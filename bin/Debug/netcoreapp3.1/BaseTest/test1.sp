@@ -1,0 +1,197 @@
+
+ProjectEnter
+{
+    static Main()
+    {
+       #Class1.Print();
+       BindCSharpTest.Fun();       
+    }
+    static Test()
+    {
+       #TempTest.Fun();
+    }
+}
+Compile
+{
+    CompileBefore()
+    {
+        
+    }
+    CompileAfter()
+    {
+        
+    }
+}
+
+ProjectConfigBegin{
+    "name":"test1",
+    "desc":"这是一个测试用例",
+    "compileFileList":
+    [ 
+        {
+            "path":"NamespaceTest1.s",
+            "option":{},
+            "group":"namespace",
+            "priority":0
+
+        },
+        {
+            "path":"NamespaceTest2.s",
+            "group":"namespace",
+            "priority":0
+        },
+        {
+            "path":"Class1Test.s",
+            "group":"class"
+        },
+        {
+            "path":"Class2Test.s",
+            "group":"class",
+            "tag":"myc"
+        },        
+        {
+            "path":"MemberFunction1Test.s",
+            "group":"function",
+            "tag":"myc"
+        },        
+        {
+            "path":"MemberFunction2Test.s",
+            "group":"function",
+            "tag":"myc"
+        },        
+        {
+            "path":"MemberVartialbe1Test.s",
+            "group":"MemberVartialbe",
+            "tag":"myc"
+        },        
+        {
+            "path":"MemberVartialbe2Test.s",
+            "group":"MemberVartialbe",
+            "tag":"myc"
+        },        
+        {
+            "path":"TempTest.s",
+            "group":"temp",
+            "tag":"TempTest"
+        },
+        {
+            "path":"ParTest.s",
+            "group":"temppar1",
+            "tag":"ParTest"
+        },
+        {
+            "path":"statements_test.s",
+            "group":"temp",
+            "tag":"temp2"
+        },
+        {
+            "path":"IfElseTest.s",
+            "group":"temp",
+            "tag":"IfelseTest"
+        },
+        {
+            "path":"SwitchTest.s",
+            "group":"temp",
+            "tag":"SwitchTest"
+        },
+        {
+            "path":"ForWhileTest.s",
+            "group":"temp",
+            "tag":"ForWhileTest"
+        },
+        {
+            "path":"GoToLabelTest.s",
+            "group":"temp",
+            "tag":"GoToLabelTest"
+        },
+        {
+            "path":"ObjectTest.s",
+            "group":"temp",
+            "tag":"ObjectTest"
+        },
+        {
+            "path":"CastObject.s",
+            "group":"temp",
+            "tag":"CastObject"
+        },
+        {
+            "path":"TemplateClass.s",
+            "group":"temp",
+            "tag":"TemplateClass"
+        },
+        {
+            "path":"ArrayTest.s",
+            "group":"temp",
+            "tag":"ArrayTest"
+        },
+        {
+            "path":"BlockTest.s",
+            "group":"temp",
+            "tag":"BlockTest"
+        },
+        {
+            "path":"GetSetVariable.s",
+            "group":"temp",
+            "tag":"GetSetVariable"
+        },
+        {
+            "path":"ExpressTest.s",
+            "group":"temp",
+            "tag":"ExpressTest"
+        },
+        {
+            "path":"CSharpTest.s",
+            "group":"csharp",
+            "tag":"CSharpTest"
+        },
+        {
+            "path":"BindCSharpTest.s",
+            "group":"csharp",
+            "tag":"BindCSharpTest"
+        },
+        {
+            "path":"NumberTest.s",
+            "group":"temp",
+            "tag":"NumberTest"
+        },
+        {
+            "path":"StringTest.s",
+            "group":"temp",
+            "tag":"StringTest"
+        },
+        {
+            "path":"Core/BaseType/Int32.s",
+            "group":"core",
+            "tag":"Int32"
+        }
+     ],
+    "globalNamespace":
+     [
+            "Application",
+            "Application.Core",
+            "Application.N1.N2.N3.N4.N5",
+            "Q",
+            "Core"
+    ],
+    "option": 
+    {
+        "isForceUseClassKey":true
+    },
+    "filter":
+    {
+        "group":["all"],
+        "tag":["BindCSharpTest"]
+    },
+    "module": 
+    [
+        {
+            "name":"Core",
+            "path":"module/Corelib.dll"
+        }
+    ]
+}ProjectConfigEnd
+
+ClassConfig
+{
+
+}

@@ -1,0 +1,757 @@
+﻿using SimpleLanguage.Compile.CoreFileMeta;
+using SimpleLanguage.Core.SelfMeta;
+using SimpleLanguage.Core.Statements;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Reflection;
+using System.Runtime.ConstrainedExecution;
+using System.Security.Cryptography;
+using System.Text;
+
+namespace SimpleLanguage.Core
+{
+    public class MetaParam
+    {
+        public bool isAllConst
+        {
+            get
+            {
+                if(m_ParentCollection != null)
+                {
+                    return m_ParentCollection.isAllConst;
+                }
+                return false;
+            }
+        }
+        public bool isCanCallFunction
+        {
+            get
+            {
+                if (m_ParentCollection != null)
+                {
+                    return m_ParentCollection.isCanCallFunction;
+                }
+                return true;
+            }
+        }
+        public MetaClass ownerMetaClass => m_OwnerMetaClass;
+        public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
+
+        protected MetaClass m_OwnerMetaClass;
+        protected MetaBlockStatements m_OwnerMetaBlockStatements;
+        protected MetaParamCollectionBase m_ParentCollection;
+
+        public virtual void Parse()
+        {
+            
+        }
+        public virtual void CaleReturnType()
+        {
+        }
+        public void SetParentCollection( MetaParamCollectionBase cbase )
+        {
+            m_ParentCollection = cbase;
+        }
+        public virtual string ToTypeName()
+        {
+            //if(m_ReturnMetaType != null )
+            //{
+            //    return m_ReturnMetaType.defineType.ToString();
+            //}
+            return "";
+        }
+        public virtual string ToFormatString()
+        {
+            return "";
+        }
+    }
+    public partial class MetaInputParam : MetaParam
+    {
+        public MetaExpressNode express => m_Express;
+
+        private FileInputParamNode m_FileInputParamNode;
+        private MetaExpressNode m_Express = null;
+        public MetaInputParam( FileInputParamNode fipn, MetaClass mc, MetaBlockStatements mbs )
+        {
+            m_FileInputParamNode = fipn;
+            m_OwnerMetaBlockStatements = mbs;
+            m_OwnerMetaClass = mc;
+
+            m_Express = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(m_OwnerMetaBlockStatements, null, m_FileInputParamNode.express, false, false );
+        }
+        public MetaInputParam( MetaExpressNode inputExpress )
+        {
+            m_Express = inputExpress;
+        }
+        public override void CaleReturnType()
+        {
+            if(m_Express != null )
+            {
+                m_Express.CalcReturnType();                
+            }
+        }
+        public MetaClass GetRetMetaClass()
+        {
+            if( m_Express != null )
+            {
+                return m_Express.GetReturnMetaClass();
+            }
+            return CoreMetaClassManager.objectMetaClass;
+        }
+        public override string ToFormatString()
+        {
+            return m_Express?.ToFormatString();
+        }
+    }
+    public class MetaOutputParam : MetaParam
+    {
+        public MetaExpressNode express;
+        public MetaOutputParam(FileInputParamNode fipn, MetaClass mc, MetaBlockStatements mbs)
+        {
+            //express = ExpressManager.instance.CreateMetaClassByFileMetaClass(mc, mbs, null, fipn.express);
+        }
+    }
+    public partial class MetaDefineParam : MetaParam
+    {
+        public MetaVariable metaVariable => m_MetaVariable;
+        public MetaExpressNode expressNode => m_MetaExpressNode;
+
+
+        private FileMetaParamterDefine m_FileMetaParamter = null;
+        private MetaVariable m_MetaVariable = null;
+        private MetaExpressNode m_MetaExpressNode = null;
+        public static bool operator ==(MetaDefineParam lmm, MetaDefineParam rmm)
+        {
+            return MetaDefineParam.Equals(lmm, rmm);
+        }
+        public static bool operator !=(MetaDefineParam lmm, MetaDefineParam rmm)
+        {
+            return !MetaDefineParam.Equals(lmm, rmm);
+        }
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+        public bool IsTemplateMetaClass()
+        {
+            return m_MetaVariable != null ? m_MetaVariable.isTemplate : false;
+        }
+        public bool EqualsMetaParam( MetaParam mp )
+        {
+            if (m_MetaVariable == null)
+            {
+                return true;
+            }
+            if( m_MetaVariable.isTemplate )
+            {
+
+            }
+            var tmc = m_MetaVariable.metaDefineType.metaClass as TemplateMetaClass;
+            if (tmc != null)
+            {
+                //return tmc.IsInConstraintMetaClass(mp.ownerMetaClass);
+            }
+
+            var retMC = (mp as MetaInputParam).express.GetReturnMetaClass();
+            var relation = ClassManager.ValidateClassRelationByMetaClass(m_MetaVariable.metaDefineType.metaClass, retMC );
+
+            if (relation == ClassManager.EClassRelation.Same || relation == ClassManager.EClassRelation.Child)
+            {
+                return true;
+            }
+
+            return false;
+        }
+        public bool EqualsName( string name )
+        {
+            return m_MetaVariable.name.Equals(name);
+        }
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+
+            if (GetType() != obj.GetType())
+                return false;
+
+
+            MetaDefineParam rec = obj as MetaDefineParam;
+            if (rec == null) return false;
+
+            //if (rec.m_DefineMetaClassType == null || m_DefineMetaClassType == null ) return false;
+
+            //if (rec.m_DefineMetaClassType == m_DefineMetaClassType && rec.m_DefineMetaClassType.name == m_DefineMetaClassType.name)
+            //    return true;
+
+            return false;
+        }
+        public MetaDefineParam( MetaClass mc, MetaBlockStatements mbs, FileMetaParamterDefine fmp )
+        {
+            m_OwnerMetaClass = mc;
+            m_OwnerMetaBlockStatements = mbs;
+            m_FileMetaParamter = fmp;
+            MetaType mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
+            m_MetaVariable = new MetaVariable(fmp.name, mbs, mc, mdt );
+            m_MetaVariable.isArgument = true;
+        }
+        public MetaDefineParam( string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaClass _defineMetaClass, MetaExpressNode _expressNode )
+        {
+            MetaType mdt = new MetaType(_defineMetaClass);
+            m_MetaVariable = new MetaVariable(_name, mbs, ownerMC, mdt );
+            m_MetaExpressNode = _expressNode;
+        }
+        public override void Parse()
+        {
+            if (m_FileMetaParamter != null)
+            {
+                MetaType defineMetaClassType = null;
+
+                string templateName = m_FileMetaParamter.classDefineRef?.allName;
+                MetaTemplate templateMeta = m_OwnerMetaClass.GetTemplateMetaClassByName(templateName);
+                if (templateMeta != null)
+                {
+                    defineMetaClassType = new MetaType(templateMeta);
+                }
+
+                if (defineMetaClassType != null)
+                {
+                    m_MetaVariable.SetMetaDefineType(defineMetaClassType);
+                }
+                else
+                {
+                    if (m_FileMetaParamter.classDefineRef != null)
+                    {
+                        var defineMetaClass = ClassManager.instance.GetMetaClassByRef(m_OwnerMetaClass, m_FileMetaParamter.classDefineRef);
+                        m_MetaVariable.SetDefineMetaClass(defineMetaClass);
+                    }
+                }
+
+            }
+            MetaExpressNode express = null;
+            
+            if(express != null )
+            {
+                AllowUseConst auc = new AllowUseConst();
+                auc.useNotConst = false;
+                auc.useNotStatic = false;
+                auc.callConstructFunction = true;
+                auc.callFunction = true;
+                express.Parse(auc);
+            }
+        }
+        public MetaExpressNode CreateExpressNodeInFunctionDefineParam()
+        {
+            //m_Express = null;// ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(ownerMetaClass, m_DefineMetaClassType, m_FileMetaParamter.express);
+            return null;
+        }
+        public override void CaleReturnType()
+        {
+            //if(m_Express != null )
+            //{
+            //    m_Express.ParseExpress();                
+            //    m_Express.CalcReturnType();
+            //}
+            //if( !isTemplate )
+            //{
+            //    ExpressManager.CalcDefineClassType(ref m_DefineMetaClassType, m_Express, m_OwnerMetaClass, m_OwnerMetaBlockStatements?.ownerMetaFunction, defineName, ref m_IsNeedCastStatements );
+            //}
+
+            //if (m_MetaVariable != null)
+            //{
+            //    m_MetaVariable.SetRetMetaClass(m_DefineMetaClassType);
+            //}
+        }
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(m_MetaVariable?.ToFormatString());
+            return sb.ToString();
+        }
+    }
+    public class MetaParamCollectionBase
+    {
+        public bool fixedParam { get { return minParamCount == maxParamCount; } }
+        public int minParamCount = 0;
+        public int maxParamCount { get { return metaParamList.Count; } }
+        public bool isAllConst = false;
+        public bool isCanCallFunction = true;
+        public List<MetaParam> metaParamList = new List<MetaParam>();
+        protected MetaClass m_OwnerMetaClass = null;
+        protected MetaBlockStatements m_MetaBlockStatements = null;
+        
+        public int count { get { return metaParamList.Count; } }
+        public bool isNullParam
+        {
+            get
+            {
+                return metaParamList.Count == 0;
+            }
+        }
+        public void Clear()
+        {
+            metaParamList.Clear();
+        }
+        public bool IsEqualMetaTemplateAndParamCollection( MetaInputTemplateCollection mitc, MetaParamCollectionBase mpc )
+        {
+            if (mpc == null)
+            {
+                return metaParamList.Count == 0;
+            }
+
+            int templateCount = 0;
+            if( mitc!=null )
+            {
+                templateCount = mitc.metaTemplateParamsList.Count;
+            }
+            if (metaParamList.Count == mpc.metaParamList.Count + templateCount)
+            {
+                int index = 0;
+                if( mitc != null )
+                {
+                    for (int i = 0; i < mitc.metaTemplateParamsList.Count; i++)
+                    {
+                        MetaDefineParam a = metaParamList[index++] as MetaDefineParam;
+                        MetaType b = mitc.metaTemplateParamsList[i];
+                        if (!a.IsTemplateMetaClass())
+                        {
+                            return false;
+                        }
+                    }
+                }
+                for (int i = 0; i < mpc.metaParamList.Count; i++)
+                {
+                    MetaParam a = metaParamList[index++];
+                    MetaParam b = mpc.metaParamList[i];
+                    if (!CheckMetaParam(a, b))
+                        return false;
+                }
+                return true;
+            }
+            return false;
+        }
+        public bool IsEqualMetaParamCollection(MetaParamCollectionBase mpc)
+        {
+            if (mpc == null )
+            {
+                return minParamCount == 0;
+            }
+
+            if (metaParamList.Count == mpc.metaParamList.Count)
+            {
+                for (int i = 0; i < metaParamList.Count; i++)
+                {
+                    MetaParam a = metaParamList[i];
+                    MetaParam b = mpc.metaParamList[i];
+                    if ( !CheckMetaParam(a, b) )
+                        return false;
+                }
+                return true;
+            }
+            return false;
+        }
+        public virtual bool CheckMetaParam( MetaParam a, MetaParam b )
+        {
+            if( a is MetaDefineParam )
+            {
+                var amd = a as MetaDefineParam;
+                if (amd.EqualsMetaParam(b))
+                    return true;
+                
+            }
+            return a == b;
+        }
+        public virtual void CheckParse()
+        {
+
+        }
+
+        public static bool operator ==(MetaParamCollectionBase lmm, MetaParamCollectionBase rmm)
+        {
+            return System.Object.Equals(lmm, rmm);
+        }
+        public static bool operator !=(MetaParamCollectionBase lmm, MetaParamCollectionBase rmm)
+        {
+            return !System.Object.Equals(lmm, rmm);
+        }
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+
+            if (GetType() != obj.GetType())
+                return false;
+
+            MetaParamCollectionBase rec = obj as MetaParamCollectionBase;
+            if (rec == null) return false;
+
+            int count = rec.metaParamList.Count;
+            for (int i = 0; i < count; i++)
+            {
+                if (this.metaParamList[i] != rec.metaParamList[i])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        public void AddMetaParam( MetaParam metaMemberParam )
+        {
+            metaMemberParam.SetParentCollection( this );
+            metaParamList.Add(metaMemberParam);
+        }
+        public string ToParamTypeName()
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < metaParamList.Count; i++)
+            {
+                sb.Append(metaParamList[i].ToTypeName());
+                if (i < metaParamList.Count - 1)
+                    sb.Append("_");
+            }
+            return sb.ToString();
+        }
+        public virtual string ToFormatString()
+        {
+            return "";
+        }
+    }
+    public class MetaDefineParamCollection : MetaParamCollectionBase
+    {
+        public bool isHaveDefaultParamExpress { get; set; } = false;
+        public MetaDefineParamCollection(bool _isAllConst, bool _isCanCallFunction)
+        { 
+            isAllConst = _isAllConst; isCanCallFunction = _isCanCallFunction; 
+        }
+        public List<MetaDefineParam> GetMetaDefineList()
+        {
+            List<MetaDefineParam> retList = new List<MetaDefineParam>();
+            for (int i = 0; i < metaParamList.Count; i++ )
+            {
+                retList.Add(metaParamList[i] as MetaDefineParam);
+            }
+            return retList;
+        }
+        public MetaDefineParam GetMetaDefineParamByName( string name )
+        {
+            for (int i = 0; i < metaParamList.Count; i++)
+            {
+                var dParam = metaParamList[i] as MetaDefineParam;
+                if( dParam != null )
+                {
+                    if (dParam.EqualsName(name))
+                        return dParam;
+                }
+            }
+            return null;
+        }
+        public void AddMetaDefineParam(MetaDefineParam metaMemberParam)
+        {
+            metaMemberParam.SetParentCollection(this);
+            metaParamList.Add(metaMemberParam);
+
+            if(isHaveDefaultParamExpress)
+            {
+                if (metaMemberParam.expressNode == null)
+                {
+                    Console.WriteLine("Error AddMetaDefineParam 参数前边已定义表达式，后边必须跟进默认值表达式!!");
+                }
+            }
+            else
+            {
+                if (metaMemberParam.expressNode != null)
+                {
+                    isHaveDefaultParamExpress = true;
+                }      
+                else
+                {
+                    minParamCount++;
+                }
+            }
+        }
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("(");
+            for (int i = 0; i < metaParamList.Count; i++)
+            {
+                sb.Append(metaParamList[i].ToFormatString());
+                if (i < metaParamList.Count - 1)
+                {
+                    sb.Append(",");
+                }
+            }
+            sb.Append(")");
+            return sb.ToString();
+        }
+    }
+    public class MetaDefineTemplateCollection
+    {
+        public List<MetaTemplate> metaTemplateList => m_MetaTemplateList;
+
+        protected List<MetaTemplate> m_MetaTemplateList = new List<MetaTemplate>();
+
+        public int count { get { return m_MetaTemplateList.Count; } }
+       
+        public MetaTemplate GetMetaDefineTemplateByName( string _name )
+        {
+            for( int i = 0; i < m_MetaTemplateList.Count; i++ )
+            {
+                if (m_MetaTemplateList[i].name == _name)
+                    return m_MetaTemplateList[i];
+            }
+            return null;
+        }
+        public bool IsEqualMetaInputTemplateCollection(MetaInputTemplateCollection mpc)
+        {
+            if (mpc == null)
+            {
+                return m_MetaTemplateList.Count == 0;
+            }
+
+            if (m_MetaTemplateList.Count == mpc.metaTemplateParamsList.Count)
+            {
+                for (int i = 0; i < m_MetaTemplateList.Count; i++)
+                {
+                    MetaTemplate a = m_MetaTemplateList[i];
+                    MetaType b = mpc.metaTemplateParamsList[i];
+                    if ( MatchMetaInputTemplate(a, b))
+                        return true;
+                }
+            }
+            return false;
+        }
+        public virtual bool MatchMetaInputTemplate(MetaTemplate a, MetaType b)
+        {
+            if (a.IsInConstraintMetaClass(b.metaClass) )
+                return true;
+            return false;
+        }
+        public virtual void AddMetaDefineTemplate(MetaTemplate defineTemplate)
+        {
+            m_MetaTemplateList.Add(defineTemplate);
+        }
+        public virtual string ToFormatString()
+        {
+            //    StringBuilder sb = new StringBuilder();
+            //    for (int i = 0; i < metaParamList.Count; i++)
+            //    {
+            //        sb.Append(metaParamList[i].ToTypeName());
+            //        if (i < metaParamList.Count - 1)
+            //            sb.Append("_");
+            //    }
+            //    return sb.ToString();
+            return "";
+        }
+    }
+    public partial class MetaInputParamCollection : MetaParamCollectionBase
+    {
+        public bool isStatic = false;
+        public bool isNeedAllConst = false;
+
+        public MetaInputParamCollection(MetaClass mc, MetaBlockStatements mbs)
+        {
+            m_OwnerMetaClass = mc;
+            m_MetaBlockStatements = mbs;
+        }
+        public MetaInputParamCollection(FileMetaParTerm fmpt, MetaClass mc, MetaBlockStatements mbs )
+        {
+            m_OwnerMetaClass = mc;
+            m_MetaBlockStatements = mbs;
+            var splitList = fmpt.SplitParamList();
+            List<FileInputParamNode> list = new List<FileInputParamNode>();
+            for (int i = 0; i < splitList.Count; i++)
+            {
+                FileInputParamNode fnpn = new FileInputParamNode(splitList[i]);
+                list.Add(fnpn);
+            }
+            ParseList( list );
+        }
+        public void ParseList( List<FileInputParamNode> splitList )
+        {
+            for (int i = 0; i < splitList.Count; i++)
+            {
+                MetaInputParam mp = new MetaInputParam(splitList[i], m_OwnerMetaClass, m_MetaBlockStatements);
+                AddMetaInputParam(mp);
+            }
+        }
+        public void AddMetaInputParam( MetaInputParam mip )
+        {
+            AddMetaParam(mip);
+        }
+        public void CaleReturnType()
+        {
+            for (int i = 0; i < metaParamList.Count; i++)
+            {
+                metaParamList[i].CaleReturnType();
+            }
+        }
+        public MetaClass GetMaxLevelMetaClassType()
+        {
+            MetaClass mc = CoreMetaClassManager.objectMetaClass;
+            bool isAllSame = true;
+            for (int i = 0; i < metaParamList.Count - 1; i++)
+            {
+                MetaInputParam cmc = (metaParamList[i] as MetaInputParam);
+                MetaInputParam nmc = (metaParamList[i + 1] as MetaInputParam);
+                if (mc == null || nmc == null) continue;
+                if (cmc.express.opLevel == nmc.express.opLevel)
+                {
+                    if( cmc.express.opLevel == 10 )
+                    {
+                        var cur = cmc.GetRetMetaClass();
+                        var next = nmc.GetRetMetaClass();
+                        var relation = ClassManager.ValidateClassRelationByMetaClass(cur, next);
+                        if( relation == ClassManager.EClassRelation.Same 
+                            || relation == ClassManager.EClassRelation.Child )
+                        {
+                            mc = next;
+                        }
+                        else if( relation == ClassManager.EClassRelation.Parent )
+                        {
+                            mc = cur;
+                        }
+                        else
+                        {
+                            isAllSame = false;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        mc = cmc.GetRetMetaClass();
+                        isAllSame = true;
+                    }
+                    
+                }
+                else 
+                {
+                    if (cmc.express.opLevel > nmc.express.opLevel)
+                    {
+                        mc = cmc.GetRetMetaClass();
+                    }
+                    else
+                    {
+                        mc = nmc.GetRetMetaClass();
+                    }
+                }
+            }
+            return mc;
+        }
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("(");
+            for( int i = 0; i < metaParamList.Count; i++ )
+            {
+                sb.Append(metaParamList[i].ToFormatString());
+                if( i < metaParamList.Count - 1 )
+                {
+                    sb.Append(",");
+                }
+            }
+            sb.Append(")");
+            return sb.ToString();
+        }
+    }
+    public class MetaInputTemplateCollection
+    {
+        public List<MetaType> metaTemplateParamsList => m_MetaTemplateParamsList;
+        private List<MetaType> m_MetaTemplateParamsList = new List<MetaType>();
+        public MetaInputTemplateCollection()
+        {
+
+        }
+        public MetaInputTemplateCollection(List<FileInputTemplateNode> callNodeList, MetaClass mc )
+        {
+            for (int i = 0; i < callNodeList.Count; i++)
+            {
+                MetaType mp = new MetaType( callNodeList[i], mc );
+                m_MetaTemplateParamsList.Add(mp);
+            }
+        }
+        public void AddMetaTemplateParamsList( MetaType mp )
+        {
+            m_MetaTemplateParamsList.Add(mp);
+        }
+        public MetaClass GetMaxLevelMetaClassType()
+        {
+            MetaClass mc = CoreMetaClassManager.objectMetaClass;
+            bool isAllSame = true;
+            for( int i = 0; i < m_MetaTemplateParamsList.Count -1; i++ )
+            {
+                MetaType cmdt = m_MetaTemplateParamsList[i];
+                MetaType nmdt = m_MetaTemplateParamsList[i + 1];
+                if(cmdt == nmdt)
+                {
+                    isAllSame = true;
+                }
+                else
+                {
+                    if( cmdt.metaTemplate == null && nmdt.metaTemplate == null )
+                    {
+                        var cmc = cmdt.metaClass;
+                        var nmc = nmdt.metaClass;
+                        if (ClassManager.IsNumberMetaClass(cmc) && ClassManager.IsNumberMetaClass(nmc))
+                        {
+                            if (i == 0)
+                            {
+                                mc = MetaTypeFactory.GetOpLevel(cmc.eType) > MetaTypeFactory.GetOpLevel(nmc.eType) ? cmc : nmc;
+                            }
+                            else
+                            {
+                                mc = MetaTypeFactory.GetOpLevel(mc.eType) > MetaTypeFactory.GetOpLevel(nmc.eType) ? mc : nmc;
+                            }
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if(cmdt.metaTemplate == nmdt.metaTemplate )
+                        {
+                            isAllSame = true;
+                        }
+                    }
+                }
+            }
+            if( isAllSame )
+            {
+                mc = m_MetaTemplateParamsList[0].metaClass;
+            }
+            return mc;
+        }
+        public string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("<");
+            for (int i = 0; i < metaTemplateParamsList.Count; i++)
+            {
+
+                sb.Append(metaTemplateParamsList[i].ToFormatString());
+                if (i < metaTemplateParamsList.Count - 1)
+                {
+                    sb.Append(",");
+                }
+            }
+            sb.Append(">");
+            return sb.ToString();
+        }
+    }
+
+    public class MetaInputArrayCollection
+    {
+        public MetaInputArrayCollection( FileMetaBracketTerm fmbt )
+        {
+
+        }
+    }
+}
