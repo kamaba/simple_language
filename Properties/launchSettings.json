@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SimpleLanguage": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

@@ -1,0 +1,23 @@
+if( true )
+ {
+    a = 20;
+   } 
+        else
+            b = 30;
+        a = 10;
+        if( true )
+            a = 20;
+        elif( a == 20 )
+            if( a/10 == 2 )
+                a = 30;
+        elif( a == 40 )
+            a = 300;
+        else
+        {
+            a = 10;
+        }
+
+        if( true )
+            console.Write(" true" );
+
+       
