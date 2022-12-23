@@ -1,4 +1,4 @@
-# Simple Language [中文](https://github.com/kamaba/simple_language/README_CN.md)
+# Simple Language [中文](https://github.com/kamaba/simple_language/blob/main/README_CN.md)
 
 ------------------------------------------------------------------------
 
