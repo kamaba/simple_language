@@ -1,4 +1,4 @@
-# 极简语言 [English](https://github.com/kamaba/simple_language/README.md)
+# 极简语言 [English](https://github.com/kamaba/simple_language)
 
 ------------------------------------------------------------------------
 
