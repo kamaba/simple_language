@@ -1204,6 +1204,10 @@ namespace SimpleLanguage.Compile.Parse
                     tokenType = ETokenType.Class;
                     extend = EType.Class;
                     break;
+                case "enum":
+                    tokenType = ETokenType.Enum;
+                    extend = EType.Enum;
+                    break;
                 case "void":
                     tokenType = ETokenType.Void;
                     break;

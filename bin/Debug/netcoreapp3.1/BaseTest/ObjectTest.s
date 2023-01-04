@@ -75,6 +75,12 @@ ObjectTest
         Class1 c4 = { x1 = 1, y1 = 2 };
         Class2 c5 = { x1 = 1, y1 = 2, x2 = 20, y2 = 100 };
         Class2 c6 = { ct1 = ClassT() };     # { ct1.t = 20; } 是不允许的
+
+        aynn = {name = "mypc", wodm = Class1(), womd2 = Class2() };
+        if aynn.name == "mypc"
+        {
+
+        }
     }
 }
 #!

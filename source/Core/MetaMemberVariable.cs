@@ -32,6 +32,7 @@ namespace SimpleLanguage.Core
         private EFromType m_FromType = EFromType.Code;
         private FileMetaMemberVariable m_FileMetaMemeberVariable;
         private MetaExpressNode m_Express = null;
+        private bool m_IsEnumValue = false;
 
         private bool m_IsSupportConstructionFunctionOnlyBraceType = false;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
         private bool m_IsSupportConstructionFunctionConnectBraceType = false;  //是否支持构造函数名称后边加{}形式    Class1{ a = Class2(){} } 不支持
@@ -63,16 +64,25 @@ namespace SimpleLanguage.Core
 
             SetOwnerMetaClass(mc);
         }
-        public MetaMemberVariable( MetaClass mc, FileMetaMemberVariable fmmv )
+        public MetaMemberVariable( MetaClass mc, FileMetaMemberVariable fmmv, bool isEnum = false )
         {
             m_FileMetaMemeberVariable = fmmv;
+            m_IsEnumValue = isEnum;
             m_Name = fmmv.name;
             fmmv.SetMetaMemberVariable(this);
             m_FromType = EFromType.Code;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             isStatic = m_FileMetaMemeberVariable?.staticToken != null;
+            if( isStatic && isEnum )
+            {
+                Console.WriteLine("Error ENum中，不允许有静态关键字，而是全部是静态关键字!!");
+            }
             if (m_FileMetaMemeberVariable.permissionToken != null)
             {
+                if( isEnum )
+                {
+                    Console.WriteLine("Error Enum中，不允许使用public/private等权限关键字!!");
+                }
                 permission = CompilerUtil.GetPerMissionByString(m_FileMetaMemeberVariable.permissionToken?.lexeme.ToString());
             }
 
@@ -418,14 +428,22 @@ namespace SimpleLanguage.Core
                     }
                     else if (fmbt != null)
                     {
-                        if (m_IsSupportConstructionFunctionOnlyBraceType)
+                        if( m_IsEnumValue )
                         {
+                            MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(fmbt, m_DefineMetaType, ownerMetaClass, null );
+                            return mnoen;
                         }
                         else
                         {
-                            Console.WriteLine("Error 在类变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                            if (m_IsSupportConstructionFunctionOnlyBraceType)
+                            {
+                            }
+                            else
+                            {
+                                Console.WriteLine("Error 在类变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                            }
+                            return null;
                         }
-                        return null;
                     }
                     else if (fmct != null)
                     {

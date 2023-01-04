@@ -1,30 +1,86 @@
-import System;
+import CSharp.System;
 
-Class1
+enum Book
 {
-    Class2 c3 = { m = 20 };
-    pinrt()
-    {
-        int a = 10;
-        {
-            b = 20;
-            {
-                a = 15;
-                a2 = 13;
-                {
-                    m = 10;
-                }
-            }
-            Console.Write( "a2 = " + a2 );
-        }
-    }
+    B1 = { int i2 = 20, string url = "http://www.baidu.com" };
+    C1 = 1;
+    string Str;
 }
-Class2
+const enum ConstColor
 {
-    static int m2 = 10;
-    m = 10;
-    Class2( int x )
+    Red = 0xff0000;
+    Green = 0x00ff00;
+    Blue = 0x0000ff;
+
+    enum MixColor
     {
-        m = 10;
+        Red = 0.0f;
+        Green = 0.0f;
+        Blue = 0.0f;
+    }
+    MixColor1 = MixColor(){Red=0.9f, Green = 0.1f, Blue = 0.01f };
+    MixColor2 = MixColor(){Red=0.4f, Green = 0.22f, Blue = 0.7f };
+}
+enum Book2
+{
+    Int32 Id = 1;
+    String Name = "";
+}
+enum Book3
+{
+    A1 = 1;
+    A2 = 2;
+    A3 = 3;
+}
+#! 暂不实现
+enum Option<T>
+{
+    T Some;
+    None;
+}
+!#
+
+EnumTest
+{
+    static Func()
+    {
+        #!
+        for b3 in Book3
+        {
+            Console.Write("Book3: " + b3 );
+        }
+        !#
+
+        #!
+        Book3 b3 = Book3.A1;
+        Book3 b3_3 = Book3.A1( 20 );
+        !#
+
+        #!
+        book = Book.B1({ i2 = 20, url = "mas" });
+        switch book
+        {
+            case Book.B1 b1:
+            {
+                Console.Write( "bi2:" + b1.i2 );
+            }
+        }
+
+        Book eb = Book.B();
+        if( eb == Book.B )
+        {
+            Console.Write( eb.ToString() );
+        }
+        !#
+
+        #! 暂不实现
+        Option op = Option.Some<String>("hello");
+        switch op{
+            case Option.Some sot:
+            {
+                Console.Write("something=" + sot.ToString() );
+            }
+        }
+        !#
     }
 }

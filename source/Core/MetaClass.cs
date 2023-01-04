@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
+using System.Linq;
 
 namespace SimpleLanguage.Core
 {
@@ -116,13 +117,40 @@ namespace SimpleLanguage.Core
         public List<MetaClass> interfaceClass => m_InterfaceClass;
         public List<MetaTemplate> metaTemplateList => m_MetaTemplateList;
         public MetaExpressNode defaultExpressNode => m_DefaultExpressNode;
+        public Dictionary<string, MetaMemberVariable> allMetaMemberVariableDict
+        {
+            get
+            {
+                Dictionary<string, MetaMemberVariable> allMetaMemberVariableDict = new Dictionary<string, MetaMemberVariable>(m_MetaMemberVariableDict);
+                allMetaMemberVariableDict = allMetaMemberVariableDict.Concat(m_MetaExtendMemeberVariableDict).ToDictionary(k => k.Key, v => v.Value);
+                return allMetaMemberVariableDict;
+            }
+        }
+        public List<MetaMemberVariable> allMetaMemberVariableList
+        {
+            get
+            {
+                List<MetaMemberVariable> allMetaMemberVariableList = new List< MetaMemberVariable>(m_MetaMemberVariableDict.Count + m_MetaExtendMemeberVariableDict.Count);
+
+                foreach (var v in allMetaMemberVariableDict)
+                {
+                    allMetaMemberVariableList.Add(v.Value);
+                }
+                foreach (var v in m_MetaExtendMemeberVariableDict)
+                {
+                    allMetaMemberVariableList.Add(v.Value);
+                }
+                return allMetaMemberVariableList;
+            }
+        }
+
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
         public Dictionary<string, MetaMemberVariable> metaExtendMemeberVariableDict => m_MetaExtendMemeberVariableDict;
         public Dictionary<Token, FileMetaClass> fileMetaClassDict => m_FileMetaClassDict;
         public bool isHandleExtendVariableDirty { get; set; } = false;
 
 
-        private Dictionary<Token, FileMetaClass> m_FileMetaClassDict = new Dictionary<Token, FileMetaClass>();
+        protected Dictionary<Token, FileMetaClass> m_FileMetaClassDict = new Dictionary<Token, FileMetaClass>();
         protected MetaClass m_ExtendClass  = null;
         protected List<MetaClass> m_InterfaceClass = new List<MetaClass>();
 
@@ -135,10 +163,10 @@ namespace SimpleLanguage.Core
         protected MetaExpressNode m_DefaultExpressNode = null;
         protected EType m_Type = EType.None;
 
-        public MetaClass(string _name)
+        public MetaClass(string _name, EType _type  = EType.Class )
         {
             m_Name = _name;
-            m_Type = EType.Class;
+            m_Type = _type;
         }
         public void AllFunctionTranslateIR()
         {
@@ -181,7 +209,7 @@ namespace SimpleLanguage.Core
             }
         }
 #if EditorMode
-        public void BindFileMetaClass(FileMetaClass fmc)
+        public virtual void BindFileMetaClass(FileMetaClass fmc)
         {
             if (m_FileMetaClassDict.ContainsKey(fmc.token))
             {
@@ -670,8 +698,16 @@ namespace SimpleLanguage.Core
                 MetaBase mb = v.Value;
                 if (mb is MetaClass)
                 {
-                    stringBuilder.Append((mb as MetaClass).ToFormatString());
-                    stringBuilder.Append(Environment.NewLine);
+                    if (mb is MetaEnum)
+                    {
+                        stringBuilder.Append((mb as MetaEnum).ToFormatString());
+                        stringBuilder.Append(Environment.NewLine);
+                    }
+                    else
+                    {
+                        stringBuilder.Append((mb as MetaClass).ToFormatString());
+                        stringBuilder.Append(Environment.NewLine);
+                    }
                 }
                 else if (mb is MetaMemberVariable)
                 {

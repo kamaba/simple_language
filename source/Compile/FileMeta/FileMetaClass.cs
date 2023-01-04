@@ -19,6 +19,8 @@ namespace SimpleLanguage.Compile.CoreFileMeta
     public partial class FileMetaClass : FileMetaBase
     {
         public bool innerClass { get; set; } = false;
+        public bool isConst { get { return m_ConstToken != null; } }
+        public bool isEnum { get { return m_EnumToken != null; } }
         public bool isPartial => m_PartialToken != null;
         public MetaClass metaClass => m_MetaClass;
         public FileMetaClassDefine extendClass => m_ExtendClass;
@@ -34,6 +36,8 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         protected Token m_PermissionToken = null;
         protected Token m_PartialToken = null;
         protected Token m_ClassToken = null;
+        protected Token m_EnumToken = null;
+        protected Token m_ConstToken = null;
         #endregion
         private MetaClass m_MetaClass = null;
         private FileMetaNamespace m_TopLevelFileMetaNamespace = null;
@@ -84,7 +88,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
                 if (cnode.nodeType == ENodeType.IdentifierLink)
                 {
-
                     if (interfaceToken != null)
                     {
                         if (interfaceNameTokenList.Count > 0)
@@ -175,6 +178,18 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                             Console.WriteLine("Error 解析过了一次权限!!");
                         }
                     }
+                    else if (token.type == ETokenType.Const)
+                    {
+                        if(m_ConstToken == null )
+                        {
+                            m_ConstToken = token;
+                        }
+                        else
+                        {
+                            isError = true;
+                            Console.WriteLine("Error 解析过了一次Const!!");
+                        }
+                    }
                     else if( token.type == ETokenType.Partial )
                     {
                         if(m_PartialToken != null )
@@ -186,12 +201,31 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     else if (token.type == ETokenType.Class)
                     {
+                        if (m_EnumToken != null)
+                        {
+                            isError = true;
+                            Console.WriteLine("Error 解析过了一次Enum!!");
+                        }
                         if (m_ClassToken != null)
                         {
                             isError = true;
                             Console.WriteLine("Error 解析过了一次Class!!");
                         }
                         m_ClassToken = token;
+                    }
+                    else if( token.type == ETokenType.Enum )
+                    {
+                        if (m_EnumToken != null)
+                        {
+                            isError = true;
+                            Console.WriteLine("Error 解析过了一次Enum!!");
+                        }
+                        if (m_ClassToken != null)
+                        {
+                            isError = true;
+                            Console.WriteLine("Error 解析过了一次Class!!");
+                        }
+                        m_EnumToken = token;                        
                     }
                     else if (token.type == ETokenType.ColonDouble)
                     {
@@ -225,26 +259,48 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                 }
             }
-            if(interfaceNameTokenList.Count > 0 )
-            {
-                interfaceTokenList.Add(interfaceNameTokenList);
-            }
 
-            if (classNameTokenList.Count == 0)
+            if(m_EnumToken != null )
             {
-                Console.WriteLine("Error 解析类型名称错误!!");
+                if(interfaceToken != null || interfaceNameTokenList.Count > 0 )
+                {
+                    Console.WriteLine("Error Enum方式，不支持接口方式");
+                    return false;
+                }
+                if (permissionToken != null)
+                {
+                    Console.WriteLine("Error Enum方式，不支持权限的使用!!");
+                    return false;
+                }
+                if (m_PartialToken != null)
+                {
+                    Console.WriteLine("Error Enum方式，不支持partial的使用!!");
+                    return false;
+                }
+
+            }
+            else
+            {
+                if (interfaceNameTokenList.Count > 0)
+                {
+                    interfaceTokenList.Add(interfaceNameTokenList);
+                }
+
+                if (classNameTokenList.Count == 0)
+                {
+                    Console.WriteLine("Error 解析类型名称错误!!");
+                }
+                SetParentClassNameToken(inheritNameTokenList, angleNode);
+                for (int i = 0; i < interfaceTokenList.Count; i++)
+                {
+                    var incn = interfaceTokenList[i];
+                    AddInterfaceClassNameToken(incn);
+                }
             }
             m_Token = classNameTokenList[classNameTokenList.Count - 1];
             if (classNameTokenList.Count > 1)
             {
                 m_NamespaceBlock = NamespaceStatementBlock.CreateStateBlock(classNameTokenList.GetRange(0, classNameTokenList.Count - 2));
-            }
-
-            SetParentClassNameToken(inheritNameTokenList, angleNode );
-            for (int i = 0; i < interfaceTokenList.Count; i++)
-            {
-                var incn = interfaceTokenList[i];
-                AddInterfaceClassNameToken(incn);
             }
             SetPermissionToken(permissionToken);
 

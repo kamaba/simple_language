@@ -216,6 +216,8 @@ namespace SimpleLanguage
         /// <summary> namespace </summary>
         Class,
         /// <summary> class </summary>
+        Enum,
+        /// <summary> enum </summary>
         Break,
         /// <summary> continue </summary>
         Next,

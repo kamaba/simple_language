@@ -32,9 +32,11 @@ namespace SimpleLanguage.Core
             }
         }
         public Dictionary<string, MetaClass> allClassDict => m_AllClassDict;
+        public List<MetaClass> dynamicClassList => m_DynamicClassList;
 
 
         private Dictionary<string, MetaClass> m_AllClassDict = new Dictionary<string, MetaClass>();
+        public List<MetaClass> m_DynamicClassList = new List<MetaClass>();
 
         public MetaClass GetClassByName(string name)
         {
@@ -76,6 +78,53 @@ namespace SimpleLanguage.Core
             }
             return topLevelNamespace.AddMetaBase(mc.name, mc) ;
         }
+        public MetaClass FindDynamicClass( MetaClass dc )
+        {
+            foreach( var v in m_DynamicClassList )
+            {
+                if( CompareMetaClassMemberVariable( dc, v ) )
+                {
+                    return v;
+                }
+            }
+            return null;
+        }
+        public bool AddDynamicClass( MetaClass dc )
+        {
+            m_DynamicClassList.Add(dc);
+            return true;
+        }
+        public bool CompareMetaClassMemberVariable( MetaClass curClass, MetaClass cpClass )
+        {
+            var curClassList = curClass.allMetaMemberVariableList;
+            var cpClassList = cpClass.allMetaMemberVariableList;
+
+            if(curClassList.Count == cpClassList.Count )
+            {
+                for( int i = 0; i < curClassList.Count; i++ )
+                {
+                    var curMV = curClassList[i];
+                    var cpMV = cpClassList[i];
+                    if( curMV.isConst == cpMV.isConst 
+                        || curMV.isStatic == cpMV.isStatic 
+                        || curMV.name == cpMV.name
+                        || curMV.metaDefineType == cpMV.metaDefineType )
+                    {
+
+                    }
+                    else
+                    {
+                        return false;
+                        break;
+                    }
+                }
+            }
+            return true;
+        }
+        public MetaClass FindDynamicClassByMetaType( MetaClass dc )
+        {
+            return null;
+        }
         public void AddClass( FileMetaClass mc )
         {
             FileMetaClass topLevelClass = mc.topLevelFileMetaClass;
@@ -101,7 +150,25 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    var newmc = new MetaClass(mc.name);
+                    MetaClass newmc = null;
+                    if ( mc.isEnum )
+                    {
+                        newmc = new MetaEnum(mc.name, mc.isConst);
+                    }
+                    else
+                    {
+                        if (topLevelClass.isEnum)
+                        {
+                            Console.WriteLine("Error 在Enum中，不允许有Class的存在!!");
+                            return;
+                        }
+                        if( mc.isConst )
+                        {
+                            Console.WriteLine("Class 中，使用关键字，不允许使用Const");
+                            return;
+                        }
+                        newmc = new MetaClass(mc.name);
+                    }
                     topLevelClass.metaClass.AddChildrenMetaClass(newmc);
                     newmc.BindFileMetaClass(mc);
 
@@ -169,8 +236,20 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    var newmc = new MetaClass(mc.name);
-
+                    MetaClass newmc = null;
+                    if (mc.isEnum)
+                    {
+                        newmc = new MetaEnum(mc.name, mc.isConst);
+                    }
+                    else
+                    {
+                        if (mc.isConst)
+                        {
+                            Console.WriteLine("Class 中，使用关键字，不允许使用Const");
+                            return;
+                        }
+                        newmc = new MetaClass(mc.name);
+                    }
                     if (tmetaNamespace != null)
                         tmetaNamespace.AddMetaClass(newmc);
                     else

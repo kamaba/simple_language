@@ -15,7 +15,7 @@ namespace SimpleLanguage.Project
 {
     public class ProjectCompile
     {
-        public static ProjectConfig config = null;
+        public static ProjectLoad config = null;
         public bool isThreadCompile = false;
 
         public static bool isLoaded = false;
@@ -32,7 +32,7 @@ namespace SimpleLanguage.Project
         {
             if( !isLoaded )
             {
-                config = new ProjectConfig(path);
+                config = new ProjectLoad(path);
                 isLoaded = true;
                 config.Load();
             }
