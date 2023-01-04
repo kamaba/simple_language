@@ -566,6 +566,7 @@ namespace SimpleLanguage.Compile.Parse
                         AddNamespaceNode(token);
                     }
                     break;
+                case ETokenType.Enum:
                 case ETokenType.Class:
                     {
                         AddNode(token);

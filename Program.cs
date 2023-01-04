@@ -51,8 +51,8 @@ namespace SimpleLanguage
             int mm = Simple.NA.NNA.NB.AA(10);
             MetaExpressNode M;
 
-            ProjectManager.Run("BaseTest\\test1.sp", true );
-
+            CommandInputArgs inputArgs = new CommandInputArgs(args);
+            ProjectManager.Run("BaseTest\\test1.sp", inputArgs );
             //Console.WriteLine("Hello World!");
 
             Console.ReadKey();            

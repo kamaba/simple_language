@@ -11,6 +11,17 @@ ProjectEnter
        #TempTest.Fun();
     }
 }
+ProjectDll
+{
+    static LoadStart()
+    {
+        #动静态库加载完成后，开始执行
+    }
+    static LoadEnd()
+    {
+        #动静态库卸载完成后，开始执行
+    }
+}
 Compile
 {
     CompileBefore()
@@ -23,17 +34,17 @@ Compile
     }
 }
 
-ProjectConfigBegin{
-    "name":"test1",
-    "desc":"这是一个测试用例",
-    "compileFileList":
-    [ 
+ProjectConfig
+{
+    name = "Test1";
+    desc = "这是一个测试用例";
+    compileFileList
+    {
+        #!
         {
-            "path":"NamespaceTest1.s",
-            "option":{},
-            "group":"namespace",
-            "priority":0
-
+            path = "NamespaceTest1.s";
+            option = {};
+            group = "namespace";
         },
         {
             "path":"NamespaceTest2.s",
@@ -163,35 +174,92 @@ ProjectConfigBegin{
             "path":"Core/BaseType/Int32.s",
             "group":"core",
             "tag":"Int32"
+        },
+        !#
+        {
+            path = "EnumTest.s";
+            group = "temp";
+            tag = "EnumTest";
+            use = true;
         }
-     ],
-    "globalNamespace":
-     [
-            "Application",
-            "Application.Core",
-            "Application.N1.N2.N3.N4.N5",
-            "Q",
-            "Core"
-    ],
-    "option": 
+    }
+    option
     {
-        "isForceUseClassKey":true
-    },
-    "filter":
+        isForceUseClassKey = true;    # 是否强制使用class关键字
+        isSupportDoublePlus = true;     #是否支持i++的 ++符号
+    }
+    filter
     {
-        "group":["all"],
-        "tag":["BindCSharpTest"]
-    },
-    "module": 
-    [
+        group = ["all"]
+        tag = ["EnumTest"]
+    }
+    importModule     #导入模块
+    {
+        Core
         {
             "name":"Core",
             "path":"module/Corelib.dll"
         }
-    ]
-}ProjectConfigEnd
+    }
+    global            #全局设置
+    {
+        namespace          #命名空间设计
+        {
+            Application
+            {
+                Core
+                {
+                    Game{}
+                    Instance{}
+                    UI{}
+                }
+                Math
+                {
+                    Util{}
+                    Ext{}
+                }
+                Render
+                {
+                    Camera{}
+                    Mass{}
+                    Entry{}
+                }
+                Util
+                {
 
-ClassConfig
-{
-
+                }
+            }
+            QT
+            {
+                Math{}
+                Express{}
+            }
+        }
+        import         #全局导入
+        {
+            "CSharp.System",
+            "CSharp.System.File",
+            "Application.Math",
+            "Application.Util"
+        }
+        replace        #全局宏替换
+        {
+            {"print":"Console.System"},
+            {"println":"Console.System"},
+            {"new $":"$"}
+        }
+    }
+    export               #导出dll
+    {
+        Core.Class1
+        {
+            variable { allNotStatic,allStatic }
+            method{"ToString", "CalcMusic","allStatic"}
+        }
+        Application.Core.Test1
+        {
+            variable = all;
+            method = all;
+        }
+    }
 }

@@ -1,4 +1,7 @@
-﻿using SimpleLanguage.Project;
+﻿using SimpleLanguage.Compile.CoreFileMeta;
+using SimpleLanguage.Compile.Parse;
+using SimpleLanguage.Project;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -97,21 +100,13 @@ namespace SimpleLanguage.Project
     }
     public class ProjectData
     {
-        [JsonPropertyName("name")]
         public string projectName { get; set; }
-        [JsonPropertyName("desc")]
         public string projectDesc { get; set; }
-        [JsonPropertyName("compileFileList")]
         public List<CompileFileData> compileFileList { get; set; }
-        [JsonPropertyName("option")]
         public CompileOptionData compileOptionData { get; set; }
-        [JsonPropertyName("filter")]
         public CompileFilterData filter { get; set; }
-        [JsonPropertyName("globalNamespace")]
         public List<string> globalNamespaceList { get; set; }
-        [JsonPropertyName("module")]
         public List<CompileModuleData> compileModuleList { get; set; }
-
         public void Parse()
         {
             if(compileFileList != null )
@@ -127,43 +122,48 @@ namespace SimpleLanguage.Project
             }
         }
     }
-    public class ProjectConfig
-    {
-        public string projectPath;
-        public ProjectData data;
-        public string fileContentString = null;
-        public string projectContentString = null;
 
-        public ProjectConfig( string path )
+    public class ProjectLoad
+    {
+        public ProjectData data => m_Data;
+
+        private ProjectData m_Data = null;
+        private string m_ProjectPath;
+        private string m_FileContentString = null;
+        private FileMeta m_File = null;
+        private LexerParse m_LexerParse = null;
+        private TokenParse m_TokenParse = null;
+        private ProjectParse m_ProjectBuild = null;
+
+        public ProjectLoad( string path )
         {
-            projectPath = path;
+            m_ProjectPath = path;
+
+            m_File = new FileMeta(m_ProjectPath);
         }
         public void Load()
         {
-            if (!File.Exists(projectPath))
+            if (!File.Exists(m_ProjectPath))
             {
+                Console.WriteLine("Error 项目加载路径不正确!!");
                 return;
             }
-            byte[] buffer = File.ReadAllBytes(projectPath);
-            fileContentString = System.Text.Encoding.UTF8.GetString(buffer);
 
+            byte[] buffer = File.ReadAllBytes(m_ProjectPath);
+            m_FileContentString = System.Text.Encoding.UTF8.GetString(buffer);
 
-            int beginIndex = fileContentString.IndexOf("ProjectConfigBegin{");
-            int endIndex = fileContentString.IndexOf("}ProjectConfigEnd");
+            m_LexerParse = new LexerParse(m_ProjectPath, m_FileContentString);
+            m_LexerParse.ParseToTokenList();
 
-            projectContentString = fileContentString.Substring(beginIndex + 18, endIndex - beginIndex - 17 );
+            m_TokenParse = new TokenParse(m_File, m_LexerParse.GetListTokensWidthEnd());
 
-            var options = new JsonSerializerOptions { 
-                WriteIndented = true,
-                PropertyNameCaseInsensitive = false
-            };
-            data = JsonSerializer.Deserialize<ProjectData>(projectContentString, options);
+            m_TokenParse.BuildStruct();
 
-            data.Parse();
+            m_ProjectBuild = new ProjectParse(m_File, m_TokenParse.rootNode);
 
-            string functionContent = fileContentString.Substring(0, beginIndex);
+            m_ProjectBuild.ParseRootNodeToFileMeta();
 
-            ProjectCompile.compileFunction = new ProjectCompileFunction(projectPath, functionContent);
+            //ProjectCompile.compileFunction = new ProjectCompileFunction(projectPath, functionContent);
         }
     }
 }

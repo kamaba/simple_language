@@ -11,14 +11,24 @@ using System.IO;
 
 namespace SimpleLanguage.Parse
 {
+    public class CommandInputArgs
+    {
+        public bool isTest { get; set; } = false;
+        public bool isPrintToken { get; set; } = false;
+
+        public CommandInputArgs( string[] args )
+        {
+
+        }
+    }
     public class ProjectManager
     {
         public static bool isUseDefineNamespace { get; set; } = false;
-        public static void Run( string path, bool isRun )
+        public static void Run( string path, CommandInputArgs cinputArgs )
         {
             ProjectCompile.Compile(path);
 
-            if (isRun)
+            if (!cinputArgs.isTest)
                 ProjectCompileFunction.RunMain();
             else
                 ProjectCompileFunction.RunTest();

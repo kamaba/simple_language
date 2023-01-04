@@ -507,11 +507,11 @@ namespace SimpleLanguage.Compile.CoreFileMeta
     }
     public class FileMetaBraceTerm : FileMetaBaseTerm
     {
-        public List<FileMetaOpAssignSyntax> fileMetaAssignSyntaxList => m_FileMetaAssignSyntaxList;
+        public List<FileMetaSyntax> fileMetaAssignSyntaxList => m_FileMetaAssignSyntaxList;
         public List<FileMetaCallLink> fileMetaCallLinkList => m_FileMetaCallLinkList;
         public bool isArray { get; set; } = false;
 
-        private List<FileMetaOpAssignSyntax> m_FileMetaAssignSyntaxList = new List<FileMetaOpAssignSyntax>();
+        private List<FileMetaSyntax> m_FileMetaAssignSyntaxList = new List<FileMetaSyntax>();
         private List<FileMetaCallLink> m_FileMetaCallLinkList = new List<FileMetaCallLink>();
         private Token m_BraceEndToken = null;
         private Node m_Node = null;
@@ -615,15 +615,26 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 }
                 else
                 {
-                    if (defineNodeList.Count != 1 || valueNodeList.Count < 1)
+                    if ( (defineNodeList.Count != 1 && defineNodeList.Count != 2 ) || valueNodeList.Count < 1)
                     {
                         Console.WriteLine("Error 在解析为{}中，赋值= 解析有问题!!");
                         continue;
                     }
-                    FileMetaCallLink fmcl = new FileMetaCallLink(m_FileMeta, defineNodeList[0]);
-                    FileMetaBaseTerm fmel = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
-                    FileMetaOpAssignSyntax fmoas = new FileMetaOpAssignSyntax(fmcl, assignToken, fmel, true);
-                    m_FileMetaAssignSyntaxList.Add(fmoas);
+                    if( defineNodeList.Count == 2 )
+                    {
+                        Token nameToken = defineNodeList[1].token;
+                        var classRef = new FileMetaClassDefine(m_FileMeta, defineNodeList[0]); 
+                        FileMetaBaseTerm fmel = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common); 
+                        FileMetaDefineVariableSyntax fmdvs = new FileMetaDefineVariableSyntax(m_FileMeta, classRef, nameToken, assignToken, null, fmel );
+                        m_FileMetaAssignSyntaxList.Add(fmdvs);
+                    }
+                    else
+                    {
+                        FileMetaCallLink fmcl = new FileMetaCallLink(m_FileMeta, defineNodeList[0]);
+                        FileMetaBaseTerm fmel = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
+                        FileMetaOpAssignSyntax fmoas = new FileMetaOpAssignSyntax(fmcl, assignToken, fmel, true);
+                        m_FileMetaAssignSyntaxList.Add(fmoas);
+                    }
                 }
             }
         }

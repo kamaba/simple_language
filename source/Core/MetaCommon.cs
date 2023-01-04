@@ -22,6 +22,8 @@ namespace SimpleLanguage.Core
         TemplateName,
         NamespaceName,
         ClassName,
+        EnumName,
+        EnumValue,
         VariableName,
         MemberVariableName,
         NewClass,
@@ -337,6 +339,20 @@ namespace SimpleLanguage.Core
                     {
                         calcMetaBase = GetFunctionOrVariableByOwnerClass(frontMetaBase as MetaClass, cnname, true);
                     }
+                    else if( frontCNT == ECallNodeType.EnumName )
+                    {
+                        calcMetaBase = GetEnumValue(frontMetaBase as MetaEnum, cnname);
+                        if( isFunction )
+                        {
+                            m_CurrentMetaBase = calcMetaBase;
+                            m_CallNodeType = ECallNodeType.EnumValue;
+                        }
+                        else
+                        {
+                            m_CurrentMetaBase = calcMetaBase;
+                            m_CallNodeType = ECallNodeType.EnumValue;
+                        }
+                    }
                     else if (frontCNT == ECallNodeType.VariableName || frontCNT == ECallNodeType.MemberVariableName)
                     {
                         var mmv = frontMetaBase as MetaVariable;
@@ -631,7 +647,14 @@ namespace SimpleLanguage.Core
                 }
                 else if (calcMetaBase is MetaClass)
                 {
-                    m_CallNodeType = ECallNodeType.ClassName;
+                    if( calcMetaBase is MetaEnum )
+                    {
+                        m_CallNodeType = ECallNodeType.EnumName;
+                    }
+                    else
+                    {
+                        m_CallNodeType = ECallNodeType.ClassName;
+                    }
                 }
                 else if (calcMetaBase is MetaTemplate)
                 {
@@ -774,6 +797,10 @@ namespace SimpleLanguage.Core
                     return null;
                 }
             }
+        }
+        public MetaBase GetEnumValue( MetaEnum me, string inputname )
+        {
+            return me.GetMemberVariableByName(inputname);
         }
         public MetaBase GetFunctionOrVariableByOwnerClass(MetaClass mc, string inputname, bool isStatic)
         {
