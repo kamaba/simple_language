@@ -74,21 +74,21 @@ ProjectEnter
 ```
 
 ### 语法说明
-1. [命名空间](https://github.com/kamaba/simple_language/md/namespace.md)
-2. 基本语法(https://github.com/kamaba/simple_language/md/base.md)
-3. 类型转换
-4. 变量
-5. 运算符
-6. 判断
-7. 循环
-8. 封装
-9. 方法
-10. [字符串](https://github.com/kamaba/simple_language/md/string.md)
-11. [枚举](https://github.com/kamaba/simple_language/md/enum.md)
-12. [类](https://github.com/kamaba/simple_language/md/class.md)
-13. [对象](https://github.com/kamaba/simple_language/md/object.md)
-14. 继承
-15. 接口
+1. [命名空间](https://github.com/kamaba/simple_language/tree/main/md/namespace.md)
+2. [基本语法](https://github.com/kamaba/simple_language/tree/main/md/base.md)
+3. [类型转换](https://github.com/kamaba/simple_language/tree/main/md/string.md)
+4. [变量](https://github.com/kamaba/simple_language/tree/main/md/string.md)
+5. [运算符](https://github.com/kamaba/simple_language/tree/main/md/string.md)
+6. [判断](https://github.com/kamaba/simple_language/tree/main/md/string.md)
+7. [循环](https://github.com/kamaba/simple_language/tree/main/md/string.md)
+8. [封装](https://github.com/kamaba/simple_language/tree/main/md/string.md)
+9. [方法](https://github.com/kamaba/simple_language/tree/main/md/string.md)
+10. [字符串](https://github.com/kamaba/simple_language/tree/main/md/string.md)
+11. [枚举](https://github.com/kamaba/simple_language/tree/main/md/enum.md)
+12. [类](https://github.com/kamaba/simple_language/tree/main/md/class.md)
+13. [对象](https://github.com/kamaba/simple_language/tree/main/md//object.md)
+14. [继承](https://github.com/kamaba/simple_language/tree/main/md/string.md)
+15. [接口](https://github.com/kamaba/simple_language/tree/main/md/string.md)
 
 ### 支持平台
 
