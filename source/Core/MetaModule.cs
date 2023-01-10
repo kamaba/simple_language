@@ -38,9 +38,9 @@ namespace SimpleLanguage.Core
                     sb.Append((mb as MetaNamespace).ToFormatString());
                     sb.Append(Environment.NewLine);
                 }
-                else if( mb is MetaClass )
+                else if (mb is MetaClass)
                 {
-                    sb.Append((mb as MetaClass).ToFormatString());
+                    sb.Append(mb.ToFormatString());
                     sb.Append(Environment.NewLine);
                 }
                 else

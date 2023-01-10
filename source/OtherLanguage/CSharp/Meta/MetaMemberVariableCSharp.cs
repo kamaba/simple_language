@@ -6,6 +6,10 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
+    public partial class MetaMemberData
+    {
+
+    }
     public partial class MetaMemberVariable
     {
         public PropertyInfo propertyInfo;

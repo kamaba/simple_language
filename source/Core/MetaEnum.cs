@@ -16,21 +16,6 @@ namespace SimpleLanguage.Core
             m_Type = EType.Enum;
             m_IsConst = isConst;
         }
-        public override bool AddMetaBase(string name, MetaBase mb)
-        {
-            return base.AddMetaBase(name, mb);
-        }
-
-        public override bool Equals(object obj)
-        {
-            return base.Equals(obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-
         public override MetaBase GetChildrenMetaBaseByName(string name)
         {
             return base.GetChildrenMetaBaseByName(name);
@@ -47,11 +32,6 @@ namespace SimpleLanguage.Core
         public override bool IsIncludeMetaBase(string name)
         {
             return base.IsIncludeMetaBase(name);
-        }
-
-        public override void SetAnchorDeep(int addep)
-        {
-            base.SetAnchorDeep(addep);
         }
         public override void BindFileMetaClass(FileMetaClass fmc)
         {

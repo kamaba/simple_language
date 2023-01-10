@@ -273,7 +273,7 @@ namespace SimpleLanguage.Core
             }
             return false;
         }
-        public void ParseDefineComplete()
+        public virtual void ParseDefineComplete()
         {
             AddDefineConstructFunction();
 

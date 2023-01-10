@@ -38,6 +38,8 @@ namespace SimpleLanguage.Core
         private Dictionary<string, MetaClass> m_AllClassDict = new Dictionary<string, MetaClass>();
         public List<MetaClass> m_DynamicClassList = new List<MetaClass>();
 
+        private Dictionary<string, MetaData> m_AllDataDict = new Dictionary<string, MetaData>();
+
         public MetaClass GetClassByName(string name)
         {
             if (m_AllClassDict.ContainsKey(name))
@@ -155,6 +157,10 @@ namespace SimpleLanguage.Core
                     {
                         newmc = new MetaEnum(mc.name, mc.isConst);
                     }
+                    else if( mc.isData )
+                    {
+                        newmc = new MetaData(mc.name, mc.isConst);
+                    }
                     else
                     {
                         if (topLevelClass.isEnum)
@@ -240,6 +246,12 @@ namespace SimpleLanguage.Core
                     if (mc.isEnum)
                     {
                         newmc = new MetaEnum(mc.name, mc.isConst);
+                    }
+                    else if (mc.isData)
+                    {
+                        var newmd = new MetaData(mc.name, mc.isConst);
+                        newmc = newmd;
+                        m_AllDataDict.Add( mc.name, newmd );
                     }
                     else
                     {

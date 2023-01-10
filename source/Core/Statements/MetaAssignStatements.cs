@@ -211,6 +211,11 @@ namespace SimpleLanguage.Core.Statements
                     Console.WriteLine("Error 变量没有发现" + m_MetaCallLink.ToTokenString());
                     return;
                 }
+                if(m_MetaVariable.isConst )
+                {
+                    Console.WriteLine("Error 类型为Const类型，不允许使用赋值!!");
+                }
+
                 m_Name = m_MetaVariable.name;
                 if (m_MetaVariable == null)
                 {

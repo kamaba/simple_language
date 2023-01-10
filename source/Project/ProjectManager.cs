@@ -23,10 +23,20 @@ namespace SimpleLanguage.Parse
     }
     public class ProjectManager
     {
+        public static ProjectData data => m_Data;
         public static bool isUseDefineNamespace { get; set; } = false;
+
+        static ProjectData m_Data = new ProjectData();
+        public static string rootPath = "";
         public static void Run( string path, CommandInputArgs cinputArgs )
         {
-            ProjectCompile.Compile(path);
+            int index = path.LastIndexOf("\\");
+            if (index != -1)
+            {
+                rootPath = path.Substring(0, index);
+            }
+
+            ProjectCompile.Compile(path, m_Data);
 
             if (!cinputArgs.isTest)
                 ProjectCompileFunction.RunMain();
