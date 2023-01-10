@@ -17,7 +17,7 @@ namespace SimpleLanguage.Core
     public class MetaVariable : MetaBase
     {
         public bool isStatic { get; set; } = false;
-        public bool isConst { get; set; } = false;
+        public virtual bool isConst { get; set; } = false;
         public bool isArgument { get; set; } = false;
         public bool isTemplate
         {

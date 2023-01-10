@@ -60,7 +60,7 @@ namespace SimpleLanguage.Compile.Parse
                 return END_CHAR;
             }
 
-            return char.MinValue;
+            return END_CHAR;
             
         }
         char PeekChar()
@@ -1208,6 +1208,10 @@ namespace SimpleLanguage.Compile.Parse
                     tokenType = ETokenType.Enum;
                     extend = EType.Enum;
                     break;
+                case "data":
+                    tokenType = ETokenType.Data;
+                    extend = EType.Data;
+                    break;
                 case "void":
                     tokenType = ETokenType.Void;
                     break;
@@ -1414,7 +1418,8 @@ namespace SimpleLanguage.Compile.Parse
                     break;
                 case "true":
                 case "false":
-                    tokenType = ETokenType.Boolean;
+                    tokenType = ETokenType.BoolValue;
+                    extend = EType.Boolean;
                     break;               
                 //case "async":
                 //    tokenType = TokenType.Async;

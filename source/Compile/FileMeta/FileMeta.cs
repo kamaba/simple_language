@@ -56,6 +56,12 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             fmc.SetFileMeta(this);
             m_FileMetaAllClassList.Add(fmc);
         }
+        public FileMetaClass GetFileMetaClassByName( string name )
+        {
+            var fmc = m_FileMetaAllClassList.Find(a => a.name == name);
+           
+            return fmc;
+        }
         public void AddFileMetaClass( FileMetaClass mc )
         {
             m_FileMetaClassList.Add(mc);

@@ -567,6 +567,7 @@ namespace SimpleLanguage.Compile.Parse
                     }
                     break;
                 case ETokenType.Enum:
+                case ETokenType.Data:
                 case ETokenType.Class:
                     {
                         AddNode(token);
@@ -601,6 +602,7 @@ namespace SimpleLanguage.Compile.Parse
                 case ETokenType.Null:
                 case ETokenType.Number:
                 case ETokenType.String:
+                case ETokenType.BoolValue:
                 case ETokenType.NumberArrayLink:
                     {
                         EndAngleSign();

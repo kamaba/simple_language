@@ -20,9 +20,23 @@ namespace SimpleLanguage.Core
         }
         public List<MetaMemberVariable> metaMemeberVariableList = new List<MetaMemberVariable>();
 
-        public void AddMetaMemberVariable(MetaMemberVariable mv )
+        public Dictionary<string, MetaVariable> metaDataVariableList = new Dictionary<string, MetaVariable>();
+
+        public void AddMetaMemberVariable(MetaMemberVariable mv)
         {
             metaMemeberVariableList.Add(mv);
+        }
+        public void AddMetaDataVariable(MetaVariable mv)
+        {
+            metaDataVariableList.Add(mv.name, mv);
+        }
+        public MetaVariable GetMetaVariable( string cname )
+        {
+            if(metaDataVariableList.ContainsKey( cname ) )
+            {
+                return metaDataVariableList[cname];
+            }
+            return null;
         }
         public void ParseExpress()
         {

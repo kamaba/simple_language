@@ -20,6 +20,7 @@ namespace SimpleLanguage
         Void,
         Class,
         Enum,
+        Data,
         Boolean,
         Bit,
         Byte,
@@ -185,43 +186,45 @@ namespace SimpleLanguage
         Case,
         /// <summary> default </summary>
         Default,
-        /// <summary> break </summary>
-        Public,
         /// <summary> public </summary>
-        Internal,
+        Public,
         /// <summary> internal </summary>
+        Internal,
+        /// <summary> projected </summary>
         Projected,
-        /// <summary> projected</summary>
+        /// <summary> private</summary>
         Private,
-        /// <summary> private </summary>
+        /// <summary> Interface </summary>
         Interface,
-        /// <summary> virtual </summary>
-        Override,
         /// <summary> override </summary>
-        Const,
+        Override,
         /// <summary> const </summary>
-        Final,
+        Const,
         /// <summary> final </summary>
-        Static,
+        Final,
         /// <summary> static </summary>
-        Get,
+        Static,
         /// <summary> get </summary>
-        Set,
+        Get,
         /// <summary> set </summary>
-        New,
+        Set,
         /// <summary> new </summary>
-        Partial,
+        New,
         /// <summary> partial </summary>
-        Namespace,
+        Partial,
         /// <summary> namespace </summary>
-        Class,
+        Namespace,
         /// <summary> class </summary>
-        Enum,
+        Class,
         /// <summary> enum </summary>
+        Enum,
+        /// <summary> data </summary>
+        Data,
+        /// <summary> Break </summary>
         Break,
-        /// <summary> continue </summary>
-        Next,
         /// <summary> next </summary>
+        Next,
+        /// <summary> continue </summary>
         Continue,
         /// <summary> goto </summary>
         Goto,
@@ -247,6 +250,8 @@ namespace SimpleLanguage
         Catch,
         /// <summary> throw </summary>
         Throw,
+        /// <summary> BoolValue </summary>
+        BoolValue,
         /// <summary> number </summary>
         Number,
         /// <summary> string </summary>

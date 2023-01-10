@@ -20,6 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="source\Export\ExportJavascript\" />
+    <Folder Include="source\Export\ExportTypescript\" />
+    <Folder Include="source\Export\ExportCSharp\" />
+    <Folder Include="source\Export\GenerateMonoIL\" />
     <Folder Include="source\OtherLanguage\CSharp\Statements\" />
   </ItemGroup>
 

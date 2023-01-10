@@ -3,7 +3,7 @@
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/11/30 12:00:00
-//  Description: class's memeber variable meta data
+//  Description: class's memeber variable metadata and member 'data' metadata
 //****************************************************************************
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
@@ -14,6 +14,186 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
+    public enum EMemberDataType
+    {
+        None,
+        ConstValue,
+        MemberData,
+    }
+    public partial class MetaMemberData : MetaVariable
+    {
+        public override bool isConst { get { return m_IsConst; } }
+
+        private FileMetaMemberData m_FileMetaMemeberData;
+        private MetaConstExpressNode m_Express = null;
+        private EMemberDataType m_MemberDataType = EMemberDataType.None;
+        private int m_Index = -1;
+        private bool m_End = false;
+        private bool m_IsConst = false;
+
+        protected Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
+
+        public MetaMemberData(MetaData mc, FileMetaMemberData fmmd )
+        {
+            m_FileMetaMemeberData = fmmd;
+            fmmd.SetMetaMemberData(this);
+            m_Name = fmmd.name;
+            m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+            SetOwnerMetaClass(mc);
+            m_IsConst = mc.isConst;
+
+            Parse();
+        }
+        public MetaMemberData( MetaMemberData parentNode, FileMetaMemberData fmmd, int _index, bool isEnd = false )
+        {
+            m_Index = _index;
+            m_End = isEnd;
+            m_FileMetaMemeberData = fmmd;
+            fmmd.SetMetaMemberData(this);
+            m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+            SetOwnerMetaClass(parentNode.ownerMetaClass);
+            m_IsConst = parentNode.isConst;
+
+            Parse();
+        }
+        public MetaMemberData GetMemberDataByName(string name)
+        {
+            if (m_MetaMemberDataDict.ContainsKey(name))
+            {
+                return m_MetaMemberDataDict[name];
+            }
+            return null;
+        }
+        public override void Parse()
+        {
+            if (m_FileMetaMemeberData != null)
+            {
+                switch (m_FileMetaMemeberData.DataType)
+                {
+                    case FileMetaMemberData.EMemberDataType.NameClass:
+                        {
+                            m_Name = m_FileMetaMemeberData.name;
+                            m_MemberDataType = EMemberDataType.MemberData;
+                        }
+                        break;
+                    case FileMetaMemberData.EMemberDataType.Array:
+                        {
+                            m_Name = m_FileMetaMemeberData.name;
+                            m_MemberDataType = EMemberDataType.MemberData;
+                        }
+                        break;
+                    case FileMetaMemberData.EMemberDataType.NoNameClass:
+                        {
+                            m_Name = m_Index.ToString();
+                            m_MemberDataType = EMemberDataType.MemberData;
+                        }
+                        break;
+                    case FileMetaMemberData.EMemberDataType.KeyValue:
+                        {
+                            m_Name = m_FileMetaMemeberData.name;
+                            m_MemberDataType = EMemberDataType.ConstValue;
+                            m_Express = new MetaConstExpressNode(m_FileMetaMemeberData.fileMetaConstValue);
+                        }
+                        break;
+                    case FileMetaMemberData.EMemberDataType.Value:
+                        {
+                            m_Name = m_Index.ToString();
+                            m_MemberDataType = EMemberDataType.ConstValue;
+                            m_Express = new MetaConstExpressNode(m_FileMetaMemeberData.fileMetaConstValue);
+                        }
+                        break;
+                }
+            }
+        }
+        public void ParseChildMemberData()
+        {
+            int count = m_FileMetaMemeberData.fileMetaMemberData.Count;
+            for (int i = 0; i < count; i++)
+            {
+                MetaMemberData mmd = new MetaMemberData(this, m_FileMetaMemeberData.fileMetaMemberData[i], i, i == count - 1);
+
+                m_MetaMemberDataDict.Add(mmd.name, mmd);
+
+                this.AddMetaBase(mmd.name, mmd);
+
+                mmd.ParseChildMemberData();
+            }
+        }
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+            switch (m_FileMetaMemeberData.DataType)
+            {
+                case FileMetaMemberData.EMemberDataType.NameClass:
+                    {
+                        for (int i = 0; i < realDeep; i++)
+                            sb.Append(Global.tabChar);
+                        sb.AppendLine(m_Name);
+                        for (int i = 0; i < realDeep; i++)
+                            sb.Append(Global.tabChar);
+                        sb.AppendLine("{");
+                        foreach (var v in m_MetaMemberDataDict)
+                        {
+                            sb.AppendLine(v.Value.ToFormatString());
+                        }
+                        for (int i = 0; i < realDeep; i++)
+                            sb.Append(Global.tabChar);
+                        sb.Append("}");
+
+                    }
+                    break;
+                case FileMetaMemberData.EMemberDataType.Array:
+                    {
+                        int i = 0;
+                        for (i = 0; i < realDeep; i++)
+                            sb.Append(Global.tabChar);
+                        sb.Append(m_Name + " = [");
+                        i = 0;
+                        foreach (var v in m_MetaMemberDataDict)
+                        {
+                            sb.Append(v.Value.ToFormatString());
+                            if (i < m_MetaMemberDataDict.Count - 1)
+                                sb.Append(",");
+                            i++;
+                        }
+                        sb.Append("]");
+                    }
+                    break;
+                case FileMetaMemberData.EMemberDataType.NoNameClass:
+                    {
+                        sb.AppendLine();
+                        for (int i = 0; i < realDeep; i++)
+                            sb.Append(Global.tabChar);
+                        sb.AppendLine("{");
+                        foreach (var v in m_MetaMemberDataDict)
+                        {
+                            sb.AppendLine(v.Value.ToFormatString());
+                        }
+                        for (int i = 0; i < realDeep; i++)
+                            sb.Append(Global.tabChar);
+                        sb.Append("}");
+                        //if( m_End )
+                        //{
+                        //    sb.AppendLine();
+                        //}
+                    }
+                    break;
+                case FileMetaMemberData.EMemberDataType.KeyValue:
+                    {
+                        for (int i = 0; i < realDeep; i++)
+                            sb.Append(Global.tabChar);
+                        sb.Append(m_Name + " = " + m_Express.ToFormatString() + ";");
+                    }
+                    break;
+                case FileMetaMemberData.EMemberDataType.Value:
+                    {
+                        sb.Append( m_Express.ToFormatString());
+                    }
+                    break;
+            }
+            return sb.ToString();
+        }
+    }
     public enum EFromType : byte
     {
         Code = 1,         //写的.s代码

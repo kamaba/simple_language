@@ -1,4 +1,11 @@
-﻿
+﻿//****************************************************************************
+//  File:      ProjectCompile.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2023/1/09 12:00:00
+//  Description:  compile configuration in the .sp file. and execute configuration relative logic.
+//****************************************************************************
+
 using SimpleLanguage.Compile.Grammer;
 using SimpleLanguage.Core;
 using SimpleLanguage.IR;
@@ -10,12 +17,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Timers;
 using SimpleLanguage.Compile.Parse;
+using SimpleLanguage.Compile.CoreFileMeta;
 
 namespace SimpleLanguage.Project
 {
     public class ProjectCompile
     {
-        public static ProjectLoad config = null;
         public bool isThreadCompile = false;
 
         public static bool isLoaded = false;
@@ -24,22 +31,57 @@ namespace SimpleLanguage.Project
         public static int buildParseCount = 0;
         public static int grammerParseCount = 0;
         public static int parseListCount = 0;
-        public static string rootPath = "";
         public static List<FileParse> fileParseList = new List<FileParse>();
 
         public static ProjectCompileFunction compileFunction = null;
-        public static void Compile( string path )
+
+        private static ProjectData m_Data = null;
+        private static string m_ProjectPath;
+        private static string m_FileContentString = null;
+        private static FileMeta m_File = null;
+        private static LexerParse m_LexerParse = null;
+        private static TokenParse m_TokenParse = null;
+        private static StructParse m_ProjectBuild = null;
+        private static ProjectParse m_ProjectParse = null;
+
+        public static void LoadProject()
+        {
+            if (!File.Exists(m_ProjectPath))
+            {
+                Console.WriteLine("Error 项目加载路径不正确!!");
+                return;
+            }
+            m_File = new FileMeta(m_ProjectPath);
+
+            byte[] buffer = File.ReadAllBytes(m_ProjectPath);
+            m_FileContentString = System.Text.Encoding.UTF8.GetString(buffer);
+
+            m_LexerParse = new LexerParse(m_ProjectPath, m_FileContentString);
+            m_LexerParse.ParseToTokenList();
+
+            m_TokenParse = new TokenParse(m_File, m_LexerParse.GetListTokensWidthEnd());
+
+            m_TokenParse.BuildStruct();
+
+            m_ProjectBuild = new StructParse(m_File, m_TokenParse.rootNode);
+
+            m_ProjectBuild.ParseRootNodeToFileMeta();
+
+            m_ProjectParse = new ProjectParse(m_File, m_Data);
+
+            m_ProjectParse.ParseProject();
+
+            Console.WriteLine(m_File.ToFormatString());
+        }
+
+        public static void Compile( string path, ProjectData pd )
         {
             if( !isLoaded )
             {
-                config = new ProjectLoad(path);
+                m_ProjectPath = path;
+                m_Data = pd;
                 isLoaded = true;
-                config.Load();
-            }
-            int index = path.LastIndexOf("\\");
-            if( index != -1 )
-            {
-                rootPath = path.Substring(0, index );
+                LoadProject();
             }
 
             ProjectCompileFunction.ProjectCompileBefore();
@@ -60,7 +102,7 @@ namespace SimpleLanguage.Project
 
         public static void AddFileParse( string path )
         {
-            var fp = new FileParse(Path.Combine(rootPath, path), new ParseFileParam() );
+            var fp = new FileParse(Path.Combine( ProjectManager.rootPath, path), new ParseFileParam() );
             fp.structParseComplete = StructParseComplete;
             fp.buildParseComplete = BuildParseComplete;
             fp.grammerParseComplete = GrammerParseComplete;

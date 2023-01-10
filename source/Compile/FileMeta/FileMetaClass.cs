@@ -21,6 +21,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public bool innerClass { get; set; } = false;
         public bool isConst { get { return m_ConstToken != null; } }
         public bool isEnum { get { return m_EnumToken != null; } }
+        public bool isData { get { return m_DataToken != null; } }
         public bool isPartial => m_PartialToken != null;
         public MetaClass metaClass => m_MetaClass;
         public FileMetaClassDefine extendClass => m_ExtendClass;
@@ -31,12 +32,14 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public NamespaceStatementBlock namespaceBlock => m_NamespaceBlock;
         public List<FileMetaMemberVariable> memberVariableList => m_MemberVariableList;
         public List<FileMetaMemberFunction> memberFunctionList => m_MemberFunctionList;
+        public List<FileMetaMemberData> memberDataList => m_MemberDataList;
 
         #region Token
         protected Token m_PermissionToken = null;
         protected Token m_PartialToken = null;
         protected Token m_ClassToken = null;
         protected Token m_EnumToken = null;
+        protected Token m_DataToken = null;
         protected Token m_ConstToken = null;
         #endregion
         private MetaClass m_MetaClass = null;
@@ -50,6 +53,8 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
         private List<FileMetaMemberVariable> m_MemberVariableList = new List<FileMetaMemberVariable>();
         private List<FileMetaMemberFunction> m_MemberFunctionList = new List<FileMetaMemberFunction>();
+        private List<FileMetaMemberData> m_MemberDataList = new List<FileMetaMemberData>();
+
         private NamespaceStatementBlock m_NamespaceBlock = null;
         private List<Node> m_NodeList = new List<Node>();
 
@@ -206,6 +211,11 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                             isError = true;
                             Console.WriteLine("Error 解析过了一次Enum!!");
                         }
+                        if( m_DataToken != null )
+                        {
+                            isError = true;
+                            Console.WriteLine("Error 解析过了一次data!!");
+                        }
                         if (m_ClassToken != null)
                         {
                             isError = true;
@@ -213,19 +223,44 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         }
                         m_ClassToken = token;
                     }
-                    else if( token.type == ETokenType.Enum )
+                    
+                    else if (token.type == ETokenType.Enum)
                     {
                         if (m_EnumToken != null)
                         {
                             isError = true;
                             Console.WriteLine("Error 解析过了一次Enum!!");
                         }
+                        if (m_DataToken != null)
+                        {
+                            isError = true;
+                            Console.WriteLine("Error 解析过了一次data!!");
+                        }
                         if (m_ClassToken != null)
                         {
                             isError = true;
                             Console.WriteLine("Error 解析过了一次Class!!");
                         }
-                        m_EnumToken = token;                        
+                        m_EnumToken = token;
+                    }
+                    else if (token.type == ETokenType.Data)
+                    {
+                        if(m_EnumToken != null)
+                        {
+                            isError = true;
+                            Console.WriteLine("Error 解析过了一次Enum!!");
+                        }
+                        if (m_DataToken != null)
+                        {
+                            isError = true;
+                            Console.WriteLine("Error 解析过了一次data!!");
+                        }
+                        if (m_ClassToken != null)
+                        {
+                            isError = true;
+                            Console.WriteLine("Error 解析过了一次Class!!");
+                        }
+                        m_DataToken = token;
                     }
                     else if (token.type == ETokenType.ColonDouble)
                     {
@@ -279,6 +314,25 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 }
 
             }
+            else if (m_DataToken != null)
+            {
+                if (interfaceToken != null || interfaceNameTokenList.Count > 0)
+                {
+                    Console.WriteLine("Error Data方式，不支持接口方式");
+                    return false;
+                }
+                if (permissionToken != null)
+                {
+                    Console.WriteLine("Error Data方式，不支持权限的使用!!");
+                    return false;
+                }
+                if (m_PartialToken != null)
+                {
+                    Console.WriteLine("Error Data方式，不支持partial的使用!!");
+                    return false;
+                }
+
+            }
             else
             {
                 if (interfaceNameTokenList.Count > 0)
@@ -315,6 +369,11 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 return topLevelFileMetaNamespace.namespaceStatementBlock.lastMetaNamespace;
             }
             return null;
+        }
+        public void AddFileMemberData( FileMetaMemberData fmmd )
+        {
+            m_MemberDataList.Add(fmmd);
+            fmmd.SetFileMeta(m_FileMeta);
         }
         public void AddFileMemberVariable(FileMetaMemberVariable fmv )
         {
@@ -425,6 +484,10 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             {
                 v.SetDeep(m_Deep + 1);
             }
+            foreach (var v in m_MemberDataList)
+            {
+                v.SetDeep(m_Deep + 1);
+            }
             foreach (var v in m_MemberFunctionList)
             {
                 v.SetDeep(m_Deep + 1);
@@ -435,82 +498,129 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             stringBuilder.Clear();
             for (int i = 0; i < deep; i++)
                 stringBuilder.Append(Global.tabChar);
-            stringBuilder.Append( m_PermissionToken != null ? m_PermissionToken.lexeme.ToString() : "_public" );
-            stringBuilder.Append(" ");
-            if (m_PartialToken != null)
-                stringBuilder.Append(m_PartialToken.lexeme.ToString() + " ");
-            else
-                stringBuilder.Append("_partial ");
-            if(m_ClassToken != null )
-            {
-                stringBuilder.Append(m_ClassToken.lexeme.ToString());
-                stringBuilder.Append(" ");
-            }
-            else
-            {
-                stringBuilder.Append("_class" + " " );
-            }
 
-            if ( m_NamespaceBlock != null )
+            if( m_DataToken != null )
             {
-                stringBuilder.Append(m_NamespaceBlock.ToFormatString());
-                stringBuilder.Append(".");
-            }
-            stringBuilder.Append(name);
-
-            if(m_TemplateParamList.Count > 0 )
-            {
-                stringBuilder.Append("<");
-                for( int i = 0; i < m_TemplateParamList.Count; i++ )
+                if (m_ConstToken != null)
                 {
-                    stringBuilder.Append(m_TemplateParamList[i].ToFormatString());
-                    if( i < m_TemplateParamList.Count - 1 )
-                    {
-                        stringBuilder.Append(",");
-                    }
+                    stringBuilder.Append(m_ConstToken.lexeme.ToString() + " ");
                 }
-                stringBuilder.Append(">");
-            }
+                stringBuilder.Append(m_DataToken.lexeme.ToString() + " ");
+                stringBuilder.Append(name);
 
-            if( extendClass != null )
-            {
-                stringBuilder.Append(" :: " + extendClass.ToFormatString());
-            }
-            if( interfaceClassList.Count > 0 )
-            {
-                stringBuilder.Append("  interface");
-            }
-            for( int i = 0; i < interfaceClassList.Count; i++ )
-            {
-                stringBuilder.Append(" " + interfaceClassList[i].ToFormatString());
-                if (i < interfaceClassList.Count - 1)
-                    stringBuilder.Append(",");
-            }
-            stringBuilder.Append(Environment.NewLine);
-            for (int i = 0; i < deep; i++)
-                stringBuilder.Append(Global.tabChar);
-            stringBuilder.Append( "{" + Environment.NewLine );
-            foreach( var v in m_ChildrenClassList)
-            {
-                stringBuilder.Append( v.ToFormatString() + Environment.NewLine);
-            }
-            if (m_ChildrenClassList.Count > 0)
                 stringBuilder.Append(Environment.NewLine);
-            
-            foreach( var v in m_MemberVariableList )
-            {
-                stringBuilder.Append(v.ToFormatString() + Environment.NewLine);
-            }
-            if (m_MemberVariableList.Count > 0)
-                stringBuilder.Append(Environment.NewLine);
+                for (int i = 0; i < deep; i++)
+                    stringBuilder.Append(Global.tabChar);
+                stringBuilder.Append("{" + Environment.NewLine);
 
-            foreach (var v in m_MemberFunctionList)
-            {
-                stringBuilder.Append(v.ToFormatString() + Environment.NewLine);
+
+                foreach (var v in m_MemberDataList)
+                {
+                    stringBuilder.Append(v.ToFormatString() + Environment.NewLine);
+                }
+
+                for (int i = 0; i < deep; i++)
+                    stringBuilder.Append(Global.tabChar);
+                stringBuilder.Append("}");
             }
-            for (int i = 0; i < deep; i++)
-                stringBuilder.Append(Global.tabChar);
-            stringBuilder.Append("}");
+            else if( m_EnumToken != null )
+            {
+                if( m_ConstToken != null )
+                {
+                    stringBuilder.Append(m_ConstToken.lexeme.ToString() + " ");
+                }
+                stringBuilder.Append(m_EnumToken.lexeme.ToString() + " ");
+                stringBuilder.Append(name);
+
+                stringBuilder.Append(Environment.NewLine);
+                for (int i = 0; i < deep; i++)
+                    stringBuilder.Append(Global.tabChar);
+                stringBuilder.Append("{" + Environment.NewLine);
+
+                for (int i = 0; i < deep; i++)
+                    stringBuilder.Append(Global.tabChar);
+                stringBuilder.Append("}");
+            }
+            else
+            {
+
+                stringBuilder.Append(m_PermissionToken != null ? m_PermissionToken.lexeme.ToString() : "_public");
+                stringBuilder.Append(" ");
+                if (m_PartialToken != null)
+                    stringBuilder.Append(m_PartialToken.lexeme.ToString() + " ");
+                else
+                    stringBuilder.Append("_partial ");
+                if (m_ClassToken != null)
+                {
+                    stringBuilder.Append(m_ClassToken.lexeme.ToString());
+                    stringBuilder.Append(" ");
+                }
+                else
+                {
+                    stringBuilder.Append("_class" + " ");
+                }
+
+                if (m_NamespaceBlock != null)
+                {
+                    stringBuilder.Append(m_NamespaceBlock.ToFormatString());
+                    stringBuilder.Append(".");
+                }
+                stringBuilder.Append(name);
+
+                if (m_TemplateParamList.Count > 0)
+                {
+                    stringBuilder.Append("<");
+                    for (int i = 0; i < m_TemplateParamList.Count; i++)
+                    {
+                        stringBuilder.Append(m_TemplateParamList[i].ToFormatString());
+                        if (i < m_TemplateParamList.Count - 1)
+                        {
+                            stringBuilder.Append(",");
+                        }
+                    }
+                    stringBuilder.Append(">");
+                }
+
+                if (extendClass != null)
+                {
+                    stringBuilder.Append(" :: " + extendClass.ToFormatString());
+                }
+                if (interfaceClassList.Count > 0)
+                {
+                    stringBuilder.Append("  interface");
+                }
+                for (int i = 0; i < interfaceClassList.Count; i++)
+                {
+                    stringBuilder.Append(" " + interfaceClassList[i].ToFormatString());
+                    if (i < interfaceClassList.Count - 1)
+                        stringBuilder.Append(",");
+                }
+                stringBuilder.Append(Environment.NewLine);
+                for (int i = 0; i < deep; i++)
+                    stringBuilder.Append(Global.tabChar);
+                stringBuilder.Append("{" + Environment.NewLine);
+                foreach (var v in m_ChildrenClassList)
+                {
+                    stringBuilder.Append(v.ToFormatString() + Environment.NewLine);
+                }
+                if (m_ChildrenClassList.Count > 0)
+                    stringBuilder.Append(Environment.NewLine);
+
+                foreach (var v in m_MemberVariableList)
+                {
+                    stringBuilder.Append(v.ToFormatString() + Environment.NewLine);
+                }
+                if (m_MemberVariableList.Count > 0)
+                    stringBuilder.Append(Environment.NewLine);
+
+                foreach (var v in m_MemberFunctionList)
+                {
+                    stringBuilder.Append(v.ToFormatString() + Environment.NewLine);
+                }
+                for (int i = 0; i < deep; i++)
+                    stringBuilder.Append(Global.tabChar);
+                stringBuilder.Append("}");
+            }
 
             return stringBuilder.ToString();
         }

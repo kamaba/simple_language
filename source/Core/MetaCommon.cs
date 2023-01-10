@@ -24,8 +24,11 @@ namespace SimpleLanguage.Core
         ClassName,
         EnumName,
         EnumValue,
+        DataName,
+        DataValue,
         VariableName,
         MemberVariableName,
+        MemberDataName,
         NewClass,
         FunctionName,
         ConstValue,
@@ -339,6 +342,16 @@ namespace SimpleLanguage.Core
                     {
                         calcMetaBase = GetFunctionOrVariableByOwnerClass(frontMetaBase as MetaClass, cnname, true);
                     }
+                    else if (frontCNT == ECallNodeType.DataName)
+                    {
+                        m_CurrentMetaBase = GetDataValueByMetaData(frontMetaBase as MetaData, cnname);
+                        m_CallNodeType = ECallNodeType.MemberDataName;
+                    }
+                    else if (frontCNT == ECallNodeType.MemberDataName)
+                    {
+                        m_CurrentMetaBase = GetDataValueByMetaMemberData(frontMetaBase as MetaMemberData, cnname);
+                        m_CallNodeType = ECallNodeType.MemberDataName;
+                    }
                     else if( frontCNT == ECallNodeType.EnumName )
                     {
                         calcMetaBase = GetEnumValue(frontMetaBase as MetaEnum, cnname);
@@ -386,37 +399,53 @@ namespace SimpleLanguage.Core
                         {
                             calcMetaBase = mmv.metaDefineType.GetMetaInputTemplateByIndex();
                         }
-                        var gett2 = GetFunctionOrVariableByOwnerClass(mmv.metaDefineType.metaClass, cnname, false);
-                        if (getmv2 != null && gett2 != null)
+                        var mc = mmv.metaDefineType.metaClass;
+                        if( mc is MetaData )
                         {
-                            Console.WriteLine("定义变量名称与数组函数名称相同，建议更换变量名称!!");
-                            return false;
+                            MetaData md = mc as MetaData;
+                            m_CurrentMetaBase = GetDataValueByMetaData(md, cnname);
+                            m_CallNodeType = ECallNodeType.MemberDataName;
                         }
-                        if (calcMetaBase == null)
+                        else if( mc is MetaEnum )
                         {
-                            calcMetaBase = gett2;
-                            if (calcMetaBase is MetaMemberFunction)
+                            MetaEnum me = mc as MetaEnum;
+                            //calcMetaBase = GetFunctionOrVariableByOwnerClass(md, cnname);
+                            //m_CallNodeType = ECallNodeType.DataMemberName;
+                        }
+                        else
+                        {
+                            var gett2 = GetFunctionOrVariableByOwnerClass(mmv.metaDefineType.metaClass, cnname, false);
+                            if (getmv2 != null && gett2 != null)
                             {
-                                m_IsFunction = true;
+                                Console.WriteLine("定义变量名称与数组函数名称相同，建议更换变量名称!!");
+                                return false;
                             }
-
-                            var gmmv2 = (gett2 as MetaMemberVariable);
-                            if (gmmv2 != null && gmmv2.metaDefineType.metaClass == CoreMetaClassManager.templateMetaClass)
+                            if (calcMetaBase == null)
                             {
-                                string inputMVName = "T_" + cnname;
-                                m_MetaVariable = mmv.GetMetaVaraible(inputMVName);
-                                if (m_MetaVariable == null)
+                                calcMetaBase = gett2;
+                                if (calcMetaBase is MetaMemberFunction)
                                 {
-                                    m_MetaVariable = new VisitMetaVariable(inputMVName, m_OwnerMetaClass, m_OwnerMetaFunctionBlock,
-                                        mmv, gmmv2);
-                                    mmv.AddMetaVariable(m_MetaVariable);
+                                    m_IsFunction = true;
                                 }
-                                calcMetaBase = m_MetaVariable;
-                            }
-                            var gmmv3 = (mmv as IteratorMetaVariable);
-                            if (gmmv3 != null)
-                            {
-                                calcMetaBase = gmmv3.GetMetaVaraible(cnname);
+
+                                var gmmv2 = (gett2 as MetaMemberVariable);
+                                if (gmmv2 != null && gmmv2.metaDefineType.metaClass == CoreMetaClassManager.templateMetaClass)
+                                {
+                                    string inputMVName = "T_" + cnname;
+                                    m_MetaVariable = mmv.GetMetaVaraible(inputMVName);
+                                    if (m_MetaVariable == null)
+                                    {
+                                        m_MetaVariable = new VisitMetaVariable(inputMVName, m_OwnerMetaClass, m_OwnerMetaFunctionBlock,
+                                            mmv, gmmv2);
+                                        mmv.AddMetaVariable(m_MetaVariable);
+                                    }
+                                    calcMetaBase = m_MetaVariable;
+                                }
+                                var gmmv3 = (mmv as IteratorMetaVariable);
+                                if (gmmv3 != null)
+                                {
+                                    calcMetaBase = gmmv3.GetMetaVaraible(cnname);
+                                }
                             }
                         }
                     }
@@ -651,6 +680,10 @@ namespace SimpleLanguage.Core
                     {
                         m_CallNodeType = ECallNodeType.EnumName;
                     }
+                    else if( calcMetaBase is MetaData )
+                    {
+                        m_CallNodeType = ECallNodeType.DataName;
+                    }
                     else
                     {
                         m_CallNodeType = ECallNodeType.ClassName;
@@ -802,6 +835,14 @@ namespace SimpleLanguage.Core
         {
             return me.GetMemberVariableByName(inputname);
         }
+        public MetaMemberData GetDataValueByMetaData(MetaData md, string inputName)
+        {
+            return md.GetMemberDataByName(inputName);
+        }
+        public MetaMemberData GetDataValueByMetaMemberData(MetaMemberData md, string inputName)
+        {
+            return md.GetMemberDataByName(inputName);
+        }
         public MetaBase GetFunctionOrVariableByOwnerClass(MetaClass mc, string inputname, bool isStatic)
         {
             if (m_IsFunction)
@@ -887,6 +928,14 @@ namespace SimpleLanguage.Core
                     return mv.metaDefineType;
                 }
             }
+            else if( m_CallNodeType == ECallNodeType.DataName )
+            {
+                MetaData mv = m_CurrentMetaBase as MetaData;
+                if (mv != null)
+                {
+                    return new MetaType( mv );
+                }
+            }
             else if (m_CallNodeType == ECallNodeType.MemberVariableName)
             {
                 MetaMemberVariable mmv = m_CurrentMetaBase as MetaMemberVariable;
@@ -919,9 +968,10 @@ namespace SimpleLanguage.Core
                     return;
                 }
             }
-            else if (m_CallNodeType == ECallNodeType.FunctionName)
+            else if (m_CallNodeType == ECallNodeType.DataName )
             {
-
+                MetaData md = m_CurrentMetaBase as MetaData;
+                return;
             }
         }
         public MetaMemberVariable GetMetaMemeberVariable()
@@ -939,6 +989,14 @@ namespace SimpleLanguage.Core
             {
                 MetaVariable mv = m_CurrentMetaBase as MetaVariable;
                 return mv;
+            }
+            else if( m_CallNodeType == ECallNodeType.DataName )
+            {
+                return (m_CurrentMetaBase as MetaData).metaVariable;
+            }
+            else if( m_CallNodeType == ECallNodeType.MemberDataName )
+            {
+                return (m_CurrentMetaBase as MetaVariable);
             }
             return null;
         }
@@ -981,6 +1039,14 @@ namespace SimpleLanguage.Core
                     return mv.metaDefineType.metaClass;
                 }
             }
+            else if( m_CallNodeType == ECallNodeType.DataName )
+            {
+                MetaData mv = m_CurrentMetaBase as MetaData;
+                if (mv != null)
+                {
+                    return mv;
+                }
+            }
             else if( m_CallNodeType == ECallNodeType.NewClass )
             {
                 return m_CurrentMetaBase as MetaClass;
@@ -1020,6 +1086,10 @@ namespace SimpleLanguage.Core
                     else
                         sb.Append(m_CurrentMetaBase?.name);
                 }
+                else if( m_CallNodeType == ECallNodeType.DataName )
+                {
+                    sb.Append(m_CurrentMetaBase.allName);
+                }
                 else if(m_CallNodeType == ECallNodeType.NewClass )
                 {
                     sb.Append(m_CurrentMetaBase?.name);
@@ -1051,6 +1121,10 @@ namespace SimpleLanguage.Core
                     }
                 }
                 else if (m_CallNodeType == ECallNodeType.MemberVariableName)
+                {
+                    sb.Append(m_CurrentMetaBase?.name);
+                }
+                else if (m_CallNodeType == ECallNodeType.MemberDataName )
                 {
                     sb.Append(m_CurrentMetaBase?.name);
                 }
