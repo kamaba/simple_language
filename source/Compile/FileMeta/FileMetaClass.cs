@@ -537,6 +537,14 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     stringBuilder.Append(Global.tabChar);
                 stringBuilder.Append("{" + Environment.NewLine);
 
+
+                foreach (var v in m_MemberVariableList)
+                {
+                    stringBuilder.Append(v.ToFormatString() + Environment.NewLine);
+                }
+                if (m_MemberVariableList.Count > 0)
+                    stringBuilder.Append(Environment.NewLine);
+
                 for (int i = 0; i < deep; i++)
                     stringBuilder.Append(Global.tabChar);
                 stringBuilder.Append("}");

@@ -12,15 +12,43 @@
 ```csharp
 file:test.sp
 
-"globalNamespace":
-     [
-            "Application",
-            "Application.Core",
-            "Application.Core.UI",
-            "Qt",
-            "Qt.Util",
-            "Core"
-    ]
+
+const data ProjectConfig
+{
+    name = "Test1";
+    desc = "这是一个测试用例";    
+    globalNamespace          #命名空间设计
+    {
+        Application
+        {
+            Core
+            {
+                Game{}
+                Instance{}
+                UI{}
+            }
+            Math
+            {
+                Util{}
+                Ext{}
+            }
+            Render
+            {
+                Camera{}
+                Mass{}
+                Entry{}
+            }
+            Util
+            {
+            }
+        }
+        QT
+        {
+            Math{}
+            Express{}
+        }
+    }
+}
 
 ```
 

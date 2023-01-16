@@ -473,6 +473,8 @@ namespace SimpleLanguage.Compile.Parse
                 {
                     if (nextNode?.nodeType == ENodeType.Brace)  //类中带(){}的结构
                     {
+                        Console.WriteLine("Error Enum的值赋值过程，要使用()的方式来进行!!");
+                        /*
                         bool isAssign = false;
                         for (int m = 0; m < nodeList.Count; m++)
                         {
@@ -509,6 +511,7 @@ namespace SimpleLanguage.Compile.Parse
                                 }
                             }
                         }
+                        */
                     }
                 }
                 else if (curNode?.nodeType == ENodeType.Brace)

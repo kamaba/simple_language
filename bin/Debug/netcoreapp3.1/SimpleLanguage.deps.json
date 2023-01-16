@@ -9,14 +9,43 @@
       "SimpleLanguage/1.0.0": {
         "dependencies": {
           "System.Diagnostics.Debug": "4.3.0",
-          "System.Text.Json": "6.0.5"
+          "System.Text.Json": "6.0.5",
+          "libLLVM": "15.0.0",
+          "libLLVM.runtime.win-x64": "15.0.0",
+          "swigged.llvm": "70.0.1"
         },
         "runtime": {
           "SimpleLanguage.dll": {}
         }
       },
+      "libLLVM/15.0.0": {},
+      "libLLVM.runtime.win-x64/15.0.0": {
+        "runtimeTargets": {
+          "runtimes/win-x64/native/libLLVM.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "15.0.0.0"
+          }
+        }
+      },
       "Microsoft.NETCore.Platforms/1.1.0": {},
       "Microsoft.NETCore.Targets/1.1.0": {},
+      "NETStandard.Library/2.0.0": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "1.1.0"
+        }
+      },
+      "swigged.llvm/70.0.1": {
+        "dependencies": {
+          "NETStandard.Library": "2.0.0"
+        },
+        "runtime": {
+          "lib/netcoreapp2.0/swigged.llvm.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
       "System.Diagnostics.Debug/4.3.0": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.1.0",
@@ -69,6 +98,20 @@
       "serviceable": false,
       "sha512": ""
     },
+    "libLLVM/15.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-A8Dyv24TD8Sn2ej2dipSu4DIap5z+gaCe8g0Em2d+wbUr4dr01wojd4EVtMQYdkG4pLGvDEb2u8sn/wyJNSDGg==",
+      "path": "libllvm/15.0.0",
+      "hashPath": "libllvm.15.0.0.nupkg.sha512"
+    },
+    "libLLVM.runtime.win-x64/15.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-rIBuatgk3VhvjumCj7H2vAwa2wpNR7v3qKgsddgOzaENBwvxhPlQKZwb54dJpgYQrM6DJE/DU3jg10COcDuZ2w==",
+      "path": "libllvm.runtime.win-x64/15.0.0",
+      "hashPath": "libllvm.runtime.win-x64.15.0.0.nupkg.sha512"
+    },
     "Microsoft.NETCore.Platforms/1.1.0": {
       "type": "package",
       "serviceable": true,
@@ -82,6 +125,20 @@
       "sha512": "sha512-aOZA3BWfz9RXjpzt0sRJJMjAscAUm3Hoa4UWAfceV9UTYxgwZ1lZt5nO2myFf+/jetYQo4uTP7zS8sJY67BBxg==",
       "path": "microsoft.netcore.targets/1.1.0",
       "hashPath": "microsoft.netcore.targets.1.1.0.nupkg.sha512"
+    },
+    "NETStandard.Library/2.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-7jnbRU+L08FXKMxqUflxEXtVymWvNOrS8yHgu9s6EM8Anr6T/wIX4nZ08j/u3Asz+tCufp3YVwFSEvFTPYmBPA==",
+      "path": "netstandard.library/2.0.0",
+      "hashPath": "netstandard.library.2.0.0.nupkg.sha512"
+    },
+    "swigged.llvm/70.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ZJBm8ZnZ2if7KmLOxSuLIGgnFv3o/Hk+gGeUsiYoKqe+dOQSN487dg6SpLR7RXcTdxfaIA8BAt4m3luZ6zKh7w==",
+      "path": "swigged.llvm/70.0.1",
+      "hashPath": "swigged.llvm.70.0.1.nupkg.sha512"
     },
     "System.Diagnostics.Debug/4.3.0": {
       "type": "package",

@@ -1293,11 +1293,6 @@ namespace SimpleLanguage.Compile.Parse
                         extend = EType.String;
                     }
                     break;
-                case "new":
-                    {
-                        tokenType = ETokenType.New;
-                    }
-                    break;
                 case "get":
                     {
                         tokenType = ETokenType.Get;
