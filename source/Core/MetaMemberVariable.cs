@@ -206,10 +206,12 @@ namespace SimpleLanguage.Core
     public partial class MetaMemberVariable : MetaVariable, IComparable<MetaMemberVariable>
     {
         public EFromType fromType => m_FromType;
+        public int index => m_Index;
         public MetaExpressNode express => m_Express;
         public int parseLevel { get; set; } = -1;
 
         private EFromType m_FromType = EFromType.Code;
+        private int m_Index = -1;
         private FileMetaMemberVariable m_FileMetaMemeberVariable;
         private MetaExpressNode m_Express = null;
         private bool m_IsEnumValue = false;
@@ -249,6 +251,7 @@ namespace SimpleLanguage.Core
             m_FileMetaMemeberVariable = fmmv;
             m_IsEnumValue = isEnum;
             m_Name = fmmv.name;
+            m_Index = mc.metaMemberVariableDict.Count;
             fmmv.SetMetaMemberVariable(this);
             m_FromType = EFromType.Code;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);

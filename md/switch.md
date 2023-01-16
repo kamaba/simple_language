@@ -22,7 +22,7 @@ switch expression
 
 #### S 中 switch 语句的类型匹配语法：
 ```ruby
-switch classObject.Type()
+switch classObject.type
 {
     case Int32
     {
@@ -116,17 +116,17 @@ ProjectEnter
         switch cb
         {
             case ClassBase cb{
-                Console.Write("this is ClassBase" );
+                Console.WriteLine("this is ClassBase" );
                 next;  #继承执行下边的检测
             }
             case ClassChild1 c1{
-                Console.Write("this is ClassChild1");
+                Console.WriteLine("this is ClassChild1");
             }
             case ClassChild2 c2{
-                Console.Write("this is ClassChild2");
+                Console.WriteLine("this is ClassChild2");
             }
             default{
-                Console.Write("Default Class");
+                Console.WriteLine("Default Class");
             }
         }
 
@@ -135,10 +135,14 @@ ProjectEnter
         switch b
         {
             case Book.name n{
-                Console.Write( "BookName:@n" );
+                Console.WriteLine( "BookName:@n" );
             }
-            case Book.price(30) p{
-                Console.Write("BookPrice:@p" );
+            case Book.price p{   #与price 进行匹配
+                Console.WriteLine("BookPrice [P=@p]" );
+                #next; 如果这个地方加一个next 则继承往下边检查
+            }
+            case Book.price(30) p{     #与price( 30) 进行匹配
+                Console.WriteLine("BookPrice:@p" );
             }
         }
     }
@@ -152,8 +156,10 @@ $ projectrun 20
 执行x>3的内容
 执行x>14的内容
 
-$ projectrun 0
-执行else的内容
+this is ClassBase
+
+BookPrice [P=30]     
+
 
 
 

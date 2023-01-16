@@ -520,7 +520,7 @@ namespace SimpleLanguage.Core
                         assignStatementsList.Add(mas);
                     }
 
-                    MetaClass anonClass = new MetaClass("AnonClass" + GetHashCode());
+                    MetaClass anonClass = new MetaClass("DynamicClass__" + GetHashCode());
                     for (int i = 0; i < assignStatementsList.Count; i++)
                     {
                         var mmv = assignStatementsList[i].metaMemberVariable;

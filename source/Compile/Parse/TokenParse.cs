@@ -581,7 +581,7 @@ namespace SimpleLanguage.Compile.Parse
                         AddNode(token);
                     }
                     break;
-                case ETokenType.New:
+                //case ETokenType.New:
                 case ETokenType.Const:
                 case ETokenType.Final:
                 case ETokenType.Static:

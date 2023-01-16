@@ -12,41 +12,6 @@
 
 
 
-创建后的工程文件:
-```csharp
-file:test_project.sp
-
-ProjectEnter
-{
-    static Main()
-    {    
-        r = Rectangle(10.0f, 20.0f );
-        r.Display();
-
-    }
-    static Test()
-    {
-        r = Rectangle();
-        r.DefaultLW();
-        r.Display();
-    }
-}
-
-
-ProjectConfigBegin{
-    "name":"test project",
-    "desc":"这是一个测试用例",
-    "compileFileList":
-    [ 
-        {
-            "path":"test.s",
-            "option":{}
-
-        },
-    ]
-}ProjectConfigEnd
-```
-
 创建的test.s 文件
 ```csharp
 import CSharp.System;
@@ -71,13 +36,47 @@ Rectangle
     }
     Display()
     {
-        Console.WriteLine("Length: @this.length " );
-        Console.WriteLine("Width: @this.width " );
+        Console.WriteLine("Length: @this.length" );
+        Console.WriteLine("Width: @this.width" );
         Console.WriteLine("Area: " + GetArea() );
     }
 }
 
 ```
+
+创建后的工程文件:
+```python
+file:test_project.sp
+
+ProjectEnter
+{
+    static Main()
+    {    
+        r = Rectangle(10.0f, 20.0f );
+        r.Display();
+
+    }
+    static Test()
+    {
+        r = Rectangle();
+        r.DefaultLW();
+        r.Display();
+    }
+}
+
+
+const data ProjectConfig{
+    name = "test project";
+    desc = "这是一个测试用例";
+    compileFileList =
+    [ 
+        {
+            path = "test.s";
+        }
+    ]
+}
+```
+
 #### 执行的代码:
 ```bash
 run test_project.sp 
@@ -103,7 +102,6 @@ Area: 10000
 3. 注释，可以嵌套多套， 如下代码区，如果去掉###! !###这个对称注释后，里边的注释继续可以使用，并且不破坏结构。
 ```python
 ###! 
-
 内容3_1
     ##!
     内容2_1_1  
@@ -139,3 +137,49 @@ Area: 10000
 - 不能与S语言的类库名称相同。
 
 ### 关键字
+
+<table border="1">
+<tr>
+<td>namespace</td>
+<td>import</td>
+<td>as</td> 
+<td>class</td><td>partial</td> 
+<td>enum</td>
+<td>data</td>
+<td>public</td><td>internal</td> <td> projected</td><td>private</td> 
+</tr>
+
+<tr>
+<td>interface</td>
+<td>override</td>
+<td>const</td><td> final</td>
+<td>static</td>
+<td>get</td><td>set</td> 
+<td>label</td><td>goto</td> 
+<td>break</td><td>continue</td>
+</tr>
+
+<tr>
+<td>if</td><td>elif</td><td>else</td>
+<td>switch</td><td>case</td><td>default</td><td>next</td>
+<td>while</td><td>dowhile</td><td>for</td> <td> in</td>
+</tr>
+
+<tr>
+<td>byte</td> <td> sbyte </td><td>char</td> <td> short </td><td>ushort</td> <td> int</td><td>uint</td> <td> ulong</td>
+<td> object</td><td>null</td><td>bool</td>
+</tr>
+
+<tr>
+<td> is</td><td> string</td>
+<td>void</td> 
+<td>this</td>
+<td>base</td>
+<td>tr</td><td>ret</td>
+<td></td>
+<td></td>
+</table>
+
+
+
+

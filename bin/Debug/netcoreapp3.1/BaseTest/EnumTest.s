@@ -24,19 +24,19 @@ const enum ConstColor
     Green = 0x00ff00;
     Blue = 0x0000ff;
 
-    MixColor1 = MixColor(){Red=0.9f, Green = 0.1f, Blue = 0.01f };
-    MixColor2 = MixColor(){Red=0.4f, Green = 0.22f, Blue = 0.7f };
+    MixColor1 = MixColor( {Red=0.9f, Green = 0.1f, Blue = 0.01f } );
+    MixColor2 = MixColor( {Red=0.4f, Green = 0.22f, Blue = 0.7f } );
 }
 enum Book2
 {
     Int32 Id = 1;
     String Name = "";
 }
-enum Book3
+enum GameState
 {
-    A1 = 1;
-    A2 = 2;
-    A3 = 3;
+    Init = 1;
+    Begin = 2;
+    End = 3;
 }
 #! 暂不实现
 enum Option<T>
@@ -54,7 +54,7 @@ EnumTest
 
         anon2 = {name="aa", age = 15, sex = 1 };
         #!
-        for b3 in Book3
+        for b3 in GameState
         {
             Console.Write("Book3: " + b3 );
         }

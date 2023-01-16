@@ -209,7 +209,7 @@ namespace SimpleLanguage
         /// <summary> set </summary>
         Set,
         /// <summary> new </summary>
-        New,
+        //New,
         /// <summary> partial </summary>
         Partial,
         /// <summary> namespace </summary>

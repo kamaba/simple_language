@@ -184,7 +184,7 @@ namespace SimpleLanguage.Project
             //ClassManager.instance.PrintAlllClassContent();
             MethodManager.instance.ParseStatements();
             Console.Write(ModuleManager.instance.ToFormatString() + Environment.NewLine);    
-            IRManager.instance.TranslateIR();
+            //IRManager.instance.TranslateIR();
         }
     }
 }

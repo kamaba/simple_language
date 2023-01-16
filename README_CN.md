@@ -74,21 +74,39 @@ ProjectEnter
 ```
 
 ### 语法说明
+#### 基本使用 
 1. [命名空间](https://github.com/kamaba/simple_language/tree/main/md/namespace.md)
 2. [基本语法](https://github.com/kamaba/simple_language/tree/main/md/base.md)
-3. [类型转换](https://github.com/kamaba/simple_language/tree/main/md/string.md)
-4. [变量](https://github.com/kamaba/simple_language/tree/main/md/string.md)
-5. [运算符](https://github.com/kamaba/simple_language/tree/main/md/string.md)
-6. [判断](https://github.com/kamaba/simple_language/tree/main/md/string.md)
-7. [循环](https://github.com/kamaba/simple_language/tree/main/md/string.md)
-8. [封装](https://github.com/kamaba/simple_language/tree/main/md/string.md)
-9. [方法](https://github.com/kamaba/simple_language/tree/main/md/string.md)
-10. [字符串](https://github.com/kamaba/simple_language/tree/main/md/string.md)
-11. [枚举](https://github.com/kamaba/simple_language/tree/main/md/enum.md)
-12. [类](https://github.com/kamaba/simple_language/tree/main/md/class.md)
-13. [对象](https://github.com/kamaba/simple_language/tree/main/md//object.md)
-14. [继承](https://github.com/kamaba/simple_language/tree/main/md/string.md)
-15. [接口](https://github.com/kamaba/simple_language/tree/main/md/string.md)
+3. [数字](https://github.com/kamaba/simple_language/tree/main/md/number.md)
+4. [字符串](https://github.com/kamaba/simple_language/tree/main/md/string.md)
+5. [变量](https://github.com/kamaba/simple_language/tree/main/md/variable.md)
+6. [表达式](https://github.com/kamaba/simple_language/tree/main/md/express.md)
+7. [运算符](https://github.com/kamaba/simple_language/tree/main/md/operator.md)
+8. [if判断](https://github.com/kamaba/simple_language/tree/main/md/if.md)
+9. [switch判断](https://github.com/kamaba/simple_language/tree/main/md/switch.md)
+10. [循环](https://github.com/kamaba/simple_language/tree/main/md/forwhiledowhile.md)
+11. [方法](https://github.com/kamaba/simple_language/tree/main/md/function.md)
+12. [枚举](https://github.com/kamaba/simple_language/tree/main/md/enum.md)
+13. [数据](https://github.com/kamaba/simple_language/tree/main/md/data.md)
+14. [类](https://github.com/kamaba/simple_language/tree/main/md/class.md)
+15. [对象](https://github.com/kamaba/simple_language/tree/main/md//object.md)
+16. [数组](https://github.com/kamaba/simple_language/tree/main/md/array.md)
+#### 高级使用
+1. [继承](https://github.com/kamaba/simple_language/tree/main/md/express.md)
+2. [接口](https://github.com/kamaba/simple_language/tree/main/md/interface.md)
+3. [标签](https://github.com/kamaba/simple_language/tree/main/md/label.md)
+4. [宏](https://github.com/kamaba/simple_language/tree/main/md/marco.md) 
+5. [模块](https://github.com/kamaba/simple_language/tree/main/md/module.md) 
+6. [类型转换](https://github.com/kamaba/simple_language/tree/main/md/cast.md)
+6. [List]
+7. [Set]
+8. [Map]
+9. [Tuple]
+10. [Queue]
+11. [Stack]
+#### 系统库
+1. [IO]
+2. []
 
 ### 支持平台
 
