@@ -18,49 +18,88 @@ using SimpleLanguage.Compile.CoreFileMeta;
 
 namespace SimpleLanguage.Project
 {
-    public class ProjectCode
+    public class ProjectClass
     {
-        private FileMeta m_File = null;
-        public ProjectCode( FileMeta fm )
-        {
-            m_File = fm;
-        }
-        public void CreateNamespace()
-        {
-            m_File.CreateNamespace();
-        }
-        public void CombineFileMeta()
-        {
-            m_File.CombineFileMeta();
-        }
-        public void CheckExtendAndInterface()
-        {
-            m_File.CheckExtendAndInterface();
-        }
-        public string ToFormatString()
-        {
-            return m_File.ToFormatString();
-        }
-        public void PrintFormatString()
-        {
-            Console.Write(m_File.ToFormatString());
-        }
-    }
-    public class ProjectCompileFunction
-    {
+        public static MetaClass projectEnter = null;
+        public static MetaClass projectDll = null;
+        public static MetaClass compile = null;
+
         public static MetaFunction s_MainFunction = null;
         public static MetaFunction s_TestFunction = null;
+        public static MetaFunction s_LoadStartFunction = null;
+        public static MetaFunction s_LoadEndFunction = null;
         public static MetaFunction s_CompileBeforeFunction = null;
         public static MetaFunction s_CompileAfterFunction = null;
-        static ProjectCode pcode = null;
-        public ProjectCompileFunction( )
+        public static void ParseCompileClass()
         {
+            FileMetaClass fmc = ProjectCompile.file.GetFileMetaClassByName("Compile");
+
+            if (fmc == null) return;
+
+            ClassManager.instance.AddClass(fmc);
+
+            compile = fmc.metaClass;
+            if (compile == null) return;
+
+            compile.Parse();
+            compile.ParseDefineComplete();
+            var flist = compile.GetMemberFunctionList();
+            for( int i = 0; i < flist.Count; i++ )
+            {
+                flist[i].ParseStatements();
+            }
+            s_CompileBeforeFunction = compile.GetMetaDefineGetSetMemberFunctionByName("CompileBefore",false,false);
+            s_CompileAfterFunction = compile.GetMetaDefineGetSetMemberFunctionByName("CompileAfter", false, false);
+
+            s_CompileBeforeFunction.TranslateIR();
+            s_CompileAfterFunction.TranslateIR();
         }
-        public static void Parse()
+        public static void ParseEnter()
         {
-            //pcode.StructParse();
-            //pcode.CombineFileMeta();
-            //pcode.CheckExtendAndInterface();
+            FileMetaClass fmc = ProjectCompile.file.GetFileMetaClassByName("ProjectEnter");
+
+            if (fmc == null) return;
+            ClassManager.instance.AddClass(fmc);
+
+            projectEnter = fmc.metaClass;
+            if (projectEnter == null) return;
+
+            projectEnter.Parse();
+            projectEnter.ParseDefineComplete();
+            var flist = projectEnter.GetMemberFunctionList();
+            for (int i = 0; i < flist.Count; i++)
+            {
+                flist[i].ParseStatements();
+            }
+            s_MainFunction = projectEnter.GetMetaDefineGetSetMemberFunctionByName("Main", false, false);
+            s_TestFunction = projectEnter.GetMetaDefineGetSetMemberFunctionByName("Test", false, false);
+
+            s_MainFunction.TranslateIR();
+            s_TestFunction.TranslateIR();
+        }
+        public static void ParseDll()
+        {
+            FileMetaClass fmc = ProjectCompile.file.GetFileMetaClassByName("ProjectDll");
+
+            if (fmc == null) return;
+
+            ClassManager.instance.AddClass(fmc);
+
+            projectDll = fmc.metaClass;
+            if (projectDll == null) return;
+
+            projectDll.Parse();
+            projectDll.ParseDefineComplete();
+            var flist = projectDll.GetMemberFunctionList();
+            for (int i = 0; i < flist.Count; i++)
+            {
+                flist[i].ParseStatements();
+            }
+            s_LoadStartFunction = projectDll.GetMetaDefineGetSetMemberFunctionByName("LoadStart", false, false);
+            s_LoadEndFunction = projectDll.GetMetaDefineGetSetMemberFunctionByName("LoadEnd", false, false);
+
+            s_LoadStartFunction.TranslateIR();
+            s_LoadEndFunction.TranslateIR();
         }
         public static void RunTest()
         {
@@ -160,6 +199,12 @@ namespace SimpleLanguage.Project
                 }
             }
 
+            if(s_CompileBeforeFunction!=null)
+            {
+                //InnerCLRRuntimeVM.Init();
+                //InnerCLRRuntimeVM.RunIRMethod(s_CompileBeforeFunction.irMethod);
+            }
+
         }
         public static bool IsCanAddFile(CompileFilterData cfd, CompileFileData fileData )
         {
@@ -175,7 +220,11 @@ namespace SimpleLanguage.Project
         }
         public static void ProjectCompileAfter()
         {
-
+            if (s_CompileBeforeFunction != null)
+            {
+                //InnerCLRRuntimeVM.Init();
+                //InnerCLRRuntimeVM.RunIRMethod(s_CompileBeforeFunction.irMethod);
+            }
         }
     }
 }

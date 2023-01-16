@@ -94,6 +94,8 @@ namespace SimpleLanguage.Core
         public bool AddDynamicClass( MetaClass dc )
         {
             m_DynamicClassList.Add(dc);
+
+            m_AllClassDict.Add(dc.allName, dc);
             return true;
         }
         public bool CompareMetaClassMemberVariable( MetaClass curClass, MetaClass cpClass )
@@ -120,8 +122,9 @@ namespace SimpleLanguage.Core
                         break;
                     }
                 }
+                return true;
             }
-            return true;
+            return false;
         }
         public MetaClass FindDynamicClassByMetaType( MetaClass dc )
         {

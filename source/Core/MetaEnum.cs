@@ -28,11 +28,6 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-
-        public override bool IsIncludeMetaBase(string name)
-        {
-            return base.IsIncludeMetaBase(name);
-        }
         public override void BindFileMetaClass(FileMetaClass fmc)
         {
             if (m_FileMetaClassDict.ContainsKey(fmc.token))
@@ -92,19 +87,12 @@ namespace SimpleLanguage.Core
             {
                 stringBuilder.Append("const ");
             }
-            if (true)
+            stringBuilder.Append("enum ");
+            if (topLevelMetaNamespace != null)
             {
-                stringBuilder.Append("enum ");
-                if (topLevelMetaNamespace != null)
-                {
-                    stringBuilder.Append(topLevelMetaNamespace.allName + ".");
-                }
-                stringBuilder.Append(name);
+                stringBuilder.Append(topLevelMetaNamespace.allName + ".");
             }
-            else
-            {
-                stringBuilder.Append("enum " + name);
-            }
+            stringBuilder.Append(name);
             if (m_MetaTemplateList.Count > 0)
             {
                 stringBuilder.Append("<");
@@ -153,11 +141,6 @@ namespace SimpleLanguage.Core
             stringBuilder.Append("}" + Environment.NewLine);
 
             return stringBuilder.ToString();
-        }
-
-        public override string ToString()
-        {
-            return base.ToString();
         }
     }
 }

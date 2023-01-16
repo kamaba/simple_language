@@ -84,3 +84,36 @@ array,list,set,dict
 2. 函数的基本类重载，然后查找方法类也重载，直接通过int32的系统方式直接查找
 3. 通过.s文件，重写，int32,ing64,string等类，如果重载后，直接走.s文件中的
 
+
+
+
+李克成:
+1. 合并PlayerController的蓝图  1.14
+2. 完成共用类的合并 包括: CitySampleGameInstance, CitySampleGameState, CitySampleGameMode, BP_CitySampleGameInstance, BP_CitySampleGameMode,BP_CitySampleGameState。  1.16-1.17
+3. 修改车辆类 CitySampleVehicleBase/BP_Vehicle/BP_VehicleBase_Deformable/BP_VehicleBase_Drivable 1.18-1.20, 1.28
+4. 车辆的交互流程 1.29-1.30
+5. 后期调整，与ody工程的冲突整理 1.31-2.3
+
+张硕:
+1. 合并ACharacter类及蓝图 合并 1.16-1.17
+2. 与其它同事的后续联调与角色色类相关的处理 1.18-1.19
+
+左瑞
+1. 跑通人物的动画流程 1.16-1.17
+2. 动作重定向调整，状态机融合，方案确定[与子亚一块调] 1.18-1.19
+3. 状态机动画制作 1.20   1.28-1.31
+4. 后期调整 2.1-2.3
+
+何家朋:(暂定使用ody方案，如果方案变动，进度再变更)
+1. 摄像机切换效果 1.16
+2. 摄像机挂载在车上后的旋转问题 1.17
+3. 为摄像机增加角度限制 1.18-1.19
+
+鄂金瑞
+1. 通过MassAI生成自带Npc 1.16-1.17
+2. 通过HUD创建车辆交互UI与controller按键操作 1.18
+3. 通过MassAI生成的Npc遵守红绿灯交通规则1.19-1.20
+4. 将MassAI生成的Npc替换为项目中的Npc1.28-1.29
+5. 将被替换后的Npc符合Npc交互流程1.30-1.31
+6. 后期调整 2.1
+

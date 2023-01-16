@@ -32,24 +32,24 @@ namespace SimpleLanguage.Core
             }
             FileMetaDefineVariableSyntax m_FileMetaDefineVariableSyntax;
             FileMetaOpAssignSyntax m_FileMetaOpAssignSyntax;
-            public NewObjectAssignStatements(MetaBlockStatements mbs, MetaClass mc, FileMetaCallLink fmcl)
+            public NewObjectAssignStatements(MetaBlockStatements mbs, MetaType mt, FileMetaCallLink fmcl )
             {
                 m_OwnerMetaBlockStatements = mbs;
                 if (fmcl != null)
                 {
-                    m_MetaExpress = new MetaCallExpressNode(fmcl, mc, mbs);
+                    m_MetaExpress = new MetaCallExpressNode(fmcl, mt.metaClass, mbs);
                     AllowUseConst auc = new AllowUseConst();
                     auc.useNotConst = false;
                     auc.useNotStatic = false;
                     m_MetaExpress.Parse(auc);
                 }
             }
-            public NewObjectAssignStatements(MetaBlockStatements mbs, MetaClass mc, MetaExpressNode men)
+            public NewObjectAssignStatements(MetaBlockStatements mbs, MetaType mc, MetaExpressNode men)
             {
                 m_OwnerMetaBlockStatements = mbs;
                 m_MetaExpress = men;
             }
-            public NewObjectAssignStatements(MetaBlockStatements mbs, MetaClass ownerMetaClass, FileMetaOpAssignSyntax fmos )
+            public NewObjectAssignStatements(MetaBlockStatements mbs, MetaType mt, FileMetaOpAssignSyntax fmos )
             {
                 m_FileMetaOpAssignSyntax = fmos;
                 m_OwnerMetaBlockStatements = mbs;
@@ -59,13 +59,21 @@ namespace SimpleLanguage.Core
                     if (fmos.variableRef.isOnlyName)
                     {
                         m_DefineName = fmos.variableRef.name;
-                        m_MetaMemberVariable = ownerMetaClass.GetMetaMemberByAllName(m_DefineName) as MetaMemberVariable;
-                        if (m_MetaMemberVariable == null)
+                        if( mt.isDynamicClass )
                         {
-                            Console.WriteLine("Error 在类" + ownerMetaClass?.allName + "函数: " + mbs?.ownerMetaFunction.name
-                                + " 没有找到: 类" + ownerMetaClass?.allName + " 变量:" + m_DefineName);
+                            m_MetaMemberVariable = new MetaMemberVariable(null, m_DefineName);
+                        }
+                        else
+                        {
+                            m_MetaMemberVariable = mt.metaClass.GetMetaMemberByAllName(m_DefineName) as MetaMemberVariable;
+                            if (m_MetaMemberVariable == null)
+                            {
+                                Console.WriteLine("Error 在类" + mt.metaClass?.allName + "函数: " + mbs?.ownerMetaFunction.name
+                                    + " 没有找到: 类" + mt.metaClass?.allName + " 变量:" + m_DefineName);
+                            }
                         }
                         m_MetaExpress = CreateExpressNodeInNewObjectStatements(m_MetaMemberVariable, m_OwnerMetaBlockStatements, m_FileMetaOpAssignSyntax?.express);
+
                     }
                     else
                     {
@@ -74,7 +82,7 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
-            public NewObjectAssignStatements(MetaBlockStatements mbs, MetaClass ownerMetaClass, FileMetaDefineVariableSyntax fmdvs)
+            public NewObjectAssignStatements(MetaBlockStatements mbs, MetaType mt, FileMetaDefineVariableSyntax fmdvs)
             {
                 m_FileMetaDefineVariableSyntax = fmdvs;
                 m_OwnerMetaBlockStatements = mbs;
@@ -85,7 +93,7 @@ namespace SimpleLanguage.Core
                     m_DefineName = m_FileMetaDefineVariableSyntax.name;
 
                     var fmcd = m_FileMetaDefineVariableSyntax.fileMetaClassDefine;
-                    var mdt = new MetaType(fmcd, ownerMetaClass);
+                    var mdt = new MetaType(fmcd, mt.metaClass);
                     m_MetaMemberVariable = new MetaMemberVariable(null, m_DefineName, mdt.metaClass);
 
                     var fileExpress = m_FileMetaDefineVariableSyntax.express;
@@ -111,11 +119,14 @@ namespace SimpleLanguage.Core
                 if (m_MetaExpress != null)
                 {
                     m_MetaExpress.CalcReturnType();
+                    
                     if(m_MetaMemberVariable != null )
                     {
                         MetaClass retMetaClass = m_MetaMemberVariable.metaDefineType.metaClass;
                         MetaClass ownerMetaClass = m_MetaMemberVariable.ownerMetaClass;
                         bool m_IsNeedCastStatements = false;
+
+                        m_MetaMemberVariable.SetMetaDefineType( m_MetaExpress.GetReturnMetaDefineType() );
                     }
                     //ExpressManager.CalcDefineClassType(ref retMetaClass, m_MetaExpress, ownerMetaClass,
                     //    m_OwnerMetaBlockStatements?.ownerMetaFunction, m_MetaVariable.name, ref m_IsNeedCastStatements);
@@ -167,11 +178,15 @@ namespace SimpleLanguage.Core
 
                             return clen;
                         }
-                    //case FileMetaTermExpress fmte:
-                    //    {
+                    case FileMetaBraceTerm fmbt:
+                        {
+                            MetaType mt = new MetaType(CoreMetaClassManager.objectMetaClass);
+                            mt.SetDynamicClass(true);
+                            MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmbt, mt, mc, mbs);
 
-                    //    }
-                    //    break;
+                            return mnoe;
+                        }
+                        break;
                     default:
                         {
                             Console.WriteLine("Error 暂不支持该类型的在NewObject中的解析!!");
@@ -197,7 +212,7 @@ namespace SimpleLanguage.Core
 
         public List<NewObjectAssignStatements> assignStatementsList = new List<NewObjectAssignStatements>();
         public MetaFunctionCall constructFunctionCall => m_MetaConstructFunctionCall;
-        public bool isAnonymousClass => m_IsAnonymousClass;
+        public bool isAnonymousClass => m_MetaDefineType != null ? m_MetaDefineType.isDynamicClass : false;
         public MetaClass GetMaxLevelMetaClassType()
         {
             MetaClass mc = CoreMetaClassManager.objectMetaClass;
@@ -251,7 +266,6 @@ namespace SimpleLanguage.Core
         }
 
         private MetaFunctionCall m_MetaConstructFunctionCall = null;
-        private bool m_IsAnonymousClass = false;
 
         private FileMetaParTerm m_FileMetaParTerm = null;
         private FileMetaBraceTerm m_FileMetaBraceTerm = null;
@@ -278,17 +292,17 @@ namespace SimpleLanguage.Core
             {
                 int arr0 = int.Parse(arr[0]);
                 MetaConstExpressNode mcen1 = new MetaConstExpressNode(EType.Int32, arr0 );
-                NewObjectAssignStatements mas1 = new NewObjectAssignStatements(mbs, CoreMetaClassManager.objectMetaClass, mcen1);
+                NewObjectAssignStatements mas1 = new NewObjectAssignStatements(mbs, new MetaType(CoreMetaClassManager.objectMetaClass), mcen1);
                 assignStatementsList.Add(mas1);
 
                 MetaConstExpressNode mcen_ = new MetaConstExpressNode(EType.String, "-" );
-                NewObjectAssignStatements mas_ = new NewObjectAssignStatements(mbs, CoreMetaClassManager.objectMetaClass, mcen_);
+                NewObjectAssignStatements mas_ = new NewObjectAssignStatements(mbs, new MetaType(CoreMetaClassManager.objectMetaClass), mcen_);
                 assignStatementsList.Add(mas_);
 
 
                 int arr1 = int.Parse(arr[1]);
                 MetaConstExpressNode mcen2 = new MetaConstExpressNode(EType.Int32, arr[1]);
-                NewObjectAssignStatements mas2 = new NewObjectAssignStatements(mbs, CoreMetaClassManager.objectMetaClass, mcen2 );
+                NewObjectAssignStatements mas2 = new NewObjectAssignStatements(mbs, new MetaType(CoreMetaClassManager.objectMetaClass), mcen2 );
                 assignStatementsList.Add(mas2);
 
                 if( arr0 > arr1 )
@@ -353,7 +367,7 @@ namespace SimpleLanguage.Core
                         for (int i = 0; i < m_FileMetaBraceTerm.fileMetaCallLinkList.Count; i++)
                         {
                             var fas = m_FileMetaBraceTerm.fileMetaCallLinkList[i];
-                            NewObjectAssignStatements mas = new NewObjectAssignStatements(mbs, mt.metaClass, fas);
+                            NewObjectAssignStatements mas = new NewObjectAssignStatements(mbs, mt, fas );
                             assignStatementsList.Add(mas);
                         }
                         var metaInputTemplateCollection = new MetaInputTemplateCollection();
@@ -399,7 +413,7 @@ namespace SimpleLanguage.Core
                 for (int i = 0; i < m_FileMetaBraceTerm.fileMetaCallLinkList.Count; i++)
                 {
                     var fas = m_FileMetaBraceTerm.fileMetaCallLinkList[i];
-                    NewObjectAssignStatements mas = new NewObjectAssignStatements(mbs, mt.metaClass, fas);
+                    NewObjectAssignStatements mas = new NewObjectAssignStatements(mbs, mt, fas);
                     assignStatementsList.Add(mas);
                 }
                 metaInputTemplateCollection = new MetaInputTemplateCollection();
@@ -447,7 +461,7 @@ namespace SimpleLanguage.Core
                 var fas = splitList[i];
 
                 MetaExpressNode men = ExpressManager.instance.CreateExpressNode( mc, mbs, new MetaType( CoreMetaClassManager.int32MetaClass ), fas );
-                NewObjectAssignStatements mas = new NewObjectAssignStatements(mbs, mc, men );
+                NewObjectAssignStatements mas = new NewObjectAssignStatements(mbs, new MetaType(mc), men );
 
                 assignStatementsList.Add(mas);
             }
@@ -481,46 +495,77 @@ namespace SimpleLanguage.Core
         {
             if (m_FileMetaBraceTerm != null && m_FileMetaBraceTerm.fileMetaAssignSyntaxList != null)
             {
-                for (int i = 0; i < m_FileMetaBraceTerm.fileMetaAssignSyntaxList.Count; i++)
+                if (m_MetaDefineType.metaClass == CoreMetaClassManager.objectMetaClass)
                 {
-                    var fas = m_FileMetaBraceTerm.fileMetaAssignSyntaxList[i];
-                    var foas = fas as FileMetaOpAssignSyntax;
-                    var fdvs = fas as FileMetaDefineVariableSyntax;
-                    NewObjectAssignStatements mas = null;
-                    if (foas != null)
+                    m_MetaDefineType.SetDynamicClass(true);
+
+                    //构建匿名类中的项
+                    for (int i = 0; i < m_FileMetaBraceTerm.fileMetaAssignSyntaxList.Count; i++)
                     {
-                        foas.express.BuildAST();
-                        mas = new NewObjectAssignStatements(m_OwnerMetaBlockStatements, m_MetaDefineType.metaClass, foas);
+                        var fas = m_FileMetaBraceTerm.fileMetaAssignSyntaxList[i];
+                        var foas = fas as FileMetaOpAssignSyntax;
+                        var fdvs = fas as FileMetaDefineVariableSyntax;
+                        NewObjectAssignStatements mas = null;
+                        if (foas != null)
+                        {
+                            foas.express.BuildAST();
+                            mas = new NewObjectAssignStatements(m_OwnerMetaBlockStatements, m_MetaDefineType, foas);
+                        }
+                        else if (fdvs != null)
+                        {
+                            fdvs.express.BuildAST();
+                            mas = new NewObjectAssignStatements(m_OwnerMetaBlockStatements, m_MetaDefineType, fdvs);
+                        }
+                        mas.CalcReturnType();
+                        assignStatementsList.Add(mas);
                     }
-                    else if (fdvs != null)
+
+                    MetaClass anonClass = new MetaClass("AnonClass" + GetHashCode());
+                    for (int i = 0; i < assignStatementsList.Count; i++)
                     {
-                        fdvs.express.BuildAST();
-                        mas = new NewObjectAssignStatements(m_OwnerMetaBlockStatements, m_MetaDefineType.metaClass, fdvs);
-                        m_IsAnonymousClass = true;
+                        var mmv = assignStatementsList[i].metaMemberVariable;
+                        anonClass.AddMetaMemberVariable(assignStatementsList[i].metaMemberVariable, false );
                     }
-                    assignStatementsList.Add(mas);
+                    MetaClass retClass = ClassManager.instance.FindDynamicClass(anonClass);
+                    if (retClass == null)
+                    {
+                        for (int i = 0; i < assignStatementsList.Count; i++)
+                        {
+                            var mmv = assignStatementsList[i].metaMemberVariable;
+                            mmv.SetOwnerMetaClass(retClass);
+                        }
+                        ClassManager.instance.AddDynamicClass(anonClass);
+                        retClass = anonClass;
+                    }
+                    else
+                    {
+                        var list = anonClass.allMetaMemberVariableList;
+                        if( list.Count == assignStatementsList.Count )
+                        {
+
+                        }
+                    }
+                    m_MetaDefineType = new MetaType(retClass);
                 }
-            }
-            if(m_IsAnonymousClass)
-            {
-                MetaClass anonClass = new MetaClass("AnonClass" + GetHashCode());
-                for( int i = 0; i < assignStatementsList.Count; i++ )
+                else
                 {
-                    var mmv = assignStatementsList[i].metaMemberVariable;
-                    anonClass.AddMetaMemberVariable(assignStatementsList[i].metaMemberVariable);
+                    for (int i = 0; i < m_FileMetaBraceTerm.fileMetaAssignSyntaxList.Count; i++)
+                    {
+                        var fas = m_FileMetaBraceTerm.fileMetaAssignSyntaxList[i];
+                        var foas = fas as FileMetaOpAssignSyntax;
+                        if (foas != null)
+                        {
+                            foas.express.BuildAST();
+                            NewObjectAssignStatements mas = new NewObjectAssignStatements(m_OwnerMetaBlockStatements, m_MetaDefineType, foas);
+                            assignStatementsList.Add(mas);
+                        }
+                        else 
+                        {
+                            Console.WriteLine("Error 该处应该是使用赋值，不能有其它表达式!!" + fas.token?.ToLexemeAllString() );
+                            continue;
+                        }
+                    }
                 }
-                MetaClass retClass = ClassManager.instance.FindDynamicClass(anonClass);
-                if( retClass == null )
-                {
-                    ClassManager.instance.AddDynamicClass(anonClass);
-                    retClass = anonClass;
-                }
-                for (int i = 0; i < assignStatementsList.Count; i++)
-                {
-                    var mmv = assignStatementsList[i].metaMemberVariable;
-                    mmv.SetOwnerMetaClass(retClass);
-                }
-                m_MetaDefineType = new MetaType(retClass);
             }
         }
         public override void Parse(AllowUseConst auc)

@@ -52,7 +52,7 @@ DataTest
 
         #RenBook2 = RenBook.Clone();             #支持Clone
 
-        RenBook3 = RenBook;                     #引用RenBook  RenBook3 是RenBook的引用
+        RenBook3 = RenBook.Ref();                     #引用RenBook  RenBook3 是RenBook的引用
 
         #RenBook rb = RenBook.Clone();          #数据只能使用Clone方法复制
 

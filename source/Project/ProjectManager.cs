@@ -39,9 +39,9 @@ namespace SimpleLanguage.Parse
             ProjectCompile.Compile(path, m_Data);
 
             if (!cinputArgs.isTest)
-                ProjectCompileFunction.RunMain();
+                ProjectClass.RunMain();
             else
-                ProjectCompileFunction.RunTest();
+                ProjectClass.RunTest();
         }
     }
 }

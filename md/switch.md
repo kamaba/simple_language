@@ -1,4 +1,5 @@
-# S语言的条件控制
+# S语言的switch条件控制
+
 
 ## Switch表达式
 
@@ -48,6 +49,14 @@ switch classObject
     }
 }
 ```
+#### S 中 switch 语句的enum匹配语法:
+```ruby
+switch enumVariable
+{
+    case enum.value { statement(enumVariable);  }  #输出enum的项
+    case enum_value v { statement(v); }  #输入enum里边的值
+}
+```
 
 #### S 中 switch 语句与返回语句结合：
 ```ruby
@@ -62,14 +71,15 @@ a = switch expression
 - switch 语句中的 expression 必须是一个整型或枚举类型，或者是一个 class 类型，其中 class 有一个单一的转换函数将其转换为整型或枚举类型。
 - 在一个 switch 中可以有任意数量的 case 语句。每个 case 后跟一个要比较的值在后边要跟一个{}。
 - case 的 constant-expression 必须与 switch 中的变量具有相同的数据类型，且必须是一个常量。
-- 当被测试的变量等于 case 中的常量时，case 后跟的语句将被执行，直到整个switch被执行完后，如果要继续进行后续的检查，需要增加next;的语法，让语句继续执行。
+- 当被测试的变量等于 case 中的常量时，case 后跟的语句将被检测，如果要继续进行后续的检查，需要增加next;的语法，让语句继续执行。
 - 该switch不像传统带break模式，break;
 - 一个 switch 语句可以有一个可选的 default 语句，在 switch 的结尾。default 语句用于在上面所有 case 都不为 true 时执行的一个任务。default 也需要包含 break 语句，这是一个良好的习惯。
 - s 不支持从一个 case 标签显式贯穿到另一个 case 标签。如果要使 s 支持从一个 case 标签显式贯穿到另一个 case 标签，可以使用 goto 一个 switch-case 或 goto default。
 - S 中，可以与返回值语句结合使用，但需要使用tr value; 的语法结合，相当于 a = value;的语法。
 
 #### 实例
-```ruby
+```python
+import CShyarp.System;
 ProjectEnter
 {
     ClassBase
@@ -84,6 +94,11 @@ ProjectEnter
     {
 
     }
+    enum Book
+    {
+        name = "1";
+        price = 20;
+    }
     static static Main( int a )
     {
         x = 0;
@@ -95,8 +110,41 @@ ProjectEnter
             case 4,5,6{ x = 10; tr 10; }
             default{ x = 100; tr 20; }}
         }
+
+        #类型与类的支持
+        ClassBase cb = ();
+        switch cb
+        {
+            case ClassBase cb{
+                Console.Write("this is ClassBase" );
+                next;  #继承执行下边的检测
+            }
+            case ClassChild1 c1{
+                Console.Write("this is ClassChild1");
+            }
+            case ClassChild2 c2{
+                Console.Write("this is ClassChild2");
+            }
+            default{
+                Console.Write("Default Class");
+            }
+        }
+
+        #enum 支持
+        Book b = Book.price( 30 );
+        switch b
+        {
+            case Book.name n{
+                Console.Write( "BookName:@n" );
+            }
+            case Book.price(30) p{
+                Console.Write("BookPrice:@p" );
+            }
+        }
     }
 }
+```
+
 ```
 $ projectrun 20
 执行以上代码，输出结果为:

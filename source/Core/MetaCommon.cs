@@ -705,7 +705,7 @@ namespace SimpleLanguage.Core
         {
             if (m_IsFunction)
             {
-                if(inputname == mc.name )
+                if(inputname == mc?.name )
                 {
                     if( m_MetaInputParamCollection.metaParamList.Count > 0 )
                     {
@@ -897,7 +897,11 @@ namespace SimpleLanguage.Core
             }
             if (m_CurrentMetaBase == null) return null;
 
-            if (m_CallNodeType == ECallNodeType.ClassName || m_CallNodeType == ECallNodeType.This
+            if( m_CallNodeType == ECallNodeType.NewClass )
+            {
+                return new MetaType(m_CurrentMetaBase as MetaClass, m_MetaTemplateParamsCollection );
+            }
+            else if (m_CallNodeType == ECallNodeType.ClassName || m_CallNodeType == ECallNodeType.This
                 || m_CallNodeType == ECallNodeType.ConstValue)
             {
                 //return m_CurrentMetaBase as MetaClass;

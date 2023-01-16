@@ -1,10 +1,22 @@
 import CSharp.System;
 
+class XC
+{
+    a = 10;
+    b = 10;
+}
 enum Book
 {
-    B1 = { int i2 = 20, string url = "http://www.baidu.com" };
+    B1 = { int i2 = 20, string url = "http://www.baidu.com", XC xc1= XC(), anonC = { string name = "xx", age = 20 } };
     C1 = 1;
     string Str;
+}
+
+MixColor
+{
+    Red = 0.0f;
+    Green = 0.0f;
+    Blue = 0.0f;
 }
 const enum ConstColor
 {
@@ -12,12 +24,6 @@ const enum ConstColor
     Green = 0x00ff00;
     Blue = 0x0000ff;
 
-    enum MixColor
-    {
-        Red = 0.0f;
-        Green = 0.0f;
-        Blue = 0.0f;
-    }
     MixColor1 = MixColor(){Red=0.9f, Green = 0.1f, Blue = 0.01f };
     MixColor2 = MixColor(){Red=0.4f, Green = 0.22f, Blue = 0.7f };
 }
@@ -44,6 +50,9 @@ EnumTest
 {
     static Func()
     {
+        anonObj = { name = "ok", age = 20, sex = 0 };
+
+        anon2 = {name="aa", age = 15, sex = 1 };
         #!
         for b3 in Book3
         {
