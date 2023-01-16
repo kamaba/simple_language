@@ -339,7 +339,7 @@ namespace SimpleLanguage.Core
                 m_InterfaceClass.Add(aic);
             }
         }
-        public void AddMetaMemberVariable( MetaMemberVariable mmv )
+        public void AddMetaMemberVariable( MetaMemberVariable mmv, bool isAddManager = true )
         {
             if( m_MetaMemberVariableDict.ContainsKey( mmv.name ) )
             {
@@ -347,7 +347,10 @@ namespace SimpleLanguage.Core
             }
             m_MetaMemberVariableDict.Add(mmv.name, mmv);
             AddMetaBase(mmv.name, mmv);
-            MetaVariableManager.instance.AddMetaMemberVariable(mmv);
+            if( isAddManager )
+            {
+                MetaVariableManager.instance.AddMetaMemberVariable(mmv);
+            }
         }
         public void AddMetaMemberFunction(MetaMemberFunction mmf, bool isAddMethod = true )
         {
@@ -479,7 +482,7 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < mmf.Count; i++)
             {
                 var fun = mmf[i];
-                if ( (fun.isGet && isGet) || (fun.isSet&& isSet ) )
+                if ( (fun.isGet == isGet) || (fun.isSet == isSet ) )
                     return fun;
             }
             return null;

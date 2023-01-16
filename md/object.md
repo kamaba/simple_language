@@ -44,4 +44,5 @@ Class1 c2; #相当于 Class1 c2 = Class1();
 Class1 c3 = (20);    #相当于Class1 c3 = Class1(20);
 Class1 c4 = {m1 = 20}    #相当于 Class1 c4; c4.m1 = 20;
 Class1 c5 = Class1(50){m1 = 300};   #相当于Class1 c5 = new Class1(50); c5.m1 = 300; 
+obj1 = {name = "ok", age = 20, sex = 0 };  #匿名类，如果发现开头没有类限制，又是{}，则作为匿名类
  ```

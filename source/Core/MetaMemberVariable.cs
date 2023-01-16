@@ -215,7 +215,7 @@ namespace SimpleLanguage.Core
         private bool m_IsEnumValue = false;
 
         private bool m_IsSupportConstructionFunctionOnlyBraceType = false;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
-        private bool m_IsSupportConstructionFunctionConnectBraceType = false;  //是否支持构造函数名称后边加{}形式    Class1{ a = Class2(){} } 不支持
+        private bool m_IsSupportConstructionFunctionConnectBraceType = true;  //是否支持构造函数名称后边加{}形式    Class1{ a = Class2(){} } 不支持
         private bool m_IsSupportConstructionFunctionOnlyParType = true; //是否支持构造函数使用 仅()形式    Class1{ a = () } 不支持
         private bool m_IsSupportInExpressUseStaticMetaMemeberFunction = true;   //是否在成员支持静态函数的
         private bool m_IsSupportInExpressUseStaticMetaVariable = true;     //是否在成员中支持静态变量

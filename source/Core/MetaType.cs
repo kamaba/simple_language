@@ -27,6 +27,7 @@ namespace SimpleLanguage.Core
         {
             get { return m_MetaClass == CoreMetaClassManager.arrayMetaClass; } 
         }
+        public bool isDynamicClass => m_IsDynamicClass;
         public bool isDefineMetaClass => m_IsDefineMetaClass;
         public MetaInputTemplateCollection inputTemplateCollection => m_InputTemplateCollection;
 
@@ -37,6 +38,7 @@ namespace SimpleLanguage.Core
         private MetaTemplate m_MetaTemplate = null;
         private bool m_IsDefineMetaClass = false;
         private bool m_IsUseInputTemplate = false;
+        private bool m_IsDynamicClass = false;
 
 
         public MetaType(FileInputTemplateNode fm, MetaClass mc)
@@ -147,6 +149,11 @@ namespace SimpleLanguage.Core
             m_MetaClass = mdt.m_MetaClass;
             m_MetaTemplate = mdt.m_MetaTemplate;
             m_InputTemplateCollection = mdt.m_InputTemplateCollection;
+            m_IsDynamicClass = mdt.isDynamicClass;
+        }
+        public void SetDynamicClass( bool flag )
+        {
+            m_IsDynamicClass = flag;
         }
         public MetaMemberFunction GetMetaMemberConstructFunction( MetaInputParamCollection input = null)
         {

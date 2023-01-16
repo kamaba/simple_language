@@ -149,6 +149,11 @@ const data ProjectConfig
             path = "DataTest.s";
             group = "temp";
             tag = "DataTest";
+        },
+        {
+            path = "EnumTest.s";
+            group = "temp";
+            tag = "EnumTest";
         }
     ];
     compileOption
@@ -159,7 +164,7 @@ const data ProjectConfig
     compileFilter
     {
         group = ["all"];
-        tag = ["DataTest"];
+        tag = ["EnumTest"];
     }
     importModule     #导入模块
     {
@@ -239,7 +244,7 @@ ProjectEnter
     static Main()
     {
        #Class1.Print();
-       DataTest.Fun();       
+       EnumTest.Fun();       
     }
     static Test()
     {

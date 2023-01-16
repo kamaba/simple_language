@@ -421,13 +421,11 @@ namespace SimpleLanguage.Compile.Parse
         }
         public void ParseEnumNode(Node pnode)
         {
-            if (CheckEnd(pnode)) return;
-
-            Node bracketNode = pnode.bracketNode;
-            Node braceNode = pnode.blockNode;
-
+            if (pnode.parseIndex >= pnode.childList.Count)
+                return;
             Node blockNode = null;
-            int type = -1;       // 0 class 1 variable 2 function content
+
+            int type = -1;       // 0 enum 1 variable
             List<Node> nodeList = new List<Node>();
 
             int index = pnode.parseIndex;
@@ -450,18 +448,27 @@ namespace SimpleLanguage.Compile.Parse
                         blockNode = curNode;
                         nodeList.Add(curNode);
                         break;
-                    }
-                    else if (nextNode?.nodeType == ENodeType.Bracket) //Class1[]
+                    }                   
+                    else if (nextNode?.nodeType == ENodeType.Angle)
                     {
-                        index++;
-                        type = 0;
-                        curNode.bracketNode = nextNode;
-                        blockNode = curNode;
-                        nodeList.Add(curNode);
-                        break;
+                        var next2Node = pnode.childList[index + 1];
+                        if (next2Node?.nodeType == ENodeType.Brace)  // Class1<>{}
+                        {
+                            index += 2;
+                            type = 0;
+                            curNode.angleNode = nextNode;
+                            curNode.blockNode = next2Node;
+                            blockNode = curNode;
+                            nodeList.Add(curNode);
+                            break;
+                        }                       
+                        else
+                        {
+                            index++;
+                            curNode.angleNode = nextNode;
+                        }
                     }
                 }
-
                 if (curNode?.nodeType == ENodeType.Par)  //类中的带()的结构
                 {
                     if (nextNode?.nodeType == ENodeType.Brace)  //类中带(){}的结构
@@ -526,37 +533,64 @@ namespace SimpleLanguage.Compile.Parse
                         break;
                     }
                 }
-                else if (curNode.nodeType == ENodeType.Comma)
-                {
-                    continue;
-                }
                 else if (curNode.nodeType == ENodeType.SemiColon)
                 {
                     type = 1;
                     break;
-                }  
+                }               
+
                 nodeList.Add(curNode);
             }
+            if (nodeList.Count == 0)
+            {
+                var curnode = pnode.parseCurrent;
+                Console.WriteLine("Error Enum解析token错误 没找发现可解析的NodeList 位置在" + curnode.token?.ToLexemeAllString());
+                return;
+            }
+            pnode.parseIndex = index;
 
-            if( type == 0 )
+            if (type == -1)
+            {
+                var curnode = pnode.parseCurrent;
+                if (blockNode != null)
+                {
+                    type = 0;
+                }
+                else
+                {
+                    Console.WriteLine("Error 解析token错误 没找发现可解析的NodeList 位置在" + curnode.token?.ToLexemeAllString());
+                    return;
+                }
+            }
+            if (type == 1)
+            {
+                FileMetaMemberVariable cpv = new FileMetaMemberVariable(m_FileMeta, nodeList);
+
+                AddParseVariableInfo(cpv);
+
+                ParseEnumNode(pnode);
+            }
+            else
             {
                 FileMetaClass cpc = new FileMetaClass(m_FileMeta, nodeList);
 
                 AddParseClassNodeInfo(cpc);
 
-                //ParseBracket(blockNode.bracketNode);
+                if (cpc.isEnum)
+                {
+                    ParseEnumNode(blockNode);
+                }
+                else
+                {
+                    Console.WriteLine("Error 在Enum不能包含类或者是数据，只允许包含enum!!");
+                    return;
+                }
 
                 m_CurrentNodeInfoStack.Pop();
 
-                ParseCommon(pnode);
-
+                ParseEnumNode(pnode);
             }
-            else if( type == 1 )
-            {
-                FileMetaMemberVariable cpv = new FileMetaMemberVariable(m_FileMeta, nodeList);
-                
-                AddParseVariableInfo(cpv);
-            }
+            ParseCommon(pnode);
         }
 
         public List<Node> GetAllNodeToSemiColon(Node pnode, bool isAddSelf = false)
@@ -1053,7 +1087,7 @@ namespace SimpleLanguage.Compile.Parse
                 
                 if( cpc.isEnum )
                 {
-                    ParseEnumNode(blockNode);
+                    ParseEnumNode(blockNode.blockNode);
                 }
                 else if( cpc.isData )
                 {

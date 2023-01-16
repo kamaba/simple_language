@@ -184,7 +184,7 @@ namespace SimpleLanguage.Core
             StringBuilder sb = new StringBuilder();
 
             sb.Append(m_MetaFunction?.allName );
-            sb.Append(m_MetaInputParamCollection.ToFormatString());
+            sb.Append(m_MetaInputParamCollection?.ToFormatString());
 
             return sb.ToString();
         }
