@@ -428,6 +428,8 @@ namespace SimpleLanguage.Compile.Parse
             int type = -1;       // 0 enum 1 variable
             List<Node> nodeList = new List<Node>();
 
+
+            bool isCheckAfterSemiColon = false;    //检查后边是否跟着封号，如果有，则进行过滤
             int index = pnode.parseIndex;
             for (index = pnode.parseIndex; index < pnode.childList.Count;)
             {
@@ -442,18 +444,67 @@ namespace SimpleLanguage.Compile.Parse
                 {
                     if (nextNode?.nodeType == ENodeType.Brace)  //Class1{}
                     {
+                        isCheckAfterSemiColon = true;
                         index++;
                         type = 0;
                         curNode.blockNode = nextNode;
                         blockNode = curNode;
                         nodeList.Add(curNode);
                         break;
-                    }                   
+                    }
+
+                    if (nextNode?.nodeType == ENodeType.Par)  //Class1()
+                    {
+                        Node next2Node = null;
+                        if( index + 1 < pnode.childList.Count )
+                        {
+                            next2Node = pnode.childList[index + 1];
+                        }
+                        if (next2Node?.nodeType == ENodeType.Brace)  //Class1(){}的结构
+                        {
+                            bool isAssign = false;
+                            for (int m = 0; m < nodeList.Count; m++)
+                            {
+                                if (nodeList[m].nodeType == ENodeType.Assign)
+                                {
+                                    isAssign = true;
+                                    break;
+                                }
+                            }
+                            if (curNode.nodeType == ENodeType.Assign) isAssign = true;
+
+                            if (isAssign)
+                            {
+                                isCheckAfterSemiColon = true;
+                                index+=2;
+                                type = 1;
+                                curNode.parNode = nextNode;
+                                curNode.blockNode = next2Node;
+                                blockNode = curNode;
+                                nodeList.Add(curNode);
+                                break;
+                            }
+                            else
+                            {
+                                Console.WriteLine("Error 不允许在enum中有函数的存在!!");
+                                break;
+                            }
+                        }
+                        else if (next2Node?.nodeType == ENodeType.SemiColon )
+                        {
+                            index+=2; 
+                            type = 1;
+                            curNode.finalNode.parNode = nextNode;
+                            nodeList.Add(curNode);
+                            break;
+                        }
+                    }
                     else if (nextNode?.nodeType == ENodeType.Angle)
                     {
                         var next2Node = pnode.childList[index + 1];
                         if (next2Node?.nodeType == ENodeType.Brace)  // Class1<>{}
                         {
+                            isCheckAfterSemiColon = true;
                             index += 2;
                             type = 0;
                             curNode.angleNode = nextNode;
@@ -471,50 +522,21 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 if (curNode?.nodeType == ENodeType.Par)  //类中的带()的结构
                 {
-                    if (nextNode?.nodeType == ENodeType.Brace)  //类中带(){}的结构
+                    if(nextNode?.nodeType == ENodeType.SemiColon)
                     {
-                        Console.WriteLine("Error Enum的值赋值过程，要使用()的方式来进行!!");
-                        /*
-                        bool isAssign = false;
-                        for (int m = 0; m < nodeList.Count; m++)
-                        {
-                            if (nodeList[m].nodeType == ENodeType.Assign)
-                            {
-                                isAssign = true;
-                                break;
-                            }
-                        }
-                        if (curNode.nodeType == ENodeType.Assign) isAssign = true;
-
-                        if (!isAssign)
-                        {
-                            index++;
-                            type = 2;
-                            curNode.blockNode = nextNode;
-                            blockNode = curNode;
-                            nodeList.Add(curNode);
-                            break;
-                        }
-                        else
-                        {
-                            if (index + 2 < pnode.childList.Count)
-                            {
-                                var n2Node = pnode.childList[index + 2];
-                                if (n2Node.nodeType == ENodeType.SemiColon)
-                                {
-                                    index += 2;
-                                    type = 1;
-                                    curNode.blockNode = nextNode;
-                                    blockNode = curNode;
-                                    nodeList.Add(curNode);
-                                    break;
-                                }
-                            }
-                        }
-                        */
+                        index++;
+                        type = 1;
+                        curNode.finalNode.parNode = nextNode;
+                        nodeList.Add(curNode);
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error 不允许在()后 不能增加其它内容!!");
+                        break;
                     }
                 }
-                else if (curNode?.nodeType == ENodeType.Brace)
+                else if (curNode?.nodeType == ENodeType.Brace)     //匿名对象
                 {
                     bool isAssign = false;
                     for (int m = 0; m < nodeList.Count; m++)
@@ -526,14 +548,18 @@ namespace SimpleLanguage.Compile.Parse
                         }
                     }
                     if (curNode?.nodeType == ENodeType.Assign) isAssign = true;
-                    if (!isAssign)
+                    if (isAssign)
                     {
-                        type = 0;
-                        index++;
+                        isCheckAfterSemiColon = true;
+                        type = 1;
                         curNode.blockNode = nextNode;
                         blockNode = nextNode;
                         nodeList.Add(curNode);
                         break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error 在语句中直接使用{}不符合语法要求!!!");
                     }
                 }
                 else if (curNode.nodeType == ENodeType.SemiColon)
@@ -549,6 +575,16 @@ namespace SimpleLanguage.Compile.Parse
                 var curnode = pnode.parseCurrent;
                 Console.WriteLine("Error Enum解析token错误 没找发现可解析的NodeList 位置在" + curnode.token?.ToLexemeAllString());
                 return;
+            }
+
+            if (isCheckAfterSemiColon && index< pnode.childList.Count)
+            {
+                var next3Node = pnode.childList[index];
+                if (next3Node?.nodeType == ENodeType.SemiColon)
+                {
+                    //如果后边紧跟着封号，则数量加1  如果{}后边不写封号的方式
+                    index++;
+                }
             }
             pnode.parseIndex = index;
 

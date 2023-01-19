@@ -626,6 +626,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         var classRef = new FileMetaClassDefine(m_FileMeta, defineNodeList[0]); 
                         FileMetaBaseTerm fmel = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common); 
                         FileMetaDefineVariableSyntax fmdvs = new FileMetaDefineVariableSyntax(m_FileMeta, classRef, nameToken, assignToken, null, fmel );
+                        fmdvs.isAppendSemiColon = false;
                         m_FileMetaAssignSyntaxList.Add(fmdvs);
                     }
                     else
@@ -633,6 +634,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         FileMetaCallLink fmcl = new FileMetaCallLink(m_FileMeta, defineNodeList[0]);
                         FileMetaBaseTerm fmel = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
                         FileMetaOpAssignSyntax fmoas = new FileMetaOpAssignSyntax(fmcl, assignToken, fmel, true);
+                        fmoas.isAppendSemiColon = false;
                         m_FileMetaAssignSyntaxList.Add(fmoas);
                     }
                 }

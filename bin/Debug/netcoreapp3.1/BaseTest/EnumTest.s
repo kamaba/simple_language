@@ -24,8 +24,10 @@ const enum ConstColor
     Green = 0x00ff00;
     Blue = 0x0000ff;
 
-    MixColor1 = MixColor( {Red=0.9f, Green = 0.1f, Blue = 0.01f } );
-    MixColor2 = MixColor( {Red=0.4f, Green = 0.22f, Blue = 0.7f } );
+    MixColor1 = MixColor() {Red=0.9f, Green = 0.1f, Blue = 0.01f } ;
+    MixColor2 = MixColor() {Red=0.4f, Green = 0.22f, Blue = 0.7f } ;
+
+    Book b1 = Book.C1( 2 );
 }
 enum Book2
 {
@@ -60,10 +62,10 @@ EnumTest
         }
         !#
 
-        #!
+        
         Book3 b3 = Book3.A1;
         Book3 b3_3 = Book3.A1( 20 );
-        !#
+        
 
         #!
         book = Book.B1({ i2 = 20, url = "mas" });

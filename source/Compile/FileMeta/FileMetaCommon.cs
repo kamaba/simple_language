@@ -317,10 +317,10 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             {
                 sb.Append(token?.lexeme.ToString());
                 sb.Append(m_FileMetaParTerm.ToFormatString());
-                //if (m_FileMetaBlockTermExpress != null)
-                //{
-                //    sb.Append(m_FileMetaBlockTermExpress.ToFormatString());
-                //}
+                if (m_FileMetaBraceTerm != null)
+                {
+                    sb.Append(m_FileMetaBraceTerm.ToFormatString());
+                }
             }
             else if(m_FileMetaBracketTerm != null )
             {
