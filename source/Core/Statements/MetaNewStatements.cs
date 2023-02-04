@@ -127,82 +127,109 @@ namespace SimpleLanguage.Core.Statements
                     ClassManager.EClassRelation relation = ClassManager.EClassRelation.No;
                     MetaConstExpressNode constExpressNode = m_ExpressNode as MetaConstExpressNode;
                     MetaClass curClass = mdt.metaClass;
-
-                    MetaClass compareClass = null;
-                    if (constExpressNode != null && constExpressNode.eType == EType.Null)
+                    if( mdt.isEnum )
                     {
-                        relation = ClassManager.EClassRelation.Same;
-                    }
-                    else
-                    {
-                        compareClass = expressRetMetaDefineType.metaClass;
-                        relation = ClassManager.ValidateClassRelationByMetaClass(curClass, compareClass);
-                    }
-
-                    StringBuilder sb = new StringBuilder();
-                    sb.Append("Warning 在类: " + metaFunction?.ownerMetaClass.allName + " 函数: " + metaFunction?.name + "中  ");
-                    if (curClass != null)
-                    {
-                        sb.Append(" 定义类 : " + curClass.allName);
-                    }
-                    if (defineName != null)
-                    {
-                        sb.Append(" 名称为: " + defineName?.ToString());
-                    }
-                    sb.Append("与后边赋值语句中 ");
-                    if (compareClass != null)
-                        sb.Append("表达式类为: " + compareClass.allName);
-                    if (relation == ClassManager.EClassRelation.No)
-                    {
-                        sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
-                        Console.WriteLine(sb.ToString());
-                        m_IsNeedCastState = true;
-                    }
-                    else if (relation == ClassManager.EClassRelation.Same)
-                    {
-                        bool isSame = true;
-                        if (mdt.isDefineMetaClass && expressRetMetaDefineType?.inputTemplateCollection?.metaTemplateParamsList != null )
+                        MetaNewObjectExpressNode mne = m_ExpressNode as MetaNewObjectExpressNode;
+                        if( mne != null )
                         {
-                            if (mdt.inputTemplateCollection.metaTemplateParamsList.Count == expressRetMetaDefineType.inputTemplateCollection.metaTemplateParamsList.Count)
+                            var expressMDT = mne.GetReturnMetaDefineType();
+                            bool isSame = expressMDT.isEnum && expressMDT.metaClass == mdt.metaClass;
+                            if( !isSame )
                             {
-                                for (int i = 0; i < mdt.inputTemplateCollection.metaTemplateParamsList.Count; i++)
-                                {
-                                    var itp = mdt.inputTemplateCollection.metaTemplateParamsList[i];
-                                    var etp = expressRetMetaDefineType.inputTemplateCollection.metaTemplateParamsList[i];
-                                    if (itp != etp )
-                                    {
-                                        isSame = false;
-                                        break;
-                                    }
-                                }
+                                Console.WriteLine("Error Enum与值不相等!!");
                             }
-                        }
-                        if (isSame)
-                        {
-                            m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
+                            else
+                            {
+                                m_IsNeedCastState = false;
+                            }
                         }
                         else
                         {
-                            relation = ClassManager.EClassRelation.No;
+                            Console.WriteLine("Error Enum没有新的创建!!");
                         }
                     }
-                    else if (relation == ClassManager.EClassRelation.Parent)
+                    else if( mdt.isData )
                     {
-                        sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
-                        Console.WriteLine(sb.ToString());
-                        m_IsNeedCastState = true;
-                    }
-                    else if (relation == ClassManager.EClassRelation.Child)
-                    {
-                        if (compareClass != null)
-                        {
-                            m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
-                        }
+
                     }
                     else
                     {
-                        sb.Append("表达式错误，或者是定义类型错误");
-                        Console.WriteLine(sb.ToString());
+                        MetaClass compareClass = null;
+                        if (constExpressNode != null && constExpressNode.eType == EType.Null)
+                        {
+                            relation = ClassManager.EClassRelation.Same;
+                        }
+                        else
+                        {
+                            compareClass = expressRetMetaDefineType.metaClass;
+                            relation = ClassManager.ValidateClassRelationByMetaClass(curClass, compareClass);
+                        }
+
+                        StringBuilder sb = new StringBuilder();
+                        sb.Append("Warning 在类: " + metaFunction?.ownerMetaClass.allName + " 函数: " + metaFunction?.name + "中  ");
+                        if (curClass != null)
+                        {
+                            sb.Append(" 定义类 : " + curClass.allName);
+                        }
+                        if (defineName != null)
+                        {
+                            sb.Append(" 名称为: " + defineName?.ToString());
+                        }
+                        sb.Append("与后边赋值语句中 ");
+                        if (compareClass != null)
+                            sb.Append("表达式类为: " + compareClass.allName);
+                        if (relation == ClassManager.EClassRelation.No)
+                        {
+                            sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
+                            Console.WriteLine(sb.ToString());
+                            m_IsNeedCastState = true;
+                        }
+                        else if (relation == ClassManager.EClassRelation.Same)
+                        {
+                            bool isSame = true;
+                            if (mdt.isDefineMetaClass && expressRetMetaDefineType?.inputTemplateCollection?.metaTemplateParamsList != null)
+                            {
+                                if (mdt.inputTemplateCollection.metaTemplateParamsList.Count == expressRetMetaDefineType.inputTemplateCollection.metaTemplateParamsList.Count)
+                                {
+                                    for (int i = 0; i < mdt.inputTemplateCollection.metaTemplateParamsList.Count; i++)
+                                    {
+                                        var itp = mdt.inputTemplateCollection.metaTemplateParamsList[i];
+                                        var etp = expressRetMetaDefineType.inputTemplateCollection.metaTemplateParamsList[i];
+                                        if (itp != etp)
+                                        {
+                                            isSame = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            if (isSame)
+                            {
+                                m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
+                            }
+                            else
+                            {
+                                relation = ClassManager.EClassRelation.No;
+                            }
+                        }
+                        else if (relation == ClassManager.EClassRelation.Parent)
+                        {
+                            sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
+                            Console.WriteLine(sb.ToString());
+                            m_IsNeedCastState = true;
+                        }
+                        else if (relation == ClassManager.EClassRelation.Child)
+                        {
+                            if (compareClass != null)
+                            {
+                                m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
+                            }
+                        }
+                        else
+                        {
+                            sb.Append("表达式错误，或者是定义类型错误");
+                            Console.WriteLine(sb.ToString());
+                        }
                     }
                 }
             }

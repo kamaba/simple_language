@@ -24,7 +24,7 @@ namespace SimpleLanguage.Core.Statements
         {
             m_FileMetaReturnSyntax = fmrs;
 
-            MetaType mdt = null;
+            MetaType mdt = new MetaType( CoreMetaClassManager.objectMetaClass );
 
             m_Express = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(m_OwnerMetaBlockStatements, mdt, m_FileMetaReturnSyntax.returnExpress, false, false );
             if (m_Express != null)

@@ -186,7 +186,6 @@ namespace SimpleLanguage.Core
 
                             return mnoe;
                         }
-                        break;
                     default:
                         {
                             Console.WriteLine("Error 暂不支持该类型的在NewObject中的解析!!");
@@ -266,6 +265,7 @@ namespace SimpleLanguage.Core
         }
 
         private MetaFunctionCall m_MetaConstructFunctionCall = null;
+        private MetaExpressNode m_MetaEnumValue = null;
 
         private FileMetaParTerm m_FileMetaParTerm = null;
         private FileMetaBraceTerm m_FileMetaBraceTerm = null;
@@ -326,6 +326,14 @@ namespace SimpleLanguage.Core
 
             Init();
         }
+        public MetaNewObjectExpressNode(FileMetaCallTerm fmct, MetaCallLink mcl, MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs )
+        {
+            m_OwnerMetaClass = ownerMC;
+            m_OwnerMetaBlockStatements = mbs;
+            m_MetaDefineType = new MetaType(mt);
+            eType = EType.Array;
+        }
+
         public MetaNewObjectExpressNode( MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs, MetaFunctionCall mmf )
         {
             m_MetaConstructFunctionCall = mmf;
@@ -335,6 +343,7 @@ namespace SimpleLanguage.Core
             eType = EType.Array;
         }
         // Class1<Int32> a = Class1<Int32>( 10 ){ a = 20; } 
+        // Enum1 e1 = Enum1.Val1( 20 );
         public MetaNewObjectExpressNode(FileMetaCallTerm fmct, MetaCallLink mcl, MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs, MetaFunctionCall mmf )
         {
             m_FileMetaCallTerm = fmct;
@@ -349,6 +358,15 @@ namespace SimpleLanguage.Core
                 {
                     m_MetaDefineType.SetMetaClass(fmcn.GetMetaClass());
                 }
+            }
+            if (fmcn.callNodeType == ECallNodeType.EnumDefaultValue)
+            {
+                m_MetaDefineType.SetEnumValue(fmcn.GetMetaMemeberVariable());
+            }
+            else if (fmcn.callNodeType == ECallNodeType.EnumNewValue)
+            {
+                m_MetaDefineType.SetEnumValue(fmcn.GetMetaMemeberVariable());
+                m_MetaEnumValue = fmcn.metaExpressValue;
             }
             m_MetaDefineType.SetMetaInputTemplateCollection(fmcn.metaTemplateParamsCollection);
 
@@ -391,9 +409,9 @@ namespace SimpleLanguage.Core
                 if (fmpt != null)
                 {
                     m_FileMetaParTerm = fmpt;
-                    MetaInputParamCollection mipc = new MetaInputParamCollection(m_FileMetaParTerm, ownerMC, mbs );
-                    MetaInputParam mip = new MetaInputParam(new MetaConstExpressNode(EType.Int16, assignStatementsList.Count));
-                    mipc.AddMetaInputParam(mip);
+                    //MetaInputParamCollection mipc = new MetaInputParamCollection(m_FileMetaParTerm, ownerMC, mbs);
+                    //MetaInputParam mip = new MetaInputParam(new MetaConstExpressNode(EType.Int16, assignStatementsList.Count));
+                    //mipc.AddMetaInputParam(mip);
                 }
 
             }
@@ -488,7 +506,18 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                eType = EType.Class;
+                if(m_MetaDefineType.isEnum )
+                {
+                    eType = EType.Enum;
+                }
+                else if( m_MetaDefineType.isData )
+                {
+                    eType = EType.Data;
+                }
+                else
+                {
+                    eType = EType.Class;
+                }
             }
         }
         void ParseBraceTermDefineVariable()
@@ -609,25 +638,37 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            if( m_MetaDefineType != null )
-            {
-                sb.Append(m_MetaDefineType.ToFormatString() );
-            }
+            sb.Append(m_MetaDefineType.ToFormatString() );
 
-            sb.Append(m_MetaConstructFunctionCall?.ToFormatString());
-            
-            if (assignStatementsList.Count > 0)
+            if( m_MetaDefineType.isEnum )
             {
-                sb.Append("{");
-                for (int i = 0; i < assignStatementsList.Count; i++)
+                sb.Append(m_MetaDefineType.allName);
+                sb.Append(".");
+                sb.Append(m_MetaDefineType.enumValue.name);
+                if(m_MetaEnumValue != null)
                 {
-                    var mas = assignStatementsList[i];
-
-                    sb.Append(mas.ToFormatString());
-                    if (i < assignStatementsList.Count - 1)
-                        sb.Append(", ");
+                    sb.Append("(");
+                    sb.Append(m_MetaEnumValue.ToFormatString());
+                    sb.Append(")");
                 }
-                sb.Append("}");
+            }
+            else
+            {
+                sb.Append(m_MetaConstructFunctionCall?.ToFormatString());
+
+                if (assignStatementsList.Count > 0)
+                {
+                    sb.Append("{");
+                    for (int i = 0; i < assignStatementsList.Count; i++)
+                    {
+                        var mas = assignStatementsList[i];
+
+                        sb.Append(mas.ToFormatString());
+                        if (i < assignStatementsList.Count - 1)
+                            sb.Append(", ");
+                    }
+                    sb.Append("}");
+                }
             }
 
             return sb.ToString();
@@ -680,9 +721,14 @@ namespace SimpleLanguage.Core
                 if (!mcl.Parse(auc)) return null;
                 mcl.CalcReturnType();
                 bool isNewClass = false;
-                if( mcl.finalMetaCallNode.callNodeType == ECallNodeType.NewClass )
+                bool isNewEnum = false;
+                if ( mcl.finalMetaCallNode.callNodeType == ECallNodeType.NewClass )
                 {
                     isNewClass = true;
+                }
+                else if(mcl.finalMetaCallNode.callNodeType == ECallNodeType.EnumNewValue )
+                {
+                    isNewEnum = true;
                 }
                 var metaFunCall = mcl.metaFunctionCall;
                 if (metaFunCall != null)
@@ -695,6 +741,12 @@ namespace SimpleLanguage.Core
                 if(isNewClass)
                 {
                     MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(root, mcl, mt, omc, mbs, metaFunCall );
+
+                    return mnoen;
+                }
+                else if( isNewEnum )
+                {
+                    MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(root, mcl, mt, omc, mbs, null );
 
                     return mnoen;
                 }

@@ -11,6 +11,15 @@ enum Book
     C1 = 1;
     string Str;
 }
+enum Book2
+{
+    Int32 Id = 1;
+    String Name = "";
+}
+enum Book3
+{
+    A1 = 10;
+}
 
 MixColor
 {
@@ -29,11 +38,6 @@ const enum ConstColor
 
     Book b1 = Book.C1( 2 );
 }
-enum Book2
-{
-    Int32 Id = 1;
-    String Name = "";
-}
 enum GameState
 {
     Init = 1;
@@ -47,9 +51,27 @@ enum Option<T>
     None;
 }
 !#
+OK
+{
+    code = 0;
+}
+Error
+{
+    code = 0;
+}
+enum Res
+{
+    OK ok;
+    Error error;
+}
 
 EnumTest
 {
+    foo()
+    {
+        Res res = Res.ok({code=0});
+        ret res;
+    }
     static Func()
     {
         anonObj = { name = "ok", age = 20, sex = 0 };
