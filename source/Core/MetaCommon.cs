@@ -23,7 +23,8 @@ namespace SimpleLanguage.Core
         NamespaceName,
         ClassName,
         EnumName,
-        EnumValue,
+        EnumDefaultValue,
+        EnumNewValue,
         DataName,
         DataValue,
         VariableName,
@@ -54,17 +55,15 @@ namespace SimpleLanguage.Core
         public bool isFirstPosMustUseThisBaseOrStaticClassName { get; set; } = false;
 
         public ECallNodeType callNodeType => m_CallNodeType;
-        public MetaConstExpressNode constValue => m_ConstValue;
-        public MetaInputTemplateCollection metaTemplateParamsCollection => m_MetaTemplateParamsCollection;
-        public bool isFunction => m_IsFunction;
-        public bool isArray => m_IsArray;
+        public MetaConstExpressNode constValue => m_ExpressNode as MetaConstExpressNode;
+        public MetaExpressNode metaExpressValue => m_ExpressNode;
+        public MetaInputTemplateCollection metaTemplateParamsCollection => m_MetaTemplateParamsCollection;               
         public Token token => m_Token;
 
         private AllowUseConst m_AllowUseConst;
         private ECallNodeType m_CallNodeType;
         private ECallNodeSign m_CallNodeSign = ECallNodeSign.Null;
         private MetaBase m_CurrentMetaBase = null;
-        private MetaConstExpressNode m_ConstValue;
         private bool m_IsArray = false;
         private bool m_IsFunction = false;
 
@@ -80,7 +79,7 @@ namespace SimpleLanguage.Core
         private MetaInputParamCollection m_MetaInputParamCollection = null;
         private MetaInputTemplateCollection m_MetaTemplateParamsCollection = null;
         private List<MetaCallLink> m_MetaCallNodeList = new List<MetaCallLink>();
-        private MetaExpressNode m_ExpressNode = null;    // a+b+(3+20+10.0f).ToString() 中的3+20+10.f就是表示式
+        private MetaExpressNode m_ExpressNode = null;    // a+b+([expressNode[3+20+10.0f]).ToString() 中的3+20+10.f就是表示式 , Enum.Value(expressNode) , fun(expressNode)
 
         protected MetaCallNode()
         { }
@@ -94,33 +93,6 @@ namespace SimpleLanguage.Core
             m_ParentMetaCallLink = mcl;
             m_IsFunction = m_FileMetaCallNode.isCallFunction;
 
-            if (m_IsFunction)
-            {
-                m_MetaInputParamCollection = new MetaInputParamCollection(m_FileMetaCallNode.fileMetaParTerm, mc, mbs); 
-
-                if (m_FileMetaCallNode.inputTemplateNodeList.Count > 0)
-                {
-                    m_MetaTemplateParamsCollection = new MetaInputTemplateCollection(m_FileMetaCallNode.inputTemplateNodeList, ownerClass);
-                }
-            }
-            else
-            {
-                m_MetaInputParamCollection = new MetaInputParamCollection(mc, mbs);
-
-                if( m_FileMetaCallNode.fileMetaParTerm != null )
-                {
-                    var firstNode = m_FileMetaCallNode.fileMetaParTerm.fileMetaExpressList[0];
-                    if( firstNode == null )
-                    {
-                        Console.WriteLine("Error ~~~~不能使用输入()中的内容!!");
-                    }
-                    else
-                    {
-                        m_ExpressNode = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements( m_OwnerMetaFunctionBlock,
-                            null, firstNode);
-                    }
-                }
-            }
             m_IsArray = m_FileMetaCallNode.isArray;
             for (int i = 0; i < m_FileMetaCallNode.arrayNodeList.Count; i++)
             {
@@ -157,12 +129,22 @@ namespace SimpleLanguage.Core
             {
                 Console.WriteLine("Error 定义原数据为空!! " + m_Token.ToLexemeAllString());
             }
-            if( m_ExpressNode != null )
+            if (m_FileMetaCallNode.fileMetaParTerm != null && !m_IsFunction )
             {
-                m_ExpressNode.CalcReturnType();
-                m_CurrentMetaBase = CoreMetaClassManager.GetMetaClassByEType(m_ExpressNode.eType);
-                m_CallNodeType = ECallNodeType.Express;
-                return true;
+                var firstNode = m_FileMetaCallNode.fileMetaParTerm.fileMetaExpressList[0];
+                if (firstNode == null)
+                {
+                    Console.WriteLine("Error 不能使用输入()中的内容 0号位的没有内容!!");
+                }
+                else
+                {
+                    m_ExpressNode = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(m_OwnerMetaFunctionBlock,
+                        null, firstNode);
+                    m_ExpressNode.CalcReturnType();
+                    m_CurrentMetaBase = CoreMetaClassManager.GetMetaClassByEType(m_ExpressNode.eType);
+                    m_CallNodeType = ECallNodeType.Express;
+                    return true;
+                }
             }
             if (m_FrontCallNode == null && isFirst == false)
             {
@@ -187,7 +169,7 @@ namespace SimpleLanguage.Core
             {
                 m_MetaCallNodeList[i].Parse(m_AllowUseConst);
             }
-            m_MetaInputParamCollection.CaleReturnType();
+            m_MetaInputParamCollection?.CaleReturnType();
 
             if (m_FrontCallNode != null)
             {
@@ -234,7 +216,7 @@ namespace SimpleLanguage.Core
                 if (!isNotConstValue)
                 {
                     m_CallNodeType = ECallNodeType.ConstValue;
-                    m_ConstValue = new MetaConstExpressNode( m_Token.GetEType(), m_Token.lexeme );
+                    m_ExpressNode = new MetaConstExpressNode( m_Token.GetEType(), m_Token.lexeme );
                     m_CurrentMetaBase = CoreMetaClassManager.GetMetaClassByEType(m_Token.GetEType());
 
                     if (isFirstPosMustUseThisBaseOrStaticClassName)
@@ -355,15 +337,10 @@ namespace SimpleLanguage.Core
                     else if( frontCNT == ECallNodeType.EnumName )
                     {
                         calcMetaBase = GetEnumValue(frontMetaBase as MetaEnum, cnname);
-                        if( isFunction )
+                        if( !m_IsFunction )
                         {
                             m_CurrentMetaBase = calcMetaBase;
-                            m_CallNodeType = ECallNodeType.EnumValue;
-                        }
-                        else
-                        {
-                            m_CurrentMetaBase = calcMetaBase;
-                            m_CallNodeType = ECallNodeType.EnumValue;
+                            m_CallNodeType = ECallNodeType.EnumDefaultValue;
                         }
                     }
                     else if (frontCNT == ECallNodeType.VariableName || frontCNT == ECallNodeType.MemberVariableName)
@@ -514,7 +491,7 @@ namespace SimpleLanguage.Core
             }
 
             if (m_IsFunction)
-            {
+            {                
                 if (calcMetaBase is MetaNamespace || calcMetaBase is MetaModule)
                 {
                     Console.WriteLine("Error 函数调用与命名空间冲突!!");
@@ -602,10 +579,35 @@ namespace SimpleLanguage.Core
                         }
                     }
                 }
+                else if( calcMetaBase is MetaMemberVariable )
+                {
+                    MetaMemberVariable mmv = calcMetaBase as MetaMemberVariable;
+                    m_CurrentMetaBase = calcMetaBase;
+
+                    m_CallNodeType = ECallNodeType.EnumNewValue;
+
+                    var splitParamList = m_FileMetaCallNode.fileMetaParTerm.SplitParamList();
+                    if (splitParamList.Count == 1)
+                    {
+                        m_ExpressNode = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements( m_OwnerMetaFunctionBlock, mmv.metaDefineType, splitParamList[0].root, false, false);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error 在Enum.value中，必须权有一个值!!");
+                        return false;
+                    }
+                    return true;
+                }
                 else
                 {
                     Console.WriteLine("Error 使用函数调用与当前节点不吻合!!");
                     return false;
+                }
+                m_MetaInputParamCollection = new MetaInputParamCollection(m_FileMetaCallNode.fileMetaParTerm, ownerClass, m_OwnerMetaFunctionBlock);
+
+                if (m_FileMetaCallNode.inputTemplateNodeList.Count > 0)
+                {
+                    m_MetaTemplateParamsCollection = new MetaInputTemplateCollection(m_FileMetaCallNode.inputTemplateNodeList, ownerClass);
                 }
             }
             else
@@ -641,7 +643,7 @@ namespace SimpleLanguage.Core
                     }
                     if (mv.isArray)             //arr[]
                     {
-                        if (m_MetaCallNodeList.Count == 1 && this.isArray)  //arr[?]
+                        if (m_MetaCallNodeList.Count == 1 && this.m_IsArray)  //arr[?]
                         {
                             MetaCallNode fmcn1 = m_MetaCallNodeList[0].finalMetaCallNode;
                             if (fmcn1?.callNodeType == ECallNodeType.ConstValue)       //arr[0]
@@ -891,9 +893,11 @@ namespace SimpleLanguage.Core
         }
         public MetaType GetMetaDefineType()
         {
-            if (m_CallNodeType == ECallNodeType.Express)
+            if (m_CallNodeType == ECallNodeType.Express
+                || m_CallNodeType == ECallNodeType.EnumNewValue
+                || m_CallNodeType == ECallNodeType.ConstValue )
             {
-                //return m_ExpressNode.GetReturnMetaClass();
+                return m_ExpressNode.GetReturnMetaDefineType();
             }
             if (m_CurrentMetaBase == null) return null;
 
@@ -901,10 +905,9 @@ namespace SimpleLanguage.Core
             {
                 return new MetaType(m_CurrentMetaBase as MetaClass, m_MetaTemplateParamsCollection );
             }
-            else if (m_CallNodeType == ECallNodeType.ClassName || m_CallNodeType == ECallNodeType.This
-                || m_CallNodeType == ECallNodeType.ConstValue)
+            else if (m_CallNodeType == ECallNodeType.ClassName || m_CallNodeType == ECallNodeType.This )
             {
-                //return m_CurrentMetaBase as MetaClass;
+                return new MetaType(m_CurrentMetaBase as MetaClass);
             }
             else if (m_CallNodeType == ECallNodeType.FunctionName)
             {
@@ -948,6 +951,15 @@ namespace SimpleLanguage.Core
                     return mmv.metaDefineType;
                 }
             }
+            else if( m_CallNodeType == ECallNodeType.EnumDefaultValue
+                || m_CallNodeType == ECallNodeType.EnumNewValue )
+            {
+                MetaMemberVariable mmv = m_CurrentMetaBase as MetaMemberVariable;
+                if( mmv != null )
+                {
+                    return mmv.metaDefineType;
+                }
+            }
             return null;
         }
         public int CalcParseLevel(int level)
@@ -962,7 +974,7 @@ namespace SimpleLanguage.Core
         }
         public void CalcReturnType()
         {
-            m_MetaInputParamCollection.CaleReturnType();
+            m_MetaInputParamCollection?.CaleReturnType();
             if (m_CallNodeType == ECallNodeType.VariableName)
             {
                 MetaVariable mv = m_CurrentMetaBase as MetaVariable;
@@ -980,7 +992,9 @@ namespace SimpleLanguage.Core
         }
         public MetaMemberVariable GetMetaMemeberVariable()
         {
-            if ( m_CallNodeType == ECallNodeType.MemberVariableName)
+            if ( m_CallNodeType == ECallNodeType.MemberVariableName
+                || m_CallNodeType == ECallNodeType.EnumDefaultValue
+                || m_CallNodeType == ECallNodeType.EnumNewValue )
             {
                 MetaMemberVariable mmv = m_CurrentMetaBase as MetaMemberVariable;
                 return mmv;
@@ -1090,6 +1104,21 @@ namespace SimpleLanguage.Core
                     else
                         sb.Append(m_CurrentMetaBase?.name);
                 }
+                else if(m_CallNodeType == ECallNodeType.EnumName )
+                {
+                    sb.Append(m_CurrentMetaBase.allName);
+                }
+                else if (m_CallNodeType == ECallNodeType.EnumDefaultValue)
+                {
+                    sb.Append(m_CurrentMetaBase.name);
+                }
+                else if (m_CallNodeType == ECallNodeType.EnumNewValue)
+                {
+                    sb.Append(m_CurrentMetaBase.name);
+                    sb.Append("(");
+                    sb.Append(m_ExpressNode.ToFormatString());
+                    sb.Append(")");                    
+                }
                 else if( m_CallNodeType == ECallNodeType.DataName )
                 {
                     sb.Append(m_CurrentMetaBase.allName);
@@ -1142,7 +1171,7 @@ namespace SimpleLanguage.Core
                 }
                 else if (m_CallNodeType == ECallNodeType.ConstValue)
                 {
-                    sb.Append(m_ConstValue.ToFormatString());
+                    sb.Append(m_ExpressNode.ToFormatString());
                 }
 
                 if (m_CurrentMetaBase == null)

@@ -1762,7 +1762,7 @@ namespace SimpleLanguage.Compile.Parse
                     }
                     else
                     {
-                        Console.WriteLine("Error 解析发现没有该节点!!");
+                        Console.WriteLine("Error 解析发现没有该节点!!" + token?.ToLexemeAllString() );
                         //new Exception("Error 解析发现没有该节点");
                     }
                 }

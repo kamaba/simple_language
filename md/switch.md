@@ -54,7 +54,7 @@ switch classObject
 switch enumVariable
 {
     case enum.value { statement(enumVariable);  }  #输出enum的项
-    case enum_value v { statement(v); }  #输入enum里边的值
+    case enum.value v { statement(v); }  #输入enum里边的值
 }
 ```
 
@@ -99,7 +99,7 @@ ProjectEnter
         name = "1";
         price = 20;
     }
-    static static Main( int a )
+    static Main( int a )
     {
         x = 0;
         ok = switch a

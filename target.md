@@ -43,6 +43,17 @@
 26. 指针的支持，在一些接触底层环境中，支持指针，但表现形式与普通想通，例 :   c = Class1();   IntPtr<Class1> cp = c.ToIntPtr();  cp.a = 20;
 27. 注释部分 如果在任务单位前边加 #[function("null无返回值", "elementId 用来传入网页的节点Id", "传入需要导出的根层级"), desc("该函数用来转换html5格式,其它使用到全局xx来控制...")] 来标注函数的注释 
 28. @[]用来扩展节点的属性功能， 例 @[Condition("Debug"), Display="Heelo"]
+29. 使用.sc来架接c语言，并且支持内置c语言的编译.
+30. 可选配模块，如果选配，直接可以使用  float2, float3, float4, float5-12, float2x2,
+float3x3, float2x3, float3x3, float3x4, float4x3, float4x4, matrix3x3 matrix16的快捷计算，如果选配该模块后，支持相关的数据方法， mod(float2), step(float2), min( float2 ), complex, 等数学上常用类型的表达
+31. 每个基础元素上，可以扩展一个byte 0-8位的标记位, 和一个扩展tag位，可配置， 这两个，通过项目，可以配置，如果配置后，相当于，每个对象上数据，都相应的扩展 byte,(int,long,?)其它位，如果使用后，则对可以在任意地方使用该元素， 尤其在遍历，map,list等方法时，如果标记后，则写统一方式可以删除，极大的提高了删除方法的写作方法快捷度。
+32. 对象最少有一个byte伴，点位，在对象管理池中，有class方法的扩展数据，有class.id,class.mem.config 包括占用内存大小，和内存排列方式，引用数量，等。
+33. 项目支持，接口是否可以使用，继承方法是否可以使用，如果继承方法不可以使用，则子类中的方法，不允许继承
+34. 格式化字符使用 Println( "@3 : @1 = @2", 1, 2, 3 );的方式进行定位并且打印!!
+35. 多线程使用，需要独立关键字在函数名称前边，sync 如果通信，支持通道的建立，通道，只在多线程中，传输数据使用。
+36. 异常处理，在{}内使用 if exception{} else{}的方式处理异常 不能自定义异常区间段只能使用{}如果前边定义过label则和class.function.label一块显示。不管使用那种方式，都有收集异常的处理中心，收集后
+可以对异常进行管理，并且和exception联动使用， 如果没有定义exception 则异常甚至可以走异常处理过程。在工程中有对应的接口处理。 如果函数调用，则同时可以使用exception( ok{}, err{} 方式处理 ), 例:
+a = Convert.Int("e").Exception( {}, { a = 0; } ); 当然在Convert.Int函数中，函数的最外层 即fun(){}配合的 if exception{ } else { }的方式 如果没有定义，则走系统的exception方法.
 
 
 

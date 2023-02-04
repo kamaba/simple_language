@@ -22,7 +22,10 @@ namespace SimpleLanguage.Core
         }
         public MetaClass metaClass => m_MetaClass;
         public MetaTemplate metaTemplate => m_MetaTemplate;
+        public MetaMemberVariable enumValue => m_EnumValue;
         public bool isUseInputTemplate => m_IsUseInputTemplate;
+        public bool isEnum { get { return m_MetaClass is MetaEnum; } }
+        public bool isData { get { return m_MetaClass is MetaData; } }
         public bool isArray
         {
             get { return m_MetaClass == CoreMetaClassManager.arrayMetaClass; } 
@@ -39,6 +42,7 @@ namespace SimpleLanguage.Core
         private bool m_IsDefineMetaClass = false;
         private bool m_IsUseInputTemplate = false;
         private bool m_IsDynamicClass = false;
+        private MetaMemberVariable m_EnumValue = null;
 
 
         public MetaType(FileInputTemplateNode fm, MetaClass mc)
@@ -154,6 +158,11 @@ namespace SimpleLanguage.Core
         public void SetDynamicClass( bool flag )
         {
             m_IsDynamicClass = flag;
+        }
+        public void SetEnumValue( MetaMemberVariable mmv )
+        {
+            m_EnumValue = mmv;
+            m_MetaClass = mmv.ownerMetaClass;
         }
         public MetaMemberFunction GetMetaMemberConstructFunction( MetaInputParamCollection input = null)
         {

@@ -133,7 +133,7 @@ namespace SimpleLanguage.Project
                 return;
             }
             InnerCLRRuntimeVM.Init();
-            InnerCLRRuntimeVM.RunIRMethod(mmf.irMethod);
+            //InnerCLRRuntimeVM.RunIRMethod(mmf.irMethod);
         }
         public static void AddDefineNamespace( MetaBase parentRoot, DefineNamespace dns, bool isAddCurrent = true )
         {
@@ -189,17 +189,17 @@ namespace SimpleLanguage.Project
             var fileList = data.compileFileList;
             var filter = data.compileFilter;
 
-            for( int i = 0; i < fileList.Count; i++ )
+            for (int i = 0; i < fileList.Count; i++)
             {
                 var fld = fileList[i];
-                
-                if(IsCanAddFile( filter, fld ) )
+
+                if (IsCanAddFile(filter, fld))
                 {
-                    ProjectCompile.AddFileParse( fld.path );
+                    ProjectCompile.AddFileParse(fld.path);
                 }
             }
 
-            if(s_CompileBeforeFunction!=null)
+            if (s_CompileBeforeFunction!=null)
             {
                 //InnerCLRRuntimeVM.Init();
                 //InnerCLRRuntimeVM.RunIRMethod(s_CompileBeforeFunction.irMethod);
@@ -208,6 +208,7 @@ namespace SimpleLanguage.Project
         }
         public static bool IsCanAddFile(CompileFilterData cfd, CompileFileData fileData )
         {
+            if (cfd == null) return true;
             if (!cfd.IsIncludeInGroup(fileData.group))
             {
                 return false;

@@ -1,6 +1,6 @@
 # S语言的条件控制
 
-## IF表达式
+## if表达式
 
 判断结构要求程序员指定一个或多个要评估或测试的条件，以及条件为真时要执行的语句（必需的）和条件为假时要执行的语句（可选的）。
 
@@ -8,24 +8,24 @@
 
 
 
-## S 中的判断语句
-S 提供了以下类型的判断语句。点击链接查看每个语句的细节。
+## SLang 中的判断语句
+SLang 提供了以下类型的判断语句。点击链接查看每个语句的细节。
 
 一个 if 语句 由一个布尔表达式后跟一个或多个语句组成。
 
-### 语法
-#### S 中 if 语句的语法：
+## 语法
+### S 中 if 语句的语法：
 ```ruby 
-if(boolean_expression) 
+if boolean_expression
 {
    # 如果布尔表达式为真将执行的语句
 }
 ````
 如果布尔表达式为 true，则执行 if 块内的代码
 
-#### S 中 if...else 语句的语法：
+#### SLang 中 if...else 语句的语法：
 ```ruby 
-if(boolean_expression)
+if boolean_expression
 {
    #如果布尔表达式为真将执行的语句 
 }
@@ -37,17 +37,17 @@ else
 如果布尔表达式为 true，则执行 if 块内的代码。如果布尔表达式为 false，则执行 else 块内的代码
 
 
-#### S 中 if...elif 语句的语法：
+### SLang 中 if...elif 语句的语法：
 ```ruby 
-if(boolean_expression1)
+if boolean_expression1
 {
    #如果布尔表达式1为真将执行的语句 
 }
-elif( boolean_expression2 )
+elif boolean_expression2 
 {
    #如果布尔表达式2为假将执行的语句
 }
-elif( boolean_expression3 )
+elif boolean_expression3
 {
    #如果布尔表达式3为假将执行的语句
 }
@@ -58,29 +58,64 @@ else
 ```
 如果boolean_expression1表达式为 true，则执行 if 块内的代码。如果boolean_expression2表达式为true 则执行elif( boolean_expression2 )后边的内容,后续可以跟多个，一但符合布尔条件，则执行。
 
-
-
-#### 实例
+### SLang中使用next字段
+在if语句与elif多级联用时，如果elif执行通过后，想继承再检查后边的elif可以在语句中使用next字段，可以让下边的语句继承检查
 ```ruby
+if false
+{
+    #语句1
+}
+elif true
+{
+    #语句2
+    next;
+}
+elif false
+{
+    #语句3
+}
+elif true
+{
+    #语句4
+}
+else
+{
+    #语句5
+}
+```
+在该实例中，我们因为elif true第一个是true执行语句2，但因为有next关键字，下一个elif还会继承检查，但语句3的条件是false,则再检查下一个elif，发现该个elif为true,则执行语句4
+
+
+### SLang中使用if语句返回值
+在if语句前，可以使用变量赋值语句，快速赋值，但需要与tr语句配合使用，否则变量使用默认值
+```ruby
+a = 20;
+val = if a = 10{ tr 10; }elif a = 15{ } else { tr 20; }
+```
+在该语句中，如果a=20则val = 20 tr语句相当于 在执行语句中进行赋值 if a = 10{ val = 20; }elif a = 15{} else { val = 20; }
+
+### 实例
+```ruby
+import CSharp.System;
 ProjectEnter
 {
-    static static Main( x )
+    static Main( x )
     {
-        if( x > 1 )
+        if x > 1
         {
-            Console.Log("执行x>1的内容");
+            Console.WriteLine("执行x>1的内容");
         }
-        elif( x > 3 )
+        elif x > 3
         {
-            Console.Log("执行x>3的内容");
+            Console.WriteLine("执行x>3的内容");
         }
-        elif( x > 14 )
+        elif x > 14
         {
-            Console.Log("执行x>14的内容");
+            Console.WriteLine("执行x>14的内容");
         }
         else
         {
-            Console.Log("执行else的内容");
+            Console.WriteLine("执行else的内容");
         }
     }
 }
