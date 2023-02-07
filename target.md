@@ -54,6 +54,12 @@ float3x3, float2x3, float3x3, float3x4, float4x3, float4x4, matrix3x3 matrix16�
 36. 异常处理，在{}内使用 if exception{} else{}的方式处理异常 不能自定义异常区间段只能使用{}如果前边定义过label则和class.function.label一块显示。不管使用那种方式，都有收集异常的处理中心，收集后
 可以对异常进行管理，并且和exception联动使用， 如果没有定义exception 则异常甚至可以走异常处理过程。在工程中有对应的接口处理。 如果函数调用，则同时可以使用exception( ok{}, err{} 方式处理 ), 例:
 a = Convert.Int("e").Exception( {}, { a = 0; } ); 当然在Convert.Int函数中，函数的最外层 即fun(){}配合的 if exception{ } else { }的方式 如果没有定义，则走系统的exception方法.
+37. 确定封号，是否强制使用。
+38. 有专门的反射类，使用在 Instance.Create( type, params );里边。
+39. 全局情引入值的使用，在sp中，可以定义全局值，在普通文件中，可以读取。如果有改动全局值，一般在EnterProject.SetGlobal( "", "" ) 实现。在普通文件中使用的话，可以使用global.varname使用。 在EnterProject.InitGlobal() 中，进行全局值的初始化。 如果定义了global,必须在项目配置中，enableGlobal的字段，需要是true,否则会提示没有打开关键字，global字段失效。
+40. env参数，在os或者是system类中。
+41. 增加使用 byte,sbyte,char,short,int,long,string 各 s_temp1 全局参数1-n 个 形式， byte[], sbyte[], char[], short[], int[], long[], string[] 1-n个，形式应该为 g_byte[]
+42. Table的类型，主要用来储存表格数据，可以与 object[][], object[][][] 互转， 一般直接读取excel,cvs 后，直接得到的是table类型的数据， 属性扩展容器库。  支持数据格式有, json, xml,yaml,cvs, excel 如果并下S.模下块，表明已入官方库，正常情况S字段，不允许其它乱用。
 
 
 
@@ -88,7 +94,6 @@ a = Convert.Int("e").Exception( {}, { a = 0; } ); 当然在Convert.Int函数中�
 
 
 默认类:
-
 byte,sbyte,char,short,ushort,int,uint,long,ulong,string
 array,list,set,dict
 
@@ -99,34 +104,4 @@ array,list,set,dict
 
 
 
-
-李克成:
-1. 合并PlayerController的蓝图  1.14
-2. 完成共用类的合并 包括: CitySampleGameInstance, CitySampleGameState, CitySampleGameMode, BP_CitySampleGameInstance, BP_CitySampleGameMode,BP_CitySampleGameState。  1.16-1.17
-3. 修改车辆类 CitySampleVehicleBase/BP_Vehicle/BP_VehicleBase_Deformable/BP_VehicleBase_Drivable 1.18-1.20, 1.28
-4. 车辆的交互流程 1.29-1.30
-5. 后期调整，与ody工程的冲突整理 1.31-2.3
-
-张硕:
-1. 合并ACharacter类及蓝图 合并 1.16-1.17
-2. 与其它同事的后续联调与角色色类相关的处理 1.18-1.19
-
-左瑞
-1. 跑通，整理CitySimple 人物的动画、玩家驾驶、IK方案 1.14、1.16
-2. 确定车辆交互：上下车、转向、撞击等动画方案、动作重定向调整 [与叶子亚协同进行] 1.17-1.18
-3. 状态机、动画功能制作 1.18-1.20   1.28-1.31
-4. 后期调整 2.1-2.3
-
-何家朋:(暂定使用ody方案，如果方案变动，进度再变更)
-1. 摄像机切换效果 1.16
-2. 摄像机挂载在车上后的旋转问题 1.17
-3. 为摄像机增加角度限制 1.18-1.19
-
-鄂金瑞
-1. 通过MassAI生成自带Npc 1.16-1.17
-2. 通过HUD创建车辆交互UI与controller按键操作 1.18
-3. 通过MassAI生成的Npc遵守红绿灯交通规则1.19-1.20
-4. 将MassAI生成的Npc替换为项目中的Npc1.28-1.29
-5. 将被替换后的Npc符合Npc交互流程1.30-1.31
-6. 后期调整 2.1
 

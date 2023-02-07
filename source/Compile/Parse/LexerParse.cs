@@ -732,7 +732,7 @@ namespace SimpleLanguage.Compile.Parse
             //    }
             //}
         }
-        /// <summary> 读取::</summary>
+        /// <summary> ::</summary>
         void ReadColon()
         {
             m_TempChar = ReadChar();
@@ -1452,8 +1452,9 @@ namespace SimpleLanguage.Compile.Parse
             while ( m_Index < m_Length )
             {
                 m_CurChar = m_Buffer[m_Index];
-                if (m_CurChar == '\n') 
+                if (m_CurChar == '\n')
                 {
+                    AddToken(ETokenType.LineEnd);
                     m_Index++;
                     AddLine();
                     continue;

@@ -143,10 +143,6 @@ namespace SimpleLanguage.Core.Statements
                                 m_IsNeedCastState = false;
                             }
                         }
-                        else
-                        {
-                            Console.WriteLine("Error Enum没有新的创建!!");
-                        }
                     }
                     else if( mdt.isData )
                     {

@@ -169,7 +169,13 @@ namespace SimpleLanguage.Core
             {
                 m_MetaCallNodeList[i].Parse(m_AllowUseConst);
             }
-            m_MetaInputParamCollection?.CaleReturnType();
+
+            if( m_IsFunction )
+            {
+                m_MetaInputParamCollection = new MetaInputParamCollection(m_FileMetaCallNode.fileMetaParTerm, ownerClass, m_OwnerMetaFunctionBlock);
+
+                m_MetaInputParamCollection?.CaleReturnType();
+            }
 
             if (m_FrontCallNode != null)
             {
@@ -603,8 +609,6 @@ namespace SimpleLanguage.Core
                     Console.WriteLine("Error 使用函数调用与当前节点不吻合!!");
                     return false;
                 }
-                m_MetaInputParamCollection = new MetaInputParamCollection(m_FileMetaCallNode.fileMetaParTerm, ownerClass, m_OwnerMetaFunctionBlock);
-
                 if (m_FileMetaCallNode.inputTemplateNodeList.Count > 0)
                 {
                     m_MetaTemplateParamsCollection = new MetaInputTemplateCollection(m_FileMetaCallNode.inputTemplateNodeList, ownerClass);
@@ -1008,9 +1012,13 @@ namespace SimpleLanguage.Core
                 MetaVariable mv = m_CurrentMetaBase as MetaVariable;
                 return mv;
             }
-            else if( m_CallNodeType == ECallNodeType.DataName )
+            else if (m_CallNodeType == ECallNodeType.DataName)
             {
                 return (m_CurrentMetaBase as MetaData).metaVariable;
+            }
+            else if (m_CallNodeType == ECallNodeType.EnumName)
+            {
+                return (m_CurrentMetaBase as MetaEnum).metaVariable;
             }
             else if( m_CallNodeType == ECallNodeType.MemberDataName )
             {
@@ -1069,13 +1077,18 @@ namespace SimpleLanguage.Core
             {
                 return m_CurrentMetaBase as MetaClass;
             }
-            else if( m_CallNodeType == ECallNodeType.MemberVariableName )
+            else if( m_CallNodeType == ECallNodeType.MemberVariableName 
+                || m_CallNodeType == ECallNodeType.EnumDefaultValue )
             {
                 MetaMemberVariable mmv = m_CurrentMetaBase as MetaMemberVariable;
                 if( mmv != null )
                 {
                     return mmv.metaDefineType.metaClass;
                 }
+            }
+            else if (m_CallNodeType == ECallNodeType.EnumName)
+            {
+                return m_CurrentMetaBase as MetaEnum;
             }
             return null;
         }

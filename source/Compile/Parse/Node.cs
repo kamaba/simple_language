@@ -43,6 +43,7 @@ namespace SimpleLanguage.Compile.Parse
         Period,
         Comma,
         SemiColon,
+        LineEnd,
         Assign,
         ConstValue,
         IdentifierLink,

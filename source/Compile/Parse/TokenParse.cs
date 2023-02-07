@@ -430,6 +430,14 @@ namespace SimpleLanguage.Compile.Parse
                         m_TokenIndex++;
                     }
                     break;
+                case ETokenType.LineEnd:      // \n
+                    {
+                        Node node = new Node(token);
+                        node.nodeType = ENodeType.LineEnd;
+                        currentNode.AddChild(node);
+                        m_TokenIndex++;
+                    }
+                    break;
                 case ETokenType.Assign:             //=
                     {
                         Node node = new Node(token);

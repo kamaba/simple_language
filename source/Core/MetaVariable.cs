@@ -187,6 +187,10 @@ namespace SimpleLanguage.Core
                 }
                 m_DefineMetaType = new MetaType(gmit);
             }
+            else
+            {
+                m_DefineMetaType = lmv.metaDefineType;
+            }
         }
 
         public override MetaVariable GetMetaVaraible(string name)

@@ -80,6 +80,8 @@ namespace SimpleLanguage
         ColonDouble,
         /// <summary> ; </summary>
         SemiColon,
+        /// <summary> \n </summary>
+        LineEnd,
         /// <summary> ? </summary>
         QuestionMark,
         /// <summary> ?? </summary>

@@ -157,29 +157,27 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             public FileMeta fileMeta => m_FileMeta;
             public bool isContinueNextCastSyntax { get; set; } = false;
             public Token variableToken => m_VariableToken;
-            public Token defineClassToken => m_DefineClassToken;
+            public FileMetaCallLink defineClassCallLink => m_DefineClassToken;
             public FileMetaBlockSyntax executeBlockSyntax => m_ExecuteBlockSyntax;
             public List<FileMetaConstValueTerm> constValueTokenList => m_ConstValueTokenList;
 
             private FileMeta m_FileMeta = null;
             private Token m_Token = null;
-            private Token m_DefineClassToken = null;
+            private FileMetaCallLink m_DefineClassToken = null;
             private Token m_VariableToken = null;
 
             private List<FileMetaConstValueTerm> m_ConstValueTokenList = new List<FileMetaConstValueTerm>();
             private FileMetaBlockSyntax m_ExecuteBlockSyntax = null;
             public int deep { get; set; } = 0;
 
-            public FileMetaKeyCaseSyntax(FileMeta fm, Token castToken, Token _defineClassToken, Token _variableToken )
+            public FileMetaKeyCaseSyntax(FileMeta fm, Token castToken )
             {
                 m_FileMeta = fm;
                 m_Token = castToken;
-                m_DefineClassToken = _defineClassToken;
-                m_VariableToken = _variableToken;
             }
-            public void SetDefineClassToken(Token _defineClassToken)
+            public void SetDefineClassNode( Node _defineClassNode )
             {
-                m_DefineClassToken = _defineClassToken;
+                m_DefineClassToken = new FileMetaCallLink(m_FileMeta, _defineClassNode);
             }
             public void SetVariableToken(Token _variableToken)
             {
@@ -206,9 +204,9 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 sb.Append("case ");
                 if(m_DefineClassToken != null )
                 {
-                    if (m_DefineClassToken != null)
+                    if (defineClassCallLink != null)
                     {
-                        sb.Append(m_DefineClassToken.lexeme?.ToString() + " ");
+                        sb.Append(defineClassCallLink.ToFormatString() + " ");
                     }
                     if (m_VariableToken != null)
                     {
@@ -285,7 +283,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             sb.Append("switch ");
             if(m_FileMetaVariableRef != null )
             {
-                sb.Append(m_FileMetaVariableRef.ToTokenString());
+                sb.Append(m_FileMetaVariableRef.ToFormatString());
             }
             sb.Append(Environment.NewLine);
             for (int i = 0; i < deep; i++)
