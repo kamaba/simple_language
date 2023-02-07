@@ -117,6 +117,34 @@ ProjectEnter
         right = MergeSort( right )
         return merge( left, right )
     }
+    ShellSort( int[] arr )
+    {
+        int gap = 1;
+        while gap < arr.len
+        {
+            gap = gap * 3 + 1   #切割成4份 大概是3/4位置
+        }        
+        while gap > 0
+        {
+            for i = gap, i < arr.len, i++
+            {
+                int tmp = arr[i];
+                int j = i-gap;
+                while j >= 0 && arr[j] > tmp        #与i-gap位置对比 镜像左边的队列 如果小于右边gap的值，则进行换，并且j = gap - j区域的有大于该节点的情况
+                {
+                    arr[j+gap] = arr[j];
+                    j -= gap;
+                }
+                arr[j+gap] = tmp;
+            }
+            gap /= 3;
+        }
+
+    }
+    QuickSort( int[] arr )
+    {
+        
+    }
     static Main()
     {
         arr = int[]{ 10,32, 15, 31, 2, 44, 19, 26, 30, 8, 22, 1, 6 };

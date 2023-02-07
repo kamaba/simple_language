@@ -77,34 +77,32 @@ EnumTest
         anonObj = { name = "ok", age = 20, sex = 0 };
 
         anon2 = {name="aa", age = 15, sex = 1 };
-        #!
+        
         for b3 in GameState
         {
             Console.Write("Book3: " + b3 );
         }
-        !#
+        
 
         
         Book3 b3 = Book3.A1;
         Book3 b3_3 = Book3.A1( 20 );
         
 
-        #!
         book = Book.B1({ i2 = 20, url = "mas" });
         switch book
         {
-            case Book.B1 b1:
+            case Book.B1 b1
             {
                 Console.Write( "bi2:" + b1.i2 );
             }
         }
 
-        Book eb = Book.B();
-        if( eb == Book.B )
+        Book eb = Book.C1;
+        if( eb == Book.C1 )
         {
-            Console.Write( eb.ToString() );
+            Console.Write( eb );
         }
-        !#
 
         #! 暂不实现
         Option op = Option.Some<String>("hello");
@@ -117,3 +115,10 @@ EnumTest
         !#
     }
 }
+
+#! 进度
+1. 上边除了T的enum没有实现，其实的都验证通过
+2. 没有在vm中没有实现enum相关的内容
+3. enum的new没有具体的分配相关的逻辑
+4. enum的.ToString() 没有实现。
+!#

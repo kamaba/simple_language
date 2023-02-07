@@ -78,7 +78,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             m_OwnerMetaClass = mc;
 
-            m_Express = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(m_OwnerMetaBlockStatements, null, m_FileInputParamNode.express, false, false );
+            m_Express = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(m_OwnerMetaBlockStatements, new MetaType(CoreMetaClassManager.objectMetaClass), m_FileInputParamNode.express, false, false );
         }
         public MetaInputParam( MetaExpressNode inputExpress )
         {

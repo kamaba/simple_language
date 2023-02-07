@@ -1235,7 +1235,7 @@ namespace SimpleLanguage.Compile.Parse
 
                         if (castnode.token?.type == ETokenType.Case)
                         {
-                            var fmkcs = new FileMetaKeySwitchSyntax.FileMetaKeyCaseSyntax(m_FileMeta, castnode.token,null,null);
+                            var fmkcs = new FileMetaKeySwitchSyntax.FileMetaKeyCaseSyntax(m_FileMeta, castnode.token);
 
                             var parlist = castnode.parNode.childList;
                             if (parlist.Count == 0)
@@ -1288,7 +1288,7 @@ namespace SimpleLanguage.Compile.Parse
                                     if (parlist[0].token?.type == ETokenType.Identifier
                                         || parlist[1].token?.type == ETokenType.Identifier)
                                     {
-                                        fmkcs.SetDefineClassToken( parlist[0].token );
+                                        fmkcs.SetDefineClassNode( parlist[0] );
                                         fmkcs.SetVariableToken( parlist[1].token );
                                     }
                                 }
@@ -1298,7 +1298,7 @@ namespace SimpleLanguage.Compile.Parse
                                     if (ttype == ETokenType.Type
                                         || ttype == ETokenType.Identifier)
                                     {
-                                        fmkcs.SetDefineClassToken( parlist[0].token );
+                                        fmkcs.SetDefineClassNode( parlist[0] );
                                     }
                                     else if (ttype == ETokenType.Number
                                         || ttype == ETokenType.String)
