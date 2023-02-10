@@ -1389,6 +1389,9 @@ namespace SimpleLanguage.Compile.Parse
                 case "label":
                     tokenType = ETokenType.Label;
                     break;
+                case "global":
+                    tokenType = ETokenType.Global;
+                    break;
                 case "try":
                     tokenType = ETokenType.Try;
                     break;
@@ -1423,7 +1426,6 @@ namespace SimpleLanguage.Compile.Parse
                 //    tokenType = TokenType.Await;
                 //    break;                
                 //case "var":
-                //case "global":
                 //    m_Builder.Length = 0;
                 //    return;
                 default:

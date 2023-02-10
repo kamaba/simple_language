@@ -886,7 +886,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         fmbt.priority = SignComputePriority.Level1;
                     }
                     AddFileMetaTerm(fmbt);
-                }              
+                }
                 else
                 {
                     Console.WriteLine("没有找到该类型: " + node.token.type.ToString()  +  " 位置: "  + node.token.ToLexemeAllString() );

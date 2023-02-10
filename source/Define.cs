@@ -234,6 +234,8 @@ namespace SimpleLanguage
         Transience,
         /// <summary> return </summary>
         Return,
+        /// <summary> global </summary>
+        Global,
         /// <summary> label </summary>
         Label,
         /// <summary> while </summary>

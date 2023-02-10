@@ -56,7 +56,7 @@ float3x3, float2x3, float3x3, float3x4, float4x3, float4x4, matrix3x3 matrix16�
 a = Convert.Int("e").Exception( {}, { a = 0; } ); 当然在Convert.Int函数中，函数的最外层 即fun(){}配合的 if exception{ } else { }的方式 如果没有定义，则走系统的exception方法.
 37. 确定封号，是否强制使用。
 38. 有专门的反射类，使用在 Instance.Create( type, params );里边。
-39. 全局情引入值的使用，在sp中，可以定义全局值，在普通文件中，可以读取。如果有改动全局值，一般在EnterProject.SetGlobal( "", "" ) 实现。在普通文件中使用的话，可以使用global.varname使用。 在EnterProject.InitGlobal() 中，进行全局值的初始化。 如果定义了global,必须在项目配置中，enableGlobal的字段，需要是true,否则会提示没有打开关键字，global字段失效。
+39. 全局情引入值的使用，在sp中，可以定义全局值，在普通文件中，可以读取。如果有改动全局值，一般在EnterProject.SetGlobal( "", "" ) 实现。在普通文件中使用的话，可以使用global.varname使用。 在EnterProject.InitGlobal() 中，进行全局值的初始化。 如果定义了global,必须在项目配置中，enableGlobal的字段，需要是true,否则会提示没有打开关键字，global字段失效。并且可以设置全局变量是否属性寄存器区,以便更快的访问。
 40. env参数，在os或者是system类中。
 41. 增加使用 byte,sbyte,char,short,int,long,string 各 s_temp1 全局参数1-n 个 形式， byte[], sbyte[], char[], short[], int[], long[], string[] 1-n个，形式应该为 g_byte[]
 42. Table的类型，主要用来储存表格数据，可以与 object[][], object[][][] 互转， 一般直接读取excel,cvs 后，直接得到的是table类型的数据， 属性扩展容器库。  支持数据格式有, json, xml,yaml,cvs, excel 如果并下S.模下块，表明已入官方库，正常情况S字段，不允许其它乱用。
