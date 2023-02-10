@@ -25,6 +25,7 @@ namespace SimpleLanguage.Parse
     {
         public static ProjectData data => m_Data;
         public static bool isUseDefineNamespace { get; set; } = false;
+        public static bool isUseForceSemiColonInLineEnd { get; set; } = false;
 
         static ProjectData m_Data = new ProjectData();
         public static string rootPath = "";

@@ -162,8 +162,8 @@ namespace SimpleLanguage.Core
                     break;
                 case FileMetaParTerm fmpt:
                     {
-                        Console.WriteLine("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
-                        //men = VisitFileMetaExpress(mc, mbs, selfMC, fmpt.express );
+                        //Console.WriteLine("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
+                        men = VisitFileMetaExpress(mc, mbs, mdt, fmpt.root );
                     }
                     break;
                 case FileMetaTermExpress fmte:

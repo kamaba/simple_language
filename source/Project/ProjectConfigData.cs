@@ -367,7 +367,7 @@ namespace SimpleLanguage.Project
         public int subVersion { get; set; } = 0;
         public int buildVersion { get; set; } = 0;
         public int buildSubVersion { get; set; } = 0;
-
+        public bool isUseForceSemiColonInLineEnd { get; set; } = true;
         public CompileOptionData compileOptionData { get; set; } = null;
         public CompileFilterData compileFilter { get; set; } = null;
         public DefineNamespace namespaceRoot { get; set; } = null;
