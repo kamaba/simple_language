@@ -35,6 +35,7 @@ namespace SimpleLanguage.Core
         ConstValue,
         This,
         Base,
+        Global,
         Express
     }
     public class MetaCallNode
@@ -231,6 +232,25 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
+            else if( etype == ETokenType.Global )
+            {
+                if (isFirst)
+                {
+                    if (m_IsFunction)
+                    {
+                        Console.WriteLine("Error 不允许global的函数形式!!");
+                    }
+                    else
+                    {
+                        m_CurrentMetaBase = ProjectManager.globalData;
+                        m_CallNodeType = ECallNodeType.Global;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Error 只有第一位置可以使用This关键字" + m_Token.ToLexemeAllString());
+                }
+            }
             else if (etype == ETokenType.This)
             {
                 if (isFirst)
@@ -329,6 +349,11 @@ namespace SimpleLanguage.Core
                     else if (frontCNT == ECallNodeType.ClassName)
                     {
                         calcMetaBase = GetFunctionOrVariableByOwnerClass(frontMetaBase as MetaClass, cnname, true);
+                    }
+                    else if( frontCNT == ECallNodeType.Global )
+                    {
+                        m_CurrentMetaBase = GetDataValueByMetaData(frontMetaBase as MetaData, cnname);
+                        m_CallNodeType = ECallNodeType.MemberDataName;
                     }
                     else if (frontCNT == ECallNodeType.DataName)
                     {
@@ -1181,6 +1206,10 @@ namespace SimpleLanguage.Core
                 else if (m_CallNodeType == ECallNodeType.Base)
                 {
                     sb.Append("base");
+                }
+                else if (m_CallNodeType == ECallNodeType.Global)
+                {
+                    sb.Append("global");
                 }
                 else if (m_CallNodeType == ECallNodeType.ConstValue)
                 {

@@ -25,7 +25,7 @@ namespace SimpleLanguage.Project
     {
         public bool isThreadCompile = false;
         public static bool isLoaded = false;
-        public static FileMeta file => m_File;
+        public static FileMeta fileMeta => m_File;
         
         public static int structParseCount = 0;
         public static int buildParseCount = 0;
@@ -69,6 +69,8 @@ namespace SimpleLanguage.Project
 
             m_ProjectParse.ParseProject();
 
+            m_File.SetDeep(0);
+
             ProjectClass.ParseCompileClass();
 
             Console.WriteLine(m_File.ToFormatString());
@@ -96,8 +98,9 @@ namespace SimpleLanguage.Project
 
             FileListStructParse();
 
-            ProjectClass.ProjectCompileAfter();
+            ClassManager.instance.AddMetaClass( ProjectManager.globalData );
 
+            ProjectClass.ProjectCompileAfter();
         }
 
         public static void AddFileParse( string path )
@@ -173,11 +176,28 @@ namespace SimpleLanguage.Project
             {
                 fileParseList[i].CombineFileMeta();
             }
+
+            for (int i = 0; i < m_File.fileMetaClassList.Count; i++)
+            {
+                var fns = m_File.fileMetaClassList[i];
+
+                if (fns.name == "ProJectConfig"
+                    || fns.name == "Compile")
+                {
+                    continue;
+                }
+                ClassManager.instance.AddClass(fns);
+            }
             for ( int i = 0; i < fileParseList.Count; i++ )
             {
                 fileParseList[i].CheckExtendAndInterface();
             }
+            m_File.CheckExtendAndInterface();
+
             ClassManager.instance.Parse();
+
+            m_ProjectParse.ParseInitClassAfter();
+
             MetaVariableManager.instance.ParseExpress();
 
             MethodManager.instance.ParseExpress();

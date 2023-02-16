@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.Compile
+namespace SimpleLanguage.source.Compile.Process
 {
-    public class FileCompileState : StateBase
+    public class FileCompileState : CompileStateBase
     {
         public enum ELoadState
         {
@@ -13,6 +13,14 @@ namespace SimpleLanguage.Compile
             LoadStart,
             Loading,
             LoadEnd,
+            LexerParse,
+            TokenParse,
+            StructParseBegin,
+            StructParseImport,
+            StructParseClass,
+            StructParseData,
+            StructParseEnum,
+            StructParseEnd,
         }
         public bool isInterupt => m_IsInterrupt;
 
@@ -21,7 +29,7 @@ namespace SimpleLanguage.Compile
         {
 
         }
-        public void SetLoadState(ELoadState loadState )
+        public void SetLoadState(ELoadState loadState)
         {
             m_LoadState = loadState;
         }

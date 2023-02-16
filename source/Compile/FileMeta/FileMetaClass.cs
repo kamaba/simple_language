@@ -375,6 +375,10 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             m_MemberDataList.Add(fmmd);
             fmmd.SetFileMeta(m_FileMeta);
         }
+        public FileMetaMemberData GetFileMemberData( string name )
+        {
+            return m_MemberDataList.Find(a => a.name == name);
+        }
         public void AddFileMemberVariable(FileMetaMemberVariable fmv )
         {
             m_MemberVariableList.Add(fmv);

@@ -30,6 +30,7 @@ namespace SimpleLanguage.Core.SelfMeta
         Double,
         String,
         Array,
+        Range,
         Template,
         Class,
     }
@@ -63,6 +64,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass floatMetaClass { get; private set; } = null;
         public static MetaClass doubleMetaClass { get; private set; } = null;
         public static MetaClass arrayMetaClass { get; set; } = null;
+        public static MetaClass rangeMetaClass { get; set; } = null;
         public static MetaClass arrayIteratorMetaClass { get; set; } = null;
         public static MetaClass templateMetaClass { get; set; } = null;
 
@@ -85,6 +87,7 @@ namespace SimpleLanguage.Core.SelfMeta
             stringMetaClass = StringMetaClass.CreateMetaClass();
             arrayIteratorMetaClass = ArrayIteratorMetaClass.CreateMetaClass();
             arrayMetaClass = ArrayMetaClass.CreateMetaClass();
+            rangeMetaClass = RangeMetaClass.CreateMetaClass();
             templateMetaClass = TemplateMetaClass.CreateMetaClass();
         }
         public void Init()
@@ -124,6 +127,8 @@ namespace SimpleLanguage.Core.SelfMeta
                     return stringMetaClass;
                 case EType.Array:
                     return arrayMetaClass;
+                case EType.Range:
+                    return rangeMetaClass;
                 default:
                     {
                         Console.WriteLine("Warning ClassManager GetMetaClassByEType 1111");

@@ -38,6 +38,7 @@ namespace SimpleLanguage
         UInt128,
         Decimal,
         Array,
+        Range,
         String,
     }
 
@@ -166,16 +167,10 @@ namespace SimpleLanguage
         Else,
         /// <summary> elif </summary>
         ElseIf,
-        /// <summary> $define </summary>
-        MacroDefine,
         /// <summary> $if </summary>
         MacroIf,
-        /// <summary> $ifndef </summary>
-        MacroIfndef,
         /// <summary> $else </summary>
         MacroElse,
-        /// <summary> $elif </summary>
-        MacroElif,
         /// <summary> $endif </summary>
         MacroEndif,
         /// <summary> import </summary>

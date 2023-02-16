@@ -222,6 +222,18 @@ namespace SimpleLanguage.Core.Statements
                     Console.WriteLine("Error 没有找到变量的定义!!! ");
                     return;
                 }
+                if( m_MetaVariable.isGlobal )
+                {
+                    if( ownerMetaClass.name == "Project" )
+                    {
+
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error 只能在Project工程下的函数中，给全局变量赋值!!");
+                        return;
+                    }
+                }
                 expressMdt = m_MetaVariable.metaDefineType;
             }
 

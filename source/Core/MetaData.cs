@@ -10,6 +10,7 @@ namespace SimpleLanguage.Core
     {
         public bool isConst => m_IsConst;
         public MetaVariable metaVariable => m_MetaVariable;
+        public Dictionary<string, MetaMemberData> metaMemberDataDict => m_MetaMemberDataDict;
 
         protected bool m_IsConst = false;
 
