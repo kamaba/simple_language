@@ -273,7 +273,6 @@ namespace SimpleLanguage.Core
         private FileMetaBracketTerm m_FileMetaBracketTerm = null;
         private FileMetaConstValueTerm m_FileMetaConstValueTerm = null;
         
-
         public MetaNewObjectExpressNode(FileMetaConstValueTerm arrayLinkToken, MetaClass ownerMC, MetaBlockStatements mbs )
         {
             m_FileMetaConstValueTerm = arrayLinkToken;
@@ -284,39 +283,40 @@ namespace SimpleLanguage.Core
             MetaType mitp = new MetaType(CoreMetaClassManager.int32MetaClass);
             metaInputTemplateCollection.AddMetaTemplateParamsList(mitp);
 
-            m_MetaDefineType = new MetaType(CoreMetaClassManager.arrayMetaClass, metaInputTemplateCollection);
+            m_MetaDefineType = new MetaType(CoreMetaClassManager.rangeMetaClass, metaInputTemplateCollection);
 
             MetaInputParamCollection mdpc = new MetaInputParamCollection( ownerMC, mbs );
             String[] arr = m_FileMetaConstValueTerm.name.Split("..");
-            if( arr.Length == 2 )
+            if (arr.Length == 2)
             {
-                int arr0 = int.Parse(arr[0]);
-                MetaConstExpressNode mcen1 = new MetaConstExpressNode(EType.Int32, arr0 );
-                NewObjectAssignStatements mas1 = new NewObjectAssignStatements(mbs, new MetaType(CoreMetaClassManager.objectMetaClass), mcen1);
-                assignStatementsList.Add(mas1);
-
-                MetaConstExpressNode mcen_ = new MetaConstExpressNode(EType.String, "-" );
-                NewObjectAssignStatements mas_ = new NewObjectAssignStatements(mbs, new MetaType(CoreMetaClassManager.objectMetaClass), mcen_);
-                assignStatementsList.Add(mas_);
-
-
-                int arr1 = int.Parse(arr[1]);
-                MetaConstExpressNode mcen2 = new MetaConstExpressNode(EType.Int32, arr[1]);
-                NewObjectAssignStatements mas2 = new NewObjectAssignStatements(mbs, new MetaType(CoreMetaClassManager.objectMetaClass), mcen2 );
-                assignStatementsList.Add(mas2);
-
-                if( arr0 > arr1 )
+                int arr0 = 0;
+                if (int.TryParse(arr[0], out arr0))
                 {
-                    Console.WriteLine("error 数组定义，必须前边的数字更小!!");
+                    MetaConstExpressNode mcen1 = new MetaConstExpressNode(EType.Int32, arr0);
+                    MetaInputParam mip = new MetaInputParam(mcen1);
+                    mdpc.AddMetaInputParam(mip);
                 }
                 else
                 {
-                    int len = arr1 - arr0 + 1;
-                    MetaInputParam mip = new MetaInputParam(new MetaConstExpressNode( EType.Int16, len ) );
-                    mdpc.AddMetaInputParam(mip);
+                    //处理前边定义过的变量
                 }
+
+                int arr1 = 0;
+                if (int.TryParse(arr[1], out arr1))
+                {
+                    MetaConstExpressNode mcen2 = new MetaConstExpressNode(EType.Int32, arr[1]);
+                    MetaInputParam mip2 = new MetaInputParam(mcen2);
+                    mdpc.AddMetaInputParam(mip2);
+                }
+                else
+                {
+                    //处理前边定义过的变量
+                }
+
+                MetaInputParam mip3 = new MetaInputParam(new MetaConstExpressNode(EType.Int32, 1 ));
+                mdpc.AddMetaInputParam(mip3);
             }
-            var tfunction = m_MetaDefineType.GetMetaMemberConstructFunction();
+            var tfunction = m_MetaDefineType.GetMetaMemberConstructFunction(mdpc);
 
             if(tfunction != null )
             {

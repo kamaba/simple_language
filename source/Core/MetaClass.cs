@@ -554,7 +554,7 @@ namespace SimpleLanguage.Core
         }
         public MetaMemberFunction GetMetaMemberConstructFunction( MetaInputParamCollection mmpc )
         {
-            return GetMetaMemberFunctionByNameAndInputParamCollect(m_Name, mmpc);
+            return GetMetaMemberFunctionByNameAndInputParamCollect("__Init__", mmpc);
         }
         public MetaMemberFunction GetMetaMemberConstructFunctionByTemplateAndParam(MetaInputTemplateCollection mitc, MetaInputParamCollection mmpc )
         {

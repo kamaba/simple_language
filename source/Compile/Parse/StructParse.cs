@@ -364,15 +364,13 @@ namespace SimpleLanguage.Compile.Parse
                         if (index < curParentNode.childList.Count)
                         {
                             Node nextNode = curParentNode.childList[index];
-                            int lineEndCount = 0;
                             if (nextNode.nodeType == ENodeType.LineEnd) //
                             {
-                                nextNode = pnode.childList[index + 2];
-                                lineEndCount++;
+                                nextNode = curParentNode.childList[++index];
                             }
                             if (nextNode.nodeType == ENodeType.Brace)  //Class1{}
                             {
-                                index+= (lineEndCount + 1);
+                                index++;
                                 curNode.blockNode = nextNode;
                                 FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, null, FileMetaMemberData.EMemberDataType.NameClass);
 
@@ -391,12 +389,11 @@ namespace SimpleLanguage.Compile.Parse
                                     var next2Node = curParentNode.childList[index];
                                     if (next2Node.nodeType == ENodeType.LineEnd) //
                                     {
-                                        next2Node = curParentNode.childList[index + 1];
-                                        lineEndCount++;
+                                        next2Node = curParentNode.childList[++index];
                                     }
                                     if (next2Node.nodeType == ENodeType.Bracket)
                                     {
-                                        index += (lineEndCount+1);
+                                        index++;
 
                                         curNode.bracketNode = next2Node;
 
@@ -408,10 +405,43 @@ namespace SimpleLanguage.Compile.Parse
 
                                         m_CurrentNodeInfoStack.Pop();
                                     }
+                                    else if( next2Node.nodeType == ENodeType.Symbol )
+                                    {
+                                        var next3Node = curParentNode.childList[++index];
+
+                                        if( next2Node.token?.type == ETokenType.Minus)
+                                        {
+                                            index++;
+                                            int val = -(int)(next3Node.token?.lexeme);
+                                            next3Node.token.SetLexeme( val );
+                                        }
+
+                                        FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, next3Node, FileMetaMemberData.EMemberDataType.KeyValue);
+
+                                        if (currentNodeInfo.parseType == EParseNodeType.Class)
+                                        {
+                                            currentNodeInfo.codeClass.AddFileMemberData(fmmd);
+                                        }
+                                        else if (currentNodeInfo.parseType == EParseNodeType.Data)
+                                        {
+                                            currentNodeInfo.codeData.AddFileMemberData(fmmd);
+                                        }
+                                        if (ProjectManager.isUseForceSemiColonInLineEnd)
+                                        {
+                                            var next4Node = curParentNode.childList[++index];
+                                            if (next4Node.nodeType != ENodeType.SemiColon)
+                                            {
+                                                Console.WriteLine("Error 应该使用;结束语句!!");
+                                            }
+                                            else
+                                            {
+                                                index++;
+                                            }
+                                        }
+                                    }
                                     else if( next2Node.nodeType == ENodeType.ConstValue )
                                     {
-                                        index+= (lineEndCount+1);
-
+                                        index++;
                                         FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, next2Node, FileMetaMemberData.EMemberDataType.KeyValue );
 
                                         if (currentNodeInfo.parseType == EParseNodeType.Class)
@@ -424,8 +454,36 @@ namespace SimpleLanguage.Compile.Parse
                                         }
                                         if(ProjectManager.isUseForceSemiColonInLineEnd)
                                         {
-                                            var next3Node = curParentNode.childList[index + 1];
+                                            var next3Node = curParentNode.childList[++index];
                                             if( next3Node.nodeType != ENodeType.SemiColon )
+                                            {
+                                                Console.WriteLine("Error 应该使用;结束语句!!");
+                                            }
+                                            else
+                                            {
+                                                index++;
+                                            }
+                                        }
+                                    }
+                                    else if( next2Node.nodeType == ENodeType.IdentifierLink )
+                                    {
+                                        index++;
+                                        string name = next2Node.token?.lexeme.ToString();
+                                        //这块现在暂时还不确定，是否在data里边可以直接生成class或者是引用 data数据
+                                        FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, next2Node, FileMetaMemberData.EMemberDataType.Data );
+
+                                        if (currentNodeInfo.parseType == EParseNodeType.Class)
+                                        {
+                                            currentNodeInfo.codeClass.AddFileMemberData(fmmd);
+                                        }
+                                        else if (currentNodeInfo.parseType == EParseNodeType.Data)
+                                        {
+                                            currentNodeInfo.codeData.AddFileMemberData(fmmd);
+                                        }
+                                        if (ProjectManager.isUseForceSemiColonInLineEnd)
+                                        {
+                                            var next3Node = curParentNode.childList[++index];
+                                            if (next3Node.nodeType != ENodeType.SemiColon)
                                             {
                                                 Console.WriteLine("Error 应该使用;结束语句!!");
                                             }
@@ -1141,7 +1199,7 @@ namespace SimpleLanguage.Compile.Parse
                         }
                         else
                         {
-                            index++;
+                            index +=(lineEndCount+1);
                             curNode.angleNode = nextNode;
                             Console.WriteLine("新加入封号结尾，这块还没有进行完全测试!!");
                         }

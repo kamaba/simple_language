@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SimpleLanguage.Core.Type
+﻿
+namespace S.Core.Type
 {
-    public class StringType : ObjectType
+    public class StringType
     {
     }
 }

@@ -130,7 +130,7 @@ namespace SimpleLanguage.Core
         {
             return null;
         }
-        public void AddClass( FileMetaClass mc )
+        public MetaClass AddClass( FileMetaClass mc )
         {
             FileMetaClass topLevelClass = mc.topLevelFileMetaClass;
             if ( topLevelClass != null )
@@ -138,20 +138,20 @@ namespace SimpleLanguage.Core
                 if( mc.isPartial )
                 {
                     Console.WriteLine("类:" + mc.name + "在: " + mc.token.ToAllString() + "不支持内部类定义并行!!");
-                    return;
+                    return null;
                 }
                 
                 if( topLevelClass.metaClass == null )
                 {
                     Console.WriteLine("Error 上级类中的MetaClass没有绑定!!");
-                    return;
+                    return null;
                 }
 
                 var findmc = topLevelClass.GetChildrenMetaBaseByName(mc.name);
                 if( findmc != null )
                 {
                     Console.WriteLine("Error 查到内部不是内部内，可能有相同成员");
-                    return;    
+                    return null;    
                 }
                 else
                 {
@@ -169,12 +169,12 @@ namespace SimpleLanguage.Core
                         if (topLevelClass.isEnum)
                         {
                             Console.WriteLine("Error 在Enum中，不允许有Class的存在!!");
-                            return;
+                            return null;
                         }
                         if( mc.isConst )
                         {
                             Console.WriteLine("Class 中，使用关键字，不允许使用Const");
-                            return;
+                            return null;
                         }
                         newmc = new MetaClass(mc.name);
                     }
@@ -182,6 +182,7 @@ namespace SimpleLanguage.Core
                     newmc.BindFileMetaClass(mc);
 
                     m_AllClassDict.Add(newmc.allName, newmc);
+                    return newmc;
                 }
             }
             else
@@ -201,7 +202,7 @@ namespace SimpleLanguage.Core
                         if (topLevelNamespace == null)
                         {
                             Console.WriteLine("Error 没有找到相当的命名空间!!!");
-                            return;
+                            return null;
                         }
                     }
                 }
@@ -210,7 +211,7 @@ namespace SimpleLanguage.Core
                 if (tmetaNamespace == null && tmetaModule == null )
                 {
                     Console.WriteLine("命名空间中，已定义其它非命名空间的类型 !!");
-                    return;
+                    return null;
                 }
                 var mbb = topLevelNamespace.GetChildrenMetaBaseByName(mc.name);
                 var amc = mbb as MetaClass;
@@ -218,14 +219,14 @@ namespace SimpleLanguage.Core
                 if( amn != null )
                 {
                     Console.WriteLine("已有命名空间的定义: ");
-                    return;
+                    return null;
                 }
                 else if (amc != null)
                 {
                     if (!mc.isPartial)
                     {
                         Console.WriteLine("类:" + mc.name + "在: " + mc.token.ToAllString() + "不支持文件并行 定义类");
-                        return;
+                        return null;
                     }
                     bool isPartial = true;
                     foreach (var v in amc.fileMetaClassDict)
@@ -239,9 +240,10 @@ namespace SimpleLanguage.Core
                     }
                     if (isPartial == false)
                     {
-                        return;
+                        return null;
                     }
                     amc.BindFileMetaClass(mc);
+                    return amc;
                 }
                 else
                 {
@@ -261,7 +263,7 @@ namespace SimpleLanguage.Core
                         if (mc.isConst)
                         {
                             Console.WriteLine("Class 中，使用关键字，不允许使用Const");
-                            return;
+                            return null;
                         }
                         newmc = new MetaClass(mc.name);
                     }
@@ -272,6 +274,7 @@ namespace SimpleLanguage.Core
 
                     newmc.BindFileMetaClass(mc);
                     m_AllClassDict.Add(newmc.allName, newmc);
+                    return newmc;
                 }
             }
 

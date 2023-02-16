@@ -26,10 +26,7 @@ namespace SimpleLanguage.Core
         public bool isUseInputTemplate => m_IsUseInputTemplate;
         public bool isEnum { get { return m_MetaClass is MetaEnum; } }
         public bool isData { get { return m_MetaClass is MetaData; } }
-        public bool isArray
-        {
-            get { return m_MetaClass == CoreMetaClassManager.arrayMetaClass; } 
-        }
+        public bool isArray{ get { return m_MetaClass == CoreMetaClassManager.arrayMetaClass; }  }
         public bool isDynamicClass => m_IsDynamicClass;
         public bool isDefineMetaClass => m_IsDefineMetaClass;
         public MetaInputTemplateCollection inputTemplateCollection => m_InputTemplateCollection;

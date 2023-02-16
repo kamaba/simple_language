@@ -32,12 +32,12 @@ namespace SimpleLanguage.Project
         public static MetaFunction s_CompileAfterFunction = null;
         public static void ParseCompileClass()
         {
-            FileMetaClass fmc = ProjectCompile.file.GetFileMetaClassByName("Compile");
+            FileMetaClass fmc = ProjectCompile.fileMeta.GetFileMetaClassByName("Compile");
 
             if (fmc == null) return;
 
             ClassManager.instance.AddClass(fmc);
-
+            
             compile = fmc.metaClass;
             if (compile == null) return;
 
@@ -54,65 +54,18 @@ namespace SimpleLanguage.Project
             s_CompileBeforeFunction.TranslateIR();
             s_CompileAfterFunction.TranslateIR();
         }
-        public static void ParseEnter()
-        {
-            FileMetaClass fmc = ProjectCompile.file.GetFileMetaClassByName("ProjectEnter");
-
-            if (fmc == null) return;
-            ClassManager.instance.AddClass(fmc);
-
-            projectEnter = fmc.metaClass;
-            if (projectEnter == null) return;
-
-            projectEnter.Parse();
-            projectEnter.ParseDefineComplete();
-            var flist = projectEnter.GetMemberFunctionList();
-            for (int i = 0; i < flist.Count; i++)
-            {
-                flist[i].ParseStatements();
-            }
-            s_MainFunction = projectEnter.GetMetaDefineGetSetMemberFunctionByName("Main", false, false);
-            s_TestFunction = projectEnter.GetMetaDefineGetSetMemberFunctionByName("Test", false, false);
-
-            s_MainFunction.TranslateIR();
-            s_TestFunction.TranslateIR();
-        }
-        public static void ParseDll()
-        {
-            FileMetaClass fmc = ProjectCompile.file.GetFileMetaClassByName("ProjectDll");
-
-            if (fmc == null) return;
-
-            ClassManager.instance.AddClass(fmc);
-
-            projectDll = fmc.metaClass;
-            if (projectDll == null) return;
-
-            projectDll.Parse();
-            projectDll.ParseDefineComplete();
-            var flist = projectDll.GetMemberFunctionList();
-            for (int i = 0; i < flist.Count; i++)
-            {
-                flist[i].ParseStatements();
-            }
-            s_LoadStartFunction = projectDll.GetMetaDefineGetSetMemberFunctionByName("LoadStart", false, false);
-            s_LoadEndFunction = projectDll.GetMetaDefineGetSetMemberFunctionByName("LoadEnd", false, false);
-
-            s_LoadStartFunction.TranslateIR();
-            s_LoadEndFunction.TranslateIR();
-        }
         public static void RunTest()
         {
-            MetaClass projectEntoer = ClassManager.instance.GetClassByName("ProjectEnter");
-            if (projectEntoer == null)
+            MetaClass project = ClassManager.instance.GetClassByName("Project");
+            if (project == null)
             {
-                Console.WriteLine("Error 没有找到ProjectEnter!!");
+                Console.WriteLine("Error project!!");
                 return;
             }
-            MetaMemberFunction mmf = projectEntoer.GetMetaMemberFunctionByAllName("Test");
+            MetaMemberFunction mmf = project.GetMetaMemberFunctionByAllName("Test");
             if (mmf == null)
             {
-                Console.WriteLine("Error 没有找到ProjectEnter.Main函数!!");
+                Console.WriteLine("Error project.Main函数!!");
                 return;
             }
             InnerCLRRuntimeVM.Init();
@@ -186,8 +139,8 @@ namespace SimpleLanguage.Project
             ProjectData data = ProjectManager.data;
             AddDefineNamespace( ModuleManager.instance.selfModule, data.namespaceRoot, false );
 
-            var fileList = data.compileFileList;
-            var filter = data.compileFilter;
+            var fileList = data.compileFileData.compileFileDataUnitList;
+            var filter = data.compileFilterData;
 
             for (int i = 0; i < fileList.Count; i++)
             {
@@ -206,7 +159,7 @@ namespace SimpleLanguage.Project
             }
 
         }
-        public static bool IsCanAddFile(CompileFilterData cfd, CompileFileData fileData )
+        public static bool IsCanAddFile(CompileFilterData cfd, CompileFileData.CompileFileDataUnit fileData )
         {
             if (cfd == null) return true;
             if (!cfd.IsIncludeInGroup(fileData.group))

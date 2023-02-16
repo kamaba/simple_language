@@ -19,6 +19,7 @@ namespace SimpleLanguage.Core
         public bool isStatic { get; set; } = false;
         public virtual bool isConst { get; set; } = false;
         public bool isArgument { get; set; } = false;
+        public bool isGlobal { get; set; } = false;
         public bool isTemplate
         {
             get { return m_DefineMetaType.isUseInputTemplate; }

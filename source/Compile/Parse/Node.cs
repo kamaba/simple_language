@@ -286,6 +286,10 @@ namespace SimpleLanguage.Compile.Parse
                     sb.Append(childList[i].ToFormatString());
                 }
             }
+            else if( nodeType == ENodeType.LineEnd )
+            {
+                //sb.Append(" ");
+            }
             else
             {
                 sb.Append(this.token?.lexeme.ToString() + " ");
