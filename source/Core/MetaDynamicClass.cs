@@ -12,15 +12,6 @@ namespace SimpleLanguage.Core
         {
             m_Type = EType.Class;
         }
-        public override void BindFileMetaClass(FileMetaClass fmc)
-        {
-            if (m_FileMetaClassDict.ContainsKey(fmc.token))
-            {
-                return;
-            }
-            fmc.SetMetaClass(this);
-            m_FileMetaClassDict.Add(fmc.token, fmc);
-        }
         public override void ParseDefineComplete()
         {
             base.ParseDefineComplete();

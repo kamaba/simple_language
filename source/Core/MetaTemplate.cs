@@ -9,10 +9,11 @@ namespace SimpleLanguage.Core
     public partial class MetaTemplate : MetaBase
     {
         public List<MetaClass> constraintMetaClassList => m_ConstraintMetaClassList;
+        public MetaClass ownerClass => m_OwnerClass;
 
-        private FileMetaTemplateDefine m_FileMetaTemplateDefine = null;
-        private MetaClass m_OwnerClass = null;
-        private List<MetaClass> m_ConstraintMetaClassList = new List<MetaClass>();
+        protected FileMetaTemplateDefine m_FileMetaTemplateDefine = null;
+        protected MetaClass m_OwnerClass = null;
+        protected List<MetaClass> m_ConstraintMetaClassList = new List<MetaClass>();
         public MetaTemplate( MetaClass mc, FileMetaTemplateDefine fmtd)
         {
             m_Name = fmtd.name;
@@ -72,6 +73,30 @@ namespace SimpleLanguage.Core
                     sb.Append("]");
                 }
             }
+
+            return sb.ToString();
+        }
+    }
+
+    public class MetaGenTemplate : MetaTemplate
+    {
+        public MetaType metaType => m_MetaType;
+
+        private MetaType m_MetaType = null;
+        public MetaGenTemplate(MetaTemplate mt, MetaType mtype ) : base( mt.ownerClass, mt.name )
+        {
+            m_MetaType = mtype;
+        }
+
+        public bool EqualWithMetaType( MetaType mt )
+        {
+            return m_MetaType == mt; ;
+        }
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(m_MetaType.metaClass.name);
 
             return sb.ToString();
         }

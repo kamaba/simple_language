@@ -20,6 +20,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Int16;
+            m_IsInnerDefineCompile = true;
         }
         public static MetaClass CreateMetaClass()
         {

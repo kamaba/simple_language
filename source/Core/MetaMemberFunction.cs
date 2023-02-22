@@ -43,6 +43,8 @@ namespace SimpleLanguage.Core
         public bool isGet { get; set; } = false;
         public bool isSet { get; set; } = false;
         public bool isFinal { get; set; } = false;
+        public bool isCanRewrite { get; set; } = false;
+        public bool isTemplateInParam { get; set; } = false;
         public bool isCastFunction
         {
             get
@@ -105,9 +107,14 @@ namespace SimpleLanguage.Core
             m_MetaBlockStatements.isOnFunction = true;
             Init();
         }
+        public MetaMemberFunction(MetaMemberFunction mmf) : base( mmf )
+        {
+
+        }
         public MetaMemberFunction( MetaClass mc, string _name ) : base( mc )
         {
             m_Name = _name;
+            isCanRewrite = true;
             m_ParamCount = 0;
             m_MetaMemberParamCollection.Clear();
 
@@ -116,6 +123,7 @@ namespace SimpleLanguage.Core
 
             Init();
         }
+       
         void Init()
         {
             m_ConstructInitFunction = name == "__Init__";
@@ -137,9 +145,24 @@ namespace SimpleLanguage.Core
             }
             m_ReturnMetaVariable = new MetaVariable("return_" + GetHashCode().ToString(), null, m_OwnerMetaClass, m_DefineMetaType);
         }
+        public bool IsEqualWithMMFByNameAndParam( MetaMemberFunction mmf )
+        {
+            if (mmf.name != m_Name) return false;
+
+            if( !m_MetaMemberParamCollection.IsEqualMetaParamCollection( mmf.metaMemberParamCollection ) )
+            {
+                return false;
+            }
+
+            return true;
+        }
         public void AddMetaDefineParam( MetaDefineParam mdp )
         {
             m_MetaMemberParamCollection.AddMetaDefineParam(mdp);
+            if( mdp.metaVariable.isTemplate )
+            {
+                isTemplateInParam = true;
+            }
         }
         public void AddMetaDefineTemplate (MetaTemplate mt )
         {
@@ -461,6 +484,38 @@ namespace SimpleLanguage.Core
             functionList.Add(mmf);
 
             AddMetaBase(mmf.name, mmf);
+        }
+    }
+
+    public class MetaGenMemberFunction : MetaMemberFunction
+    {
+        List<MetaGenTemplate> m_MetaGenTemplate = null;
+        public MetaGenMemberFunction(MetaMemberFunction mmf, List<MetaGenTemplate> mgt) : base(mmf)
+        {
+            m_MetaGenTemplate = mgt;
+        }
+        public void UpdateGenFunction()
+        {
+            if (isTemplateInParam == false)
+            {
+                m_MetaBlockStatements = new MetaBlockStatements(this);
+            }
+            else
+            {
+                var list = metaMemberParamCollection.metaParamList;
+                for (int k = 0; k < list.Count; k++)
+                {
+                    MetaDefineParam mdp = list[k] as MetaDefineParam;
+                    if (mdp.metaVariable.isTemplate)
+                    {
+                        string pTName = mdp.metaVariable.metaDefineType.name;
+                        //if (m_MetaGenTemplate.name == pTName)
+                        //{
+                        //    mdp.SetMetaType(metaType);
+                        //}
+                    }
+                }
+            }
         }
     }
 }

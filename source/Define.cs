@@ -36,10 +36,10 @@ namespace SimpleLanguage
         Double,
         Int128,
         UInt128,
-        Decimal,
         Array,
         Range,
         String,
+        Decimal,
     }
 
     //token类型
@@ -217,7 +217,7 @@ namespace SimpleLanguage
         Enum,
         /// <summary> data </summary>
         Data,
-        /// <summary> Break </summary>
+        /// <summary> break </summary>
         Break,
         /// <summary> next </summary>
         Next,
@@ -263,10 +263,31 @@ namespace SimpleLanguage
         This,
         /// <summary> base </summary>
         Base,
-        /// <summary> boolean </summary>
+        /// <summary> range </summary>     
+        Range,
+        /// <summary> boolean </summary>   
         Boolean,
+        /// <summary> complex </summary>
+        Complex,
         /// <summary> 标识符 </summary>
         Identifier,
+
+        Float2, Float3, Float4,
+        /// <summary> float extent </summary>
+        Float2x2, 
+        Float2x3, Float3x2, Float3x3,
+        Float4x2, Float4x3, Float4x4, Float2x4, Float3x4,
+        /// <summary> floatNxN extent </summary>
+        Double2, Double3, Double4,
+        /// <summary> double extent </summary>
+        Double2x2,
+        Double2x3, Double3x2, Double3x3,
+        Double4x2, Double4x3, Double4x4, Double2x4, Double3x4,
+        /// <summary> doubleNxN extent </summary>
+        Matrix2x2,
+        Matrix2x3, Matrix3x2, Matrix3x3,
+        Matrix4x2, Matrix4x3, Matrix4x4, Matrix2x4, Matrix3x4,
+
         /// <summary> 结束 </summary>
         Finished,
     }

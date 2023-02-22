@@ -16,6 +16,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public CharMetaClass():base( DefaultObject.Char.ToString() )
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
+            m_IsInnerDefineCompile = true;
             m_Type = EType.Char;
         }
         public static MetaClass CreateMetaClass()

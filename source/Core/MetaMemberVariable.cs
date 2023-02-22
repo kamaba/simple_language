@@ -10,7 +10,9 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.Core
 {
@@ -345,6 +347,7 @@ namespace SimpleLanguage.Core
         private FileMetaMemberVariable m_FileMetaMemeberVariable;
         private MetaExpressNode m_Express = null;
         private bool m_IsEnumValue = false;
+        private bool m_IsInnerDefine = false;
 
         private bool m_IsSupportConstructionFunctionOnlyBraceType = false;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
         private bool m_IsSupportConstructionFunctionConnectBraceType = true;  //是否支持构造函数名称后边加{}形式    Class1{ a = Class2(){} } 不支持
@@ -359,13 +362,30 @@ namespace SimpleLanguage.Core
         public static int s_DefineMetaTypeLevel = 1000000000;
         public static int s_ExpressLevel = 1500000000;
 
+        public MetaMemberVariable( MetaMemberVariable mmv ) : base( mmv )
+        {
+            m_FromType = EFromType.Manual;
+            m_DefineMetaType = mmv.m_DefineMetaType;
+            m_IsInnerDefine = mmv.m_IsInnerDefine;
+            m_Express = mmv.m_Express;
+        }
         public MetaMemberVariable(MetaClass mc, string _name)
         {
             m_Name = _name;
             m_FromType = EFromType.Manual;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+            m_IsInnerDefine = true;
 
             SetOwnerMetaClass(mc);
+        } 
+        public MetaMemberVariable( MetaClass ownerMc, string _name, MetaTemplate mt )
+        {
+            m_Name = _name;
+            m_FromType = EFromType.Manual;
+            m_DefineMetaType = new MetaType( mt );
+            m_IsInnerDefine = true;
+
+            SetOwnerMetaClass(ownerMc);
         }
         public MetaMemberVariable(MetaClass mc, string _name, MetaClass _defineTypeClass )
         {
@@ -826,5 +846,18 @@ namespace SimpleLanguage.Core
             return mn;
         }
         
+    }
+
+    public class MetaGenMemberVariable : MetaMemberVariable
+    {
+        private MetaGenTemplate m_MetaGenTemplate = null;
+        public MetaGenMemberVariable(MetaMemberVariable mmv, MetaGenTemplate mgt ) : base(mmv)
+        {
+            m_MetaGenTemplate = mgt;
+        }
+        public void UpdateGenMemberVariable()
+        {
+            m_DefineMetaType = m_MetaGenTemplate.metaType;
+        }
     }
 }

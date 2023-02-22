@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Runtime.ConstrainedExecution;
 using System.Text;
 using SimpleLanguage.Compile.CoreFileMeta;
+using SimpleLanguage.Core;
 
 namespace SimpleLanguage.Core
 {
@@ -80,15 +81,15 @@ namespace SimpleLanguage.Core
                         return;
                     }
                     m_IsDefineMetaClass = true;
-                    m_MetaClass = dmt;
 
                     m_InputTemplateCollection = new MetaInputTemplateCollection(cmr.inputTemplateNodeList, mc );
+
+                    m_MetaClass = dmt.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
                 }
                 else
                 {
                     if (cmr.isArray)
                     {
-                        m_MetaClass = CoreMetaClassManager.arrayMetaClass;
                         var dmt = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
                         for (int i = 0; i < cmr.arrayTokenList.Count; i++)
                         {
@@ -106,6 +107,8 @@ namespace SimpleLanguage.Core
                         MetaType mitp = new MetaType(dmt);
                         m_InputTemplateCollection = new MetaInputTemplateCollection();
                         m_InputTemplateCollection.AddMetaTemplateParamsList(mitp);
+
+                        m_MetaClass = CoreMetaClassManager.arrayMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
                     }
 
                     if (m_MetaClass == null)
@@ -134,12 +137,21 @@ namespace SimpleLanguage.Core
        
         public MetaType(MetaClass mc, MetaInputTemplateCollection mitc = null )
         {
-            m_MetaClass = mc;
-            if (m_MetaClass == null)
+            if (mc == null)
             {
                 Console.WriteLine("Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
-            m_InputTemplateCollection = mitc;
+            if( mitc == null)
+            {
+                m_MetaClass = mc;
+            }
+            else
+            {
+                m_InputTemplateCollection = mitc;
+
+                m_MetaClass = mc.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
+            }
+
         }
         public MetaType( MetaTemplate mt )
         {
@@ -201,7 +213,7 @@ namespace SimpleLanguage.Core
             m_MetaClass = mc;
             m_IsDefineMetaClass = true;
         }
-        public void SetMetaInputTemplateCollection(MetaInputTemplateCollection mitc )
+        public void SetMetaInputTemplateCollection( MetaInputTemplateCollection mitc )
         {
             m_InputTemplateCollection = mitc;
         }
@@ -255,7 +267,7 @@ namespace SimpleLanguage.Core
                 }
                 sb.Append("]");
             }
-            if(m_InputTemplateCollection != null && m_InputTemplateCollection.metaTemplateParamsList.Count > 0 )
+            if(m_MetaClass is MetaTemplateClass)
             {
                 sb.Append("<");
                 for (int i = 0; i < m_InputTemplateCollection.metaTemplateParamsList.Count; i++)

@@ -145,20 +145,23 @@ namespace SimpleLanguage.Core
             }
             if( m_MetaVariable.isTemplate )
             {
-
             }
-            var tmc = m_MetaVariable.metaDefineType.metaClass as TemplateMetaClass;
+            var tmc = m_MetaVariable.metaDefineType.metaClass as MetaTemplateClass;
             if (tmc != null)
             {
                 //return tmc.IsInConstraintMetaClass(mp.ownerMetaClass);
-            }
-
-            var retMC = (mp as MetaInputParam).express.GetReturnMetaClass();
-            var relation = ClassManager.ValidateClassRelationByMetaClass(m_MetaVariable.metaDefineType.metaClass, retMC );
-
-            if (relation == ClassManager.EClassRelation.Same || relation == ClassManager.EClassRelation.Child)
-            {
                 return true;
+            }
+            MetaInputParam mip = (mp as MetaInputParam);
+            if( mip != null)
+            {
+                var retMC = (mp as MetaInputParam).express.GetReturnMetaClass();
+                var relation = ClassManager.ValidateClassRelationByMetaClass(m_MetaVariable.metaDefineType.metaClass, retMC);
+
+                if (relation == ClassManager.EClassRelation.Same || relation == ClassManager.EClassRelation.Child)
+                {
+                    return true;
+                }
             }
 
             return false;
@@ -201,6 +204,14 @@ namespace SimpleLanguage.Core
             m_MetaVariable = new MetaVariable(_name, mbs, ownerMC, mdt );
             m_MetaExpressNode = _expressNode;
         }
+        public MetaDefineParam( string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaTemplate mt )
+        {
+            m_OwnerMetaClass = ownerMC;
+            m_OwnerMetaBlockStatements = mbs;
+            MetaType mdt = new MetaType(mt);
+            m_MetaVariable = new MetaVariable(_name, mbs, ownerMC, mdt);
+            m_MetaVariable.isArgument = true;
+        }
         public override void Parse()
         {
             if (m_FileMetaParamter != null)
@@ -239,6 +250,10 @@ namespace SimpleLanguage.Core
                 auc.callFunction = true;
                 express.Parse(auc);
             }
+        }
+        public void SetMetaType( MetaType mt )
+        {
+            m_MetaVariable.SetMetaDefineType(mt);
         }
         public MetaExpressNode CreateExpressNodeInFunctionDefineParam()
         {

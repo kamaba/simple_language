@@ -3,7 +3,7 @@
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/8/12 12:00:00
-//  Description: 
+//  Description:  this's a statement in function! same link table model!
 //****************************************************************************
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
@@ -32,7 +32,11 @@ namespace SimpleLanguage.Core.Statements
         protected List<MetaBlockStatements> m_ChildrenMetaBlockStatementsList = new List<MetaBlockStatements>();
         protected MetaStatements m_OwnerMetaStatements = null;
         private FileMetaBlockSyntax m_FileMetaBlockSyntax;
-
+        public MetaBlockStatements( MetaFunction mf )
+        {
+            m_OwnerMetaBlockStatements = null;
+            m_OwnerMetaFunction = mf;
+        }
         public MetaBlockStatements( MetaFunction mf, FileMetaBlockSyntax fmbs )
         {
             m_OwnerMetaBlockStatements = null;
@@ -118,7 +122,6 @@ namespace SimpleLanguage.Core.Statements
                 {
                     break;
                 }
-
             }
             tms.SetNextStatements( t );
         }

@@ -3,7 +3,7 @@
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/5/12 12:00:00
-//  Description: 
+//  Description:  word lexer parse to token
 //****************************************************************************
 
 using SimpleLanguage.Parse;
@@ -1418,7 +1418,11 @@ namespace SimpleLanguage.Compile.Parse
                 case "false":
                     tokenType = ETokenType.BoolValue;
                     extend = EType.Boolean;
-                    break;               
+                    break;
+                case "range":
+                    tokenType = ETokenType.Identifier;
+                    extend = EType.Range;
+                    break;
                 //case "async":
                 //    tokenType = TokenType.Async;
                 //    break;

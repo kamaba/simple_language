@@ -352,6 +352,10 @@ namespace SimpleLanguage.Core
             m_MetaConstructFunctionCall = mmf;
             m_MetaDefineType = new MetaType( mt );
             var fmcn = mcl.finalMetaCallNode;
+
+            bool needByFileMetaParTermSetTemplate = false;
+            MetaInputTemplateCollection mitc = new MetaInputTemplateCollection();
+            MetaClass createMC = null;
             if ( !m_MetaDefineType.isDefineMetaClass )
             {
                 if( fmcn.callNodeType == ECallNodeType.NewClass )
@@ -368,8 +372,18 @@ namespace SimpleLanguage.Core
                 m_MetaDefineType.SetEnumValue(fmcn.GetMetaMemeberVariable());
                 m_MetaEnumValue = fmcn.metaExpressValue;
             }
-            m_MetaDefineType.SetMetaInputTemplateCollection(fmcn.metaTemplateParamsCollection);
-
+            else if( fmcn.callNodeType == ECallNodeType.FunctionName )
+            {
+                createMC = mmf.function.ownerMetaClass;
+                m_MetaDefineType.SetMetaClass(createMC);
+                if (createMC.metaTemplateList.Count > 0 )
+                {
+                    if( fmcn.metaTemplateParamsCollection == null )
+                    {
+                        needByFileMetaParTermSetTemplate = true;
+                    }
+                }
+            }            
 
             var list = fmct.callLink?.callNodeList;
             if (list != null && list.Count > 0 )
@@ -409,7 +423,37 @@ namespace SimpleLanguage.Core
                 if (fmpt != null)
                 {
                     m_FileMetaParTerm = fmpt;
-                    //MetaInputParamCollection mipc = new MetaInputParamCollection(m_FileMetaParTerm, ownerMC, mbs);
+                    if( needByFileMetaParTermSetTemplate )
+                    {
+                        List<MetaClass> mtList = new List<MetaClass>();
+                        MetaInputParamCollection mipc = new MetaInputParamCollection(m_FileMetaParTerm, ownerMC, mbs);
+                        for (int i = 0; i < mipc.count; i++)
+                        {
+                            var mp = mipc.metaParamList[i] as MetaInputParam;
+                            mp.CaleReturnType();
+                            mtList.Add( mp.GetRetMetaClass() );
+                        }
+                        if( createMC == CoreMetaClassManager.rangeMetaClass )
+                        {
+                            bool isSame = true;
+                            for (int i = 0; i < mtList.Count-1; i++)
+                            {
+                                var curMc = mtList[i];
+                                var nextMc = mtList[i+1];  
+                                if( curMc != nextMc )
+                                {
+                                    isSame = false;
+                                    break;
+                                }
+                            }
+                            if( isSame )
+                            {
+                                var mitc1 = new MetaInputTemplateCollection();
+                                mitc1.AddMetaTemplateParamsList(new MetaType(mtList[0]));
+                                m_MetaDefineType.SetMetaInputTemplateCollection(mitc1);
+                            }
+                        }
+                    }
                     //MetaInputParam mip = new MetaInputParam(new MetaConstExpressNode(EType.Int16, assignStatementsList.Count));
                     //mipc.AddMetaInputParam(mip);
                 }
@@ -638,7 +682,6 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(m_MetaDefineType.ToFormatString() );
 
             if( m_MetaDefineType.isEnum )
             {
@@ -654,6 +697,10 @@ namespace SimpleLanguage.Core
             }
             else
             {
+                if ( m_MetaDefineType != null )
+                {
+                    //sb.Append(m_MetaDefineType.allName + "()");
+                }
                 sb.Append(m_MetaConstructFunctionCall?.ToFormatString());
 
                 if (assignStatementsList.Count > 0)

@@ -1,4 +1,12 @@
-﻿using SimpleLanguage.IR;
+﻿//****************************************************************************
+//  File:      MetaClass.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/6/12 12:00:00
+//  Description: Meta class's attribute
+//****************************************************************************
+
+using SimpleLanguage.IR;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Parse;
 using System;
@@ -113,8 +121,10 @@ namespace SimpleLanguage.Core
 
         public MetaClassData metaClassData => m_MetaClassData;
         public EType eType => m_Type;
+        public bool isInnerDefineInCompile => m_IsInnerDefineCompile;
         public MetaClass extendClass => m_ExtendClass;
         public List<MetaClass> interfaceClass => m_InterfaceClass;
+        public bool isTemplateClass { get { return m_MetaTemplateList.Count > 0; } }
         public List<MetaTemplate> metaTemplateList => m_MetaTemplateList;
         public MetaExpressNode defaultExpressNode => m_DefaultExpressNode;
         public Dictionary<string, MetaMemberVariable> allMetaMemberVariableDict
@@ -147,6 +157,8 @@ namespace SimpleLanguage.Core
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
         public Dictionary<string, MetaMemberVariable> metaExtendMemeberVariableDict => m_MetaExtendMemeberVariableDict;
         public Dictionary<Token, FileMetaClass> fileMetaClassDict => m_FileMetaClassDict;
+        public Dictionary<string, List<MetaMemberFunction>> metaMemberFunctionListDict => m_MetaMemberFunctionListDict;
+        public List<MetaTemplateClass> metaGenTemplateClassList => m_MetaGenTemplateClassList;
         public bool isHandleExtendVariableDirty { get; set; } = false;
 
 
@@ -155,6 +167,7 @@ namespace SimpleLanguage.Core
         protected List<MetaClass> m_InterfaceClass = new List<MetaClass>();
 
         protected List<MetaTemplate> m_MetaTemplateList = new List<MetaTemplate>();
+        protected List<MetaTemplateClass> m_MetaGenTemplateClassList = new List<MetaTemplateClass>();
         protected Dictionary<string, MetaClass> m_ChildrenMetaClassDict = new Dictionary<string, MetaClass>();
         protected Dictionary<string, MetaMemberVariable> m_MetaMemberVariableDict = new Dictionary<string, MetaMemberVariable>();
         protected Dictionary<string, MetaMemberVariable> m_MetaExtendMemeberVariableDict = new Dictionary<string, MetaMemberVariable>();
@@ -162,11 +175,22 @@ namespace SimpleLanguage.Core
         protected Dictionary<string, List<MetaMemberFunction>> m_MetaMemberFunctionListDict = new Dictionary<string, List<MetaMemberFunction>>();
         protected MetaExpressNode m_DefaultExpressNode = null;
         protected EType m_Type = EType.None;
+        protected bool m_IsInnerDefineCompile = false;
 
         public MetaClass(string _name, EType _type  = EType.Class )
         {
             m_Name = _name;
             m_Type = _type;
+        }
+        public MetaClass( MetaClass mc )
+        {
+            m_Name = mc.m_Name;
+            m_Type = mc.m_Type;
+            m_ExtendClass = mc.m_ExtendClass;
+
+            m_MetaMemberVariableDict = mc.m_MetaMemberVariableDict;
+            m_MetaExtendMemeberVariableDict = mc.m_MetaExtendMemeberVariableDict;
+            m_MetaMemberFunctionListDict = mc.m_MetaMemberFunctionListDict;
         }
         public void AllFunctionTranslateIR()
         {
@@ -181,19 +205,20 @@ namespace SimpleLanguage.Core
         }
         public virtual void ParseInnerVariable()
         {
-
         }
         public virtual void ParseInnerFunction()
         {
-
         }
-        public void Parse()
+        public void ParseInner()
         {
             ParseCSharp();
 
             ParseInnerVariable();
             ParseInnerFunction();
 
+        }
+        public void Parse()
+        {
             foreach ( var it in m_MetaMemberVariableDict)
             {
                 it.Value.Parse();
@@ -209,7 +234,7 @@ namespace SimpleLanguage.Core
             }
         }
 #if EditorMode
-        public virtual void BindFileMetaClass(FileMetaClass fmc)
+        public void BindFileMetaClass(FileMetaClass fmc)
         {
             if (m_FileMetaClassDict.ContainsKey(fmc.token))
             {
@@ -217,42 +242,74 @@ namespace SimpleLanguage.Core
             }
             fmc.SetMetaClass( this );
             m_FileMetaClassDict.Add(fmc.token, fmc);
-
-            for( int i = 0; i < fmc.templateParamList.Count; i++ )
+        }
+        public void ParseFileMetaClassTemplate( FileMetaClass fmc )
+        {
+            for (int i = 0; i < fmc.templateParamList.Count; i++)
             {
                 string tTemplateName = fmc.templateParamList[i].name;
-                if(m_MetaTemplateList.Find( a=> a.name == tTemplateName ) != null )
+                if ( m_MetaTemplateList.Find(a => a.name == tTemplateName) != null)
                 {
                     Console.WriteLine("Error 定义模式名称重复!!");
                 }
                 else
                 {
-                    m_MetaTemplateList.Add( new MetaTemplate( this, fmc.templateParamList[i]) );
+                    m_MetaTemplateList.Add(new MetaTemplate( this, fmc.templateParamList[i]));
                 }
             }
-
+        }
+        public void ParseFileMetaClassMemeberVarAndFunc( FileMetaClass fmc )
+        {
             bool isHave = false;
-            foreach (var v in fmc.memberVariableList)
+            foreach (var v2 in fmc.memberVariableList)
             {
-                MetaBase mb = GetChildrenMetaBaseByName(v.name);
+                MetaBase mb = GetChildrenMetaBaseByName(v2.name);
                 if (mb != null)
                 {
-                    Console.WriteLine("Error 已有定义类: " + allName + "中 已有: " + v.token?.ToLexemeAllString() + "的元素!!");
+                    Console.WriteLine("Error 已有定义类: " + allName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
                     isHave = true;
                 }
                 else
                     isHave = false;
-                MetaMemberVariable mmv = new MetaMemberVariable( this, v );
-                if( isHave )
+                MetaMemberVariable mmv = new MetaMemberVariable(this, v2);
+                if (isHave)
                 {
-                    mmv.SetName( mmv.name + "__repeat__" );
+                    mmv.SetName(mmv.name + "__repeat__");
                 }
                 AddMetaMemberVariable(mmv);
             }
+            foreach (var v2 in fmc.memberFunctionList)
+            {
+                MetaMemberFunction mmf = new MetaMemberFunction(this, v2 );
+                AddMetaMemberFunction(mmf);
+            }            
+        }
+        public void ParseFileMetaClassRewrite( FileMetaClass fmc )
+        {
             foreach (var v in fmc.memberFunctionList)
             {
-                MetaMemberFunction mmf = new MetaMemberFunction( this, v );
-                AddMetaMemberFunction(mmf);
+                bool isAdd = true;
+                MetaMemberFunction mmf = new MetaMemberFunction(this, v);
+                if (m_MetaMemberAllNameFunctionDict.ContainsKey(mmf.name))
+                {
+                    var mmaf = m_MetaMemberAllNameFunctionDict[mmf.name];
+                    if( mmaf.IsEqualWithMMFByNameAndParam( mmf ) )
+                    {
+                        isAdd = false;
+                        if (mmaf.isCanRewrite)
+                        {
+                            m_MetaMemberAllNameFunctionDict[mmf.name] = mmf;
+                        }
+                        else
+                        {
+                            Console.WriteLine(" Error 内部定义过的函数，不允许重写!!");
+                        }
+                    }
+                }
+                if (isAdd)
+                {
+                    AddMetaMemberFunction(mmf);
+                }
             }
         }
         public bool CompareInputTemplateList( MetaInputTemplateCollection mitc )
@@ -303,6 +360,68 @@ namespace SimpleLanguage.Core
             }
             m_ChildrenMetaClassDict.Add(mc.name, mc);
             AddMetaBase(mc.name, mc);
+        }
+        public void AddGenTemplateMetaClass(MetaTemplateClass mtc )
+        {
+            m_MetaGenTemplateClassList.Add(mtc);
+        }
+        public MetaTemplateClass GenerateTemplateClass( MetaInputTemplateCollection mic )
+        {
+            if (isTemplateClass == false)
+            {
+                Console.WriteLine("Error 该类不是模版类,不能生成模版生成类!!");
+                return null;
+            }
+            if(mic == null )
+            {
+                return null;
+            }
+            if (metaTemplateList.Count == mic.metaTemplateParamsList.Count)
+            {
+                MetaTemplateClass tmc = new MetaTemplateClass(this);
+                AddGenTemplateMetaClass(tmc);
+
+                for (int i = 0; i < metaTemplateList.Count; i++)
+                {
+                    var classTemplate = metaTemplateList[i];
+                    var inputTemplate = mic.metaTemplateParamsList[i];
+
+                    MetaGenTemplate mgt = new MetaGenTemplate(classTemplate, inputTemplate);
+                    tmc.AddMetaGenTemplate(mgt);
+                }
+                tmc.UpdateGenMember();
+
+                return tmc;
+            }
+            else
+            {
+                Console.WriteLine("Error 传进来的模版参数与类定义的参数长度对不上!!");
+                return null;
+            }
+        }
+        public MetaTemplateClass GetGenTemplateMetaClassIfNotThenGenTemplateClass(MetaInputTemplateCollection mtic )
+        {
+            MetaTemplateClass mtc = GetGenTemplateMetaClass(mtic);
+            if( mtc == null )
+            {
+                mtc = GenerateTemplateClass(mtic);
+            }
+            if( mtc == null )
+            {
+                Console.WriteLine("Error 没有找到合适的Template");
+            }
+            return mtc;
+        }
+        public MetaTemplateClass GetGenTemplateMetaClass( MetaInputTemplateCollection mitc )
+        {
+            foreach (var item in m_MetaGenTemplateClassList)
+            {
+                if (item.Adapter(mitc))
+                {
+                    return item;
+                }
+            }
+            return null;
         }
         public MetaClass GetChildrenMetaClassByName( string name )
         {
@@ -451,7 +570,7 @@ namespace SimpleLanguage.Core
             }
             return mmvList;
         }
-        public MetaMemberVariable GetMetaMemberVariableByName( string name )
+        public virtual MetaMemberVariable GetMetaMemberVariableByName( string name )
         {
             if (m_MetaMemberVariableDict.ContainsKey(name))
             {

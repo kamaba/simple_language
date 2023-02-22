@@ -56,7 +56,7 @@ namespace SimpleLanguage.Core
             }
             return m_CSharpType;
         }
-        public void ParseCSharp()
+        void ParseCSharp()
         {
             if (m_CSharpType == null) return;
 

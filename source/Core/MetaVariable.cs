@@ -39,6 +39,12 @@ namespace SimpleLanguage.Core
         //用来存放扩展包含变量
         protected Dictionary<string, MetaVariable> m_MetaVariableDict = new Dictionary<string, MetaVariable>();
         protected MetaVariable() { }
+        public MetaVariable( MetaVariable mv )
+        {
+            m_DefineMetaType = mv.m_DefineMetaType;
+            m_OwnerMetaClass = mv.m_OwnerMetaClass;
+            m_OwnerMetaBlockStatements = mv.m_OwnerMetaBlockStatements;
+        }
         public MetaVariable(string _name, MetaBlockStatements mbs, MetaClass ownerClass, MetaType mdt )
         {
             m_Name = _name;

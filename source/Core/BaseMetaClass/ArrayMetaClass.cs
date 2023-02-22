@@ -8,7 +8,6 @@
 using SimpleLanguage.VM;
 using System;
 using System.Collections.Generic;
-using System.Runtime.Intrinsics.X86;
 using System.Text;
 
 namespace SimpleLanguage.Core.SelfMeta
@@ -18,6 +17,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public IEnumerableMetaClass() : base(DefaultObject.Array.ToString())
         {
             m_Type = EType.Array;
+            m_IsInnerDefineCompile = true;
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             //m_MetaTemplateList.Add(new TemplateMetaClass("T"));
         }
@@ -33,8 +33,8 @@ namespace SimpleLanguage.Core.SelfMeta
             MetaMemberVariable index = new MetaMemberVariable(this, "index", CoreMetaClassManager.int32MetaClass);
             AddMetaMemberVariable(index);
 
-            MetaMemberVariable tvalue = new MetaMemberVariable(this, "value", CoreMetaClassManager.templateMetaClass);
-            AddMetaMemberVariable(tvalue);
+            //MetaMemberVariable tvalue = new MetaMemberVariable(this, "value", CoreMetaClassManager.templateMetaClass);
+            //AddMetaMemberVariable(tvalue);
         }
         public static MetaClass CreateMetaClass()
         {
@@ -57,8 +57,8 @@ namespace SimpleLanguage.Core.SelfMeta
             MetaMemberVariable index = new MetaMemberVariable(this, "index", CoreMetaClassManager.int32MetaClass);
             AddMetaMemberVariable(index);
 
-            MetaMemberVariable tvalue = new MetaMemberVariable(this, "value", CoreMetaClassManager.templateMetaClass);
-            AddMetaMemberVariable(tvalue);
+            //MetaMemberVariable tvalue = new MetaMemberVariable(this, "value", CoreMetaClassManager.templateMetaClass);
+            //AddMetaMemberVariable(tvalue);
         }
         public override void ParseInnerFunction()
         {
@@ -78,9 +78,9 @@ namespace SimpleLanguage.Core.SelfMeta
             //Array.AddMetaDefineParam(new MetaDefineParam("bound4", this, null, CoreMetaClassManager.int16MetaClass, men));
 
             MetaMemberFunction AddT = new MetaMemberFunction( this , "Add");
-            AddT.AddMetaDefineParam(new MetaDefineParam("T", this, null, CoreMetaClassManager.templateMetaClass, null));
-            AddT.SetMetaDefineType(new MetaType(CoreMetaClassManager.templateMetaClass));
-            AddMetaMemberFunction(AddT);
+            //AddT.AddMetaDefineParam(new MetaDefineParam("T", this, null, CoreMetaClassManager.templateMetaClass, null));
+            //AddT.SetMetaDefineType(new MetaType(CoreMetaClassManager.templateMetaClass));
+            //AddMetaMemberFunction(AddT);
 
             MetaMemberFunction RemoveIndex = new MetaMemberFunction(this, "RemoveIndex");
             RemoveIndex.AddMetaDefineParam(new MetaDefineParam("index", this, null, CoreMetaClassManager.int32MetaClass, null));
@@ -88,9 +88,9 @@ namespace SimpleLanguage.Core.SelfMeta
             AddMetaMemberFunction(RemoveIndex);
 
             MetaMemberFunction Remove = new MetaMemberFunction(this, "Remove");
-            Remove.AddMetaDefineParam(new MetaDefineParam("T", this, null, CoreMetaClassManager.templateMetaClass, null));
-            Remove.SetMetaDefineType(new MetaType(CoreMetaClassManager.objectMetaClass));
-            AddMetaMemberFunction(Remove);
+            //Remove.AddMetaDefineParam(new MetaDefineParam("T", this, null, CoreMetaClassManager.templateMetaClass, null));
+            //Remove.SetMetaDefineType(new MetaType(CoreMetaClassManager.objectMetaClass));
+            //AddMetaMemberFunction(Remove);
 
             MetaMemberFunction SetLength = new MetaMemberFunction(this, "SetLength");
             SetLength.AddMetaDefineParam(new MetaDefineParam("length", this, null, CoreMetaClassManager.int32MetaClass, null));
@@ -102,9 +102,9 @@ namespace SimpleLanguage.Core.SelfMeta
             AddMetaMemberFunction(Count);
 
             MetaMemberFunction IsIn = new MetaMemberFunction(this, "IsIn");
-            IsIn.AddMetaDefineParam(new MetaDefineParam("T", this, null, CoreMetaClassManager.templateMetaClass, null));
-            IsIn.SetMetaDefineType(new MetaType(CoreMetaClassManager.voidMetaClass));
-            AddMetaMemberFunction(IsIn);
+            //IsIn.AddMetaDefineParam(new MetaDefineParam("T", this, null, CoreMetaClassManager.templateMetaClass, null));
+            //IsIn.SetMetaDefineType(new MetaType(CoreMetaClassManager.voidMetaClass));
+            //AddMetaMemberFunction(IsIn);
         }
         public void Init_Call( ArrayObject<int> arrObj, int count )
         {
