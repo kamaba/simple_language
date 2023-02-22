@@ -32,9 +32,12 @@ namespace SimpleLanguage.Core.SelfMeta
         public void AddCoreFunction()
         {
             MetaMemberFunction Cast = new MetaMemberFunction(this, "Cast");
-            Cast.AddMetaDefineParam(new MetaDefineParam("t", this, null, CoreMetaClassManager.templateMetaClass, null));
-            Cast.SetDefineMetaClass(CoreMetaClassManager.int32MetaClass);
-            AddMetaMemberFunction(Cast);
+            //Cast.AddMetaDefineParam(new MetaDefineParam("t", this, null, CoreMetaClassManager.templateMetaClass, null));
+            //Cast.SetDefineMetaClass(CoreMetaClassManager.int32MetaClass);
+            //AddMetaMemberFunction(Cast);
+
+            MetaMemberFunction __Init__ = new MetaMemberFunction(this, "__Init__");
+            AddMetaMemberFunction(__Init__);
 
             MetaMemberFunction GetHashCode = new MetaMemberFunction(this, "GetHashCode");
             GetHashCode.SetDefineMetaClass(CoreMetaClassManager.int32MetaClass);

@@ -24,8 +24,8 @@ namespace SimpleLanguage.Core.SelfMeta
             MetaMemberVariable index = new MetaMemberVariable(this, "index", CoreMetaClassManager.int32MetaClass);
             AddMetaMemberVariable(index);
 
-            MetaMemberVariable tvalue = new MetaMemberVariable(this, "value", CoreMetaClassManager.templateMetaClass);
-            AddMetaMemberVariable(tvalue);
+            //MetaMemberVariable tvalue = new MetaMemberVariable(this, "value", CoreMetaClassManager.templateMetaClass);
+            //AddMetaMemberVariable(tvalue);
         }
         public static MetaClass CreateMetaClass()
         {
@@ -38,64 +38,42 @@ namespace SimpleLanguage.Core.SelfMeta
     {
         public RangeMetaClass():base( DefaultObject.Range.ToString() )
         {
-            m_Type = EType.Array;
+            m_Type = EType.Range;
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
+            m_IsInnerDefineCompile = true;
             m_MetaTemplateList.Add( new MetaTemplate(this, "T") );
         }
         public override void ParseInnerVariable()
         {
+            MetaTemplate mt = m_MetaTemplateList[0];
+
+            MetaMemberVariable m_Start = new MetaMemberVariable(this, "m_Start", mt );
+            AddMetaMemberVariable(m_Start);
+            MetaMemberVariable m_End = new MetaMemberVariable(this, "m_End", mt );
+            AddMetaMemberVariable(m_End);
+            MetaMemberVariable m_Step = new MetaMemberVariable(this, "m_Step", mt );
+            AddMetaMemberVariable(m_Step);
+
             MetaMemberVariable index = new MetaMemberVariable(this, "index", CoreMetaClassManager.int32MetaClass);
             AddMetaMemberVariable(index);
 
-            MetaMemberVariable tvalue = new MetaMemberVariable(this, "value", CoreMetaClassManager.templateMetaClass);
-            AddMetaMemberVariable(tvalue);
+            //MetaMemberVariable tvalue = new MetaMemberVariable(this, "value", CoreMetaClassManager.templateMetaClass);
+            //AddMetaMemberVariable(tvalue);
         }
         public override void ParseInnerFunction()
         {
-            AddCoreFunction();
-        }
-        public void AddCoreFunction()
-        {
-            MetaMemberFunction Array = new MetaMemberFunction(this, "__Init__");
-            AddMetaMemberFunction(Array); 
-            Array.SetMetaDefineType(new MetaType(CoreMetaClassManager.rangeMetaClass));
+            MetaMemberFunction __Init__ = new MetaMemberFunction(this, "__Init__");
+            AddMetaMemberFunction(__Init__);
+            __Init__.SetMetaDefineType(new MetaType(CoreMetaClassManager.rangeMetaClass));
 
-            MetaExpressNode men = new MetaConstExpressNode(EType.Int32, 0);
-            Array.AddMetaDefineParam(new MetaDefineParam("start", this, null, CoreMetaClassManager.int32MetaClass, men));         
+            MetaTemplate mt = m_MetaTemplateList[0];
 
-            MetaExpressNode men2 = new MetaConstExpressNode(EType.Int32, 1);
-            Array.AddMetaDefineParam(new MetaDefineParam("end", this, null, CoreMetaClassManager.int32MetaClass, men2 ));
-
-            MetaExpressNode men3 = new MetaConstExpressNode(EType.Int32, 1);
-            Array.AddMetaDefineParam(new MetaDefineParam("step", this, null, CoreMetaClassManager.int32MetaClass, men3));
-
-
-            MetaMemberFunction AddT = new MetaMemberFunction( this , "Add");
-            AddT.AddMetaDefineParam(new MetaDefineParam("T", this, null, CoreMetaClassManager.templateMetaClass, null));
-            AddT.SetMetaDefineType(new MetaType(CoreMetaClassManager.templateMetaClass));
-            AddMetaMemberFunction(AddT);
-
-            MetaMemberFunction RemoveIndex = new MetaMemberFunction(this, "RemoveIndex");
-            RemoveIndex.AddMetaDefineParam(new MetaDefineParam("index", this, null, CoreMetaClassManager.int32MetaClass, null));
-            //RemoveIndex.SetMetaDefineType(new MetaDefineType(CoreMetaClassManager.int32MetaClass));
-            AddMetaMemberFunction(RemoveIndex);
-
-            MetaMemberFunction Remove = new MetaMemberFunction(this, "Remove");
-            Remove.AddMetaDefineParam(new MetaDefineParam("T", this, null, CoreMetaClassManager.templateMetaClass, null));
-            Remove.SetMetaDefineType(new MetaType(CoreMetaClassManager.objectMetaClass));
-            AddMetaMemberFunction(Remove);
-
-            MetaMemberFunction SetLength = new MetaMemberFunction(this, "SetLength");
-            SetLength.AddMetaDefineParam(new MetaDefineParam("length", this, null, CoreMetaClassManager.int32MetaClass, null));
-            SetLength.SetMetaDefineType(new MetaType(CoreMetaClassManager.voidMetaClass));
-            AddMetaMemberFunction(SetLength);
-
-            MetaMemberFunction Count = new MetaMemberFunction(this, "Count");
-            Count.SetMetaDefineType(new MetaType(CoreMetaClassManager.int32MetaClass));
-            AddMetaMemberFunction(Count);
+            __Init__.AddMetaDefineParam(new MetaDefineParam("start", this, null, mt ));
+            __Init__.AddMetaDefineParam(new MetaDefineParam("end", this, null, mt ));
+            __Init__.AddMetaDefineParam(new MetaDefineParam("step", this, null, mt ));
 
             MetaMemberFunction IsIn = new MetaMemberFunction(this, "IsIn");
-            IsIn.AddMetaDefineParam(new MetaDefineParam("T", this, null, CoreMetaClassManager.templateMetaClass, null));
+            IsIn.AddMetaDefineParam(new MetaDefineParam("T", this, null, mt ));
             IsIn.SetMetaDefineType(new MetaType(CoreMetaClassManager.voidMetaClass));
             AddMetaMemberFunction(IsIn);
         }

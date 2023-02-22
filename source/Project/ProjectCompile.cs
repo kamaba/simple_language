@@ -25,7 +25,7 @@ namespace SimpleLanguage.Project
     {
         public bool isThreadCompile = false;
         public static bool isLoaded = false;
-        public static FileMeta fileMeta => m_File;
+        public static FileMeta projectFileMeta => m_ProjectFile;
         
         public static int structParseCount = 0;
         public static int buildParseCount = 0;
@@ -36,7 +36,7 @@ namespace SimpleLanguage.Project
         private static ProjectData m_Data = null;
         private static string m_ProjectPath;
         private static string m_FileContentString = null;
-        private static FileMeta m_File = null;
+        private static FileMeta m_ProjectFile = null;
         private static LexerParse m_LexerParse = null;
         private static TokenParse m_TokenParse = null;
         private static StructParse m_ProjectBuild = null;
@@ -49,7 +49,7 @@ namespace SimpleLanguage.Project
                 Console.WriteLine("Error 项目加载路径不正确!!");
                 return;
             }
-            m_File = new FileMeta(m_ProjectPath);
+            m_ProjectFile = new FileMeta(m_ProjectPath);
 
             byte[] buffer = File.ReadAllBytes(m_ProjectPath);
             m_FileContentString = System.Text.Encoding.UTF8.GetString(buffer);
@@ -57,23 +57,23 @@ namespace SimpleLanguage.Project
             m_LexerParse = new LexerParse(m_ProjectPath, m_FileContentString);
             m_LexerParse.ParseToTokenList();
 
-            m_TokenParse = new TokenParse(m_File, m_LexerParse.GetListTokensWidthEnd());
+            m_TokenParse = new TokenParse(m_ProjectFile, m_LexerParse.GetListTokensWidthEnd());
 
             m_TokenParse.BuildStruct();
 
-            m_ProjectBuild = new StructParse(m_File, m_TokenParse.rootNode);
+            m_ProjectBuild = new StructParse(m_ProjectFile, m_TokenParse.rootNode);
 
             m_ProjectBuild.ParseRootNodeToFileMeta();
 
-            m_ProjectParse = new ProjectParse(m_File, m_Data);
+            m_ProjectParse = new ProjectParse(m_ProjectFile, m_Data);
 
             m_ProjectParse.ParseProject();
 
-            m_File.SetDeep(0);
+            m_ProjectFile.SetDeep(0);
 
             ProjectClass.ParseCompileClass();
 
-            Console.WriteLine(m_File.ToFormatString());
+            Console.WriteLine(m_ProjectFile.ToFormatString());
         }
 
         public static void Compile( string path, ProjectData pd )
@@ -177,9 +177,9 @@ namespace SimpleLanguage.Project
                 fileParseList[i].CombineFileMeta();
             }
 
-            for (int i = 0; i < m_File.fileMetaClassList.Count; i++)
+            for (int i = 0; i < m_ProjectFile.fileMetaClassList.Count; i++)
             {
-                var fns = m_File.fileMetaClassList[i];
+                var fns = m_ProjectFile.fileMetaClassList[i];
 
                 if (fns.name == "ProJectConfig"
                     || fns.name == "Compile")
@@ -192,7 +192,9 @@ namespace SimpleLanguage.Project
             {
                 fileParseList[i].CheckExtendAndInterface();
             }
-            m_File.CheckExtendAndInterface();
+            m_ProjectFile.CheckExtendAndInterface();
+
+            ClassManager.instance.ParseFileMetaClass();
 
             ClassManager.instance.Parse();
 

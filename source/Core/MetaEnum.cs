@@ -36,15 +36,8 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public override void BindFileMetaClass(FileMetaClass fmc)
+        public void ParseFileMetaEnumMemeberData(FileMetaClass fmc)
         {
-            if (m_FileMetaClassDict.ContainsKey(fmc.token))
-            {
-                return;
-            }
-            fmc.SetMetaClass(this);
-            m_FileMetaClassDict.Add(fmc.token, fmc);
-
             for (int i = 0; i < fmc.templateParamList.Count; i++)
             {
                 string tTemplateName = fmc.templateParamList[i].name;

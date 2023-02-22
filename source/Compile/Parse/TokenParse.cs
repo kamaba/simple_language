@@ -256,6 +256,7 @@ namespace SimpleLanguage.Compile.Parse
                 case ETokenType.Object:
                 case ETokenType.Boolean:
                 case ETokenType.Global:
+                case ETokenType.Range:
                     {
                         AddIdentifier(token);
                     }

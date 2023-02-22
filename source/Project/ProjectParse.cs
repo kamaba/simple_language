@@ -400,15 +400,8 @@ namespace SimpleLanguage.Project
         public ImportModuleData importModuleData { get; set; } = new ImportModuleData();
         public MemberSetData memberSetData { get; set; } = new MemberSetData();
 
-        public override void BindFileMetaClass(FileMetaClass fmc)
+        public override void ParseFileMetaDataMemeberData(FileMetaClass fmc)
         {
-            if (m_FileMetaClassDict.ContainsKey(fmc.token))
-            {
-                return;
-            }
-            fmc.SetMetaClass(this);
-            m_FileMetaClassDict.Add(fmc.token, fmc);
-
             bool isHave = false;
             for (int i = 0; i < fmc.memberDataList.Count; i++)
             {
@@ -571,6 +564,7 @@ namespace SimpleLanguage.Project
                 return;
             }
             m_ProjectData.BindFileMetaClass(fmc);
+            m_ProjectData.ParseFileMetaDataMemeberData(fmc);
             m_ProjectData.Parse();
 
         }

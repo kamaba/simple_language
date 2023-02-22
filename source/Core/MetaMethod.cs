@@ -92,6 +92,12 @@ namespace SimpleLanguage.Core
                 ld.nextStatements = newld.nextStatements;
             }
         }
+        public MetaFunction( MetaFunction mf )
+        {
+            m_MetaMemberParamCollection = new MetaDefineParamCollection(false, true);
+            m_DefineMetaType = new MetaType(mf.metaDefineType);
+            SetOwnerMetaClass(mf.ownerMetaClass);
+        }
         public MetaFunction(MetaClass mc)
         {
             m_MetaMemberParamCollection = new MetaDefineParamCollection(false, true);
@@ -183,7 +189,11 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(m_MetaFunction?.allName );
+            if( m_MetaFunction != null )
+            {
+                sb.Append(m_MetaFunction.ownerMetaClass.ToFormatString());
+                sb.Append("." + m_MetaFunction.name);
+            }
             sb.Append(m_MetaInputParamCollection?.ToFormatString());
 
             return sb.ToString();

@@ -32,7 +32,7 @@ namespace SimpleLanguage.Project
         public static MetaFunction s_CompileAfterFunction = null;
         public static void ParseCompileClass()
         {
-            FileMetaClass fmc = ProjectCompile.fileMeta.GetFileMetaClassByName("Compile");
+            FileMetaClass fmc = ProjectCompile.projectFileMeta.GetFileMetaClassByName("Compile");
 
             if (fmc == null) return;
 
