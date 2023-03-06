@@ -36,7 +36,7 @@ namespace SimpleLanguage.Core.SelfMeta
 
             MetaMemberFunction ToInt32 = new MetaMemberFunction(this, "ToInt32");
             ToInt32.isOverrideFunction = true;
-            AddMetaMemberFunction(ToInt32);
+            AddInnerMetaMemberFunction(ToInt32);
         }
         public MetaClass Cast( MetaTemplate mt)
         {

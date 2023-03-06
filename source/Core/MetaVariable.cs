@@ -20,10 +20,6 @@ namespace SimpleLanguage.Core
         public virtual bool isConst { get; set; } = false;
         public bool isArgument { get; set; } = false;
         public bool isGlobal { get; set; } = false;
-        public bool isTemplate
-        {
-            get { return m_DefineMetaType.isUseInputTemplate; }
-        }
         public bool isArray
         {
             get { return m_DefineMetaType.isArray; }
@@ -41,6 +37,7 @@ namespace SimpleLanguage.Core
         protected MetaVariable() { }
         public MetaVariable( MetaVariable mv )
         {
+            m_Name = mv.m_Name;
             m_DefineMetaType = mv.m_DefineMetaType;
             m_OwnerMetaClass = mv.m_OwnerMetaClass;
             m_OwnerMetaBlockStatements = mv.m_OwnerMetaBlockStatements;
@@ -92,6 +89,10 @@ namespace SimpleLanguage.Core
                 return m_MetaVariableDict[name];
             }
             return null;
+        }
+        public virtual string ToStatementString()
+        {
+            return "";
         }
         public override string ToFormatString()
         {

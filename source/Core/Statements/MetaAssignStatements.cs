@@ -326,33 +326,15 @@ namespace SimpleLanguage.Core.Statements
                         Console.WriteLine(sb.ToString());
                         m_IsNeedCastState = true;
                     }
+                    else if( relation == ClassManager.EClassRelation.Similar )
+                    {
+                        sb.Append("数字类型相似，可能会有强转会有精度的丢失!");
+                        Console.WriteLine(sb.ToString());
+                        m_IsNeedCastState = true;
+                    }
                     else if (relation == ClassManager.EClassRelation.Same)
                     {
-                        bool isSame = true;
-                        if (mdt.isUseInputTemplate )
-                        {
-                            if (mdt.inputTemplateCollection.metaTemplateParamsList.Count == expressRetMetaDefineType.inputTemplateCollection.metaTemplateParamsList.Count)
-                            {
-                                for (int i = 0; i < mdt.inputTemplateCollection.metaTemplateParamsList.Count; i++)
-                                {
-                                    var itp = mdt.inputTemplateCollection.metaTemplateParamsList[i];
-                                    var etp = expressRetMetaDefineType.inputTemplateCollection.metaTemplateParamsList[i];
-                                    if ( MetaType.EqualMetaDefineType( itp, etp ) )
-                                    {
-                                        isSame = false;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        if (isSame)
-                        {
-                            m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
-                        }
-                        else
-                        {
-                            relation = ClassManager.EClassRelation.No;
-                        }
+                        m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
                     }
                     else if (relation == ClassManager.EClassRelation.Parent)
                     {
@@ -421,6 +403,12 @@ namespace SimpleLanguage.Core.Statements
                 if (m_FinalMetaExpress != null)
                 {
                     sb.Append(m_FinalMetaExpress.ToFormatString());
+                }
+                if(m_IsNeedCastState)
+                {
+                    sb.Append(".Cast<");
+                    sb.Append(m_MetaVariable.metaDefineType.ToFormatString());
+                    sb.Append(">()");
                 }
             }
             return sb.ToString();

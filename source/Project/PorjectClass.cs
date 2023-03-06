@@ -62,7 +62,7 @@ namespace SimpleLanguage.Project
                 Console.WriteLine("Error project!!");
                 return;
             }
-            MetaMemberFunction mmf = project.GetMetaMemberFunctionByAllName("Test");
+            MetaMemberFunction mmf = project.GetFirstMetaMemberFunctionByName("Test");
             if (mmf == null)
             {
                 Console.WriteLine("Error project.Main函数!!");
@@ -79,7 +79,7 @@ namespace SimpleLanguage.Project
                 Console.WriteLine("Error 没有找到ProjectEnter!!");
                 return;
             }
-            MetaMemberFunction mmf = projectEntoer.GetMetaMemberFunctionByAllName("Main");
+            MetaMemberFunction mmf = projectEntoer.GetFirstMetaMemberFunctionByName("Main");
             if (mmf == null)
             {
                 Console.WriteLine("Error 没有找到ProjectEnter.Main函数!!");

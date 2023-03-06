@@ -16,6 +16,8 @@ using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Linq;
+using System.Runtime.Intrinsics.X86;
+using System.Reflection;
 
 namespace SimpleLanguage.Core
 {
@@ -158,7 +160,7 @@ namespace SimpleLanguage.Core
         public Dictionary<string, MetaMemberVariable> metaExtendMemeberVariableDict => m_MetaExtendMemeberVariableDict;
         public Dictionary<Token, FileMetaClass> fileMetaClassDict => m_FileMetaClassDict;
         public Dictionary<string, List<MetaMemberFunction>> metaMemberFunctionListDict => m_MetaMemberFunctionListDict;
-        public List<MetaTemplateClass> metaGenTemplateClassList => m_MetaGenTemplateClassList;
+        public List<MetaGenTemplateClass> metaGenTemplateClassList => m_MetaGenTemplateClassList;
         public bool isHandleExtendVariableDirty { get; set; } = false;
 
 
@@ -167,12 +169,13 @@ namespace SimpleLanguage.Core
         protected List<MetaClass> m_InterfaceClass = new List<MetaClass>();
 
         protected List<MetaTemplate> m_MetaTemplateList = new List<MetaTemplate>();
-        protected List<MetaTemplateClass> m_MetaGenTemplateClassList = new List<MetaTemplateClass>();
+        protected List<MetaGenTemplateClass> m_MetaGenTemplateClassList = new List<MetaGenTemplateClass>();
         protected Dictionary<string, MetaClass> m_ChildrenMetaClassDict = new Dictionary<string, MetaClass>();
         protected Dictionary<string, MetaMemberVariable> m_MetaMemberVariableDict = new Dictionary<string, MetaMemberVariable>();
         protected Dictionary<string, MetaMemberVariable> m_MetaExtendMemeberVariableDict = new Dictionary<string, MetaMemberVariable>();
         protected Dictionary<string, MetaMemberFunction> m_MetaMemberAllNameFunctionDict = new Dictionary<string, MetaMemberFunction>();
         protected Dictionary<string, List<MetaMemberFunction>> m_MetaMemberFunctionListDict = new Dictionary<string, List<MetaMemberFunction>>();
+        protected List<MetaMemberFunction> m_TempInnerFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected MetaExpressNode m_DefaultExpressNode = null;
         protected EType m_Type = EType.None;
         protected bool m_IsInnerDefineCompile = false;
@@ -191,6 +194,24 @@ namespace SimpleLanguage.Core
             m_MetaMemberVariableDict = mc.m_MetaMemberVariableDict;
             m_MetaExtendMemeberVariableDict = mc.m_MetaExtendMemeberVariableDict;
             m_MetaMemberFunctionListDict = mc.m_MetaMemberFunctionListDict;
+        }
+        public override void SetDeep( int deep )
+        {
+            m_Deep = deep;
+
+            foreach( var v in m_ChildrenMetaClassDict )
+            {
+                v.Value.SetDeep(deep + 1);
+            }
+
+            foreach( var v in m_MetaMemberVariableDict )
+            {
+                v.Value.SetDeep(deep + 1);
+            }
+            foreach( var v in m_MetaMemberAllNameFunctionDict)
+            {
+                v.Value.SetDeep(deep + 1);
+            }
         }
         public void AllFunctionTranslateIR()
         {
@@ -266,7 +287,15 @@ namespace SimpleLanguage.Core
                 MetaBase mb = GetChildrenMetaBaseByName(v2.name);
                 if (mb != null)
                 {
-                    Console.WriteLine("Error 已有定义类: " + allName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
+                    MetaMemberVariable cmmv = mb as MetaMemberVariable;
+                    if(cmmv != null && cmmv.isInnerDefine )
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error 已有定义类: " + allName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
+                    }
                     isHave = true;
                 }
                 else
@@ -284,40 +313,13 @@ namespace SimpleLanguage.Core
                 AddMetaMemberFunction(mmf);
             }            
         }
-        public void ParseFileMetaClassRewrite( FileMetaClass fmc )
-        {
-            foreach (var v in fmc.memberFunctionList)
-            {
-                bool isAdd = true;
-                MetaMemberFunction mmf = new MetaMemberFunction(this, v);
-                if (m_MetaMemberAllNameFunctionDict.ContainsKey(mmf.name))
-                {
-                    var mmaf = m_MetaMemberAllNameFunctionDict[mmf.name];
-                    if( mmaf.IsEqualWithMMFByNameAndParam( mmf ) )
-                    {
-                        isAdd = false;
-                        if (mmaf.isCanRewrite)
-                        {
-                            m_MetaMemberAllNameFunctionDict[mmf.name] = mmf;
-                        }
-                        else
-                        {
-                            Console.WriteLine(" Error 内部定义过的函数，不允许重写!!");
-                        }
-                    }
-                }
-                if (isAdd)
-                {
-                    AddMetaMemberFunction(mmf);
-                }
-            }
-        }
         public bool CompareInputTemplateList( MetaInputTemplateCollection mitc )
         {
             if( mitc == null || mitc?.metaTemplateParamsList?.Count == 0 )
             {
                 if (this.metaTemplateList.Count == 0)
                     return true;
+                return false;
             }
             if( mitc.metaTemplateParamsList.Count == this.metaTemplateList.Count )
             {
@@ -341,6 +343,43 @@ namespace SimpleLanguage.Core
                 m_DefaultExpressNode = new MetaNewObjectExpressNode(mdt, this, null, cdf );
             }
 
+            List<MetaMemberFunction> addList = new List<MetaMemberFunction>();
+            for( int i = 0; i < m_TempInnerFunctionList.Count; i++ ) 
+            {
+                MetaMemberFunction mmf = m_TempInnerFunctionList[i];
+
+                bool isAdd = true;
+                if (m_MetaMemberFunctionListDict.ContainsKey(mmf.name))
+                {
+                    var list = m_MetaMemberFunctionListDict[mmf.name];
+                    MetaMemberFunction curFun = IsSameMetaMemeberFunction(list, mmf);
+                    if (curFun != null)
+                    {
+                        isAdd = false;
+                        if (mmf.isCanRewrite)
+                        {
+                            int index = list.IndexOf(curFun);
+                            list[index] = mmf;
+                        }
+                        else
+                        {
+                            RemoveMetaMemberFunction(curFun);
+                            isAdd = true;
+                            break;
+                        }
+                    }
+                }                
+                if (isAdd)
+                {
+                    addList.Add(mmf);
+                }
+            }
+            for( int i = 0; i < addList.Count; i++ )
+            {
+                AddMetaMemberFunction(addList[i]);
+            }
+            m_TempInnerFunctionList.Clear();
+
             CreateMetaClassData();
         }
 #endif
@@ -361,11 +400,19 @@ namespace SimpleLanguage.Core
             m_ChildrenMetaClassDict.Add(mc.name, mc);
             AddMetaBase(mc.name, mc);
         }
-        public void AddGenTemplateMetaClass(MetaTemplateClass mtc )
+        public MetaClass GetChildrenMetaClass( string name )
+        {
+            if( m_ChildrenMetaClassDict.ContainsKey( name ) )
+            {
+                return m_ChildrenMetaClassDict[name];
+            }
+            return null;
+        }
+        public void AddGenTemplateMetaClass(MetaGenTemplateClass mtc )
         {
             m_MetaGenTemplateClassList.Add(mtc);
         }
-        public MetaTemplateClass GenerateTemplateClass( MetaInputTemplateCollection mic )
+        public MetaGenTemplateClass GenerateTemplateClass( MetaInputTemplateCollection mic )
         {
             if (isTemplateClass == false)
             {
@@ -378,7 +425,7 @@ namespace SimpleLanguage.Core
             }
             if (metaTemplateList.Count == mic.metaTemplateParamsList.Count)
             {
-                MetaTemplateClass tmc = new MetaTemplateClass(this);
+                MetaGenTemplateClass tmc = new MetaGenTemplateClass(this);
                 AddGenTemplateMetaClass(tmc);
 
                 for (int i = 0; i < metaTemplateList.Count; i++)
@@ -390,6 +437,7 @@ namespace SimpleLanguage.Core
                     tmc.AddMetaGenTemplate(mgt);
                 }
                 tmc.UpdateGenMember();
+                tmc.SetDeep(m_Deep + 1);
 
                 return tmc;
             }
@@ -399,9 +447,9 @@ namespace SimpleLanguage.Core
                 return null;
             }
         }
-        public MetaTemplateClass GetGenTemplateMetaClassIfNotThenGenTemplateClass(MetaInputTemplateCollection mtic )
+        public MetaGenTemplateClass GetGenTemplateMetaClassIfNotThenGenTemplateClass(MetaInputTemplateCollection mtic )
         {
-            MetaTemplateClass mtc = GetGenTemplateMetaClass(mtic);
+            MetaGenTemplateClass mtc = GetGenTemplateMetaClass(mtic);
             if( mtc == null )
             {
                 mtc = GenerateTemplateClass(mtic);
@@ -412,7 +460,7 @@ namespace SimpleLanguage.Core
             }
             return mtc;
         }
-        public MetaTemplateClass GetGenTemplateMetaClass( MetaInputTemplateCollection mitc )
+        public MetaGenTemplateClass GetGenTemplateMetaClass( MetaInputTemplateCollection mitc )
         {
             foreach (var item in m_MetaGenTemplateClassList)
             {
@@ -471,20 +519,32 @@ namespace SimpleLanguage.Core
                 MetaVariableManager.instance.AddMetaMemberVariable(mmv);
             }
         }
+        public MetaMemberFunction IsSameMetaMemeberFunction(List<MetaMemberFunction> list, MetaMemberFunction mmf)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                var curFun = list[i];
+                if( curFun.metaMemberParamCollection.IsEqualMetaDefineParamCollection( mmf.metaMemberParamCollection ) )
+                {
+                    return curFun;
+                }
+            }
+            return null;
+        }
+        public void AddInnerMetaMemberFunction( MetaMemberFunction mmf )
+        {
+            m_TempInnerFunctionList.Add(mmf);
+        }
         public void AddMetaMemberFunction(MetaMemberFunction mmf, bool isAddMethod = true )
         {
-            if (!m_MetaMemberAllNameFunctionDict.ContainsKey(mmf.functionAllName))
-            {
-                m_MetaMemberAllNameFunctionDict.Add(mmf.functionAllName, mmf);
-            }
             if(m_MetaMemberFunctionListDict.ContainsKey(mmf.name ) )
             {
                 var list = m_MetaMemberFunctionListDict[mmf.name];
 
-                MetaMemberFunction finded = list.Find(a => a.functionAllName == mmf.functionAllName);
-                if( finded == null )
+                if( IsSameMetaMemeberFunction(list, mmf) == null )
                 {
                     list.Add(mmf);
+                    m_MetaMemberAllNameFunctionDict.Add(mmf.functionAllName, mmf);
                 }
             }
             else
@@ -492,6 +552,7 @@ namespace SimpleLanguage.Core
                 var list = new List<MetaMemberFunction>();
                 list.Add(mmf);
                 m_MetaMemberFunctionListDict.Add(mmf.name, list);
+                m_MetaMemberAllNameFunctionDict.Add(mmf.functionAllName, mmf);
             }
             AddMetaBase(mmf.functionAllName, mmf);
 
@@ -504,14 +565,26 @@ namespace SimpleLanguage.Core
                 MethodManager.instance.AddDynamicMemberFunction(mmf);
             }
         }
+        public void RemoveMetaMemberFunction( MetaMemberFunction mmf )
+        {
+            if (m_MetaMemberFunctionListDict.ContainsKey(mmf.name))
+            {
+                var list = m_MetaMemberFunctionListDict[mmf.name];
+
+                list.Remove(mmf);
+            }
+            RemoveMetaBase(mmf);
+
+            //MethodManager.instance.AddMemeberFunction(mmf);
+        }
         public void AddDefineConstructFunction()
         {
             MetaMemberFunction mmf = GetMetaMemberConstructDefaultFunction();
             if( mmf == null )
             {
-                //mmf = new MetaMemberFunction(this, "Init");
-                //mmf.SetDefineMetaClass(this);
-                //AddMetaMemberFunction(mmf);
+                mmf = new MetaMemberFunction(this, "__Init__");
+                mmf.SetDefineMetaClass(this);
+                AddMetaMemberFunction(mmf);
             }
         }
         public void HandleExtendClassVariable()
@@ -531,20 +604,15 @@ namespace SimpleLanguage.Core
             m_MetaClassData.SetRealMetaMemberVariable(resList);
             //m_MetaClassData.CalcAllocSize();
         }
-        public MetaVariable GetMetaMemberByAllName( string name )
+        public virtual MetaMemberVariable GetMetaMemberVariableByName(string name)
         {
-            if(m_MetaMemberVariableDict.ContainsKey(name ) )
+            if (m_MetaMemberVariableDict.ContainsKey(name))
             {
                 return m_MetaMemberVariableDict[name];
             }
-            if(m_MetaExtendMemeberVariableDict.ContainsKey( name ))
+            if (m_MetaExtendMemeberVariableDict.ContainsKey(name))
             {
                 return m_MetaExtendMemeberVariableDict[name];
-            }
-            foreach( var v in m_MetaMemberAllNameFunctionDict)
-            {
-                if (v.Value.name == name)
-                    return v.Value;
             }
             return null;
         }
@@ -570,18 +638,6 @@ namespace SimpleLanguage.Core
             }
             return mmvList;
         }
-        public virtual MetaMemberVariable GetMetaMemberVariableByName( string name )
-        {
-            if (m_MetaMemberVariableDict.ContainsKey(name))
-            {
-                return m_MetaMemberVariableDict[name];
-            }
-            if (m_MetaExtendMemeberVariableDict.ContainsKey(name))
-            {
-                return m_MetaExtendMemeberVariableDict[name];
-            }
-            return null;
-        }
         public MetaMemberFunction GetMetaDefineGetSetMemberFunctionByName( string name, bool isGet , bool isSet )
         {
             if (!m_MetaMemberFunctionListDict.ContainsKey(name))
@@ -606,7 +662,7 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public MetaMemberFunction GetMetaMemberFunctionByNameAndInputParamCollect(string name, MetaInputParamCollection mmpc)
+        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputParamCollect(string name, MetaInputParamCollection mmpc)
         {
             if (!m_MetaMemberFunctionListDict.ContainsKey(name))
             {
@@ -625,66 +681,50 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < mmf.Count; i++)
             {
                 var fun = mmf[i];
-                if (fun.IsEqualMetaParamCollection(mmpc))
+                if (fun.IsEqualMetaInputParamCollection(mmpc))
                     return fun;
             }
             return null;
         }
-        public MetaMemberFunction GetMetaMemberFunctionByNameAndTemplateCollectInputParamCollect(string name, MetaInputTemplateCollection mitc, MetaInputParamCollection mmpc)
-        {
-            if (!m_MetaMemberFunctionListDict.ContainsKey(name))
-            {
-                if ( m_ExtendClass != null)
-                {
-                    var func = m_ExtendClass.GetMetaMemberFunctionByNameAndTemplateCollectInputParamCollect(name, mitc, mmpc);
-                    if (func != null)
-                    {
-                        return func;
-                    }
-                }
-                return null;
-            }
+        //该方法，只能查找Cast<T1>() 模版函数使用 不能用Class<T>{ Fun() } 这种的
+        //暂不支持使用模版方法的查找
+        //public MetaMemberFunction GetMetaMemberFunctionByNameAndTemplateCollectInputParamCollect(string name, MetaInputTemplateCollection mitc, MetaInputParamCollection mmpc)
+        //{
+        //    if (!m_MetaMemberFunctionListDict.ContainsKey(name))
+        //    {
+        //        if ( m_ExtendClass != null)
+        //        {
+        //            var func = m_ExtendClass.GetMetaMemberFunctionByNameAndTemplateCollectInputParamCollect(name, mitc, mmpc);
+        //            if (func != null)
+        //            {
+        //                return func;
+        //            }
+        //        }
+        //        return null;
+        //    }
            
 
-            var mmf = m_MetaMemberFunctionListDict[name];
+        //    var mmf = m_MetaMemberFunctionListDict[name];
 
-            for (int i = 0; i < mmf.Count; i++)
-            {
-                var fun = mmf[i];
-                if( fun.isConstructInitFunction )
-                {            
-                }
-                if (fun.IsEqualMetaTemplateCollectionAndMetaParamCollection(mitc, mmpc))
-                    return fun;
-            }
-            return null;
-        }
-        public MetaMemberFunction GetMetaMemberFunctionByAllName( string name )
-        {
-            if(m_MetaMemberAllNameFunctionDict.ContainsKey( name ) )
-            {
-                return (m_MetaMemberAllNameFunctionDict[name] as MetaMemberFunction);
-            }
-            return null;
-        }
+        //    for (int i = 0; i < mmf.Count; i++)
+        //    {
+        //        var fun = mmf[i];
+        //        if (fun.IsEqualMetaTemplateCollectionAndMetaParamCollection(mitc, mmpc))
+        //            return fun;
+        //    }
+        //    return null;
+        //}
         public MetaMemberFunction GetMetaMemberConstructDefaultFunction()
         {
             return GetMetaMemberConstructFunction(null);
         }
-        public MetaMemberFunction GetMetaMemberConstructFunction( MetaInputParamCollection mmpc )
+        public virtual MetaMemberFunction GetMetaMemberConstructFunction( MetaInputParamCollection mmpc )
         {
             return GetMetaMemberFunctionByNameAndInputParamCollect("__Init__", mmpc);
         }
-        public MetaMemberFunction GetMetaMemberConstructFunctionByTemplateAndParam(MetaInputTemplateCollection mitc, MetaInputParamCollection mmpc )
+        public MetaMemberFunction GetFirstMetaMemberFunctionByName( string name )
         {
-            if(mitc== null )
-            {
-                return GetMetaMemberFunctionByNameAndInputParamCollect("__Init__", mmpc );
-            }
-            else
-            {
-                return GetMetaMemberFunctionByNameAndTemplateCollectInputParamCollect("__Init__", mitc, mmpc );
-            }
+            return GetMetaMemberFunctionByNameAndInputParamCollect( name, null );
         }
         public MetaBase GetMetaBaseByTopLevel( string _name )
         {
@@ -745,6 +785,15 @@ namespace SimpleLanguage.Core
         public override string ToFormatString()
         {
             return GetFormatString(false);
+        }
+        public virtual string ToDefineTypeString()
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+
+            stringBuilder.Append(name);
+
+            return stringBuilder.ToString();
+
         }
         public string GetFormatString( bool isShowNamespace )
         {
@@ -852,6 +901,18 @@ namespace SimpleLanguage.Core
                 else
                 {
                     stringBuilder.Append("Errrrrroooorrr ---" + mb.ToFormatString());
+                    stringBuilder.Append(Environment.NewLine);
+                }
+            }
+            stringBuilder.Append(Environment.NewLine);
+            if( m_MetaGenTemplateClassList.Count > 0 )
+            {
+                for (int i = 0; i <= realDeep; i++)
+                    stringBuilder.Append(Global.tabChar);
+                stringBuilder.AppendLine("------------Generator Template List-------------");
+                for (int i = 0; i < m_MetaGenTemplateClassList.Count; i++)
+                {
+                    stringBuilder.Append(m_MetaGenTemplateClassList[i].ToFormatString());
                     stringBuilder.Append(Environment.NewLine);
                 }
             }

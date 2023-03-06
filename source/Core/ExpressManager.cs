@@ -238,7 +238,7 @@ namespace SimpleLanguage.Core
                         {
                             //Console.WriteLine("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
                             
-                            MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode((root as FileMetaBracketTerm),  mdt, ownerClass, mbs, null);
+                            MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode((root as FileMetaBracketTerm),  ownerClass, mbs );
                             if (mnoen != null)
                                 return mnoen;
                         }
@@ -274,6 +274,7 @@ namespace SimpleLanguage.Core
             {
                 FileMetaIfSyntaxTerm ifExpressTerm = fmte as FileMetaIfSyntaxTerm;
                 FileMetaSwitchSyntaxTerm switchExpressTerm = fmte as FileMetaSwitchSyntaxTerm;
+                FileMetaParTerm parExpressTerm = fmte as FileMetaParTerm;
                 if (ifExpressTerm != null)
                 {
                     MetaExecuteStatementsNode mesn = MetaExecuteStatementsNode.CreateMetaExecuteStatementsNodeByIfExpress(mdt, mc, mbs, ifExpressTerm.ifSyntax);
@@ -289,6 +290,12 @@ namespace SimpleLanguage.Core
                     {
                         return mesn;
                     }
+                }
+                else if(parExpressTerm != null )
+                {
+                    MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByPar(parExpressTerm, mdt, mc, mbs);
+                    if (mnoen != null)
+                        return mnoen;
                 }
                 else
                 {

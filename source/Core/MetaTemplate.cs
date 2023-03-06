@@ -31,8 +31,8 @@ namespace SimpleLanguage.Core
             {
                 for (int i = 0; i < m_FileMetaTemplateDefine.inClassNameTokenList.Count; i++)
                 {
-                    var mc = ClassManager.instance.GetMetaDefineTypeByInputTemplateAndFileMeta(m_OwnerClass, m_FileMetaTemplateDefine.inClassNameTokenList[i]);
-                    m_ConstraintMetaClassList.Add(mc.metaClass);
+                    var mc = ClassManager.instance.GetMetaClassByInputTemplateAndFileMeta(m_OwnerClass, m_FileMetaTemplateDefine.inClassNameTokenList[i]);
+                    m_ConstraintMetaClassList.Add(mc);
                 }
             }
         }
@@ -90,13 +90,35 @@ namespace SimpleLanguage.Core
 
         public bool EqualWithMetaType( MetaType mt )
         {
-            return m_MetaType == mt; ;
+            return m_MetaType.metaClass.allName == mt.metaClass.allName;
+        }
+        public string ToDefineTypeString()
+        {
+            StringBuilder sb = new StringBuilder();
+            MetaGenTemplateClass mtc = m_MetaType.metaClass as MetaGenTemplateClass;
+            if (mtc != null)
+            {
+                sb.Append(mtc.ToDefineTypeString());
+            }
+            else
+            {
+                sb.Append(m_MetaType.metaClass.name);
+            }
+
+            return sb.ToString();
         }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-
-            sb.Append(m_MetaType.metaClass.name);
+            MetaGenTemplateClass mtc = m_MetaType.metaClass as MetaGenTemplateClass;
+            if (mtc!= null)
+            {
+                sb.Append(mtc.ToFormatString());
+            }
+            else
+            {
+                sb.Append(m_MetaType.metaClass.name);
+            }
 
             return sb.ToString();
         }

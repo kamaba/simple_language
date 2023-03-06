@@ -63,8 +63,9 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass uint64MetaClass { get; private set; } = null;
         public static MetaClass floatMetaClass { get; private set; } = null;
         public static MetaClass doubleMetaClass { get; private set; } = null;
-        public static MetaClass arrayMetaClass { get; set; } = null;
-        public static MetaClass rangeMetaClass { get; set; } = null;
+        public static MetaClass arrayMetaClass { get; private set; } = null;
+        public static MetaClass rangeMetaClass { get; private set; } = null;
+        public static MetaClass typeMetaClass { get; private set; } = null;
         public static MetaClass arrayIteratorMetaClass { get; set; } = null;
 
         public static List<MetaClass> s_InnerDefineMetaClassList = new List<MetaClass>();
@@ -89,6 +90,7 @@ namespace SimpleLanguage.Core.SelfMeta
             arrayIteratorMetaClass = ArrayIteratorMetaClass.CreateMetaClass();
             arrayMetaClass = ArrayMetaClass.CreateMetaClass();
             rangeMetaClass = RangeMetaClass.CreateMetaClass();
+            typeMetaClass = TypeMetaClass.CreateMetaClass();
             s_InnerDefineMetaClassList.Add(objectMetaClass);
             s_InnerDefineMetaClassList.Add(voidMetaClass);
             s_InnerDefineMetaClassList.Add(booleanMetaClass);
@@ -107,6 +109,7 @@ namespace SimpleLanguage.Core.SelfMeta
             s_InnerDefineMetaClassList.Add(arrayIteratorMetaClass);
             s_InnerDefineMetaClassList.Add(arrayMetaClass);
             s_InnerDefineMetaClassList.Add(rangeMetaClass);
+            s_InnerDefineMetaClassList.Add(typeMetaClass);
         }
         public void Init()
         {
@@ -209,7 +212,7 @@ namespace SimpleLanguage.Core.SelfMeta
                 default:return name;
             }
         }
-        public static MetaClass GetSelfMetaClass( string name )
+        public static MetaClass GetCoreMetaClass( string name )
         {
             string name1 = GetSelfMetaName(name);
             return ModuleManager.instance.coreModule.GetChildrenMetaBaseByName(name1) as MetaClass;

@@ -6,8 +6,15 @@ Core.Int32
     {
         return String.ParseString( m_Value );
     }
-    static String ToString( Int32 value )
+    static String Int32ToString( Int32 value )
     {
         return String.ParseString( value );
-    }    
+    }
+    Cast( Type t )
+    {
+        if( t == Int16.type )
+        {
+            ret Convert.Int32ConvertToInt16( m_Value )
+        }
+    }
 }

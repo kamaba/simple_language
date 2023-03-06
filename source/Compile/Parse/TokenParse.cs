@@ -668,7 +668,7 @@ namespace SimpleLanguage.Compile.Parse
                         AddKeyNode(token);
                     }
                     break;
-                case ETokenType.At:
+                case ETokenType.Dollar:
                     {
                         AddAtOpSign(token);
                     }

@@ -50,7 +50,6 @@ namespace SimpleLanguage.Core.SelfMeta
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Int32;
         }
-
         public override void ParseInnerFunction()
         {
             AddCoreFunction();

@@ -200,6 +200,8 @@ namespace SimpleLanguage.Project
 
             m_ProjectParse.ParseInitClassAfter();
 
+            ModuleManager.instance.selfModule.SetDeep(0);
+
             MetaVariableManager.instance.ParseExpress();
 
             MethodManager.instance.ParseExpress();

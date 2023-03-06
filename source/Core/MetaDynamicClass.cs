@@ -6,9 +6,9 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public class MetaDynamicData : MetaClass
+    public class MetaDynamicClass : MetaClass
     {
-        public MetaDynamicData(string _name ) : base( _name )
+        public MetaDynamicClass(string _name ) : base( _name )
         {
             m_Type = EType.Class;
         }

@@ -69,6 +69,10 @@ namespace SimpleLanguage.Core
         {
             m_Name = _name;
         }
+        public virtual void SetDeep(int deep)
+        {
+            m_Deep = deep;
+        }
         public virtual void SetAnchorDeep(int addep )
         {
             m_AnchorDeep = addep;
@@ -146,6 +150,24 @@ namespace SimpleLanguage.Core
                 mb.m_ParentNode = this;
                 mb.m_Deep = this.deep + 1;
                 childrenNameNodeDict.Add(name, mb);
+                return true;
+            }
+            return false;
+        }
+        public bool RemoveMetaBase( MetaBase mb )
+        {
+            string key = "";
+            foreach( var v in childrenNameNodeDict )
+            {
+                if( v.Value == mb )
+                {
+                    key = v.Key;
+                    break;
+                }
+            }
+            if( string.IsNullOrEmpty( key ) )
+            {
+                childrenNameNodeDict.Remove(key);
                 return true;
             }
             return false;

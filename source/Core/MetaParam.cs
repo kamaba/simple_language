@@ -116,6 +116,21 @@ namespace SimpleLanguage.Core
     {
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaExpressNode expressNode => m_MetaExpressNode;
+        public bool isTemplate
+        {
+            get
+            {
+                return m_MetaVariable != null ? m_MetaVariable.metaDefineType.isTemplate : false;
+            }
+        }
+        public bool isMust { get { return m_MetaExpressNode != null; } }            //是否为非省略参数
+        public bool isTemplateMetaClass
+        {
+            get
+            {
+                return m_MetaVariable != null ? m_MetaVariable.metaDefineType.isGenTemplateClass : false;
+            }
+        }
 
 
         private FileMetaParamterDefine m_FileMetaParamter = null;
@@ -133,29 +148,35 @@ namespace SimpleLanguage.Core
         {
             return base.GetHashCode();
         }
-        public bool IsTemplateMetaClass()
+        public bool EqualDefineMetaParam(MetaParam param)
         {
-            return m_MetaVariable != null ? m_MetaVariable.isTemplate : false;
+            MetaDefineParam mdp = (param as MetaDefineParam);
+            if (mdp != null)
+            {
+                MetaType md = mdp.metaVariable.metaDefineType;
+                if ( !MetaType.EqualMetaDefineType( md, metaVariable.metaDefineType ) )
+                {
+                    return false;
+                }
+                return true;
+            }
+            return false;
         }
-        public bool EqualsMetaParam( MetaParam mp )
+        public bool EqualsInputMetaParam(MetaInputParam mip)
         {
             if (m_MetaVariable == null)
             {
                 return true;
             }
-            if( m_MetaVariable.isTemplate )
-            {
-            }
-            var tmc = m_MetaVariable.metaDefineType.metaClass as MetaTemplateClass;
+            var tmc = m_MetaVariable.metaDefineType.metaClass as MetaGenTemplateClass;
             if (tmc != null)
             {
                 //return tmc.IsInConstraintMetaClass(mp.ownerMetaClass);
                 return true;
             }
-            MetaInputParam mip = (mp as MetaInputParam);
             if( mip != null)
             {
-                var retMC = (mp as MetaInputParam).express.GetReturnMetaClass();
+                var retMC = mip.GetRetMetaClass();
                 var relation = ClassManager.ValidateClassRelationByMetaClass(m_MetaVariable.metaDefineType.metaClass, retMC);
 
                 if (relation == ClassManager.EClassRelation.Same || relation == ClassManager.EClassRelation.Child)
@@ -188,6 +209,13 @@ namespace SimpleLanguage.Core
             //    return true;
 
             return false;
+        }
+        public MetaDefineParam( MetaDefineParam mpd )
+        {
+            m_OwnerMetaClass = mpd.m_OwnerMetaClass;
+            m_OwnerMetaBlockStatements = mpd.m_OwnerMetaBlockStatements;
+            m_FileMetaParamter = mpd.m_FileMetaParamter;
+            m_MetaVariable = mpd.m_MetaVariable;
         }
         public MetaDefineParam( MetaClass mc, MetaBlockStatements mbs, FileMetaParamterDefine fmp )
         {
@@ -236,24 +264,31 @@ namespace SimpleLanguage.Core
                         var defineMetaClass = ClassManager.instance.GetMetaClassByRef(m_OwnerMetaClass, m_FileMetaParamter.classDefineRef);
                         m_MetaVariable.SetDefineMetaClass(defineMetaClass);
                     }
+                    if( m_FileMetaParamter.express != null )
+                    {
+                        m_MetaExpressNode = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(null, new MetaType(CoreMetaClassManager.objectMetaClass), m_FileMetaParamter.express);
+                    }
                 }
 
             }
-            MetaExpressNode express = null;
             
-            if(express != null )
+            if(m_MetaExpressNode != null )
             {
                 AllowUseConst auc = new AllowUseConst();
                 auc.useNotConst = false;
                 auc.useNotStatic = false;
                 auc.callConstructFunction = true;
                 auc.callFunction = true;
-                express.Parse(auc);
+                m_MetaExpressNode.Parse(auc);
             }
         }
         public void SetMetaType( MetaType mt )
         {
             m_MetaVariable.SetMetaDefineType(mt);
+        }
+        public void SetMetaVariable( MetaVariable mv )
+        {
+            m_MetaVariable = mv;
         }
         public MetaExpressNode CreateExpressNodeInFunctionDefineParam()
         {
@@ -328,7 +363,7 @@ namespace SimpleLanguage.Core
                     {
                         MetaDefineParam a = metaParamList[index++] as MetaDefineParam;
                         MetaType b = mitc.metaTemplateParamsList[i];
-                        if (!a.IsTemplateMetaClass())
+                        if (!a.isTemplateMetaClass )
                         {
                             return false;
                         }
@@ -336,46 +371,38 @@ namespace SimpleLanguage.Core
                 }
                 for (int i = 0; i < mpc.metaParamList.Count; i++)
                 {
-                    MetaParam a = metaParamList[index++];
-                    MetaParam b = mpc.metaParamList[i];
-                    if (!CheckMetaParam(a, b))
+                    MetaDefineParam a = metaParamList[index++] as MetaDefineParam;
+                    MetaInputParam b = mpc.metaParamList[i] as MetaInputParam;
+                    if (!CheckInputMetaParam(a, b))
                         return false;
                 }
                 return true;
             }
             return false;
         }
-        public bool IsEqualMetaParamCollection(MetaParamCollectionBase mpc)
+        public virtual bool CheckInputMetaParam( MetaDefineParam a, MetaInputParam b)
         {
-            if (mpc == null )
+            if( b == null )
             {
-                return minParamCount == 0;
+                return a.isMust;      // 必须传参，但没有参数
             }
+            if (a.EqualsInputMetaParam(b))
+                return true;
+            return false;
+        }
 
-            if (metaParamList.Count == mpc.metaParamList.Count)
-            {
-                for (int i = 0; i < metaParamList.Count; i++)
-                {
-                    MetaParam a = metaParamList[i];
-                    MetaParam b = mpc.metaParamList[i];
-                    if ( !CheckMetaParam(a, b) )
-                        return false;
-                }
-                return true;
-            }
-            return false;
-        }
-        public virtual bool CheckMetaParam( MetaParam a, MetaParam b )
+        public virtual bool CheckDefineMetaParam(MetaParam a, MetaParam b)
         {
-            if( a is MetaDefineParam )
+            if (a is MetaDefineParam)
             {
                 var amd = a as MetaDefineParam;
-                if (amd.EqualsMetaParam(b))
+                if (amd.EqualDefineMetaParam(b))
                     return true;
-                
+
             }
             return a == b;
         }
+
         public virtual void CheckParse()
         {
 
@@ -438,6 +465,14 @@ namespace SimpleLanguage.Core
     public class MetaDefineParamCollection : MetaParamCollectionBase
     {
         public bool isHaveDefaultParamExpress { get; set; } = false;
+        public MetaDefineParamCollection( MetaDefineParamCollection mdpc )
+        {
+            isHaveDefaultParamExpress = mdpc.isHaveDefaultParamExpress;
+            for( int i = 0; i < mdpc.metaParamList.Count; i++ )
+            {
+                metaParamList.Add(new MetaDefineParam(mdpc.metaParamList[i] as MetaDefineParam));
+            }
+        }
         public MetaDefineParamCollection(bool _isAllConst, bool _isCanCallFunction)
         { 
             isAllConst = _isAllConst; isCanCallFunction = _isCanCallFunction; 
@@ -488,6 +523,53 @@ namespace SimpleLanguage.Core
                 }
             }
         }
+        public bool IsEqualMetaInputParamCollection(MetaInputParamCollection mpc)
+        {
+            int inputCount = 0;
+            if( mpc != null )
+            {
+                inputCount = mpc.metaParamList.Count;
+            }
+            if (metaParamList.Count >= inputCount )
+            {
+                for (int i = 0; i < metaParamList.Count; i++)
+                {
+                    MetaDefineParam a = metaParamList[i] as MetaDefineParam;
+                    if (a == null)
+                        return false;
+                    MetaInputParam b = null;
+                    if( mpc != null && i < inputCount )
+                    {
+                        b = mpc.metaParamList[i] as MetaInputParam;
+                    }
+                    if (!CheckInputMetaParam(a, b))
+                        return false;
+                }
+                return true;
+            }
+            return false;
+        }
+        public bool IsEqualMetaDefineParamCollection(MetaDefineParamCollection mdpc)
+        {
+            if (mdpc == null)
+            {
+                return minParamCount == 0;
+            }
+
+            if (metaParamList.Count == mdpc.metaParamList.Count)
+            {
+                for (int i = 0; i < metaParamList.Count; i++)
+                {
+                    MetaParam a = metaParamList[i];
+                    MetaParam b = mdpc.metaParamList[i];
+                    if (!CheckDefineMetaParam(a, b))
+                        return false;
+                }
+                return true;
+            }
+            return false;
+        }
+
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
@@ -677,8 +759,12 @@ namespace SimpleLanguage.Core
     }
     public class MetaInputTemplateCollection
     {
+        public bool isTemplateName => m_IsTemplateName;
         public List<MetaType> metaTemplateParamsList => m_MetaTemplateParamsList;
+
+
         private List<MetaType> m_MetaTemplateParamsList = new List<MetaType>();
+        private bool m_IsTemplateName = false;
         public MetaInputTemplateCollection()
         {
 
@@ -689,6 +775,10 @@ namespace SimpleLanguage.Core
             {
                 MetaType mp = new MetaType( callNodeList[i], mc );
                 m_MetaTemplateParamsList.Add(mp);
+                if( mp.isTemplate )
+                {
+                    m_IsTemplateName = true;
+                }
             }
         }
         public void AddMetaTemplateParamsList( MetaType mp )
