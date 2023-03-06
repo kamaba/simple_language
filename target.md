@@ -60,12 +60,15 @@ a = Convert.Int("e").Exception( {}, { a = 0; } ); 当然在Convert.Int函数中�
 40. env参数，在os或者是system类中。
 41. 增加使用 byte,sbyte,char,short,int,long,string 各 s_temp1 全局参数1-n 个 形式， byte[], sbyte[], char[], short[], int[], long[], string[] 1-n个，形式应该为 g_byte[]
 42. Table的类型，主要用来储存表格数据，可以与 object[][], object[][][] 互转， 一般直接读取excel,cvs 后，直接得到的是table类型的数据， 属性扩展容器库。  支持数据格式有, json, xml,yaml,cvs, excel 如果并下S.模下块，表明已入官方库，正常情况S字段，不允许其它乱用。
-
+43. label标签与{} 能联合使用 label s1{}
+44. 通过 asm51{} 的区域划分方式，或者是 asm_adm64_x86{} 方式，可执行对应的汇编内容，在编译的时候，只有这种输出这种环境的时候，才会执行该汇编语句。 文件不可以用.s 而用 .asm   如果是和c混编需要 用例 .sc的方式  c纯使用.c的方式，并且可以在.sp中配置.c的编译过程和参数。
+45. 数据类型没有真正的占用内容，如果在函数中构建，则返回时，是返回的数据，而不是引用，如果使用了引用，则只能引用全局引用，因为使用完后就被释放了。
+46. instance可以通过[inst=instance] 或者[instance,other]的方式，进行使用静态instance, 当然初始化顺序也可以通过在config中配置 instanceSort进行调整。
+47. 可以设置最多继承层数，外来插件可以继承层数。
+48. 暂定，不支持模板函数，而传入Type类，进行逻辑判断， 只针对Cast<T>() 方法，进行单独处理。 当函数已定义类型，参数未定义类型，如果是常规类型如Int32,Float等，  赋值相当于调用 .ToInt32()  .ToFloat()语句  如果是自定义类型，  其实也是.Cast<Int32>() 的方式，但发现这个后转到.ToInt32() 则相当于调用   inputparam.Cast<DefineClass>()的方式去处理
 
 
 语言细节:
-1. 当函数已定义类型，参数未定义类型，如果是常规类型如Int32,Float等，  赋值相当于调用 .ToInt32()  .ToFloat()语句  如果是自定义类型，  其实也是.Cast<Int32>() 的方式，但发现这个后转到.ToInt32()
-则相当于调用   inputparam.Cast<DefineClass>()的方式去处理
 2. 默认变量不可以使用 外部引入变量，只能使用const 或者是 常量
 3. 定义变量不能于本类及父类的名称一样，否则报错。
 
@@ -73,8 +76,17 @@ a = Convert.Int("e").Exception( {}, { a = 0; } ); 当然在Convert.Int函数中�
 近期目标:
 1. 编译过程，代码化，过程化，有提示，有报错，有修改意见，有自动修复
 2. 写基础类int32,int16, string,char 
-3 解释成c# 中间语言 或者是 javascript语言
 4. 其它语言在本代码中写
+7. 空间的分配与管理
+8. 可以调用大部分csharp类
+3. 解释成c# 中间语言 或者是 javascript语言
+
+1. 内部构建的代码与重写代码的不冲突
+2. 在内部，可以有自由的数据结构，相当于如果内部定义数据，在外边的.s中，不允许再定义数据，只可以写函数
+3. 在内部构建后，函数可以绑定内部静态函数调用，相当于，可以有部分，通过csharp代码处理。
+4. 写完int,float,string, range,array的方法相关
+5. 带T的，新要建立一个TemplateMetaClass 然后 在建立的时候，先查找是否是模版类，如果是，再去模版类中匹配，找到相应的模版类。
+6. Array的建立，可以通过T,建立一个真正的数组，然后分数组维度，然后再建立自己的空间。
 
 
 18. 定义快速取值函数  public string Get(){ return "AA" }  public void Set( string a ){ this.aa = a; } 相当于c# this[] 和 return this[]
@@ -101,6 +113,7 @@ array,list,set,dict
 1. 函数直接使用，在语句中
 2. 函数的基本类重载，然后查找方法类也重载，直接通过int32的系统方式直接查找
 3. 通过.s文件，重写，int32,ing64,string等类，如果重载后，直接走.s文件中的
+
 
 
 

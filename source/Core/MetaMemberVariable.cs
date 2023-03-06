@@ -341,6 +341,7 @@ namespace SimpleLanguage.Core
         public int index => m_Index;
         public MetaExpressNode express => m_Express;
         public int parseLevel { get; set; } = -1;
+        public bool isInnerDefine => m_IsInnerDefine;
 
         private EFromType m_FromType = EFromType.Code;
         private int m_Index = -1;
@@ -390,6 +391,7 @@ namespace SimpleLanguage.Core
         public MetaMemberVariable(MetaClass mc, string _name, MetaClass _defineTypeClass )
         {
             m_Name = _name;
+            m_IsInnerDefine = true;
             m_FromType = EFromType.Manual;
             m_DefineMetaType = new MetaType(_defineTypeClass);
             m_DefineMetaType.SetMetaClass(_defineTypeClass);
@@ -592,36 +594,12 @@ namespace SimpleLanguage.Core
                     }
                     else if (relation == ClassManager.EClassRelation.Same)
                     {
-                        bool isSame = true;
-                        if ( m_DefineMetaType.isUseInputTemplate )
+                        if( expressRetMetaDefineType.metaClass == ownerMetaClass )
                         {
-                            if (m_DefineMetaType.inputTemplateCollection.metaTemplateParamsList.Count == expressRetMetaDefineType.inputTemplateCollection.metaTemplateParamsList.Count)
-                            {
-                                for (int i = 0; i < m_DefineMetaType.inputTemplateCollection.metaTemplateParamsList.Count; i++)
-                                {
-                                    var itp = m_DefineMetaType.inputTemplateCollection.metaTemplateParamsList[i];
-                                    var etp = expressRetMetaDefineType.inputTemplateCollection.metaTemplateParamsList[i];
-                                    if (itp != etp )
-                                    {
-                                        isSame = false;
-                                        break;
-                                    }
-                                }
-                            }
+                            Console.WriteLine("Error 自己类内部不允许包含 自己的实体，必须赋值为null");
+                            return;
                         }
-                        if (isSame)
-                        {
-                            if( expressRetMetaDefineType.metaClass == ownerMetaClass )
-                            {
-                                Console.WriteLine("Error 自己类内部不允许包含 自己的实体，必须赋值为null");
-                                return;
-                            }
-                            SetMetaDefineType(expressRetMetaDefineType);
-                        }
-                        else
-                        {
-                            relation = ClassManager.EClassRelation.No;
-                        }
+                        SetMetaDefineType(expressRetMetaDefineType);
                     }
                     else if (relation == ClassManager.EClassRelation.Parent)
                     {
@@ -850,14 +828,25 @@ namespace SimpleLanguage.Core
 
     public class MetaGenMemberVariable : MetaMemberVariable
     {
-        private MetaGenTemplate m_MetaGenTemplate = null;
-        public MetaGenMemberVariable(MetaMemberVariable mmv, MetaGenTemplate mgt ) : base(mmv)
+        List<MetaGenTemplate> m_MetaGenTemplateList = null;
+        public MetaGenMemberVariable(MetaGenTemplateClass mtc, MetaMemberVariable mmv, List<MetaGenTemplate> mgt ) : base(mmv)
         {
-            m_MetaGenTemplate = mgt;
+            m_MetaGenTemplateList = mgt;
+            SetOwnerMetaClass(mtc);
         }
         public void UpdateGenMemberVariable()
         {
-            m_DefineMetaType = m_MetaGenTemplate.metaType;
+            if( m_MetaGenTemplateList!= null )
+            {
+                for( int i = 0; i < m_MetaGenTemplateList.Count; i++ )
+                {
+                    MetaGenTemplate mgt = m_MetaGenTemplateList[i];
+                    if( mgt.name == m_DefineMetaType.metaTemplate.name )
+                    {
+                        m_DefineMetaType = mgt.metaType;
+                    }
+                }
+            }
         }
     }
 }

@@ -53,7 +53,6 @@ namespace SimpleLanguage.Core.Statements
         private void Parse()
         {
             string defineName = m_Name;
-            MetaInputTemplateCollection mitc = null;
             MetaType mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
             var metaFunction = m_OwnerMetaBlockStatements?.ownerMetaFunction;
 
@@ -182,31 +181,7 @@ namespace SimpleLanguage.Core.Statements
                         }
                         else if (relation == ClassManager.EClassRelation.Same)
                         {
-                            bool isSame = true;
-                            if (mdt.isDefineMetaClass && expressRetMetaDefineType?.inputTemplateCollection?.metaTemplateParamsList != null)
-                            {
-                                if (mdt.inputTemplateCollection.metaTemplateParamsList.Count == expressRetMetaDefineType.inputTemplateCollection.metaTemplateParamsList.Count)
-                                {
-                                    for (int i = 0; i < mdt.inputTemplateCollection.metaTemplateParamsList.Count; i++)
-                                    {
-                                        var itp = mdt.inputTemplateCollection.metaTemplateParamsList[i];
-                                        var etp = expressRetMetaDefineType.inputTemplateCollection.metaTemplateParamsList[i];
-                                        if (itp != etp)
-                                        {
-                                            isSame = false;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                            if (isSame)
-                            {
-                                m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
-                            }
-                            else
-                            {
-                                relation = ClassManager.EClassRelation.No;
-                            }
+                            m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
                         }
                         else if (relation == ClassManager.EClassRelation.Parent)
                         {

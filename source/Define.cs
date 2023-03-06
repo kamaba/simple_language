@@ -263,6 +263,8 @@ namespace SimpleLanguage
         This,
         /// <summary> base </summary>
         Base,
+        /// <summary> array </summary>     
+        Array,
         /// <summary> range </summary>     
         Range,
         /// <summary> boolean </summary>   

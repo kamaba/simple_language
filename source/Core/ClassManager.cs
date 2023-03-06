@@ -3,7 +3,6 @@ using SimpleLanguage.Core;
 using SimpleLanguage.Core.SelfMeta;
 using System;
 using System.Collections.Generic;
-using System.Runtime.Intrinsics.X86;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -19,6 +18,9 @@ namespace SimpleLanguage.Core
             Same,
             Child,
             Parent,
+            Similar,
+            SameClassNotSameInputTemplate,
+            SameClassAndSameInputTemplate,
         }
         public static ClassManager s_Instance = null;
         public static ClassManager instance
@@ -33,11 +35,11 @@ namespace SimpleLanguage.Core
             }
         }
         public Dictionary<string, MetaClass> allClassDict => m_AllClassDict;
-        public List<MetaClass> dynamicClassList => m_DynamicClassList;
+        public List<MetaDynamicClass> dynamicClassList => m_DynamicClassList;
 
 
         private Dictionary<string, MetaClass> m_AllClassDict = new Dictionary<string, MetaClass>();
-        private List<MetaClass> m_DynamicClassList = new List<MetaClass>();
+        private List<MetaDynamicClass> m_DynamicClassList = new List<MetaDynamicClass>();
 
         private Dictionary<string, MetaData> m_AllDataDict = new Dictionary<string, MetaData>();
 
@@ -81,7 +83,7 @@ namespace SimpleLanguage.Core
             }
             return topLevelNamespace.AddMetaBase(mc.name, mc) ;
         }
-        public MetaClass FindDynamicClass( MetaClass dc )
+        public MetaDynamicClass FindDynamicClass( MetaClass dc )
         {
             foreach( var v in m_DynamicClassList )
             {
@@ -92,7 +94,7 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public bool AddDynamicClass( MetaClass dc )
+        public bool AddDynamicClass(MetaDynamicClass dc )
         {
             m_DynamicClassList.Add(dc);
 
@@ -278,7 +280,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        newmc.ParseFileMetaClassRewrite(fmc);
+                        newmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
                     }
                 }
 
@@ -382,6 +384,22 @@ namespace SimpleLanguage.Core
             }
             return ValidateClassRelationByMetaClass(currentClass, compareClass);
         }
+        public static bool IsNumberClass( MetaClass curClass )
+        {
+            if (curClass == CoreMetaClassManager.byteMetaClass
+                || curClass == CoreMetaClassManager.sbyteMetaClass
+                || curClass == CoreMetaClassManager.charMetaClass
+                || curClass == CoreMetaClassManager.int16MetaClass
+                || curClass == CoreMetaClassManager.uint16MetaClass
+                || curClass == CoreMetaClassManager.int32MetaClass
+                || curClass == CoreMetaClassManager.uint32MetaClass
+                || curClass == CoreMetaClassManager.int64MetaClass
+                || curClass == CoreMetaClassManager.uint64MetaClass)
+            {
+                return true;
+            }
+            return false;
+        }
         public static EClassRelation ValidateClassRelationByMetaClass( MetaClass curClass, MetaClass compareClass )
         {
             if( curClass == CoreMetaClassManager.objectMetaClass )
@@ -394,15 +412,30 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                if (curClass.IsParseMetaClass(compareClass))
+                if(IsNumberClass(curClass) && IsNumberClass(compareClass ) )
                 {
-                    return EClassRelation.Parent;
+                    //switch( curClass )
+                    //{
+                    //    case Int16MetaClass int16:
+                    //        {
+
+                    //        }
+                    //        break;
+                    //}
+                    return EClassRelation.Similar;
                 }
-                if (compareClass.IsParseMetaClass(curClass))
+                else
                 {
-                    return EClassRelation.Child;
+                    if (curClass.IsParseMetaClass(compareClass))
+                    {
+                        return EClassRelation.Parent;
+                    }
+                    if (compareClass.IsParseMetaClass(curClass))
+                    {
+                        return EClassRelation.Child;
+                    }
+                    return EClassRelation.No;
                 }
-                return EClassRelation.No;
             }
         }
         public void HandleExtendContentAndInterfaceContent( FileMetaClass mc )
@@ -491,7 +524,7 @@ namespace SimpleLanguage.Core
         }
         public MetaClass GetMetaClassByName(string inputname, MetaClass ownerClass = null, FileMeta fm = null )
         {
-            MetaClass fmc = CoreMetaClassManager.GetSelfMetaClass(inputname);
+            MetaClass fmc = CoreMetaClassManager.GetCoreMetaClass(inputname);
             if( fmc != null )
             {
                 return fmc;
@@ -583,7 +616,7 @@ namespace SimpleLanguage.Core
             if (ownerClass == null)
                 return null;
 
-            MetaBase findMB = CoreMetaClassManager.GetSelfMetaClass(stringList[0]);
+            MetaBase findMB = CoreMetaClassManager.GetCoreMetaClass(stringList[0]);
             if(findMB is MetaClass )
             {
                 return findMB as MetaClass;
@@ -643,7 +676,7 @@ namespace SimpleLanguage.Core
         public MetaClass GetMetaClassByNameAndFileMeta(MetaClass ownerClass, string name, FileMeta fm)
         {
             MetaBase mb = ownerClass;
-            var selfClass = CoreMetaClassManager.GetSelfMetaClass(name);
+            var selfClass = CoreMetaClassManager.GetCoreMetaClass(name);
             if (selfClass != null)
                 return selfClass;
 
@@ -720,20 +753,12 @@ namespace SimpleLanguage.Core
             }
             return mc;
         }
-        public MetaType GetMetaDefineTypeByInputTemplateAndFileMeta( MetaClass ownerClass, FileInputTemplateNode fmcd )
+        //通过FileInputTemplateNode 获取MetaType 例 List< List< List<int> > > 这种的，需要嵌套获取处理
+        public MetaClass GetMetaClassByInputTemplateAndFileMeta( MetaClass ownerClass, FileInputTemplateNode fitn )
         {
-            var nlist = fmcd.nameList;
-            if( nlist.Count == 1 )
-            {
-                var retTemplate = ownerClass.GetTemplateMetaClassByName(nlist[0]);
-                if( retTemplate != null )
-                {
-                    return new MetaType(retTemplate);
-                }
-            }
-
-            FileMeta fm = fmcd.fileMeta;
-            MetaClass mc = GetMetaClassByListString( ownerClass, nlist);
+            var nlist = fitn.nameList;
+            FileMeta fm = fitn.fileMeta;
+            MetaClass mc = GetMetaClassByListString( ownerClass, nlist );
             if (mc == null)
             {
                 var mb = fm.GetMetaBaseFileMetaClass(nlist);
@@ -746,11 +771,11 @@ namespace SimpleLanguage.Core
                     }
                     else if (mb is MetaClass)
                     {
-                        new MetaType( mb as MetaClass );
+                        mc = mb as MetaClass;
                     }
                 }
             }
-            return new MetaType(mc);
+            return mc;
         }
         public void PrintAllClassName()
         {

@@ -66,7 +66,7 @@ namespace SimpleLanguage.Compile.Parse
         public Node bracketNode { get; set; } = null;         //[中括号的节点
         public Node angleNode { get; set; } = null;           //<尖括号的节点
         public Token linkToken;                 //.节点
-        public Token atToken;                   // @节点
+        public Token atToken;                   // $节点
         public Node lastNode = null;            // 最后处理的节点
 
         public ENodeType nodeType = ENodeType.Null;

@@ -199,7 +199,6 @@ namespace SimpleLanguage.CSharp
                 }
                 */
             }
-            /*
             MetaNamespace gnmn = new MetaNamespace(name);
             gnmn.SetRefFromType(RefFromType.CSharp);
             MetaModule gmm = mb as MetaModule;
@@ -213,8 +212,6 @@ namespace SimpleLanguage.CSharp
                 gmn.AddMetaNamespace(gnmn);
             }
             return gnmn;
-            */
-            return null;
         }
         public static Object GetObject(FileMetaClassDefine fmcv, MetaNamespace mn)
         {

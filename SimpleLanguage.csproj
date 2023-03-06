@@ -15,6 +15,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="source\Core\新文件夹\**" />
+    <EmbeddedResource Remove="source\Core\新文件夹\**" />
+    <None Remove="source\Core\新文件夹\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="libLLVM" Version="15.0.0" />
     <PackageReference Include="libLLVM.runtime.win-x64" Version="15.0.0" />
     <PackageReference Include="swigged.llvm" Version="70.0.1" />

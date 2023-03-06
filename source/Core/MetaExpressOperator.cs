@@ -327,6 +327,8 @@ namespace SimpleLanguage.Core
                 m_Right.CalcReturnType();
             }
             ParseCompute();
+
+            GetReturnMetaDefineType();
         }
         public void ParseCompute()
         {

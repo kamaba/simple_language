@@ -80,6 +80,19 @@ List<T>
         
     }
 }
+Test<T>
+{
+    T t1;
+    int cn = 0;
+    __Init__()
+    {
+
+    }
+    __Init__( int n )
+    {
+        this.cn = n;
+    }
+}
 
 TemplateObject
 {
@@ -90,5 +103,12 @@ TemplateObject
         ClassT2_2<int> ct22 = ClassT2_2<int>(); 
         ct2 = ClassT2<string>();
         ClassT2 glct2 = ClassT2_2<Class2>();
+
+        
+        Test<int> te1 = Test<int>();
+        te2 = Test<float>(2);
+        Test<Test<int>> te2 = Test<Test<int>>(2);
+        Test<double> te3 = (30);  
+        
     }
 }
