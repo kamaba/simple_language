@@ -346,7 +346,7 @@ namespace SimpleLanguage.Core
                                 continue;
                             }
                         }
-                        m_ContentType = EStatementsContentType.DynamicClass;
+                        m_ContentType = EStatementsContentType.ClassValueAssign;
                     }
                 }
             }
@@ -549,76 +549,80 @@ namespace SimpleLanguage.Core
                 }
             }            
 
-            var list = fmct.callLink?.callNodeList;
-            if (list != null && list.Count > 0 )
+            if(fmcn != null && fmcn.metaBraceStatementsContent != null )
             {
-                Console.WriteLine("Error 待测试!!!");
-                var listfinalNode = list[list.Count - 1];
-                FileMetaBraceTerm fmbt = listfinalNode.fileMetaBraceTerm;
-                if(fmbt != null )
-                {
-                    m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fmbt, m_OwnerMetaBlockStatements, m_OwnerMetaClass );
-                    m_MetaBraceOrBracketStatementsContent.Parse();
-                    if ( fmbt.isArray )
-                    {
-                        var metaInputTemplateCollection = new MetaInputTemplateCollection();
-                        MetaClass mc = m_MetaBraceOrBracketStatementsContent.GetMaxLevelMetaClassType();
-                        metaInputTemplateCollection.AddMetaTemplateParamsList(new MetaType(mc));
-
-                        m_MetaDefineType.SetRawMetaClass(CoreMetaClassManager.arrayMetaClass);
-
-                        if (fmcn.metaTemplateParamsCollection == null )
-                        {
-                            m_MetaDefineType.SetMetaInputTemplateCollection(metaInputTemplateCollection);
-                        }
-                        else
-                        {
-                            m_MetaDefineType.SetMetaInputTemplateCollection(fmcn.metaTemplateParamsCollection);
-                        }
-                        m_MetaDefineType.UpdateMetaClassByRawMetaClassAndInputTemplateCollection();
-                    }
-                }
-                FileMetaParTerm fmpt = listfinalNode.fileMetaParTerm;
-                if (fmpt != null)
-                {
-                    Console.WriteLine("Error 待测试!!!");
-                    m_FileMetaParTerm = fmpt;
-                    if( needByFileMetaParTermSetTemplate )
-                    {
-                        List<MetaClass> mtList = new List<MetaClass>();
-                        MetaInputParamCollection mipc = new MetaInputParamCollection(m_FileMetaParTerm, ownerMC, mbs);
-                        for (int i = 0; i < mipc.count; i++)
-                        {
-                            var mp = mipc.metaParamList[i] as MetaInputParam;
-                            mp.CaleReturnType();
-                            mtList.Add( mp.GetRetMetaClass() );
-                        }
-                        if( createMC == CoreMetaClassManager.rangeMetaClass )
-                        {
-                            bool isSame = true;
-                            for (int i = 0; i < mtList.Count-1; i++)
-                            {
-                                var curMc = mtList[i];
-                                var nextMc = mtList[i+1];  
-                                if( curMc != nextMc )
-                                {
-                                    isSame = false;
-                                    break;
-                                }
-                            }
-                            if( isSame )
-                            {
-                                var mitc1 = new MetaInputTemplateCollection();
-                                mitc1.AddMetaTemplateParamsList(new MetaType(mtList[0]));
-                                m_MetaDefineType.SetMetaInputTemplateCollection(mitc1);
-                            }
-                        }
-                    }
-                    //MetaInputParam mip = new MetaInputParam(new MetaConstExpressNode(EType.Int16, assignStatementsList.Count));
-                    //mipc.AddMetaInputParam(mip);
-                }
-
+                m_MetaBraceOrBracketStatementsContent = fmcn.metaBraceStatementsContent;
             }
+            //var list = fmct.callLink?.callNodeList;
+            //if (list != null && list.Count > 0 )
+            //{
+            //    Console.WriteLine("Error 待测试!!!");
+            //    var listfinalNode = list[list.Count - 1];
+            //    FileMetaBraceTerm fmbt = listfinalNode.fileMetaBraceTerm;
+            //    if(fmbt != null )
+            //    {
+            //        m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fmbt, m_OwnerMetaBlockStatements, m_OwnerMetaClass );
+            //        m_MetaBraceOrBracketStatementsContent.Parse();
+            //        if ( fmbt.isArray )
+            //        {
+            //            var metaInputTemplateCollection = new MetaInputTemplateCollection();
+            //            MetaClass mc = m_MetaBraceOrBracketStatementsContent.GetMaxLevelMetaClassType();
+            //            metaInputTemplateCollection.AddMetaTemplateParamsList(new MetaType(mc));
+
+            //            m_MetaDefineType.SetRawMetaClass(CoreMetaClassManager.arrayMetaClass);
+
+            //            if (fmcn.metaTemplateParamsCollection == null )
+            //            {
+            //                m_MetaDefineType.SetMetaInputTemplateCollection(metaInputTemplateCollection);
+            //            }
+            //            else
+            //            {
+            //                m_MetaDefineType.SetMetaInputTemplateCollection(fmcn.metaTemplateParamsCollection);
+            //            }
+            //            m_MetaDefineType.UpdateMetaClassByRawMetaClassAndInputTemplateCollection();
+            //        }
+            //    }
+            //    FileMetaParTerm fmpt = listfinalNode.fileMetaParTerm;
+            //    if (fmpt != null)
+            //    {
+            //        Console.WriteLine("Error 待测试!!!");
+            //        m_FileMetaParTerm = fmpt;
+            //        if( needByFileMetaParTermSetTemplate )
+            //        {
+            //            List<MetaClass> mtList = new List<MetaClass>();
+            //            MetaInputParamCollection mipc = new MetaInputParamCollection(m_FileMetaParTerm, ownerMC, mbs);
+            //            for (int i = 0; i < mipc.count; i++)
+            //            {
+            //                var mp = mipc.metaParamList[i] as MetaInputParam;
+            //                mp.CaleReturnType();
+            //                mtList.Add( mp.GetRetMetaClass() );
+            //            }
+            //            if( createMC == CoreMetaClassManager.rangeMetaClass )
+            //            {
+            //                bool isSame = true;
+            //                for (int i = 0; i < mtList.Count-1; i++)
+            //                {
+            //                    var curMc = mtList[i];
+            //                    var nextMc = mtList[i+1];  
+            //                    if( curMc != nextMc )
+            //                    {
+            //                        isSame = false;
+            //                        break;
+            //                    }
+            //                }
+            //                if( isSame )
+            //                {
+            //                    var mitc1 = new MetaInputTemplateCollection();
+            //                    mitc1.AddMetaTemplateParamsList(new MetaType(mtList[0]));
+            //                    m_MetaDefineType.SetMetaInputTemplateCollection(mitc1);
+            //                }
+            //            }
+            //        }
+            //        //MetaInputParam mip = new MetaInputParam(new MetaConstExpressNode(EType.Int16, assignStatementsList.Count));
+            //        //mipc.AddMetaInputParam(mip);
+            //    }
+
+            //}
             Init();
         }
         // Class1 c = { a = 20, b = 20 };  => Class1 c = Class1(); c.a = 20; c.b = 20;
@@ -681,7 +685,7 @@ namespace SimpleLanguage.Core
         {
             if(m_MetaConstructFunctionCall != null )
             {
-                eType = m_MetaConstructFunctionCall.function.metaDefineType.metaClass.eType;
+                eType = m_MetaDefineType.metaClass.eType;
             }
             else
             {
@@ -735,7 +739,10 @@ namespace SimpleLanguage.Core
             }
             return m_MetaDefineType;
         }
-
+        public override string ToTokenString()
+        {
+            return base.ToTokenString();
+        }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();

@@ -12,27 +12,28 @@ using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.SelfMeta;
+using SimpleLanguage.Core.Statements;
 
 namespace SimpleLanguage.Core
 {
     public class MetaGenTemplateClass : MetaClass
     {
-        protected List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
-        protected Dictionary<string, MetaGenMemberVariable> m_MetaGenMemberVariableDict = new Dictionary<string, MetaGenMemberVariable>();
-        protected Dictionary<string, List<MetaGenMemberFunction>> m_MetaGenMemberFunctionListDict = new Dictionary<string, List<MetaGenMemberFunction>>();
+        public override bool isGenTemplate { get { return true; } }
 
+        protected List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
         public MetaGenTemplateClass(MetaClass mc) : base(mc)
         {
+
         }
-        public override void SetDeep( int deep )
+        public override void SetDeep(int deep)
         {
             m_Deep = deep;
-            foreach (var v in m_MetaGenMemberVariableDict)
+            foreach (var v in m_MetaMemberVariableDict)
             {
                 v.Value.SetDeep(m_Deep + 1);
             }
 
-            foreach (var v in m_MetaGenMemberFunctionListDict)
+            foreach (var v in m_MetaMemberFunctionListDict)
             {
                 foreach (var v2 in v.Value)
                 {
@@ -48,20 +49,11 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public MetaGenMemberVariable GetMetaGenMemberVariable( string name )
-        {
-            if(m_MetaGenMemberVariableDict.ContainsKey(name) )
-            {
-                return m_MetaGenMemberVariableDict[name];
-            }
-            return null;
-        }
-
         public override MetaMemberVariable GetMetaMemberVariableByName(string name)
         {
-            if (m_MetaGenMemberVariableDict.ContainsKey(name))
+            if (m_MetaMemberVariableDict.ContainsKey(name))
             {
-                return m_MetaGenMemberVariableDict[name];
+                return m_MetaMemberVariableDict[name];
             }
             if (m_MetaMemberVariableDict.ContainsKey(name))
             {
@@ -73,55 +65,49 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public override MetaMemberFunction GetMetaMemberFunctionByNameAndInputParamCollect(string name, MetaInputParamCollection mmpc)
-        {
-            if (!m_MetaGenMemberFunctionListDict.ContainsKey(name))
-            {
-                return null;
-            }
-            var mmf = m_MetaGenMemberFunctionListDict[name];
-
-            for (int i = 0; i < mmf.Count; i++)
-            {
-                var fun = mmf[i];
-                if (fun.IsEqualMetaInputParamCollection(mmpc))
-                    return fun;
-            }
-            return null;
-        }
         public void AddMetaGenTemplate( MetaGenTemplate mgt )
         {
             m_MetaGenTemplateList.Add(mgt);
         }
+        public MetaGenTemplate GetMetaGenTemplate( string name )
+        {
+            var ret = m_MetaGenTemplateList.Find(a => a.name == name);
+
+            return ret;
+        }
         public void UpdateGenMember()
         {
-            foreach( var v in m_MetaMemberVariableDict.Values )
+            Dictionary<string, MetaMemberVariable> addList = new Dictionary<string, MetaMemberVariable>();
+            foreach ( var v in m_MetaMemberVariableDict.Values )
             {
                 if( v.metaDefineType.metaTemplate != null )
                 {
-                    MetaGenMemberVariable mgmv = new MetaGenMemberVariable( this, v, m_MetaGenTemplateList );
-                    m_MetaGenMemberVariableDict.Add(mgmv.name, mgmv);
+                    MetaMemberVariable mgmv = new MetaMemberVariable( this, v, m_MetaGenTemplateList );
+                    addList.Add(mgmv.name, mgmv);
                     mgmv.UpdateGenMemberVariable();
                 }
             }
+            m_MetaMemberVariableDict = addList;
 
+            Dictionary<string, List<MetaMemberFunction>> addFunctionList = new Dictionary<string, List<MetaMemberFunction>>();
             foreach (var v in m_MetaMemberFunctionListDict)
             {
                 if (v.Value.Count > 0)
                 {
-                    var list = new List<MetaGenMemberFunction>();
-                    m_MetaGenMemberFunctionListDict.Add(v.Key, list);
+                    var list = new List<MetaMemberFunction>();
+                    addFunctionList.Add(v.Key, list);
 
                     for (int j = 0; j < v.Value.Count; j++)
                     {
                         var curFun = v.Value[j];
 
-                        MetaGenMemberFunction mgmf = new MetaGenMemberFunction( this, curFun, m_MetaGenTemplateList);
+                        MetaMemberFunction mgmf = new MetaMemberFunction(this);
+                        mgmf.UpdateGenMemberFunction( curFun );
                         list.Add(mgmf);
-                        mgmf.UpdateGenMemberFunction();
                     }
                 }
             }
+            m_MetaMemberFunctionListDict = addFunctionList;
         }
         public bool Adapter(MetaInputTemplateCollection mitc)
         {
@@ -159,7 +145,6 @@ namespace SimpleLanguage.Core
 
             return sb.ToString();
         }
-
         public override string ToFormatString()
         {
             StringBuilder stringBuilder = new StringBuilder();
@@ -169,7 +154,7 @@ namespace SimpleLanguage.Core
                 stringBuilder.Append(Global.tabChar);
             stringBuilder.Append(permission.ToFormatString());
             stringBuilder.Append(" ");
-            
+
             stringBuilder.Append("class " + name);
             if (m_MetaGenTemplateList.Count > 0)
             {
@@ -219,15 +204,15 @@ namespace SimpleLanguage.Core
                 stringBuilder.Append(Global.tabChar);
             stringBuilder.Append("{" + Environment.NewLine);
 
-            foreach( var v in m_MetaGenMemberVariableDict )
+            foreach (var v in m_MetaMemberVariableDict)
             {
                 stringBuilder.Append(v.Value.ToFormatString());
                 stringBuilder.Append(Environment.NewLine);
             }
 
-            foreach (var v in m_MetaGenMemberFunctionListDict)
+            foreach (var v in m_MetaMemberFunctionListDict)
             {
-                foreach( var v2 in v.Value )
+                foreach (var v2 in v.Value)
                 {
                     stringBuilder.Append(v2.ToFormatString());
                     stringBuilder.Append(Environment.NewLine);

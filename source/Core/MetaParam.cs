@@ -103,6 +103,14 @@ namespace SimpleLanguage.Core
         {
             return m_Express?.ToFormatString();
         }
+        public string ToStatementString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(m_Express.ToFormatString());
+
+            return sb.ToString();
+        }
     }
     public class MetaOutputParam : MetaParam
     {
@@ -114,6 +122,7 @@ namespace SimpleLanguage.Core
     }
     public partial class MetaDefineParam : MetaParam
     {
+        public FileMetaParamterDefine fileMetaParamter => m_FileMetaParamter;
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaExpressNode expressNode => m_MetaExpressNode;
         public bool isTemplate
@@ -210,20 +219,35 @@ namespace SimpleLanguage.Core
 
             return false;
         }
-        public MetaDefineParam( MetaDefineParam mpd )
-        {
-            m_OwnerMetaClass = mpd.m_OwnerMetaClass;
-            m_OwnerMetaBlockStatements = mpd.m_OwnerMetaBlockStatements;
-            m_FileMetaParamter = mpd.m_FileMetaParamter;
-            m_MetaVariable = mpd.m_MetaVariable;
-        }
         public MetaDefineParam( MetaClass mc, MetaBlockStatements mbs, FileMetaParamterDefine fmp )
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_FileMetaParamter = fmp;
-            MetaType mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
+            MetaType mdt = null;
+            if (m_FileMetaParamter.classDefineRef != null )
+            {
+                mdt = new MetaType(fmp.classDefineRef, mc);
+            }
+            else
+            {
+                mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
+            }
             m_MetaVariable = new MetaVariable(fmp.name, mbs, mc, mdt );
+            m_MetaVariable.isArgument = true;
+
+            if (m_FileMetaParamter.express != null)
+            {
+                m_MetaExpressNode = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(null, new MetaType(CoreMetaClassManager.objectMetaClass), m_FileMetaParamter.express);
+
+            }
+        }
+        public MetaDefineParam(string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaType mt )
+        {
+            m_OwnerMetaClass = ownerMC;
+            m_OwnerMetaBlockStatements = mbs;
+            MetaType mdt = new MetaType(mt);
+            m_MetaVariable = new MetaVariable(_name, mbs, ownerMC, mdt);
             m_MetaVariable.isArgument = true;
         }
         public MetaDefineParam( string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaClass _defineMetaClass, MetaExpressNode _expressNode )
@@ -241,37 +265,7 @@ namespace SimpleLanguage.Core
             m_MetaVariable.isArgument = true;
         }
         public override void Parse()
-        {
-            if (m_FileMetaParamter != null)
-            {
-                MetaType defineMetaClassType = null;
-
-                string templateName = m_FileMetaParamter.classDefineRef?.allName;
-                MetaTemplate templateMeta = m_OwnerMetaClass.GetTemplateMetaClassByName(templateName);
-                if (templateMeta != null)
-                {
-                    defineMetaClassType = new MetaType(templateMeta);
-                }
-
-                if (defineMetaClassType != null)
-                {
-                    m_MetaVariable.SetMetaDefineType(defineMetaClassType);
-                }
-                else
-                {
-                    if (m_FileMetaParamter.classDefineRef != null)
-                    {
-                        var defineMetaClass = ClassManager.instance.GetMetaClassByRef(m_OwnerMetaClass, m_FileMetaParamter.classDefineRef);
-                        m_MetaVariable.SetDefineMetaClass(defineMetaClass);
-                    }
-                    if( m_FileMetaParamter.express != null )
-                    {
-                        m_MetaExpressNode = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(null, new MetaType(CoreMetaClassManager.objectMetaClass), m_FileMetaParamter.express);
-                    }
-                }
-
-            }
-            
+        {            
             if(m_MetaExpressNode != null )
             {
                 AllowUseConst auc = new AllowUseConst();
@@ -282,6 +276,8 @@ namespace SimpleLanguage.Core
                 m_MetaExpressNode.Parse(auc);
             }
         }
+        public void SetOwnerMetaClass(MetaClass mc) { m_OwnerMetaClass = mc; }
+        public void SetOwnerMetaBlockStatements(MetaBlockStatements mbs) { m_OwnerMetaBlockStatements = mbs; }
         public void SetMetaType( MetaType mt )
         {
             m_MetaVariable.SetMetaDefineType(mt);
@@ -384,7 +380,7 @@ namespace SimpleLanguage.Core
         {
             if( b == null )
             {
-                return a.isMust;      // 必须传参，但没有参数
+                return !a.isMust;      // 必须传参，但没有参数
             }
             if (a.EqualsInputMetaParam(b))
                 return true;
@@ -465,13 +461,9 @@ namespace SimpleLanguage.Core
     public class MetaDefineParamCollection : MetaParamCollectionBase
     {
         public bool isHaveDefaultParamExpress { get; set; } = false;
-        public MetaDefineParamCollection( MetaDefineParamCollection mdpc )
+        public MetaDefineParamCollection()
         {
-            isHaveDefaultParamExpress = mdpc.isHaveDefaultParamExpress;
-            for( int i = 0; i < mdpc.metaParamList.Count; i++ )
-            {
-                metaParamList.Add(new MetaDefineParam(mdpc.metaParamList[i] as MetaDefineParam));
-            }
+
         }
         public MetaDefineParamCollection(bool _isAllConst, bool _isCanCallFunction)
         { 

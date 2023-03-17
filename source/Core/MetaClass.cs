@@ -126,8 +126,9 @@ namespace SimpleLanguage.Core
         public bool isInnerDefineInCompile => m_IsInnerDefineCompile;
         public MetaClass extendClass => m_ExtendClass;
         public List<MetaClass> interfaceClass => m_InterfaceClass;
-        public bool isTemplateClass { get { return m_MetaTemplateList.Count > 0; } }
-        public List<MetaTemplate> metaTemplateList => m_MetaTemplateList;
+        public bool isTemplateClass { get { return m_MetaTemplateList.Count > 0; } }        //是否是模版类
+        public virtual bool isGenTemplate { get { return false; } }
+        public List<MetaTemplate> metaTemplateList => m_MetaTemplateList;   
         public MetaExpressNode defaultExpressNode => m_DefaultExpressNode;
         public Dictionary<string, MetaMemberVariable> allMetaMemberVariableDict
         {
@@ -164,6 +165,7 @@ namespace SimpleLanguage.Core
         public bool isHandleExtendVariableDirty { get; set; } = false;
 
 
+        protected EType m_Type = EType.None;
         protected Dictionary<Token, FileMetaClass> m_FileMetaClassDict = new Dictionary<Token, FileMetaClass>();
         protected MetaClass m_ExtendClass  = null;
         protected List<MetaClass> m_InterfaceClass = new List<MetaClass>();
@@ -177,7 +179,6 @@ namespace SimpleLanguage.Core
         protected Dictionary<string, List<MetaMemberFunction>> m_MetaMemberFunctionListDict = new Dictionary<string, List<MetaMemberFunction>>();
         protected List<MetaMemberFunction> m_TempInnerFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected MetaExpressNode m_DefaultExpressNode = null;
-        protected EType m_Type = EType.None;
         protected bool m_IsInnerDefineCompile = false;
 
         public MetaClass(string _name, EType _type  = EType.Class )
@@ -189,11 +190,16 @@ namespace SimpleLanguage.Core
         {
             m_Name = mc.m_Name;
             m_Type = mc.m_Type;
+            m_FileMetaClassDict = mc.m_FileMetaClassDict;
             m_ExtendClass = mc.m_ExtendClass;
+            m_InterfaceClass = mc.m_InterfaceClass;
+            m_ChildrenMetaClassDict = mc.m_ChildrenMetaClassDict;
 
             m_MetaMemberVariableDict = mc.m_MetaMemberVariableDict;
             m_MetaExtendMemeberVariableDict = mc.m_MetaExtendMemeberVariableDict;
             m_MetaMemberFunctionListDict = mc.m_MetaMemberFunctionListDict;
+            m_MetaMemberAllNameFunctionDict = mc.m_MetaMemberAllNameFunctionDict;
+            m_DefaultExpressNode = mc.m_DefaultExpressNode;
         }
         public override void SetDeep( int deep )
         {
@@ -336,7 +342,7 @@ namespace SimpleLanguage.Core
         {
             AddDefineConstructFunction();
 
-            if(m_DefaultExpressNode == null )
+            if(m_DefaultExpressNode == null && isTemplateClass == false )
             {
                 MetaType mdt = new MetaType(this);
                 var cdf = new MetaFunctionCall( this, GetMetaMemberConstructDefaultFunction());
@@ -638,7 +644,7 @@ namespace SimpleLanguage.Core
             }
             return mmvList;
         }
-        public MetaMemberFunction GetMetaDefineGetSetMemberFunctionByName( string name, bool isGet , bool isSet )
+        public virtual MetaMemberFunction GetMetaDefineGetSetMemberFunctionByName( string name, bool isGet , bool isSet )
         {
             if (!m_MetaMemberFunctionListDict.ContainsKey(name))
             {

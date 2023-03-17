@@ -52,57 +52,50 @@ namespace SimpleLanguage.Core
         protected MetaVariable m_ReturnMetaVariable = null;
         protected MetaDefineParamCollection m_MetaMemberParamCollection = null;
         protected MetaDefineTemplateCollection m_MetaMemberTemplateCollection = new MetaDefineTemplateCollection();
-        protected int m_ParamCount = 0;
-        protected int m_TemplateCount = 0;
         protected EMethodCallType m_MethodCallType = EMethodCallType.Local;
         protected bool m_IsMustNeedReturnStatements = false;
         protected IRMethod m_IRMethod = null;
-        private List<LabelData> labelDataList = new List<LabelData>();
+        private List<LabelData> m_LabelDataList = new List<LabelData>();
 
-        public void AddMetaStatements(MetaStatements state )
-        {
-            m_MetaBlockStatements.AddFrontStatements(state);
-        }
-        public void SetIRMethod( IRMethod method )
-        {
-            m_IRMethod = method;
-        }
-        public List<MetaVariable> GetCalcMetaVariableList( bool isIncludeArgument = false )
-        {
-            List<MetaVariable> metaVarList = new List<MetaVariable>();
-            m_MetaBlockStatements?.GetCalcMetaVariableList(metaVarList, isIncludeArgument);
-            return metaVarList;
-        }
-        public LabelData GetLabelDataById( string label )
-        {
-            return labelDataList.Find(a => a.label == label);
-        }
-        public LabelData AddLabelData( string label, MetaStatements nextState = null )
-        {
-            var ld = new LabelData() { label = label, nextStatements = nextState };
-            labelDataList.Add(ld );
-            return ld;
-        }
-        public void UpdateLabelData( LabelData newld )
-        {
-            var ld = labelDataList.Find(a => a.label == newld.label);
-            if( ld != null )
-            {
-                ld.frontStatements = newld.frontStatements;
-                ld.nextStatements = newld.nextStatements;
-            }
-        }
-        public MetaFunction( MetaFunction mf )
-        {
-            m_MetaMemberParamCollection = new MetaDefineParamCollection(false, true);
-            m_DefineMetaType = new MetaType(mf.metaDefineType);
-            SetOwnerMetaClass(mf.ownerMetaClass);
-        }
         public MetaFunction(MetaClass mc)
         {
             m_MetaMemberParamCollection = new MetaDefineParamCollection(false, true);
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             SetOwnerMetaClass(mc);           
+        }
+
+        public void AddMetaStatements(MetaStatements state)
+        {
+            m_MetaBlockStatements.AddFrontStatements(state);
+        }
+        public void SetIRMethod(IRMethod method)
+        {
+            m_IRMethod = method;
+        }
+        public List<MetaVariable> GetCalcMetaVariableList(bool isIncludeArgument = false)
+        {
+            List<MetaVariable> metaVarList = new List<MetaVariable>();
+            m_MetaBlockStatements?.GetCalcMetaVariableList(metaVarList, isIncludeArgument);
+            return metaVarList;
+        }
+        public LabelData GetLabelDataById(string label)
+        {
+            return m_LabelDataList.Find(a => a.label == label);
+        }
+        public LabelData AddLabelData(string label, MetaStatements nextState = null)
+        {
+            var ld = new LabelData() { label = label, nextStatements = nextState };
+            m_LabelDataList.Add(ld);
+            return ld;
+        }
+        public void UpdateLabelData(LabelData newld)
+        {
+            var ld = m_LabelDataList.Find(a => a.label == newld.label);
+            if (ld != null)
+            {
+                ld.frontStatements = newld.frontStatements;
+                ld.nextStatements = newld.nextStatements;
+            }
         }
         public MetaDefineParam GetMetaDefineParamByName( string name )
         {
@@ -199,6 +192,15 @@ namespace SimpleLanguage.Core
             //    param.ParseExpress();
             //}
         }
+        public bool CheckMetaFunctionMatchInputParamCollection()
+        {
+            if( !m_MetaFunction.IsEqualMetaInputParamCollection( m_MetaInputParamCollection ) )
+            {
+                Console.WriteLine("Error 验证失败,函数与输入参数不匹配!!");
+                return false;
+            }
+            return true;
+        }
         public MetaType GeMetaDefineType()
         {
             return m_MetaFunction.metaDefineType;
@@ -216,29 +218,29 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public override string ToFormatString()
+        public string ToCommonString()
         {
             StringBuilder sb = new StringBuilder();
 
-            if( m_MetaFunction != null )
+            if (m_MetaFunction != null)
             {
-                sb.Append(m_MetaFunction.ownerMetaClass.ToDefineTypeString() );
-                sb.Append("." + m_MetaFunction.name + "(");
+                sb.Append( m_MetaFunction.name + "(");
                 int inputCount = m_MetaInputParamCollection?.metaParamList.Count ?? 0;
                 List<MetaParam> mpList = m_MetaFunction.metaMemberParamCollection.metaParamList;
                 int defineCount = m_MetaFunction.metaMemberParamCollection.count;
-                for ( int i = 0; i < defineCount; i++ )
+                for (int i = 0; i < defineCount; i++)
                 {
-                    if( i < inputCount)
+                    if (i < inputCount)
                     {
-                        sb.Append(m_MetaInputParamCollection.metaParamList[i].ToFormatString());
+                        MetaInputParam mip = m_MetaInputParamCollection.metaParamList[i] as MetaInputParam;
+                        sb.Append(mip.ToStatementString());
                     }
                     else
                     {
                         MetaDefineParam mdp = mpList[i] as MetaDefineParam;
-                        if( mdp != null )
+                        if (mdp != null)
                         {
-                            sb.Append(mdp.expressNode.ToFormatString() );
+                            sb.Append(mdp.expressNode?.ToFormatString());
                         }
                     }
                     if (i < defineCount - 1)
@@ -249,6 +251,24 @@ namespace SimpleLanguage.Core
                 sb.Append(")");
             }
 
+            return sb.ToString();
+
+        }
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (m_CallerMetaVariable != null)
+            {
+                sb.Append(m_CallerMetaVariable.name);
+            }
+
+            if (m_CallerMetaClass != null)
+            {
+                sb.Append(m_CallerMetaClass.ToDefineTypeString());
+            }
+            sb.Append(".");
+            sb.Append(ToCommonString()); 
             return sb.ToString();
         }
     }

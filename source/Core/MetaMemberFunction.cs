@@ -11,6 +11,7 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Security.Cryptography;
 using System.Runtime.ConstrainedExecution;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.Core
 {
@@ -24,10 +25,10 @@ namespace SimpleLanguage.Core
                 {
                     StringBuilder sb = new StringBuilder();
                     sb.Append(name);
-                    if( m_ParamCount > 0 )
+                    if( m_MetaMemberParamCollection?.maxParamCount > 0 )
                     {
                         sb.Append("_");
-                        sb.Append(m_ParamCount.ToString() );
+                        sb.Append(m_MetaMemberParamCollection.maxParamCount.ToString() );
                         sb.Append("_");
                         sb.Append(m_MetaMemberParamCollection.ToParamTypeName() );
                         sb.Append("_");
@@ -57,8 +58,12 @@ namespace SimpleLanguage.Core
 
         private string m_FunctionAllName = null;
         private bool m_ConstructInitFunction = false;
-        private FileMetaMemberFunction m_FileMetaMemberFunction = null;
+        protected FileMetaMemberFunction m_FileMetaMemberFunction = null;
 
+        public MetaMemberFunction( MetaClass mc ):base(mc)
+        {
+
+        }
         public MetaMemberFunction( MetaClass mc, FileMetaMemberFunction fmmf):base( mc )
         {
             m_MetaMemberParamCollection = new MetaDefineParamCollection(true, false);
@@ -79,15 +84,15 @@ namespace SimpleLanguage.Core
                 isWithInterface = true;
             }
 
-            m_ParamCount = fmmf.metaParamtersList.Count;
-            for (int i = 0; i < m_ParamCount; i++)
+            var paramCount = fmmf.metaParamtersList.Count;
+            for (int i = 0; i < paramCount; i++)
             {
                 var param = fmmf.metaParamtersList[i];
                 MetaDefineParam mmp = new MetaDefineParam(mc, null, param);
                 m_MetaMemberParamCollection.AddMetaDefineParam(mmp);
             }
-            m_TemplateCount = fmmf.metaTemplatesList.Count;         // Cast<T1>() 里边的T1 可以是多个
-            for( int i = 0; i < m_TemplateCount; i++ )
+            var templateCount = fmmf.metaTemplatesList.Count;         // Cast<T1>() 里边的T1 可以是多个
+            for( int i = 0; i < templateCount; i++ )
             {
                 var template = fmmf.metaTemplatesList[i];
 
@@ -107,107 +112,10 @@ namespace SimpleLanguage.Core
             }
             m_MetaBlockStatements = new MetaBlockStatements(this, null);
             m_MetaBlockStatements.isOnFunction = true;
-            Init();
-        }
-        public MetaMemberFunction(MetaMemberFunction mmf) : base( mmf )
-        {
-            m_FileMetaMemberFunction = mmf.m_FileMetaMemberFunction;
-            m_Name = mmf.m_Name;
 
-            isStatic = mmf.isStatic;
-            isGet = mmf.isGet;
-            isSet = mmf.isSet;
-            isFinal = mmf.isFinal;
-            isTemplateInParam = mmf.isTemplateInParam;
 
-            m_ParamCount = mmf.m_ParamCount;
-            m_MetaMemberParamCollection = new MetaDefineParamCollection( mmf.m_MetaMemberParamCollection );
-            m_TemplateCount = mmf.m_TemplateCount;
-            for (int i = 0; i < m_TemplateCount; i++)
-            {
-                //var template = fmmf.metaTemplatesList[i];
 
-                //MetaTemplate mdt = new MetaTemplate(ownerMetaClass, template);
-                //AddMetaDefineTemplate(mdt);
-                //for (int j = 0; j < template.inClassNameTokenList.Count; j++)
-                //{
-                //    var inClassToken = template.inClassNameTokenList[j];
-                //    MetaClass gmc = ClassManager.instance.GetMetaClassByListString(ownerMetaClass, inClassToken.nameList);
-                //    if (gmc == null)
-                //    {
-                //        Console.WriteLine("Error 没有查找到inClass的类名, " + inClassToken.ToFormatString());
-                //        continue;
-                //    }
-                //    mdt.AddInConstraintMetaClass(gmc);
-                //}
-            }
-            Init();
-        }
-        public MetaMemberFunction( MetaClass mc, string _name ) : base( mc )
-        {
-            m_Name = _name;
-            isCanRewrite = true;
-            m_ParamCount = 0;
-            m_MetaMemberParamCollection.Clear();
-
-            m_MetaBlockStatements = new MetaBlockStatements(this, null);
-            m_MetaBlockStatements.isOnFunction = true;
-
-            Init();
-        }
-       
-        void Init()
-        {
-            m_ConstructInitFunction = name == "__Init__";
-            if (m_ConstructInitFunction)
-            {             
-                m_DefineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
-            }
-            else
-            {
-                m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-            }
-            if( isGet )
-            {
-                m_IsMustNeedReturnStatements = true;
-            }
-            if ( !isStatic )
-            {
-                m_ThisMetaVariable = new MetaVariable( "this_" + GetHashCode().ToString(), null, m_OwnerMetaClass, new MetaType( m_OwnerMetaClass ) );
-            }
-            m_ReturnMetaVariable = new MetaVariable("return_" + GetHashCode().ToString(), null, m_OwnerMetaClass, m_DefineMetaType);
-        }
-        public bool IsEqualWithMMFByNameAndParam( MetaMemberFunction mmf )
-        {
-            if (mmf.name != m_Name) return false;
-
-            if( !m_MetaMemberParamCollection.IsEqualMetaDefineParamCollection( mmf.metaMemberParamCollection ) )
-            {
-                return false;
-            }
-
-            return true;
-        }
-        public void AddMetaDefineParam( MetaDefineParam mdp )
-        {
-            m_MetaMemberParamCollection.AddMetaDefineParam(mdp);
-        }
-        public void AddMetaDefineTemplate (MetaTemplate mt )
-        {
-            m_MetaMemberTemplateCollection.AddMetaDefineTemplate(mt);
-        }
-        public override void Parse()
-        {
-            for (int i = 0; i < m_MetaMemberParamCollection.metaParamList.Count; i++)
-            {
-                MetaDefineParam mpl = m_MetaMemberParamCollection.metaParamList[i] as MetaDefineParam;
-                mpl.Parse(); 
-                if (mpl.isTemplate )
-                {
-                    isTemplateInParam = true;
-                }
-            }
-            if ( m_FileMetaMemberFunction != null )
+            if (m_FileMetaMemberFunction != null)
             {
                 /* 暂不支持横版函数  例   T1 Create<T1>(int a )  中的T1 是独立的，不互模版类的T相同时，就认为是模版函数
                 for (int i = 0; i < m_FileMetaMemberFunction.metaTemplatesList.Count; i++ )
@@ -219,7 +127,7 @@ namespace SimpleLanguage.Core
                     AddMetaDefineTemplate(nmt);
                 }
                 */
-                if (m_FileMetaMemberFunction.returnMetaClass != null )
+                if (m_FileMetaMemberFunction.returnMetaClass != null)
                 {
                     MetaType retMT = null;
                     if (m_ConstructInitFunction)
@@ -238,9 +146,9 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            var rawMC = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta( m_OwnerMetaClass, cmr );
+                            var rawMC = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(m_OwnerMetaClass, cmr);
                             List<MetaTemplate> templates = new List<MetaTemplate>();
-                            if( cmr.inputTemplateNodeList.Count > 0 )
+                            if (cmr.inputTemplateNodeList.Count > 0)
                             {
                                 Console.WriteLine("Error 没有找到MetaTemplate相关信息，语法错误!!");
                                 //for ( int i = 0; i < cmr.inputTemplateNodeList.Count; i++ )
@@ -260,7 +168,7 @@ namespace SimpleLanguage.Core
                             retMT = new MetaType(rawMC);
                         }
 
-                        if (retMT == null )
+                        if (retMT == null)
                         {
                             Console.WriteLine("Error 定义的返回类型，没有找到相对应的类型！！");
                         }
@@ -269,6 +177,156 @@ namespace SimpleLanguage.Core
                             m_DefineMetaType = retMT;
                         }
                     }
+                }
+            }
+
+            Init();
+        }
+        public MetaMemberFunction( MetaClass mc, string _name ) : base( mc )
+        {
+            m_Name = _name;
+            isCanRewrite = true;
+            m_MetaMemberParamCollection.Clear();
+
+            m_MetaBlockStatements = new MetaBlockStatements(this, null);
+            m_MetaBlockStatements.isOnFunction = true;
+
+            Init();
+        }
+        void Init()
+        {
+            m_ConstructInitFunction = name == "__Init__";
+            if(m_DefineMetaType == null )
+            {
+                if (m_ConstructInitFunction)
+                {
+                    m_DefineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
+                }
+                else
+                {
+                    m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                }
+            }
+            if( isSet && !isGet )
+            {
+                m_DefineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
+            }
+            if ( isGet )
+            {
+                m_IsMustNeedReturnStatements = true;
+            }
+            if ( !isStatic )
+            {
+                m_ThisMetaVariable = new MetaVariable( "this_" + GetHashCode().ToString(), null, m_OwnerMetaClass, new MetaType( m_OwnerMetaClass ) );
+            }
+            m_ReturnMetaVariable = new MetaVariable("return_" + GetHashCode().ToString(), null, m_OwnerMetaClass, m_DefineMetaType);
+        }
+        public override void SetDeep(int deep)
+        {
+            m_Deep = deep;
+            m_MetaBlockStatements?.SetDeep(deep);
+        }
+        public bool IsEqualWithMMFByNameAndParam( MetaMemberFunction mmf )
+        {
+            if (mmf.name != m_Name) return false;
+
+            if( !m_MetaMemberParamCollection.IsEqualMetaDefineParamCollection( mmf.metaMemberParamCollection ) )
+            {
+                return false;
+            }
+
+            return true;
+        }
+        public void UpdateGenMemberFunction( MetaMemberFunction mmf )
+        {
+            MetaGenTemplateClass mtc = m_OwnerMetaClass as MetaGenTemplateClass;
+            m_Name = mmf.m_Name;
+            SetOwnerMetaClass(mtc);
+            m_FileMetaMemberFunction = mmf.m_FileMetaMemberFunction;
+            isStatic = mmf.isStatic;
+            isGet = mmf.isGet;
+            isSet = mmf.isSet;
+            isFinal = mmf.isFinal;
+            m_IsMustNeedReturnStatements = mmf.m_IsMustNeedReturnStatements;
+            m_MethodCallType = mmf.m_MethodCallType;
+            isTemplateInParam = mmf.isTemplateInParam;
+            m_DefineMetaType = new MetaType(mmf.m_DefineMetaType);
+            m_MetaBlockStatements = new MetaBlockStatements(this);
+            m_MetaBlockStatements.isOnFunction = true;
+
+            var list = mmf.metaMemberParamCollection.metaParamList;
+            MetaGenTemplateClass mgtc = m_OwnerMetaClass as MetaGenTemplateClass;
+            m_MetaMemberParamCollection = new MetaDefineParamCollection();
+            for (int k = 0; k < list.Count; k++)
+            {
+                MetaDefineParam mdp = list[k] as MetaDefineParam;
+                if (mdp.isTemplate)
+                {
+                    string pTName = mdp.metaVariable.metaDefineType.metaTemplate.name;
+                    var find = mgtc.GetMetaGenTemplate(pTName);
+                    if (find != null)
+                    {
+                        MetaDefineParam nmdp = new MetaDefineParam( mdp.metaVariable.name, m_OwnerMetaClass, m_MetaBlockStatements, new MetaType( find.metaType ) );
+                        m_MetaMemberParamCollection.AddMetaDefineParam(nmdp);
+                    }
+                }
+                else
+                {
+                    MetaDefineParam nmdp = new MetaDefineParam(mdp.metaVariable.name, m_OwnerMetaClass, m_MetaBlockStatements, mdp?.metaVariable?.metaDefineType );
+                    m_MetaMemberParamCollection.AddMetaDefineParam(nmdp);
+                }
+            }
+
+            MetaType mt = null;
+            if(mmf.returnMetaVariable != null )
+            {
+                var mmf_retMV = mmf.returnMetaVariable;
+
+                if (mmf_retMV.metaDefineType.isTemplate)
+                {
+                    string pTName = mmf_retMV.metaDefineType.metaTemplate.name;
+                    var find = mgtc.GetMetaGenTemplate(pTName);
+                    if (find != null)
+                    {
+                        mt = find.metaType;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error 没有发现模版对应的模板名称!!");
+                    }
+                }
+                else
+                {
+                    mt = mmf_retMV.metaDefineType;
+                }
+                m_DefineMetaType = new MetaType(mt);
+                m_ReturnMetaVariable = new MetaVariable(mmf.returnMetaVariable.name, m_MetaBlockStatements, this.ownerMetaClass, m_DefineMetaType );
+
+            }
+            if( mmf.metaBlockStatements != null )
+            {
+                //MetaStatements ms = mmf.metaBlockStatements.GenTemplateClassStatement(m_OwnerMetaClass as MetaGenTemplateClass, m_MetaBlockStatements);
+                //m_MetaBlockStatements.SetNextStatements(ms);
+            }
+            
+        }
+        public void AddMetaDefineParam( MetaDefineParam mdp )
+        {
+            m_MetaMemberParamCollection.AddMetaDefineParam(mdp);
+        }
+        public void AddMetaDefineTemplate (MetaTemplate mt )
+        {
+            m_MetaMemberTemplateCollection.AddMetaDefineTemplate(mt);
+        }
+        public override void Parse()
+        {
+            for (int i = 0; i < m_MetaMemberParamCollection.metaParamList.Count; i++)
+            {
+                MetaDefineParam mpl = m_MetaMemberParamCollection.metaParamList[i] as MetaDefineParam;
+                mpl.Parse(); 
+                if (mpl.isTemplate )
+                {
+                    isTemplateInParam = true;
                 }
             }
         }
@@ -529,6 +587,14 @@ namespace SimpleLanguage.Core
             {
                 sb.Append(" override");
             }
+            if (isGet)
+            {
+                sb.Append(" get");
+            }
+            if (isSet)
+            {
+                sb.Append(" set");
+            }
             if (isWithInterface)
             {
                 sb.Append(" interface");
@@ -543,103 +609,6 @@ namespace SimpleLanguage.Core
                 sb.Append(m_MetaBlockStatements.ToFormatString());
 
             return sb.ToString();
-        }
-    }
-    public class MetaMemberFunctionCollection : MetaBase
-    {
-        public List<MetaMemberFunction> functionList = new List<MetaMemberFunction>();
-
-        public MetaMemberFunctionCollection( string _name)
-        {
-            m_Name = _name;
-        }
-        public void AddFunction( MetaMemberFunction mmf )
-        {
-            functionList.Add(mmf);
-
-            AddMetaBase(mmf.name, mmf);
-        }
-    }
-
-    public class MetaGenMemberFunction : MetaMemberFunction
-    {
-        private MetaBlockStatements m_OrigenBlockStatements = null;
-        private MetaVariable m_OrigenReturnMetaVariable = null;
-        private MetaDefineParamCollection m_OrigenMetaMemberParamCollection = null;
-
-        private List<MetaGenTemplate> m_MetaGenTemplate = null;
-        public MetaGenMemberFunction(MetaGenTemplateClass mtc, MetaMemberFunction mmf, List<MetaGenTemplate> mgt) : base(mmf)
-        {
-            m_MetaBlockStatements = new MetaBlockStatements(this, null);
-            m_MetaBlockStatements.isOnFunction = true;
-            m_OrigenBlockStatements = mmf.metaBlockStatements;
-            m_OrigenReturnMetaVariable = mmf.returnMetaVariable;
-            m_OrigenMetaMemberParamCollection = mmf.metaMemberParamCollection;
-            SetOwnerMetaClass(mtc);
-            m_MetaGenTemplate = mgt;
-        }
-        public override void SetDeep(int deep)
-        {
-            m_Deep = deep;
-            m_MetaBlockStatements.SetDeep(deep);
-        }
-        public void UpdateGenMemberFunction()
-        {
-            var list = m_OrigenMetaMemberParamCollection.metaParamList;
-            m_MetaMemberParamCollection.Clear();
-            for (int k = 0; k < list.Count; k++)
-            {
-                MetaDefineParam mdp = list[k] as MetaDefineParam;
-                if (mdp.isTemplate )
-                {
-                    string pTName = mdp.metaVariable.metaDefineType.metaTemplate.name;
-                    var find = m_MetaGenTemplate.Find(a => a.name == pTName);
-                    if( find != null ) 
-                    {
-                        MetaDefineParam nmdp = new MetaDefineParam(mdp);
-                        MetaVariable mv = new MetaVariable( nmdp.metaVariable.name, m_MetaBlockStatements, this.m_OwnerMetaClass, find.metaType);
-                        nmdp.SetMetaVariable(mv);
-                        AddMetaDefineParam(nmdp);
-                    }
-                }
-                else
-                {
-                    MetaDefineParam nmdp = new MetaDefineParam(mdp);
-                    MetaVariable mv = new MetaVariable(nmdp.metaVariable.name, m_MetaBlockStatements, this.m_OwnerMetaClass, mdp.metaVariable.metaDefineType );
-                    nmdp.SetMetaVariable(mv);
-                    nmdp.Parse();
-                    AddMetaDefineParam(nmdp);
-                }
-            }
-
-            MetaType mt = null;
-            if(m_OrigenReturnMetaVariable.metaDefineType.isTemplate )
-            {
-                string pTName = m_OrigenReturnMetaVariable.metaDefineType.metaTemplate.name;
-                var find = m_MetaGenTemplate.Find(a => a.name == pTName);
-                if( find != null )
-                {
-                    mt = find.metaType;
-                }
-                else
-                {
-                    Console.WriteLine("Error 没有发现模版对应的模板名称!!");
-                }
-            }
-            else
-            {
-                mt = m_OrigenReturnMetaVariable.metaDefineType;
-            }
-            m_ReturnMetaVariable = new MetaVariable(m_OrigenReturnMetaVariable.name, m_MetaBlockStatements, this.ownerMetaClass, mt );
-            //MetaStatements cur = origenBlockStatements.nextMetaStatements;
-            //while (true)
-            //{
-            //    var next = cur;
-            //    if (next == null)
-            //        break;
-            //    cur.SetNextStatements(next);
-            //    cur = next;
-            //}
         }
     }
 }

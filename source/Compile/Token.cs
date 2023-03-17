@@ -87,7 +87,8 @@ namespace SimpleLanguage.Compile
                     }
                     break;
                 case ETokenType.Boolean:
-                    {
+                case ETokenType.BoolValue:
+                {
                         etype = EType.Boolean;
                     }
                     break;

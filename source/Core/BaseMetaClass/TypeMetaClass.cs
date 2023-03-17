@@ -13,7 +13,7 @@ namespace SimpleLanguage.Core.SelfMeta
 {
     public class TypeMetaClass : MetaClass
     {
-        public TypeMetaClass() : base(DefaultObject.Byte.ToString())
+        public TypeMetaClass() : base(DefaultObject.Type.ToString())
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Class;

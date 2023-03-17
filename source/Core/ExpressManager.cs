@@ -75,6 +75,10 @@ namespace SimpleLanguage.Core
                         //mcn.GetMetaVariable
                     }
                     break;
+                case MetaConstExpressNode mcen:
+                    {
+                    }
+                    break;
                 default:
                     {
                         Console.WriteLine("Error Optimaze don't support that ExpressType");
@@ -204,6 +208,8 @@ namespace SimpleLanguage.Core
                     case FileMetaCallTerm fmct:
                         {
                             var auc = new AllowUseConst();
+                            auc.useNotStatic = !isStatic;
+                            auc.useNotConst = isConst;
 
                             MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByCall((root as FileMetaCallTerm), mdt, ownerClass, mbs, auc );
                             if (mnoen != null)

@@ -71,5 +71,9 @@ namespace SimpleLanguage.Core.Statements
         {
             m_NextMetaStatements = ms;
         }
+        public virtual MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
+        {
+            return null;
+        }
     }
 }

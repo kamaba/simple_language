@@ -497,7 +497,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 if (i < m_FileMetaExpressList.Count - 1)
                    stringBuilder.Append(",");
             }
-            stringBuilder.Append(m_EndToken.lexeme.ToString());
+            stringBuilder.Append(m_EndToken?.lexeme.ToString());
             return stringBuilder.ToString();
         }
         public override string ToTokenString()

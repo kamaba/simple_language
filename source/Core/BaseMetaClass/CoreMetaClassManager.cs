@@ -33,6 +33,7 @@ namespace SimpleLanguage.Core.SelfMeta
         Range,
         Template,
         Class,
+        Type,
     }
     class CoreMetaClassManager
     {
