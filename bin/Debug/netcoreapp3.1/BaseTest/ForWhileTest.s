@@ -1,5 +1,10 @@
-forwhile_test
+FowWhileTest
 {   
+    static Fun()
+    {
+        forfun()
+        whilefun()
+    }
     static forfun()
     {
         int j = 0;

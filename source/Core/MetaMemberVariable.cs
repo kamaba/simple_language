@@ -349,6 +349,7 @@ namespace SimpleLanguage.Core
         private MetaExpressNode m_Express = null;
         private bool m_IsEnumValue = false;
         private bool m_IsInnerDefine = false;
+        private List<MetaGenTemplate> m_MetaGenTemplateList = null;
 
         private bool m_IsSupportConstructionFunctionOnlyBraceType = false;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
         private bool m_IsSupportConstructionFunctionConnectBraceType = true;  //是否支持构造函数名称后边加{}形式    Class1{ a = Class2(){} } 不支持
@@ -423,6 +424,16 @@ namespace SimpleLanguage.Core
 
             SetOwnerMetaClass(mc);
         }
+        public MetaMemberVariable(MetaGenTemplateClass mtc, MetaMemberVariable mmv, List<MetaGenTemplate> mgt) : base(mmv)
+        {
+            m_MetaGenTemplateList = mgt;
+            m_Name = mmv.m_Name;
+            m_IsInnerDefine = mmv.m_IsInnerDefine;
+            m_FromType = mmv.m_FromType;
+            m_DefineMetaType = mmv.m_DefineMetaType;
+
+            SetOwnerMetaClass(mtc);
+        }
         public override void Parse()
         {
             if (m_FileMetaMemeberVariable != null)
@@ -430,6 +441,20 @@ namespace SimpleLanguage.Core
                 if (m_FileMetaMemeberVariable.classDefineRef != null)
                 {
                     m_DefineMetaType = new MetaType(m_FileMetaMemeberVariable.classDefineRef, ownerMetaClass );
+                }
+            }
+        }
+        public void UpdateGenMemberVariable()
+        {
+            if (m_MetaGenTemplateList != null)
+            {
+                for (int i = 0; i < m_MetaGenTemplateList.Count; i++)
+                {
+                    MetaGenTemplate mgt = m_MetaGenTemplateList[i];
+                    if (mgt.name == m_DefineMetaType.metaTemplate.name)
+                    {
+                        m_DefineMetaType = mgt.metaType;
+                    }
                 }
             }
         }
@@ -824,29 +849,5 @@ namespace SimpleLanguage.Core
             return mn;
         }
         
-    }
-
-    public class MetaGenMemberVariable : MetaMemberVariable
-    {
-        List<MetaGenTemplate> m_MetaGenTemplateList = null;
-        public MetaGenMemberVariable(MetaGenTemplateClass mtc, MetaMemberVariable mmv, List<MetaGenTemplate> mgt ) : base(mmv)
-        {
-            m_MetaGenTemplateList = mgt;
-            SetOwnerMetaClass(mtc);
-        }
-        public void UpdateGenMemberVariable()
-        {
-            if( m_MetaGenTemplateList!= null )
-            {
-                for( int i = 0; i < m_MetaGenTemplateList.Count; i++ )
-                {
-                    MetaGenTemplate mgt = m_MetaGenTemplateList[i];
-                    if( mgt.name == m_DefineMetaType.metaTemplate.name )
-                    {
-                        m_DefineMetaType = mgt.metaType;
-                    }
-                }
-            }
-        }
     }
 }

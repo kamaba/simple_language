@@ -5,9 +5,9 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "ArrayTest.s";
+            path = "ForWhileTest.s";
             group = "temp";
-            tag = "ArrayTest";
+            tag = "FowWhileTest";
         }
     ]
     globalVariable
@@ -29,7 +29,7 @@ Project
         #global.pi = 3.1415f;
         #global.xc = { a = 20, b = 15 }
        #Class1.Print();
-       ArrayTest.Fun();       
+       ForWhileTest.Fun();       
     }
     static Test()
     {

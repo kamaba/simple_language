@@ -38,6 +38,15 @@ namespace SimpleLanguage.Core.Statements
             }
 
         }
+        public override MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
+        {
+            //m_ReturnMetaDefineType?.SetMetaClass(mgt.metaType.metaClass);
+            //if (m_NextMetaStatements != null)
+            //{
+            //    m_NextMetaStatements.GenTemplateClassStatement(mgt);
+            //}
+            return null;
+        }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();

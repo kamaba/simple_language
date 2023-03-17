@@ -93,6 +93,14 @@ namespace Simple
         {
             namespace C1_2
             {
+                public class A<T>
+                {
+                    T a = default(T);
+                    public T getA()
+                    {
+                        return a;
+                    }
+                }
 
             }
         }

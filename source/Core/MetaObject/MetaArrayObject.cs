@@ -12,9 +12,16 @@ using SimpleLanguage.Core;
 
 namespace SimpleLanguage.Core.MetaObjects
 {
-    public class ArrayMetaObject : MetaObject
+    public class MetaArrayObject : MetaObject
     {
-        public ArrayMetaObject() 
-        { }
+        public Array m_Array; 
+        public MetaArrayObject() 
+        {
+
+        }
+        public int count()
+        {
+            return m_Array?.Length ?? 0;
+        }
     }
 }

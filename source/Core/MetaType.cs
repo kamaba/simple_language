@@ -9,6 +9,7 @@ using System.Runtime.ConstrainedExecution;
 using System.Text;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core;
+using System.Security.Cryptography;
 
 namespace SimpleLanguage.Core
 {
@@ -185,6 +186,16 @@ namespace SimpleLanguage.Core
             m_MetaTemplate = mdt.m_MetaTemplate;
             m_InputTemplateCollection = mdt.m_InputTemplateCollection;
         }
+        public bool IsCanForIn()
+        {
+            if( m_MetaClass is MetaData || m_MetaClass is MetaEnum )
+            { return true; }
+            if( m_MetaClass.eType == EType.Array
+                || m_MetaClass.eType == EType.Range )
+            { return true; }
+
+            return false;
+        }
         public void SetEnumValue( MetaMemberVariable mmv )
         {
             m_EnumValue = mmv;
@@ -247,6 +258,10 @@ namespace SimpleLanguage.Core
         {
             m_MetaClass = mc;
             m_IsDefineMetaClass = true;
+        }
+        public void ClearMetaTemplate()
+        {
+            m_MetaTemplate = null;
         }
         public void SetMetaInputTemplateCollection( MetaInputTemplateCollection mitc )
         {

@@ -95,7 +95,7 @@ ProjectEnter
     }
 }
 ```
-### 数据类型的使用方式
+### 数组类型的使用方式
 - 通过data字段字义该类为数据类型，并且，使用 {},=[], name = "val"等方式进行赋值
 - 可以在data前边使用const关键字，进行锁定，不允许修改内容
 - data使用后，在语句中可以直接使用例   print( "book name: @Book.name" ); 

@@ -166,3 +166,6 @@ TempTest
         #Console.Write( aaa );
     }
 }
+
+
+# 3.1 先实现type和Cast 

@@ -291,6 +291,8 @@ namespace SimpleLanguage.Core
                 || m_OpLevelSign == ELeftRightOpSign.GreaterOrEqual
                 || m_OpLevelSign == ELeftRightOpSign.Less
                 || m_OpLevelSign == ELeftRightOpSign.LessOrEqual
+                || m_OpLevelSign == ELeftRightOpSign.And
+                || m_OpLevelSign == ELeftRightOpSign.Or
                     )
                 isEqualType = true;
             else
@@ -492,6 +494,8 @@ namespace SimpleLanguage.Core
                         case ELeftRightOpSign.GreaterOrEqual:
                         case ELeftRightOpSign.Less:
                         case ELeftRightOpSign.LessOrEqual:
+                        case ELeftRightOpSign.And:
+                        case ELeftRightOpSign.Or:
                             {
                                 constLeft.ComputeEqualComputeRight(constRight, m_OpLevelSign);
                                 return constLeft;

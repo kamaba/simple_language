@@ -41,6 +41,12 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = mv.m_DefineMetaType;
             m_OwnerMetaClass = mv.m_OwnerMetaClass;
             m_OwnerMetaBlockStatements = mv.m_OwnerMetaBlockStatements;
+            m_MetaVariableDict = mv.m_MetaVariableDict;
+
+            isStatic = mv.isStatic;
+            isConst = mv.isConst;
+            isArgument = mv.isArgument;
+            isGlobal = mv.isGlobal;
         }
         public MetaVariable(string _name, MetaBlockStatements mbs, MetaClass ownerClass, MetaType mdt )
         {
@@ -72,6 +78,20 @@ namespace SimpleLanguage.Core
         public virtual void Parse()
         {
 
+        }
+        public void GenTemplateMetaVaraible( MetaGenTemplateClass mgt, MetaBlockStatements mbs )
+        {
+            m_OwnerMetaBlockStatements = mbs;
+            m_OwnerMetaClass = mgt;
+            if(m_DefineMetaType.isTemplate )
+            {
+                var tmc = mgt.GetMetaGenTemplate(m_DefineMetaType.metaTemplate.name);
+                if( tmc != null )
+                {
+                    m_DefineMetaType.ClearMetaTemplate();
+                    m_DefineMetaType.SetMetaClass(tmc.metaType.metaClass);
+                }
+            }
         }
         public bool AddMetaVariable( MetaVariable mv )
         {
@@ -116,14 +136,22 @@ namespace SimpleLanguage.Core
          */
         public enum EVisitType
         {
+            Link,
             AT
         }
 
         MetaVariable m_LocalMetaVariable = null;
-        EVisitType m_VisitType = EVisitType.AT;
+        private EVisitType m_VisitType = EVisitType.AT;
         MetaVariable m_VisitMetaVariable = null;
         string m_AtName = "";
 
+        public VisitMetaVariable( MetaVariable lmv, MetaVariable target )
+        {
+            m_VisitType = EVisitType.Link;
+            m_LocalMetaVariable = lmv;
+            m_VisitMetaVariable = target;
+            m_DefineMetaType = target.metaDefineType;
+        }
         public VisitMetaVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaVariable vmv)
         {
             m_Name = _name;
@@ -153,18 +181,26 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(m_LocalMetaVariable.name);
-            if (m_LocalMetaVariable.isArray)
+            if(m_VisitType == EVisitType.Link)
             {
-                sb.Append("[");
-                //sb.Append(m_DefineMetaType.ToFormatString());
-                sb.Append(m_Name);
-                sb.Append("]");
-                //sb.Append(m_Express.ToFormatString());
+                sb.Append("[" + m_LocalMetaVariable.metaDefineType.allName+ "]");
+                sb.Append(m_VisitMetaVariable.name);
             }
             else
             {
-
+                sb.Append(m_LocalMetaVariable.name);
+                if (m_LocalMetaVariable.isArray)
+                {
+                    sb.Append("[");
+                    //sb.Append(m_DefineMetaType.ToFormatString());
+                    sb.Append(m_Name);
+                    sb.Append("]");
+                    //sb.Append(m_Express.ToFormatString());
+                }
+                else
+                {
+                    sb.Append(m_VisitMetaVariable.name);
+                }
             }
 
             return sb.ToString();
@@ -176,6 +212,7 @@ namespace SimpleLanguage.Core
         MetaVariable m_LocalMetaVariable = null;
         MetaType m_OrgMetaDefineType = null;
         MetaVariable m_IndexMetaVariable = null;
+        MetaVariable m_ValueMetaVariable = null;
 
         public IteratorMetaVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaType orgMC )
         {
@@ -185,6 +222,7 @@ namespace SimpleLanguage.Core
             m_LocalMetaVariable = lmv;
             m_OrgMetaDefineType = orgMC;
             m_IndexMetaVariable = new MetaVariable("index", mbs, mc, new MetaType(CoreMetaClassManager.int32MetaClass));
+            m_ValueMetaVariable = new MetaVariable("value", mbs, mc, new MetaType(orgMC.metaClass));
             if (lmv.isArray)
             {
                 var gmit = m_LocalMetaVariable.metaDefineType.GetMetaInputTemplateByIndex();
@@ -200,12 +238,21 @@ namespace SimpleLanguage.Core
                 m_DefineMetaType = lmv.metaDefineType;
             }
         }
+        public MetaClass GetIteratorMetaClass()
+        {
+            return m_OrgMetaDefineType.metaClass;
+        }
+
 
         public override MetaVariable GetMetaVaraible(string name)
         {
             if( name == "index" )
             {
                 return m_IndexMetaVariable;
+            }
+            else if( name == "value" )
+            {
+                return m_ValueMetaVariable;
             }
             if (m_MetaVariableDict.ContainsKey(name))
             {

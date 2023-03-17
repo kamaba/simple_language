@@ -5,6 +5,7 @@
 //  DateTime: 2022/6/12 12:00:00
 //  Description: 
 //****************************************************************************
+using SimpleLanguage.Core.MetaObjects;
 using SimpleLanguage.VM;
 using System;
 using System.Collections.Generic;
@@ -112,15 +113,15 @@ namespace SimpleLanguage.Core.SelfMeta
             ////IsIn.SetMetaDefineType(new MetaType(CoreMetaClassManager.voidMetaClass));
             ////AddInnerMetaMemberFunction(IsIn);
         }
-        public void Init_Call( ArrayObject<int> arrObj, int count )
-        {
-
-        }
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new ArrayMetaClass();
             ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
             return mc;
+        }
+        public static int GetMetaClassCount( MetaArrayObject amo )
+        {
+            return amo.count();
         }
     }
 }

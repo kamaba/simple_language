@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using static SimpleLanguage.Core.Statements.MetaIfStatements;
 
 namespace SimpleLanguage.Core.Statements
 {
@@ -191,6 +192,8 @@ namespace SimpleLanguage.Core.Statements
             AllowUseConst auc = new AllowUseConst();
             auc.useNotStatic = m_FileMetaOpAssignSyntax?.staticToken != null ? false : true;
             auc.useNotConst = m_FileMetaOpAssignSyntax?.constToken == null ? false : true;
+            auc.setterFunction = true;
+            auc.getterFunction = false;
             m_MetaCallLink.Parse(auc);
             m_MetaCallLink.CalcReturnType();
             var mfc = m_MetaCallLink.metaFunctionCall;
@@ -360,9 +363,19 @@ namespace SimpleLanguage.Core.Statements
             {
                 MetaInputParam mip = new MetaInputParam(m_ExpressNode);
                 mfc.metaInputParamCollection.AddMetaInputParam(mip);
-                m_MetaCallLink.finalMetaCallNode.SetInputParamCollection(mfc.metaInputParamCollection);
+                mfc.CheckMetaFunctionMatchInputParamCollection();
             }
             return;
+        }
+
+        public override MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
+        {
+            if (m_NextMetaStatements != null)
+            {
+                //m_NextMetaStatements.GenTemplateClassStatement(mgt);
+            }
+
+            return null;
         }
         public override string ToFormatString()
         {

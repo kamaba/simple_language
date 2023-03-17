@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile.CoreFileMeta;
+using System.Net;
 
 namespace SimpleLanguage.Core.Statements
 {
@@ -27,6 +28,9 @@ namespace SimpleLanguage.Core.Statements
         private MetaVariable m_MetaVariable = null;
         private MetaExpressNode m_ExpressNode = null;
         private bool m_IsNeedCastStatements = false;
+        public MetaNewStatements( MetaBlockStatements mbs ) : base(mbs)
+        {
+        }
         public MetaNewStatements(MetaBlockStatements mbs, FileMetaDefineVariableSyntax fmdvs ) : base( mbs )
         {
             m_FileMetaDefineVariableSyntax = fmdvs;
@@ -220,6 +224,22 @@ namespace SimpleLanguage.Core.Statements
             {
                 nextMetaStatements.SetTRMetaVariable(mv);
             }
+        }
+        public override MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
+        {
+            MetaNewStatements mns = new MetaNewStatements(parentMs);
+            mns.m_FileMetaDefineVariableSyntax = m_FileMetaDefineVariableSyntax;
+            mns.m_FileMetaOpAssignSyntax = m_FileMetaOpAssignSyntax;
+            mns.m_FileMetaCallSyntax = m_FileMetaCallSyntax;
+            mns.m_IsNeedCastStatements = m_IsNeedCastStatements;
+            mns.m_MetaVariable = new MetaVariable(m_MetaVariable);
+            mns.m_ExpressNode = m_ExpressNode;
+            mns.m_MetaVariable.GenTemplateMetaVaraible( mgt, parentMs );
+            if (m_NextMetaStatements != null)
+            {
+                m_NextMetaStatements.GenTemplateClassStatement(mgt, parentMs);
+            }
+            return mns;
         }
         public override void SetDeep(int dp)
         {
