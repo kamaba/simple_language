@@ -37,6 +37,19 @@ namespace SimpleLanguage
     {
         public static int m = 20;
     }
+    public class L<T>
+    {
+        public T m;
+        public T laa( T t )
+        {
+            T mw = t;
+            if( typeof( T ) == typeof( Int32) )
+            {
+                
+            }
+            return mw;
+        }
+    }
     class Program
     {
         static void Main(string[] args)
@@ -53,8 +66,6 @@ namespace SimpleLanguage
 
             CommandInputArgs inputArgs = new CommandInputArgs(args);
             ProjectManager.Run("BaseTest\\test1.sp", inputArgs );
-            //Console.WriteLine("Hello World!");
-
             Console.ReadKey();            
         }
     }

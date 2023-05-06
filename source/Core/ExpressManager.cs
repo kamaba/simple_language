@@ -75,6 +75,10 @@ namespace SimpleLanguage.Core
                         //mcn.GetMetaVariable
                     }
                     break;
+                case MetaConstExpressNode mcen:
+                    {
+                    }
+                    break;
                 default:
                     {
                         Console.WriteLine("Error Optimaze don't support that ExpressType");
@@ -162,8 +166,8 @@ namespace SimpleLanguage.Core
                     break;
                 case FileMetaParTerm fmpt:
                     {
-                        Console.WriteLine("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
-                        //men = VisitFileMetaExpress(mc, mbs, selfMC, fmpt.express );
+                        //Console.WriteLine("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
+                        men = VisitFileMetaExpress(mc, mbs, mdt, fmpt.root );
                     }
                     break;
                 case FileMetaTermExpress fmte:
@@ -204,6 +208,8 @@ namespace SimpleLanguage.Core
                     case FileMetaCallTerm fmct:
                         {
                             var auc = new AllowUseConst();
+                            auc.useNotStatic = !isStatic;
+                            auc.useNotConst = isConst;
 
                             MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByCall((root as FileMetaCallTerm), mdt, ownerClass, mbs, auc );
                             if (mnoen != null)
@@ -238,7 +244,7 @@ namespace SimpleLanguage.Core
                         {
                             //Console.WriteLine("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
                             
-                            MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode((root as FileMetaBracketTerm),  mdt, ownerClass, mbs, null);
+                            MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode((root as FileMetaBracketTerm),  ownerClass, mbs );
                             if (mnoen != null)
                                 return mnoen;
                         }
@@ -274,6 +280,7 @@ namespace SimpleLanguage.Core
             {
                 FileMetaIfSyntaxTerm ifExpressTerm = fmte as FileMetaIfSyntaxTerm;
                 FileMetaSwitchSyntaxTerm switchExpressTerm = fmte as FileMetaSwitchSyntaxTerm;
+                FileMetaParTerm parExpressTerm = fmte as FileMetaParTerm;
                 if (ifExpressTerm != null)
                 {
                     MetaExecuteStatementsNode mesn = MetaExecuteStatementsNode.CreateMetaExecuteStatementsNodeByIfExpress(mdt, mc, mbs, ifExpressTerm.ifSyntax);
@@ -289,6 +296,12 @@ namespace SimpleLanguage.Core
                     {
                         return mesn;
                     }
+                }
+                else if(parExpressTerm != null )
+                {
+                    MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByPar(parExpressTerm, mdt, mc, mbs);
+                    if (mnoen != null)
+                        return mnoen;
                 }
                 else
                 {

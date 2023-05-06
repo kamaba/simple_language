@@ -13,6 +13,18 @@ namespace SimpleLanguage.Core
         {
             m_Name = _name;
         }
+        public override void SetDeep(int deep)
+        {
+            base.SetDeep(deep);
+            foreach( var v in m_MetaNamespaceList )
+            {
+                v.SetDeep(deep + 1);
+            }
+            foreach( var v in m_MetaClassList )
+            {
+                v.SetDeep(deep + 1);
+            }
+        }
         public void AddMetaNamespace(MetaNamespace namespaceName )
         {
             m_MetaNamespaceList.Add(namespaceName);

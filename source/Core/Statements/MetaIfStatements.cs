@@ -44,7 +44,7 @@ namespace SimpleLanguage.Core.Statements
                 if( conditionExpress != null )
                 {
                     m_Express = conditionExpress;
-                    m_FinalExpress = ExpressManager.instance.CreateOptimizeAfterExpress(m_Express);
+                    m_FinalExpress = m_Express;// ExpressManager.instance.CreateOptimizeAfterExpress(m_Express);
                 }
 
                 m_ThenMetaStatements = new MetaBlockStatements(mbs, ifexpress.executeBlockSyntax);
@@ -187,6 +187,18 @@ namespace SimpleLanguage.Core.Statements
                     msis3.thenMetaStatements.SetTRMetaVariable(m_MetaVariable);
                 }
             }
+        }
+        public override MetaStatements GenTemplateClassStatement( MetaGenTemplateClass mgt, MetaBlockStatements mbs )
+        {
+            //for (int i = 0; i < m_MetaElseIfStatements.Count; i++)
+            //{
+            //    m_MetaElseIfStatements[i].thenMetaStatements?.GenTemplateClassStatement(mgt);
+            //}
+            //if (m_NextMetaStatements != null)
+            //{
+            //    m_NextMetaStatements.GenTemplateClassStatement(mgt);
+            //}
+            return null;
         }
         public override void SetDeep(int dp)
         {

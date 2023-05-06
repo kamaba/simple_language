@@ -1,111 +1,185 @@
-# S语言的条件控制
+# S语言的循环语句
 
-## Switch表达式
+## 循环表达式
+循环语句可以使用在 遍历数组或者迭代表达式，也可以使用条件语句，进行循环执行, 分三种 分别为: for, while, dowhile
 
-一个 switch 语句允许测试一个变量等于多个值时的情况。每个值称为一个 case，且被测试的变量会对每个 switch case 进行检查。
+-------------------------
 
-下面是大多数编程语言中典型的判断结构的一般形式：
+### for的语法
+1. 使用条件判断式去执行循环 即，for 初始化, 执行约束条件， 变量变化{} 这三个语句是顺序化的，但可以依次从后往前不写。
+2. 使用 for in 语句，一般是迭代数组或者是迭代表达式去执行， for 迭代变量 in 数组/迭代表达式{} 这个语句不可以省略任何组成部分。
 
-
-### 语法
-#### S 中 switch 语句的常量匹配语法：
-
+for条件示例
 ```ruby 
-switch expression 
+for init_express, end_condition_express, change_variable_express
 {
-    case constant-express{ statement(s); }
-    case constant-express{ statement(s); next; }
-    default{ statement(s);}
+    #语句
+}
+```
+其中init_express, end_condition_express, change_variable_express都是可选，但顺序不能变，只能从后边向前省略，与函数传参类似。
+
+for的遍历示例
+```python
+Array arr = {1,2,3,4};
+for v in arr
+{
+    #语句
 }
 ```
 
-#### S 中 switch 语句的类型匹配语法：
-```ruby
-switch classObject.Type()
+break,continue的使用
+```python
+for v in 1..10
 {
-    case Int32
+    if v < 4
     {
-        statement();
+        #输入小于v说明
+        continue;
     }
-    case Int64
+    if v == 8
     {
-        statement();
+        break;
     }
+    #输出当前遍历值与它的索引
+    Console.WriteLine( "v=@v index=@v.index ");
 }
 ```
+上边示例中，v是遍历的迭代器， 使用v则，直接识别当前v的值，如果使用v.index则表达，当前的索引值,
+如果v小于4 则使用continue,在continue之前的语句执行，后边的则跳过，如果v == 8则break，相当于跳出循环执行。
 
-#### S 中 switch 语句的类型带增加变量匹配语法：
-```ruby
-switch classObject
+### for 语句必须遵循下面的规则：
+- for{}语句，可以配合break/continue等使用
+- for 后边的表达示都为可选表达式，但如果省略只能从后往前依次略，一般结束条件可用break结束。
+- for in表达式，可以对enum,和迭代表达式配合使用，必须迭代变量，自带一些属性index,是当前的索引
+- for in表达式，后边的迭代表达式如果使用了自带游标，即 arr.index的变化 例: for v in arr{ a = arr.index; }这个时候，arr.index就是它的游标，游标这种情况是只读的，在其它情况，可以设置游标值，然后进行读取。
+-------
+### while的语法
+1. 使用while语句执行，相当于每次语句结束后，通过while判断是否返回的是布尔表达式，如果是true,则继续执行
+2. 使用dowhile语句和while类似，但判断条件是首次跳过判断，而在执行后进行判断布尔表达式，如果true则继续执行。
+
+while示例
+```python 
+while boolean_express
 {
-    case Class2 defaultVariable2
-    {
-        statement( defaultVariable2 );
-    }
-    case Class3 defaultVariable3
-    {
-        statement(defaultVariable3);
-    }
+    #语句
 }
 ```
-
-#### S 中 switch 语句与返回语句结合：
-```ruby
-a = switch expression
+dowhile示例
+```python
+dowhile boolean_express
 {
-    case constant-express{ statement(s); tr 20; }
-    case constant-express{ statement(s); tr 30; }
+    #语句
 }
 ```
+### while/dowhile 语句必须遵循下面的规则：
+- while/dowhile 后边只允许布尔类型的呈现
+- while/dowhile中，可与break/continue配合使用。
+------
 
-### switch 语句必须遵循下面的规则：
-- switch 语句中的 expression 必须是一个整型或枚举类型，或者是一个 class 类型，其中 class 有一个单一的转换函数将其转换为整型或枚举类型。
-- 在一个 switch 中可以有任意数量的 case 语句。每个 case 后跟一个要比较的值在后边要跟一个{}。
-- case 的 constant-expression 必须与 switch 中的变量具有相同的数据类型，且必须是一个常量。
-- 当被测试的变量等于 case 中的常量时，case 后跟的语句将被执行，直到整个switch被执行完后，如果要继续进行后续的检查，需要增加next;的语法，让语句继续执行。
-- 该switch不像传统带break模式，break;
-- 一个 switch 语句可以有一个可选的 default 语句，在 switch 的结尾。default 语句用于在上面所有 case 都不为 true 时执行的一个任务。default 也需要包含 break 语句，这是一个良好的习惯。
-- s 不支持从一个 case 标签显式贯穿到另一个 case 标签。如果要使 s 支持从一个 case 标签显式贯穿到另一个 case 标签，可以使用 goto 一个 switch-case 或 goto default。
-- S 中，可以与返回值语句结合使用，但需要使用tr value; 的语法结合，相当于 a = value;的语法。
 
 #### 实例
 ```ruby
+import CSharp.System;
+
+const enum ArrEnum
+{
+    a = 1;
+    b = 2;
+    c = 3;
+}
 ProjectEnter
 {
-    ClassBase
+    static Main()
     {
-
-    }
-    ClassChild1 :: ClassBase
-    {
-
-    }
-    ClassChild2 :: ClassBase
-    {
-
-    }
-    static static Main( int a )
-    {
-        x = 0;
-        ok = switch a
+        #for enum
+        for v in ArrEnum
         {
-            case 1{ x = 1; }
-            case 2{ x = 2; tr 3; }
-            case 3{ x = 3; tr 4; next; }
-            case 4,5,6{ x = 10; tr 10; }
-            default{ x = 100; tr 20; }}
+            Console.WriteLine("V=@v");
         }
+        #输入结果
+        #>>v=a
+        #>>v=b
+        #>>v=c
+
+        #for 数组
+        for v in 1..3
+        {
+            Console.WriteLine("v=@v index=@v.index");
+        }
+        #输入结果
+        #>>v=1 index=0
+        #>>v=2 index=1
+        #>>v=3 index=2
+        Array<string> arrString = {"a","b","c","d","e"};
+        for v in arrString
+        {
+            if v.index > 4
+            {
+                break;
+            }
+            if v.index == 0 
+            {
+                arrString[v.index] = "mc";
+                Console.WriteLine("v[0]=mc");
+                continue;
+            }
+            if v == "b" 
+            {
+                Console.WriteLine( "v=@v" );
+            }
+            Console.WriteLine("index=@v.index");
+        }
+        #输入结果
+        #>>v[0]=mc
+        #>>index=0
+        #>>v=b
+        #>>index=1
+        #>>index=2
+        #>>index=3
+        #>>index=4
+
+        #for 条件
+        for i = 0, i < 2, i++
+        {
+            Console.WriteLine("v=@i");  #条件迭代没有index值
+        }
+        #输入结果
+        #>>v=0
+        #>>v=1
+        i2 = 10;
+        for
+        {
+            if i2 > 12
+            {
+                break;
+            }
+            i2 += 2;
+            Console.WriteLine("i2=@i2");
+        }
+        #输入结果
+        #>>i2=10
+        #>>i2=12
+
+        #while
+        bool flag1 = true;
+        while flag1
+        {
+            Console.WriteLine("while" );
+            flag1 = false;
+        }
+        #输入结果
+        #>>while
+
+        #dowhile
+        dowhile false
+        {
+            Console.WriteLine("dowhile");
+            #输出一次dowhile
+        }
+        #输入结果
+        #>>dowhile  
     }
 }
 ```
-$ projectrun 20
-执行以上代码，输出结果为:
-执行x>1的内容
-执行x>3的内容
-执行x>14的内容
-
-$ projectrun 0
-执行else的内容
-
 
 

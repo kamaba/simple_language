@@ -36,6 +36,15 @@ data Book  #定义数据
         }
     ] 
 }
+data AD
+{
+    a = 20;
+    #td = BD  如果这样引用会报错，因为有循环引用现象
+}
+data BD 
+{
+    ad = AD     #可以引用数据，但不能引用类或者是enu
+}
 class BookClass    #也可以使用 class关键字
 {
     class Rent{
@@ -86,7 +95,7 @@ ProjectEnter
     }
 }
 ```
-### 数据类型的使用方式
+### 数组类型的使用方式
 - 通过data字段字义该类为数据类型，并且，使用 {},=[], name = "val"等方式进行赋值
 - 可以在data前边使用const关键字，进行锁定，不允许修改内容
 - data使用后，在语句中可以直接使用例   print( "book name: @Book.name" ); 
@@ -95,3 +104,4 @@ ProjectEnter
 - 数据，可以转化为数据流方式 stream = Book.ToStream();  stream 是独有的Stream类型，可以直接传入class中，赋值
 - 数据可以与类进行转化，但有可能有不匹配的数据丢失， BookClass bc = Book.ToClass<BookClass>(); 
 - 类也可以向数据转化 BookClass bc = BookClass(); bd = bc.ToData<Book>(); bd则为数据类的变量。
+- 数据在定义时候，可以引用其它数据,但不能引用类与枚举，但不能循环引用，否则会报错! 

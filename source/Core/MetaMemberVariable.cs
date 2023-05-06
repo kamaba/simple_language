@@ -10,7 +10,9 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.Core
 {
@@ -23,9 +25,11 @@ namespace SimpleLanguage.Core
     public partial class MetaMemberData : MetaVariable
     {
         public override bool isConst { get { return m_IsConst; } }
+        public MetaConstExpressNode constExpressNode => m_Express as MetaConstExpressNode;
+        public Dictionary<string, MetaMemberData> metaMemberDataDict => m_MetaMemberDataDict;
 
-        private FileMetaMemberData m_FileMetaMemeberData;
-        private MetaConstExpressNode m_Express = null;
+        private FileMetaMemberData m_FileMetaMemeberData = null;
+        private MetaExpressNode m_Express = null;
         private EMemberDataType m_MemberDataType = EMemberDataType.None;
         private int m_Index = -1;
         private bool m_End = false;
@@ -33,6 +37,12 @@ namespace SimpleLanguage.Core
 
         protected Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
 
+        public MetaMemberData(MetaData mc)
+        {
+            m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+            SetOwnerMetaClass(mc);
+            m_IsConst = mc.isConst;
+        }
         public MetaMemberData(MetaData mc, FileMetaMemberData fmmd )
         {
             m_FileMetaMemeberData = fmmd;
@@ -43,6 +53,43 @@ namespace SimpleLanguage.Core
             m_IsConst = mc.isConst;
 
             Parse();
+        }
+
+        public string GetString( string name, bool isInChildren = true )
+        {
+            var constExpress = (m_Express as MetaConstExpressNode);
+            if (constExpress != null)
+            {
+                return constExpress.value.ToString();
+            }
+            else
+            {
+                if(isInChildren)
+                {
+                    if (m_MetaMemberDataDict.ContainsKey(name))
+                    {
+                        return m_MetaMemberDataDict[name].GetString(name);
+                    }
+                }
+            }
+            return null;
+        }
+        public int GetInt(string name, int defaultValue = 0 )
+        {
+            var constExpress = (m_Express as MetaConstExpressNode);
+            if (constExpress != null)
+            {
+                if( constExpress.eType == EType.Int16
+                    || constExpress.eType == EType.UInt16
+                    || constExpress.eType == EType.Int32
+                    || constExpress.eType == EType.UInt32
+                    || constExpress.eType == EType.Int64
+                    || constExpress.eType == EType.UInt64 )
+                {
+                    return int.Parse(constExpress.value.ToString());
+                }
+            }
+            return defaultValue;
         }
         public MetaMemberData( MetaMemberData parentNode, FileMetaMemberData fmmd, int _index, bool isEnd = false )
         {
@@ -64,31 +111,40 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
+        public bool AddMetaMemberData( MetaMemberData mmd )
+        {
+            if( m_MetaMemberDataDict.ContainsKey( mmd.name ) )
+            {
+                return false;
+            }
+            m_MetaMemberDataDict.Add(mmd.name, mmd);
+            return true;
+        }
         public override void Parse()
         {
             if (m_FileMetaMemeberData != null)
             {
                 switch (m_FileMetaMemeberData.DataType)
                 {
-                    case FileMetaMemberData.EMemberDataType.NameClass:
+                    case FileMetaMemberData.EMemberDataType.NameClass:    // data Data{ childData{} }
                         {
                             m_Name = m_FileMetaMemeberData.name;
                             m_MemberDataType = EMemberDataType.MemberData;
                         }
                         break;
-                    case FileMetaMemberData.EMemberDataType.Array:
+                    case FileMetaMemberData.EMemberDataType.Array:      // data Data{ childArray[  ] }
                         {
                             m_Name = m_FileMetaMemeberData.name;
                             m_MemberDataType = EMemberDataType.MemberData;
                         }
                         break;
-                    case FileMetaMemberData.EMemberDataType.NoNameClass:
+                    case FileMetaMemberData.EMemberDataType.NoNameClass:   // data Data{ childArray{ {}, {} } }
                         {
                             m_Name = m_Index.ToString();
                             m_MemberDataType = EMemberDataType.MemberData;
                         }
                         break;
-                    case FileMetaMemberData.EMemberDataType.KeyValue:
+                    case FileMetaMemberData.EMemberDataType.KeyValue:  // data Data{ childArray{ a = 1; b = 2 } }
                         {
                             m_Name = m_FileMetaMemeberData.name;
                             m_MemberDataType = EMemberDataType.ConstValue;
@@ -102,8 +158,79 @@ namespace SimpleLanguage.Core
                             m_Express = new MetaConstExpressNode(m_FileMetaMemeberData.fileMetaConstValue);
                         }
                         break;
+                    case FileMetaMemberData.EMemberDataType.Data:
+                        {
+                            m_Name = m_FileMetaMemeberData.name;
+                            m_MemberDataType = EMemberDataType.MemberData;
+                            m_Express = new MetaCallExpressNode(m_FileMetaMemeberData.fileMetaCallTermValue.callLink, null, null );
+                            m_Express.Parse(new AllowUseConst());
+                            m_DefineMetaType = m_Express.GetReturnMetaDefineType();
+                            if(m_DefineMetaType == null )
+                            {
+                                Console.WriteLine("Error 在生成Data时，没有找到." + m_FileMetaMemeberData.fileMetaCallTermValue.ToTokenString());
+                                return;
+                            }
+                            var mc = m_Express.GetReturnMetaClass();
+                            MetaData refMD = mc as MetaData;
+                            if (refMD != null )
+                            {
+                                CopyByMetaData(refMD);
+                            }
+                            else
+                            {
+                                Console.WriteLine("Error 在生成Data时，发现不是Data数据!!");
+                            }
+                        }
+                        break;
                 }
             }
+        }
+        public MetaMemberData Copy()
+        {
+            var newMMD = new MetaMemberData( m_OwnerMetaClass as MetaData );
+            newMMD.m_Name = m_Name;
+            newMMD.m_MemberDataType = m_MemberDataType;
+            if (m_MemberDataType == EMemberDataType.MemberData )
+            {
+                foreach( var v in m_MetaMemberDataDict )
+                {
+                    newMMD.AddMetaMemberData(v.Value.Copy());
+                }
+            }
+            else if( m_MemberDataType == EMemberDataType.ConstValue )
+            {
+                newMMD.m_Express = m_Express;
+            }
+            return newMMD;
+        }
+        public void CopyByMetaData( MetaData md )
+        {
+            MetaData curMD = m_OwnerMetaClass as MetaData;
+            foreach (var v in md.metaMemberDataDict)
+            {
+                if (v.Value.IsIncludeMetaData(curMD) )
+                {
+                    Console.WriteLine("Error 当前有循环引用数量现象，请查正!!" + md.allName);
+                    continue;
+                }
+                var newMMD = v.Value.Copy();
+                this.AddMetaMemberData(newMMD);
+            }
+        }
+        public bool IsIncludeMetaData( MetaData md )
+        {
+            if (md == null) return false;
+
+            MetaData belongMD = m_OwnerMetaClass as MetaData;
+            if(belongMD != null)
+            {
+                if(belongMD == md )
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
         public void ParseChildMemberData()
         {
@@ -112,11 +239,16 @@ namespace SimpleLanguage.Core
             {
                 MetaMemberData mmd = new MetaMemberData(this, m_FileMetaMemeberData.fileMetaMemberData[i], i, i == count - 1);
 
-                m_MetaMemberDataDict.Add(mmd.name, mmd);
+                if( AddMetaMemberData(mmd) )
+                {
+                    this.AddMetaBase(mmd.name, mmd);
 
-                this.AddMetaBase(mmd.name, mmd);
-
-                mmd.ParseChildMemberData();
+                    mmd.ParseChildMemberData();
+                }
+                else
+                {
+                    Console.WriteLine("Error 命名有重名!!");
+                }
             }
         }
         public override string ToFormatString()
@@ -209,12 +341,15 @@ namespace SimpleLanguage.Core
         public int index => m_Index;
         public MetaExpressNode express => m_Express;
         public int parseLevel { get; set; } = -1;
+        public bool isInnerDefine => m_IsInnerDefine;
 
         private EFromType m_FromType = EFromType.Code;
         private int m_Index = -1;
         private FileMetaMemberVariable m_FileMetaMemeberVariable;
         private MetaExpressNode m_Express = null;
         private bool m_IsEnumValue = false;
+        private bool m_IsInnerDefine = false;
+        private List<MetaGenTemplate> m_MetaGenTemplateList = null;
 
         private bool m_IsSupportConstructionFunctionOnlyBraceType = false;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
         private bool m_IsSupportConstructionFunctionConnectBraceType = true;  //是否支持构造函数名称后边加{}形式    Class1{ a = Class2(){} } 不支持
@@ -229,17 +364,35 @@ namespace SimpleLanguage.Core
         public static int s_DefineMetaTypeLevel = 1000000000;
         public static int s_ExpressLevel = 1500000000;
 
+        public MetaMemberVariable( MetaMemberVariable mmv ) : base( mmv )
+        {
+            m_FromType = EFromType.Manual;
+            m_DefineMetaType = mmv.m_DefineMetaType;
+            m_IsInnerDefine = mmv.m_IsInnerDefine;
+            m_Express = mmv.m_Express;
+        }
         public MetaMemberVariable(MetaClass mc, string _name)
         {
             m_Name = _name;
             m_FromType = EFromType.Manual;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+            m_IsInnerDefine = true;
 
             SetOwnerMetaClass(mc);
+        } 
+        public MetaMemberVariable( MetaClass ownerMc, string _name, MetaTemplate mt )
+        {
+            m_Name = _name;
+            m_FromType = EFromType.Manual;
+            m_DefineMetaType = new MetaType( mt );
+            m_IsInnerDefine = true;
+
+            SetOwnerMetaClass(ownerMc);
         }
         public MetaMemberVariable(MetaClass mc, string _name, MetaClass _defineTypeClass )
         {
             m_Name = _name;
+            m_IsInnerDefine = true;
             m_FromType = EFromType.Manual;
             m_DefineMetaType = new MetaType(_defineTypeClass);
             m_DefineMetaType.SetMetaClass(_defineTypeClass);
@@ -271,6 +424,16 @@ namespace SimpleLanguage.Core
 
             SetOwnerMetaClass(mc);
         }
+        public MetaMemberVariable(MetaGenTemplateClass mtc, MetaMemberVariable mmv, List<MetaGenTemplate> mgt) : base(mmv)
+        {
+            m_MetaGenTemplateList = mgt;
+            m_Name = mmv.m_Name;
+            m_IsInnerDefine = mmv.m_IsInnerDefine;
+            m_FromType = mmv.m_FromType;
+            m_DefineMetaType = mmv.m_DefineMetaType;
+
+            SetOwnerMetaClass(mtc);
+        }
         public override void Parse()
         {
             if (m_FileMetaMemeberVariable != null)
@@ -278,6 +441,20 @@ namespace SimpleLanguage.Core
                 if (m_FileMetaMemeberVariable.classDefineRef != null)
                 {
                     m_DefineMetaType = new MetaType(m_FileMetaMemeberVariable.classDefineRef, ownerMetaClass );
+                }
+            }
+        }
+        public void UpdateGenMemberVariable()
+        {
+            if (m_MetaGenTemplateList != null)
+            {
+                for (int i = 0; i < m_MetaGenTemplateList.Count; i++)
+                {
+                    MetaGenTemplate mgt = m_MetaGenTemplateList[i];
+                    if (mgt.name == m_DefineMetaType.metaTemplate.name)
+                    {
+                        m_DefineMetaType = mgt.metaType;
+                    }
                 }
             }
         }
@@ -442,36 +619,12 @@ namespace SimpleLanguage.Core
                     }
                     else if (relation == ClassManager.EClassRelation.Same)
                     {
-                        bool isSame = true;
-                        if ( m_DefineMetaType.isUseInputTemplate )
+                        if( expressRetMetaDefineType.metaClass == ownerMetaClass )
                         {
-                            if (m_DefineMetaType.inputTemplateCollection.metaTemplateParamsList.Count == expressRetMetaDefineType.inputTemplateCollection.metaTemplateParamsList.Count)
-                            {
-                                for (int i = 0; i < m_DefineMetaType.inputTemplateCollection.metaTemplateParamsList.Count; i++)
-                                {
-                                    var itp = m_DefineMetaType.inputTemplateCollection.metaTemplateParamsList[i];
-                                    var etp = expressRetMetaDefineType.inputTemplateCollection.metaTemplateParamsList[i];
-                                    if (itp != etp )
-                                    {
-                                        isSame = false;
-                                        break;
-                                    }
-                                }
-                            }
+                            Console.WriteLine("Error 自己类内部不允许包含 自己的实体，必须赋值为null");
+                            return;
                         }
-                        if (isSame)
-                        {
-                            if( expressRetMetaDefineType.metaClass == ownerMetaClass )
-                            {
-                                Console.WriteLine("Error 自己类内部不允许包含 自己的实体，必须赋值为null");
-                                return;
-                            }
-                            SetMetaDefineType(expressRetMetaDefineType);
-                        }
-                        else
-                        {
-                            relation = ClassManager.EClassRelation.No;
-                        }
+                        SetMetaDefineType(expressRetMetaDefineType);
                     }
                     else if (relation == ClassManager.EClassRelation.Parent)
                     {

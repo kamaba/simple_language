@@ -10,6 +10,7 @@ namespace SimpleLanguage.Core
     {
         public bool isConst => m_IsConst;
         public MetaVariable metaVariable => m_MetaVariable;
+        public Dictionary<string, MetaMemberData> metaMemberDataDict => m_MetaMemberDataDict;
 
         protected bool m_IsConst = false;
 
@@ -51,15 +52,8 @@ namespace SimpleLanguage.Core
 
             MetaVariableManager.instance.AddMetaDataVariable(m_MetaVariable);
         }
-        public override void BindFileMetaClass(FileMetaClass fmc)
+        public virtual void ParseFileMetaDataMemeberData(FileMetaClass fmc)
         {
-            if (m_FileMetaClassDict.ContainsKey(fmc.token))
-            {
-                return;
-            }
-            fmc.SetMetaClass(this);
-            m_FileMetaClassDict.Add(fmc.token, fmc);
-
             bool isHave = false;
             for ( int i = 0; i < fmc.memberDataList.Count; i++ )
             {

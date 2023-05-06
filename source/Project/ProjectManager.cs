@@ -6,6 +6,7 @@
 //  Description:  manager project enter and compile 
 //****************************************************************************
 
+using SimpleLanguage.Core;
 using SimpleLanguage.Project;
 using System.IO;
 
@@ -25,9 +26,12 @@ namespace SimpleLanguage.Parse
     {
         public static ProjectData data => m_Data;
         public static bool isUseDefineNamespace { get; set; } = false;
+        public static bool isUseForceSemiColonInLineEnd { get; set; } = false;
 
-        static ProjectData m_Data = new ProjectData();
+        static ProjectData m_Data = new ProjectData( "ProjectData", false );
         public static string rootPath = "";
+
+        public static MetaData globalData = new MetaData( "global", true );
         public static void Run( string path, CommandInputArgs cinputArgs )
         {
             int index = path.LastIndexOf("\\");

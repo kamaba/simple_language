@@ -30,8 +30,10 @@ namespace SimpleLanguage.Core.SelfMeta
         Double,
         String,
         Array,
+        Range,
         Template,
         Class,
+        Type,
     }
     class CoreMetaClassManager
     {
@@ -62,9 +64,12 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass uint64MetaClass { get; private set; } = null;
         public static MetaClass floatMetaClass { get; private set; } = null;
         public static MetaClass doubleMetaClass { get; private set; } = null;
-        public static MetaClass arrayMetaClass { get; set; } = null;
+        public static MetaClass arrayMetaClass { get; private set; } = null;
+        public static MetaClass rangeMetaClass { get; private set; } = null;
+        public static MetaClass typeMetaClass { get; private set; } = null;
         public static MetaClass arrayIteratorMetaClass { get; set; } = null;
-        public static MetaClass templateMetaClass { get; set; } = null;
+
+        public static List<MetaClass> s_InnerDefineMetaClassList = new List<MetaClass>();
 
         static CoreMetaClassManager()
         {
@@ -85,10 +90,34 @@ namespace SimpleLanguage.Core.SelfMeta
             stringMetaClass = StringMetaClass.CreateMetaClass();
             arrayIteratorMetaClass = ArrayIteratorMetaClass.CreateMetaClass();
             arrayMetaClass = ArrayMetaClass.CreateMetaClass();
-            templateMetaClass = TemplateMetaClass.CreateMetaClass();
+            rangeMetaClass = RangeMetaClass.CreateMetaClass();
+            typeMetaClass = TypeMetaClass.CreateMetaClass();
+            s_InnerDefineMetaClassList.Add(objectMetaClass);
+            s_InnerDefineMetaClassList.Add(voidMetaClass);
+            s_InnerDefineMetaClassList.Add(booleanMetaClass);
+            s_InnerDefineMetaClassList.Add(byteMetaClass);
+            s_InnerDefineMetaClassList.Add(sbyteMetaClass);
+            s_InnerDefineMetaClassList.Add(charMetaClass);
+            s_InnerDefineMetaClassList.Add(int16MetaClass);
+            s_InnerDefineMetaClassList.Add(uint16MetaClass);
+            s_InnerDefineMetaClassList.Add(int32MetaClass);
+            s_InnerDefineMetaClassList.Add(uint32MetaClass);
+            s_InnerDefineMetaClassList.Add(int64MetaClass);
+            s_InnerDefineMetaClassList.Add(uint64MetaClass);
+            s_InnerDefineMetaClassList.Add(floatMetaClass);
+            s_InnerDefineMetaClassList.Add(doubleMetaClass);
+            s_InnerDefineMetaClassList.Add(stringMetaClass);
+            s_InnerDefineMetaClassList.Add(arrayIteratorMetaClass);
+            s_InnerDefineMetaClassList.Add(arrayMetaClass);
+            s_InnerDefineMetaClassList.Add(rangeMetaClass);
+            s_InnerDefineMetaClassList.Add(typeMetaClass);
         }
         public void Init()
         {
+            foreach( var v in s_InnerDefineMetaClassList )
+            {
+                v.ParseInner();
+            }
         }
         public static MetaClass GetMetaClassByEType(EType etype)
         {
@@ -124,6 +153,8 @@ namespace SimpleLanguage.Core.SelfMeta
                     return stringMetaClass;
                 case EType.Array:
                     return arrayMetaClass;
+                case EType.Range:
+                    return rangeMetaClass;
                 default:
                     {
                         Console.WriteLine("Warning ClassManager GetMetaClassByEType 1111");
@@ -176,10 +207,13 @@ namespace SimpleLanguage.Core.SelfMeta
                 case "double":
                 case "Double":
                     return DefaultObject.Double.ToString();
+                case "range":
+                case "Range":
+                    return DefaultObject.Range.ToString();
                 default:return name;
             }
         }
-        public static MetaClass GetSelfMetaClass( string name )
+        public static MetaClass GetCoreMetaClass( string name )
         {
             string name1 = GetSelfMetaName(name);
             return ModuleManager.instance.coreModule.GetChildrenMetaBaseByName(name1) as MetaClass;

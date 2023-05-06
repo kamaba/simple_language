@@ -369,7 +369,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         private Node m_Node = null;
         private Token m_EndToken = null;
 
-        // Array a = ( 1,2 3,4 );  Class c = ( 1,2 );    int a = ( 1 + 2 + GetX() )
+        // Array a = ( 1,2 3,4 );  Class c = ( 1,2 );    int a = ( 1 + 2 + GetX() )  Enum e = Enum.Value( {} );
         public FileMetaParTerm( FileMeta fm, Node node, FileMetaTermExpress.EExpressType expressType )
         {
             m_FileMeta = fm;
@@ -409,13 +409,13 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 else if( nodeList.Count == 1 )
                 {
                     var cnode = nodeList[0];
-                    if (cnode.nodeType == ENodeType.ConstValue)
+                    if (cnode.nodeType == ENodeType.ConstValue)     //Fun( 1 )
                     {
                         var fileMetaConstValueTerm = new FileMetaConstValueTerm(m_FileMeta, cnode.token);
                         fileMetaConstValueTerm.priority = cnode.priority;
                         AddFileMetaTerm(fileMetaConstValueTerm);
                     }
-                    else if (cnode.nodeType == ENodeType.Bracket)
+                    else if (cnode.nodeType == ENodeType.Bracket)       // Fun( [1] )
                     {
                         var fileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, cnode);
                         fileMetaBracketTerm.priority = SignComputePriority.Level1;
@@ -426,6 +426,11 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         var fileMetaSymbolTerm = new FileMetaSymbolTerm(m_FileMeta, cnode.token);
                         fileMetaSymbolTerm.priority = SignComputePriority.Level12_Split;
                         AddFileMetaTerm(fileMetaSymbolTerm);
+                    }
+                    else if( cnode.nodeType == ENodeType.Brace )  // Enum.Value( {} );
+                    {
+                        var fileMetaBraceTerm = new FileMetaBraceTerm(m_FileMeta, cnode);
+                        AddFileMetaTerm(fileMetaBraceTerm);
                     }
                     else
                     {
@@ -492,7 +497,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 if (i < m_FileMetaExpressList.Count - 1)
                    stringBuilder.Append(",");
             }
-            stringBuilder.Append(m_EndToken.lexeme.ToString());
+            stringBuilder.Append(m_EndToken?.lexeme.ToString());
             return stringBuilder.ToString();
         }
         public override string ToTokenString()
@@ -626,6 +631,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         var classRef = new FileMetaClassDefine(m_FileMeta, defineNodeList[0]); 
                         FileMetaBaseTerm fmel = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common); 
                         FileMetaDefineVariableSyntax fmdvs = new FileMetaDefineVariableSyntax(m_FileMeta, classRef, nameToken, assignToken, null, fmel );
+                        fmdvs.isAppendSemiColon = false;
                         m_FileMetaAssignSyntaxList.Add(fmdvs);
                     }
                     else
@@ -633,6 +639,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         FileMetaCallLink fmcl = new FileMetaCallLink(m_FileMeta, defineNodeList[0]);
                         FileMetaBaseTerm fmel = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
                         FileMetaOpAssignSyntax fmoas = new FileMetaOpAssignSyntax(fmcl, assignToken, fmel, true);
+                        fmoas.isAppendSemiColon = false;
                         m_FileMetaAssignSyntaxList.Add(fmoas);
                     }
                 }
@@ -879,7 +886,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         fmbt.priority = SignComputePriority.Level1;
                     }
                     AddFileMetaTerm(fmbt);
-                }              
+                }
                 else
                 {
                     Console.WriteLine("没有找到该类型: " + node.token.type.ToString()  +  " 位置: "  + node.token.ToLexemeAllString() );

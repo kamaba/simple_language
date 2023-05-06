@@ -9,12 +9,20 @@ namespace SimpleLanguage.Core
     public class MetaEnum : MetaClass
     {
         public bool isConst => m_IsConst;
+        public MetaVariable metaVariable => m_MetaVariable;
 
         protected bool m_IsConst = false;
+        protected MetaVariable m_MetaVariable = null;
         public MetaEnum(string _name, bool isConst ) : base(_name)
         {
             m_Type = EType.Enum;
             m_IsConst = isConst;
+        }
+        public void CreateMetaVariable()
+        {
+            m_MetaVariable = new MetaVariable(m_Name, null, null, new MetaType(this));
+
+            MetaVariableManager.instance.AddMetaEnumVariable(m_MetaVariable);
         }
         public override MetaBase GetChildrenMetaBaseByName(string name)
         {
@@ -28,15 +36,8 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public override void BindFileMetaClass(FileMetaClass fmc)
+        public void ParseFileMetaEnumMemeberData(FileMetaClass fmc)
         {
-            if (m_FileMetaClassDict.ContainsKey(fmc.token))
-            {
-                return;
-            }
-            fmc.SetMetaClass(this);
-            m_FileMetaClassDict.Add(fmc.token, fmc);
-
             for (int i = 0; i < fmc.templateParamList.Count; i++)
             {
                 string tTemplateName = fmc.templateParamList[i].name;
@@ -73,6 +74,12 @@ namespace SimpleLanguage.Core
             {
                 Console.WriteLine("Error Enum中不允许有Function!!");
             }
+        }
+        public override void ParseDefineComplete()
+        {
+            base.ParseDefineComplete();
+
+            CreateMetaVariable();
         }
 
         public override string ToFormatString()

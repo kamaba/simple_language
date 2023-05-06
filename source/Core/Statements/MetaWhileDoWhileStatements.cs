@@ -71,7 +71,7 @@ namespace SimpleLanguage.Core.Statements
                     m_ThenMetaStatements.UpdateMetaVariable(m_ForInContent);
                 }
                 MetaType mdt = m_ForInContent.metaDefineType;
-                if (!mdt.isArray)
+                if ( !mdt.IsCanForIn() )
                 {
                     Console.WriteLine("Error For in 表达式，应该是个数组形式!");
                     return;

@@ -142,7 +142,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         private Token m_PermissionToken = null;
         private Token m_LeftBraceToken = null;
         private Token m_RightBraceToken = null;
-        private List<Token> m_ReturnTypeTokenList = new List<Token>();
         public FileMetaMemberFunction( FileMeta fm, List<Node> nodeList)
         {
             m_FileMeta = fm;
@@ -154,7 +153,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             Token virtualToken = null;
             int addCount = 0;
             bool isError = false;
-            List<Token> returnClassNameTokenList = new List<Token>();
+            Node returnClassNameNode = null;
             Token interfaceToken = null;
             Token staticToken = null;
             Token getToken = null;
@@ -177,7 +176,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     else
                     {
-                        returnClassNameTokenList = cnode.linkTokenList;
+                        returnClassNameNode = cnode;
                     }
                 }
                 else
@@ -231,7 +230,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     else if (token.type == ETokenType.Type || token.type == ETokenType.Void)
                     {
-                        returnClassNameTokenList.Add(token);
+                        returnClassNameNode = cnode;
                     }
                     else if (token.type == ETokenType.Interface)
                     {
@@ -286,10 +285,9 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             m_GetToken = getToken;
             m_SetToken = setToken;
             m_FinalToken = finalToken;
-            if (returnClassNameTokenList != null && returnClassNameTokenList.Count > 0)
+            if (returnClassNameNode != null )
             {
-                m_ReturnTypeTokenList = returnClassNameTokenList;
-                m_ReturnMetaClass = new FileMetaClassDefine(m_FileMeta, m_ReturnTypeTokenList);
+                m_ReturnMetaClass = new FileMetaClassDefine(m_FileMeta, returnClassNameNode );
             }
             return true;
         }

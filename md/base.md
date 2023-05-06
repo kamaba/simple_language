@@ -171,13 +171,14 @@ Area: 10000
 </tr>
 
 <tr>
-<td> is</td><td> string</td>
+<td>string</td>
 <td>void</td> 
+<td>true</td>
+<td>false</td>
 <td>this</td>
 <td>base</td>
 <td>tr</td><td>ret</td>
-<td></td>
-<td></td>
+<td>is</td>
 </table>
 
 

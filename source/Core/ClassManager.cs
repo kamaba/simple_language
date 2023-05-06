@@ -18,6 +18,9 @@ namespace SimpleLanguage.Core
             Same,
             Child,
             Parent,
+            Similar,
+            SameClassNotSameInputTemplate,
+            SameClassAndSameInputTemplate,
         }
         public static ClassManager s_Instance = null;
         public static ClassManager instance
@@ -32,11 +35,11 @@ namespace SimpleLanguage.Core
             }
         }
         public Dictionary<string, MetaClass> allClassDict => m_AllClassDict;
-        public List<MetaClass> dynamicClassList => m_DynamicClassList;
+        public List<MetaDynamicClass> dynamicClassList => m_DynamicClassList;
 
 
         private Dictionary<string, MetaClass> m_AllClassDict = new Dictionary<string, MetaClass>();
-        public List<MetaClass> m_DynamicClassList = new List<MetaClass>();
+        private List<MetaDynamicClass> m_DynamicClassList = new List<MetaDynamicClass>();
 
         private Dictionary<string, MetaData> m_AllDataDict = new Dictionary<string, MetaData>();
 
@@ -80,7 +83,7 @@ namespace SimpleLanguage.Core
             }
             return topLevelNamespace.AddMetaBase(mc.name, mc) ;
         }
-        public MetaClass FindDynamicClass( MetaClass dc )
+        public MetaDynamicClass FindDynamicClass( MetaClass dc )
         {
             foreach( var v in m_DynamicClassList )
             {
@@ -91,7 +94,7 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public bool AddDynamicClass( MetaClass dc )
+        public bool AddDynamicClass(MetaDynamicClass dc )
         {
             m_DynamicClassList.Add(dc);
 
@@ -119,7 +122,6 @@ namespace SimpleLanguage.Core
                     else
                     {
                         return false;
-                        break;
                     }
                 }
                 return true;
@@ -130,102 +132,81 @@ namespace SimpleLanguage.Core
         {
             return null;
         }
-        public void AddClass( FileMetaClass mc )
+        public MetaClass AddClass( FileMetaClass fmc )
         {
-            FileMetaClass topLevelClass = mc.topLevelFileMetaClass;
+            bool isCanAddBind = false;
+            MetaNamespace tmetaNamespace = null;
+            MetaModule tmetaModule = null;
+            MetaClass tmetaClass = null;
+            FileMetaClass topLevelClass = fmc.topLevelFileMetaClass;
             if ( topLevelClass != null )
             {
-                if( mc.isPartial )
+                if(fmc.isPartial )
                 {
-                    Console.WriteLine("类:" + mc.name + "在: " + mc.token.ToAllString() + "不支持内部类定义并行!!");
-                    return;
+                    Console.WriteLine("类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持内部嵌套类定义并行!!");
+                    return null;
                 }
                 
                 if( topLevelClass.metaClass == null )
                 {
                     Console.WriteLine("Error 上级类中的MetaClass没有绑定!!");
-                    return;
+                    return null;
                 }
 
-                var findmc = topLevelClass.GetChildrenMetaBaseByName(mc.name);
-                if( findmc != null )
+                var findmc = topLevelClass.GetChildrenMetaBaseByName(fmc.name);
+                if (findmc != null)
                 {
                     Console.WriteLine("Error 查到内部不是内部内，可能有相同成员");
-                    return;    
+                    return null;
                 }
                 else
                 {
-                    MetaClass newmc = null;
-                    if ( mc.isEnum )
-                    {
-                        newmc = new MetaEnum(mc.name, mc.isConst);
-                    }
-                    else if( mc.isData )
-                    {
-                        newmc = new MetaData(mc.name, mc.isConst);
-                    }
-                    else
-                    {
-                        if (topLevelClass.isEnum)
-                        {
-                            Console.WriteLine("Error 在Enum中，不允许有Class的存在!!");
-                            return;
-                        }
-                        if( mc.isConst )
-                        {
-                            Console.WriteLine("Class 中，使用关键字，不允许使用Const");
-                            return;
-                        }
-                        newmc = new MetaClass(mc.name);
-                    }
-                    topLevelClass.metaClass.AddChildrenMetaClass(newmc);
-                    newmc.BindFileMetaClass(mc);
-
-                    m_AllClassDict.Add(newmc.allName, newmc);
+                    tmetaClass = topLevelClass.metaClass;
+                    isCanAddBind = true;
                 }
             }
             else
             {
                 MetaBase topLevelNamespace = ModuleManager.instance.selfModule;
-                var lastMetaNamespace = mc.GetLasatMetaNamespace();
+                var lastMetaNamespace = fmc.GetLasatMetaNamespace();
                 if( lastMetaNamespace != null )
                 {
                     topLevelNamespace = lastMetaNamespace;
                 }
-                if ( mc.namespaceBlock != null )
+                if (fmc.namespaceBlock != null )
                 {
-                    var nlist = mc.namespaceBlock.namespaceList;
+                    var nlist = fmc.namespaceBlock.namespaceList;
                     for (int i = 0; i < nlist.Count; i++)
                     {
                         topLevelNamespace = topLevelNamespace.GetChildrenMetaBaseByName(nlist[i]);
                         if (topLevelNamespace == null)
                         {
                             Console.WriteLine("Error 没有找到相当的命名空间!!!");
-                            return;
+                            return null;
                         }
                     }
                 }
-                MetaNamespace tmetaNamespace = topLevelNamespace as MetaNamespace;
-                MetaModule tmetaModule = topLevelNamespace as MetaModule;
+                tmetaNamespace = topLevelNamespace as MetaNamespace;
+                tmetaModule = topLevelNamespace as MetaModule;
                 if (tmetaNamespace == null && tmetaModule == null )
                 {
                     Console.WriteLine("命名空间中，已定义其它非命名空间的类型 !!");
-                    return;
+                    return null;
                 }
-                var mbb = topLevelNamespace.GetChildrenMetaBaseByName(mc.name);
+                var mbb = topLevelNamespace.GetChildrenMetaBaseByName(fmc.name);
                 var amc = mbb as MetaClass;
                 var amn = mbb as MetaNamespace;
                 if( amn != null )
                 {
                     Console.WriteLine("已有命名空间的定义: ");
-                    return;
+                    return null;
                 }
                 else if (amc != null)
                 {
-                    if (!mc.isPartial)
+                    if (!fmc.isPartial)
                     {
-                        Console.WriteLine("类:" + mc.name + "在: " + mc.token.ToAllString() + "不支持文件并行 定义类");
-                        return;
+                        Console.WriteLine("类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持文件并行 定义类");
+                        return null;
                     }
                     bool isPartial = true;
                     foreach (var v in amc.fileMetaClassDict)
@@ -239,42 +220,85 @@ namespace SimpleLanguage.Core
                     }
                     if (isPartial == false)
                     {
-                        return;
+                        return null;
                     }
-                    amc.BindFileMetaClass(mc);
+                    amc.BindFileMetaClass(fmc);
+                    return amc;
                 }
                 else
                 {
-                    MetaClass newmc = null;
-                    if (mc.isEnum)
-                    {
-                        newmc = new MetaEnum(mc.name, mc.isConst);
-                    }
-                    else if (mc.isData)
-                    {
-                        var newmd = new MetaData(mc.name, mc.isConst);
-                        newmc = newmd;
-                        m_AllDataDict.Add( mc.name, newmd );
-                    }
-                    else
-                    {
-                        if (mc.isConst)
-                        {
-                            Console.WriteLine("Class 中，使用关键字，不允许使用Const");
-                            return;
-                        }
-                        newmc = new MetaClass(mc.name);
-                    }
-                    if (tmetaNamespace != null)
-                        tmetaNamespace.AddMetaClass(newmc);
-                    else
-                        tmetaModule.AddMetaClass(newmc);
-
-                    newmc.BindFileMetaClass(mc);
-                    m_AllClassDict.Add(newmc.allName, newmc);
+                    isCanAddBind = true;
                 }
             }
 
+
+            if( isCanAddBind ) 
+            {
+                MetaClass newmc = null;
+                if (fmc.isEnum)
+                {
+                    MetaEnum newme = new MetaEnum(fmc.name, fmc.isConst);
+                    newme.BindFileMetaClass(fmc);
+                    newme.ParseFileMetaClassTemplate(fmc);
+                    newme.ParseFileMetaEnumMemeberData(fmc);
+                    newmc = newme;
+                }
+                else if (fmc.isData)
+                {
+                    var newmd = new MetaData(fmc.name, fmc.isConst);
+                    newmc = newmd;
+                    m_AllDataDict.Add(fmc.name, newmd);
+                    newmd.BindFileMetaClass(fmc);
+                    newmd.ParseFileMetaDataMemeberData(fmc);
+                }
+                else
+                {
+                    if (fmc.isConst)
+                    {
+                        Console.WriteLine("Class 中，使用关键字，不允许使用Const");
+                        return null;
+                    }
+                    bool isCreateClass = true;
+                    if (m_AllClassDict.ContainsKey(fmc.name))
+                    {
+                        var newmc2 = m_AllClassDict[fmc.name];
+                        if (newmc2.isInnerDefineInCompile)
+                        {
+                            newmc = newmc2;
+                            isCreateClass = false;
+                        }
+                    }
+
+                    if (isCreateClass)
+                    {
+                        newmc = new MetaClass(fmc.name);
+                        m_AllClassDict.Add(newmc.allName, newmc);
+
+                        newmc.BindFileMetaClass(fmc);
+                        newmc.ParseFileMetaClassTemplate(fmc);
+                        newmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
+                    }
+                    else
+                    {
+                        newmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
+                    }
+                }
+
+                if(tmetaClass != null )
+                {
+                    tmetaClass.AddChildrenMetaClass(newmc);
+                }
+                else if (tmetaNamespace != null)
+                    tmetaNamespace.AddMetaClass(newmc);
+                else
+                    tmetaModule.AddMetaClass(newmc);
+
+                return newmc;
+            }
+            else
+            {
+                return null;
+            }
         }       
         public void AddDictMetaClass( MetaClass mc )
         {
@@ -311,6 +335,10 @@ namespace SimpleLanguage.Core
                     mc.metaClass.AddInterfaceClass(ifmc[i]);
                 }
             }
+        }
+        public void ParseFileMetaClass()
+        {
+
         }
         public void Parse()
         {
@@ -356,6 +384,22 @@ namespace SimpleLanguage.Core
             }
             return ValidateClassRelationByMetaClass(currentClass, compareClass);
         }
+        public static bool IsNumberClass( MetaClass curClass )
+        {
+            if (curClass == CoreMetaClassManager.byteMetaClass
+                || curClass == CoreMetaClassManager.sbyteMetaClass
+                || curClass == CoreMetaClassManager.charMetaClass
+                || curClass == CoreMetaClassManager.int16MetaClass
+                || curClass == CoreMetaClassManager.uint16MetaClass
+                || curClass == CoreMetaClassManager.int32MetaClass
+                || curClass == CoreMetaClassManager.uint32MetaClass
+                || curClass == CoreMetaClassManager.int64MetaClass
+                || curClass == CoreMetaClassManager.uint64MetaClass)
+            {
+                return true;
+            }
+            return false;
+        }
         public static EClassRelation ValidateClassRelationByMetaClass( MetaClass curClass, MetaClass compareClass )
         {
             if( curClass == CoreMetaClassManager.objectMetaClass )
@@ -368,15 +412,30 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                if (curClass.IsParseMetaClass(compareClass))
+                if(IsNumberClass(curClass) && IsNumberClass(compareClass ) )
                 {
-                    return EClassRelation.Parent;
+                    //switch( curClass )
+                    //{
+                    //    case Int16MetaClass int16:
+                    //        {
+
+                    //        }
+                    //        break;
+                    //}
+                    return EClassRelation.Similar;
                 }
-                if (compareClass.IsParseMetaClass(curClass))
+                else
                 {
-                    return EClassRelation.Child;
+                    if (curClass.IsParseMetaClass(compareClass))
+                    {
+                        return EClassRelation.Parent;
+                    }
+                    if (compareClass.IsParseMetaClass(curClass))
+                    {
+                        return EClassRelation.Child;
+                    }
+                    return EClassRelation.No;
                 }
-                return EClassRelation.No;
             }
         }
         public void HandleExtendContentAndInterfaceContent( FileMetaClass mc )
@@ -465,7 +524,7 @@ namespace SimpleLanguage.Core
         }
         public MetaClass GetMetaClassByName(string inputname, MetaClass ownerClass = null, FileMeta fm = null )
         {
-            MetaClass fmc = CoreMetaClassManager.GetSelfMetaClass(inputname);
+            MetaClass fmc = CoreMetaClassManager.GetCoreMetaClass(inputname);
             if( fmc != null )
             {
                 return fmc;
@@ -557,7 +616,7 @@ namespace SimpleLanguage.Core
             if (ownerClass == null)
                 return null;
 
-            MetaBase findMB = CoreMetaClassManager.GetSelfMetaClass(stringList[0]);
+            MetaBase findMB = CoreMetaClassManager.GetCoreMetaClass(stringList[0]);
             if(findMB is MetaClass )
             {
                 return findMB as MetaClass;
@@ -617,7 +676,7 @@ namespace SimpleLanguage.Core
         public MetaClass GetMetaClassByNameAndFileMeta(MetaClass ownerClass, string name, FileMeta fm)
         {
             MetaBase mb = ownerClass;
-            var selfClass = CoreMetaClassManager.GetSelfMetaClass(name);
+            var selfClass = CoreMetaClassManager.GetCoreMetaClass(name);
             if (selfClass != null)
                 return selfClass;
 
@@ -694,20 +753,12 @@ namespace SimpleLanguage.Core
             }
             return mc;
         }
-        public MetaType GetMetaDefineTypeByInputTemplateAndFileMeta( MetaClass ownerClass, FileInputTemplateNode fmcd )
+        //通过FileInputTemplateNode 获取MetaType 例 List< List< List<int> > > 这种的，需要嵌套获取处理
+        public MetaClass GetMetaClassByInputTemplateAndFileMeta( MetaClass ownerClass, FileInputTemplateNode fitn )
         {
-            var nlist = fmcd.nameList;
-            if( nlist.Count == 1 )
-            {
-                var retTemplate = ownerClass.GetTemplateMetaClassByName(nlist[0]);
-                if( retTemplate != null )
-                {
-                    return new MetaType(retTemplate);
-                }
-            }
-
-            FileMeta fm = fmcd.fileMeta;
-            MetaClass mc = GetMetaClassByListString( ownerClass, nlist);
+            var nlist = fitn.nameList;
+            FileMeta fm = fitn.fileMeta;
+            MetaClass mc = GetMetaClassByListString( ownerClass, nlist );
             if (mc == null)
             {
                 var mb = fm.GetMetaBaseFileMetaClass(nlist);
@@ -720,11 +771,11 @@ namespace SimpleLanguage.Core
                     }
                     else if (mb is MetaClass)
                     {
-                        new MetaType( mb as MetaClass );
+                        mc = mb as MetaClass;
                     }
                 }
             }
-            return new MetaType(mc);
+            return mc;
         }
         public void PrintAllClassName()
         {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SimpleLanguage.source.Compile.Process;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -22,9 +23,15 @@ namespace SimpleLanguage.Compile
                 return s_Instance;
             }
         }
+
+        List<CompileStateBase> CompileStateList = new List<CompileStateBase>();
         public void AddCompileError( string str )
         {
 
-        }       
+        }
+        public void AddProjectCompileState(ProjectCompileState.ELoadState state, ELevelInfo info, ProjectCompileState.EError error, string str )
+        {
+
+        }
     }
 }

@@ -21,6 +21,7 @@ namespace SimpleLanguage.Core
         public List<MetaMemberVariable> metaMemeberVariableList = new List<MetaMemberVariable>();
 
         public Dictionary<string, MetaVariable> metaDataVariableList = new Dictionary<string, MetaVariable>();
+        public Dictionary<string, MetaVariable> metaEnumVariableList = new Dictionary<string, MetaVariable>();
 
         public void AddMetaMemberVariable(MetaMemberVariable mv)
         {
@@ -29,6 +30,10 @@ namespace SimpleLanguage.Core
         public void AddMetaDataVariable(MetaVariable mv)
         {
             metaDataVariableList.Add(mv.name, mv);
+        }
+        public void AddMetaEnumVariable( MetaVariable mv )
+        {
+            metaEnumVariableList.Add(mv.name, mv);
         }
         public MetaVariable GetMetaVariable( string cname )
         {
