@@ -52,8 +52,6 @@ namespace SimpleLanguage.Core
             var defineMetaClassType = ClassManager.instance.GetMetaClassByCSharpType(pi.ParameterType);
             MetaType mdt = new MetaType(defineMetaClassType);
             m_MetaVariable = new MetaVariable( pi.Name, mbs, mc, mdt );
-
-
         }
     }
 }

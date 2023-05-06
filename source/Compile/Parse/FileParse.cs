@@ -8,6 +8,7 @@
 
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core;
+using SimpleLanguage.source.Compile.Process;
 using System;
 using System.IO;
 

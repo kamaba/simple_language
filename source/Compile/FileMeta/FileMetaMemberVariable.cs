@@ -25,11 +25,13 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             Array,
             KeyValue,
             Value,
+            Data,
         }
 
         public Token nameToken => m_Token;
         public List<FileMetaMemberData> fileMetaMemberData => m_FileMetaMemberData;
         public FileMetaConstValueTerm fileMetaConstValue => m_FileMetaConstValue;
+        public FileMetaCallTerm fileMetaCallTermValue => m_FileMetaCallTermValue;
         public EMemberDataType DataType => m_MemberDataType;
 
         private Token m_AssignToken = null;
@@ -37,6 +39,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         private List<FileMetaMemberData> m_FileMetaMemberData = new List<FileMetaMemberData>();
         private EMemberDataType m_MemberDataType = EMemberDataType.None;
         private FileMetaConstValueTerm m_FileMetaConstValue = null;
+        private FileMetaCallTerm m_FileMetaCallTermValue = null;
 
         public FileMetaMemberData(FileMeta fm, Node _beforeNode, Node _afterNode, EMemberDataType dataType )
         {
@@ -60,6 +63,11 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             else if( dataType == EMemberDataType.Value )
             {
                 m_FileMetaConstValue = new FileMetaConstValueTerm(m_FileMeta, _beforeNode.token);
+            }
+            else if( dataType == EMemberDataType.Data )
+            {
+                m_Token = _beforeNode.token;
+                m_FileMetaCallTermValue = new FileMetaCallTerm(m_FileMeta, _afterNode);
             }
         }
         public void AddFileMemberData( FileMetaMemberData fmmd )

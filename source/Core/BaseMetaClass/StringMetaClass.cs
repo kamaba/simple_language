@@ -17,7 +17,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public StringMetaClass():base( DefaultObject.String.ToString())
         {
             System.Type type = typeof(System.String);
-            
+            m_IsInnerDefineCompile = true;
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.String;
         }

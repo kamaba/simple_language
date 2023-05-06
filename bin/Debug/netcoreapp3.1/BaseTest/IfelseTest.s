@@ -1,25 +1,25 @@
-IfElseTest
+IfelseTest
 {
     Class1
     {}
     Class2
     {
-        i = 0;
+        i = 0
     }
     static Func()
     {
         m = 0;
-        a = if (m >= 0 && m < 100 && m != 50) 
+        if (m >= 0 && m < 100 && m != 50) 
         { 
             m = 20; 
             {
-                ccc = if m == 14{ tr 20; }
-                if m== 20 { tr ccc; }
-                else{ tr 33; } 
+                if m == 14{ m = 10 }
+                if m== 20 { m = 20}
+                else{ m = 30 } 
             }
-         } 
+        } 
         else
-        { tr 20; }
+        { m = 20 }
         
         if true 
         {
@@ -28,16 +28,20 @@ IfElseTest
         elif 2 == 120 && false 
         {
             x2 = 300;
-        }        
-       
-        b = if a==25 
+        } 
+               
+        a = 30
+
+        if a==25 
         { 
-            {tr 20;}
+            {
+                m = 20
+            }
         } 
         elif a==30 && a < 35 
-        { tr 33; } 
+        {  } 
         elif a==31
-        { m = 100; tr 35; }
+        { m = 100 }
         
         if true
         {
@@ -82,6 +86,7 @@ IfElseTest
     }
     static FunIfCondition()
     {
+        #这部分还没有实现
         a = null;
         if a       #等于 if a != null
         { 

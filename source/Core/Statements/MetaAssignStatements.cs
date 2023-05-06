@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using static SimpleLanguage.Core.Statements.MetaIfStatements;
 
 namespace SimpleLanguage.Core.Statements
 {
@@ -191,6 +192,8 @@ namespace SimpleLanguage.Core.Statements
             AllowUseConst auc = new AllowUseConst();
             auc.useNotStatic = m_FileMetaOpAssignSyntax?.staticToken != null ? false : true;
             auc.useNotConst = m_FileMetaOpAssignSyntax?.constToken == null ? false : true;
+            auc.setterFunction = true;
+            auc.getterFunction = false;
             m_MetaCallLink.Parse(auc);
             m_MetaCallLink.CalcReturnType();
             var mfc = m_MetaCallLink.metaFunctionCall;
@@ -221,6 +224,18 @@ namespace SimpleLanguage.Core.Statements
                 {
                     Console.WriteLine("Error 没有找到变量的定义!!! ");
                     return;
+                }
+                if( m_MetaVariable.isGlobal )
+                {
+                    if( ownerMetaClass.name == "Project" )
+                    {
+
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error 只能在Project工程下的函数中，给全局变量赋值!!");
+                        return;
+                    }
                 }
                 expressMdt = m_MetaVariable.metaDefineType;
             }
@@ -314,33 +329,15 @@ namespace SimpleLanguage.Core.Statements
                         Console.WriteLine(sb.ToString());
                         m_IsNeedCastState = true;
                     }
+                    else if( relation == ClassManager.EClassRelation.Similar )
+                    {
+                        sb.Append("数字类型相似，可能会有强转会有精度的丢失!");
+                        Console.WriteLine(sb.ToString());
+                        m_IsNeedCastState = true;
+                    }
                     else if (relation == ClassManager.EClassRelation.Same)
                     {
-                        bool isSame = true;
-                        if (mdt.isUseInputTemplate )
-                        {
-                            if (mdt.inputTemplateCollection.metaTemplateParamsList.Count == expressRetMetaDefineType.inputTemplateCollection.metaTemplateParamsList.Count)
-                            {
-                                for (int i = 0; i < mdt.inputTemplateCollection.metaTemplateParamsList.Count; i++)
-                                {
-                                    var itp = mdt.inputTemplateCollection.metaTemplateParamsList[i];
-                                    var etp = expressRetMetaDefineType.inputTemplateCollection.metaTemplateParamsList[i];
-                                    if ( MetaType.EqualMetaDefineType( itp, etp ) )
-                                    {
-                                        isSame = false;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        if (isSame)
-                        {
-                            m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
-                        }
-                        else
-                        {
-                            relation = ClassManager.EClassRelation.No;
-                        }
+                        m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
                     }
                     else if (relation == ClassManager.EClassRelation.Parent)
                     {
@@ -366,9 +363,19 @@ namespace SimpleLanguage.Core.Statements
             {
                 MetaInputParam mip = new MetaInputParam(m_ExpressNode);
                 mfc.metaInputParamCollection.AddMetaInputParam(mip);
-                m_MetaCallLink.finalMetaCallNode.SetInputParamCollection(mfc.metaInputParamCollection);
+                mfc.CheckMetaFunctionMatchInputParamCollection();
             }
             return;
+        }
+
+        public override MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
+        {
+            if (m_NextMetaStatements != null)
+            {
+                //m_NextMetaStatements.GenTemplateClassStatement(mgt);
+            }
+
+            return null;
         }
         public override string ToFormatString()
         {
@@ -409,6 +416,12 @@ namespace SimpleLanguage.Core.Statements
                 if (m_FinalMetaExpress != null)
                 {
                     sb.Append(m_FinalMetaExpress.ToFormatString());
+                }
+                if(m_IsNeedCastState)
+                {
+                    sb.Append(".Cast<");
+                    sb.Append(m_MetaVariable.metaDefineType.ToFormatString());
+                    sb.Append(">()");
                 }
             }
             return sb.ToString();

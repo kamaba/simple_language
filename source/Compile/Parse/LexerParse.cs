@@ -3,7 +3,7 @@
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/5/12 12:00:00
-//  Description: 
+//  Description:  word lexer parse to token
 //****************************************************************************
 
 using SimpleLanguage.Parse;
@@ -732,7 +732,7 @@ namespace SimpleLanguage.Compile.Parse
             //    }
             //}
         }
-        /// <summary> 读取::</summary>
+        /// <summary> ::</summary>
         void ReadColon()
         {
             m_TempChar = ReadChar();
@@ -848,6 +848,7 @@ namespace SimpleLanguage.Compile.Parse
                         m_SourceChar++;
                         break;
                     }
+                    /*
                     else if (m_TempChar == '{')
                     {
                         AddToken(ETokenType.String, m_Builder.ToString());
@@ -901,7 +902,7 @@ namespace SimpleLanguage.Compile.Parse
                         Console.WriteLine("Error  不允许}独立出现，一般与{配对出现，如果要显示}请使用\\}");
                         break;
                     }
-                    else if (m_TempChar == '@')
+                    else if (m_TempChar == '$')
                     {
                         AddToken(ETokenType.String, m_Builder.ToString());
                         AddToken(ETokenType.Plus, '+');
@@ -967,6 +968,7 @@ namespace SimpleLanguage.Compile.Parse
                             }
                         }
                     }
+                    */
                     else
                     {
                         m_Builder.Append(m_TempChar);
@@ -1086,47 +1088,24 @@ namespace SimpleLanguage.Compile.Parse
         }
         void ReadDollar()
         {
-            AddToken(ETokenType.Colon);
-
-            m_Index++;
-            m_SourceChar++;
-            /*
-            m_TempChar = ReadChar();
-            if (m_TempChar == '$')
+            var ch = ReadChar();
+            if (ch == '\"')
             {
-                AddToken(ETokenType.ColonDouble, "$$");
+                ReadString(true);
+            }
+            //else if (ch == '{')
+            //{
+            //    ReadChar();
+            //    AddToken( ETokenType.LeftBrace);
+            //}
+            else if (Char.IsNumber(ch) || Char.IsLetter(ch))
+            {
+                AddToken(ETokenType.Dollar, '$');
             }
             else
             {
-                UndoChar();
-                AddToken(ETokenType.Colon);
+                Console.WriteLine("Error 不允许@后边加其它符号!!");
             }
-            */
-            /*
-            switch (m_Builder.ToString()) {
-                case "$define":
-                    AddToken(TokenType.MacroDefine);
-                    break;
-                case "$if":
-                    AddToken(TokenType.MacroIf);
-                    break;
-                case "$ifndef":
-                    AddToken(TokenType.MacroIfndef);
-                    break;
-                case "$else":
-                    AddToken(TokenType.MacroElse);
-                    break;
-                case "$elif":
-                    AddToken(TokenType.MacroElif);
-                    break;
-                case "$endif":
-                    AddToken(TokenType.MacroEndif);
-                    break;
-                default:
-                    ThrowInvalidCharacterException($"无法识别的宏命令 : {m_Builder}");
-                    break;
-            }
-            */
         }
         void ReadSharp()
         {
@@ -1389,6 +1368,9 @@ namespace SimpleLanguage.Compile.Parse
                 case "label":
                     tokenType = ETokenType.Label;
                     break;
+                case "global":
+                    tokenType = ETokenType.Global;
+                    break;
                 case "try":
                     tokenType = ETokenType.Try;
                     break;
@@ -1415,7 +1397,15 @@ namespace SimpleLanguage.Compile.Parse
                 case "false":
                     tokenType = ETokenType.BoolValue;
                     extend = EType.Boolean;
-                    break;               
+                    break;
+                case "range":
+                    tokenType = ETokenType.Identifier;
+                    extend = EType.Range;
+                    break;
+                case "array":
+                    tokenType = ETokenType.Identifier;
+                    extend = EType.Array;
+                    break;
                 //case "async":
                 //    tokenType = TokenType.Async;
                 //    break;
@@ -1423,7 +1413,6 @@ namespace SimpleLanguage.Compile.Parse
                 //    tokenType = TokenType.Await;
                 //    break;                
                 //case "var":
-                //case "global":
                 //    m_Builder.Length = 0;
                 //    return;
                 default:
@@ -1452,8 +1441,9 @@ namespace SimpleLanguage.Compile.Parse
             while ( m_Index < m_Length )
             {
                 m_CurChar = m_Buffer[m_Index];
-                if (m_CurChar == '\n') 
+                if (m_CurChar == '\n')
                 {
+                    AddToken(ETokenType.LineEnd);
                     m_Index++;
                     AddLine();
                     continue;

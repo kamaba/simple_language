@@ -24,7 +24,7 @@ namespace SimpleLanguage.Core.Statements
         {
             m_FileMetaReturnSyntax = fmrs;
 
-            MetaType mdt = null;
+            MetaType mdt = new MetaType( CoreMetaClassManager.objectMetaClass );
 
             m_Express = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(m_OwnerMetaBlockStatements, mdt, m_FileMetaReturnSyntax.returnExpress, false, false );
             if (m_Express != null)
@@ -37,6 +37,15 @@ namespace SimpleLanguage.Core.Statements
                 m_ReturnMetaDefineType = new MetaType( CoreMetaClassManager.voidMetaClass );
             }
 
+        }
+        public override MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
+        {
+            //m_ReturnMetaDefineType?.SetMetaClass(mgt.metaType.metaClass);
+            //if (m_NextMetaStatements != null)
+            //{
+            //    m_NextMetaStatements.GenTemplateClassStatement(mgt);
+            //}
+            return null;
         }
         public override string ToFormatString()
         {

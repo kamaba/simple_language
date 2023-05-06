@@ -17,6 +17,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public VoidMetaClass():base( DefaultObject.Void.ToString() )
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass );
+            m_IsInnerDefineCompile = true;
             MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Null, "null");
             SetDefaultExpressNode(mcen);
             m_Type = EType.Void;

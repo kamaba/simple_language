@@ -10,6 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile.Parse;
+using static SimpleLanguage.Compile.Parse.StructParse;
+using System.Xml.Linq;
+using System.Runtime.Intrinsics.X86;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
 {    
@@ -48,18 +51,19 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         {
             return "";
         }
-    }   
+    }
     public class FileMetaConditionExpressSyntax : FileMetaSyntax
     {
         // if condition{}  elif condition{}  while condition{}  dowhile condition{}
 
         public FileMetaBaseTerm conditionExpress => m_ConditionExpress;
         public FileMetaBlockSyntax executeBlockSyntax => m_ExecuteBlockSyntax;
-        
+
 
 
         private FileMetaBaseTerm m_ConditionExpress = null;
         private FileMetaBlockSyntax m_ExecuteBlockSyntax = null;
+
         public FileMetaConditionExpressSyntax( FileMeta fm, Token _ifToken, FileMetaBaseTerm _condition, FileMetaBlockSyntax _executeBlockSyntax )
         {
             m_FileMeta = fm;
@@ -101,6 +105,47 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         private FileMetaConditionExpressSyntax m_IfExpressSyntax = null;
         private List<FileMetaConditionExpressSyntax> m_ElseIfExpressSyntax = new List<FileMetaConditionExpressSyntax>();
         private FileMetaKeyOnlySyntax m_ElseExpressSyntax = null;
+
+
+        public static FileMetaKeyIfSyntax ParseIfSyntax( FileMeta fm, SyntaxNodeStruct sns)
+        {
+            FileMetaKeyIfSyntax ifSyntax = new FileMetaKeyIfSyntax(fm);
+            FileMetaBaseTerm conditionExpress = FileMetatUtil.CreateFileMetaExpress(fm, sns.keyContent, FileMetaTermExpress.EExpressType.Common);
+            FileMetaBlockSyntax executeBlock = new FileMetaBlockSyntax(fm, sns.blockNode.token, sns.blockNode.endToken);
+            var fms = new FileMetaConditionExpressSyntax(fm, sns.keyNode.token, conditionExpress, executeBlock);
+
+            if (sns.keyNode.token.type == ETokenType.If)
+            {
+                if (ifSyntax.ifExpressSyntax != null)
+                {
+                    Console.WriteLine("Error 不能有多个if语句!!");
+                }
+                ifSyntax.SetFileMetaConditionExpressSyntax(fms);
+            }
+
+            for (int i = 0; i < sns.followKeySyntaxStructList.Count; i++)
+            {
+                var csns = sns.followKeySyntaxStructList[i];
+                var cnode = csns.keyNode;
+                Token token = cnode.token;
+                if (token.type == ETokenType.ElseIf)
+                {
+                    FileMetaBaseTerm child_conditionExpress = FileMetatUtil.CreateFileMetaExpress(fm, csns.keyContent, FileMetaTermExpress.EExpressType.Common);
+                    FileMetaBlockSyntax child_executeBlock = new FileMetaBlockSyntax(fm, csns.blockNode.token, csns.blockNode.endToken);
+                    var child_fms = new FileMetaConditionExpressSyntax(fm, token, child_conditionExpress, child_executeBlock);
+
+                    ifSyntax.AddElseIfExpressSyntax(child_fms);
+                }
+                else if (token.type == ETokenType.Else)
+                {
+                    FileMetaBlockSyntax executeBlock2 = new FileMetaBlockSyntax(fm, csns.blockNode.token, csns.blockNode.endToken);
+                    var fms3 = new FileMetaKeyOnlySyntax(fm, token, executeBlock2);
+
+                    ifSyntax.SetElseExpressSyntax(fms3);
+                }
+            }
+            return ifSyntax;
+        }
 
         public FileMetaKeyIfSyntax(FileMeta fm )
         {
@@ -157,29 +202,115 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             public FileMeta fileMeta => m_FileMeta;
             public bool isContinueNextCastSyntax { get; set; } = false;
             public Token variableToken => m_VariableToken;
-            public Token defineClassToken => m_DefineClassToken;
+            public FileMetaCallLink defineClassCallLink => m_DefineClassToken;
             public FileMetaBlockSyntax executeBlockSyntax => m_ExecuteBlockSyntax;
             public List<FileMetaConstValueTerm> constValueTokenList => m_ConstValueTokenList;
 
             private FileMeta m_FileMeta = null;
             private Token m_Token = null;
-            private Token m_DefineClassToken = null;
+            private FileMetaCallLink m_DefineClassToken = null;
             private Token m_VariableToken = null;
 
             private List<FileMetaConstValueTerm> m_ConstValueTokenList = new List<FileMetaConstValueTerm>();
             private FileMetaBlockSyntax m_ExecuteBlockSyntax = null;
             public int deep { get; set; } = 0;
 
-            public FileMetaKeyCaseSyntax(FileMeta fm, Token castToken, Token _defineClassToken, Token _variableToken )
+            public void aaaa()
+            {
+                /*
+                var fmkcs = new FileMetaKeySwitchSyntax.FileMetaKeyCaseSyntax(m_FileMeta, castnode.token);
+
+                var parlist = castnode.parNode.childList;
+                if (parlist.Count == 0)
+                {
+                    Console.WriteLine("Error Case语句不允许没有检查值!!");
+                }
+                List<Node> childList = new List<Node>();
+                bool isComma = false;
+                for (int i = 0; i < parlist.Count; i++)
+                {
+                    if (parlist[i].token?.type == ETokenType.Comma)
+                    {
+                        isComma = true;
+                        continue;
+                    }
+                    childList.Add(parlist[i]);
+                }
+                if (isComma)
+                {
+                    bool isSame = true;//是否通过,号切后的类型是相同的
+                    for (int i = 0; i < childList.Count - 1; i++)
+                    {
+                        var curNode = childList[i];
+                        var nextNode = childList[i + 1];
+                        var type = curNode.token.type;
+                        if (type != ETokenType.Number && type != ETokenType.String)
+                        {
+                            Console.WriteLine("Error 逗号分割只允许number,string");
+                            break;
+                        }
+                        if (type != nextNode.token.type)
+                        {
+                            isSame = false;
+                            break;
+                        }
+                    }
+                    if (!isSame)
+                    {
+                        Console.WriteLine("Error 使用逗号切割开后，类型不相同!!");
+                    }
+                    for (int i = 0; i < childList.Count; i++)
+                    {
+                        fmkcs.AddConstValueTokenList(new FileMetaConstValueTerm(m_FileMeta, childList[i].token));
+                    }
+                }
+                else
+                {
+                    if (parlist.Count == 2)
+                    {
+                        if (parlist[0].token?.type == ETokenType.Identifier
+                            || parlist[1].token?.type == ETokenType.Identifier)
+                        {
+                            fmkcs.SetDefineClassNode(parlist[0]);
+                            fmkcs.SetVariableToken(parlist[1].token);
+                        }
+                    }
+                    else if (parlist.Count == 1)
+                    {
+                        var ttype = parlist[0].token?.type;
+                        if (ttype == ETokenType.Type
+                            || ttype == ETokenType.Identifier)
+                        {
+                            fmkcs.SetDefineClassNode(parlist[0]);
+                        }
+                        else if (ttype == ETokenType.Number
+                            || ttype == ETokenType.String)
+                        {
+                            fmkcs.AddConstValueTokenList(new FileMetaConstValueTerm(m_FileMeta, parlist[0].token));
+                        }
+                    }
+                }
+                FileMetaBlockSyntax executeBlock = new FileMetaBlockSyntax(m_FileMeta, castnode.blockNode.token, castnode.blockNode.endToken);
+                fmkcs.SetExecuteBlockSyntax(executeBlock);
+                ParseCurrentNodeInfo pcnic = new ParseCurrentNodeInfo(executeBlock);
+                m_CurrentNodeInfoStack.Push(pcnic);
+                ParseSyntax(castnode.blockNode);
+                m_CurrentNodeInfoStack.Pop();
+
+                if (j != castlist.Count - 1)
+                    fmkcs.isContinueNextCastSyntax = true;
+
+                fms.AddFileMetaKeyCaseSyntaxList(fmkcs);
+                */
+            }
+            public FileMetaKeyCaseSyntax(FileMeta fm, Token castToken )
             {
                 m_FileMeta = fm;
                 m_Token = castToken;
-                m_DefineClassToken = _defineClassToken;
-                m_VariableToken = _variableToken;
             }
-            public void SetDefineClassToken(Token _defineClassToken)
+            public void SetDefineClassNode( Node _defineClassNode )
             {
-                m_DefineClassToken = _defineClassToken;
+                m_DefineClassToken = new FileMetaCallLink(m_FileMeta, _defineClassNode);
             }
             public void SetVariableToken(Token _variableToken)
             {
@@ -206,9 +337,9 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 sb.Append("case ");
                 if(m_DefineClassToken != null )
                 {
-                    if (m_DefineClassToken != null)
+                    if (defineClassCallLink != null)
                     {
-                        sb.Append(m_DefineClassToken.lexeme?.ToString() + " ");
+                        sb.Append(defineClassCallLink.ToFormatString() + " ");
                     }
                     if (m_VariableToken != null)
                     {
@@ -251,6 +382,8 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         private FileMetaBlockSyntax m_DefaultExecuteBlockSyntax = null;
         private List<FileMetaKeyCaseSyntax> m_FileMetaKeyCaseSyntaxList = new List<FileMetaKeyCaseSyntax>();
 
+
+
         public FileMetaKeySwitchSyntax(FileMeta fm, Token _switchToken, Token _leftBraceToken,
             Token _rightBraceToken, FileMetaCallLink cl )
         {
@@ -285,7 +418,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             sb.Append("switch ");
             if(m_FileMetaVariableRef != null )
             {
-                sb.Append(m_FileMetaVariableRef.ToTokenString());
+                sb.Append(m_FileMetaVariableRef.ToFormatString());
             }
             sb.Append(Environment.NewLine);
             for (int i = 0; i < deep; i++)
@@ -328,6 +461,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         private FileMetaBaseTerm m_ConditionExpress  = null;
         private FileMetaOpAssignSyntax m_StepFileMetaOpAssignSyntax = null;
         private Token m_InToken = null;
+
         public FileMetaKeyForSyntax(FileMeta fm, Token _forToken, FileMetaBlockSyntax fmbs )
         {
             m_FileMeta = fm;
@@ -424,7 +558,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < deep; i++)
                 sb.Append(Global.tabChar);
-            sb.Append(m_Token?.lexeme.ToString() + ";" );
+            sb.Append(m_Token?.lexeme.ToString() );
             if (m_ExecuteBlockSyntax != null)
             {
                 sb.Append(Environment.NewLine);
@@ -438,6 +572,14 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public FileMetaBaseTerm returnExpress =>m_ReturnExpress;
 
         private FileMetaBaseTerm m_ReturnExpress = null;
+
+        public static FileMetaKeyReturnSyntax ParseIfSyntax(FileMeta fm, SyntaxNodeStruct akss)
+        {           
+            var cnode = akss.keyNode;
+            FileMetaBaseTerm conditionExpress = FileMetatUtil.CreateFileMetaExpress(fm, akss.keyContent, FileMetaTermExpress.EExpressType.Common);
+            var fms = new FileMetaKeyReturnSyntax(fm, cnode.token, conditionExpress);
+            return fms;
+        }
         public FileMetaKeyReturnSyntax(FileMeta fm, Token _token, FileMetaBaseTerm _express )
         {
             m_FileMeta = fm;
@@ -460,6 +602,27 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public Token labelToken => m_LabelToken;
 
         private Token m_LabelToken = null;
+
+        public static FileMetaKeyGotoLabelSyntax ParseIfSyntax(FileMeta fm, SyntaxNodeStruct akss)
+        {
+            var cnode = akss.keyNode;
+            Token labelToken = null;
+            if (akss.keyContent.Count != 1 )
+            {
+                Console.WriteLine("Error 解析Goto Label语法，只支持 goto id;的语法!!");
+            }
+            else
+            {
+                labelToken = akss.keyContent[0].token;
+                if (labelToken.type != ETokenType.Identifier)
+                {
+                    Console.WriteLine("Error 解析GotoLabel中 后边必须使用普通字符");
+                }
+            }
+            var fms = new FileMetaKeyGotoLabelSyntax( fm, cnode.token, labelToken);
+
+            return fms;
+        }
         public FileMetaKeyGotoLabelSyntax(FileMeta fm, Token _token, Token _label )
         {
             m_FileMeta = fm;
@@ -472,7 +635,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             for (int i = 0; i < deep; i++)
                 sb.Append(Global.tabChar);
             sb.Append(m_Token?.lexeme.ToString() + " ");
-            sb.Append(m_LabelToken?.lexeme.ToString() + ";" );
+            sb.Append(m_LabelToken?.lexeme.ToString() );
             return sb.ToString();
         }
     }

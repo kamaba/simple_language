@@ -25,3 +25,7 @@ Language functions in three stages
 ### Support platform
 
 ### Install and use
+
+
+### Contact Author
+mail: kamaba233@gmail.com

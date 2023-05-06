@@ -15,6 +15,9 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 {
     public partial class FileMeta : FileMetaBase
     {
+        public List<FileMetaClass> fileMetaClassList => m_FileMetaClassList;
+
+
         private string m_Path;
         // for example: import namespace1.namespace2;
         private List<FileMetaImportSyntax> m_FileImportSyntax = new List<FileMetaImportSyntax>();

@@ -17,6 +17,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public FloatMetaClass() : base(DefaultObject.Float.ToString())
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
+            m_IsInnerDefineCompile = true;
             MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float, 0.0f);
             SetDefaultExpressNode(mcen);
 
@@ -28,14 +29,14 @@ namespace SimpleLanguage.Core.SelfMeta
         }
         public void AddCoreFunction()
         {
-            MetaMemberFunction Cast = new MetaMemberFunction(this, "Cast");
-            Cast.AddMetaDefineParam(new MetaDefineParam("Template", this, null, CoreMetaClassManager.templateMetaClass, null));
-            AddMetaMemberFunction(Cast);
+            //MetaMemberFunction Cast = new MetaMemberFunction(this, "Cast");
+            //Cast.AddMetaDefineParam(new MetaDefineParam("Template", this, null, CoreMetaClassManager.templateMetaClass, null));
+            //AddMetaMemberFunction(Cast);
             m_Type = EType.Float;
 
             MetaMemberFunction ToInt32 = new MetaMemberFunction(this, "ToInt32");
             ToInt32.isOverrideFunction = true;
-            AddMetaMemberFunction(ToInt32);
+            AddInnerMetaMemberFunction(ToInt32);
         }
         public MetaClass Cast( MetaTemplate mt)
         {
@@ -58,6 +59,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public DoubleMetaClass() : base(DefaultObject.Double.ToString())
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
+            m_IsInnerDefineCompile = true;
             MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Double, 0.0f);
             SetDefaultExpressNode(mcen);
             m_Type = EType.Double;

@@ -3,7 +3,7 @@
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/8/12 12:00:00
-//  Description: 
+//  Description:  this's a statement in function! same link table model!
 //****************************************************************************
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
@@ -16,23 +16,29 @@ namespace SimpleLanguage.Core.Statements
 {
     public partial class MetaBlockStatements : MetaStatements
     {
-        public MetaBlockStatements parent = null;
+        public override MetaFunction ownerMetaFunction => m_OwnerMetaFunction;
+        public MetaStatements ownerMetaStatements => m_OwnerMetaStatements;
+        public FileMetaBlockSyntax fileMetaBlockSyntax => m_FileMetaBlockSyntax;
+
+        public MetaBlockStatements parent { get; set; } = null;
         protected MetaFunction m_OwnerMetaFunction = null;
         public bool isOnFunction = false;                   // on function or inner function 
 
-        public override MetaFunction ownerMetaFunction
-        {
-            get
-            {
-                return m_OwnerMetaFunction;
-            }
-        }
 
-        private Dictionary<string, MetaVariable> m_MetaVariableDict = new Dictionary<string, MetaVariable>();
+        protected Dictionary<string, MetaVariable> m_MetaVariableDict = new Dictionary<string, MetaVariable>();
         protected List<MetaBlockStatements> m_ChildrenMetaBlockStatementsList = new List<MetaBlockStatements>();
         protected MetaStatements m_OwnerMetaStatements = null;
-        private FileMetaBlockSyntax m_FileMetaBlockSyntax;
-
+        protected FileMetaBlockSyntax m_FileMetaBlockSyntax = null;
+        public MetaBlockStatements( MetaBlockStatements mbs )
+        {
+            this.m_OwnerMetaFunction = mbs.ownerMetaFunction;
+            this.m_OwnerMetaBlockStatements = mbs.m_OwnerMetaBlockStatements;
+        }
+        public MetaBlockStatements( MetaFunction mf )
+        {
+            m_OwnerMetaBlockStatements = null;
+            m_OwnerMetaFunction = mf;
+        }
         public MetaBlockStatements( MetaFunction mf, FileMetaBlockSyntax fmbs )
         {
             m_OwnerMetaBlockStatements = null;
@@ -65,12 +71,13 @@ namespace SimpleLanguage.Core.Statements
                 return m_OwnerMetaStatements;
             }
             var nextStatements = m_NextMetaStatements;
-            while( nextMetaStatements != null )
+            while(nextStatements != null )
             {
-                if (nextMetaStatements is MetaForStatements)
-                    return nextMetaStatements;
-                else if (nextMetaStatements is MetaWhileDoWhileStatements)
-                    return nextMetaStatements;
+                if (nextStatements is MetaForStatements)
+                    return nextStatements;
+                else if (nextStatements is MetaWhileDoWhileStatements)
+                    return nextStatements;
+                nextStatements = nextStatements.nextMetaStatements;
             }
             if (m_OwnerMetaBlockStatements != null )
             {
@@ -118,7 +125,6 @@ namespace SimpleLanguage.Core.Statements
                 {
                     break;
                 }
-
             }
             tms.SetNextStatements( t );
         }
@@ -196,6 +202,29 @@ namespace SimpleLanguage.Core.Statements
                 var mmpcp = list[i];
                 AddMetaVariable(mmpcp.metaVariable);
             }
+        }
+        public override MetaStatements GenTemplateClassStatement( MetaGenTemplateClass mgt, MetaBlockStatements parentMs )
+        {
+            MetaBlockStatements mbs = new MetaBlockStatements( parentMs );
+            mbs.SetFileMetaBlockSyntax(m_FileMetaBlockSyntax);
+            mbs.parent = parentMs;
+            Dictionary<string,MetaVariable> tMvList = new Dictionary<string, MetaVariable>();
+            foreach (var v in m_MetaVariableDict)
+            {
+                MetaVariable nmv = new MetaVariable(v.Value);
+                nmv.SetOwnerBlockstatements(mbs);
+                nmv.GenTemplateMetaVaraible(mgt, mbs);
+                tMvList.Add(nmv.name, nmv);
+            }
+            m_MetaVariableDict = tMvList;
+
+            if (m_NextMetaStatements != null)
+            {
+                m_NextMetaStatements = m_NextMetaStatements.GenTemplateClassStatement( mgt, mbs );
+            }
+            mbs.SetNextStatements( m_NextMetaStatements );
+
+            return mbs;
         }
         public override string ToFormatString()
         {

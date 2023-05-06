@@ -69,9 +69,9 @@ namespace SimpleLanguage.Core.Statements
                 var irCallFun = new IRCallFunction(irMethod, mnoen.constructFunctionCall);
                 m_IRDataList.AddRange(irCallFun.IRDataList);
 
-                for (int i = 0; i < mnoen.assignStatementsList.Count; i++)
+                for (int i = 0; i < mnoen.metaBraceOrBracketStatementsContent.assignStatementsList.Count; i++)
                 {
-                    var asl = mnoen.assignStatementsList[i];
+                    var asl = mnoen.metaBraceOrBracketStatementsContent.assignStatementsList[i];
 
                     IRExpress irExp = new IRExpress(irMethod, mmvs[i].express);
                     m_IRDataList.AddRange(irExp.IRDataList);

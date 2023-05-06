@@ -1,3 +1,7 @@
+
+data XC{ a = 2
+b = 10
+}
 NumberTest
 {
     static Fun()

@@ -32,37 +32,40 @@ namespace SimpleLanguage.Core.SelfMeta
         public void AddCoreFunction()
         {
             MetaMemberFunction Cast = new MetaMemberFunction(this, "Cast");
-            Cast.AddMetaDefineParam(new MetaDefineParam("t", this, null, CoreMetaClassManager.templateMetaClass, null));
-            Cast.SetDefineMetaClass(CoreMetaClassManager.int32MetaClass);
-            AddMetaMemberFunction(Cast);
+            //Cast.AddMetaDefineParam(new MetaDefineParam("t", this, null, CoreMetaClassManager.templateMetaClass, null));
+            //Cast.SetDefineMetaClass(CoreMetaClassManager.int32MetaClass);
+            //AddMetaMemberFunction(Cast);
+
+            MetaMemberFunction __Init__ = new MetaMemberFunction(this, "__Init__");
+            AddMetaMemberFunction(__Init__);
 
             MetaMemberFunction GetHashCode = new MetaMemberFunction(this, "GetHashCode");
             GetHashCode.SetDefineMetaClass(CoreMetaClassManager.int32MetaClass);
-            AddMetaMemberFunction(GetHashCode);
+            AddInnerMetaMemberFunction(GetHashCode);
             MetaMemberFunction GetType = new MetaMemberFunction(this, "GetType");
             GetType.SetDefineMetaClass(this);
-            AddMetaMemberFunction(GetType);
+            AddInnerMetaMemberFunction(GetType);
             MetaMemberFunction Clone = new MetaMemberFunction(this, "Clone");
             Clone.SetDefineMetaClass( this );
-            AddMetaMemberFunction(Clone);
+            AddInnerMetaMemberFunction(Clone);
             MetaMemberFunction ToString = new MetaMemberFunction(this, "ToString");
             ToString.SetDefineMetaClass(CoreMetaClassManager.stringMetaClass);
-            AddMetaMemberFunction(ToString);
+            AddInnerMetaMemberFunction(ToString);
             MetaMemberFunction ToShort = new MetaMemberFunction(this, "ToShort");
             ToShort.SetDefineMetaClass(CoreMetaClassManager.int16MetaClass);
-            AddMetaMemberFunction(ToShort);
+            AddInnerMetaMemberFunction(ToShort);
             MetaMemberFunction ToInt = new MetaMemberFunction(this, "ToInt");
             ToInt.SetDefineMetaClass(CoreMetaClassManager.int32MetaClass);
-            AddMetaMemberFunction(ToShort);
+            AddInnerMetaMemberFunction(ToShort);
             MetaMemberFunction ToLong = new MetaMemberFunction(this, "ToLong");
             ToLong.SetDefineMetaClass(CoreMetaClassManager.int64MetaClass);
-            AddMetaMemberFunction(ToLong);
+            AddInnerMetaMemberFunction(ToLong);
             MetaMemberFunction ToFloat = new MetaMemberFunction(this, "ToFloat");
             ToFloat.SetDefineMetaClass(CoreMetaClassManager.floatMetaClass);
-            AddMetaMemberFunction(ToFloat);
+            AddInnerMetaMemberFunction(ToFloat);
             MetaMemberFunction ToDouble = new MetaMemberFunction(this, "ToDouble");
             ToDouble.SetDefineMetaClass(CoreMetaClassManager.doubleMetaClass);
-            AddMetaMemberFunction(ToLong);
+            AddInnerMetaMemberFunction(ToLong);
         }
 
         public static MetaClass CreateMetaClass()

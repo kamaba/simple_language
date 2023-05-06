@@ -255,6 +255,8 @@ namespace SimpleLanguage.Compile.Parse
                 case ETokenType.This:           //this
                 case ETokenType.Object:
                 case ETokenType.Boolean:
+                case ETokenType.Global:
+                case ETokenType.Range:
                     {
                         AddIdentifier(token);
                     }
@@ -426,6 +428,14 @@ namespace SimpleLanguage.Compile.Parse
                     {
                         Node node = new Node(token);
                         node.nodeType = ENodeType.SemiColon;
+                        currentNode.AddChild(node);
+                        m_TokenIndex++;
+                    }
+                    break;
+                case ETokenType.LineEnd:      // \n
+                    {
+                        Node node = new Node(token);
+                        node.nodeType = ENodeType.LineEnd;
                         currentNode.AddChild(node);
                         m_TokenIndex++;
                     }
@@ -658,7 +668,7 @@ namespace SimpleLanguage.Compile.Parse
                         AddKeyNode(token);
                     }
                     break;
-                case ETokenType.At:
+                case ETokenType.Dollar:
                     {
                         AddAtOpSign(token);
                     }

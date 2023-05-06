@@ -59,7 +59,7 @@ namespace SimpleLanguage.Core.Statements
                 m_NextMetaStatements.SetTRMetaVariable(mv);
             }
         }
-        public virtual void SetDeep( int dp )
+        public override void SetDeep( int dp )
         {
             m_Deep = dp;
             if(m_NextMetaStatements != null )
@@ -70,6 +70,10 @@ namespace SimpleLanguage.Core.Statements
         public virtual void SetNextStatements( MetaStatements ms )
         {
             m_NextMetaStatements = ms;
+        }
+        public virtual MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
+        {
+            return null;
         }
     }
 }

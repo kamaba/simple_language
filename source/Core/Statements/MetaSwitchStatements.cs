@@ -72,17 +72,19 @@ namespace SimpleLanguage.Core.Statements
                     isContinueNext = true;
                 }
 
-                MetaMemberFunction.CreateMetaSyntax(fmkcs.executeBlockSyntax, thenMetaStatements);
-
                 Parse();
+
+                MetaMemberFunction.CreateMetaSyntax(fmkcs.executeBlockSyntax, thenMetaStatements);
             }
             private void Parse()
             {
-                if ( m_FileMetaKeyCaseSyntax.defineClassToken  != null )
+                if ( m_FileMetaKeyCaseSyntax.defineClassCallLink != null )
                 {
-                    string tokename = m_FileMetaKeyCaseSyntax.defineClassToken.lexeme.ToString();
+                    MetaCallExpressNode mcen = new MetaCallExpressNode(m_FileMetaKeyCaseSyntax.defineClassCallLink, null, null);
+                    mcen.Parse(new AllowUseConst() { });
+                    mcen.CalcReturnType();
 
-                    matchTypeClass = ClassManager.instance.GetMetaClassByNameAndFileMeta(m_OwnerMetaBlockStatements.ownerMetaClass, tokename, m_FileMetaKeyCaseSyntax.fileMeta);
+                    matchTypeClass = mcen.metaCallLink.finalMetaCallNode.GetMetaClass();
 
                     if (matchTypeClass != null)
                     {
@@ -154,6 +156,7 @@ namespace SimpleLanguage.Core.Statements
                 }
                 else if (switchCaseType == SwitchCaseType.ClassType)
                 {
+
                 }
                 return;
             }

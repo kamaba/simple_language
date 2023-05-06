@@ -15,6 +15,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="source\Core\新文件夹\**" />
+    <EmbeddedResource Remove="source\Core\新文件夹\**" />
+    <None Remove="source\Core\新文件夹\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="libLLVM" Version="15.0.0" />
     <PackageReference Include="libLLVM.runtime.win-x64" Version="15.0.0" />
     <PackageReference Include="swigged.llvm" Version="70.0.1" />
@@ -23,10 +29,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="source\Export\ExportJavascript\" />
-    <Folder Include="source\Export\ExportTypescript\" />
-    <Folder Include="source\Export\ExportCSharp\" />
+    <Folder Include="source\Export\ExportJavascriptCode\" />
+    <Folder Include="source\Export\ExportTypescriptCode\" />
+    <Folder Include="source\Export\ExportCSharpCode\" />
     <Folder Include="source\Export\GenerateMonoIL\" />
+    <Folder Include="source\Export\ExportCPlusCode\" />
     <Folder Include="source\MakeBin\LLVM\" />
     <Folder Include="source\OtherLanguage\CSharp\Statements\" />
   </ItemGroup>
