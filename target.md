@@ -66,6 +66,7 @@ a = Convert.Int("e").Exception( {}, { a = 0; } ); 当然在Convert.Int函数中�
 46. instance可以通过 @instance 或者 [@instance,@other]的方式，进行使用静态instance, 当然初始化顺序也可以通过在config中配置 instanceSort进行调整。
 47. 可以设置最多继承层数，外来插件可以继承层数。
 48. 暂定，不支持模板函数，而传入Type类，进行逻辑判断， 只针对Cast<T>() 方法，进行单独处理。 当函数已定义类型，参数未定义类型，如果是常规类型如Int32,Float等，  赋值相当于调用 .ToInt32()  .ToFloat()语句  如果是自定义类型，  其实也是.Cast<Int32>() 的方式，但发现这个后转到.ToInt32() 则相当于调用   inputparam.Cast<DefineClass>()的方式去处理
+49.通过函数方式申请手动管理 居部管理等
 
 
 语言细节:
