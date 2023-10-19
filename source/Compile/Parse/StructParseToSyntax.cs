@@ -807,10 +807,6 @@ namespace SimpleLanguage.Compile.Parse
 
         public FileMetaConditionExpressSyntax ParseConditionSyntax(FileMeta fm, SyntaxNodeStruct sns)
         {
-            if (sns.keyContent.Count > 1)
-            {
-                Console.WriteLine("Error 解析switch 后边主允许有其它内容!!");
-            }
             var cnode = sns.keyNode;
             FileMetaBaseTerm conditionExpress = FileMetatUtil.CreateFileMetaExpress(fm, sns.keyContent, FileMetaTermExpress.EExpressType.Common);
             FileMetaBlockSyntax executeBlock = new FileMetaBlockSyntax(fm, sns.blockNode.token, sns.blockNode.endToken);
