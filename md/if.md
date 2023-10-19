@@ -86,14 +86,6 @@ else
 在该实例中，我们因为elif true第一个是true执行语句2，但因为有next关键字，下一个elif还会继承检查，但语句3的条件是false,则再检查下一个elif，发现该个elif为true,则执行语句4
 
 
-### SLang中使用if语句返回值
-在if语句前，可以使用变量赋值语句，快速赋值，但需要与tr语句配合使用，否则变量使用默认值
-```ruby
-a = 20;
-val = if a = 10{ tr 10; }elif a = 15{ } else { tr 20; }
-```
-在该语句中，如果a=20则val = 20 tr语句相当于 在执行语句中进行赋值 if a = 10{ val = 20; }elif a = 15{} else { val = 20; }
-
 ### 实例
 ```ruby
 import CSharp.System;

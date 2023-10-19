@@ -47,7 +47,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         {
             m_FileMetaSyntax.Add(fms);
         }
-        public virtual string ToFormatString()
+        public override string ToFormatString()
         {
             return "";
         }

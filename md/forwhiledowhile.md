@@ -15,12 +15,30 @@ for init_express, end_condition_express, change_variable_express
 {
     #语句
 }
+
+for
+{
+    #可选无参数
+}
+for i = 10
+{
+    #可选默认定义参数
+}
+for i = 10, i < 100
+{
+    #可选默认定义参数
+}
+for i = 10, i < 100, i+= 2
+{
+    #全参数
+}
+#可选
 ```
 其中init_express, end_condition_express, change_variable_express都是可选，但顺序不能变，只能从后边向前省略，与函数传参类似。
 
 for的遍历示例
 ```python
-Array arr = {1,2,3,4};
+Array arr = [1,2,3,5]
 for v in arr
 {
     #语句
@@ -34,14 +52,14 @@ for v in 1..10
     if v < 4
     {
         #输入小于v说明
-        continue;
+        continue
     }
     if v == 8
     {
-        break;
+        break
     }
     #输出当前遍历值与它的索引
-    Console.WriteLine( "v=@v index=@v.index ");
+    Console.WriteLine( "v=$v index=$v.index ");
 }
 ```
 上边示例中，v是遍历的迭代器， 使用v则，直接识别当前v的值，如果使用v.index则表达，当前的索引值,
@@ -61,7 +79,7 @@ while示例
 ```python 
 while boolean_express
 {
-    #语句
+    #语句  注意，上边的参数不允许省略
 }
 ```
 dowhile示例
@@ -94,7 +112,7 @@ ProjectEnter
         #for enum
         for v in ArrEnum
         {
-            Console.WriteLine("V=@v");
+            Console.WriteLine("V=$v");
         }
         #输入结果
         #>>v=a
@@ -104,7 +122,7 @@ ProjectEnter
         #for 数组
         for v in 1..3
         {
-            Console.WriteLine("v=@v index=@v.index");
+            Console.WriteLine("v=$v index=$v.index");
         }
         #输入结果
         #>>v=1 index=0
@@ -125,9 +143,9 @@ ProjectEnter
             }
             if v == "b" 
             {
-                Console.WriteLine( "v=@v" );
+                Console.WriteLine( "v=$v" );
             }
-            Console.WriteLine("index=@v.index");
+            Console.WriteLine("index=$v.index");
         }
         #输入结果
         #>>v[0]=mc
@@ -141,7 +159,7 @@ ProjectEnter
         #for 条件
         for i = 0, i < 2, i++
         {
-            Console.WriteLine("v=@i");  #条件迭代没有index值
+            Console.WriteLine("v=$i");  #条件迭代没有index值
         }
         #输入结果
         #>>v=0
@@ -154,7 +172,7 @@ ProjectEnter
                 break;
             }
             i2 += 2;
-            Console.WriteLine("i2=@i2");
+            Console.WriteLine("i2=$i2");
         }
         #输入结果
         #>>i2=10
