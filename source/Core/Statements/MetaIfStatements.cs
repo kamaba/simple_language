@@ -233,5 +233,19 @@ namespace SimpleLanguage.Core.Statements
 
             return sb.ToString();
         }
+
+        public override string ToIRString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < m_MetaElseIfStatements.Count; i++)
+            {
+                sb.Append(m_MetaElseIfStatements[i].ToIRString());
+                sb.AppendLine();
+            }
+            sb.Append(nextMetaStatements?.ToIRString());
+
+            return sb.ToString();
+        }
     }
 }

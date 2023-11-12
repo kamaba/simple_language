@@ -27,64 +27,52 @@ namespace SimpleLanguage.Core.Statements
                 {
                     mnoen = m_ExpressNode as MetaNewObjectExpressNode;
                     IRNew irNew = new IRNew( irMethod, mnoen.GetReturnMetaDefineType());
-                    m_IRDataList.AddRange(irNew.IRDataList);                    
+                    m_IRStatements.Add( irNew );
                 }
                 else
                 {
                     m_IRExpress = new IRExpress(irMethod, m_ExpressNode);
-                    m_IRDataList.AddRange(m_IRExpress.IRDataList);
+                    m_IRStatements.Add(m_IRExpress);
                 }
             }
             
-            IRData insNode = new IRData();
-            insNode.opCode = EIROpCode.StoreLocal;
-            insNode.index = irMethod.GetLocalVariableIndex(m_MetaVariable);
-            m_IRDataList.Add(insNode);
+            IRStoreVariable irStoreVar = new IRStoreVariable(irMethod, m_MetaVariable);
+            m_IRStatements.Add(irStoreVar);
 
-            if( mnoen!= null )
+            if ( mnoen!= null )
             {
                 var metaClass = mnoen.GetReturnMetaClass();
                 var mmvs = metaClass.metaClassData.metaMemberVariables;
                 for ( int i = 0; i < mmvs.Count; i++ )
                 {
                     IRExpress irExp = new IRExpress(irMethod, mmvs[i].express);
-                    m_IRDataList.AddRange(irExp.IRDataList);
+                    m_IRStatements.Add(irExp);
 
-                    IRData mmvsNode = new IRData();
-                    mmvsNode.opCode = EIROpCode.LoadLocal;
-                    mmvsNode.index = irMethod.GetLocalVariableIndex(m_MetaVariable);
-                    m_IRDataList.Add(mmvsNode);
+                    IRLoadVariable irLoadVar1 = new IRLoadVariable(irMethod, m_MetaVariable);
+                    m_IRStatements.Add(irLoadVar1);
 
-                    IRData storeNode = new IRData();
-                    storeNode.opCode = EIROpCode.StoreNotStaticField;
-                    storeNode.index = metaClass.metaClassData.GetMemberVariableIndex(mmvs[i]);
-                    m_IRDataList.Add(storeNode);
+                    IRStoreVariable irStoreVar2 = new IRStoreVariable(irMethod, mmvs[i]);
+                    m_IRStatements.Add(irStoreVar2);
                 }
 
-                IRData localThisNode = new IRData();
-                localThisNode.opCode = EIROpCode.LoadLocal;
-                localThisNode.index = irMethod.GetLocalVariableIndex(m_MetaVariable);
-                m_IRDataList.Add(localThisNode);
+                IRLoadVariable localThisNodeVar = new IRLoadVariable(irMethod, m_MetaVariable);
+                m_IRStatements.Add(localThisNodeVar);
 
                 var irCallFun = new IRCallFunction(irMethod, mnoen.constructFunctionCall);
-                m_IRDataList.AddRange(irCallFun.IRDataList);
+                m_IRStatements.Add(irCallFun);
 
                 for (int i = 0; i < mnoen.metaBraceOrBracketStatementsContent.assignStatementsList.Count; i++)
                 {
                     var asl = mnoen.metaBraceOrBracketStatementsContent.assignStatementsList[i];
 
                     IRExpress irExp = new IRExpress(irMethod, mmvs[i].express);
-                    m_IRDataList.AddRange(irExp.IRDataList);
+                    m_IRStatements.Add(irExp);
 
-                    IRData mmvsNode = new IRData();
-                    mmvsNode.opCode = EIROpCode.LoadLocal;
-                    mmvsNode.index = irMethod.GetLocalVariableIndex(m_MetaVariable);
-                    m_IRDataList.Add(insNode);
+                    IRLoadVariable mmvsNodeVar = new IRLoadVariable(irMethod, m_MetaVariable);
+                    m_IRStatements.Add(mmvsNodeVar);
 
-                    IRData storeNode = new IRData();
-                    storeNode.opCode = EIROpCode.StoreNotStaticField;
-                    storeNode.index = metaClass.metaClassData.GetMemberVariableIndex(asl.metaMemberVariable);
-                    m_IRDataList.Add(insNode);
+                    IRStoreVariable irStoreNodeVar3 = new IRStoreVariable(irMethod, asl.metaMemberVariable );
+                    m_IRStatements.Add(irStoreNodeVar3);
                 }
             }
         }

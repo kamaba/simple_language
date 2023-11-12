@@ -1493,6 +1493,7 @@ namespace SimpleLanguage.Core
                 Console.WriteLine("Error 连接串没有找到合适的节点  360!!!");
             }
         }
+        public int GetCodeFileLine() { return 0; }
         public bool Parse( AllowUseConst _useConst )
         {
             allowUseConst = new AllowUseConst(_useConst);

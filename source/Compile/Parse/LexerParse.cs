@@ -848,7 +848,6 @@ namespace SimpleLanguage.Compile.Parse
                         m_SourceChar++;
                         break;
                     }
-                    /*
                     else if (m_TempChar == '{')
                     {
                         AddToken(ETokenType.String, m_Builder.ToString());
@@ -968,7 +967,6 @@ namespace SimpleLanguage.Compile.Parse
                             }
                         }
                     }
-                    */
                     else
                     {
                         m_Builder.Append(m_TempChar);

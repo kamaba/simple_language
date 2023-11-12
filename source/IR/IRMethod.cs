@@ -133,7 +133,7 @@ namespace SimpleLanguage.IR
                 return;
             }
             mbs.ParseAllIRStatements();
-            IRDataList.AddRange(mbs.irDataList);
+            IRDataList.AddRange(mbs.GetIRDataList());
 
             for( int i = 0; i < m_LabelList.Count; i++ )
             {
@@ -161,8 +161,10 @@ namespace SimpleLanguage.IR
                 }
             }
 
-            string str = ToStringFormat();
-            Console.WriteLine("IRDataList: " + str);
+
+
+            string str = mbs.ToIRString();//ToStringFormat();
+            Console.WriteLine(str);
         }
         public string ToStringFormat()
         {

@@ -703,6 +703,14 @@ namespace SimpleLanguage.Core
                 }
             }
         }
+        public override int GetCodeFileLine()
+        {
+            if(m_FileMetaConstValueTerm  != null)
+            {
+                return m_FileMetaConstValueTerm.token.sourceBeginLine;
+            }
+            return base.GetCodeFileLine();
+        }
         public override void Parse(AllowUseConst auc)
         {
             //for( int i = 0; i < assignStatementsList.Count; i++ )

@@ -17,51 +17,51 @@ namespace SimpleLanguage.IR
 {
     public class IRLoadVariable : IRBase
     {
+        public IRData irLoadData = new IRData();
         MetaVariable m_MetaVariable = null;
         protected IRLoadVariable(IRMethod _irMethod) : base(_irMethod)
         { }
-        IRLoadVariable(MetaMemberVariable mmv)
-        {
-            m_MetaVariable = mmv;
-        }
         public IRLoadVariable(IRManager _irManager, MetaMemberVariable mmv)
         {
             m_MetaVariable = mmv;
             if (mmv.isStatic)
             {
-                IRData data = new IRData();
-                data.opCode = EIROpCode.LoadStaticField;
-                data.index = _irManager.GetStaticVariableIndex(mmv);
-                m_IRDataList.Add(data);
+                irLoadData.opCode = EIROpCode.LoadStaticField;
+                irLoadData.index = _irManager.GetStaticVariableIndex(mmv);
+                m_IRDataList.Add(irLoadData);
             }
             else
             {
-                IRData data = new IRData();
-                data.opCode = EIROpCode.LoadNotStaticField;
-                data.index = mmv.ownerMetaClass.metaClassData.GetMemberVariableIndex(mmv);
-                m_IRDataList.Add(data);
+                irLoadData.opCode = EIROpCode.LoadNotStaticField;
+                irLoadData.index = mmv.ownerMetaClass.metaClassData.GetMemberVariableIndex(mmv);
+                m_IRDataList.Add(irLoadData);
             }
         }
         public IRLoadVariable(IRMethod _irMethod, MetaVariable mv) : base(_irMethod)
         {
             if (mv.isArgument)
             {
-                IRData data = new IRData();
-                data.opCode = EIROpCode.LoadArgument;
-                data.index = m_IRMethod.GetArgumentIndex(mv);
-                m_IRDataList.Add(data);
+                irLoadData.opCode = EIROpCode.LoadArgument;
+                irLoadData.line = mv.GetCodeFileLine();
+                irLoadData.index = m_IRMethod.GetArgumentIndex(mv);
+                m_IRDataList.Add(irLoadData);
             }
             else
             {
-                IRData data = new IRData();
-                data.opCode = EIROpCode.LoadLocal;
-                data.index = m_IRMethod.GetLocalVariableIndex(mv);
-                m_IRDataList.Add(data);
+                irLoadData.opCode = EIROpCode.LoadLocal;
+                irLoadData.line = mv.GetCodeFileLine();
+                irLoadData.index = m_IRMethod.GetLocalVariableIndex(mv);
+                m_IRDataList.Add(irLoadData);
             }
+        }
+        public override string ToIRString()
+        {
+            return base.ToIRString();
         }
     }
     public class IRStoreVariable : IRBase
     {
+        public IRData irStoreData = new IRData();
         MetaVariable m_MetaVariable = null;
         public IRStoreVariable( IRMethod _irMethod, MetaMemberVariable mmv)
         {
@@ -70,27 +70,28 @@ namespace SimpleLanguage.IR
             IRExpress irexp = new IRExpress(_irMethod, mmv.express);
             m_IRDataList.AddRange(irexp.IRDataList);
 
-            IRData data = new IRData();
-            data.opCode = EIROpCode.StoreNotStaticField;
-            data.index = mmv.ownerMetaClass.metaClassData.GetMemberVariableIndex(mmv);
-            m_IRDataList.Add(data);
+            irStoreData.opCode = EIROpCode.StoreNotStaticField;
+            irStoreData.index = mmv.ownerMetaClass.metaClassData.GetMemberVariableIndex(mmv);
+            m_IRDataList.Add(irStoreData);
         }
         public IRStoreVariable(IRMethod _irMethod, MetaVariable mv) : base(_irMethod)
         {
             if (mv.isArgument)
             {
-                IRData data = new IRData();
-                data.opCode = EIROpCode.LoadArgument;
-                data.index = m_IRMethod.GetArgumentIndex(mv);
-                m_IRDataList.Add(data);
+                irStoreData.opCode = EIROpCode.LoadArgument;
+                irStoreData.index = m_IRMethod.GetArgumentIndex(mv);
+                m_IRDataList.Add(irStoreData);
             }
             else
             {
-                IRData data = new IRData();
-                data.opCode = EIROpCode.LoadLocal;
-                data.index = m_IRMethod.GetLocalVariableIndex(mv);
-                m_IRDataList.Add(data);
+                irStoreData.opCode = EIROpCode.StoreLocal;
+                irStoreData.index = m_IRMethod.GetLocalVariableIndex(mv);
+                m_IRDataList.Add(irStoreData);
             }
+        }
+        public override string ToIRString()
+        {
+            return base.ToIRString();
         }
     }
 }

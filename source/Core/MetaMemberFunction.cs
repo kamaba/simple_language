@@ -226,6 +226,14 @@ namespace SimpleLanguage.Core
             m_Deep = deep;
             m_MetaBlockStatements?.SetDeep(deep);
         }
+        public override int GetCodeFileLine()
+        {
+            if( m_FileMetaMemberFunction?.finalToken != null )
+            {
+                return m_FileMetaMemberFunction.finalToken.sourceBeginLine;
+            }
+            return base.GetCodeFileLine();
+        }
         public bool IsEqualWithMMFByNameAndParam( MetaMemberFunction mmf )
         {
             if (mmf.name != m_Name) return false;
@@ -502,10 +510,10 @@ namespace SimpleLanguage.Core
                     break;
                 case FileMetaCallSyntax fmcs:
                     {
-                        MetaCallStatements mas = new MetaCallStatements(currentBlockStatements, fmcs);
-                        beforeStatements.SetNextStatements(mas);
-                        beforeStatements = mas;
-                        return mas;
+                        var mcs = new MetaCallStatements(currentBlockStatements, fmcs );
+                        beforeStatements.SetNextStatements(mcs);
+                        beforeStatements = mcs;
+                        return mcs;
                     }
                 case FileMetaKeyReturnSyntax fmrs:
                     {

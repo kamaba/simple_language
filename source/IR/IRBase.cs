@@ -31,5 +31,15 @@ namespace SimpleLanguage.IR
         {
             m_IRDataList.Add(irData);
         }
+        public virtual string ToIRString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for( int i = 0; i < m_IRDataList.Count; i++ )
+            {
+                sb.AppendLine(m_IRDataList[i].ToString());
+            }
+            return sb.ToString();
+        }
     }
 }

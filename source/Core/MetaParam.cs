@@ -234,6 +234,7 @@ namespace SimpleLanguage.Core
                 mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
             m_MetaVariable = new MetaVariable(fmp.name, mbs, mc, mdt );
+            m_MetaVariable.SetFromMetaDefineParamCreate(this);
             m_MetaVariable.isArgument = true;
 
             if (m_FileMetaParamter.express != null)
@@ -248,12 +249,14 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             MetaType mdt = new MetaType(mt);
             m_MetaVariable = new MetaVariable(_name, mbs, ownerMC, mdt);
+            m_MetaVariable.SetFromMetaDefineParamCreate(this);
             m_MetaVariable.isArgument = true;
         }
         public MetaDefineParam( string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaClass _defineMetaClass, MetaExpressNode _expressNode )
         {
             MetaType mdt = new MetaType(_defineMetaClass);
             m_MetaVariable = new MetaVariable(_name, mbs, ownerMC, mdt );
+            m_MetaVariable.SetFromMetaDefineParamCreate(this);
             m_MetaExpressNode = _expressNode;
         }
         public MetaDefineParam( string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaTemplate mt )
@@ -262,7 +265,16 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             MetaType mdt = new MetaType(mt);
             m_MetaVariable = new MetaVariable(_name, mbs, ownerMC, mdt);
+            m_MetaVariable.SetFromMetaDefineParamCreate(this);
             m_MetaVariable.isArgument = true;
+        }
+        public int GetCodeFileLine()
+        {
+            if(m_FileMetaParamter != null )
+            {
+                return m_FileMetaParamter.token.sourceBeginLine;
+            }
+            return 0;
         }
         public override void Parse()
         {            

@@ -129,6 +129,7 @@ namespace SimpleLanguage.Core
             }
             return m_MetaDefineType;
         }
+        public override int GetCodeFileLine() { if (m_FileMetaConstValueTerm?.token != null) { return m_FileMetaConstValueTerm.token.sourceBeginLine; } else return 0; }
         public void ComputeAddRight(MetaConstExpressNode right)
         {
             switch (right.eType)

@@ -23,7 +23,7 @@ namespace SimpleLanguage.Core.Statements
         public override void ParseIRStatements()
         {
             IRCallFunction irCallFun = new IRCallFunction(irMethod, metaFunctionCall );            
-            //m_IRDataList.AddRange(irCallFun.IRDataList);
+            m_IRStatements.Add( irCallFun );
         }
         public override string ToFormatString()
         {
