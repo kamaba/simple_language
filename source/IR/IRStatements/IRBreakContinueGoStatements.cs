@@ -21,7 +21,8 @@ namespace SimpleLanguage.Core.Statements
         public IRBranch irBrach = null;
         public override void ParseIRStatements()
         {
-            irBrach = new IRBranch(irMethod,  EIROpCode.Br );
+            irBrach = new IRBranch(irMethod,  EIROpCode.Br, null );
+            m_IRStatements.Add(irBrach);
             if (m_FileMetaKeyOnlySyntax.token != null )
             {
                 irBrach.brData.line = m_FileMetaKeyOnlySyntax.token.sourceBeginLine;
@@ -30,7 +31,7 @@ namespace SimpleLanguage.Core.Statements
             m_IRStatements.Add( irBrach );
             if (m_ForStatements != null )
             {
-                irBrach.brData.opValue = m_ForStatements.endIrRata.nopData;
+                irBrach.brData.opValue = m_ForStatements.endIRData.nopData;
             }
             else if( m_WhileStatements != null )
             {
@@ -53,10 +54,10 @@ namespace SimpleLanguage.Core.Statements
         public IRBranch irBrach = null;
         public override void ParseIRStatements()
         {
-            irBrach = new IRBranch(irMethod, EIROpCode.Br );
+            irBrach = new IRBranch(irMethod, EIROpCode.Br, null );
             if (m_FileMetaKeyOnlySyntax.token != null)
             {
-                irBrach.brData.line = m_FileMetaKeyOnlySyntax.token.sourceBeginLine;
+                irBrach.SetCodeFileLine( m_FileMetaKeyOnlySyntax.token.sourceBeginLine );
             }
             irMethod.AddLabelDict(irBrach.brData);
             m_IRStatements.Add(irBrach);
@@ -92,7 +93,7 @@ namespace SimpleLanguage.Core.Statements
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine("#goto " + m_FileMetaKeyGotoLabelSyntax?.token.ToString() + "#");
+            sb.AppendLine(isLabel?"#labal ":"#goto " + m_FileMetaKeyGotoLabelSyntax?.token.ToString() + "#");
 
             sb.AppendLine(base.ToIRString());
 

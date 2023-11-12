@@ -296,37 +296,5 @@ namespace SimpleLanguage.Core.Statements
             return sb.ToString();
 
         }
-        public override string ToIRString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append("statement{");
-
-            sb.Append(m_MetaVariable.ToIRString());
-            sb.Append(" = ");
-            if (m_IsNeedCastState)
-            {
-                sb.Append("(");
-            }
-            sb.Append(m_ExpressNode.ToIRString());
-            if (m_IsNeedCastState)
-            {
-                sb.Append(").Cast<" + m_MetaVariable.metaDefineType.metaClass.allName + ">()");
-            }
-            sb.AppendLine("}");
-
-            sb.AppendLine("parseIR");
-            sb.AppendLine("{");
-            //for (int i = 0; i < m_IRDataList.Count; i++)
-            //{
-            //    sb.AppendLine(m_IRDataList[i].ToString());
-            //}
-            sb.AppendLine("}");
-            if (nextMetaStatements != null)
-            {
-                sb.AppendLine(nextMetaStatements.ToIRString());
-            }
-            return sb.ToString();
-        }
     }
 }

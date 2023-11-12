@@ -63,7 +63,7 @@ namespace SimpleLanguage.IR
             return base.ToIRString();
         }
     }
-    /*
+    
     public partial class MetaCallStatements
     {
         private IRMethod m_IRMethod = null;
@@ -163,16 +163,9 @@ namespace SimpleLanguage.IR
         {
             StringBuilder sb = new StringBuilder();
 
-            //var cnlist = callNodeList;
-            //for (int i = 0; i < m_IRList.Count; i++)
-            //{
-            //    var irn = m_IRList[i];
-
-            //    sb.AppendLine(irn.ToIRString());
-            //}
-
+            sb.Append("call");
+            //sb.Append(base.ToIRString());
             return sb.ToString();
         }
-    }
-    */
+    }    
 }

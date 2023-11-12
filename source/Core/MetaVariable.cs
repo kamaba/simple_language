@@ -145,15 +145,6 @@ namespace SimpleLanguage.Core
             }
             return 0;
         }
-        public string ToIRString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append(m_DefineMetaType.ToFormatString());
-            sb.Append(" ");
-            sb.Append(m_Name);
-            return sb.ToString();
-        }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();

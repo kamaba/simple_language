@@ -53,8 +53,8 @@ namespace SimpleLanguage.Core.Statements
                         conditionStatList.Add(loadLocal);
                     }
 
-                    ifBreach = new IRBranch( _irMethod, EIROpCode.BrFalse );
-                    ifBreach.brData.line = m_IfOrElseIfKeySyntax.token.sourceBeginLine;
+                    ifBreach = new IRBranch( _irMethod, EIROpCode.BrFalse, null );
+                    ifBreach.SetCodeFileLine( m_IfOrElseIfKeySyntax.token.sourceBeginLine );
                     conditionStatList.Add(ifBreach);
 
                     _irMethod.AddLabelDict(ifBreach.brData);
@@ -62,7 +62,7 @@ namespace SimpleLanguage.Core.Statements
                 m_ThenMetaStatements.ParseAllIRStatements();
                 //thenStatList.AddRange(m_ThenMetaStatements.irDataList);
 
-                brBrach = new IRBranch(_irMethod, EIROpCode.Br); 
+                brBrach = new IRBranch(_irMethod, EIROpCode.Br, null ); 
                 _irMethod.AddLabelDict(brBrach.brData);
 
                 thenStatList.Add(brBrach);

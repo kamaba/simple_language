@@ -32,10 +32,10 @@ namespace SimpleLanguage.Core.Statements
 
             sb.AppendLine("parseIR");
             sb.AppendLine("{");
-            //for (int i = 0; i < m_IRDataList.Count; i++)
-            //{
-            //    sb.AppendLine(m_IRDataList[i].ToString());
-            //}
+            for (int i = 0; i < m_IRStatements.Count; i++)
+            {
+                sb.AppendLine(m_IRStatements[i].ToIRString());
+            }
             sb.AppendLine("}");
 
             return sb.ToString();

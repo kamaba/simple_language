@@ -31,6 +31,10 @@ namespace SimpleLanguage.IR
         {
             m_IRDataList.Add(irData);
         }
+        public virtual void SetCodeFileLine( int line )
+        {
+
+        }
         public virtual string ToIRString()
         {
             StringBuilder sb = new StringBuilder();

@@ -510,7 +510,7 @@ namespace SimpleLanguage.Core
                     break;
                 case FileMetaCallSyntax fmcs:
                     {
-                        var mcs = new MetaCallStatements(currentBlockStatements, fmcs );
+                        var mcs = new Statements.MetaCallStatements(currentBlockStatements, fmcs );
                         beforeStatements.SetNextStatements(mcs);
                         beforeStatements = mcs;
                         return mcs;
