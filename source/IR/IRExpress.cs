@@ -34,8 +34,11 @@ namespace SimpleLanguage.IR
             {
                 case MetaConstExpressNode mcn:
                     {
-                        IRData data = IRExpress.CreateIRDataByConstExpress(mcn);
-                        AddIRData(data);
+                        IRData irdata = new IRData();
+                        irdata.opCode = IRManager.GetConstIROpCode(mcn.eType);
+                        irdata.opValue = mcn.value;
+                        irdata.line = mcn.GetCodeFileLine();
+                        AddIRData(irdata);
                     }
                     break;
                 case MetaUnaryOpExpressNode muoen:
@@ -53,6 +56,7 @@ namespace SimpleLanguage.IR
                         CreateIRDataOne(leftNode);
                         CreateIRDataOne(rightNode);
                         var signData = CreateLeftAndRightIRData(moen.opSign);
+                        signData.line = moen.GetCodeFileLine();
                         AddIRData(signData);
                     }
                     break;
@@ -60,14 +64,14 @@ namespace SimpleLanguage.IR
                     {
                         if( m_IRManager != null )
                         {
-                            mcn.metaCallLink.ParseToIRDataListByIRManager(m_IRManager);
+                            //mcn.metaCallLink.ParseToIRDataListByIRManager(m_IRManager);
                         }
                         else
                         {
-                            mcn.metaCallLink.ParseToIRDataList(m_IRMethod);
+                            //mcn.metaCallLink.ParseToIRDataList(m_IRMethod);
                         }
-                        var list = mcn.metaCallLink.irDataList;
-                        m_IRDataList.AddRange(list);
+                        //var list = mcn.metaCallLink.irDataList;
+                        //m_IRDataList.AddRange(list);
                     }
                     break;
                 default:
@@ -194,12 +198,9 @@ namespace SimpleLanguage.IR
             }
             return data;
         }
-        public static IRData CreateIRDataByConstExpress( MetaConstExpressNode mcen )
+        public override string ToIRString()
         {
-            IRData irdata = new IRData();
-            irdata.opCode = IRManager.GetConstIROpCode(mcen.eType);
-            irdata.opValue = mcen.value;
-            return irdata;
+            return base.ToIRString();
         }
     }
 }

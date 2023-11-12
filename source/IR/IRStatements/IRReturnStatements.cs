@@ -19,20 +19,17 @@ namespace SimpleLanguage.Core.Statements
         private IRExpress m_ReturnValueExpress = null;
         public override void ParseIRStatements()
         {
-            /*
-            IRData insNode = new IRData();
-            insNode.opCode = EIROpCode.Nop;
-            m_IRDataList.Add(insNode);
-            */
             if( m_Express != null )
             {
                 m_ReturnValueExpress = new IRExpress( irMethod, m_Express );
-                m_IRDataList.AddRange(m_ReturnValueExpress.IRDataList);
+                m_IRStatements.Add( m_ReturnValueExpress );
 
-                IRData storeNode = new IRData();
-                storeNode.opCode = EIROpCode.StoreReturn;
-                storeNode.index = 0;
-                m_IRDataList.Add(storeNode);
+                //IRStoreVariable
+
+                //IRData storeNode = new IRData();
+                //storeNode.opCode = EIROpCode.StoreReturn;
+                //storeNode.index = 0;
+                //m_IRDataList.Add(storeNode);
             }
         }
     }
@@ -41,9 +38,6 @@ namespace SimpleLanguage.Core.Statements
     {
         public override void ParseIRStatements()
         {
-            IRData insNode = new IRData();
-            insNode.opCode = EIROpCode.Nop;
-            m_IRDataList.Add(insNode);
         }
     }
 }

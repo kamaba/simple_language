@@ -32,16 +32,38 @@ for i = 10, i < 100, i+= 2
 {
     #全参数
 }
+for i = 10, i < 100, i++
+{
+    #全参数
+}
 #可选
 ```
 其中init_express, end_condition_express, change_variable_express都是可选，但顺序不能变，只能从后边向前省略，与函数传参类似。
 
-for的遍历示例
+for的遍历Array示例
 ```python
 Array arr = [1,2,3,5]
 for v in arr
 {
     #语句
+}
+```
+for的遍历Range示例
+```python
+range ran = 1..100
+for v in ran
+{
+    #语句
+}
+```
+
+for的遍历enum示例
+```csharp
+enum EMusicType{ classic = 1, rocky = 2}
+for v in EMusicType
+{
+    #语句
+    Console.WriteLine("MusicType=$v")
 }
 ```
 
@@ -59,7 +81,10 @@ for v in 1..10
         break
     }
     #输出当前遍历值与它的索引
-    Console.WriteLine( "v=$v index=$v.index ");
+    # v是当前遍历的对象，如果是List,Set则直接就是对象本身，如果是Map则Map的遍历节点
+    # v.value = v[v.index]的值 如果是Map的话，就是value值，如果是List则v与v.value一样的
+    # v.index是遍历时，当前数组或者是遍历迭代的当前索引，如果数组是0则index=-1, index总在可遍历的范围之内，也可以对index赋值，但如果在for遍历时，v.SetIndex(int) 或者是 v.index = int是被锁上的
+    Console.WriteLine( "v=$v v.value = &v.value index=$v.index ");
 }
 ```
 上边示例中，v是遍历的迭代器， 使用v则，直接识别当前v的值，如果使用v.index则表达，当前的索引值,

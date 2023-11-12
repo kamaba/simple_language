@@ -101,6 +101,8 @@ namespace SimpleLanguage.Project
             ClassManager.instance.AddMetaClass( ProjectManager.globalData );
 
             ProjectClass.ProjectCompileAfter();
+
+            IRManager.instance.TranslateIR();
         }
 
         public static void AddFileParse( string path )
@@ -207,8 +209,7 @@ namespace SimpleLanguage.Project
             MethodManager.instance.ParseExpress();
             //ClassManager.instance.PrintAlllClassContent();
             MethodManager.instance.ParseStatements();
-            Console.Write(ModuleManager.instance.ToFormatString() + Environment.NewLine);    
-            //IRManager.instance.TranslateIR();
+            Console.Write(ModuleManager.instance.ToFormatString() + Environment.NewLine);   
         }
     }
 }

@@ -306,6 +306,14 @@ namespace SimpleLanguage.Core
         {
             m_Right = _right;
         }
+        public override int GetCodeFileLine()
+        {
+            if (m_FileMetaBaseTerm != null)
+            {
+                return m_FileMetaBaseTerm.token.sourceBeginLine;
+            }
+            return base.GetCodeFileLine();
+        }
         public override void Parse(AllowUseConst auc)
         {
             m_Left.Parse(auc);

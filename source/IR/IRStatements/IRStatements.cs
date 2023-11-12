@@ -20,11 +20,25 @@ namespace SimpleLanguage.Core.Statements
         {
             get { return m_OwnerMetaBlockStatements.ownerMetaFunction.irMethod; }
         }
-        public List<IRData> irDataList => m_IRDataList;
+        public List<IRBase> irStatements => m_IRStatements;
 
-        protected List<IRData> m_IRDataList = new List<IRData>();
+        protected List<IRBase> m_IRStatements = new List<IRBase>();
         public virtual void ParseIRStatements()
         {         
+        }
+        public virtual string ToIRString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("parseIR");
+            sb.AppendLine("{");
+            //for (int i = 0; i < m_IRDataList.Count; i++)
+            //{
+            //    sb.AppendLine(m_IRDataList[i].ToString());
+            //}
+            sb.AppendLine("}");
+
+            return sb.ToString();
         }
     }
 }

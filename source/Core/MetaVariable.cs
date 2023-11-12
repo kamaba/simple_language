@@ -32,6 +32,9 @@ namespace SimpleLanguage.Core
         protected MetaClass m_OwnerMetaClass = null;
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
         protected MetaType m_DefineMetaType = null;
+        protected MetaNewStatements m_FromMetaNewStatementsCreate = null;
+        protected MetaDefineParam m_FromMetaDefineParamCreate = null;
+        protected MetaExpressNode m_FromExpressNodeCreate = null;
         //用来存放扩展包含变量
         protected Dictionary<string, MetaVariable> m_MetaVariableDict = new Dictionary<string, MetaVariable>();
         protected MetaVariable() { }
@@ -54,7 +57,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             m_OwnerMetaClass = ownerClass;
             m_DefineMetaType = mdt;
-            if(m_DefineMetaType == null )
+            if (m_DefineMetaType == null )
             {
                 m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
@@ -74,7 +77,19 @@ namespace SimpleLanguage.Core
         public void SetMetaDefineType( MetaType mdt )
         {
             m_DefineMetaType = mdt;
-        }       
+        }
+        public void SetFromMetaNewStatementsCreate(MetaNewStatements ns)
+        {
+            m_FromMetaNewStatementsCreate = ns;
+        }
+        public void SetFromMetaDefineParamCreate(MetaDefineParam mdp)
+        {
+            m_FromMetaDefineParamCreate = mdp;
+        }
+        public void SetFromExpressNodeCreate( MetaExpressNode men)
+        {
+            m_FromExpressNodeCreate = men;
+        }
         public virtual void Parse()
         {
 
@@ -114,6 +129,31 @@ namespace SimpleLanguage.Core
         {
             return "";
         }
+        public virtual int GetCodeFileLine()
+        {
+            if(m_FromMetaNewStatementsCreate != null )
+            {
+                return m_FromMetaNewStatementsCreate.GetCodeFileLine();
+            }
+            if( m_FromMetaDefineParamCreate != null )
+            {
+                return m_FromMetaDefineParamCreate.GetCodeFileLine();
+            }
+            if(m_FromExpressNodeCreate != null )
+            {
+                return m_FromExpressNodeCreate.GetCodeFileLine();
+            }
+            return 0;
+        }
+        public string ToIRString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(m_DefineMetaType.ToFormatString());
+            sb.Append(" ");
+            sb.Append(m_Name);
+            return sb.ToString();
+        }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
@@ -128,10 +168,10 @@ namespace SimpleLanguage.Core
     public class VisitMetaVariable : MetaVariable
     {
         /*
-         * 访问变量 一般使用 $x @x 必须先定义
+         * 访问变量 一般使用 $x $x 必须先定义
          * int a = 20; Array arr = Array<int>( 1,2,3); 
-         * int b = arr.@a; 这里的@a就是访问变量，使用arr为localMV, 使用m_VisitMetaVariable 是a 如果是常量，则保存
-         * 常量的  arr.@0  m_VisitMV = null; m_AtName = "0";  返回值本身就是一个变量，相当于已经访问过了，在defineType
+         * int b = arr.$a; 这里的$a就是访问变量，使用arr为localMV, 使用m_VisitMetaVariable 是a 如果是常量，则保存
+         * 常量的  arr.$0  m_VisitMV = null; m_AtName = "0";  返回值本身就是一个变量，相当于已经访问过了，在defineType
          * 中，返回模版类中的名称
          */
         public enum EVisitType

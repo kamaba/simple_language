@@ -11,6 +11,7 @@ using SimpleLanguage.VM;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
 
 namespace SimpleLanguage.VM.Runtime
@@ -18,6 +19,7 @@ namespace SimpleLanguage.VM.Runtime
     public class RuntimeMethod
     {
         public string id { get; set; } = "";
+        public int level { get; set; } = 0;
         public bool isPersistent { get; set; } = false;
         public SObject[] returnObjectArray => m_ReturnObjectArray;
 
@@ -195,7 +197,13 @@ namespace SimpleLanguage.VM.Runtime
         {
             string funName = id;
 
-            //Console.WriteLine("---Push Method: " + funName +"-------------------------" );
+            string pushChar = "";
+            for( int i = 0; i < level; i++ )
+            {
+                pushChar = '\t' + pushChar;
+            }
+            Console.WriteLine(pushChar + "[VMRuntime] [Push] Method: [" + funName +"]-------------------------" );
+            level++;
 
             var topClrRuntime = InnerCLRRuntimeVM.topCLRRuntime;
             for( int i = 0; i < m_ArgumentObjectArray.Length; i++ )
@@ -212,11 +220,17 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 RunInstruction(m_IRDataList[m_ExecuteIndex]);
             }
-            //Console.WriteLine(Environment.NewLine + "---Pop Method: " + funName + "-------------------------");
+            level--;
+            pushChar = "";
+            for (int i = 0; i < level; i++)
+            {
+                pushChar = '\t' + pushChar;
+            }
+            Console.WriteLine();
+            Console.WriteLine(pushChar  + "[VMRuntime] [Pop] Method: [" + funName + "]-------------------------");
         }
         public unsafe void RunInstruction( IRData iri )
         {
-            return;
             m_ExecuteIndex++;
             switch ( iri.opCode )
             {

@@ -70,6 +70,7 @@ namespace SimpleLanguage.Core.Statements
             {
                 m_IsNeedSetMetaVariable = true;
                 m_MetaVariable = new MetaVariable("autocreate_" + GetHashCode(), m_MetaBlockStatements, m_MetaBlockStatements.ownerMetaClass, m_MetaDefineType);
+                m_MetaVariable.SetFromExpressNodeCreate(m_ExpressNode);
             }
         }
     }

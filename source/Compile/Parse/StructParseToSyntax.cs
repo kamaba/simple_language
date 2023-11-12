@@ -657,6 +657,13 @@ namespace SimpleLanguage.Compile.Parse
                     ParseSyntax(akss.keyNode.blockNode);
                     m_CurrentNodeInfoStack.Pop();
                 }
+                else if(akss.tokenType == ETokenType.Break )
+                {
+                    FileMetaKeyOnlySyntax fmkis = new FileMetaKeyOnlySyntax(m_FileMeta, akss.keyNode.token, null);
+                    AddParseSyntaxNodeInfo(fmkis);
+                    fms = fmkis;
+
+                }
             }
             return fms;
         }

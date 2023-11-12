@@ -22,54 +22,73 @@ namespace SimpleLanguage.Core.Statements
         {
             public IRExpress irExpress => m_IrExpress;
 
-            public List<IRData> conditionStatList = new List<IRData>();
-            public List<IRData> thenStatList = new List<IRData>();
+            public List<IRBase> conditionStatList = new List<IRBase>();
+            public List<IRBase> thenStatList = new List<IRBase>();
 
-            public IRData brData = null;
-            public IRData ifData = null;
-            public IRData startData = null;
+            public IRBranch brBrach = null;
+            public IRBranch ifBreach = null;
+            public IRNop startNop = null;
 
             private IRExpress m_IrExpress = null;
             public void ParseIRStatements( IRMethod _irMethod )
             {
-                startData = new IRData();
-                startData.opCode = EIROpCode.Nop;
-                conditionStatList.Add(startData);
+                startNop = new IRNop( _irMethod );
+                conditionStatList.Add(startNop);
 
                 if (m_IfElseState == IfElseState.If || m_IfElseState == IfElseState.ElseIf )
                 {
+                    startNop.nopData.line = m_FinalExpress.GetCodeFileLine();
+                    
                     m_IrExpress = new IRExpress(_irMethod, m_FinalExpress);
-                    conditionStatList.AddRange(m_IrExpress.IRDataList);
+                    conditionStatList.Add(m_IrExpress);
 
                     if (m_MetaAssignManager?.isNeedSetMetaVariable == true)
                     {
-                        IRData irData = new IRData();
-                        irData.opCode = EIROpCode.StoreLocal;
-                        irData.index = _irMethod.GetLocalVariableIndex(m_BoolConditionVariable);
-                        conditionStatList.Add(irData);
+                        IRStoreVariable storeLocal = new IRStoreVariable(_irMethod, m_BoolConditionVariable);
+                        storeLocal.irStoreData.line = m_BoolConditionVariable.GetCodeFileLine();
+                        conditionStatList.Add(storeLocal);
 
-                        IRData irData2 = new IRData();
-                        irData2.opCode = EIROpCode.LoadLocal;
-                        irData2.index = _irMethod.GetLocalVariableIndex(m_BoolConditionVariable);
-                        conditionStatList.Add(irData2);
+                        IRLoadVariable loadLocal = new IRLoadVariable(_irMethod, m_BoolConditionVariable);
+                        loadLocal.irLoadData.line = m_BoolConditionVariable.GetCodeFileLine();
+                        conditionStatList.Add(loadLocal);
                     }
 
-                    ifData = new IRData();
-                    ifData.opCode = EIROpCode.BrFalse;
-                    conditionStatList.Add(ifData);
+                    ifBreach = new IRBranch( _irMethod, EIROpCode.BrFalse );
+                    ifBreach.brData.line = m_IfOrElseIfKeySyntax.token.sourceBeginLine;
+                    conditionStatList.Add(ifBreach);
 
-                    _irMethod.AddLabelDict(ifData);
+                    _irMethod.AddLabelDict(ifBreach.brData);
                 }
-                m_ThenMetaStatements.ParseAllIRStatements();                
-                thenStatList.AddRange(m_ThenMetaStatements.irDataList);
+                m_ThenMetaStatements.ParseAllIRStatements();
+                //thenStatList.AddRange(m_ThenMetaStatements.irDataList);
 
-                brData = new IRData();
-                brData.opCode = EIROpCode.Br;
-                brData.index = -1;
-                _irMethod.AddLabelDict(brData);
+                brBrach = new IRBranch(_irMethod, EIROpCode.Br); 
+                _irMethod.AddLabelDict(brBrach.brData);
 
-                thenStatList.Add(brData);
+                thenStatList.Add(brBrach);
 
+            }
+
+            public string ToIRString()
+            {
+                StringBuilder sb = new StringBuilder();
+
+                sb.AppendLine("{");
+                sb.Append("#if ");
+                sb.AppendLine(m_FinalExpress.ToFormatString() + "#");
+
+                for (int i = 0; i < conditionStatList.Count; i++)
+                {
+                    sb.AppendLine(conditionStatList[i].ToString());
+                }
+                sb.AppendLine("}");
+
+                if( thenMetaStatements != null )
+                {
+                    sb.AppendLine(thenMetaStatements.ToIRString());
+                }
+
+                return sb.ToString();
             }
         }
         public override void ParseIRStatements()
@@ -79,28 +98,27 @@ namespace SimpleLanguage.Core.Statements
                 var meis = m_MetaElseIfStatements[i];
 
                 meis.ParseIRStatements( irMethod );
-                m_IRDataList.AddRange(meis.conditionStatList);
-                m_IRDataList.AddRange(meis.thenStatList);               
+                m_IRStatements.AddRange(meis.conditionStatList);
+                m_IRStatements.AddRange(meis.thenStatList);               
             }
 
-            IRData nopIR = new IRData();
-            nopIR.opCode = EIROpCode.Nop;
-            m_IRDataList.Add(nopIR);
+            IRNop nopIR = new IRNop( irMethod );
+            m_IRStatements.Add(nopIR);
 
             for ( int i = 0; i < m_MetaElseIfStatements.Count; i++ )
             {
                 var meis = m_MetaElseIfStatements[i];
-                meis.brData.opValue = nopIR;
+                meis.brBrach.brData.opValue = nopIR;
 
-                if (meis.ifData != null)
+                if (meis.ifBreach != null)
                 {
                     if( i < m_MetaElseIfStatements.Count - 1 )
                     {
-                        meis.ifData.opValue = m_MetaElseIfStatements[i + 1].startData;
+                        meis.ifBreach.brData.opValue = m_MetaElseIfStatements[i + 1].startNop.nopData;
                     }
                     else if( i == m_MetaElseIfStatements.Count - 1 )
                     {
-                        meis.ifData.opValue = nopIR;
+                        meis.ifBreach.brData.opValue = nopIR;
                     }
                 }
             }

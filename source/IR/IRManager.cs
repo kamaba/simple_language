@@ -20,14 +20,19 @@ namespace SimpleLanguage.IR
         public EIROpCode opCode;                 //指令类型
         public object    opValue;                //指令值
         public int       index;                  //索引
+        public string    path;                   //文件路径
+        public int       line;                   //运行行
 
+        public IRData()
+        {
+
+        }
         public override string ToString()
         {
             StringBuilder m_StringBuilder = new StringBuilder();
-            m_StringBuilder.Append("IL:[" + opCode.ToString() + "] index:[");
-            m_StringBuilder.Append(index.ToString() + "]");
+            m_StringBuilder.Append( path + " " + line.ToString() + " [" + opCode.ToString() + "] index:[" + index.ToString() + "]");
             if (opValue != null)
-            m_StringBuilder.Append( " val:[" +opValue.ToString() + "] ");
+                m_StringBuilder.Append( " val:[" +opValue.ToString() + "] ");
             return m_StringBuilder.ToString();
         }
     }

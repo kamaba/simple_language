@@ -15,12 +15,12 @@ using System.Text;
 
 namespace SimpleLanguage.IR
 {
-    public class IRCallFunction : IRLoadVariable
+    public class IRCallFunction : IRBase
     {
         MetaFunctionCall m_MetaFunctionCall = null;
         public int paramCount { get; set; } = 0;
         public bool target { get; set; } = false;
-        public IRCallFunction(IRMethod _irMethod, MetaFunctionCall mfc) : base(_irMethod)
+        public IRCallFunction(IRMethod _irMethod, MetaFunctionCall mfc) 
         {
             m_MetaFunctionCall = mfc;
             Parse();
@@ -43,6 +43,7 @@ namespace SimpleLanguage.IR
                     IRData data = new IRData();
                     data.opCode = EIROpCode.CallCSharpMethod;
                     data.opValue = this;
+                    data.line = mmf.GetCodeFileLine();
                     IRDataList.Add(data);
                     return;
                 }
@@ -50,21 +51,21 @@ namespace SimpleLanguage.IR
             IRData datacall = new IRData();
             datacall.opCode = EIROpCode.Call;
             datacall.opValue = m_MetaFunctionCall;
+            datacall.line = mf.GetCodeFileLine();
             IRDataList.Add(datacall);
         }
         public System.Object InvokeCSharp( Object target, Object[] csParamObjs)
         {
             return m_MetaFunctionCall.methodInfo.Invoke(target, csParamObjs);
         }
+        public override string ToIRString()
+        {
+            return base.ToIRString();
+        }
     }
-}
-namespace SimpleLanguage.Core
-{
-    public partial class MetaCallLink
+    /*
+    public partial class MetaCallStatements
     {
-        public List<IRData> irDataList => m_IRDataList;
-
-        private List<IRData> m_IRDataList = new List<IRData>();
         private IRMethod m_IRMethod = null;
         private List<IRBase> m_IRList = new List<IRBase>();
 
@@ -72,100 +73,106 @@ namespace SimpleLanguage.Core
         {
             m_IRMethod = _irMethod;
 
-            var cnlist = callNodeList;
-            for (int i = 0; i < cnlist.Count; i++)
-            {
-                var cnode = cnlist[i];
-                if (cnode.callNodeType == ECallNodeType.ConstValue)
-                {
-                    IRData data = IRExpress.CreateIRDataByConstExpress(cnode.constValue);
-                    m_IRDataList.Add(data);
-                }
-                else if (cnode.callNodeType == ECallNodeType.VariableName)
-                {
-                    MetaVariable mv = cnode.GetMetaVariable();
-                    IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mv);
-                    m_IRList.Add(irVar);
-                    m_IRDataList.AddRange(irVar.IRDataList);
-                }
-                else if( cnode.callNodeType == ECallNodeType.MemberVariableName )
-                {
-                    MetaMemberVariable mmv = cnode.GetMetaMemeberVariable();
+            //var cnlist = callNodeList;
+            //for (int i = 0; i < cnlist.Count; i++)
+            //{
+            //    var cnode = cnlist[i];
+            //    if (cnode.callNodeType == ECallNodeType.ConstValue)
+            //    {
+            //        IRExpress irExpress = new IRExpress( _irMethod, cnode.metaExpressValue );
+            //        m_IRList.Add(irExpress);
+            //    }
+            //    else if (cnode.callNodeType == ECallNodeType.VariableName)
+            //    {
+            //        MetaVariable mv = cnode.GetMetaVariable();
+            //        IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mv);
+            //        m_IRList.Add(irVar);
+            //    }
+            //    else if( cnode.callNodeType == ECallNodeType.MemberVariableName )
+            //    {
+            //        MetaMemberVariable mmv = cnode.GetMetaMemeberVariable();
 
-                    IRLoadVariable irVar = new IRLoadVariable(IRManager.instance, mmv);
-                    m_IRList.Add(irVar);
-                    m_IRDataList.AddRange(irVar.IRDataList);
-                }
-                else if (cnode.callNodeType == ECallNodeType.FunctionName)
-                {
-                    var mfc = cnode.GetMetaFunctionCall();
-                    IRCallFunction irCallFun = new IRCallFunction(m_IRMethod, mfc);
-                    m_IRList.Add(irCallFun);
-                    m_IRDataList.AddRange(irCallFun.IRDataList);
-                }
-                else if (cnode.callNodeType == ECallNodeType.This)
-                {
-                    IRData data = new IRData();
-                    data.opCode = EIROpCode.Call;
-                    data.opValue = "";
-                    m_IRDataList.Add(data);
-                }
-                else if (cnode.callNodeType == ECallNodeType.Base)
-                {
-                    IRData data = new IRData();
-                    data.opCode = EIROpCode.Call;
-                    data.opValue = "";
-                    m_IRDataList.Add(data);
-                }
-            }
+            //        IRLoadVariable irVar = new IRLoadVariable(IRManager.instance, mmv);
+            //        m_IRList.Add(irVar);
+            //    }
+            //    else if (cnode.callNodeType == ECallNodeType.FunctionName)
+            //    {
+            //        var mfc = cnode.GetMetaFunctionCall();
+            //        IRCallFunction irCallFun = new IRCallFunction(m_IRMethod, mfc);
+            //        m_IRList.Add(irCallFun);
+            //    }
+            //    else if (cnode.callNodeType == ECallNodeType.This)
+            //    {
+            //        IRData data = new IRData();
+            //        data.opCode = EIROpCode.Call;
+            //        data.opValue = "";
+            //    }
+            //    else if (cnode.callNodeType == ECallNodeType.Base)
+            //    {
+            //        IRData data = new IRData();
+            //        data.opCode = EIROpCode.Call;
+            //        data.opValue = "";
+            //    }
+            //}
         }
         public void ParseToIRDataListByIRManager(IRManager _irManager)
         {
-            var cnlist = callNodeList;
-            for (int i = 0; i < cnlist.Count; i++)
-            {
-                var cnode = cnlist[i];
-                if (cnode.callNodeType == ECallNodeType.ConstValue)
-                {
-                    IRData data = IRExpress.CreateIRDataByConstExpress(cnode.constValue);
-                    m_IRDataList.Add(data);
-                }
-                else if (cnode.callNodeType == ECallNodeType.VariableName)
-                {
-                    MetaVariable mv = cnode.GetMetaVariable();
-                    IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mv);
-                    m_IRList.Add(irVar);
-                    m_IRDataList.AddRange(irVar.IRDataList);
-                }
-                else if (cnode.callNodeType == ECallNodeType.MemberVariableName)
-                {
-                    MetaMemberVariable mmv = cnode.GetMetaMemeberVariable();
-                    IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mmv);
-                    m_IRList.Add(irVar);
-                    m_IRDataList.AddRange(irVar.IRDataList);
-                }
-                else if (cnode.callNodeType == ECallNodeType.FunctionName)
-                {
-                    var mfc = cnode.GetMetaFunctionCall();
-                    IRCallFunction irCallFun = new IRCallFunction(m_IRMethod, mfc);
-                    m_IRList.Add(irCallFun);
-                    m_IRDataList.AddRange(irCallFun.IRDataList);
-                }
-                else if (cnode.callNodeType == ECallNodeType.This)
-                {
-                    IRData data = new IRData();
-                    data.opCode = EIROpCode.Call;
-                    data.opValue = "";
-                    m_IRDataList.Add(data);
-                }
-                else if (cnode.callNodeType == ECallNodeType.Base)
-                {
-                    IRData data = new IRData();
-                    data.opCode = EIROpCode.Call;
-                    data.opValue = "";
-                    m_IRDataList.Add(data);
-                }
-            }
+            //var cnlist = callNodeList;
+            //for (int i = 0; i < cnlist.Count; i++)
+            //{
+            //    var cnode = cnlist[i];
+            //    if (cnode.callNodeType == ECallNodeType.ConstValue)
+            //    {
+            //        IRExpress data = new IRExpress( _irManager, cnode.constValue);
+            //        m_IRList.Add(data);
+            //    }
+            //    else if (cnode.callNodeType == ECallNodeType.VariableName)
+            //    {
+            //        MetaVariable mv = cnode.GetMetaVariable();
+            //        IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mv);
+            //        m_IRList.Add(irVar);
+            //    }
+            //    else if (cnode.callNodeType == ECallNodeType.MemberVariableName)
+            //    {
+            //        MetaMemberVariable mmv = cnode.GetMetaMemeberVariable();
+            //        IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mmv);
+            //        m_IRList.Add(irVar);
+            //    }
+            //    else if (cnode.callNodeType == ECallNodeType.FunctionName)
+            //    {
+            //        var mfc = cnode.GetMetaFunctionCall();
+            //        IRCallFunction irCallFun = new IRCallFunction(m_IRMethod, mfc);
+            //        m_IRList.Add(irCallFun);
+            //    }
+            //    else if (cnode.callNodeType == ECallNodeType.This)
+            //    {
+            //        IRData data = new IRData();
+            //        data.opCode = EIROpCode.Call;
+            //        data.opValue = "";
+            //    }
+            //    else if (cnode.callNodeType == ECallNodeType.Base)
+            //    {
+            //        IRData data = new IRData();
+            //        data.opCode = EIROpCode.Call;
+            //        data.opValue = "";
+            //    }
+            //}
+        }
+
+        public string ToIRString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            //var cnlist = callNodeList;
+            //for (int i = 0; i < m_IRList.Count; i++)
+            //{
+            //    var irn = m_IRList[i];
+
+            //    sb.AppendLine(irn.ToIRString());
+            //}
+
+            return sb.ToString();
         }
     }
+    */
 }

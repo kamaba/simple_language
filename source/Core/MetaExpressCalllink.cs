@@ -36,6 +36,7 @@ namespace SimpleLanguage.Core
                 m_MetaCallLink.Parse( auc );
             }
         }
+        public override int GetCodeFileLine() { if (m_MetaCallLink != null) { return m_MetaCallLink.GetCodeFileLine(); } else return 0; }
         public override int CalcParseLevel(int level)
         {
             if (m_MetaCallLink != null)

@@ -18,69 +18,85 @@ namespace SimpleLanguage.Core.Statements
 {
     public partial class MetaBreakStatements
     {
-        public IRData brData = null;
+        public IRBranch irBrach = null;
         public override void ParseIRStatements()
         {
-            brData = new IRData();
-            brData.opCode = EIROpCode.Br;
-            irMethod.AddLabelDict(brData);
-            m_IRDataList.Add(brData);
+            irBrach = new IRBranch(irMethod,  EIROpCode.Br );
+            if (m_FileMetaKeyOnlySyntax.token != null )
+            {
+                irBrach.brData.line = m_FileMetaKeyOnlySyntax.token.sourceBeginLine;
+            }
+            irMethod.AddLabelDict(irBrach.brData);
+            m_IRStatements.Add( irBrach );
             if (m_ForStatements != null )
             {
-                brData.opValue = m_ForStatements.endData;
+                irBrach.brData.opValue = m_ForStatements.endIrRata.nopData;
             }
             else if( m_WhileStatements != null )
             {
-                brData.opValue = m_WhileStatements.endData;
+                irBrach.brData.opValue = m_WhileStatements.endData;
             }
+        }
+        public override string ToIRString()
+        {
+            StringBuilder sb = new StringBuilder();
 
+            sb.AppendLine("#break#");
+
+            sb.AppendLine(base.ToIRString());
+
+            return sb.ToString();
         }
     }
     public partial class MetaContinueStatements
     {
-        public IRData brData = null;
+        public IRBranch irBrach = null;
         public override void ParseIRStatements()
         {
-            IRData insNode = new IRData();
-            insNode.opCode = EIROpCode.Nop;
-            m_IRDataList.Add(insNode);
-
-            brData = new IRData();
-            brData.opCode = EIROpCode.Br;
-            irMethod.AddLabelDict(brData);
-            m_IRDataList.Add(brData);
+            irBrach = new IRBranch(irMethod, EIROpCode.Br );
+            if (m_FileMetaKeyOnlySyntax.token != null)
+            {
+                irBrach.brData.line = m_FileMetaKeyOnlySyntax.token.sourceBeginLine;
+            }
+            irMethod.AddLabelDict(irBrach.brData);
+            m_IRStatements.Add(irBrach);
             if (m_ForStatements != null)
             {
-                brData.opValue = m_ForStatements.forStartIRData;
+                irBrach.brData.opValue = m_ForStatements.forStartIRData;
             }
             else if (m_WhileStatements != null)
             {
-                brData.opValue = m_WhileStatements.endData;
+                irBrach.brData.opValue = m_WhileStatements.endData;
             }
+        }
+        public override string ToIRString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("#continue#");
+
+            sb.AppendLine(base.ToIRString());
+
+            return sb.ToString();
         }
     }
     public partial class MetaGotoLabelStatements
     {
-        public IRData labelIRData = null;
-        public IRData brIRData = null;
+        public IRLabel labelIR = null;
         public override void ParseIRStatements()
         {
-            if( isLabel )
-            {
-                labelIRData = new IRData();
-                labelIRData.opCode = EIROpCode.Label;
-                labelIRData.opValue = labelData.label;
-                m_IRDataList.Add(labelIRData);
-                irMethod.AddLabelDict(labelIRData);
-            }
-            else
-            {
-                brIRData = new IRData();
-                brIRData.opCode = EIROpCode.BrLabel;
-                brIRData.opValue = labelData.label;
-                irMethod.AddLabelDict(labelIRData);
-                m_IRDataList.Add(brIRData);
-            }
+            labelIR = new IRLabel(irMethod, labelData.label, isLabel);
+            m_IRStatements.Add(labelIR);
+        }
+        public override string ToIRString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("#goto " + m_FileMetaKeyGotoLabelSyntax?.token.ToString() + "#");
+
+            sb.AppendLine(base.ToIRString());
+
+            return sb.ToString();
         }
     }
 }

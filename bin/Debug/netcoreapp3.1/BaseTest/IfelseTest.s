@@ -9,7 +9,7 @@ IfelseTest
     static Func()
     {
         m = 0;
-        if (m >= 0 && m < 100 && m != 50) 
+        if m >= 0 && m < 100 && m != 50
         { 
             m = 20; 
             {

@@ -68,7 +68,7 @@ if false
 elif true
 {
     #语句2
-    next;
+    next
 }
 elif false
 {

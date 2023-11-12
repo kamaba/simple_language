@@ -73,20 +73,20 @@ namespace SimpleLanguage.Project
         }
         public static void RunMain()
         {
-            MetaClass projectEntoer = ClassManager.instance.GetClassByName("ProjectEnter");
+            MetaClass projectEntoer = ClassManager.instance.GetClassByName("Project");
             if (projectEntoer == null)
             {
-                Console.WriteLine("Error 没有找到ProjectEnter!!");
+                Console.WriteLine("Error 没有找到Project!!");
                 return;
             }
             MetaMemberFunction mmf = projectEntoer.GetFirstMetaMemberFunctionByName("Main");
             if (mmf == null)
             {
-                Console.WriteLine("Error 没有找到ProjectEnter.Main函数!!");
+                Console.WriteLine("Error 没有找到Project.Main函数!!");
                 return;
             }
             InnerCLRRuntimeVM.Init();
-            //InnerCLRRuntimeVM.RunIRMethod(mmf.irMethod);
+            InnerCLRRuntimeVM.RunIRMethod(mmf.irMethod);
         }
         public static void AddDefineNamespace( MetaBase parentRoot, DefineNamespace dns, bool isAddCurrent = true )
         {

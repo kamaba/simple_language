@@ -20,7 +20,7 @@ namespace SimpleLanguage.Core.Statements
         {
             IRData insNode = new IRData();
             insNode.opCode = EIROpCode.Nop;
-            m_IRDataList.Add(insNode);
+            //m_IRDataList.Add(insNode);
             /*
             for (int i = 0; i < m_MetaElseIfStatements.Count; i++)
             {

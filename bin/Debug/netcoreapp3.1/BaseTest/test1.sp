@@ -7,7 +7,7 @@ const data ProjectConfig
         {
             path = "ForWhileTest.s";
             group = "temp";
-            tag = "FowWhileTest";
+            tag = "all";
         }
     ]
     globalVariable

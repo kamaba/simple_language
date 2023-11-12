@@ -17,19 +17,17 @@ namespace SimpleLanguage.Core.Statements
 {
     public partial class MetaAssignStatements
     {
-        IRExpress m_IRExpress = null;
+        protected IRExpress m_IRExpress = null;
+        protected IRStoreVariable m_StoreVariable = null;
         public override void ParseIRStatements()
         {
             if (m_FinalMetaExpress != null)
             {
                 m_IRExpress = new IRExpress( irMethod, m_FinalMetaExpress);
-                m_IRDataList.AddRange(m_IRExpress.IRDataList);
+                m_IRStatements.Add(m_IRExpress);
             }
-
-            IRData insNode = new IRData();
-            insNode.opCode = EIROpCode.StoreLocal;
-            insNode.index = irMethod.GetLocalVariableIndex(m_MetaVariable);
-            m_IRDataList.Add(insNode);
+            m_StoreVariable = new IRStoreVariable(irMethod, m_MetaVariable);
+            m_IRStatements.Add(m_StoreVariable);
         }
     }
 }
