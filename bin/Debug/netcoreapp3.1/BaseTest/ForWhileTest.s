@@ -7,9 +7,9 @@ ForWhileTest
     }
     static forfun()
     {
-        for i = 0
+        for i = 123
         {
-            if i >= 3
+            if i >= 125
             {
                 break
             }
@@ -35,7 +35,6 @@ ForWhileTest
 
             if n % 2 == 0 { n=40; continue }
         }
-        #!
         int i2 = 0;
         List list = List();        
         for it in list

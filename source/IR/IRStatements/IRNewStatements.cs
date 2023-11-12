@@ -35,7 +35,7 @@ namespace SimpleLanguage.Core.Statements
                     m_IRStatements.Add(m_IRExpress);
                 }
             }
-            
+
             IRStoreVariable irStoreVar = new IRStoreVariable(irMethod, m_MetaVariable);
             m_IRStatements.Add(irStoreVar);
 
@@ -75,6 +75,20 @@ namespace SimpleLanguage.Core.Statements
                     m_IRStatements.Add(irStoreNodeVar3);
                 }
             }
+        }
+        public override string ToIRString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("#new var ");
+            sb.AppendLine(m_MetaVariable.ToFormatString() + "#");
+            sb.AppendLine("{");
+            for (int i = 0; i < m_IRStatements.Count; i++)
+            {
+                sb.AppendLine(m_IRStatements[i].ToIRString());
+            }
+            sb.AppendLine("}");
+            return sb.ToString();
         }
     }
 }

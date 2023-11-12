@@ -18,9 +18,7 @@ namespace SimpleLanguage.IR
     public class IRLoadVariable : IRBase
     {
         public IRData irLoadData = new IRData();
-        MetaVariable m_MetaVariable = null;
-        protected IRLoadVariable(IRMethod _irMethod) : base(_irMethod)
-        { }
+        MetaVariable m_MetaVariable = null;        
         public IRLoadVariable(IRManager _irManager, MetaMemberVariable mmv)
         {
             m_MetaVariable = mmv;

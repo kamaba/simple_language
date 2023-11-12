@@ -19,13 +19,27 @@ namespace SimpleLanguage.IR
     public class IRBranch : IRBase
     {
         public IRData brData = new IRData();
-        public IRBranch( IRMethod _irMethod, EIROpCode type )
+        public IRBranch( IRMethod _irMethod, EIROpCode type, IRData brIRData )
         {
             brData.opCode = type;
+            brData.opValue = brData;
+        }
+        public void SetOpValue(IRData opValue)
+        {
+            brData.opValue = opValue;
+        }
+        public override void SetCodeFileLine(int line)
+        {
+            brData.line = line;
         }
         public override string ToIRString()
         {
-            return base.ToIRString();
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("branch");
+            sb.Append(base.ToIRString());
+
+            return sb.ToString();
         }
     }
     public class IRLabel : IRBase
@@ -39,7 +53,12 @@ namespace SimpleLanguage.IR
         }
         public override string ToIRString()
         {
-            return base.ToIRString();
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("labal");
+            sb.Append(base.ToIRString());
+
+            return sb.ToString();
         }
     }
 }

@@ -100,7 +100,6 @@ namespace SimpleLanguage.Core.Statements
             }
             else
             {
-
                 var fmcd = m_FileMetaKeyForSyntax.fileMetaClassDefine;
                 switch (fmcd)
                 {
@@ -239,78 +238,6 @@ namespace SimpleLanguage.Core.Statements
             else
             {
                 sb.Append(m_ThenMetaStatements?.nextMetaStatements?.ToFormatString());
-            }
-
-            sb.Append(Environment.NewLine);
-            for (int i = 0; i < deep; i++)
-            {
-                sb.Append(Global.tabChar);
-            }
-            sb.Append("}");
-            sb.Append(Environment.NewLine);
-
-            sb.Append(nextMetaStatements?.ToFormatString());
-            sb.Append(Environment.NewLine);
-
-            return sb.ToString();
-        }
-
-        public override string ToIRString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append("for ");
-            if (m_IsForIn)
-            {
-                sb.Append(m_ForMetaVariable.name);
-                sb.Append(" in ");
-                sb.Append(m_ForInContent.name);
-            }
-            sb.Append(Environment.NewLine);
-            sb.Append("{");
-            sb.Append(Environment.NewLine);
-
-            if (!m_IsForIn)
-            {
-                //for (int i = 0; i < deep + 1; i++)
-                //{
-                //    sb.Append(Global.tabChar);
-                //}
-                if (m_NewStatements != null)
-                {
-                    sb.Append(m_NewStatements.ToIRString());
-                }
-                if (m_AssignStatements != null)
-                {
-                    sb.Append(m_AssignStatements.ToIRString());
-                }
-
-                if (m_ConditionExpress != null)
-                {
-                    sb.Append(Environment.NewLine);
-                    for (int i = 0; i < deep + 1; i++)
-                    {
-                        sb.Append(Global.tabChar);
-                    }
-                    sb.Append("if ");
-                    sb.Append(m_ConditionExpress.ToFormatString());
-                    sb.Append("{break;}");
-                    sb.Append(Environment.NewLine);
-                }
-                if (m_StepStatements != null)
-                {
-                    for (int i = 0; i < deep + 1; i++)
-                    {
-                        sb.Append(Global.tabChar);
-                    }
-                    sb.Append(m_StepStatements.ToIRString());
-                }
-
-                sb.Append(m_ThenMetaStatements?.nextMetaStatements?.ToIRString());
-            }
-            else
-            {
-                sb.Append(m_ThenMetaStatements?.nextMetaStatements?.ToIRString());
             }
 
             sb.Append(Environment.NewLine);

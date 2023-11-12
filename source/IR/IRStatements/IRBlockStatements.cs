@@ -61,12 +61,15 @@ namespace SimpleLanguage.Core.Statements
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("#{}#");
-            if (nextMetaStatements != null)
-            {
-                sb.AppendLine( nextMetaStatements.ToIRString() );
-            }
+            sb.AppendLine("#block {");
 
+            MetaStatements mbs = m_NextMetaStatements;
+            while (mbs != null)
+            {
+                sb.AppendLine(mbs.ToIRString());
+                mbs = mbs.nextMetaStatements;
+            }
+            sb.AppendLine("}#");
             return sb.ToString();
         }
     }
