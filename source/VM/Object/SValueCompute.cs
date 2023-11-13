@@ -292,7 +292,7 @@ namespace SimpleLanguage.VM
             else if (this.eType == EType.String)
             {
                 eType = EType.String;
-                stringValue = GetValueObject().ToString() + sval.stringValue;
+                stringValue = GetValueObject().ToString() + sval.GetValueObject().ToString();
             }
             else
             {

@@ -37,7 +37,7 @@ namespace SimpleLanguage.Core.Statements
 
                 if (m_IfElseState == IfElseState.If || m_IfElseState == IfElseState.ElseIf )
                 {
-                    startNop.nopData.SetDebugInfoByToken( m_FinalExpress.GetToken() );
+                    startNop.data.SetDebugInfoByToken( m_FinalExpress.GetToken() );
                     
                     m_IrExpress = new IRExpress(_irMethod, m_FinalExpress);
                     conditionStatList.Add(m_IrExpress);
@@ -108,17 +108,17 @@ namespace SimpleLanguage.Core.Statements
             for ( int i = 0; i < m_MetaElseIfStatements.Count; i++ )
             {
                 var meis = m_MetaElseIfStatements[i];
-                meis.ifEndBrach.data.opValue = ifEndIRNop;
+                meis.ifEndBrach.data.opValue = ifEndIRNop.data;
 
                 if (meis.ifFalseBreach != null)
                 {
                     if( i < m_MetaElseIfStatements.Count - 1 )
                     {
-                        meis.ifFalseBreach.data.opValue = m_MetaElseIfStatements[i + 1].startNop.nopData;
+                        meis.ifFalseBreach.data.opValue = m_MetaElseIfStatements[i + 1].startNop.data;
                     }
                     else if( i == m_MetaElseIfStatements.Count - 1 )
                     {
-                        meis.ifFalseBreach.data.opValue = ifEndIRNop;
+                        meis.ifFalseBreach.data.opValue = ifEndIRNop.data;
                     }
                 }
             }
