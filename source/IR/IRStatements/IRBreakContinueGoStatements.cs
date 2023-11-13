@@ -30,7 +30,7 @@ namespace SimpleLanguage.Core.Statements
             irMethod.AddLabelDict(irBrach.data);
             if (m_ForStatements != null )
             {
-                irBrach.data.opValue = m_ForStatements.endIRData.nopData;
+                irBrach.data.opValue = m_ForStatements.endIRData.data;
             }
             else if( m_WhileStatements != null )
             {

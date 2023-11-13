@@ -210,6 +210,14 @@ namespace SimpleLanguage.Core.Statements
                 {
                     sb.Append(m_AssignStatements.ToFormatString());
                 }
+                if (m_StepStatements != null)
+                {
+                    for (int i = 0; i < deep + 1; i++)
+                    {
+                        sb.Append(Global.tabChar);
+                    }
+                    sb.Append(m_StepStatements.ToFormatString());
+                }
 
                 if (m_ConditionExpress != null)
                 {
@@ -223,15 +231,6 @@ namespace SimpleLanguage.Core.Statements
                     sb.Append("{break;}");
                     sb.Append(Environment.NewLine);
                 }
-                if (m_StepStatements != null)
-                {
-                    for (int i = 0; i < deep + 1; i++)
-                    {
-                        sb.Append(Global.tabChar);
-                    }
-                    sb.Append(m_StepStatements.ToFormatString());
-                }
-
                 sb.Append(m_ThenMetaStatements?.nextMetaStatements?.ToFormatString());
 
             }

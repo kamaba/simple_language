@@ -7,34 +7,52 @@ ForWhileTest
     }
     static forfun()
     {
+        i = 20
+        for
+        {
+            if i > 22
+            {
+                break
+            }
+            CSharp.System.Console.WriteLine("for{} i= $i ")
+        }
+        #!
         for i = 123
         {
-            if i >= 125
+            if i >= 130
             {
                 break
             }
             i++
-            CSharp.System.Console.Write("i= $i ")
+            CSharp.System.Console.WriteLine("i= $i ")
         }
+        !#
+        
         #!
         for i = 0, i < 10
         {
-            CSharp.System.Console.Write("i= $i ")
+            CSharp.System.Console.WriteLine("i= $i ")
             i++            
         }
-        for i = 0, i < 30, i+=2
+        !#
+        #!
+        for i = 0, i <= 2, i+=2
         {            
-            CSharp.System.Console.Write("i= $i ");
+            CSharp.System.Console.WriteLine("i= $i ");
             n = i * 10;
         }
+        !#
+        #!
         for i = 0, i < 30, i++
         {
-            CSharp.System.Console.Write("i= $i ");
+            CSharp.System.Console.WriteLine("i= $i ");
             n = i * 10;
-            if n == 400{ break }
+            #if n == 200{ break }
 
-            if n % 2 == 0 { n=40; continue }
+            if n % 2 == 0 {CSharp.System.Console.WriteLine("这是一个偶数 = $i ");continue }
         }
+        !#
+        #!
         int i2 = 0;
         List list = List();        
         for it in list

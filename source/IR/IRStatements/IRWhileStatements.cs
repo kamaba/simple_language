@@ -48,26 +48,27 @@ namespace SimpleLanguage.Core.Statements
                 forStartIRData = new IRNop( irMethod );
                 m_IRStatements.Add(forStartIRData);
 
-                if (m_ConditionExpress != null)
-                {
-                    m_IRConditionExpress = new IRExpress(irMethod, m_ConditionExpress);
-                    m_IRStatements.Add(m_IRConditionExpress);
-
-                    ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, endIRData.nopData);
-                    m_IRStatements.Add(ifIRData);
-
-                    irMethod.AddLabelDict(ifIRData.data);
-                }
                 if (m_StepStatements != null)
                 {
                     m_StepStatements.ParseIRStatements();
                     m_IRStatements.AddRange(m_StepStatements.irStatements);
                 }
+
+                if (m_ConditionExpress != null)
+                {
+                    m_IRConditionExpress = new IRExpress(irMethod, m_ConditionExpress);
+                    m_IRStatements.Add(m_IRConditionExpress);
+
+                    ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, endIRData.data);
+                    m_IRStatements.Add(ifIRData);
+
+                    irMethod.AddLabelDict(ifIRData.data);
+                }
                 m_ThenMetaStatements.ParseAllIRStatements();
                 m_IRStatements.AddRange(m_ThenMetaStatements.irStatements);
             }
 
-            brIRData = new IRBranch(irMethod, EIROpCode.Br, forStartIRData.nopData );
+            brIRData = new IRBranch(irMethod, EIROpCode.Br, forStartIRData.data );
             irMethod.AddLabelDict(brIRData.data);
             m_IRStatements.Add(brIRData);
             m_IRStatements.Add(endIRData);

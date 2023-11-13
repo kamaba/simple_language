@@ -19,7 +19,7 @@ namespace SimpleLanguage.Core.Statements
         public override void ParseIRStatements()
         {
             IRNop insNode = new IRNop(irMethod);
-            insNode.nopData.SetDebugInfoByToken( m_FileMetaBlockSyntax.token );
+            insNode.data.SetDebugInfoByToken( m_FileMetaBlockSyntax.token );
             m_IRStatements.Add(insNode);
         }
         public void ParseAllIRStatements()
@@ -27,7 +27,7 @@ namespace SimpleLanguage.Core.Statements
             IRNop insNode = new IRNop(this.m_OwnerMetaFunction.irMethod);
             if (m_FileMetaBlockSyntax?.token  != null)
             {
-                insNode.nopData.SetDebugInfoByToken( m_FileMetaBlockSyntax.token );
+                insNode.data.SetDebugInfoByToken( m_FileMetaBlockSyntax.token );
             }
             m_IRStatements.Add(insNode);
 
