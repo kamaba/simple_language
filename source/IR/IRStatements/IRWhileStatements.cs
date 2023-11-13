@@ -56,7 +56,7 @@ namespace SimpleLanguage.Core.Statements
                     ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, endIRData.nopData);
                     m_IRStatements.Add(ifIRData);
 
-                    irMethod.AddLabelDict(ifIRData.brData);
+                    irMethod.AddLabelDict(ifIRData.data);
                 }
                 if (m_StepStatements != null)
                 {
@@ -68,7 +68,7 @@ namespace SimpleLanguage.Core.Statements
             }
 
             brIRData = new IRBranch(irMethod, EIROpCode.Br, forStartIRData.nopData );
-            irMethod.AddLabelDict(brIRData.brData);
+            irMethod.AddLabelDict(brIRData.data);
             m_IRStatements.Add(brIRData);
             m_IRStatements.Add(endIRData);
 
@@ -117,14 +117,9 @@ namespace SimpleLanguage.Core.Statements
                 }
                 if (m_StepStatements != null)
                 {
-                    for (int i = 0; i < deep + 1; i++)
-                    {
-                        sb.Append(Global.tabChar);
-                    }
                     sb.Append(m_StepStatements.ToIRString());
                 }
-
-                sb.Append(m_ThenMetaStatements?.nextMetaStatements?.ToIRString());
+                sb.Append(m_ThenMetaStatements?.ToIRString());
             }
             else
             {

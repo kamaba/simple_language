@@ -114,7 +114,7 @@ namespace SimpleLanguage.Core
             {
                 return m_MetaDefineType;
             }
-            MetaType mdt = null;
+            //MetaType mdt = null;
             MetaClass mc = CoreMetaClassManager.GetMetaClassByEType(eType);
             MetaInputTemplateCollection mitc = new MetaInputTemplateCollection();
             if( eType == EType.Array )
@@ -129,7 +129,7 @@ namespace SimpleLanguage.Core
             }
             return m_MetaDefineType;
         }
-        public override int GetCodeFileLine() { if (m_FileMetaConstValueTerm?.token != null) { return m_FileMetaConstValueTerm.token.sourceBeginLine; } else return 0; }
+        public override Token GetToken() { return m_FileMetaConstValueTerm?.token; }
         public void ComputeAddRight(MetaConstExpressNode right)
         {
             switch (right.eType)

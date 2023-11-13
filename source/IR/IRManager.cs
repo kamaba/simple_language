@@ -6,31 +6,56 @@
 //  Description: 
 //****************************************************************************
 
+using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
 using SimpleLanguage.VM;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Numerics;
 using System.Text;
 
 namespace SimpleLanguage.IR
 {
+    public struct DebugInfo
+    {
+        public string path;
+        public int beginLine;
+        public int beginChar;
+        public int endLine;
+        public int endChar;
+    }
     public class IRData
     {
         public int id = 0;
         public EIROpCode opCode;                 //指令类型
         public object    opValue;                //指令值
         public int       index;                  //索引
-        public string    path;                   //文件路径
-        public int       line;                   //运行行
+        public DebugInfo debugInfo;              //调试信息
 
         public IRData()
         {
 
         }
+        public void SetDebugInfoByValue( DebugInfo info )
+        {
+            debugInfo = info;
+        }
+        public void SetDebugInfoByToken( Token token )
+        {
+            if(token != null )
+            {
+                debugInfo.path = token.path;
+                debugInfo.beginLine = token.sourceBeginLine;
+                debugInfo.beginChar = token.sourceBeginChar;
+                debugInfo.endLine = token.sourceEndLine;
+                debugInfo.endChar = token.sourceEndChar;
+            }
+        }
         public override string ToString()
         {
             StringBuilder m_StringBuilder = new StringBuilder();
-            m_StringBuilder.Append( path + " " + line.ToString() + " [" + opCode.ToString() + "] index:[" + index.ToString() + "]");
+            m_StringBuilder.Append(debugInfo.path + " " + debugInfo.beginLine.ToString() + " [" + opCode.ToString() + "] index:[" + index.ToString() + "]");
             if (opValue != null)
                 m_StringBuilder.Append( " val:[" +opValue.ToString() + "] ");
             return m_StringBuilder.ToString();

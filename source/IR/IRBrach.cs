@@ -6,37 +6,39 @@
 //  Description: 
 //****************************************************************************
 
+using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.VM;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace SimpleLanguage.IR
 {
     public class IRBranch : IRBase
     {
-        public IRData brData = new IRData();
+        public IRData data = new IRData();
         public IRBranch( IRMethod _irMethod, EIROpCode type, IRData brIRData )
         {
-            brData.opCode = type;
-            brData.opValue = brData;
+            data.opCode = type;
+            data.opValue = brIRData;
+            AddIRData( data );
         }
         public void SetOpValue(IRData opValue)
         {
-            brData.opValue = opValue;
+            data.opValue = opValue;
         }
-        public override void SetCodeFileLine(int line)
+        public void SetDebugInfoByToken(Token token)
         {
-            brData.line = line;
+            data.SetDebugInfoByToken(token);
         }
         public override string ToIRString()
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("branch");
             sb.Append(base.ToIRString());
 
             return sb.ToString();
@@ -44,12 +46,12 @@ namespace SimpleLanguage.IR
     }
     public class IRLabel : IRBase
     {
-        IRData labelIRData = new IRData();
+        IRData data = new IRData();
         public IRLabel(IRMethod _irMethod, string _label, bool isGogo )
         {
-            labelIRData = new IRData();
-            labelIRData.opCode = isGogo ? EIROpCode.Label : EIROpCode.BrLabel;
-            labelIRData.opValue = _label;
+            data = new IRData();
+            data.opCode = isGogo ? EIROpCode.Label : EIROpCode.BrLabel;
+            data.opValue = _label;
         }
         public override string ToIRString()
         {

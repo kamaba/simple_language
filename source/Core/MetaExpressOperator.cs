@@ -306,13 +306,13 @@ namespace SimpleLanguage.Core
         {
             m_Right = _right;
         }
-        public override int GetCodeFileLine()
+        public override Token GetToken()
         {
             if (m_FileMetaBaseTerm != null)
             {
-                return m_FileMetaBaseTerm.token.sourceBeginLine;
+                return m_FileMetaBaseTerm.token;
             }
-            return base.GetCodeFileLine();
+            return base.GetToken();
         }
         public override void Parse(AllowUseConst auc)
         {

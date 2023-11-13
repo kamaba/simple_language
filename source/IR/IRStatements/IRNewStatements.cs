@@ -37,6 +37,10 @@ namespace SimpleLanguage.Core.Statements
             }
 
             IRStoreVariable irStoreVar = new IRStoreVariable(irMethod, m_MetaVariable);
+            if(m_FileMetaOpAssignSyntax != null )
+            {
+                irStoreVar.data.SetDebugInfoByToken(m_FileMetaOpAssignSyntax.assignToken);
+            }
             m_IRStatements.Add(irStoreVar);
 
             if ( mnoen!= null )
@@ -81,7 +85,13 @@ namespace SimpleLanguage.Core.Statements
             StringBuilder sb = new StringBuilder();
 
             sb.Append("#new var ");
-            sb.AppendLine(m_MetaVariable.ToFormatString() + "#");
+            sb.Append(m_MetaVariable.ToFormatString() );
+            if(m_ExpressNode != null )
+            {
+                sb.Append( " = " + m_ExpressNode.ToFormatString());
+            }
+            sb.AppendLine(" #");
+
             sb.AppendLine("{");
             for (int i = 0; i < m_IRStatements.Count; i++)
             {
