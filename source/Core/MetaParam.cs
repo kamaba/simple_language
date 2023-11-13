@@ -268,13 +268,13 @@ namespace SimpleLanguage.Core
             m_MetaVariable.SetFromMetaDefineParamCreate(this);
             m_MetaVariable.isArgument = true;
         }
-        public int GetCodeFileLine()
+        public Compile.Token GetToken()
         {
             if(m_FileMetaParamter != null )
             {
-                return m_FileMetaParamter.token.sourceBeginLine;
+                return m_FileMetaParamter.token;
             }
-            return 0;
+            return null;
         }
         public override void Parse()
         {            
@@ -741,6 +741,10 @@ namespace SimpleLanguage.Core
                         mc = nmc.GetRetMetaClass();
                     }
                 }
+            }
+            if(isAllSame )
+            {
+                Console.WriteLine("全都相似");
             }
             return mc;
         }

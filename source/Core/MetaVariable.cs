@@ -6,6 +6,7 @@
 //  Description:  all variable 's define, if it's iterator style then use IteratorMetaVariable, other custom same style!
 //****************************************************************************
 
+using SimpleLanguage.Compile;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using System;
@@ -129,21 +130,21 @@ namespace SimpleLanguage.Core
         {
             return "";
         }
-        public virtual int GetCodeFileLine()
+        public virtual Token GetToken()
         {
             if(m_FromMetaNewStatementsCreate != null )
             {
-                return m_FromMetaNewStatementsCreate.GetCodeFileLine();
+                return m_FromMetaNewStatementsCreate.GetToken();
             }
             if( m_FromMetaDefineParamCreate != null )
             {
-                return m_FromMetaDefineParamCreate.GetCodeFileLine();
+                return m_FromMetaDefineParamCreate.GetToken();
             }
             if(m_FromExpressNodeCreate != null )
             {
-                return m_FromExpressNodeCreate.GetCodeFileLine();
+                return m_FromExpressNodeCreate.GetToken();
             }
-            return 0;
+            return null;
         }
         public override string ToFormatString()
         {

@@ -279,6 +279,10 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 Console.WriteLine("Error 解析位置 Token: " + m_Token?.ToLexemeAllString() );
                 return false;
             }
+            if( isError )
+            {
+                Console.WriteLine("ParseFunction 解析函数");
+            }
             m_VirtualOverrideToken = virtualToken;            
             m_PermissionToken = permissionToken;
             m_StaticToken = staticToken;

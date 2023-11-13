@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.IR
 {
@@ -29,18 +30,33 @@ namespace SimpleLanguage.IR
         }
         public void AddIRData( IRData irData )
         {
+            if( irData ==  null )
+            {
+                return;
+            }
             m_IRDataList.Add(irData);
         }
-        public virtual void SetCodeFileLine( int line )
+        public void AddIRRangeData( IEnumerable<IRData> ienumData )
         {
-
+            foreach( var v in ienumData )
+            {
+                if (v == null)
+                {
+                    continue;
+                }
+                m_IRDataList.Add(v);
+            }
         }
         public virtual string ToIRString()
         {
             StringBuilder sb = new StringBuilder();
 
-            for( int i = 0; i < m_IRDataList.Count; i++ )
+            for (int i = 0; i < m_IRDataList.Count; i++)
             {
+                if (this.m_IRDataList[i] == null)
+                {
+                    continue;
+                }
                 sb.AppendLine(m_IRDataList[i].ToString());
             }
             return sb.ToString();

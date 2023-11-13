@@ -15,11 +15,10 @@ namespace SimpleLanguage.IR
     public class IRNop : IRBase
     {
         public IRData nopData = new IRData();
-        public IRNop( IRMethod irMethod )
+        public IRNop( IRMethod irMethod ):base( irMethod )
         {
-            m_IRMethod = irMethod;
             nopData.opCode = EIROpCode.Nop;
-            nopData.line = 0;
+            m_IRDataList.Add( nopData );
         }
         public override string ToIRString()
         {

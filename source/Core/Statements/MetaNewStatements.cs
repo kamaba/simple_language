@@ -54,21 +54,21 @@ namespace SimpleLanguage.Core.Statements
             m_OwnerMetaBlockStatements.AddOnlyNameMetaVariable(m_Name);
             Parse();
         }
-        public int GetCodeFileLine()
+        public Compile.Token GetToken()
         {
             if (m_FileMetaDefineVariableSyntax != null)
             {
-                return m_FileMetaDefineVariableSyntax.token.sourceBeginLine;
+                return m_FileMetaDefineVariableSyntax.token;
             }
             if (m_FileMetaOpAssignSyntax != null)
             {
-                return m_FileMetaOpAssignSyntax.assignToken.sourceBeginLine;
+                return m_FileMetaOpAssignSyntax.assignToken;
             }
             if (m_FileMetaCallSyntax != null)
             {
-                return m_FileMetaCallSyntax.token.sourceBeginLine;
+                return m_FileMetaCallSyntax.token;
             }
-            return 0;
+            return null;
         }
         private void Parse()
         {

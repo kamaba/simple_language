@@ -24,13 +24,12 @@ namespace SimpleLanguage.Core.Statements
 
         protected List<IRBase> m_IRStatements = new List<IRBase>();
         public virtual void ParseIRStatements()
-        {         
+        {
         }
         public virtual string ToIRString()
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine("parseIR");
             sb.AppendLine("{");
             for (int i = 0; i < m_IRStatements.Count; i++)
             {

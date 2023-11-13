@@ -18,13 +18,12 @@ namespace SimpleLanguage.Core.Statements
     {
         public override void ParseIRStatements()
         {
-            //m_MetaCallLink.ParseToIRDataList(irMethod);
-            //m_IRStatements.AddRange(m_MetaCallLink);
+            m_MetaCallLink.ParseToIRDataList(irMethod);
+            m_IRStatements.AddRange(m_MetaCallLink.irList);
         }
         public override string ToIRString()
         {
-            //return m_MetaCallLink.ToIRString();
-            return base.ToIRString();
+            return m_MetaCallLink.ToIRString();
         }
     }
 }

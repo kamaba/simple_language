@@ -52,8 +52,7 @@ namespace SimpleLanguage.Core
         protected MetaClass m_OwnerMetaClass = null;
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
         protected MetaType m_MetaDefineType = null;
-        public virtual int GetCodeFileLine() { return 0; }
-        public virtual string GetFilePath() { return ""; }
+        public virtual Token GetToken() { return null; }
         public virtual int CalcParseLevel(int level) { return level; }
         public virtual void CalcReturnType() {  }
         public virtual void Parse(AllowUseConst auc) { }

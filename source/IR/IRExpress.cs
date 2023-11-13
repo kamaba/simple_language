@@ -37,7 +37,7 @@ namespace SimpleLanguage.IR
                         IRData irdata = new IRData();
                         irdata.opCode = IRManager.GetConstIROpCode(mcn.eType);
                         irdata.opValue = mcn.value;
-                        irdata.line = mcn.GetCodeFileLine();
+                        irdata.SetDebugInfoByToken( mcn.GetToken() );
                         AddIRData(irdata);
                     }
                     break;
@@ -56,7 +56,7 @@ namespace SimpleLanguage.IR
                         CreateIRDataOne(leftNode);
                         CreateIRDataOne(rightNode);
                         var signData = CreateLeftAndRightIRData(moen.opSign);
-                        signData.line = moen.GetCodeFileLine();
+                        signData.SetDebugInfoByToken( moen.GetToken() );
                         AddIRData(signData);
                     }
                     break;
@@ -64,14 +64,17 @@ namespace SimpleLanguage.IR
                     {
                         if( m_IRManager != null )
                         {
-                            //mcn.metaCallLink.ParseToIRDataListByIRManager(m_IRManager);
+                            mcn.metaCallLink.ParseToIRDataListByIRManager(m_IRManager);
                         }
                         else
                         {
-                            //mcn.metaCallLink.ParseToIRDataList(m_IRMethod);
+                            mcn.metaCallLink.ParseToIRDataList(m_IRMethod);
                         }
-                        //var list = mcn.metaCallLink.irDataList;
-                        //m_IRDataList.AddRange(list);
+                        var list = mcn.metaCallLink.irList;
+                        for( int i = 0; i < list.Count; i++ )
+                        {
+                            m_IRDataList.AddRange(list[i].IRDataList);
+                        }
                     }
                     break;
                 default:

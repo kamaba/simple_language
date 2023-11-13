@@ -226,13 +226,13 @@ namespace SimpleLanguage.Core
             m_Deep = deep;
             m_MetaBlockStatements?.SetDeep(deep);
         }
-        public override int GetCodeFileLine()
+        public override Token GetToken()
         {
             if( m_FileMetaMemberFunction?.finalToken != null )
             {
-                return m_FileMetaMemberFunction.finalToken.sourceBeginLine;
+                return m_FileMetaMemberFunction.finalToken;
             }
-            return base.GetCodeFileLine();
+            return base.GetToken();
         }
         public bool IsEqualWithMMFByNameAndParam( MetaMemberFunction mmf )
         {

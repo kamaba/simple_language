@@ -25,17 +25,16 @@ namespace SimpleLanguage.Core.Statements
             m_IRStatements.Add(irBrach);
             if (m_FileMetaKeyOnlySyntax.token != null )
             {
-                irBrach.brData.line = m_FileMetaKeyOnlySyntax.token.sourceBeginLine;
+                irBrach.data.SetDebugInfoByToken( m_FileMetaKeyOnlySyntax.token );
             }
-            irMethod.AddLabelDict(irBrach.brData);
-            m_IRStatements.Add( irBrach );
+            irMethod.AddLabelDict(irBrach.data);
             if (m_ForStatements != null )
             {
-                irBrach.brData.opValue = m_ForStatements.endIRData.nopData;
+                irBrach.data.opValue = m_ForStatements.endIRData.nopData;
             }
             else if( m_WhileStatements != null )
             {
-                irBrach.brData.opValue = m_WhileStatements.endData;
+                irBrach.data.opValue = m_WhileStatements.endData;
             }
         }
         public override string ToIRString()
@@ -57,17 +56,17 @@ namespace SimpleLanguage.Core.Statements
             irBrach = new IRBranch(irMethod, EIROpCode.Br, null );
             if (m_FileMetaKeyOnlySyntax.token != null)
             {
-                irBrach.SetCodeFileLine( m_FileMetaKeyOnlySyntax.token.sourceBeginLine );
+                irBrach.SetDebugInfoByToken( m_FileMetaKeyOnlySyntax.token );
             }
-            irMethod.AddLabelDict(irBrach.brData);
+            irMethod.AddLabelDict(irBrach.data);
             m_IRStatements.Add(irBrach);
             if (m_ForStatements != null)
             {
-                irBrach.brData.opValue = m_ForStatements.forStartIRData;
+                irBrach.data.opValue = m_ForStatements.forStartIRData;
             }
             else if (m_WhileStatements != null)
             {
-                irBrach.brData.opValue = m_WhileStatements.endData;
+                irBrach.data.opValue = m_WhileStatements.endData;
             }
         }
         public override string ToIRString()

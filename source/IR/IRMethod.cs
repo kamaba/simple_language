@@ -133,7 +133,10 @@ namespace SimpleLanguage.IR
                 return;
             }
             mbs.ParseAllIRStatements();
-            IRDataList.AddRange(mbs.GetIRDataList());
+            for( int i = 0; i < mbs.irStatements.Count; i++ )
+            {
+                IRDataList.AddRange(mbs.irStatements[i].IRDataList);
+            }
 
             for( int i = 0; i < m_LabelList.Count; i++ )
             {
