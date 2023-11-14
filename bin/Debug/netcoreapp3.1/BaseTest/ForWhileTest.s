@@ -91,6 +91,7 @@ ForWhileTest
     static whilefun()
     {
         int i = 0;
+        #!
         while i < 14
         {
             i++
@@ -99,11 +100,13 @@ ForWhileTest
             if i > 10{ break;}
             CSharp.System.Console.WriteLine(" ioooo = $i ");
         }
-        #!
+        !#
         i = 10
         while
         {
-
+            i++;
+            CSharp.System.Console.WriteLine(" ioooo = $i ");
+            if( i > 13 ){break;}
         }
         while true{ m = 20;}
         i = 30;
