@@ -6,6 +6,7 @@
 //  Description: handle if-elif-else statements, splite a one 'if' syntax statements and more
 //  'elif' syntax  statements and one 'else' syntax statements
 //****************************************************************************
+using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Parse;
@@ -27,6 +28,8 @@ namespace SimpleLanguage.Core.Statements
         public partial class MetaElseIfStatements
         {
             public MetaBlockStatements thenMetaStatements => m_ThenMetaStatements;
+            public IfElseState ifElseState => m_IfElseState;
+            public FileMetaKeyOnlySyntax elseKeySyntax => m_ElseKeySyntax;
 
             private FileMetaKeyOnlySyntax m_ElseKeySyntax = null;
             private FileMetaConditionExpressSyntax m_IfOrElseIfKeySyntax = null;
@@ -134,6 +137,7 @@ namespace SimpleLanguage.Core.Statements
             }
         }
         List<MetaElseIfStatements> metaElseIfStatements => m_MetaElseIfStatements;
+        public FileMetaKeyIfSyntax fileMetaKeyIfSyntax => m_FileMetaKeyIfSyntax;
 
         private List<MetaElseIfStatements> m_MetaElseIfStatements = new List<MetaElseIfStatements>();
         private FileMetaKeyIfSyntax m_FileMetaKeyIfSyntax = null;

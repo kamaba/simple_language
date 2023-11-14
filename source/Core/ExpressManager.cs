@@ -279,7 +279,7 @@ namespace SimpleLanguage.Core
             if (fmte != null)
             {
                 FileMetaIfSyntaxTerm ifExpressTerm = fmte as FileMetaIfSyntaxTerm;
-                FileMetaSwitchSyntaxTerm switchExpressTerm = fmte as FileMetaSwitchSyntaxTerm;
+                FileMetaMatchSyntaxTerm switchExpressTerm = fmte as FileMetaMatchSyntaxTerm;
                 FileMetaParTerm parExpressTerm = fmte as FileMetaParTerm;
                 if (ifExpressTerm != null)
                 {

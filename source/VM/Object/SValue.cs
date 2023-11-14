@@ -90,7 +90,6 @@ namespace SimpleLanguage.VM
         }
         public Object GetValueObject()
         {
-
             switch (this.eType)
             {
                 case EType.Byte:

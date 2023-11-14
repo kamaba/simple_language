@@ -256,6 +256,10 @@ namespace SimpleLanguage.Compile.Parse
                     {
                         keynodeStruct.SetMainKeyNode(curNode);
                     }
+                    else if( ttt == ETokenType.In )
+                    {
+                        keynodeStruct.AddContent(curNode);
+                    }
                     else
                     {
                         Console.WriteLine("Error ½âÎöÒì³£¹Ø¼ü×Ö" + curNode.token.ToLexemeAllString());
@@ -657,7 +661,7 @@ namespace SimpleLanguage.Compile.Parse
                     ParseSyntax(akss.keyNode.blockNode);
                     m_CurrentNodeInfoStack.Pop();
                 }
-                else if(akss.tokenType == ETokenType.Break )
+                else if(akss.tokenType == ETokenType.Break || akss.tokenType == ETokenType.Continue )
                 {
                     FileMetaKeyOnlySyntax fmkis = new FileMetaKeyOnlySyntax(m_FileMeta, akss.keyNode.token, null);
                     AddParseSyntaxNodeInfo(fmkis);

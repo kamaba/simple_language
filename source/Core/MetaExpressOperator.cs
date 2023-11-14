@@ -182,6 +182,12 @@ namespace SimpleLanguage.Core
             }
             return this;
         }
+
+
+        public override Token GetToken() 
+        { 
+            return tokeType; 
+        }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
@@ -311,6 +317,10 @@ namespace SimpleLanguage.Core
             if (m_FileMetaBaseTerm != null)
             {
                 return m_FileMetaBaseTerm.token;
+            }
+            if(m_SignToken != null )
+            {
+                return m_SignToken;
             }
             return base.GetToken();
         }

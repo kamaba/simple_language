@@ -6,6 +6,7 @@
 //  Description:  handle for loop statements or while/dowhile statements create instruction 
 //****************************************************************************
 
+using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.Statements;
 using SimpleLanguage.IR;
 using System;
@@ -32,6 +33,15 @@ namespace SimpleLanguage.Core.Statements
 
             if (m_IsForIn)
             {
+                IRStoreVariable irStoreVar = new IRStoreVariable(irMethod, m_ForMetaVariable);
+                m_IRStatements.Add(irStoreVar);
+                //if (m_FileMetaOpAssignSyntax != null)
+                //{
+                //    irStoreVar.data.SetDebugInfoByToken(m_FileMetaOpAssignSyntax.assignToken);
+                //}
+
+                m_ThenMetaStatements.ParseAllIRStatements();
+                m_IRStatements.AddRange(m_ThenMetaStatements.irStatements);
             }
             else
             {
@@ -61,15 +71,12 @@ namespace SimpleLanguage.Core.Statements
 
                     ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, endIRData.data);
                     m_IRStatements.Add(ifIRData);
-
-                    irMethod.AddLabelDict(ifIRData.data);
                 }
                 m_ThenMetaStatements.ParseAllIRStatements();
                 m_IRStatements.AddRange(m_ThenMetaStatements.irStatements);
             }
 
             brIRData = new IRBranch(irMethod, EIROpCode.Br, forStartIRData.data );
-            irMethod.AddLabelDict(brIRData.data);
             m_IRStatements.Add(brIRData);
             m_IRStatements.Add(endIRData);
 
@@ -136,73 +143,93 @@ namespace SimpleLanguage.Core.Statements
 
     public partial class MetaWhileDoWhileStatements
     {
-        public IRData startIRData = null;       //while 开始执行起点
-        public IRData whileStartIRData = null;    //while 循环返回起点
-        public IRData ifData = null;            //判断是否到终点if判断
-        public IRData brData = null;            //while 结束点返回起点语句
-        public IRData endData = null;           //while 语句点
+        public IRNop startIRData = null;       //while 开始执行起点
+        public IRNop whileStartIRData = null;    //while 循环返回起点
+        public IRBranch ifIRData = null;            //判断是否到终点if判断
+        public IRBranch brIRData = null;            //while结束点返回起点语句
+        public IRNop endIRData = null;           //while语句点
 
         private IRExpress m_IRConditionExpress = null;
         public override void ParseIRStatements()
         {
-            //startIRData = new IRData();
-            //startIRData.opCode = EIROpCode.Nop;
-            //m_IRDataList.Add(startIRData);
+            startIRData = new IRNop(irMethod);
+            endIRData = new IRNop(irMethod);
+            m_IRStatements.Add(startIRData);
 
-            //endData = new IRData();
-            //endData.opCode = EIROpCode.Nop;
+            whileStartIRData = new IRNop(irMethod);
+            m_IRStatements.Add(whileStartIRData);
 
-            //whileStartIRData = new IRData();
-            //whileStartIRData.opCode = EIROpCode.Nop;
-            //m_IRDataList.Add(whileStartIRData);
 
-            //if ( m_IsWhile )
-            //{
-            //    if (m_ConditionExpress != null)
-            //    {
-            //        m_IRConditionExpress = new IRExpress(irMethod, m_ConditionExpress);
-            //        m_IRDataList.AddRange(m_IRConditionExpress.IRDataList);
+            if (m_IsWhile)
+            {
+                if (m_ConditionExpress != null)
+                {
+                    m_IRConditionExpress = new IRExpress(irMethod, m_ConditionExpress);
+                    m_IRStatements.Add(m_IRConditionExpress);
 
-            //        ifData = new IRData();
-            //        ifData.opCode = EIROpCode.BrFalse;
-            //        ifData.opValue = endData;
-            //        m_IRDataList.Add(ifData);
+                    ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, endIRData.data);
+                    m_IRStatements.Add(ifIRData);
+                }
+                m_ThenMetaStatements.ParseAllIRStatements();
+                m_IRStatements.AddRange(m_ThenMetaStatements.irStatements);
+            }
+            else
+            {
+                m_ThenMetaStatements.ParseAllIRStatements();
+                m_IRStatements.AddRange(m_ThenMetaStatements.irStatements);
 
-            //        irMethod.AddLabelDict(ifData);
-            //    }
-            //    m_ThenMetaStatements.ParseAllIRStatements();
-            //    m_IRDataList.AddRange(m_ThenMetaStatements.irDataList);
-            //}
-            //else
-            //{
-            //    m_ThenMetaStatements.ParseAllIRStatements();
-            //    m_IRDataList.AddRange(m_ThenMetaStatements.irDataList);
+                if (m_ConditionExpress != null)
+                {
+                    m_IRConditionExpress = new IRExpress(irMethod, m_ConditionExpress);
+                    m_IRStatements.Add(m_IRConditionExpress);
 
-            //    if (m_ConditionExpress != null)
-            //    {
-            //        m_IRConditionExpress = new IRExpress(irMethod, m_ConditionExpress);
-            //        m_IRDataList.AddRange(m_IRConditionExpress.IRDataList);
+                    ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, endIRData.data);
+                    m_IRStatements.Add(ifIRData);
+                }
+            }
 
-            //        ifData = new IRData();
-            //        ifData.opCode = EIROpCode.BrFalse;
-            //        ifData.opValue = endData;
-            //        m_IRDataList.Add(ifData);
+            brIRData = new IRBranch(irMethod, EIROpCode.Br, whileStartIRData.data);
+            m_IRStatements.Add(brIRData);
+            m_IRStatements.Add(endIRData);
 
-            //        irMethod.AddLabelDict(ifData);
-            //    }
-            //}
-            //brData = new IRData();
-            //brData.opCode = EIROpCode.Br;
-            //brData.opValue = whileStartIRData;
-            //irMethod.AddLabelDict(brData);
-            //m_IRDataList.Add(brData);
-            //m_IRDataList.Add(endData);            
+            if (m_ConditionExpress != null)
+            {
+                ifIRData.data.SetDebugInfoByToken(m_ConditionExpress.GetToken());
+            }
+            if (m_FileMetaKeyWhileSyntax != null)
+            {
+                brIRData.data.SetDebugInfoByToken(m_FileMetaKeyWhileSyntax.executeBlockSyntax.endBlock);
+                startIRData.data.SetDebugInfoByToken(m_FileMetaKeyWhileSyntax.token);
+                whileStartIRData.data.SetDebugInfoByToken(m_FileMetaKeyWhileSyntax.executeBlockSyntax.beginBlock);
+                endIRData.data.SetDebugInfoByToken(m_FileMetaKeyWhileSyntax.executeBlockSyntax.endBlock);
+            }
 
-            //if (m_NextMetaStatements != null)
-            //{
-            //    m_NextMetaStatements.ParseIRStatements();
-            //    m_IRDataList.AddRange(m_NextMetaStatements.irDataList);
-            //}
+            if (m_NextMetaStatements != null)
+            {
+                m_NextMetaStatements.ParseIRStatements();
+            }
+        }
+
+        public override string ToIRString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("#" + (m_IsWhile ? "while" : "dowhile#   {") );
+            sb.AppendLine( base.ToIRString() );
+            sb.AppendLine("}");
+            if (m_ConditionExpress != null)
+            {
+                sb.AppendLine("#condition" + m_ConditionExpress.ToFormatString() + "#");
+                sb.AppendLine("{");
+                sb.Append(m_IRConditionExpress.ToIRString());
+                sb.AppendLine("}");
+            }
+
+            sb.AppendLine(m_ThenMetaStatements.ToIRString());
+
+            sb.AppendLine("}");
+
+            return sb.ToString();
         }
     }
 }

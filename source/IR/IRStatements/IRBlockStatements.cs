@@ -16,20 +16,21 @@ namespace SimpleLanguage.Core.Statements
 {
     public partial class MetaBlockStatements
     {
+        public IRNop blockStart = null;
         public override void ParseIRStatements()
         {
-            IRNop insNode = new IRNop(irMethod);
-            insNode.data.SetDebugInfoByToken( m_FileMetaBlockSyntax.token );
-            m_IRStatements.Add(insNode);
+            blockStart = new IRNop(irMethod);
+            blockStart.data.SetDebugInfoByToken( m_FileMetaBlockSyntax.token );
+            m_IRStatements.Add(blockStart);
         }
         public void ParseAllIRStatements()
         {
-            IRNop insNode = new IRNop(this.m_OwnerMetaFunction.irMethod);
+            blockStart = new IRNop(this.m_OwnerMetaFunction.irMethod);
             if (m_FileMetaBlockSyntax?.token  != null)
             {
-                insNode.data.SetDebugInfoByToken( m_FileMetaBlockSyntax.token );
+                blockStart.data.SetDebugInfoByToken( m_FileMetaBlockSyntax.token );
             }
-            m_IRStatements.Add(insNode);
+            m_IRStatements.Add(blockStart);
 
             MetaStatements mbs = m_NextMetaStatements;
             while (mbs != null)

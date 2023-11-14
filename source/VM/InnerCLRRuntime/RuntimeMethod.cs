@@ -349,8 +349,8 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Call:
                     {
-                        var mfc = iri.opValue as MetaFunctionCall;
-                        InnerCLRRuntimeVM.RunIRMethod(mfc.function.irMethod);
+                        var mfc = iri.opValue as IRMethod;
+                        InnerCLRRuntimeVM.RunIRMethod(mfc);
                     }
                     break;
                 case EIROpCode.CallCSharpMethod:

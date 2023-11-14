@@ -303,12 +303,12 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 fms.AddFileMetaKeyCaseSyntaxList(fmkcs);
                 */
             }
-            public FileMetaKeyCaseSyntax(FileMeta fm, Token castToken )
+            public FileMetaKeyCaseSyntax(FileMeta fm, Token castToken)
             {
                 m_FileMeta = fm;
                 m_Token = castToken;
             }
-            public void SetDefineClassNode( Node _defineClassNode )
+            public void SetDefineClassNode(Node _defineClassNode)
             {
                 m_DefineClassToken = new FileMetaCallLink(m_FileMeta, _defineClassNode);
             }
@@ -316,11 +316,11 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             {
                 m_VariableToken = _variableToken;
             }
-            public void SetExecuteBlockSyntax( FileMetaBlockSyntax ebs )
+            public void SetExecuteBlockSyntax(FileMetaBlockSyntax ebs)
             {
                 m_ExecuteBlockSyntax = ebs;
             }
-            public void AddConstValueTokenList( FileMetaConstValueTerm fmcvt )
+            public void AddConstValueTokenList(FileMetaConstValueTerm fmcvt)
             {
                 m_ConstValueTokenList.Add(fmcvt);
             }
@@ -335,7 +335,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 for (int i = 0; i < deep; i++)
                     sb.Append(Global.tabChar);
                 sb.Append("case ");
-                if(m_DefineClassToken != null )
+                if (m_DefineClassToken != null)
                 {
                     if (defineClassCallLink != null)
                     {
@@ -348,20 +348,20 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 }
                 else
                 {
-                    for( int i = 0; i < m_ConstValueTokenList.Count; i++ )
+                    for (int i = 0; i < m_ConstValueTokenList.Count; i++)
                     {
-                        sb.Append(m_ConstValueTokenList[i].ToFormatString() );
+                        sb.Append(m_ConstValueTokenList[i].ToFormatString());
                         if (i < m_ConstValueTokenList.Count - 1)
                             sb.Append(",");
                     }
                 }
-                
-                if(m_ExecuteBlockSyntax != null )
+
+                if (m_ExecuteBlockSyntax != null)
                 {
                     sb.Append(Environment.NewLine);
                     sb.Append(m_ExecuteBlockSyntax.ToFormatString());
                 }
-                if( isContinueNextCastSyntax )
+                if (isContinueNextCastSyntax)
                 {
                     sb.Append("next;");
                 }
@@ -385,7 +385,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
 
         public FileMetaKeySwitchSyntax(FileMeta fm, Token _switchToken, Token _leftBraceToken,
-            Token _rightBraceToken, FileMetaCallLink cl )
+            Token _rightBraceToken, FileMetaCallLink cl)
         {
             m_FileMeta = fm;
             m_Token = _switchToken;
@@ -393,7 +393,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             m_RightBraceToken = _rightBraceToken;
             m_FileMetaVariableRef = cl;
         }
-        public void AddFileMetaKeyCaseSyntaxList(FileMetaKeyCaseSyntax keyCase )
+        public void AddFileMetaKeyCaseSyntaxList(FileMetaKeyCaseSyntax keyCase)
         {
             m_FileMetaKeyCaseSyntaxList.Add(keyCase);
         }
@@ -408,7 +408,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             {
                 m_FileMetaKeyCaseSyntaxList[i].SetDeep(m_Deep + 1);
             }
-            m_DefaultExecuteBlockSyntax?.SetDeep(m_Deep  + 1);
+            m_DefaultExecuteBlockSyntax?.SetDeep(m_Deep + 1);
         }
         public override string ToFormatString()
         {
@@ -416,7 +416,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             for (int i = 0; i < deep; i++)
                 sb.Append(Global.tabChar);
             sb.Append("switch ");
-            if(m_FileMetaVariableRef != null )
+            if (m_FileMetaVariableRef != null)
             {
                 sb.Append(m_FileMetaVariableRef.ToFormatString());
             }
@@ -425,12 +425,262 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 sb.Append(Global.tabChar);
             sb.Append("{");
 
-            for ( int i = 0; i < m_FileMetaKeyCaseSyntaxList.Count; i++ )
+            for (int i = 0; i < m_FileMetaKeyCaseSyntaxList.Count; i++)
             {
                 sb.Append(Environment.NewLine);
                 sb.Append(m_FileMetaKeyCaseSyntaxList[i].ToFormatString());
             }
-            if(m_DefaultExecuteBlockSyntax != null )
+            if (m_DefaultExecuteBlockSyntax != null)
+            {
+                sb.Append(Environment.NewLine);
+                for (int i = 0; i < deep + 1; i++)
+                    sb.Append(Global.tabChar);
+                sb.Append("default");
+                sb.Append(Environment.NewLine);
+                sb.Append(m_DefaultExecuteBlockSyntax.ToFormatString());
+            }
+
+            sb.Append(Environment.NewLine);
+            for (int i = 0; i < deep; i++)
+                sb.Append(Global.tabChar);
+            sb.Append("}");
+
+            return sb.ToString();
+        }
+    }
+    public class FileMetaKeyMatchSyntax : FileMetaSyntax
+    {
+        public class FileMetaKeyCaseSyntax
+        {
+            public FileMeta fileMeta => m_FileMeta;
+            public bool isContinueNextCastSyntax { get; set; } = false;
+            public Token variableToken => m_VariableToken;
+            public FileMetaCallLink defineClassCallLink => m_DefineClassToken;
+            public FileMetaBlockSyntax executeBlockSyntax => m_ExecuteBlockSyntax;
+            public List<FileMetaConstValueTerm> constValueTokenList => m_ConstValueTokenList;
+
+            private FileMeta m_FileMeta = null;
+            private Token m_Token = null;
+            private FileMetaCallLink m_DefineClassToken = null;
+            private Token m_VariableToken = null;
+
+            private List<FileMetaConstValueTerm> m_ConstValueTokenList = new List<FileMetaConstValueTerm>();
+            private FileMetaBlockSyntax m_ExecuteBlockSyntax = null;
+            public int deep { get; set; } = 0;
+
+            public void aaaa()
+            {
+                /*
+                var fmkcs = new FileMetaKeySwitchSyntax.FileMetaKeyCaseSyntax(m_FileMeta, castnode.token);
+
+                var parlist = castnode.parNode.childList;
+                if (parlist.Count == 0)
+                {
+                    Console.WriteLine("Error Case语句不允许没有检查值!!");
+                }
+                List<Node> childList = new List<Node>();
+                bool isComma = false;
+                for (int i = 0; i < parlist.Count; i++)
+                {
+                    if (parlist[i].token?.type == ETokenType.Comma)
+                    {
+                        isComma = true;
+                        continue;
+                    }
+                    childList.Add(parlist[i]);
+                }
+                if (isComma)
+                {
+                    bool isSame = true;//是否通过,号切后的类型是相同的
+                    for (int i = 0; i < childList.Count - 1; i++)
+                    {
+                        var curNode = childList[i];
+                        var nextNode = childList[i + 1];
+                        var type = curNode.token.type;
+                        if (type != ETokenType.Number && type != ETokenType.String)
+                        {
+                            Console.WriteLine("Error 逗号分割只允许number,string");
+                            break;
+                        }
+                        if (type != nextNode.token.type)
+                        {
+                            isSame = false;
+                            break;
+                        }
+                    }
+                    if (!isSame)
+                    {
+                        Console.WriteLine("Error 使用逗号切割开后，类型不相同!!");
+                    }
+                    for (int i = 0; i < childList.Count; i++)
+                    {
+                        fmkcs.AddConstValueTokenList(new FileMetaConstValueTerm(m_FileMeta, childList[i].token));
+                    }
+                }
+                else
+                {
+                    if (parlist.Count == 2)
+                    {
+                        if (parlist[0].token?.type == ETokenType.Identifier
+                            || parlist[1].token?.type == ETokenType.Identifier)
+                        {
+                            fmkcs.SetDefineClassNode(parlist[0]);
+                            fmkcs.SetVariableToken(parlist[1].token);
+                        }
+                    }
+                    else if (parlist.Count == 1)
+                    {
+                        var ttype = parlist[0].token?.type;
+                        if (ttype == ETokenType.Type
+                            || ttype == ETokenType.Identifier)
+                        {
+                            fmkcs.SetDefineClassNode(parlist[0]);
+                        }
+                        else if (ttype == ETokenType.Number
+                            || ttype == ETokenType.String)
+                        {
+                            fmkcs.AddConstValueTokenList(new FileMetaConstValueTerm(m_FileMeta, parlist[0].token));
+                        }
+                    }
+                }
+                FileMetaBlockSyntax executeBlock = new FileMetaBlockSyntax(m_FileMeta, castnode.blockNode.token, castnode.blockNode.endToken);
+                fmkcs.SetExecuteBlockSyntax(executeBlock);
+                ParseCurrentNodeInfo pcnic = new ParseCurrentNodeInfo(executeBlock);
+                m_CurrentNodeInfoStack.Push(pcnic);
+                ParseSyntax(castnode.blockNode);
+                m_CurrentNodeInfoStack.Pop();
+
+                if (j != castlist.Count - 1)
+                    fmkcs.isContinueNextCastSyntax = true;
+
+                fms.AddFileMetaKeyCaseSyntaxList(fmkcs);
+                */
+            }
+            public FileMetaKeyCaseSyntax(FileMeta fm, Token castToken)
+            {
+                m_FileMeta = fm;
+                m_Token = castToken;
+            }
+            public void SetDefineClassNode(Node _defineClassNode)
+            {
+                m_DefineClassToken = new FileMetaCallLink(m_FileMeta, _defineClassNode);
+            }
+            public void SetVariableToken(Token _variableToken)
+            {
+                m_VariableToken = _variableToken;
+            }
+            public void SetExecuteBlockSyntax(FileMetaBlockSyntax ebs)
+            {
+                m_ExecuteBlockSyntax = ebs;
+            }
+            public void AddConstValueTokenList(FileMetaConstValueTerm fmcvt)
+            {
+                m_ConstValueTokenList.Add(fmcvt);
+            }
+            public void SetDeep(int _deep)
+            {
+                deep = _deep;
+                m_ExecuteBlockSyntax.SetDeep(_deep);
+            }
+            public string ToFormatString()
+            {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < deep; i++)
+                    sb.Append(Global.tabChar);
+                sb.Append("case ");
+                if (m_DefineClassToken != null)
+                {
+                    if (defineClassCallLink != null)
+                    {
+                        sb.Append(defineClassCallLink.ToFormatString() + " ");
+                    }
+                    if (m_VariableToken != null)
+                    {
+                        sb.Append(m_VariableToken.lexeme?.ToString() + " ");
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < m_ConstValueTokenList.Count; i++)
+                    {
+                        sb.Append(m_ConstValueTokenList[i].ToFormatString());
+                        if (i < m_ConstValueTokenList.Count - 1)
+                            sb.Append(",");
+                    }
+                }
+
+                if (m_ExecuteBlockSyntax != null)
+                {
+                    sb.Append(Environment.NewLine);
+                    sb.Append(m_ExecuteBlockSyntax.ToFormatString());
+                }
+                if (isContinueNextCastSyntax)
+                {
+                    sb.Append("next;");
+                }
+
+
+                return sb.ToString();
+            }
+        }
+
+        public FileMetaCallLink fileMetaVariableRef => m_FileMetaVariableRef;
+        public FileMetaBlockSyntax defaultExecuteBlockSyntax => m_DefaultExecuteBlockSyntax;
+        public List<FileMetaKeyCaseSyntax> fileMetaKeyCaseSyntaxList => m_FileMetaKeyCaseSyntaxList;
+        public FileMetaBlockSyntax executeBlockSyntax => m_DefaultExecuteBlockSyntax;
+
+        private Token m_LeftBraceToken = null;
+        private Token m_RightBraceToken = null;
+        private FileMetaCallLink m_FileMetaVariableRef = null;
+        private FileMetaBlockSyntax m_DefaultExecuteBlockSyntax = null;
+        private List<FileMetaKeyCaseSyntax> m_FileMetaKeyCaseSyntaxList = new List<FileMetaKeyCaseSyntax>();
+        public FileMetaKeyMatchSyntax(FileMeta fm, Token _switchToken, Token _leftBraceToken,
+            Token _rightBraceToken, FileMetaCallLink cl)
+        {
+            m_FileMeta = fm;
+            m_Token = _switchToken;
+            m_LeftBraceToken = _leftBraceToken;
+            m_RightBraceToken = _rightBraceToken;
+            m_FileMetaVariableRef = cl;
+        }
+        public void AddFileMetaKeyCaseSyntaxList(FileMetaKeyCaseSyntax keyCase)
+        {
+            m_FileMetaKeyCaseSyntaxList.Add(keyCase);
+        }
+        public void SetDefaultExecuteBlockSyntax(FileMetaBlockSyntax fmbs)
+        {
+            m_DefaultExecuteBlockSyntax = fmbs;
+        }
+        public override void SetDeep(int _deep)
+        {
+            m_Deep = _deep;
+            for (int i = 0; i < m_FileMetaKeyCaseSyntaxList.Count; i++)
+            {
+                m_FileMetaKeyCaseSyntaxList[i].SetDeep(m_Deep + 1);
+            }
+            m_DefaultExecuteBlockSyntax?.SetDeep(m_Deep + 1);
+        }
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < deep; i++)
+                sb.Append(Global.tabChar);
+            sb.Append("switch ");
+            if (m_FileMetaVariableRef != null)
+            {
+                sb.Append(m_FileMetaVariableRef.ToFormatString());
+            }
+            sb.Append(Environment.NewLine);
+            for (int i = 0; i < deep; i++)
+                sb.Append(Global.tabChar);
+            sb.Append("{");
+
+            for (int i = 0; i < m_FileMetaKeyCaseSyntaxList.Count; i++)
+            {
+                sb.Append(Environment.NewLine);
+                sb.Append(m_FileMetaKeyCaseSyntaxList[i].ToFormatString());
+            }
+            if (m_DefaultExecuteBlockSyntax != null)
             {
                 sb.Append(Environment.NewLine);
                 for (int i = 0; i < deep + 1; i++)
