@@ -44,7 +44,9 @@ namespace SimpleLanguage.IR
         public IRMethod( MetaFunction mf )
         {
             m_MetaFunction = mf;
-            mf.SetIRMethod(this);
+        }
+        public void Parse()
+        {
             id = m_MetaFunction.irMethodName;
 
             if (m_MetaFunction.thisMetaVariable != null)
@@ -76,6 +78,62 @@ namespace SimpleLanguage.IR
                 irsd.index = m_MethodLocalVariableList.Count;
                 m_MethodLocalVariableList.Add(irsd);
             }
+
+            var mmf = m_MetaFunction;
+            MetaBlockStatements mbs = mmf.metaBlockStatements;
+            if (mbs == null)
+            {
+                Console.WriteLine("Info 空函数!!");
+                return;
+            }
+            mbs.ParseAllIRStatements();
+            for (int i = 0; i < mbs.irStatements.Count; i++)
+            {
+                for (int j = 0; j < mbs.irStatements[i].IRDataList.Count; j++)
+                {
+                    var addIR = mbs.irStatements[i].IRDataList[j];
+                    addIR.id = m_IRDataList.Count;
+                    AddLabelDict(addIR);
+                    m_IRDataList.Add(addIR);
+                }
+            }
+
+            for (int i = 0; i < m_LabelList.Count; i++)
+            {
+                var defLabel = m_LabelList[i];
+                switch (defLabel.opCode)
+                {
+                    case EIROpCode.BrLabel:
+                        {
+                            var findLabel = m_LabelList.Find(a => a.opValue == defLabel.opValue);
+                            defLabel.opValue = findLabel;
+                        }
+                        break;
+                    case EIROpCode.Br:
+                        {
+                            var findex = IRDataList.FindIndex(a => a == defLabel.opValue);
+                            defLabel.index = findex;
+                        }
+                        break;
+                    case EIROpCode.BrFalse:
+                        {
+                            var findex = IRDataList.FindIndex(a => a == defLabel.opValue);
+                            defLabel.index = findex;
+                        }
+                        break;
+                    case EIROpCode.BrTrue:
+                        {
+                            var findex = IRDataList.FindIndex(a => a == defLabel.opValue);
+                            defLabel.index = findex;
+                        }
+                        break;
+                }
+            }
+
+
+
+            string str = mbs.ToIRString();//ToStringFormat();
+            Console.WriteLine(str);
         }
         public void MethodInitParse()
         {
@@ -91,7 +149,9 @@ namespace SimpleLanguage.IR
                     m_LabelList.Add(irdata);
                 }
             }
-            else
+            else if( irdata.opCode == EIROpCode.Br
+                || irdata.opCode == EIROpCode.BrFalse
+                || irdata.opCode == EIROpCode.BrTrue )
             {
                 m_LabelList.Add(irdata);
             }
@@ -123,53 +183,7 @@ namespace SimpleLanguage.IR
             }
             return -1;
         }
-        public void Parse()
-        {
-            var mmf = m_MetaFunction;
-            MetaBlockStatements mbs = mmf.metaBlockStatements;
-            if (mbs == null )
-            {
-                Console.WriteLine("Info 空函数!!");
-                return;
-            }
-            mbs.ParseAllIRStatements();
-            for( int i = 0; i < mbs.irStatements.Count; i++ )
-            {
-                IRDataList.AddRange(mbs.irStatements[i].IRDataList);
-            }
-
-            for( int i = 0; i < m_LabelList.Count; i++ )
-            {
-                var defLabel = m_LabelList[i];
-                switch( defLabel.opCode )
-                {
-                    case EIROpCode.BrLabel:
-                        {
-                            var findLabel = m_LabelList.Find(a => a.opValue == defLabel.opValue);
-                            defLabel.opValue = findLabel;
-                        }
-                        break;
-                    case EIROpCode.Br:
-                        {
-                            var findex = IRDataList.FindIndex(a => a == defLabel.opValue);
-                            defLabel.index = findex;
-                        }
-                        break;
-                    case EIROpCode.BrFalse:
-                        {
-                            var findex = IRDataList.FindIndex(a => a == defLabel.opValue);
-                            defLabel.index = findex;
-                        }
-                        break;
-                }
-            }
-
-
-
-            string str = mbs.ToIRString();//ToStringFormat();
-            Console.WriteLine(str);
-        }
-        public string ToStringFormat()
+        public string ToIRString()
         {
             StringBuilder sb = new StringBuilder();
 

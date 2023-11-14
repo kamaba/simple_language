@@ -59,6 +59,7 @@ namespace SimpleLanguage.Core
 
         public MetaFunction(MetaClass mc)
         {
+            m_IRMethod = new IRMethod(this);
             m_MetaMemberParamCollection = new MetaDefineParamCollection(false, true);
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             SetOwnerMetaClass(mc);           
@@ -67,10 +68,6 @@ namespace SimpleLanguage.Core
         public void AddMetaStatements(MetaStatements state)
         {
             m_MetaBlockStatements.AddFrontStatements(state);
-        }
-        public void SetIRMethod(IRMethod method)
-        {
-            m_IRMethod = method;
         }
         public List<MetaVariable> GetCalcMetaVariableList(bool isIncludeArgument = false)
         {

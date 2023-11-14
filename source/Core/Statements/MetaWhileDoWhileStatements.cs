@@ -279,6 +279,7 @@ namespace SimpleLanguage.Core.Statements
         private void Parse()
         {
             m_ThenMetaStatements = new MetaBlockStatements(m_OwnerMetaBlockStatements, m_FileMetaKeyWhileSyntax.executeBlockSyntax);
+            m_ThenMetaStatements.SetOwnerMetaStatements(this);
 
             if (m_FileMetaKeyWhileSyntax.conditionExpress != null)
             {

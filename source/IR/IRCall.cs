@@ -50,7 +50,7 @@ namespace SimpleLanguage.IR
             }
             IRData datacall = new IRData();
             datacall.opCode = EIROpCode.Call;
-            datacall.opValue = m_MetaFunctionCall;
+            datacall.opValue = m_MetaFunctionCall.function.irMethod;
             datacall.SetDebugInfoByToken( mf.GetToken() );
             AddIRData(datacall);
         }
@@ -257,6 +257,7 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
+            sb.AppendLine("#Call#");
             for (int i = 0; i < irList.Count; i++ )
             {
                 sb.AppendLine(irList[i].ToIRString());

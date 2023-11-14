@@ -787,12 +787,12 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             return sb.ToString();
         }
     }
-    public class FileMetaSwitchSyntaxTerm : FileMetaBaseTerm
+    public class FileMetaMatchSyntaxTerm : FileMetaBaseTerm
     {
         public FileMetaKeySwitchSyntax switchSyntax => m_SwitchSyntax;
 
         private FileMetaKeySwitchSyntax m_SwitchSyntax = null;
-        public FileMetaSwitchSyntaxTerm(FileMeta fm, FileMetaKeySwitchSyntax _switchSyntax)
+        public FileMetaMatchSyntaxTerm(FileMeta fm, FileMetaKeySwitchSyntax _switchSyntax)
         {
             m_FileMeta = fm;
             m_SwitchSyntax = _switchSyntax;

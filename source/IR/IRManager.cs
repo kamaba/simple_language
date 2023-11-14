@@ -55,7 +55,7 @@ namespace SimpleLanguage.IR
         public override string ToString()
         {
             StringBuilder m_StringBuilder = new StringBuilder();
-            m_StringBuilder.Append(debugInfo.path + " " + debugInfo.beginLine.ToString() + " [" + opCode.ToString() + "] index:[" + index.ToString() + "]");
+            m_StringBuilder.Append( id + "   [ " + debugInfo.path + ":" + debugInfo.beginLine.ToString() + "]" + " [" + opCode.ToString() + "] index:[" + index.ToString() + "]");
             if (opValue != null)
                 m_StringBuilder.Append( " val:[" +opValue.ToString() + "] ");
             return m_StringBuilder.ToString();
@@ -173,9 +173,8 @@ namespace SimpleLanguage.IR
             {
                 return IRMethodDict[mf.irMethodName];
             }
-            IRMethod irmethod = new IRMethod(mf);
-            irmethod.Parse();
-            return irmethod;
+            mf.irMethod.Parse();
+            return mf.irMethod;
         }
         public int GetStaticVariableIndex(MetaVariable mv)
         {
@@ -217,13 +216,13 @@ namespace SimpleLanguage.IR
                 return true;
             }
         }
-        public string ToStringFormat()
+        public string ToIRString()
         {
             StringBuilder sb = new StringBuilder();
 
             foreach( var v in IRMethodDict )
             {
-                sb.Append(v.Value.ToStringFormat());
+                sb.Append(v.Value.ToIRString());
             }
 
             return sb.ToString();

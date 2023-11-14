@@ -20,8 +20,6 @@ namespace SimpleLanguage.Core.Statements
     {
         public partial class MetaElseIfStatements
         {
-            public IRExpress irExpress => m_IrExpress;
-
             public List<IRBase> conditionStatList = new List<IRBase>();
             public List<IRBase> thenStatList = new List<IRBase>();
 
@@ -56,36 +54,35 @@ namespace SimpleLanguage.Core.Statements
                     ifFalseBreach = new IRBranch( _irMethod, EIROpCode.BrFalse, null );
                     ifFalseBreach.SetDebugInfoByToken( m_IfOrElseIfKeySyntax.token );
                     conditionStatList.Add(ifFalseBreach);
-
-                    _irMethod.AddLabelDict(ifFalseBreach.data);
                 }
                 m_ThenMetaStatements.ParseAllIRStatements();
                 thenStatList.AddRange(m_ThenMetaStatements.irStatements);
 
+                //{}代码执行结束后的位置
                 ifEndBrach = new IRBranch(_irMethod, EIROpCode.Br, null );
-                ifEndBrach.data.index = -1;
-                _irMethod.AddLabelDict(ifEndBrach.data);
-
                 thenStatList.Add(ifEndBrach);
+
+                if(m_IfOrElseIfKeySyntax != null )
+                {
+                    ifEndBrach.data.SetDebugInfoByToken(m_IfOrElseIfKeySyntax?.executeBlockSyntax?.endBlock);
+                }
             }
 
             public string ToIRString()
             {
                 StringBuilder sb = new StringBuilder();
 
-                sb.AppendLine("{");
                 sb.Append("#if ");
                 sb.AppendLine(m_FinalExpress.ToFormatString() + "#");
 
                 for (int i = 0; i < conditionStatList.Count; i++)
                 {
-                    sb.AppendLine(conditionStatList[i].ToString());
+                    sb.AppendLine(conditionStatList[i].ToIRString());
                 }
-                sb.AppendLine("}");
 
-                if( thenMetaStatements != null )
+                if(m_ThenMetaStatements != null )
                 {
-                    sb.AppendLine(thenMetaStatements.ToIRString());
+                    sb.AppendLine(m_ThenMetaStatements.ToIRString());
                 }
 
                 return sb.ToString();
@@ -105,6 +102,12 @@ namespace SimpleLanguage.Core.Statements
             IRNop ifEndIRNop = new IRNop( irMethod );
             m_IRStatements.Add(ifEndIRNop);
 
+
+            if ( m_FileMetaKeyIfSyntax != null )
+            {
+                ifEndIRNop.data.SetDebugInfoByToken(m_FileMetaKeyIfSyntax.ifExpressSyntax.executeBlockSyntax?.endBlock);
+            }
+
             for ( int i = 0; i < m_MetaElseIfStatements.Count; i++ )
             {
                 var meis = m_MetaElseIfStatements[i];
@@ -114,7 +117,7 @@ namespace SimpleLanguage.Core.Statements
                 {
                     if( i < m_MetaElseIfStatements.Count - 1 )
                     {
-                        meis.ifFalseBreach.data.opValue = m_MetaElseIfStatements[i + 1].startNop.data;
+                        meis.ifFalseBreach.data.opValue = m_MetaElseIfStatements[i+1].startNop.data;
                     }
                     else if( i == m_MetaElseIfStatements.Count - 1 )
                     {

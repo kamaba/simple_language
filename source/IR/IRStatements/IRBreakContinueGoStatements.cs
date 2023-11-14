@@ -27,14 +27,13 @@ namespace SimpleLanguage.Core.Statements
             {
                 irBrach.data.SetDebugInfoByToken( m_FileMetaKeyOnlySyntax.token );
             }
-            irMethod.AddLabelDict(irBrach.data);
             if (m_ForStatements != null )
             {
                 irBrach.data.opValue = m_ForStatements.endIRData.data;
             }
             else if( m_WhileStatements != null )
             {
-                irBrach.data.opValue = m_WhileStatements.endData;
+                irBrach.data.opValue = m_WhileStatements.endIRData.data;
             }
         }
         public override string ToIRString()
@@ -58,15 +57,14 @@ namespace SimpleLanguage.Core.Statements
             {
                 irBrach.SetDebugInfoByToken( m_FileMetaKeyOnlySyntax.token );
             }
-            irMethod.AddLabelDict(irBrach.data);
             m_IRStatements.Add(irBrach);
             if (m_ForStatements != null)
             {
-                irBrach.data.opValue = m_ForStatements.forStartIRData;
+                irBrach.data.opValue = m_ForStatements.forStartIRData.data;
             }
             else if (m_WhileStatements != null)
             {
-                irBrach.data.opValue = m_WhileStatements.endData;
+                 irBrach.data.opValue = m_WhileStatements.whileStartIRData.data;
             }
         }
         public override string ToIRString()

@@ -52,7 +52,13 @@ namespace SimpleLanguage.IR
         }
         public override string ToIRString()
         {
-            return base.ToIRString();
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("#LoadVariable#");
+            for (int i = 0; i < m_IRDataList.Count; i++)
+            {
+                sb.AppendLine(m_IRDataList[i].ToString());
+            }
+            return sb.ToString();
         }
     }
     public class IRStoreVariable : IRBase
@@ -85,6 +91,7 @@ namespace SimpleLanguage.IR
         public override string ToIRString()
         {
             StringBuilder sb = new StringBuilder();
+            sb.AppendLine("#StoreVariable#");
             for( int i = 0; i < m_IRDataList.Count; i++ )
             {
                 sb.AppendLine(m_IRDataList[i].ToString());
