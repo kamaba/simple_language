@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "ForWhileTest.s";
+            path = "ObjectTest.s";
             group = "temp";
             tag = "all";
         }
@@ -16,6 +16,37 @@ const data ProjectConfig
         minInt = -1i;
         maxInt = 23232323i;
         #xc = XC;
+    }
+    globalNamespace          #命名空间设计
+    {
+        Application
+        {
+            Core
+            {
+                Game{}
+                Instance{}
+                UI{}
+            }
+            Math
+            {
+                Util{}
+                Ext{}
+            }
+            Render
+            {
+                Camera{}
+                Mass{}
+                Entry{}
+            }
+            Util
+            {
+            }
+        }
+        QT
+        {
+            Math{}
+            Express{}
+        }
     }
 }
 
@@ -29,7 +60,7 @@ Project
         #global.pi = 3.1415f;
         #global.xc = { a = 20, b = 15 }
        #Class1.Print();
-       ForWhileTest.Fun();       
+       ObjectTest.Fun();       
     }
     static Test()
     {

@@ -246,7 +246,7 @@ namespace SimpleLanguage.Project
         public DefineNamespace()
         {
         }
-        public DefineNamespace Parse( MetaMemberData mmd)
+        public DefineNamespace Parse( MetaMemberData mmd )
         {
             if (mmd == null)
             {
@@ -254,19 +254,17 @@ namespace SimpleLanguage.Project
             }
             spaceName = mmd.name;
 
-            /*
-            for (int i = 0; i < root.fileMetaMemberData.Count; i++)
+            foreach(var ns in mmd.childrenNameNodeDict)
             {
-                FileMetaMemberData cfmmd = root.fileMetaMemberData[i];
-
-                var cDefineNamespce = new DefineNamespace();
-                var newND = cDefineNamespce.Parse(cfmmd);
-                if (newND != null)
+                var dn = new DefineNamespace();
+                MetaMemberData cmmd = ns.Value as MetaMemberData;
+                if (cmmd != null)
                 {
-                    childDefineNamespace.Add(newND);
+                    dn.Parse(cmmd);
                 }
+                childDefineNamespace.Add(dn);
+
             }
-            */
             return this;
         }
     }
