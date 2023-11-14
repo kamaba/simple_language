@@ -75,6 +75,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             for( int i = 0; i < m_FileImportSyntax.Count; i++ )
             {
                 MetaNamespace mn = m_FileImportSyntax[i].lastMetaNamespace;
+                if (mn == null) { continue; }
                 if( mn.refFromType == RefFromType.CSharp )
                 {
                     Object obj = CSharpManager.GetObject(fmcv, mn);

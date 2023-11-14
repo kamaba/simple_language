@@ -239,7 +239,7 @@ const data ProjectConfig
     }
 }
 
-ProjectEnter
+Project
 {
     static Main()
     {
@@ -250,14 +250,11 @@ ProjectEnter
     {
        #TempTest.Fun();
     }
-}
-ProjectDll
-{
-    static LoadStart()
+    static LoadDllStart()
     {
         #动静态库加载完成后，开始执行
     }
-    static LoadEnd()
+    static LoadDllEnd()
     {
         #动静态库卸载完成后，开始执行
     }

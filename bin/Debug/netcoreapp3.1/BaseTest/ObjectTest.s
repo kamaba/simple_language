@@ -8,7 +8,7 @@ ClassT
     t = 0;
     static t2 = 0;
 
-    ClassT( int _t )
+    __Init__( int _t )
     {
         this.t = _t;
     }
@@ -19,7 +19,7 @@ QS.ClassT2
 }
 Class1
 {
-    Class1( int _x1, int _y1 )
+    __Init__( int _x1, int _y1 )
     {
         this.x1 = _x1;
         this.y1 = _y1;
@@ -43,7 +43,7 @@ Class1
 }
 Class2 :: Class1
 {
-    Class2( int _x1, int _y1, int _x2, int _y2 )
+    __Init__( int _x1, int _y1, int _x2, int _y2 )
     {
         Class1( _x1, _y2 );
         Class2( _x1, _y1, _x2 );        
@@ -51,7 +51,7 @@ Class2 :: Class1
         this.x2 = this.x1 + _x2;
         this.y2 = _y2;
     }
-    Class2( int _x1, int _y1, int _x2 )
+    __Init__( int _x1, int _y1, int _x2 )
     {
         this.x2 = _x1;
     }
