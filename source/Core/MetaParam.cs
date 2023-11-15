@@ -132,7 +132,7 @@ namespace SimpleLanguage.Core
                 return m_MetaVariable != null ? m_MetaVariable.metaDefineType.isTemplate : false;
             }
         }
-        public bool isMust { get { return m_MetaExpressNode != null; } }            //是否为非省略参数
+        public bool isMust { get { return m_MetaExpressNode == null; } }            //是否为非省略参数
         public bool isTemplateMetaClass
         {
             get
@@ -239,8 +239,7 @@ namespace SimpleLanguage.Core
 
             if (m_FileMetaParamter.express != null)
             {
-                m_MetaExpressNode = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(null, new MetaType(CoreMetaClassManager.objectMetaClass), m_FileMetaParamter.express);
-
+                m_MetaExpressNode = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(null, new MetaType(CoreMetaClassManager.objectMetaClass), m_FileMetaParamter.express);               
             }
         }
         public MetaDefineParam(string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaType mt )

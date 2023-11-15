@@ -329,10 +329,10 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.StoreNotStaticField:
                     {
-                        var v = m_ValueStack[m_ValueIndex - 1];
+                        var v = m_ValueStack[m_ValueIndex - 2];
                         if (v.eType == EType.Class)
                         {
-                            (v.sobject as ClassObject).SetMemberVariableSValue(iri.index, m_ValueStack[m_ValueIndex - 2]);
+                            (v.sobject as ClassObject).SetMemberVariableSValue(iri.index, m_ValueStack[m_ValueIndex - 1]);
                         }
                         m_ValueIndex-=2;
                     }
@@ -392,6 +392,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         MetaType mdt = iri.opValue as MetaType;
                         ClassObject co = new ClassObject(mdt);
+                        ObjectManager.AddClassObject(co);
                         m_ValueStack[m_ValueIndex++].SetSObject( co );
                     }
                     break;

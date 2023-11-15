@@ -1,12 +1,12 @@
 import Application.Core;
 
-namespace Application.MFC;
-namespace QS;
+#namespace Application.MFC;
+#namespace QS;
 
 ClassT
 {
-    t = 0;
-    static t2 = 0;
+    t = 111;
+    static t2 = 112;
 
     __Init__( int _t )
     {
@@ -15,41 +15,43 @@ ClassT
 }
 QS.ClassT2
 {
-    t = 0;
+    t = 113;
 }
 Class1
 {
     __Init__( int _x1, int _y1 )
     {
         this.x1 = _x1;
-        this.y1 = _y1;
-        #ct.t = 20;   #不允许这样的赋值，也不允许静态的赋值
-        this.ct1 = { t = 20 };
-        this.ct2 = ClassT( 40 );
-        this.ct3 = ClassT(){ t = 10 };
-        this.ct4 = QS.ClassT2();
-        this.ct5 = QS.ClassT2(){t = 100; };
+        #this.y1 = _y1;
+        #ct.t = 20;   #[error] 不允许这样的赋值，也不允许静态的赋值
+        #this.ct1 = { t = 20 }; #[warning] 暂时有报错, 未确定是否支持这种方式
+        #this.ct2 = ClassT( 114 );
+        #this.ct3 = ClassT(){ t = 115 };
+        #this.ct4 = QS.ClassT2();
+        #this.ct5 = QS.ClassT2(){t = 116; };
     }
-    x1 = 0;
-    y1 = 0;
-    ClassT ct1 = null;
-    ClassT ct2 = ClassT( 400 );
-    ClassT ct2_2 = ();
-    ClassT ct3 = ();
-    QS.ClassT2 ct4 = QS.ClassT2();
-    QS.ClassT2 ct5;
-    ct6 = ClassT( 200 );
-    ClassT ct7;
+    x1 = 117;
+    #y1 = 118;
+    #ClassT ct1 = null;
+    #ClassT ct2 = ClassT( 119 );
+    #ClassT ct2_2 = ();
+    #ClassT ct3 = ();
+    #QS.ClassT2 ct4 = QS.ClassT2();
+    #QS.ClassT2 ct5;
+    #ct6 = ClassT( 120 );
+    #ClassT ct7;
 }
 Class2 :: Class1
 {
     __Init__( int _x1, int _y1, int _x2, int _y2 )
     {
-        Class1( _x1, _y2 );
-        Class2( _x1, _y1, _x2 );        
+        #!
+        base.__Init__( _x1, _y2 );
+        __Init__( _x1, _y1, _x2 );        
         this.x2++;
         this.x2 = this.x1 + _x2;
         this.y2 = _y2;
+        !#
     }
     __Init__( int _x1, int _y1, int _x2 )
     {
@@ -70,17 +72,18 @@ ObjectTest
     static Fun()
     {
         c1 = Class1();        
-        c2 = Class2( 1,2,3,4 );
-        c3 = Class1( 1, 2 ){ x1 = 0 };
-        Class1 c4 = { x1 = 1, y1 = 2 };
-        Class2 c5 = { x1 = 1, y1 = 2, x2 = 20, y2 = 100 };
-        Class2 c6 = { ct1 = ClassT() };     # { ct1.t = 20; } 是不允许的
+        #c2 = Class2( 121,122,123,124 );
+        #c3 = Class1( 125, 126 ){ x1 = 127 };
+        #Class1 c4 = { x1 = 128, y1 = 129 };
+        #Class2 c5 = { x1 = 130, y1 = 131, x2 = 132, y2 = 133 };
+        #Class2 c6 = { ct1 = ClassT() };     # { ct1.t = 20; } 是不允许的
 
-        aynn = {name = "mypc", wodm = Class1(), womd2 = Class2() };
-        if aynn.name == "mypc"
-        {
+        CSharp.System.Console.Write("Class1 Value: " + c1.x1 );
 
-        }
+        #aynn = {name = "mypc", wodm = Class1(), womd2 = Class2() };
+        #if aynn.name == "mypc"
+        #{
+        #}
     }
 }
 #!

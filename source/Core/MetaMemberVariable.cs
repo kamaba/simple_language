@@ -577,24 +577,26 @@ namespace SimpleLanguage.Core
             else
             {
                 if (m_Express != null)
-                {
-                    var expressRetMetaDefineType = m_Express.GetReturnMetaDefineType();
-                    if( expressRetMetaDefineType == null )
-                    {
-                        Console.WriteLine("Error 表达式中返回定义类型为空 " + m_Express.ToTokenString());
-                        return;
-                    }
+                {                    
                     ClassManager.EClassRelation relation = ClassManager.EClassRelation.No;
                     MetaConstExpressNode constExpressNode = m_Express as MetaConstExpressNode;
                     MetaClass curClass = m_DefineMetaType.metaClass;
 
                     MetaClass compareClass = null;
+                    MetaType expressRetMetaDefineType = null;
                     if (constExpressNode != null && constExpressNode.eType == EType.Null)
                     {
                         relation = ClassManager.EClassRelation.Same;
                     }
                     else
                     {
+                        expressRetMetaDefineType = m_Express.GetReturnMetaDefineType();
+                        if (expressRetMetaDefineType == null)
+                        {
+                            Console.WriteLine("Error 表达式中返回定义类型为空 " + m_Express.ToTokenString());
+                            return;
+                        }
+
                         compareClass = expressRetMetaDefineType.metaClass;
                         relation = ClassManager.ValidateClassRelationByMetaClass(curClass, compareClass);
                     }
@@ -619,12 +621,15 @@ namespace SimpleLanguage.Core
                     }
                     else if (relation == ClassManager.EClassRelation.Same)
                     {
-                        if( expressRetMetaDefineType.metaClass == ownerMetaClass )
+                        if( !(constExpressNode != null && constExpressNode.eType == EType.Null ) )
                         {
-                            Console.WriteLine("Error 自己类内部不允许包含 自己的实体，必须赋值为null");
-                            return;
+                            if (expressRetMetaDefineType.metaClass == ownerMetaClass)
+                            {
+                                Console.WriteLine("Error 自己类内部不允许包含 自己的实体，必须赋值为null");
+                                return;
+                            }
+                            SetMetaDefineType(expressRetMetaDefineType);
                         }
-                        SetMetaDefineType(expressRetMetaDefineType);
                     }
                     else if (relation == ClassManager.EClassRelation.Parent)
                     {

@@ -22,7 +22,8 @@ namespace Simple
         {
             public class NNN2
             {
-                NNN2 c2 = new NNN2();
+                public int baba = 20;
+                public NNN2 c2 = new NNN2();
                 public NNN2()
                 {
                 
@@ -64,6 +65,7 @@ namespace Simple
                     object aaaa = 1 + 2.0f;
                     int m1 = x1;
                     m1 = m1++ + +2- -20;
+                    n2.c2.baba = 100;
                 }
             }
         }

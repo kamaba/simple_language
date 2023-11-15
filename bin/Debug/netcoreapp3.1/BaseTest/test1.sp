@@ -47,6 +47,7 @@ const data ProjectConfig
             Math{}
             Express{}
         }
+        QS{}
     }
 }
 

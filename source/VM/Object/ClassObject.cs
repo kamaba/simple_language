@@ -36,10 +36,10 @@ namespace SimpleLanguage.VM
         {
             m_MetaDefineType = mdt;
 
-            int byteCount = mdt.metaClass.metaClassData.byteCount;
+            int byteCount = mdt.metaClass.byteCount;
             m_Data = new byte[byteCount];
 
-            var mvdict = mdt.metaClass.metaClassData.metaMemberVariables;
+            var mvdict = mdt.metaClass.localMetaMemberVariables;
 
             m_MemberVariableData = new MemberVariableData[mvdict.Count];
             m_MemberVariableArray = new SObject[mvdict.Count];

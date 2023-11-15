@@ -10,6 +10,12 @@ namespace SimpleLanguage.VM
 {
     public class ObjectManager
     {
+        public static Dictionary<int, ClassObject> classObjectDict = new Dictionary<int, ClassObject>();
+
+        public static void AddClassObject( ClassObject cl )
+        {
+
+        }
         public static SValue CreateValueByDefineType(MetaType mdt)
         {
             SValue svalue = new SValue();

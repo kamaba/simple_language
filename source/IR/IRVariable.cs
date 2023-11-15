@@ -29,7 +29,7 @@ namespace SimpleLanguage.IR
             else
             {
                 data.opCode = EIROpCode.LoadNotStaticField;
-                data.index = mmv.ownerMetaClass.metaClassData.GetMemberVariableIndex(mmv);
+                data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
                 m_IRDataList.Add(data);
             }
         }
@@ -70,7 +70,7 @@ namespace SimpleLanguage.IR
             m_IRDataList.AddRange(irexp.IRDataList);
 
             data.opCode = EIROpCode.StoreNotStaticField;
-            data.index = mmv.ownerMetaClass.metaClassData.GetMemberVariableIndex(mmv);
+            data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
             m_IRDataList.Add(data);
         }
         public IRStoreVariable(IRMethod _irMethod, MetaVariable mv) : base(_irMethod)
