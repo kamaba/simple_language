@@ -23,80 +23,6 @@ namespace SimpleLanguage.Core
 {
     public partial class MetaClass : MetaBase
     {
-        public class MetaClassData
-        {
-            public List<MetaMemberVariable> metaMemberVariables => m_MetaMemberVariables;
-
-            public int allocSize = 0;
-            List<MetaMemberVariable> m_MetaMemberVariables = new List<MetaMemberVariable>();
-            public List<EType> m_MetaTypeList = new List<EType>();
-            public int byteCount = 0;
-
-            public int GetMemberVariableIndex( MetaMemberVariable mmv )
-            {
-                for( int i = 0; i < m_MetaMemberVariables.Count; i++ )
-                {
-                    if (m_MetaMemberVariables[i] == mmv)
-                        return i;
-                }
-                return -1;
-            }
-            public void SetRealMetaMemberVariable( List<MetaMemberVariable> mmvList )
-            {
-                m_MetaMemberVariables = mmvList;
-            }
-
-            [Conditional("DEBUG")]           
-            public void CalcAllocSize()
-            {
-                m_MetaTypeList.Clear();
-                foreach (var v in m_MetaMemberVariables)
-                {
-                    m_MetaTypeList.Add(v.metaDefineType.metaClass.eType);
-                }
-                int count = 0;
-                int ssize = 0;
-                for(int i = 0; i < m_MetaTypeList.Count; i++ )
-                {
-                    ssize = GetTypeSize( m_MetaTypeList[i] );                    
-                    count += ssize;
-                    byteCount += ssize;
-                }
-            }
-            public int GetTypeSize( EType etype )
-            {
-                switch (etype)
-                {
-                    case EType.Bit:
-                        return 1;
-                    case EType.Byte:
-                    case EType.Boolean:
-                        return 1;
-                    case EType.Char:
-                        return 2;
-                    case EType.Int16:
-                    case EType.UInt16:
-                        return 2;
-                    case EType.Int32:
-                    case EType.UInt32:
-                    case EType.Class:
-                    case EType.String:
-                    case EType.Float:
-                        return 4;
-                    case EType.Int64:
-                    case EType.UInt64:
-                    case EType.Double:
-                        return 8;
-                    case EType.Int128:
-                    case EType.UInt128:
-                    case EType.Decimal:
-                        return 16;
-
-                }
-
-                return 1;
-            }
-        }
         public MetaNamespace topLevelMetaNamespace
         {
             get
@@ -114,14 +40,6 @@ namespace SimpleLanguage.Core
             }
 
         }
-        public int GetSize()
-        {
-            return 100;
-        }
-
-        MetaClassData m_MetaClassData = new MetaClassData();
-
-        public MetaClassData metaClassData => m_MetaClassData;
         public EType eType => m_Type;
         public bool isInnerDefineInCompile => m_IsInnerDefineCompile;
         public MetaClass extendClass => m_ExtendClass;
@@ -385,8 +303,6 @@ namespace SimpleLanguage.Core
                 AddMetaMemberFunction(addList[i]);
             }
             m_TempInnerFunctionList.Clear();
-
-            CreateMetaClassData();
         }
 #endif
         public MetaTemplate GetTemplateMetaClassByName(string _name)
@@ -604,12 +520,6 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        public void CreateMetaClassData()
-        {
-            var resList = GetMetaMemberVariableListByFlag(false, false);
-            m_MetaClassData.SetRealMetaMemberVariable(resList);
-            //m_MetaClassData.CalcAllocSize();
-        }
         public virtual MetaMemberVariable GetMetaMemberVariableByName(string name)
         {
             if (m_MetaMemberVariableDict.ContainsKey(name))
@@ -668,13 +578,13 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputParamCollect(string name, MetaInputParamCollection mmpc)
+        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputParamCollect(string name, MetaInputParamCollection mmpc, bool isIncludeExtendClass = true )
         {
             if (!m_MetaMemberFunctionListDict.ContainsKey(name))
             {
-                if ( m_ExtendClass != null)
+                if (isIncludeExtendClass  && m_ExtendClass != null )
                 {
-                    var func = m_ExtendClass.GetMetaMemberFunctionByNameAndInputParamCollect(name, mmpc);
+                    var func = m_ExtendClass.GetMetaMemberFunctionByNameAndInputParamCollect(name, mmpc, isIncludeExtendClass );
                     if (func != null)
                     {
                         return func;
@@ -726,7 +636,7 @@ namespace SimpleLanguage.Core
         }
         public virtual MetaMemberFunction GetMetaMemberConstructFunction( MetaInputParamCollection mmpc )
         {
-            return GetMetaMemberFunctionByNameAndInputParamCollect("__Init__", mmpc);
+            return GetMetaMemberFunctionByNameAndInputParamCollect("__Init__", mmpc, false );
         }
         public MetaMemberFunction GetFirstMetaMemberFunctionByName( string name )
         {

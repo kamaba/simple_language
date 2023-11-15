@@ -46,13 +46,11 @@ namespace SimpleLanguage.Core.Statements
             if ( mnoen!= null )
             {
                 var metaClass = mnoen.GetReturnMetaClass();
-                var mmvs = metaClass.metaClassData.metaMemberVariables;
+                var mmvs = metaClass.localMetaMemberVariables;
+                // Class1{ a = 1; b = 2 }
                 for ( int i = 0; i < mmvs.Count; i++ )
                 {
-                    IRExpress irExp = new IRExpress(irMethod, mmvs[i].express);
-                    m_IRStatements.Add(irExp);
-
-                    IRLoadVariable irLoadVar1 = new IRLoadVariable(irMethod, m_MetaVariable);
+                    IRLoadVariable irLoadVar1 = new IRLoadVariable(irMethod, m_MetaVariable );
                     m_IRStatements.Add(irLoadVar1);
 
                     IRStoreVariable irStoreVar2 = new IRStoreVariable(irMethod, mmvs[i]);
@@ -62,15 +60,14 @@ namespace SimpleLanguage.Core.Statements
                 IRLoadVariable localThisNodeVar = new IRLoadVariable(irMethod, m_MetaVariable);
                 m_IRStatements.Add(localThisNodeVar);
 
+                // Class1().Init();
                 var irCallFun = new IRCallFunction(irMethod, mnoen.constructFunctionCall);
                 m_IRStatements.Add(irCallFun);
 
-                for (int i = 0; i < mnoen.metaBraceOrBracketStatementsContent.assignStatementsList.Count; i++)
+                // { a = 1, b = 2 }
+                for (int i = 0; i < mnoen.metaBraceOrBracketStatementsContent?.assignStatementsList.Count; i++)
                 {
                     var asl = mnoen.metaBraceOrBracketStatementsContent.assignStatementsList[i];
-
-                    IRExpress irExp = new IRExpress(irMethod, mmvs[i].express);
-                    m_IRStatements.Add(irExp);
 
                     IRLoadVariable mmvsNodeVar = new IRLoadVariable(irMethod, m_MetaVariable);
                     m_IRStatements.Add(mmvsNodeVar);

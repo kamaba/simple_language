@@ -949,7 +949,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             if(m_AssignToken!= null )
             {
                 sb.Append( m_AssignToken.lexeme.ToString() + " " );
-                sb.Append(m_FileMetaExpress.ToFormatString());
+                sb.Append(m_FileMetaExpress?.ToFormatString());
                 if( isAppendSemiColon )
                 {
                    sb.Append(";");

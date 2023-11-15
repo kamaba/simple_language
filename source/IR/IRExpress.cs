@@ -6,6 +6,7 @@
 //  Description:  express convert ir code!
 //****************************************************************************
 
+using Simple.CC.C2;
 using SimpleLanguage.Core;
 using System;
 using System.Collections.Generic;
@@ -75,6 +76,12 @@ namespace SimpleLanguage.IR
                         {
                             m_IRDataList.AddRange(list[i].IRDataList);
                         }
+                    }
+                    break;
+                case MetaNewObjectExpressNode mnoe:
+                    {
+                        IRNew irnew = new IRNew(m_IRMethod, mnoe.GetReturnMetaDefineType() );
+                        m_IRDataList.AddRange(irnew.IRDataList);
                     }
                     break;
                 default:

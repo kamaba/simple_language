@@ -136,6 +136,10 @@ namespace SimpleLanguage.IR
             //解析成员中的string类型
             //解析成员中的const类型
             var classDict = ClassManager.instance.allClassDict;
+            foreach( var v in classDict )
+            {
+                v.Value.CreateMetaClassData();
+            }
             foreach( var v in classDict)
             {
                 var mmvd = v.Value.metaMemberVariableDict;

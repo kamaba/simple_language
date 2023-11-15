@@ -115,17 +115,24 @@ namespace SimpleLanguage.Core
                 return m_MetaDefineType;
             }
             //MetaType mdt = null;
-            MetaClass mc = CoreMetaClassManager.GetMetaClassByEType(eType);
-            MetaInputTemplateCollection mitc = new MetaInputTemplateCollection();
-            if( eType == EType.Array )
+            if( eType == EType.Null )
             {
-                MetaType mitp = new MetaType(CoreMetaClassManager.int32MetaClass);
-                mitc.AddMetaTemplateParamsList(mitp);
-                m_MetaDefineType = new MetaType(mc, mitc);
+                m_MetaDefineType = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
             else
             {
-                m_MetaDefineType = new MetaType(mc);
+                MetaClass mc = CoreMetaClassManager.GetMetaClassByEType(eType);
+                MetaInputTemplateCollection mitc = new MetaInputTemplateCollection();
+                if (eType == EType.Array)
+                {
+                    MetaType mitp = new MetaType(CoreMetaClassManager.int32MetaClass);
+                    mitc.AddMetaTemplateParamsList(mitp);
+                    m_MetaDefineType = new MetaType(mc, mitc);
+                }
+                else
+                {
+                    m_MetaDefineType = new MetaType(mc);
+                }
             }
             return m_MetaDefineType;
         }

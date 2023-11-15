@@ -27,6 +27,10 @@ namespace SimpleLanguage.IR
         }
         void Parse()
         {
+            if (m_MetaFunctionCall?.metaInputParamCollection == null)
+            {
+                return;
+            }
             paramCount = m_MetaFunctionCall.metaInputParamCollection.count;
             for (int j = 0; j < paramCount; j++)
             {
