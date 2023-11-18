@@ -549,10 +549,10 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            //if (fmcn != null && fmcn.metaBraceStatementsContent != null)
-            //{
-            //    m_MetaBraceOrBracketStatementsContent = fmcn.metaBraceStatementsContent;
-            //}
+            if (fmcn != null && fmcn.methodCall?.instance != null)
+            {
+                m_MetaBraceOrBracketStatementsContent = fmcn.metaBraceStatementsContent;
+            }
             var list = fmct.callLink?.callNodeList;
             if (list != null && list.Count > 0)
             {
