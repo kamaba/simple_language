@@ -556,11 +556,11 @@ namespace SimpleLanguage.Core
             var list = fmct.callLink?.callNodeList;
             if (list != null && list.Count > 0)
             {
-                Console.WriteLine("Error 待测试!!!");
                 var listfinalNode = list[list.Count - 1];
                 FileMetaBraceTerm fmbt = listfinalNode.fileMetaBraceTerm;
                 if (fmbt != null)
                 {
+                    Console.WriteLine("Error 待测试!!!");
                     m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fmbt, m_OwnerMetaBlockStatements, m_OwnerMetaClass);
                     m_MetaBraceOrBracketStatementsContent.Parse();
                     if (fmbt.isArray)
@@ -585,10 +585,10 @@ namespace SimpleLanguage.Core
                 FileMetaParTerm fmpt = listfinalNode.fileMetaParTerm;
                 if (fmpt != null)
                 {
-                    Console.WriteLine("Error 待测试!!!");
                     m_FileMetaParTerm = fmpt;
                     if (needByFileMetaParTermSetTemplate)
                     {
+                        Console.WriteLine("Error 待测试!!!");
                         List<MetaClass> mtList = new List<MetaClass>();
                         MetaInputParamCollection mipc = new MetaInputParamCollection(m_FileMetaParTerm, ownerMC, mbs);
                         for (int i = 0; i < mipc.count; i++)

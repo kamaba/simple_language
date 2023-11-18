@@ -282,7 +282,7 @@ namespace SimpleLanguage.Core.Statements
             MetaType expressRetMetaDefineType = m_FinalMetaExpress.GetReturnMetaDefineType();
             if (expressRetMetaDefineType == null)
             {
-                Console.WriteLine("Error 解析新建变量语句时，表达式返回类型为空!!");
+                Console.WriteLine("Error 解析新建变量语句时，表达式返回类型为空!!__3");
                 return;
             }
 
