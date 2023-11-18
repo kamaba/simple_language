@@ -171,6 +171,8 @@ namespace SimpleLanguage.Core
             Link,
             AT
         }
+        public MetaVariable localMetaVariable => m_LocalMetaVariable;
+        public MetaVariable visitMetaVariable => m_VisitMetaVariable;
 
         MetaVariable m_LocalMetaVariable = null;
         private EVisitType m_VisitType = EVisitType.AT;
@@ -183,6 +185,15 @@ namespace SimpleLanguage.Core
             m_LocalMetaVariable = lmv;
             m_VisitMetaVariable = target;
             m_DefineMetaType = target.metaDefineType;
+        }
+        public int GetIRMemberIndex()
+        {
+            var mmv = m_VisitMetaVariable as MetaMemberVariable;
+            if (mmv != null ) 
+            {
+                return mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
+            }
+            return -1;
         }
         public VisitMetaVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaVariable vmv)
         {

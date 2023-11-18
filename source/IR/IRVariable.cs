@@ -33,6 +33,7 @@ namespace SimpleLanguage.IR
                 m_IRDataList.Add(data);
             }
         }
+
         public IRLoadVariable(IRMethod _irMethod, MetaVariable mv) : base(_irMethod)
         {
             if (mv.isArgument)
@@ -64,28 +65,53 @@ namespace SimpleLanguage.IR
     public class IRStoreVariable : IRBase
     {
         public IRData data = new IRData();
-        public IRStoreVariable( IRMethod _irMethod, MetaMemberVariable mmv)
-        {
-            IRExpress irexp = new IRExpress(_irMethod, mmv.express);
-            m_IRDataList.AddRange(irexp.IRDataList);
-
-            data.opCode = EIROpCode.StoreNotStaticField;
-            data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
-            m_IRDataList.Add(data);
-        }
         public IRStoreVariable(IRMethod _irMethod, MetaVariable mv) : base(_irMethod)
         {
-            if (mv.isArgument)
+            var vmv = mv as VisitMetaVariable;
+            var mmv = mv as MetaMemberVariable;
+            if (vmv != null)
             {
-                data.opCode = EIROpCode.LoadArgument;
-                data.index = m_IRMethod.GetArgumentIndex(mv);
+                var localVariable = vmv.localMetaVariable;
+                if (localVariable is MetaVariable)
+                {
+                    if (localVariable is VisitMetaVariable)
+                    {
+                        IRStoreVariable parentIRStore = new IRStoreVariable(_irMethod, localVariable as VisitMetaVariable);
+                        m_IRDataList.AddRange(parentIRStore.IRDataList);
+                    }
+                    else
+                    {
+                        IRLoadVariable irload = new IRLoadVariable(_irMethod, localVariable as MetaVariable);
+                        m_IRDataList.AddRange(irload.IRDataList);
+                    }
+                }
+                data.opCode = EIROpCode.StoreNotStaticField;
+                data.index = vmv.GetIRMemberIndex();
+                m_IRDataList.Add(data);
+            }
+            else if (mmv != null)
+            {
+                //IRExpress irexp = new IRExpress(_irMethod, mmv.express);
+                //m_IRDataList.AddRange(irexp.IRDataList);
+
+                data.opCode = EIROpCode.StoreNotStaticField;
+                data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
                 m_IRDataList.Add(data);
             }
             else
             {
-                data.opCode = EIROpCode.StoreLocal;
-                data.index = m_IRMethod.GetLocalVariableIndex(mv);
-                m_IRDataList.Add(data);
+                if (mv.isArgument)
+                {
+                    data.opCode = EIROpCode.LoadArgument;
+                    data.index = m_IRMethod.GetArgumentIndex(mv);
+                    m_IRDataList.Add(data);
+                }
+                else
+                {
+                    data.opCode = EIROpCode.StoreLocal;
+                    data.index = m_IRMethod.GetLocalVariableIndex(mv);
+                    m_IRDataList.Add(data);
+                }
             }
         }
         public override string ToIRString()

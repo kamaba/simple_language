@@ -14,7 +14,10 @@ namespace SimpleLanguage.VM
 
         public static void AddClassObject( ClassObject cl )
         {
-
+            if(　!classObjectDict.ContainsKey(cl.GetHashCode() ) )
+            {
+                classObjectDict.Add(cl.GetHashCode(), cl);
+            }
         }
         public static SValue CreateValueByDefineType(MetaType mdt)
         {

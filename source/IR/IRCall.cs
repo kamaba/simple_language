@@ -31,6 +31,11 @@ namespace SimpleLanguage.IR
             {
                 return;
             }
+            if( !m_MetaFunctionCall.isStaticCall || m_MetaFunctionCall.isConstruction )
+            {
+                //IRLoadVariable irload = new IRLoadVariable(m_IRMethod, m_MetaFunctionCall.callerMetaVariable );
+                //AddIRRangeData(irload.IRDataList);
+            }
             paramCount = m_MetaFunctionCall.metaInputParamCollection.count;
             for (int j = 0; j < paramCount; j++)
             {
@@ -206,6 +211,19 @@ namespace SimpleLanguage.Core
 
                     IRLoadVariable irVar = new IRLoadVariable(IRManager.instance, mmv);
                     irList.Add(irVar);
+                }
+                else if( cnode.callNodeType == ECallNodeType.VisitVariable )
+                {
+                    VisitMetaVariable vmv = cnode.GetMetaVariable() as VisitMetaVariable;
+                    if( vmv != null )
+                    {
+                        IRLoadVariable irVar = new IRLoadVariable(IRManager.instance, vmv.visitMetaVariable as MetaMemberVariable );
+                        irList.Add(irVar);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error convert VisitMetaVariable");
+                    }
                 }
                 else if (cnode.callNodeType == ECallNodeType.FunctionName)
                 {
