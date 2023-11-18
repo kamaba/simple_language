@@ -35,21 +35,21 @@ namespace SimpleLanguage.Core.Statements
             m_MetaCallLink = new MetaCallLink(fmcl.variableRef, mbs.ownerMetaClass, mbs);
             m_MetaCallLink.Parse(m_AllowUseConst);
             m_MetaCallLink.CalcReturnType();
-            var metaFunCall = m_MetaCallLink.metaFunctionCall;
-            if (metaFunCall == null)
-            {
-                return;
-            }
-            if (!(metaFunCall.function is MetaMemberFunction))
-            {
-                return;
+            //var metaFunCall = m_MetaCallLink.finalMetaCallNode;
+            //if (metaFunCall == null)
+            //{
+            //    return;
+            //}
+            //if (!(metaFunCall.function is MetaMemberFunction))
+            //{
+            //    return;
 
-            }
-            var conFun = metaFunCall.function as MetaMemberFunction;
-            if (!conFun.isConstructInitFunction)
-            {
-                return;
-            }
+            //}
+            //var conFun = metaFunCall.function as MetaMemberFunction;
+            //if (!conFun.isConstructInitFunction)
+            //{
+            //    return;
+            //}
         }
         public override string ToFormatString()
         {

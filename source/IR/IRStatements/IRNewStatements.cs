@@ -50,16 +50,15 @@ namespace SimpleLanguage.Core.Statements
                 // Class1{ a = 1; b = 2 }
                 for ( int i = 0; i < mmvs.Count; i++ )
                 {
+                    IRExpress irexp = new IRExpress(irMethod, mmvs[i].express);
+                    m_IRStatements.Add(irexp);
+
                     IRLoadVariable irLoadVar1 = new IRLoadVariable(irMethod, m_MetaVariable );
                     m_IRStatements.Add(irLoadVar1);
 
                     IRStoreVariable irStoreVar2 = new IRStoreVariable(irMethod, mmvs[i]);
                     m_IRStatements.Add(irStoreVar2);
                 }
-
-                IRLoadVariable localThisNodeVar = new IRLoadVariable(irMethod, m_MetaVariable);
-                m_IRStatements.Add(localThisNodeVar);
-
                 // Class1().Init();
                 var irCallFun = new IRCallFunction(irMethod, mnoen.constructFunctionCall);
                 m_IRStatements.Add(irCallFun);

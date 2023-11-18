@@ -93,7 +93,7 @@ namespace SimpleLanguage.Core.Statements
                 }
                 else
                 {
-                    m_ForMetaVariable = new IteratorMetaVariable(dname, ownerMetaClass, m_OwnerMetaBlockStatements, m_ForInContent, forMVMC );
+                    m_ForMetaVariable = new MetaIteratorVariable(dname, ownerMetaClass, m_OwnerMetaBlockStatements, m_ForInContent, forMVMC );
                 }
 
                 m_ThenMetaStatements.UpdateMetaVariable(m_ForMetaVariable);
