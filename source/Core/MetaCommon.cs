@@ -1280,18 +1280,7 @@ namespace SimpleLanguage.Core
     public partial class MetaCallLink
     {
         public MetaVisitNode finalCallNode => m_FinalCallNode;
-        public List<MetaVisitNode> callNodeList
-        {
-            get
-            {
-                List<MetaVisitNode> list = new List<MetaVisitNode>();
-
-                list.Add(m_FirstCallNode);
-                list.AddRange(m_VisitNodeList);
-
-                return list;
-            }
-        }
+        public List<MetaVisitNode> callNodeList => m_VisitNodeList;
         public AllowUseConst allowUseConst { get; set; }
 
         private FileMetaCallLink m_FileMetaCallLink;
@@ -1300,7 +1289,7 @@ namespace SimpleLanguage.Core
         private List<MetaCallNode> m_CallNodeList = new List<MetaCallNode>();
 
         private MetaVisitNode m_FinalCallNode = null;
-        private MetaVisitNode m_FirstCallNode = null;
+        //private MetaVisitNode m_FirstCallNode = null;
         private List<MetaVisitNode> m_VisitNodeList = new List<MetaVisitNode>();
         public MetaCallLink(FileMetaCallLink fmcl, MetaClass metaClass, MetaBlockStatements mbs )
         {
@@ -1410,13 +1399,14 @@ namespace SimpleLanguage.Core
                         }
                         else if (nmcn.callNodeType == ECallNodeType.FunctionName)
                         {
-                            MetaMethodCall mmc = new MetaMethodCall(nmcn.m_MetaClass, nmcn.m_MetaFunction, nmcn.m_MetaInputParamCollection);
+                            MetaMethodCall mmc = new MetaMethodCall(nmcn.m_MetaFunction.ownerMetaClass, nmcn.m_MetaFunction, nmcn.m_MetaInputParamCollection);
                             MetaVisitNode mvn = MetaVisitNode.CreateByMethodCall(mmc);
                             m_VisitNodeList.Add(mvn);
                         }
                         else if (nmcn.callNodeType == ECallNodeType.NewClass )
                         {
                             MetaMethodCall mmc = new MetaMethodCall( nmcn.m_MetaClass, nmcn.m_MetaFunction, nmcn.m_MetaInputParamCollection );
+                            mmc.SetCallerMetaVariable( (nmcn.m_MetaFunction as MetaMemberFunction).thisMetaVariable );
                             MetaVisitNode mvn = MetaVisitNode.CreateByMethodCall(mmc);
                             mvn.metaBraceStatementsContent = mcn.metaBraceStatementsContent;
                             mvn.visitType = MetaVisitNode.EVisitType.NewMethodCall;
@@ -1428,6 +1418,7 @@ namespace SimpleLanguage.Core
                         if(mcn.callNodeType == ECallNodeType.NewClass)
                         {
                             MetaMethodCall mmc = new MetaMethodCall(mcn.m_MetaClass, mcn.m_MetaFunction, mcn.m_MetaInputParamCollection);
+                            mmc.SetCallerMetaVariable((mcn.m_MetaFunction as MetaMemberFunction).thisMetaVariable);
                             MetaVisitNode mvn = MetaVisitNode.CreateByMethodCall(mmc);
                             mvn.metaBraceStatementsContent = mcn.metaBraceStatementsContent;
                             mvn.visitType = MetaVisitNode.EVisitType.NewMethodCall;

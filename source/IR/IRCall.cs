@@ -31,7 +31,7 @@ namespace SimpleLanguage.IR
             {
                 return;
             }
-            if( !m_MetaFunctionCall.isStaticCall || m_MetaFunctionCall.isConstruction )
+            if( !m_MetaFunctionCall.isStaticCall )
             {
                 if( m_MetaFunctionCall.callerMetaVariable!=null )
                 {
@@ -198,10 +198,9 @@ namespace SimpleLanguage.Core
         {
             m_IRMethod = _irMethod;
 
-            var cnlist = callNodeList;
-            for (int i = 0; i < cnlist.Count; i++)
+            for (int i = 0; i < callNodeList.Count; i++)
             {
-                var cnode = cnlist[i];
+                var cnode = callNodeList[i];
                 //if (cnode.callNodeType == ECallNodeType.ConstValue)
                 //{
                 //    IRExpress data = new IRExpress( _irMethod, cnode.constValue);
@@ -217,28 +216,27 @@ namespace SimpleLanguage.Core
                 //{
                 //    MetaMemberVariable mmv = cnode.GetMetaMemeberVariable();
 
-                //    IRLoadVariable irVar = new IRLoadVariable(IRManager.instance, mmv);
-                //    irList.Add(irVar);
-                //}
-                //else if( cnode.callNodeType == ECallNodeType.VisitVariable )
-                //{
-                //    MetaVisitVariable vmv = cnode.GetMetaVariable() as MetaVisitVariable;
-                //    if( vmv != null )
-                //    {
-                //        IRLoadVariable irVar = new IRLoadVariable(IRManager.instance, vmv.visitMetaVariable as MetaMemberVariable );
-                //        irList.Add(irVar);
-                //    }
-                //    else
-                //    {
-                //        Console.WriteLine("Error convert VisitMetaVariable");
-                //    }
-                //}
-                //else if (cnode.callNodeType == ECallNodeType.FunctionName)
-                //{
-                //    var mfc = cnode.GetMetaFunctionCall();
-                //    IRCallFunction irCallFun = new IRCallFunction(m_IRMethod, mfc);
-                //    irList.Add(irCallFun);
-                //}
+                    //    IRLoadVariable irVar = new IRLoadVariable(IRManager.instance, mmv);
+                    //    irList.Add(irVar);
+                    //}
+                    //else if( cnode.callNodeType == ECallNodeType.VisitVariable )
+                    //{
+                    //    MetaVisitVariable vmv = cnode.GetMetaVariable() as MetaVisitVariable;
+                    //    if( vmv != null )
+                    //    {
+                    //        IRLoadVariable irVar = new IRLoadVariable(IRManager.instance, vmv.visitMetaVariable as MetaMemberVariable );
+                    //        irList.Add(irVar);
+                    //    }
+                    //    else
+                    //    {
+                    //        Console.WriteLine("Error convert VisitMetaVariable");
+                    //    }
+                    //}
+                if (cnode.visitType == MetaVisitNode.EVisitType.MethodCall)
+                {
+                    IRCallFunction irCallFun = new IRCallFunction(m_IRMethod, cnode.methodCall );
+                    irList.Add(irCallFun);
+                }
                 //else if (cnode.callNodeType == ECallNodeType.This)
                 //{
                 //    IRCallFunction data = new IRCallFunction( _irMethod, cnode.GetMetaFunctionCall() );

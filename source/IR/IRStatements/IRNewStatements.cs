@@ -60,6 +60,7 @@ namespace SimpleLanguage.Core.Statements
                     m_IRStatements.Add(irStoreVar2);
                 }
                 // Class1().Init();
+                mnoen.constructFunctionCall.SetCallerMetaVariable(m_MetaVariable);
                 var irCallFun = new IRCallFunction(irMethod, mnoen.constructFunctionCall);
                 m_IRStatements.Add(irCallFun);
 
