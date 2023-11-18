@@ -116,12 +116,12 @@ namespace SimpleLanguage.Core.Statements
                 expressRetMetaDefineType = m_ExpressNode.GetReturnMetaDefineType();
                 if (m_ExpressNode == null)
                 {
-                    Console.WriteLine("Error 解析新建变量语句时，表达式解析为空!!");
+                    Console.WriteLine("Error 解析新建变量语句时，表达式解析为空!!__1");
                     return;
                 }
                 if (expressRetMetaDefineType == null)
                 {
-                    Console.WriteLine("Error 解析新建变量语句时，表达式返回类型为空!!");
+                    Console.WriteLine("Error 解析新建变量语句时，表达式返回类型为空!!__2");
                     return;
                 }
             }

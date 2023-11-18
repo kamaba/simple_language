@@ -313,6 +313,7 @@ namespace SimpleLanguage.Core
         public enum EVisitType
         {
             Variable,
+            VisitVariable,
             IteratorVariable,
             MethodCall,
             NewMethodCall
@@ -320,6 +321,7 @@ namespace SimpleLanguage.Core
         public string name;
         public EVisitType visitType;
 
+        public MetaVariable variable = null;
         public MetaVisitVariable visitVariable = null;
         public MetaMethodCall methodCall = null;
         public MetaClass callerMetaClass;
@@ -334,14 +336,42 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CreateByVariable(MetaVisitVariable _variale )
+        public static MetaVisitNode CreateByVisitVariable(MetaVisitVariable _variale)
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.visitType = EVisitType.VisitVariable;
+            vn.visitVariable = _variale;
+
+            return vn;
+        }
+        public static MetaVisitNode CreateByVariable(MetaVariable _variale)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.visitType = EVisitType.Variable;
-            vn.visitVariable = _variale;
+            vn.variable = _variale;
 
             return vn;
+        }
+        public MetaType GetMetaDefineType()
+        {
+            switch(visitType)
+            {
+                case EVisitType.MethodCall:
+                    {
+                        return methodCall.GetRetMetaType();
+                    }
+                    case EVisitType.VisitVariable:
+                    {
+                        return visitVariable.metaDefineType;
+                    }
+                    case EVisitType.Variable:
+                    {
+                        return variable.metaDefineType;
+                    }
+            }
+            return new MetaType(CoreMetaClassManager.objectMetaClass);
         }
         public MetaClass GetMetaClass()
         {
