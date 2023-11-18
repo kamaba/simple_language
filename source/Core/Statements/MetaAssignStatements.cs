@@ -197,15 +197,15 @@ namespace SimpleLanguage.Core.Statements
             auc.getterFunction = false;
             m_MetaCallLink.Parse(auc);
             m_MetaCallLink.CalcReturnType();
-            var mfc = m_MetaCallLink.metaFunctionCall;
-            if( mfc != null && mfc.function is MetaMemberFunction )
-            {
-                MetaMemberFunction mmf = mfc.function as MetaMemberFunction;
-                if( mmf.isSet )
-                {
-                    m_IsSetStatements = true;
-                }
-            }
+            //var mfc = new Object(); m_MetaCallLink.metaFunctionCall;
+            //if( mfc != null && mfc.function is MetaMemberFunction )
+            //{
+            //    MetaMemberFunction mmf = mfc.function as MetaMemberFunction;
+            //    if( mmf.isSet )
+            //    {
+            //        m_IsSetStatements = true;
+            //    }
+            //}
             MetaType expressMdt = new MetaType(CoreMetaClassManager.objectMetaClass);
             if (!m_IsSetStatements)
             {
@@ -363,8 +363,8 @@ namespace SimpleLanguage.Core.Statements
             else
             {
                 MetaInputParam mip = new MetaInputParam(m_ExpressNode);
-                mfc.metaInputParamCollection.AddMetaInputParam(mip);
-                mfc.CheckMetaFunctionMatchInputParamCollection();
+                //mfc.metaInputParamCollection.AddMetaInputParam(mip);
+                //mfc.CheckMetaFunctionMatchInputParamCollection();
             }
             return;
         }

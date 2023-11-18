@@ -301,5 +301,9 @@ namespace SimpleLanguage.VM
 
             return sb.ToString();
         }
+        public override string ToString()
+        {
+            return "aa";
+        }
     }
 }

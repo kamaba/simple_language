@@ -10,7 +10,7 @@ namespace SimpleLanguage.Core.Statements
     public partial class MetaCSharpCallStatements : MetaStatements
     {
         MethodInfo m_MethodInfo = null;
-        MetaFunctionCall metaFunctionCall = null;
+        MetaMethodCall metaFunctionCall = null;
         public MetaCSharpCallStatements(MetaBlockStatements mbs, string _name, System.Type type, MethodInfo methodInfo) : base(mbs)
         {
             m_MethodInfo = methodInfo;
@@ -18,7 +18,7 @@ namespace SimpleLanguage.Core.Statements
             MetaFunction mf = new MetaMemberFunction( mbs.ownerMetaClass, _name, m_MethodInfo);
 
             var mipc = new MetaInputParamCollection(mbs.ownerMetaClass, mbs);
-            metaFunctionCall = new MetaFunctionCall(mbs.ownerMetaClass, mf, mipc );
+            metaFunctionCall = new MetaMethodCall(mbs.ownerMetaClass, mf, mipc );
         }
         public override void ParseIRStatements()
         {

@@ -17,10 +17,10 @@ namespace SimpleLanguage.IR
 {
     public class IRCallFunction : IRBase
     {
-        MetaFunctionCall m_MetaFunctionCall = null;
+        MetaMethodCall m_MetaFunctionCall = null;
         public int paramCount { get; set; } = 0;
         public bool target { get; set; } = false;
-        public IRCallFunction(IRMethod _irMethod, MetaFunctionCall mfc) : base(_irMethod)
+        public IRCallFunction(IRMethod _irMethod, MetaMethodCall mfc) : base(_irMethod)
         {
             m_MetaFunctionCall = mfc;
             Parse();
@@ -33,8 +33,16 @@ namespace SimpleLanguage.IR
             }
             if( !m_MetaFunctionCall.isStaticCall || m_MetaFunctionCall.isConstruction )
             {
-                //IRLoadVariable irload = new IRLoadVariable(m_IRMethod, m_MetaFunctionCall.callerMetaVariable );
-                //AddIRRangeData(irload.IRDataList);
+                if( m_MetaFunctionCall.callerMetaVariable!=null )
+                {
+                    IRLoadVariable irload = new IRLoadVariable(m_IRMethod, m_MetaFunctionCall.callerMetaVariable);
+                    AddIRRangeData(irload.IRDataList);
+                }
+                else
+                {
+                    Console.WriteLine("Error 没有加载到调用者信息!");
+                    return;
+                }
             }
             paramCount = m_MetaFunctionCall.metaInputParamCollection.count;
             for (int j = 0; j < paramCount; j++)
@@ -194,53 +202,53 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < cnlist.Count; i++)
             {
                 var cnode = cnlist[i];
-                if (cnode.callNodeType == ECallNodeType.ConstValue)
-                {
-                    IRExpress data = new IRExpress( _irMethod, cnode.constValue);
-                    irList.Add(data);
-                }
-                else if (cnode.callNodeType == ECallNodeType.VariableName)
-                {
-                    MetaVariable mv = cnode.GetMetaVariable();
-                    IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mv);
-                    irList.Add(irVar);
-                }
-                else if (cnode.callNodeType == ECallNodeType.MemberVariableName)
-                {
-                    MetaMemberVariable mmv = cnode.GetMetaMemeberVariable();
+                //if (cnode.callNodeType == ECallNodeType.ConstValue)
+                //{
+                //    IRExpress data = new IRExpress( _irMethod, cnode.constValue);
+                //    irList.Add(data);
+                //}
+                //else if (cnode.callNodeType == ECallNodeType.VariableName)
+                //{
+                //    MetaVariable mv = cnode.GetMetaVariable();
+                //    IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mv);
+                //    irList.Add(irVar);
+                //}
+                //else if (cnode.callNodeType == ECallNodeType.MemberVariableName)
+                //{
+                //    MetaMemberVariable mmv = cnode.GetMetaMemeberVariable();
 
-                    IRLoadVariable irVar = new IRLoadVariable(IRManager.instance, mmv);
-                    irList.Add(irVar);
-                }
-                else if( cnode.callNodeType == ECallNodeType.VisitVariable )
-                {
-                    VisitMetaVariable vmv = cnode.GetMetaVariable() as VisitMetaVariable;
-                    if( vmv != null )
-                    {
-                        IRLoadVariable irVar = new IRLoadVariable(IRManager.instance, vmv.visitMetaVariable as MetaMemberVariable );
-                        irList.Add(irVar);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Error convert VisitMetaVariable");
-                    }
-                }
-                else if (cnode.callNodeType == ECallNodeType.FunctionName)
-                {
-                    var mfc = cnode.GetMetaFunctionCall();
-                    IRCallFunction irCallFun = new IRCallFunction(m_IRMethod, mfc);
-                    irList.Add(irCallFun);
-                }
-                else if (cnode.callNodeType == ECallNodeType.This)
-                {
-                    IRCallFunction data = new IRCallFunction( _irMethod, cnode.GetMetaFunctionCall() );
-                    irList.Add(data);
-                }
-                else if (cnode.callNodeType == ECallNodeType.Base)
-                {
-                    IRCallFunction data = new IRCallFunction(_irMethod, cnode.GetMetaFunctionCall());
-                    irList.Add(data);
-                }
+                //    IRLoadVariable irVar = new IRLoadVariable(IRManager.instance, mmv);
+                //    irList.Add(irVar);
+                //}
+                //else if( cnode.callNodeType == ECallNodeType.VisitVariable )
+                //{
+                //    MetaVisitVariable vmv = cnode.GetMetaVariable() as MetaVisitVariable;
+                //    if( vmv != null )
+                //    {
+                //        IRLoadVariable irVar = new IRLoadVariable(IRManager.instance, vmv.visitMetaVariable as MetaMemberVariable );
+                //        irList.Add(irVar);
+                //    }
+                //    else
+                //    {
+                //        Console.WriteLine("Error convert VisitMetaVariable");
+                //    }
+                //}
+                //else if (cnode.callNodeType == ECallNodeType.FunctionName)
+                //{
+                //    var mfc = cnode.GetMetaFunctionCall();
+                //    IRCallFunction irCallFun = new IRCallFunction(m_IRMethod, mfc);
+                //    irList.Add(irCallFun);
+                //}
+                //else if (cnode.callNodeType == ECallNodeType.This)
+                //{
+                //    IRCallFunction data = new IRCallFunction( _irMethod, cnode.GetMetaFunctionCall() );
+                //    irList.Add(data);
+                //}
+                //else if (cnode.callNodeType == ECallNodeType.Base)
+                //{
+                //    IRCallFunction data = new IRCallFunction(_irMethod, cnode.GetMetaFunctionCall());
+                //    irList.Add(data);
+                //}
             }
         }
         public void ParseToIRDataListByIRManager(IRManager _irManager)
@@ -249,29 +257,29 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < cnlist.Count; i++)
             {
                 var cnode = cnlist[i];
-                if (cnode.callNodeType == ECallNodeType.ConstValue)
-                {
-                    IRExpress data = new IRExpress(_irManager, cnode.constValue);
-                    irList.Add(data);
-                }
-                else if (cnode.callNodeType == ECallNodeType.VariableName)
-                {
-                    MetaVariable mv = cnode.GetMetaVariable();
-                    IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mv);
-                    irList.Add(irVar);
-                }
-                else if (cnode.callNodeType == ECallNodeType.MemberVariableName)
-                {
-                    MetaMemberVariable mmv = cnode.GetMetaMemeberVariable();
-                    IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mmv);
-                    irList.Add(irVar);
-                }
-                else if (cnode.callNodeType == ECallNodeType.FunctionName)
-                {
-                    var mfc = cnode.GetMetaFunctionCall();
-                    IRCallFunction irCallFun = new IRCallFunction(m_IRMethod, mfc);
-                    irList.Add(irCallFun);
-                }               
+                //if (cnode.callNodeType == ECallNodeType.ConstValue)
+                //{
+                //    IRExpress data = new IRExpress(_irManager, cnode.constValue);
+                //    irList.Add(data);
+                //}
+                //else if (cnode.callNodeType == ECallNodeType.VariableName)
+                //{
+                //    MetaVariable mv = cnode.GetMetaVariable();
+                //    IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mv);
+                //    irList.Add(irVar);
+                //}
+                //else if (cnode.callNodeType == ECallNodeType.MemberVariableName)
+                //{
+                //    MetaMemberVariable mmv = cnode.GetMetaMemeberVariable();
+                //    IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mmv);
+                //    irList.Add(irVar);
+                //}
+                //else if (cnode.callNodeType == ECallNodeType.FunctionName)
+                //{
+                //    var mfc = cnode.GetMetaFunctionCall();
+                //    IRCallFunction irCallFun = new IRCallFunction(m_IRMethod, mfc);
+                //    irList.Add(irCallFun);
+                //}               
             }
         }
 

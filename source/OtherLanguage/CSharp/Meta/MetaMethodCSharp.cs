@@ -6,7 +6,7 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public partial class MetaFunctionCall
+    public partial class MetaMethodCall
     {
         public MethodInfo methodInfo;
         public System.Object instance;

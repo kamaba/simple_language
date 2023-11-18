@@ -67,16 +67,16 @@ namespace SimpleLanguage.IR
         public IRData data = new IRData();
         public IRStoreVariable(IRMethod _irMethod, MetaVariable mv) : base(_irMethod)
         {
-            var vmv = mv as VisitMetaVariable;
+            var vmv = mv as MetaVisitVariable;
             var mmv = mv as MetaMemberVariable;
             if (vmv != null)
             {
                 var localVariable = vmv.localMetaVariable;
                 if (localVariable is MetaVariable)
                 {
-                    if (localVariable is VisitMetaVariable)
+                    if (localVariable is MetaVisitVariable)
                     {
-                        IRStoreVariable parentIRStore = new IRStoreVariable(_irMethod, localVariable as VisitMetaVariable);
+                        IRStoreVariable parentIRStore = new IRStoreVariable(_irMethod, localVariable as MetaVisitVariable);
                         m_IRDataList.AddRange(parentIRStore.IRDataList);
                     }
                     else
@@ -91,9 +91,6 @@ namespace SimpleLanguage.IR
             }
             else if (mmv != null)
             {
-                //IRExpress irexp = new IRExpress(_irMethod, mmv.express);
-                //m_IRDataList.AddRange(irexp.IRDataList);
-
                 data.opCode = EIROpCode.StoreNotStaticField;
                 data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
                 m_IRDataList.Add(data);

@@ -264,10 +264,10 @@ namespace SimpleLanguage.Core
             {
                 MetaType mdt = new MetaType(this);
                 var defaultFunction = GetMetaMemberConstructDefaultFunction();
-                MetaFunctionCall mfc = null;
+                MetaMethodCall mfc = null;
                 if (defaultFunction != null)
                 {
-                    mfc = new MetaFunctionCall(this, GetMetaMemberConstructDefaultFunction());
+                    mfc = new MetaMethodCall(this, defaultFunction );
                 }
                 m_DefaultExpressNode = new MetaNewObjectExpressNode(mdt, this, null, mfc);
             }

@@ -754,7 +754,7 @@ namespace SimpleLanguage.Core
 
                             if (mmf == null) return null;
 
-                            MetaFunctionCall mfc = new MetaFunctionCall(ownerMetaClass, mmf, mpc );
+                            MetaMethodCall mfc = new MetaMethodCall(ownerMetaClass, mmf, mpc );
 
                             MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(fmpt, m_DefineMetaType, ownerMetaClass, null, mfc);
                             if (mnoen != null)

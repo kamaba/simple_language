@@ -84,7 +84,7 @@ namespace SimpleLanguage.Core.Statements
                     mcen.Parse(new AllowUseConst() { });
                     mcen.CalcReturnType();
 
-                    matchTypeClass = mcen.metaCallLink.finalMetaCallNode.GetMetaClass();
+                    matchTypeClass = mcen.metaCallLink.finalCallNode.callerMetaClass;
 
                     if (matchTypeClass != null)
                     {
