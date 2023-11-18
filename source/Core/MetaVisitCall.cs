@@ -209,16 +209,21 @@ namespace SimpleLanguage.Core
             m_CallerMetaClass = mc;
             m_MetaFunction = _fun;
             m_MetaInputParamCollection = _param;
-            if (_fun is MetaMemberFunction)
+            var tmmf = _fun as MetaMemberFunction;
+            if (tmmf != null )
             {
-                isConstruction = (_fun as MetaMemberFunction).isConstructInitFunction;
-                isStaticCall = false;
+                isConstruction = tmmf.isConstructInitFunction;
+                isStaticCall = tmmf.isStatic;
             }
             else
             {
-                isStaticCall = true;
+                isStaticCall = false;
             }
             ParseCSharp();
+        }
+        public void SetCallerMetaVariable( MetaVariable metaVariable)
+        {
+            m_CallerMetaVariable = metaVariable;
         }
         public void Parse()
         {
