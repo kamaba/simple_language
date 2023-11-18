@@ -263,8 +263,13 @@ namespace SimpleLanguage.Core
             if(m_DefaultExpressNode == null && isTemplateClass == false )
             {
                 MetaType mdt = new MetaType(this);
-                var cdf = new MetaFunctionCall( this, GetMetaMemberConstructDefaultFunction());
-                m_DefaultExpressNode = new MetaNewObjectExpressNode(mdt, this, null, cdf );
+                var defaultFunction = GetMetaMemberConstructDefaultFunction();
+                MetaFunctionCall mfc = null;
+                if (defaultFunction != null)
+                {
+                    mfc = new MetaFunctionCall(this, GetMetaMemberConstructDefaultFunction());
+                }
+                m_DefaultExpressNode = new MetaNewObjectExpressNode(mdt, this, null, mfc);
             }
 
             List<MetaMemberFunction> addList = new List<MetaMemberFunction>();

@@ -325,14 +325,20 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             (v.sobject as ClassObject).GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex-1]);
                         }
+                        m_ValueIndex--;
                     }
                     break;
                 case EIROpCode.StoreNotStaticField:
                     {
-                        var v = m_ValueStack[m_ValueIndex - 2];
+                        // -2在存储的值 -1表示要存储的对象 0位表示要存储的位置
+                        var v = m_ValueStack[m_ValueIndex - 1];
                         if (v.eType == EType.Class)
                         {
-                            (v.sobject as ClassObject).SetMemberVariableSValue(iri.index, m_ValueStack[m_ValueIndex - 1]);
+                            (v.sobject as ClassObject).SetMemberVariableSValue(iri.index, m_ValueStack[m_ValueIndex - 2]);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Error StoreNotStaticField Path:" + iri.debugInfo.path + " Line: " + iri.debugInfo.beginLine );
                         }
                         m_ValueIndex-=2;
                     }

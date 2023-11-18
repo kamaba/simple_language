@@ -70,6 +70,7 @@ namespace SimpleLanguage.VM
         public void SetValue(ClassObject val )
         {
             m_Object = val;
+            val.refCount++;
         }
         public void GetMemberVariableSValue( int index, ref SValue svalue )
         {
@@ -174,13 +175,115 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Class:
                     {
-                        ClassObject classObj = m_MemberVariableArray[index] as ClassObject;
-                        if (classObj == null)
+                        var mva = m_MemberVariableArray[index];
+                        if (mva.eType == EType.Byte)
                         {
-                            Console.WriteLine("该类型不是Int32类型!!");
-                            return;
+
+                            ByteObject byteObj = mva as ByteObject;
+                            if (byteObj == null)
+                            {
+                                Console.WriteLine("该类型不是Int32类型!!");
+                                return;
+                            }
+                            byteObj.SetValue(svalue.int8Value);
                         }
-                        classObj.SetValue(svalue.sobject as ClassObject);
+                        else if (mva.eType == EType.SByte)
+                        {
+
+                            SByteObject sbyteObj = mva as SByteObject;
+                            if (sbyteObj == null)
+                            {
+                                Console.WriteLine("该类型不是Int32类型!!");
+                                return;
+                            }
+                            sbyteObj.SetValue(svalue.sint8Value);
+                        }
+                        else if (mva.eType == EType.Int16)
+                        {
+
+                            Int16Object int16Obj = mva as Int16Object;
+                            if (int16Obj == null)
+                            {
+                                Console.WriteLine("该类型不是Int16类型!!");
+                                return;
+                            }
+                            int16Obj.SetValue(svalue.int16Value);
+                        }
+                        else if (mva.eType == EType.UInt16)
+                        {
+
+                            UInt32Object uint32Obj = mva as UInt32Object;
+                            if (uint32Obj == null)
+                            {
+                                Console.WriteLine("该类型不是UInt32类型!!");
+                                return;
+                            }
+                            uint32Obj.SetValue(svalue.uint32Value);
+                        }
+                        else if (mva.eType == EType.Int32)
+                        {
+                            Int32Object int32Obj = mva as Int32Object;
+                            if (int32Obj == null)
+                            {
+                                Console.WriteLine("该类型不是Int32类型!!");
+                                return;
+                            }
+                            int32Obj.SetValue(svalue.int32Value);
+                        }
+                        else if (mva.eType == EType.UInt32)
+                        {
+
+                            UInt32Object uint32Obj = mva as UInt32Object;
+                            if (uint32Obj == null)
+                            {
+                                Console.WriteLine("该类型不是Int32类型!!");
+                                return;
+                            }
+                            uint32Obj.SetValue(svalue.uint32Value);
+                        }
+                        else if (mva.eType == EType.Int64)
+                        {
+
+                            Int64Object int64Obj = mva as Int64Object;
+                            if (int64Obj == null)
+                            {
+                                Console.WriteLine("该类型不是Int64类型!!");
+                                return;
+                            }
+                            int64Obj.SetValue(svalue.int64Value);
+                        }
+                        else if (mva.eType == EType.UInt64)
+                        {
+
+                            UInt64Object uint64Obj = mva as UInt64Object;
+                            if (uint64Obj == null)
+                            {
+                                Console.WriteLine("该类型不是Int64类型!!");
+                                return;
+                            }
+                            uint64Obj.SetValue(svalue.uint64Value);
+                        }
+                        else if (mva.eType == EType.String)
+                        {
+
+                            StringObject stringObj = mva as StringObject;
+                            if (stringObj == null)
+                            {
+                                Console.WriteLine("该类型不是stringObj类型!!");
+                                return;
+                            }
+                            stringObj.SetValue(svalue.stringValue);
+                        }
+                        else
+                        {
+                            ClassObject classObj = m_MemberVariableArray[index] as ClassObject;
+                            if (classObj == null)
+                            {
+                                Console.WriteLine("该类型不是Int32类型!!");
+                                return;
+                            }
+                            classObj.SetValue(svalue.sobject as ClassObject);
+                        }
                     }
                     break;
             }

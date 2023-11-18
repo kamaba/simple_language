@@ -23,9 +23,10 @@ namespace SimpleLanguage.Core.Statements
         {
             if (m_FinalMetaExpress != null)
             {
-                m_IRExpress = new IRExpress( irMethod, m_FinalMetaExpress);
+                m_IRExpress = new IRExpress(irMethod, m_FinalMetaExpress);
                 m_IRStatements.Add(m_IRExpress);
             }
+
             m_StoreVariable = new IRStoreVariable(irMethod, m_MetaVariable);
             m_IRStatements.Add(m_StoreVariable);
         }
