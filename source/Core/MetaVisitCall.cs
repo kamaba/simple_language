@@ -323,6 +323,7 @@ namespace SimpleLanguage.Core
         public MetaVisitVariable visitVariable = null;
         public MetaMethodCall methodCall = null;
         public MetaClass callerMetaClass;
+        public MetaBraceOrBracketStatementsContent metaBraceStatementsContent = null;
 
         public static MetaVisitNode CreateByMethodCall( MetaMethodCall _methodCall)
         {
@@ -341,6 +342,21 @@ namespace SimpleLanguage.Core
             vn.visitVariable = _variale;
 
             return vn;
+        }
+        public MetaClass GetMetaClass()
+        {
+            if (visitVariable != null)
+            {
+            }
+            return null;
+        }
+        public MetaVariable GetRetMetaVariable()
+        {
+            if( visitVariable != null )
+            {
+                return visitVariable.visitMetaVariable;
+            }
+            return null;
         }
 
         public int CalcParseLevel(int level)
