@@ -768,6 +768,10 @@ namespace SimpleLanguage.Core
                         Console.WriteLine("Error 当前位置不允许有函数调用方式使用!!!" + m_Token?.ToLexemeAllString());
                     }
                 }
+                else if( m_MetaFunction != null )
+                {
+
+                }
                 else
                 {
                     Console.WriteLine("Error 使用函数调用与当前节点不吻合!!");
@@ -1355,7 +1359,7 @@ namespace SimpleLanguage.Core
             allowUseConst = new AllowUseConst(_useConst);
             allowUseConst.setterFunction = false;
             allowUseConst.getterFunction = true;
-            bool flag = true;// m_FirstNode.ParseNode(allowUseConst);
+            bool flag = true;
             for (int i = 0; i < m_CallNodeList.Count; i++)
             {
                 if (flag)
@@ -1510,9 +1514,9 @@ namespace SimpleLanguage.Core
         public string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < m_CallNodeList.Count; i++)
+            for (int i = 0; i < m_VisitNodeList.Count; i++)
             {
-                sb.Append(m_CallNodeList[i].ToFormatString());
+                sb.Append(m_VisitNodeList[i].ToFormatString());
             }
             return sb.ToString();
         }

@@ -325,7 +325,7 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             (v.sobject as ClassObject).GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex-1]);
                         }
-                        m_ValueIndex--;
+                        m_ValueIndex-=1;
                     }
                     break;
                 case EIROpCode.StoreNotStaticField:
@@ -366,11 +366,11 @@ namespace SimpleLanguage.VM.Runtime
                         Object[] paramsObj = new Object[mfc.paramCount];
                         if( mfc.target )
                         {
-                            targetObject = m_ValueStack[--m_ValueIndex].CreateCSharpObject();
+                            targetObject = m_ValueStack[m_ValueIndex--].CreateCSharpObject();
                         }
                         for (int i = 0; i < paramsObj.Length; i++)
                         {
-                            paramsObj[i] = m_ValueStack[--m_ValueIndex].CreateCSharpObject();
+                            paramsObj[i] = m_ValueStack[m_ValueIndex--].CreateCSharpObject();
                         }
                         Object obj = mfc.InvokeCSharp(targetObject, paramsObj);
                         if (obj != null)
@@ -444,7 +444,7 @@ namespace SimpleLanguage.VM.Runtime
                             Console.WriteLine("Error 加法运算!!超出的栈范围");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex-2].AddSValue(ref m_ValueStack[m_ValueIndex-1], false );
+                        m_ValueStack[m_ValueIndex-1].AddSValue(ref m_ValueStack[m_ValueIndex], false );
                         m_ValueIndex--;
                     }
                     break;

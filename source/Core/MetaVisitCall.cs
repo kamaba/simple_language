@@ -428,7 +428,28 @@ namespace SimpleLanguage.Core
         }
         public string ToFormatString()
         {
-            return "";
+            StringBuilder sb = new StringBuilder(); 
+
+            switch( visitType )
+            {
+                case EVisitType.MethodCall:
+                    {
+                        sb.Append( methodCall.ToFormatString() );
+                    }
+                    break;
+                case EVisitType.VisitVariable:
+                    {
+                        sb.Append(visitVariable.ToFormatString());
+                    }
+                    break;
+                default:
+                    {
+                        sb.Append("MetaVisitCall111");
+                    }
+                    break;
+            }
+
+            return sb.ToString();
         }
     }
 }

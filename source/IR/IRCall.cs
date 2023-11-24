@@ -194,7 +194,7 @@ namespace SimpleLanguage.Core
         private IRMethod m_IRMethod = null;
         public List<IRBase> irList = new List<IRBase>();
 
-        public void ParseToIRDataList(IRMethod _irMethod)
+        public void ParseToIRDataList(IRMethod _irMethod, bool isSave = false )
         {
             m_IRMethod = _irMethod;
 
@@ -206,12 +206,37 @@ namespace SimpleLanguage.Core
                 //    IRExpress data = new IRExpress( _irMethod, cnode.constValue);
                 //    irList.Add(data);
                 //}
-                //else if (cnode.callNodeType == ECallNodeType.VariableName)
-                //{
-                //    MetaVariable mv = cnode.GetMetaVariable();
-                //    IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mv);
-                //    irList.Add(irVar);
-                //}
+                if (cnode.visitType == MetaVisitNode.EVisitType.VisitVariable )
+                {
+                    MetaVisitVariable mvn = cnode.visitVariable;
+                    if( mvn.localMetaVariable != null )
+                    {
+                        IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mvn.localMetaVariable );
+                        irList.Add(irVar);
+
+                        if( mvn.visitMetaVariable != null )
+                        {
+                            if( mvn.visitMetaVariable is MetaMemberVariable )
+                            {
+                                bool isLoad = true;
+                                if( i == callNodeList.Count - 1  )
+                                {
+                                    if( isSave )
+                                    {
+                                        isLoad = false;
+                                        IRStoreVariable irSvar2 = new IRStoreVariable(_irMethod, mvn.visitMetaVariable as MetaMemberVariable);
+                                        irList.Add(irSvar2);
+                                    }
+                                }
+                                if(isLoad )
+                                {
+                                    IRLoadVariable irVar2 = new IRLoadVariable(m_IRMethod, mvn.visitMetaVariable as MetaMemberVariable);
+                                    irList.Add(irVar2);
+                                }
+                            }
+                        }
+                    }
+                }
                 //else if (cnode.callNodeType == ECallNodeType.MemberVariableName)
                 //{
                 //    MetaMemberVariable mmv = cnode.GetMetaMemeberVariable();

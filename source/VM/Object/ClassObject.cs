@@ -303,7 +303,7 @@ namespace SimpleLanguage.VM
         }
         public override string ToString()
         {
-            return "aa";
-        }
+            return m_MetaDefineType.allName + "  " ;
+         }
     }
 }

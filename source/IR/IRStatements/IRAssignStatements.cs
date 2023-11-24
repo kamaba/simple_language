@@ -27,8 +27,8 @@ namespace SimpleLanguage.Core.Statements
                 m_IRStatements.Add(m_IRExpress);
             }
 
-            m_StoreVariable = new IRStoreVariable(irMethod, m_MetaVariable);
-            m_IRStatements.Add(m_StoreVariable);
+            m_MetaCallLink.ParseToIRDataList(irMethod, true );
+            m_IRStatements.AddRange(m_MetaCallLink.irList);
         }
     }
 }
