@@ -325,13 +325,13 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             (v.sobject as ClassObject).GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex-1]);
                         }
-                        m_ValueIndex-=1;
+                        //栈位不变，因为当前对象位的被通过索引取出来的成员变量值，覆盖掉， 所以栈位不会发生变化
                     }
                     break;
                 case EIROpCode.StoreNotStaticField:
                     {
                         // -2在存储的值 -1表示要存储的对象 0位表示要存储的位置
-                        var v = m_ValueStack[m_ValueIndex - 1];
+                        var v = m_ValueStack[m_ValueIndex-1];
                         if (v.eType == EType.Class)
                         {
                             (v.sobject as ClassObject).SetMemberVariableSValue(iri.index, m_ValueStack[m_ValueIndex - 2]);
@@ -366,11 +366,11 @@ namespace SimpleLanguage.VM.Runtime
                         Object[] paramsObj = new Object[mfc.paramCount];
                         if( mfc.target )
                         {
-                            targetObject = m_ValueStack[m_ValueIndex--].CreateCSharpObject();
+                            targetObject = m_ValueStack[--m_ValueIndex].CreateCSharpObject();
                         }
                         for (int i = 0; i < paramsObj.Length; i++)
                         {
-                            paramsObj[i] = m_ValueStack[m_ValueIndex--].CreateCSharpObject();
+                            paramsObj[i] = m_ValueStack[--m_ValueIndex].CreateCSharpObject();
                         }
                         Object obj = mfc.InvokeCSharp(targetObject, paramsObj);
                         if (obj != null)
@@ -403,8 +403,7 @@ namespace SimpleLanguage.VM.Runtime
                     }
                     break;
                 case EIROpCode.Label:
-                    {                        
-                        m_ValueIndex++;
+                    {
                     }
                     break;
                 case EIROpCode.Br:
@@ -439,42 +438,40 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Add:
                     {
-                        if( m_ValueIndex - 1 < 0 )
+                        if( m_ValueIndex - 2 < 0 )
                         {
                             Console.WriteLine("Error 加法运算!!超出的栈范围");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex-1].AddSValue(ref m_ValueStack[m_ValueIndex], false );
+                        m_ValueStack[m_ValueIndex-2].AddSValue(ref m_ValueStack[m_ValueIndex-1], false );
                         m_ValueIndex--;
                     }
                     break;
                 case EIROpCode.Minus:
                     {
-                        if (m_ValueIndex - 1 < 0)
+                        if (m_ValueIndex - 2 < 0)
                         {
                             Console.WriteLine("Error 减法运算!!超出的栈范围");
                             break;
                         }
-                        //m_ValueStack[m_ValueIndex-2].MinusSValue(m_ValueStack[m_ValueIndex-1], false );
-                        m_ValueStack[m_ValueIndex-2].ComputeSVAlue(1, ref m_ValueStack[m_ValueIndex-1], false );
+                        m_ValueStack[m_ValueIndex-2].ComputeSVAlue(1, ref m_ValueStack[m_ValueIndex - 1], false );
                         m_ValueIndex--;
                     }
                     break;
                 case EIROpCode.Multiply:
                     {
-                        if (m_ValueIndex - 1 < 0)
+                        if (m_ValueIndex - 2 < 0)
                         {
                             Console.WriteLine("Error 乘法运算!!超出的栈范围");
                             break;
                         }
-                        //m_ValueStack[m_ValueIndex-2].MultiplySValue(m_ValueStack[m_ValueIndex-1], false);
                         m_ValueStack[m_ValueIndex - 2].ComputeSVAlue(2, ref m_ValueStack[m_ValueIndex - 1], false);
                         m_ValueIndex--;
                     }
                     break;
                 case EIROpCode.Divide:
                     {
-                        if (m_ValueIndex - 1 < 0)
+                        if (m_ValueIndex - 2 < 0)
                         {
                             Console.WriteLine("Error 除法运算!!超出的栈范围");
                             break;
@@ -486,7 +483,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Modulo:
                     {
-                        if (m_ValueIndex - 1 < 0)
+                        if (m_ValueIndex - 2 < 0)
                         {
                             Console.WriteLine("Error 余法运算!!超出的栈范围");
                             break;
@@ -498,7 +495,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Combine:
                     {
-                        if (m_ValueIndex - 1 < 0)
+                        if (m_ValueIndex - 2 < 0)
                         {
                             Console.WriteLine("Error 合并运算!!超出的栈范围");
                             break;
@@ -510,7 +507,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.InclusiveOr:
                     {
-                        if (m_ValueIndex - 1 < 0)
+                        if (m_ValueIndex - 2 < 0)
                         {
                             Console.WriteLine("Error 包括运算!!超出的栈范围");
                             break;
@@ -522,7 +519,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.XOR:
                     {
-                        if (m_ValueIndex - 1 < 0)
+                        if (m_ValueIndex - 2 < 0)
                         {
                             Console.WriteLine("Error 或运算!!超出的栈范围");
                             break;
@@ -534,25 +531,25 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Shr:
                     {
-                        if (m_ValueIndex - 1 < 0)
+                        if (m_ValueIndex - 2 < 0)
                         {
                             Console.WriteLine("Error 右移运算!!超出的栈范围");
                             break;
                         }
                         //m_ValueStack[m_ValueIndex--].ShrSValue(m_ValueStack[m_ValueIndex], false);
-                        m_ValueStack[m_ValueIndex - 2].ComputeSVAlue(8, ref m_ValueStack[m_ValueIndex - 1], false);
+                        m_ValueStack[m_ValueIndex - 2].ComputeSVAlue(8, ref m_ValueStack[m_ValueIndex], false);
                         m_ValueIndex--;
                     }
                     break;
                 case EIROpCode.Shi:
                     {
-                        if (m_ValueIndex - 1 < 0)
+                        if (m_ValueIndex - 2 < 0)
                         {
                             Console.WriteLine("Error 左移运算!!超出的栈范围");
                             break;
                         }
                         //m_ValueStack[m_ValueIndex--].ShiSValue(m_ValueStack[m_ValueIndex], false);
-                        m_ValueStack[m_ValueIndex - 2].ComputeSVAlue(9, ref m_ValueStack[m_ValueIndex - 1], false);
+                        m_ValueStack[m_ValueIndex - 2].ComputeSVAlue(9, ref m_ValueStack[m_ValueIndex], false);
                         m_ValueIndex--;
                     }
                     break;
@@ -563,7 +560,7 @@ namespace SimpleLanguage.VM.Runtime
                             Console.WriteLine("Error Not运算!!超出的栈范围");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex--].NotSValue();
+                        m_ValueStack[m_ValueIndex].NotSValue();
                     }
                     break;
                 case EIROpCode.Neg:
@@ -573,7 +570,7 @@ namespace SimpleLanguage.VM.Runtime
                             Console.WriteLine("Error Neg运算!!超出的栈范围");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex--].NegSValue(false);
+                        m_ValueStack[m_ValueIndex].NegSValue(false);
                     }
                     break;
                 case EIROpCode.And:
