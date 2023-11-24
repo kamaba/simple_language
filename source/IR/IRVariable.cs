@@ -17,7 +17,7 @@ namespace SimpleLanguage.IR
 {
     public class IRLoadVariable : IRBase
     {
-        public IRData data = new IRData();     
+        public IRData data = new IRData();
         public IRLoadVariable(IRManager _irManager, MetaMemberVariable mmv)
         {
             if (mmv.isStatic)
@@ -32,6 +32,13 @@ namespace SimpleLanguage.IR
                 data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
                 m_IRDataList.Add(data);
             }
+        }
+
+        public IRLoadVariable(IRMethod _irManager, MetaMemberVariable mmv)
+        {
+            data.opCode = EIROpCode.LoadNotStaticField;
+            data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
+            m_IRDataList.Add(data);
         }
 
         public IRLoadVariable(IRMethod _irMethod, MetaVariable mv) : base(_irMethod)
@@ -50,6 +57,10 @@ namespace SimpleLanguage.IR
                 data.index = m_IRMethod.GetLocalVariableIndex(mv);
                 m_IRDataList.Add(data);
             }
+        }
+        public IRLoadVariable( IRMethod _irMethod, MetaVisitNode mvn ) : base( _irMethod )
+        {
+            //if( mvn.)
         }
         public override string ToIRString()
         {
