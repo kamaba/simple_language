@@ -1022,8 +1022,16 @@ namespace SimpleLanguage.Core
                 retMC = ModuleManager.instance.selfModule.GetChildrenMetaBaseByName(inputname);
                 if( retMC != null )
                 {
-                    m_MetaClass = retMC as MetaClass;
-                    m_CallNodeType = ECallNodeType.ClassName;
+                    if( retMC is MetaNamespace)
+                    {
+                        m_MetaNamespace = retMC as MetaNamespace;
+                        m_CallNodeType = ECallNodeType.NamespaceName;
+                    }
+                    else
+                    {
+                        m_MetaClass = retMC as MetaClass;
+                        m_CallNodeType = ECallNodeType.ClassName;
+                    }
                 }
             }
             //查找父类或子类中包含的节点
