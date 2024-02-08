@@ -33,7 +33,7 @@ namespace SimpleLanguage.Parse
         static ProjectData m_Data = new ProjectData( "ProjectData", false );
         public static string rootPath = "";
 
-        public static MetaData globalData = new MetaData( "global", true );
+        public static MetaClass globalData = new MetaClass( "global" );
         public static void Run( string path, CommandInputArgs cinputArgs )
         {
             int index = path.LastIndexOf("\\");

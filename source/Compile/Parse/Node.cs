@@ -48,6 +48,7 @@ namespace SimpleLanguage.Compile.Parse
         ConstValue,
         IdentifierLink,
         Key,
+        EmbellishKey,
         End,
     }
         
@@ -69,7 +70,7 @@ namespace SimpleLanguage.Compile.Parse
         public Token atToken;                   // $节点
         public Node lastNode = null;            // 最后处理的节点
 
-        public ENodeType nodeType = ENodeType.Null;
+        public ENodeType nodeType { get; set; } = ENodeType.Null;
         private List<Node> m_ExtendLinkNodeList = new List<Node>();
         public List<Node> childList = new List<Node>();    //子内容节点
 
@@ -170,6 +171,10 @@ namespace SimpleLanguage.Compile.Parse
         public void AddSyntax( Node c )
         {
             this.childList.Add(c);
+        }
+        public override string ToString()
+        {
+            return token != null ? token.ToString() : base.ToString();
         }
         public string ToFormatString()
         {

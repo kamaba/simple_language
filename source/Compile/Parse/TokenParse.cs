@@ -100,6 +100,7 @@ namespace SimpleLanguage.Compile.Parse
                 EndAngleSign();
             }
             Node node = new Node(token);
+            node.nodeType = ENodeType.EmbellishKey;
             currentNode.AddChild(node);
             m_TokenIndex++;
             return node;
@@ -577,7 +578,7 @@ namespace SimpleLanguage.Compile.Parse
                     }
                     break;
                 case ETokenType.Enum:
-                case ETokenType.Data:
+                //case ETokenType.Data:
                 case ETokenType.Class:
                     {
                         AddNode(token);

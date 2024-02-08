@@ -21,7 +21,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public bool innerClass { get; set; } = false;
         public bool isConst { get { return m_ConstToken != null; } }
         public bool isEnum { get { return m_EnumToken != null; } }
-        public bool isData { get { return m_DataToken != null; } }
+        //public bool isData { get { return m_DataToken != null; } }
         public bool isPartial => m_PartialToken != null;
         public MetaClass metaClass => m_MetaClass;
         public FileMetaClassDefine extendClass => m_ExtendClass;
@@ -32,14 +32,13 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public NamespaceStatementBlock namespaceBlock => m_NamespaceBlock;
         public List<FileMetaMemberVariable> memberVariableList => m_MemberVariableList;
         public List<FileMetaMemberFunction> memberFunctionList => m_MemberFunctionList;
-        public List<FileMetaMemberData> memberDataList => m_MemberDataList;
 
         #region Token
         protected Token m_PermissionToken = null;
         protected Token m_PartialToken = null;
         protected Token m_ClassToken = null;
         protected Token m_EnumToken = null;
-        protected Token m_DataToken = null;
+        //protected Token m_DataToken = null;
         protected Token m_ConstToken = null;
         #endregion
         private MetaClass m_MetaClass = null;
@@ -53,7 +52,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
         private List<FileMetaMemberVariable> m_MemberVariableList = new List<FileMetaMemberVariable>();
         private List<FileMetaMemberFunction> m_MemberFunctionList = new List<FileMetaMemberFunction>();
-        private List<FileMetaMemberData> m_MemberDataList = new List<FileMetaMemberData>();
 
         private NamespaceStatementBlock m_NamespaceBlock = null;
         private List<Node> m_NodeList = new List<Node>();
@@ -211,11 +209,11 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                             isError = true;
                             Console.WriteLine("Error 解析过了一次Enum!!");
                         }
-                        if( m_DataToken != null )
-                        {
-                            isError = true;
-                            Console.WriteLine("Error 解析过了一次data!!");
-                        }
+                        //if( m_DataToken != null )
+                        //{
+                        //    isError = true;
+                        //    Console.WriteLine("Error 解析过了一次data!!");
+                        //}
                         if (m_ClassToken != null)
                         {
                             isError = true;
@@ -231,11 +229,11 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                             isError = true;
                             Console.WriteLine("Error 解析过了一次Enum!!");
                         }
-                        if (m_DataToken != null)
-                        {
-                            isError = true;
-                            Console.WriteLine("Error 解析过了一次data!!");
-                        }
+                        //if (m_DataToken != null)
+                        //{
+                        //    isError = true;
+                        //    Console.WriteLine("Error 解析过了一次data!!");
+                        //}
                         if (m_ClassToken != null)
                         {
                             isError = true;
@@ -243,25 +241,25 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         }
                         m_EnumToken = token;
                     }
-                    else if (token.type == ETokenType.Data)
-                    {
-                        if(m_EnumToken != null)
-                        {
-                            isError = true;
-                            Console.WriteLine("Error 解析过了一次Enum!!");
-                        }
-                        if (m_DataToken != null)
-                        {
-                            isError = true;
-                            Console.WriteLine("Error 解析过了一次data!!");
-                        }
-                        if (m_ClassToken != null)
-                        {
-                            isError = true;
-                            Console.WriteLine("Error 解析过了一次Class!!");
-                        }
-                        m_DataToken = token;
-                    }
+                    //else if (token.type == ETokenType.Data)
+                    //{
+                    //    if(m_EnumToken != null)
+                    //    {
+                    //        isError = true;
+                    //        Console.WriteLine("Error 解析过了一次Enum!!");
+                    //    }
+                    //    //if (m_DataToken != null)
+                    //    //{
+                    //    //    isError = true;
+                    //    //    Console.WriteLine("Error 解析过了一次data!!");
+                    //    //}
+                    //    if (m_ClassToken != null)
+                    //    {
+                    //        isError = true;
+                    //        Console.WriteLine("Error 解析过了一次Class!!");
+                    //    }
+                    //    //m_DataToken = token;
+                    //}
                     else if (token.type == ETokenType.ColonDouble)
                     {
                         if (colonDoubleToken != null)
@@ -314,25 +312,25 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 }
 
             }
-            else if (m_DataToken != null)
-            {
-                if (interfaceToken != null || interfaceNameTokenList.Count > 0)
-                {
-                    Console.WriteLine("Error Data方式，不支持接口方式");
-                    return false;
-                }
-                if (permissionToken != null)
-                {
-                    Console.WriteLine("Error Data方式，不支持权限的使用!!");
-                    return false;
-                }
-                if (m_PartialToken != null)
-                {
-                    Console.WriteLine("Error Data方式，不支持partial的使用!!");
-                    return false;
-                }
+            //else if (m_DataToken != null)
+            //{
+            //    if (interfaceToken != null || interfaceNameTokenList.Count > 0)
+            //    {
+            //        Console.WriteLine("Error Data方式，不支持接口方式");
+            //        return false;
+            //    }
+            //    if (permissionToken != null)
+            //    {
+            //        Console.WriteLine("Error Data方式，不支持权限的使用!!");
+            //        return false;
+            //    }
+            //    if (m_PartialToken != null)
+            //    {
+            //        Console.WriteLine("Error Data方式，不支持partial的使用!!");
+            //        return false;
+            //    }
 
-            }
+            //}
             else
             {
                 if (interfaceNameTokenList.Count > 0)
@@ -369,15 +367,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 return topLevelFileMetaNamespace.namespaceStatementBlock.lastMetaNamespace;
             }
             return null;
-        }
-        public void AddFileMemberData( FileMetaMemberData fmmd )
-        {
-            m_MemberDataList.Add(fmmd);
-            fmmd.SetFileMeta(m_FileMeta);
-        }
-        public FileMetaMemberData GetFileMemberData( string name )
-        {
-            return m_MemberDataList.Find(a => a.name == name);
         }
         public void AddFileMemberVariable(FileMetaMemberVariable fmv )
         {
@@ -487,11 +476,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             foreach (var v in m_MemberVariableList)
             {
                 v.SetDeep(m_Deep + 1);
-            }
-            foreach (var v in m_MemberDataList)
-            {
-                v.SetDeep(m_Deep + 1);
-            }
+            }            
             foreach (var v in m_MemberFunctionList)
             {
                 v.SetDeep(m_Deep + 1);
@@ -503,31 +488,32 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             for (int i = 0; i < deep; i++)
                 stringBuilder.Append(Global.tabChar);
 
-            if( m_DataToken != null )
-            {
-                if (m_ConstToken != null)
-                {
-                    stringBuilder.Append(m_ConstToken.lexeme.ToString() + " ");
-                }
-                stringBuilder.Append(m_DataToken.lexeme.ToString() + " ");
-                stringBuilder.Append(name);
+            //if( m_DataToken != null )
+            //{
+            //    if (m_ConstToken != null)
+            //    {
+            //        stringBuilder.Append(m_ConstToken.lexeme.ToString() + " ");
+            //    }
+            //    stringBuilder.Append(m_DataToken.lexeme.ToString() + " ");
+            //    stringBuilder.Append(name);
 
-                stringBuilder.Append(Environment.NewLine);
-                for (int i = 0; i < deep; i++)
-                    stringBuilder.Append(Global.tabChar);
-                stringBuilder.Append("{" + Environment.NewLine);
+            //    stringBuilder.Append(Environment.NewLine);
+            //    for (int i = 0; i < deep; i++)
+            //        stringBuilder.Append(Global.tabChar);
+            //    stringBuilder.Append("{" + Environment.NewLine);
 
 
-                foreach (var v in m_MemberDataList)
-                {
-                    stringBuilder.Append(v.ToFormatString() + Environment.NewLine);
-                }
+            //    foreach (var v in m_MemberDataList)
+            //    {
+            //        stringBuilder.Append(v.ToFormatString() + Environment.NewLine);
+            //    }
 
-                for (int i = 0; i < deep; i++)
-                    stringBuilder.Append(Global.tabChar);
-                stringBuilder.Append("}");
-            }
-            else if( m_EnumToken != null )
+            //    for (int i = 0; i < deep; i++)
+            //        stringBuilder.Append(Global.tabChar);
+            //    stringBuilder.Append("}");
+            //}
+            //else 
+            if( m_EnumToken != null )
             {
                 if( m_ConstToken != null )
                 {
