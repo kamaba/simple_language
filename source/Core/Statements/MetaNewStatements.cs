@@ -166,10 +166,10 @@ namespace SimpleLanguage.Core.Statements
                             }
                         }
                     }
-                    else if( mdt.isData )
-                    {
+                    //else if( mdt.isData )
+                    //{
 
-                    }
+                    //}
                     else
                     {
                         MetaClass compareClass = null;

@@ -36,12 +36,12 @@ data Book  #定义数据
         }
     ] 
 }
-data AD
+AD
 {
     a = 20;
     #td = BD  如果这样引用会报错，因为有循环引用现象
 }
-data BD 
+BD 
 {
     ad = AD     #可以引用数据，但不能引用类或者是enu
 }
@@ -105,3 +105,13 @@ ProjectEnter
 - 数据可以与类进行转化，但有可能有不匹配的数据丢失， BookClass bc = Book.ToClass<BookClass>(); 
 - 类也可以向数据转化 BookClass bc = BookClass(); bd = bc.ToData<Book>(); bd则为数据类的变量。
 - 数据在定义时候，可以引用其它数据,但不能引用类与枚举，但不能循环引用，否则会报错! 
+
+
+data字段变化
+1. data 结构体与class 结构体合并
+2. data字段，在取取，或者是操作的时候，可以用data锁定关键字   data Class1 c1;   qq.GetClass1( c1 ); 在取c1的时候，   在定义Class的时候  比如 data class Book{ name = "莫体" };  可以直接Book.name 类似于static方法，但类的内容不用全部
+3. data关键字在定义类的时候使用 如   Class1{ data Class2 c2; data Class3 c3; } 这种情况，内存是连续的。
+4. 在传参时，如何仿制struct结构， 可以在 data Class1 getC1(){ return c1; } 这种情况，返回的是值型，  如果已定制值类，则使用= 号的时候，是进行数据全考呗的
+
+如果想使用data怎么办
+1. 在类开头使用[data]，限制，这样，

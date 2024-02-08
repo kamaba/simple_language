@@ -692,11 +692,7 @@ namespace SimpleLanguage.Core
                 if(m_MetaDefineType.isEnum )
                 {
                     eType = EType.Enum;
-                }
-                else if( m_MetaDefineType.isData )
-                {
-                    eType = EType.Data;
-                }
+                }               
                 else
                 {
                     eType = EType.Class;

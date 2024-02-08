@@ -26,7 +26,7 @@ namespace SimpleLanguage.Core
         public MetaTemplate metaTemplate => m_MetaTemplate;
         public MetaMemberVariable enumValue => m_EnumValue;
         public bool isEnum => m_MetaClass is MetaEnum;
-        public bool isData => m_MetaClass is MetaData;
+        //public bool isData => m_MetaClass is MetaData;
         public bool isTemplate => m_MetaTemplate is MetaTemplate;
         public bool isGenTemplateClass => m_MetaClass is MetaGenTemplateClass;
         public bool isArray => m_MetaClass?.eType == EType.Array;
@@ -188,7 +188,7 @@ namespace SimpleLanguage.Core
         }
         public bool IsCanForIn()
         {
-            if( m_MetaClass is MetaData || m_MetaClass is MetaEnum )
+            if(m_MetaClass is MetaEnum )//m_MetaClass is MetaData ||  )
             { return true; }
             if( m_MetaClass.eType == EType.Array
                 || m_MetaClass.eType == EType.Range )

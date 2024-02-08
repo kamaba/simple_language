@@ -20,7 +20,7 @@ namespace SimpleLanguage
         Void,
         Class,
         Enum,
-        Data,
+        //Data,
         Boolean,
         Bit,
         Byte,
@@ -216,7 +216,7 @@ namespace SimpleLanguage
         /// <summary> enum </summary>
         Enum,
         /// <summary> data </summary>
-        Data,
+        //Data,
         /// <summary> break </summary>
         Break,
         /// <summary> next </summary>

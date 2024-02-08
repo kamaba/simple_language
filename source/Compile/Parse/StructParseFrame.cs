@@ -14,6 +14,7 @@ using System.Text;
 using SimpleLanguage.Compile.Grammer;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Runtime.Intrinsics.X86;
+using System.Reflection;
 
 namespace SimpleLanguage.Compile.Parse
 {
@@ -27,7 +28,6 @@ namespace SimpleLanguage.Compile.Parse
             Class,
             Function,
             Statements,
-            Data,
         }
         public class ParseCurrentNodeInfo
         {
@@ -35,7 +35,6 @@ namespace SimpleLanguage.Compile.Parse
             public FileMeta codeFile = null;
             public FileMetaNamespace codeNamespace = null;
             public FileMetaClass codeClass = null;
-            public FileMetaMemberData codeData = null;
             public FileMetaMemberFunction codeFunction = null;
             public FileMetaSyntax codeSyntax = null;
 
@@ -58,12 +57,7 @@ namespace SimpleLanguage.Compile.Parse
             {
                 codeFunction = nsf;
                 parseType = EParseNodeType.Function;
-            }
-            public ParseCurrentNodeInfo( FileMetaMemberData fmmd )
-            {
-                codeData = fmmd;
-                parseType = EParseNodeType.Data;
-            }
+            }           
             public ParseCurrentNodeInfo(FileMetaSyntax nss)
             {
                 codeSyntax = nss;
@@ -146,26 +140,26 @@ namespace SimpleLanguage.Compile.Parse
                 return;
             }
         }
-        public void AddParseDataInfo( FileMetaMemberData fmmd )
-        {
-            if (currentNodeInfo.parseType == EParseNodeType.Class)
-            {
-                currentNodeInfo.codeClass.AddFileMemberData(fmmd);
-            }
-            else if( currentNodeInfo.parseType == EParseNodeType.Data )
-            {
-                currentNodeInfo.codeData.AddFileMemberData(fmmd);
-            }
-            else
-            {
-                Console.WriteLine("错误 !!1 AddParseFunctionNodeInfo");
-                return;
-            }
+        //public void AddParseDataInfo( FileMetaMemberData fmmd )
+        //{
+        //    if (currentNodeInfo.parseType == EParseNodeType.Class)
+        //    {
+        //        currentNodeInfo.codeClass.AddFileMemberData(fmmd);
+        //    }
+        //    else if( currentNodeInfo.parseType == EParseNodeType.Data )
+        //    {
+        //        currentNodeInfo.codeData.AddFileMemberData(fmmd);
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine("错误 !!1 AddParseFunctionNodeInfo");
+        //        return;
+        //    }
 
-            ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fmmd);
+        //    ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fmmd);
             
-            m_CurrentNodeInfoStack.Push(pcni);
-        }
+        //    m_CurrentNodeInfoStack.Push(pcni);
+        //}
         public void AddParseFunctionNodeInfo(FileMetaMemberFunction fmmf, bool isPush = true)
         {
             if (currentNodeInfo.parseType == EParseNodeType.Class)
@@ -275,11 +269,11 @@ namespace SimpleLanguage.Compile.Parse
                 bool isStatements = currentNodeInfo.parseType == EParseNodeType.Statements;
                 if (isFile || isNamespace || isClass  )
                 {
-                    ParseClassOrClassContent(pnode, isFile, isNamespace, isClass );
+                    ParseClass( pnode );
                 }
                 else if (isFunction || isStatements )
                 {
-                    ParseSyntax(pnode);
+                    ParseSyntax( pnode );
                 }
                 else
                 {
@@ -288,245 +282,245 @@ namespace SimpleLanguage.Compile.Parse
             }
         }
 
-        public void ParseDataNode(Node pnode)
-        {
-            Node bracketNode = pnode.bracketNode;
-            Node braceNode = pnode.blockNode;
+        //public void ParseDataNode(Node pnode)
+        //{
+        //    Node bracketNode = pnode.bracketNode;
+        //    Node braceNode = pnode.blockNode;
 
-            if (bracketNode != null)
-            {
-                int index = bracketNode.parseIndex;
-                for (index = bracketNode.parseIndex; index < bracketNode.childList.Count;)
-                {
-                    var curNode = bracketNode.childList[index++];
-                    if (curNode.nodeType == ENodeType.Brace)  //Class1 [{},{}]
-                    {
-                        FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, null, FileMetaMemberData.EMemberDataType.NoNameClass);
+        //    if (bracketNode != null)
+        //    {
+        //        int index = bracketNode.parseIndex;
+        //        for (index = bracketNode.parseIndex; index < bracketNode.childList.Count;)
+        //        {
+        //            var curNode = bracketNode.childList[index++];
+        //            if (curNode.nodeType == ENodeType.Brace)  //Class1 [{},{}]
+        //            {
+        //                FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, null, FileMetaMemberData.EMemberDataType.NoNameClass);
 
-                        AddParseDataInfo(fmmd);
+        //                AddParseDataInfo(fmmd);
 
-                        ParseDataNode(curNode);
+        //                ParseDataNode(curNode);
 
-                        m_CurrentNodeInfoStack.Pop();
-                    }
-                    else if (curNode.nodeType == ENodeType.ConstValue)   // ["stringValue","Stvlue"]
-                    {
-                        FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, null, FileMetaMemberData.EMemberDataType.Value);
+        //                m_CurrentNodeInfoStack.Pop();
+        //            }
+        //            else if (curNode.nodeType == ENodeType.ConstValue)   // ["stringValue","Stvlue"]
+        //            {
+        //                FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, null, FileMetaMemberData.EMemberDataType.Value);
 
-                        currentNodeInfo.codeData.AddFileMemberData(fmmd);
+        //                currentNodeInfo.codeData.AddFileMemberData(fmmd);
 
-                        if (ProjectManager.isUseForceSemiColonInLineEnd)
-                        {
-                            var next3Node = bracketNode.childList[index + 1];
-                            if (next3Node?.nodeType != ENodeType.SemiColon )
-                            {
-                                Console.WriteLine("Error 应该使用;结束语句!!");
-                            }
-                        }
-                    }
-                    else if (curNode?.nodeType == ENodeType.Bracket) // [[],[]]
-                    {
-                        FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, null, FileMetaMemberData.EMemberDataType.Array);
+        //                if (ProjectManager.isUseForceSemiColonInLineEnd)
+        //                {
+        //                    var next3Node = bracketNode.childList[index + 1];
+        //                    if (next3Node?.nodeType != ENodeType.SemiColon )
+        //                    {
+        //                        Console.WriteLine("Error 应该使用;结束语句!!");
+        //                    }
+        //                }
+        //            }
+        //            else if (curNode?.nodeType == ENodeType.Bracket) // [[],[]]
+        //            {
+        //                FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, null, FileMetaMemberData.EMemberDataType.Array);
 
-                        AddParseDataInfo(fmmd);
+        //                AddParseDataInfo(fmmd);
 
-                        ParseDataNode(curNode);
+        //                ParseDataNode(curNode);
 
-                        m_CurrentNodeInfoStack.Pop();
-                    }
-                    else if (curNode.nodeType == ENodeType.Comma)
-                    {
-                        continue;
-                    }
-                    else if (curNode.nodeType == ENodeType.LineEnd)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString() );
-                        continue;
-                    }
-                }
-                bracketNode.parseIndex = index;
+        //                m_CurrentNodeInfoStack.Pop();
+        //            }
+        //            else if (curNode.nodeType == ENodeType.Comma)
+        //            {
+        //                continue;
+        //            }
+        //            else if (curNode.nodeType == ENodeType.LineEnd)
+        //            {
+        //                continue;
+        //            }
+        //            else
+        //            {
+        //                Console.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString() );
+        //                continue;
+        //            }
+        //        }
+        //        bracketNode.parseIndex = index;
 
-                ParseDataNode(bracketNode);
-            }
-            else
-            {
-                Node curParentNode = braceNode != null ? braceNode : pnode;   
-                int index = curParentNode.parseIndex;
-                for (index = curParentNode.parseIndex; index < curParentNode.childList.Count;)
-                {
-                    var curNode = curParentNode.childList[index++];
+        //        ParseDataNode(bracketNode);
+        //    }
+        //    else
+        //    {
+        //        Node curParentNode = braceNode != null ? braceNode : pnode;   
+        //        int index = curParentNode.parseIndex;
+        //        for (index = curParentNode.parseIndex; index < curParentNode.childList.Count;)
+        //        {
+        //            var curNode = curParentNode.childList[index++];
                    
-                    if (curNode.nodeType == ENodeType.IdentifierLink)  //Class1
-                    {
-                        if (index < curParentNode.childList.Count)
-                        {
-                            Node nextNode = curParentNode.childList[index];
-                            if (nextNode.nodeType == ENodeType.LineEnd) //
-                            {
-                                nextNode = curParentNode.childList[++index];
-                            }
-                            if (nextNode.nodeType == ENodeType.Brace)  //Class1{}
-                            {
-                                index++;
-                                curNode.blockNode = nextNode;
-                                FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, null, FileMetaMemberData.EMemberDataType.NameClass);
+        //            if (curNode.nodeType == ENodeType.IdentifierLink)  //Class1
+        //            {
+        //                if (index < curParentNode.childList.Count)
+        //                {
+        //                    Node nextNode = curParentNode.childList[index];
+        //                    if (nextNode.nodeType == ENodeType.LineEnd) //
+        //                    {
+        //                        nextNode = curParentNode.childList[++index];
+        //                    }
+        //                    if (nextNode.nodeType == ENodeType.Brace)  //Class1{}
+        //                    {
+        //                        index++;
+        //                        curNode.blockNode = nextNode;
+        //                        FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, null, FileMetaMemberData.EMemberDataType.NameClass);
 
-                                AddParseDataInfo(fmmd);
+        //                        AddParseDataInfo(fmmd);
 
-                                ParseDataNode(curNode);
+        //                        ParseDataNode(curNode);
 
-                                m_CurrentNodeInfoStack.Pop();
+        //                        m_CurrentNodeInfoStack.Pop();
 
-                            }
-                            else if (nextNode?.nodeType == ENodeType.Assign) //Class1 = 
-                            {
-                                index++;
-                                if (index < curParentNode.childList.Count)
-                                {
-                                    var next2Node = curParentNode.childList[index];
-                                    if (next2Node.nodeType == ENodeType.LineEnd) //
-                                    {
-                                        next2Node = curParentNode.childList[++index];
-                                    }
-                                    if (next2Node.nodeType == ENodeType.Bracket)
-                                    {
-                                        index++;
+        //                    }
+        //                    else if (nextNode?.nodeType == ENodeType.Assign) //Class1 = 
+        //                    {
+        //                        index++;
+        //                        if (index < curParentNode.childList.Count)
+        //                        {
+        //                            var next2Node = curParentNode.childList[index];
+        //                            if (next2Node.nodeType == ENodeType.LineEnd) //
+        //                            {
+        //                                next2Node = curParentNode.childList[++index];
+        //                            }
+        //                            if (next2Node.nodeType == ENodeType.Bracket)
+        //                            {
+        //                                index++;
 
-                                        curNode.bracketNode = next2Node;
+        //                                curNode.bracketNode = next2Node;
 
-                                        FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, null, FileMetaMemberData.EMemberDataType.Array);
+        //                                FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, null, FileMetaMemberData.EMemberDataType.Array);
 
-                                        AddParseDataInfo(fmmd);
+        //                                AddParseDataInfo(fmmd);
 
-                                        ParseDataNode(curNode);
+        //                                ParseDataNode(curNode);
 
-                                        m_CurrentNodeInfoStack.Pop();
-                                    }
-                                    else if( next2Node.nodeType == ENodeType.Symbol )
-                                    {
-                                        var next3Node = curParentNode.childList[++index];
+        //                                m_CurrentNodeInfoStack.Pop();
+        //                            }
+        //                            else if( next2Node.nodeType == ENodeType.Symbol )
+        //                            {
+        //                                var next3Node = curParentNode.childList[++index];
 
-                                        if( next2Node.token?.type == ETokenType.Minus)
-                                        {
-                                            index++;
-                                            int val = -(int)(next3Node.token?.lexeme);
-                                            next3Node.token.SetLexeme( val );
-                                        }
+        //                                if( next2Node.token?.type == ETokenType.Minus)
+        //                                {
+        //                                    index++;
+        //                                    int val = -(int)(next3Node.token?.lexeme);
+        //                                    next3Node.token.SetLexeme( val );
+        //                                }
 
-                                        FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, next3Node, FileMetaMemberData.EMemberDataType.KeyValue);
+        //                                FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, next3Node, FileMetaMemberData.EMemberDataType.KeyValue);
 
-                                        if (currentNodeInfo.parseType == EParseNodeType.Class)
-                                        {
-                                            currentNodeInfo.codeClass.AddFileMemberData(fmmd);
-                                        }
-                                        else if (currentNodeInfo.parseType == EParseNodeType.Data)
-                                        {
-                                            currentNodeInfo.codeData.AddFileMemberData(fmmd);
-                                        }
-                                        if (ProjectManager.isUseForceSemiColonInLineEnd)
-                                        {
-                                            var next4Node = curParentNode.childList[++index];
-                                            if (next4Node.nodeType != ENodeType.SemiColon)
-                                            {
-                                                Console.WriteLine("Error 应该使用;结束语句!!");
-                                            }
-                                            else
-                                            {
-                                                index++;
-                                            }
-                                        }
-                                    }
-                                    else if( next2Node.nodeType == ENodeType.ConstValue )
-                                    {
-                                        index++;
-                                        FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, next2Node, FileMetaMemberData.EMemberDataType.KeyValue );
+        //                                if (currentNodeInfo.parseType == EParseNodeType.Class)
+        //                                {
+        //                                    currentNodeInfo.codeClass.AddFileMemberData(fmmd);
+        //                                }
+        //                                else if (currentNodeInfo.parseType == EParseNodeType.Data)
+        //                                {
+        //                                    currentNodeInfo.codeData.AddFileMemberData(fmmd);
+        //                                }
+        //                                if (ProjectManager.isUseForceSemiColonInLineEnd)
+        //                                {
+        //                                    var next4Node = curParentNode.childList[++index];
+        //                                    if (next4Node.nodeType != ENodeType.SemiColon)
+        //                                    {
+        //                                        Console.WriteLine("Error 应该使用;结束语句!!");
+        //                                    }
+        //                                    else
+        //                                    {
+        //                                        index++;
+        //                                    }
+        //                                }
+        //                            }
+        //                            else if( next2Node.nodeType == ENodeType.ConstValue )
+        //                            {
+        //                                index++;
+        //                                FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, next2Node, FileMetaMemberData.EMemberDataType.KeyValue );
 
-                                        if (currentNodeInfo.parseType == EParseNodeType.Class)
-                                        {
-                                            currentNodeInfo.codeClass.AddFileMemberData(fmmd);
-                                        }
-                                        else if (currentNodeInfo.parseType == EParseNodeType.Data)
-                                        {
-                                            currentNodeInfo.codeData.AddFileMemberData(fmmd);
-                                        }
-                                        if(ProjectManager.isUseForceSemiColonInLineEnd)
-                                        {
-                                            var next3Node = curParentNode.childList[++index];
-                                            if( next3Node.nodeType != ENodeType.SemiColon )
-                                            {
-                                                Console.WriteLine("Error 应该使用;结束语句!!");
-                                            }
-                                            else
-                                            {
-                                                index++;
-                                            }
-                                        }
-                                    }
-                                    else if( next2Node.nodeType == ENodeType.IdentifierLink )
-                                    {
-                                        index++;
-                                        string name = next2Node.token?.lexeme.ToString();
-                                        //这块现在暂时还不确定，是否在data里边可以直接生成class或者是引用 data数据
-                                        FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, next2Node, FileMetaMemberData.EMemberDataType.Data );
+        //                                if (currentNodeInfo.parseType == EParseNodeType.Class)
+        //                                {
+        //                                    currentNodeInfo.codeClass.AddFileMemberData(fmmd);
+        //                                }
+        //                                else if (currentNodeInfo.parseType == EParseNodeType.Data)
+        //                                {
+        //                                    currentNodeInfo.codeData.AddFileMemberData(fmmd);
+        //                                }
+        //                                if(ProjectManager.isUseForceSemiColonInLineEnd)
+        //                                {
+        //                                    var next3Node = curParentNode.childList[++index];
+        //                                    if( next3Node.nodeType != ENodeType.SemiColon )
+        //                                    {
+        //                                        Console.WriteLine("Error 应该使用;结束语句!!");
+        //                                    }
+        //                                    else
+        //                                    {
+        //                                        index++;
+        //                                    }
+        //                                }
+        //                            }
+        //                            else if( next2Node.nodeType == ENodeType.IdentifierLink )
+        //                            {
+        //                                index++;
+        //                                string name = next2Node.token?.lexeme.ToString();
+        //                                //这块现在暂时还不确定，是否在data里边可以直接生成class或者是引用 data数据
+        //                                FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, next2Node, FileMetaMemberData.EMemberDataType.Data );
 
-                                        if (currentNodeInfo.parseType == EParseNodeType.Class)
-                                        {
-                                            currentNodeInfo.codeClass.AddFileMemberData(fmmd);
-                                        }
-                                        else if (currentNodeInfo.parseType == EParseNodeType.Data)
-                                        {
-                                            currentNodeInfo.codeData.AddFileMemberData(fmmd);
-                                        }
-                                        if (ProjectManager.isUseForceSemiColonInLineEnd)
-                                        {
-                                            var next3Node = curParentNode.childList[++index];
-                                            if (next3Node.nodeType != ENodeType.SemiColon)
-                                            {
-                                                Console.WriteLine("Error 应该使用;结束语句!!");
-                                            }
-                                            else
-                                            {
-                                                index++;
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("Error 不允许=号后边非Const值!!");
-                                    }
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Error 不允许=号后边没值!!");
-                                }
+        //                                if (currentNodeInfo.parseType == EParseNodeType.Class)
+        //                                {
+        //                                    currentNodeInfo.codeClass.AddFileMemberData(fmmd);
+        //                                }
+        //                                else if (currentNodeInfo.parseType == EParseNodeType.Data)
+        //                                {
+        //                                    currentNodeInfo.codeData.AddFileMemberData(fmmd);
+        //                                }
+        //                                if (ProjectManager.isUseForceSemiColonInLineEnd)
+        //                                {
+        //                                    var next3Node = curParentNode.childList[++index];
+        //                                    if (next3Node.nodeType != ENodeType.SemiColon)
+        //                                    {
+        //                                        Console.WriteLine("Error 应该使用;结束语句!!");
+        //                                    }
+        //                                    else
+        //                                    {
+        //                                        index++;
+        //                                    }
+        //                                }
+        //                            }
+        //                            else
+        //                            {
+        //                                Console.WriteLine("Error 不允许=号后边非Const值!!");
+        //                            }
+        //                        }
+        //                        else
+        //                        {
+        //                            Console.WriteLine("Error 不允许=号后边没值!!");
+        //                        }
 
-                            }
-                        }
-                    }
-                    else if (curNode.nodeType == ENodeType.Comma)
-                    {
-                        continue;
-                    }
-                    else if ( curNode.nodeType == ENodeType.SemiColon)
-                    {
-                        continue;
-                    }
-                    else if( curNode.nodeType == ENodeType.LineEnd )
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Error Data数据中，不允许使用除自定义以后的字段!!" + curNode?.token?.ToLexemeAllString() );
-                    }
-                }
-                curParentNode.parseIndex = index;
-            }
-        }
+        //                    }
+        //                }
+        //            }
+        //            else if (curNode.nodeType == ENodeType.Comma)
+        //            {
+        //                continue;
+        //            }
+        //            else if ( curNode.nodeType == ENodeType.SemiColon)
+        //            {
+        //                continue;
+        //            }
+        //            else if( curNode.nodeType == ENodeType.LineEnd )
+        //            {
+        //                continue;
+        //            }
+        //            else
+        //            {
+        //                Console.WriteLine("Error Data数据中，不允许使用除自定义以后的字段!!" + curNode?.token?.ToLexemeAllString() );
+        //            }
+        //        }
+        //        curParentNode.parseIndex = index;
+        //    }
+        //}
         public void ParseEnumNode(Node pnode)
         {
             if (pnode.parseIndex >= pnode.childList.Count)
@@ -908,64 +902,166 @@ namespace SimpleLanguage.Compile.Parse
             }
 
         }
-        public void ParseClassOrClassContent(Node pnode, bool isFile, bool isNamespace, bool isClass )
-        {
-            Node blockNode = null;
 
-            int type = -1;       // 0 class 1 variable 2 function content
+        public void ParseParContrent(Node pnode)
+        {
+            // [] 解析中括号里边的内容
+            Node bracketNode = pnode.bracketNode;
+            int index1 = bracketNode.parseIndex;
+            for (index1 = bracketNode.parseIndex; index1 < bracketNode.childList.Count;)
+            {
+                var curNode = bracketNode.childList[index1++];
+                if (curNode.nodeType == ENodeType.Brace)  //Class1 [{},{}]
+                {
+                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, FileMetaMemberVariable.EMemberDataType.NoNameClass);
+
+                    AddParseVariableInfo(fmmd);
+
+                    ParseCommon(curNode);
+
+                    m_CurrentNodeInfoStack.Pop();
+                }
+                else if (curNode.nodeType == ENodeType.ConstValue)   // ["stringValue","Stvlue"]
+                {
+                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, FileMetaMemberVariable.EMemberDataType.Value);
+
+                    //currentNodeInfo.codeData.AddFileMemberData(fmmd);
+
+                    if (ProjectManager.isUseForceSemiColonInLineEnd)
+                    {
+                        var next3Node = bracketNode.childList[index1 + 1];
+                        if (next3Node?.nodeType != ENodeType.SemiColon)
+                        {
+                            Console.WriteLine("Error 应该使用;结束语句!!");
+                        }
+                    }
+                }
+                else if (curNode?.nodeType == ENodeType.Bracket) // [[],[]]
+                {
+                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, FileMetaMemberVariable.EMemberDataType.Array);
+
+                    //AddParseDataInfo(fmmd);
+                    AddParseVariableInfo(fmmd);
+
+                    //ParseDataNode(curNode);
+                    ParseCommon(curNode);
+
+                    m_CurrentNodeInfoStack.Pop();
+                }
+                else if (curNode.nodeType == ENodeType.Comma)
+                {
+                    continue;
+                }
+                else if (curNode.nodeType == ENodeType.LineEnd)
+                {
+                    continue;
+                }
+                else
+                {
+                    Console.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                    continue;
+                }
+            }
+            bracketNode.parseIndex = index1;
+
+            //ParseDataNode(bracketNode);
+            ParseCommon(bracketNode);
+        }
+
+        void AddFileMetaMemberVariable( Node pnode, List<Node> nodeList )
+        {
+            FileMetaMemberVariable cpv = new FileMetaMemberVariable(m_FileMeta, nodeList);
+
+            AddParseVariableInfo(cpv);
+
+            ParseCommon(pnode);
+        }
+        void AddFileMetaFunctionVariable(Node pnode, Node blockNode, List<Node> nodeList )
+        {
+            FileMetaMemberFunction cpf = new FileMetaMemberFunction(m_FileMeta, nodeList);
+
+            AddParseFunctionNodeInfo(cpf);
+
+            ParseSyntax(blockNode);
+
+            m_CurrentNodeInfoStack.Pop();
+
+            ParseCommon(pnode);
+        }
+        void AddFileMetaClasss(Node pnode, Node blockNode, List<Node> nodeList)
+        {
+            FileMetaClass cpc = new FileMetaClass(m_FileMeta, nodeList);
+
+            AddParseClassNodeInfo(cpc);
+
+            if (cpc.isEnum)
+            {
+                ParseEnumNode(blockNode);
+            }
+            else
+            {
+                ParseClass(blockNode);
+            }
+
+            m_CurrentNodeInfoStack.Pop();
+
+            ParseCommon(pnode);
+        }
+        public void ParseClass(Node pnode )
+        {
+            Node braceNode = pnode.blockNode;
+
             List<Node> nodeList = new List<Node>();
 
             int index = pnode.parseIndex;
-            for ( index = pnode.parseIndex; index < pnode.childList.Count;  )
+            for ( index = pnode.parseIndex; index < pnode.childList.Count;)
             {
                 int lineEndCount = 0;
                 var curNode = pnode.childList[index++];
+                if (curNode.nodeType == ENodeType.LineEnd)
+                {
+                    continue;
+                }
+
                 Node nextNode = null;
                 if (index < pnode.childList.Count)
                 {
                     nextNode = pnode.childList[index];
                 }
-
-                if (curNode.nodeType == ENodeType.IdentifierLink  )  //Class1
+                if (curNode.nodeType == ENodeType.IdentifierLink)  //Class1
                 {
                     if (nextNode.nodeType == ENodeType.LineEnd)   // Class\n(remove){nextNode}
                     {
-                        nextNode = pnode.childList[index+1];
+                        nextNode = pnode.childList[index + 1];
                         lineEndCount++;
                     }
 
-                    if ( nextNode?.nodeType == ENodeType.Brace )  //Class1{}
+                    if (nextNode.nodeType == ENodeType.Brace)  //Class1{}
                     {
                         index += (lineEndCount + 1);
-                        type = 0;
                         curNode.blockNode = nextNode;
-                        blockNode = curNode;
                         nodeList.Add(curNode);
-                        break;
+
+                        AddFileMetaClasss(pnode, curNode.blockNode, nodeList);
                     }
-                    else if( nextNode?.nodeType == ENodeType.Par )   //Class1()
+                    else if (nextNode?.nodeType == ENodeType.Par)   //Class1()
                     {
-                        if( isClass )
+                        var next2Node = pnode.childList[index + 1];
+                        if (next2Node.nodeType == ENodeType.LineEnd) //Class1()\n
                         {
-                            var next2Node = pnode.childList[index + 1];
-                            if (next2Node.nodeType == ENodeType.LineEnd) //Class1()\n
-                            {
-                                next2Node = pnode.childList[index+2];
-                                lineEndCount++;
-                            }
-                            if (next2Node?.nodeType == ENodeType.Brace)  //  Func(){}
-                            {
-                                index += (lineEndCount + 2);
-                                type = 2;
-                                curNode.parNode = nextNode;
-                                curNode.blockNode = next2Node;
-                                blockNode = curNode;
-                                nodeList.Add(curNode);
-                                break;
-                            }
+                            next2Node = pnode.childList[index + 2];
+                            lineEndCount++;
+                        }
+                        if (next2Node?.nodeType == ENodeType.Brace)  //  Func(){}
+                        {
+                            index += (lineEndCount + 2);
+                            curNode.parNode = nextNode;
+                            curNode.blockNode = next2Node;
+                            nodeList.Add(curNode);
+                            AddFileMetaFunctionVariable(pnode, curNode.blockNode, nodeList);
                         }
                     }
-                    else if( nextNode?.nodeType == ENodeType.Angle )   //Class1<>
+                    else if (nextNode?.nodeType == ENodeType.Angle)   //Class1<>
                     {
                         var next2Node = pnode.childList[index + 1];
                         if (next2Node.nodeType == ENodeType.LineEnd)
@@ -973,17 +1069,15 @@ namespace SimpleLanguage.Compile.Parse
                             next2Node = pnode.childList[index + 2];
                             lineEndCount++;
                         }
-                        if ( next2Node?.nodeType == ENodeType.Brace )  // Class1<>{}
+                        if (next2Node?.nodeType == ENodeType.Brace)  // Class1<>{}
                         {
                             index += (lineEndCount + 2);
-                            type = 0;
                             curNode.angleNode = nextNode;
                             curNode.blockNode = next2Node;
-                            blockNode = curNode;
                             nodeList.Add(curNode);
-                            break;
+                            AddFileMetaFunctionVariable(pnode, curNode.blockNode, nodeList);
                         }
-                        else if( next2Node.nodeType == ENodeType.Par ) // Func<>()?
+                        else if (next2Node.nodeType == ENodeType.Par) // Func<>()?
                         {
                             var next3Node = pnode.childList[index + 2];
                             if (next3Node.nodeType == ENodeType.LineEnd)
@@ -991,95 +1085,76 @@ namespace SimpleLanguage.Compile.Parse
                                 next3Node = pnode.childList[index + 3];
                                 lineEndCount++;
                             }
-                            if (next3Node.nodeType == ENodeType.Brace )   // Func<>(){}
+                            if (next3Node.nodeType == ENodeType.Brace)   // Func<>(){}
                             {
                                 index += (lineEndCount + 3);
-                                type = 2;
                                 curNode.angleNode = nextNode;
                                 curNode.parNode = next2Node;
                                 curNode.blockNode = next3Node;
-                                blockNode = curNode;
                                 nodeList.Add(curNode);
-                                break;
+                                AddFileMetaFunctionVariable(pnode, curNode.blockNode, nodeList);
                             }
                         }
                         else
                         {
-                            index +=(lineEndCount+1);
+                            index += (lineEndCount + 1);
                             curNode.angleNode = nextNode;
                             Console.WriteLine("新加入封号结尾，这块还没有进行完全测试!!");
                         }
                     }
-                }
-                
-                if( isClass )//isClass
-                {
-                    if (curNode?.nodeType == ENodeType.Par )  //类中的带()的 一般在表达式中  xxx = a()
+                    else if (nextNode?.nodeType == ENodeType.Assign) //Class1 = "test1", [],{}, (2+3); Class2(10);
                     {
-                        if (nextNode.nodeType == ENodeType.LineEnd)
+                        index++;
+                        if (index < pnode.childList.Count)
                         {
-                            nextNode = pnode.childList[index + 1];
-                            lineEndCount++;
-                        }
-                        if ( nextNode?.nodeType == ENodeType.Brace )  //类中带(){}的结构
-                        {
-                            bool isAssign = false;
-                            for( int m = 0; m < nodeList.Count; m++ )
+                            var next2Node = pnode.childList[index];
+                            if (next2Node.nodeType == ENodeType.LineEnd) //只允许有一次回车  name = \n
                             {
-                                if( nodeList[m].nodeType == ENodeType.Assign )
-                                {
-                                    isAssign = true;
-                                    break;
-                                }
+                                next2Node = pnode.childList[++index];
                             }
-                            if (curNode.nodeType == ENodeType.Assign) isAssign = true;
-
-                            if(!isAssign)
+                            if (next2Node.nodeType == ENodeType.Symbol
+                                || next2Node.nodeType == ENodeType.ConstValue
+                                || next2Node.nodeType == ENodeType.Par
+                                || next2Node.nodeType == ENodeType.Bracket
+                                || next2Node.nodeType == ENodeType.IdentifierLink  )                                 
                             {
-                                index+= (lineEndCount + 1);
-                                type = 2;
-                                curNode.blockNode = nextNode;
-                                blockNode = curNode;
-                                nodeList.Add(curNode);
-                                break;
+                                List<Node> expressNode = new List<Node>();
+                                expressNode.Add(curNode);
+                                expressNode.Add(nextNode);
+                                int j = 0;
+                                for (j = index; j < pnode.childList.Count; j++)
+                                {
+                                    if ((pnode.childList[j].nodeType == ENodeType.LineEnd
+                                        || pnode.childList[j].nodeType == ENodeType.SemiColon))
+                                    {
+                                        j++;
+                                        break;
+                                    }
+                                    expressNode.Add(pnode.childList[j]);
+                                }
+                                index = j;
+                                FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, expressNode);
+
+                                if (currentNodeInfo.parseType == EParseNodeType.Class)
+                                {
+                                    currentNodeInfo.codeClass.AddFileMemberVariable(fmmd);
+                                }
                             }
                             else
                             {
-                                if( index + 2 < pnode.childList.Count )
-                                {
-                                    var n2Node = pnode.childList[index + 2];
-
-                                    bool isLineEnd = false;
-                                    if (ProjectManager.isUseForceSemiColonInLineEnd)
-                                    {
-                                        if (n2Node.nodeType == ENodeType.SemiColon)
-                                        {
-                                            isLineEnd = true;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (n2Node.nodeType == ENodeType.LineEnd
-                                            || n2Node.nodeType == ENodeType.SemiColon)
-                                        {
-                                            isLineEnd = true;
-                                        }
-                                    }
-
-                                    if(isLineEnd)
-                                    {
-                                        index+=2;
-                                        type = 1;
-                                        curNode.blockNode = nextNode;
-                                        blockNode = curNode;
-                                        nodeList.Add(curNode);
-                                        break;
-                                    }
-                                }
+                                Console.WriteLine("Error 解析： “ + " + next2Node?.token?.ToLexemeAllString());
                             }
                         }
                     }
-                    else if ( curNode?.nodeType == ENodeType.Brace )
+                }
+                else if (curNode?.nodeType == ENodeType.Par)  //类中的带()的 一般在表达式中  xxx = a()
+                {
+                    if (nextNode.nodeType == ENodeType.LineEnd)
+                    {
+                        nextNode = pnode.childList[index + 1];
+                        lineEndCount++;
+                    }
+                    if (nextNode?.nodeType == ENodeType.Brace)  //类中带(){}的结构
                     {
                         bool isAssign = false;
                         for (int m = 0; m < nodeList.Count; m++)
@@ -1090,109 +1165,93 @@ namespace SimpleLanguage.Compile.Parse
                                 break;
                             }
                         }
-                        if (curNode?.nodeType == ENodeType.Assign) isAssign = true;
-                        if( !isAssign )
+                        if (curNode.nodeType == ENodeType.Assign) isAssign = true;
+
+                        if (!isAssign)
                         {
-                            type = 0;
-                            index++;
+                            index += (lineEndCount + 1);
                             curNode.blockNode = nextNode;
-                            blockNode = nextNode;
                             nodeList.Add(curNode);
                             break;
-                        }                        
-                    }
-                    else 
-                    {
-                        if( ProjectManager.isUseForceSemiColonInLineEnd )
-                        {
-                            if( curNode.nodeType == ENodeType.SemiColon )
-                            {
-                                type = 1;
-                                break;
-                            }
                         }
                         else
                         {
-                            if (curNode.nodeType == ENodeType.SemiColon)
+                            if (index + 2 < pnode.childList.Count)
                             {
-                                type = 1;
-                                break;
-                            }
-                            if (curNode.nodeType == ENodeType.LineEnd)
-                            {
-                                type = 1;
-                                break;
+                                var n2Node = pnode.childList[index + 2];
+
+                                bool isLineEnd = false;
+                                if (ProjectManager.isUseForceSemiColonInLineEnd)
+                                {
+                                    if (n2Node.nodeType == ENodeType.SemiColon)
+                                    {
+                                        isLineEnd = true;
+                                    }
+                                }
+                                else
+                                {
+                                    if (n2Node.nodeType == ENodeType.LineEnd
+                                        || n2Node.nodeType == ENodeType.SemiColon)
+                                    {
+                                        isLineEnd = true;
+                                    }
+                                }
+
+                                if (isLineEnd)
+                                {
+                                    index += 2;
+                                    curNode.blockNode = nextNode;
+                                    nodeList.Add(curNode);
+                                    break;
+                                }
                             }
                         }
                     }
                 }
-
-                nodeList.Add(curNode);
-            }
-            if( nodeList.Count == 0 )
-            {
-                var curnode = pnode.parseCurrent;
-                Console.WriteLine("Error 解析token错误 没找发现可解析的NodeList 位置在" + curnode.token?.ToLexemeAllString() );
-                return;
-            }
-            if( type == -1 )
-            {
-                var curnode = pnode.parseCurrent;
-                if (blockNode != null )
+                else if (curNode?.nodeType == ENodeType.Brace)
                 {
-                    type = 0;
+                    bool isAssign = false;
+                    for (int m = 0; m < nodeList.Count; m++)
+                    {
+                        if (nodeList[m].nodeType == ENodeType.Assign)
+                        {
+                            isAssign = true;
+                            break;
+                        }
+                    }
+                    if (curNode?.nodeType == ENodeType.Assign) isAssign = true;
+                    if (!isAssign)
+                    {
+                        index++;
+                        curNode.blockNode = nextNode;
+                        nodeList.Add(curNode);
+                        break;
+                    }
+                }
+                else if( curNode.nodeType == ENodeType.EmbellishKey)
+                {
+                    nodeList.Add(curNode);
                 }
                 else
                 {
-                    Console.WriteLine("Error 解析token错误 没找发现可解析的NodeList 位置在" + curnode.token?.ToLexemeAllString());
-                    return;
+                    //if (ProjectManager.isUseForceSemiColonInLineEnd)
+                    //{
+                    //    if (curNode.nodeType == ENodeType.SemiColon)
+                    //    {
+                    //        break;
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    if (curNode.nodeType == ENodeType.SemiColon)
+                    //    {
+                    //        break;
+                    //    }
+                    //}
+                    Console.WriteLine("Error 不允许--------------------");
                 }
             }
             pnode.parseIndex = index;
-
-            if (type == 1 )
-            {
-                FileMetaMemberVariable cpv = new FileMetaMemberVariable( m_FileMeta, nodeList);
-
-                AddParseVariableInfo(cpv);
-
-                ParseCommon(pnode);
-            }
-            else if( type == 2 )
-            {
-                FileMetaMemberFunction cpf = new FileMetaMemberFunction(m_FileMeta, nodeList);
-
-                AddParseFunctionNodeInfo(cpf);
-
-                ParseSyntax(blockNode.blockNode);
-
-                m_CurrentNodeInfoStack.Pop();
-
-                ParseCommon(pnode);                
-            }
-            else
-            {
-                FileMetaClass cpc = new FileMetaClass(m_FileMeta, nodeList);
-                
-                AddParseClassNodeInfo(cpc);
-                
-                if( cpc.isEnum )
-                {
-                    ParseEnumNode(blockNode.blockNode);
-                }
-                else if( cpc.isData )
-                {
-                    ParseDataNode(blockNode);
-                }
-                else
-                {
-                    ParseCommon(blockNode.blockNode);
-                }
-
-                m_CurrentNodeInfoStack.Pop();
-
-                ParseCommon(pnode);
-            }
         }       
         //处理 ident <> () {} [] . 的结合 与子元素的统一处理
         public static void HandleLinkNode(Node node, Node inputFinaleNode =null )

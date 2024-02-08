@@ -41,8 +41,6 @@ namespace SimpleLanguage.Core
         private Dictionary<string, MetaClass> m_AllClassDict = new Dictionary<string, MetaClass>();
         private List<MetaDynamicClass> m_DynamicClassList = new List<MetaDynamicClass>();
 
-        private Dictionary<string, MetaData> m_AllDataDict = new Dictionary<string, MetaData>();
-
         public MetaClass GetClassByName(string name)
         {
             if (m_AllClassDict.ContainsKey(name))
@@ -243,14 +241,14 @@ namespace SimpleLanguage.Core
                     newme.ParseFileMetaEnumMemeberData(fmc);
                     newmc = newme;
                 }
-                else if (fmc.isData)
-                {
-                    var newmd = new MetaData(fmc.name, fmc.isConst);
-                    newmc = newmd;
-                    m_AllDataDict.Add(fmc.name, newmd);
-                    newmd.BindFileMetaClass(fmc);
-                    newmd.ParseFileMetaDataMemeberData(fmc);
-                }
+                //else if (fmc.isData)
+                //{
+                //    var newmd = new MetaData(fmc.name, fmc.isConst);
+                //    newmc = newmd;
+                //    m_AllDataDict.Add(fmc.name, newmd);
+                //    newmd.BindFileMetaClass(fmc);
+                //    newmd.ParseFileMetaDataMemeberData(fmc);
+                //}
                 else
                 {
                     if (fmc.isConst)
@@ -272,11 +270,12 @@ namespace SimpleLanguage.Core
                     if (isCreateClass)
                     {
                         newmc = new MetaClass(fmc.name);
-                        m_AllClassDict.Add(newmc.allName, newmc);
 
                         newmc.BindFileMetaClass(fmc);
                         newmc.ParseFileMetaClassTemplate(fmc);
                         newmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
+
+                        m_AllClassDict.Add(newmc.allName, newmc);
                     }
                     else
                     {

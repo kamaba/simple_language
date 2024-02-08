@@ -632,7 +632,10 @@ namespace SimpleLanguage.Compile.Parse
 
                     ParseCurrentNodeInfo pcnic = new ParseCurrentNodeInfo(fmkis);
                     m_CurrentNodeInfoStack.Push(pcnic);
-                    ParseSyntax(akss.keyNode.blockNode);
+                    if( akss.keyNode.blockNode != null )
+                    {
+                        ParseSyntax(akss.keyNode.blockNode);
+                    }
                     m_CurrentNodeInfoStack.Pop();
                 }
                 else if (akss.tokenType == ETokenType.Label

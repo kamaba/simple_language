@@ -37,9 +37,9 @@ namespace SimpleLanguage.Core
             foreach (var v in childrenNameNodeDict)
             {
                 MetaBase mb = v.Value;
-                if (mb is MetaMemberData )
+                if (mb is MetaMemberVariable )
                 {
-                    stringBuilder.Append((mb as MetaMemberData).ToFormatString());
+                    stringBuilder.Append((mb as MetaMemberVariable ).ToFormatString());
                     stringBuilder.Append(Environment.NewLine);
                 }
             }
