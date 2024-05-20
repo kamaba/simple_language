@@ -21,6 +21,7 @@ data Book  #定义数据
     author= ["Lif", "Paper", "Mango"];
     buy = 
     [
+        #这种的是用来说明，匿名对象的数组
         {
             time="2022-12-12"; 
             price=25;
@@ -34,7 +35,23 @@ data Book  #定义数据
             price=22;
             sex = 1;
         }
-    ] 
+    ],
+    sell =
+    [
+        #这种的是用来说明 相同带类名的数组
+        data1(){
+            time = "111";
+            price = 20;
+        },
+        data1(){
+            time = "222";
+            price = 30;
+        }
+    ],
+    sell2 = 
+    {
+        #这种的主要是配合的匿名类
+    } 
 }
 AD
 {

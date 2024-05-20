@@ -81,11 +81,21 @@ namespace SimpleLanguage.Core
 
         private FileMetaConstValueTerm m_FileMetaConstValueTerm = null;
         public object value { get; set; } = null;
+
+        public MetaClass m_MetaClass = null;
         public MetaConstExpressNode(FileMetaConstValueTerm fmct )
         {
             m_FileMetaConstValueTerm = fmct;
 
             Parse1(fmct.token.GetEType(), fmct.token.lexeme);
+        }
+        public MetaConstExpressNode( MetaDynamicClass mdc )
+        {
+            eType = EType.Class;
+
+            m_MetaClass = mdc;
+
+            value = mdc;
         }
         public MetaConstExpressNode(EType etype, object val)
         {
@@ -119,19 +129,30 @@ namespace SimpleLanguage.Core
             {
                 m_MetaDefineType = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
+            if (eType == EType.Class )
+            {
+                m_MetaDefineType = new MetaType(m_MetaClass);
+            }
             else
             {
                 MetaClass mc = CoreMetaClassManager.GetMetaClassByEType(eType);
-                MetaInputTemplateCollection mitc = new MetaInputTemplateCollection();
-                if (eType == EType.Array)
+
+                if( mc == null )
                 {
-                    MetaType mitp = new MetaType(CoreMetaClassManager.int32MetaClass);
-                    mitc.AddMetaTemplateParamsList(mitp);
-                    m_MetaDefineType = new MetaType(mc, mitc);
                 }
                 else
                 {
-                    m_MetaDefineType = new MetaType(mc);
+                    MetaInputTemplateCollection mitc = new MetaInputTemplateCollection();
+                    if (eType == EType.Array)
+                    {
+                        MetaType mitp = new MetaType(CoreMetaClassManager.int32MetaClass);
+                        mitc.AddMetaTemplateParamsList(mitp);
+                        m_MetaDefineType = new MetaType(mc, mitc);
+                    }
+                    else
+                    {
+                        m_MetaDefineType = new MetaType(mc);
+                    }
                 }
             }
             return m_MetaDefineType;

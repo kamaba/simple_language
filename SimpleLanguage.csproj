@@ -17,10 +17,13 @@
   <ItemGroup>
     <Compile Remove="source\Core\新文件夹\**" />
     <Compile Remove="source\IR\新文件夹\**" />
+    <Compile Remove="source\MakeBin\**" />
     <EmbeddedResource Remove="source\Core\新文件夹\**" />
     <EmbeddedResource Remove="source\IR\新文件夹\**" />
+    <EmbeddedResource Remove="source\MakeBin\**" />
     <None Remove="source\Core\新文件夹\**" />
     <None Remove="source\IR\新文件夹\**" />
+    <None Remove="source\MakeBin\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,7 +40,6 @@
     <Folder Include="source\Export\ExportCSharpCode\" />
     <Folder Include="source\Export\GenerateMonoIL\" />
     <Folder Include="source\Export\ExportCPlusCode\" />
-    <Folder Include="source\MakeBin\LLVM\" />
     <Folder Include="source\OtherLanguage\CSharp\Statements\" />
   </ItemGroup>
 

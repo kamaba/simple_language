@@ -205,6 +205,8 @@ namespace SimpleLanguage
         Get,
         /// <summary> set </summary>
         Set,
+        /// <summary> let </summary>
+        Let,
         /// <summary> new </summary>
         //New,
         /// <summary> partial </summary>

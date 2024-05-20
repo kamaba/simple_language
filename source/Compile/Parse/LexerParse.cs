@@ -1366,6 +1366,9 @@ namespace SimpleLanguage.Compile.Parse
                 case "label":
                     tokenType = ETokenType.Label;
                     break;
+                case "let":
+                    tokenType = ETokenType.Let;
+                    break;
                 case "global":
                     tokenType = ETokenType.Global;
                     break;
