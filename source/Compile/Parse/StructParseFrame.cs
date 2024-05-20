@@ -902,7 +902,7 @@ namespace SimpleLanguage.Compile.Parse
             }
 
         }
-
+        /*
         public void ParseParContrent(Node pnode)
         {
             // [] 解析中括号里边的内容
@@ -923,7 +923,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else if (curNode.nodeType == ENodeType.ConstValue)   // ["stringValue","Stvlue"]
                 {
-                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, FileMetaMemberVariable.EMemberDataType.Value);
+                    //FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, FileMetaMemberVariable.EMemberDataType.Value);
 
                     //currentNodeInfo.codeData.AddFileMemberData(fmmd);
 
@@ -967,7 +967,6 @@ namespace SimpleLanguage.Compile.Parse
             //ParseDataNode(bracketNode);
             ParseCommon(bracketNode);
         }
-
         void AddFileMetaMemberVariable( Node pnode, List<Node> nodeList )
         {
             FileMetaMemberVariable cpv = new FileMetaMemberVariable(m_FileMeta, nodeList);
@@ -976,6 +975,7 @@ namespace SimpleLanguage.Compile.Parse
 
             ParseCommon(pnode);
         }
+        */
         void AddFileMetaFunctionVariable(Node pnode, Node blockNode, List<Node> nodeList )
         {
             FileMetaMemberFunction cpf = new FileMetaMemberFunction(m_FileMeta, nodeList);
@@ -985,8 +985,6 @@ namespace SimpleLanguage.Compile.Parse
             ParseSyntax(blockNode);
 
             m_CurrentNodeInfoStack.Pop();
-
-            ParseCommon(pnode);
         }
         void AddFileMetaClasss(Node pnode, Node blockNode, List<Node> nodeList)
         {
@@ -1004,10 +1002,8 @@ namespace SimpleLanguage.Compile.Parse
             }
 
             m_CurrentNodeInfoStack.Pop();
-
-            ParseCommon(pnode);
         }
-        public void ParseClass(Node pnode )
+        public void ParseClass( Node pnode )
         {
             Node braceNode = pnode.blockNode;
 
@@ -1043,6 +1039,7 @@ namespace SimpleLanguage.Compile.Parse
                         nodeList.Add(curNode);
 
                         AddFileMetaClasss(pnode, curNode.blockNode, nodeList);
+                        nodeList.Clear();
                     }
                     else if (nextNode?.nodeType == ENodeType.Par)   //Class1()
                     {
@@ -1059,6 +1056,7 @@ namespace SimpleLanguage.Compile.Parse
                             curNode.blockNode = next2Node;
                             nodeList.Add(curNode);
                             AddFileMetaFunctionVariable(pnode, curNode.blockNode, nodeList);
+                            nodeList.Clear();
                         }
                     }
                     else if (nextNode?.nodeType == ENodeType.Angle)   //Class1<>

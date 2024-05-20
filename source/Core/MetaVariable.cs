@@ -23,7 +23,7 @@ namespace SimpleLanguage.Core
         public bool isGlobal { get; set; } = false;
         public bool isArray
         {
-            get { return m_DefineMetaType.isArray; }
+            get { return m_DefineMetaType != null ? m_DefineMetaType.isArray : false ; }
         }
 
         public MetaType metaDefineType => m_DefineMetaType;

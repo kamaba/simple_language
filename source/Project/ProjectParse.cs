@@ -34,21 +34,21 @@ namespace SimpleLanguage.Project
             public ECompileState compileState { get; set; }
             public int priority { get; set; }
 
-            public CompileFileDataUnit(MetaMemberVariable mmv)
+            public CompileFileDataUnit(MetaDynamicClass mdc)
             {
-                //var findPath = mmd.GetString("path", true);
-                //if (findPath == null)
-                //{
-                //    Console.Write("在ProjectConfig 中的CompileFileData必须有path节点!!");
-                //    return;
-                //}
-                //path = findPath;
-                //var findOption = mmd.GetFileMetaMemberDataByName("option");
-                //var findGroup = mmd.GetFileMetaMemberDataByName("group");
+                var findPath = mdc.GetMetaMemberVariableByName("path");
+                if (findPath == null)
+                {
+                    Console.Write("在ProjectConfig 中的CompileFileData必须有path节点!!");
+                    return;
+                }
+                path = findPath.constExpressNode.ToTokenString();
+                var findOption = mdc.GetMetaMemberVariableByName("option");
+                var findGroup = mdc.GetMetaMemberVariableByName("group");
                 //group = findGroup?.fileMetaConstValue?.token?.lexeme.ToString();
-                //var findTag = fmmd.GetFileMetaMemberDataByName("tag");
+                var findTag = mdc.GetMetaMemberVariableByName("tag");
                 //tag = findTag?.fileMetaConstValue?.token?.lexeme.ToString();
-                //var findIgnore = fmmd.GetFileMetaMemberDataByName("ignore");
+                var findIgnore = mdc.GetMetaMemberVariableByName("ignore");
 
                 //object obj = findIgnore?.fileMetaConstValue?.token?.lexeme;
                 //if (obj != null && (bool)obj == true)
@@ -57,20 +57,20 @@ namespace SimpleLanguage.Project
                 //}
                 //else
                 //{
-                //    compileState = ECompileState.Default;
+                    compileState = ECompileState.Default;
                 //}
             }
         }
 
         public List<CompileFileDataUnit> compileFileDataUnitList = new List<CompileFileDataUnit>();
 
-        //public void Parse(MetaMemberData mmd)
-        //{
-        //    foreach (var v in mmd.metaMemberDataDict)
-        //    {
-        //        compileFileDataUnitList.Add(new CompileFileDataUnit(v.Value));
-        //    }
-        //}
+        public void Parse(MetaMemberVariable mmd)
+        {
+            foreach (var v in mmd.childrenNameNodeDict )
+            {
+                compileFileDataUnitList.Add(new CompileFileDataUnit(v.Value as MetaDynamicClass));
+            }
+        }
     }
     public class CompileOptionData
     {
@@ -356,7 +356,7 @@ namespace SimpleLanguage.Project
             return;
         }
     }
-    public class MemberSetData
+    public class MemorySetData
     {
         public void Parse(MetaMemberVariable mmd)
         {
@@ -396,7 +396,7 @@ namespace SimpleLanguage.Project
         public ExportDllData exportDllData { get; set; } = new ExportDllData();
         public CompileModuleData compileModuleData { get; set; } = new CompileModuleData();
         public ImportModuleData importModuleData { get; set; } = new ImportModuleData();
-        public MemberSetData memberSetData { get; set; } = new MemberSetData();
+        public MemorySetData memorySetData { get; set; } = new MemorySetData();
 
         public void ParseFileMetaDataMemeberData(FileMetaClass fmc)
         {
@@ -420,15 +420,13 @@ namespace SimpleLanguage.Project
                 {
                     mmd.SetName(mmd.name + "__repeat__");
                 }
+                //mmd.metaDefineType = 
                 AddMetaMemberVariable(mmd);
 
-                mmd.ParseChildMemberData();
+                mmd.CreateExpress();
+                mmd.CalcReturnType();
 
                 ParseBlockNode(mmd);
-            }
-            if (fmc.memberVariableList.Count > 0 || fmc.memberFunctionList.Count > 0)
-            {
-                Console.WriteLine("Error Data中不允许有Variable 和 Function!!");
             }
         }
 
@@ -455,7 +453,7 @@ namespace SimpleLanguage.Project
                     break;
                 case "compileFileList":
                     {
-                        //compileFileData.Parse(mmd);
+                        compileFileData.Parse(mmd);
                     }
                     break;
                 case "compileOption":
@@ -498,9 +496,9 @@ namespace SimpleLanguage.Project
                         exportDllData.Parse(mmd);
                     }
                     break;
-                case "memberSet":
+                case "memorySet":
                     {
-                        memberSetData.Parse(mmd);
+                        memorySetData.Parse(mmd);
                     }
                     break;
             }
