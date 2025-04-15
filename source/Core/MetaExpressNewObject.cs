@@ -437,6 +437,26 @@ namespace SimpleLanguage.Core
         private FileMetaCallTerm m_FileMetaCallTerm = null;
         private FileMetaConstValueTerm m_FileMetaConstValueTerm = null;
 
+        public MetaNewObjectExpressNode( MetaClass ownermc, List<MetaDynamicClass> list )
+        {
+            m_OwnerMetaClass = ownermc;
+            m_OwnerMetaBlockStatements = null;
+            m_MetaBraceOrBracketStatementsContent = null;;
+
+            var metaInputTemplateCollection = new MetaInputTemplateCollection();
+            //MetaType mitp = new MetaType(MetaDynamicClass);
+            //metaInputTemplateCollection.AddMetaTemplateParamsList(mitp);
+            m_MetaDefineType = new MetaType(CoreMetaClassManager.arrayMetaClass, metaInputTemplateCollection);
+
+            //MetaInputParamCollection mipc = new MetaInputParamCollection(mc, mbs);
+            //mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaBraceOrBracketStatementsContent.count)));
+            //MetaMemberFunction mmf = m_MetaDefineType.metaClass.GetMetaMemberConstructFunction(mipc);
+
+            //m_MetaConstructFunctionCall = new MetaMethodCall(m_MetaDefineType.metaClass, mmf, mipc);
+
+            eType = EType.Array;
+        }
+
         // 1..x
         public MetaNewObjectExpressNode(FileMetaConstValueTerm arrayLinkToken, MetaClass ownerMC, MetaBlockStatements mbs )
         {

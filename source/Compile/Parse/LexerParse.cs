@@ -732,20 +732,6 @@ namespace SimpleLanguage.Compile.Parse
             //    }
             //}
         }
-        /// <summary> ::</summary>
-        void ReadColon()
-        {
-            m_TempChar = ReadChar();
-            if( m_TempChar == ':' )
-            {
-                AddToken(ETokenType.ColonDouble, "::" );
-            }
-            else
-            {
-                UndoChar();
-                AddToken(ETokenType.Colon);
-            }
-        }        
         void ReadCharAddToken()
         {
             do
@@ -1512,7 +1498,7 @@ namespace SimpleLanguage.Compile.Parse
                             m_SourceChar++;
                             break;
                         case ':':
-                            ReadColon();
+                            AddToken(ETokenType.Colon);
                             m_Index++;
                             m_SourceChar++;
                             break;

@@ -89,14 +89,6 @@ namespace SimpleLanguage.Core
 
             Parse1(fmct.token.GetEType(), fmct.token.lexeme);
         }
-        public MetaConstExpressNode( MetaDynamicClass mdc )
-        {
-            eType = EType.Class;
-
-            m_MetaClass = mdc;
-
-            value = mdc;
-        }
         public MetaConstExpressNode(EType etype, object val)
         {
             Parse1(etype, val);

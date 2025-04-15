@@ -420,11 +420,6 @@ namespace SimpleLanguage.Compile.Parse
                         AddNode(token);
                     }
                     break;
-                case ETokenType.ColonDouble:    //::
-                    {
-                        AddNode(token);
-                    }
-                    break;
                 case ETokenType.SemiColon:      //;
                     {
                         Node node = new Node(token);
@@ -606,6 +601,11 @@ namespace SimpleLanguage.Compile.Parse
                     }
                     break;
                 case ETokenType.Interface:
+                    {
+                        AddNode(token);
+                    }
+                    break;
+                case ETokenType.Extend:
                     {
                         AddNode(token);
                     }

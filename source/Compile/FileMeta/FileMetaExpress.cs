@@ -738,6 +738,71 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 }
             }
         }
+        // = [{a=20;b="aaa";},{a=30;b="ccc";}] 
+        public FileMetaBracketTerm( FileMeta fm, Node node, int a )
+        {
+            int type = -1;
+            List<Node> list = new List<Node>();
+            for (int index = 0; index < node.childList.Count; index++)
+            {
+                var curNode = node.childList[index];
+                if (curNode.nodeType == ENodeType.LineEnd
+                    || curNode.nodeType == ENodeType.SemiColon
+                    || curNode.nodeType == ENodeType.Comma)
+                {
+                    if (list.Count == 0)
+                    {
+                        continue;
+                    }
+                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, list);
+
+                    //AddFileMemberVariable(fmmd);
+
+                    list = new List<Node>();
+                    continue;
+                }
+                if (curNode.nodeType == ENodeType.IdentifierLink)      //aaa(){},aaa(){}
+                {
+
+                }
+                if (curNode.nodeType == ENodeType.Brace)  //Class1 [{},{}]
+                {
+                    if (type == 2 || type == 3)
+                    {
+                        Console.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                        continue;
+                    }
+
+                    type = 1;
+
+                    //FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, EMemberDataType.NoNameClass);
+
+                    //AddFileMemberVariable(fmmd);
+                }
+                else if (curNode?.nodeType == ENodeType.Bracket) // [[],[]]
+                {
+                    if (type == 1 || type == 2)
+                    {
+                        Console.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                        continue;
+                    }
+
+                    type = 3;
+
+                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, FileMetaMemberVariable.EMemberDataType.Array);
+
+                    //AddFileMemberVariable(fmmd);
+                }
+                else if (curNode?.nodeType == ENodeType.IdentifierLink
+                    || curNode?.nodeType == ENodeType.Assign
+                    || curNode?.nodeType == ENodeType.ConstValue
+                    )
+                {
+                    list.Add(curNode);
+                }
+            }
+        }
+        // = [{},{},{}]
         public override string ToFormatString()
         {
             StringBuilder stringBuilder = new StringBuilder();
