@@ -77,8 +77,6 @@ namespace SimpleLanguage
         Comma,
         /// <summary> : </summary>
         Colon,
-        /// <summary> :: </summary>
-        ColonDouble,
         /// <summary> ; </summary>
         SemiColon,
         /// <summary> \n </summary>
@@ -193,6 +191,8 @@ namespace SimpleLanguage
         Private,
         /// <summary> Interface </summary>
         Interface,
+        /// <summary> extend </summary>
+        Extend,
         /// <summary> override </summary>
         Override,
         /// <summary> const </summary>

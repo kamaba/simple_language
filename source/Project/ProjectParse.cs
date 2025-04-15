@@ -66,10 +66,16 @@ namespace SimpleLanguage.Project
 
         public void Parse(MetaMemberVariable mmd)
         {
-            foreach (var v in mmd.childrenNameNodeDict )
+            var express = mmd.express;
+            MetaNewObjectExpressNode mnoen = express as MetaNewObjectExpressNode;
+            if( mnoen != null)
             {
-                compileFileDataUnitList.Add(new CompileFileDataUnit(v.Value as MetaDynamicClass));
+                //mnoen.
             }
+            //foreach (var v in  )
+            //{
+            //    compileFileDataUnitList.Add(new CompileFileDataUnit(v.Value as MetaDynamicClass));
+            //}
         }
     }
     public class CompileOptionData

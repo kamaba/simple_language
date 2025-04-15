@@ -73,7 +73,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             }
 
             Token permissionToken = null;
-            Token colonDoubleToken = null;
+            Token extendToken = null;
             Token interfaceToken = null;
             Token commaToken = null;
             bool isError = false;
@@ -99,7 +99,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         }
                         interfaceNameTokenList = cnode.linkTokenList;
                     }
-                    else if (colonDoubleToken != null && interfaceToken == null)
+                    else if (extendToken != null && interfaceToken == null)
                     {
                         if (inheritNameTokenList.Count > 0)
                         {
@@ -260,14 +260,14 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     //    }
                     //    //m_DataToken = token;
                     //}
-                    else if (token.type == ETokenType.ColonDouble)
+                    else if (token.type == ETokenType.Extend )
                     {
-                        if (colonDoubleToken != null)
+                        if (extendToken != null)
                         {
                             isError = true;
-                            Console.WriteLine("Error 解析过了一次双冒号!!");
+                            Console.WriteLine("Error 解析过了一次Extend!!");
                         }
-                        colonDoubleToken = token;
+                        extendToken = token;
                     }
                     else if (token.type == ETokenType.Interface)
                     {

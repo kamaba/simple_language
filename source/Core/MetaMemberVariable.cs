@@ -687,7 +687,8 @@ namespace SimpleLanguage.Core
         {
             if( m_FileMetaMemeberVariable.DataType == FileMetaMemberVariable.EMemberDataType.Array )
             {
-                ParseChildMemberData();
+                m_Express = CreateExpressNodeInClassMetaVariable();
+                //ParseChildMemberData();
             }
             else
             {
@@ -1079,13 +1080,16 @@ namespace SimpleLanguage.Core
 
             if(m_FileMetaMemeberVariable.DataType == FileMetaMemberVariable.EMemberDataType.Array )
             {
+                List<MetaDynamicClass> list = new List<MetaDynamicClass>();
+
                 for (int i = 0; i < count; i++)
                 {
                     var fmmv = m_FileMetaMemeberVariable.fileMetaMemberVariable[i];
 
                     MetaDynamicClass mdc = new MetaDynamicClass(fmmv.GetHashCode().ToString());
+                    list.Add(mdc);
 
-                    for( int j = 0; j < fmmv.fileMetaMemberVariable.Count; j++ )
+                    for ( int j = 0; j < fmmv.fileMetaMemberVariable.Count; j++ )
                     {
                         MetaMemberVariable mmv = new MetaMemberVariable(mdc, fmmv.fileMetaMemberVariable[j] as FileMetaMemberVariable, false);
 
@@ -1093,10 +1097,10 @@ namespace SimpleLanguage.Core
                         mmv.ParseChildMemberData();
                         mmv.CalcDefineClassType();
 
-                        mdc.AddMetaMemberVariable(mmv);
                     }
-                    m_Express = new MetaConstExpressNode( mdc );
+                    
                 }
+                m_Express = new MetaNewObjectExpressNode(this.m_OwnerMetaClass, list);
             }
             else if( m_FileMetaMemeberVariable.DataType == FileMetaMemberVariable.EMemberDataType.ConstVariable )
             {

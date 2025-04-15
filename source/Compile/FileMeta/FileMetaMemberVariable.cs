@@ -166,7 +166,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         {
             None,
             NameClass,
-            NoNameClass,
+            //NoNameClass,
             Array,
             KeyValue,
             ConstVariable,
@@ -241,77 +241,15 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             if (dataType == EMemberDataType.NameClass)
             {
             }
-            else if( dataType == EMemberDataType.NoNameClass )
-            {
-                isParseBuild = false;
-
-                int type = -1;
-                List < Node > list = new List < Node >();
-                for (int index = 0; index < _beforeNode.childList.Count; index++)
-                {
-                    var curNode = _beforeNode.childList[index];
-                    if (curNode.nodeType == ENodeType.LineEnd
-                        || curNode.nodeType == ENodeType.SemiColon
-                        || curNode.nodeType == ENodeType.Comma)
-                    {
-                        if(list.Count == 0 )
-                        {
-                            continue;
-                        }
-                        FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, list );
-
-                        AddFileMemberVariable(fmmd);
-
-                        list = new List<Node>();
-                        continue;
-                    }
-                    if (curNode.nodeType == ENodeType.IdentifierLink)      //aaa(){},aaa(){}
-                    {
-
-                    }
-                    if (curNode.nodeType == ENodeType.Brace)  //Class1 [{},{}]
-                    {
-                        if (type == 2 || type == 3)
-                        {
-                            Console.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
-                            continue;
-                        }
-
-                        type = 1;
-
-                        FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, EMemberDataType.NoNameClass);
-
-                        AddFileMemberVariable(fmmd);
-                    }
-                    else if (curNode?.nodeType == ENodeType.Bracket) // [[],[]]
-                    {
-                        if (type == 1 || type == 2)
-                        {
-                            Console.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
-                            continue;
-                        }
-
-                        type = 3;
-
-                        FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, FileMetaMemberVariable.EMemberDataType.Array);
-
-                        AddFileMemberVariable(fmmd);
-                    }
-                    else if( curNode?.nodeType == ENodeType.IdentifierLink
-                        || curNode?.nodeType == ENodeType.Assign
-                        || curNode?.nodeType == ENodeType.ConstValue
-                        )
-                    {
-                        list.Add(curNode);
-                    }
-                }
-            }
             else if (dataType == EMemberDataType.KeyValue)
             {
                 m_Express = new FileMetaConstValueTerm(m_FileMeta, _afterNode.token);
             }
             else if (dataType == EMemberDataType.Array)
             {
+                isParseBuild = false;
+
+                m_Express = new FileMetaBracketTerm(m_FileMeta, _beforeNode, 1);
             }
             else if (dataType == EMemberDataType.ConstVariable )
             {
@@ -411,7 +349,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
                     type = 1;
 
-                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, EMemberDataType.NoNameClass );
+                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, EMemberDataType.Array );
 
                     AddFileMemberVariable(fmmd);
                 }
@@ -720,20 +658,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     sb.Append(" " + m_Express?.ToFormatString());
                 }
                 sb.Append(";");
-            }
-            else if (m_MemberDataType == EMemberDataType.NoNameClass)
-            {
-                sb.AppendLine();
-                for (int i = 0; i < deep; i++)
-                    sb.Append(Global.tabChar);
-                sb.AppendLine("{");
-                for (int i = 0; i < m_FileMetaMemberVariableList.Count; i++)
-                {
-                    sb.AppendLine(m_FileMetaMemberVariableList[i].ToFormatString());
-                }
-                for (int i = 0; i < deep; i++)
-                    sb.Append(Global.tabChar);
-                sb.Append("}");
             }
             else if (m_MemberDataType == EMemberDataType.KeyValue)
             {
