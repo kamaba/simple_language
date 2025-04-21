@@ -47,7 +47,7 @@ namespace Application
 }
 final Application.MyClass2   #不允许继承
 {
-
+    
 }
 MyClass3
 {

@@ -34,21 +34,29 @@ namespace SimpleLanguage.Project
             public ECompileState compileState { get; set; }
             public int priority { get; set; }
 
-            public CompileFileDataUnit(MetaDynamicClass mdc)
+            public CompileFileDataUnit(MetaMemberData mmd )
             {
-                var findPath = mdc.GetMetaMemberVariableByName("path");
+                var findPath = mmd.GetString("path", true);
                 if (findPath == null)
                 {
                     Console.Write("在ProjectConfig 中的CompileFileData必须有path节点!!");
                     return;
                 }
-                path = findPath.constExpressNode.ToTokenString();
-                var findOption = mdc.GetMetaMemberVariableByName("option");
-                var findGroup = mdc.GetMetaMemberVariableByName("group");
-                //group = findGroup?.fileMetaConstValue?.token?.lexeme.ToString();
-                var findTag = mdc.GetMetaMemberVariableByName("tag");
-                //tag = findTag?.fileMetaConstValue?.token?.lexeme.ToString();
-                var findIgnore = mdc.GetMetaMemberVariableByName("ignore");
+                path = findPath;
+
+                //var findPath = mdc.GetMetaMemberVariableByName("path");
+                //if (findPath == null)
+                //{
+                //    Console.Write("在ProjectConfig 中的CompileFileData必须有path节点!!");
+                //    return;
+                //}
+                //path = findPath.constExpressNode.ToTokenString();
+                //var findOption = mdc.GetMetaMemberVariableByName("option");
+                //var findGroup = mdc.GetMetaMemberVariableByName("group");
+                ////group = findGroup?.fileMetaConstValue?.token?.lexeme.ToString();
+                //var findTag = mdc.GetMetaMemberVariableByName("tag");
+                ////tag = findTag?.fileMetaConstValue?.token?.lexeme.ToString();
+                //var findIgnore = mdc.GetMetaMemberVariableByName("ignore");
 
                 //object obj = findIgnore?.fileMetaConstValue?.token?.lexeme;
                 //if (obj != null && (bool)obj == true)
@@ -64,18 +72,12 @@ namespace SimpleLanguage.Project
 
         public List<CompileFileDataUnit> compileFileDataUnitList = new List<CompileFileDataUnit>();
 
-        public void Parse(MetaMemberVariable mmd)
+        public void Parse(MetaMemberData mmd)
         {
-            var express = mmd.express;
-            MetaNewObjectExpressNode mnoen = express as MetaNewObjectExpressNode;
-            if( mnoen != null)
+            foreach (var v in mmd.metaMemberDataDict)
             {
-                //mnoen.
+                compileFileDataUnitList.Add(new CompileFileDataUnit(v.Value));
             }
-            //foreach (var v in  )
-            //{
-            //    compileFileDataUnitList.Add(new CompileFileDataUnit(v.Value as MetaDynamicClass));
-            //}
         }
     }
     public class CompileOptionData
@@ -83,10 +85,10 @@ namespace SimpleLanguage.Project
         public bool isForceUseClassKey { get; set; }
         public bool isSupportDoublePlus { get; set; }
 
-        public void Parse(MetaMemberVariable mmd)
+        public void Parse(MetaMemberData mmd)
         {
-            //var findIsForceUseClassKey = fmmd.GetFileMetaMemberDataByName("isForceUseClassKey");
-            //var findIsSupportDoublePlus = fmmd.GetFileMetaMemberDataByName("isSupportDoublePlus");
+            //var findIsForceUseClassKey = mmd.GetFileMetaMemberDataByName("isForceUseClassKey");
+            //var findIsSupportDoublePlus = mmd.GetFileMetaMemberDataByName("isSupportDoublePlus");
 
             //object obj1 = findIsForceUseClassKey?.fileMetaConstValue?.token?.lexeme;
             //object obj2 = findIsSupportDoublePlus?.fileMetaConstValue?.token?.lexeme;
@@ -124,7 +126,7 @@ namespace SimpleLanguage.Project
             return false;
         }
 
-        public bool Parse(MetaMemberVariable mmd)
+        public bool Parse(MetaMemberData mmd)
         {
             if (mmd == null)
             {
@@ -186,7 +188,7 @@ namespace SimpleLanguage.Project
         }
 
         List<ImportModuleDataUnit> importModuleDataUnitList = new List<ImportModuleDataUnit>();
-        public bool Parse( MetaMemberVariable mmd )
+        public bool Parse(MetaMemberData mmd )
         {
             /*
             var findGroup = m_FileMetaMemberData.GetFileMetaMemberDataByName("group");
@@ -252,7 +254,7 @@ namespace SimpleLanguage.Project
         public DefineNamespace()
         {
         }
-        public DefineNamespace Parse(MetaMemberVariable mmd )
+        public DefineNamespace Parse(MetaMemberData mmd )
         {
             if (mmd == null)
             {
@@ -260,10 +262,10 @@ namespace SimpleLanguage.Project
             }
             spaceName = mmd.name;
 
-            foreach(var ns in mmd.childrenNameNodeDict)
+            foreach (var ns in mmd.childrenNameNodeDict)
             {
                 var dn = new DefineNamespace();
-                MetaMemberVariable cmmd = ns.Value as MetaMemberVariable;
+                MetaMemberData cmmd = ns.Value as MetaMemberData;
                 if (cmmd != null)
                 {
                     dn.Parse(cmmd);
@@ -277,7 +279,7 @@ namespace SimpleLanguage.Project
     public class GlobalVariableData
     {
         public Dictionary<string, MetaVariable> m_VariableDict = new Dictionary<string, MetaVariable>();
-        public void Parse( MetaMemberVariable mmd )
+        public void Parse(MetaMemberData mmd )
         {
             if (mmd == null)
             {
@@ -293,7 +295,7 @@ namespace SimpleLanguage.Project
     {
         public List<string> globalImportList = new List<string>();
 
-        public void Parse(MetaMemberVariable mmd )
+        public void Parse(MetaMemberData mmd )
         {
             if (mmd == null)
             {
@@ -317,7 +319,7 @@ namespace SimpleLanguage.Project
     {
         private Dictionary<string, string> repaceStringDict = new Dictionary<string, string>();
 
-        public void Parse(MetaMemberVariable mmd )
+        public void Parse(MetaMemberData mmd )
         {
             if (mmd == null)
             {
@@ -348,7 +350,7 @@ namespace SimpleLanguage.Project
         public string spaceName { get; set; } = "";
         public List<DefineNamespace> childDefineNamespace = new List<DefineNamespace>();
 
-        public void Parse(MetaMemberVariable mmd)
+        public void Parse(MetaMemberData mmd)
         {
             if (mmd == null)
             {
@@ -364,7 +366,7 @@ namespace SimpleLanguage.Project
     }
     public class MemorySetData
     {
-        public void Parse(MetaMemberVariable mmd)
+        public void Parse(MetaMemberData mmd)
         {
             if (mmd == null)
             {
@@ -379,9 +381,9 @@ namespace SimpleLanguage.Project
         }
     }
 
-    public class ProjectData : MetaClass
+    public class ProjectData : MetaData
     {
-        public ProjectData(string _name, bool isConst) : base(_name )
+        public ProjectData(string _name, bool isConst) : base(_name, isConst )
         {
 
         }
@@ -403,13 +405,12 @@ namespace SimpleLanguage.Project
         public CompileModuleData compileModuleData { get; set; } = new CompileModuleData();
         public ImportModuleData importModuleData { get; set; } = new ImportModuleData();
         public MemorySetData memorySetData { get; set; } = new MemorySetData();
-
-        public void ParseFileMetaDataMemeberData(FileMetaClass fmc)
+        public override void ParseFileMetaDataMemeberData(FileMetaClass fmc)
         {
             bool isHave = false;
-            for (int i = 0; i < fmc.memberVariableList.Count; i++)
+            for (int i = 0; i < fmc.memberDataList.Count; i++)
             {
-                var v = fmc.memberVariableList[i];
+                var v = fmc.memberDataList[i];
                 MetaBase mb = GetChildrenMetaBaseByName(v.name);
                 if (mb != null)
                 {
@@ -421,22 +422,25 @@ namespace SimpleLanguage.Project
                 if (v.name == "globalVariable")
                     continue;
 
-                MetaMemberVariable mmd = new MetaMemberVariable(this, v);
+                MetaMemberData mmd = new MetaMemberData(this, v);
                 if (isHave)
                 {
                     mmd.SetName(mmd.name + "__repeat__");
                 }
                 //mmd.metaDefineType = 
-                AddMetaMemberVariable(mmd);
+                AddMetaMemberData(mmd);
 
-                mmd.CreateExpress();
-                mmd.CalcReturnType();
+                mmd.ParseChildMemberData();
 
                 ParseBlockNode(mmd);
             }
+            if (fmc.memberVariableList.Count > 0 || fmc.memberFunctionList.Count > 0)
+            {
+                Console.WriteLine("Error Data中不允许有Variable 和 Function!!");
+            }
         }
 
-        public void ParseBlockNode(MetaMemberVariable mmd)
+        public void ParseBlockNode(MetaMemberData mmd)
         {
             if (mmd == null) return;
 

@@ -73,6 +73,8 @@ namespace SimpleLanguage.Project
 
             ProjectClass.ParseCompileClass();
 
+            ProjectClass.ParseProjectClass();
+
             Console.WriteLine(m_ProjectFile.ToFormatString());
         }
 

@@ -86,11 +86,11 @@ ProjectEnter
     {
 
     }
-    ClassChild1 :: ClassBase
+    ClassChild1 extend ClassBase
     {
 
     }
-    ClassChild2 :: ClassBase
+    ClassChild2 extend ClassBase
     {
 
     }

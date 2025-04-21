@@ -15,6 +15,7 @@ using System.IO;
 using System.Text;
 using SimpleLanguage.Compile.Parse;
 using SimpleLanguage.Compile.CoreFileMeta;
+using System.Runtime.Intrinsics.X86;
 
 namespace SimpleLanguage.Project
 {
@@ -53,6 +54,31 @@ namespace SimpleLanguage.Project
 
             s_CompileBeforeFunction.TranslateIR();
             s_CompileAfterFunction.TranslateIR();
+        }
+        public static void ParseProjectClass()
+        {
+            FileMetaClass pfmc = ProjectCompile.projectFileMeta.GetFileMetaClassByName("Project");
+            if (pfmc == null)
+            {
+                Console.Write("Error 解析工程文件，没有找到Project!!");
+                return;
+            }
+
+            ClassManager.instance.AddClass(pfmc);
+
+            var projectcompile = pfmc.metaClass;
+            if (projectcompile == null) return;
+
+            projectcompile.Parse();
+            projectcompile.ParseDefineComplete();
+            var flist = projectcompile.GetMemberFunctionList();
+            for (int i = 0; i < flist.Count; i++)
+            {
+                flist[i].ParseStatements();
+            }
+            var mainFunction = projectcompile.GetMetaDefineGetSetMemberFunctionByName("Main", false, false );
+            
+            mainFunction.TranslateIR();
         }
         public static void RunTest()
         {

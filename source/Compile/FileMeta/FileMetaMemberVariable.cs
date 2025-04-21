@@ -16,150 +16,150 @@ using static SimpleLanguage.Compile.CoreFileMeta.FileMetaMemberVariable;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
 {
-    //public class FileMetaMemberData : FileMetaBase
-    //{
-    //    public enum EMemberDataType
-    //    {
-    //        None,
-    //        NameClass,
-    //        NoNameClass,
-    //        Array,
-    //        KeyValue,
-    //        Value,
-    //        Data,
-    //    }
+    public class FileMetaMemberData : FileMetaBase
+    {
+        public enum EMemberDataType
+        {
+            None,
+            NameClass,
+            NoNameClass,
+            Array,
+            KeyValue,
+            Value,
+            Data,
+        }
 
-    //    public Token nameToken => m_Token;
-    //    public List<FileMetaMemberData> fileMetaMemberData => m_FileMetaMemberData;
-    //    public FileMetaConstValueTerm fileMetaConstValue => m_FileMetaConstValue;
-    //    public FileMetaCallTerm fileMetaCallTermValue => m_FileMetaCallTermValue;
-    //    public EMemberDataType DataType => m_MemberDataType;
+        public Token nameToken => m_Token;
+        public List<FileMetaMemberData> fileMetaMemberData => m_FileMetaMemberData;
+        public FileMetaConstValueTerm fileMetaConstValue => m_FileMetaConstValue;
+        public FileMetaCallTerm fileMetaCallTermValue => m_FileMetaCallTermValue;
+        public EMemberDataType DataType => m_MemberDataType;
 
-    //    private Token m_AssignToken = null;
-    //    private List<Node> m_NodeList = new List<Node>();
-    //    private List<FileMetaMemberData> m_FileMetaMemberData = new List<FileMetaMemberData>();
-    //    private EMemberDataType m_MemberDataType = EMemberDataType.None;
-    //    private FileMetaConstValueTerm m_FileMetaConstValue = null;
-    //    private FileMetaCallTerm m_FileMetaCallTermValue = null;
+        private Token m_AssignToken = null;
+        private List<Node> m_NodeList = new List<Node>();
+        private List<FileMetaMemberData> m_FileMetaMemberData = new List<FileMetaMemberData>();
+        private EMemberDataType m_MemberDataType = EMemberDataType.None;
+        private FileMetaConstValueTerm m_FileMetaConstValue = null;
+        private FileMetaCallTerm m_FileMetaCallTermValue = null;
 
-    //    public FileMetaMemberData(FileMeta fm, Node _beforeNode, Node _afterNode, EMemberDataType dataType )
-    //    {
-    //        m_MemberDataType = dataType;
+        public FileMetaMemberData(FileMeta fm, Node _beforeNode, Node _afterNode, EMemberDataType dataType)
+        {
+            m_MemberDataType = dataType;
 
-    //        m_FileMeta = fm;
+            m_FileMeta = fm;
 
-    //        if( dataType == EMemberDataType.NameClass)
-    //        {
-    //            m_Token = _beforeNode.token;
-    //        }
-    //        else if( dataType == EMemberDataType.KeyValue )
-    //        {
-    //            m_Token = _beforeNode.token;
-    //            m_FileMetaConstValue = new FileMetaConstValueTerm(m_FileMeta, _afterNode.token);
-    //        }
-    //        else if( dataType == EMemberDataType.Array )
-    //        {
-    //            m_Token = _beforeNode.token;
-    //        }
-    //        else if( dataType == EMemberDataType.Value )
-    //        {
-    //            m_FileMetaConstValue = new FileMetaConstValueTerm(m_FileMeta, _beforeNode.token);
-    //        }
-    //        else if( dataType == EMemberDataType.Data )
-    //        {
-    //            m_Token = _beforeNode.token;
-    //            m_FileMetaCallTermValue = new FileMetaCallTerm(m_FileMeta, _afterNode);
-    //        }
-    //    }
-    //    public void AddFileMemberData( FileMetaMemberData fmmd )
-    //    {
-    //        m_FileMetaMemberData.Add(fmmd);
-    //    }
-    //    public override void SetDeep(int _deep)
-    //    {
-    //        m_Deep = _deep;
-    //        for (int i = 0; i < m_FileMetaMemberData.Count; i++)
-    //        {
-    //            m_FileMetaMemberData[i].SetDeep(m_Deep + 1);
-    //        }
-    //    }
-    //    public void SetMetaMemberData(MetaMemberData fmmd )
-    //    {
+            if (dataType == EMemberDataType.NameClass)
+            {
+                m_Token = _beforeNode.token;
+            }
+            else if (dataType == EMemberDataType.KeyValue)
+            {
+                m_Token = _beforeNode.token;
+                m_FileMetaConstValue = new FileMetaConstValueTerm(m_FileMeta, _afterNode.token);
+            }
+            else if (dataType == EMemberDataType.Array)
+            {
+                m_Token = _beforeNode.token;
+            }
+            else if (dataType == EMemberDataType.Value)
+            {
+                m_FileMetaConstValue = new FileMetaConstValueTerm(m_FileMeta, _beforeNode.token);
+            }
+            else if (dataType == EMemberDataType.Data)
+            {
+                m_Token = _beforeNode.token;
+                m_FileMetaCallTermValue = new FileMetaCallTerm(m_FileMeta, _afterNode);
+            }
+        }
+        public void AddFileMemberData(FileMetaMemberData fmmd)
+        {
+            m_FileMetaMemberData.Add(fmmd);
+        }
+        public override void SetDeep(int _deep)
+        {
+            m_Deep = _deep;
+            for (int i = 0; i < m_FileMetaMemberData.Count; i++)
+            {
+                m_FileMetaMemberData[i].SetDeep(m_Deep + 1);
+            }
+        }
+        public void SetMetaMemberData(MetaMemberData fmmd)
+        {
 
-    //    }
-    //    public FileMetaMemberData GetFileMetaMemberDataByName( string name )
-    //    {
-    //        FileMetaMemberData fmmd = m_FileMetaMemberData.Find(a => a.name == name);
+        }
+        public FileMetaMemberData GetFileMetaMemberDataByName(string name)
+        {
+            FileMetaMemberData fmmd = m_FileMetaMemberData.Find(a => a.name == name);
 
-    //        return fmmd;
-    //    }
-    //    public override string ToFormatString()
-    //    {
-    //        StringBuilder sb = new StringBuilder();
-          
-            
-    //        if( m_MemberDataType == EMemberDataType.NameClass)
-    //        {
-    //            for (int i = 0; i < deep; i++)
-    //                sb.Append(Global.tabChar);
-    //            sb.AppendLine(name);
-    //            for (int i = 0; i < deep; i++)
-    //                sb.Append(Global.tabChar);
-    //            sb.AppendLine("{");
-    //            for (int i = 0; i < m_FileMetaMemberData.Count; i++)
-    //            {
-    //                sb.AppendLine(m_FileMetaMemberData[i].ToFormatString());
-    //            }
-    //            for (int i = 0; i < deep; i++)
-    //                sb.Append(Global.tabChar);
-    //            sb.Append("}");
-    //        }
-    //        else if( m_MemberDataType == EMemberDataType.NoNameClass )
-    //        {
-    //            sb.AppendLine();
-    //            for (int i = 0; i < deep; i++)
-    //                sb.Append(Global.tabChar);
-    //            sb.AppendLine("{");
-    //            for (int i = 0; i < m_FileMetaMemberData.Count; i++)
-    //            {
-    //                sb.AppendLine(m_FileMetaMemberData[i].ToFormatString());
-    //            }
-    //            for (int i = 0; i < deep; i++)
-    //                sb.Append(Global.tabChar);
-    //            sb.Append("}");
-    //        }
-    //        else if( m_MemberDataType == EMemberDataType.KeyValue )
-    //        {
-    //            for (int i = 0; i < deep; i++)
-    //                sb.Append(Global.tabChar);
-    //            sb.Append(name + " = ");
-    //            sb.Append(m_FileMetaConstValue.ToFormatString());
-    //            sb.Append(";");
-    //        }
-    //        else if (m_MemberDataType == EMemberDataType.Array)
-    //        {
-    //            for (int i = 0; i < deep; i++)
-    //                sb.Append(Global.tabChar);
-    //            sb.Append(name + " = [");
-    //            for ( int i = 0; i < m_FileMetaMemberData.Count; i++ )
-    //            {
-    //                sb.Append(m_FileMetaMemberData[i].ToFormatString());
-    //                if( i < m_FileMetaMemberData.Count - 1 )
-    //                {
-    //                    sb.Append(",");
-    //                }
-    //            }
-    //            sb.Append("]");
-    //            sb.Append(";");
-    //        }
-    //        else if (m_MemberDataType == EMemberDataType.Value )
-    //        {
-    //            sb.Append(m_FileMetaConstValue.ToFormatString());
-    //        }
+            return fmmd;
+        }
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
 
-    //        return sb.ToString();
-    //    }
-    //}
+
+            if (m_MemberDataType == EMemberDataType.NameClass)
+            {
+                for (int i = 0; i < deep; i++)
+                    sb.Append(Global.tabChar);
+                sb.AppendLine(name);
+                for (int i = 0; i < deep; i++)
+                    sb.Append(Global.tabChar);
+                sb.AppendLine("{");
+                for (int i = 0; i < m_FileMetaMemberData.Count; i++)
+                {
+                    sb.AppendLine(m_FileMetaMemberData[i].ToFormatString());
+                }
+                for (int i = 0; i < deep; i++)
+                    sb.Append(Global.tabChar);
+                sb.Append("}");
+            }
+            else if (m_MemberDataType == EMemberDataType.NoNameClass)
+            {
+                sb.AppendLine();
+                for (int i = 0; i < deep; i++)
+                    sb.Append(Global.tabChar);
+                sb.AppendLine("{");
+                for (int i = 0; i < m_FileMetaMemberData.Count; i++)
+                {
+                    sb.AppendLine(m_FileMetaMemberData[i].ToFormatString());
+                }
+                for (int i = 0; i < deep; i++)
+                    sb.Append(Global.tabChar);
+                sb.Append("}");
+            }
+            else if (m_MemberDataType == EMemberDataType.KeyValue)
+            {
+                for (int i = 0; i < deep; i++)
+                    sb.Append(Global.tabChar);
+                sb.Append(name + " = ");
+                sb.Append(m_FileMetaConstValue.ToFormatString());
+                sb.Append(";");
+            }
+            else if (m_MemberDataType == EMemberDataType.Array)
+            {
+                for (int i = 0; i < deep; i++)
+                    sb.Append(Global.tabChar);
+                sb.Append(name + " = [");
+                for (int i = 0; i < m_FileMetaMemberData.Count; i++)
+                {
+                    sb.Append(m_FileMetaMemberData[i].ToFormatString());
+                    if (i < m_FileMetaMemberData.Count - 1)
+                    {
+                        sb.Append(",");
+                    }
+                }
+                sb.Append("]");
+                sb.Append(";");
+            }
+            else if (m_MemberDataType == EMemberDataType.Value)
+            {
+                sb.Append(m_FileMetaConstValue.ToFormatString());
+            }
+
+            return sb.ToString();
+        }
+    }
     public partial class FileMetaMemberVariable : FileMetaBase
     {
         public enum EMemberDataType

@@ -3,7 +3,7 @@
 
 Class1
 {
-    <displayName="semws", des="这是个什么什么函数，用来干什么的", ret=[]>
+    @displayName="semws", @des="这是个什么什么函数，用来干什么的", @ret=[], @instance, @condition=[debug,info]
     Fun1()
     {
 

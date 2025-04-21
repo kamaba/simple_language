@@ -573,7 +573,7 @@ namespace SimpleLanguage.Compile.Parse
                     }
                     break;
                 case ETokenType.Enum:
-                //case ETokenType.Data:
+                case ETokenType.Data:
                 case ETokenType.Class:
                     {
                         AddNode(token);

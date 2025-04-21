@@ -42,7 +42,7 @@ Class1
     m1 = 10;
 }
 
-c1 = Class1.New( 20 );          
+c1 = Class1( 20 );          
  ```
 
 2. ClassName c = { };   该方式自动创建为ClassName的类，并且通过{}中，可能为ClassName中的元素赋值,但必须使用前置的ClassName来确定类型，否则的话，视为匿名对象，在使用的时候，虽然可以通过转化来
