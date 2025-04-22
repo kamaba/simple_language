@@ -593,7 +593,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
                 if (extendClass != null)
                 {
-                    stringBuilder.Append(" :: " + extendClass.ToFormatString());
+                    stringBuilder.Append(" extends " + extendClass.ToFormatString());
                 }
                 if (interfaceClassList.Count > 0)
                 {

@@ -100,7 +100,7 @@ namespace SimpleLanguage.Project
 
             ClassManager.instance.AddMetaClass( ProjectManager.globalData );
 
-            ProjectClass.ParseProjectClass();
+            //ProjectClass.ParseProjectClass();
 
             ProjectClass.ProjectCompileAfter();
 

@@ -63,9 +63,6 @@ namespace SimpleLanguage.Project
                 Console.Write("Error 解析工程文件，没有找到Project!!");
                 return;
             }
-
-            ClassManager.instance.AddClass(pfmc);
-
             var projectcompile = pfmc.metaClass;
             if (projectcompile == null) return;
 
