@@ -93,18 +93,6 @@ namespace SimpleLanguage.Compile.Parse
         {
             m_TokenIndex++;
         }
-        private Node AddNode(Token token, bool isEndAngleSign = true )
-        {
-            if( isEndAngleSign )
-            {
-                EndAngleSign();
-            }
-            Node node = new Node(token);
-            node.nodeType = ENodeType.EmbellishKey;
-            currentNode.AddChild(node);
-            m_TokenIndex++;
-            return node;
-        }
         private Node AddKeyNode(Token token, bool isEndAngleSign = true )
         {
             if (isEndAngleSign)
@@ -252,12 +240,6 @@ namespace SimpleLanguage.Compile.Parse
             switch (token.type)
             {
                 case ETokenType.Identifier:  //Identifier
-                case ETokenType.Base:         //parent
-                case ETokenType.This:           //this
-                case ETokenType.Object:
-                case ETokenType.Boolean:
-                case ETokenType.Global:
-                case ETokenType.Range:
                     {
                         AddIdentifier(token);
                     }
@@ -417,7 +399,7 @@ namespace SimpleLanguage.Compile.Parse
                     break;
                 case ETokenType.Colon:       //:
                     {
-                        AddNode(token);
+                        AddKeyNode(token);
                     }
                     break;
                 case ETokenType.SemiColon:      //;
@@ -557,60 +539,6 @@ namespace SimpleLanguage.Compile.Parse
                         AddAnnotation(token);
                     }
                     break;
-                case ETokenType.Import:
-                    {
-                        AddImportNode(token);
-                    }
-                    break;
-                case ETokenType.As:
-                    {
-                        AddKeyNode(token);
-                    }
-                    break;
-                case ETokenType.Namespace:
-                    {
-                        AddNamespaceNode(token);
-                    }
-                    break;
-                case ETokenType.Enum:
-                case ETokenType.Data:
-                case ETokenType.Class:
-                    {
-                        AddNode(token);
-                    }
-                    break;
-                case ETokenType.Public:
-                case ETokenType.Internal:
-                case ETokenType.Projected:
-                case ETokenType.Private:
-                    {
-                        AddNode(token);
-                    }
-                    break;
-                //case ETokenType.New:
-                case ETokenType.Const:
-                case ETokenType.Final:
-                case ETokenType.Static:
-                case ETokenType.Override:
-                case ETokenType.Partial:
-                case ETokenType.Void:
-                case ETokenType.Get:
-                case ETokenType.Set:
-                    {
-                        AddNode(token);
-                    }
-                    break;
-                case ETokenType.Interface:
-                    {
-                        AddNode(token);
-                    }
-                    break;
-                case ETokenType.Extends:
-                    {
-                        AddNode(token);
-                    }
-                    break;
-                case ETokenType.Null:
                 case ETokenType.Number:
                 case ETokenType.String:
                 case ETokenType.BoolValue:
@@ -644,6 +572,54 @@ namespace SimpleLanguage.Compile.Parse
                         m_TokenIndex++;
                     }
                     break;
+
+                case ETokenType.Import:
+                    {
+                        AddImportNode(token);
+                    }
+                    break;
+                case ETokenType.As:
+                    {
+                        AddKeyNode(token);
+                    }
+                    break;
+                case ETokenType.Namespace:
+                    {
+                        AddNamespaceNode(token);
+                    }
+                    break;
+                case ETokenType.Enum:
+                case ETokenType.Data:
+                case ETokenType.Class:
+                    {
+                        AddKeyNode(token);
+                    }
+                    break;
+                case ETokenType.Public:
+                case ETokenType.Internal:
+                case ETokenType.Projected:
+                case ETokenType.Private:
+                    {
+                        AddKeyNode(token);
+                    }
+                    break;
+                case ETokenType.Null:
+                case ETokenType.Base:         //base
+                case ETokenType.This:           //this
+                case ETokenType.Object:
+                case ETokenType.Boolean:
+                case ETokenType.Global:
+                case ETokenType.Range:
+                case ETokenType.Const:
+                case ETokenType.Final:
+                case ETokenType.Static:
+                case ETokenType.Override:
+                case ETokenType.Partial:
+                case ETokenType.Void:
+                case ETokenType.Get:
+                case ETokenType.Set:
+                case ETokenType.Interface:
+                case ETokenType.Extends:
                 case ETokenType.If:
                 case ETokenType.ElseIf:
                 case ETokenType.For:
@@ -654,10 +630,6 @@ namespace SimpleLanguage.Compile.Parse
                 case ETokenType.Goto:
                 case ETokenType.Transience:
                 case ETokenType.Label:
-                    {
-                        AddKeyNode(token);
-                    }
-                    break;
                 case ETokenType.Else:
                 case ETokenType.In:
                 case ETokenType.Switch:

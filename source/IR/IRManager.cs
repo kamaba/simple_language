@@ -57,7 +57,29 @@ namespace SimpleLanguage.IR
             StringBuilder m_StringBuilder = new StringBuilder();
             m_StringBuilder.Append( id + "   [ " + debugInfo.path + ":" + debugInfo.beginLine.ToString() + "]" + " [" + opCode.ToString() + "] index:[" + index.ToString() + "]");
             if (opValue != null)
-                m_StringBuilder.Append( " val:[" +opValue.ToString() + "] ");
+            {
+                MetaType mt = opValue as MetaType;
+                IRMethod irm = opValue as IRMethod;
+                if ( opValue.GetType() == typeof( Int32 ) )
+                {
+                    m_StringBuilder.Append(" val: int32[" + opValue + "] ");
+                }
+                else
+                {
+                    if (mt != null)
+                    {
+                        m_StringBuilder.Append(" val mt:[" + mt.allName + "] ");
+                    }
+                    else if( irm != null )
+                    {
+                        m_StringBuilder.Append(" val irm:[" + irm.id + "] ");
+                    }
+                    else
+                    {
+                        m_StringBuilder.Append(" val:[" + opValue.ToString() + "] ");
+                    }
+                }
+            }
             return m_StringBuilder.ToString();
         }
     }

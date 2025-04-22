@@ -1046,7 +1046,13 @@ namespace SimpleLanguage.Compile.Parse
                         nextNode = pnode.childList[index + 1];
                         lineEndCount++;
                     }
-                    else if( nextNode.nodeType == ENodeType.EmbellishKey )
+                    else if( nextNode.nodeType == ENodeType.Key )
+                    {
+                        nodeList.Add(curNode);
+                        Console.WriteLine("Error-------------------------");
+                        continue;
+                    }
+                    else if( nextNode.nodeType == ENodeType.IdentifierLink )
                     {
                         nodeList.Add(curNode);
                         continue;
@@ -1136,9 +1142,8 @@ namespace SimpleLanguage.Compile.Parse
                                 || next2Node.nodeType == ENodeType.Bracket
                                 || next2Node.nodeType == ENodeType.IdentifierLink  )                                 
                             {
-                                List<Node> expressNode = new List<Node>();
-                                expressNode.Add(curNode);
-                                expressNode.Add(nextNode);
+                                nodeList.Add(curNode);
+                                nodeList.Add(nextNode);
                                 int j = 0;
                                 for (j = index; j < pnode.childList.Count; j++)
                                 {
@@ -1148,10 +1153,11 @@ namespace SimpleLanguage.Compile.Parse
                                         j++;
                                         break;
                                     }
-                                    expressNode.Add(pnode.childList[j]);
+                                    nodeList.Add(pnode.childList[j]);
                                 }
                                 index = j;
-                                FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, expressNode);
+                                FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, nodeList );
+                                nodeList.Clear();
 
                                 if (currentNodeInfo.parseType == EParseNodeType.Class)
                                 {
@@ -1246,7 +1252,7 @@ namespace SimpleLanguage.Compile.Parse
                         break;
                     }
                 }
-                else if( curNode.nodeType == ENodeType.EmbellishKey)
+                else if( curNode.nodeType == ENodeType.Key )
                 {
                     nodeList.Add(curNode);
                 }
@@ -1263,6 +1269,13 @@ namespace SimpleLanguage.Compile.Parse
                     {
                         if (curNode.nodeType == ENodeType.SemiColon)
                         {
+                            FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, nodeList);
+                            nodeList.Clear();
+
+                            if (currentNodeInfo.parseType == EParseNodeType.Class)
+                            {
+                                currentNodeInfo.codeClass.AddFileMemberVariable(fmmd);
+                            }
                             break;
                         }
                     }

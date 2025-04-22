@@ -252,7 +252,19 @@ namespace SimpleLanguage.Compile.Parse
                         || ttt == ETokenType.Break
                         || ttt == ETokenType.Continue
                         || ttt == ETokenType.Label
-                        || ttt == ETokenType.Goto)
+                        || ttt == ETokenType.Goto
+                        || ttt == ETokenType.Const )
+                    {
+                        keynodeStruct.SetMainKeyNode(curNode);
+                    }
+                    else if(  ttt == ETokenType.Data
+                        || ttt == ETokenType.Class
+                        || ttt == ETokenType.Interface
+                        || ttt == ETokenType.Extends
+                        || ttt == ETokenType.Public
+                        || ttt == ETokenType.Private
+                        || ttt == ETokenType.Projected
+                        || ttt == ETokenType.Internal )
                     {
                         keynodeStruct.SetMainKeyNode(curNode);
                     }
