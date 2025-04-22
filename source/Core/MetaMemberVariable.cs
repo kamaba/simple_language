@@ -684,7 +684,7 @@ namespace SimpleLanguage.Core
         }
         public void CreateExpress()
         {
-            if( m_FileMetaMemeberVariable.DataType == FileMetaMemberVariable.EMemberDataType.Array )
+            if(m_FileMetaMemeberVariable?.DataType == FileMetaMemberVariable.EMemberDataType.Array )
             {
                 m_Express = CreateExpressNodeInClassMetaVariable();
                 //ParseChildMemberData();

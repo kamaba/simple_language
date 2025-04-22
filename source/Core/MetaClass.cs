@@ -752,7 +752,7 @@ namespace SimpleLanguage.Core
             }
             if ( m_ExtendClass != null )
             {
-                stringBuilder.Append(" :: ");
+                stringBuilder.Append(" extends ");
                 stringBuilder.Append(m_ExtendClass.allName);
                 var mtl = m_ExtendClass.metaTemplateList;
                 if( mtl.Count > 0 )
