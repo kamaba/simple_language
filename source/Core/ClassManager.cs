@@ -276,23 +276,32 @@ namespace SimpleLanguage.Core
                         newmc.BindFileMetaClass(fmc);
                         newmc.ParseFileMetaClassTemplate(fmc);
                         newmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
-
-                        m_AllClassDict.Add(newmc.allName, newmc);
                     }
                     else
                     {
                         newmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
                     }
+
+                    if (tmetaClass != null)
+                    {
+                        tmetaClass.AddChildrenMetaClass(newmc);
+                    }
+                    else if (tmetaNamespace != null)
+                        tmetaNamespace.AddMetaClass(newmc);
+                    else
+                        tmetaModule.AddMetaClass(newmc);
+
+                    if( newmc is MetaData )
+                    {
+                        m_AllDataDict.Add(newmc.allName, newmc as MetaData);
+                    }
+                    else
+                    {
+                        m_AllClassDict.Add(newmc.allName, newmc);
+                    }
+
                 }
 
-                if(tmetaClass != null )
-                {
-                    tmetaClass.AddChildrenMetaClass(newmc);
-                }
-                else if (tmetaNamespace != null)
-                    tmetaNamespace.AddMetaClass(newmc);
-                else
-                    tmetaModule.AddMetaClass(newmc);
 
                 return newmc;
             }
