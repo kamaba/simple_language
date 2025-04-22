@@ -210,7 +210,10 @@ namespace SimpleLanguage.IR
         }
         public override string ToIRString()
         {
-            return base.ToIRString();
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("#LoadConst#" );
+            sb.Append(base.ToIRString());
+            return sb.ToString();
         }
     }
 }

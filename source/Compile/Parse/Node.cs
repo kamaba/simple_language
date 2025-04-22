@@ -48,7 +48,6 @@ namespace SimpleLanguage.Compile.Parse
         ConstValue,
         IdentifierLink,
         Key,
-        EmbellishKey,
         End,
     }
         
