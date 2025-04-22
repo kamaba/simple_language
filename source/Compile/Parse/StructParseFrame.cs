@@ -1046,6 +1046,11 @@ namespace SimpleLanguage.Compile.Parse
                         nextNode = pnode.childList[index + 1];
                         lineEndCount++;
                     }
+                    else if( nextNode.nodeType == ENodeType.EmbellishKey )
+                    {
+                        nodeList.Add(curNode);
+                        continue;
+                    }
 
                     if (nextNode.nodeType == ENodeType.Brace)  //Class1{}
                     {
@@ -1247,20 +1252,20 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    //if (ProjectManager.isUseForceSemiColonInLineEnd)
-                    //{
-                    //    if (curNode.nodeType == ENodeType.SemiColon)
-                    //    {
-                    //        break;
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    if (curNode.nodeType == ENodeType.SemiColon)
-                    //    {
-                    //        break;
-                    //    }
-                    //}
+                    if (ProjectManager.isUseForceSemiColonInLineEnd)
+                    {
+                        if (curNode.nodeType == ENodeType.SemiColon)
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if (curNode.nodeType == ENodeType.SemiColon)
+                        {
+                            break;
+                        }
+                    }
                     Console.WriteLine("Error ≤ª‘ –Ì--------------------");
                 }
             }

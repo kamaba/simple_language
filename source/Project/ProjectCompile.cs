@@ -73,8 +73,6 @@ namespace SimpleLanguage.Project
 
             ProjectClass.ParseCompileClass();
 
-            ProjectClass.ParseProjectClass();
-
             Console.WriteLine(m_ProjectFile.ToFormatString());
         }
 
@@ -101,6 +99,8 @@ namespace SimpleLanguage.Project
             FileListStructParse();
 
             ClassManager.instance.AddMetaClass( ProjectManager.globalData );
+
+            ProjectClass.ParseProjectClass();
 
             ProjectClass.ProjectCompileAfter();
 

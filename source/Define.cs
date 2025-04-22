@@ -192,7 +192,7 @@ namespace SimpleLanguage
         /// <summary> Interface </summary>
         Interface,
         /// <summary> extend </summary>
-        Extend,
+        Extends,
         /// <summary> override </summary>
         Override,
         /// <summary> const </summary>
