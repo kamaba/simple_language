@@ -73,7 +73,7 @@ ProjectEnter
       arr1.index = 20;     #数组的当前游标
       arr1.value.i = 10;   #数组当前游标的植
         
-      for( a in arr1 )      #使用for 的 a 是封装过的it里边包含 Index() 也可以直接a = ArrNodeClass();替代里边的值
+      for a in arr1      #使用for 的 a 是封装过的it里边包含 Index() 也可以直接a = ArrNodeClass();替代里边的值
       {
          if a.index == 20   #系统自带Index()函数  如果在使用for 时，则object.Index()表示他的下标
          {

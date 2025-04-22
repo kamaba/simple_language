@@ -605,7 +605,7 @@ namespace SimpleLanguage.Compile.Parse
                         AddNode(token);
                     }
                     break;
-                case ETokenType.Extend:
+                case ETokenType.Extends:
                     {
                         AddNode(token);
                     }

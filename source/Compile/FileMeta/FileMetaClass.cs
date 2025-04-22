@@ -76,7 +76,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             }
 
             Token permissionToken = null;
-            Token extendToken = null;
+            Token extendsToken = null;
             Token interfaceToken = null;
             Token commaToken = null;
             bool isError = false;
@@ -102,7 +102,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         }
                         interfaceNameTokenList = cnode.linkTokenList;
                     }
-                    else if (extendToken != null && interfaceToken == null)
+                    else if (extendsToken != null && interfaceToken == null)
                     {
                         if (inheritNameTokenList.Count > 0)
                         {
@@ -263,14 +263,14 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         }
                         m_DataToken = token;
                     }
-                    else if (token.type == ETokenType.Extend )
+                    else if (token.type == ETokenType.Extends )
                     {
-                        if (extendToken != null)
+                        if (extendsToken != null)
                         {
                             isError = true;
                             Console.WriteLine("Error 解析过了一次Extend!!");
                         }
-                        extendToken = token;
+                        extendsToken = token;
                     }
                     else if (token.type == ETokenType.Interface)
                     {
