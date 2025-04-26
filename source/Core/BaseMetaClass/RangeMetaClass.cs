@@ -18,6 +18,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public RangeIteratorMetaClass() : base(DefaultObject.Class.ToString())
         {
             m_Type = EType.Class;
+            m_IsInnerDefineCompile = true;
         }
         public override void ParseInnerVariable()
         {

@@ -571,17 +571,26 @@ namespace SimpleLanguage.Project
             }
             m_ProjectData.BindFileMetaClass(fmc);
             m_ProjectData.ParseFileMetaDataMemeberData(fmc);
-            m_ProjectData.Parse();
-
+            m_ProjectData.ParseMetaMemberVariableName();
+            m_ProjectData.ParseMetaMemberFunctionName();
+            m_ProjectData.ParseMetaMemberVariableDefineType();
+            m_ProjectData.ParseMetaMemberFunctionDefineType();
         }
-        public void ParseInitClassAfter()
+        public void ParseGlobalVariable()
         {
             if(m_ProjectData == null)
             {
                 return;
             }
             m_ProjectData.ParseGlobalVariable();
+        }
+        public void ParseDefineComplete()
+        {
 
+            if (m_ProjectData == null)
+            {
+                return;
+            }
             m_ProjectData.ParseDefineComplete();
 
             //m_ProjectData.metaVariable.isGlobal = true;

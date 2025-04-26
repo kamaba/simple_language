@@ -35,6 +35,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.UInt16;
+            m_IsInnerDefineCompile = true;
         }
         public static MetaClass CreateMetaClass()
         {
@@ -49,6 +50,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Int32;
+            m_IsInnerDefineCompile = true;
         }
         public override void ParseInnerFunction()
         {
@@ -74,6 +76,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.UInt32;
+            m_IsInnerDefineCompile = true;
         }
         public static MetaClass CreateMetaClass()
         {
@@ -88,6 +91,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Int64;
+            m_IsInnerDefineCompile = true;
         }
         public static MetaClass CreateMetaClass()
         {
@@ -102,6 +106,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.UInt64;
+            m_IsInnerDefineCompile = true;
         }
         public static MetaClass CreateMetaClass()
         {

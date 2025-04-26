@@ -98,6 +98,8 @@ namespace SimpleLanguage.Core
 
                 MetaTemplate mdt = new MetaTemplate( ownerMetaClass, template );
                 AddMetaDefineTemplate(mdt);
+
+                //下边的代码未来要转移支解析Meta过程中
                 for( int j = 0; j < template.inClassNameTokenList.Count; j++)       //判断是否使用in []
                 {
                     var inClassToken = template.inClassNameTokenList[j];
@@ -112,73 +114,6 @@ namespace SimpleLanguage.Core
             }
             m_MetaBlockStatements = new MetaBlockStatements(this, null);
             m_MetaBlockStatements.isOnFunction = true;
-
-
-
-            if (m_FileMetaMemberFunction != null)
-            {
-                /* 暂不支持横版函数  例   T1 Create<T1>(int a )  中的T1 是独立的，不互模版类的T相同时，就认为是模版函数
-                for (int i = 0; i < m_FileMetaMemberFunction.metaTemplatesList.Count; i++ )
-                {
-                    var mt = m_FileMetaMemberFunction.metaTemplatesList[i];
-
-                    var nmt = new MetaTemplate( this.ownerMetaClass, mt );
-
-                    AddMetaDefineTemplate(nmt);
-                }
-                */
-                if (m_FileMetaMemberFunction.returnMetaClass != null)
-                {
-                    MetaType retMT = null;
-                    if (m_ConstructInitFunction)
-                    {
-                        Console.WriteLine("Error 当前类:" + allName + " 是构建Init类，不允许有返回类型 ");
-                    }
-                    else
-                    {
-                        FileMetaClassDefine cmr = m_FileMetaMemberFunction.returnMetaClass;
-
-                        string templateName = cmr.name;
-                        var getMetaTemplate = m_OwnerMetaClass.GetTemplateMetaClassByName(templateName);
-                        if (getMetaTemplate != null)
-                        {
-                            retMT = new MetaType(getMetaTemplate);
-                        }
-                        else
-                        {
-                            var rawMC = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(m_OwnerMetaClass, cmr);
-                            List<MetaTemplate> templates = new List<MetaTemplate>();
-                            if (cmr.inputTemplateNodeList.Count > 0)
-                            {
-                                Console.WriteLine("Error 没有找到MetaTemplate相关信息，语法错误!!");
-                                //for ( int i = 0; i < cmr.inputTemplateNodeList.Count; i++ )
-                                //{
-                                //    MetaTemplate cmt = m_MetaMemberTemplateCollection.GetMetaDefineTemplateByName(cmr.inputTemplateNodeList[i].nameList[0]);
-                                //    if( cmt != null )
-                                //    {
-                                //        templates.Add( cmt );
-                                //    }
-                                //    else
-                                //    {
-                                //        // T2 Create<T1> 没有从<>找到T2
-                                //        Console.WriteLine("Error 没有找到MetaTemplate相关信息，语法错误!!");
-                                //    }
-                                //}
-                            }
-                            retMT = new MetaType(rawMC);
-                        }
-
-                        if (retMT == null)
-                        {
-                            Console.WriteLine("Error 定义的返回类型，没有找到相对应的类型！！");
-                        }
-                        else
-                        {
-                            m_DefineMetaType = retMT;
-                        }
-                    }
-                }
-            }
 
             Init();
         }
@@ -221,6 +156,7 @@ namespace SimpleLanguage.Core
             }
             m_ReturnMetaVariable = new MetaVariable("return_" + GetHashCode().ToString(), null, m_OwnerMetaClass, m_DefineMetaType);
         }
+
         public override void SetDeep(int deep)
         {
             m_Deep = deep;
@@ -326,19 +262,87 @@ namespace SimpleLanguage.Core
         {
             m_MetaMemberTemplateCollection.AddMetaDefineTemplate(mt);
         }
-        public override void Parse()
+        public override void ParseName()
         {
             for (int i = 0; i < m_MetaMemberParamCollection.metaParamList.Count; i++)
             {
                 MetaDefineParam mpl = m_MetaMemberParamCollection.metaParamList[i] as MetaDefineParam;
-                mpl.Parse(); 
-                if (mpl.isTemplate )
+                mpl.Parse();
+                if (mpl.isTemplate)
                 {
                     isTemplateInParam = true;
                 }
             }
         }
-        public bool ParseExpress()
+        public override void ParseReturnMetaType()
+        {
+            if (m_FileMetaMemberFunction != null)
+            {
+                /* 暂不支持横版函数  例   T1 Create<T1>(int a )  中的T1 是独立的，不互模版类的T相同时，就认为是模版函数
+                for (int i = 0; i < m_FileMetaMemberFunction.metaTemplatesList.Count; i++ )
+                {
+                    var mt = m_FileMetaMemberFunction.metaTemplatesList[i];
+
+                    var nmt = new MetaTemplate( this.ownerMetaClass, mt );
+
+                    AddMetaDefineTemplate(nmt);
+                }
+                */
+                if (m_FileMetaMemberFunction.returnMetaClass != null)
+                {
+                    MetaType retMT = null;
+                    if (m_ConstructInitFunction)
+                    {
+                        Console.WriteLine("Error 当前类:" + allName + " 是构建Init类，不允许有返回类型 ");
+                    }
+                    else
+                    {
+                        FileMetaClassDefine cmr = m_FileMetaMemberFunction.returnMetaClass;
+
+                        string templateName = cmr.name;
+                        var getMetaTemplate = m_OwnerMetaClass.GetTemplateMetaClassByName(templateName);
+                        if (getMetaTemplate != null)
+                        {
+                            retMT = new MetaType(getMetaTemplate);
+                        }
+                        else
+                        {
+                            var rawMC = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(m_OwnerMetaClass, cmr);
+                            List<MetaTemplate> templates = new List<MetaTemplate>();
+                            if (cmr.inputTemplateNodeList.Count > 0)
+                            {
+                                Console.WriteLine("Error 没有找到MetaTemplate相关信息，语法错误!!");
+                                //for ( int i = 0; i < cmr.inputTemplateNodeList.Count; i++ )
+                                //{
+                                //    MetaTemplate cmt = m_MetaMemberTemplateCollection.GetMetaDefineTemplateByName(cmr.inputTemplateNodeList[i].nameList[0]);
+                                //    if( cmt != null )
+                                //    {
+                                //        templates.Add( cmt );
+                                //    }
+                                //    else
+                                //    {
+                                //        // T2 Create<T1> 没有从<>找到T2
+                                //        Console.WriteLine("Error 没有找到MetaTemplate相关信息，语法错误!!");
+                                //    }
+                                //}
+                            }
+                            retMT = new MetaType(rawMC);
+                        }
+
+                        if (retMT == null)
+                        {
+                            Console.WriteLine("Error 定义的返回类型，没有找到相对应的类型！！");
+                        }
+                        else
+                        {
+                            m_DefineMetaType = retMT;
+                            m_ReturnMetaVariable.SetMetaDefineType(m_DefineMetaType);
+                        }
+                    }
+                }
+            }
+        }
+        public override bool ParseMetaExpress()
         {
             for (int i = 0; i < m_MetaMemberParamCollection.metaParamList.Count; i++)
             {
@@ -579,6 +583,10 @@ namespace SimpleLanguage.Core
             return false;
         }
 
+        public override string ToString()
+        {
+            return allName;
+        }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();

@@ -31,15 +31,15 @@ namespace SimpleLanguage.Core
         EnumName,
         EnumDefaultValue,
         EnumNewValue,
-        //DataName,
+        DataName,
         DataValue,
         VariableName,
         VisitVariable,
         IteratorVariable,
         MemberVariableName,
-        //MemberDataName,
+        MemberDataName,
         NewClass,
-        FunctionName,
+        MemberFunctionName,
         ConstValue,
         This,
         Base,
@@ -435,7 +435,7 @@ namespace SimpleLanguage.Core
                                     }
                                     m_MetaFunction = mmf;
                                     tmb = mmf;
-                                    m_CallNodeType = ECallNodeType.FunctionName;
+                                    m_CallNodeType = ECallNodeType.MemberFunctionName;
                                 }
                             }
                             if (tmb == null)
@@ -456,7 +456,7 @@ namespace SimpleLanguage.Core
                         if (mmf != null)
                         {
                             m_MetaFunction = mmf;
-                            m_CallNodeType = ECallNodeType.FunctionName;
+                            m_CallNodeType = ECallNodeType.MemberFunctionName;
                         }
                     }
                     else if( frontCNT == ECallNodeType.Global )//|| frontCNT == ECallNodeType.DataName) 
@@ -544,13 +544,13 @@ namespace SimpleLanguage.Core
                         if(tempMetaBase2 == null )
                         {
                             var mc = mv.metaDefineType.metaClass;
-                            //if (mc is MetaData)
-                            //{
-                            //    MetaData md = mc as MetaData;
-                            //    m_MetaMemberData = GetDataValueByMetaData(md, name);
-                            //    m_CallNodeType = ECallNodeType.MemberDataName;
-                            //}
-                            //else 
+                            if (mc is MetaData)
+                            {
+                                MetaData md = mc as MetaData;
+                                //m_MetaMemberData = GetDataValueByMetaData(md, name);
+                                //m_CallNodeType = ECallNodeType.MemberDataName;
+                            }
+                            else
                             if (mc is MetaEnum)
                             {
                                 MetaEnum me = mc as MetaEnum;
@@ -568,7 +568,7 @@ namespace SimpleLanguage.Core
                                         m_MetaInputParamCollection = new MetaInputParamCollection(m_OwnerMetaClass, m_OwnerMetaFunctionBlock);
                                     }
                                     m_MetaFunction = mmf;
-                                    m_CallNodeType = ECallNodeType.FunctionName;
+                                    m_CallNodeType = ECallNodeType.MemberFunctionName;
                                 }
 
                                 if(tempMetaBase2 == null )
@@ -614,9 +614,9 @@ namespace SimpleLanguage.Core
                             return false;
                         }
                     }
-                    else if (frontCNT == ECallNodeType.FunctionName)
+                    else if (frontCNT == ECallNodeType.MemberFunctionName )
                     {
-                        MetaType retMT = m_MetaFunction.returnMetaVariable.metaDefineType;
+                        MetaType retMT = m_FrontCallNode.m_MetaFunction.returnMetaVariable.metaDefineType;
                         if( retMT != null && retMT.metaClass != null )
                         {
                             var aa = GetFunctionOrVariableByOwnerClass(retMT.metaClass, name, false);
@@ -748,7 +748,7 @@ namespace SimpleLanguage.Core
                         MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputParamCollect("__Init__", m_MetaInputParamCollection);
                         if (mmf == null)
                         {
-                            Console.WriteLine("Error 没有找到" + curmc.allName + "的__Init__方法!)");
+                            Console.WriteLine("Error 没有找到 关于类中" + curmc.allName + "的__Init__方法!)");
                             return false;
                         }
                         m_MetaClass = curmc;
@@ -952,7 +952,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_IsFunction)
                 {
-                    m_CallNodeType = ECallNodeType.FunctionName;
+                    m_CallNodeType = ECallNodeType.MemberFunctionName;
                     m_MetaFunction = mb as MetaFunction;
                     if (m_MetaFunction.isStatic)
                     {
@@ -1080,7 +1080,7 @@ namespace SimpleLanguage.Core
                 if( mmf != null )
                 {
                     m_MetaFunction = mmf;
-                    m_CallNodeType = ECallNodeType.FunctionName;
+                    m_CallNodeType = ECallNodeType.MemberFunctionName;
                 }
             }
             return retMC;
@@ -1122,14 +1122,14 @@ namespace SimpleLanguage.Core
         {
             return me.GetMemberVariableByName(inputname);
         }
-        //public MetaMemberData GetDataValueByMetaData(MetaData md, string inputName)
-        //{
-        //    return md.GetMemberDataByName(inputName);
-        //}
-        //public MetaMemberData GetDataValueByMetaMemberData(MetaMemberData md, string inputName)
-        //{
-        //    return md.GetMemberDataByName(inputName);
-        //}
+        public MetaMemberData GetDataValueByMetaData(MetaData md, string inputName)
+        {
+            return md.GetMemberDataByName(inputName);
+        }
+        public MetaMemberData GetDataValueByMetaMemberData(MetaMemberData md, string inputName)
+        {
+            return md.GetMemberDataByName(inputName);
+        }
         public MetaBase GetFunctionOrVariableByOwnerClass(MetaClass mc, string inputname, bool isStatic)
         {
             if (m_IsFunction)
@@ -1244,7 +1244,7 @@ namespace SimpleLanguage.Core
                     else
                         sb.Append(m_MetaNamespace?.name);
                 }
-                else if (m_CallNodeType == ECallNodeType.FunctionName)
+                else if (m_CallNodeType == ECallNodeType.MemberFunctionName)
                 {
                     sb.Append(m_MetaFunction?.ToFormatString());
                 }
@@ -1433,7 +1433,7 @@ namespace SimpleLanguage.Core
                         //{
 
                         //}
-                        else if (nmcn.callNodeType == ECallNodeType.FunctionName)
+                        else if (nmcn.callNodeType == ECallNodeType.MemberFunctionName )
                         {
                             MetaMethodCall mmc = new MetaMethodCall(nmcn.m_MetaFunction.ownerMetaClass, nmcn.m_MetaFunction, nmcn.m_MetaInputParamCollection);
                             MetaVisitNode mvn = MetaVisitNode.CreateByMethodCall(mmc);

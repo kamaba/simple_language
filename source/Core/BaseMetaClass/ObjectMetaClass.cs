@@ -16,6 +16,7 @@ namespace SimpleLanguage.Core.SelfMeta
     {
         public ObjectMetaClass():base(DefaultObject.Object.ToString())
         {
+            m_IsInnerDefineCompile = true;
         }        
         public MetaClass Cast( MetaTemplate mc )
         {

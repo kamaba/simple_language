@@ -192,26 +192,24 @@ namespace SimpleLanguage.Project
                 }
                 ClassManager.instance.AddClass(fns);
             }
-            for ( int i = 0; i < fileParseList.Count; i++ )
-            {
-                fileParseList[i].CheckExtendAndInterface();
-            }
-            m_ProjectFile.CheckExtendAndInterface();
 
-            ClassManager.instance.ParseFileMetaClass();
-
-            ClassManager.instance.Parse();
-
-            m_ProjectParse.ParseInitClassAfter();
-
-            ModuleManager.instance.selfModule.SetDeep(0);
-
-            MetaVariableManager.instance.ParseExpress();
-
-            MethodManager.instance.ParseExpress();
+            ClassManager.instance.ParseExtendsRelation();
+            ClassManager.instance.ParseTemplateRelation();
+            ClassManager.instance.ParseMemberVariableName();
+            ClassManager.instance.ParseMemberFunctionName();
+            ClassManager.instance.HandleExtendData();
+            ClassManager.instance.ParseMemberVariableReturnMetaType();
+            ClassManager.instance.ParseMemberFunctionReturnMetaType();
+            m_ProjectParse.ParseGlobalVariable();
+            ClassManager.instance.CheckInterfaces();
+            ClassManager.instance.ParseDefineComplete();
             //ClassManager.instance.PrintAlllClassContent();
+            MetaVariableManager.instance.ParseMetaExpress();
+            MethodManager.instance.ParseMetaExpress();
             MethodManager.instance.ParseStatements();
-            Console.Write(ModuleManager.instance.ToFormatString() + Environment.NewLine);   
+            Console.WriteLine("-------------------------解析完成后的格式输出 开始--------------------------");
+            Console.Write(ModuleManager.instance.ToFormatString() + Environment.NewLine);
+            Console.WriteLine("-------------------------解析完成后的格式输出 结束--------------------------");
         }
     }
 }

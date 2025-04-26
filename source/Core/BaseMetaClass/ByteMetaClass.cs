@@ -40,6 +40,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.SByte;
+            m_IsInnerDefineCompile = true;
         }
         public static MetaClass CreateMetaClass()
         {

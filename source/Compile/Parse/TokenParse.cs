@@ -25,7 +25,6 @@ namespace SimpleLanguage.Compile.Parse
         Node m_RootNode = new Node(null);
         Stack<Node> currentNodeStack = new Stack<Node>();
         Node currentNode = null;
-        Node tempNode = null;
 
         public TokenParse(FileMeta fm, List<Token> list)
         {
@@ -44,8 +43,9 @@ namespace SimpleLanguage.Compile.Parse
         }
         public void BuildEnd()
         {
+            Console.WriteLine($"---------------File:{m_FileMeta.path}  Token节点  开始:-------------------------");
             Console.WriteLine(m_RootNode.ToFormatString());
-            Console.WriteLine("----------------------------------------");
+            Console.WriteLine($"---------------File:{m_FileMeta.path}  Token节点  结束:-------------------------");
         }
         public void AddImportNode( Token token )
         {
@@ -66,25 +66,23 @@ namespace SimpleLanguage.Compile.Parse
             Node node = new Node(code);
             node.nodeType = ENodeType.IdentifierLink;
 
-            if (tempNode?.linkToken != null)
+            if ( currentNode.linkToken != null)
             {
-                Node node2 = new Node(tempNode.linkToken);
+                Node node2 = new Node(currentNode.linkToken);
                 node2.nodeType = ENodeType.Period;
 
-                tempNode.AddLinkNode(node2);
-                tempNode.AddLinkNode(node );
-                if( tempNode.atToken != null )
+                currentNode.AddLinkNode(node2);
+                currentNode.AddLinkNode(node );
+                if(currentNode.atToken != null )
                 {
-                    node.atToken = tempNode.atToken;
-                    tempNode.atToken = null;
+                    node.atToken = currentNode.atToken;
+                    currentNode.atToken = null;
                 }
-                tempNode.linkToken = null;
+                currentNode.linkToken = null;
             }
             else
             {
                 currentNode.AddChild(node);
-                tempNode = node;
-                tempNode.lastNode = node;
             }
             //tempNode.lastNode = node;
             m_TokenIndex++;
@@ -107,9 +105,9 @@ namespace SimpleLanguage.Compile.Parse
         }
         private Node AddAtOpSign( Token token )
         {
-            if (tempNode?.linkToken != null)
+            if (currentNode.linkToken != null)
             {
-                tempNode.atToken = token;
+                currentNode.atToken = token;
             }
             else
             {
@@ -263,7 +261,6 @@ namespace SimpleLanguage.Compile.Parse
                         
                         currentNode.AddChild(node);
                         currentNode = node;
-                        tempNode = null;
                     }
                     break;
                 case ETokenType.RightBrace: //}
@@ -292,7 +289,6 @@ namespace SimpleLanguage.Compile.Parse
 
                         currentNode.AddChild(node);
                         currentNode = node;
-                        tempNode = null;
                     }
                     break;
                 case ETokenType.Greater:            // >
@@ -332,7 +328,6 @@ namespace SimpleLanguage.Compile.Parse
 
                         currentNode.AddChild(node);
                         currentNode = node;
-                        tempNode = null;
                     }
                     break;
                 case ETokenType.RightPar: //)
@@ -342,8 +337,6 @@ namespace SimpleLanguage.Compile.Parse
                         {
                             cnode.endToken = token;
                             m_TokenIndex++;
-                            tempNode = cnode;
-                            tempNode.lastNode = cnode;
                             currentNode = cnode.parent;
                         }
                         else
@@ -363,7 +356,6 @@ namespace SimpleLanguage.Compile.Parse
 
                         currentNode.AddChild(node);
                         currentNode = node;
-                        tempNode = null;
                     }
                     break;
                 case ETokenType.RightBracket://]
@@ -374,8 +366,6 @@ namespace SimpleLanguage.Compile.Parse
                             cnode.endToken = token;
                             m_TokenIndex++;
                             currentNode = cnode.parent;
-                            tempNode = cnode;
-                            tempNode.lastNode = cnode;
                         }
                         else
                         {
@@ -385,7 +375,7 @@ namespace SimpleLanguage.Compile.Parse
                     break;
                 case ETokenType.Period:  //.
                     {
-                        tempNode.linkToken = token;
+                        currentNode.linkToken = token;
                         m_TokenIndex++;
                     }
                     break;
@@ -547,25 +537,23 @@ namespace SimpleLanguage.Compile.Parse
                         EndAngleSign();
                         Node node = new Node(token);
                         node.nodeType = ENodeType.ConstValue;
-                        if (tempNode?.linkToken != null)
+                        if ( currentNode.linkToken != null)
                         {
-                            Node node2 = new Node(tempNode.linkToken);
+                            Node node2 = new Node(currentNode.linkToken);
                             node2.nodeType = ENodeType.Period;
 
-                            tempNode.AddLinkNode(node2);
-                            tempNode.AddLinkNode(node);
-                            tempNode.linkToken = null;
-                            if( tempNode.atToken != null )
+                            currentNode.AddLinkNode(node2);
+                            currentNode.AddLinkNode(node);
+                            currentNode.linkToken = null;
+                            if(currentNode.atToken != null )
                             {
-                                node.atToken = tempNode.atToken;
-                                tempNode.atToken = null;
+                                node.atToken = currentNode.atToken;
+                                currentNode.atToken = null;
                             }
                         }
                         else
                         {
                             currentNode.AddChild(node);
-                            tempNode = node;
-                            tempNode.lastNode = node;
                         }
                         //tempNode.lastNode = node;
 

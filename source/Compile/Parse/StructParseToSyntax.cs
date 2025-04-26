@@ -268,7 +268,13 @@ namespace SimpleLanguage.Compile.Parse
                     {
                         keynodeStruct.SetMainKeyNode(curNode);
                     }
-                    else if( ttt == ETokenType.In )
+                    else if (ttt == ETokenType.In)
+                    {
+                        keynodeStruct.AddContent(curNode);
+                    }
+                    else if (ttt == ETokenType.This
+                       || ttt == ETokenType.Base
+                        )
                     {
                         keynodeStruct.AddContent(curNode);
                     }
@@ -373,7 +379,11 @@ namespace SimpleLanguage.Compile.Parse
                 else
                 {
                     Token token = cnode.token;
-                    if (token?.type == ETokenType.Static)
+                    if( token.type == ETokenType.This || token.type == ETokenType.Base )
+                    {
+                        defineNodeList.Add(cnode);
+                    }
+                    else if (token?.type == ETokenType.Static)
                     {
                         if (staticToken != null)
                         {

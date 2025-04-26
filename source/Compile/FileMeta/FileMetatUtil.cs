@@ -114,7 +114,10 @@ namespace SimpleLanguage.Compile
         public static FileMetaBaseTerm CreateFileOneTerm( FileMeta fm, Node node, FileMetaTermExpress.EExpressType expressType)
         {
             FileMetaBaseTerm fmbt = null;
-            if (node.nodeType == ENodeType.IdentifierLink)
+            if (node.nodeType == ENodeType.IdentifierLink
+                || (node.nodeType == ENodeType.Key && 
+                        (node.token?.type == ETokenType.This|| node.token?.type == ETokenType.Base ) ) 
+                )
             {
                 fmbt = new FileMetaCallTerm(fm, node);
                 fmbt.priority = SignComputePriority.Level1;
@@ -131,6 +134,10 @@ namespace SimpleLanguage.Compile
                     fmbt = new FileMetaConstValueTerm(fm, node.token);
                     fmbt.priority = SignComputePriority.Level1;
                 }
+            }
+            else if( node.nodeType == ENodeType.Key )
+            {
+
             }
             else if (node.nodeType == ENodeType.Par)
             {

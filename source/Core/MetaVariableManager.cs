@@ -43,7 +43,7 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public void ParseExpress()
+        public void ParseMetaExpress()
         {
             foreach (var v in metaMemeberVariableList)
             {
@@ -58,6 +58,7 @@ namespace SimpleLanguage.Core
             foreach (var v in metaMemeberVariableList)
             {
                 v.CalcReturnType();
+                v.ParseChildMemberData();
             }
         }
     }

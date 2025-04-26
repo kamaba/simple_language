@@ -114,10 +114,6 @@ namespace SimpleLanguage.Compile.Parse
         {
             m_File.CombineFileMeta();
         }
-        public void CheckExtendAndInterface()
-        {
-            m_File.CheckExtendAndInterface();
-        }
         public string ToFormatString()
         {
             return m_File.ToFormatString();

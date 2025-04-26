@@ -309,16 +309,19 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             if (typeNode != null)
                 m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, typeNode);
 
-            if(afterNodeList[0].nodeType == ENodeType.Bracket )
+            if(afterNodeList.Count > 0 )
             {
-                m_MemberDataType = EMemberDataType.Array;
-                ParseBracketContrent(afterNodeList[0]);
-            }
-            else
-            {
-                m_MemberDataType = EMemberDataType.ConstVariable;
-                //m_FileMetaConstValue = new FileMetaConstValueTerm(m_FileMeta, _beforeNode.token);
-                m_Express = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, afterNodeList, FileMetaTermExpress.EExpressType.MemberVariable);
+                if (afterNodeList[0].nodeType == ENodeType.Bracket)
+                {
+                    m_MemberDataType = EMemberDataType.Array;
+                    ParseBracketContrent(afterNodeList[0]);
+                }
+                else
+                {
+                    m_MemberDataType = EMemberDataType.ConstVariable;
+                    //m_FileMetaConstValue = new FileMetaConstValueTerm(m_FileMeta, _beforeNode.token);
+                    m_Express = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, afterNodeList, FileMetaTermExpress.EExpressType.MemberVariable);
+                }
             }
 
             return true;
@@ -613,6 +616,10 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             {
                 m_FileMetaMemberVariableList[i].SetDeep(m_Deep + 1);
             }
+        }
+        public override string ToString()
+        {
+            return m_Token.lexeme.ToString();
         }
         public override string ToFormatString()
         {
