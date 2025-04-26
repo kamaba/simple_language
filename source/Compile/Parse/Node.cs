@@ -70,8 +70,8 @@ namespace SimpleLanguage.Compile.Parse
         public Node lastNode = null;            // 最后处理的节点
 
         public ENodeType nodeType { get; set; } = ENodeType.Null;
-        private List<Node> m_ExtendLinkNodeList = new List<Node>();
-        public List<Node> childList = new List<Node>();    //子内容节点
+        private List<Node> m_ExtendLinkNodeList { get; set; } = new List<Node>();
+        public List<Node> childList { get; set; } = new List<Node>();    //子内容节点
 
         public int parseIndex = 0;
 
@@ -173,7 +173,61 @@ namespace SimpleLanguage.Compile.Parse
         }
         public override string ToString()
         {
-            return token != null ? token.ToString() : base.ToString();
+            StringBuilder sb = new StringBuilder();
+            switch(nodeType )
+            {
+                case ENodeType.Root:
+                    {
+                        sb.Append("root");
+                    }
+                    break;
+                case ENodeType.IdentifierLink:
+                    {
+                        sb.Append(token != null ? token.ToString() : base.ToString());
+                    }
+                    break;
+                case ENodeType.Brace:
+                    {
+                        sb.Append("  {    }  ");
+                    }
+                    break;
+                case ENodeType.Bracket:
+                    {
+                        sb.Append("  [   ]  ");
+                    }
+                    break;
+                case ENodeType.Angle:
+                    {
+                        sb.Append("   <    >  ");
+                    }
+                    break;
+                case ENodeType.Par:
+                    {
+                        sb.Append("   (     )   ");
+                    }
+                    break;
+                case ENodeType.Key:
+                    {
+                        sb.Append(token.ToString());
+                    }
+                    break;
+                case ENodeType.LineEnd:
+                    {
+                        sb.AppendLine("换行");
+                    }
+                    break;
+                case ENodeType.SemiColon:
+                    {
+                        sb.AppendLine(";");
+                    }
+                    break;
+                default:
+                    {
+                        sb.Append(token != null ? token.ToString() : base.ToString());
+                    }
+                    break;
+            }
+            return sb.ToString();
         }
         public string ToFormatString()
         {
@@ -288,6 +342,13 @@ namespace SimpleLanguage.Compile.Parse
                 for (int i = 0; i < childList.Count; i++)
                 {
                     sb.Append(childList[i].ToFormatString());
+                }
+                if( this.extendLinkNodeList?.Count > 0 )
+                {
+                    for( int i = 0; i < this.extendLinkNodeList.Count; i++ )
+                    {
+                        sb.Append(this.extendLinkNodeList[i].token?.lexeme.ToString() );
+                    }
                 }
             }
             else if( nodeType == ENodeType.LineEnd )

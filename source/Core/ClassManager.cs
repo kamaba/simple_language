@@ -319,49 +319,84 @@ namespace SimpleLanguage.Core
             }
             m_AllClassDict.Add(mc.allName, mc);
         }
-        public void CheckExtendAndInterface( FileMetaClass mc )
+        public void ParseExtendsRelation( FileMetaClass mc )
         {
-            if (mc.metaClass == null) return;
-
-            if (mc.metaClass.extendClass != null)
-            {
-                Console.WriteLine("已绑定过了继承类 : " + mc.metaClass.extendClass.name);
-                return;
-            }
-            MetaClass getmc = mc.GetExtendMetaClass();
-            if (getmc != null)
-            {
-                mc.metaClass.SetExtendClass(getmc);
-            }
-            else
-            {
-                mc.metaClass.SetExtendClass(CoreMetaClassManager.objectMetaClass);
-            }
+            if (mc.metaClass == null) return;            
+        }
+        public void ParseInterface( FileMetaClass mc )
+        {
             var ifmc = mc.GetInterfaceMetaClass();
-            if (ifmc.Count > 0 )
+            if (ifmc.Count > 0)
             {
-                for( int i = 0; i < ifmc.Count; i++ )
+                for (int i = 0; i < ifmc.Count; i++)
                 {
                     mc.metaClass.AddInterfaceClass(ifmc[i]);
                 }
             }
         }
-        public void ParseFileMetaClass()
+        public void ParseExtendsRelation()
         {
-
-        }
-        public void Parse()
-        {
-            foreach( var it in m_AllClassDict )
+            foreach (var it in m_AllClassDict)
             {
-                it.Value.Parse();
+                it.Value.ParseExtendsRelation();
             }
+        }
+        public void ParseTemplateRelation()
+        {
+            foreach (var it in m_AllClassDict)
+            {
+                it.Value.ParseTemplateRelation();
+            }
+        }
+        public void ParseMemberVariableName()
+        {
+            foreach (var it in m_AllClassDict)
+            {
+                it.Value.ParseMetaMemberVariableName();
+            }
+        }
+        public void ParseMemberFunctionName()
+        {
+            foreach (var it in m_AllClassDict)
+            {
+                it.Value.ParseMetaMemberFunctionName();
+            }
+        }
+        public void HandleExtendData()
+        {
+            foreach (var it in m_AllClassDict)
+            {
+                it.Value.ParseMetaMemberFunctionName();
+            }
+        }
+        public void ParseMemberVariableReturnMetaType()
+        {
+            foreach (var it in m_AllClassDict)
+            {
+                it.Value.ParseMetaMemberVariableDefineType();
+            }
+        }
+        public void ParseMemberFunctionReturnMetaType()
+        {
+            foreach (var it in m_AllClassDict)
+            {
+                it.Value.ParseMetaMemberFunctionDefineType();
+            }
+        }
+        public void CheckInterfaces()
+        {
+            foreach (var it in m_AllClassDict)
+            {
+                //it.Value.ParseMetaMemberVariableName();
+            }
+        }
+        public void ParseDefineComplete()
+        {
             foreach (var it in m_AllClassDict)
             {
                 it.Value.ParseDefineComplete();
             }
         }
-
         public static bool IsNumberMetaClass( MetaClass mc )
         {
             switch( mc.eType )
@@ -448,7 +483,7 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        public void HandleExtendContentAndInterfaceContent( FileMetaClass mc )
+        public void HandleExtendContent( FileMetaClass mc )
         {
             if (mc.metaClass == null) return;
 
@@ -531,6 +566,9 @@ namespace SimpleLanguage.Core
             {
                 //Console.WriteLine("");
             }
+        }
+        public void HandleInterface( FileMetaClass mc )
+        {
         }
         public MetaClass GetMetaClassByName(string inputname, MetaClass ownerClass = null, FileMeta fm = null )
         {

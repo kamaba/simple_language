@@ -15,6 +15,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 {
     public partial class FileMeta : FileMetaBase
     {
+        public string path => m_Path;
         public List<FileMetaClass> fileMetaClassList => m_FileMetaClassList;
 
 
@@ -197,26 +198,18 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 ClassManager.instance.AddClass(fns);
             }
         }
-        public void CheckExtendAndInterface()
+        public void HandleExtendData()
         {
             for (int i = 0; i < m_FileMetaAllClassList.Count; i++)
             {
                 var fns = m_FileMetaAllClassList[i];
 
-                ClassManager.instance.CheckExtendAndInterface(fns);
+                ClassManager.instance.HandleExtendContent(fns);
             }
-            for (int i = 0; i < m_FileMetaAllClassList.Count; i++)
-            {
-                var fns = m_FileMetaAllClassList[i];
+        }
+        public void ParseInface()
+        {
 
-                ClassManager.instance.HandleExtendContentAndInterfaceContent(fns);
-            }
-            for (int i = 0; i < m_FileMetaAllClassList.Count; i++)
-            {
-                var fns = m_FileMetaAllClassList[i];
-
-                ClassManager.instance.HandleExtendContentAndInterfaceContent(fns);
-            }
         }
         public override void SetDeep(int _deep)
         {

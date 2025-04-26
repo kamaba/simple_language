@@ -28,6 +28,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public ArrayIteratorMetaClass() : base(DefaultObject.Class.ToString())
         {
             m_Type = EType.Class;
+            m_IsInnerDefineCompile = true;
         }
         public override void ParseInnerVariable()
         {

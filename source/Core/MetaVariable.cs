@@ -91,9 +91,17 @@ namespace SimpleLanguage.Core
         {
             m_FromExpressNodeCreate = men;
         }
-        public virtual void Parse()
+        public virtual void ParseName()
         {
 
+        }
+        public virtual void ParseReturnMetaType()
+        {
+
+        }
+        public virtual bool ParseMetaExpress()
+        {
+            return true;
         }
         public void GenTemplateMetaVaraible( MetaGenTemplateClass mgt, MetaBlockStatements mbs )
         {

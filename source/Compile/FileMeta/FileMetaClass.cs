@@ -494,6 +494,10 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 v.SetDeep(m_Deep + 1);
             }
         }
+        public override string ToString()
+        {
+            return this.name;
+        }
         public override string ToFormatString()
         {
             stringBuilder.Clear();

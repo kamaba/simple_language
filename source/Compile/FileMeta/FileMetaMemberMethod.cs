@@ -142,9 +142,11 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         private Token m_PermissionToken = null;
         private Token m_LeftBraceToken = null;
         private Token m_RightBraceToken = null;
-        public FileMetaMemberFunction( FileMeta fm, List<Node> nodeList)
+        private Node m_BlockNode;
+        public FileMetaMemberFunction( FileMeta fm, Node block, List<Node> nodeList)
         {
             m_FileMeta = fm;
+            m_BlockNode = block;
             ParseFunction(nodeList);
         }
         public bool ParseFunction(List<Node> nodeList)
@@ -268,10 +270,10 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             ParseTemplate(finalNode.angleNode);
 
             m_Token = finalNode.token;
-            if (finalNode.blockNode != null)
+            if ( m_BlockNode != null)
             {
-                m_LeftBraceToken = finalNode.blockNode.token;
-                m_RightBraceToken = finalNode.blockNode.endToken;
+                m_LeftBraceToken = m_BlockNode.token;
+                m_RightBraceToken = m_BlockNode.endToken;
                 m_FileMetaBlockSyntax = new FileMetaBlockSyntax(m_FileMeta, m_LeftBraceToken, m_RightBraceToken);
             }
             else

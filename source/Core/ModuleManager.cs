@@ -38,6 +38,7 @@ namespace SimpleLanguage.Core
             m_AllMetaModuleDict.Add(moduleName, selfModule);
             m_AllMetaModuleDict.Add(slCoreModuleName, coreModule);
             m_AllMetaModuleDict.Add(csharpModuleName, csharpModule);
+            selfModule.SetDeep(0);
         }
         public MetaModule GetMetaModuleOrRetSelfModuleByName( string name )
         {

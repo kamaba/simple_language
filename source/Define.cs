@@ -50,7 +50,7 @@ namespace SimpleLanguage
         /// <summary> void </summary>
         Void,
         /// <summary>
-        /// int/int32/int16/short/long/float/double
+        /// int/int32/int16/short/long/half/float/double/float3x3
         /// </summary>
         Type,
         /// <summary> { </summary>
@@ -165,11 +165,11 @@ namespace SimpleLanguage
         Else,
         /// <summary> elif </summary>
         ElseIf,
-        /// <summary> $if </summary>
+        /// <summary> !if </summary>
         MacroIf,
-        /// <summary> $else </summary>
+        /// <summary> !else </summary>
         MacroElse,
-        /// <summary> $endif </summary>
+        /// <summary> !endif </summary>
         MacroEndif,
         /// <summary> import </summary>
         Import,
@@ -191,7 +191,7 @@ namespace SimpleLanguage
         Private,
         /// <summary> Interface </summary>
         Interface,
-        /// <summary> extend </summary>
+        /// <summary> extends </summary>
         Extends,
         /// <summary> override </summary>
         Override,

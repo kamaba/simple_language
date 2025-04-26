@@ -84,7 +84,7 @@ namespace SimpleLanguage.Core
 
             if(m_VisitType == EVisitType.Link)
             {
-                sb.Append("[" + m_LocalMetaVariable.metaDefineType.allName+ "]");
+                sb.Append("[" + m_VisitMetaVariable.metaDefineType.allName+ "]");
                 sb.Append(m_VisitMetaVariable.name);
             }
             else

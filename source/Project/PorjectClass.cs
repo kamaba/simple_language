@@ -42,7 +42,7 @@ namespace SimpleLanguage.Project
             compile = fmc.metaClass;
             if (compile == null) return;
 
-            compile.Parse();
+            //compile.Parse();
             compile.ParseDefineComplete();
             var flist = compile.GetMemberFunctionList();
             for( int i = 0; i < flist.Count; i++ )
@@ -54,28 +54,6 @@ namespace SimpleLanguage.Project
 
             s_CompileBeforeFunction.TranslateIR();
             s_CompileAfterFunction.TranslateIR();
-        }
-        public static void ParseProjectClass()
-        {
-            FileMetaClass pfmc = ProjectCompile.projectFileMeta.GetFileMetaClassByName("Project");
-            if (pfmc == null)
-            {
-                Console.Write("Error 解析工程文件，没有找到Project!!");
-                return;
-            }
-            var projectcompile = pfmc.metaClass;
-            if (projectcompile == null) return;
-
-            projectcompile.Parse();
-            projectcompile.ParseDefineComplete();
-            var flist = projectcompile.GetMemberFunctionList();
-            for (int i = 0; i < flist.Count; i++)
-            {
-                flist[i].ParseStatements();
-            }
-            var mainFunction = projectcompile.GetMetaDefineGetSetMemberFunctionByName("Main", false, false );
-            
-            mainFunction.TranslateIR();
         }
         public static void RunTest()
         {

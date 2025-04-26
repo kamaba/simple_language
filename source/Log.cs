@@ -8,7 +8,16 @@ namespace SimpleLanguage.Parse
 {
     public class LogData
     {
+
+        public enum EErrorType
+        {
+            None,
+            Lexeme,     //词法错误
+            Grammer,    //错法错误
+        }
+
         public int error { get; set; } = 0;
+        public EErrorType errorType { get; set; } = EErrorType.None;
         public string message { get; set; }
         public string filePath { get; set; }
         public int sourceBeginLine { get; set; }         //开始所在行

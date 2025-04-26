@@ -66,12 +66,12 @@ namespace SimpleLanguage.Core
             dynamicMetaMemberFunctionDict.Add(mmf.GetHashCode(), mmf);
             
         }
-        public void ParseExpress()
+        public void ParseMetaExpress()
         {
             var tempDict = new Dictionary<int, MetaMemberFunction>(metaMemberFunctionDict);
             foreach (var v in tempDict)
             {
-                v.Value.ParseExpress();
+                v.Value.ParseMetaExpress();
             }
         }
         public void ParseStatements()

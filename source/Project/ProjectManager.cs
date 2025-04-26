@@ -25,7 +25,7 @@ namespace SimpleLanguage.Parse
     public class ProjectManager
     {
         public static ProjectData data => m_Data;
-        public static bool isUseDefineNamespace { get; set; } = false;
+        public static bool isUseDefineNamespace { get; set; } = true;
         public static bool isUseForceSemiColonInLineEnd { get; set; } = false;
         // 第一位是否只能使用this. base.的方式
         public static bool isFirstPosMustUseThisBaseOrStaticClassName { get; set; } = false;

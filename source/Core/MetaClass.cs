@@ -162,18 +162,78 @@ namespace SimpleLanguage.Core
             ParseInnerFunction();
 
         }
-        public void Parse()
+        public void ParseExtendsRelation()
         {
-            foreach ( var it in m_MetaMemberVariableDict)
+            if( this.isInnerDefineInCompile )
             {
-                it.Value.Parse();
+                return;
             }
+            if (this.extendClass != null)
+            {
+                Console.WriteLine("已绑定过了继承类 : " + extendClass.name);
+                return;
+            }
+            foreach( var v in m_FileMetaClassDict )
+            {
+                var mc = v.Value;
+                MetaClass getmc = mc.GetExtendMetaClass();
+                if (getmc != null)
+                {
+                    mc.metaClass.SetExtendClass(getmc);
+                }
+                else
+                {
+                    mc.metaClass.SetExtendClass(CoreMetaClassManager.objectMetaClass);
+                }
+            }
+        }
+        public void HandleExtendData()
+        {
+        }
+        public void ParseTemplateRelation()
+        {
+        }
+        public void ParseMetaMemberVariableName()
+        {
+            foreach (var it in m_MetaMemberVariableDict)
+            {
+                it.Value.ParseName();
+            }
+        }
+        public void ParseMetaMemberFunctionName()
+        {
+            foreach (var it in m_MetaMemberFunctionListDict )
+            {
+                foreach( var it2 in it.Value )
+                {
+                    it2.ParseName();
+                }
+            }
+        }
+        public void ParseMetaMemberVariableDefineType()
+        {
+            foreach (var it in m_MetaMemberVariableDict)
+            {
+                it.Value.ParseReturnMetaType();
+            }
+        }
+        public void ParseMetaMemberFunctionDefineType()
+        {
+            foreach (var it in m_MetaMemberFunctionListDict)
+            {
+                foreach( var it2 in it.Value )
+                {
+                    it2.ParseReturnMetaType();
+                }
+            }
+        }
+        public void CheckInterface()
+        {
 
-            foreach ( var it in m_MetaMemberAllNameFunctionDict)
-            {
-                it.Value.Parse();
-            }
-            foreach( var it in m_MetaTemplateList)
+        }
+        public void ParseMetaInConstraint()
+        {
+            foreach (var it in m_MetaTemplateList)
             {
                 it.ParseInConstraint();
             }
@@ -256,6 +316,7 @@ namespace SimpleLanguage.Core
             }
             return false;
         }
+        //解析 自动构建函数  
         public virtual void ParseDefineComplete()
         {
             AddDefineConstructFunction();
