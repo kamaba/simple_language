@@ -239,6 +239,12 @@ namespace SimpleLanguage.VM
                             anyObject.SetValue(EType.Class, svalue.int32Value);
                             return;
                         }
+                        Int32Object int32Obj = obj as Int32Object;
+                        if( int32Obj != null )
+                        {
+                            int32Obj.SetValue(svalue.int32Value); 
+                            return;
+                        }
                         ClassObject classObj = obj as ClassObject;
                         if (classObj == null)
                         {

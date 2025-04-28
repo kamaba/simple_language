@@ -12,6 +12,7 @@ using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static SimpleLanguage.Core.MetaVariable;
 
 namespace SimpleLanguage.Core.Statements
 {
@@ -81,7 +82,7 @@ namespace SimpleLanguage.Core.Statements
                 if ( m_FileMetaKeyCaseSyntax.defineClassCallLink != null )
                 {
                     MetaCallExpressNode mcen = new MetaCallExpressNode(m_FileMetaKeyCaseSyntax.defineClassCallLink, null, null);
-                    mcen.Parse(new AllowUseConst() { });
+                    mcen.Parse(new AllowUseSettings() { });
                     mcen.CalcReturnType();
 
                     matchTypeClass = mcen.metaCallLink.finalCallNode.callerMetaClass;
@@ -115,7 +116,7 @@ namespace SimpleLanguage.Core.Statements
                             return;
                         }
                         MetaType mdt = new MetaType(matchTypeClass);
-                        defineMetaVariable = new MetaVariable(token2name, m_OwnerMetaBlockStatements,
+                        defineMetaVariable = new MetaVariable(token2name, EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements,
                             m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
                         thenMetaStatements.AddMetaVariable(defineMetaVariable);
 
@@ -259,7 +260,7 @@ namespace SimpleLanguage.Core.Statements
             }
             if (m_MetaCallLink != null)
             {
-                AllowUseConst auc = new AllowUseConst();
+                AllowUseSettings auc = new AllowUseSettings();
                 auc.callConstructFunction = false;
                 m_MetaCallLink.Parse(auc);
                 m_MetaCallLink.CalcReturnType();

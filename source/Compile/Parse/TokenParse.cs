@@ -39,7 +39,7 @@ namespace SimpleLanguage.Compile.Parse
         {
             ParseToken();
 
-            BuildEnd();
+            //BuildEnd();
         }
         public void BuildEnd()
         {

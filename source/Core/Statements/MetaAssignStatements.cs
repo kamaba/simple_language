@@ -69,8 +69,8 @@ namespace SimpleLanguage.Core.Statements
             if (m_MetaVariable == null)
             {
                 m_IsNeedSetMetaVariable = true;
-                m_MetaVariable = new MetaVariable("autocreate_" + GetHashCode(), m_MetaBlockStatements, m_MetaBlockStatements.ownerMetaClass, m_MetaDefineType);
-                m_MetaVariable.SetFromExpressNodeCreate(m_ExpressNode);
+                m_MetaVariable = new MetaVariable("autocreate_" + GetHashCode(), MetaVariable.EVariableFrom.LocalStatement, m_MetaBlockStatements, m_MetaBlockStatements.ownerMetaClass, m_MetaDefineType);
+                //m_MetaVariable.SetFromExpressNodeCreate(m_ExpressNode);
             }
         }
     }
@@ -190,7 +190,7 @@ namespace SimpleLanguage.Core.Statements
                     }
                     break;
             }
-            AllowUseConst auc = new AllowUseConst();
+            AllowUseSettings auc = new AllowUseSettings();
             auc.useNotStatic = m_FileMetaOpAssignSyntax?.staticToken != null ? false : true;
             auc.useNotConst = m_FileMetaOpAssignSyntax?.constToken == null ? false : true;
             auc.setterFunction = true;

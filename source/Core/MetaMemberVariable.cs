@@ -162,7 +162,7 @@ namespace SimpleLanguage.Core
                             m_Name = m_FileMetaMemeberData.name;
                             m_MemberDataType = EMemberDataType.MemberData;
                             m_Express = new MetaCallExpressNode(m_FileMetaMemeberData.fileMetaCallTermValue.callLink, null, null);
-                            m_Express.Parse(new AllowUseConst());
+                            m_Express.Parse(new AllowUseSettings());
                             m_DefineMetaType = m_Express.GetReturnMetaDefineType();
                             if (m_DefineMetaType == null)
                             {
@@ -184,7 +184,7 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        public override void ParseReturnMetaType()
+        public override void ParsDefineMetaType()
         {
             if (m_FileMetaMemeberData != null)
             {
@@ -227,7 +227,7 @@ namespace SimpleLanguage.Core
                             m_Name = m_FileMetaMemeberData.name;
                             m_MemberDataType = EMemberDataType.MemberData;
                             m_Express = new MetaCallExpressNode(m_FileMetaMemeberData.fileMetaCallTermValue.callLink, null, null);
-                            m_Express.Parse(new AllowUseConst());
+                            m_Express.Parse(new AllowUseSettings());
                             m_DefineMetaType = m_Express.GetReturnMetaDefineType();
                             if (m_DefineMetaType == null)
                             {
@@ -292,7 +292,7 @@ namespace SimpleLanguage.Core
                             m_Name = m_FileMetaMemeberData.name;
                             m_MemberDataType = EMemberDataType.MemberData;
                             m_Express = new MetaCallExpressNode(m_FileMetaMemeberData.fileMetaCallTermValue.callLink, null, null);
-                            m_Express.Parse(new AllowUseConst());
+                            m_Express.Parse(new AllowUseSettings());
                             m_DefineMetaType = m_Express.GetReturnMetaDefineType();
                             if (m_DefineMetaType == null)
                             {
@@ -617,7 +617,7 @@ namespace SimpleLanguage.Core
         //                    m_Name = m_FileMetaMemeberData.name;
         //                    m_MemberDataType = EMemberDataType.MemberData;
         //                    m_Express = new MetaCallExpressNode(m_FileMetaMemeberData.fileMetaCallTermValue.callLink, null, null);
-        //                    m_Express.Parse(new AllowUseConst());
+        //                    m_Express.Parse(new AllowUseSettings());
         //                    m_DefineMetaType = m_Express.GetReturnMetaDefineType();
         //                    if (m_DefineMetaType == null)
         //                    {
@@ -735,17 +735,9 @@ namespace SimpleLanguage.Core
         {
             if (m_FileMetaMemeberVariable != null)
             {
-                if (m_FileMetaMemeberVariable.classDefineRef != null)
-                {
-                    m_DefineMetaType = new MetaType(m_FileMetaMemeberVariable.classDefineRef, ownerMetaClass);
-                }
-                else
-                {
-
-                }
             }
         }
-        public override void ParseReturnMetaType()
+        public override void ParsDefineMetaType()
         {
             if (m_FileMetaMemeberVariable != null)
             {
@@ -867,7 +859,7 @@ namespace SimpleLanguage.Core
         }
         void CalcDefineClassType()
         {
-            var metaFunction = m_OwnerMetaBlockStatements?.ownerMetaFunction;
+            //var metaFunction = m_OwnerMetaBlockStatements?.ownerMetaFunction;
             string defineName = m_Name;
             if (!m_DefineMetaType.isDefineMetaClass)
             {
@@ -925,7 +917,7 @@ namespace SimpleLanguage.Core
                     }
 
                     StringBuilder sb = new StringBuilder();
-                    sb.Append("Warning 在类: " + metaFunction?.ownerMetaClass.allName + " 函数: " + metaFunction?.name + "中  ");
+                    //sb.Append("Warning 在类: " + metaFunction?.ownerMetaClass.allName + " 函数: " + metaFunction?.name + "中  ");
                     if (curClass != null)
                     {
                         sb.Append(" 定义类 : " + curClass.allName);
@@ -1120,7 +1112,7 @@ namespace SimpleLanguage.Core
                                 return null;
                             }
                         }
-                        AllowUseConst auc = new AllowUseConst();
+                        AllowUseSettings auc = new AllowUseSettings();
                         auc.useNotConst = false;
                         auc.useNotStatic = true;
 
@@ -1154,7 +1146,7 @@ namespace SimpleLanguage.Core
                                 return null;
                             }
                         }
-                        AllowUseConst auc = new AllowUseConst();
+                        AllowUseSettings auc = new AllowUseSettings();
                         auc.useNotConst = false;
                         auc.useNotStatic = true;
                         MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByCall(fmct, m_DefineMetaType, ownerMetaClass, null, auc );
@@ -1169,7 +1161,7 @@ namespace SimpleLanguage.Core
 
             MetaExpressNode mn = ExpressManager.instance.VisitFileMetaExpress(ownerMetaClass, null, m_DefineMetaType, root);
 
-            AllowUseConst auc2 = new AllowUseConst();
+            AllowUseSettings auc2 = new AllowUseSettings();
             auc2.useNotConst = isConst;
             auc2.useNotStatic = !isStatic;
             mn.Parse(auc2);

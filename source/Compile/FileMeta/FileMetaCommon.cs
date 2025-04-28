@@ -632,6 +632,10 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             }
             return mb2;
         }       
+        public override string ToString()
+        {
+            return allName;
+        }
         public string ToTokenString()
         {
             return allName + " Token File:[" + m_ClassNameToken.path + "] Line:[" + m_ClassNameToken.sourceBeginLine.ToString() + "]  Char:[" + m_ClassNameToken.sourceBeginChar.ToString() + "]";

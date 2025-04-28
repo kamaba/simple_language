@@ -55,7 +55,7 @@ namespace SimpleLanguage.Core
         public virtual Token GetToken() { return null; }
         public virtual int CalcParseLevel(int level) { return level; }
         public virtual void CalcReturnType() {  }
-        public virtual void Parse(AllowUseConst auc) { }
+        public virtual void Parse(AllowUseSettings auc) { }
         public MetaClass GetReturnMetaClass()
         {
             if( m_MetaDefineType == null )

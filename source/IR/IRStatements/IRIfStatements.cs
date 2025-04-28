@@ -43,11 +43,11 @@ namespace SimpleLanguage.Core.Statements
                     if (m_MetaAssignManager?.isNeedSetMetaVariable == true)
                     {
                         IRStoreVariable storeLocal = new IRStoreVariable(_irMethod, m_BoolConditionVariable);
-                        storeLocal.data.SetDebugInfoByToken( m_BoolConditionVariable.GetToken() );
+                        storeLocal.data.SetDebugInfoByToken( m_BoolConditionVariable.pingToken );
                         conditionStatList.Add(storeLocal);
 
                         IRLoadVariable loadLocal = new IRLoadVariable(_irMethod, m_BoolConditionVariable);
-                        loadLocal.data.SetDebugInfoByToken( m_BoolConditionVariable.GetToken() );
+                        loadLocal.data.SetDebugInfoByToken( m_BoolConditionVariable.pingToken );
                         conditionStatList.Add(loadLocal);
                     }
 

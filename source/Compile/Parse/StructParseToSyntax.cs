@@ -426,8 +426,12 @@ namespace SimpleLanguage.Compile.Parse
             }
 
             FileMetaBaseTerm fme = null;
-            if (assignNode != null && afterNodeList.Count > 0 && afterNodeList[0].nodeType == ENodeType.Key)
+            if (assignNode != null && afterNodeList.Count > 0 )
             {
+                if(afterNodeList[0].nodeType == ENodeType.Key
+                    && afterNodeList[0].token?.type != ETokenType.This
+                    && afterNodeList[0].token?.type != ETokenType.Base)
+                    Console.WriteLine("Error 暂不支持 a = if/switch{}语法");
                 //var fme22 = HandleCreateFileMetaSyntaxByPNode(afterNodeList);
                 //if ((afterNodeList[0].token.type == ETokenType.If
                 //    || afterNodeList[0].token.type == ETokenType.Switch)
@@ -451,7 +455,6 @@ namespace SimpleLanguage.Compile.Parse
                 //{
                 //    Console.WriteLine("Error 不允许嵌套除if/switch以外的语句!!");
                 //}
-                Console.WriteLine("Error 暂不支持 a = if/switch{}语法");
             }
             if (fme == null)
             {

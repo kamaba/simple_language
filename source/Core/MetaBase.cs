@@ -47,10 +47,10 @@ namespace SimpleLanguage.Core
         }
 
 
-        protected string m_AllName = "";
-        protected int m_Deep = 0;
         protected RefFromType m_RefFromType;
         protected string m_Name = "";
+        protected string m_AllName = "";
+        protected int m_Deep = 0;
         protected int m_AnchorDeep = 0;
         protected MetaBase m_ParentNode = null;
         protected Dictionary<string, MetaBase> m_ChildrenNameNodeDict = new Dictionary<string, MetaBase>();
@@ -123,22 +123,22 @@ namespace SimpleLanguage.Core
             return findParentClassMB;
         }
 
-        public MetaBase GetMetaBaseInParentAndInChildrenMetaBaseByName(string inputname )
-        {
-            //子类
-            MetaBase fmc = GetChildrenMetaBaseByName(inputname);
-            if (fmc != null )
-            {
-                return fmc;
-            }
-            //上级节点类或者是命名空间
-            fmc = GetMetaBaseInParentNodeContainByName(inputname);
-            if (fmc != null)
-            {
-                return fmc;
-            }
-            return null;
-        }
+        //public MetaBase GetMetaBaseInParentAndInChildrenMetaBaseByName(string inputname )
+        //{
+        //    //子类
+        //    MetaBase fmc = GetChildrenMetaBaseByName(inputname);
+        //    if (fmc != null )
+        //    {
+        //        return fmc;
+        //    }
+        //    //上级节点类或者是命名空间
+        //    fmc = GetMetaBaseInParentNodeContainByName(inputname);
+        //    if (fmc != null)
+        //    {
+        //        return fmc;
+        //    }
+        //    return null;
+        //}
         public virtual bool IsIncludeMetaBase( string name )
         {
             return childrenNameNodeDict.ContainsKey(name);

@@ -39,7 +39,8 @@ namespace SimpleLanguage.Core
         MemberVariableName,
         MemberDataName,
         NewClass,
-        MemberFunctionName,
+        MemberStaticFunctionName,
+        MemberNonStaticFunctionName,
         ConstValue,
         This,
         Base,
@@ -67,7 +68,7 @@ namespace SimpleLanguage.Core
         public MetaInputTemplateCollection metaTemplateParamsCollection => m_MetaTemplateParamsCollection;
         public MetaBraceOrBracketStatementsContent metaBraceStatementsContent => m_MetaBraceStatementsContent;
 
-        private AllowUseConst m_AllowUseConst;
+        private AllowUseSettings m_AllowUseSettings;
         private ECallNodeType m_CallNodeType;
         private ECallNodeSign m_CallNodeSign = ECallNodeSign.Null;
         public bool m_IsArray = false;
@@ -128,9 +129,9 @@ namespace SimpleLanguage.Core
         {
             m_FrontCallNode = mcn;
         }
-        public bool ParseNode(AllowUseConst _auc)
+        public bool ParseNode(AllowUseSettings _auc)
         {
-            m_AllowUseConst = _auc;
+            m_AllowUseSettings = _auc;
             if (m_FileMetaCallSign != null)
             {
                 if (m_FileMetaCallSign.token.type == ETokenType.Period)
@@ -189,7 +190,7 @@ namespace SimpleLanguage.Core
 
             for (int i = 0; i < this.m_MetaArrayCallNodeList.Count; i++)
             {
-                m_MetaArrayCallNodeList[i].Parse(m_AllowUseConst);
+                m_MetaArrayCallNodeList[i].Parse(m_AllowUseSettings);
             }
 
             if( m_IsFunction )
@@ -286,11 +287,11 @@ namespace SimpleLanguage.Core
                 {
                     Console.WriteLine("Error 只有第一位置可以使用This关键字" + m_Token.ToLexemeAllString());
                 }
-                if (!m_AllowUseConst.useNotStatic)
+                if (!m_AllowUseSettings.useNotStatic)
                 {
                     Console.WriteLine("Error 表达式中,限制使用非静态字段，不允许使用this字段，而直接使用类名称!!" + m_Token.ToLexemeAllString());
                 }
-                if (!m_AllowUseConst.useThis)
+                if (!m_AllowUseSettings.useThis)
                 {
                     Console.WriteLine("Error 不允许使用this语法" + m_Token.ToLexemeAllString());
                 }
@@ -320,11 +321,11 @@ namespace SimpleLanguage.Core
                 {
                     Console.WriteLine("Error 只有第一位置可以使用base关键字" + m_Token.ToLexemeAllString());
                 }
-                if (!m_AllowUseConst.useNotStatic)
+                if (!m_AllowUseSettings.useNotStatic)
                 {
                     Console.WriteLine("Error 静态类中，不允许使用this字段，而直接使用类名称!!" + m_Token.ToLexemeAllString());
                 }
-                if (!m_AllowUseConst.useThis)
+                if (!m_AllowUseSettings.useThis)
                 {
                     Console.WriteLine("Error 不允许使用this语法" + m_Token.ToLexemeAllString());
                 }
@@ -428,14 +429,14 @@ namespace SimpleLanguage.Core
                                         Console.WriteLine("Error 调用非静态成员，不能使用Class.Variable的方式!");
                                         return false;
                                     }
-                                    if (mmf.isConstructInitFunction && !m_AllowUseConst.callConstructFunction)
+                                    if (mmf.isConstructInitFunction && !m_AllowUseSettings.callConstructFunction)
                                     {
                                         Console.WriteLine("Error 不允许使用构造函数" + m_Token.ToLexemeAllString());
                                         return false;
                                     }
                                     m_MetaFunction = mmf;
                                     tmb = mmf;
-                                    m_CallNodeType = ECallNodeType.MemberFunctionName;
+                                    m_CallNodeType = ECallNodeType.MemberStaticFunctionName;
                                 }
                             }
                             if (tmb == null)
@@ -456,7 +457,7 @@ namespace SimpleLanguage.Core
                         if (mmf != null)
                         {
                             m_MetaFunction = mmf;
-                            m_CallNodeType = ECallNodeType.MemberFunctionName;
+                            m_CallNodeType = ECallNodeType.MemberStaticFunctionName;
                         }
                     }
                     else if( frontCNT == ECallNodeType.Global )//|| frontCNT == ECallNodeType.DataName) 
@@ -512,7 +513,7 @@ namespace SimpleLanguage.Core
                         var mv = m_FrontCallNode.m_MetaVariable;
                         if( frontCNT == ECallNodeType.VisitVariable )
                         {
-                            mv = (mv as MetaVisitVariable).visitMetaVariable;
+                            mv = (mv as MetaVisitVariable).sourceMetaVariable;
                         }
                         MetaVariable getmv2 = null;
                         if ( mv.isArray )
@@ -563,12 +564,17 @@ namespace SimpleLanguage.Core
                                 MetaMemberFunction mmf = gett2 as MetaMemberFunction;
                                 if (mmf != null )
                                 {
+                                    if(mmf.isStatic )
+                                    {
+                                        Console.WriteLine("Error 该位置为非静态函数查找 但找到了静态函数!!" + m_FileMetaCallNode.token?.ToAllString());
+                                        return false;
+                                    }
                                     if( m_MetaInputParamCollection == null )
                                     {
                                         m_MetaInputParamCollection = new MetaInputParamCollection(m_OwnerMetaClass, m_OwnerMetaFunctionBlock);
                                     }
                                     m_MetaFunction = mmf;
-                                    m_CallNodeType = ECallNodeType.MemberFunctionName;
+                                    m_CallNodeType = ECallNodeType.MemberNonStaticFunctionName;
                                 }
 
                                 if(tempMetaBase2 == null )
@@ -614,7 +620,8 @@ namespace SimpleLanguage.Core
                             return false;
                         }
                     }
-                    else if (frontCNT == ECallNodeType.MemberFunctionName )
+                    else if (frontCNT == ECallNodeType.MemberStaticFunctionName 
+                        || frontCNT == ECallNodeType.MemberNonStaticFunctionName )
                     {
                         MetaType retMT = m_FrontCallNode.m_MetaFunction.returnMetaVariable.metaDefineType;
                         if( retMT != null && retMT.metaClass != null )
@@ -763,7 +770,7 @@ namespace SimpleLanguage.Core
                         }
                     }
 
-                    if (!m_AllowUseConst.callFunction && m_IsFunction)
+                    if (!m_AllowUseSettings.callFunction && m_IsFunction)
                     {
                         Console.WriteLine("Error 当前位置不允许有函数调用方式使用!!!" + m_Token?.ToLexemeAllString());
                     }
@@ -783,7 +790,7 @@ namespace SimpleLanguage.Core
                 if (m_MetaVariable != null)
                 {
                     var tmv = m_MetaVariable;
-                    if (m_AllowUseConst.useNotStatic == false && m_MetaVariable.isStatic == false)
+                    if (m_AllowUseSettings.useNotStatic == false && m_MetaVariable.isStatic == false)
                     {
                         if (frontCNT == ECallNodeType.VariableName
                             || frontCNT == ECallNodeType.MemberVariableName
@@ -796,7 +803,7 @@ namespace SimpleLanguage.Core
                     }
                     if (m_MetaVariable.isArray)             //Array<int> arr = {1,2,3}; 这个arr[0]就是mv
                     {
-                        if (m_MetaArrayCallNodeList.Count == 1 && this.m_IsArray)  //arr[?]
+                        if (m_MetaArrayCallNodeList.Count == 1 && this.m_IsArray )  //arr[?]
                         {
                             MetaCallNode fmcn1 = null;// m_MetaArrayCallNodeList[0].finalMetaCallNode;
                             if (fmcn1?.callNodeType == ECallNodeType.ConstValue)       //arr[0]
@@ -952,7 +959,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_IsFunction)
                 {
-                    m_CallNodeType = ECallNodeType.MemberFunctionName;
+                    m_CallNodeType = ECallNodeType.MemberNonStaticFunctionName;
                     m_MetaFunction = mb as MetaFunction;
                     if (m_MetaFunction.isStatic)
                     {
@@ -1080,7 +1087,7 @@ namespace SimpleLanguage.Core
                 if( mmf != null )
                 {
                     m_MetaFunction = mmf;
-                    m_CallNodeType = ECallNodeType.MemberFunctionName;
+                    m_CallNodeType = mmf.isStatic ? ECallNodeType.MemberStaticFunctionName : ECallNodeType.MemberNonStaticFunctionName;
                 }
             }
             return retMC;
@@ -1145,8 +1152,8 @@ namespace SimpleLanguage.Core
                 var gmb = mc.GetCSharpMemberVariableAndCreateByName(inputname);
                 if (gmb == null)
                 {
-                    return mc.GetMetaDefineGetSetMemberFunctionByName(inputname, m_AllowUseConst.getterFunction,
-                        m_AllowUseConst.setterFunction);
+                    return mc.GetMetaDefineGetSetMemberFunctionByName(inputname, m_AllowUseSettings.getterFunction,
+                        m_AllowUseSettings.setterFunction);
                 }
                 else
                 {
@@ -1170,8 +1177,8 @@ namespace SimpleLanguage.Core
                 var gmb = mc.GetCSharpMemberVariableAndCreateByName(inputname);
                 if (gmb == null)
                 {
-                    return mc.GetMetaDefineGetSetMemberFunctionByName(inputname, m_AllowUseConst.getterFunction,
-                        m_AllowUseConst.setterFunction);
+                    return mc.GetMetaDefineGetSetMemberFunctionByName(inputname, m_AllowUseSettings.getterFunction,
+                        m_AllowUseSettings.setterFunction);
                 }
                 else
                 {
@@ -1244,9 +1251,13 @@ namespace SimpleLanguage.Core
                     else
                         sb.Append(m_MetaNamespace?.name);
                 }
-                else if (m_CallNodeType == ECallNodeType.MemberFunctionName)
+                else if (m_CallNodeType == ECallNodeType.MemberStaticFunctionName)
                 {
-                    sb.Append(m_MetaFunction?.ToFormatString());
+                    sb.Append( "static " + m_MetaFunction?.ToFormatString());
+                }
+                else if (m_CallNodeType == ECallNodeType.MemberNonStaticFunctionName)
+                {
+                    sb.Append("nonstatic " + m_MetaFunction?.ToFormatString());
                 }
                 else if (m_CallNodeType == ECallNodeType.VariableName)
                 {
@@ -1285,7 +1296,7 @@ namespace SimpleLanguage.Core
             return sb.ToString();
         }
     }
-    public class AllowUseConst
+    public class AllowUseSettings
     {
         public bool useNotStatic = false;
         public bool useNotConst = true;
@@ -1296,12 +1307,12 @@ namespace SimpleLanguage.Core
         public bool getterFunction = true ;
         public bool useBrace = false;
 
-        public AllowUseConst()
+        public AllowUseSettings()
         {
 
         }
 
-        public AllowUseConst(AllowUseConst clone )
+        public AllowUseSettings(AllowUseSettings clone )
         {
             useNotStatic = clone.useNotStatic;
             useNotConst = clone.useNotConst;
@@ -1317,7 +1328,7 @@ namespace SimpleLanguage.Core
     {
         public MetaVisitNode finalCallNode => m_FinalCallNode;
         public List<MetaVisitNode> callNodeList => m_VisitNodeList;
-        public AllowUseConst allowUseConst { get; set; }
+        public AllowUseSettings allowUseSettings { get; set; }
 
         private FileMetaCallLink m_FileMetaCallLink;
         private MetaClass m_OwnerMetaClass = null;
@@ -1362,11 +1373,11 @@ namespace SimpleLanguage.Core
             }
         }
         public Token GetToken() { return null; }
-        public bool Parse( AllowUseConst _useConst )
+        public bool Parse(AllowUseSettings _useConst )
         {
-            allowUseConst = new AllowUseConst(_useConst);
-            allowUseConst.setterFunction = false;
-            allowUseConst.getterFunction = true;
+            allowUseSettings = new AllowUseSettings(_useConst);
+            allowUseSettings.setterFunction = false;
+            allowUseSettings.getterFunction = true;
             bool flag = true;
             for (int i = 0; i < m_CallNodeList.Count; i++)
             {
@@ -1374,13 +1385,13 @@ namespace SimpleLanguage.Core
                 {
                     if( i == m_CallNodeList.Count - 1 )
                     {
-                        allowUseConst.setterFunction = _useConst.setterFunction;
-                        allowUseConst.getterFunction = _useConst.getterFunction;
-                        flag = m_CallNodeList[i].ParseNode(allowUseConst);
+                        allowUseSettings.setterFunction = _useConst.setterFunction;
+                        allowUseSettings.getterFunction = _useConst.getterFunction;
+                        flag = m_CallNodeList[i].ParseNode(allowUseSettings);
                     }
                     else
                     {
-                        flag = m_CallNodeList[i].ParseNode(allowUseConst);
+                        flag = m_CallNodeList[i].ParseNode(allowUseSettings);
                     }
                 }
             }
@@ -1400,7 +1411,7 @@ namespace SimpleLanguage.Core
                     }
                     if( i < m_CallNodeList.Count )
                     {
-                        MetaCallNode nmcn = m_CallNodeList[i++];
+                        MetaCallNode nmcn = m_CallNodeList[i];
                         if( nmcn == null )
                         {
                             Debug.WriteLine("Error 生成链接点报错");
@@ -1409,9 +1420,25 @@ namespace SimpleLanguage.Core
                         if( nmcn.callNodeType == ECallNodeType.VariableName
                             || nmcn.callNodeType == ECallNodeType.MemberVariableName )
                         {
-                            MetaVisitVariable mvv = new MetaVisitVariable(mcn.m_MetaVariable, nmcn.m_MetaVariable);
-                            MetaVisitNode mvn = MetaVisitNode.CreateByVisitVariable(mvv);
-                            m_VisitNodeList.Add(mvn);
+                            if( mcn.callNodeType == ECallNodeType.MemberNonStaticFunctionName
+                                || mcn.callNodeType == ECallNodeType.MemberStaticFunctionName )
+                            {                                
+                                MetaVisitVariable mvv = new MetaVisitVariable(mcn.m_MetaFunction.returnMetaVariable,
+                                    nmcn.m_MetaVariable);
+                                MetaVisitNode mvn = MetaVisitNode.CreateByVisitVariable(mvv);
+                                m_VisitNodeList.Add(mvn);
+                            }
+                            else if( mcn.callNodeType == ECallNodeType.VariableName 
+                                || mcn.callNodeType != ECallNodeType.MemberNonStaticFunctionName )
+                            {
+                                MetaVisitVariable mvv = new MetaVisitVariable(mcn.m_MetaVariable, nmcn.m_MetaVariable);
+                                MetaVisitNode mvn = MetaVisitNode.CreateByVisitVariable(mvv);
+                                m_VisitNodeList.Add(mvn);
+                            }
+                            else
+                            {
+                                Console.WriteLine("----------------------------------------------------");
+                            }
                         }
                         else if (nmcn.callNodeType == ECallNodeType.VisitVariable)
                         {
@@ -1420,22 +1447,29 @@ namespace SimpleLanguage.Core
                         }
                         else if ( nmcn.callNodeType == ECallNodeType.IteratorVariable )
                         {
+                            Console.WriteLine("----------------------------------------------------");
                         }
-                        //else if (nmcn.callNodeType == ECallNodeType.DataName)
-                        //{
-
-                        //}
+                        else if (nmcn.callNodeType == ECallNodeType.DataName)
+                        {
+                            Console.WriteLine("----------------------------------------------------");
+                        }
                         else if (nmcn.callNodeType == ECallNodeType.EnumName)
                         {
-
+                            Console.WriteLine("----------------------------------------------------");
                         }
-                        //else if (nmcn.callNodeType == ECallNodeType.MemberDataName )
-                        //{
-
-                        //}
-                        else if (nmcn.callNodeType == ECallNodeType.MemberFunctionName )
+                        else if (nmcn.callNodeType == ECallNodeType.MemberDataName)
+                        {
+                            Console.WriteLine("----------------------------------------------------");
+                        }
+                        else if (nmcn.callNodeType == ECallNodeType.MemberStaticFunctionName)
                         {
                             MetaMethodCall mmc = new MetaMethodCall(nmcn.m_MetaFunction.ownerMetaClass, nmcn.m_MetaFunction, nmcn.m_MetaInputParamCollection);
+                            MetaVisitNode mvn = MetaVisitNode.CreateByMethodCall(mmc);
+                            m_VisitNodeList.Add(mvn);
+                        }
+                        else if (nmcn.callNodeType == ECallNodeType.MemberNonStaticFunctionName)
+                        {
+                            MetaMethodCall mmc = new MetaMethodCall(mcn.m_MetaVariable, nmcn.m_MetaFunction, nmcn.m_MetaInputParamCollection);
                             MetaVisitNode mvn = MetaVisitNode.CreateByMethodCall(mmc);
                             m_VisitNodeList.Add(mvn);
                         }
@@ -1443,9 +1477,7 @@ namespace SimpleLanguage.Core
                         {
                             MetaMethodCall mmc = new MetaMethodCall( nmcn.m_MetaClass, nmcn.m_MetaFunction, nmcn.m_MetaInputParamCollection );
                             mmc.SetCallerMetaVariable( (nmcn.m_MetaFunction as MetaMemberFunction).thisMetaVariable );
-                            MetaVisitNode mvn = MetaVisitNode.CreateByMethodCall(mmc);
-                            mvn.metaBraceStatementsContent = mcn.metaBraceStatementsContent;
-                            mvn.visitType = MetaVisitNode.EVisitType.NewMethodCall;
+                            MetaVisitNode mvn = MetaVisitNode.CreateByNewMethodCall(mmc, mcn.metaBraceStatementsContent );
                             m_VisitNodeList.Add(mvn);
                         }
                     }
@@ -1455,9 +1487,7 @@ namespace SimpleLanguage.Core
                         {
                             MetaMethodCall mmc = new MetaMethodCall(mcn.m_MetaClass, mcn.m_MetaFunction, mcn.m_MetaInputParamCollection);
                             mmc.SetCallerMetaVariable((mcn.m_MetaFunction as MetaMemberFunction).thisMetaVariable);
-                            MetaVisitNode mvn = MetaVisitNode.CreateByMethodCall(mmc);
-                            mvn.metaBraceStatementsContent = mcn.metaBraceStatementsContent;
-                            mvn.visitType = MetaVisitNode.EVisitType.NewMethodCall;
+                            MetaVisitNode mvn = MetaVisitNode.CreateByNewMethodCall(mmc, mcn.metaBraceStatementsContent);
                             m_VisitNodeList.Add(mvn);
                         }
                         else if( mcn.callNodeType == ECallNodeType.This )
@@ -1527,9 +1557,11 @@ namespace SimpleLanguage.Core
         public string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < m_VisitNodeList.Count; i++)
+            for (int i = 0; i < this.m_VisitNodeList.Count; i++)
             {
-                sb.Append(m_VisitNodeList[i].ToFormatString());
+                sb.Append(m_VisitNodeList[i].ToFormatString() );
+                if( i < this.m_VisitNodeList.Count - 1 )
+                    sb.Append("  ->  ");
             }
             return sb.ToString();
         }

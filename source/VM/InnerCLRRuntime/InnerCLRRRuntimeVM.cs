@@ -79,10 +79,10 @@ namespace SimpleLanguage.VM.Runtime
             {
                 m_StaticVariableValueArray[i] = ObjectManager.CreateValueByDefineType(staticArray[i].metaVariable.metaDefineType);
             }
-
+            //InnverCLRRuntimeVM.RootInnerCLRRuntime 
             RuntimeMethod clrRuntime = new RuntimeMethod(IRManager.instance.irDataList);
             clrRuntime.isPersistent = true;
-            clrRuntime.id = "InnverCLRRuntimeVM.RootInnerCLRRuntime";
+            clrRuntime.id = "InnverCLRRuntimeVM.CLRRuntime.EntryMethod()";
             InnerCLRRuntimeVM.PushCLRRuntime(clrRuntime);
             clrRuntime.Run();
         }

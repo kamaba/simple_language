@@ -207,7 +207,7 @@ namespace SimpleLanguage.Core
                         break;
                     case FileMetaCallTerm fmct:
                         {
-                            var auc = new AllowUseConst();
+                            var auc = new AllowUseSettings();
                             auc.useNotStatic = !isStatic;
                             auc.useNotConst = isConst;
 
@@ -255,7 +255,7 @@ namespace SimpleLanguage.Core
                 }
                 if( men != null )
                 {
-                    AllowUseConst auc = new AllowUseConst();
+                    AllowUseSettings auc = new AllowUseSettings();
                     auc.useNotStatic = !isStatic;
                     auc.useNotConst = isConst;
                     men.Parse(auc);
@@ -264,7 +264,7 @@ namespace SimpleLanguage.Core
             }
 
             MetaExpressNode mn = VisitFileMetaExpress(ownerClass, mbs, mdt, root);
-            AllowUseConst auc2 = new AllowUseConst();
+            AllowUseSettings auc2 = new AllowUseSettings();
             auc2.useNotStatic = !isStatic;
             auc2.useNotConst = isConst;
             mn.Parse(auc2);

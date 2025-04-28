@@ -83,9 +83,8 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 m_FileMetaMemberData[i].SetDeep(m_Deep + 1);
             }
         }
-        public void SetMetaMemberData(MetaMemberData fmmd)
+        public void SetMetaMemberData(MetaMemberData mmd)
         {
-
         }
         public FileMetaMemberData GetFileMetaMemberDataByName(string name)
         {
@@ -307,7 +306,10 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             m_Token = nameNode.token;
 
             if (typeNode != null)
+            {
                 m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, typeNode);
+                m_MemberDataType = EMemberDataType.ConstVariable;
+            }
 
             if(afterNodeList.Count > 0 )
             {
@@ -696,8 +698,10 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 sb.Append( name + " = ");
                 sb.Append(m_Express?.ToFormatString());
             }
-
-
+            else
+            {
+                sb.Append("没有差别MemberDataType");
+            }
             return sb.ToString();
         }
     }

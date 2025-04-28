@@ -319,18 +319,20 @@ namespace SimpleLanguage.Core
             }
             m_AllClassDict.Add(mc.allName, mc);
         }
-        public void ParseExtendsRelation( FileMetaClass mc )
+        public void ParseInterfaceRelation()
         {
-            if (mc.metaClass == null) return;            
-        }
-        public void ParseInterface( FileMetaClass mc )
-        {
-            var ifmc = mc.GetInterfaceMetaClass();
-            if (ifmc.Count > 0)
+            foreach (var it in m_AllClassDict)
             {
-                for (int i = 0; i < ifmc.Count; i++)
+                foreach( var it2 in it.Value.fileMetaClassDict )
                 {
-                    mc.metaClass.AddInterfaceClass(ifmc[i]);
+                    var ifmc = it2.Value.GetInterfaceMetaClass();
+                    if (ifmc.Count > 0)
+                    {
+                        for (int i = 0; i < ifmc.Count; i++)
+                        {
+                            it.Value.AddInterfaceClass(ifmc[i]);
+                        }
+                    }
                 }
             }
         }
@@ -364,30 +366,37 @@ namespace SimpleLanguage.Core
         }
         public void HandleExtendData()
         {
+            List<MetaClass> allMClassList = new List<MetaClass>();
             foreach (var it in m_AllClassDict)
             {
-                it.Value.ParseMetaMemberFunctionName();
+                allMClassList.Add(it.Value);
+            }
+            allMClassList.Sort((x, y) => x.extendLevel - y.extendLevel);
+            
+            foreach (var it in allMClassList)
+            {
+                it.HandleExtendData();
             }
         }
-        public void ParseMemberVariableReturnMetaType()
+        public void ParseMemberVariableDefineMetaType()
         {
             foreach (var it in m_AllClassDict)
             {
-                it.Value.ParseMetaMemberVariableDefineType();
+                it.Value.ParseMemberVariableDefineMetaType();
             }
         }
-        public void ParseMemberFunctionReturnMetaType()
+        public void ParseMemberFunctionDefineMetaType()
         {
             foreach (var it in m_AllClassDict)
             {
-                it.Value.ParseMetaMemberFunctionDefineType();
+                it.Value.ParseMemberFunctionDefineMetaType();
             }
         }
         public void CheckInterfaces()
         {
             foreach (var it in m_AllClassDict)
             {
-                //it.Value.ParseMetaMemberVariableName();
+                it.Value.CheckInterface();
             }
         }
         public void ParseDefineComplete()

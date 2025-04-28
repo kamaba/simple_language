@@ -96,14 +96,14 @@ namespace SimpleLanguage.Compile.CoreFileMeta
     }
     public partial class FileMetaFunction : FileMetaBase
     {
-        public FileMetaClassDefine returnMetaClass => m_ReturnMetaClass;
+        public FileMetaClassDefine defineMetaClass => m_DefineMetaClass;
         public FileMetaBlockSyntax fileMetaBlockSyntax => m_FileMetaBlockSyntax;
         public List<FileMetaParamterDefine> metaParamtersList => m_MetaParamtersList;
         public List<FileMetaTemplateDefine> metaTemplatesList => m_MetaTemplatesList;
 
         protected List<FileMetaParamterDefine> m_MetaParamtersList = new List<FileMetaParamterDefine>();
         protected List<FileMetaTemplateDefine> m_MetaTemplatesList = new List<FileMetaTemplateDefine>();
-        protected FileMetaClassDefine m_ReturnMetaClass = null;
+        protected FileMetaClassDefine m_DefineMetaClass = null;
         protected FileMetaBlockSyntax m_FileMetaBlockSyntax = null;
         protected FileMetaFunction() { }
 
@@ -293,7 +293,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             m_FinalToken = finalToken;
             if (returnClassNameNode != null )
             {
-                m_ReturnMetaClass = new FileMetaClassDefine(m_FileMeta, returnClassNameNode );
+                m_DefineMetaClass = new FileMetaClassDefine(m_FileMeta, returnClassNameNode );
             }
             return true;
         }
@@ -391,9 +391,9 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             {
                 sb.Append(" " + m_VirtualOverrideToken.lexeme.ToString());
             }
-            if (m_ReturnMetaClass != null)
+            if (m_DefineMetaClass != null)
             {
-                sb.Append(" " + m_ReturnMetaClass.ToFormatString() );
+                sb.Append(" " + m_DefineMetaClass.ToFormatString() );
             }
             if(m_MetaTemplatesList.Count > 0 )
             {

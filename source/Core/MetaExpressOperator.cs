@@ -36,7 +36,7 @@ namespace SimpleLanguage.Core
         {
             m_Value = _value;
         }
-        public override void Parse( AllowUseConst auc)
+        public override void Parse( AllowUseSettings auc)
         {
             m_Value.Parse(auc);
         }
@@ -324,7 +324,7 @@ namespace SimpleLanguage.Core
             }
             return base.GetToken();
         }
-        public override void Parse(AllowUseConst auc)
+        public override void Parse(AllowUseSettings auc)
         {
             m_Left.Parse(auc);
             m_Right.Parse(auc);

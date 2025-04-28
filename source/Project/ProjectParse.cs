@@ -518,33 +518,33 @@ namespace SimpleLanguage.Project
         {
             if (m_FileMetaClassDict.Count == 0)
                 return;
-            FileMetaMemberVariable fmd = null;
+            FileMetaMemberData fmd = null;
             foreach( var v in m_FileMetaClassDict )
             {
-                //fmd = v.Value.GetFileMemberData("globalVariable");
-                //if (fmd != null)
-                //    continue;
+                fmd = v.Value.GetFileMemberData("globalVariable");
+                if (fmd != null)
+                    break;
             }
 
-            if(fmd == null )
+            if( fmd == null )
             {
                 return;
             }
 
-            MetaBase mb = GetChildrenMetaBaseByName(fmd.name);
+            MetaBase mb = ProjectManager.globalData.GetChildrenMetaBaseByName(fmd.name);
             if (mb != null)
             {
                 Console.WriteLine("Error 已有定义类: " + allName + "中 已有: " + fmd.token?.ToLexemeAllString() + "的元素!!");
                 return;
             }
-
-            MetaMemberVariable mmd = new MetaMemberVariable(this, fmd );
-            //AddMetaMemberData(mmd);
-            //mmd.ParseChildMemberData();
-            //ParseBlockNode(mmd);
+            //需要在做Data处理的时候 ，再处理该逻辑
+            MetaMemberData mmd = new MetaMemberData(ProjectManager.globalData, fmd );
+            mmd.ParseName();
+            mmd.ParsDefineMetaType();
+            mmd.ParseMetaExpress();
+            ProjectManager.globalData.AddMetaMemberData(mmd);
         }
     }
-
     public class ProjectParse
     {
         ProjectData m_ProjectData = null;
@@ -573,8 +573,8 @@ namespace SimpleLanguage.Project
             m_ProjectData.ParseFileMetaDataMemeberData(fmc);
             m_ProjectData.ParseMetaMemberVariableName();
             m_ProjectData.ParseMetaMemberFunctionName();
-            m_ProjectData.ParseMetaMemberVariableDefineType();
-            m_ProjectData.ParseMetaMemberFunctionDefineType();
+            m_ProjectData.ParseMemberVariableDefineMetaType();
+            m_ProjectData.ParseMemberFunctionDefineMetaType();
         }
         public void ParseGlobalVariable()
         {

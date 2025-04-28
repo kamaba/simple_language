@@ -47,41 +47,51 @@ namespace SimpleLanguage.Core.Statements
             {
                 var metaClass = mnoen.GetReturnMetaClass();
                 var mmvs = metaClass.localMetaMemberVariables;
-                // Class1{ a = 1; b = 2 }
+                
+                bool isFZ = false;
                 for ( int i = 0; i < mmvs.Count; i++ )
                 {
-                    IRExpress irexp = new IRExpress(irMethod, mmvs[i].express);
-                    m_IRStatements.Add(irexp);
+                    isFZ = false;
+                    // Class1{ a = 1; b = 2 }  如果已经配置 {}内容，则不走默认赋值，而是走{}内容赋值
+                    for (int j = 0; j < mnoen.metaBraceOrBracketStatementsContent?.assignStatementsList.Count; j++)
+                    {
+                        var asl = mnoen.metaBraceOrBracketStatementsContent.assignStatementsList[j];
 
-                    IRLoadVariable irLoadVar1 = new IRLoadVariable(irMethod, m_MetaVariable );
-                    m_IRStatements.Add(irLoadVar1);
+                        if( asl.metaMemberVariable.name == mmvs[i].name )
+                        {
+                            IRLoadVariable mmvsNodeVar = new IRLoadVariable(irMethod, m_MetaVariable);
+                            m_IRStatements.Add(mmvsNodeVar);
 
-                    IRStoreVariable irStoreVar2 = new IRStoreVariable(irMethod, mmvs[i]);
-                    m_IRStatements.Add(irStoreVar2);
+                            IRStoreVariable irStoreNodeVar3 = new IRStoreVariable(irMethod, asl.metaMemberVariable);
+                            m_IRStatements.Add(irStoreNodeVar3);
+                            isFZ = true;
+                            break;
+                        }
+                    }
+
+                    if(isFZ == false )
+                    {
+                        IRExpress irexp = new IRExpress(irMethod, mmvs[i].express);
+                        m_IRStatements.Add(irexp);
+
+                        IRLoadVariable irLoadVar1 = new IRLoadVariable(irMethod, m_MetaVariable);
+                        m_IRStatements.Add(irLoadVar1);
+
+                        IRStoreVariable irStoreVar2 = new IRStoreVariable(irMethod, mmvs[i]);
+                        m_IRStatements.Add(irStoreVar2);
+                    }
                 }
                 // Class1().Init();
-                mnoen.constructFunctionCall.SetCallerMetaVariable(m_MetaVariable);
                 var irCallFun = new IRCallFunction(irMethod, mnoen.constructFunctionCall);
                 m_IRStatements.Add(irCallFun);
 
-                // { a = 1, b = 2 }
-                for (int i = 0; i < mnoen.metaBraceOrBracketStatementsContent?.assignStatementsList.Count; i++)
-                {
-                    var asl = mnoen.metaBraceOrBracketStatementsContent.assignStatementsList[i];
-
-                    IRLoadVariable mmvsNodeVar = new IRLoadVariable(irMethod, m_MetaVariable);
-                    m_IRStatements.Add(mmvsNodeVar);
-
-                    IRStoreVariable irStoreNodeVar3 = new IRStoreVariable(irMethod, asl.metaMemberVariable );
-                    m_IRStatements.Add(irStoreNodeVar3);
-                }
             }
         }
         public override string ToIRString()
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("#new var ");
+            sb.Append(" #new var ");
             sb.Append(m_MetaVariable.ToFormatString() );
             if(m_ExpressNode != null )
             {
