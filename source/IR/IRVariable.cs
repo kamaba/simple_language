@@ -46,14 +46,14 @@ namespace SimpleLanguage.IR
             if (mv.isArgument)
             {
                 data.opCode = EIROpCode.LoadArgument;
-                data.SetDebugInfoByToken( mv.GetToken() );
+                data.SetDebugInfoByToken( mv.pingToken );
                 data.index = m_IRMethod.GetArgumentIndex(mv);
                 m_IRDataList.Add(data);
             }
             else
             {
                 data.opCode = EIROpCode.LoadLocal;
-                data.SetDebugInfoByToken( mv.GetToken() );
+                data.SetDebugInfoByToken( mv.pingToken );
                 data.index = m_IRMethod.GetLocalVariableIndex(mv);
                 m_IRDataList.Add(data);
             }
@@ -82,7 +82,7 @@ namespace SimpleLanguage.IR
             var mmv = mv as MetaMemberVariable;
             if (vmv != null)
             {
-                var localVariable = vmv.localMetaVariable;
+                var localVariable = vmv.sourceMetaVariable;
                 if (localVariable is MetaVariable)
                 {
                     if (localVariable is MetaVisitVariable)

@@ -99,7 +99,8 @@ namespace SimpleLanguage.Core.Statements
                     + "已定义过了变量名称!!! MBS:" + token?.ToLexemeAllString() + " var:" + mv.ToFormatString() );
                 return false;
             }
-            mv.SetOwnerBlockstatements(this);
+            mv.SetPingToken(m_FileMetaBlockSyntax?.token);
+            //mv.SetOwnerBlockstatements(this);
             m_MetaVariableDict.Add(mv.name, mv);
             return true;
         }
@@ -130,7 +131,6 @@ namespace SimpleLanguage.Core.Statements
         }
         public bool UpdateMetaVariable( MetaVariable mv )
         {
-            mv.SetOwnerBlockstatements(this);
             if (m_MetaVariableDict.ContainsKey(mv.name))
             {
                 m_MetaVariableDict[mv.name] = mv;
@@ -212,7 +212,6 @@ namespace SimpleLanguage.Core.Statements
             foreach (var v in m_MetaVariableDict)
             {
                 MetaVariable nmv = new MetaVariable(v.Value);
-                nmv.SetOwnerBlockstatements(mbs);
                 nmv.GenTemplateMetaVaraible(mgt, mbs);
                 tMvList.Add(nmv.name, nmv);
             }

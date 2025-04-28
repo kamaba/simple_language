@@ -67,7 +67,7 @@ namespace SimpleLanguage.Core.Statements
                 }
                 else
                 {
-                    m_ForInContent = new MetaVariable("forcontent_" + GetHashCode().ToString(), m_OwnerMetaBlockStatements, ownerMetaClass, mnoen.GetReturnMetaDefineType() );
+                    m_ForInContent = new MetaVariable("forcontent_" + GetHashCode().ToString(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, ownerMetaClass, mnoen.GetReturnMetaDefineType() );
                     m_ThenMetaStatements.UpdateMetaVariable(m_ForInContent);
                 }
                 MetaType mdt = m_ForInContent.metaDefineType;
@@ -291,7 +291,7 @@ namespace SimpleLanguage.Core.Statements
 
             if (m_ConditionExpress != null)
             {
-                AllowUseConst auc = new AllowUseConst();
+                AllowUseSettings auc = new AllowUseSettings();
                 m_ConditionExpress.Parse(auc);
                 m_ConditionExpress.CalcReturnType();
             }

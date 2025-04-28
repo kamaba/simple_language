@@ -928,6 +928,18 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     AddFileMetaTerm(fmbt);
                 }
+                else if( node.nodeType == ENodeType.Key 
+                    && (node.token?.type == ETokenType.This 
+                    || node.token?.type == ETokenType.Base ) )
+                {
+                    if (fmbt != null)
+                    {
+                        Console.WriteLine("Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString());
+                    }
+                    fmbt = new FileMetaCallTerm(m_FileMeta, node);
+                    fmbt.priority = int.MaxValue;
+                    AddFileMetaTerm(fmbt);
+                }
                 else if( node.nodeType == ENodeType.IdentifierLink )
                 {
                     if(fmbt != null )

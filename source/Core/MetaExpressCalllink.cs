@@ -29,7 +29,7 @@ namespace SimpleLanguage.Core
         {
             m_MetaCallLink = mcl;
         }
-        public override void Parse( AllowUseConst auc )
+        public override void Parse( AllowUseSettings auc )
         {
             if(m_MetaCallLink!= null )
             {

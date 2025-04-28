@@ -36,7 +36,7 @@ namespace SimpleLanguage.Core
             if (fmcl != null)
             {
                 m_MetaExpress = new MetaCallExpressNode(fmcl, mt.metaClass, mbs);
-                AllowUseConst auc = new AllowUseConst();
+                AllowUseSettings auc = new AllowUseSettings();
                 auc.useNotConst = false;
                 auc.useNotStatic = false;
                 m_MetaExpress.Parse(auc);
@@ -168,7 +168,7 @@ namespace SimpleLanguage.Core
                 case FileMetaCallTerm callTerm:
                     {
                         MetaCallExpressNode clen = new MetaCallExpressNode(callTerm.callLink, mc, mbs);
-                        AllowUseConst auc = new AllowUseConst();
+                        AllowUseSettings auc = new AllowUseSettings();
                         auc.useNotConst = false;
                         auc.useNotStatic = false;
                         auc.callConstructFunction = true;
@@ -727,7 +727,7 @@ namespace SimpleLanguage.Core
             }
             return base.GetToken();
         }
-        public override void Parse(AllowUseConst auc)
+        public override void Parse(AllowUseSettings auc)
         {
             //for( int i = 0; i < assignStatementsList.Count; i++ )
             //{
@@ -788,10 +788,30 @@ namespace SimpleLanguage.Core
             {
                 if ( m_MetaDefineType != null )
                 {
-                    //sb.Append(m_MetaDefineType.allName + "()");
+                    sb.Append(m_MetaDefineType.allName + "()");
+                    sb.Append(".");
                 }
-                sb.Append(m_MetaConstructFunctionCall?.ToFormatString());
-
+                if(m_MetaConstructFunctionCall.callerMetaVariable != null )
+                {
+                    sb.Append(m_MetaConstructFunctionCall.callerMetaVariable.name);
+                    sb.Append(".");
+                    sb.Append(m_MetaConstructFunctionCall.function.name);
+                    sb.Append("(");
+                    if( m_MetaConstructFunctionCall.metaInputParamCollection != null )
+                    {
+                        int count = m_MetaConstructFunctionCall.metaInputParamCollection.metaParamList.Count;
+                        for ( int i = 0; i < count; i++ )
+                        {
+                            var mp = m_MetaConstructFunctionCall.metaInputParamCollection.metaParamList[i];
+                            sb.Append(mp.ToFormatString());
+                            if( i < count - 1 )
+                            {
+                                sb.Append(",");
+                            }
+                        }
+                    }
+                    sb.Append(")");
+                }
                 sb.Append(m_MetaBraceOrBracketStatementsContent?.ToFormatString());
             }
 
@@ -833,7 +853,7 @@ namespace SimpleLanguage.Core
                 return mnoen;
             }
         }
-        public static MetaNewObjectExpressNode CreateNewObjectExpressNodeByCall(FileMetaCallTerm root, MetaType mt, MetaClass omc, MetaBlockStatements mbs, AllowUseConst auc )
+        public static MetaNewObjectExpressNode CreateNewObjectExpressNodeByCall(FileMetaCallTerm root, MetaType mt, MetaClass omc, MetaBlockStatements mbs, AllowUseSettings auc )
         {
             var fmct = (root as FileMetaCallTerm);
             if (fmct == null) return null;

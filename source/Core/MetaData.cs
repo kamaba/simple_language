@@ -48,7 +48,7 @@ namespace SimpleLanguage.Core
         }
         public void CreateMetaVariable()
         {
-            m_MetaVariable = new MetaVariable(m_Name, null, null, new MetaType(this));
+            m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.Member, null, null, new MetaType(this));
 
             MetaVariableManager.instance.AddMetaDataVariable(m_MetaVariable);
         }

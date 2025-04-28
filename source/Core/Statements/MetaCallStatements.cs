@@ -22,18 +22,18 @@ namespace SimpleLanguage.Core.Statements
 
         private MetaCallLink m_MetaCallLink = null;
         private FileMetaCallSyntax m_FileMetaCallSyntax = null;
-        private AllowUseConst m_AllowUseConst = new AllowUseConst();
+        private AllowUseSettings m_AllowUseSettings = new AllowUseSettings();
         public MetaCallStatements(MetaBlockStatements mbs, FileMetaCallSyntax fmcl) : base(mbs)
         {
             m_FileMetaCallSyntax = fmcl;
 
-            m_AllowUseConst.useNotStatic = false;
-            m_AllowUseConst.useNotConst = false;
-            m_AllowUseConst.callConstructFunction = true;
-            m_AllowUseConst.callFunction = true;
+            m_AllowUseSettings.useNotStatic = false;
+            m_AllowUseSettings.useNotConst = false;
+            m_AllowUseSettings.callConstructFunction = true;
+            m_AllowUseSettings.callFunction = true;
 
             m_MetaCallLink = new MetaCallLink(fmcl.variableRef, mbs.ownerMetaClass, mbs);
-            m_MetaCallLink.Parse(m_AllowUseConst);
+            m_MetaCallLink.Parse(m_AllowUseSettings);
             m_MetaCallLink.CalcReturnType();
         }
         public override string ToFormatString()

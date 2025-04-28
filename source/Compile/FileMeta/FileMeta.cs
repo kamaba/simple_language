@@ -234,7 +234,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("Path: " + m_Path + Environment.NewLine );
+            sb.Append("-------------------FileMeta 文件显示 开始 : Path: " + m_Path + "-----------------------" + Environment.NewLine );
             //sb.Append("ImportSyntax" + Environment.NewLine);
             for( int i = 0; i < m_FileImportSyntax.Count; i++ )
             {
@@ -252,6 +252,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             {
                 sb.Append(m_FileMetaClassList[i].ToFormatString() + Environment.NewLine);
             }
+            sb.Append("-------------------FileMeta 文件显示 结束 : -----------------------" + Environment.NewLine);
 
             return sb.ToString();
         }

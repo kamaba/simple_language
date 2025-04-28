@@ -29,24 +29,24 @@ namespace SimpleLanguage.Core
             Link,
             AT
         }
-        public MetaVariable localMetaVariable => m_LocalMetaVariable;
-        public MetaVariable visitMetaVariable => m_VisitMetaVariable;
+        public MetaVariable sourceMetaVariable => m_SourceMetaVariable;
+        public MetaVariable targetMetaVariable => m_TargetMetaVariable;
 
-        MetaVariable m_LocalMetaVariable = null;
-        private EVisitType m_VisitType = EVisitType.AT;
-        MetaVariable m_VisitMetaVariable = null;
+        MetaVariable m_SourceMetaVariable = null;
+        EVisitType m_VisitType = EVisitType.AT;
+        MetaVariable m_TargetMetaVariable = null;
         string m_AtName = "";
 
-        public MetaVisitVariable( MetaVariable lmv, MetaVariable target )
+        public MetaVisitVariable( MetaVariable source, MetaVariable target )
         {
             m_VisitType = EVisitType.Link;
-            m_LocalMetaVariable = lmv;
-            m_VisitMetaVariable = target;
+            m_SourceMetaVariable = source;
+            m_TargetMetaVariable = target;
             m_DefineMetaType = target.metaDefineType;
         }
         public int GetIRMemberIndex()
         {
-            var mmv = m_VisitMetaVariable as MetaMemberVariable;
+            var mmv = m_SourceMetaVariable as MetaMemberVariable;
             if (mmv != null ) 
             {
                 return mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
@@ -58,8 +58,8 @@ namespace SimpleLanguage.Core
             m_Name = _name;
             m_AtName = _name;
             m_OwnerMetaClass = mc;
-            m_OwnerMetaBlockStatements = mbs;
-            m_LocalMetaVariable = lmv;
+            //m_OwnerMetaBlockStatements = mbs;
+            m_SourceMetaVariable = lmv;
             if (lmv.isArray)
             {
                 if (vmv == null && string.IsNullOrEmpty(m_AtName))
@@ -67,9 +67,9 @@ namespace SimpleLanguage.Core
                     Console.WriteLine("Error VisitMetaVariable访问变量访问位置不能同时为空!!");
                     return;
                 }
-                m_VisitMetaVariable = vmv;
+                m_TargetMetaVariable = vmv;
 
-                var gmit = m_LocalMetaVariable.metaDefineType.GetMetaInputTemplateByIndex();
+                var gmit = m_SourceMetaVariable.metaDefineType.GetMetaInputTemplateByIndex();
                 if (gmit == null)
                 {
                     Console.WriteLine("Error 访问的Array中，没有找到模版 名称!!");
@@ -84,13 +84,19 @@ namespace SimpleLanguage.Core
 
             if(m_VisitType == EVisitType.Link)
             {
-                sb.Append("[" + m_VisitMetaVariable.metaDefineType.allName+ "]");
-                sb.Append(m_VisitMetaVariable.name);
+                if(m_SourceMetaVariable != null )
+                {
+                    sb.Append("[" + m_SourceMetaVariable.metaDefineType.allName + "]");
+                    sb.Append(m_SourceMetaVariable.name);
+                    sb.Append( "." );
+                }
+                sb.Append("[" + m_TargetMetaVariable.metaDefineType.allName+ "]");
+                sb.Append(m_TargetMetaVariable.name);
             }
             else
             {
-                sb.Append(m_LocalMetaVariable.name);
-                if (m_LocalMetaVariable.isArray)
+                sb.Append(m_SourceMetaVariable.name);
+                if (m_SourceMetaVariable.isArray)
                 {
                     sb.Append("[");
                     //sb.Append(m_DefineMetaType.ToFormatString());
@@ -100,7 +106,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    sb.Append(m_VisitMetaVariable.name);
+                    sb.Append(m_TargetMetaVariable.name);
                 }
             }
 
@@ -119,11 +125,13 @@ namespace SimpleLanguage.Core
         {
             m_Name = _name;
             m_OwnerMetaClass = mc;
-            m_OwnerMetaBlockStatements = mbs;
+            //m_OwnerMetaBlockStatements = mbs;
             m_LocalMetaVariable = lmv;
             m_OrgMetaDefineType = orgMC;
-            m_IndexMetaVariable = new MetaVariable("index", mbs, mc, new MetaType(CoreMetaClassManager.int32MetaClass));
-            m_ValueMetaVariable = new MetaVariable("value", mbs, mc, new MetaType(orgMC.metaClass));
+            m_IndexMetaVariable = new MetaVariable("index", EVariableFrom.ArrayInner, mbs, mc, new MetaType(CoreMetaClassManager.int32MetaClass));
+            m_ValueMetaVariable = new MetaVariable("value", EVariableFrom.ArrayInner, mbs, mc, new MetaType(orgMC.metaClass));
+            m_IndexMetaVariable.SetPingToken(lmv.pingToken);
+            m_ValueMetaVariable.SetPingToken(lmv.pingToken);
             if (lmv.isArray)
             {
                 var gmit = m_LocalMetaVariable.metaDefineType.GetMetaInputTemplateByIndex();
@@ -300,12 +308,12 @@ namespace SimpleLanguage.Core
 
             if (m_CallerMetaVariable != null)
             {
-                sb.Append(m_CallerMetaVariable.name);
+                sb.Append(m_CallerMetaVariable.name );
             }
 
             if (m_CallerMetaClass != null)
             {
-                sb.Append(m_CallerMetaClass.ToDefineTypeString());
+                sb.Append("[" + m_CallerMetaClass.ToDefineTypeString() + "]");
             }
             sb.Append(".");
             sb.Append(ToCommonString());
@@ -323,15 +331,23 @@ namespace SimpleLanguage.Core
             MethodCall,
             NewMethodCall
         }
-        public string name;
-        public EVisitType visitType;
+        public EVisitType visitType { get; private set; }
+        public MetaVariable variable { get; private set; } = null;
+        public MetaVisitVariable visitVariable { get; private set; } = null;
+        public MetaMethodCall methodCall { get; private set; } = null;
+        public MetaClass callerMetaClass { get; private set; }= null;
+        public MetaBraceOrBracketStatementsContent metaBraceStatementsContent { get; private set; } = null;
 
-        public MetaVariable variable = null;
-        public MetaVisitVariable visitVariable = null;
-        public MetaMethodCall methodCall = null;
-        public MetaClass callerMetaClass;
-        public MetaBraceOrBracketStatementsContent metaBraceStatementsContent = null;
+        public static MetaVisitNode CreateByNewMethodCall(MetaMethodCall _methodCall, MetaBraceOrBracketStatementsContent mb )
+        {
+            MetaVisitNode vn = new MetaVisitNode();
 
+            vn.metaBraceStatementsContent = mb;
+            vn.visitType = EVisitType.NewMethodCall;
+            vn.methodCall = _methodCall;
+
+            return vn;
+        }
         public static MetaVisitNode CreateByMethodCall( MetaMethodCall _methodCall)
         {
             MetaVisitNode vn = new MetaVisitNode();
@@ -375,21 +391,33 @@ namespace SimpleLanguage.Core
                     {
                         return variable.metaDefineType;
                     }
+                default:
+                    {
+                        Console.Write("Error ---------" + visitType.ToString() );
+                    }
+                    break;
             }
             return new MetaType(CoreMetaClassManager.objectMetaClass);
         }
+        public void SetMetaBraceStatementsContent(MetaBraceOrBracketStatementsContent mbbsc )
+        {
+            this.metaBraceStatementsContent = mbbsc;
+        }
         public MetaClass GetMetaClass()
         {
-            if (visitVariable != null)
+            var mt = GetMetaDefineType();
+            if( mt == null )
             {
+                Console.Write("Error");
+                return null;
             }
-            return null;
+            return mt.metaClass;
         }
         public MetaVariable GetRetMetaVariable()
         {
             if( visitVariable != null )
             {
-                return visitVariable.visitMetaVariable;
+                return visitVariable.targetMetaVariable;
             }
             return null;
         }
@@ -422,10 +450,6 @@ namespace SimpleLanguage.Core
             //    return;
             //}
         }
-        public string ToCommonString()
-        {
-            return "";
-        }
         public string ToFormatString()
         {
             StringBuilder sb = new StringBuilder(); 
@@ -434,17 +458,27 @@ namespace SimpleLanguage.Core
             {
                 case EVisitType.MethodCall:
                     {
-                        sb.Append( methodCall.ToFormatString() );
+                        sb.Append(this.methodCall.ToFormatString() );
                     }
                     break;
                 case EVisitType.VisitVariable:
                     {
-                        sb.Append(visitVariable.ToFormatString());
+                        sb.Append(this.visitVariable.ToFormatString());
+                    }
+                    break;
+                case EVisitType.Variable:
+                    {
+                        sb.Append(this.variable.ToFormatString());
+                    }
+                    break;
+                case EVisitType.NewMethodCall:
+                    {
+                        sb.Append("");
                     }
                     break;
                 default:
                     {
-                        sb.Append("MetaVisitCall111");
+                        sb.Append("Error MetaVisitCall Default Parse!");
                     }
                     break;
             }

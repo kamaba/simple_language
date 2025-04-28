@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using static SimpleLanguage.Core.MetaVariable;
 
 namespace SimpleLanguage.Core
 {
@@ -51,7 +52,7 @@ namespace SimpleLanguage.Core
 
             var defineMetaClassType = ClassManager.instance.GetMetaClassByCSharpType(pi.ParameterType);
             MetaType mdt = new MetaType(defineMetaClassType);
-            m_MetaVariable = new MetaVariable( pi.Name, mbs, mc, mdt );
+            m_MetaVariable = new MetaVariable( pi.Name, EVariableFrom.None, mbs, mc, mdt );
         }
     }
 }

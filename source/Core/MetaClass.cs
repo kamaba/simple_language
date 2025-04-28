@@ -43,6 +43,7 @@ namespace SimpleLanguage.Core
         public EType eType => m_Type;
         public bool isInnerDefineInCompile => m_IsInnerDefineCompile;
         public MetaClass extendClass => m_ExtendClass;
+        public int extendLevel => m_ExtendLevel;
         public List<MetaClass> interfaceClass => m_InterfaceClass;
         public bool isTemplateClass { get { return m_MetaTemplateList.Count > 0; } }        //是否是模版类
         public virtual bool isGenTemplate { get { return false; } }
@@ -67,10 +68,6 @@ namespace SimpleLanguage.Core
                 {
                     allMetaMemberVariableList.Add(v.Value);
                 }
-                foreach (var v in m_MetaExtendMemeberVariableDict)
-                {
-                    allMetaMemberVariableList.Add(v.Value);
-                }
                 return allMetaMemberVariableList;
             }
         }
@@ -86,6 +83,7 @@ namespace SimpleLanguage.Core
         protected EType m_Type = EType.None;
         protected Dictionary<Token, FileMetaClass> m_FileMetaClassDict = new Dictionary<Token, FileMetaClass>();
         protected MetaClass m_ExtendClass  = null;
+        protected int m_ExtendLevel = 0;
         protected List<MetaClass> m_InterfaceClass = new List<MetaClass>();
 
         protected List<MetaTemplate> m_MetaTemplateList = new List<MetaTemplate>();
@@ -110,6 +108,7 @@ namespace SimpleLanguage.Core
             m_Type = mc.m_Type;
             m_FileMetaClassDict = mc.m_FileMetaClassDict;
             m_ExtendClass = mc.m_ExtendClass;
+            m_ExtendLevel = m_ExtendClass.m_ExtendLevel + 1;
             m_InterfaceClass = mc.m_InterfaceClass;
             m_ChildrenMetaClassDict = mc.m_ChildrenMetaClassDict;
 
@@ -189,6 +188,30 @@ namespace SimpleLanguage.Core
         }
         public void HandleExtendData()
         {
+            if(m_ExtendClass == null )
+            {
+                return;
+            }
+            foreach (var v in m_ExtendClass.m_MetaMemberVariableDict)
+            {
+                var c = v.Value;
+                if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
+                {
+                    Console.WriteLine($"Error 继承的类:{allName} 在继承的父类{m_ExtendClass.allName} 中已包含:{c.name} ");
+                    continue;
+                }
+                this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
+            }
+            foreach (var v in m_ExtendClass.m_MetaExtendMemeberVariableDict )
+            {
+                var c = v.Value;
+                if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
+                {
+                    Console.WriteLine($"Error 继承的类:{allName} 在继承的父类{m_ExtendClass.allName} 中已包含:{c.name} ");
+                    continue;
+                }
+                this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
+            }
         }
         public void ParseTemplateRelation()
         {
@@ -210,26 +233,26 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        public void ParseMetaMemberVariableDefineType()
+        public void ParseMemberVariableDefineMetaType()
         {
             foreach (var it in m_MetaMemberVariableDict)
             {
-                it.Value.ParseReturnMetaType();
+                it.Value.ParsDefineMetaType();
             }
         }
-        public void ParseMetaMemberFunctionDefineType()
+        public void ParseMemberFunctionDefineMetaType()
         {
             foreach (var it in m_MetaMemberFunctionListDict)
             {
                 foreach( var it2 in it.Value )
                 {
-                    it2.ParseReturnMetaType();
+                    it2.ParsDefineMetaType();
                 }
             }
         }
-        public void CheckInterface()
+        public bool CheckInterface()
         {
-
+            return true;
         }
         public void ParseMetaInConstraint()
         {
@@ -470,6 +493,7 @@ namespace SimpleLanguage.Core
         public void SetExtendClass(MetaClass sec)
         {
             m_ExtendClass = sec;
+            m_ExtendLevel = m_ExtendClass.m_ExtendLevel + 1;
         }
         public bool IsParseMetaClass(MetaClass parentClass, bool isIncludeSelf = true )
         {

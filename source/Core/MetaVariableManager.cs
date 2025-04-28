@@ -27,6 +27,14 @@ namespace SimpleLanguage.Core
         {
             metaMemeberVariableList.Add(mv);
         }
+        //public void AddGlobalMetaVariable( MetaVariable mv )
+        //{
+
+        //}
+        //public MetaVariable GetGlobalMetaVariable( string name )
+        //{
+        //    return null;
+        //}
         public void AddMetaDataVariable(MetaVariable mv)
         {
             metaDataVariableList.Add(mv.name, mv);

@@ -143,6 +143,12 @@ namespace SimpleLanguage.VM.Runtime
                 Console.WriteLine("执行的栈超出范围!!");
                 return null;
             }
+            if(index < 0 )
+            {
+                Console.WriteLine("执行的栈超出范围!!-");
+                return null;
+            }
+
             return m_LocalVariableObjectArray[index];
         }
         public SObject GetArgumentValue( int index )

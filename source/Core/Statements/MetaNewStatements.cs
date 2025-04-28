@@ -20,12 +20,14 @@ namespace SimpleLanguage.Core.Statements
     public partial class MetaNewStatements : MetaStatements
     {
         public MetaVariable metaVariable => m_MetaVariable;
+        public MetaVariable thisVariable => m_ThisVariable;
 
         private FileMetaDefineVariableSyntax m_FileMetaDefineVariableSyntax = null;
         private FileMetaOpAssignSyntax m_FileMetaOpAssignSyntax = null;
         private FileMetaCallSyntax m_FileMetaCallSyntax = null;
 
         private MetaVariable m_MetaVariable = null;
+        private MetaVariable m_ThisVariable = null;
         private MetaExpressNode m_ExpressNode = null;
         private bool m_IsNeedCastStatements = false;
         public MetaNewStatements( MetaBlockStatements mbs ) : base(mbs)
@@ -82,24 +84,24 @@ namespace SimpleLanguage.Core.Statements
                 var fmcd = m_FileMetaDefineVariableSyntax.fileMetaClassDefine;
                 mdt = new MetaType(fmcd, ownerMetaClass);
 
-                m_MetaVariable = new MetaVariable(m_Name, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
-                m_MetaVariable.SetFromMetaNewStatementsCreate(this);
+                m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
+                m_MetaVariable.SetPingToken(fmcd.arrayTokenList[0]);
                 m_OwnerMetaBlockStatements.UpdateMetaVariable(m_MetaVariable);
 
                 fileExpress = m_FileMetaDefineVariableSyntax.express;
             }
             else if (m_FileMetaOpAssignSyntax != null)
             {
-                m_MetaVariable = new MetaVariable(m_Name, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
-                m_MetaVariable.SetFromMetaNewStatementsCreate(this);
+                m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
+                m_MetaVariable.SetPingToken(m_FileMetaOpAssignSyntax.token);
                 m_OwnerMetaBlockStatements.UpdateMetaVariable(m_MetaVariable);
 
                 fileExpress = m_FileMetaOpAssignSyntax.express;
             }
             else if (m_FileMetaCallSyntax!= null )
             {
-                m_MetaVariable = new MetaVariable(m_Name, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
-                m_MetaVariable.SetFromMetaNewStatementsCreate(this);
+                m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
+                m_MetaVariable.SetPingToken(m_FileMetaCallSyntax.token);
                 m_OwnerMetaBlockStatements.UpdateMetaVariable(m_MetaVariable);
             }
             if(m_MetaVariable == null )

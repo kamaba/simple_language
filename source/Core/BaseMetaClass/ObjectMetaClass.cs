@@ -37,8 +37,11 @@ namespace SimpleLanguage.Core.SelfMeta
             //Cast.SetDefineMetaClass(CoreMetaClassManager.int32MetaClass);
             //AddMetaMemberFunction(Cast);
 
-            MetaMemberVariable index = new MetaMemberVariable(this, "id", CoreMetaClassManager.int32MetaClass);
-            AddMetaMemberVariable(index);
+            MetaMemberVariable mmvobjectid = new MetaMemberVariable(this, "objectid", CoreMetaClassManager.int32MetaClass);
+            AddMetaMemberVariable(mmvobjectid);
+
+            //MetaMemberVariable mmvname = new MetaMemberVariable(this, "name", CoreMetaClassManager.stringMetaClass);
+            //AddMetaMemberVariable(mmvname);
 
             MetaMemberFunction __Init__ = new MetaMemberFunction(this, "__Init__");
             AddMetaMemberFunction(__Init__);

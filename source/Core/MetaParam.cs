@@ -233,9 +233,8 @@ namespace SimpleLanguage.Core
             {
                 mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
-            m_MetaVariable = new MetaVariable(fmp.name, mbs, mc, mdt );
-            m_MetaVariable.SetFromMetaDefineParamCreate(this);
-            m_MetaVariable.isArgument = true;
+            m_MetaVariable = new MetaVariable(fmp.name, MetaVariable.EVariableFrom.Argument, mbs, mc, mdt );
+            //m_MetaVariable.SetFromMetaDefineParamCreate(this);
 
             if (m_FileMetaParamter.express != null)
             {
@@ -247,15 +246,14 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
             MetaType mdt = new MetaType(mt);
-            m_MetaVariable = new MetaVariable(_name, mbs, ownerMC, mdt);
-            m_MetaVariable.SetFromMetaDefineParamCreate(this);
-            m_MetaVariable.isArgument = true;
+            m_MetaVariable = new MetaVariable(_name, MetaVariable.EVariableFrom.Argument, mbs, ownerMC, mdt);
+            m_MetaVariable.SetPingToken(this.m_FileMetaParamter.token);
         }
         public MetaDefineParam( string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaClass _defineMetaClass, MetaExpressNode _expressNode )
         {
             MetaType mdt = new MetaType(_defineMetaClass);
-            m_MetaVariable = new MetaVariable(_name, mbs, ownerMC, mdt );
-            m_MetaVariable.SetFromMetaDefineParamCreate(this);
+            m_MetaVariable = new MetaVariable(_name, MetaVariable.EVariableFrom.None, mbs, ownerMC, mdt );
+            m_MetaVariable.SetPingToken(this.m_FileMetaParamter.token);
             m_MetaExpressNode = _expressNode;
         }
         public MetaDefineParam( string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaTemplate mt )
@@ -263,9 +261,8 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
             MetaType mdt = new MetaType(mt);
-            m_MetaVariable = new MetaVariable(_name, mbs, ownerMC, mdt);
-            m_MetaVariable.SetFromMetaDefineParamCreate(this);
-            m_MetaVariable.isArgument = true;
+            m_MetaVariable = new MetaVariable(_name, MetaVariable.EVariableFrom.Argument, mbs, ownerMC, mdt);
+            m_MetaVariable.SetPingToken(this.m_FileMetaParamter?.token);
         }
         public Compile.Token GetToken()
         {
@@ -279,7 +276,7 @@ namespace SimpleLanguage.Core
         {            
             if(m_MetaExpressNode != null )
             {
-                AllowUseConst auc = new AllowUseConst();
+                AllowUseSettings auc = new AllowUseSettings();
                 auc.useNotConst = false;
                 auc.useNotStatic = false;
                 auc.callConstructFunction = true;

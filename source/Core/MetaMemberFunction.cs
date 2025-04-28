@@ -152,9 +152,9 @@ namespace SimpleLanguage.Core
             }
             if ( !isStatic )
             {
-                m_ThisMetaVariable = new MetaVariable( "this_" + GetHashCode().ToString(), null, m_OwnerMetaClass, new MetaType( m_OwnerMetaClass ) );
+                m_ThisMetaVariable = new MetaVariable( "this_" + GetHashCode().ToString(), EVariableFrom.LocalStatement, null, m_OwnerMetaClass, new MetaType( m_OwnerMetaClass ) );
             }
-            m_ReturnMetaVariable = new MetaVariable("return_" + GetHashCode().ToString(), null, m_OwnerMetaClass, m_DefineMetaType);
+            m_ReturnMetaVariable = new MetaVariable("return_" + GetHashCode().ToString(), EVariableFrom.LocalStatement, null, m_OwnerMetaClass, m_DefineMetaType);
         }
 
         public override void SetDeep(int deep)
@@ -162,13 +162,13 @@ namespace SimpleLanguage.Core
             m_Deep = deep;
             m_MetaBlockStatements?.SetDeep(deep);
         }
-        public override Token GetToken()
+        public Token GetToken()
         {
             if( m_FileMetaMemberFunction?.finalToken != null )
             {
                 return m_FileMetaMemberFunction.finalToken;
             }
-            return base.GetToken();
+            return this.pingToken;
         }
         public bool IsEqualWithMMFByNameAndParam( MetaMemberFunction mmf )
         {
@@ -244,7 +244,7 @@ namespace SimpleLanguage.Core
                     mt = mmf_retMV.metaDefineType;
                 }
                 m_DefineMetaType = new MetaType(mt);
-                m_ReturnMetaVariable = new MetaVariable(mmf.returnMetaVariable.name, m_MetaBlockStatements, this.ownerMetaClass, m_DefineMetaType );
+                m_ReturnMetaVariable = new MetaVariable(mmf.returnMetaVariable.name, EVariableFrom.LocalStatement, m_MetaBlockStatements, this.ownerMetaClass, m_DefineMetaType );
 
             }
             if( mmf.metaBlockStatements != null )
@@ -274,7 +274,7 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        public override void ParseReturnMetaType()
+        public override void ParsDefineMetaType()
         {
             if (m_FileMetaMemberFunction != null)
             {
@@ -288,7 +288,7 @@ namespace SimpleLanguage.Core
                     AddMetaDefineTemplate(nmt);
                 }
                 */
-                if (m_FileMetaMemberFunction.returnMetaClass != null)
+                if (m_FileMetaMemberFunction.defineMetaClass != null)
                 {
                     MetaType retMT = null;
                     if (m_ConstructInitFunction)
@@ -297,7 +297,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        FileMetaClassDefine cmr = m_FileMetaMemberFunction.returnMetaClass;
+                        FileMetaClassDefine cmr = m_FileMetaMemberFunction.defineMetaClass;
 
                         string templateName = cmr.name;
                         var getMetaTemplate = m_OwnerMetaClass.GetTemplateMetaClassByName(templateName);
