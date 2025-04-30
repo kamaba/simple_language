@@ -58,7 +58,6 @@ namespace SimpleLanguage.Core
             m_Name = _name;
             m_AtName = _name;
             m_OwnerMetaClass = mc;
-            //m_OwnerMetaBlockStatements = mbs;
             m_SourceMetaVariable = lmv;
             if (lmv.isArray)
             {
@@ -130,8 +129,8 @@ namespace SimpleLanguage.Core
             m_OrgMetaDefineType = orgMC;
             m_IndexMetaVariable = new MetaVariable("index", EVariableFrom.ArrayInner, mbs, mc, new MetaType(CoreMetaClassManager.int32MetaClass));
             m_ValueMetaVariable = new MetaVariable("value", EVariableFrom.ArrayInner, mbs, mc, new MetaType(orgMC.metaClass));
-            m_IndexMetaVariable.SetPingToken(lmv.pingToken);
-            m_ValueMetaVariable.SetPingToken(lmv.pingToken);
+            m_IndexMetaVariable.AddPingToken(lmv.pingToken);
+            m_ValueMetaVariable.AddPingToken(lmv.pingToken);
             if (lmv.isArray)
             {
                 var gmit = m_LocalMetaVariable.metaDefineType.GetMetaInputTemplateByIndex();
@@ -328,7 +327,7 @@ namespace SimpleLanguage.Core
             Variable,
             VisitVariable,
             IteratorVariable,
-            MethodCall,
+            MethodCall, 
             NewMethodCall
         }
         public EVisitType visitType { get; private set; }
@@ -415,9 +414,25 @@ namespace SimpleLanguage.Core
         }
         public MetaVariable GetRetMetaVariable()
         {
-            if( visitVariable != null )
+            switch( visitType )
             {
-                return visitVariable.targetMetaVariable;
+                case EVisitType.Variable:
+                    {
+                        return variable;
+                    }
+                case EVisitType.MethodCall:
+                    {
+                        return methodCall.function.returnMetaVariable;
+                    }
+                case EVisitType.NewMethodCall:
+                    {
+                        return methodCall.function.thisMetaVariable;
+                    }
+                default:
+                    {
+                        Console.WriteLine("Error MetaVisiCall IsNull!");
+                    }
+                    break;
             }
             return null;
         }

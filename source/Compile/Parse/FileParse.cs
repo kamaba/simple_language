@@ -8,6 +8,7 @@
 
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core;
+using SimpleLanguage.Parse;
 using SimpleLanguage.source.Compile.Process;
 using System;
 using System.IO;
@@ -51,12 +52,14 @@ namespace SimpleLanguage.Compile.Parse
         }
         public bool IsExists()
         {
-            return File.Exists(filePath);
+            string realpath = Path.Combine(ProjectManager.projectPath, filePath);
+            return File.Exists(realpath);
         }
         public bool LoadFile()
         {
             m_FileCompileState.SetLoadState( FileCompileState.ELoadState.LoadStart );
-            using (var stream = File.OpenRead(filePath))
+            string realpath = Path.Combine(ProjectManager.projectPath, filePath);
+            using (var stream = File.OpenRead(realpath))
             {
                 m_FileCompileState.SetLoadState(FileCompileState.ELoadState.Loading );
                 fileSize = stream.Length;

@@ -228,17 +228,22 @@ namespace SimpleLanguage.Core
         private MetaBlockStatements m_OwnerMetaBlockStatements = null;
         private MetaType m_DefineMetaType = null;
         private EStatementsContentType m_ContentType = EStatementsContentType.None;
-        public MetaBraceOrBracketStatementsContent(FileMetaBraceTerm fileMetaBraceTerm, MetaBlockStatements mbs, MetaClass mc )
+        private bool m_IsDynamicClass = false;
+        public MetaBraceOrBracketStatementsContent( bool isDynamicClass, FileMetaBraceTerm fileMetaBraceTerm, MetaBlockStatements mbs, MetaClass mc )
         {
             m_FileMetaBraceTerm = fileMetaBraceTerm;
             m_OwnerMetaBlockStatements = mbs;
             m_OwnerMetaClass = mc;
+            m_IsDynamicClass = isDynamicClass;
+
+            m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
         }
-        public MetaBraceOrBracketStatementsContent(FileMetaBracketTerm fileMetaBracketTerm, MetaBlockStatements mbs, MetaClass mc)
+        public MetaBraceOrBracketStatementsContent(bool isDynamicClass, FileMetaBracketTerm fileMetaBracketTerm, MetaBlockStatements mbs, MetaClass mc)
         {
             m_FileMetaBracketTerm = fileMetaBracketTerm;
             m_OwnerMetaBlockStatements = mbs;
             m_OwnerMetaClass = mc;
+            m_IsDynamicClass = isDynamicClass;
         }
         public void SetMetaType( MetaType mt )
         {
@@ -275,7 +280,7 @@ namespace SimpleLanguage.Core
                 }
                 if( m_FileMetaBraceTerm.fileMetaAssignSyntaxList != null && m_FileMetaBraceTerm.fileMetaAssignSyntaxList.Count > 0 )
                 {
-                    if (m_DefineMetaType.metaClass == CoreMetaClassManager.objectMetaClass)
+                    if (m_IsDynamicClass)           //如果动态类，则认为该次构建为动态构建
                     {
                         //m_MetaDefineType.SetDynamicClass(true);  ??
 
@@ -581,7 +586,7 @@ namespace SimpleLanguage.Core
                 if (fmbt != null)
                 {
                     Console.WriteLine("Error 待测试!!!");
-                    m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fmbt, m_OwnerMetaBlockStatements, m_OwnerMetaClass);
+                    m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(false, fmbt, m_OwnerMetaBlockStatements, m_OwnerMetaClass);
                     m_MetaBraceOrBracketStatementsContent.Parse();
                     if (fmbt.isArray)
                     {
@@ -648,7 +653,7 @@ namespace SimpleLanguage.Core
         // Class1 c = { a = 20, b = 20 };  => Class1 c = Class1(); c.a = 20; c.b = 20;
         public MetaNewObjectExpressNode( FileMetaBraceTerm fmbt, MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs )
         {
-            m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fmbt, m_OwnerMetaBlockStatements, m_OwnerMetaClass );
+            m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(false, fmbt, m_OwnerMetaBlockStatements, m_OwnerMetaClass );
             m_OwnerMetaClass = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
             m_MetaDefineType = new MetaType(mt);
@@ -684,7 +689,7 @@ namespace SimpleLanguage.Core
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
-            m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fmbt, m_OwnerMetaBlockStatements, m_OwnerMetaClass);
+            m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(false, fmbt, m_OwnerMetaBlockStatements, m_OwnerMetaClass);
             m_MetaBraceOrBracketStatementsContent.Parse();
             MetaClass inputType = m_MetaBraceOrBracketStatementsContent.GetMaxLevelMetaClassType();
 

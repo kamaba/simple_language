@@ -84,10 +84,10 @@ namespace SimpleLanguage.Core.Statements
                 {
                     m_Express.CalcReturnType();
                     m_MetaAssignManager = new MetaAssignManager( m_Express, m_ThenMetaStatements, new MetaType(CoreMetaClassManager.booleanMetaClass));
-                    m_BoolConditionVariable = m_MetaAssignManager.metaVariable;
+                    m_BoolConditionVariable = m_MetaAssignManager.judgmentValueMetaVariable;
                     if( m_MetaAssignManager.isNeedSetMetaVariable )
                     {
-                        m_ThenMetaStatements.UpdateMetaVariable(m_BoolConditionVariable);
+                        m_ThenMetaStatements.UpdateMetaVariableDict(m_BoolConditionVariable);
                     }
                 }
             }
@@ -159,7 +159,16 @@ namespace SimpleLanguage.Core.Statements
             {
                 mdt = m_MetaVariable.metaDefineType;
             }
-            var express = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements( m_OwnerMetaBlockStatements, mdt, m_FileMetaKeyIfSyntax.ifExpressSyntax.conditionExpress );
+            ExpressManager.CreateExpressParam cep = new ExpressManager.CreateExpressParam()
+            {
+                mbs = m_OwnerMetaBlockStatements,
+                mdt = mdt,
+                fme = m_FileMetaKeyIfSyntax.ifExpressSyntax.conditionExpress,
+                isStatic = false,
+                isConst = false,
+                parsefrom = EParseFrom.StatementRightExpress
+            };
+            var express = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep );
 
             MetaIfStatements.MetaElseIfStatements msis = new MetaIfStatements.MetaElseIfStatements(m_OwnerMetaBlockStatements, m_FileMetaKeyIfSyntax.ifExpressSyntax, express);
             AddIfEslseStateStatements(msis, IfElseState.If );
@@ -172,7 +181,16 @@ namespace SimpleLanguage.Core.Statements
             {
                 var fmsthen = m_FileMetaKeyIfSyntax.elseIfExpressSyntax[i];
 
-                var express2 = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(m_OwnerMetaBlockStatements, mdt, fmsthen.conditionExpress );
+                ExpressManager.CreateExpressParam cep2 = new ExpressManager.CreateExpressParam()
+                {
+                    mbs = m_OwnerMetaBlockStatements,
+                    mdt = mdt,
+                    fme = fmsthen.conditionExpress,
+                    isStatic = false,
+                    isConst = false,
+                    parsefrom = EParseFrom.StatementRightExpress
+                };
+                var express2 = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
 
                 MetaIfStatements.MetaElseIfStatements msis2 = new MetaIfStatements.MetaElseIfStatements(m_OwnerMetaBlockStatements, fmsthen, express2 );
                 AddIfEslseStateStatements(msis2, IfElseState.ElseIf );

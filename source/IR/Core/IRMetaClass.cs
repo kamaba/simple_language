@@ -37,6 +37,7 @@ namespace SimpleLanguage.Core
                 if (m_LocalMetaMemberVariables[i] == mmv)
                     return i;
             }
+            Console.WriteLine("SVM Error 没有找本地成员变量中找到相关局部定义变量!");
             return -1;
         }
         public void CalcAllocSize()

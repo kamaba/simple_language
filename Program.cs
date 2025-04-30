@@ -65,7 +65,7 @@ namespace SimpleLanguage
             MetaExpressNode M;
 
             CommandInputArgs inputArgs = new CommandInputArgs(args);
-            ProjectManager.Run("BaseTest\\test1.sp", inputArgs );
+            ProjectManager.Run( "../../../test/BaseTest", inputArgs );
             Console.ReadKey();            
         }
     }

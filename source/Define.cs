@@ -219,6 +219,8 @@ namespace SimpleLanguage
         Enum,
         /// <summary> data </summary>
         Data,
+        /// <summary> dynamic </summary>
+        Dynamic,
         /// <summary> break </summary>
         Break,
         /// <summary> next </summary>

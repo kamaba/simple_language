@@ -41,19 +41,20 @@ namespace SimpleLanguage.Core
         public EVariableFrom variableFrom => m_VariableFrom;
         public MetaType metaDefineType => m_DefineMetaType;
         public MetaClass ownerMetaClass => m_OwnerMetaClass;
-        public Token pingToken => m_PingToken;
-        //public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
+        public Token pingToken => m_PintTokenList.Count > 0 ? m_PintTokenList[0] : null;
 
         protected MetaClass m_OwnerMetaClass = null;
         protected MetaType m_DefineMetaType = null;
+        protected EVariableFrom m_VariableFrom;
+        protected List<Token> m_PintTokenList = new List<Token>();
+        //用来存放扩展包含变量
+        protected Dictionary<string, MetaVariable> m_MetaVariableDict = new Dictionary<string, MetaVariable>();
+
         //protected MetaNewStatements m_FromMetaNewStatementsCreate = null;
         //protected MetaDefineParam m_FromMetaDefineParamCreate = null;
         //protected MetaExpressNode m_FromExpressNodeCreate = null;
         //protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
-        protected EVariableFrom m_VariableFrom;
-        protected Token m_PingToken;
-        //用来存放扩展包含变量
-        protected Dictionary<string, MetaVariable> m_MetaVariableDict = new Dictionary<string, MetaVariable>();
+        //public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
         protected MetaVariable() { }
         public MetaVariable( MetaVariable mv )
         {
@@ -62,7 +63,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = mv.m_OwnerMetaClass;
             //m_OwnerMetaBlockStatements = mv.m_OwnerMetaBlockStatements;
             m_MetaVariableDict = mv.m_MetaVariableDict;
-            m_PingToken = mv.m_PingToken;
+            m_PintTokenList = mv.m_PintTokenList;
 
             isStatic = mv.isStatic;
             isConst = mv.isConst;
@@ -84,14 +85,29 @@ namespace SimpleLanguage.Core
         {
             m_OwnerMetaClass = ownerclass;
         }
-        public void SetPingToken( string path, int beginline, int beginpos, int endline, int endpos )
+        public void AddPingToken( string path, int beginline, int beginpos, int endline, int endpos )
         {
-            m_PingToken = new Token(path, ETokenType.None, "", beginline, beginpos);
-            m_PingToken.SetSrouceEnd( endline, endpos );
+            var pingToken = new Token(path, ETokenType.None, "", beginline, beginpos);
+            pingToken.SetSrouceEnd( endline, endpos );
+
+            var find1 = m_PintTokenList.Find( a=> a.sourceBeginLine == beginline && a.sourceBeginChar == beginpos );
+            if( find1 == null )
+            {
+                m_PintTokenList.Add(pingToken);
+            }
         }
-        public void SetPingToken( Token token )
+        public void AddPingToken( Token token )
         {
-            m_PingToken = token;
+            var find1 = m_PintTokenList.Find(
+                a => a.sourceBeginLine == token.sourceBeginLine
+                && a.sourceBeginChar == token.sourceBeginChar
+                && a.sourceEndLine == token.sourceEndLine
+                && a.sourceEndChar == token.sourceEndChar
+                && a.path == token.path );
+            if (find1 == null)
+            {
+                m_PintTokenList.Add(token);
+            }
         }
         public void SetDefineMetaClass(MetaClass defineClass)
         {

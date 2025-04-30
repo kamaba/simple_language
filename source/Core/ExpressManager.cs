@@ -182,10 +182,21 @@ namespace SimpleLanguage.Core
             }
             return men;
         }
-        public MetaExpressNode CreateExpressNodeInMetaFunctionCommonStatements(MetaBlockStatements mbs, MetaType mdt, FileMetaBaseTerm fme, bool isStatic = false, bool isConst = false )
+        public class CreateExpressParam
         {
-            MetaClass ownerClass = mbs?.ownerMetaClass;
-            var root = fme.root;
+            public MetaBlockStatements mbs;
+            public MetaType mdt;
+            public FileMetaBaseTerm fme;
+            public bool isStatic = false;
+            public bool isConst = false;
+            public bool isDynamicClass = false;
+            public EParseFrom parsefrom = EParseFrom.None;
+
+        }
+        public MetaExpressNode CreateExpressNodeInMetaFunctionCommonStatements(CreateExpressParam cep )
+        {
+            MetaClass ownerClass = cep.mbs?.ownerMetaClass;
+            var root = cep.fme.root;
             if (root.left == null && root.right == null)
             {
                 MetaExpressNode men = null;
@@ -195,7 +206,7 @@ namespace SimpleLanguage.Core
                         {
                             if( fmcvt.token.type == ETokenType.NumberArrayLink )
                             {
-                                MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(fmcvt, ownerClass, mbs);
+                                MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(fmcvt, ownerClass, cep.mbs);
 
                                 return mnoen;
                             }
@@ -208,26 +219,27 @@ namespace SimpleLanguage.Core
                     case FileMetaCallTerm fmct:
                         {
                             var auc = new AllowUseSettings();
-                            auc.useNotStatic = !isStatic;
-                            auc.useNotConst = isConst;
+                            auc.useNotStatic = !cep.isStatic;
+                            auc.useNotConst = cep.isConst;
+                            auc.parseFrom = cep.parsefrom;
 
-                            MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByCall((root as FileMetaCallTerm), mdt, ownerClass, mbs, auc );
+                            MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByCall((root as FileMetaCallTerm), cep.mdt, ownerClass, cep.mbs, auc );
                             if (mnoen != null)
                                 return mnoen;
 
-                            MetaCallExpressNode men2 = new MetaCallExpressNode( fmct.callLink, ownerClass, mbs ); 
+                            MetaCallExpressNode men2 = new MetaCallExpressNode( fmct.callLink, ownerClass, cep.mbs ); 
                             men = men2;
                         }
                         break;
                     case FileMetaBraceTerm fmbt:
                         {
-                            men = new MetaNewObjectExpressNode(fmbt, mdt, ownerClass, mbs);
+                            men = new MetaNewObjectExpressNode(fmbt, cep.mdt, ownerClass, cep.mbs );
                         }
                         break;
                     case FileMetaParTerm fmpt:
                         {
                             //Console.WriteLine("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
-                            MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByPar((root as FileMetaParTerm), mdt, ownerClass, mbs);
+                            MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByPar((root as FileMetaParTerm), cep.mdt, ownerClass, cep.mbs);
                             if (mnoen != null)
                                 return mnoen;
 
@@ -237,14 +249,14 @@ namespace SimpleLanguage.Core
                     case FileMetaTermExpress fmte:
                         {
                             //Console.WriteLine("Error CreateExpressNode 创建表达项不能为符号");
-                            men = CreateExpressNode(ownerClass, mbs, mdt, fmte);
+                            men = CreateExpressNode(ownerClass, cep.mbs, cep.mdt, fmte);
                         }
                         break;
                     case FileMetaBracketTerm fmbt:
                         {
                             //Console.WriteLine("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
                             
-                            MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode((root as FileMetaBracketTerm),  ownerClass, mbs );
+                            MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode((root as FileMetaBracketTerm),  ownerClass, cep.mbs );
                             if (mnoen != null)
                                 return mnoen;
                         }
@@ -256,23 +268,23 @@ namespace SimpleLanguage.Core
                 if( men != null )
                 {
                     AllowUseSettings auc = new AllowUseSettings();
-                    auc.useNotStatic = !isStatic;
-                    auc.useNotConst = isConst;
+                    auc.useNotStatic = !cep.isStatic;
+                    auc.useNotConst = cep.isConst;
                     men.Parse(auc);
                     return men;
                 }
             }
 
-            MetaExpressNode mn = VisitFileMetaExpress(ownerClass, mbs, mdt, root);
+            MetaExpressNode mn = VisitFileMetaExpress(ownerClass, cep.mbs, cep.mdt, root);
             AllowUseSettings auc2 = new AllowUseSettings();
-            auc2.useNotStatic = !isStatic;
-            auc2.useNotConst = isConst;
+            auc2.useNotStatic = !cep.isStatic;
+            auc2.useNotConst = cep.isConst;
             mn.Parse(auc2);
 
             return mn;
         }
 
-        public static MetaExpressNode CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(FileMetaBaseTerm fmte, MetaBlockStatements mbs, MetaType mdt )
+        public static MetaExpressNode CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch( bool isDynamicClass, FileMetaBaseTerm fmte, MetaBlockStatements mbs, MetaType mdt )
         {
             MetaClass mc = mbs.ownerMetaClass;
 
@@ -305,7 +317,8 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    return ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(mbs, mdt, fmte, false, false );
+                    CreateExpressParam cep = new CreateExpressParam() { mbs = mbs, mdt = mdt, fme = fmte, isStatic = false, isConst = false, isDynamicClass = false };
+                    return ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep);
                 }
             }
             else

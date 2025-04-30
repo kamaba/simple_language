@@ -20,20 +20,16 @@ namespace SimpleLanguage.Core.Statements
 {
     public class MetaAssignManager
     {
-        public MetaVariable metaVariable => m_MetaVariable;
+        public MetaVariable judgmentValueMetaVariable => m_JudgmentValueMetaVariable;
         public MetaExpressNode expressNode => m_ExpressNode;
         public bool isNeedSetMetaVariable => m_IsNeedSetMetaVariable;
 
         private MetaExpressNode m_ExpressNode = null;
-        private MetaVariable m_MetaVariable = null;
+        private MetaVariable m_JudgmentValueMetaVariable = null;
         private bool m_IsNeedSetMetaVariable = false;
         private MetaBlockStatements m_MetaBlockStatements = null;
         private MetaType m_MetaDefineType = null;
 
-        public MetaAssignManager( MetaCallLink mcl, MetaExpressNode expressNode, MetaBlockStatements mbs )
-        {
-
-        }
         public MetaAssignManager(MetaExpressNode expressNode, MetaBlockStatements mbs, MetaType defaultMdt )
         {
             m_ExpressNode = expressNode;
@@ -51,26 +47,36 @@ namespace SimpleLanguage.Core.Statements
                         var retMc = mcen.GetReturnMetaClass();
                         if (retMc == CoreMetaClassManager.booleanMetaClass)
                         {
-                            m_MetaVariable = mcen.GetMetaVariable();
+                            m_JudgmentValueMetaVariable = mcen.GetMetaVariable();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Error 返回的判断语句: " + mcen.ToTokenString() + "   并非是boolean类型!");
                         }
                     }
                     break;
                 case MetaConstExpressNode mconen:
                     {
+                        Console.WriteLine("Error -------------------------------------------");
                     }
                     break;
                 case MetaOpExpressNode moen:
                     {
-
+                        Console.WriteLine("Error -------------------------------------------");
+                    }
+                    break;
+                default:
+                    {
+                        Console.WriteLine("Error -------------------------------------------");
                     }
                     break;
             }
 
-            if (m_MetaVariable == null)
+            if (m_JudgmentValueMetaVariable == null)
             {
                 m_IsNeedSetMetaVariable = true;
-                m_MetaVariable = new MetaVariable("autocreate_" + GetHashCode(), MetaVariable.EVariableFrom.LocalStatement, m_MetaBlockStatements, m_MetaBlockStatements.ownerMetaClass, m_MetaDefineType);
-                //m_MetaVariable.SetFromExpressNodeCreate(m_ExpressNode);
+                m_JudgmentValueMetaVariable = new MetaVariable("autocreate_" + GetHashCode(), MetaVariable.EVariableFrom.LocalStatement, m_MetaBlockStatements, m_MetaBlockStatements.ownerMetaClass, m_MetaDefineType);
+                m_JudgmentValueMetaVariable.AddPingToken(m_ExpressNode.GetToken());
             }
         }
     }
@@ -243,7 +249,7 @@ namespace SimpleLanguage.Core.Statements
 
             if (m_FileMetaOpAssignSyntax.express != null)
             {
-                m_ExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch( m_FileMetaOpAssignSyntax.express, m_OwnerMetaBlockStatements, expressMdt);
+                m_ExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(m_FileMetaOpAssignSyntax.dynamicToken != null, m_FileMetaOpAssignSyntax.express, m_OwnerMetaBlockStatements, expressMdt);
                 
                 if (m_ExpressNode == null)
                 {

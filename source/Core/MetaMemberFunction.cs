@@ -130,7 +130,7 @@ namespace SimpleLanguage.Core
         }
         void Init()
         {
-            m_ConstructInitFunction = name == "__Init__";
+            m_ConstructInitFunction = name == "_init_";
             if(m_DefineMetaType == null )
             {
                 if (m_ConstructInitFunction)
@@ -152,9 +152,9 @@ namespace SimpleLanguage.Core
             }
             if ( !isStatic )
             {
-                m_ThisMetaVariable = new MetaVariable( "this_" + GetHashCode().ToString(), EVariableFrom.LocalStatement, null, m_OwnerMetaClass, new MetaType( m_OwnerMetaClass ) );
+                m_ThisMetaVariable = new MetaVariable( "this_" + GetHashCode().ToString(), EVariableFrom.Argument, null, m_OwnerMetaClass, new MetaType( m_OwnerMetaClass ) );
             }
-            m_ReturnMetaVariable = new MetaVariable("return_" + GetHashCode().ToString(), EVariableFrom.LocalStatement, null, m_OwnerMetaClass, m_DefineMetaType);
+            m_ReturnMetaVariable = new MetaVariable("return_" + GetHashCode().ToString(), EVariableFrom.Argument, null, m_OwnerMetaClass, m_DefineMetaType);
         }
 
         public override void SetDeep(int deep)
@@ -354,6 +354,10 @@ namespace SimpleLanguage.Core
         {
             if( m_FileMetaMemberFunction != null )
             {
+                if(m_ThisMetaVariable != null )
+                {
+                    m_ThisMetaVariable.AddPingToken(m_FileMetaMemberFunction.token);
+                }
                 if (m_FileMetaMemberFunction.fileMetaBlockSyntax != null)
                 {
                     Token beginToken = m_FileMetaMemberFunction.fileMetaBlockSyntax.beginBlock;

@@ -43,8 +43,8 @@ namespace SimpleLanguage.Core.SelfMeta
             //MetaMemberVariable mmvname = new MetaMemberVariable(this, "name", CoreMetaClassManager.stringMetaClass);
             //AddMetaMemberVariable(mmvname);
 
-            MetaMemberFunction __Init__ = new MetaMemberFunction(this, "__Init__");
-            AddMetaMemberFunction(__Init__);
+            MetaMemberFunction _init_ = new MetaMemberFunction(this, "_init_");
+            AddMetaMemberFunction(_init_);
 
             MetaMemberFunction GetHashCode = new MetaMemberFunction(this, "GetHashCode");
             GetHashCode.SetDefineMetaClass(CoreMetaClassManager.int32MetaClass);

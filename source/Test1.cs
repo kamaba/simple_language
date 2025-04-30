@@ -67,13 +67,20 @@ namespace Simple
                     m1 = m1++ + +2- -20;
                     n2.c2.baba = 100;
                 }
+                public NB( NNN2 n2 )
+                {
+
+                }
             }
         }
         namespace NNB
         {
             public partial class  NC
             {
-
+                static void Test()
+                {
+                    new NB(new NNN2());
+                }
             }
             namespace NNB2
             {

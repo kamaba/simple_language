@@ -26,7 +26,17 @@ namespace SimpleLanguage.Core.Statements
 
             MetaType mdt = new MetaType( CoreMetaClassManager.objectMetaClass );
 
-            m_Express = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(m_OwnerMetaBlockStatements, mdt, m_FileMetaReturnSyntax.returnExpress, false, false );
+
+            ExpressManager.CreateExpressParam cep2 = new ExpressManager.CreateExpressParam()
+            {
+                mbs = m_OwnerMetaBlockStatements,
+                mdt = mdt,
+                fme = m_FileMetaReturnSyntax.returnExpress,
+                isStatic = false,
+                isConst = false,
+                parsefrom = EParseFrom.StatementRightExpress
+            };
+            m_Express = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
             if (m_Express != null)
             {
                 m_Express.CalcReturnType();
@@ -73,7 +83,17 @@ namespace SimpleLanguage.Core.Statements
             if (m_FileMetaReturnSyntax?.returnExpress != null)
             {
                 MetaType mdt = new MetaType(returnMetaClass);
-                m_Express = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(m_OwnerMetaBlockStatements, mdt, m_FileMetaReturnSyntax.returnExpress, false, false );
+
+                ExpressManager.CreateExpressParam cep2 = new ExpressManager.CreateExpressParam()
+                {
+                    mbs = m_OwnerMetaBlockStatements,
+                    mdt = mdt,
+                    fme = m_FileMetaReturnSyntax.returnExpress,
+                    isStatic = false,
+                    isConst = false,
+                    parsefrom = EParseFrom.StatementRightExpress
+                };
+                m_Express = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
             }
             if (m_Express != null)
             {

@@ -155,7 +155,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_ArgumentObjectArray.Length)
             {
-                Console.WriteLine("执行的参数超出范围!!");
+                Console.WriteLine($"SVM Error FunctionName:{this.id} 执行的参数超出范围!!");
                 return null;
             }
             return m_ArgumentObjectArray[index];

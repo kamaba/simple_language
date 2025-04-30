@@ -292,7 +292,7 @@ namespace SimpleLanguage.Core
                             m_Name = m_FileMetaMemeberData.name;
                             m_MemberDataType = EMemberDataType.MemberData;
                             m_Express = new MetaCallExpressNode(m_FileMetaMemeberData.fileMetaCallTermValue.callLink, null, null);
-                            m_Express.Parse(new AllowUseSettings());
+                            m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
                             m_DefineMetaType = m_Express.GetReturnMetaDefineType();
                             if (m_DefineMetaType == null)
                             {
@@ -508,6 +508,7 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = mmv.m_DefineMetaType;
             m_IsInnerDefine = mmv.m_IsInnerDefine;
             m_Express = mmv.m_Express;
+            m_VariableFrom = EVariableFrom.Member;
         }
         public MetaMemberVariable(MetaClass mc, string _name)
         {
@@ -515,6 +516,7 @@ namespace SimpleLanguage.Core
             m_FromType = EFromType.Manual;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             m_IsInnerDefine = true;
+            m_VariableFrom = EVariableFrom.Member;
 
             SetOwnerMetaClass(mc);
         } 
@@ -524,6 +526,7 @@ namespace SimpleLanguage.Core
             m_FromType = EFromType.Manual;
             m_DefineMetaType = new MetaType( mt );
             m_IsInnerDefine = true;
+            m_VariableFrom = EVariableFrom.Member;
 
             SetOwnerMetaClass(ownerMc);
         }
@@ -693,6 +696,7 @@ namespace SimpleLanguage.Core
             m_FromType = EFromType.Manual;
             m_DefineMetaType = new MetaType(_defineTypeClass);
             m_DefineMetaType.SetMetaClass(_defineTypeClass);
+            m_VariableFrom = EVariableFrom.Member;
 
             SetOwnerMetaClass(mc);
         }
@@ -701,12 +705,14 @@ namespace SimpleLanguage.Core
             m_FileMetaMemeberVariable = fmmv;
             m_IsEnumValue = isEnum;
             m_Name = fmmv.name;
+            AddPingToken( fmmv.nameToken );
             m_Index = mc.metaMemberVariableDict.Count;
             fmmv.SetMetaMemberVariable(this);
             m_FromType = EFromType.Code;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             isStatic = m_FileMetaMemeberVariable?.staticToken != null;
-            if( isStatic && isEnum )
+            m_VariableFrom = EVariableFrom.Member;
+            if ( isStatic && isEnum )
             {
                 Console.WriteLine("Error ENum中，不允许有静态关键字，而是全部是静态关键字!!");
             }
@@ -728,6 +734,8 @@ namespace SimpleLanguage.Core
             m_IsInnerDefine = mmv.m_IsInnerDefine;
             m_FromType = mmv.m_FromType;
             m_DefineMetaType = mmv.m_DefineMetaType;
+            m_VariableFrom = EVariableFrom.Member;
+            m_PintTokenList = mmv.m_PintTokenList;
 
             SetOwnerMetaClass(mtc);
         }

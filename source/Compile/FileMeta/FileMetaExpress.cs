@@ -543,8 +543,10 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             for (int j = 0; j < m_Node.childList.Count; j++)
             {
                 var c2node = m_Node.childList[j];
-                if (c2node.nodeType == ENodeType.Comma
-                    || c2node.nodeType == ENodeType.SemiColon)
+                if (
+                    c2node.nodeType == ENodeType.Comma
+                    //|| c2node.nodeType == ENodeType.SemiColon
+                    )
                 {
                     nodeListList.Add(tempNodeList);
                     tempNodeList = new List<Node>();
@@ -638,7 +640,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     {
                         FileMetaCallLink fmcl = new FileMetaCallLink(m_FileMeta, defineNodeList[0]);
                         FileMetaBaseTerm fmel = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
-                        FileMetaOpAssignSyntax fmoas = new FileMetaOpAssignSyntax(fmcl, assignToken, fmel, true);
+                        FileMetaOpAssignSyntax fmoas = new FileMetaOpAssignSyntax(fmcl, assignToken, null, fmel, true);
                         fmoas.isAppendSemiColon = false;
                         m_FileMetaAssignSyntaxList.Add(fmoas);
                     }
