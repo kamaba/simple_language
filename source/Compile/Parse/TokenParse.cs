@@ -579,6 +579,7 @@ namespace SimpleLanguage.Compile.Parse
                 case ETokenType.Enum:
                 case ETokenType.Data:
                 case ETokenType.Class:
+                case ETokenType.Dynamic:
                     {
                         AddKeyNode(token);
                     }

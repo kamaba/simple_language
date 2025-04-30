@@ -76,11 +76,11 @@ namespace SimpleLanguage.Core.SelfMeta
         }
         public void AddCoreFunction()
         {
-            //MetaMemberFunction __Init__ = new MetaMemberFunction(this, "__Init__");
+            //MetaMemberFunction _init_ = new MetaMemberFunction(this, "_init_");
             //MetaExpressNode men = new MetaConstExpressNode(EType.Int32, 0);
-            //__Init__.AddMetaDefineParam(new MetaDefineParam("_count", this, null, CoreMetaClassManager.int32MetaClass, men));
-            //__Init__.AddMetaDefineParam(new MetaDefineParam("bound1", this, null, CoreMetaClassManager.int32MetaClass, men));
-            //AddInnerMetaMemberFunction(__Init__);
+            //_init_.AddMetaDefineParam(new MetaDefineParam("_count", this, null, CoreMetaClassManager.int32MetaClass, men));
+            //_init_.AddMetaDefineParam(new MetaDefineParam("bound1", this, null, CoreMetaClassManager.int32MetaClass, men));
+            //AddInnerMetaMemberFunction(_init_);
 
             //////Array.AddMetaDefineParam(new MetaDefineParam("bound2", this, null, CoreMetaClassManager.int16MetaClass, men));
             //////Array.AddMetaDefineParam(new MetaDefineParam("bound3", this, null, CoreMetaClassManager.int16MetaClass, men));

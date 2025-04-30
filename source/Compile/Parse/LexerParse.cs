@@ -1178,6 +1178,9 @@ namespace SimpleLanguage.Compile.Parse
                     tokenType = ETokenType.Data;
                     extend = EType.Data;
                     break;
+                case "dynamic":
+                    tokenType = ETokenType.Dynamic;
+                    break;
                 case "void":
                     tokenType = ETokenType.Void;
                     break;

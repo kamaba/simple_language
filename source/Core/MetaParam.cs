@@ -78,7 +78,16 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             m_OwnerMetaClass = mc;
 
-            m_Express = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(m_OwnerMetaBlockStatements, new MetaType(CoreMetaClassManager.objectMetaClass), m_FileInputParamNode.express, false, false );
+            ExpressManager.CreateExpressParam cep = new ExpressManager.CreateExpressParam()
+            {
+                mbs = m_OwnerMetaBlockStatements,
+                mdt = new MetaType(CoreMetaClassManager.objectMetaClass),
+                fme = m_FileInputParamNode.express,
+                isStatic = false,
+                isConst = false,
+                parsefrom = EParseFrom.InputParamExpress
+            };
+            m_Express = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep);
         }
         public MetaInputParam( MetaExpressNode inputExpress )
         {
@@ -234,11 +243,20 @@ namespace SimpleLanguage.Core
                 mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
             m_MetaVariable = new MetaVariable(fmp.name, MetaVariable.EVariableFrom.Argument, mbs, mc, mdt );
-            //m_MetaVariable.SetFromMetaDefineParamCreate(this);
+            m_MetaVariable.AddPingToken(fmp.token);
 
             if (m_FileMetaParamter.express != null)
             {
-                m_MetaExpressNode = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(null, new MetaType(CoreMetaClassManager.objectMetaClass), m_FileMetaParamter.express);               
+                ExpressManager.CreateExpressParam cep = new ExpressManager.CreateExpressParam()
+                {
+                    mbs = null,
+                    mdt = new MetaType(CoreMetaClassManager.objectMetaClass),
+                    fme = m_FileMetaParamter.express,
+                    isStatic = false,
+                    isConst = false,
+                    parsefrom = EParseFrom.InputParamExpress
+                };
+                m_MetaExpressNode = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep);               
             }
         }
         public MetaDefineParam(string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaType mt )
@@ -247,13 +265,13 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             MetaType mdt = new MetaType(mt);
             m_MetaVariable = new MetaVariable(_name, MetaVariable.EVariableFrom.Argument, mbs, ownerMC, mdt);
-            m_MetaVariable.SetPingToken(this.m_FileMetaParamter.token);
+            m_MetaVariable.AddPingToken(this.m_FileMetaParamter.token);
         }
         public MetaDefineParam( string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaClass _defineMetaClass, MetaExpressNode _expressNode )
         {
             MetaType mdt = new MetaType(_defineMetaClass);
             m_MetaVariable = new MetaVariable(_name, MetaVariable.EVariableFrom.None, mbs, ownerMC, mdt );
-            m_MetaVariable.SetPingToken(this.m_FileMetaParamter.token);
+            m_MetaVariable.AddPingToken(this.m_FileMetaParamter.token);
             m_MetaExpressNode = _expressNode;
         }
         public MetaDefineParam( string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaTemplate mt )
@@ -262,7 +280,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             MetaType mdt = new MetaType(mt);
             m_MetaVariable = new MetaVariable(_name, MetaVariable.EVariableFrom.Argument, mbs, ownerMC, mdt);
-            m_MetaVariable.SetPingToken(this.m_FileMetaParamter?.token);
+            m_MetaVariable.AddPingToken(this.m_FileMetaParamter?.token);
         }
         public Compile.Token GetToken()
         {

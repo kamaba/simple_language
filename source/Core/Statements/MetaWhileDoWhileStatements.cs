@@ -50,7 +50,16 @@ namespace SimpleLanguage.Core.Statements
                 m_ForInContent = null;
                 if (m_FileMetaKeyForSyntax.conditionExpress != null)
                 {
-                    m_ConditionExpress = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(m_OwnerMetaBlockStatements, null, m_FileMetaKeyForSyntax.conditionExpress, false, false);
+                    ExpressManager.CreateExpressParam cep2 = new ExpressManager.CreateExpressParam()
+                    {
+                        mbs = m_OwnerMetaBlockStatements,
+                        mdt = null,
+                        fme = m_FileMetaKeyForSyntax.conditionExpress,
+                        isStatic = false,
+                        isConst = false,
+                        parsefrom = EParseFrom.StatementRightExpress
+                    };
+                    m_ConditionExpress = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
                     m_ConditionExpress.CalcReturnType();
                 }
 
@@ -68,7 +77,7 @@ namespace SimpleLanguage.Core.Statements
                 else
                 {
                     m_ForInContent = new MetaVariable("forcontent_" + GetHashCode().ToString(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, ownerMetaClass, mnoen.GetReturnMetaDefineType() );
-                    m_ThenMetaStatements.UpdateMetaVariable(m_ForInContent);
+                    m_ThenMetaStatements.UpdateMetaVariableDict(m_ForInContent);
                 }
                 MetaType mdt = m_ForInContent.metaDefineType;
                 if ( !mdt.IsCanForIn() )
@@ -96,7 +105,7 @@ namespace SimpleLanguage.Core.Statements
                     m_ForMetaVariable = new MetaIteratorVariable(dname, ownerMetaClass, m_OwnerMetaBlockStatements, m_ForInContent, forMVMC );
                 }
 
-                m_ThenMetaStatements.UpdateMetaVariable(m_ForMetaVariable);
+                m_ThenMetaStatements.UpdateMetaVariableDict(m_ForMetaVariable);
             }
             else
             {
@@ -156,11 +165,20 @@ namespace SimpleLanguage.Core.Statements
                 {
                     Console.WriteLine("Error 没有找到相应的变量!!");
                 }
-                m_ThenMetaStatements.UpdateMetaVariable(m_ForMetaVariable);
+                m_ThenMetaStatements.UpdateMetaVariableDict(m_ForMetaVariable);
 
                 if (m_FileMetaKeyForSyntax.conditionExpress != null)
                 {
-                    m_ConditionExpress = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(m_ThenMetaStatements, m_ForMetaVariable.metaDefineType, m_FileMetaKeyForSyntax.conditionExpress, false, false );
+                    ExpressManager.CreateExpressParam cep2 = new ExpressManager.CreateExpressParam()
+                    {
+                        mbs = m_ThenMetaStatements,
+                        mdt = m_ForMetaVariable.metaDefineType,
+                        fme = m_FileMetaKeyForSyntax.conditionExpress,
+                        isStatic = false,
+                        isConst = false,
+                        parsefrom = EParseFrom.StatementRightExpress
+                    };
+                    m_ConditionExpress = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
                     m_ConditionExpress.CalcReturnType();
                 }
             }
@@ -285,7 +303,16 @@ namespace SimpleLanguage.Core.Statements
             {
                 MetaType mdt = new MetaType(m_OwnerMetaBlockStatements.ownerMetaClass);
 
-                m_ConditionExpress = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements( m_OwnerMetaBlockStatements, null, m_FileMetaKeyWhileSyntax.conditionExpress, false, false );
+                ExpressManager.CreateExpressParam cep2 = new ExpressManager.CreateExpressParam()
+                {
+                    mbs = m_OwnerMetaBlockStatements,
+                    mdt = mdt,
+                    fme = m_FileMetaKeyWhileSyntax.conditionExpress,
+                    isStatic = false,
+                    isConst = false,
+                    parsefrom = EParseFrom.StatementRightExpress
+                };
+                m_ConditionExpress = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
             }
             MetaMemberFunction.CreateMetaSyntax(m_FileMetaKeyWhileSyntax.executeBlockSyntax, m_ThenMetaStatements );
 

@@ -99,8 +99,6 @@ namespace SimpleLanguage.Core.Statements
                     + "已定义过了变量名称!!! MBS:" + token?.ToLexemeAllString() + " var:" + mv.ToFormatString() );
                 return false;
             }
-            mv.SetPingToken(m_FileMetaBlockSyntax?.token);
-            //mv.SetOwnerBlockstatements(this);
             m_MetaVariableDict.Add(mv.name, mv);
             return true;
         }
@@ -129,7 +127,7 @@ namespace SimpleLanguage.Core.Statements
             }
             tms.SetNextStatements( t );
         }
-        public bool UpdateMetaVariable( MetaVariable mv )
+        public bool UpdateMetaVariableDict( MetaVariable mv )
         {
             if (m_MetaVariableDict.ContainsKey(mv.name))
             {

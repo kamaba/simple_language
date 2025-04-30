@@ -594,7 +594,7 @@ namespace SimpleLanguage.Core
             MetaMemberFunction mmf = GetMetaMemberConstructDefaultFunction();
             if( mmf == null )
             {
-                mmf = new MetaMemberFunction(this, "__Init__");
+                mmf = new MetaMemberFunction(this, "_init_");
                 mmf.SetDefineMetaClass(this);
                 AddMetaMemberFunction(mmf);
             }
@@ -726,7 +726,7 @@ namespace SimpleLanguage.Core
         }
         public virtual MetaMemberFunction GetMetaMemberConstructFunction( MetaInputParamCollection mmpc )
         {
-            return GetMetaMemberFunctionByNameAndInputParamCollect("__Init__", mmpc, false );
+            return GetMetaMemberFunctionByNameAndInputParamCollect("_init_", mmpc, false );
         }
         public MetaMemberFunction GetFirstMetaMemberFunctionByName( string name )
         {

@@ -24,6 +24,7 @@ namespace SimpleLanguage.Parse
     }
     public class ProjectManager
     {
+        public static string projectPath { get; set; } = "";
         public static ProjectData data => m_Data;
         public static bool isUseDefineNamespace { get; set; } = true;
         public static bool isUseForceSemiColonInLineEnd { get; set; } = false;

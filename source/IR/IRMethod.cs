@@ -181,6 +181,7 @@ namespace SimpleLanguage.IR
                 if (v.metaVariable == mv)
                     return v.index;
             }
+            Console.WriteLine("SVM Error 在获取输入参数定义中没有找到相关的参数!");
             return -1;
         }
         public string ToIRString()

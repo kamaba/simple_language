@@ -43,7 +43,7 @@ DemoClass
     a = 0i;
     b = 100i;
 
-    __Init__( int _a, int _b )
+    _init_( int _a, int _b )
     {
         this.a = _a;
         this.b = _b * 2;

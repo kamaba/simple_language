@@ -208,7 +208,7 @@ namespace SimpleLanguage.Compile.Parse
                                 || ttt == ETokenType.DoWhile
                                 || ttt == ETokenType.Switch
                                 || ttt == ETokenType.Case
-                                || ttt == ETokenType.Label)
+                                || ttt == ETokenType.Label) // ClassName(){}
                     {
 
                         isMustContactBrace = true;
@@ -217,6 +217,13 @@ namespace SimpleLanguage.Compile.Parse
                     if (isMustContactBrace)
                     {
                         keynodeStruct.SetBraceNode(curNode);
+                    }
+                    else
+                    {
+                        if (keynodeStruct.eSyntaxNodeType == ESyntaxNodeStructType.CommonSyntax)
+                        {
+                            keynodeStruct.AddContent(curNode);
+                        }
                     }
                     break;
                 }
@@ -257,18 +264,15 @@ namespace SimpleLanguage.Compile.Parse
                     {
                         keynodeStruct.SetMainKeyNode(curNode);
                     }
-                    else if(  ttt == ETokenType.Data
-                        || ttt == ETokenType.Class
-                        || ttt == ETokenType.Interface
-                        || ttt == ETokenType.Extends
-                        || ttt == ETokenType.Public
-                        || ttt == ETokenType.Private
-                        || ttt == ETokenType.Projected
-                        || ttt == ETokenType.Internal )
+                    else if(  ttt == ETokenType.Data )
                     {
                         keynodeStruct.SetMainKeyNode(curNode);
                     }
                     else if (ttt == ETokenType.In)
+                    {
+                        keynodeStruct.AddContent(curNode);
+                    }
+                    else if (ttt == ETokenType.Dynamic)
                     {
                         keynodeStruct.AddContent(curNode);
                     }
@@ -278,6 +282,16 @@ namespace SimpleLanguage.Compile.Parse
                     {
                         keynodeStruct.AddContent(curNode);
                     }
+                    //else if ( ttt == ETokenType.Class
+                    //    || ttt == ETokenType.Interface
+                    //    || ttt == ETokenType.Extends
+                    //    || ttt == ETokenType.Public
+                    //    || ttt == ETokenType.Private
+                    //    || ttt == ETokenType.Projected
+                    //    || ttt == ETokenType.Internal )
+                    //{
+
+                    //}
                     else
                     {
                         Console.WriteLine("Error 解析异常关键字" + curNode.token.ToLexemeAllString());
@@ -358,6 +372,7 @@ namespace SimpleLanguage.Compile.Parse
             }
 
             Token staticToken = null;
+            Token dynamicToken = null;
             Token nameToken = null;
             FileMetaClassDefine classRef = null;
             FileMetaCallLink varRef = null;
@@ -395,6 +410,14 @@ namespace SimpleLanguage.Compile.Parse
                         || token?.type == ETokenType.String)
                     {
                         defineNodeList.Add(cnode);
+                    }
+                    else if( token?.type == ETokenType.Dynamic )
+                    {
+                        if (dynamicToken != null)
+                        {
+                            Console.WriteLine("Error 多个Dynamic!!");
+                        }
+                        dynamicToken = token;
                     }
                     else
                     {
@@ -476,7 +499,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 if (varRef != null)
                 {
-                    FileMetaOpAssignSyntax fms = new FileMetaOpAssignSyntax(varRef, assignNode.token, fme, true);
+                    FileMetaOpAssignSyntax fms = new FileMetaOpAssignSyntax(varRef, assignNode.token, dynamicToken, fme, true);
                     return fms;
                 }
             }
@@ -487,7 +510,7 @@ namespace SimpleLanguage.Compile.Parse
                     Console.WriteLine("Error 当为定义变量时，名称不能为空!!");
                     return null;
                 }
-                FileMetaOpAssignSyntax fms = new FileMetaOpAssignSyntax(varRef, opAssignNode.token, fme);
+                FileMetaOpAssignSyntax fms = new FileMetaOpAssignSyntax(varRef, opAssignNode.token, dynamicToken, fme);
                 return fms;
             }
             else

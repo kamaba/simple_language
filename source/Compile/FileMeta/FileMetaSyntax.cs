@@ -962,16 +962,18 @@ namespace SimpleLanguage.Compile.CoreFileMeta
     {
         public FileMetaCallLink variableRef => m_VariableRef;
         public FileMetaBaseTerm express => m_Express;
-        public Token assignToken { get; protected set;} = null;
+        public Token assignToken { get; protected set; } = null;
+        public Token dynamicToken { get; protected set; } = null;
         public Token constToken { get; protected set;} = null;
         public Token staticToken { get; protected set; } = null;
 
         private FileMetaCallLink m_VariableRef = null;
         private FileMetaBaseTerm m_Express = null;
-        public FileMetaOpAssignSyntax(FileMetaCallLink fileMetaVariableRef, Token _opAssignToken, FileMetaBaseTerm fme, bool flag = false  )
+        public FileMetaOpAssignSyntax(FileMetaCallLink fileMetaVariableRef, Token _opAssignToken, Token _dynamicClassToken, FileMetaBaseTerm fme, bool flag = false  )
         {
             m_VariableRef = fileMetaVariableRef;
             assignToken = _opAssignToken;
+            dynamicToken = _dynamicClassToken;
             m_Express = fme;
             isAppendSemiColon = flag;
         }

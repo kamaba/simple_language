@@ -63,15 +63,15 @@ namespace SimpleLanguage.Core.SelfMeta
         }
         public override void ParseInnerFunction()
         {
-            MetaMemberFunction __Init__ = new MetaMemberFunction(this, "__Init__");
-            __Init__.SetMetaDefineType(new MetaType(CoreMetaClassManager.rangeMetaClass));
+            MetaMemberFunction _init_ = new MetaMemberFunction(this, "_init_");
+            _init_.SetMetaDefineType(new MetaType(CoreMetaClassManager.rangeMetaClass));
 
             MetaTemplate mt = m_MetaTemplateList[0];
 
-            __Init__.AddMetaDefineParam(new MetaDefineParam("_start", this, null, mt ));
-            __Init__.AddMetaDefineParam(new MetaDefineParam("_end", this, null, mt ));
-            __Init__.AddMetaDefineParam(new MetaDefineParam("_step", this, null, mt ));
-            AddInnerMetaMemberFunction(__Init__);
+            _init_.AddMetaDefineParam(new MetaDefineParam("_start", this, null, mt ));
+            _init_.AddMetaDefineParam(new MetaDefineParam("_end", this, null, mt ));
+            _init_.AddMetaDefineParam(new MetaDefineParam("_step", this, null, mt ));
+            AddInnerMetaMemberFunction(_init_);
 
             MetaMemberFunction IsIn = new MetaMemberFunction(this, "IsIn");
             IsIn.AddMetaDefineParam(new MetaDefineParam("name", this, null, mt ));

@@ -20,10 +20,16 @@ namespace SimpleLanguage.IR
     public struct DebugInfo
     {
         public string path;
+        public string name;
         public int beginLine;
         public int beginChar;
         public int endLine;
         public int endChar;
+
+        public override string ToString()
+        {
+            return path + " -> " + name;
+        }
     }
     public class IRData
     {
@@ -46,6 +52,7 @@ namespace SimpleLanguage.IR
             if(token != null )
             {
                 debugInfo.path = token.path;
+                debugInfo.name = token.lexeme?.ToString();
                 debugInfo.beginLine = token.sourceBeginLine;
                 debugInfo.beginChar = token.sourceBeginChar;
                 debugInfo.endLine = token.sourceEndLine;

@@ -18,6 +18,7 @@ using System.IO;
 using System.Timers;
 using SimpleLanguage.Compile.Parse;
 using SimpleLanguage.Compile.CoreFileMeta;
+using System.Security.Cryptography.X509Certificates;
 
 namespace SimpleLanguage.Project
 {
@@ -34,7 +35,6 @@ namespace SimpleLanguage.Project
         public static List<FileParse> fileParseList = new List<FileParse>();
 
         private static ProjectData m_Data = null;
-        private static string m_ProjectPath;
         private static string m_FileContentString = null;
         private static FileMeta m_ProjectFile = null;
         private static LexerParse m_LexerParse = null;
@@ -44,17 +44,31 @@ namespace SimpleLanguage.Project
 
         public static void LoadProject()
         {
-            if (!File.Exists(m_ProjectPath))
+            DirectoryInfo directory = new DirectoryInfo(ProjectManager.projectPath);
+
+            if( !directory.Exists)
+            {
+                Console.WriteLine("Error 项目加载路径不正确!!");
+            }
+
+            string[] paths = Directory.GetFiles(ProjectManager.projectPath, "*.sp", SearchOption.TopDirectoryOnly);
+            if( paths.Length == 0 )
+            {
+                Console.WriteLine("Error 项目加载路径没有找到sp文件!!");
+            }
+
+
+            if (!File.Exists(paths[0]))
             {
                 Console.WriteLine("Error 项目加载路径不正确!!");
                 return;
             }
-            m_ProjectFile = new FileMeta(m_ProjectPath);
+            m_ProjectFile = new FileMeta(paths[0]);
 
-            byte[] buffer = File.ReadAllBytes(m_ProjectPath);
+            byte[] buffer = File.ReadAllBytes(paths[0]);
             m_FileContentString = System.Text.Encoding.UTF8.GetString(buffer);
 
-            m_LexerParse = new LexerParse(m_ProjectPath, m_FileContentString);
+            m_LexerParse = new LexerParse(ProjectManager.projectPath, m_FileContentString);
             m_LexerParse.ParseToTokenList();
 
             m_TokenParse = new TokenParse(m_ProjectFile, m_LexerParse.GetListTokensWidthEnd());
@@ -80,7 +94,7 @@ namespace SimpleLanguage.Project
         {
             if( !isLoaded )
             {
-                m_ProjectPath = path;
+                ProjectManager.projectPath = path;
                 m_Data = pd;
                 isLoaded = true;
                 LoadProject();

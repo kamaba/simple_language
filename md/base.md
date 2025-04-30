@@ -20,7 +20,7 @@ Rectangle
 {
     length = 0.0f;
     float width = 0.0f;
-    __Init__( float _l, float _w )
+    _init_( float _l, float _w )
     {
         this.length = _l;
         this.width = _w;

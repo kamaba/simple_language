@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Net;
+using SimpleLanguage.Compile;
 
 namespace SimpleLanguage.Core.Statements
 {
@@ -78,6 +79,7 @@ namespace SimpleLanguage.Core.Statements
             MetaType mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
             var metaFunction = m_OwnerMetaBlockStatements?.ownerMetaFunction;
 
+            bool isDynamicClass = false;
             FileMetaBaseTerm fileExpress = null;
             if ( m_FileMetaDefineVariableSyntax != null )
             {
@@ -85,24 +87,36 @@ namespace SimpleLanguage.Core.Statements
                 mdt = new MetaType(fmcd, ownerMetaClass);
 
                 m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
-                m_MetaVariable.SetPingToken(fmcd.arrayTokenList[0]);
-                m_OwnerMetaBlockStatements.UpdateMetaVariable(m_MetaVariable);
+                m_MetaVariable.AddPingToken(fmcd.arrayTokenList[0]);
+                m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_MetaVariable);
 
                 fileExpress = m_FileMetaDefineVariableSyntax.express;
             }
             else if (m_FileMetaOpAssignSyntax != null)
             {
                 m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
-                m_MetaVariable.SetPingToken(m_FileMetaOpAssignSyntax.token);
-                m_OwnerMetaBlockStatements.UpdateMetaVariable(m_MetaVariable);
+                Token token = m_FileMetaOpAssignSyntax.assignToken;
+                if( m_FileMetaOpAssignSyntax.dynamicToken != null )
+                {
+                    isDynamicClass = true;  
+                }
+                if(m_FileMetaOpAssignSyntax.variableRef != null )
+                {
+                    foreach( var v in  m_FileMetaOpAssignSyntax.variableRef.callNodeList)
+                    {
+                        m_MetaVariable.AddPingToken(v.token);
+                    }
+                }
+                m_MetaVariable.AddPingToken(token);
+                m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_MetaVariable);
 
                 fileExpress = m_FileMetaOpAssignSyntax.express;
             }
             else if (m_FileMetaCallSyntax!= null )
             {
                 m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
-                m_MetaVariable.SetPingToken(m_FileMetaCallSyntax.token);
-                m_OwnerMetaBlockStatements.UpdateMetaVariable(m_MetaVariable);
+                m_MetaVariable.AddPingToken(m_FileMetaCallSyntax.token);
+                m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_MetaVariable);
             }
             if(m_MetaVariable == null )
             {
@@ -113,7 +127,7 @@ namespace SimpleLanguage.Core.Statements
             MetaType expressRetMetaDefineType = null;
             if (fileExpress != null)
             {
-                m_ExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(fileExpress, m_OwnerMetaBlockStatements, mdt);
+                m_ExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(isDynamicClass, fileExpress, m_OwnerMetaBlockStatements, mdt);
                 m_ExpressNode.CalcReturnType();
                 expressRetMetaDefineType = m_ExpressNode.GetReturnMetaDefineType();
                 if (m_ExpressNode == null)

@@ -43,19 +43,39 @@ namespace SimpleLanguage.IR
 
         public IRLoadVariable(IRMethod _irMethod, MetaVariable mv) : base(_irMethod)
         {
-            if (mv.isArgument)
+            if ( mv.variableFrom == MetaVariable.EVariableFrom.Argument )
             {
                 data.opCode = EIROpCode.LoadArgument;
                 data.SetDebugInfoByToken( mv.pingToken );
                 data.index = m_IRMethod.GetArgumentIndex(mv);
                 m_IRDataList.Add(data);
             }
-            else
+            else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
+            {
+                MetaMemberVariable mmv = mv as MetaMemberVariable;
+                data.opCode = EIROpCode.LoadNotStaticField;
+                data.SetDebugInfoByToken(mmv.pingToken);
+                data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
+                m_IRDataList.Add(data);
+            }
+            else if (mv.variableFrom == MetaVariable.EVariableFrom.LocalStatement)
             {
                 data.opCode = EIROpCode.LoadLocal;
-                data.SetDebugInfoByToken( mv.pingToken );
+                data.SetDebugInfoByToken(mv.pingToken);
                 data.index = m_IRMethod.GetLocalVariableIndex(mv);
                 m_IRDataList.Add(data);
+            }
+            else if (mv.variableFrom == MetaVariable.EVariableFrom.Global )
+            {
+                MetaMemberVariable mmv = mv as MetaMemberVariable;
+                data.opCode = EIROpCode.LoadNotStaticField;
+                data.SetDebugInfoByToken(mmv.pingToken);
+                data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
+                m_IRDataList.Add(data);
+            }
+            else
+            {
+                Console.WriteLine($"SVM Error 没有找到加载变量的来源类型！");
             }
         }
         public IRLoadVariable( IRMethod _irMethod, MetaVisitNode mvn ) : base( _irMethod )
