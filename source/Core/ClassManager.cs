@@ -112,6 +112,14 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
+        public MetaData FindMetaDataByName( string name )
+        {
+            if(m_AllDataDict.ContainsKey(name ) )
+            {
+                return m_AllDataDict[name];
+            }
+            return null;
+        }
         public bool AddMetaData(MetaData dc)
         {
             m_AllDataDict.Add(dc.name, dc);
@@ -287,9 +295,8 @@ namespace SimpleLanguage.Core
                 }
                 else if (fmc.isData)
                 {
-                    var newmd = new MetaData(fmc.name, fmc.isConst);
+                    var newmd = new MetaData( fmc );
                     newmc = newmd;
-                    m_AllDataDict.Add(fmc.name, newmd);
                     newmd.BindFileMetaClass(fmc);
                     newmd.ParseFileMetaDataMemeberData(fmc);
                 }
@@ -324,24 +331,24 @@ namespace SimpleLanguage.Core
                         newmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
                     }
 
-                    if (tmetaClass != null)
-                    {
-                        tmetaClass.AddChildrenMetaClass(newmc);
-                    }
-                    else if (tmetaNamespace != null)
-                        tmetaNamespace.AddMetaClass(newmc);
-                    else
-                        tmetaModule.AddMetaClass(newmc);
+                }
+                if (tmetaClass != null)
+                {
+                    tmetaClass.AddChildrenMetaClass(newmc);
+                }
+                else if (tmetaNamespace != null)
+                    tmetaNamespace.AddMetaClass(newmc);
+                else
+                    tmetaModule.AddMetaClass(newmc);
 
-                    if( newmc is MetaData )
-                    {
-                        m_AllDataDict.Add(newmc.allName, newmc as MetaData);
-                    }
-                    else
-                    {
-                        m_AllClassDict.Add(newmc.allName, newmc);
-                    }
 
+                if (newmc is MetaData)
+                {
+                    m_AllDataDict.Add(newmc.allName, newmc as MetaData);
+                }
+                else
+                {
+                    m_AllClassDict.Add(newmc.allName, newmc);
                 }
 
 

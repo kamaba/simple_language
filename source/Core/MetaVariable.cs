@@ -139,7 +139,7 @@ namespace SimpleLanguage.Core
         {
 
         }
-        public virtual void ParsDefineMetaType()
+        public virtual void ParseDefineMetaType()
         {
 
         }

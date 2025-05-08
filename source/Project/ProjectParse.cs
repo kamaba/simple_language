@@ -383,7 +383,7 @@ namespace SimpleLanguage.Project
 
     public class ProjectData : MetaData
     {
-        public ProjectData(string _name, bool isConst) : base(_name, isConst )
+        public ProjectData(string _name, bool isConst) : base(_name, isConst, false )
         {
 
         }
@@ -407,34 +407,25 @@ namespace SimpleLanguage.Project
         public MemorySetData memorySetData { get; set; } = new MemorySetData();
         public override void ParseFileMetaDataMemeberData(FileMetaClass fmc)
         {
-            bool isHave = false;
+            m_Deep = 0;
             for (int i = 0; i < fmc.memberDataList.Count; i++)
             {
                 var v = fmc.memberDataList[i];
-                MetaBase mb = GetChildrenMetaBaseByName(v.name);
-                if (mb != null)
-                {
-                    Console.WriteLine("Error 已有定义类: " + allName + "中 已有: " + v.token?.ToLexemeAllString() + "的元素!!");
-                    isHave = true;
-                }
-                else
-                    isHave = false;
+                
                 if (v.name == "globalVariable")
                     continue;
 
-                MetaMemberData mmd = new MetaMemberData(this, v);
-                if (isHave)
-                {
-                    mmd.SetName(mmd.name + "__repeat__");
-                }
-                //mmd.metaDefineType = 
+                MetaMemberData mmd = new MetaMemberData(this, v, i);
+                mmd.ParseName();
+                mmd.ParseDefineMetaType();
+                mmd.ParseMetaExpress();
                 AddMetaMemberData(mmd);
-
                 mmd.ParseChildMemberData();
 
                 ParseBlockNode(mmd);
             }
-            if (fmc.memberVariableList.Count > 0 || fmc.memberFunctionList.Count > 0)
+            int ct = this.metaMemberDataDict.Count;
+            if ( fmc.memberVariableList.Count > 0 || fmc.memberFunctionList.Count > 0)
             {
                 Console.WriteLine("Error Data中不允许有Variable 和 Function!!");
             }
@@ -534,13 +525,13 @@ namespace SimpleLanguage.Project
             MetaBase mb = ProjectManager.globalData.GetChildrenMetaBaseByName(fmd.name);
             if (mb != null)
             {
-                Console.WriteLine("Error 已有定义类: " + allName + "中 已有: " + fmd.token?.ToLexemeAllString() + "的元素!!");
+                Console.WriteLine("Error ProjectParse ParseGlobalVariable已有定义类: " + allName + "中 已有: " + fmd.token?.ToLexemeAllString() + "的元素!!");
                 return;
             }
             //需要在做Data处理的时候 ，再处理该逻辑
-            MetaMemberData mmd = new MetaMemberData(ProjectManager.globalData, fmd );
+            MetaMemberData mmd = new MetaMemberData(ProjectManager.globalData, fmd, ProjectManager.globalData.metaMemberDataDict.Count );
             mmd.ParseName();
-            mmd.ParsDefineMetaType();
+            mmd.ParseDefineMetaType();
             mmd.ParseMetaExpress();
             ProjectManager.globalData.AddMetaMemberData(mmd);
         }

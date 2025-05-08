@@ -17,16 +17,25 @@ namespace SimpleLanguage.Core
         protected bool m_IsConst = false;
         protected bool m_IsStatic = false;
 
-        protected string m_MetaNameName = "";
         protected MetaVariable m_MetaVariable = null;
         protected Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
         protected List<Token> m_PingTokensList = new List<Token>();
 
-        public MetaData(string _name, bool isConst) : base(_name)
+
+        public MetaData( FileMetaClass md )
         {
-            m_MetaNameName = _name;
+            m_Name = md.name;
             m_Type = EType.Data;
-            m_IsConst = isConst;
+            m_IsConst =  md.isConst;
+            m_IsStatic = md.isStatic;
+            m_FileMetaClassDict.Add(md.token, md);
+        }
+        public MetaData(string _name, bool constToken, bool staticToken ) : base(_name)
+        {
+            m_Name = _name;
+            m_Type = EType.Data;
+            m_IsConst = constToken;
+            m_IsStatic = staticToken;
         }
 
         public override MetaBase GetChildrenMetaBaseByName(string name)
@@ -69,12 +78,12 @@ namespace SimpleLanguage.Core
                 MetaBase mb = GetChildrenMetaBaseByName(v.name);
                 if (mb != null)
                 {
-                    Console.WriteLine("Error 已有定义类: " + allName + "中 已有: " + v.token?.ToLexemeAllString() + "的元素!!");
+                    Console.WriteLine("Error MetaData MetaDataMember已有定义类: " + allName + "中 已有: " + v.token?.ToLexemeAllString() + "的元素!!");
                     isHave = true;
                 }
                 else
                     isHave = false;
-                MetaMemberData mmv = new MetaMemberData(this, v);
+                MetaMemberData mmv = new MetaMemberData(this, v, i);
                 if (isHave)
                 {
                     mmv.SetName(mmv.name + "__repeat__");
