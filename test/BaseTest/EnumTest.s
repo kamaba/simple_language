@@ -7,9 +7,12 @@ class XC
 }
 enum Book
 {
-    B1 = { int i2 = 20, string url = "http://www.baidu.com", XC xc1= XC(), anonC = { string name = "xx", age = 20 } };
-    C1 = 1;
-    string Str;
+    B1 = { int i2 = 20, string url = "http://www.baidu.com", XC xc1= XC(), anonC = { string name = "xx", age = 20 } }
+    C1 = 1
+    string Str
+    C2
+    C4 = 10
+    C5
 }
 enum Book2
 {
@@ -44,13 +47,6 @@ enum GameState
     Begin = 2;
     End = 3;
 }
-#! 暂不实现
-enum Option<T>
-{
-    T Some;
-    None;
-}
-!#
 OK
 {
     code = 0;

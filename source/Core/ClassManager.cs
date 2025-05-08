@@ -101,21 +101,37 @@ namespace SimpleLanguage.Core
             m_AllClassDict.Add(dc.allName, dc);
             return true;
         }
-        public bool CompareMetaClassMemberVariable( MetaClass curClass, MetaClass cpClass )
+        public MetaData FindMetaData( MetaData md )
+        {
+            foreach( var v in m_AllDataDict )
+            {
+                if(CompareMetaDataMember( v.Value, md ) )
+                {
+                    return v.Value;
+                }
+            }
+            return null;
+        }
+        public bool AddMetaData(MetaData dc)
+        {
+            m_AllDataDict.Add(dc.name, dc);
+            return true;
+        }
+        public bool CompareMetaClassMemberVariable(MetaClass curClass, MetaClass cpClass)
         {
             var curClassList = curClass.allMetaMemberVariableList;
             var cpClassList = cpClass.allMetaMemberVariableList;
 
-            if(curClassList.Count == cpClassList.Count )
+            if (curClassList.Count == cpClassList.Count)
             {
-                for( int i = 0; i < curClassList.Count; i++ )
+                for (int i = 0; i < curClassList.Count; i++)
                 {
                     var curMV = curClassList[i];
                     var cpMV = cpClassList[i];
-                    if( curMV.isConst == cpMV.isConst 
-                        || curMV.isStatic == cpMV.isStatic 
+                    if (curMV.isConst == cpMV.isConst
+                        || curMV.isStatic == cpMV.isStatic
                         || curMV.name == cpMV.name
-                        || curMV.metaDefineType == cpMV.metaDefineType )
+                        || curMV.metaDefineType == cpMV.metaDefineType)
                     {
 
                     }
@@ -127,6 +143,32 @@ namespace SimpleLanguage.Core
                 return true;
             }
             return false;
+        }
+        public bool CompareMetaDataMember(MetaData curClass, MetaData cpClass)
+        {
+            var curClassList = curClass.metaMemberDataDict;
+            var cpClassList = cpClass.metaMemberDataDict;
+
+            if (curClassList.Count != cpClassList.Count)
+            {
+                return false;
+            }
+            foreach( var v in curClassList )
+            {
+                if( !cpClassList.ContainsKey(v.Key ) )
+                {
+                    return false;
+                }
+                var vval = v.Value;
+                var val2 = cpClassList[v.Key];
+
+                if( vval.metaDefineType.metaClass != val2.metaDefineType.metaClass )
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
         public MetaClass FindDynamicClassByMetaType( MetaClass dc )
         {

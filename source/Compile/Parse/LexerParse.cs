@@ -1352,15 +1352,14 @@ namespace SimpleLanguage.Compile.Parse
                     tokenType = ETokenType.Transience;
                     break;
                 case "ret":
-                case "return"://?
                     tokenType = ETokenType.Return;
                     break;
                 case "label":
                     tokenType = ETokenType.Label;
                     break;
-                case "let":
-                    tokenType = ETokenType.Let;
-                    break;
+                //case "let":
+                //    tokenType = ETokenType.Let;
+                //    break;
                 case "global":
                     tokenType = ETokenType.Global;
                     break;
@@ -1379,6 +1378,9 @@ namespace SimpleLanguage.Compile.Parse
                 case "object":
                 case "Object":
                     tokenType = ETokenType.Object;
+                    break;
+                case "var":
+                    tokenType = ETokenType.Var;
                     break;
                 case "this":
                     tokenType = ETokenType.This;
@@ -1404,10 +1406,7 @@ namespace SimpleLanguage.Compile.Parse
                 //    break;
                 //case "await":
                 //    tokenType = TokenType.Await;
-                //    break;                
-                //case "var":
-                //    m_Builder.Length = 0;
-                //    return;
+                //    break;    
                 default:
                     tokenType = ETokenType.Identifier;
                     break;

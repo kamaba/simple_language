@@ -9,18 +9,22 @@ namespace SimpleLanguage.Core
     public class MetaData : MetaClass
     {
         public bool isConst => m_IsConst;
+        public bool isStatic => m_IsStatic;
+
         public MetaVariable metaVariable => m_MetaVariable;
         public Dictionary<string, MetaMemberData> metaMemberDataDict => m_MetaMemberDataDict;
 
         protected bool m_IsConst = false;
+        protected bool m_IsStatic = false;
 
-        protected string m_VariableName = "";
+        protected string m_MetaNameName = "";
         protected MetaVariable m_MetaVariable = null;
         protected Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
+        protected List<Token> m_PingTokensList = new List<Token>();
 
         public MetaData(string _name, bool isConst) : base(_name)
         {
-            m_VariableName = _name;
+            m_MetaNameName = _name;
             m_Type = EType.Data;
             m_IsConst = isConst;
         }
@@ -28,6 +32,10 @@ namespace SimpleLanguage.Core
         public override MetaBase GetChildrenMetaBaseByName(string name)
         {
             return base.GetChildrenMetaBaseByName(name);
+        }
+        public void AddPingToken(Token tok)
+        {
+            m_PingTokensList.Add(tok);
         }
         public MetaMemberData GetMemberDataByName(string name)
         {

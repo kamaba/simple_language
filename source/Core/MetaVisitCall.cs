@@ -390,6 +390,10 @@ namespace SimpleLanguage.Core
                     {
                         return variable.metaDefineType;
                     }
+                case EVisitType.NewMethodCall:
+                    {
+                        return methodCall.callerMetaVariable.metaDefineType;
+                    }
                 default:
                     {
                         Console.Write("Error ---------" + visitType.ToString() );

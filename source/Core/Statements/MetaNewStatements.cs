@@ -87,7 +87,7 @@ namespace SimpleLanguage.Core.Statements
                 mdt = new MetaType(fmcd, ownerMetaClass);
 
                 m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
-                m_MetaVariable.AddPingToken(fmcd.arrayTokenList[0]);
+                m_MetaVariable.AddPingToken(m_FileMetaDefineVariableSyntax.token);
                 m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_MetaVariable);
 
                 fileExpress = m_FileMetaDefineVariableSyntax.express;
@@ -127,7 +127,7 @@ namespace SimpleLanguage.Core.Statements
             MetaType expressRetMetaDefineType = null;
             if (fileExpress != null)
             {
-                m_ExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(isDynamicClass, fileExpress, m_OwnerMetaBlockStatements, mdt);
+                m_ExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(fileExpress, m_OwnerMetaBlockStatements, mdt, m_MetaVariable);
                 m_ExpressNode.CalcReturnType();
                 expressRetMetaDefineType = m_ExpressNode.GetReturnMetaDefineType();
                 if (m_ExpressNode == null)
@@ -292,16 +292,26 @@ namespace SimpleLanguage.Core.Statements
                 sb.Append(Global.tabChar);
             sb.Append(m_MetaVariable.ToFormatString());
             sb.Append(" = ");
-            if(m_IsNeedCastState )
+            if(m_MetaVariable.metaDefineType.isData )
             {
-                sb.Append("(");
+                sb.Append(m_ExpressNode.ToFormatString());
             }
-            sb.Append(m_ExpressNode.ToFormatString());
-            if(m_IsNeedCastState)
+            else if( m_MetaVariable.metaDefineType.isEnum )
             {
-                sb.Append(").Cast<" + m_MetaVariable.metaDefineType.metaClass.allName + ">()");
             }
-            sb.Append(";");
+            else
+            {
+                if (m_IsNeedCastState)
+                {
+                    sb.Append("(");
+                }
+                sb.Append(m_ExpressNode.ToFormatString());
+                if (m_IsNeedCastState)
+                {
+                    sb.Append(").Cast<" + m_MetaVariable.metaDefineType.metaClass.allName + ">()");
+                }
+                sb.Append(";");
+            }
 
             if ( nextMetaStatements != null )
             {

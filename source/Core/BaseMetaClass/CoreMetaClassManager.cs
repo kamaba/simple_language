@@ -34,6 +34,7 @@ namespace SimpleLanguage.Core.SelfMeta
         Template,
         Class,
         Type,
+        Dynamic,
     }
     class CoreMetaClassManager
     {
@@ -67,6 +68,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass arrayMetaClass { get; private set; } = null;
         public static MetaClass rangeMetaClass { get; private set; } = null;
         public static MetaClass typeMetaClass { get; private set; } = null;
+        public static MetaClass dynamicMetaClass { get; private set; } = null;
         public static MetaClass arrayIteratorMetaClass { get; set; } = null;
 
         public static List<MetaClass> s_InnerDefineMetaClassList = new List<MetaClass>();
@@ -92,6 +94,8 @@ namespace SimpleLanguage.Core.SelfMeta
             arrayMetaClass = ArrayMetaClass.CreateMetaClass();
             rangeMetaClass = RangeMetaClass.CreateMetaClass();
             typeMetaClass = TypeMetaClass.CreateMetaClass();
+            dynamicMetaClass = DynamicMetaClass.CreateMetaClass();
+
             s_InnerDefineMetaClassList.Add(objectMetaClass);
             s_InnerDefineMetaClassList.Add(voidMetaClass);
             s_InnerDefineMetaClassList.Add(booleanMetaClass);
@@ -111,6 +115,7 @@ namespace SimpleLanguage.Core.SelfMeta
             s_InnerDefineMetaClassList.Add(arrayMetaClass);
             s_InnerDefineMetaClassList.Add(rangeMetaClass);
             s_InnerDefineMetaClassList.Add(typeMetaClass);
+            s_InnerDefineMetaClassList.Add(dynamicMetaClass); 
         }
         public void Init()
         {
@@ -210,6 +215,8 @@ namespace SimpleLanguage.Core.SelfMeta
                 case "range":
                 case "Range":
                     return DefaultObject.Range.ToString();
+                case "dynamic":
+                    return DefaultObject.Dynamic.ToString();
                 default:return name;
             }
         }

@@ -11,6 +11,7 @@ const data ProjectConfig
             a = 200
         }
     ]
+    ct2 = ClassT()
     globalVariable
     {
         testclass

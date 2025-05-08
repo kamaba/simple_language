@@ -1,12 +1,26 @@
 import System;
 
-Ab1 :: Attribute
+webapi extends Attribute
 {
-    
+    void get typeGet( string path )
+    {
+
+    }
 }
-Am :: Attribute
+coda extends Attribute
 {
 
+}
+instance extens Attribute
+{
+    void construct
+    {
+
+    }
+    void _init_( metaType type )
+    {
+        
+    }
 }
 
 [Ab1("a")]

@@ -81,7 +81,7 @@ namespace SimpleLanguage.Core
             ExpressManager.CreateExpressParam cep = new ExpressManager.CreateExpressParam()
             {
                 mbs = m_OwnerMetaBlockStatements,
-                mdt = new MetaType(CoreMetaClassManager.objectMetaClass),
+                metaType = new MetaType(CoreMetaClassManager.objectMetaClass),
                 fme = m_FileInputParamNode.express,
                 isStatic = false,
                 isConst = false,
@@ -250,7 +250,7 @@ namespace SimpleLanguage.Core
                 ExpressManager.CreateExpressParam cep = new ExpressManager.CreateExpressParam()
                 {
                     mbs = null,
-                    mdt = new MetaType(CoreMetaClassManager.objectMetaClass),
+                    metaType = new MetaType(CoreMetaClassManager.objectMetaClass),
                     fme = m_FileMetaParamter.express,
                     isStatic = false,
                     isConst = false,

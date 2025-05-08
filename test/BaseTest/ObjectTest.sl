@@ -3,7 +3,7 @@ import Application.Core;
 namespace Application;
 namespace Application.Core;
 
-###!
+
 ClassT
 {
     ClassT2
@@ -89,16 +89,35 @@ Class2 extends Class1
     y2 = 0;
 }
 
-!###
+data Data1
+{
+    ct = ClassT(20)
+    x1 = 20
+    x2 = [1,2,3]
+    x3 = [{a = 10}, {a = 20} ]
+    x4 = 
+    {
+         a = 30
+    }
+}
 
 ObjectTest
 {
     static Fun()
     {
-        dynamic d1 = {t1 = 2, t2 = 3 }
-        #d2 = { ct = ClassT(20), y2 = "sss" }
-        #string md2str = d2.y2;
+        Data1 d1 = Data1(){ ct = ClassT(30) }
 
+        #dynamic d1 = {t1 = 2, t2 = 3 }
+        #!
+        a20 = 10000 + 20;
+        a21 = ClassT(10){t=1}
+        d2 = { ct = ClassT(20), childd1 = { a3 = { qx = 1024 } }, ch2 = [1,2,3,4],  ha=a21, ch3 = [ {a=20}, {a = {ax = 10241 } } ], y2 = "sss" }  # 相当于data d2 = {}
+        md2str = d2.y2;
+        r20 = d2.childd1.a3.qx;
+        r21 = d2.ch2.$2;
+        r22 = d2.ha.t
+        r23 = d2.ch3.$2.a.ax
+        !#
         #ct111 = ClassT(100){ t = 1 }        
         #vv1 = ClassT().t;      #不允许 newclass只允许 使用创建新的变量方式
         #c1 = Class1(ClassT(), ct111 );    #传参的时候，如果是 ClassName(){} 不支持后边的{} 只支持ClassName(1,2,3) 的形式使用 
@@ -115,7 +134,7 @@ ObjectTest
         #t2 = c1.ct3.GetT().t2;                                       #测试调用对象链
         #t2  = c1.ct3.t;
         
-        CSharp.System.Console.Write("Class1 Value: " + d1.t1 );     
+        #CSharp.System.Console.Write("Class1 Value: " + d1.t1 );     
 
         #CSharp.System.Console.Write("Class1 Value: " + c1.ct3.t );     #测试调用对象链
 

@@ -23,14 +23,14 @@ namespace SimpleLanguage.Core
             }
         }
         public MetaClass metaClass => m_MetaClass;
+        public bool isEnum => m_MetaClass is MetaEnum;
+        public bool isData => m_MetaClass is MetaData;
         public MetaTemplate metaTemplate => m_MetaTemplate;
         public MetaMemberVariable enumValue => m_EnumValue;
-        public bool isEnum => m_MetaClass is MetaEnum;
-        //public bool isData => m_MetaClass is MetaData;
         public bool isTemplate => m_MetaTemplate is MetaTemplate;
         public bool isGenTemplateClass => m_MetaClass is MetaGenTemplateClass;
         public bool isArray => m_MetaClass?.eType == EType.Array;
-        public bool isDynamicClass => m_MetaClass is MetaDynamicClass;
+        public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
         public bool isDefineMetaClass => m_IsDefineMetaClass;
         private List<MetaTemplate> defineMetaTemplateList => m_DefineMetaTemplateList;
 
@@ -161,7 +161,8 @@ namespace SimpleLanguage.Core
             {
                 Console.WriteLine("Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
-            if( mitc == null)
+            m_IsDefineMetaClass = false;
+            if ( mitc == null)
             {
                 m_RawMetaClass = mc;
                 m_MetaClass = mc;

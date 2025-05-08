@@ -68,7 +68,7 @@ namespace SimpleLanguage.Project
             byte[] buffer = File.ReadAllBytes(paths[0]);
             m_FileContentString = System.Text.Encoding.UTF8.GetString(buffer);
 
-            m_LexerParse = new LexerParse(ProjectManager.projectPath, m_FileContentString);
+            m_LexerParse = new LexerParse(paths[0], m_FileContentString);
             m_LexerParse.ParseToTokenList();
 
             m_TokenParse = new TokenParse(m_ProjectFile, m_LexerParse.GetListTokensWidthEnd());

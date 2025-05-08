@@ -83,9 +83,18 @@ namespace Application
                         if( x == 35 )
                         {
                             System.Console.Write( "x=" + x );
-                            #Console.Write("x= @x ");
+                            #Console.Write("x= $x ");
                             ret mc2;
                         }
+                    }
+                    a3a = true ? x > 15 : false
+                    if a3a
+                    {
+                        Console.Write("value > 15" )
+                    }
+                    else
+                    {
+                        Console.Write("Value < 15 );
                     }
                 }
 

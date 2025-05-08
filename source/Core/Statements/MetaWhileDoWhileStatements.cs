@@ -53,7 +53,7 @@ namespace SimpleLanguage.Core.Statements
                     ExpressManager.CreateExpressParam cep2 = new ExpressManager.CreateExpressParam()
                     {
                         mbs = m_OwnerMetaBlockStatements,
-                        mdt = null,
+                        metaType = null,
                         fme = m_FileMetaKeyForSyntax.conditionExpress,
                         isStatic = false,
                         isConst = false,
@@ -172,7 +172,7 @@ namespace SimpleLanguage.Core.Statements
                     ExpressManager.CreateExpressParam cep2 = new ExpressManager.CreateExpressParam()
                     {
                         mbs = m_ThenMetaStatements,
-                        mdt = m_ForMetaVariable.metaDefineType,
+                        metaType = m_ForMetaVariable.metaDefineType,
                         fme = m_FileMetaKeyForSyntax.conditionExpress,
                         isStatic = false,
                         isConst = false,
@@ -306,7 +306,7 @@ namespace SimpleLanguage.Core.Statements
                 ExpressManager.CreateExpressParam cep2 = new ExpressManager.CreateExpressParam()
                 {
                     mbs = m_OwnerMetaBlockStatements,
-                    mdt = mdt,
+                    metaType = mdt,
                     fme = m_FileMetaKeyWhileSyntax.conditionExpress,
                     isStatic = false,
                     isConst = false,

@@ -249,7 +249,7 @@ namespace SimpleLanguage.Core.Statements
 
             if (m_FileMetaOpAssignSyntax.express != null)
             {
-                m_ExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(m_FileMetaOpAssignSyntax.dynamicToken != null, m_FileMetaOpAssignSyntax.express, m_OwnerMetaBlockStatements, expressMdt);
+                m_ExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(m_FileMetaOpAssignSyntax.express, m_OwnerMetaBlockStatements, expressMdt);
                 
                 if (m_ExpressNode == null)
                 {
