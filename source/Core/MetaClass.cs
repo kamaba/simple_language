@@ -97,6 +97,11 @@ namespace SimpleLanguage.Core
         protected MetaExpressNode m_DefaultExpressNode = null;
         protected bool m_IsInnerDefineCompile = false;
 
+        protected MetaClass()
+        {
+
+        }
+
         public MetaClass(string _name, EType _type  = EType.Class )
         {
             m_Name = _name;
@@ -237,7 +242,7 @@ namespace SimpleLanguage.Core
         {
             foreach (var it in m_MetaMemberVariableDict)
             {
-                it.Value.ParsDefineMetaType();
+                it.Value.ParseDefineMetaType();
             }
         }
         public void ParseMemberFunctionDefineMetaType()
@@ -246,7 +251,7 @@ namespace SimpleLanguage.Core
             {
                 foreach( var it2 in it.Value )
                 {
-                    it2.ParsDefineMetaType();
+                    it2.ParseDefineMetaType();
                 }
             }
         }
@@ -301,7 +306,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Console.WriteLine("Error 已有定义类: " + allName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
+                        Console.WriteLine("Error MetaClass MemberVarAndFunc已有定义类: " + allName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
                     }
                     isHave = true;
                 }

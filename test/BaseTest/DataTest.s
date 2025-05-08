@@ -142,3 +142,7 @@ DataTest
         # 相当于 { a : 20, b : 30, message:"ok" }
     }
 }
+
+
+## data 写法  {  var1name = 内容 }
+    - 内容支持 const  number/

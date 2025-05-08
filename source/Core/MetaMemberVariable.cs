@@ -304,9 +304,10 @@ namespace SimpleLanguage.Core
         {
             if (m_FileMetaMemeberVariable != null)
             {
+                m_Name = m_FileMetaMemeberVariable.name;
             }
         }
-        public override void ParsDefineMetaType()
+        public override void ParseDefineMetaType()
         {
             if (m_FileMetaMemeberVariable != null)
             {

@@ -274,7 +274,7 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        public override void ParsDefineMetaType()
+        public override void ParseDefineMetaType()
         {
             if (m_FileMetaMemberFunction != null)
             {

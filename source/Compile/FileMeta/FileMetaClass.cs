@@ -20,6 +20,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
     {
         public bool innerClass { get; set; } = false;
         public bool isConst { get { return m_ConstToken != null; } }
+        public bool isStatic { get { return m_StaticToken != null; } }
         public bool isEnum { get { return m_EnumToken != null; } }
         public bool isData { get { return m_DataToken != null; } }
         public bool isPartial => m_PartialToken != null;
@@ -41,6 +42,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         protected Token m_EnumToken = null;
         protected Token m_DataToken = null;
         protected Token m_ConstToken = null;
+        protected Token m_StaticToken = null;
         #endregion
         private MetaClass m_MetaClass = null;
         private FileMetaNamespace m_TopLevelFileMetaNamespace = null;

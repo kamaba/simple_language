@@ -134,6 +134,7 @@ namespace SimpleLanguage.Core
                     if (m_MetaClass == null)
                     {
                         m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
+                        
                         if (m_RawMetaClass != null)
                         {
                             m_IsDefineMetaClass = true;

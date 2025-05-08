@@ -89,17 +89,31 @@ Class2 extends Class1
     y2 = 0;
 }
 
-data Data1
+
+data QS.Data1
 {
-    ct = ClassT(20)
+    ct = ClassT(20) 
     x1 = 20
-    x2 = [1,2,3]
+    x2 = [-11.3f,2,3]
     x3 = [{a = 10}, {a = 20} ]
-    x4 = 
-    {
+    x4 = {
          a = 30
     }
+    x41 = 
+    {
+        
+    }
 }
+#!
+data Data2
+{
+    d11 = Data1()
+}
+data Data11 binds Data1,Data2
+{
+    x5 = [1,2,3]
+}
+!#
 
 ObjectTest
 {

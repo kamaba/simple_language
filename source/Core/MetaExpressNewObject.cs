@@ -69,7 +69,7 @@ namespace SimpleLanguage.Core
                         m_MetaMemberData = new MetaMemberData(mt.metaClass as MetaData, fmos );
                         m_MetaMemberData.SetOwnerBlockstatements(m_OwnerMetaBlockStatements);
                         m_MetaMemberData.ParseName();
-                        m_MetaMemberData.ParsDefineMetaType();
+                        m_MetaMemberData.ParseDefineMetaType();
                         m_MetaExpress = m_MetaMemberData.expressNode;
                         m_MetaMemberData.ParseMetaExpress();
                         m_MetaMemberData.ParseChildMemberData();
@@ -414,7 +414,7 @@ namespace SimpleLanguage.Core
                             anname = anname + m_FileMetaBraceTerm.token?.path + "_" + m_FileMetaBraceTerm.token?.sourceBeginLine.ToString() + "_" + GetHashCode().ToString();
                         }
 
-                        m_NewTempMetaData = new MetaData(anname, false);
+                        m_NewTempMetaData = new MetaData(anname, false, false );
                         if( m_EqualMetaVariable?.pingToken != null )
                         {
                             m_NewTempMetaData.AddPingToken(m_EqualMetaVariable.pingToken);

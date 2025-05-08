@@ -301,10 +301,12 @@ namespace SimpleLanguage.Compile.CoreFileMeta
     }
     public class FileMetaConstValueTerm : FileMetaBaseTerm
     {
-        public FileMetaConstValueTerm( FileMeta fm, Token _token )
+        private Token m_PlusOrMinusToken = null;
+        public FileMetaConstValueTerm( FileMeta fm, Token _token, Token plusMinusToken = null )
         {
             m_FileMeta = fm;
             m_Token = _token;
+            m_PlusOrMinusToken = plusMinusToken;
             m_Root = this;
         }
         public override string ToFormatString()

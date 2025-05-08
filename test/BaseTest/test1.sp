@@ -11,10 +11,9 @@ const data ProjectConfig
             a = 200
         }
     ]
-    ct2 = ClassT()
-    globalVariable
+    globalVariable = 
     {
-        testclass
+        testclass =
         {
             a = 20
             b = 30
@@ -24,39 +23,39 @@ const data ProjectConfig
         maxInt = 23232323i;
         #xc = XC;
     }
-    globalNamespace          #命名空间设计
+    globalNamespace =          #命名空间设计
     {
-        Application
+        Application =
         {
-            Core
+            Core =
             {
-                Game
+                Game =
                 {
                 }
-                Instance{}
-                UI{}
+                Instance = {}
+                UI = {}
             }
-            Math
+            Math=
             {
-                Util{}
-                Ext{}
+                Util={}
+                Ext={}
             }
-            Render
+            Render =
             {
-                Camera{}
-                Mass{}
-                Entry{}
+                Camera={}
+                Mass={}
+                Entry={}
             }
-            Util
+            Util=
             {
             }
         }
-        QT
+        QT=
         {
-            Math{}
-            Express{}
+            Math={}
+            Express={}
         }
-        QS{}
+        QS={}
     }
 }
 

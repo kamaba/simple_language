@@ -57,7 +57,7 @@ namespace SimpleLanguage.Core
                 MetaBase mb = GetChildrenMetaBaseByName(v.name);
                 if (mb != null)
                 {
-                    Console.WriteLine("Error 已有定义类: " + allName + "中 已有: " + v.token?.ToLexemeAllString() + "的元素!!");
+                    Console.WriteLine("Error Enum MetaMemberData已有定义类: " + allName + "中 已有: " + v.token?.ToLexemeAllString() + "的元素!!");
                     isHave = true;
                 }
                 else
