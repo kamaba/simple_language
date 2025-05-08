@@ -53,15 +53,15 @@ namespace SimpleLanguage.Core
         //protected MetaNewStatements m_FromMetaNewStatementsCreate = null;
         //protected MetaDefineParam m_FromMetaDefineParamCreate = null;
         //protected MetaExpressNode m_FromExpressNodeCreate = null;
-        //protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
-        //public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
+        protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
+        public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
         protected MetaVariable() { }
         public MetaVariable( MetaVariable mv )
         {
             m_Name = mv.m_Name;
             m_DefineMetaType = mv.m_DefineMetaType;
             m_OwnerMetaClass = mv.m_OwnerMetaClass;
-            //m_OwnerMetaBlockStatements = mv.m_OwnerMetaBlockStatements;
+            m_OwnerMetaBlockStatements = mv.m_OwnerMetaBlockStatements;
             m_MetaVariableDict = mv.m_MetaVariableDict;
             m_PintTokenList = mv.m_PintTokenList;
 
@@ -73,7 +73,7 @@ namespace SimpleLanguage.Core
         {
             m_Name = _name;
             m_VariableFrom = from;
-            //m_OwnerMetaBlockStatements = mbs;
+            m_OwnerMetaBlockStatements = mbs;
             m_OwnerMetaClass = ownerClass;
             m_DefineMetaType = mdt;
             if (m_DefineMetaType == null )
@@ -119,10 +119,10 @@ namespace SimpleLanguage.Core
         }
         // 这里注释掉是因为，使用token进行定位，而不再使用解析完成后的语句
 
-        //public virtual void SetOwnerBlockstatements(MetaBlockStatements mbs)
-        //{
-        //    //m_OwnerMetaBlockStatements = mbs;
-        //}
+        public virtual void SetOwnerBlockstatements(MetaBlockStatements mbs)
+        {
+            m_OwnerMetaBlockStatements = mbs;
+        }
         //public void SetFromMetaNewStatementsCreate(MetaNewStatements ns)
         //{
         //    //m_FromMetaNewStatementsCreate = ns;

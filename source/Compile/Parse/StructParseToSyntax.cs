@@ -373,6 +373,7 @@ namespace SimpleLanguage.Compile.Parse
 
             Token staticToken = null;
             Token dynamicToken = null;
+            Token dataToken = null;
             Token nameToken = null;
             FileMetaClassDefine classRef = null;
             FileMetaCallLink varRef = null;
@@ -411,13 +412,23 @@ namespace SimpleLanguage.Compile.Parse
                     {
                         defineNodeList.Add(cnode);
                     }
-                    else if( token?.type == ETokenType.Dynamic )
+                    else if (token?.type == ETokenType.Dynamic)
                     {
                         if (dynamicToken != null)
                         {
                             Console.WriteLine("Error 多个Dynamic!!");
                         }
                         dynamicToken = token;
+                        defineNodeList.Add(cnode);
+                    }
+                    else if (token?.type == ETokenType.Data )
+                    {
+                        if (dataToken != null)
+                        {
+                            Console.WriteLine("Error 多个Data!!");
+                        }
+                        dataToken = token;
+                        defineNodeList.Add(cnode);
                     }
                     else
                     {

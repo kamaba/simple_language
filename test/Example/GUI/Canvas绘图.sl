@@ -1,12 +1,13 @@
 import CSharp.System;
 import Tkinter;
+import Core;
 
 PTS
 {
     x = 0
     y = 0
 
-    List<PTS> points;
+    Core.List<PTS> points;
 
     static Fun()
     {        
@@ -18,7 +19,7 @@ PTS
         MAXPTS = 15
         h = screeny
         w = scrrenx
-        xcenter = w/2
+        xcenter = w.toFloat()/2    # w/2
         ycenter = h/2
         radius = (h-30)/(aspectRatio*2) - 20
         step = 360 / MAXPTS

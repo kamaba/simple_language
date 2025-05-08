@@ -107,12 +107,20 @@ IfelseTest
 
         }
         int ai = 0;
-        if ai    #如果数字型 则判断是否为int/short/long = 0 float/double = 0.0 string = ""  先判断是否有对象 ai != null 确定int后查看 0
+        if ai    #如果数字型 则判断是否为int/short/long != 0 float/double = 0.0 string = ""  先判断是否有对象 ai != null 确定int后查看 0
         {
 
         }
+        var a = Claas1();
 
-        int a = if true{ tr 20 }else{ tr 10}    #局部返回 tr  像 if/switch/while/dowhile/for/for in/
+        int a = if true
+        { tr 20 }
+        else
+        {
+             tr 10
+        }    #局部返回 tr  像 if/switch/while/dowhile/for/for in/
+
+        a = 100 ? a == 10 : -100;
     }
 }
        

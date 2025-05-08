@@ -730,7 +730,8 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 }
                 else if (cnode.nodeType == ENodeType.Brace )
                 {
-                    Console.WriteLine("Error 不支持在[]中解析[]的逻辑!!");
+                    var fileMetaBraceTerm = new FileMetaBraceTerm(m_FileMeta, cnode);
+                    AddFileMetaTerm(fileMetaBraceTerm);
                     continue;
                 }
                 else

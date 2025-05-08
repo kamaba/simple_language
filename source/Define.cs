@@ -261,6 +261,8 @@ namespace SimpleLanguage
         String,
         /// <summary> null </summary>
         Null,
+        /// <summary> var </summary>
+        Var,
         /// <summary> object </summary>
         Object,
         /// <summary> this </summary>

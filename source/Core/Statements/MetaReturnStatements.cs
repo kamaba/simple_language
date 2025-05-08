@@ -30,7 +30,7 @@ namespace SimpleLanguage.Core.Statements
             ExpressManager.CreateExpressParam cep2 = new ExpressManager.CreateExpressParam()
             {
                 mbs = m_OwnerMetaBlockStatements,
-                mdt = mdt,
+                metaType = mdt,
                 fme = m_FileMetaReturnSyntax.returnExpress,
                 isStatic = false,
                 isConst = false,
@@ -87,7 +87,7 @@ namespace SimpleLanguage.Core.Statements
                 ExpressManager.CreateExpressParam cep2 = new ExpressManager.CreateExpressParam()
                 {
                     mbs = m_OwnerMetaBlockStatements,
-                    mdt = mdt,
+                    metaType = mdt,
                     fme = m_FileMetaReturnSyntax.returnExpress,
                     isStatic = false,
                     isConst = false,
