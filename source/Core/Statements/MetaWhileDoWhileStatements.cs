@@ -63,7 +63,7 @@ namespace SimpleLanguage.Core.Statements
                     m_ConditionExpress.CalcReturnType();
                 }
 
-                var mcallEn = m_ConditionExpress as MetaCallExpressNode;
+                var mcallEn = m_ConditionExpress as MetaCallLinkExpressNode;
                 var mnoen = m_ConditionExpress as MetaNewObjectExpressNode;
                 if (mcallEn == null && mnoen == null)
                 {

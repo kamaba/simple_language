@@ -625,6 +625,7 @@ namespace SimpleLanguage.Compile.Parse
                 case ETokenType.Continue:
                 case ETokenType.Break:
                 case ETokenType.Default:
+                case ETokenType.Var:
                 case ETokenType.Next:
                     {
                         AddKeyNode(token);

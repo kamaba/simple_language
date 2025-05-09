@@ -264,10 +264,14 @@ namespace SimpleLanguage.Compile.Parse
                     {
                         keynodeStruct.SetMainKeyNode(curNode);
                     }
-                    else if(  ttt == ETokenType.Data )
+                    else if (ttt == ETokenType.Data)
                     {
-                        keynodeStruct.SetMainKeyNode(curNode);
+                        keynodeStruct.AddContent(curNode);
                     }
+                    else if (ttt == ETokenType.Var )
+                    {
+                        keynodeStruct.AddContent(curNode);
+                    }                    
                     else if (ttt == ETokenType.In)
                     {
                         keynodeStruct.AddContent(curNode);
@@ -373,6 +377,7 @@ namespace SimpleLanguage.Compile.Parse
 
             Token staticToken = null;
             Token dynamicToken = null;
+            Token varToken = null;
             Token dataToken = null;
             Token nameToken = null;
             FileMetaClassDefine classRef = null;
@@ -414,16 +419,25 @@ namespace SimpleLanguage.Compile.Parse
                     }
                     else if (token?.type == ETokenType.Dynamic)
                     {
-                        if (dynamicToken != null)
+                        if (varToken != null || dynamicToken != null || dataToken != null)
                         {
                             Console.WriteLine("Error 多个Dynamic!!");
                         }
                         dynamicToken = token;
                         defineNodeList.Add(cnode);
                     }
+                    else if (token?.type == ETokenType.Var)
+                    {
+                        if (varToken != null || dynamicToken != null || dataToken != null )
+                        {
+                            Console.WriteLine("Error 多个Var!!");
+                        }
+                        varToken = token;
+                        defineNodeList.Add(cnode);
+                    }
                     else if (token?.type == ETokenType.Data )
                     {
-                        if (dataToken != null)
+                        if (varToken != null || dynamicToken != null || dataToken != null)
                         {
                             Console.WriteLine("Error 多个Data!!");
                         }
@@ -442,21 +456,29 @@ namespace SimpleLanguage.Compile.Parse
                 Console.WriteLine("Error 定义类型少于1");
                 return null;
             }
-            else if (defineNodeList.Count == 1)
+            else if (defineNodeList.Count == 1  )
             {
                 nameToken = defineNodeList[0].token;
                 varRef = new FileMetaCallLink(m_FileMeta, defineNodeList[0]);
             }
             else if (defineNodeList.Count == 2)
             {
-                classRef = new FileMetaClassDefine(m_FileMeta, defineNodeList[0]);
-                var node2 = defineNodeList[1];
-                if (node2.linkTokenList.Count != 1)
+                if(varToken != null || dynamicToken != null || dataToken != null )
                 {
-                    Console.WriteLine("Error 定义名称只允许一个字符串!!");
-                    return null;
+                    nameToken = defineNodeList[1].token;
+                    varRef = new FileMetaCallLink(m_FileMeta, defineNodeList[1]);
                 }
-                nameToken = node2.token;
+                else
+                {
+                    classRef = new FileMetaClassDefine(m_FileMeta, defineNodeList[0]);
+                    var node2 = defineNodeList[1];
+                    if (node2.linkTokenList.Count != 1)
+                    {
+                        Console.WriteLine("Error 定义名称只允许一个字符串!!");
+                        return null;
+                    }
+                    nameToken = node2.token;
+                }
             }
 
             FileMetaBaseTerm fme = null;
@@ -510,7 +532,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 if (varRef != null)
                 {
-                    FileMetaOpAssignSyntax fms = new FileMetaOpAssignSyntax(varRef, assignNode.token, dynamicToken, fme, true);
+                    FileMetaOpAssignSyntax fms = new FileMetaOpAssignSyntax(varRef, assignNode.token, dynamicToken, dataToken, varToken,  fme, true);
                     return fms;
                 }
             }
@@ -521,7 +543,7 @@ namespace SimpleLanguage.Compile.Parse
                     Console.WriteLine("Error 当为定义变量时，名称不能为空!!");
                     return null;
                 }
-                FileMetaOpAssignSyntax fms = new FileMetaOpAssignSyntax(varRef, opAssignNode.token, dynamicToken, fme);
+                FileMetaOpAssignSyntax fms = new FileMetaOpAssignSyntax(varRef, opAssignNode.token, dynamicToken, varToken, dataToken, fme);
                 return fms;
             }
             else

@@ -327,8 +327,9 @@ namespace SimpleLanguage.Core
             Variable,
             VisitVariable,
             IteratorVariable,
-            MethodCall, 
-            NewMethodCall
+            MethodCall,
+            NewMethodCall,
+            New,
         }
         public EVisitType visitType { get; private set; }
         public MetaVariable variable { get; private set; } = null;
@@ -337,6 +338,16 @@ namespace SimpleLanguage.Core
         public MetaClass callerMetaClass { get; private set; }= null;
         public MetaBraceOrBracketStatementsContent metaBraceStatementsContent { get; private set; } = null;
 
+        public static MetaVisitNode CraeteByNew( MetaClass mc, MetaBraceOrBracketStatementsContent mb)
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.callerMetaClass = mc;
+            vn.metaBraceStatementsContent = mb;
+            vn.visitType = EVisitType.New;
+
+            return vn;
+        }
         public static MetaVisitNode CreateByNewMethodCall(MetaMethodCall _methodCall, MetaBraceOrBracketStatementsContent mb )
         {
             MetaVisitNode vn = new MetaVisitNode();
@@ -393,6 +404,10 @@ namespace SimpleLanguage.Core
                 case EVisitType.NewMethodCall:
                     {
                         return methodCall.callerMetaVariable.metaDefineType;
+                    }
+                case EVisitType.New:
+                    {
+                        return new MetaType(this.callerMetaClass);
                     }
                 default:
                     {
@@ -492,7 +507,7 @@ namespace SimpleLanguage.Core
                     break;
                 case EVisitType.NewMethodCall:
                     {
-                        sb.Append("");
+                        sb.Append(this.methodCall.ToFormatString());
                     }
                     break;
                 default:

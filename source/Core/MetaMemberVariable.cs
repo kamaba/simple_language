@@ -180,7 +180,7 @@ namespace SimpleLanguage.Core
         //                {
         //                    m_Name = m_FileMetaMemeberData.name;
         //                    m_MemberDataType = EMemberDataType.MemberData;
-        //                    m_Express = new MetaCallExpressNode(m_FileMetaMemeberData.fileMetaCallTermValue.callLink, null, null);
+        //                    m_Express = new MetaCallLinkExpressNode(m_FileMetaMemeberData.fileMetaCallTermValue.callLink, null, null);
         //                    m_Express.Parse(new AllowUseSettings());
         //                    m_DefineMetaType = m_Express.GetReturnMetaDefineType();
         //                    if (m_DefineMetaType == null)
@@ -544,9 +544,9 @@ namespace SimpleLanguage.Core
         public MetaExpressNode SimulateExpressRun(MetaExpressNode node)
         {
             MetaExpressNode newnode = node;
-            if ( node is MetaCallExpressNode )
+            if ( node is MetaCallLinkExpressNode )
             {
-                MetaCallExpressNode mcen = node as MetaCallExpressNode;
+                MetaCallLinkExpressNode mcen = node as MetaCallLinkExpressNode;
                 if( mcen != null )
                 {
                     newnode = mcen.ConvertConstExpressNode();

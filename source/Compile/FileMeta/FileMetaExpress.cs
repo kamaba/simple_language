@@ -642,7 +642,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     {
                         FileMetaCallLink fmcl = new FileMetaCallLink(m_FileMeta, defineNodeList[0]);
                         FileMetaBaseTerm fmel = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
-                        FileMetaOpAssignSyntax fmoas = new FileMetaOpAssignSyntax(fmcl, assignToken, null, fmel, true);
+                        FileMetaOpAssignSyntax fmoas = new FileMetaOpAssignSyntax(fmcl, assignToken, null, null, null, fmel, true);
                         fmoas.isAppendSemiColon = false;
                         m_FileMetaAssignSyntaxList.Add(fmoas);
                     }

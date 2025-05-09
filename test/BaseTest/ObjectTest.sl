@@ -1,6 +1,7 @@
 import Application.Core;
+import QS
 
-namespace Application;
+namespace Application;         
 namespace Application.Core;
 
 
@@ -104,22 +105,13 @@ data QS.Data1
         
     }
 }
-#!
-data Data2
-{
-    d11 = Data1()
-}
-data Data11 binds Data1,Data2
-{
-    x5 = [1,2,3]
-}
-!#
-
 ObjectTest
 {
     static Fun()
     {
-        Data1 d1 = Data1(){ ct = ClassT(30) }
+        var d1 = Data1(){ ct = ClassT(30) }
+        d1.ct = ClassT(0)
+        vx = d1.ct.t
 
         #dynamic d1 = {t1 = 2, t2 = 3 }
         #!
@@ -148,7 +140,7 @@ ObjectTest
         #t2 = c1.ct3.GetT().t2;                                       #测试调用对象链
         #t2  = c1.ct3.t;
         
-        #CSharp.System.Console.Write("Class1 Value: " + d1.t1 );     
+        CSharp.System.Console.Write("Class1 Value: " + vx );     
 
         #CSharp.System.Console.Write("Class1 Value: " + c1.ct3.t );     #测试调用对象链
 
