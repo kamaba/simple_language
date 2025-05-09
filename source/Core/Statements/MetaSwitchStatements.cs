@@ -81,7 +81,7 @@ namespace SimpleLanguage.Core.Statements
             {
                 if ( m_FileMetaKeyCaseSyntax.defineClassCallLink != null )
                 {
-                    MetaCallExpressNode mcen = new MetaCallExpressNode(m_FileMetaKeyCaseSyntax.defineClassCallLink, null, null);
+                    MetaCallLinkExpressNode mcen = new MetaCallLinkExpressNode(m_FileMetaKeyCaseSyntax.defineClassCallLink, null, null);
                     mcen.Parse(new AllowUseSettings() { });
                     mcen.CalcReturnType();
 

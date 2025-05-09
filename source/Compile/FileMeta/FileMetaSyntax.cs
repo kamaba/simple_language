@@ -966,18 +966,25 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public Token dynamicToken => m_DynamicToken;
         public Token constToken => m_ConstToken;
         public Token staticToken => m_StaticToken;
+        public bool hasDefine => m_DynamicToken != null || m_DataToken != null || m_VarToken != null;
 
         private FileMetaCallLink m_VariableRef = null;
         private FileMetaBaseTerm m_Express = null;
         private Token m_AssignToken = null;
         private Token m_DynamicToken = null;
+        private Token m_DataToken = null;
+        private Token m_VarToken = null;
         private Token m_ConstToken = null;
         private Token m_StaticToken = null;
-        public FileMetaOpAssignSyntax(FileMetaCallLink fileMetaVariableRef, Token _opAssignToken, Token _dynamicClassToken, FileMetaBaseTerm fme, bool flag = false  )
+        public FileMetaOpAssignSyntax(FileMetaCallLink fileMetaVariableRef, Token _opAssignToken, Token _dynamicClassToken,
+            Token _dynamicDataToken, Token _varToken,
+            FileMetaBaseTerm fme, bool flag = false  )
         {
             m_VariableRef = fileMetaVariableRef;
             m_AssignToken = _opAssignToken;
             m_DynamicToken = _dynamicClassToken;
+            m_DataToken = _dynamicDataToken;
+            m_VarToken = _varToken;
             m_Express = fme;
             isAppendSemiColon = flag;
         }

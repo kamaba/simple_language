@@ -42,7 +42,7 @@ namespace SimpleLanguage.Core.Statements
         {
             switch (m_ExpressNode)
             {
-                case MetaCallExpressNode mcen:
+                case MetaCallLinkExpressNode mcen:
                     {
                         var retMc = mcen.GetReturnMetaClass();
                         if (retMc == CoreMetaClassManager.booleanMetaClass)
@@ -88,7 +88,6 @@ namespace SimpleLanguage.Core.Statements
         private FileMetaOpAssignSyntax m_FileMetaOpAssignSyntax = null;
 
         private MetaVariable m_MetaVariable = null;
-        private MetaCallLink m_MetaCallLink = null;
         private EOpSign m_OpSign;
         private ELeftRightOpSign m_AutoAddExpressOpSign;
         private Token m_SignToken = null;
@@ -96,7 +95,7 @@ namespace SimpleLanguage.Core.Statements
         private bool m_IsAssign = false;
 
         private MetaExpressNode m_ExpressNode;
-        private MetaExpressNode m_LeftMetaExpress;
+        private MetaCallLinkExpressNode m_LeftMetaExpress;
         private MetaExpressNode m_FinalMetaExpress;
         private bool m_IsNeedCastStatements = false;
 
@@ -108,23 +107,25 @@ namespace SimpleLanguage.Core.Statements
         }
         private void Parse()
         {
-            m_MetaCallLink = new MetaCallLink(m_FileMetaOpAssignSyntax.variableRef, m_OwnerMetaBlockStatements?.ownerMetaClass, m_OwnerMetaBlockStatements );
+            var metaCallLink = new MetaCallLink(m_FileMetaOpAssignSyntax.variableRef, m_OwnerMetaBlockStatements?.ownerMetaClass, m_OwnerMetaBlockStatements );
 
-            if (m_MetaCallLink == null)
+            if (metaCallLink == null)
             {
                 Console.WriteLine("Error MetaAssignStatements ParseDefine!!!" + m_FileMetaOpAssignSyntax.variableRef?.ToTokenString());
                 return;
             }
 
             m_SignToken = m_FileMetaOpAssignSyntax.assignToken;
-            m_LeftMetaExpress = new MetaCallExpressNode(m_MetaCallLink);
+            m_LeftMetaExpress = new MetaCallLinkExpressNode(metaCallLink);
 
             ETokenType ett = m_SignToken.type;
 
+            bool isCanNew = false;
             switch( ett )
             {
                 case ETokenType.Assign:
                     {
+                        isCanNew = true;
                     }
                     break;
                 case ETokenType.PlusAssign:
@@ -201,24 +202,29 @@ namespace SimpleLanguage.Core.Statements
             auc.useNotConst = m_FileMetaOpAssignSyntax?.constToken == null ? false : true;
             auc.setterFunction = true;
             auc.getterFunction = false;
-            m_MetaCallLink.Parse(auc);
-            m_MetaCallLink.CalcReturnType();
-            //var mfc = new Object(); m_MetaCallLink.metaFunctionCall;
-            //if( mfc != null && mfc.function is MetaMemberFunction )
-            //{
-            //    MetaMemberFunction mmf = mfc.function as MetaMemberFunction;
-            //    if( mmf.isSet )
-            //    {
-            //        m_IsSetStatements = true;
-            //    }
-            //}
+            m_LeftMetaExpress.Parse(auc);
+            m_LeftMetaExpress.CalcReturnType();
+
+            if(m_LeftMetaExpress.metaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.MethodCall )
+            {
+                var fun = m_LeftMetaExpress.metaCallLink.finalCallNode.methodCall.function;
+                if ( fun is MetaMemberFunction)
+                {
+                    MetaMemberFunction mmf = fun as MetaMemberFunction;
+                    if (mmf.isSet)
+                    {
+                        m_IsSetStatements = true;
+                    }
+                }
+            }
+
             MetaType expressMdt = new MetaType(CoreMetaClassManager.objectMetaClass);
             if (!m_IsSetStatements)
             {
-                m_MetaVariable = m_MetaCallLink.ExecuteGetMetaVariable();
+                m_MetaVariable = m_LeftMetaExpress.GetMetaVariable();
                 if (m_MetaVariable == null)
                 {
-                    Console.WriteLine("Error 变量没有发现" + m_MetaCallLink.ToTokenString());
+                    Console.WriteLine("Error 变量没有发现" + m_LeftMetaExpress.ToTokenString());
                     return;
                 }
                 if(m_MetaVariable.isConst )
@@ -227,11 +233,6 @@ namespace SimpleLanguage.Core.Statements
                 }
 
                 m_Name = m_MetaVariable.name;
-                if (m_MetaVariable == null)
-                {
-                    Console.WriteLine("Error 没有找到变量的定义!!! ");
-                    return;
-                }
                 if( m_MetaVariable.isGlobal )
                 {
                     if( ownerMetaClass.name == "Project" )
@@ -294,6 +295,11 @@ namespace SimpleLanguage.Core.Statements
 
             if(m_IsSetStatements == false )
             {
+                //Class1{  set name( string _n) { _name = _n } }
+                // c1 = Class1()
+                // c1.name = "aa"  =>   c1.name("aa")
+                // 相当于 给 set 函数传参数
+
                 MetaType mdt = m_MetaVariable.metaDefineType;
 
                 if( mdt.metaTemplate != null )

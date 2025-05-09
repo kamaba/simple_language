@@ -10,12 +10,12 @@ using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Core
 {
-    public class MetaCallExpressNode : MetaExpressNode
+    public class MetaCallLinkExpressNode : MetaExpressNode
     {
         public MetaCallLink metaCallLink => m_MetaCallLink;
 
         private MetaCallLink m_MetaCallLink = null;
-        public MetaCallExpressNode( FileMetaCallLink fmcl, MetaClass mc, MetaBlockStatements mbs )
+        public MetaCallLinkExpressNode( FileMetaCallLink fmcl, MetaClass mc, MetaBlockStatements mbs )
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
@@ -25,7 +25,7 @@ namespace SimpleLanguage.Core
                 m_MetaCallLink = new MetaCallLink( fmcl, mc, mbs );
             }
         }
-        public MetaCallExpressNode( MetaCallLink mcl )
+        public MetaCallLinkExpressNode( MetaCallLink mcl )
         {
             m_MetaCallLink = mcl;
         }

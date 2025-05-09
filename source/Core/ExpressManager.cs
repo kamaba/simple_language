@@ -72,7 +72,7 @@ namespace SimpleLanguage.Core
                         moen.SimulateCompute(config);
                     }
                     break;
-                case MetaCallExpressNode mcn:
+                case MetaCallLinkExpressNode mcn:
                     {
                         //mcn.GetMetaVariable
                     }
@@ -166,7 +166,7 @@ namespace SimpleLanguage.Core
                     break;
                 case FileMetaCallTerm fmct:
                     {
-                        MetaCallExpressNode men2 = new MetaCallExpressNode(fmct.callLink, mc, mbs );
+                        MetaCallLinkExpressNode men2 = new MetaCallLinkExpressNode(fmct.callLink, mc, mbs );
                         men = men2;
                     }
                     break;
@@ -259,7 +259,7 @@ namespace SimpleLanguage.Core
                             if (mnoen != null)
                                 return mnoen;
 
-                            MetaCallExpressNode men2 = new MetaCallExpressNode( fmct.callLink, ownerClass, cep.mbs ); 
+                            MetaCallLinkExpressNode men2 = new MetaCallLinkExpressNode( fmct.callLink, ownerClass, cep.mbs ); 
                             men = men2;
                         }
                         break;
@@ -379,7 +379,7 @@ namespace SimpleLanguage.Core
                         level = CalcParseLevel(level, moen.left);
                     }
                     break;
-                case MetaCallExpressNode mcn:
+                case MetaCallLinkExpressNode mcn:
                     {
                         level = mcn.CalcParseLevel(level);
                     }
