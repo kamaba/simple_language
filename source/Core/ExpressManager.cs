@@ -317,8 +317,12 @@ namespace SimpleLanguage.Core
             return mn;
         }
 
-        public static MetaExpressNode CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch( FileMetaBaseTerm fmte, MetaBlockStatements mbs, MetaType mdt, MetaVariable equalMetaVariable = null )
+        public static MetaExpressNode CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(CreateExpressParam cep )
         {
+            FileMetaBaseTerm fmte = cep.fme;
+            MetaBlockStatements mbs = cep.mbs;
+            MetaType mdt = cep.metaType;
+            MetaVariable equalMetaVariable = cep.equalMetaVariable;
             MetaClass mc = mbs.ownerMetaClass;
 
             if (fmte != null)
@@ -350,11 +354,6 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    CreateExpressParam cep = new CreateExpressParam() 
-                    { mbs = mbs, metaType = mdt, fme = fmte, isStatic = false, isConst = false,
-                        parsefrom = EParseFrom.StatementRightExpress,
-                        equalMetaVariable = equalMetaVariable
-                    };
                     return ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep);
                 }
             }
