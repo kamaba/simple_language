@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using static SimpleLanguage.Core.ExpressManager;
 using static SimpleLanguage.Core.Statements.MetaIfStatements;
 
 namespace SimpleLanguage.Core.Statements
@@ -250,7 +251,17 @@ namespace SimpleLanguage.Core.Statements
 
             if (m_FileMetaOpAssignSyntax.express != null)
             {
-                m_ExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(m_FileMetaOpAssignSyntax.express, m_OwnerMetaBlockStatements, expressMdt);
+                CreateExpressParam cep = new CreateExpressParam()
+                {
+                    mbs = m_OwnerMetaBlockStatements,
+                    metaType = expressMdt,
+                    fme = m_FileMetaOpAssignSyntax.express,
+                    isStatic = false,
+                    isConst = false,
+                    parsefrom = EParseFrom.StatementRightExpress,
+                    equalMetaVariable = m_MetaVariable
+                };
+                m_ExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(cep);
                 
                 if (m_ExpressNode == null)
                 {
