@@ -114,7 +114,9 @@ namespace SimpleLanguage.Core
     }
     public class MetaIteratorVariable : MetaVariable
     {
+#pragma warning disable CS0414 // 字段“MetaIteratorVariable.m_Index”已被赋值，但从未使用过它的值
         int m_Index = 0;
+#pragma warning restore CS0414 // 字段“MetaIteratorVariable.m_Index”已被赋值，但从未使用过它的值
         MetaVariable m_LocalMetaVariable = null;
         MetaType m_OrgMetaDefineType = null;
         MetaVariable m_IndexMetaVariable = null;
@@ -327,8 +329,9 @@ namespace SimpleLanguage.Core
             Variable,
             VisitVariable,
             IteratorVariable,
-            MethodCall, 
-            NewMethodCall
+            MethodCall,
+            NewMethodCall,
+            New,
         }
         public EVisitType visitType { get; private set; }
         public MetaVariable variable { get; private set; } = null;
@@ -337,6 +340,16 @@ namespace SimpleLanguage.Core
         public MetaClass callerMetaClass { get; private set; }= null;
         public MetaBraceOrBracketStatementsContent metaBraceStatementsContent { get; private set; } = null;
 
+        public static MetaVisitNode CraeteByNew( MetaClass mc, MetaBraceOrBracketStatementsContent mb)
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.callerMetaClass = mc;
+            vn.metaBraceStatementsContent = mb;
+            vn.visitType = EVisitType.New;
+
+            return vn;
+        }
         public static MetaVisitNode CreateByNewMethodCall(MetaMethodCall _methodCall, MetaBraceOrBracketStatementsContent mb )
         {
             MetaVisitNode vn = new MetaVisitNode();
@@ -393,6 +406,10 @@ namespace SimpleLanguage.Core
                 case EVisitType.NewMethodCall:
                     {
                         return methodCall.callerMetaVariable.metaDefineType;
+                    }
+                case EVisitType.New:
+                    {
+                        return new MetaType(this.callerMetaClass);
                     }
                 default:
                     {
@@ -492,7 +509,7 @@ namespace SimpleLanguage.Core
                     break;
                 case EVisitType.NewMethodCall:
                     {
-                        sb.Append("");
+                        sb.Append(this.methodCall.ToFormatString());
                     }
                     break;
                 default:

@@ -72,7 +72,7 @@ namespace SimpleLanguage.Core
                         moen.SimulateCompute(config);
                     }
                     break;
-                case MetaCallExpressNode mcn:
+                case MetaCallLinkExpressNode mcn:
                     {
                         //mcn.GetMetaVariable
                     }
@@ -166,7 +166,7 @@ namespace SimpleLanguage.Core
                     break;
                 case FileMetaCallTerm fmct:
                     {
-                        MetaCallExpressNode men2 = new MetaCallExpressNode(fmct.callLink, mc, mbs );
+                        MetaCallLinkExpressNode men2 = new MetaCallLinkExpressNode(fmct.callLink, mc, mbs );
                         men = men2;
                     }
                     break;
@@ -259,7 +259,7 @@ namespace SimpleLanguage.Core
                             if (mnoen != null)
                                 return mnoen;
 
-                            MetaCallExpressNode men2 = new MetaCallExpressNode( fmct.callLink, ownerClass, cep.mbs ); 
+                            MetaCallLinkExpressNode men2 = new MetaCallLinkExpressNode( fmct.callLink, ownerClass, cep.mbs ); 
                             men = men2;
                         }
                         break;
@@ -317,8 +317,12 @@ namespace SimpleLanguage.Core
             return mn;
         }
 
-        public static MetaExpressNode CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch( FileMetaBaseTerm fmte, MetaBlockStatements mbs, MetaType mdt, MetaVariable equalMetaVariable = null )
+        public static MetaExpressNode CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(CreateExpressParam cep )
         {
+            FileMetaBaseTerm fmte = cep.fme;
+            MetaBlockStatements mbs = cep.mbs;
+            MetaType mdt = cep.metaType;
+            MetaVariable equalMetaVariable = cep.equalMetaVariable;
             MetaClass mc = mbs.ownerMetaClass;
 
             if (fmte != null)
@@ -350,11 +354,6 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    CreateExpressParam cep = new CreateExpressParam() 
-                    { mbs = mbs, metaType = mdt, fme = fmte, isStatic = false, isConst = false,
-                        parsefrom = EParseFrom.StatementRightExpress,
-                        equalMetaVariable = equalMetaVariable
-                    };
                     return ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep);
                 }
             }
@@ -379,7 +378,7 @@ namespace SimpleLanguage.Core
                         level = CalcParseLevel(level, moen.left);
                     }
                     break;
-                case MetaCallExpressNode mcn:
+                case MetaCallLinkExpressNode mcn:
                     {
                         level = mcn.CalcParseLevel(level);
                     }

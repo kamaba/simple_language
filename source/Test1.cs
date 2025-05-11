@@ -33,7 +33,9 @@ namespace Simple
                 }
                 public class NTEmplate< T >
                 {
+#pragma warning disable CS0169 // 从不使用字段“NNN2.NTEmplate<T>.a”
                     T a;
+#pragma warning restore CS0169 // 从不使用字段“NNN2.NTEmplate<T>.a”
                     public T Print()
                     {
                         T a2 = default(T);
@@ -140,10 +142,14 @@ namespace Simple
 
         class CXX : CC.CI1
         {
+#pragma warning disable CS0169 // 从不使用字段“CXX.mk”
             C2.MC2.MC2_3 mk;
+#pragma warning restore CS0169 // 从不使用字段“CXX.mk”
             public class XX : C2.MC2.MC2_3
             {
+#pragma warning disable CS0414 // 字段“CXX.XX.x”已被赋值，但从未使用过它的值
                 int x = 20;
+#pragma warning restore CS0414 // 字段“CXX.XX.x”已被赋值，但从未使用过它的值
             }
             public void PrintX()
             {

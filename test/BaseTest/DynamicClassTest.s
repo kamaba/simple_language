@@ -20,7 +20,7 @@ namespace N1
 
         _init_( Class1 x1 )
         {
-            c1 = x1
+            this.c1 = x1
         }
     }
     DynamicClass
@@ -28,11 +28,9 @@ namespace N1
         static Fun()
         {
             dynamic c1 = {a = 10; c1 = Class1(); Class1_2 c2 = Class1_2( Class1() ){ c2 = Class2() } };
-            data c2 = {a=2,b="ace",N1.Class1 c1 = (){ a2 = 10}, arr1 = [1,2,3,4,5] }
-
-            re1 = c2.c1.a2
-
-            Console.Write("ret=" +　re1 );
+            #data c2 = {a=2,b="ace",N1.Class1 c1 = (){ a2 = 10}, arr1 = [1,2,3,4,5] }
+            re1 = c1.c1.a2
+            Console.Write("ret=" + re1 );
         }
     }
 }

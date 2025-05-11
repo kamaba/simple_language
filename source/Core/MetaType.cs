@@ -31,6 +31,7 @@ namespace SimpleLanguage.Core
         public bool isGenTemplateClass => m_MetaClass is MetaGenTemplateClass;
         public bool isArray => m_MetaClass?.eType == EType.Array;
         public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
+        public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData;
         public bool isDefineMetaClass => m_IsDefineMetaClass;
         private List<MetaTemplate> defineMetaTemplateList => m_DefineMetaTemplateList;
 

@@ -1,7 +1,7 @@
 
 Array<T>
 {
-    Int32 m_Count = 0;
+    private Int32 m_Count = 0;
     UInt16 m_Bound1 = 0;
     UInt16 m_Bound2 = 0;
 
@@ -19,7 +19,7 @@ Array<T>
         this.m_Bound1 = _b1;
     }    
     
-    __cast__( Type t )
+    public T1 _cast_<T1>( T1 t1 )
     {
         #!
         if( t == Int16.type )
@@ -29,21 +29,35 @@ Array<T>
         }
         !#
     }
+
     add( T t )
     {
         CSharp.SL.Core.MetaArrayClass.Add( this, t );
     }
-    removeIndex( int index )
+    bool removeAt( int index )
     {
-        CSharp.SL.Core.MetaArrayClass.RemoveIndex( this, index );
+        byte ret1 = CSharp.SL.Core.MetaArrayClass.RemoveIndex( this, index )
+        ret true ? ret1 == 1 : false
     }
-    remove( T t )
+    bool remove( T t )
     {
         CSharp.SL.Core.MetaArrayClass.Remove( this, t );
+        ret false
     }
     int get index()
     {
         ret this.m_Index;
+    }
+    #[index]
+    public T _index_( int _index )
+    {
+        Ptr obj = CSharp.SL.Core.MetaArrayClass.GetValue( this, _index )
+        return obj.cast<T>()
+    }
+    #["index"]
+    public T _index_( string _index )
+    {
+
     }
     set index( int a )
     {
@@ -57,7 +71,7 @@ Array<T>
     {
         this.m_Value = t;
     }
-    bool inC( T t )
+    bool contraint( T t )
     {
         ret CSharp.SL.Core.MetaArrayClass.In( this, t )
     }
@@ -87,7 +101,7 @@ ArrayTest
         # c# 的方法  ArrClass[] arr2 = new ArrClass2[100]; 这里边使用的是 arr2 = ArrClass2[100];
         int[] a6 = Array<Int32>(4);  # 数组表示使用 Array<T>() new Array对象 长度为4的int
         
-        float[] a7 = Array<float>(){ 1.2, 2.2, 3.4 };  #   
+        float[] a7 = Array<float>(){ 1.2, 2.2, 3.4 };  #  需要{}的内容特殊处理   
         
         Array<float> a8 = Array( 20 ){1,2,3,5,3.3};   #申请一个长度为20的数组
        
@@ -117,6 +131,7 @@ ArrayTest
         
         arr1.Remove( arr1[20] );     #删除数据-1 
         arr1.$0.i = 10;
+        arr1.$"aa".i = 20;          #需要重写_index_( string s )才可以使用
         
         arr1.index = 2;     #数组的当前游标
         arr1.value.i = 10;   #数组当前游标的植
@@ -133,7 +148,7 @@ ArrayTest
         {
             i = a.index + 1
         }
-        for i = 0, i < arr1.Count()
+        for i = 0, i < arr1.count()
         {
             i++
             if i < 40

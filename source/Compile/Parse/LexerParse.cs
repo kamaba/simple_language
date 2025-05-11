@@ -751,7 +751,7 @@ namespace SimpleLanguage.Compile.Parse
                             t = m_Builder[0];
                         }
                     }
-                    AddToken(ETokenType.Number, t, EType.Char );
+                    AddToken(ETokenType.String, t, EType.String );
                     m_Index++;
                     m_SourceChar++;
                     break;
@@ -968,7 +968,9 @@ namespace SimpleLanguage.Compile.Parse
             int checkBracket = 1;
             bool isBracket = false;
             StringBuilder bracketStringBuild = new StringBuilder();
+#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
             int offsetLine = 0;
+#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
             while( true )
             {
                 int index = m_Index + checkBracket;
@@ -1196,12 +1198,12 @@ namespace SimpleLanguage.Compile.Parse
                         extend = EType.SByte;
                     }
                     break;
-                case "char":
-                    {
-                        tokenType = ETokenType.Type;
-                        extend = EType.Char;
-                    }
-                    break;
+                //case "char":
+                //    {
+                //        tokenType = ETokenType.Type;
+                //        extend = EType.Char;
+                //    }
+                //    break;
                 case "short":
                     {
                         tokenType = ETokenType.Type;
@@ -1289,6 +1291,9 @@ namespace SimpleLanguage.Compile.Parse
                     break;
                 case "const":
                     tokenType = ETokenType.Const;
+                    break;
+                case "mut":
+                    tokenType = ETokenType.Mut;
                     break;
                 case "final":
                     tokenType = ETokenType.Final;

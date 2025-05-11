@@ -600,6 +600,7 @@ namespace SimpleLanguage.Compile.Parse
                 case ETokenType.Global:
                 case ETokenType.Range:
                 case ETokenType.Const:
+                case ETokenType.Mut:
                 case ETokenType.Final:
                 case ETokenType.Static:
                 case ETokenType.Override:
@@ -625,6 +626,7 @@ namespace SimpleLanguage.Compile.Parse
                 case ETokenType.Continue:
                 case ETokenType.Break:
                 case ETokenType.Default:
+                case ETokenType.Var:
                 case ETokenType.Next:
                     {
                         AddKeyNode(token);

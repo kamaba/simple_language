@@ -81,7 +81,7 @@ namespace SimpleLanguage.Core.Statements
             {
                 if ( m_FileMetaKeyCaseSyntax.defineClassCallLink != null )
                 {
-                    MetaCallExpressNode mcen = new MetaCallExpressNode(m_FileMetaKeyCaseSyntax.defineClassCallLink, null, null);
+                    MetaCallLinkExpressNode mcen = new MetaCallLinkExpressNode(m_FileMetaKeyCaseSyntax.defineClassCallLink, null, null);
                     mcen.Parse(new AllowUseSettings() { });
                     mcen.CalcReturnType();
 
@@ -93,8 +93,12 @@ namespace SimpleLanguage.Core.Statements
                     }
                     else
                     {
+#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
                         EType etype = EType.None;
+#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
+#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
                         string tname = "";
+#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
                         //if (MetaTypeFactory.MatchSystemType(m_FileMetaKeyCaseSyntax.defineClassToken.lexeme.ToString(), ref etype, ref tname))
                         //{
                         //    matchTypeClass = ClassManager.instance.GetClassByMetaType(new MetaType(etype, tname));

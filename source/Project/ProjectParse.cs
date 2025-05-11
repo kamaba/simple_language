@@ -383,7 +383,7 @@ namespace SimpleLanguage.Project
 
     public class ProjectData : MetaData
     {
-        public ProjectData(string _name, bool isConst) : base(_name, isConst, false )
+        public ProjectData(string _name, bool isConst) : base(_name, isConst, false, false )
         {
 
         }

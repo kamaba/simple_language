@@ -263,11 +263,11 @@ namespace SimpleLanguage.VM.Runtime
                         m_ValueStack[m_ValueIndex++].SetBoolValue((bool)iri.opValue);
                     }
                     break;
-                case EIROpCode.LoadConstChar:
-                    {
-                        m_ValueStack[m_ValueIndex++].SetCharValue((Char)iri.opValue);
-                    }
-                    break;
+                //case EIROpCode.LoadConstChar:
+                //    {
+                //        m_ValueStack[m_ValueIndex++].SetCharValue((Char)iri.opValue);
+                //    }
+                //    break;
                 case EIROpCode.LoadConstInt16:
                     {
                         m_ValueStack[m_ValueIndex++].SetInt16Value((Int16)iri.opValue);
