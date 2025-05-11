@@ -35,6 +35,7 @@ namespace SimpleLanguage.Core.SelfMeta
         Class,
         Type,
         Dynamic,
+        Data,
     }
     class CoreMetaClassManager
     {
@@ -54,7 +55,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass stringMetaClass { get; private set; } = null;
         public static MetaClass voidMetaClass { get; set; } = null;
         public static MetaClass booleanMetaClass { get; private set; } = null;
-        public static MetaClass charMetaClass { get; private set; } = null;
+        //public static MetaClass charMetaClass { get; private set; } = null;
         public static MetaClass byteMetaClass { get; private set; } = null;
         public static MetaClass sbyteMetaClass { get; private set; } = null;
         public static MetaClass int16MetaClass { get; private set; } = null;
@@ -69,6 +70,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass rangeMetaClass { get; private set; } = null;
         public static MetaClass typeMetaClass { get; private set; } = null;
         public static MetaClass dynamicMetaClass { get; private set; } = null;
+        public static MetaClass dynamicMetaData { get; private set; } = null;
         public static MetaClass arrayIteratorMetaClass { get; set; } = null;
 
         public static List<MetaClass> s_InnerDefineMetaClassList = new List<MetaClass>();
@@ -80,7 +82,7 @@ namespace SimpleLanguage.Core.SelfMeta
             booleanMetaClass = BooleanMetaClass.CreateMetaClass();
             byteMetaClass = ByteMetaClass.CreateMetaClass();
             sbyteMetaClass = SByteMetaClass.CreateMetaClass();
-            charMetaClass = CharMetaClass.CreateMetaClass();
+            //charMetaClass = CharMetaClass.CreateMetaClass();
             int16MetaClass = Int16MetaClass.CreateMetaClass();
             uint16MetaClass = UInt16MetaClass.CreateMetaClass();
             int32MetaClass = Int32MetaClass.CreateMetaClass();
@@ -95,13 +97,14 @@ namespace SimpleLanguage.Core.SelfMeta
             rangeMetaClass = RangeMetaClass.CreateMetaClass();
             typeMetaClass = TypeMetaClass.CreateMetaClass();
             dynamicMetaClass = DynamicMetaClass.CreateMetaClass();
+            dynamicMetaData = DynamicMetaData.CreateMetaClass();
 
             s_InnerDefineMetaClassList.Add(objectMetaClass);
             s_InnerDefineMetaClassList.Add(voidMetaClass);
             s_InnerDefineMetaClassList.Add(booleanMetaClass);
             s_InnerDefineMetaClassList.Add(byteMetaClass);
             s_InnerDefineMetaClassList.Add(sbyteMetaClass);
-            s_InnerDefineMetaClassList.Add(charMetaClass);
+            //s_InnerDefineMetaClassList.Add(charMetaClass);
             s_InnerDefineMetaClassList.Add(int16MetaClass);
             s_InnerDefineMetaClassList.Add(uint16MetaClass);
             s_InnerDefineMetaClassList.Add(int32MetaClass);
@@ -115,7 +118,8 @@ namespace SimpleLanguage.Core.SelfMeta
             s_InnerDefineMetaClassList.Add(arrayMetaClass);
             s_InnerDefineMetaClassList.Add(rangeMetaClass);
             s_InnerDefineMetaClassList.Add(typeMetaClass);
-            s_InnerDefineMetaClassList.Add(dynamicMetaClass); 
+            s_InnerDefineMetaClassList.Add(dynamicMetaClass);
+            s_InnerDefineMetaClassList.Add(dynamicMetaData);
         }
         public void Init()
         {
@@ -136,8 +140,8 @@ namespace SimpleLanguage.Core.SelfMeta
                     return byteMetaClass;
                 case EType.SByte:
                     return sbyteMetaClass;
-                case EType.Char:
-                    return charMetaClass;
+                //case EType.Char:
+                //    return charMetaClass;
                 case EType.Int16:
                     return int16MetaClass;
                 case EType.UInt16:
@@ -217,6 +221,8 @@ namespace SimpleLanguage.Core.SelfMeta
                     return DefaultObject.Range.ToString();
                 case "dynamic":
                     return DefaultObject.Dynamic.ToString();
+                case "data":
+                    return DefaultObject.Data.ToString();
                 default:return name;
             }
         }

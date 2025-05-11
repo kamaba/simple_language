@@ -18,8 +18,12 @@ namespace SimpleLanguage.VM
     {
         public void ComputeSValue(SValue sval, bool isUnsignCompute )
         {
+#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
             bool isNumber = false;
+#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
+#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
             bool isUnsign = false;
+#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
             switch (eType)
             {
                 case EType.Int32:
@@ -42,11 +46,11 @@ namespace SimpleLanguage.VM
                                     stringValue += sval.sint8Value.ToString();
                                 }
                                 break;
-                            case EType.Char:
-                                {
-                                    stringValue += sval.charValue.ToString();
-                                }
-                                break;
+                            //case EType.Char:
+                            //    {
+                            //        stringValue += sval.charValue.ToString();
+                            //    }
+                            //    break;
                             case EType.Int16:
                                 {
                                     stringValue += sval.int16Value.ToString();
@@ -251,11 +255,11 @@ namespace SimpleLanguage.VM
                                     SetInt32Compare(int32Value, sval.sint8Value, compareSign, isOrEqual);
                                 }
                                 break;
-                            case EType.Char:
-                                {
-                                    SetInt32Compare(int32Value, sval.charValue, compareSign, isOrEqual);
-                                }
-                                break;
+                            //case EType.Char:
+                            //    {
+                            //        SetInt32Compare(int32Value, sval.charValue, compareSign, isOrEqual);
+                            //    }
+                            //    break;
                             case EType.Int16:
                                 {
                                     SetInt32Compare(int32Value, sval.int16Value, compareSign, isOrEqual);

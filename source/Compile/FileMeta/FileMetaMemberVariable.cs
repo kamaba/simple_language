@@ -144,7 +144,8 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
             Node nameNode = null;
             Node typeNode = null;
-            if (!GetNameAndTypeToken(defineNodeList, ref typeNode, ref nameNode, ref m_PermissionToken, ref m_StaticToken))
+            Node mutNode = null;
+            if (!GetNameAndTypeToken(defineNodeList, ref typeNode, ref mutNode, ref nameNode, ref m_PermissionToken, ref m_StaticToken))
             {
                 Console.WriteLine("Error 没有找到该定义名称 必须使用例: X = 10; 的格式");
                 return false;
@@ -164,7 +165,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
             if (typeNode != null)
             {
-                m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, typeNode);
+                m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, typeNode, mutNode );
                 m_MemberDataType = EMemberDataType.ConstVariable;
             }
 
@@ -393,7 +394,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             //    Console.WriteLine("Error 不允许=号后边没值!!");
             //}
         }
-        public bool GetNameAndTypeToken(List<Node> defineNodeList, ref Node typeNode, ref Node nameNode, ref Token permissionToken, ref Token staticToken)
+        public bool GetNameAndTypeToken(List<Node> defineNodeList, ref Node typeNode, ref Node mutNode, ref Node nameNode, ref Token permissionToken, ref Token staticToken)
         {
             bool isError = false;
 
@@ -433,6 +434,15 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     else if( token.type == ETokenType.Type )
                     {
                         nodeList.Add(cnode);
+                    }
+                    else if( token.type == ETokenType.Mut )
+                    {
+                        if (mutNode != null)
+                        {
+                            isError = true;
+                            Console.WriteLine("Error 多重定义名称的Mut定义!!");
+                        }
+                        mutNode = cnode;
                     }
                     else
                     {

@@ -27,7 +27,9 @@ namespace SimpleLanguage.Core
                 default:
                     return type.Name;
             }
+#pragma warning disable CS0162 // 检测到无法访问的代码
             return "Object";
+#pragma warning restore CS0162 // 检测到无法访问的代码
         }
     }
 }

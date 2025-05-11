@@ -3,11 +3,20 @@ import Application.Core;
 #namespace Application.MFC;
 
 
-Class1{
-    interface Fun()
+Class1
+{
+    interface string interfaceFun1()  #必须定义返回值
+}
+Class2
+{
+    interface int interfaceFun2()
+}
+Class3  #如果被接口了，发现没有接口，需要报错
+{
+    interface3(){};
 }
 
-Class1_1 extends Class1
+Class1_1 interface Class1,Class2,Class3
 {
     x1 = 0;
     y1 = 0;
@@ -24,9 +33,13 @@ Class1_1 extends Class1
         base._init_(z1+10);
     }
 
-    # 必须实现 Fun函数
-    Fun(){
+    # 必须实现 Fun函数  自动变成public
+    override string interfaceFun1()    
+    {  
         return "a";
+    }
+    override int interfaceFun2(){
+        return 2;
     }
 
     interface Fun2()

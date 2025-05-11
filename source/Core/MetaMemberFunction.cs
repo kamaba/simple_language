@@ -459,17 +459,32 @@ namespace SimpleLanguage.Core
                         if (fmos.variableRef.isOnlyName)
                         {
                             string name1 = fmos.variableRef.name;
-                            if (!currentBlockStatements.GetIsMetaVariable(name1))
+                            if( fmos.hasDefine )
                             {
-                                var ownerclass = currentBlockStatements.ownerMetaClass;
-                                MetaBase mb = ownerclass.GetMetaMemberVariableByName(name1);
-                                if( mb != null )
+                                if (currentBlockStatements.GetIsMetaVariable(name1))
                                 {
-                                    Console.WriteLine("Error 如果是使用类成员，必须使用this.变量的方式" + fmos.variableRef.ToTokenString() );
+                                    Console.WriteLine("Error 如果使用了var/data/dynamic/int 等前缀，有重复定义的行为" + fmos.variableRef.ToTokenString());
+                                    isNewStatements = false;
                                 }
                                 else
                                 {
                                     isNewStatements = true;
+                                }
+                            }
+                            else
+                            {
+                                if (!currentBlockStatements.GetIsMetaVariable(name1))
+                                {
+                                    var ownerclass = currentBlockStatements.ownerMetaClass;
+                                    MetaBase mb = ownerclass.GetMetaMemberVariableByName(name1);
+                                    if (mb != null)
+                                    {
+                                        Console.WriteLine("Error 如果是使用类成员，必须使用this.变量的方式" + fmos.variableRef.ToTokenString());
+                                    }
+                                    else
+                                    {
+                                        isNewStatements = true;
+                                    }
                                 }
                             }
                         }

@@ -97,7 +97,9 @@ namespace SimpleLanguage.Core
                 {
                     bf |= BindingFlags.Static;
                 }
+#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
                 Binder binder = null;
+#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
 
                 System.Type[] types = mipc.GetCSharpParamTypes();
 

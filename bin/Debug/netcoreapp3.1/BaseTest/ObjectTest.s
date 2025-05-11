@@ -41,7 +41,7 @@ Class1
     #ct6 = ClassT( 120 );
     #ClassT ct7;
 }
-Class2 :: Class1
+Class2 extned Class1
 {
     __Init__( int _x1, int _y1, int _x2, int _y2 )
     {

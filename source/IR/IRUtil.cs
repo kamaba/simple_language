@@ -32,8 +32,8 @@ namespace SimpleLanguage.IR
                 case EType.Byte:
                 case EType.Boolean:
                     return 1;
-                case EType.Char:
-                    return 2;
+                //case EType.Char:
+                //    return 2;
                 case EType.Int16:
                 case EType.UInt16:
                     return 2;
@@ -51,6 +51,8 @@ namespace SimpleLanguage.IR
                 case EType.UInt128:
                 case EType.Decimal:
                     return 16;
+                case EType.Float2:
+                    return 8;
 
             }
             return 1;

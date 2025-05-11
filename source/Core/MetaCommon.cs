@@ -40,6 +40,7 @@ namespace SimpleLanguage.Core
         MemberVariableName,
         MemberDataName,
         NewClass,
+        NewData,
         MemberFunctionName,
         ConstValue,
         This,
@@ -867,6 +868,27 @@ namespace SimpleLanguage.Core
                         Console.WriteLine("Error 当前位置不允许有函数调用方式使用!!!" + m_Token?.ToLexemeAllString());
                     }
                 }
+                else if( m_MetaData != null )
+                {
+                    m_CallNodeType = ECallNodeType.NewData;
+                    if (m_FileMetaCallNode.fileMetaBraceTerm != null)  //可以使用  ArrClass(){ x = ??} 的方式
+                    {
+                        if (m_AllowUseSettings.parseFrom == EParseFrom.InputParamExpress)
+                        {
+                            Console.WriteLine("Error 在InputParam 里边，构建函数，只允许 使用ClassName() 的方式, " +
+                                "不允许使用 ClassName(){}的方式" + m_FileMetaCallNode.fileMetaBraceTerm.ToTokenString());
+                            return false;
+                        }
+                        m_MetaBraceStatementsContent = new MetaBraceOrBracketStatementsContent(m_FileMetaCallNode.fileMetaBraceTerm, m_OwnerMetaFunctionBlock, m_OwnerMetaClass);
+                        m_MetaBraceStatementsContent.SetMetaType(new MetaType(m_MetaData));
+                        m_MetaBraceStatementsContent.Parse();
+                    }
+
+                }
+                else if( m_MetaEnum != null )
+                {
+
+                }
                 else if( m_MetaFunction != null )
                 {
 
@@ -1152,8 +1174,31 @@ namespace SimpleLanguage.Core
                 retMC = m_FileMetaCallNode.fileMeta.GetMetaBaseByName(inputname);
                 if (retMC != null)
                 {
-                    m_MetaNamespace = retMC as MetaNamespace;
-                    m_CallNodeType = ECallNodeType.NamespaceName;
+                    if( retMC is MetaNamespace )
+                    {
+                        m_MetaNamespace = retMC as MetaNamespace;
+                        m_CallNodeType = ECallNodeType.NamespaceName;
+                    }
+                    else if( retMC is MetaData )
+                    {
+                        m_MetaData = retMC as MetaData;
+                        m_CallNodeType = ECallNodeType.DataName;
+                    }
+                    else if( retMC is MetaEnum )
+                    {
+                        m_MetaEnum = retMC as MetaEnum;
+                        m_CallNodeType = ECallNodeType.EnumName;
+                    }
+                    else if( retMC is MetaClass )
+                    {
+                        m_MetaClass = retMC as MetaClass;
+                        m_CallNodeType = ECallNodeType.ClassName;
+                    }
+                    else
+                    {
+                        Console.Write("Error 没有发该RetMC的类别MetaCommon");
+                    }
+
                 }
             }
 
@@ -1499,7 +1544,8 @@ namespace SimpleLanguage.Core
                     {
                         flag = m_CallNodeList[i].ParseNode(allowUseSettings);
                     }
-                    if(m_CallNodeList[i].callNodeType == ECallNodeType.NewClass )
+                    if(m_CallNodeList[i].callNodeType == ECallNodeType.NewClass 
+                        || m_CallNodeList[i].callNodeType == ECallNodeType.NewData )
                     {
                         if( i < m_CallNodeList.Count - 1 )
                         {
@@ -1568,6 +1614,12 @@ namespace SimpleLanguage.Core
                         {
                             Debug.WriteLine("Error 使用NewClass方式，后边不允许跟其它变量相关内容!");
                         }
+                    }
+                    else if( mcn.callNodeType == ECallNodeType.NewData )
+                    {
+                        MetaVisitNode mvn = MetaVisitNode.CraeteByNew( mcn.m_MetaData, mcn.metaBraceStatementsContent);
+                        m_VisitNodeList.Add(mvn);
+                        continue;
                     }
                     else if (mcn.callNodeType == ECallNodeType.VisitVariable)
                     {

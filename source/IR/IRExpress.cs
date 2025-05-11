@@ -61,7 +61,7 @@ namespace SimpleLanguage.IR
                         AddIRData(signData);
                     }
                     break;
-                case MetaCallExpressNode mcn:
+                case MetaCallLinkExpressNode mcn:
                     {
                         if( m_IRManager != null )
                         {

@@ -538,11 +538,11 @@ namespace SimpleLanguage.Core
                         str = "\"" + value.ToString() + "\"";
                     }
                     break;
-                case EType.Char:
-                    {
-                        str = "\'" + value.ToString() + "\'";
-                    }
-                    break;
+                //case EType.Char:
+                //    {
+                //        str = "\'" + value.ToString() + "\'";
+                //    }
+                //    break;
                 case EType.Int16:
                     {
                         signEn = "s";

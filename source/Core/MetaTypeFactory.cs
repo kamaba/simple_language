@@ -38,8 +38,8 @@ namespace SimpleLanguage.Core
         {
             if (defineType == EType.Boolean)
                 return 0;
-            else if (defineType == EType.Char)
-                return 1;
+            //else if (defineType == EType.Char)
+            //    return 1;
             else if (defineType == EType.Int16 || defineType == EType.UInt16)
                 return 2;
             else if (defineType == EType.Int32 || defineType == EType.UInt32)

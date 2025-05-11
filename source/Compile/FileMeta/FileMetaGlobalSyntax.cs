@@ -22,7 +22,9 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         List<Token> m_ImportNameListToken = new List<Token>();
         private List<Node> m_NodeList = new List<Node>();
         private NamespaceStatementBlock m_NamespaceStatement;
+#pragma warning disable CS0649 // 从未对字段“FileMetaImportSyntax.m_AsNameStatement”赋值，字段将一直保持其默认值 null
         private NamespaceStatementBlock m_AsNameStatement;
+#pragma warning restore CS0649 // 从未对字段“FileMetaImportSyntax.m_AsNameStatement”赋值，字段将一直保持其默认值 null
 
         public NamespaceStatementBlock namespaceStatement => m_NamespaceStatement;
         public NamespaceStatementBlock asNameStatement => m_AsNameStatement;

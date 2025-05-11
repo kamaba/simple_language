@@ -81,7 +81,9 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             Token extendsToken = null;
             Token interfaceToken = null;
             Token commaToken = null;
+#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
             bool isError = false;
+#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
             List<Token> classNameTokenList = new List<Token>();
             List<Token> inheritNameTokenList = new List<Token>();
             List<Token> interfaceNameTokenList = new List<Token>();

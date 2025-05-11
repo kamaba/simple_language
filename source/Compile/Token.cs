@@ -128,11 +128,13 @@ namespace SimpleLanguage.Compile
                             val = lexeme.ToString();
                         }
                         break;
-                    case EType.Char:
-                        {
-                            val = '\'' + lexeme.ToString() + '\'';
-                        }
+                    //case EType.Char:
+                    //    {
+                    //        val = '\'' + lexeme.ToString() + '\'';
+                    //    }
+#pragma warning disable CS0162 // 检测到无法访问的代码
                         break;
+#pragma warning restore CS0162 // 检测到无法访问的代码
                     case EType.Int16:
                         {
                             val = lexeme.ToString();

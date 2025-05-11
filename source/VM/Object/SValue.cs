@@ -19,7 +19,7 @@ namespace SimpleLanguage.VM
         public EType eType;
         public byte int8Value;
         public sbyte sint8Value;
-        public char charValue;
+        //public char charValue;
         public short int16Value;
         public ushort uint16Value;
         public int int32Value;
@@ -48,11 +48,11 @@ namespace SimpleLanguage.VM
             eType = EType.SByte;
             sint8Value = val;
         }
-        public void SetCharValue(char val)
-        {
-            eType = EType.Char;
-            charValue = val;
-        }
+        //public void SetCharValue(char val)
+        //{
+        //    eType = EType.Char;
+        //    charValue = val;
+        //}
         public void SetInt16Value(Int16 val)
         {
             eType = EType.Int16;
@@ -100,10 +100,10 @@ namespace SimpleLanguage.VM
                     {
                         return sint8Value;
                     }
-                case EType.Char:
-                    {
-                        return charValue;
-                    }
+                //case EType.Char:
+                //    {
+                //        return charValue;
+                //    }
                 case EType.Int16:
                     {
                         return int16Value;
@@ -157,12 +157,12 @@ namespace SimpleLanguage.VM
                         sint8Value = sint8obj.value;
                     }
                     break;
-                case CharObject charObj:
-                    {
-                        eType = EType.Char;
-                        charValue = charObj.value;
-                    }
-                    break;
+                //case CharObject charObj:
+                //    {
+                //        eType = EType.Char;
+                //        charValue = charObj.value;
+                //    }
+                //    break;
                 case Int16Object int16obj:
                     {
                         eType = EType.Int16;
@@ -221,11 +221,11 @@ namespace SimpleLanguage.VM
                                     sint8Value = (sbyte)(tobj);
                                 }
                                 break;
-                            case EType.Char:
-                                {
-                                    charValue = (char)(tobj);
-                                }
-                                break;
+                            //case EType.Char:
+                            //    {
+                            //        charValue = (char)(tobj);
+                            //    }
+                            //    break;
                             case EType.Int16:
                                 {
                                     int16Value = (short)(tobj);
@@ -289,10 +289,10 @@ namespace SimpleLanguage.VM
                     {
                         return sint8Value;
                     }
-                case EType.Char:
-                    {
-                        return charValue;
-                    }
+                //case EType.Char:
+                //    {
+                //        return charValue;
+                //    }
                 case EType.Int16:
                     {
                         return int16Value;
@@ -340,13 +340,13 @@ namespace SimpleLanguage.VM
                         sint8Value = (SByte)obj;
                     }
                     break;
-                case Char ch:
-                    {
-                        eType = EType.Char;
-                        charValue = (char)obj;
+                //case Char ch:
+                //    {
+                //        eType = EType.Char;
+                //        charValue = (char)obj;
 
-                    }
-                    break;
+                //    }
+                //    break;
                 case Int16 int16:
                     {
                         eType = EType.Int16;
@@ -408,10 +408,10 @@ namespace SimpleLanguage.VM
                     {
                         return new BoolObject(int8Value == 1);
                     }
-                case EType.Char:
-                    {
-                        return new CharObject(charValue);
-                    }
+                //case EType.Char:
+                //    {
+                //        return new CharObject(charValue);
+                //    }
                 case EType.Int16:
                     {
                         return new Int16Object(int16Value);

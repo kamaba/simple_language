@@ -10,6 +10,10 @@ C2
     C1 c1;
     Print()
     {
+        StringBuilder sb = StringBuilder();
+        sb.Append("mm");
+        sb.Append("OK");
+        string aa = sb.ToString();
         this.c1.b = 20;
         System.Console.Write(" OK   $this.c1.b " );
     }
