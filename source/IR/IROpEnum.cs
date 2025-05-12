@@ -20,7 +20,7 @@ namespace SimpleLanguage.IR
         LoadConstNull,
         LoadConstByte,
         LoadConstSByte,
-        LoadConstChar,
+        //LoadConstChar,
         LoadConstInt16,
         LoadConstUInt16,
         LoadConstInt32,

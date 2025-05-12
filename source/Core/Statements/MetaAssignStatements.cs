@@ -423,17 +423,17 @@ namespace SimpleLanguage.Core.Statements
             
             if(m_IsSetStatements)
             {
-                sb.Append(m_MetaCallLink.ToFormatString());
+                sb.Append(m_LeftMetaExpress.metaCallLink.ToFormatString());
             }
             else
             {
                 if (m_MetaVariable != null)
                 {
-                    sb.Append(m_MetaCallLink.ToFormatString());
+                    sb.Append(m_LeftMetaExpress.metaCallLink.ToFormatString());
                 }
                 else
                 {
-                    sb.Append("NotFind[ " + m_MetaCallLink?.ToFormatString());
+                    sb.Append("NotFind[ " + m_LeftMetaExpress.metaCallLink?.ToFormatString());
                 }
                 sb.Append(" = ");
 

@@ -59,13 +59,13 @@ namespace SimpleLanguage.Core.Statements
                         {
                             var asl = mnoen.metaBraceOrBracketStatementsContent.assignStatementsList[j];
 
-                            if (asl.metaMemberVariable.name == v.Key )
+                            if (asl.metaMemberData.name == v.Key )
                             {
-                                IRLoadVariable mmvsNodeVar = new IRLoadVariable(irMethod, m_MetaVariable);
-                                m_IRStatements.Add(mmvsNodeVar);
+                                //IRLoadVariable mmvsNodeVar = new IRLoadVariable(irMethod, m_MetaVariable);
+                                //m_IRStatements.Add(mmvsNodeVar);
 
-                                IRStoreVariable irStoreNodeVar3 = new IRStoreVariable(irMethod, asl.metaMemberVariable);
-                                m_IRStatements.Add(irStoreNodeVar3);
+                                //IRStoreVariable irStoreNodeVar3 = new IRStoreVariable(irMethod, asl.metaMemberData );
+                                //m_IRStatements.Add(irStoreNodeVar3);
                                 isFZ = true;
                                 break;
                             }

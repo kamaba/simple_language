@@ -459,7 +459,7 @@ namespace SimpleLanguage.Core
         {
             switch( mc.eType )
             {
-                case EType.Char:
+                //case EType.Char:
                 case EType.Int16:
                 case EType.UInt16:
                 case EType.Int32:
@@ -491,7 +491,7 @@ namespace SimpleLanguage.Core
         {
             if (curClass == CoreMetaClassManager.byteMetaClass
                 || curClass == CoreMetaClassManager.sbyteMetaClass
-                || curClass == CoreMetaClassManager.charMetaClass
+                //|| curClass == CoreMetaClassManager.charMetaClass
                 || curClass == CoreMetaClassManager.int16MetaClass
                 || curClass == CoreMetaClassManager.uint16MetaClass
                 || curClass == CoreMetaClassManager.int32MetaClass

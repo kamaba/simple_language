@@ -128,10 +128,10 @@ namespace SimpleLanguage.Compile
                             val = lexeme.ToString();
                         }
                         break;
-                    case EType.Char:
-                        {
-                            val = '\'' + lexeme.ToString() + '\'';
-                        }
+                    //case EType.Char:
+                    //    {
+                    //        val = '\'' + lexeme.ToString() + '\'';
+                    //    }
                         break;
                     case EType.Int16:
                         {

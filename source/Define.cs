@@ -7,6 +7,7 @@ namespace SimpleLanguage
     public enum EPermission
     {
         Null,
+        Export,
         Public,
         Internal,
         Protected,
@@ -25,7 +26,7 @@ namespace SimpleLanguage
         Bit,
         Byte,
         SByte,
-        Char,
+        //Char,
         Int16,
         UInt16,
         Int32,
@@ -40,6 +41,7 @@ namespace SimpleLanguage
         Range,
         String,
         Decimal,
+        Float2,
     }
 
     //token类型
@@ -197,6 +199,8 @@ namespace SimpleLanguage
         Override,
         /// <summary> const </summary>
         Const,
+        /// <summary> mut </summary>
+        Mut,
         /// <summary> final </summary>
         Final,
         /// <summary> static </summary>

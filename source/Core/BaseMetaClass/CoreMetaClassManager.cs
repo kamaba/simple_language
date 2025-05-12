@@ -55,7 +55,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass stringMetaClass { get; private set; } = null;
         public static MetaClass voidMetaClass { get; set; } = null;
         public static MetaClass booleanMetaClass { get; private set; } = null;
-        public static MetaClass charMetaClass { get; private set; } = null;
+        //public static MetaClass charMetaClass { get; private set; } = null;
         public static MetaClass byteMetaClass { get; private set; } = null;
         public static MetaClass sbyteMetaClass { get; private set; } = null;
         public static MetaClass int16MetaClass { get; private set; } = null;
@@ -82,7 +82,7 @@ namespace SimpleLanguage.Core.SelfMeta
             booleanMetaClass = BooleanMetaClass.CreateMetaClass();
             byteMetaClass = ByteMetaClass.CreateMetaClass();
             sbyteMetaClass = SByteMetaClass.CreateMetaClass();
-            charMetaClass = CharMetaClass.CreateMetaClass();
+            //charMetaClass = CharMetaClass.CreateMetaClass();
             int16MetaClass = Int16MetaClass.CreateMetaClass();
             uint16MetaClass = UInt16MetaClass.CreateMetaClass();
             int32MetaClass = Int32MetaClass.CreateMetaClass();
@@ -104,7 +104,7 @@ namespace SimpleLanguage.Core.SelfMeta
             s_InnerDefineMetaClassList.Add(booleanMetaClass);
             s_InnerDefineMetaClassList.Add(byteMetaClass);
             s_InnerDefineMetaClassList.Add(sbyteMetaClass);
-            s_InnerDefineMetaClassList.Add(charMetaClass);
+            //s_InnerDefineMetaClassList.Add(charMetaClass);
             s_InnerDefineMetaClassList.Add(int16MetaClass);
             s_InnerDefineMetaClassList.Add(uint16MetaClass);
             s_InnerDefineMetaClassList.Add(int32MetaClass);
@@ -140,8 +140,8 @@ namespace SimpleLanguage.Core.SelfMeta
                     return byteMetaClass;
                 case EType.SByte:
                     return sbyteMetaClass;
-                case EType.Char:
-                    return charMetaClass;
+                //case EType.Char:
+                //    return charMetaClass;
                 case EType.Int16:
                     return int16MetaClass;
                 case EType.UInt16:

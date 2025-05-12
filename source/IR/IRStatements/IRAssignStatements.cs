@@ -27,8 +27,8 @@ namespace SimpleLanguage.Core.Statements
                 m_IRStatements.Add(m_IRExpress);
             }
 
-            m_MetaCallLink.ParseToIRDataList(irMethod, true );
-            m_IRStatements.AddRange(m_MetaCallLink.irList);
+            m_LeftMetaExpress.metaCallLink.ParseToIRDataList(irMethod, true );
+            m_IRStatements.AddRange(m_LeftMetaExpress.metaCallLink.irList);
         }
     }
 }
