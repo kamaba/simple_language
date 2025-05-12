@@ -1,13 +1,6 @@
 
-String
+public class Map<T,K> extends Object
 {
-    String value;
-    String ToString()
-    {
-        return this;
-    }
-    static Int32 ToInt32( String value )
-    {
-        return Int32.Parse( value );
-    }
+    Set<T> key = Set<T>(4);
+    
 }
