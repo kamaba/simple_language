@@ -25,7 +25,7 @@ EList<T> extends List<T>
     {
 
     }
-    _index_( string aa )
+    override _index_( string aa )
     {
 
     }
