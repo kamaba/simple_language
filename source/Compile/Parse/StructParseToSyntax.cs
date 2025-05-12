@@ -197,7 +197,9 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else if (curNodeType == ENodeType.Brace)
                 {
+#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
                     Node nextNode = null;
+#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
                     bool isMustContactBrace = false;
                     ETokenType ttt = keynodeStruct.tokenType;
                     if (ttt == ETokenType.If

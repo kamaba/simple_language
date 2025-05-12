@@ -11,5 +11,7 @@ BindCSharpTest
         int a = 20;
         string as1 = a.ToString();
         Console.Write( as1 );
+
+        string str = Console.ReadIn()
     }
 }

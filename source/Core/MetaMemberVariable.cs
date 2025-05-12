@@ -47,9 +47,15 @@ namespace SimpleLanguage.Core
         private bool m_IsSupportConstructionFunctionOnlyBraceType = false;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
         private bool m_IsSupportConstructionFunctionConnectBraceType = true;  //是否支持构造函数名称后边加{}形式    Class1{ a = Class2(){} } 不支持
         private bool m_IsSupportConstructionFunctionOnlyParType = true; //是否支持构造函数使用 仅()形式    Class1{ a = () } 不支持
+#pragma warning disable CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseStaticMetaMemeberFunction”已被赋值，但从未使用过它的值
         private bool m_IsSupportInExpressUseStaticMetaMemeberFunction = true;   //是否在成员支持静态函数的
+#pragma warning restore CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseStaticMetaMemeberFunction”已被赋值，但从未使用过它的值
+#pragma warning disable CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseStaticMetaVariable”已被赋值，但从未使用过它的值
         private bool m_IsSupportInExpressUseStaticMetaVariable = true;     //是否在成员中支持静态变量
+#pragma warning restore CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseStaticMetaVariable”已被赋值，但从未使用过它的值
+#pragma warning disable CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseCurrentClassNotStaticMemberMetaVariable”已被赋值，但从未使用过它的值
         private bool m_IsSupportInExpressUseCurrentClassNotStaticMemberMetaVariable = true;  //是否支持在表达式中使用本类或父类中的非静态变量
+#pragma warning restore CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseCurrentClassNotStaticMemberMetaVariable”已被赋值，但从未使用过它的值
 
         public static int s_ConstLevel = 10000000;
         public static int s_IsHaveRetStaticLevel = 100000000;
@@ -58,7 +64,9 @@ namespace SimpleLanguage.Core
         public static int s_ExpressLevel = 1500000000;
         public MetaConstExpressNode constExpressNode => m_Express as MetaConstExpressNode;
 
+#pragma warning disable CS0414 // 字段“MetaMemberVariable.m_MemberDataType”已被赋值，但从未使用过它的值
         private EMemberDataType m_MemberDataType = EMemberDataType.None;
+#pragma warning restore CS0414 // 字段“MetaMemberVariable.m_MemberDataType”已被赋值，但从未使用过它的值
 
         protected Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
 

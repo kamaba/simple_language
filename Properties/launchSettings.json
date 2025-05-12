@@ -2,7 +2,8 @@
   "profiles": {
     "SimpleLanguage": {
       "commandName": "Project",
-      "nativeDebugging": true
+      "nativeDebugging": true,
+      "jsWebView2Debugging": false
     }
   }
 }

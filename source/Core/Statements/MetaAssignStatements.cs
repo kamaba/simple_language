@@ -89,7 +89,9 @@ namespace SimpleLanguage.Core.Statements
         private FileMetaOpAssignSyntax m_FileMetaOpAssignSyntax = null;
 
         private MetaVariable m_MetaVariable = null;
+#pragma warning disable CS0414 // 字段“MetaAssignStatements.m_OpSign”已被赋值，但从未使用过它的值
         private EOpSign m_OpSign;
+#pragma warning restore CS0414 // 字段“MetaAssignStatements.m_OpSign”已被赋值，但从未使用过它的值
         private ELeftRightOpSign m_AutoAddExpressOpSign;
         private Token m_SignToken = null;
         private bool m_IsSetStatements = false;
@@ -98,7 +100,9 @@ namespace SimpleLanguage.Core.Statements
         private MetaExpressNode m_ExpressNode;
         private MetaCallLinkExpressNode m_LeftMetaExpress;
         private MetaExpressNode m_FinalMetaExpress;
+#pragma warning disable CS0414 // 字段“MetaAssignStatements.m_IsNeedCastStatements”已被赋值，但从未使用过它的值
         private bool m_IsNeedCastStatements = false;
+#pragma warning restore CS0414 // 字段“MetaAssignStatements.m_IsNeedCastStatements”已被赋值，但从未使用过它的值
 
         public MetaAssignStatements( MetaBlockStatements mbs, FileMetaOpAssignSyntax fmos) : base(mbs)
         {
@@ -121,7 +125,9 @@ namespace SimpleLanguage.Core.Statements
 
             ETokenType ett = m_SignToken.type;
 
+#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
             bool isCanNew = false;
+#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
             switch( ett )
             {
                 case ETokenType.Assign:

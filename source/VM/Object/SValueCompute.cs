@@ -198,32 +198,32 @@ namespace SimpleLanguage.VM
                             int16Value = (short)(int16Value >> svalShort);
                     }
                     break;
-                case EType.Char:
-                    {
+                //case EType.Char:
+                //    {
 
-                        char svalChar = (char)svalue.GetValueObject();
-                        if (sign == 0)
-                            charValue += svalChar;
-                        else if (sign == 1)
-                            charValue -= svalChar;
-                        else if (sign == 2)
-                            charValue *= svalChar;
-                        else if (sign == 3)
-                            charValue /= svalChar;
-                        else if (sign == 4)
-                            charValue %= svalChar;
-                        else if (sign == 5)
-                            charValue &= svalChar;
-                        else if (sign == 6)
-                            charValue |= svalChar;
-                        else if (sign == 7)
-                            charValue = (char)(charValue ^ svalChar);
-                        else if (sign == 8)
-                            charValue = (char)(charValue << svalChar);
-                        else if (sign == 9)
-                            charValue = (char)(charValue >> svalChar);
-                    }
-                    break;
+                //        char svalChar = (char)svalue.GetValueObject();
+                //        if (sign == 0)
+                //            charValue += svalChar;
+                //        else if (sign == 1)
+                //            charValue -= svalChar;
+                //        else if (sign == 2)
+                //            charValue *= svalChar;
+                //        else if (sign == 3)
+                //            charValue /= svalChar;
+                //        else if (sign == 4)
+                //            charValue %= svalChar;
+                //        else if (sign == 5)
+                //            charValue &= svalChar;
+                //        else if (sign == 6)
+                //            charValue |= svalChar;
+                //        else if (sign == 7)
+                //            charValue = (char)(charValue ^ svalChar);
+                //        else if (sign == 8)
+                //            charValue = (char)(charValue << svalChar);
+                //        else if (sign == 9)
+                //            charValue = (char)(charValue >> svalChar);
+                //    }
+                //    break;
                 case EType.Byte:
                     {
 
@@ -347,12 +347,12 @@ namespace SimpleLanguage.VM
                         int8Value = (int8Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
-                case EType.Char:
-                    {
-                        eType = EType.Boolean;
-                        int8Value = (charValue == 0) ? (byte)1 : (byte)0;
-                    }
-                    break;
+                //case EType.Char:
+                //    {
+                //        eType = EType.Boolean;
+                //        int8Value = (charValue == 0) ? (byte)1 : (byte)0;
+                //    }
+                //    break;
                 case EType.Int16:
                     {
                         eType = EType.Boolean;
@@ -407,12 +407,12 @@ namespace SimpleLanguage.VM
                         int32Value = -sint8Value;
                     }
                     break;
-                case EType.Char:
-                    {
-                        eType = EType.Int32;
-                        int32Value = -charValue;
-                    }
-                    break;
+                //case EType.Char:
+                //    {
+                //        eType = EType.Int32;
+                //        int32Value = -charValue;
+                //    }
+                //    break;
                 case EType.Int16:
                     {
                         int16Value = (short)(-int16Value);
