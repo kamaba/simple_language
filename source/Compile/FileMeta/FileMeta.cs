@@ -93,7 +93,9 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public MetaBase GetMetaBaseFileMetaClass( List<string> classList )
         {
             if (classList.Count == 0) return null;
+#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
             MetaBase mb = null;
+#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
             for (int i = 0; i < m_FileImportSyntax.Count; i++)
             {                
                 MetaNamespace mn = m_FileImportSyntax[i].lastMetaNamespace;
@@ -156,6 +158,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         }
         public T GetMetaBaseTByName<T>(string name) where T : MetaBase
         {
+#pragma warning disable CS0162 // 检测到无法访问的代码
             for (int i = 0; i < m_FileImportSyntax.Count; i++)
             {
                 MetaBase mn = m_FileImportSyntax[i].lastMetaNamespace;
@@ -171,6 +174,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         continue;
                 }
             }
+#pragma warning restore CS0162 // 检测到无法访问的代码
             return default(T);
         }
         public void CreateNamespace()

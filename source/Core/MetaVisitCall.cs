@@ -114,7 +114,9 @@ namespace SimpleLanguage.Core
     }
     public class MetaIteratorVariable : MetaVariable
     {
+#pragma warning disable CS0414 // 字段“MetaIteratorVariable.m_Index”已被赋值，但从未使用过它的值
         int m_Index = 0;
+#pragma warning restore CS0414 // 字段“MetaIteratorVariable.m_Index”已被赋值，但从未使用过它的值
         MetaVariable m_LocalMetaVariable = null;
         MetaType m_OrgMetaDefineType = null;
         MetaVariable m_IndexMetaVariable = null;

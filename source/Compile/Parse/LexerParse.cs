@@ -968,7 +968,9 @@ namespace SimpleLanguage.Compile.Parse
             int checkBracket = 1;
             bool isBracket = false;
             StringBuilder bracketStringBuild = new StringBuilder();
+#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
             int offsetLine = 0;
+#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
             while( true )
             {
                 int index = m_Index + checkBracket;

@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "ObjectTest.sl";
+            path = "EnumTest.sl";
             group = "temp";
             tag = "all";
             a = 200
@@ -69,7 +69,8 @@ Project
         #global.pi = 3.1415f;
         #global.xc = { a = 20, b = 15 }
        #Class1.Print();
-       ObjectTest.Fun();       
+       //ObjectTest.Fun();    
+       EnumTest.fun()   
     }
     static Test()
     {

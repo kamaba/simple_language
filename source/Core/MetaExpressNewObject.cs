@@ -521,7 +521,9 @@ namespace SimpleLanguage.Core
             //这个函数要处理 [1,2,3] 相同情况的类型    [1, 2.3f, 3.0d] 相同数字的最大类型确定 
             // [1UL, 2.3f] 这种情况，刚都按object处理  [1,"123", 3.0f] 不相同时 结果是object
             MetaClass mc = CoreMetaClassManager.objectMetaClass;
+#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
             bool isAllSame = true;
+#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
             for (int i = 0; i < m_AssignStatementsList.Count - 1; i++)
             {
                 MetaBraceAssignStatements cmc = m_AssignStatementsList[i];

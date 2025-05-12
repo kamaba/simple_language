@@ -9,7 +9,9 @@ namespace SimpleLanguage
 {
     public class C1
     {
+#pragma warning disable CS0414 // 字段“C1.CV”已被赋值，但从未使用过它的值
         int CV = 1;
+#pragma warning restore CS0414 // 字段“C1.CV”已被赋值，但从未使用过它的值
         const int j20 = 11 + 20;
         int CV2 = C2.CV_1;
         public C1()
@@ -62,7 +64,9 @@ namespace SimpleLanguage
             a = C2.CV4;
             var vv = C2.abc;
             int mm = Simple.NA.NNA.NB.AA(10);
+#pragma warning disable CS0168 // 声明了变量，但从未使用过
             MetaExpressNode M;
+#pragma warning restore CS0168 // 声明了变量，但从未使用过
 
             CommandInputArgs inputArgs = new CommandInputArgs(args);
             ProjectManager.Run( "../../../test/BaseTest", inputArgs );

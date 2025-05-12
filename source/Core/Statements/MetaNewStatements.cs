@@ -80,7 +80,9 @@ namespace SimpleLanguage.Core.Statements
             MetaType mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
             var metaFunction = m_OwnerMetaBlockStatements?.ownerMetaFunction;
 
+#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
             bool isDynamicClass = false;
+#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
             FileMetaBaseTerm fileExpress = null;
             if ( m_FileMetaDefineVariableSyntax != null )
             {

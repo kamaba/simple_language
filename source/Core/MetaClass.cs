@@ -335,12 +335,14 @@ namespace SimpleLanguage.Core
             }
             if( mitc.metaTemplateParamsList.Count == this.metaTemplateList.Count )
             {
+#pragma warning disable CS0162 // 检测到无法访问的代码
                 for( int i = 0; i < mitc.metaTemplateParamsList.Count; i++ )
                 {
                     var mtpl = mitc.metaTemplateParamsList[i];
                     var ctpl = this.metaTemplateList[i];
                     return true;
                 }
+#pragma warning restore CS0162 // 检测到无法访问的代码
             }
             return false;
         }

@@ -1,9 +1,9 @@
 
 public class Math
 {
-    const float pi = 3.1415926f;
+    const float Pi = 3.1415926f;
 
-    public T min<T>( T a, T b )
+    public static T min<T>( T a, T b )
     {
         if a < b
         { 
@@ -11,7 +11,7 @@ public class Math
         } 
         else 
         { 
-            return b
+            ret b
         }
     }
     public float dot( float2 a, float2 b )
