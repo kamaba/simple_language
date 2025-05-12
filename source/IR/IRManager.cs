@@ -123,7 +123,7 @@ namespace SimpleLanguage.IR
                 case EType.Byte: return EIROpCode.LoadConstByte;
                 case EType.SByte: return EIROpCode.LoadConstSByte;
                 case EType.Boolean:return EIROpCode.LoadConstBoolean;
-                case EType.Char: return EIROpCode.LoadConstChar;
+                //case EType.Char: return EIROpCode.LoadConstChar;
                 case EType.Int16: return EIROpCode.LoadConstInt16;
                 case EType.UInt16:return EIROpCode.LoadConstUInt16;
                 case EType.Int32: return EIROpCode.LoadConstInt32;

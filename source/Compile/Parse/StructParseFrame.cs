@@ -244,6 +244,7 @@ namespace SimpleLanguage.Compile.Parse
                             break;
                         case ETokenType.Const:
                         case ETokenType.Data:
+                        case ETokenType.Enum:
                         case ETokenType.Class:
                         case ETokenType.Public:
                         case ETokenType.Private:
@@ -410,8 +411,9 @@ namespace SimpleLanguage.Compile.Parse
                             if (next2Node.nodeType == ENodeType.Par)   //Class1()
                             {
                                 curNode.parNode = next2Node;
-
-                                if( j < curParentNode.childList.Count )
+                                index = j;
+                                isParseEnd = true;
+                                if ( j < curParentNode.childList.Count )
                                 {
                                     var next3Node = curParentNode.childList[j];
                                     if (next3Node == null) continue;
@@ -663,20 +665,27 @@ namespace SimpleLanguage.Compile.Parse
 
                 if (curNode.nodeType == ENodeType.IdentifierLink)  //Enum1
                 {
-                    if (nextNode.nodeType == ENodeType.LineEnd)
+                    if (nextNode?.nodeType == ENodeType.LineEnd)
                     {
-                        nextNode = pnode.childList[index + 1];
-                        lineCount++;
+                        if( index + 1 < pnode.childList.Count)
+                        {
+                            nextNode = pnode.childList[index + 1];
+                            lineCount++;
+                        }
+                        else
+                        {
+                            isLineEnd = true;
+                        }
                     }
-                    if (nextNode?.nodeType == ENodeType.Brace)  //Enum1{}
-                    {
-                        index+= (lineCount+1);
-                        type = 0;
-                        curNode.blockNode = nextNode;
-                        blockNode = curNode;
-                        nodeList.Add(curNode);
-                        break;
-                    }
+                    //if (nextNode?.nodeType == ENodeType.Brace)  // 不允许 enum Enum1{  $a = {}$ } 
+                    //{
+                    //    index+= (lineCount+1);
+                    //    type = 0;
+                    //    curNode.blockNode = nextNode;
+                    //    blockNode = curNode;
+                    //    nodeList.Add(curNode);
+                    //    break;
+                    //}
 
                     if (nextNode?.nodeType == ENodeType.Par)  //Enum1()
                     {
@@ -687,7 +696,14 @@ namespace SimpleLanguage.Compile.Parse
                             next2Node = pnode.childList[index + 1];
                             if (next2Node.nodeType == ENodeType.LineEnd)
                             {
-                                next2Node = pnode.childList[index + 2];
+                                if( index + 2 < pnode.childList.Count )
+                                {
+                                    next2Node = pnode.childList[index + 2];
+                                }
+                                else
+                                {
+                                    next2Node = null;
+                                }
                                 lineCount++;
                                 isLineEnd2 = true;
                             }
@@ -835,6 +851,7 @@ namespace SimpleLanguage.Compile.Parse
                 nodeList.Add(curNode);
             }
             pnode.parseIndex = index;
+
             if (isLineEnd)
             {
                 ParseEnumNode(pnode);
@@ -870,27 +887,8 @@ namespace SimpleLanguage.Compile.Parse
             }
             else
             {
-                FileMetaClass cpc = new FileMetaClass(m_FileMeta, nodeList);
-
-                AddParseClassNodeInfo(cpc);
-
-                if (cpc.isEnum)
-                {
-                    ParseEnumNode(blockNode);
-                }
-                else if (cpc.isData)
-                {
-                    ParseDataNode(blockNode);
-                }
-                else
-                {
-                    Console.WriteLine("Error 在Enum不能包含类或者是数据，只允许包含enum!!");
-                    return;
-                }
-
-                m_CurrentNodeInfoStack.Pop();
-
-                ParseEnumNode(pnode);
+                Console.WriteLine("Error 在Enum不能包含类或者是数据");
+                return;
             }
         }
 

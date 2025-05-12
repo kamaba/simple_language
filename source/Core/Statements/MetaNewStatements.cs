@@ -15,6 +15,7 @@ using System.Text;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Net;
 using SimpleLanguage.Compile;
+using static SimpleLanguage.Core.ExpressManager;
 
 namespace SimpleLanguage.Core.Statements
 {
@@ -127,7 +128,13 @@ namespace SimpleLanguage.Core.Statements
             MetaType expressRetMetaDefineType = null;
             if (fileExpress != null)
             {
-                m_ExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(fileExpress, m_OwnerMetaBlockStatements, mdt, m_MetaVariable);
+                CreateExpressParam cep = new CreateExpressParam();
+                cep.fme = fileExpress;
+                cep.equalMetaVariable = m_MetaVariable;
+                cep.metaType = mdt;
+                cep.mbs = m_OwnerMetaBlockStatements;
+
+                m_ExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(cep);
                 m_ExpressNode.CalcReturnType();
                 expressRetMetaDefineType = m_ExpressNode.GetReturnMetaDefineType();
                 if (m_ExpressNode == null)
