@@ -48,6 +48,7 @@ namespace SimpleLanguage.Core
             }
         }
         public EType eType { get; protected set; } = EType.None;
+        public MetaClass ownerMetaClass => m_OwnerMetaClass;
 
         protected MetaClass m_OwnerMetaClass = null;
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;

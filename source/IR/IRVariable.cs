@@ -52,10 +52,10 @@ namespace SimpleLanguage.IR
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
             {
-                MetaMemberVariable mmv = mv as MetaMemberVariable;
+                MetaMemberEnum mme = mv as MetaMemberEnum;
                 data.opCode = EIROpCode.LoadNotStaticField;
-                data.SetDebugInfoByToken(mmv.pingToken);
-                data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
+                data.SetDebugInfoByToken(mme.pingToken);
+                data.index = 0;// mme.ownerMetaClass.GetLocalMemberVariableIndex(mme);
                 m_IRDataList.Add(data);
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.LocalStatement)

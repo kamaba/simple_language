@@ -191,7 +191,7 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        public void HandleExtendData()
+        public virtual void HandleExtendData()
         {
             if(m_ExtendClass == null )
             {

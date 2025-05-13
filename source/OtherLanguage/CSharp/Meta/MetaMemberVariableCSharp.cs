@@ -1,4 +1,5 @@
-﻿using SimpleLanguage.CSharp;
+﻿using SimpleLanguage.Core.SelfMeta;
+using SimpleLanguage.CSharp;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -32,6 +33,23 @@ namespace SimpleLanguage.Core
             propertyInfo = pi;
             m_FromType = EFromType.CSharp;
             var defineMetaClassType = ClassManager.instance.GetClassByName(pi.DeclaringType.Name);
+            if( defineMetaClassType == null )
+            {
+                string[] fullname = pi.DeclaringType.FullName.Split(".");
+                MetaBase fmc = ModuleManager.instance.csharpModule;
+                for( int i = 0; i < fullname.Length; i++ )
+                {
+                    var cfmc = fmc.GetChildrenMetaBaseByName(fullname[i]);
+                    if(cfmc != null )
+                    {
+                        fmc = cfmc;
+                        continue;
+                    }
+                    fmc = CSharpManager.FindAndCreateMetaBase(fmc, fullname[i]);
+                }
+                defineMetaClassType = fmc as MetaClass;
+            }
+
             m_DefineMetaType = new MetaType(defineMetaClassType);
 
             SetOwnerMetaClass(mc);

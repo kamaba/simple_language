@@ -19,9 +19,8 @@ namespace SimpleLanguage.Core
             }
         }
         public List<MetaMemberVariable> metaMemeberVariableList = new List<MetaMemberVariable>();
-
-        public Dictionary<string, MetaVariable> metaDataVariableList = new Dictionary<string, MetaVariable>();
-        public Dictionary<string, MetaVariable> metaEnumVariableList = new Dictionary<string, MetaVariable>();
+        public List<MetaMemberData> metaMemberDataVariableList = new List<MetaMemberData>();
+        public List<MetaMemberEnum> metaMemberEnumVariableList = new List<MetaMemberEnum>();
 
         public void AddMetaMemberVariable(MetaMemberVariable mv)
         {
@@ -35,23 +34,15 @@ namespace SimpleLanguage.Core
         //{
         //    return null;
         //}
-        public void AddMetaDataVariable(MetaVariable mv)
+        public void AddMetaDataVariable(MetaMemberData mv)
         {
-            metaDataVariableList.Add(mv.name, mv);
+            metaMemberDataVariableList.Add(mv);
         }
-        public void AddMetaEnumVariable( MetaVariable mv )
+        public void AddMetaEnumVariable(MetaMemberEnum mv )
         {
-            metaEnumVariableList.Add(mv.name, mv);
+            metaMemberEnumVariableList.Add(mv);
         }
-        public MetaVariable GetMetaVariable( string cname )
-        {
-            if(metaDataVariableList.ContainsKey( cname ) )
-            {
-                return metaDataVariableList[cname];
-            }
-            return null;
-        }
-        public void ParseMetaExpress()
+        public void ParseMetaClassMemberExpress()
         {
             foreach (var v in metaMemeberVariableList)
             {
@@ -67,6 +58,20 @@ namespace SimpleLanguage.Core
             {
                 v.CalcReturnType();
                 v.ParseChildMemberData();
+            }
+        }
+        public void ParseMetaDataMemberExpress()
+        {
+            foreach (var v in metaMemberDataVariableList )
+            {
+                v.ParseMetaExpress();
+            }
+        }
+        public void ParseMetaEnumMemberExpress()
+        {
+            foreach (var v in metaMemberEnumVariableList )
+            {
+                v.ParseMetaExpress();
             }
         }
     }

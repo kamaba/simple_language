@@ -323,7 +323,7 @@ namespace SimpleLanguage.Core
             MetaBlockStatements mbs = cep.mbs;
             MetaType mdt = cep.metaType;
             MetaVariable equalMetaVariable = cep.equalMetaVariable;
-            MetaClass mc = mbs.ownerMetaClass;
+            MetaClass mc = cep.metaClass;
 
             if (fmte != null)
             {

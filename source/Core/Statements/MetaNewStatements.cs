@@ -176,18 +176,24 @@ namespace SimpleLanguage.Core.Statements
                     MetaClass curClass = mdt.metaClass;
                     if( mdt.isEnum )
                     {
-                        MetaNewObjectExpressNode mne = m_ExpressNode as MetaNewObjectExpressNode;
-                        if( mne != null )
+                        if(m_ExpressNode != null )
                         {
-                            var expressMDT = mne.GetReturnMetaDefineType();
-                            bool isSame = expressMDT.isEnum && expressMDT.metaClass == mdt.metaClass;
-                            if( !isSame )
+                            MetaCallLinkExpressNode expressMDT = m_ExpressNode as MetaCallLinkExpressNode;
+                            if (expressMDT == null )
                             {
-                                Console.WriteLine("Error Enum与值不相等!!");
+                                Console.WriteLine("Error Enum模式，只允许是调用模式[CallLinkExpress]");
                             }
                             else
                             {
-                                m_IsNeedCastState = false;
+                                var varableEnum = expressMDT.metaCallLink.finalCallNode.variable.ownerMetaClass;
+                                if( mdt.metaClass != varableEnum )
+                                {
+                                    Console.WriteLine("Error Enum与值不相等!!");
+                                }
+                                else
+                                {
+                                    m_IsNeedCastState = false;
+                                }
                             }
                         }
                     }

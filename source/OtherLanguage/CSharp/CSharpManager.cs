@@ -17,6 +17,7 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Data;
+using System.Linq;
 
 namespace SimpleLanguage.CSharp
 {
@@ -145,73 +146,34 @@ namespace SimpleLanguage.CSharp
                     }
                 }
 
-                /*
-                var types = am.GetExportedTypes();
-                for( int i = 0; i < types.Length; i++ )
+                string[] namespaces = am.GetTypes()
+                    .Select(t => t.Namespace)
+                    .Where(ns => !string.IsNullOrEmpty(ns))
+                    .Distinct()
+                    .ToArray();
+
+                for (int l = 0; l < namespaces.Length; l++)
                 {
-                    var type = types[i];
-                    if( type.FullName == allName )
+                    string cuns = namespaces[l];
+                    if( cuns.IndexOf(allName) != -1 )
                     {
-                        //Console.WriteLine("CSharp FindAndCreateMetaBase Find Type Successed!!");
-                        if( type.IsClass )
+                        MetaNamespace nmn = new MetaNamespace(name);
+                        nmn.SetRefFromType(RefFromType.CSharp);
+                        if (mb is MetaNamespace mn)
                         {
-                            MetaClass mc = new MetaClass(type.Name, type );
-                            mc.SetRefFromType(RefFromType.CSharp);
-                            if( mb is MetaModule )
-                            {
-                                MetaModule mm = mb as MetaModule;
-                                if( mm != null )
-                                {
-                                    mm.AddMetaClass(mc);
-                                }
-                            }
-                            if ( mb is MetaNamespace )
-                            {
-                                MetaNamespace mn = mb as MetaNamespace;
-                                if( mn != null )
-                                {
-                                    mn.AddMetaClass(mc);
-                                }
-                            }
-                            else if( mb is MetaClass )
-                            {
-                                MetaClass gmc = mb as MetaClass;
-                                gmc.AddChildrenMetaClass(mc);
-                            }
-                            ClassManager.instance.AddDictMetaClass(mc);
-                            return mc;
+                            mn.AddMetaNamespace(nmn);
+                            return nmn;
                         }
-                        else if( type.IsTypeDefinition )
+                        else if(mb is MetaModule mm )
                         {
-                            MetaNamespace nmn = new MetaNamespace(type.Name);
-                            nmn.SetRefFromType(RefFromType.CSharp);
-                            if (mb is MetaNamespace)
-                            {
-                                MetaNamespace mn = mb as MetaNamespace;
-                                if (mn != null)
-                                {
-                                    mn.AddMetaNamespace(nmn);
-                                    return nmn;
-                                }
-                            }
+                            mm.AddMetaNamespace(nmn); 
+                            return nmn;
                         }
+
                     }
                 }
-                */
             }
-            MetaNamespace gnmn = new MetaNamespace(name);
-            gnmn.SetRefFromType(RefFromType.CSharp);
-            MetaModule gmm = mb as MetaModule;
-            MetaNamespace gmn = mb as MetaNamespace;
-            if (gmm != null )
-            {
-                gmm.AddMetaNamespace(gnmn);
-            }
-            else if( gmn != null )
-            {
-                gmn.AddMetaNamespace(gnmn);
-            }
-            return gnmn;
+            return null;
         }
         public static Object GetObject(FileMetaClassDefine fmcv, MetaNamespace mn)
         {

@@ -78,7 +78,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             }
 
             Token permissionToken = null;
-            Token extendsToken = null;
+            Token m_ExtendsToken = null;
             Token interfaceToken = null;
             Token commaToken = null;
 #pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
@@ -106,7 +106,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         }
                         interfaceNameTokenList = cnode.linkTokenList;
                     }
-                    else if (extendsToken != null && interfaceToken == null)
+                    else if (m_ExtendsToken != null && interfaceToken == null)
                     {
                         if (inheritNameTokenList.Count > 0)
                         {
@@ -250,31 +250,45 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     else if (token.type == ETokenType.Data)
                     {
-                        if (m_EnumToken != null)
+                        if( m_EnumToken != null)
                         {
-                            isError = true;
-                            Console.WriteLine("Error 解析过了一次Enum!!");
+                            if( m_ExtendsToken != null )
+                            {
+                                if (inheritNameTokenList.Count > 0)
+                                {
+                                    Console.WriteLine("Error 字符两次赋值 99");
+                                }
+                                inheritNameTokenList = cnode.linkTokenList;
+                            }
+                            else
+                            {
+                                isError = true;
+                                Console.WriteLine("Error 解析过了一次Enum!!");
+                            }
                         }
-                        if (m_DataToken != null)
+                        else
                         {
-                            isError = true;
-                            Console.WriteLine("Error 解析过了一次data!!");
+                            if (m_DataToken != null)
+                            {
+                                isError = true;
+                                Console.WriteLine("Error 解析过了一次data!!");
+                            }
+                            if (m_ClassToken != null)
+                            {
+                                isError = true;
+                                Console.WriteLine("Error 解析过了一次Class!!");
+                            }
+                            m_DataToken = token;
                         }
-                        if (m_ClassToken != null)
-                        {
-                            isError = true;
-                            Console.WriteLine("Error 解析过了一次Class!!");
-                        }
-                        m_DataToken = token;
                     }
                     else if (token.type == ETokenType.Extends )
                     {
-                        if (extendsToken != null)
+                        if (m_ExtendsToken != null)
                         {
                             isError = true;
                             Console.WriteLine("Error 解析过了一次Extend!!");
                         }
-                        extendsToken = token;
+                        m_ExtendsToken = token;
                     }
                     else if (token.type == ETokenType.Interface)
                     {
@@ -317,6 +331,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     Console.WriteLine("Error Enum方式，不支持partial的使用!!");
                     return false;
                 }
+                SetParentClassNameToken(inheritNameTokenList, angleNode);
 
             }
             else if (m_DataToken != null)

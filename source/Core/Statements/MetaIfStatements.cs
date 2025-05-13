@@ -9,6 +9,7 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
+using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
@@ -47,7 +48,7 @@ namespace SimpleLanguage.Core.Statements
                 if( conditionExpress != null )
                 {
                     m_Express = conditionExpress;
-                    m_FinalExpress = m_Express;// ExpressManager.instance.CreateOptimizeAfterExpress(m_Express);
+                    m_FinalExpress = ExpressManager.instance.CreateOptimizeAfterExpress(m_Express);
                 }
 
                 m_ThenMetaStatements = new MetaBlockStatements(mbs, ifexpress.executeBlockSyntax);
@@ -80,10 +81,10 @@ namespace SimpleLanguage.Core.Statements
             }
             private void Parse()
             {
-                if (m_Express != null)
+                if (m_FinalExpress != null)
                 {
-                    m_Express.CalcReturnType();
-                    m_MetaAssignManager = new MetaAssignManager( m_Express, m_ThenMetaStatements, new MetaType(CoreMetaClassManager.booleanMetaClass));
+                    m_FinalExpress.CalcReturnType();
+                    m_MetaAssignManager = new MetaAssignManager(m_FinalExpress, m_ThenMetaStatements, new MetaType(CoreMetaClassManager.booleanMetaClass));
                     m_BoolConditionVariable = m_MetaAssignManager.judgmentValueMetaVariable;
                     if( m_MetaAssignManager.isNeedSetMetaVariable )
                     {

@@ -646,18 +646,33 @@ namespace SimpleLanguage.Compile.Parse
         {
             if (pnode.parseIndex >= pnode.childList.Count)
                 return;
+
+            var action = delegate( List<Node> addnode )
+            {
+                for (int i = 0; i < addnode.Count; i++)
+                {
+                    var curNodexxx = addnode[i];
+                    if (curNodexxx.nodeType == ENodeType.Key
+                        && curNodexxx.token.type == ETokenType.Enum)
+                    {
+                        Console.WriteLine("error 不允许在enum 内容里边再嵌套enum");
+                        return;
+                    }
+                }
+                FileMetaMemberVariable cpv = new FileMetaMemberVariable(m_FileMeta, addnode);
+
+                AddParseVariableInfo(cpv);
+            };
+
             Node blockNode = null;
-
-            int type = -1;       // 0 enum 1 variable
-            List<Node> nodeList = new List<Node>();
-
-            bool isLineEnd = false;
+            List<Node> nodeList = new List<Node>();           
             int index = pnode.parseIndex;
+            bool isParse = false;
+            bool isAssign = false;
             for (index = pnode.parseIndex; index < pnode.childList.Count;)
             {
                 var curNode = pnode.childList[index++];
                 Node nextNode = null;
-                int lineCount = 0;
                 if (index < pnode.childList.Count)
                 {
                     nextNode = pnode.childList[index];
@@ -665,230 +680,165 @@ namespace SimpleLanguage.Compile.Parse
 
                 if (curNode.nodeType == ENodeType.IdentifierLink)  //Enum1
                 {
-                    if (nextNode?.nodeType == ENodeType.LineEnd)
+                    if(isAssign)
                     {
-                        if( index + 1 < pnode.childList.Count)
+                        nodeList.Add(curNode);
+                        if (nextNode?.nodeType == ENodeType.Par)  //Enum1()
                         {
-                            nextNode = pnode.childList[index + 1];
-                            lineCount++;
-                        }
-                        else
-                        {
-                            isLineEnd = true;
-                        }
-                    }
-                    //if (nextNode?.nodeType == ENodeType.Brace)  // 不允许 enum Enum1{  $a = {}$ } 
-                    //{
-                    //    index+= (lineCount+1);
-                    //    type = 0;
-                    //    curNode.blockNode = nextNode;
-                    //    blockNode = curNode;
-                    //    nodeList.Add(curNode);
-                    //    break;
-                    //}
-
-                    if (nextNode?.nodeType == ENodeType.Par)  //Enum1()
-                    {
-                        Node next2Node = null;
-                        bool isLineEnd2 = false;
-                        if( index + 1 < pnode.childList.Count )
-                        {
-                            next2Node = pnode.childList[index + 1];
-                            if (next2Node.nodeType == ENodeType.LineEnd)
+                            curNode.parNode = nextNode;
+                            if (index + 1 < pnode.childList.Count)
                             {
-                                if( index + 2 < pnode.childList.Count )
+                                Node next2Node = pnode.childList[index + 1];
+                                if (next2Node.nodeType == ENodeType.LineEnd)
                                 {
-                                    next2Node = pnode.childList[index + 2];
+                                    index += 1;
+                                    isParse = true;
+                                    if (index + 1 < pnode.childList.Count)
+                                    {
+                                        next2Node = pnode.childList[index + 1];
+                                        if( next2Node?.nodeType == ENodeType.Brace )
+                                        {
+                                            index += 2;
+                                            curNode.blockNode = next2Node;
+                                            blockNode = next2Node;
+                                        }
+                                    }
                                 }
-                                else
+                                else if (next2Node?.nodeType == ENodeType.Brace)  //Class1(){}的结构
                                 {
-                                    next2Node = null;
+                                    index += 2;
+                                    blockNode = next2Node;
+                                    isParse = true;
                                 }
-                                lineCount++;
-                                isLineEnd2 = true;
+                                else if (next2Node?.nodeType == ENodeType.SemiColon)
+                                {
+                                    index += 1;
+                                    isParse = true;
+                                }
                             }
                         }
-                        if (next2Node?.nodeType == ENodeType.Brace)  //Class1(){}的结构
+                        else if (nextNode?.nodeType == ENodeType.Angle)    // Class1<>
                         {
-                            bool isAssign = false;
-                            for (int m = 0; m < nodeList.Count; m++)
+                            var next2Node = pnode.childList[index + 1];
+                            if (next2Node?.nodeType == ENodeType.Brace)  // Class1<int>(){}
                             {
-                                if (nodeList[m].nodeType == ENodeType.Assign)
-                                {
-                                    isAssign = true;
-                                    break;
-                                }
-                            }
-                            if (curNode.nodeType == ENodeType.Assign) isAssign = true;
-
-                            if (isAssign)
-                            {
-                                index+= (lineCount+2);
-                                type = 1;
-                                curNode.parNode = nextNode;
+                                index += 2;
+                                curNode.angleNode = nextNode;
                                 curNode.blockNode = next2Node;
                                 blockNode = curNode;
-                                nodeList.Add(curNode);
-                                break;
                             }
                             else
                             {
-                                Console.WriteLine("Error 不允许在enum中有函数的存在!!");
-                                break;
+                                index++;
+                                curNode.angleNode = nextNode;
                             }
                         }
-                        else if (next2Node?.nodeType == ENodeType.SemiColon || isLineEnd2 )
+                        else if (nextNode?.nodeType == ENodeType.LineEnd
+                            || nextNode?.nodeType == ENodeType.SemiColon)
                         {
-                            index+=(lineCount+2); 
-                            type = 1;
-                            curNode.finalNode.parNode = nextNode;
-                            nodeList.Add(curNode);
-                            break;
                         }
-                    }
-                    else if (nextNode?.nodeType == ENodeType.Angle)    // Class1<>
-                    {
-                        var next2Node = pnode.childList[index + 1];
-                        if (next2Node?.nodeType == ENodeType.Brace)  // Class1<>{}
-                        {
-                            index += 2;
-                            type = 0;
-                            curNode.angleNode = nextNode;
-                            curNode.blockNode = next2Node;
-                            blockNode = curNode;
-                            nodeList.Add(curNode);
-                            break;
-                        }                       
                         else
                         {
-                            index++;
-                            curNode.angleNode = nextNode;
+                            Console.WriteLine("在解析enum member 中 成员变量 如果是identifier格式，则后边不允许跟当前格式");
                         }
-                    }
-                }
-                if (curNode?.nodeType == ENodeType.Par)  //类中的带()的结构
-                {
-                    if (nextNode?.nodeType == ENodeType.SemiColon)
-                    {
-                        index+= (lineCount+1);
-                        type = 1;
-                        curNode.finalNode.parNode = nextNode;
-                        nodeList.Add(curNode);
-                        break;
-                    }
-                    else if (nextNode?.nodeType == ENodeType.LineEnd)
-                    {
-                        index++;
-                        type = 1;
-                        curNode.finalNode.parNode = nextNode;
-                        nodeList.Add(curNode);
-                        break;
                     }
                     else
                     {
-                        Console.WriteLine("Error 不允许在Class1()后 不能增加其它内容!!");
-                        break;
-                    }
-                }
-                else if (curNode?.nodeType == ENodeType.Brace)     //匿名对象
-                {
-                    bool isAssign = false;
-                    for (int m = 0; m < nodeList.Count; m++)
-                    {
-                        if (nodeList[m].nodeType == ENodeType.Assign)
-                        {
-                            isAssign = true;
-                            break;
-                        }
-                    }
-                    if (curNode?.nodeType == ENodeType.Assign) isAssign = true;
-                    if (isAssign)
-                    {
-                        type = 1;
-                        blockNode = curNode;
                         nodeList.Add(curNode);
-                        break;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Error 在语句中直接使用{}不符合语法要求!!!");
                     }
                 }
                 else if (curNode.nodeType == ENodeType.SemiColon)
                 {
-                    if (nodeList.Count == 0)
-                    {
-                        isLineEnd = true;
-                        break;
-                    }
-                    else
-                    {
-                        type = 1;
-                        break;
-                    }
+                    pnode.parseIndex = index;
+                    isParse = true;
                 }
                 else if (curNode.nodeType == ENodeType.LineEnd)
                 {
-                    if(nodeList.Count == 0 )
+                    if (ProjectManager.isUseForceSemiColonInLineEnd)
                     {
-                        isLineEnd = true;
-                        break;
+                        continue;
                     }
                     else
                     {
-                        if( ProjectManager.isUseForceSemiColonInLineEnd )
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            type = 1;
-                            break;
-                        }
+                        isParse = true;
                     }
                 }
-
-                nodeList.Add(curNode);
-            }
-            pnode.parseIndex = index;
-
-            if (isLineEnd)
-            {
-                ParseEnumNode(pnode);
-                return;
-            }
-            if (nodeList.Count == 0 )
-            {
-                var curnode = pnode.parseCurrent;
-                Console.WriteLine("Error Enum解析token错误 没找发现可解析的NodeList 位置在" + curnode.token?.ToLexemeAllString());
-                return;
-            }
-
-            if (type == -1)
-            {
-                var curnode = pnode.parseCurrent;
-                if (blockNode != null)
+                else if (curNode.nodeType == ENodeType.Assign)
                 {
-                    type = 0;
+                    nodeList.Add(curNode);
+                    isAssign = true;
+                }
+                else if( curNode.nodeType == ENodeType.ConstValue )
+                {
+                    nodeList.Add(curNode);
+                }
+                else if( curNode.nodeType == ENodeType.Key && curNode.token.type == ETokenType.Mut )
+                {
+                    nodeList.Add(curNode);
                 }
                 else
                 {
-                    Console.WriteLine("Error 解析token错误 没找发现可解析的NodeList 位置在" + curnode.token?.ToLexemeAllString());
-                    return;
+                    Console.WriteLine("Error 解析Enum memeber 时，不允许有其它形式的存在!");
                 }
-            }
-            if (type == 1)
-            {
-                FileMetaMemberVariable cpv = new FileMetaMemberVariable(m_FileMeta, nodeList);
 
-                AddParseVariableInfo(cpv);
+                if(isParse )
+                {
+                    if(nodeList.Count > 0)
+                    {
+                        action.Invoke(nodeList);
+                        nodeList.Clear();
+                    }
+                    isParse = false;
+                    isAssign = false;
+                }
 
-                ParseEnumNode(pnode);
-            }
-            else
-            {
-                Console.WriteLine("Error 在Enum不能包含类或者是数据");
-                return;
+                #region 扩展解析其它方式
+                //if (curNode?.nodeType == ENodeType.Par)  //类中的带()的结构
+                //{
+                //    if (nextNode?.nodeType == ENodeType.SemiColon)
+                //    {
+                //        index+= (lineCount+1);
+                //        curNode.finalNode.parNode = nextNode;
+                //        nodeList.Add(curNode);
+                //        break;
+                //    }
+                //    else if (nextNode?.nodeType == ENodeType.LineEnd)
+                //    {
+                //        index++;
+                //        curNode.finalNode.parNode = nextNode;
+                //        nodeList.Add(curNode);
+                //        break;
+                //    }
+                //    else
+                //    {
+                //        Console.WriteLine("Error 不允许在Class1()后 不能增加其它内容!!");
+                //        break;
+                //    }
+                //}
+                //else if (curNode?.nodeType == ENodeType.Brace)     //匿名对象
+                //{
+                //    bool isAssign = false;
+                //    for (int m = 0; m < nodeList.Count; m++)
+                //    {
+                //        if (nodeList[m].nodeType == ENodeType.Assign)
+                //        {
+                //            isAssign = true;
+                //            break;
+                //        }
+                //    }
+                //    if (curNode?.nodeType == ENodeType.Assign) isAssign = true;
+                //    if (isAssign)
+                //    {
+                //        blockNode = curNode;
+                //        nodeList.Add(curNode);
+                //        break;
+                //    }
+                //    else
+                //    {
+                //        Console.WriteLine("Error 在语句中直接使用{}不符合语法要求!!!");
+                //    }
+                //}
+                #endregion
             }
         }
 

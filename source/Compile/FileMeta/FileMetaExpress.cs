@@ -545,13 +545,14 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             for (int j = 0; j < m_Node.childList.Count; j++)
             {
                 var c2node = m_Node.childList[j];
-                if (
-                    c2node.nodeType == ENodeType.Comma
-                    //|| c2node.nodeType == ENodeType.SemiColon
-                    )
+                if (c2node.nodeType == ENodeType.Comma )
                 {
                     nodeListList.Add(tempNodeList);
                     tempNodeList = new List<Node>();
+                }
+                else if( c2node.nodeType == ENodeType.LineEnd )
+                {
+                    continue;
                 }
                 else
                 {
