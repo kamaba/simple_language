@@ -50,10 +50,10 @@ namespace SimpleLanguage.Core
                 return 5;
             else if (defineType == EType.Double)
                 return 6;
-            else if (defineType == EType.String)
-                return 7;
             else if (defineType == EType.Array)
                 return 8;
+            else if (defineType == EType.String)
+                return 11;
 
             return 10;
         }

@@ -63,7 +63,14 @@ namespace SimpleLanguage.Core.Statements
                     break;
                 case MetaOpExpressNode moen:
                     {
-                        Console.WriteLine("Error -------------------------------------------");
+                        if (moen.isEqualType)
+                        {
+                            //m_JudgmentValueMetaVariable = CreateOptimizeAfterExpress;
+                        }
+                        else
+                        {
+                            //Console.WriteLine("Error 返回的判断语句: " + mcen.ToTokenString() + "   并非是boolean类型!");
+                        }
                     }
                     break;
                 default:

@@ -139,6 +139,9 @@ namespace SimpleLanguage.Core
                 return false;
             }
             m_MetaMemberDataDict.Add(mmd.name, mmd);
+
+            MetaVariableManager.instance.AddMetaDataVariable(mmd);
+
             return true;
         }
         public override void ParseName()

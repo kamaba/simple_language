@@ -91,7 +91,6 @@ namespace SimpleLanguage.Core
                 }
                 mmv.ParseName();
                 mmv.ParseDefineMetaType();
-                mmv.ParseMetaExpress();
                 AddMetaMemberData(mmv);
 
                 mmv.ParseChildMemberData();

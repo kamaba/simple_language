@@ -126,7 +126,7 @@ namespace SimpleLanguage.Core
         {
             m_Name = _name;
             m_OwnerMetaClass = mc;
-            //m_OwnerMetaBlockStatements = mbs;
+            m_OwnerMetaBlockStatements = mbs;
             m_LocalMetaVariable = lmv;
             m_OrgMetaDefineType = orgMC;
             m_IndexMetaVariable = new MetaVariable("index", EVariableFrom.ArrayInner, mbs, mc, new MetaType(CoreMetaClassManager.int32MetaClass));
@@ -332,6 +332,7 @@ namespace SimpleLanguage.Core
             MethodCall,
             NewMethodCall,
             New,
+            Enum,
         }
         public EVisitType visitType { get; private set; }
         public MetaVariable variable { get; private set; } = null;
@@ -347,6 +348,14 @@ namespace SimpleLanguage.Core
             vn.callerMetaClass = mc;
             vn.metaBraceStatementsContent = mb;
             vn.visitType = EVisitType.New;
+
+            return vn;
+        }
+        public static MetaVisitNode CreateByEnum( MetaEnum me, MetaVariable _variable )
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+            vn.variable = _variable;
+            vn.visitType = EVisitType.Variable;
 
             return vn;
         }
@@ -448,6 +457,10 @@ namespace SimpleLanguage.Core
                 case EVisitType.NewMethodCall:
                     {
                         return methodCall.function.thisMetaVariable;
+                    }
+                case EVisitType.Enum:
+                    {
+                        return variable;
                     }
                 default:
                     {

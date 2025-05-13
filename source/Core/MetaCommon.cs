@@ -31,7 +31,7 @@ namespace SimpleLanguage.Core
         ExternalClassName,
         EnumName,
         EnumDefaultValue,
-        EnumNewValue,
+        EnumValueArray,
         DataName,
         DataValue,
         FunctionInnerVariableName,
@@ -216,7 +216,9 @@ namespace SimpleLanguage.Core
                 return false;
             }
 
-            if (etype == ETokenType.Number || etype == ETokenType.String || etype == ETokenType.Boolean)
+            if (etype == ETokenType.Number 
+                || etype == ETokenType.String 
+                || etype == ETokenType.Boolean)
             {
                 bool isNotConstValue = false;
                 if (frontCNT == ECallNodeType.FunctionInnerVariableName
@@ -405,6 +407,7 @@ namespace SimpleLanguage.Core
                         {
                             m_MetaEnum = tempMetaBase as MetaEnum;
                             m_CallNodeType = ECallNodeType.EnumName;
+                            m_MetaVariable = m_MetaEnum.metaVariable;
                         }
                         else
                         {
@@ -476,6 +479,20 @@ namespace SimpleLanguage.Core
                             }
                             if (tmb == null)
                             {
+                                MetaMemberVariable csharpmmv = m_FrontCallNode.m_MetaClass.GetCSharpMemberVariableAndCreateByName(name) as MetaMemberVariable;
+                                if( csharpmmv != null )
+                                {
+                                    m_MetaVariable = csharpmmv;
+                                    m_CallNodeType = ECallNodeType.MemberVariableName;
+                                    return true;
+                                }
+                                MetaMemberFunction csharpmmf = m_FrontCallNode.m_MetaClass.GetCSharpMemberFunctionAndCreateByNameAndInputParamCollect(name, !m_AllowUseSettings.useNotStatic, m_MetaInputParamCollection);
+                                if (csharpmmf != null)
+                                {
+                                    m_MetaFunction = csharpmmf;
+                                    m_CallNodeType = ECallNodeType.MemberFunctionName;
+                                    return true;
+                                }
                                 Console.WriteLine("Error 不能使用Class.xxxx未发现后续!");
                                 return false;
                             }
@@ -529,45 +546,41 @@ namespace SimpleLanguage.Core
                     }
                     else if( frontCNT == ECallNodeType.EnumName )
                     {
-                        var mb = GetEnumValue(m_FrontCallNode.m_MetaEnum, name);
-                        if( mb != null )
+                        if( name == "values")
                         {
-                            if( m_IsFunction)// Enum e = Enum.MetaVaraible( 2 )
+                            m_MetaVariable = m_FrontCallNode.m_MetaEnum.metaVariable;
+                            if( m_MetaVariable == null )
                             {
-                                MetaMemberVariable mmv = m_MetaVariable as MetaMemberVariable;
-                                m_CallNodeType = ECallNodeType.EnumNewValue;
-
-                                var splitParamList = m_FileMetaCallNode.fileMetaParTerm.SplitParamList();
-                                if (splitParamList.Count == 1)
+                                m_FrontCallNode.m_MetaEnum.CreateValues();
+                                m_MetaVariable = m_FrontCallNode.m_MetaEnum.metaVariable;
+                                if (m_MetaVariable == null)
                                 {
-                                    ExpressManager.CreateExpressParam cep = new ExpressManager.CreateExpressParam()
-                                    {
-                                        mbs = m_OwnerMetaFunctionBlock,
-                                        metaType = mmv.metaDefineType,
-                                        fme = splitParamList[0].root,
-                                        isStatic = false,
-                                        isConst = false
-                                    };
-                                    m_ExpressNode = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep);
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Error 在Enum.value中，必须权有一个值!!");
                                     return false;
                                 }
-                                //m_MetaVariable = m
-                                Console.WriteLine("1111 不能使用Enum.xxxx未发现后续!");
                             }
-                            else
-                            {
-                                m_MetaEnum = mb as MetaEnum;
-                                m_CallNodeType = ECallNodeType.EnumDefaultValue;
-                            }
+                            m_CallNodeType = ECallNodeType.EnumValueArray;
                         }
                         else
                         {
-                            Console.WriteLine("Error 不能使用Enum.xxxx未发现后续!");
-                            return false;
+                            MetaMemberEnum mme = m_FrontCallNode.m_MetaEnum.GetMemberEnumByName(name);
+                            if (mme != null)
+                            {
+                                if (m_IsFunction)// Enum e = Enum.MetaVaraible( 2 )
+                                {
+                                    Console.WriteLine("不能使用Enum.metaVariable(2) 这样的格式!");
+                                    return false;
+                                }
+                                else
+                                {
+                                    m_MetaVariable = mme;
+                                    m_CallNodeType = ECallNodeType.EnumDefaultValue;
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("Error 不能使用Enum.xxxx未发现后续!");
+                                return false;
+                            }
                         }
                     }
                     else if (frontCNT == ECallNodeType.FunctionInnerVariableName
@@ -1056,7 +1069,11 @@ namespace SimpleLanguage.Core
                         }
                     }
                 }
-                else if(m_MetaClass is MetaData )
+                else if( m_MetaData != null )
+                {
+
+                }
+                else if(m_MetaEnum != null )
                 {
 
                 }
@@ -1113,93 +1130,67 @@ namespace SimpleLanguage.Core
                 EType etype = EType.None;
                 if (Enum.TryParse<EType>(m_Token.extend.ToString(), out etype))
                 {
-                    retMC = CoreMetaClassManager.GetMetaClassByEType(etype);
-                    if (retMC != null)
-                    {
-                        m_MetaClass = retMC as MetaClass;
-                        m_CallNodeType = ECallNodeType.ClassName;
-                    }
+                    retMC = CoreMetaClassManager.GetMetaClassByEType(etype);                    
                 }
             }
             // 查找 coreModule的模块
             if( retMC== null )
             {
                 retMC = ModuleManager.instance.GetMetaModuleByName(inputname);
-                if( retMC !=null )
-                {
-                    m_MetaMoule = retMC as MetaModule;
-                    m_CallNodeType = ECallNodeType.NamespaceName;
-                }
             }
             //查找core中的定义
             if( retMC == null )
             {
                 retMC = CoreMetaClassManager.GetCoreMetaClass(inputname); 
-                if (retMC != null)
-                {
-                    m_MetaClass = retMC as MetaClass;
-                    m_CallNodeType = ECallNodeType.ClassName;
-                }
             }
             //查找selfModule中的定义
             if (retMC == null )
             {
                 retMC = ModuleManager.instance.selfModule.GetChildrenMetaBaseByName(inputname);
-                if( retMC != null )
-                {
-                    if( retMC is MetaNamespace)
-                    {
-                        m_MetaNamespace = retMC as MetaNamespace;
-                        m_CallNodeType = ECallNodeType.NamespaceName;
-                    }
-                    else
-                    {
-                        m_MetaClass = retMC as MetaClass;
-                        m_CallNodeType = ECallNodeType.ClassName;
-                    }
-                }
             }
             //查找父类或子类中包含的节点
             if( retMC == null )
             {
                 retMC = mc.GetChildrenMetaClass(inputname);
-                if (retMC != null)
-                {
-                    m_CallNodeType = ECallNodeType.ClassName;
-                }
             }
             //通过fileMeta查找是否有首定义字符
             if( retMC == null )
             {
                 retMC = m_FileMetaCallNode.fileMeta.GetMetaBaseByName(inputname);
-                if (retMC != null)
+            }
+            if (retMC != null)
+            {
+                if( retMC is MetaModule )
                 {
-                    if( retMC is MetaNamespace )
-                    {
-                        m_MetaNamespace = retMC as MetaNamespace;
-                        m_CallNodeType = ECallNodeType.NamespaceName;
-                    }
-                    else if( retMC is MetaData )
-                    {
-                        m_MetaData = retMC as MetaData;
-                        m_CallNodeType = ECallNodeType.DataName;
-                    }
-                    else if( retMC is MetaEnum )
-                    {
-                        m_MetaEnum = retMC as MetaEnum;
-                        m_CallNodeType = ECallNodeType.EnumName;
-                    }
-                    else if( retMC is MetaClass )
-                    {
-                        m_MetaClass = retMC as MetaClass;
-                        m_CallNodeType = ECallNodeType.ClassName;
-                    }
-                    else
-                    {
-                        Console.Write("Error 没有发该RetMC的类别MetaCommon");
-                    }
-
+                    m_MetaMoule = retMC as MetaModule;
+                    m_CallNodeType = ECallNodeType.NamespaceName;
                 }
+                else if (retMC is MetaNamespace)
+                {
+                    m_MetaNamespace = retMC as MetaNamespace;
+                    m_CallNodeType = ECallNodeType.NamespaceName;
+                }
+                else if (retMC is MetaData)
+                {
+                    m_MetaData = retMC as MetaData;
+                    m_CallNodeType = ECallNodeType.DataName;
+                }
+                else if (retMC is MetaEnum)
+                {
+                    m_MetaEnum = retMC as MetaEnum;
+                    m_MetaVariable = m_MetaEnum.metaVariable;
+                    m_CallNodeType = ECallNodeType.EnumName;
+                }
+                else if (retMC is MetaClass)
+                {
+                    m_MetaClass = retMC as MetaClass;
+                    m_CallNodeType = ECallNodeType.ClassName;
+                }
+                else
+                {
+                    Console.Write("Error 没有发该RetMC的类别MetaCommon");
+                }
+
             }
 
             //函数内成员
@@ -1272,10 +1263,6 @@ namespace SimpleLanguage.Core
                 //}
             }
             return null;
-        }
-        public MetaBase GetEnumValue( MetaEnum me, string inputname )
-        {
-            return me.GetMemberVariableByName(inputname);
         }
         public MetaMemberData GetDataValueByMetaData(MetaData md, string inputName)
         {
@@ -1370,23 +1357,16 @@ namespace SimpleLanguage.Core
                 }
                 else if (m_CallNodeType == ECallNodeType.EnumDefaultValue)
                 {
-                    sb.Append(m_MetaEnum.name);
+                    sb.Append(m_MetaVariable?.name);
                 }
-                else if (m_CallNodeType == ECallNodeType.EnumNewValue)
+                else if (m_CallNodeType == ECallNodeType.DataName)
                 {
-                    sb.Append(m_MetaEnum.name);
-                    sb.Append("(");
-                    sb.Append(m_ExpressNode.ToFormatString());
-                    sb.Append(")");
+                    sb.Append(m_MetaData.allName);
                 }
-                //else if (m_CallNodeType == ECallNodeType.DataName)
-                //{
-                //    sb.Append(m_MetaMemberData.allName);
-                //}
-                //else if (m_CallNodeType == ECallNodeType.MemberDataName)
-                //{
-                //    sb.Append(m_MetaMemberData?.name);
-                //}
+                else if (m_CallNodeType == ECallNodeType.MemberDataName)
+                {
+                    sb.Append(m_MetaVariable?.name);
+                }
                 else if (m_CallNodeType == ECallNodeType.NewClass)
                 {
                     sb.Append(m_MetaClass.ToFormatString());
@@ -1621,6 +1601,15 @@ namespace SimpleLanguage.Core
                         m_VisitNodeList.Add(mvn);
                         continue;
                     }
+                    else if (mcn.callNodeType == ECallNodeType.EnumName)
+                    {
+
+                    }
+                    else if (mcn.callNodeType == ECallNodeType.EnumValueArray)
+                    {
+                        MetaVisitNode mvn = MetaVisitNode.CreateByEnum(mcn.m_MetaEnum, mcn.m_MetaVariable);
+                        m_VisitNodeList.Add(mvn);
+                    }
                     else if (mcn.callNodeType == ECallNodeType.VisitVariable)
                     {
                         MetaVisitNode mvn = MetaVisitNode.CreateByVisitVariable(mcn.m_MetaVariable as MetaVisitVariable);
@@ -1632,11 +1621,18 @@ namespace SimpleLanguage.Core
                     }
                     else if (mcn.callNodeType == ECallNodeType.DataName)
                     {
-                        Console.WriteLine("Meta Common Parse DataName----------------------------------------------------");
+                        MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.m_MetaVariable);
+                        m_VisitNodeList.Add(mvn);
                     }
                     else if (mcn.callNodeType == ECallNodeType.EnumName)
                     {
-                        Console.WriteLine("Meta Common Parse EnumName----------------------------------------------------");
+                        MetaVisitNode mvn = MetaVisitNode.CreateByEnum(mcn.m_MetaEnum, mcn.m_MetaVariable);
+                        m_VisitNodeList.Add(mvn);    
+                    }
+                    else if( mcn.callNodeType == ECallNodeType.EnumDefaultValue )
+                    {
+                        MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.m_MetaVariable);
+                        m_VisitNodeList.Add(mvn);
                     }
                     else if (mcn.callNodeType == ECallNodeType.MemberDataName)
                     {

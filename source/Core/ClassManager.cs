@@ -287,10 +287,9 @@ namespace SimpleLanguage.Core
                 MetaClass newmc = null;
                 if (fmc.isEnum)
                 {
-                    MetaEnum newme = new MetaEnum(fmc.name, fmc.isConst);
+                    MetaEnum newme = new MetaEnum(fmc.name);
                     newme.BindFileMetaClass(fmc);
-                    newme.ParseFileMetaClassTemplate(fmc);
-                    newme.ParseFileMetaEnumMemeberData(fmc);
+                    newme.ParseFileMetaEnumMemeberEnum(fmc);
                     newmc = newme;
                 }
                 else if (fmc.isData)
@@ -453,6 +452,16 @@ namespace SimpleLanguage.Core
             foreach (var it in m_AllClassDict)
             {
                 it.Value.ParseDefineComplete();
+            }
+        }
+        public void ParseMemberEnumExpress()
+        {
+            foreach (var it in m_AllClassDict)
+            {
+                if( it.Value is MetaEnum me )
+                {
+                    me.ParseMemberMetaEnumExpress();
+                }
             }
         }
         public static bool IsNumberMetaClass( MetaClass mc )

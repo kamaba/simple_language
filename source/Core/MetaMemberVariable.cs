@@ -319,13 +319,16 @@ namespace SimpleLanguage.Core
         {
             if (m_FileMetaMemeberVariable != null)
             {
-                if (m_FileMetaMemeberVariable.classDefineRef != null)
+                if(m_IsEnumValue == false )
                 {
-                    m_DefineMetaType = new MetaType(m_FileMetaMemeberVariable.classDefineRef, ownerMetaClass);
-                }
-                else
-                {
+                    if (m_FileMetaMemeberVariable.classDefineRef != null)
+                    {
+                        m_DefineMetaType = new MetaType(m_FileMetaMemeberVariable.classDefineRef, ownerMetaClass);
+                    }
+                    else
+                    {
 
+                    }
                 }
             }
         }

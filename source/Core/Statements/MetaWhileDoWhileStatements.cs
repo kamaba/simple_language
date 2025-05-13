@@ -86,6 +86,10 @@ namespace SimpleLanguage.Core.Statements
                     return;
                 }
                 var forMVMC = mdt.GetMetaInputTemplateByIndex();
+                if( forMVMC == null )
+                {
+                    forMVMC = m_ForInContent.metaDefineType;
+                }
 
                 var fmcd = m_FileMetaKeyForSyntax.fileMetaClassDefine as FileMetaCallSyntax;
                 if( fmcd == null )

@@ -219,7 +219,9 @@ namespace SimpleLanguage.Project
             ClassManager.instance.CheckInterfaces();
             ClassManager.instance.ParseDefineComplete();
             //ClassManager.instance.PrintAlllClassContent();
-            MetaVariableManager.instance.ParseMetaExpress();
+            ClassManager.instance.ParseMemberEnumExpress();
+            MetaVariableManager.instance.ParseMetaDataMemberExpress();
+            MetaVariableManager.instance.ParseMetaClassMemberExpress();
             MethodManager.instance.ParseMetaExpress();
             MethodManager.instance.ParseStatements();
             Console.WriteLine("-------------------------解析完成后的格式输出 开始--------------------------");
