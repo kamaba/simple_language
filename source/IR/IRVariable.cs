@@ -29,16 +29,25 @@ namespace SimpleLanguage.IR
             else
             {
                 data.opCode = EIROpCode.LoadNotStaticField;
-                data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
+                //data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
                 m_IRDataList.Add(data);
             }
         }
 
-        public IRLoadVariable(IRMethod _irManager, MetaMemberVariable mmv)
+        public IRLoadVariable(IRMethod _irManager, MetaMemberEnum mmv)
         {
-            data.opCode = EIROpCode.LoadNotStaticField;
-            data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
-            m_IRDataList.Add(data);
+            if (mmv.isStatic)
+            {
+                data.opCode = EIROpCode.LoadStaticField;
+                //data.index = _irManager.GetStaticVariableIndex(mmv);
+                m_IRDataList.Add(data);
+            }
+            else
+            {
+                data.opCode = EIROpCode.LoadNotStaticField;
+                //data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
+                m_IRDataList.Add(data);
+            }
         }
 
         public IRLoadVariable(IRMethod _irMethod, MetaVariable mv) : base(_irMethod)
@@ -52,10 +61,9 @@ namespace SimpleLanguage.IR
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
             {
-                MetaMemberEnum mme = mv as MetaMemberEnum;
+                data.SetDebugInfoByToken(mv.pingToken);
+                //data.index = mv.ownerMetaClass.GetLocalMemberVariableIndex(mv as MetaMemberVariable);
                 data.opCode = EIROpCode.LoadNotStaticField;
-                data.SetDebugInfoByToken(mme.pingToken);
-                data.index = 0;// mme.ownerMetaClass.GetLocalMemberVariableIndex(mme);
                 m_IRDataList.Add(data);
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.LocalStatement)
@@ -70,17 +78,13 @@ namespace SimpleLanguage.IR
                 MetaMemberVariable mmv = mv as MetaMemberVariable;
                 data.opCode = EIROpCode.LoadNotStaticField;
                 data.SetDebugInfoByToken(mmv.pingToken);
-                data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
+                //data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
                 m_IRDataList.Add(data);
             }
             else
             {
                 Console.WriteLine($"SVM Error 没有找到加载变量的来源类型！");
             }
-        }
-        public IRLoadVariable( IRMethod _irMethod, MetaVisitNode mvn ) : base( _irMethod )
-        {
-            //if( mvn.)
         }
         public override string ToIRString()
         {
@@ -123,7 +127,7 @@ namespace SimpleLanguage.IR
             else if (mmv != null)
             {
                 data.opCode = EIROpCode.StoreNotStaticField;
-                data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
+                //data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
                 m_IRDataList.Add(data);
             }
             else

@@ -12,32 +12,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.IR.Statements
 {
-    public partial class MetaStatements
+    public class MetaIRStatements
     {
-        public IRMethod irMethod
-        {
-            get { return m_OwnerMetaBlockStatements.ownerMetaFunction.irMethod; }
-        }
+        public IRMethod irMethod { get; protected set; } = null;
         public List<IRBase> irStatements => m_IRStatements;
 
         protected List<IRBase> m_IRStatements = new List<IRBase>();
-        public virtual void ParseIRStatements()
-        {
-        }
-        public virtual string ToIRString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine("{");
-            for (int i = 0; i < m_IRStatements.Count; i++)
-            {
-                sb.AppendLine(m_IRStatements[i].ToIRString());
-            }
-            sb.AppendLine("}");
-
-            return sb.ToString();
-        }
     }
 }

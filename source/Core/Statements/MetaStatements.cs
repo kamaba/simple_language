@@ -13,6 +13,7 @@ using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using SimpleLanguage.Compile;
 
 namespace SimpleLanguage.Core.Statements
 {
@@ -72,6 +73,10 @@ namespace SimpleLanguage.Core.Statements
             m_NextMetaStatements = ms;
         }
         public virtual MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
+        {
+            return null;
+        }
+        public virtual Token GetToken()
         {
             return null;
         }

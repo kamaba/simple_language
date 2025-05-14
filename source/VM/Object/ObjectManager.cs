@@ -1,5 +1,4 @@
-﻿using SimpleLanguage.Core;
-using SimpleLanguage.Core.SelfMeta;
+﻿using SimpleLanguage.IR;
 using SimpleLanguage.VM;
 using System;
 using System.Collections.Generic;
@@ -19,73 +18,73 @@ namespace SimpleLanguage.VM
                 classObjectDict.Add(cl.GetHashCode(), cl);
             }
         }
-        public static SValue CreateValueByDefineType(MetaType mdt)
+        public static SValue CreateValueByDefineType( IRMetaClass mdt )
         {
             SValue svalue = new SValue();
-            if (mdt.metaClass == CoreMetaClassManager.booleanMetaClass)
-            {
-                svalue.SetBoolValue(false);
-            }
-            else if (mdt.metaClass == CoreMetaClassManager.int16MetaClass)
-            {
-                svalue.SetInt16Value(0);
-            }
-            else if (mdt.metaClass == CoreMetaClassManager.int32MetaClass)
-            {
-                svalue.SetInt32Value(0);
-            }
-            else if (mdt.metaClass == CoreMetaClassManager.int64MetaClass)
-            {
-                svalue.SetInt64Value(0);
-            }
-            else if (mdt.metaClass == CoreMetaClassManager.stringMetaClass)
-            {
-                svalue.SetStringValue("");
-            }
-            else if (mdt.metaClass == CoreMetaClassManager.arrayMetaClass)
-            {
-            }
-            else
-            {
-                var sobj = new ClassObject(mdt);
-                svalue.SetSObject(sobj);
-            }
+            //if (mdt.metaClass == CoreMetaClassManager.booleanMetaClass)
+            //{
+            //    svalue.SetBoolValue(false);
+            //}
+            //else if (mdt.metaClass == CoreMetaClassManager.int16MetaClass)
+            //{
+            //    svalue.SetInt16Value(0);
+            //}
+            //else if (mdt.metaClass == CoreMetaClassManager.int32MetaClass)
+            //{
+            //    svalue.SetInt32Value(0);
+            //}
+            //else if (mdt.metaClass == CoreMetaClassManager.int64MetaClass)
+            //{
+            //    svalue.SetInt64Value(0);
+            //}
+            //else if (mdt.metaClass == CoreMetaClassManager.stringMetaClass)
+            //{
+            //    svalue.SetStringValue("");
+            //}
+            //else if (mdt.metaClass == CoreMetaClassManager.arrayMetaClass)
+            //{
+            //}
+            //else
+            //{
+            //    //var sobj = new ClassObject(mdt);
+            //    //svalue.SetSObject(sobj);
+            //}
             return svalue;
         }
-        public static SObject CreateObjectByDefineType(MetaType mdt)
+        public static SObject CreateObjectByDefineType(IRMetaClass mdt)
         {
             SObject sobj = null;
 
-            if (mdt.metaClass == CoreMetaClassManager.booleanMetaClass)
-            {
-                sobj = new BoolObject(false);
-            }
-            else if (mdt.metaClass == CoreMetaClassManager.int32MetaClass)
-            {
-                sobj = new Int32Object(0);
-            }
-            else if (mdt.metaClass == CoreMetaClassManager.stringMetaClass)
-            {
-                sobj = new StringObject("");
-            }
-            else if (mdt.metaClass == CoreMetaClassManager.arrayMetaClass)
-            {
-                sobj = new ArrayObject<int>();
-            }
-            else if (mdt.metaClass == CoreMetaClassManager.objectMetaClass)
-            {
-                sobj = new AnyObject();
-            }
-            else
-            {
-                sobj = new ClassObject(mdt);
-            }
+            //if (mdt.metaClass == CoreMetaClassManager.booleanMetaClass)
+            //{
+            //    sobj = new BoolObject(false);
+            //}
+            //else if (mdt.metaClass == CoreMetaClassManager.int32MetaClass)
+            //{
+            //    sobj = new Int32Object(0);
+            //}
+            //else if (mdt.metaClass == CoreMetaClassManager.stringMetaClass)
+            //{
+            //    sobj = new StringObject("");
+            //}
+            //else if (mdt.metaClass == CoreMetaClassManager.arrayMetaClass)
+            //{
+            //    sobj = new ArrayObject<int>();
+            //}
+            //else if (mdt.metaClass == CoreMetaClassManager.objectMetaClass)
+            //{
+            //    sobj = new AnyObject();
+            //}
+            //else
+            //{
+            //    sobj = new ClassObject(mdt);
+            //}
             return sobj;
         }
-        public static SObject CreateObject(MetaClass mc)
+        public static SObject CreateObject(IRMetaClass mc)
         {
             SObject sobj = null;
-            EType etype = mc.eType;
+            //EType etype = mc.eType;
             /*
             if (mc.metaType.defineType == EType.Byte)
             {

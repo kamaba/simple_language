@@ -12,11 +12,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.IR.Statements
 {
-    public partial class MetaSwitchStatements
+    public class MetaIRSwitchStatements : MetaIRStatements
     {
-        public override void ParseIRStatements()
+        public List<IRBase> ParseIRStatements(MetaSwitchStatements ms)
         {
             IRData insNode = new IRData();
             insNode.opCode = EIROpCode.Nop;
@@ -53,6 +53,7 @@ namespace SimpleLanguage.Core.Statements
                 }
             }
             */
+            return m_IRStatements;
         }
     }
 }

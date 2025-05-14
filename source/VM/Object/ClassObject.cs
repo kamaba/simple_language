@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Core;
+using SimpleLanguage.IR;
 
 namespace SimpleLanguage.VM
 {
@@ -24,7 +25,7 @@ namespace SimpleLanguage.VM
     {
         public ClassObject value => m_Object;
 
-        private MetaType m_MetaDefineType;
+        private IRMetaClass m_IRMetaClass;
         private ClassObject m_Object = null;
         private byte[] m_Data = null;
         private MemberVariableData[] m_MemberVariableData = null;
@@ -32,21 +33,21 @@ namespace SimpleLanguage.VM
         private SObject[] m_MemberVariableArray = null;
 
 
-        public ClassObject( MetaType mdt )
+        public ClassObject(IRMetaClass irmc )
         {
-            m_MetaDefineType = mdt;
+            m_IRMetaClass = irmc;
 
-            int byteCount = mdt.metaClass.byteCount;
+            int byteCount = irmc.byteCount;
             m_Data = new byte[byteCount];
 
-            var mvdict = mdt.metaClass.localMetaMemberVariables;
+            var mvdict = irmc.localMetaMemberVariables;
 
             m_MemberVariableData = new MemberVariableData[mvdict.Count];
             m_MemberVariableArray = new SObject[mvdict.Count];
             for( int i = 0; i < mvdict.Count; i++ )
             {
-                var obj = ObjectManager.CreateObjectByDefineType(mvdict[i].metaDefineType);
-                m_MemberVariableArray[i] = obj;
+                //var obj = ObjectManager.CreateObjectByDefineType(mvdict[i].metaDefineType);
+                //m_MemberVariableArray[i] = obj;
             }
         }
         public int GetMemberVariableIndex( MetaMemberVariable mmv )
@@ -296,14 +297,14 @@ namespace SimpleLanguage.VM
             {
                 sb.Append(m_Object.ToFormatString());
             }
-            sb.Append(m_MetaDefineType.ToFormatString());
+            sb.Append(m_IRMetaClass.ToString());
             //for( int i = 0; i < m_MemberVariableArray)
 
             return sb.ToString();
         }
         public override string ToString()
         {
-            return m_MetaDefineType.allName + "  " ;
+            return m_IRMetaClass.allName + "  " ;
          }
     }
 }

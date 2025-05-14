@@ -18,17 +18,21 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using System.Linq;
 using System.Runtime.Intrinsics.X86;
 using System.Reflection;
+using SimpleLanguage.Core;
 
-namespace SimpleLanguage.Core
+namespace SimpleLanguage.IR
 {
-    public partial class MetaClass
+    public class IRMetaClass
     {
         public List<MetaMemberVariable> localMetaMemberVariables => m_LocalMetaMemberVariables;
+        public List<MetaMemberData> localMetaMemberDatas => m_LocalMetaMemberDatas;
 
         public int allocSize = 0;
         List<MetaMemberVariable> m_LocalMetaMemberVariables = new List<MetaMemberVariable>();
+        List<MetaMemberData> m_LocalMetaMemberDatas = new List<MetaMemberData>();
         public List<EType> m_MetaTypeList = new List<EType>();
         public int byteCount = 0;
+        public string allName { get; set; } = null;
 
         public int GetLocalMemberVariableIndex(MetaMemberVariable mmv)
         {
@@ -64,9 +68,20 @@ namespace SimpleLanguage.Core
         {
             return 100;
         }
-        public void CreateMetaClassData()
+        public void CreateMetaClassData( MetaClass mc )
         {
-            m_LocalMetaMemberVariables = GetMetaMemberVariableListByFlag(false, false);
+            allName = mc.allName;
+            if (mc is MetaEnum me)
+            {
+            }
+            else if (mc is MetaData md)
+            {
+                m_LocalMetaMemberDatas = md.GetMetaMemberDataList();
+            }
+            else
+            {
+                m_LocalMetaMemberVariables = mc.GetMetaMemberVariableListByFlag(false, false);
+            }
             CalcAllocSize();
         }
     }

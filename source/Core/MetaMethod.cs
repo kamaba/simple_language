@@ -30,16 +30,6 @@ namespace SimpleLanguage.Core
                 return allName;
             }
         }
-
-        public string irMethodName
-        {
-            get
-            {
-                return allName;
-            }
-        }
-
-        public IRMethod irMethod => m_IRMethod;
         public MetaVariable thisMetaVariable => m_ThisMetaVariable;
         public MetaVariable returnMetaVariable => m_ReturnMetaVariable;
         public bool fixedParam { get; set; } = true;
@@ -59,7 +49,6 @@ namespace SimpleLanguage.Core
 
         public MetaFunction(MetaClass mc)
         {
-            m_IRMethod = new IRMethod(this);
             m_MetaMemberParamCollection = new MetaDefineParamCollection(false, true);
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             SetOwnerMetaClass(mc);           

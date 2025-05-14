@@ -13,22 +13,22 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.IR.Statements
 {
-    public partial class MetaAssignStatements
+    public class MetaIRAssignStatements : MetaIRStatements
     {
         protected IRExpress m_IRExpress = null;
         protected IRStoreVariable m_StoreVariable = null;
-        public override void ParseIRStatements()
+        public void ParseIRStatements( MetaAssignStatements ms )
         {
-            if (m_FinalMetaExpress != null)
+            if (ms.finalMetaExpress != null)
             {
-                m_IRExpress = new IRExpress(irMethod, m_FinalMetaExpress);
+                m_IRExpress = new IRExpress(irMethod, ms.finalMetaExpress);
                 m_IRStatements.Add(m_IRExpress);
             }
 
-            m_LeftMetaExpress.metaCallLink.ParseToIRDataList(irMethod, true );
-            m_IRStatements.AddRange(m_LeftMetaExpress.metaCallLink.irList);
+            //ms.leftMetaExpress.metaCallLink.ParseToIRDataList(irMethod, true );
+            //m_IRStatements.AddRange(ms.leftMetaExpress.metaCallLink.irList);
         }
     }
 }

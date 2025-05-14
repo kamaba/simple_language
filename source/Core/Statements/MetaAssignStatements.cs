@@ -90,8 +90,10 @@ namespace SimpleLanguage.Core.Statements
     }
     public partial class MetaAssignStatements : MetaStatements
     {
+        public MetaExpressNode finalMetaExpress => m_FinalMetaExpress;
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaExpressNode expressNode => m_ExpressNode;
+        public MetaExpressNode leftMetaExpress => m_LeftMetaExpress;
 
         private FileMetaOpAssignSyntax m_FileMetaOpAssignSyntax = null;
 

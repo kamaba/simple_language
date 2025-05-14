@@ -6,41 +6,48 @@
 //  Description:
 //****************************************************************************
 
+using SimpleLanguage.Core;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using SimpleLanguage.IR;
+using SimpleLanguage.IR.Statements;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.IR.Statements
 {
-    public partial class MetaNewStatements
+    public class MetaIRDefineVarStatements : MetaIRStatements
     {
         IRExpress m_IRExpress = null;
-        public override void ParseIRStatements()
+        public MetaIRDefineVarStatements( IRMethod _method ) 
+        {
+            this.irMethod = _method;
+        }
+        public void ParseIRStatements( MetaDefineVarStatements ms)
         {
             MetaNewObjectExpressNode mnoen = null;
-            if ( m_ExpressNode != null)
+            if (ms.expressNode != null)
             {
-                if( m_ExpressNode is MetaNewObjectExpressNode )
+                if(ms.expressNode is MetaNewObjectExpressNode )
                 {
-                    mnoen = m_ExpressNode as MetaNewObjectExpressNode;
-                    IRNew irNew = new IRNew( irMethod, mnoen.GetReturnMetaDefineType());
+                    mnoen = ms.expressNode as MetaNewObjectExpressNode;
+                    IRNew irNew = new IRNew( irMethod );
+                    irNew.Parse(mnoen.GetReturnMetaDefineType());
                     m_IRStatements.Add( irNew );
                 }
                 else
                 {
-                    m_IRExpress = new IRExpress(irMethod, m_ExpressNode);
+                    m_IRExpress = new IRExpress(irMethod, ms.expressNode);
                     m_IRStatements.Add(m_IRExpress);
                 }
             }
 
-            IRStoreVariable irStoreVar = new IRStoreVariable(irMethod, m_MetaVariable);
-            if(m_FileMetaOpAssignSyntax != null )
-            {
-                irStoreVar.data.SetDebugInfoByToken(m_FileMetaOpAssignSyntax.assignToken);
-            }
+            IRStoreVariable irStoreVar = new IRStoreVariable(irMethod, ms.metaVariable);
+            //if(m_FileMetaOpAssignSyntax != null )
+            //{
+            //    irStoreVar.data.SetDebugInfoByToken(m_FileMetaOpAssignSyntax.assignToken);
+            //}
             m_IRStatements.Add(irStoreVar);
 
             if ( mnoen!= null )
@@ -79,8 +86,8 @@ namespace SimpleLanguage.Core.Statements
                                 IRExpress irexp = new IRExpress(irMethod, v.Value.expressNode );
                                 m_IRStatements.Add(irexp);
 
-                                IRLoadVariable irLoadVar1 = new IRLoadVariable(irMethod, m_MetaVariable);
-                                m_IRStatements.Add(irLoadVar1);
+                                //IRLoadVariable irLoadVar1 = new IRLoadVariable(irMethod, m_MetaVariable);
+                                //m_IRStatements.Add(irLoadVar1);
 
                                 IRStoreVariable irStoreVar2 = new IRStoreVariable(irMethod, v.Value );
                                 m_IRStatements.Add(irStoreVar2);
@@ -102,69 +109,68 @@ namespace SimpleLanguage.Core.Statements
                 else
                 {
                     MetaClass metaClass = mt.metaClass;
-                    var mmvs = metaClass.localMetaMemberVariables;
+                    //var mmvs = metaClass.localMetaMemberVariables;
 
-                    bool isFZ = false;
-                    for (int i = 0; i < mmvs.Count; i++)
-                    {
-                        isFZ = false;
-                        // Class1{ a = 1; b = 2 }  如果已经配置 {}内容，则不走默认赋值，而是走{}内容赋值
-                        for (int j = 0; j < mnoen.metaBraceOrBracketStatementsContent?.assignStatementsList.Count; j++)
-                        {
-                            var asl = mnoen.metaBraceOrBracketStatementsContent.assignStatementsList[j];
+                    //bool isFZ = false;
+                    //for (int i = 0; i < mmvs.Count; i++)
+                    //{
+                    //    isFZ = false;
+                    //    // Class1{ a = 1; b = 2 }  如果已经配置 {}内容，则不走默认赋值，而是走{}内容赋值
+                    //    for (int j = 0; j < mnoen.metaBraceOrBracketStatementsContent?.assignStatementsList.Count; j++)
+                    //    {
+                    //        var asl = mnoen.metaBraceOrBracketStatementsContent.assignStatementsList[j];
 
-                            if (asl.metaMemberVariable.name == mmvs[i].name)
-                            {
-                                IRLoadVariable mmvsNodeVar = new IRLoadVariable(irMethod, m_MetaVariable);
-                                m_IRStatements.Add(mmvsNodeVar);
+                    //        if (asl.metaMemberVariable.name == mmvs[i].name)
+                    //        {
+                    //            IRLoadVariable mmvsNodeVar = new IRLoadVariable(irMethod, m_MetaVariable);
+                    //            m_IRStatements.Add(mmvsNodeVar);
 
-                                IRStoreVariable irStoreNodeVar3 = new IRStoreVariable(irMethod, asl.metaMemberVariable);
-                                m_IRStatements.Add(irStoreNodeVar3);
-                                isFZ = true;
-                                break;
-                            }
-                        }
+                    //            IRStoreVariable irStoreNodeVar3 = new IRStoreVariable(irMethod, asl.metaMemberVariable);
+                    //            m_IRStatements.Add(irStoreNodeVar3);
+                    //            isFZ = true;
+                    //            break;
+                    //        }
+                    //    }
 
-                        if (isFZ == false)
-                        {
-                            IRExpress irexp = new IRExpress(irMethod, mmvs[i].express);
-                            m_IRStatements.Add(irexp);
+                    //    if (isFZ == false)
+                    //    {
+                    //        IRExpress irexp = new IRExpress(irMethod, mmvs[i].express);
+                    //        m_IRStatements.Add(irexp);
 
-                            IRLoadVariable irLoadVar1 = new IRLoadVariable(irMethod, m_MetaVariable);
-                            m_IRStatements.Add(irLoadVar1);
+                    //        IRLoadVariable irLoadVar1 = new IRLoadVariable(irMethod, m_MetaVariable);
+                    //        m_IRStatements.Add(irLoadVar1);
 
-                            IRStoreVariable irStoreVar2 = new IRStoreVariable(irMethod, mmvs[i]);
-                            m_IRStatements.Add(irStoreVar2);
-                        }
+                    //        IRStoreVariable irStoreVar2 = new IRStoreVariable(irMethod, mmvs[i]);
+                    //        m_IRStatements.Add(irStoreVar2);
+                    //    }
                     }
                     // Class1().Init();
-                    var irCallFun = new IRCallFunction(irMethod, mnoen.constructFunctionCall);
-                    m_IRStatements.Add(irCallFun);
+                    //var irCallFun = new IRCallFunction(irMethod, mnoen.constructFunctionCall);
+                    //m_IRStatements.Add(irCallFun);
                 }
 
                 
 
             }
-        }
-        public override string ToIRString()
-        {
-            StringBuilder sb = new StringBuilder();
+        //public override string ToIRString()
+        //{
+        //    StringBuilder sb = new StringBuilder();
 
-            sb.Append(" #new var ");
-            sb.Append(m_MetaVariable.ToFormatString() );
-            if(m_ExpressNode != null )
-            {
-                sb.Append( " = " + m_ExpressNode.ToFormatString());
-            }
-            sb.AppendLine(" #");
+        //    sb.Append(" #new var ");
+        //    sb.Append(m_MetaVariable.ToFormatString() );
+        //    if(m_ExpressNode != null )
+        //    {
+        //        sb.Append( " = " + m_ExpressNode.ToFormatString());
+        //    }
+        //    sb.AppendLine(" #");
 
-            sb.AppendLine("{");
-            for (int i = 0; i < m_IRStatements.Count; i++)
-            {
-                sb.AppendLine(m_IRStatements[i].ToIRString());
-            }
-            sb.AppendLine("}");
-            return sb.ToString();
-        }
+        //    sb.AppendLine("{");
+        //    for (int i = 0; i < m_IRStatements.Count; i++)
+        //    {
+        //        sb.AppendLine(m_IRStatements[i].ToIRString());
+        //    }
+        //    sb.AppendLine("}");
+        //    return sb.ToString();
+        //}
     }
 }

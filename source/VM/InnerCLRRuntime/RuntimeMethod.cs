@@ -5,7 +5,6 @@
 //  DateTime: 2022/11/30 12:00:00
 //  Description: master use .net clr system. new create method instance than running code virtual machine 
 //****************************************************************************
-using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.VM;
 using System;
@@ -61,15 +60,15 @@ namespace SimpleLanguage.VM.Runtime
                 m_ReturnObjectArray = new SObject[m_IRMethod.methodReturnVariableList.Count];
                 for (int i = 0; i < m_IRMethod.methodReturnVariableList.Count; i++)
                 {
-                    SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodReturnVariableList[i].metaVariable.metaDefineType);
-                    sobj.SetVoid();
-                    m_ReturnObjectArray[i] = sobj;
+                    //SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodReturnVariableList[i].metaVariable.metaDefineType);
+                    //sobj.SetVoid();
+                    //m_ReturnObjectArray[i] = sobj;
                 }
                 m_ArgumentObjectArray = new SObject[m_IRMethod.methodArgumentList.Count];
                 for (int i = 0; i < m_IRMethod.methodArgumentList.Count; i++)
                 {
-                    SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodArgumentList[i].metaVariable.metaDefineType);
-                    m_ArgumentObjectArray[i] = sobj;
+                    //SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodArgumentList[i].metaVariable.metaDefineType);
+                    //m_ArgumentObjectArray[i] = sobj;
                 }
                 for( int i = 0; i < m_ArgumentObjectArray.Length; i++ )
                 {
@@ -84,8 +83,8 @@ namespace SimpleLanguage.VM.Runtime
                     var mdt = mev.metaVariable.metaDefineType;
                     if (mdt.metaClass != null)
                     {
-                        SObject sobj = ObjectManager.CreateObjectByDefineType(mdt);
-                        m_LocalVariableObjectArray[i] = sobj;
+                        //SObject sobj = ObjectManager.CreateObjectByDefineType(mdt);
+                        //m_LocalVariableObjectArray[i] = sobj;
                     }
                 }
                 for (int i = 0; i < m_LocalVariableObjectArray.Length; i++)
@@ -403,10 +402,10 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.NewObject:
                     {
-                        MetaType mdt = iri.opValue as MetaType;
-                        ClassObject co = new ClassObject(mdt);
-                        ObjectManager.AddClassObject(co);
-                        m_ValueStack[m_ValueIndex++].SetSObject( co );
+                        //MetaType mdt = iri.opValue as MetaType;
+                        //ClassObject co = new ClassObject(mdt);
+                        //ObjectManager.AddClassObject(co);
+                        //m_ValueStack[m_ValueIndex++].SetSObject( co );
                     }
                     break;
                 case EIROpCode.Label:

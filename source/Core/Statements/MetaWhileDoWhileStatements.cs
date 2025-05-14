@@ -22,7 +22,7 @@ namespace SimpleLanguage.Core.Statements
         private MetaVariable m_ForInContent = null;
         private FileMetaKeyForSyntax m_FileMetaKeyForSyntax = null;
         private MetaBlockStatements m_ThenMetaStatements = null;
-        private MetaNewStatements m_NewStatements = null;
+        private MetaDefineVarStatements m_DefineVarStatements = null;
         private MetaAssignStatements m_AssignStatements = null;
         private MetaExpressNode m_ConditionExpress = null;
         private MetaAssignStatements m_StepStatements = null;
@@ -118,7 +118,7 @@ namespace SimpleLanguage.Core.Statements
                 {
                     case FileMetaDefineVariableSyntax fmcd1:
                         {
-                            m_NewStatements = new MetaNewStatements(m_ThenMetaStatements, fmcd1);
+                            m_DefineVarStatements = new MetaDefineVarStatements(m_ThenMetaStatements, fmcd1);
                         }
                         break;
                     case FileMetaOpAssignSyntax fmoas:
@@ -132,7 +132,7 @@ namespace SimpleLanguage.Core.Statements
                             else
                             {
                                 m_ThenMetaStatements.AddOnlyNameMetaVariable(sname);
-                                m_NewStatements = new MetaNewStatements(m_ThenMetaStatements, fmoas);
+                                m_DefineVarStatements = new MetaDefineVarStatements(m_ThenMetaStatements, fmoas);
                             }
                             break;
                         }
@@ -147,7 +147,7 @@ namespace SimpleLanguage.Core.Statements
                             else
                             {
                                 m_ThenMetaStatements.AddOnlyNameMetaVariable(sname);
-                                m_NewStatements = new MetaNewStatements(m_ThenMetaStatements, fmcs);
+                                m_DefineVarStatements = new MetaDefineVarStatements(m_ThenMetaStatements, fmcs);
                             }
                         }
                         break;
@@ -157,9 +157,9 @@ namespace SimpleLanguage.Core.Statements
                     m_StepStatements = new MetaAssignStatements(m_ThenMetaStatements, m_FileMetaKeyForSyntax.stepFileMetaOpAssignSyntax);
                 }
 
-                if ( m_NewStatements != null)
+                if (m_DefineVarStatements != null)
                 {
-                    m_ForMetaVariable = m_NewStatements.metaVariable;
+                    m_ForMetaVariable = m_DefineVarStatements.metaVariable;
                 }
                 else if ( m_AssignStatements != null)
                 {
@@ -224,9 +224,9 @@ namespace SimpleLanguage.Core.Statements
                 {
                     sb.Append(Global.tabChar);
                 }
-                if ( m_NewStatements != null)
+                if (m_DefineVarStatements != null)
                 {
-                    sb.Append(m_NewStatements.ToFormatString());
+                    sb.Append(m_DefineVarStatements.ToFormatString());
                 }
                 if ( m_AssignStatements != null)
                 {

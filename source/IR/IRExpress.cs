@@ -6,7 +6,6 @@
 //  Description:  express convert ir code!
 //****************************************************************************
 
-using Simple.CC.C2;
 using SimpleLanguage.Core;
 using System;
 using System.Collections.Generic;
@@ -17,16 +16,15 @@ namespace SimpleLanguage.IR
     public class IRExpress : IRBase
     {
         private IRManager m_IRManager = null;
-        private MetaExpressNode m_Node = null;
         public IRExpress( IRMethod irMethod, MetaExpressNode node ) : base( irMethod )
         {
-            m_Node = node;
+            //m_Node = node;
             CreateIRDataOne(node);
         }
         public IRExpress( IRManager _irManager, MetaExpressNode node ):base()
         {
             m_IRManager = _irManager;
-            m_Node = node;
+            //m_Node = node;
             CreateIRDataOne(node);
         }
         public void CreateIRDataOne(MetaExpressNode node)
@@ -65,22 +63,23 @@ namespace SimpleLanguage.IR
                     {
                         if( m_IRManager != null )
                         {
-                            mcn.metaCallLink.ParseToIRDataListByIRManager(m_IRManager);
+                            //mcn.metaCallLink.ParseToIRDataListByIRManager(m_IRManager);
                         }
                         else
                         {
-                            mcn.metaCallLink.ParseToIRDataList(m_IRMethod);
+                            //mcn.metaCallLink.ParseToIRDataList(m_IRMethod);
                         }
-                        var list = mcn.metaCallLink.irList;
-                        for( int i = 0; i < list.Count; i++ )
-                        {
-                            m_IRDataList.AddRange(list[i].IRDataList);
-                        }
+                        //var list = mcn.metaCallLink.irList;
+                        //for( int i = 0; i < list.Count; i++ )
+                        //{
+                        //    m_IRDataList.AddRange(list[i].IRDataList);
+                        //}
                     }
                     break;
                 case MetaNewObjectExpressNode mnoe:
                     {
-                        IRNew irnew = new IRNew(m_IRMethod, mnoe.GetReturnMetaDefineType() );
+                        IRNew irnew = new IRNew(m_IRMethod );
+                        irnew.Parse(mnoe.GetReturnMetaDefineType());
                         m_IRDataList.AddRange(irnew.IRDataList);
                     }
                     break;

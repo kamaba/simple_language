@@ -455,7 +455,7 @@ namespace SimpleLanguage.Core
                     break;
                 case FileMetaOpAssignSyntax fmos:
                     {
-                        bool isNewStatements = false;
+                        bool isDefineVarStatements = false;
                         if (fmos.variableRef.isOnlyName)
                         {
                             string name1 = fmos.variableRef.name;
@@ -464,11 +464,11 @@ namespace SimpleLanguage.Core
                                 if (currentBlockStatements.GetIsMetaVariable(name1))
                                 {
                                     Console.WriteLine("Error 如果使用了var/data/dynamic/int 等前缀，有重复定义的行为" + fmos.variableRef.ToTokenString());
-                                    isNewStatements = false;
+                                    isDefineVarStatements = false;
                                 }
                                 else
                                 {
-                                    isNewStatements = true;
+                                    isDefineVarStatements = true;
                                 }
                             }
                             else
@@ -483,18 +483,18 @@ namespace SimpleLanguage.Core
                                     }
                                     else
                                     {
-                                        isNewStatements = true;
+                                        isDefineVarStatements = true;
                                     }
                                 }
                             }
                         }
-                        if (isNewStatements)
+                        if (isDefineVarStatements)
                         {
                             //if (currentBlockStatements.ownerMetaFunction?.isConstructFunction)
                             //{
                             //    Console.WriteLine("Error 构造函数中，不允许使用定义字段，必须使用this.非静态或者是类名.静态字段赋值!" + fmos.variableRef.ToTokenString());
                             //}
-                            MetaNewStatements mnvs11 = new MetaNewStatements( currentBlockStatements, fmos );
+                            MetaDefineVarStatements mnvs11 = new MetaDefineVarStatements( currentBlockStatements, fmos );
                             beforeStatements.SetNextStatements(mnvs11);
                             beforeStatements = mnvs11;
                         }
@@ -508,24 +508,24 @@ namespace SimpleLanguage.Core
                     break;
                 case FileMetaDefineVariableSyntax fmvs:
                     {
-                        bool isNewStatements = false;
+                        bool isDefineVarStatements = false;
                         string name1 = fmvs.name;
                         if (currentBlockStatements.GetIsMetaVariable(name1))
                         {
-                            isNewStatements = true;
+                            isDefineVarStatements = true;
                             Console.WriteLine("Error 定义变量名称与类函数临时名称一样!!" + fmvs.token?.ToLexemeAllString());                            
                         }
                         else
                         {
-                            isNewStatements = currentBlockStatements.ownerMetaClass.GetMetaMemberVariableByName(name1) == null;
-                            if (!isNewStatements)
+                            isDefineVarStatements = currentBlockStatements.ownerMetaClass.GetMetaMemberVariableByName(name1) == null;
+                            if (!isDefineVarStatements)
                             {
                                 Console.WriteLine("Error 定义变量名称与类定义名称一样!!" + fmvs.token?.ToLexemeAllString());
                             }
                         }
-                        if ( isNewStatements )
+                        if ( isDefineVarStatements )
                         {
-                            MetaNewStatements mnvs11 = new MetaNewStatements(currentBlockStatements, fmvs);                           
+                            MetaDefineVarStatements mnvs11 = new MetaDefineVarStatements(currentBlockStatements, fmvs);                           
                             beforeStatements.SetNextStatements(mnvs11);
                             beforeStatements = mnvs11;
                         }

@@ -15,23 +15,16 @@ namespace SimpleLanguage.IR
 {
     public class IRNew : IRBase
     {
-        private MetaType m_MetaDefineType = null;
-        public IRNew( IRMethod irMethod, MetaType mdt):base( irMethod )
+        public IRNew( IRMethod irMethod ):base( irMethod )
         {
-            m_MetaDefineType = mdt;
-
-            Parse();
         }
-        void Parse()
+        public void Parse( MetaType mt )
         {
             IRData data = new IRData();
             data.opCode = EIROpCode.NewObject;
-            data.opValue = m_MetaDefineType;
+            data.opValue = mt;
+            data.debugInfo = new DebugInfo() { name = mt.metaClass.allName, info = "IRNew" };
             m_IRDataList.Add(data);
-        }
-        public override string ToIRString()
-        {
-            return base.ToIRString();
         }
     }
 }
