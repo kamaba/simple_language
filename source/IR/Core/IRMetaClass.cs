@@ -24,15 +24,23 @@ namespace SimpleLanguage.IR
 {
     public class IRMetaClass
     {
-        public List<MetaMemberVariable> localMetaMemberVariables => m_LocalMetaMemberVariables;
-        public List<MetaMemberData> localMetaMemberDatas => m_LocalMetaMemberDatas;
+        public IRMetaClass( IRManager manager )
+        {
+            irManager = manager;
+        }
+        public List<IRMetaVariable> localIRMetaVariable => m_LocalIRMetaVariable;
 
         public int allocSize = 0;
-        List<MetaMemberVariable> m_LocalMetaMemberVariables = new List<MetaMemberVariable>();
-        List<MetaMemberData> m_LocalMetaMemberDatas = new List<MetaMemberData>();
         public List<EType> m_MetaTypeList = new List<EType>();
         public int byteCount = 0;
         public string allName { get; set; } = null;
+
+
+        List<MetaMemberVariable> m_LocalMetaMemberVariables = new List<MetaMemberVariable>();
+        List<MetaMemberData> m_LocalMetaMemberDatas = new List<MetaMemberData>();
+
+        private List<IRMetaVariable> m_LocalIRMetaVariable = new List<IRMetaVariable>();
+        private IRManager irManager = null;
 
         public int GetLocalMemberVariableIndex(MetaMemberVariable mmv)
         {
@@ -63,10 +71,9 @@ namespace SimpleLanguage.IR
                 byteCount += ssize;
             }
         }
-
-        public int GetSize()
+        public IRMetaVariable GetIRMetaVariable( int id )
         {
-            return 100;
+            return m_LocalIRMetaVariable.Find( a=> a.id == id );
         }
         public void CreateMetaClassData( MetaClass mc )
         {
@@ -77,10 +84,22 @@ namespace SimpleLanguage.IR
             else if (mc is MetaData md)
             {
                 m_LocalMetaMemberDatas = md.GetMetaMemberDataList();
+                foreach( var v in m_LocalMetaMemberDatas )
+                {
+                    IRMetaVariable irmv = new IRMetaVariable(v);
+                    m_LocalIRMetaVariable.Add(irmv);
+                    irManager.allVariableList.Add(irmv);
+                }
             }
             else
             {
                 m_LocalMetaMemberVariables = mc.GetMetaMemberVariableListByFlag(false, false);
+                foreach (var v in m_LocalMetaMemberVariables)
+                {
+                    IRMetaVariable irmv = new IRMetaVariable(v);
+                    m_LocalIRMetaVariable.Add(irmv);
+                    irManager.allVariableList.Add(irmv);
+                }
             }
             CalcAllocSize();
         }

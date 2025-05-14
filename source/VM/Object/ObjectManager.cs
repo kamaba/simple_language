@@ -9,6 +9,7 @@ namespace SimpleLanguage.VM
 {
     public class ObjectManager
     {
+        //public static Dictionary<int, DataObject> dataObjectDict = new Dictionarny<int, DataObject>();
         public static Dictionary<int, ClassObject> classObjectDict = new Dictionary<int, ClassObject>();
 
         public static void AddClassObject( ClassObject cl )

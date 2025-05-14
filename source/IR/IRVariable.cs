@@ -23,7 +23,7 @@ namespace SimpleLanguage.IR
             if (mmv.isStatic)
             {
                 data.opCode = EIROpCode.LoadStaticField;
-                data.index = _irManager.GetStaticVariableIndex(mmv);
+                //data.index = _irManager.GetStaticVariableIndex(mmv);
                 m_IRDataList.Add(data);
             }
             else
@@ -33,7 +33,6 @@ namespace SimpleLanguage.IR
                 m_IRDataList.Add(data);
             }
         }
-
         public IRLoadVariable(IRMethod _irManager, MetaMemberEnum mmv)
         {
             if (mmv.isStatic)
@@ -49,14 +48,13 @@ namespace SimpleLanguage.IR
                 m_IRDataList.Add(data);
             }
         }
-
         public IRLoadVariable(IRMethod _irMethod, MetaVariable mv) : base(_irMethod)
         {
             if ( mv.variableFrom == MetaVariable.EVariableFrom.Argument )
             {
                 data.opCode = EIROpCode.LoadArgument;
                 data.SetDebugInfoByToken( mv.pingToken );
-                data.index = m_IRMethod.GetArgumentIndex(mv);
+                //data.index = m_IRMethod.GetArgumentIndex(mv);
                 m_IRDataList.Add(data);
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
@@ -70,7 +68,7 @@ namespace SimpleLanguage.IR
             {
                 data.opCode = EIROpCode.LoadLocal;
                 data.SetDebugInfoByToken(mv.pingToken);
-                data.index = m_IRMethod.GetLocalVariableIndex(mv);
+                //data.index = m_IRMethod.GetLocalVariableIndex(mv);
                 m_IRDataList.Add(data);
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.Global )
@@ -100,51 +98,52 @@ namespace SimpleLanguage.IR
     public class IRStoreVariable : IRBase
     {
         public IRData data = new IRData();
-        public IRStoreVariable(IRMethod _irMethod, MetaVariable mv) : base(_irMethod)
+        public IRStoreVariable(IRMethod _irMethod, int id ) : base(_irMethod)
         {
-            var vmv = mv as MetaVisitVariable;
-            var mmv = mv as MetaMemberVariable;
-            if (vmv != null)
-            {
-                var localVariable = vmv.sourceMetaVariable;
-                if (localVariable is MetaVariable)
-                {
-                    if (localVariable is MetaVisitVariable)
-                    {
-                        IRStoreVariable parentIRStore = new IRStoreVariable(_irMethod, localVariable as MetaVisitVariable);
-                        m_IRDataList.AddRange(parentIRStore.IRDataList);
-                    }
-                    else
-                    {
-                        IRLoadVariable irload = new IRLoadVariable(_irMethod, localVariable as MetaVariable);
-                        m_IRDataList.AddRange(irload.IRDataList);
-                    }
-                }
-                data.opCode = EIROpCode.StoreNotStaticField;
-                data.index = vmv.GetIRMemberIndex();
-                m_IRDataList.Add(data);
-            }
-            else if (mmv != null)
-            {
-                data.opCode = EIROpCode.StoreNotStaticField;
-                //data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
-                m_IRDataList.Add(data);
-            }
-            else
-            {
-                if (mv.isArgument)
-                {
-                    data.opCode = EIROpCode.LoadArgument;
-                    data.index = m_IRMethod.GetArgumentIndex(mv);
-                    m_IRDataList.Add(data);
-                }
-                else
-                {
-                    data.opCode = EIROpCode.StoreLocal;
-                    data.index = m_IRMethod.GetLocalVariableIndex(mv);
-                    m_IRDataList.Add(data);
-                }
-            }
+            IRMetaVariable irmv = _irMethod.irManager.allVariableList.Find(a => a.id == id);
+            //var vmv = mv as MetaVisitVariable;
+            //var mmv = mv as MetaMemberVariable;
+            //if (vmv != null)
+            //{
+            //    var localVariable = vmv.sourceMetaVariable;
+            //    if (localVariable is MetaVariable)
+            //    {
+            //        if (localVariable is MetaVisitVariable)
+            //        {
+            //            IRStoreVariable parentIRStore = new IRStoreVariable(_irMethod, localVariable as MetaVisitVariable);
+            //            m_IRDataList.AddRange(parentIRStore.IRDataList);
+            //        }
+            //        else
+            //        {
+            //            IRLoadVariable irload = new IRLoadVariable(_irMethod, localVariable as MetaVariable);
+            //            m_IRDataList.AddRange(irload.IRDataList);
+            //        }
+            //    }
+            //    data.opCode = EIROpCode.StoreNotStaticField;
+            //    data.index = vmv.GetIRMemberIndex();
+            //    m_IRDataList.Add(data);
+            //}
+            //else if (mmv != null)
+            //{
+            //    data.opCode = EIROpCode.StoreNotStaticField;
+            //    //data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
+            //    m_IRDataList.Add(data);
+            //}
+            //else
+            //{
+            //    if (mv.isArgument)
+            //    {
+            //        data.opCode = EIROpCode.LoadArgument;
+            //        //data.index = m_IRMethod.GetArgumentIndex(mv);
+            //        m_IRDataList.Add(data);
+            //    }
+            //    else
+            //    {
+            //        data.opCode = EIROpCode.StoreLocal;
+            //        //data.index = m_IRMethod.GetLocalVariableIndex(mv);
+            //        m_IRDataList.Add(data);
+            //    }
+            //}
         }
         public override string ToIRString()
         {

@@ -36,10 +36,11 @@ namespace SimpleLanguage.IR
         public Dictionary<string, IRMethod> IRMethodDict = new Dictionary<string, IRMethod>();
         public Dictionary<int, string> IRStringDict = new Dictionary<int,string>();
         public Dictionary<int, SValue> IRConstDict = new Dictionary<int, SValue>();
-        public List<IRMethodStackData> staticVariableList => m_StaticVariableList;
+        public List<IRMetaVariable> staticVariableList => m_StaticVariableList;
+        public List<IRMetaVariable>allVariableList => m_AllVariableList;
 
-
-        private List<IRMethodStackData> m_StaticVariableList = new List<IRMethodStackData>();
+        private List<IRMetaVariable> m_StaticVariableList = new List<IRMetaVariable>();
+        private List<IRMetaVariable> m_AllVariableList = new List<IRMetaVariable>();
         private List<IRData> m_IRDataList = new List<IRData>();
 
         private List<IRMetaClass> m_IRMetaClassList = new List<IRMetaClass>();
@@ -88,6 +89,10 @@ namespace SimpleLanguage.IR
             }
 
         }
+        public IRMetaClass GetIRMetaClassByName( string allname )
+        {
+            return m_IRMetaClassList.Find(a => a.allName == allname);
+        }
         void ParseClass()
         {
             //解析成员中的string类型
@@ -95,11 +100,11 @@ namespace SimpleLanguage.IR
             var classDict = ClassManager.instance.allClassDict;
             foreach( var v in classDict )
             {
-                IRMetaClass irmc = new IRMetaClass();
+                IRMetaClass irmc = new IRMetaClass(this);
                 irmc.CreateMetaClassData(v.Value);
                 m_IRMetaClassList.Add( irmc );
             }
-            foreach( var v in classDict)
+            foreach( var v in classDict )
             {
                 if( v.Value is MetaEnum me )
                 {
@@ -108,9 +113,9 @@ namespace SimpleLanguage.IR
                     {
                         if (v2.Value.isStatic)
                         {
-                            IRMethodStackData irData = new IRMethodStackData( v2.Value );
-                            irData.index = m_StaticVariableList.Count;
-                            m_StaticVariableList.Add(irData);
+                            IRMetaVariable irMV = new IRMetaVariable(v2.Value);
+                            irMV.index = m_StaticVariableList.Count;
+                            m_StaticVariableList.Add(irMV);
                         }
                     }
                 }
@@ -121,7 +126,7 @@ namespace SimpleLanguage.IR
                     {
                         if (v2.Value.isStatic)
                         {
-                            IRMethodStackData irData = new IRMethodStackData(v2.Value);
+                            IRMetaVariable irData = new IRMetaVariable(v2.Value);
                             irData.index = m_StaticVariableList.Count;
                             m_StaticVariableList.Add(irData);
                         }
@@ -134,66 +139,22 @@ namespace SimpleLanguage.IR
                     {
                         if (v2.Value.isStatic)
                         {
-                            IRMethodStackData irData = new IRMethodStackData(v2.Value);
+                            IRMetaVariable irData = new IRMetaVariable(v2.Value);
                             irData.index = m_StaticVariableList.Count;
                             m_StaticVariableList.Add(irData);
                         }
                     }
                 }
             }
-            foreach (var v in classDict)
+            foreach ( var v in m_StaticVariableList )
             {
-                if (v.Value is MetaEnum me)
-                {
-                    var mmvd = me.metaMemberEnumDict;
-                    foreach (var v2 in mmvd)
-                    {
-                        if (v2.Value.isStatic)
-                        {
-                            IRExpress irexp = new IRExpress(IRManager.instance, v2.Value.express);
-                            m_IRDataList.AddRange(irexp.IRDataList);
+                IRExpress irexp = new IRExpress(IRManager.instance, v.express );
+                m_IRDataList.AddRange(irexp.IRDataList);
 
-                            IRData insNode = new IRData();
-                            insNode.opCode = EIROpCode.StoreStaticField;
-                            insNode.index = GetStaticVariableIndex(v2.Value);
-                            m_IRDataList.Add(insNode);
-                        }
-                    }
-                }
-                else if (v.Value is MetaData md)
-                {
-                    var mmvd = md.metaMemberDataDict;
-                    foreach (var v2 in mmvd)
-                    {
-                        if (v2.Value.isStatic)
-                        {
-                            IRExpress irexp = new IRExpress(IRManager.instance, v2.Value.expressNode);
-                            m_IRDataList.AddRange(irexp.IRDataList);
-
-                            IRData insNode = new IRData();
-                            insNode.opCode = EIROpCode.StoreStaticField;
-                            insNode.index = GetStaticVariableIndex(v2.Value);
-                            m_IRDataList.Add(insNode);
-                        }
-                    }
-                }
-                else
-                {
-                    var mmvd = v.Value.metaMemberVariableDict;
-                    foreach (var v2 in mmvd)
-                    {
-                        if (v2.Value.isStatic)
-                        {
-                            IRExpress irexp = new IRExpress(IRManager.instance, v2.Value.express);
-                            m_IRDataList.AddRange(irexp.IRDataList);
-
-                            IRData insNode = new IRData();
-                            insNode.opCode = EIROpCode.StoreStaticField;
-                            insNode.index = GetStaticVariableIndex(v2.Value);
-                            m_IRDataList.Add(insNode);
-                        }
-                    }
-                }
+                IRData insNode = new IRData();
+                insNode.opCode = EIROpCode.StoreStaticField;
+                insNode.index = GetStaticVariableIndex(v);
+                m_IRDataList.Add(insNode);
             }
         }
         public IRMethod TranslateIRByFunction( MetaFunction mf )
@@ -206,14 +167,14 @@ namespace SimpleLanguage.IR
             irmethod.Parse(mf);
             return irmethod;
         }
-        public int GetStaticVariableIndex(MetaVariable mv)
+        public int GetStaticVariableIndex(IRMetaVariable mv)
         {
             foreach (var v in m_StaticVariableList)
             {
-                if (v.metaVariable == mv)
+                if (v == mv)
                     return v.index;
             }
-            Console.WriteLine("IR GetStaticVariableIndex 获取静态数据失败，没有找到相关的静态数据! " + mv.name);
+            Console.WriteLine("IR GetStaticVariableIndex 获取静态数据失败，没有找到相关的静态数据! " + mv.id );
             return -1;
         }
         public int AddStringIRStack( string strMsg )

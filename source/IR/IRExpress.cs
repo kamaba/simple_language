@@ -7,6 +7,8 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
+using SimpleLanguage.Core.IR;
+using SimpleLanguage.IR.Statements;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -61,25 +63,26 @@ namespace SimpleLanguage.IR
                     break;
                 case MetaCallLinkExpressNode mcn:
                     {
-                        if( m_IRManager != null )
+                        IRMetaCallLink irmc = new IRMetaCallLink();
+                        if ( m_IRManager != null )
                         {
-                            //mcn.metaCallLink.ParseToIRDataListByIRManager(m_IRManager);
+                            irmc.ParseToIRDataListByIRManager(m_IRManager, mcn.metaCallLink.callNodeList);
                         }
                         else
                         {
-                            //mcn.metaCallLink.ParseToIRDataList(m_IRMethod);
+                            irmc.ParseToIRDataList(m_IRMethod, mcn.metaCallLink.callNodeList);
                         }
-                        //var list = mcn.metaCallLink.irList;
-                        //for( int i = 0; i < list.Count; i++ )
-                        //{
-                        //    m_IRDataList.AddRange(list[i].IRDataList);
-                        //}
+                        for( int i = 0; i < irmc.irList.Count; i++ )
+                        {
+                            m_IRDataList.AddRange(irmc.irList[i].IRDataList);
+                        }
                     }
                     break;
                 case MetaNewObjectExpressNode mnoe:
                     {
                         IRNew irnew = new IRNew(m_IRMethod );
-                        irnew.Parse(mnoe.GetReturnMetaDefineType());
+                        var irmc = m_IRManager.GetIRMetaClassByName(mnoe.GetReturnMetaClass().allName);
+                        irnew.Parse(irmc);
                         m_IRDataList.AddRange(irnew.IRDataList);
                     }
                     break;
