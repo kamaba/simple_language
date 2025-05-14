@@ -10,6 +10,7 @@ using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.VM;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
@@ -21,46 +22,54 @@ namespace SimpleLanguage.Core.IR
         private IRMethod m_IRMethod = null;
         public List<IRBase> irList = new List<IRBase>();
 
-        public void ParseToIRDataList(IRMethod _irMethod, List<MetaVisitNode> callNodeList, bool isSave = false)
+        public void ParseToIRDataList(IRMethod _irMethod, List<MetaVisitNode> cnlist, bool isSave = false)
         {
             m_IRMethod = _irMethod;
 
-            //for (int i = 0; i < callNodeList.Count; i++)
-            //{
-            //    var cnode = callNodeList[i];
-            //    if (cnode.visitType == MetaVisitNode.EVisitType.Variable)
-            //    {
-            //        IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, cnode.variable);
-            //        irList.Add(irVar);
-            //    }
-            //    else if (cnode.visitType == MetaVisitNode.EVisitType.MethodCall)
-            //    {
-            //        IRCallFunction irCallFun = new IRCallFunction(m_IRMethod, cnode.methodCall);
-            //        irList.Add(irCallFun);
-            //    }
-            //    else if (cnode.visitType == MetaVisitNode.EVisitType.VisitVariable)
-            //    {
-            //    }
-            //    else if (cnode.visitType == MetaVisitNode.EVisitType.NewMethodCall)
-            //    {
-            //        var irnew = new IRNew(m_IRMethod, cnode.GetMetaDefineType());
-            //        irList.Add(irnew);
+            for (int i = 0; i < cnlist.Count; i++)
+            {
+                var cnode = cnlist[i];
+                if (cnode.visitType == MetaVisitNode.EVisitType.ConstValue)
+                {
+                    IRExpress ire = new IRExpress(_irMethod, cnode.constValueExpress);
+                    irList.Add(ire);
+                }
+                else if (cnode.visitType == MetaVisitNode.EVisitType.Variable)
+                {
+                    MetaVariable mv = cnode.variable;
+                    if (mv.variableFrom == MetaVariable.EVariableFrom.Static
+                        || mv.variableFrom == MetaVariable.EVariableFrom.Global )
+                    {
+                        Console.WriteLine("Error VM IRMetaCall 该位置不应该有静态变量");
+                    }
+                    else
+                    {
+                        IRLoadVariable irVar = new IRLoadVariable(m_IRMethod.irManager, mv.GetHashCode());
+                        irList.Add(irVar);
+                    }
+                }
+                else if (cnode.visitType == MetaVisitNode.EVisitType.MethodCall)
+                {
+                    var mfc = cnode.methodCall;
+                    IRCallFunction irCallFun = new IRCallFunction(m_IRMethod);
+                    irCallFun.Parse(cnode.methodCall);
+                    irList.Add(irCallFun);
+                }
+                else if (cnode.visitType == MetaVisitNode.EVisitType.NewClassMethodCall)
+                {
+                    var irmc = _irMethod.irManager.GetIRMetaClassByName(cnode.callerMetaClass.allName);
+                    IRNew irnew = new IRNew(m_IRMethod, irmc);
+                    irList.Add(irnew);
 
-            //        IRCallFunction irCallFun = new IRCallFunction(m_IRMethod, cnode.methodCall);
-            //        irList.Add(irCallFun);
-
-            //        IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, cnode.variable);
-            //        irList.Add(irVar);
-            //    }
-            //    else
-            //    {
-            //        Console.WriteLine("Error 不允许有其它形式在CallLink的首位的形式" + cnode.visitType.ToString());
-            //    }
-            //}
+                    var mfc = cnode.methodCall;
+                    IRCallFunction irCallFun = new IRCallFunction(m_IRMethod);
+                    irCallFun.Parse(cnode.methodCall);
+                    irList.Add(irCallFun);
+                }
+            }
         }
-        public void ParseToIRDataListByIRManager( IRManager _irManager, List<MetaVisitNode> callNodeList )
+        public void ParseToIRDataListByIRManager( IRManager _irManager, List<MetaVisitNode> cnlist)
         {
-            var cnlist = callNodeList;
             for (int i = 0; i < cnlist.Count; i++)
             {
                 var cnode = cnlist[i];
@@ -71,22 +80,36 @@ namespace SimpleLanguage.Core.IR
                 }
                 else if (cnode.visitType == MetaVisitNode.EVisitType.Variable )
                 {
-                    MetaVariable mv = cnode.visitVariable;
-                    IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mv);
-                    irList.Add(irVar);
+                    MetaVariable mv = cnode.variable;
+                    if (mv.variableFrom == MetaVariable.EVariableFrom.Static
+                        || mv.variableFrom == MetaVariable.EVariableFrom.Global)
+                    {
+                        IRLoadVariable irVar = new IRLoadVariable(m_IRMethod.irManager, mv.GetHashCode());
+                        irList.Add(irVar);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error VM IRMetaCall 该位置不应该有非静态变量");
+                    }
                 }
-                //else if (cnode.callNodeType == ECallNodeType.MemberVariableName)
-                //{
-                //    MetaMemberVariable mmv = cnode.GetMetaMemeberVariable();
-                //    IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mmv);
-                //    irList.Add(irVar);
-                //}
-                //else if (cnode.callNodeType == ECallNodeType.FunctionName)
-                //{
-                //    var mfc = cnode.GetMetaFunctionCall();
-                //    IRCallFunction irCallFun = new IRCallFunction(m_IRMethod, mfc);
-                //    irList.Add(irCallFun);
-                //}
+                else if (cnode.visitType == MetaVisitNode.EVisitType.MethodCall)
+                {
+                    var mfc = cnode.methodCall;
+                    IRCallFunction irCallFun = new IRCallFunction(m_IRMethod);
+                    irCallFun.Parse(cnode.methodCall);
+                    irList.Add(irCallFun);
+                }
+                else if (cnode.visitType == MetaVisitNode.EVisitType.NewClassMethodCall )
+                {
+                    var irmc = _irManager.GetIRMetaClassByName(cnode.callerMetaClass.allName);
+                    IRNew irnew = new IRNew( m_IRMethod, irmc);
+                    irList.Add(irnew);
+
+                    var mfc = cnode.methodCall;
+                    IRCallFunction irCallFun = new IRCallFunction(m_IRMethod);
+                    irCallFun.Parse(cnode.methodCall);
+                    irList.Add(irCallFun);
+                }
             }
         }
 

@@ -15,10 +15,11 @@ namespace SimpleLanguage.IR
 {
     public class IRNew : IRBase
     {
-        public IRNew( IRMethod irMethod ):base( irMethod )
+        public IRNew( IRMethod irMethod, IRMetaClass irmc) :base( irMethod )
         {
+            Parse(irmc);
         }
-        public void Parse( IRMetaClass irmc )
+         void Parse( IRMetaClass irmc )
         {
             IRData data = new IRData();
             data.opCode = EIROpCode.NewObject;

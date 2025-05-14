@@ -85,6 +85,10 @@ namespace SimpleLanguage.Core
         {
             m_OwnerMetaClass = ownerclass;
         }
+        public void SetIsStatic( bool iss )
+        {
+            this.isStatic = iss;
+        }
         public void AddPingToken( string path, int beginline, int beginpos, int endline, int endpos )
         {
             var pingToken = new Token(path, ETokenType.None, "", beginline, beginpos);

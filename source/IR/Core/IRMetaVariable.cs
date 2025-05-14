@@ -15,10 +15,19 @@ using SimpleLanguage.Core;
 
 namespace SimpleLanguage.IR
 {
+    public enum IRMetaVariableFrom
+    {
+        None,
+        Argument,
+        LocalStatement,
+        Member,
+        Static,
+    }
     public class IRMetaVariable
     {
-        public MetaExpressNode express { get { return m_ExpressNode; } }
+        public MetaExpressNode express => m_ExpressNode;
         public IRMetaClass irMetaClass => m_IRMetaClass;
+        public IRMetaVariableFrom irMetaVariableFrom => m_IRMetaVariableFrom;
 
         MetaVariable m_MetaVariable = null;
         public int id { get; set; } = 0;
@@ -27,11 +36,12 @@ namespace SimpleLanguage.IR
 
         private MetaExpressNode m_ExpressNode = null;
         private IRMetaClass m_IRMetaClass = null;
+        private IRMetaVariableFrom m_IRMetaVariableFrom = IRMetaVariableFrom.None;
         public IRMetaVariable( MetaVariable mv )
         {
             m_MetaVariable = mv;
             id = mv.GetHashCode();
-            name = mv.allName;
+            name = mv.ownerMetaBlockStatements?.ownerMetaFunction.allName + "_local[" + mv.allName + "]";
         }
         public IRMetaVariable(MetaMemberEnum mme)
         {
@@ -53,6 +63,11 @@ namespace SimpleLanguage.IR
             id = mmv.GetHashCode();
             name = mmv.ownerMetaClass.allName + "." + mmv.name;
             m_ExpressNode = mmv.express;
+        }
+
+        public override string ToString()
+        {
+            return name;
         }
     }
 }

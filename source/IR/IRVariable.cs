@@ -6,7 +6,6 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.VM;
 using System;
@@ -18,71 +17,37 @@ namespace SimpleLanguage.IR
     public class IRLoadVariable : IRBase
     {
         public IRData data = new IRData();
-        public IRLoadVariable(IRManager _irManager, MetaMemberVariable mmv)
+        public IRLoadVariable(IRManager _irManager, int id)
         {
-            if (mmv.isStatic)
-            {
-                data.opCode = EIROpCode.LoadStaticField;
-                //data.index = _irManager.GetStaticVariableIndex(mmv);
-                m_IRDataList.Add(data);
-            }
-            else
-            {
-                data.opCode = EIROpCode.LoadNotStaticField;
-                //data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
-                m_IRDataList.Add(data);
-            }
+            var irmv = _irManager.staticVariableList.Find(a => a.id == id);
+            data.opCode = EIROpCode.LoadStaticField;
+            data.index = irmv.index;
+            m_IRDataList.Add(data);
         }
-        public IRLoadVariable(IRMethod _irManager, MetaMemberEnum mmv)
+        public IRLoadVariable(IRMethod _irMethod, int id) : base(_irMethod)
         {
-            if (mmv.isStatic)
-            {
-                data.opCode = EIROpCode.LoadStaticField;
-                //data.index = _irManager.GetStaticVariableIndex(mmv);
-                m_IRDataList.Add(data);
-            }
-            else
-            {
-                data.opCode = EIROpCode.LoadNotStaticField;
-                //data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
-                m_IRDataList.Add(data);
-            }
-        }
-        public IRLoadVariable(IRMethod _irMethod, MetaVariable mv) : base(_irMethod)
-        {
-            if ( mv.variableFrom == MetaVariable.EVariableFrom.Argument )
+            var irmv = _irMethod.GetIRLocalVariableById(id);
+            if (irmv.irMetaVariableFrom == IRMetaVariableFrom.Argument )
             {
                 data.opCode = EIROpCode.LoadArgument;
-                data.SetDebugInfoByToken( mv.pingToken );
-                //data.index = m_IRMethod.GetArgumentIndex(mv);
-                m_IRDataList.Add(data);
+                //data.SetDebugInfoByToken( mv.pingToken );
             }
-            else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
+            else if (irmv.irMetaVariableFrom == IRMetaVariableFrom.Member)
             {
-                data.SetDebugInfoByToken(mv.pingToken);
-                //data.index = mv.ownerMetaClass.GetLocalMemberVariableIndex(mv as MetaMemberVariable);
+                //data.SetDebugInfoByToken(mv.pingToken);
                 data.opCode = EIROpCode.LoadNotStaticField;
-                m_IRDataList.Add(data);
             }
-            else if (mv.variableFrom == MetaVariable.EVariableFrom.LocalStatement)
+            else if (irmv.irMetaVariableFrom == IRMetaVariableFrom.LocalStatement )
             {
                 data.opCode = EIROpCode.LoadLocal;
-                data.SetDebugInfoByToken(mv.pingToken);
-                //data.index = m_IRMethod.GetLocalVariableIndex(mv);
-                m_IRDataList.Add(data);
-            }
-            else if (mv.variableFrom == MetaVariable.EVariableFrom.Global )
-            {
-                MetaMemberVariable mmv = mv as MetaMemberVariable;
-                data.opCode = EIROpCode.LoadNotStaticField;
-                data.SetDebugInfoByToken(mmv.pingToken);
-                //data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
-                m_IRDataList.Add(data);
+                //data.SetDebugInfoByToken(mv.pingToken);
             }
             else
             {
                 Console.WriteLine($"SVM Error 没有找到加载变量的来源类型！");
             }
+            data.index = irmv.index;
+            m_IRDataList.Add(data);
         }
         public override string ToIRString()
         {
@@ -100,7 +65,10 @@ namespace SimpleLanguage.IR
         public IRData data = new IRData();
         public IRStoreVariable(IRMethod _irMethod, int id ) : base(_irMethod)
         {
-            IRMetaVariable irmv = _irMethod.irManager.allVariableList.Find(a => a.id == id);
+            IRMetaVariable irmv = _irMethod.GetIRLocalVariableById(id);
+            data.opCode = EIROpCode.LoadLocal;
+            data.index = irmv.index; 
+            m_IRDataList.Add(data);
             //var vmv = mv as MetaVisitVariable;
             //var mmv = mv as MetaMemberVariable;
             //if (vmv != null)
@@ -123,27 +91,11 @@ namespace SimpleLanguage.IR
             //    data.index = vmv.GetIRMemberIndex();
             //    m_IRDataList.Add(data);
             //}
-            //else if (mmv != null)
-            //{
-            //    data.opCode = EIROpCode.StoreNotStaticField;
-            //    //data.index = mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
-            //    m_IRDataList.Add(data);
-            //}
-            //else
-            //{
-            //    if (mv.isArgument)
-            //    {
-            //        data.opCode = EIROpCode.LoadArgument;
-            //        //data.index = m_IRMethod.GetArgumentIndex(mv);
-            //        m_IRDataList.Add(data);
-            //    }
-            //    else
-            //    {
-            //        data.opCode = EIROpCode.StoreLocal;
-            //        //data.index = m_IRMethod.GetLocalVariableIndex(mv);
-            //        m_IRDataList.Add(data);
-            //    }
-            //}
+        }
+
+        public IRStoreVariable( IRMetaVariable irmv )
+        {
+
         }
         public override string ToIRString()
         {

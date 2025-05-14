@@ -25,7 +25,7 @@ namespace SimpleLanguage.IR
         public IRCallFunction(IRMethod _irMethod) : base(_irMethod)
         {
         }
-        void Parse(MetaMethodCall mfc)
+        public void Parse(MetaMethodCall mfc)
         {
             if (mfc?.metaInputParamCollection == null)
             {
@@ -35,7 +35,7 @@ namespace SimpleLanguage.IR
             {
                 if(mfc.callerMetaVariable!=null )
                 {
-                    IRLoadVariable irload = new IRLoadVariable(m_IRMethod, mfc.callerMetaVariable);
+                    IRLoadVariable irload = new IRLoadVariable(m_IRMethod, mfc.callerMetaVariable.GetHashCode());
                     AddIRRangeData(irload.IRDataList);
                 }
                 else

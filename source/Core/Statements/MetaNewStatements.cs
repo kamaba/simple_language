@@ -22,14 +22,14 @@ namespace SimpleLanguage.Core.Statements
     public partial class MetaDefineVarStatements : MetaStatements
     {
         public MetaExpressNode expressNode => m_ExpressNode;
-        public MetaVariable metaVariable => m_MetaVariable;
+        public MetaVariable defineVarMetaVariable => m_DefineVarMetaVariable;
         public MetaVariable thisVariable => m_ThisVariable;
 
         private FileMetaDefineVariableSyntax m_FileMetaDefineVariableSyntax = null;
         private FileMetaOpAssignSyntax m_FileMetaOpAssignSyntax = null;
         private FileMetaCallSyntax m_FileMetaCallSyntax = null;
 
-        private MetaVariable m_MetaVariable = null;
+        private MetaVariable m_DefineVarMetaVariable = null;
         private MetaVariable m_ThisVariable = null;
         private MetaExpressNode m_ExpressNode = null;
         private bool m_IsNeedCastStatements = false;
@@ -90,15 +90,15 @@ namespace SimpleLanguage.Core.Statements
                 var fmcd = m_FileMetaDefineVariableSyntax.fileMetaClassDefine;
                 mdt = new MetaType(fmcd, ownerMetaClass);
 
-                m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
-                m_MetaVariable.AddPingToken(m_FileMetaDefineVariableSyntax.token);
-                m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_MetaVariable);
+                m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
+                m_DefineVarMetaVariable.AddPingToken(m_FileMetaDefineVariableSyntax.token);
+                m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_DefineVarMetaVariable);
 
                 fileExpress = m_FileMetaDefineVariableSyntax.express;
             }
             else if (m_FileMetaOpAssignSyntax != null)
             {
-                m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
+                m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
                 Token token = m_FileMetaOpAssignSyntax.assignToken;
                 if( m_FileMetaOpAssignSyntax.dynamicToken != null )
                 {
@@ -108,21 +108,21 @@ namespace SimpleLanguage.Core.Statements
                 {
                     foreach( var v in  m_FileMetaOpAssignSyntax.variableRef.callNodeList)
                     {
-                        m_MetaVariable.AddPingToken(v.token);
+                        m_DefineVarMetaVariable.AddPingToken(v.token);
                     }
                 }
-                m_MetaVariable.AddPingToken(token);
-                m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_MetaVariable);
+                m_DefineVarMetaVariable.AddPingToken(token);
+                m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_DefineVarMetaVariable);
 
                 fileExpress = m_FileMetaOpAssignSyntax.express;
             }
             else if (m_FileMetaCallSyntax!= null )
             {
-                m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
-                m_MetaVariable.AddPingToken(m_FileMetaCallSyntax.token);
-                m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_MetaVariable);
+                m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
+                m_DefineVarMetaVariable.AddPingToken(m_FileMetaCallSyntax.token);
+                m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_DefineVarMetaVariable);
             }
-            if(m_MetaVariable == null )
+            if(m_DefineVarMetaVariable == null )
             {
                 Console.WriteLine("Error {0} MetaVariable is Null", defineName);
                 return;
@@ -133,7 +133,7 @@ namespace SimpleLanguage.Core.Statements
             {
                 CreateExpressParam cep = new CreateExpressParam();
                 cep.fme = fileExpress;
-                cep.equalMetaVariable = m_MetaVariable;
+                cep.equalMetaVariable = m_DefineVarMetaVariable;
                 cep.metaType = mdt;
                 cep.mbs = m_OwnerMetaBlockStatements;
 
@@ -165,7 +165,7 @@ namespace SimpleLanguage.Core.Statements
                 }
                 if (isCheckReturnType)
                 {
-                    m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
+                    m_DefineVarMetaVariable.SetMetaDefineType(expressRetMetaDefineType);
                 }
             }
             else
@@ -236,7 +236,7 @@ namespace SimpleLanguage.Core.Statements
                         }
                         else if (relation == ClassManager.EClassRelation.Same)
                         {
-                            m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
+                            m_DefineVarMetaVariable.SetMetaDefineType(expressRetMetaDefineType);
                         }
                         else if (relation == ClassManager.EClassRelation.Parent)
                         {
@@ -248,7 +248,7 @@ namespace SimpleLanguage.Core.Statements
                         {
                             if (compareClass != null)
                             {
-                                m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
+                                m_DefineVarMetaVariable.SetMetaDefineType(expressRetMetaDefineType);
                             }
                         }
                         else
@@ -261,9 +261,9 @@ namespace SimpleLanguage.Core.Statements
             }
             if (m_ExpressNode == null)
             {
-                m_ExpressNode = m_MetaVariable.metaDefineType.GetDefaultExpressNode();
+                m_ExpressNode = m_DefineVarMetaVariable.metaDefineType.GetDefaultExpressNode();
             }
-            SetTRMetaVariable(m_MetaVariable);
+            SetTRMetaVariable(m_DefineVarMetaVariable);
         }        
         public override void SetTRMetaVariable(MetaVariable mv)
         {
@@ -283,9 +283,9 @@ namespace SimpleLanguage.Core.Statements
             mns.m_FileMetaOpAssignSyntax = m_FileMetaOpAssignSyntax;
             mns.m_FileMetaCallSyntax = m_FileMetaCallSyntax;
             mns.m_IsNeedCastStatements = m_IsNeedCastStatements;
-            mns.m_MetaVariable = new MetaVariable(m_MetaVariable);
+            mns.m_DefineVarMetaVariable = new MetaVariable(m_DefineVarMetaVariable);
             mns.m_ExpressNode = m_ExpressNode;
-            mns.m_MetaVariable.GenTemplateMetaVaraible( mgt, parentMs );
+            mns.m_DefineVarMetaVariable.GenTemplateMetaVaraible( mgt, parentMs );
             if (m_NextMetaStatements != null)
             {
                 m_NextMetaStatements.GenTemplateClassStatement(mgt, parentMs);
@@ -306,13 +306,13 @@ namespace SimpleLanguage.Core.Statements
 
             for (int i = 0; i < realDeep; i++)
                 sb.Append(Global.tabChar);
-            sb.Append(m_MetaVariable.ToFormatString());
+            sb.Append(m_DefineVarMetaVariable.ToFormatString());
             sb.Append(" = ");
-            if(m_MetaVariable.metaDefineType.isData )
+            if(m_DefineVarMetaVariable.metaDefineType.isData )
             {
                 sb.Append(m_ExpressNode.ToFormatString());
             }
-            else if( m_MetaVariable.metaDefineType.isEnum )
+            else if(m_DefineVarMetaVariable.metaDefineType.isEnum )
             {
             }
             else
@@ -324,7 +324,7 @@ namespace SimpleLanguage.Core.Statements
                 sb.Append(m_ExpressNode.ToFormatString());
                 if (m_IsNeedCastState)
                 {
-                    sb.Append(").Cast<" + m_MetaVariable.metaDefineType.metaClass.allName + ">()");
+                    sb.Append(").cast<" + m_DefineVarMetaVariable.metaDefineType.metaClass.allName + ">()");
                 }
                 sb.Append(";");
             }

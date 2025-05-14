@@ -353,7 +353,7 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CreateByEnum( MetaEnum me, MetaVariable _variable )
+        public static MetaVisitNode CreateByEnumDefaultValue( MetaEnum me, MetaVariable _variable )
         {
             MetaVisitNode vn = new MetaVisitNode();
             vn.variable = _variable;

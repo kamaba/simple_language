@@ -56,30 +56,22 @@ namespace SimpleLanguage.VM
         {
             SObject sobj = null;
 
-            //if (mdt.metaClass == CoreMetaClassManager.booleanMetaClass)
-            //{
-            //    sobj = new BoolObject(false);
-            //}
-            //else if (mdt.metaClass == CoreMetaClassManager.int32MetaClass)
-            //{
-            //    sobj = new Int32Object(0);
-            //}
-            //else if (mdt.metaClass == CoreMetaClassManager.stringMetaClass)
-            //{
-            //    sobj = new StringObject("");
-            //}
-            //else if (mdt.metaClass == CoreMetaClassManager.arrayMetaClass)
-            //{
-            //    sobj = new ArrayObject<int>();
-            //}
-            //else if (mdt.metaClass == CoreMetaClassManager.objectMetaClass)
-            //{
-            //    sobj = new AnyObject();
-            //}
-            //else
-            //{
-            //    sobj = new ClassObject(mdt);
-            //}
+            if (mdt.allName == "boolean" )
+            {
+                sobj = new BoolObject(false);
+            }
+            else if (mdt.allName == "int32" )
+            {
+                sobj = new Int32Object(0);
+            }
+            else if (mdt.allName == "string")
+            {
+                sobj = new StringObject("");
+            }
+            else
+            {
+                sobj = new ClassObject(mdt);
+            }
             return sobj;
         }
         public static SObject CreateObject(IRMetaClass mc)

@@ -9,14 +9,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 
 namespace SimpleLanguage.VM
 {
     public class MemberVariableData
     {
-        public MetaMemberVariable memberVariable = null;
         public int index { get; set; } = 0;
         public int start { get; set; } = 0;
         public int length { get; set; } = 0;
@@ -25,12 +23,11 @@ namespace SimpleLanguage.VM
     {
         public ClassObject value => m_Object;
 
-        private IRMetaClass m_IRMetaClass;
         private ClassObject m_Object = null;
         private byte[] m_Data = null;
-        //private MemberVariableData[] m_MemberVariableData = null;
-        //Debug
         private SObject[] m_MemberVariableObjectArray = null;
+
+        private IRMetaClass m_IRMetaClass;
 
 
         public ClassObject( IRMetaClass irmc )
@@ -40,24 +37,13 @@ namespace SimpleLanguage.VM
             int byteCount = irmc.byteCount;
             m_Data = new byte[byteCount];
 
-            var mvdict = irmc.localIRMetaVariable;
-
-           // m_MemberVariableData = new MemberVariableData[mvdict.Count];
+            var mvdict = irmc.localIRMetaVariableList;
             m_MemberVariableObjectArray = new SObject[mvdict.Count];
             for( int i = 0; i < mvdict.Count; i++ )
             {
                 var obj = ObjectManager.CreateObjectByDefineType(mvdict[i].irMetaClass);
                 m_MemberVariableObjectArray[i] = obj;
             }
-        }
-        public int GetMemberVariableIndex( MetaMemberVariable mmv )
-        {
-            //foreach (var v in m_MemberVariableData)
-            //{
-            //    if (v.memberVariable == mmv)
-            //        return v.index;
-            //}
-            return -1;
         }
         public SObject GetMemberVariable(int index)
         {

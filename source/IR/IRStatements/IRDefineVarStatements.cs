@@ -1,5 +1,5 @@
 ﻿//****************************************************************************
-//  File:      IRNewStatements.cs
+//  File:     IRDefineVarStatements.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/11/14 12:00:00
@@ -26,13 +26,14 @@ namespace SimpleLanguage.IR.Statements
         }
         public void ParseIRStatements( MetaDefineVarStatements ms )
         {
+            MetaNewObjectExpressNode mnoen = null;
             if (ms.expressNode != null)
             {
-                if(ms.expressNode is MetaNewObjectExpressNode )
+                mnoen = ms.expressNode as MetaNewObjectExpressNode;
+                if (mnoen != null)
                 {
-                    IRNew irNew = new IRNew( irMethod );
                     IRMetaClass irmc = IRManager.instance.GetIRMetaClassByName(ms.expressNode.GetReturnMetaClass().allName);
-                    irNew.Parse(irmc);
+                    IRNew irNew = new IRNew( irMethod, irmc );
                     m_IRStatements.Add( irNew );
                 }
                 else
@@ -41,8 +42,7 @@ namespace SimpleLanguage.IR.Statements
                     m_IRStatements.Add(m_IRExpress);
                 }
             }
-
-            IRStoreVariable irStoreVar = new IRStoreVariable(irMethod, ms.metaVariable.GetHashCode());
+            IRStoreVariable irStoreVar = new IRStoreVariable(irMethod, ms.defineVarMetaVariable.GetHashCode() );
             //if(m_FileMetaOpAssignSyntax != null )
             //{
             //    irStoreVar.data.SetDebugInfoByToken(m_FileMetaOpAssignSyntax.assignToken);
@@ -147,9 +147,6 @@ namespace SimpleLanguage.IR.Statements
                     //var irCallFun = new IRCallFunction(irMethod, mnoen.constructFunctionCall);
                     //m_IRStatements.Add(irCallFun);
                 }
-
-                
-
             }
         //public override string ToIRString()
         //{

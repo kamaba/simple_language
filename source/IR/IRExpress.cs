@@ -80,9 +80,8 @@ namespace SimpleLanguage.IR
                     break;
                 case MetaNewObjectExpressNode mnoe:
                     {
-                        IRNew irnew = new IRNew(m_IRMethod );
                         var irmc = m_IRManager.GetIRMetaClassByName(mnoe.GetReturnMetaClass().allName);
-                        irnew.Parse(irmc);
+                        IRNew irnew = new IRNew(m_IRMethod, irmc);
                         m_IRDataList.AddRange(irnew.IRDataList);
                     }
                     break;

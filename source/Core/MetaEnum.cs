@@ -40,7 +40,8 @@ namespace SimpleLanguage.Core
                 mitc.AddMetaTemplateParamsList(new MetaType(this.extendClass));
                 var mt = new MetaType(CoreMetaClassManager.arrayMetaClass, mitc);
                 m_MetaVariable = new MetaVariable( "values", MetaVariable.EVariableFrom.Member, null, this, mt);
-                foreach( var v in m_MetaMemberEnumDict )
+                m_MetaVariable.SetIsStatic( true );
+                foreach ( var v in m_MetaMemberEnumDict )
                 {
                     m_MetaVariable.AddMetaVariable(v.Value);
                 }

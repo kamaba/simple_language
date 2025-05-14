@@ -98,13 +98,19 @@ namespace SimpleLanguage.IR
             //解析成员中的string类型
             //解析成员中的const类型
             var classDict = ClassManager.instance.allClassDict;
-            foreach( var v in classDict )
+            foreach (var v in classDict)
             {
                 IRMetaClass irmc = new IRMetaClass(this);
                 irmc.CreateMetaClassData(v.Value);
-                m_IRMetaClassList.Add( irmc );
+                m_IRMetaClassList.Add(irmc);
             }
-            foreach( var v in classDict )
+            foreach (var v in ClassManager.instance.allDataDict )
+            {
+                IRMetaClass irmc = new IRMetaClass(this);
+                irmc.CreateMetaClassData(v.Value);
+                m_IRMetaClassList.Add(irmc);
+            }
+            foreach ( var v in classDict )
             {
                 if( v.Value is MetaEnum me )
                 {
@@ -117,6 +123,12 @@ namespace SimpleLanguage.IR
                             irMV.index = m_StaticVariableList.Count;
                             m_StaticVariableList.Add(irMV);
                         }
+                    }
+                    if( me.metaVariable != null )
+                    {
+                        IRMetaVariable irMV = new IRMetaVariable(me.metaVariable);
+                        irMV.index = m_StaticVariableList.Count;
+                        m_StaticVariableList.Add(irMV);
                     }
                 }
                 else if( v.Value is MetaData md )
@@ -153,7 +165,7 @@ namespace SimpleLanguage.IR
 
                 IRData insNode = new IRData();
                 insNode.opCode = EIROpCode.StoreStaticField;
-                insNode.index = GetStaticVariableIndex(v);
+                insNode.index = v.index;
                 m_IRDataList.Add(insNode);
             }
         }
@@ -166,16 +178,6 @@ namespace SimpleLanguage.IR
             IRMethod irmethod = new IRMethod(this);
             irmethod.Parse(mf);
             return irmethod;
-        }
-        public int GetStaticVariableIndex(IRMetaVariable mv)
-        {
-            foreach (var v in m_StaticVariableList)
-            {
-                if (v == mv)
-                    return v.index;
-            }
-            Console.WriteLine("IR GetStaticVariableIndex 获取静态数据失败，没有找到相关的静态数据! " + mv.id );
-            return -1;
         }
         public int AddStringIRStack( string strMsg )
         {
