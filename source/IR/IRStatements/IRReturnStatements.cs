@@ -12,31 +12,31 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.IR.Statements
 {
-    public partial class MetaReturnStatements
+    public class MetaIRReturnStatements : MetaIRStatements
     {
         private IRExpress m_ReturnValueExpress = null;
-        public override void ParseIRStatements()
+        public void ParseIRStatements(MetaReturnStatements ms)
         {
-            if( m_Express != null )
-            {
-                m_ReturnValueExpress = new IRExpress( irMethod, m_Express );
-                m_IRStatements.Add( m_ReturnValueExpress );
+            //if( m_Express != null )
+            //{
+            //    m_ReturnValueExpress = new IRExpress( irMethod, m_Express );
+            //    m_IRStatements.Add( m_ReturnValueExpress );
 
-                //IRStoreVariable
+            //    //IRStoreVariable
 
-                //IRData storeNode = new IRData();
-                //storeNode.opCode = EIROpCode.StoreReturn;
-                //storeNode.index = 0;
-                //m_IRDataList.Add(storeNode);
-            }
+            //    //IRData storeNode = new IRData();
+            //    //storeNode.opCode = EIROpCode.StoreReturn;
+            //    //storeNode.index = 0;
+            //    //m_IRDataList.Add(storeNode);
+            //}
         }
     }
 
-    public partial class MetaTRStatements
+    public class MetaIRTRStatements
     {
-        public override void ParseIRStatements()
+        public void ParseIRStatements()
         {
         }
     }

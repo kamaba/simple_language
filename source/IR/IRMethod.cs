@@ -9,6 +9,7 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
+using SimpleLanguage.IR.Statements;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -25,43 +26,56 @@ namespace SimpleLanguage.IR
         {
             m_MetaVariable = mv;
         }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            if( m_MetaVariable != null )
+            {
+                sb.Append( m_MetaVariable.metaDefineType.metaClass.ToString() );
+                sb.Append(".");
+                sb.Append(m_MetaVariable.allName);
+            }
+            return sb.ToString();
+        }
     }
     public class IRMethod
     {
         public string id { get; set; } = "";
+        public IRManager irManager { get; private set; } = null;
         public List<IRMethodStackData> methodArgumentList => m_MethodArgumentList;
         public List<IRMethodStackData> methodLocalVariableList => m_MethodLocalVariableList;
         public List<IRMethodStackData> methodReturnVariableList => m_MethodReturnList;
         public List<IRData> IRDataList => m_IRDataList;
 
 
-        private MetaFunction m_MetaFunction = null;
+        //private MetaFunction m_MetaFunction = null;
         private List<IRMethodStackData> m_MethodArgumentList = new List<IRMethodStackData>();
         private List<IRMethodStackData> m_MethodLocalVariableList = new List<IRMethodStackData>();
         private List<IRMethodStackData> m_MethodReturnList = new List<IRMethodStackData>();
         private List<IRData> m_LabelList = new List<IRData>();
         private List<IRData> m_IRDataList = new List<IRData>();
-        public IRMethod( MetaFunction mf )
+        public IRMethod(IRManager irma)
         {
-            m_MetaFunction = mf;
+            irManager = irma;
         }
-        public void Parse()
+        public void Parse( MetaFunction mf )
         {
-            id = m_MetaFunction.irMethodName;
+            id = mf.allName;
 
-            if (m_MetaFunction.thisMetaVariable != null)
+            if (mf.thisMetaVariable != null)
             {
-                IRMethodStackData imp = new IRMethodStackData(m_MetaFunction.thisMetaVariable);
+                IRMethodStackData imp = new IRMethodStackData(mf.thisMetaVariable);
                 imp.index = 0;
                 m_MethodArgumentList.Add(imp);
             }
-            if (m_MetaFunction.returnMetaVariable!=null)
+            if (mf.returnMetaVariable!=null)
             {
-                IRMethodStackData imp = new IRMethodStackData(m_MetaFunction.returnMetaVariable);
+                IRMethodStackData imp = new IRMethodStackData(mf.returnMetaVariable);
                 imp.index = 1;
                 m_MethodReturnList.Add(imp);
             }
-            var list2 = m_MetaFunction.metaMemberParamCollection.metaParamList;
+            var list2 = mf.metaMemberParamCollection.metaParamList;
             for( int i = 0; i < list2.Count; i++ )
             {
                 MetaDefineParam mdp = list2[i] as MetaDefineParam;
@@ -71,7 +85,7 @@ namespace SimpleLanguage.IR
                 m_MethodArgumentList.Add(imp);
             }
 
-            var list = m_MetaFunction.GetCalcMetaVariableList();
+            var list = mf.GetCalcMetaVariableList();
             for( int i = 0; i < list.Count; i++ )
             {
                 var irsd = new IRMethodStackData(list[i]);
@@ -79,19 +93,20 @@ namespace SimpleLanguage.IR
                 m_MethodLocalVariableList.Add(irsd);
             }
 
-            var mmf = m_MetaFunction;
+            var mmf = mf;
             MetaBlockStatements mbs = mmf.metaBlockStatements;
             if (mbs == null)
             {
-                Console.WriteLine("Info 空函数!!");
+                Console.WriteLine("----------------  Info 空函数!! --------------------");
                 return;
             }
-            mbs.ParseAllIRStatements();
-            for (int i = 0; i < mbs.irStatements.Count; i++)
+            IRBlockStatements irbs = new IRBlockStatements();
+            irbs.ParseAllIRStatements(mbs);
+            for (int i = 0; i < irbs.irStatements.Count; i++)
             {
-                for (int j = 0; j < mbs.irStatements[i].IRDataList.Count; j++)
+                for (int j = 0; j < irbs.irStatements[i].IRDataList.Count; j++)
                 {
-                    var addIR = mbs.irStatements[i].IRDataList[j];
+                    var addIR = irbs.irStatements[i].IRDataList[j];
                     addIR.id = m_IRDataList.Count;
                     AddLabelDict(addIR);
                     m_IRDataList.Add(addIR);
@@ -129,11 +144,6 @@ namespace SimpleLanguage.IR
                         break;
                 }
             }
-
-
-
-            string str = mbs.ToIRString();//ToStringFormat();
-            Console.WriteLine(str);
         }
         public void MethodInitParse()
         {

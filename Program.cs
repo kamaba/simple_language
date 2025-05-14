@@ -1,6 +1,4 @@
-﻿using Simple;
-using Simple.NA.NNA;
-using SimpleLanguage.Core;
+﻿using SimpleLanguage.Core;
 using SimpleLanguage.Parse;
 using SimpleLanguage.Project;
 using System;
@@ -56,17 +54,17 @@ namespace SimpleLanguage
     {
         static void Main(string[] args)
         {
-            C1 c1 = new C1();
-            int a = C2.CV_1;
-            a = C2.CV2;
-            a = C2.CV33;
-            a = C2.CV3;
-            a = C2.CV4;
-            var vv = C2.abc;
-            int mm = Simple.NA.NNA.NB.AA(10);
-#pragma warning disable CS0168 // 声明了变量，但从未使用过
-            MetaExpressNode M;
-#pragma warning restore CS0168 // 声明了变量，但从未使用过
+//            C1 c1 = new C1();
+//            int a = C2.CV_1;
+//            a = C2.CV2;
+//            a = C2.CV33;
+//            a = C2.CV3;
+//            a = C2.CV4;
+//            var vv = C2.abc;
+//            int mm = Simple.NA.NNA.NB.AA(10);
+//#pragma warning disable CS0168 // 声明了变量，但从未使用过
+//            MetaExpressNode M;
+//#pragma warning restore CS0168 // 声明了变量，但从未使用过
 
             CommandInputArgs inputArgs = new CommandInputArgs(args);
             ProjectManager.Run( "../../../test/BaseTest", inputArgs );

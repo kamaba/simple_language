@@ -51,6 +51,14 @@ namespace SimpleLanguage.Core.Statements
             m_OwnerMetaFunction = mbs.ownerMetaFunction;
             m_FileMetaBlockSyntax = fmbs;
         }
+        public override Token GetToken()
+        {
+            if( m_FileMetaBlockSyntax != null )
+            {
+                return m_FileMetaBlockSyntax.beginBlock;
+            }
+            return null;
+        }
         public void SetFileMetaBlockSyntax( FileMetaBlockSyntax blockSyntax )
         {
             m_FileMetaBlockSyntax = blockSyntax;

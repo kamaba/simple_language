@@ -16,6 +16,7 @@ using System.Text;
 using SimpleLanguage.Compile.Parse;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Runtime.Intrinsics.X86;
+using SimpleLanguage.IR;
 
 namespace SimpleLanguage.Project
 {
@@ -69,8 +70,9 @@ namespace SimpleLanguage.Project
                 Console.WriteLine("Error project.Main函数!!");
                 return;
             }
+            var irmethod = IRManager.instance.GetIRMethod(mmf.allName);
             InnerCLRRuntimeVM.Init();
-            InnerCLRRuntimeVM.RunIRMethod(mmf.irMethod);
+            InnerCLRRuntimeVM.RunIRMethod(irmethod);
         }
         public static void RunMain()
         {
@@ -86,8 +88,9 @@ namespace SimpleLanguage.Project
                 Console.WriteLine("Error 没有找到Project.Main函数!!");
                 return;
             }
+            var irmethod = IRManager.instance.GetIRMethod(mmf.allName);
             InnerCLRRuntimeVM.Init();
-            InnerCLRRuntimeVM.RunIRMethod(mmf.irMethod);
+            InnerCLRRuntimeVM.RunIRMethod(irmethod);
         }
         public static void AddDefineNamespace( MetaBase parentRoot, DefineNamespace dns, bool isAddCurrent = true )
         {

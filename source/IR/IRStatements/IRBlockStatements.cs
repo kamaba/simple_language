@@ -6,54 +6,104 @@
 //  Description: 
 //****************************************************************************
 
+using SimpleLanguage.Core.IRStatements;
 using SimpleLanguage.Core.Statements;
 using SimpleLanguage.IR;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.IR.Statements
 {
-    public partial class MetaBlockStatements
+    public class IRBlockStatements : MetaIRStatements
     {
-        public IRNop blockStart = null;
-        public override void ParseIRStatements()
+        public IRNop blockStart = null;        
+        public void ParseAllIRStatements(MetaBlockStatements ms)
         {
-            blockStart = new IRNop(irMethod);
-            blockStart.data.SetDebugInfoByToken( m_FileMetaBlockSyntax.token );
-            m_IRStatements.Add(blockStart);
-        }
-        public void ParseAllIRStatements()
-        {
-            blockStart = new IRNop(this.m_OwnerMetaFunction.irMethod);
-            if (m_FileMetaBlockSyntax?.token  != null)
-            {
-                blockStart.data.SetDebugInfoByToken( m_FileMetaBlockSyntax.token );
-            }
+            blockStart = new IRNop(this.irMethod);
             m_IRStatements.Add(blockStart);
 
-            MetaStatements mbs = m_NextMetaStatements;
-            while (mbs != null)
+            MetaStatements nextmbs = ms.nextMetaStatements;
+            while (nextmbs != null)
             {
-                mbs.ParseIRStatements();
-                m_IRStatements.AddRange(mbs.irStatements);
-                mbs = mbs.nextMetaStatements;
+                switch(nextmbs)
+                {
+                    case MetaBlockStatements mbs:
+                        {
+                            blockStart = new IRNop(irMethod);
+                            blockStart.data.SetDebugInfoByToken(ms.GetToken());
+                            m_IRStatements.Add(blockStart);
+                        }
+                        break;
+                    case MetaDefineVarStatements mns:
+                        {
+                            MetaIRDefineVarStatements mirns = new MetaIRDefineVarStatements(irMethod);
+                            mirns.ParseIRStatements(mns);
+                        }
+                        break;
+                    case MetaAssignStatements mas:
+                        {
+                            MetaIRAssignStatements miras = new MetaIRAssignStatements();
+                            miras.ParseIRStatements(mas);
+                        }
+                        break;
+                    case MetaBreakStatements mbreaks:
+                        {
+                            MetaIRBreakStatements mirbs = new MetaIRBreakStatements();
+                            mirbs.ParseIRStatements(mbreaks);
+                        }
+                        break;
+                    case MetaContinueStatements mcs:
+                        {
+                            MetaIRContinueStatements mircs = new MetaIRContinueStatements();
+                            mircs.ParseIRStatements(mcs);
+                        }
+                        break;
+                    case MetaGotoLabelStatements mgls:
+                        {
+                            MetaIRGotoLabelStatements mirgls = new MetaIRGotoLabelStatements();
+                            mirgls.ParseIRStatements(mgls);
+                        }
+                        break;
+                    case MetaIfStatements mif:
+                        {
+                            MetaIRIfStatements mirif = new MetaIRIfStatements();
+                            mirif.ParseIRStatements(mif);
+                        }
+                        break;
+                    case MetaReturnStatements mirrs:
+                        {
+                            MetaIRReturnStatements mirrss = new MetaIRReturnStatements();
+                            mirrss.ParseIRStatements(mirrs);
+                        }
+                        break;
+                    case MetaSwitchStatements mswitchs:
+                        {
+                            MetaIRSwitchStatements mirss = new MetaIRSwitchStatements();
+                            mirss.ParseIRStatements(mswitchs);
+                        }
+                        break;
+                    case MetaForStatements mfors:
+                        {
+                            MetaIRForStatements mirfors = new MetaIRForStatements();
+                            mirfors.ParseIRStatements(mfors);
+                        }
+                        break;
+                    case MetaWhileDoWhileStatements mwdws:
+                        {
+                            MetaIRWhileDoWhileStatements mirwdws = new MetaIRWhileDoWhileStatements();
+                            mirwdws.ParseIRStatements(mwdws);
+                        }
+                        break;
+                    default:
+                        {
+                            Console.WriteLine("------------------没有解析IR的语句类型------------");
+                        }
+                        break;
+                }
+                m_IRStatements.AddRange(irStatements);
+                nextmbs = nextmbs.nextMetaStatements;
             }
-        }
-        public override string ToIRString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine("#block {");
-
-            MetaStatements mbs = m_NextMetaStatements;
-            while (mbs != null)
-            {
-                sb.AppendLine(mbs.ToIRString());
-                mbs = mbs.nextMetaStatements;
-            }
-            sb.AppendLine("}#");
-            return sb.ToString();
         }
     }
 }

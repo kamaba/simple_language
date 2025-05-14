@@ -20,15 +20,5 @@ namespace SimpleLanguage.IR
             data.opCode = EIROpCode.Nop;
             m_IRDataList.Add(data);
         }
-        public override string ToIRString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            for( int i = 0; i < m_IRDataList.Count; i++ )
-            {
-                sb.AppendLine(m_IRDataList[i].ToString());
-            }
-            return sb.ToString();
-        }
     }
 }

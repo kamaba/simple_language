@@ -21,7 +21,7 @@ using System.Reflection;
 
 namespace SimpleLanguage.IR
 {
-    public partial class IRUtil
+    public class IRUtil
     {
         public static int GetTypeSize(EType etype)
         {

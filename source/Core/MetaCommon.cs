@@ -1,5 +1,4 @@
-﻿using Simple.CC.C2;
-using SimpleLanguage.Compile;
+﻿using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
@@ -9,7 +8,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using static Simple.CC.C2.MC2;
 using static SimpleLanguage.Core.MetaNewObjectExpressNode;
 
 namespace SimpleLanguage.Core

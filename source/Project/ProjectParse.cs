@@ -415,7 +415,7 @@ namespace SimpleLanguage.Project
                 if (v.name == "globalVariable")
                     continue;
 
-                MetaMemberData mmd = new MetaMemberData(this, v, i);
+                MetaMemberData mmd = new MetaMemberData(this, v, i, true );
                 mmd.ParseName();
                 mmd.ParseDefineMetaType();
                 mmd.ParseMetaExpress();
@@ -529,7 +529,7 @@ namespace SimpleLanguage.Project
                 return;
             }
             //需要在做Data处理的时候 ，再处理该逻辑
-            MetaMemberData mmd = new MetaMemberData(ProjectManager.globalData, fmd, ProjectManager.globalData.metaMemberDataDict.Count );
+            MetaMemberData mmd = new MetaMemberData(ProjectManager.globalData, fmd, ProjectManager.globalData.metaMemberDataDict.Count, true );
             mmd.ParseName();
             mmd.ParseDefineMetaType();
             mmd.ParseMetaExpress();

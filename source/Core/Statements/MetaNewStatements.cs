@@ -19,8 +19,9 @@ using static SimpleLanguage.Core.ExpressManager;
 
 namespace SimpleLanguage.Core.Statements
 {
-    public partial class MetaNewStatements : MetaStatements
+    public partial class MetaDefineVarStatements : MetaStatements
     {
+        public MetaExpressNode expressNode => m_ExpressNode;
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaVariable thisVariable => m_ThisVariable;
 
@@ -32,10 +33,10 @@ namespace SimpleLanguage.Core.Statements
         private MetaVariable m_ThisVariable = null;
         private MetaExpressNode m_ExpressNode = null;
         private bool m_IsNeedCastStatements = false;
-        public MetaNewStatements( MetaBlockStatements mbs ) : base(mbs)
+        public MetaDefineVarStatements( MetaBlockStatements mbs ) : base(mbs)
         {
         }
-        public MetaNewStatements(MetaBlockStatements mbs, FileMetaDefineVariableSyntax fmdvs ) : base( mbs )
+        public MetaDefineVarStatements(MetaBlockStatements mbs, FileMetaDefineVariableSyntax fmdvs ) : base( mbs )
         {
             m_FileMetaDefineVariableSyntax = fmdvs;
             m_Name = fmdvs.name;            
@@ -43,7 +44,7 @@ namespace SimpleLanguage.Core.Statements
 
             Parse();
         }
-        public MetaNewStatements(MetaBlockStatements mbs, FileMetaOpAssignSyntax fmoas ): base( mbs )
+        public MetaDefineVarStatements(MetaBlockStatements mbs, FileMetaOpAssignSyntax fmoas ): base( mbs )
         {
             m_FileMetaOpAssignSyntax = fmoas;
             m_Name = m_FileMetaOpAssignSyntax.variableRef.name;
@@ -51,7 +52,7 @@ namespace SimpleLanguage.Core.Statements
 
             Parse();
         }
-        public MetaNewStatements( MetaBlockStatements mbs, FileMetaCallSyntax callSyntax ):base( mbs )
+        public MetaDefineVarStatements( MetaBlockStatements mbs, FileMetaCallSyntax callSyntax ):base( mbs )
         {
             m_FileMetaCallSyntax = callSyntax;
             m_Name = callSyntax.variableRef.name;
@@ -277,7 +278,7 @@ namespace SimpleLanguage.Core.Statements
         }
         public override MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
         {
-            MetaNewStatements mns = new MetaNewStatements(parentMs);
+            MetaDefineVarStatements mns = new MetaDefineVarStatements(parentMs);
             mns.m_FileMetaDefineVariableSyntax = m_FileMetaDefineVariableSyntax;
             mns.m_FileMetaOpAssignSyntax = m_FileMetaOpAssignSyntax;
             mns.m_FileMetaCallSyntax = m_FileMetaCallSyntax;

@@ -20,11 +20,11 @@ namespace SimpleLanguage.Core.Statements
             var mipc = new MetaInputParamCollection(mbs.ownerMetaClass, mbs);
             metaFunctionCall = new MetaMethodCall(mbs.ownerMetaClass, mf, mipc );
         }
-        public override void ParseIRStatements()
-        {
-            IRCallFunction irCallFun = new IRCallFunction(irMethod, metaFunctionCall );            
-            m_IRStatements.Add( irCallFun );
-        }
+        //public override void ParseIRStatements()
+        //{
+        //    IRCallFunction irCallFun = new IRCallFunction(irMethod, metaFunctionCall );            
+        //    m_IRStatements.Add( irCallFun );
+        //}
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();

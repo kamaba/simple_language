@@ -49,7 +49,7 @@ namespace SimpleLanguage.Core
             var mmv = m_SourceMetaVariable as MetaMemberVariable;
             if (mmv != null ) 
             {
-                return mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
+                //return mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
             }
             return -1;
         }

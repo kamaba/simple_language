@@ -44,6 +44,7 @@ namespace SimpleLanguage.Core
         private int m_Index = -1;
         private bool m_End = false;
         private bool m_IsConst = false;
+        private bool m_IsStatic = false;
         private bool m_IsWithName = false;
 
         protected Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
@@ -58,12 +59,13 @@ namespace SimpleLanguage.Core
             SetOwnerMetaClass(mc);
             m_IsConst = mc.isConst;
         }
-        public MetaMemberData(MetaData mc, FileMetaMemberData fmmd, int index )
+        public MetaMemberData(MetaData mc, FileMetaMemberData fmmd, int index, bool isStatic )
         {
             m_FileMetaMemeberData = fmmd;
             fmmd.SetMetaMemberData(this);
             m_Name = fmmd.name;
             m_Index = index;
+            m_IsStatic = isStatic;
             m_IsWithName = m_FileMetaMemeberData.isWithName;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             SetOwnerMetaClass(mc);

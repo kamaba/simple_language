@@ -64,6 +64,15 @@ namespace SimpleLanguage.Core
             m_MetaMemberDataDict.Add(mmd.name, mmd);
             AddMetaBase(mmd.name, mmd);
         }
+        public List<MetaMemberData> GetMetaMemberDataList()
+        {
+            List < MetaMemberData > list = new List<MetaMemberData> ();
+            foreach ( var v in m_MetaMemberDataDict )
+            {
+                list.Add(v.Value);
+            }
+            return list;
+        }
         //public void CreateMetaVariable()
         //{
         //    var m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.Member, null, null, new MetaType(this));
@@ -84,7 +93,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                     isHave = false;
-                MetaMemberData mmv = new MetaMemberData(this, v, i);
+                MetaMemberData mmv = new MetaMemberData(this, v, i, isStatic);
                 if (isHave)
                 {
                     mmv.SetName(mmv.name + "__repeat__");
