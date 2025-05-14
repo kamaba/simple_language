@@ -1,0 +1,58 @@
+﻿//****************************************************************************
+//  File:      IRMetaVariable.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2023/11/15 12:00:00
+//  Description: Meta class's ir attribute
+//****************************************************************************
+
+using SimpleLanguage.IR;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Linq;
+using SimpleLanguage.Core;
+
+namespace SimpleLanguage.IR
+{
+    public class IRMetaVariable
+    {
+        public MetaExpressNode express { get { return m_ExpressNode; } }
+        public IRMetaClass irMetaClass => m_IRMetaClass;
+
+        MetaVariable m_MetaVariable = null;
+        public int id { get; set; } = 0;
+        public string name { get; set; }
+        public int index { get; set; } = 0;
+
+        private MetaExpressNode m_ExpressNode = null;
+        private IRMetaClass m_IRMetaClass = null;
+        public IRMetaVariable( MetaVariable mv )
+        {
+            m_MetaVariable = mv;
+            id = mv.GetHashCode();
+            name = mv.allName;
+        }
+        public IRMetaVariable(MetaMemberEnum mme)
+        {
+            m_MetaVariable = mme;
+            id = mme.GetHashCode();
+            name = mme.ownerMetaClass.allName + "." + mme.name;
+            m_ExpressNode = mme.express;
+        }
+        public IRMetaVariable(MetaMemberData mmd)
+        {
+            m_MetaVariable = mmd;
+            id = mmd.GetHashCode();
+            name = mmd.ownerMetaClass.allName + "." + mmd.name;
+            m_ExpressNode = mmd.expressNode;
+        }
+        public IRMetaVariable( MetaMemberVariable mmv )
+        {
+            m_MetaVariable = mmv;
+            id = mmv.GetHashCode();
+            name = mmv.ownerMetaClass.allName + "." + mmv.name;
+            m_ExpressNode = mmv.express;
+        }
+    }
+}
