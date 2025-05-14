@@ -60,7 +60,7 @@ namespace SimpleLanguage.VM.Runtime
                 m_ReturnObjectArray = new SObject[m_IRMethod.methodReturnVariableList.Count];
                 for (int i = 0; i < m_IRMethod.methodReturnVariableList.Count; i++)
                 {
-                    //SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodReturnVariableList[i].metaVariable.metaDefineType);
+                    //SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodReturnVariableList[i].metaDefineType);
                     //sobj.SetVoid();
                     //m_ReturnObjectArray[i] = sobj;
                 }
@@ -80,12 +80,12 @@ namespace SimpleLanguage.VM.Runtime
                 for (int i = 0; i < m_IRMethod.methodLocalVariableList.Count; i++)
                 {
                     var mev = m_IRMethod.methodLocalVariableList[i];
-                    var mdt = mev.metaVariable.metaDefineType;
-                    if (mdt.metaClass != null)
-                    {
-                        //SObject sobj = ObjectManager.CreateObjectByDefineType(mdt);
-                        //m_LocalVariableObjectArray[i] = sobj;
-                    }
+                    //var mdt = mev.metaDefineType;
+                    //if (mdt.metaClass != null)
+                    //{
+                    //    //SObject sobj = ObjectManager.CreateObjectByDefineType(mdt);
+                    //    //m_LocalVariableObjectArray[i] = sobj;
+                    //}
                 }
                 for (int i = 0; i < m_LocalVariableObjectArray.Length; i++)
                 {
@@ -402,10 +402,10 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.NewObject:
                     {
-                        //MetaType mdt = iri.opValue as MetaType;
-                        //ClassObject co = new ClassObject(mdt);
-                        //ObjectManager.AddClassObject(co);
-                        //m_ValueStack[m_ValueIndex++].SetSObject( co );
+                        IRMetaClass mdt = iri.opValue as IRMetaClass;
+                        ClassObject co = new ClassObject(mdt);
+                        ObjectManager.AddClassObject(co);
+                        m_ValueStack[m_ValueIndex++].SetSObject( co );
                     }
                     break;
                 case EIROpCode.Label:

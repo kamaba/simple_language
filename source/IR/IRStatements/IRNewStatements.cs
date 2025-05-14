@@ -24,16 +24,15 @@ namespace SimpleLanguage.IR.Statements
         {
             this.irMethod = _method;
         }
-        public void ParseIRStatements( MetaDefineVarStatements ms)
+        public void ParseIRStatements( MetaDefineVarStatements ms )
         {
-            MetaNewObjectExpressNode mnoen = null;
             if (ms.expressNode != null)
             {
                 if(ms.expressNode is MetaNewObjectExpressNode )
                 {
-                    mnoen = ms.expressNode as MetaNewObjectExpressNode;
                     IRNew irNew = new IRNew( irMethod );
-                    irNew.Parse(mnoen.GetReturnMetaDefineType());
+                    IRMetaClass irmc = IRManager.instance.GetIRMetaClassByName(ms.expressNode.GetReturnMetaClass().allName);
+                    irNew.Parse(irmc);
                     m_IRStatements.Add( irNew );
                 }
                 else
@@ -43,7 +42,7 @@ namespace SimpleLanguage.IR.Statements
                 }
             }
 
-            IRStoreVariable irStoreVar = new IRStoreVariable(irMethod, ms.metaVariable);
+            IRStoreVariable irStoreVar = new IRStoreVariable(irMethod, ms.metaVariable.GetHashCode());
             //if(m_FileMetaOpAssignSyntax != null )
             //{
             //    irStoreVar.data.SetDebugInfoByToken(m_FileMetaOpAssignSyntax.assignToken);
@@ -89,7 +88,7 @@ namespace SimpleLanguage.IR.Statements
                                 //IRLoadVariable irLoadVar1 = new IRLoadVariable(irMethod, m_MetaVariable);
                                 //m_IRStatements.Add(irLoadVar1);
 
-                                IRStoreVariable irStoreVar2 = new IRStoreVariable(irMethod, v.Value );
+                                IRStoreVariable irStoreVar2 = new IRStoreVariable(irMethod, v.Value.GetHashCode() );
                                 m_IRStatements.Add(irStoreVar2);
                             }
                             else if( v.Value.memberDataType == EMemberDataType.MemberArray )

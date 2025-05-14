@@ -28,45 +28,45 @@ namespace SimpleLanguage.VM
         private IRMetaClass m_IRMetaClass;
         private ClassObject m_Object = null;
         private byte[] m_Data = null;
-        private MemberVariableData[] m_MemberVariableData = null;
+        //private MemberVariableData[] m_MemberVariableData = null;
         //Debug
-        private SObject[] m_MemberVariableArray = null;
+        private SObject[] m_MemberVariableObjectArray = null;
 
 
-        public ClassObject(IRMetaClass irmc )
+        public ClassObject( IRMetaClass irmc )
         {
             m_IRMetaClass = irmc;
 
             int byteCount = irmc.byteCount;
             m_Data = new byte[byteCount];
 
-            var mvdict = irmc.localMetaMemberVariables;
+            var mvdict = irmc.localIRMetaVariable;
 
-            m_MemberVariableData = new MemberVariableData[mvdict.Count];
-            m_MemberVariableArray = new SObject[mvdict.Count];
+           // m_MemberVariableData = new MemberVariableData[mvdict.Count];
+            m_MemberVariableObjectArray = new SObject[mvdict.Count];
             for( int i = 0; i < mvdict.Count; i++ )
             {
-                //var obj = ObjectManager.CreateObjectByDefineType(mvdict[i].metaDefineType);
-                //m_MemberVariableArray[i] = obj;
+                var obj = ObjectManager.CreateObjectByDefineType(mvdict[i].irMetaClass);
+                m_MemberVariableObjectArray[i] = obj;
             }
         }
         public int GetMemberVariableIndex( MetaMemberVariable mmv )
         {
-            foreach (var v in m_MemberVariableData)
-            {
-                if (v.memberVariable == mmv)
-                    return v.index;
-            }
+            //foreach (var v in m_MemberVariableData)
+            //{
+            //    if (v.memberVariable == mmv)
+            //        return v.index;
+            //}
             return -1;
         }
         public SObject GetMemberVariable(int index)
         {
-            if (index > m_MemberVariableArray.Length)
+            if (index > m_MemberVariableObjectArray.Length)
             {
                 Console.WriteLine("执行的参数超出范围!!");
                 return null;
             }
-            return m_MemberVariableArray[index];
+            return m_MemberVariableObjectArray[index];
         }
         public void SetValue(ClassObject val )
         {
@@ -75,12 +75,12 @@ namespace SimpleLanguage.VM
         }
         public void GetMemberVariableSValue( int index, ref SValue svalue )
         {
-            if (index > m_MemberVariableArray.Length)
+            if (index > m_MemberVariableObjectArray.Length)
             {
                 Console.WriteLine("执行的参数超出范围!!");
                 return;
             }
-            var mmv = m_MemberVariableArray[index];
+            var mmv = m_MemberVariableObjectArray[index];
             switch (mmv)
             {
                 case Int16Object int16Obj:
@@ -112,7 +112,7 @@ namespace SimpleLanguage.VM
         }
         public void SetMemberVariableSValue( int index, SValue svalue)
         {
-            if (index > m_MemberVariableArray.Length)
+            if (index > m_MemberVariableObjectArray.Length)
             {
                 Console.WriteLine("执行的参数超出范围!!");
                 return;
@@ -121,7 +121,7 @@ namespace SimpleLanguage.VM
             {
                 case EType.Null:
                     {
-                        ClassObject classObj = m_MemberVariableArray[index] as ClassObject;
+                        ClassObject classObj = m_MemberVariableObjectArray[index] as ClassObject;
                         if (classObj == null)
                         {
                             Console.WriteLine("该类型不是Int32类型!!");
@@ -132,7 +132,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Int16:
                     {
-                        Int16Object int32Obj = m_MemberVariableArray[index] as Int16Object;
+                        Int16Object int32Obj = m_MemberVariableObjectArray[index] as Int16Object;
                         if (int32Obj == null)
                         {
                             Console.WriteLine("该类型不是Int32类型!!");
@@ -143,7 +143,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Int32:
                     {
-                        Int32Object int32Obj = m_MemberVariableArray[index] as Int32Object;
+                        Int32Object int32Obj = m_MemberVariableObjectArray[index] as Int32Object;
                         if (int32Obj == null)
                         {
                             Console.WriteLine("该类型不是Int32类型!!");
@@ -154,7 +154,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Int64:
                     {
-                        Int64Object int64Obj = m_MemberVariableArray[index] as Int64Object;
+                        Int64Object int64Obj = m_MemberVariableObjectArray[index] as Int64Object;
                         if (int64Obj == null)
                         {
                             Console.WriteLine("该类型不是Int32类型!!");
@@ -165,7 +165,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.String:
                     {
-                        StringObject stringObj = m_MemberVariableArray[index] as StringObject;
+                        StringObject stringObj = m_MemberVariableObjectArray[index] as StringObject;
                         if (stringObj == null)
                         {
                             Console.WriteLine("该类型不是Int32类型!!");
@@ -176,7 +176,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Class:
                     {
-                        var mva = m_MemberVariableArray[index];
+                        var mva = m_MemberVariableObjectArray[index];
                         if (mva.eType == EType.Byte)
                         {
 
@@ -277,7 +277,7 @@ namespace SimpleLanguage.VM
                         }
                         else
                         {
-                            ClassObject classObj = m_MemberVariableArray[index] as ClassObject;
+                            ClassObject classObj = m_MemberVariableObjectArray[index] as ClassObject;
                             if (classObj == null)
                             {
                                 Console.WriteLine("该类型不是Int32类型!!");

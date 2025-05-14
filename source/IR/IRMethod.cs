@@ -17,42 +17,18 @@ using System.Text;
 
 namespace SimpleLanguage.IR
 {
-    public class IRMethodStackData
-    {
-        public int index { get; set; } = 0;
-        public MetaVariable metaVariable => m_MetaVariable;
-        private MetaVariable m_MetaVariable = null;
-        public IRMethodStackData( MetaVariable mv )
-        {
-            m_MetaVariable = mv;
-        }
-
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-            if( m_MetaVariable != null )
-            {
-                sb.Append( m_MetaVariable.metaDefineType.metaClass.ToString() );
-                sb.Append(".");
-                sb.Append(m_MetaVariable.allName);
-            }
-            return sb.ToString();
-        }
-    }
     public class IRMethod
     {
         public string id { get; set; } = "";
         public IRManager irManager { get; private set; } = null;
-        public List<IRMethodStackData> methodArgumentList => m_MethodArgumentList;
-        public List<IRMethodStackData> methodLocalVariableList => m_MethodLocalVariableList;
-        public List<IRMethodStackData> methodReturnVariableList => m_MethodReturnList;
+        public List<IRMetaVariable> methodArgumentList => m_MethodArgumentList;
+        public List<IRMetaVariable> methodLocalVariableList => m_MethodLocalVariableList;
+        public List<IRMetaVariable> methodReturnVariableList => m_MethodReturnList;
         public List<IRData> IRDataList => m_IRDataList;
 
-
-        //private MetaFunction m_MetaFunction = null;
-        private List<IRMethodStackData> m_MethodArgumentList = new List<IRMethodStackData>();
-        private List<IRMethodStackData> m_MethodLocalVariableList = new List<IRMethodStackData>();
-        private List<IRMethodStackData> m_MethodReturnList = new List<IRMethodStackData>();
+        private List<IRMetaVariable> m_MethodArgumentList = new List<IRMetaVariable>();
+        private List<IRMetaVariable> m_MethodLocalVariableList = new List<IRMetaVariable>();
+        private List<IRMetaVariable> m_MethodReturnList = new List<IRMetaVariable>();
         private List<IRData> m_LabelList = new List<IRData>();
         private List<IRData> m_IRDataList = new List<IRData>();
         public IRMethod(IRManager irma)
@@ -65,13 +41,13 @@ namespace SimpleLanguage.IR
 
             if (mf.thisMetaVariable != null)
             {
-                IRMethodStackData imp = new IRMethodStackData(mf.thisMetaVariable);
+                IRMetaVariable imp = new IRMetaVariable(mf.thisMetaVariable);
                 imp.index = 0;
                 m_MethodArgumentList.Add(imp);
             }
             if (mf.returnMetaVariable!=null)
             {
-                IRMethodStackData imp = new IRMethodStackData(mf.returnMetaVariable);
+                IRMetaVariable imp = new IRMetaVariable(mf.returnMetaVariable);
                 imp.index = 1;
                 m_MethodReturnList.Add(imp);
             }
@@ -80,7 +56,7 @@ namespace SimpleLanguage.IR
             {
                 MetaDefineParam mdp = list2[i] as MetaDefineParam;
                 if (mdp == null) continue;
-                IRMethodStackData imp = new IRMethodStackData(mdp.metaVariable);
+                IRMetaVariable imp = new IRMetaVariable(mdp.metaVariable);
                 imp.index = m_MethodArgumentList.Count;
                 m_MethodArgumentList.Add(imp);
             }
@@ -88,7 +64,7 @@ namespace SimpleLanguage.IR
             var list = mf.GetCalcMetaVariableList();
             for( int i = 0; i < list.Count; i++ )
             {
-                var irsd = new IRMethodStackData(list[i]);
+                var irsd = new IRMetaVariable(list[i]);
                 irsd.index = m_MethodLocalVariableList.Count;
                 m_MethodLocalVariableList.Add(irsd);
             }
@@ -166,29 +142,29 @@ namespace SimpleLanguage.IR
                 m_LabelList.Add(irdata);
             }
         }
-        public int GetReturnVariableIndex( MetaVariable mv )
+        public int GetReturnVariableIndex(IRMetaVariable mv )
         {
             foreach (var v in m_MethodReturnList )
             {
-                if (v.metaVariable == mv)
+                if (v == mv)
                     return v.index;
             }
             return -1;
         }
-        public int GetLocalVariableIndex( MetaVariable mv )
+        public int GetLocalVariableIndex( IRMetaVariable mv )
         {
             foreach( var v in m_MethodLocalVariableList)
             {
-                if (v.metaVariable == mv)
+                if (v == mv)
                     return v.index;
             }
             return -1;
         }
-        public int GetArgumentIndex( MetaVariable mv )
+        public int GetArgumentIndex(IRMetaVariable mv )
         {
             foreach (var v in m_MethodArgumentList )
             {
-                if (v.metaVariable == mv)
+                if (v == mv)
                     return v.index;
             }
             Console.WriteLine("SVM Error 在获取输入参数定义中没有找到相关的参数!");

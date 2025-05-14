@@ -18,12 +18,12 @@ namespace SimpleLanguage.IR
         public IRNew( IRMethod irMethod ):base( irMethod )
         {
         }
-        public void Parse( MetaType mt )
+        public void Parse( IRMetaClass irmc )
         {
             IRData data = new IRData();
             data.opCode = EIROpCode.NewObject;
-            data.opValue = mt;
-            data.debugInfo = new DebugInfo() { name = mt.metaClass.allName, info = "IRNew" };
+            data.opValue = irmc;
+            data.debugInfo = new DebugInfo() { name = irmc.allName, info = "IRNew" };
             m_IRDataList.Add(data);
         }
     }

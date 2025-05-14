@@ -326,14 +326,16 @@ namespace SimpleLanguage.Core
     {
         public enum EVisitType
         {
+            ConstValue,
             Variable,
             VisitVariable,
             IteratorVariable,
             MethodCall,
-            NewMethodCall,
-            New,
+            NewClassMethodCall,
+            NewData,
             Enum,
         }
+        public MetaConstExpressNode constValueExpress { get; private set; } = null;
         public EVisitType visitType { get; private set; }
         public MetaVariable variable { get; private set; } = null;
         public MetaVisitVariable visitVariable { get; private set; } = null;
@@ -347,7 +349,7 @@ namespace SimpleLanguage.Core
 
             vn.callerMetaClass = mc;
             vn.metaBraceStatementsContent = mb;
-            vn.visitType = EVisitType.New;
+            vn.visitType = EVisitType.NewData;
 
             return vn;
         }
@@ -364,7 +366,7 @@ namespace SimpleLanguage.Core
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.metaBraceStatementsContent = mb;
-            vn.visitType = EVisitType.NewMethodCall;
+            vn.visitType = EVisitType.NewClassMethodCall;
             vn.methodCall = _methodCall;
 
             return vn;
@@ -412,11 +414,11 @@ namespace SimpleLanguage.Core
                     {
                         return variable.metaDefineType;
                     }
-                case EVisitType.NewMethodCall:
+                case EVisitType.NewClassMethodCall:
                     {
                         return methodCall.callerMetaVariable.metaDefineType;
                     }
-                case EVisitType.New:
+                case EVisitType.NewData:
                     {
                         return new MetaType(this.callerMetaClass);
                     }
@@ -454,7 +456,7 @@ namespace SimpleLanguage.Core
                     {
                         return methodCall.function.returnMetaVariable;
                     }
-                case EVisitType.NewMethodCall:
+                case EVisitType.NewClassMethodCall:
                     {
                         return methodCall.function.thisMetaVariable;
                     }
@@ -520,7 +522,7 @@ namespace SimpleLanguage.Core
                         sb.Append(this.variable.ToFormatString());
                     }
                     break;
-                case EVisitType.NewMethodCall:
+                case EVisitType.NewClassMethodCall:
                     {
                         sb.Append(this.methodCall.ToFormatString());
                     }

@@ -710,7 +710,7 @@ namespace SimpleLanguage.Core
             MetaClass createMC = null;
             if (!m_MetaDefineType.isDefineMetaClass)
             {
-                if (fmcn.visitType == MetaVisitNode.EVisitType.NewMethodCall )
+                if (fmcn.visitType == MetaVisitNode.EVisitType.NewClassMethodCall)
                 {
                     m_MetaDefineType.SetMetaClass(fmcn.methodCall.function.ownerMetaClass);
                 }
@@ -1069,11 +1069,11 @@ namespace SimpleLanguage.Core
                 bool isNewClass = false;
                 bool isNewData = false;
                 bool isNewEnum = false;
-                if ( mcl.finalCallNode?.visitType ==  MetaVisitNode.EVisitType.NewMethodCall )
+                if ( mcl.finalCallNode?.visitType ==  MetaVisitNode.EVisitType.NewClassMethodCall)
                 {
                     isNewClass = true;
                 }
-                else if( mcl.finalCallNode?.visitType == MetaVisitNode.EVisitType.New )
+                else if( mcl.finalCallNode?.visitType == MetaVisitNode.EVisitType.NewData )
                 {
                     isNewData = true;
                 }
