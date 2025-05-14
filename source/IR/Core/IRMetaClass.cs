@@ -28,7 +28,7 @@ namespace SimpleLanguage.IR
         {
             irManager = manager;
         }
-        public List<IRMetaVariable> localIRMetaVariable => m_LocalIRMetaVariable;
+        public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
 
         public int allocSize = 0;
         public List<EType> m_MetaTypeList = new List<EType>();
@@ -39,19 +39,8 @@ namespace SimpleLanguage.IR
         List<MetaMemberVariable> m_LocalMetaMemberVariables = new List<MetaMemberVariable>();
         List<MetaMemberData> m_LocalMetaMemberDatas = new List<MetaMemberData>();
 
-        private List<IRMetaVariable> m_LocalIRMetaVariable = new List<IRMetaVariable>();
+        private List<IRMetaVariable> m_LocalIRMetaVariableList = new List<IRMetaVariable>();
         private IRManager irManager = null;
-
-        public int GetLocalMemberVariableIndex(MetaMemberVariable mmv)
-        {
-            for (int i = 0; i < m_LocalMetaMemberVariables.Count; i++)
-            {
-                if (m_LocalMetaMemberVariables[i] == mmv)
-                    return i;
-            }
-            Console.WriteLine("SVM Error 没有找本地成员变量中找到相关局部定义变量!");
-            return -1;
-        }
         public void CalcAllocSize()
         {
             m_MetaTypeList.Clear();
@@ -73,7 +62,7 @@ namespace SimpleLanguage.IR
         }
         public IRMetaVariable GetIRMetaVariable( int id )
         {
-            return m_LocalIRMetaVariable.Find( a=> a.id == id );
+            return m_LocalIRMetaVariableList.Find( a=> a.id == id );
         }
         public void CreateMetaClassData( MetaClass mc )
         {
@@ -87,7 +76,7 @@ namespace SimpleLanguage.IR
                 foreach( var v in m_LocalMetaMemberDatas )
                 {
                     IRMetaVariable irmv = new IRMetaVariable(v);
-                    m_LocalIRMetaVariable.Add(irmv);
+                    m_LocalIRMetaVariableList.Add(irmv);
                     irManager.allVariableList.Add(irmv);
                 }
             }
@@ -97,11 +86,15 @@ namespace SimpleLanguage.IR
                 foreach (var v in m_LocalMetaMemberVariables)
                 {
                     IRMetaVariable irmv = new IRMetaVariable(v);
-                    m_LocalIRMetaVariable.Add(irmv);
+                    m_LocalIRMetaVariableList.Add(irmv);
                     irManager.allVariableList.Add(irmv);
                 }
             }
             CalcAllocSize();
+        }
+        public override string ToString()
+        {
+            return allName;
         }
     }
 }

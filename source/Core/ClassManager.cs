@@ -35,6 +35,7 @@ namespace SimpleLanguage.Core
             }
         }
         public Dictionary<string, MetaClass> allClassDict => m_AllClassDict;
+        public Dictionary<string, MetaData> allDataDict => m_AllDataDict;
         public List<MetaDynamicClass> dynamicClassList => m_DynamicClassList;
 
 

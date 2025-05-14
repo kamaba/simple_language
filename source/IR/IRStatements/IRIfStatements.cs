@@ -19,7 +19,7 @@ namespace SimpleLanguage.Core.IRStatements
 {
     public class MetaIRIfStatements : MetaIRStatements
     {
-        public class MetaElseIfStatements
+        public class MetaIRElseIfStatements
         {
             public List<IRBase> conditionStatList = new List<IRBase>();
             public List<IRBase> thenStatList = new List<IRBase>();
@@ -29,44 +29,44 @@ namespace SimpleLanguage.Core.IRStatements
             public IRNop startNop = null;
 
             private IRExpress m_IrExpress = null;
-            public void ParseIRStatements( IRMethod _irMethod )
+            public void ParseIRStatements( IRMethod _irMethod, MetaIfStatements.MetaElseIfStatements mires )
             {
                 startNop = new IRNop( _irMethod );
                 conditionStatList.Add(startNop);
 
-                //if (m_IfElseState == IfElseState.If || m_IfElseState == IfElseState.ElseIf )
-                //{
-                //    startNop.data.SetDebugInfoByToken( m_FinalExpress.GetToken() );
-                    
-                //    m_IrExpress = new IRExpress(_irMethod, m_FinalExpress);
-                //    conditionStatList.Add(m_IrExpress);
+                if (mires.ifElseState == MetaIfStatements.IfElseState.If || mires.ifElseState == MetaIfStatements.IfElseState.ElseIf)
+                {
+                    startNop.data.SetDebugInfoByToken(m_FinalExpress.GetToken());
 
-                //    if (m_MetaAssignManager?.isNeedSetMetaVariable == true)
-                //    {
-                //        IRStoreVariable storeLocal = new IRStoreVariable(_irMethod, m_BoolConditionVariable);
-                //        storeLocal.data.SetDebugInfoByToken( m_BoolConditionVariable.pingToken );
-                //        conditionStatList.Add(storeLocal);
+                    m_IrExpress = new IRExpress(_irMethod, m_FinalExpress);
+                    conditionStatList.Add(m_IrExpress);
 
-                //        IRLoadVariable loadLocal = new IRLoadVariable(_irMethod, m_BoolConditionVariable);
-                //        loadLocal.data.SetDebugInfoByToken( m_BoolConditionVariable.pingToken );
-                //        conditionStatList.Add(loadLocal);
-                //    }
+                    if (m_MetaAssignManager?.isNeedSetMetaVariable == true)
+                    {
+                        IRStoreVariable storeLocal = new IRStoreVariable(_irMethod, m_BoolConditionVariable);
+                        storeLocal.data.SetDebugInfoByToken(m_BoolConditionVariable.pingToken);
+                        conditionStatList.Add(storeLocal);
 
-                //    ifFalseBreach = new IRBranch( _irMethod, EIROpCode.BrFalse, null );
-                //    ifFalseBreach.SetDebugInfoByToken( m_IfOrElseIfKeySyntax.token );
-                //    conditionStatList.Add(ifFalseBreach);
-                //}
-                //m_ThenMetaStatements.ParseAllIRStatements();
-                //thenStatList.AddRange(m_ThenMetaStatements.irStatements);
+                        IRLoadVariable loadLocal = new IRLoadVariable(_irMethod, m_BoolConditionVariable);
+                        loadLocal.data.SetDebugInfoByToken(m_BoolConditionVariable.pingToken);
+                        conditionStatList.Add(loadLocal);
+                    }
 
-                ////{}代码执行结束后的位置
-                //ifEndBrach = new IRBranch(_irMethod, EIROpCode.Br, null );
-                //thenStatList.Add(ifEndBrach);
+                    ifFalseBreach = new IRBranch(_irMethod, EIROpCode.BrFalse, null);
+                    ifFalseBreach.SetDebugInfoByToken(m_IfOrElseIfKeySyntax.token);
+                    conditionStatList.Add(ifFalseBreach);
+                }
+                m_ThenMetaStatements.ParseAllIRStatements();
+                thenStatList.AddRange(m_ThenMetaStatements.irStatements);
 
-                //if(m_IfOrElseIfKeySyntax != null )
-                //{
-                //    ifEndBrach.data.SetDebugInfoByToken(m_IfOrElseIfKeySyntax?.executeBlockSyntax?.endBlock);
-                //}
+                //{}代码执行结束后的位置
+                ifEndBrach = new IRBranch(_irMethod, EIROpCode.Br, null);
+                thenStatList.Add(ifEndBrach);
+
+                if (m_IfOrElseIfKeySyntax != null)
+                {
+                    ifEndBrach.data.SetDebugInfoByToken(m_IfOrElseIfKeySyntax?.executeBlockSyntax?.endBlock);
+                }
             }
 
             public string ToIRString()
@@ -91,41 +91,47 @@ namespace SimpleLanguage.Core.IRStatements
         }
         public void ParseIRStatements(MetaIfStatements ifstatements )
         {
-            //for( int i = 0; i < m_MetaElseIfStatements.Count; i++ )
-            //{
-            //    var meis = m_MetaElseIfStatements[i];
+            for (int i = 0; i < ifstatements.metaElseIfStatements.Count; i++)
+            {
+                var meis = ifstatements.metaElseIfStatements[i];
 
-            //    meis.ParseIRStatements( irMethod );
-            //    m_IRStatements.AddRange(meis.conditionStatList);
-            //    m_IRStatements.AddRange(meis.thenStatList);               
-            //}
+                MetaIRElseIfStatements mire = new MetaIRElseIfStatements();
 
-            //IRNop ifEndIRNop = new IRNop( irMethod );
-            //m_IRStatements.Add(ifEndIRNop);
+                mire.ParseIRStatements(irMethod);
+                m_IRStatements.AddRange(mire.conditionStatList);
+                m_IRStatements.AddRange(mire.thenStatList);
+            }
+
+            IRNop ifEndIRNop = new IRNop(irMethod);
+            m_IRStatements.Add(ifEndIRNop);
 
 
-            //if ( m_FileMetaKeyIfSyntax != null )
+            //if (m_FileMetaKeyIfSyntax != null)
             //{
             //    ifEndIRNop.data.SetDebugInfoByToken(m_FileMetaKeyIfSyntax.ifExpressSyntax.executeBlockSyntax?.endBlock);
             //}
 
-            //for ( int i = 0; i < m_MetaElseIfStatements.Count; i++ )
-            //{
-            //    var meis = m_MetaElseIfStatements[i];
-            //    meis.ifEndBrach.data.opValue = ifEndIRNop.data;
+            for (int i = 0; i < ifstatements.metaElseIfStatements.Count; i++)
+            {
+                var meis = ifstatements.metaElseIfStatements[i];
 
-            //    if (meis.ifFalseBreach != null)
-            //    {
-            //        if( i < m_MetaElseIfStatements.Count - 1 )
-            //        {
-            //            meis.ifFalseBreach.data.opValue = m_MetaElseIfStatements[i+1].startNop.data;
-            //        }
-            //        else if( i == m_MetaElseIfStatements.Count - 1 )
-            //        {
-            //            meis.ifFalseBreach.data.opValue = ifEndIRNop.data;
-            //        }
-            //    }
-            //}
+
+                MetaIRElseIfStatements mire = new MetaIRElseIfStatements();
+
+                mire.ifEndBrach.data.opValue = ifEndIRNop.data;
+
+                if (mire.ifFalseBreach != null)
+                {
+                    if (i < ifstatements.metaElseIfStatements.Count - 1)
+                    {
+                        //mire.ifFalseBreach.data.opValue = ifstatements.metaElseIfStatements[i + 1].startNop.data;
+                    }
+                    else if (i == ifstatements.metaElseIfStatements.Count - 1)
+                    {
+                        mire.ifFalseBreach.data.opValue = ifEndIRNop.data;
+                    }
+                }
+            }
         }
     }
 }

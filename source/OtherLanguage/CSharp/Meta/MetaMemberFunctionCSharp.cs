@@ -103,7 +103,7 @@ namespace SimpleLanguage.Core
             {
                 MethodInfo mi = ttype.GetMethod(methodName);
 
-                MetaCSharpCallStatements mcallState = new MetaCSharpCallStatements( m_MetaBlockStatements, methodName, ttype,  mi );
+                MetaOtherPlatformStatements mcallState = new MetaOtherPlatformStatements( m_MetaBlockStatements );
 
                 AddMetaStatements(mcallState);
             }

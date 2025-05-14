@@ -159,7 +159,7 @@ namespace SimpleLanguage.Core.Statements
 
                 if (m_DefineVarStatements != null)
                 {
-                    m_ForMetaVariable = m_DefineVarStatements.metaVariable;
+                    m_ForMetaVariable = m_DefineVarStatements.defineVarMetaVariable;
                 }
                 else if ( m_AssignStatements != null)
                 {

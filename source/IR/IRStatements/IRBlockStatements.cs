@@ -17,6 +17,11 @@ namespace SimpleLanguage.IR.Statements
 {
     public class IRBlockStatements : MetaIRStatements
     {
+        public IRBlockStatements( IRMethod irmthod )
+        {
+            irMethod = irmthod;
+        }
+
         public IRNop blockStart = null;        
         public void ParseAllIRStatements(MetaBlockStatements ms)
         {
@@ -93,6 +98,11 @@ namespace SimpleLanguage.IR.Statements
                         {
                             MetaIRWhileDoWhileStatements mirwdws = new MetaIRWhileDoWhileStatements();
                             mirwdws.ParseIRStatements(mwdws);
+                        }
+                        break;
+                    case MetaOtherPlatformStatements mops:
+                        {
+                            //MetaIRCSharpCallStatements mcsharpcsinst = new MetaCSharpCallStatements(mcsharpcs, )
                         }
                         break;
                     default:

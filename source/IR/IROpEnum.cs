@@ -36,7 +36,6 @@ namespace SimpleLanguage.IR
         LoadLocal,  
         LoadNotStaticField,
         LoadStaticField,
-        LoadObject,
 
         NewObject,
         NewArray,

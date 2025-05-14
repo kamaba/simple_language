@@ -1,17 +1,19 @@
-﻿using SimpleLanguage.Core.Statements;
+﻿
+using SimpleLanguage.Core;
+using SimpleLanguage.Core.Statements;
 using SimpleLanguage.IR;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.IR.Statements
 {
-    public partial class MetaCSharpCallStatements : MetaStatements
+    public class MetaIRCSharpCallStatements : MetaIRStatements
     {
         MethodInfo m_MethodInfo = null;
         MetaMethodCall metaFunctionCall = null;
-        public MetaCSharpCallStatements(MetaBlockStatements mbs, string _name, System.Type type, MethodInfo methodInfo) : base(mbs)
+        public MetaIRCSharpCallStatements(MetaBlockStatements mbs, string _name, System.Type type, MethodInfo methodInfo) 
         {
             m_MethodInfo = methodInfo;
 
@@ -25,18 +27,18 @@ namespace SimpleLanguage.Core.Statements
         //    IRCallFunction irCallFun = new IRCallFunction(irMethod, metaFunctionCall );            
         //    m_IRStatements.Add( irCallFun );
         //}
-        public override string ToFormatString()
-        {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < realDeep; i++)
-                sb.Append(Global.tabChar);
-            sb.Append(Environment.NewLine);
-            if (nextMetaStatements != null)
-            {
-                sb.Append(nextMetaStatements.ToFormatString());
-            }
+        //public override string ToFormatString()
+        //{
+        //    StringBuilder sb = new StringBuilder();
+        //    for (int i = 0; i < realDeep; i++)
+        //        sb.Append(Global.tabChar);
+        //    sb.Append(Environment.NewLine);
+        //    if (nextMetaStatements != null)
+        //    {
+        //        sb.Append(nextMetaStatements.ToFormatString());
+        //    }
 
-            return sb.ToString();
-        }
+        //    return sb.ToString();
+        //}
     }
 }

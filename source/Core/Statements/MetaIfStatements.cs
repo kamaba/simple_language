@@ -137,7 +137,7 @@ namespace SimpleLanguage.Core.Statements
                 return sb.ToString();
             }
         }
-        List<MetaElseIfStatements> metaElseIfStatements => m_MetaElseIfStatements;
+        public List<MetaElseIfStatements> metaElseIfStatements => m_MetaElseIfStatements;
         public FileMetaKeyIfSyntax fileMetaKeyIfSyntax => m_FileMetaKeyIfSyntax;
 
         private List<MetaElseIfStatements> m_MetaElseIfStatements = new List<MetaElseIfStatements>();

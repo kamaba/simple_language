@@ -48,7 +48,7 @@ namespace SimpleLanguage.IR
             if (mf.returnMetaVariable!=null)
             {
                 IRMetaVariable imp = new IRMetaVariable(mf.returnMetaVariable);
-                imp.index = 1;
+                imp.index = 0;
                 m_MethodReturnList.Add(imp);
             }
             var list2 = mf.metaMemberParamCollection.metaParamList;
@@ -76,7 +76,7 @@ namespace SimpleLanguage.IR
                 Console.WriteLine("----------------  Info 空函数!! --------------------");
                 return;
             }
-            IRBlockStatements irbs = new IRBlockStatements();
+            IRBlockStatements irbs = new IRBlockStatements(this);
             irbs.ParseAllIRStatements(mbs);
             for (int i = 0; i < irbs.irStatements.Count; i++)
             {
@@ -151,24 +151,9 @@ namespace SimpleLanguage.IR
             }
             return -1;
         }
-        public int GetLocalVariableIndex( IRMetaVariable mv )
+        public IRMetaVariable GetIRLocalVariableById( int id )
         {
-            foreach( var v in m_MethodLocalVariableList)
-            {
-                if (v == mv)
-                    return v.index;
-            }
-            return -1;
-        }
-        public int GetArgumentIndex(IRMetaVariable mv )
-        {
-            foreach (var v in m_MethodArgumentList )
-            {
-                if (v == mv)
-                    return v.index;
-            }
-            Console.WriteLine("SVM Error 在获取输入参数定义中没有找到相关的参数!");
-            return -1;
+            return m_MethodLocalVariableList.Find(a => a.id == id);
         }
         public string ToIRString()
         {
