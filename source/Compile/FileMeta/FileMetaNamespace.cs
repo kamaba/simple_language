@@ -16,6 +16,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 {
     public partial class FileDefineNamespace : FileMetaBase
     {
+        public bool isSearchNamespace { get; set; } = false;
         private List<Node> m_NodeList = new List<Node>();
         public new string name
         {
@@ -62,6 +63,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 Console.WriteLine("Error 没有查找namespaceToken");
                 return false;
             }
+            isSearchNamespace = m_NodeList[1].blockNode == null;
             m_NamespaceStateBlock = NamespaceStatementBlock.CreateStateBlock(m_NodeList[1].linkTokenList);
             return true;
         }        

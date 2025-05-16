@@ -14,11 +14,16 @@ using System.Text;
 
 namespace SimpleLanguage.IR.Statements
 {
-    public partial class MetaCallStatements
+    public class IRCallStatements : IRStatements
     {
         private IRMethod m_IRMethod = null;
         private List<IRBase> m_IRList = new List<IRBase>();
 
+        public void ParseIRStatements(MetaCallStatements ms)
+        {
+            //m_MetaCallLink.ParseToIRDataList(irMethod);
+            //m_IRStatements.AddRange(m_MetaCallLink.irList);
+        }
         public void ParseToIRDataList(IRMethod _irMethod)
         {
             m_IRMethod = _irMethod;
@@ -116,14 +121,6 @@ namespace SimpleLanguage.IR.Statements
             sb.Append("call");
             //sb.Append(base.ToIRString());
             return sb.ToString();
-        }
-    }
-    public class MetaIRCallStatements : MetaIRStatements
-    {
-        public void ParseIRStatements(MetaCallStatements ms)
-        {
-            //m_MetaCallLink.ParseToIRDataList(irMethod);
-            //m_IRStatements.AddRange(m_MetaCallLink.irList);
         }
         //public override string ToIRString()
         //{

@@ -51,7 +51,7 @@ namespace SimpleLanguage.Core
                 if (mb == null)
                 {
                     mb = new MetaNamespace(name);
-                    if (ProjectManager.isUseDefineNamespace)
+                    if (ProjectManager.useDefineNamespaceType == EUseDefineType.NoUseProjectConfigNamespace )
                     {
                         Console.WriteLine("Error 在使用namespace 时，在项目定义中，没有找到相关的定义!!  位置:" + fns.namespaceStatementBlock.tokenList[i].ToLexemeAllString());
                         (mb as MetaNamespace).isNotAllowCreateName = true;

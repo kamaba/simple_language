@@ -92,7 +92,7 @@ namespace SimpleLanguage.Project
             InnerCLRRuntimeVM.Init();
             InnerCLRRuntimeVM.RunIRMethod(irmethod);
         }
-        public static void AddDefineNamespace( MetaBase parentRoot, DefineNamespace dns, bool isAddCurrent = true )
+        public static void AddDefineNamespace( MetaBase parentRoot, DefineStruct dns, bool isAddCurrent = true )
         {
             if (parentRoot == null) return;
 
@@ -102,10 +102,10 @@ namespace SimpleLanguage.Project
                 MetaNamespace nodeNS = null;
                 if (isAddCurrent)
                 {
-                    var cfindNode = parentRoot.GetChildrenMetaBaseByName(dns.spaceName);
+                    var cfindNode = parentRoot.GetChildrenMetaBaseByName(dns.name);
                     if (cfindNode == null)
                     {
-                        nodeNS = new MetaNamespace(dns.spaceName);
+                        nodeNS = new MetaNamespace(dns.name);
                     }
                     else
                     {
@@ -130,9 +130,9 @@ namespace SimpleLanguage.Project
                 {
                     parMS = parentRoot;
                 }
-                for( int i = 0; i < dns.childDefineNamespace.Count; i++ )
+                for( int i = 0; i < dns.childDefineStruct.Count; i++ )
                 {
-                    AddDefineNamespace(parMS, dns.childDefineNamespace[i]);
+                    AddDefineNamespace(parMS, dns.childDefineStruct[i] );
                 }
             }
         }

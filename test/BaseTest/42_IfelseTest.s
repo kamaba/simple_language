@@ -82,6 +82,13 @@ IfelseTest
         {
             a = 10;
         }
+
+        #enum的对比
+
+        #data数据类的对比
+
+        #class的对比 
+        
         
     }
     static FunIfCondition()

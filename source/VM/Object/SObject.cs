@@ -20,10 +20,10 @@ namespace SimpleLanguage.VM
         protected EType m_Etype = EType.Class;
         public bool m_IsNull = false;
         public bool m_IsVoid = false;
+        public short typeId { get; set; } = 0;
         public int refCount { get; set; } = 0;
         protected SObject()
         {
-
         }
         public void SetNull()
         {

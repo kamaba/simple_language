@@ -40,11 +40,12 @@ namespace SimpleLanguage.Core.IR
                     if (mv.variableFrom == MetaVariable.EVariableFrom.Static
                         || mv.variableFrom == MetaVariable.EVariableFrom.Global )
                     {
-                        Console.WriteLine("Error VM IRMetaCall 该位置不应该有静态变量");
+                        IRLoadVariable irVar = new IRLoadVariable(m_IRMethod.irManager, mv.GetHashCode());
+                        irList.Add(irVar);
                     }
                     else
                     {
-                        IRLoadVariable irVar = new IRLoadVariable(m_IRMethod.irManager, mv.GetHashCode());
+                        IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mv.GetHashCode());
                         irList.Add(irVar);
                     }
                 }

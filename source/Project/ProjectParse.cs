@@ -16,6 +16,8 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Compile.Parse;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
+using System.Security.Cryptography.X509Certificates;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Project
 {
@@ -245,33 +247,73 @@ namespace SimpleLanguage.Project
             //var findOption = fmmd.GetFileMetaMemberDataByName("option");
         }
     }
-    public class DefineNamespace
+    public class DefineStruct
     {
-        public string spaceName { get; set; } = "";
-        public List<DefineNamespace> childDefineNamespace = new List<DefineNamespace>();
-
-
-        public DefineNamespace()
+        public enum EDefineStructType
         {
+            Namespace,
+            Class,
+            Data,
+            Enum
         }
-        public DefineNamespace Parse(MetaMemberData mmd )
+            
+        public DefineStruct( EDefineStructType edst )
+        {
+            type = edst;
+        }
+
+        public string name { get; set; } = "";
+        public EDefineStructType type { get; set; } = EDefineStructType.Namespace;  //0-namespace 1-class 2-data 3-enum
+        public List<DefineStruct> childDefineStruct = new List<DefineStruct>();
+
+
+        public DefineStruct Parse(MetaMemberData mmd)
         {
             if (mmd == null)
             {
                 return null;
             }
-            spaceName = mmd.name;
+            name = mmd.name;
 
+            string usetype = "namespace";
+
+            List<MetaMemberData> mdChild = new List<MetaMemberData>();
             foreach (var ns in mmd.childrenNameNodeDict)
             {
-                var dn = new DefineNamespace();
                 MetaMemberData cmmd = ns.Value as MetaMemberData;
                 if (cmmd != null)
                 {
-                    dn.Parse(cmmd);
-                }
-                childDefineNamespace.Add(dn);
+                    if (cmmd.name == "type")
+                    {
+                        usetype = cmmd.GetString("type");
 
+                        if (usetype == "namespace")
+                        {
+                            type = EDefineStructType.Namespace;
+                        }
+                        else if (usetype == "class")
+                        {
+                            type = EDefineStructType.Class;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Error 未识别到" + usetype);
+                            continue;
+                        }
+                    }
+                    else if (cmmd.name == "child")
+                    {
+                        foreach (var ns2 in cmmd.childrenNameNodeDict)
+                        {
+                            MetaMemberData cmmd2 = ns2.Value as MetaMemberData;
+                            if (cmmd2 != null)
+                            {
+                                DefineStruct ds = new DefineStruct(EDefineStructType.Namespace);
+                                childDefineStruct.Add(ds.Parse(cmmd2));
+                            }
+                        }
+                    }
+                }
             }
             return this;
         }
@@ -348,7 +390,6 @@ namespace SimpleLanguage.Project
     public class ExportDllData
     {
         public string spaceName { get; set; } = "";
-        public List<DefineNamespace> childDefineNamespace = new List<DefineNamespace>();
 
         public void Parse(MetaMemberData mmd)
         {
@@ -397,7 +438,7 @@ namespace SimpleLanguage.Project
         public CompileFileData compileFileData { get; set; } = new CompileFileData();
         public CompileOptionData compileOptionData { get; set; } = new CompileOptionData();
         public CompileFilterData compileFilterData { get; set; } = new CompileFilterData();
-        public DefineNamespace namespaceRoot { get; set; } = new DefineNamespace();
+        public DefineStruct namespaceRoot { get; set; } = new DefineStruct( DefineStruct.EDefineStructType.Namespace );
         public GlobalImportData globalImportData { get; set; } = new GlobalImportData();
         public GlobalReplaceData globalReplaceData { get; set; } = new GlobalReplaceData();
         public GlobalVariableData globalVariableData { get; set; } = new GlobalVariableData();
@@ -477,9 +518,18 @@ namespace SimpleLanguage.Project
                         globalVariableData.Parse(mmd);
                     }
                     break;
-                case "globalNamespace":
+                case "proojectStruct":
                     {
-                        namespaceRoot.Parse(mmd);
+                        foreach (var ns in mmd.childrenNameNodeDict)
+                        {
+                            MetaMemberData cmmd = ns.Value as MetaMemberData;
+                            if (cmmd != null)
+                            {
+                                DefineStruct ds = new DefineStruct(DefineStruct.EDefineStructType.Namespace);
+                                ds.Parse(cmmd);
+                                namespaceRoot.childDefineStruct.Add(ds);
+                            }
+                        }
                     }
                     break;
                 case "globalImport":
@@ -562,6 +612,7 @@ namespace SimpleLanguage.Project
             }
             m_ProjectData.BindFileMetaClass(fmc);
             m_ProjectData.ParseFileMetaDataMemeberData(fmc);
+            BuildDefineNameStruct();
             m_ProjectData.ParseMetaMemberVariableName();
             m_ProjectData.ParseMetaMemberFunctionName();
             m_ProjectData.ParseMemberVariableDefineMetaType();
@@ -574,6 +625,63 @@ namespace SimpleLanguage.Project
                 return;
             }
             m_ProjectData.ParseGlobalVariable();
+        }
+        void BuildDefineNameStruct()
+        {
+            BuildDefineNameStructNode(m_ProjectData.namespaceRoot, ModuleManager.instance.selfModule);
+        }
+        public void BuildDefineNameStructNode( DefineStruct ds, MetaBase parentMb )
+        {
+            MetaBase newParentMB = null;
+            if( parentMb is MetaModule mm )
+            {
+                if( ds.type == DefineStruct.EDefineStructType.Namespace )
+                {
+                    MetaNamespace mn = new MetaNamespace(ds.name);
+                    mm.AddMetaNamespace(mn);
+                    newParentMB = mn;
+                }
+                else if( ds.type == DefineStruct.EDefineStructType.Class )
+                {
+                    MetaClass mc = new MetaClass(ds.name, EType.Class);
+                    mm.AddMetaClass(mc);
+                    newParentMB = mc;
+
+                }
+            }
+            else if (parentMb is MetaNamespace mn2)
+            {
+                if (ds.type == DefineStruct.EDefineStructType.Namespace)
+                {
+                    MetaNamespace mn = new MetaNamespace(ds.name);
+                    mn2.AddMetaNamespace(mn);
+                    newParentMB = mn;
+                }
+                else if (ds.type == DefineStruct.EDefineStructType.Class)
+                {
+                    MetaClass mc = new MetaClass(ds.name, EType.Class);
+                    mn2.AddMetaClass(mc);
+                    newParentMB = mc;
+                }
+            }
+            else if (parentMb is MetaClass mc2 )
+            {
+                if (ds.type == DefineStruct.EDefineStructType.Namespace)
+                {
+                    Console.WriteLine("Error 不能在class里，添加namespace!");
+                }
+                else if (ds.type == DefineStruct.EDefineStructType.Class)
+                {
+                    MetaClass mc = new MetaClass(ds.name, EType.Class);
+                    mc2.AddChildrenMetaClass(mc);
+                    newParentMB = mc;
+                }
+            }
+
+            for (int i = 0; i < ds.childDefineStruct.Count; i++ )
+            {
+                BuildDefineNameStructNode(ds.childDefineStruct[i], newParentMB);
+            }
         }
         public void ParseDefineComplete()
         {

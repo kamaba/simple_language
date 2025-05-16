@@ -31,6 +31,9 @@ namespace SimpleLanguage.Core.Statements
             public MetaBlockStatements thenMetaStatements => m_ThenMetaStatements;
             public IfElseState ifElseState => m_IfElseState;
             public FileMetaKeyOnlySyntax elseKeySyntax => m_ElseKeySyntax;
+            public MetaExpressNode finalExpress => m_FinalExpress;
+            public MetaAssignManager metaAssignManager => m_MetaAssignManager;
+            public MetaVariable boolConditionVariable => m_BoolConditionVariable;
 
             private FileMetaKeyOnlySyntax m_ElseKeySyntax = null;
             private FileMetaConditionExpressSyntax m_IfOrElseIfKeySyntax = null;

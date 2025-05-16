@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "11_EnumTest.sl";
+            path = "1_NamespaceTest1.sl";
             group = "temp";
             tag = "all";
             a = 200
@@ -23,39 +23,27 @@ const data ProjectConfig
         maxInt = 23232323i;
         #xc = XC;
     }
-    globalNamespace =          #命名空间设计
+    proojectStruct =          #命名空间设计
     {
-        Application =
+        Std =
         {
-            Core =
+            type = "namespace"
+            child = 
             {
-                Game =
+                Collection =
                 {
+                    type = "namespace"
                 }
-                Instance = {}
-                UI = {}
+                T =
+                {
+                    type = "namespace"
+                }
+                Math =
+                {
+                    type = "class"
+                }
             }
-            Math=
-            {
-                Util={}
-                Ext={}
-            }
-            Render =
-            {
-                Camera={}
-                Mass={}
-                Entry={}
-            }
-            Util=
-            {
-            }
-        }
-        QT=
-        {
-            Math={}
-            Express={}
-        }
-        QS={}
+        } 
     }
 }
 
@@ -70,7 +58,8 @@ Project
         #global.xc = { a = 20, b = 15 }
        #Class1.Print();
        #ObjectTest.Fun();    
-       EnumTest.fun()   
+       #EnumTest.fun()   
+       #CommitTest.fun();
     }
     static Test()
     {

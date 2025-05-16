@@ -89,6 +89,10 @@ namespace SimpleLanguage.IR
             }
 
         }
+        public IRMetaClass GetIRMetaClassById( short id )
+        {
+            return m_IRMetaClassList.Find(a => a.id == id );
+        }
         public IRMetaClass GetIRMetaClassByName( string allname )
         {
             return m_IRMetaClassList.Find(a => a.allName == allname);

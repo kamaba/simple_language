@@ -7,18 +7,20 @@
 //****************************************************************************
 
 using SimpleLanguage.Core.Statements;
-using SimpleLanguage.IR;
-using SimpleLanguage.IR.Statements;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 using System.Xml.Linq;
 
-namespace SimpleLanguage.Core.IRStatements
+namespace SimpleLanguage.IR
 {
-    public class MetaIRIfStatements : MetaIRStatements
+    public class IRIfStatements : IRStatements
     {
+        public IRIfStatements( IRMethod method )
+        {
+            this.irMethod = method;
+        }
         public class MetaIRElseIfStatements
         {
             public List<IRBase> conditionStatList = new List<IRBase>();
@@ -36,37 +38,39 @@ namespace SimpleLanguage.Core.IRStatements
 
                 if (mires.ifElseState == MetaIfStatements.IfElseState.If || mires.ifElseState == MetaIfStatements.IfElseState.ElseIf)
                 {
-                    startNop.data.SetDebugInfoByToken(m_FinalExpress.GetToken());
+                    startNop.data.SetDebugInfoByToken(mires.finalExpress.GetToken());
 
-                    m_IrExpress = new IRExpress(_irMethod, m_FinalExpress);
+                    m_IrExpress = new IRExpress(_irMethod, mires.finalExpress);
                     conditionStatList.Add(m_IrExpress);
 
-                    if (m_MetaAssignManager?.isNeedSetMetaVariable == true)
+                    if (mires.metaAssignManager?.isNeedSetMetaVariable == true)
                     {
-                        IRStoreVariable storeLocal = new IRStoreVariable(_irMethod, m_BoolConditionVariable);
-                        storeLocal.data.SetDebugInfoByToken(m_BoolConditionVariable.pingToken);
+                        IRStoreVariable storeLocal = new IRStoreVariable(_irMethod, mires.boolConditionVariable.GetHashCode());
+                        storeLocal.data.SetDebugInfoByToken(mires.boolConditionVariable.pingToken);
                         conditionStatList.Add(storeLocal);
 
-                        IRLoadVariable loadLocal = new IRLoadVariable(_irMethod, m_BoolConditionVariable);
-                        loadLocal.data.SetDebugInfoByToken(m_BoolConditionVariable.pingToken);
+                        IRLoadVariable loadLocal = new IRLoadVariable(_irMethod, mires.boolConditionVariable.GetHashCode());
+                        loadLocal.data.SetDebugInfoByToken(mires.boolConditionVariable.pingToken);
                         conditionStatList.Add(loadLocal);
                     }
 
                     ifFalseBreach = new IRBranch(_irMethod, EIROpCode.BrFalse, null);
-                    ifFalseBreach.SetDebugInfoByToken(m_IfOrElseIfKeySyntax.token);
+                    //ifFalseBreach.SetDebugInfoByToken(mires.m_IfOrElseIfKeySyntax.token);
                     conditionStatList.Add(ifFalseBreach);
                 }
-                m_ThenMetaStatements.ParseAllIRStatements();
-                thenStatList.AddRange(m_ThenMetaStatements.irStatements);
+
+                IRBlockStatements irbs = new IRBlockStatements(_irMethod);
+                irbs.ParseAllIRStatements(mires.thenMetaStatements);
+                thenStatList.AddRange(irbs.irStatements);
 
                 //{}代码执行结束后的位置
                 ifEndBrach = new IRBranch(_irMethod, EIROpCode.Br, null);
                 thenStatList.Add(ifEndBrach);
 
-                if (m_IfOrElseIfKeySyntax != null)
-                {
-                    ifEndBrach.data.SetDebugInfoByToken(m_IfOrElseIfKeySyntax?.executeBlockSyntax?.endBlock);
-                }
+                //if (m_IfOrElseIfKeySyntax != null)
+                //{
+                //    ifEndBrach.data.SetDebugInfoByToken(m_IfOrElseIfKeySyntax?.executeBlockSyntax?.endBlock);
+                //}
             }
 
             public string ToIRString()
@@ -89,7 +93,7 @@ namespace SimpleLanguage.Core.IRStatements
                 return sb.ToString();
             }
         }
-        public void ParseIRStatements(MetaIfStatements ifstatements )
+        public void ParseIRStatements( MetaIfStatements ifstatements )
         {
             for (int i = 0; i < ifstatements.metaElseIfStatements.Count; i++)
             {
@@ -97,7 +101,7 @@ namespace SimpleLanguage.Core.IRStatements
 
                 MetaIRElseIfStatements mire = new MetaIRElseIfStatements();
 
-                mire.ParseIRStatements(irMethod);
+                mire.ParseIRStatements(irMethod, meis);
                 m_IRStatements.AddRange(mire.conditionStatList);
                 m_IRStatements.AddRange(mire.thenStatList);
             }
@@ -115,8 +119,8 @@ namespace SimpleLanguage.Core.IRStatements
             {
                 var meis = ifstatements.metaElseIfStatements[i];
 
-
                 MetaIRElseIfStatements mire = new MetaIRElseIfStatements();
+                mire.ParseIRStatements(irMethod, meis);
 
                 mire.ifEndBrach.data.opValue = ifEndIRNop.data;
 

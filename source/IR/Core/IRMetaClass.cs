@@ -24,9 +24,12 @@ namespace SimpleLanguage.IR
 {
     public class IRMetaClass
     {
+        static short s_TypeLength = 1000;
+        public short id { get; set; } = 0;
         public IRMetaClass( IRManager manager )
         {
             irManager = manager;
+            id = s_TypeLength++;
         }
         public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
 

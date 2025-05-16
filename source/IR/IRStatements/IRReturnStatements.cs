@@ -12,10 +12,14 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.IR.Statements
+namespace SimpleLanguage.IR
 {
-    public class MetaIRReturnStatements : MetaIRStatements
+    public class IRReturnStatements : IRStatements
     {
+        public IRReturnStatements(IRMethod method)
+        {
+            this.irMethod = method;
+        }
         private IRExpress m_ReturnValueExpress = null;
         public void ParseIRStatements(MetaReturnStatements ms)
         {

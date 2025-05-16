@@ -60,19 +60,19 @@ namespace SimpleLanguage.VM.Runtime
                 m_ReturnObjectArray = new SObject[m_IRMethod.methodReturnVariableList.Count];
                 for (int i = 0; i < m_IRMethod.methodReturnVariableList.Count; i++)
                 {
-                    //SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodReturnVariableList[i].metaDefineType);
-                    //sobj.SetVoid();
-                    //m_ReturnObjectArray[i] = sobj;
+                    SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodReturnVariableList[i].irMetaClass);
+                    sobj.SetVoid();
+                    m_ReturnObjectArray[i] = sobj;
                 }
                 m_ArgumentObjectArray = new SObject[m_IRMethod.methodArgumentList.Count];
                 for (int i = 0; i < m_IRMethod.methodArgumentList.Count; i++)
                 {
-                    //SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodArgumentList[i].metaVariable.metaDefineType);
-                    //m_ArgumentObjectArray[i] = sobj;
+                    SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodArgumentList[i].irMetaClass);
+                    m_ArgumentObjectArray[i] = sobj;
                 }
                 for( int i = 0; i < m_ArgumentObjectArray.Length; i++ )
                 {
-                    //Console.WriteLine( "Argu_" + i.ToString() + "_Value: [" + m_ArgumentObjectArray[i].ToString() + "]" );
+                    Console.WriteLine( "Argu_" + i.ToString() + "_Value: [" + m_ArgumentObjectArray[i].ToString() + "]" );
                 }                
 
                 //局部变量列表 local variable table

@@ -312,6 +312,11 @@ namespace SimpleLanguage.VM
                         }
                     }
                     break;
+                case EType.Class:
+                    {
+
+                    }
+                    break;
             }
         }
     }

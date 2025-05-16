@@ -42,6 +42,9 @@ namespace SimpleLanguage.IR
             m_MetaVariable = mv;
             id = mv.GetHashCode();
             name = mv.ownerMetaBlockStatements?.ownerMetaFunction.allName + "_local[" + mv.allName + "]";
+            m_IRMetaVariableFrom = mv.variableFrom == MetaVariable.EVariableFrom.Argument 
+                ?  IRMetaVariableFrom.Argument : IRMetaVariableFrom.LocalStatement;
+            //m_IRMetaClass = IRManager.instance.GetIRMetaClassById(mv.meta)
         }
         public IRMetaVariable(MetaMemberEnum mme)
         {
@@ -49,6 +52,7 @@ namespace SimpleLanguage.IR
             id = mme.GetHashCode();
             name = mme.ownerMetaClass.allName + "." + mme.name;
             m_ExpressNode = mme.express;
+            m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
         }
         public IRMetaVariable(MetaMemberData mmd)
         {
@@ -56,6 +60,7 @@ namespace SimpleLanguage.IR
             id = mmd.GetHashCode();
             name = mmd.ownerMetaClass.allName + "." + mmd.name;
             m_ExpressNode = mmd.expressNode;
+            m_IRMetaVariableFrom = mmd.isStatic ? IRMetaVariableFrom.Static : IRMetaVariableFrom.Member;
         }
         public IRMetaVariable( MetaMemberVariable mmv )
         {
@@ -63,6 +68,7 @@ namespace SimpleLanguage.IR
             id = mmv.GetHashCode();
             name = mmv.ownerMetaClass.allName + "." + mmv.name;
             m_ExpressNode = mmv.express;
+            m_IRMetaVariableFrom = IRMetaVariableFrom.Member;
         }
 
         public override string ToString()

@@ -1,19 +1,18 @@
 ﻿
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.Statements;
-using SimpleLanguage.IR;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace SimpleLanguage.IR.Statements
+namespace SimpleLanguage.IR
 {
-    public class MetaIRCSharpCallStatements : MetaIRStatements
+    public class IRCSharpCallStatements : IRStatements
     {
         MethodInfo m_MethodInfo = null;
         MetaMethodCall metaFunctionCall = null;
-        public MetaIRCSharpCallStatements(MetaBlockStatements mbs, string _name, System.Type type, MethodInfo methodInfo) 
+        public IRCSharpCallStatements(MetaBlockStatements mbs, string _name, System.Type type, MethodInfo methodInfo) 
         {
             m_MethodInfo = methodInfo;
 

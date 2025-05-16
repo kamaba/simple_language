@@ -60,7 +60,7 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = mmv.m_DefineMetaType;
             m_IsInnerDefine = mmv.m_IsInnerDefine;
             m_Express = mmv.m_Express;
-            m_VariableFrom = EVariableFrom.Member;
+            m_VariableFrom = EVariableFrom.Static;
         }
         public MetaMemberEnum(MetaClass mc, string _name)
         {
@@ -68,7 +68,7 @@ namespace SimpleLanguage.Core
             m_FromType = EFromType.Manual;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             m_IsInnerDefine = true;
-            m_VariableFrom = EVariableFrom.Member;
+            m_VariableFrom = EVariableFrom.Static;
 
             SetOwnerMetaClass(mc);
         } 
@@ -78,7 +78,7 @@ namespace SimpleLanguage.Core
             m_FromType = EFromType.Manual;
             m_DefineMetaType = new MetaType( mt );
             m_IsInnerDefine = true;
-            m_VariableFrom = EVariableFrom.Member;
+            m_VariableFrom = EVariableFrom.Static;
 
             SetOwnerMetaClass(ownerMc);
         }
@@ -89,7 +89,7 @@ namespace SimpleLanguage.Core
             m_FromType = EFromType.Manual;
             m_DefineMetaType = new MetaType(_defineTypeClass);
             m_DefineMetaType.SetMetaClass(_defineTypeClass);
-            m_VariableFrom = EVariableFrom.Member;
+            m_VariableFrom = EVariableFrom.Static;
 
             SetOwnerMetaClass(mc);
         }
@@ -102,7 +102,7 @@ namespace SimpleLanguage.Core
             m_FromType = EFromType.Code;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             isStatic = true;// enum 成员全部为static
-            m_VariableFrom = EVariableFrom.Member;
+            m_VariableFrom = EVariableFrom.Static;
             if (fmmv.staticToken != null )
             {
                 Console.WriteLine("Error ENum中，不允许有静态关键字，而是全部是静态关键字!!");
@@ -122,7 +122,7 @@ namespace SimpleLanguage.Core
             m_IsInnerDefine = mmv.m_IsInnerDefine;
             m_FromType = mmv.m_FromType;
             m_DefineMetaType = mmv.m_DefineMetaType;
-            m_VariableFrom = EVariableFrom.Member;
+            m_VariableFrom = EVariableFrom.Static;
             m_PintTokenList = mmv.m_PintTokenList;
 
             SetOwnerMetaClass(mtc);
