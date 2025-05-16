@@ -4,6 +4,7 @@ using SimpleLanguage.Compile.Grammer;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -53,7 +54,7 @@ namespace SimpleLanguage.Core
                     mb = new MetaNamespace(name);
                     if (ProjectManager.useDefineNamespaceType == EUseDefineType.NoUseProjectConfigNamespace )
                     {
-                        Console.WriteLine("Error 在使用namespace 时，在项目定义中，没有找到相关的定义!!  位置:" + fns.namespaceStatementBlock.tokenList[i].ToLexemeAllString());
+                        Debug.Write("Error 在使用namespace 时，在项目定义中，没有找到相关的定义!!  位置:" + fns.namespaceStatementBlock.tokenList[i].ToLexemeAllString());
                         (mb as MetaNamespace).isNotAllowCreateName = true;
                     }
                     parentNode.AddMetaBase(name, mb);
@@ -97,7 +98,7 @@ namespace SimpleLanguage.Core
                             parentMetaNamespace = metabase as MetaNamespace;
                             if(parentMetaNamespace == null )
                             {
-                                Console.WriteLine("已有类: " + tempname + "与添加的命名空间冲突!!");
+                                Debug.Write("已有类: " + tempname + "与添加的命名空间冲突!!");
                                 return;
                             }
                         }
@@ -115,7 +116,7 @@ namespace SimpleLanguage.Core
                             parentMetaNamespace = metabase as MetaNamespace;
                             if (parentMetaNamespace == null)
                             {
-                                Console.WriteLine("已有类: " + tempname + "与添加的命名空间冲突!!");
+                                Debug.Write("已有类: " + tempname + "与添加的命名空间冲突!!");
                                 return;
                             }
                         }
@@ -131,7 +132,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Console.WriteLine("NamespaceManager::AddNamespaceString 命名空间:" + nsString + "解析错误!!");
+                Debug.Write("NamespaceManager::AddNamespaceString 命名空间:" + nsString + "解析错误!!");
                 return;
             }
         }

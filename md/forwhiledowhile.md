@@ -63,7 +63,7 @@ enum EMusicType{ classic = 1, rocky = 2}
 for v in EMusicType
 {
     #语句
-    Console.WriteLine("MusicType=$v")
+    Debug.Write("MusicType=$v")
 }
 ```
 
@@ -84,7 +84,7 @@ for v in 1..10
     # v是当前遍历的对象，如果是List,Set则直接就是对象本身，如果是Map则Map的遍历节点
     # v.value = v[v.index]的值 如果是Map的话，就是value值，如果是List则v与v.value一样的
     # v.index是遍历时，当前数组或者是遍历迭代的当前索引，如果数组是0则index=-1, index总在可遍历的范围之内，也可以对index赋值，但如果在for遍历时，v.SetIndex(int) 或者是 v.index = int是被锁上的
-    Console.WriteLine( "v=$v v.value = &v.value index=$v.index ");
+    Debug.Write( "v=$v v.value = &v.value index=$v.index ");
 }
 ```
 上边示例中，v是遍历的迭代器， 使用v则，直接识别当前v的值，如果使用v.index则表达，当前的索引值,
@@ -137,7 +137,7 @@ ProjectEnter
         #for enum
         for v in ArrEnum
         {
-            Console.WriteLine("V=$v");
+            Debug.Write("V=$v");
         }
         #输入结果
         #>>v=a
@@ -147,7 +147,7 @@ ProjectEnter
         #for 数组
         for v in 1..3
         {
-            Console.WriteLine("v=$v index=$v.index");
+            Debug.Write("v=$v index=$v.index");
         }
         #输入结果
         #>>v=1 index=0
@@ -163,14 +163,14 @@ ProjectEnter
             if v.index == 0 
             {
                 arrString[v.index] = "mc";
-                Console.WriteLine("v[0]=mc");
+                Debug.Write("v[0]=mc");
                 continue;
             }
             if v == "b" 
             {
-                Console.WriteLine( "v=$v" );
+                Debug.Write( "v=$v" );
             }
-            Console.WriteLine("index=$v.index");
+            Debug.Write("index=$v.index");
         }
         #输入结果
         #>>v[0]=mc
@@ -184,7 +184,7 @@ ProjectEnter
         #for 条件
         for i = 0, i < 2, i++
         {
-            Console.WriteLine("v=$i");  #条件迭代没有index值
+            Debug.Write("v=$i");  #条件迭代没有index值
         }
         #输入结果
         #>>v=0
@@ -197,7 +197,7 @@ ProjectEnter
                 break;
             }
             i2 += 2;
-            Console.WriteLine("i2=$i2");
+            Debug.Write("i2=$i2");
         }
         #输入结果
         #>>i2=10
@@ -207,7 +207,7 @@ ProjectEnter
         bool flag1 = true;
         while flag1
         {
-            Console.WriteLine("while" );
+            Debug.Write("while" );
             flag1 = false;
         }
         #输入结果
@@ -216,7 +216,7 @@ ProjectEnter
         #dowhile
         dowhile false
         {
-            Console.WriteLine("dowhile");
+            Debug.Write("dowhile");
             #输出一次dowhile
         }
         #输入结果

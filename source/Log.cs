@@ -2,6 +2,7 @@
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace SimpleLanguage.Parse
@@ -51,7 +52,7 @@ namespace SimpleLanguage.Parse
         }
         public static void AddCodeFileLog( Token token, string msg )
         {
-            Console.WriteLine("解析发生错误");
+            Debug.Write("解析发生错误");
         }
     }
 }

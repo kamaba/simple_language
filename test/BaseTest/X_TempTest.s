@@ -80,8 +80,8 @@ TempTest
         !#
         #int b = 10;
         #int a = 10/b + 20/b;
-        #Console.WriteLine( a );
-        #Console.WriteLine( "hello world!!!" );        
+        #Debug.Write( a );
+        #Debug.Write( "hello world!!!" );        
         #int b1 = 10;
         #int c1 = a+b1;
         #string cs = c.ToString();

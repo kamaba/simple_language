@@ -12,6 +12,7 @@ using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using static SimpleLanguage.Core.ExpressManager;
@@ -52,13 +53,13 @@ namespace SimpleLanguage.Core.Statements
                         }
                         else
                         {
-                            Console.WriteLine("Error 返回的判断语句: " + mcen.ToTokenString() + "   并非是boolean类型!");
+                            Debug.Write("Error 返回的判断语句: " + mcen.ToTokenString() + "   并非是boolean类型!");
                         }
                     }
                     break;
                 case MetaConstExpressNode mconen:
                     {
-                        Console.WriteLine("Error -------------------------------------------");
+                        Debug.Write("Error -------------------------------------------");
                     }
                     break;
                 case MetaOpExpressNode moen:
@@ -69,13 +70,13 @@ namespace SimpleLanguage.Core.Statements
                         }
                         else
                         {
-                            //Console.WriteLine("Error 返回的判断语句: " + mcen.ToTokenString() + "   并非是boolean类型!");
+                            //Debug.Write("Error 返回的判断语句: " + mcen.ToTokenString() + "   并非是boolean类型!");
                         }
                     }
                     break;
                 default:
                     {
-                        Console.WriteLine("Error -------------------------------------------");
+                        Debug.Write("Error -------------------------------------------");
                     }
                     break;
             }
@@ -125,7 +126,7 @@ namespace SimpleLanguage.Core.Statements
 
             if (metaCallLink == null)
             {
-                Console.WriteLine("Error MetaAssignStatements ParseDefine!!!" + m_FileMetaOpAssignSyntax.variableRef?.ToTokenString());
+                Debug.Write("Error MetaAssignStatements ParseDefine!!!" + m_FileMetaOpAssignSyntax.variableRef?.ToTokenString());
                 return;
             }
 
@@ -209,7 +210,7 @@ namespace SimpleLanguage.Core.Statements
                     break;
                 default:
                     {
-                        Console.WriteLine("Error 赋值语句解析符号暂不支持: " + ett.ToString());
+                        Debug.Write("Error 赋值语句解析符号暂不支持: " + ett.ToString());
                     }
                     break;
             }
@@ -240,12 +241,12 @@ namespace SimpleLanguage.Core.Statements
                 m_MetaVariable = m_LeftMetaExpress.GetMetaVariable();
                 if (m_MetaVariable == null)
                 {
-                    Console.WriteLine("Error 变量没有发现" + m_LeftMetaExpress.ToTokenString());
+                    Debug.Write("Error 变量没有发现" + m_LeftMetaExpress.ToTokenString());
                     return;
                 }
                 if(m_MetaVariable.isConst )
                 {
-                    Console.WriteLine("Error 类型为Const类型，不允许使用赋值!!");
+                    Debug.Write("Error 类型为Const类型，不允许使用赋值!!");
                 }
 
                 m_Name = m_MetaVariable.name;
@@ -257,7 +258,7 @@ namespace SimpleLanguage.Core.Statements
                     }
                     else
                     {
-                        Console.WriteLine("Error 只能在Project工程下的函数中，给全局变量赋值!!");
+                        Debug.Write("Error 只能在Project工程下的函数中，给全局变量赋值!!");
                         return;
                     }
                 }
@@ -280,7 +281,7 @@ namespace SimpleLanguage.Core.Statements
                 
                 if (m_ExpressNode == null)
                 {
-                    Console.WriteLine("Error 解析新建变量语句时，表达式解析为空!!");
+                    Debug.Write("Error 解析新建变量语句时，表达式解析为空!!");
                     return;
                 }
             }
@@ -307,7 +308,7 @@ namespace SimpleLanguage.Core.Statements
 
             if (m_FinalMetaExpress == null)
             {
-                Console.WriteLine("Error 类: " + ownerMetaClass?.allName + "没有找到变量:[" + m_FileMetaOpAssignSyntax.express.ToFormatString() + "]的定义!!! 69 ");
+                Debug.Write("Error 类: " + ownerMetaClass?.allName + "没有找到变量:[" + m_FileMetaOpAssignSyntax.express.ToFormatString() + "]的定义!!! 69 ");
                 return;
             }
             m_FinalMetaExpress.CalcReturnType();
@@ -315,7 +316,7 @@ namespace SimpleLanguage.Core.Statements
             MetaType expressRetMetaDefineType = m_FinalMetaExpress.GetReturnMetaDefineType();
             if (expressRetMetaDefineType == null)
             {
-                Console.WriteLine("Error 解析新建变量语句时，表达式返回类型为空!!__3");
+                Debug.Write("Error 解析新建变量语句时，表达式返回类型为空!!__3");
                 return;
             }
 
@@ -332,7 +333,7 @@ namespace SimpleLanguage.Core.Statements
                 {
                     if( expressRetMetaDefineType?.metaTemplate != mdt.metaTemplate )
                     {
-                        Console.WriteLine("Error 模版与类定义的模版不相同!!");
+                        Debug.Write("Error 模版与类定义的模版不相同!!");
                     }
                 }
                 else
@@ -365,13 +366,13 @@ namespace SimpleLanguage.Core.Statements
                     if (relation == ClassManager.EClassRelation.No)
                     {
                         sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
-                        Console.WriteLine(sb.ToString());
+                        Debug.Write(sb.ToString());
                         m_IsNeedCastState = true;
                     }
                     else if( relation == ClassManager.EClassRelation.Similar )
                     {
                         sb.Append("数字类型相似，可能会有强转会有精度的丢失!");
-                        Console.WriteLine(sb.ToString());
+                        Debug.Write(sb.ToString());
                         m_IsNeedCastState = true;
                     }
                     else if (relation == ClassManager.EClassRelation.Same)
@@ -381,7 +382,7 @@ namespace SimpleLanguage.Core.Statements
                     else if (relation == ClassManager.EClassRelation.Parent)
                     {
                         sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
-                        Console.WriteLine(sb.ToString());
+                        Debug.Write(sb.ToString());
                         m_IsNeedCastState = true;
                     }
                     else if (relation == ClassManager.EClassRelation.Child)
@@ -394,7 +395,7 @@ namespace SimpleLanguage.Core.Statements
                     else
                     {
                         sb.Append("表达式错误，或者是定义类型错误");
-                        Console.WriteLine(sb.ToString());
+                        Debug.Write(sb.ToString());
                     }
                 }
             }

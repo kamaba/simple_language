@@ -2,6 +2,7 @@
 using SimpleLanguage.VM;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
@@ -152,7 +153,7 @@ namespace SimpleLanguage.VM
                         BoolObject boolObj = obj as BoolObject;
                         if (boolObj == null)
                         {
-                            Console.WriteLine("该类型不是Boolean类型!!");
+                            Debug.Write("该类型不是Boolean类型!!");
                             return;
                         }
                         boolObj.SetValue(svalue.int8Value==1);
@@ -169,7 +170,7 @@ namespace SimpleLanguage.VM
                         Int16Object int32Obj = obj as Int16Object;
                         if (int32Obj == null)
                         {
-                            Console.WriteLine("该类型不是Int32类型!!");
+                            Debug.Write("该类型不是Int32类型!!");
                             return;
                         }
                         int32Obj.SetValue(svalue.int16Value);
@@ -186,7 +187,7 @@ namespace SimpleLanguage.VM
                         Int32Object int32Obj = obj as Int32Object;
                         if (int32Obj == null)
                         {
-                            Console.WriteLine("该类型不是Int32类型!!");
+                            Debug.Write("该类型不是Int32类型!!");
                             return;
                         }
                         int32Obj.SetValue(svalue.int32Value);
@@ -203,7 +204,7 @@ namespace SimpleLanguage.VM
                         Int64Object int64Obj = obj as Int64Object;
                         if (int64Obj == null)
                         {
-                            Console.WriteLine("该类型不是Int32类型!!");
+                            Debug.Write("该类型不是Int32类型!!");
                             return;
                         }
                         int64Obj.SetValue(svalue.int64Value);
@@ -220,7 +221,7 @@ namespace SimpleLanguage.VM
                         StringObject stringObj = obj as StringObject;
                         if (stringObj == null)
                         {
-                            Console.WriteLine("该类型不是Int32类型!!");
+                            Debug.Write("该类型不是Int32类型!!");
                             return;
                         }
                         stringObj.SetValue(svalue.stringValue);
@@ -243,7 +244,7 @@ namespace SimpleLanguage.VM
                         ClassObject classObj = obj as ClassObject;
                         if (classObj == null)
                         {
-                            Console.WriteLine("该类型不是Int32类型!!");
+                            Debug.Write("该类型不是Int32类型!!");
                             return;
                         }
                         classObj.SetValue(svalue.sobject);

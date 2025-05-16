@@ -10,6 +10,7 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core.Statements
@@ -103,7 +104,7 @@ namespace SimpleLanguage.Core.Statements
             if (m_MetaVariableDict.ContainsKey(mv.name))
             {
                 Token token = m_FileMetaBlockSyntax?.token;
-                Console.WriteLine("error Class: [" + ownerMetaClass?.allName + "] Method: [" + ownerMetaFunction.functionAllName + "]" 
+                Debug.Write("error Class: [" + ownerMetaClass?.allName + "] Method: [" + ownerMetaFunction.functionAllName + "]" 
                     + "已定义过了变量名称!!! MBS:" + token?.ToLexemeAllString() + " var:" + mv.ToFormatString() );
                 return false;
             }

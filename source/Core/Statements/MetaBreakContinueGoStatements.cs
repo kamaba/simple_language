@@ -10,6 +10,7 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core.Statements
@@ -109,7 +110,7 @@ namespace SimpleLanguage.Core.Statements
                     }
                     else
                     {
-                        Console.WriteLine("Error 使用goto跳转，必须在本函数中已有定义!!");
+                        Debug.Write("Error 使用goto跳转，必须在本函数中已有定义!!");
                         return;
                     }
                 }

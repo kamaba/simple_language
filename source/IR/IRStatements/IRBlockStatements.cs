@@ -10,6 +10,7 @@ using SimpleLanguage.Core.Statements;
 using SimpleLanguage.IR.Statements;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.IR
@@ -106,7 +107,7 @@ namespace SimpleLanguage.IR
                         break;
                     default:
                         {
-                            Console.WriteLine("------------------没有解析IR的语句类型------------");
+                            Debug.Write("------------------没有解析IR的语句类型------------");
                         }
                         break;
                 }

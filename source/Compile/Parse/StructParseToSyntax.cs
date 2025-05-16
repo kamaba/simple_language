@@ -18,6 +18,7 @@ using System.Collections;
 using System.Xml.Linq;
 using System.Reflection;
 using SimpleLanguage.Core.Statements;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Compile.Parse
 {
@@ -73,7 +74,7 @@ namespace SimpleLanguage.Compile.Parse
                     || tokenType == ETokenType.Break
                     || tokenType == ETokenType.Continue )
                 {
-                    Console.WriteLine("Error 不允许在Else后增加任何代码" + node.token?.ToLexemeAllString() );
+                    Debug.Write("Error 不允许在Else后增加任何代码" + node.token?.ToLexemeAllString() );
                 }
                 else
                 {
@@ -100,7 +101,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Console.WriteLine("Error 结束{}错误，关键字不允许或者是其它错误" + node?.token?.ToLexemeAllString());
+                    Debug.Write("Error 结束{}错误，关键字不允许或者是其它错误" + node?.token?.ToLexemeAllString());
                 }
             }
             public bool IsLineEndBreak()
@@ -185,7 +186,7 @@ namespace SimpleLanguage.Compile.Parse
                     {
                         if (ProjectManager.isUseForceSemiColonInLineEnd)
                         {
-                            Console.WriteLine("warning 使用的是强制封号结束语句方式，注意这个节点会继承往下查找语句"
+                            Debug.Write("warning 使用的是强制封号结束语句方式，注意这个节点会继承往下查找语句"
                                 + curToken?.ToLexemeAllString());
                         }
                         break;
@@ -300,7 +301,7 @@ namespace SimpleLanguage.Compile.Parse
                     //}
                     else
                     {
-                        Console.WriteLine("Error 解析异常关键字" + curNode.token.ToLexemeAllString());
+                        Debug.Write("Error 解析异常关键字" + curNode.token.ToLexemeAllString());
                     }
                 }
                 else
@@ -368,12 +369,12 @@ namespace SimpleLanguage.Compile.Parse
             }
             if (beforeNodeList.Count == 0)
             {
-                Console.WriteLine("Error 发生错误，有符号的情况，必须有前置变量");
+                Debug.Write("Error 发生错误，有符号的情况，必须有前置变量");
                 return null;
             }
             else if (beforeNodeList.Count > 5)
             {
-                Console.WriteLine("Error 发生错误，前置不允许超过4个");
+                Debug.Write("Error 发生错误，前置不允许超过4个");
                 return null;
             }
 
@@ -410,7 +411,7 @@ namespace SimpleLanguage.Compile.Parse
                     {
                         if (staticToken != null)
                         {
-                            Console.WriteLine("Error 多个Static!!");
+                            Debug.Write("Error 多个Static!!");
                         }
                         staticToken = token;
                     }
@@ -423,7 +424,7 @@ namespace SimpleLanguage.Compile.Parse
                     {
                         if (varToken != null || dynamicToken != null || dataToken != null)
                         {
-                            Console.WriteLine("Error 多个Dynamic!!");
+                            Debug.Write("Error 多个Dynamic!!");
                         }
                         dynamicToken = token;
                         defineNodeList.Add(cnode);
@@ -432,7 +433,7 @@ namespace SimpleLanguage.Compile.Parse
                     {
                         if (varToken != null || dynamicToken != null || dataToken != null )
                         {
-                            Console.WriteLine("Error 多个Var!!");
+                            Debug.Write("Error 多个Var!!");
                         }
                         varToken = token;
                         defineNodeList.Add(cnode);
@@ -441,21 +442,21 @@ namespace SimpleLanguage.Compile.Parse
                     {
                         if (varToken != null || dynamicToken != null || dataToken != null)
                         {
-                            Console.WriteLine("Error 多个Data!!");
+                            Debug.Write("Error 多个Data!!");
                         }
                         dataToken = token;
                         defineNodeList.Add(cnode);
                     }
                     else
                     {
-                        Console.WriteLine("Error 解析发现没有该节点!!" + token?.ToLexemeAllString());
+                        Debug.Write("Error 解析发现没有该节点!!" + token?.ToLexemeAllString());
                         //new Exception("Error 解析发现没有该节点");
                     }
                 }
             }
             if (defineNodeList.Count == 0 || defineNodeList.Count > 3)
             {
-                Console.WriteLine("Error 定义类型少于1");
+                Debug.Write("Error 定义类型少于1");
                 return null;
             }
             else if (defineNodeList.Count == 1  )
@@ -476,7 +477,7 @@ namespace SimpleLanguage.Compile.Parse
                     var node2 = defineNodeList[1];
                     if (node2.linkTokenList.Count != 1)
                     {
-                        Console.WriteLine("Error 定义名称只允许一个字符串!!");
+                        Debug.Write("Error 定义名称只允许一个字符串!!");
                         return null;
                     }
                     nameToken = node2.token;
@@ -489,7 +490,7 @@ namespace SimpleLanguage.Compile.Parse
                 if(afterNodeList[0].nodeType == ENodeType.Key
                     && afterNodeList[0].token?.type != ETokenType.This
                     && afterNodeList[0].token?.type != ETokenType.Base)
-                    Console.WriteLine("Error 暂不支持 a = if/switch{}语法");
+                    Debug.Write("Error 暂不支持 a = if/switch{}语法");
                 //var fme22 = HandleCreateFileMetaSyntaxByPNode(afterNodeList);
                 //if ((afterNodeList[0].token.type == ETokenType.If
                 //    || afterNodeList[0].token.type == ETokenType.Switch)
@@ -506,12 +507,12 @@ namespace SimpleLanguage.Compile.Parse
                 //    }
                 //    else
                 //    {
-                //        Console.WriteLine("Error 生成if/switch语句失败!!");
+                //        Debug.Write("Error 生成if/switch语句失败!!");
                 //    }
                 //}
                 //else
                 //{
-                //    Console.WriteLine("Error 不允许嵌套除if/switch以外的语句!!");
+                //    Debug.Write("Error 不允许嵌套除if/switch以外的语句!!");
                 //}
             }
             if (fme == null)
@@ -523,7 +524,7 @@ namespace SimpleLanguage.Compile.Parse
             {
                 if (nameToken == null)
                 {
-                    Console.WriteLine("Error 当为定义变量时，名称不能为空!!");
+                    Debug.Write("Error 当为定义变量时，名称不能为空!!");
                     return null;
                 }
                 if (classRef != null)
@@ -542,7 +543,7 @@ namespace SimpleLanguage.Compile.Parse
             {
                 if (varRef == null)
                 {
-                    Console.WriteLine("Error 当为定义变量时，名称不能为空!!");
+                    Debug.Write("Error 当为定义变量时，名称不能为空!!");
                     return null;
                 }
                 FileMetaOpAssignSyntax fms = new FileMetaOpAssignSyntax(varRef, opAssignNode.token, dynamicToken, varToken, dataToken, fme);
@@ -552,7 +553,7 @@ namespace SimpleLanguage.Compile.Parse
             {
                 if (nameToken == null)
                 {
-                    Console.WriteLine("Error 当为定义变量时，名称不能为空!!");
+                    Debug.Write("Error 当为定义变量时，名称不能为空!!");
                     return null;
                 }
                 if (classRef != null)
@@ -727,14 +728,14 @@ namespace SimpleLanguage.Compile.Parse
                     Token labelToken = null;
                     if (akss.keyContent.Count != 1)
                     {
-                        Console.WriteLine("Error 解析Goto Label语法，只支持 goto id;的语法!!");
+                        Debug.Write("Error 解析Goto Label语法，只支持 goto id;的语法!!");
                     }
                     else
                     {
                         labelToken = akss.keyContent[0].token;
                         if (labelToken.type != ETokenType.Identifier)
                         {
-                            Console.WriteLine("Error 解析GotoLabel中 后边必须使用普通字符");
+                            Debug.Write("Error 解析GotoLabel中 后边必须使用普通字符");
                         }
                     }
 
@@ -768,7 +769,7 @@ namespace SimpleLanguage.Compile.Parse
             var parlist = sns.keyContent;
             if (parlist.Count == 0)
             {
-                Console.WriteLine("Error For语句中，条件区域没有相关的值!!");
+                Debug.Write("Error For语句中，条件区域没有相关的值!!");
             }
             List<Node> defineVariableSyntaxNodeList = new List<Node>();
             List<Node> conditionExpressNodeList = new List<Node>();
@@ -826,14 +827,14 @@ namespace SimpleLanguage.Compile.Parse
             }
             if (defineVariableSyntax == null)
             {
-                Console.WriteLine("Error 解析for 第一部分错误，解析语句出错，不是定义类型语句!!");
+                Debug.Write("Error 解析for 第一部分错误，解析语句出错，不是定义类型语句!!");
             }
             if (inToken != null)
             {
                 var cfe = FileMetatUtil.CreateFileMetaExpress(fm, conditionExpressNodeList, FileMetaTermExpress.EExpressType.Common);
                 if (cfe == null)
                 {
-                    Console.WriteLine("Error 解析for 第二部分错误!!");
+                    Debug.Write("Error 解析for 第二部分错误!!");
                 }
                 else
                 {
@@ -847,7 +848,7 @@ namespace SimpleLanguage.Compile.Parse
                     var cfe = FileMetatUtil.CreateFileMetaExpress(fm, conditionExpressNodeList, FileMetaTermExpress.EExpressType.Common);
                     if (cfe == null)
                     {
-                        Console.WriteLine("Error 解析for 第二部分错误!!");
+                        Debug.Write("Error 解析for 第二部分错误!!");
                     }
                     else
                     {
@@ -863,7 +864,7 @@ namespace SimpleLanguage.Compile.Parse
                     }
                     else
                     {
-                        Console.WriteLine("Error 解析for 第三部分错误!!");
+                        Debug.Write("Error 解析for 第三部分错误!!");
                     }
                 }
             }
@@ -895,7 +896,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Console.WriteLine("Error switch中不能出现除case/default子外的语句!!");
+                    Debug.Write("Error switch中不能出现除case/default子外的语句!!");
                 }
             }
 

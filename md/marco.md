@@ -50,7 +50,7 @@ ProjectConfigBegin{
     globalReplace #全局宏替换
     {
         print = "Console.Write";
-        println = "Console.WriteLine";
+        println = "Debug.Write";
         "new (x)" = "(x)";
         love = "if";  #关键字进行替换 关键字替换的新字，不能与现有的关键字相同
         "循环" = "while";

@@ -11,6 +11,7 @@ using SimpleLanguage.Core;
 using SimpleLanguage.VM;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Text;
@@ -62,7 +63,7 @@ namespace SimpleLanguage.IR
                 case EType.Null:return EIROpCode.LoadConstNull;
                 default:
                     {
-                        Console.WriteLine("Error GetConstIROpCode!!");
+                        Debug.Write("Error GetConstIROpCode!!");
                     }
                     break;
             }

@@ -11,6 +11,7 @@ using SimpleLanguage.IR;
 using SimpleLanguage.VM;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
@@ -40,7 +41,7 @@ namespace SimpleLanguage.IR
                 }
                 else
                 {
-                    Console.WriteLine("Error 没有加载到调用者信息!");
+                    Debug.Write("Error 没有加载到调用者信息!");
                     return;
                 }
             }
@@ -77,7 +78,7 @@ namespace SimpleLanguage.IR
         {
             if (m_MethodInfo == null)
             {
-                Console.WriteLine("error 执行时发现系统空函数");
+                Debug.Write("error 执行时发现系统空函数");
                 return null;
             }
             return m_MethodInfo.Invoke(target, csParamObjs);

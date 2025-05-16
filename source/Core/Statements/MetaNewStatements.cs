@@ -16,6 +16,7 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using System.Net;
 using SimpleLanguage.Compile;
 using static SimpleLanguage.Core.ExpressManager;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Core.Statements
 {
@@ -124,7 +125,7 @@ namespace SimpleLanguage.Core.Statements
             }
             if(m_DefineVarMetaVariable == null )
             {
-                Console.WriteLine("Error {0} MetaVariable is Null", defineName);
+                Debug.Write("Error {0} MetaVariable is Null", defineName);
                 return;
             }
 
@@ -142,12 +143,12 @@ namespace SimpleLanguage.Core.Statements
                 expressRetMetaDefineType = m_ExpressNode.GetReturnMetaDefineType();
                 if (m_ExpressNode == null)
                 {
-                    Console.WriteLine("Error 解析新建变量语句时，表达式解析为空!!__1");
+                    Debug.Write("Error 解析新建变量语句时，表达式解析为空!!__1");
                     return;
                 }
                 if (expressRetMetaDefineType == null)
                 {
-                    Console.WriteLine("Error 解析新建变量语句时，表达式返回类型为空!!__2");
+                    Debug.Write("Error 解析新建变量语句时，表达式返回类型为空!!__2");
                     return;
                 }
             }
@@ -182,14 +183,14 @@ namespace SimpleLanguage.Core.Statements
                             MetaCallLinkExpressNode expressMDT = m_ExpressNode as MetaCallLinkExpressNode;
                             if (expressMDT == null )
                             {
-                                Console.WriteLine("Error Enum模式，只允许是调用模式[CallLinkExpress]");
+                                Debug.Write("Error Enum模式，只允许是调用模式[CallLinkExpress]");
                             }
                             else
                             {
                                 var varableEnum = expressMDT.metaCallLink.finalCallNode.variable.ownerMetaClass;
                                 if( mdt.metaClass != varableEnum )
                                 {
-                                    Console.WriteLine("Error Enum与值不相等!!");
+                                    Debug.Write("Error Enum与值不相等!!");
                                 }
                                 else
                                 {
@@ -231,7 +232,7 @@ namespace SimpleLanguage.Core.Statements
                         if (relation == ClassManager.EClassRelation.No)
                         {
                             sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
-                            Console.WriteLine(sb.ToString());
+                            Debug.Write(sb.ToString());
                             m_IsNeedCastState = true;
                         }
                         else if (relation == ClassManager.EClassRelation.Same)
@@ -241,7 +242,7 @@ namespace SimpleLanguage.Core.Statements
                         else if (relation == ClassManager.EClassRelation.Parent)
                         {
                             sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
-                            Console.WriteLine(sb.ToString());
+                            Debug.Write(sb.ToString());
                             m_IsNeedCastState = true;
                         }
                         else if (relation == ClassManager.EClassRelation.Child)
@@ -254,7 +255,7 @@ namespace SimpleLanguage.Core.Statements
                         else
                         {
                             sb.Append("表达式错误，或者是定义类型错误");
-                            Console.WriteLine(sb.ToString());
+                            Debug.Write(sb.ToString());
                         }
                     }
                 }

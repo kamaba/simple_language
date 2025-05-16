@@ -12,6 +12,7 @@ using SimpleLanguage.VM;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 
@@ -90,7 +91,7 @@ namespace SimpleLanguage.Core.IR
                     }
                     else
                     {
-                        Console.WriteLine("Error VM IRMetaCall 该位置不应该有非静态变量");
+                        Debug.Write("Error VM IRMetaCall 该位置不应该有非静态变量");
                     }
                 }
                 else if (cnode.visitType == MetaVisitNode.EVisitType.MethodCall)

@@ -14,6 +14,7 @@ using System.Text;
 using SimpleLanguage.Compile.Parse;
 using static SimpleLanguage.Compile.CoreFileMeta.FileMetaMemberVariable;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
 {
@@ -82,7 +83,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 }
                 else
                 {
-                    Console.WriteLine("Error 带着名称FileMetaMemberData 但没有发现相关的token");
+                    Debug.Write("Error 带着名称FileMetaMemberData 但没有发现相关的token");
                 }
             }
             if (dataType == EMemberDataType.Data)

@@ -36,9 +36,9 @@ Rectangle
     }
     Display()
     {
-        Console.WriteLine("Length: @this.length" );
-        Console.WriteLine("Width: @this.width" );
-        Console.WriteLine("Area: " + GetArea() );
+        Debug.Write("Length: @this.length" );
+        Debug.Write("Width: @this.width" );
+        Debug.Write("Area: " + GetArea() );
     }
 }
 

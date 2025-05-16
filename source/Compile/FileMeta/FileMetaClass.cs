@@ -73,7 +73,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         {
             if (m_NodeList.Count == 0)
             {
-                Console.WriteLine("Error 错误 !!!");
+                Debug.Write("Error 错误 !!!");
                 return false;
             }
 
@@ -102,7 +102,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     {
                         if (interfaceNameTokenList.Count > 0)
                         {
-                            Console.WriteLine("Error 字符两次赋值 90 ");
+                            Debug.Write("Error 字符两次赋值 90 ");
                         }
                         interfaceNameTokenList = cnode.linkTokenList;
                     }
@@ -110,7 +110,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     {
                         if (inheritNameTokenList.Count > 0)
                         {
-                            Console.WriteLine("Error 字符两次赋值 99");
+                            Debug.Write("Error 字符两次赋值 99");
                         }
                         inheritNameTokenList = cnode.linkTokenList;
                     }
@@ -118,10 +118,10 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     {
                         if (classNameTokenList.Count > 0)
                         {
-                            Console.WriteLine("Error 字符两次赋值 107");
+                            Debug.Write("Error 字符两次赋值 107");
                             for( int i = 0; i < classNameTokenList.Count; i++ )
                             {
-                                Console.WriteLine(classNameTokenList[i].lexeme.ToString());
+                                Debug.Write(classNameTokenList[i].lexeme.ToString());
                             }
                         }
                         classNameTokenList = cnode.linkTokenList;
@@ -139,7 +139,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                                 {
                                     if (angleNodeListList.Count < 0)
                                     {
-                                        Console.WriteLine("Error 解析<,> 不允许第一位出现逗号!!");
+                                        Debug.Write("Error 解析<,> 不允许第一位出现逗号!!");
                                     }
                                     else
                                     {
@@ -151,7 +151,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                             }
                             if (angleNodeListList.Count < 0)
                             {
-                                Console.WriteLine("Error 解析<,> 不允许第一位出现逗号!!");
+                                Debug.Write("Error 解析<,> 不允许第一位出现逗号!!");
                             }
                             else
                             {
@@ -185,7 +185,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         else
                         {
                             isError = true;
-                            Console.WriteLine("Error 解析过了一次权限!!");
+                            Debug.Write("Error 解析过了一次权限!!");
                         }
                     }
                     else if (token.type == ETokenType.Const)
@@ -197,7 +197,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         else
                         {
                             isError = true;
-                            Console.WriteLine("Error 解析过了一次Const!!");
+                            Debug.Write("Error 解析过了一次Const!!");
                         }
                     }
                     else if( token.type == ETokenType.Partial )
@@ -205,7 +205,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if(m_PartialToken != null )
                         {
                             isError = true;
-                            Console.WriteLine("Error 解析过了一次Class!!");
+                            Debug.Write("Error 解析过了一次Class!!");
                         }
                         m_PartialToken = token;
                     }
@@ -214,17 +214,17 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (m_EnumToken != null)
                         {
                             isError = true;
-                            Console.WriteLine("Error 解析过了一次Enum!!");
+                            Debug.Write("Error 解析过了一次Enum!!");
                         }
                         if (m_DataToken != null)
                         {
                             isError = true;
-                            Console.WriteLine("Error 解析过了一次data!!");
+                            Debug.Write("Error 解析过了一次data!!");
                         }
                         if (m_ClassToken != null)
                         {
                             isError = true;
-                            Console.WriteLine("Error 解析过了一次Class!!");
+                            Debug.Write("Error 解析过了一次Class!!");
                         }
                         m_ClassToken = token;
                     }
@@ -234,17 +234,17 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (m_EnumToken != null)
                         {
                             isError = true;
-                            Console.WriteLine("Error 解析过了一次Enum!!");
+                            Debug.Write("Error 解析过了一次Enum!!");
                         }
                         if (m_DataToken != null)
                         {
                             isError = true;
-                            Console.WriteLine("Error 解析过了一次data!!");
+                            Debug.Write("Error 解析过了一次data!!");
                         }
                         if (m_ClassToken != null)
                         {
                             isError = true;
-                            Console.WriteLine("Error 解析过了一次Class!!");
+                            Debug.Write("Error 解析过了一次Class!!");
                         }
                         m_EnumToken = token;
                     }
@@ -256,14 +256,14 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                             {
                                 if (inheritNameTokenList.Count > 0)
                                 {
-                                    Console.WriteLine("Error 字符两次赋值 99");
+                                    Debug.Write("Error 字符两次赋值 99");
                                 }
                                 inheritNameTokenList = cnode.linkTokenList;
                             }
                             else
                             {
                                 isError = true;
-                                Console.WriteLine("Error 解析过了一次Enum!!");
+                                Debug.Write("Error 解析过了一次Enum!!");
                             }
                         }
                         else
@@ -271,12 +271,12 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                             if (m_DataToken != null)
                             {
                                 isError = true;
-                                Console.WriteLine("Error 解析过了一次data!!");
+                                Debug.Write("Error 解析过了一次data!!");
                             }
                             if (m_ClassToken != null)
                             {
                                 isError = true;
-                                Console.WriteLine("Error 解析过了一次Class!!");
+                                Debug.Write("Error 解析过了一次Class!!");
                             }
                             m_DataToken = token;
                         }
@@ -286,7 +286,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (m_ExtendsToken != null)
                         {
                             isError = true;
-                            Console.WriteLine("Error 解析过了一次Extend!!");
+                            Debug.Write("Error 解析过了一次Extend!!");
                         }
                         m_ExtendsToken = token;
                     }
@@ -295,7 +295,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (interfaceToken != null)
                         {
                             isError = true;
-                            Console.WriteLine("Error 解析类时，已发现用过interface标记，不可重复使用该标记");
+                            Debug.Write("Error 解析类时，已发现用过interface标记，不可重复使用该标记");
                         }
                         interfaceToken = token;
                     }
@@ -308,7 +308,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     else
                     {
                         isError = true;
-                        Console.WriteLine("Error 有其它未知类型在class中");
+                        Debug.Write("Error 有其它未知类型在class中");
                         break;
                     }
                 }
@@ -318,17 +318,17 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             {
                 if(interfaceToken != null || interfaceNameTokenList.Count > 0 )
                 {
-                    Console.WriteLine("Error Enum方式，不支持接口方式");
+                    Debug.Write("Error Enum方式，不支持接口方式");
                     return false;
                 }
                 if (permissionToken != null)
                 {
-                    Console.WriteLine("Error Enum方式，不支持权限的使用!!");
+                    Debug.Write("Error Enum方式，不支持权限的使用!!");
                     return false;
                 }
                 if (m_PartialToken != null)
                 {
-                    Console.WriteLine("Error Enum方式，不支持partial的使用!!");
+                    Debug.Write("Error Enum方式，不支持partial的使用!!");
                     return false;
                 }
                 SetParentClassNameToken(inheritNameTokenList, angleNode);
@@ -338,17 +338,17 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             {
                 if (interfaceToken != null || interfaceNameTokenList.Count > 0)
                 {
-                    Console.WriteLine("Error Data方式，不支持接口方式");
+                    Debug.Write("Error Data方式，不支持接口方式");
                     return false;
                 }
                 if (permissionToken != null)
                 {
-                    Console.WriteLine("Error Data方式，不支持权限的使用!!");
+                    Debug.Write("Error Data方式，不支持权限的使用!!");
                     return false;
                 }
                 if (m_PartialToken != null)
                 {
-                    Console.WriteLine("Error Data方式，不支持partial的使用!!");
+                    Debug.Write("Error Data方式，不支持partial的使用!!");
                     return false;
                 }
 
@@ -362,7 +362,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
                 if (classNameTokenList.Count == 0)
                 {
-                    Console.WriteLine("Error 解析类型名称错误!!");
+                    Debug.Write("Error 解析类型名称错误!!");
                 }
                 SetParentClassNameToken(inheritNameTokenList, angleNode);
                 for (int i = 0; i < interfaceTokenList.Count; i++)
@@ -486,7 +486,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 MetaClass getmc = ClassManager.instance.GetMetaClassByRef( metaClass, m_ExtendClass );
                 if (getmc == null)
                 {
-                    //Console.WriteLine(" CheckExtendAndInterface 在判断继承的时候，发没的:" + m_ExtendClass.allName + "  类"
+                    //Debug.Write(" CheckExtendAndInterface 在判断继承的时候，发没的:" + m_ExtendClass.allName + "  类"
                     //    + "位置行: " + m_ExtendClass.token.sourceBeginLine.ToString() );
 
 

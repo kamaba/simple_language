@@ -116,17 +116,17 @@ ProjectEnter
         switch cb
         {
             case ClassBase cb{
-                Console.WriteLine("this is ClassBase" );
+                Debug.Write("this is ClassBase" );
                 next;  #继承执行下边的检测
             }
             case ClassChild1 c1{
-                Console.WriteLine("this is ClassChild1");
+                Debug.Write("this is ClassChild1");
             }
             case ClassChild2 c2{
-                Console.WriteLine("this is ClassChild2");
+                Debug.Write("this is ClassChild2");
             }
             default{
-                Console.WriteLine("Default Class");
+                Debug.Write("Default Class");
             }
         }
 
@@ -135,14 +135,14 @@ ProjectEnter
         switch b
         {
             case Book.name n{
-                Console.WriteLine( "BookName:@n" );
+                Debug.Write( "BookName:@n" );
             }
             case Book.price p{   #与price 进行匹配
-                Console.WriteLine("BookPrice [P=@p]" );
+                Debug.Write("BookPrice [P=@p]" );
                 #next; 如果这个地方加一个next 则继承往下边检查
             }
             case Book.price(30) p{     #与price( 30) 进行匹配
-                Console.WriteLine("BookPrice:@p" );
+                Debug.Write("BookPrice:@p" );
             }
         }
     }

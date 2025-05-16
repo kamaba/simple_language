@@ -12,6 +12,7 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using System.Security.Cryptography;
 using System.Runtime.ConstrainedExecution;
 using System.Xml.Linq;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Core
 {
@@ -106,7 +107,7 @@ namespace SimpleLanguage.Core
                     MetaClass gmc = ClassManager.instance.GetMetaClassByListString( ownerMetaClass, inClassToken.nameList);
                     if( gmc == null )
                     {
-                        Console.WriteLine("Error 没有查找到inClass的类名, " + inClassToken.ToFormatString());
+                        Debug.Write("Error 没有查找到inClass的类名, " + inClassToken.ToFormatString());
                         continue;
                     }
                     mdt.AddInConstraintMetaClass(gmc);
@@ -236,7 +237,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Console.WriteLine("Error 没有发现模版对应的模板名称!!");
+                        Debug.Write("Error 没有发现模版对应的模板名称!!");
                     }
                 }
                 else
@@ -293,7 +294,7 @@ namespace SimpleLanguage.Core
                     MetaType retMT = null;
                     if (m_ConstructInitFunction)
                     {
-                        Console.WriteLine("Error 当前类:" + allName + " 是构建Init类，不允许有返回类型 ");
+                        Debug.Write("Error 当前类:" + allName + " 是构建Init类，不允许有返回类型 ");
                     }
                     else
                     {
@@ -311,7 +312,7 @@ namespace SimpleLanguage.Core
                             List<MetaTemplate> templates = new List<MetaTemplate>();
                             if (cmr.inputTemplateNodeList.Count > 0)
                             {
-                                Console.WriteLine("Error 没有找到MetaTemplate相关信息，语法错误!!");
+                                Debug.Write("Error 没有找到MetaTemplate相关信息，语法错误!!");
                                 //for ( int i = 0; i < cmr.inputTemplateNodeList.Count; i++ )
                                 //{
                                 //    MetaTemplate cmt = m_MetaMemberTemplateCollection.GetMetaDefineTemplateByName(cmr.inputTemplateNodeList[i].nameList[0]);
@@ -322,7 +323,7 @@ namespace SimpleLanguage.Core
                                 //    else
                                 //    {
                                 //        // T2 Create<T1> 没有从<>找到T2
-                                //        Console.WriteLine("Error 没有找到MetaTemplate相关信息，语法错误!!");
+                                //        Debug.Write("Error 没有找到MetaTemplate相关信息，语法错误!!");
                                 //    }
                                 //}
                             }
@@ -331,7 +332,7 @@ namespace SimpleLanguage.Core
 
                         if (retMT == null)
                         {
-                            Console.WriteLine("Error 定义的返回类型，没有找到相对应的类型！！");
+                            Debug.Write("Error 定义的返回类型，没有找到相对应的类型！！");
                         }
                         else
                         {
@@ -368,7 +369,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Console.WriteLine("Error 该函数没有定义内容！！");
+                    Debug.Write("Error 该函数没有定义内容！！");
                 }
             }
             m_MetaBlockStatements.SetDeep(deep);
@@ -433,7 +434,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Console.WriteLine("Error FileMetaConditionExpressSyntax: 暂不支持该类型的解析!!");
+                            Debug.Write("Error FileMetaConditionExpressSyntax: 暂不支持该类型的解析!!");
                         }
                     }
                     break;
@@ -463,7 +464,7 @@ namespace SimpleLanguage.Core
                             {
                                 if (currentBlockStatements.GetIsMetaVariable(name1))
                                 {
-                                    Console.WriteLine("Error 如果使用了var/data/dynamic/int 等前缀，有重复定义的行为" + fmos.variableRef.ToTokenString());
+                                    Debug.Write("Error 如果使用了var/data/dynamic/int 等前缀，有重复定义的行为" + fmos.variableRef.ToTokenString());
                                     isDefineVarStatements = false;
                                 }
                                 else
@@ -479,7 +480,7 @@ namespace SimpleLanguage.Core
                                     MetaBase mb = ownerclass.GetMetaMemberVariableByName(name1);
                                     if (mb != null)
                                     {
-                                        Console.WriteLine("Error 如果是使用类成员，必须使用this.变量的方式" + fmos.variableRef.ToTokenString());
+                                        Debug.Write("Error 如果是使用类成员，必须使用this.变量的方式" + fmos.variableRef.ToTokenString());
                                     }
                                     else
                                     {
@@ -492,7 +493,7 @@ namespace SimpleLanguage.Core
                         {
                             //if (currentBlockStatements.ownerMetaFunction?.isConstructFunction)
                             //{
-                            //    Console.WriteLine("Error 构造函数中，不允许使用定义字段，必须使用this.非静态或者是类名.静态字段赋值!" + fmos.variableRef.ToTokenString());
+                            //    Debug.Write("Error 构造函数中，不允许使用定义字段，必须使用this.非静态或者是类名.静态字段赋值!" + fmos.variableRef.ToTokenString());
                             //}
                             MetaDefineVarStatements mnvs11 = new MetaDefineVarStatements( currentBlockStatements, fmos );
                             beforeStatements.SetNextStatements(mnvs11);
@@ -513,14 +514,14 @@ namespace SimpleLanguage.Core
                         if (currentBlockStatements.GetIsMetaVariable(name1))
                         {
                             isDefineVarStatements = true;
-                            Console.WriteLine("Error 定义变量名称与类函数临时名称一样!!" + fmvs.token?.ToLexemeAllString());                            
+                            Debug.Write("Error 定义变量名称与类函数临时名称一样!!" + fmvs.token?.ToLexemeAllString());                            
                         }
                         else
                         {
                             isDefineVarStatements = currentBlockStatements.ownerMetaClass.GetMetaMemberVariableByName(name1) == null;
                             if (!isDefineVarStatements)
                             {
-                                Console.WriteLine("Error 定义变量名称与类定义名称一样!!" + fmvs.token?.ToLexemeAllString());
+                                Debug.Write("Error 定义变量名称与类定义名称一样!!" + fmvs.token?.ToLexemeAllString());
                             }
                         }
                         if ( isDefineVarStatements )
@@ -556,7 +557,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Console.WriteLine("Error 生成MetaStatements出错KeyReturnSyntax类型错误!!");
+                            Debug.Write("Error 生成MetaStatements出错KeyReturnSyntax类型错误!!");
                         }
                     }
                     break;
@@ -568,7 +569,7 @@ namespace SimpleLanguage.Core
                         return metaGotoStatements;
                     }
                 default:
-                    Console.WriteLine("Waning 还有没有解析的语句!! MetaMemberFunction 314");
+                    Debug.Write("Waning 还有没有解析的语句!! MetaMemberFunction 314");
                     break;
             }
             return null;

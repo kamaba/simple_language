@@ -174,7 +174,7 @@ namespace SimpleLanguage.Core
             }
             if (this.extendClass != null)
             {
-                Console.WriteLine("已绑定过了继承类 : " + extendClass.name);
+                Debug.Write("已绑定过了继承类 : " + extendClass.name);
                 return;
             }
             foreach( var v in m_FileMetaClassDict )
@@ -202,7 +202,7 @@ namespace SimpleLanguage.Core
                 var c = v.Value;
                 if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
                 {
-                    Console.WriteLine($"Error 继承的类:{allName} 在继承的父类{m_ExtendClass.allName} 中已包含:{c.name} ");
+                    Debug.Write($"Error 继承的类:{allName} 在继承的父类{m_ExtendClass.allName} 中已包含:{c.name} ");
                     continue;
                 }
                 this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
@@ -212,7 +212,7 @@ namespace SimpleLanguage.Core
                 var c = v.Value;
                 if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
                 {
-                    Console.WriteLine($"Error 继承的类:{allName} 在继承的父类{m_ExtendClass.allName} 中已包含:{c.name} ");
+                    Debug.Write($"Error 继承的类:{allName} 在继承的父类{m_ExtendClass.allName} 中已包含:{c.name} ");
                     continue;
                 }
                 this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
@@ -283,7 +283,7 @@ namespace SimpleLanguage.Core
                 string tTemplateName = fmc.templateParamList[i].name;
                 if ( m_MetaTemplateList.Find(a => a.name == tTemplateName) != null)
                 {
-                    Console.WriteLine("Error 定义模式名称重复!!");
+                    Debug.Write("Error 定义模式名称重复!!");
                 }
                 else
                 {
@@ -306,7 +306,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Console.WriteLine("Error MetaClass MemberVarAndFunc已有定义类: " + allName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
+                        Debug.Write("Error MetaClass MemberVarAndFunc已有定义类: " + allName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
                     }
                     isHave = true;
                 }
@@ -434,7 +434,7 @@ namespace SimpleLanguage.Core
         {
             if (isTemplateClass == false)
             {
-                Console.WriteLine("Error 该类不是模版类,不能生成模版生成类!!");
+                Debug.Write("Error 该类不是模版类,不能生成模版生成类!!");
                 return null;
             }
             if(mic == null )
@@ -461,7 +461,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Console.WriteLine("Error 传进来的模版参数与类定义的参数长度对不上!!");
+                Debug.Write("Error 传进来的模版参数与类定义的参数长度对不上!!");
                 return null;
             }
         }
@@ -474,7 +474,7 @@ namespace SimpleLanguage.Core
             }
             if( mtc == null )
             {
-                Console.WriteLine("Error 没有找到合适的Template");
+                Debug.Write("Error 没有找到合适的Template");
             }
             return mtc;
         }

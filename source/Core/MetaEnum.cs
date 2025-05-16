@@ -3,6 +3,7 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -68,18 +69,18 @@ namespace SimpleLanguage.Core
         {
             if (fmc.memberFunctionList.Count > 0)
             {
-                Console.WriteLine("Error Enum中不允许有Function!!");
+                Debug.Write("Error Enum中不允许有Function!!");
             }
             if (fmc.templateParamList.Count > 0)
             {
-                Console.WriteLine("Error 在Enum定义中，不允许使用Template模板的形式!");
+                Debug.Write("Error 在Enum定义中，不允许使用Template模板的形式!");
             }
             //for (int i = 0; i < fmc.templateParamList.Count; i++)
             //{
             //    string tTemplateName = fmc.templateParamList[i].name;
             //    if (m_MetaTemplateList.Find(a => a.name == tTemplateName) != null)
             //    {
-            //        Console.WriteLine("Error 定义模式名称重复!!");
+            //        Debug.Write("Error 定义模式名称重复!!");
             //    }
             //    else
             //    {
@@ -93,7 +94,7 @@ namespace SimpleLanguage.Core
                 MetaBase mb = GetChildrenMetaBaseByName(v.name);
                 if (mb != null)
                 {
-                    Console.WriteLine("Error Enum MetaMemberData已有定义类: " + allName + "中 已有: " + v.token?.ToLexemeAllString() + "的元素!!");
+                    Debug.Write("Error Enum MetaMemberData已有定义类: " + allName + "中 已有: " + v.token?.ToLexemeAllString() + "的元素!!");
                     isHave = true;
                 }
                 else
@@ -148,7 +149,7 @@ namespace SimpleLanguage.Core
         {
             if (m_MetaMemberEnumDict.Count == 0)
             {
-                Console.WriteLine("Warning 在enum : " + name + " 没有发现有任何成员");
+                Debug.Write("Warning 在enum : " + name + " 没有发现有任何成员");
                 return;
             }
 
@@ -172,7 +173,7 @@ namespace SimpleLanguage.Core
                     {
                         if (v.Value.express == null)
                         {
-                            Console.WriteLine("Error Enum Member Enum 成员第一位必须有=号");
+                            Debug.Write("Error Enum Member Enum 成员第一位必须有=号");
                             continue;
                         }
                     }
@@ -180,7 +181,7 @@ namespace SimpleLanguage.Core
                     {
                         if (v.Value.constExpressNode == null)
                         {
-                            Console.WriteLine("Error Enum Member Enum 内允许使用const值类变量");
+                            Debug.Write("Error Enum Member Enum 内允许使用const值类变量");
                             continue;
                         }
                         else if (m_ExtendClass == CoreMetaClassManager.byteMetaClass)
@@ -191,7 +192,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine("Error Enum Member Enum 内部int转byte出错");
+                                Debug.Write("Error Enum Member Enum 内部int转byte出错");
                                 continue;
                             }
                         }
@@ -204,7 +205,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine("Error Enum Member Enum 内部int转byte出错");
+                                Debug.Write("Error Enum Member Enum 内部int转byte出错");
                                 continue;
                             }
                         }
@@ -217,7 +218,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine("Error Enum Member Enum 内部int转byte出错");
+                                Debug.Write("Error Enum Member Enum 内部int转byte出错");
                                 continue;
                             }
                         }
@@ -230,7 +231,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine("Error Enum Member Enum 内部int转byte出错");
+                                Debug.Write("Error Enum Member Enum 内部int转byte出错");
                                 continue;
                             }
                         }
@@ -243,7 +244,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine("Error Enum Member Enum 内部int转byte出错");
+                                Debug.Write("Error Enum Member Enum 内部int转byte出错");
                                 continue;
                             }
                         }
@@ -256,7 +257,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine("Error Enum Member Enum 内部int转byte出错");
+                                Debug.Write("Error Enum Member Enum 内部int转byte出错");
                                 continue;
                             }
                         }
@@ -285,17 +286,17 @@ namespace SimpleLanguage.Core
                     v.Value.ParseDefineMetaType();
                     if (v.Value.express == null)
                     {
-                        Console.WriteLine("Error Enum Member Enum String成员必须有=号" + v.Key);
+                        Debug.Write("Error Enum Member Enum String成员必须有=号" + v.Key);
                         continue;
                     }
                     if (v.Value.constExpressNode == null)
                     {
-                        Console.WriteLine("Error Enum Member Enum 内允许使用const值类变量");
+                        Debug.Write("Error Enum Member Enum 内允许使用const值类变量");
                         continue;
                     }
                     if (v.Value.constExpressNode.eType != EType.String)
                     {
-                        Console.WriteLine("Error Enum Member Enum 内允许使用string值类变量");
+                        Debug.Write("Error Enum Member Enum 内允许使用string值类变量");
                         continue;
                     }
                 }
@@ -307,7 +308,7 @@ namespace SimpleLanguage.Core
                     v.Value.ParseDefineMetaType();
                     if (v.Value.express == null)
                     {
-                        Console.WriteLine("Error Enum Member Enum 动态成员第一位必须有=号");
+                        Debug.Write("Error Enum Member Enum 动态成员第一位必须有=号");
                         continue;
                     }
                     v.Value.ParseMetaExpress();
@@ -319,12 +320,12 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Console.WriteLine("Error Enum Member Enum 内允许使用data值类变量, 不允许其它类型");
+                            Debug.Write("Error Enum Member Enum 内允许使用data值类变量, 不允许其它类型");
                         }
                     }
                     else
                     {
-                        Console.WriteLine("Error Enum Member Enum 内允许使用data new 值类变量");
+                        Debug.Write("Error Enum Member Enum 内允许使用data new 值类变量");
                     }
                 }
             }
@@ -335,7 +336,7 @@ namespace SimpleLanguage.Core
                     v.Value.ParseDefineMetaType();
                     if (v.Value.express == null)
                     {
-                        Console.WriteLine("Error Enum Member Enum 成员第一位必须有=号");
+                        Debug.Write("Error Enum Member Enum 成员第一位必须有=号");
                         continue;
                     }
                     v.Value.ParseMetaExpress();
@@ -348,7 +349,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Console.WriteLine("Error Enum Member Enum 内允许使用data值类变量, 不允许其它类型");
+                            Debug.Write("Error Enum Member Enum 内允许使用data值类变量, 不允许其它类型");
                         }
                     }
                     else if (v.Value.constExpressNode != null)
@@ -357,7 +358,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Console.WriteLine("Error Enum Member Enum 内允许使用data new 值类变量");
+                        Debug.Write("Error Enum Member Enum 内允许使用data new 值类变量");
                     }
                 }
             }

@@ -51,7 +51,7 @@ ProjectEnter
         {
             goto s2;
         }
-        Console.WriteLine( a );
+        Debug.Write( a );
         a++;
 
     }

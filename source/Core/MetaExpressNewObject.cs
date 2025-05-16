@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using SimpleLanguage.Compile;
@@ -81,21 +82,21 @@ namespace SimpleLanguage.Core
                             m_MetaMemberData = (mt.metaClass as MetaData).GetMemberDataByName(m_DefineName);
                             if (m_MetaMemberData == null)
                             {
-                                Console.WriteLine("Error 在类" + mt.metaClass?.allName + "函数: " + mbs?.ownerMetaFunction.name
+                                Debug.Write("Error 在类" + mt.metaClass?.allName + "函数: " + mbs?.ownerMetaFunction.name
                                     + " 没有找到: 类" + mt.metaClass?.allName + " 变量:" + m_DefineName);
                             }
                             m_MetaExpress = CreateExpressNodeInNewObjectStatements(m_MetaMemberData, m_OwnerMetaBlockStatements, m_FileMetaOpAssignSyntax?.express);
                         }
                         else if( mt.isEnum )
                         {
-                            Console.WriteLine("-----------------------------------Enum-------------------------");
+                            Debug.Write("-----------------------------------Enum-------------------------");
                         }
                         else
                         {
                             m_MetaMemberVariable = mt.metaClass.GetMetaMemberVariableByName(m_DefineName);
                             if (m_MetaMemberVariable == null)
                             {
-                                Console.WriteLine("Error 在类" + mt.metaClass?.allName + "函数: " + mbs?.ownerMetaFunction.name
+                                Debug.Write("Error 在类" + mt.metaClass?.allName + "函数: " + mbs?.ownerMetaFunction.name
                                     + " 没有找到: 类" + mt.metaClass?.allName + " 变量:" + m_DefineName);
                             }
                             m_MetaExpress = CreateExpressNodeInNewObjectStatements(m_MetaMemberVariable, m_OwnerMetaBlockStatements, m_FileMetaOpAssignSyntax?.express);
@@ -105,7 +106,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Console.WriteLine("Error 在类" + mbs.ownerMetaClass?.allName + "函数: " + mbs.ownerMetaFunction.name
+                    Debug.Write("Error 在类" + mbs.ownerMetaClass?.allName + "函数: " + mbs.ownerMetaFunction.name
                         + " 语句: " + fmos.variableRef.ToTokenString());
                 }
             }
@@ -170,7 +171,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Console.WriteLine("使用{}赋值，表达式不允许为空!!");
+                Debug.Write("使用{}赋值，表达式不允许为空!!");
             }
             return true;
         }
@@ -179,7 +180,7 @@ namespace SimpleLanguage.Core
         {
             if (fme == null)
             {
-                Console.WriteLine("Error !!!!!!!!!!");
+                Debug.Write("Error !!!!!!!!!!");
                 return null;
             }
 
@@ -230,13 +231,13 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Console.WriteLine("Error 只有在data varname = {} 支持 { cha1 = [] } 的格式,其它的表达式中不支持");
+                            Debug.Write("Error 只有在data varname = {} 支持 { cha1 = [] } 的格式,其它的表达式中不支持");
                         }
                         break;
                     }
                 default:
                     {
-                        Console.WriteLine("Error 暂不支持该类型的在NewObject中的解析!!");
+                        Debug.Write("Error 暂不支持该类型的在NewObject中的解析!!");
                     }
                     break;
             }
@@ -336,7 +337,7 @@ namespace SimpleLanguage.Core
             {
                 if( m_FileMetaBraceTerm.fileMetaCallLinkList?.Count > 0 )
                 {
-                    Console.WriteLine("-------------------------------------------------------------------");
+                    Debug.Write("-------------------------------------------------------------------");
                     for (int i = 0; i < m_FileMetaBraceTerm.fileMetaCallLinkList.Count; i++)
                     {
                         var fas = m_FileMetaBraceTerm.fileMetaCallLinkList[i];
@@ -383,11 +384,11 @@ namespace SimpleLanguage.Core
                                 {
                                     //fdvs.express.BuildAST();
                                     //mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, m_DefineMetaType, fdvs);
-                                    Console.WriteLine("Error 不允许的表达式类形在 a = { int a; } 这种的形式里边");
+                                    Debug.Write("Error 不允许的表达式类形在 a = { int a; } 这种的形式里边");
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Error 不允许的表达式类形在 a = {} 这种的形式里边");
+                                    Debug.Write("Error 不允许的表达式类形在 a = {} 这种的形式里边");
                                 }
                                 mas.CalcReturnType();
                                 assignStatementsList.Add(mas);
@@ -430,7 +431,7 @@ namespace SimpleLanguage.Core
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Error 该处应该是使用赋值，不能有其它表达式!!" + fas.token?.ToLexemeAllString());
+                                    Debug.Write("Error 该处应该是使用赋值，不能有其它表达式!!" + fas.token?.ToLexemeAllString());
                                     continue;
                                 }
                             }
@@ -506,7 +507,7 @@ namespace SimpleLanguage.Core
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Error 该处应该是使用赋值，不能有其它表达式!!" + fas.token?.ToLexemeAllString());
+                                    Debug.Write("Error 该处应该是使用赋值，不能有其它表达式!!" + fas.token?.ToLexemeAllString());
                                     continue;
                                 }
                             }
@@ -748,7 +749,7 @@ namespace SimpleLanguage.Core
                 FileMetaBraceTerm fmbt = listfinalNode.fileMetaBraceTerm;
                 if (fmbt != null)
                 {
-                    //Console.WriteLine("Error 待测试!!!");
+                    //Debug.Write("Error 待测试!!!");
                     m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fmbt, m_OwnerMetaBlockStatements, m_OwnerMetaClass );
                     m_MetaBraceOrBracketStatementsContent.SetMetaType(m_MetaDefineType);
                     m_MetaBraceOrBracketStatementsContent.Parse();
@@ -777,7 +778,7 @@ namespace SimpleLanguage.Core
                     m_FileMetaParTerm = fmpt;
                     if (needByFileMetaParTermSetTemplate)
                     {
-                        Console.WriteLine("Error 待测试!!!");
+                        Debug.Write("Error 待测试!!!");
                         List<MetaClass> mtList = new List<MetaClass>();
                         MetaInputParamCollection mipc = new MetaInputParamCollection(m_FileMetaParTerm, ownerMC, mbs);
                         for (int i = 0; i < mipc.count; i++)

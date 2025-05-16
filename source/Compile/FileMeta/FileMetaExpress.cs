@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile.Parse;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
 {
@@ -73,12 +74,12 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if (isComma)
                     {
-                        Console.WriteLine("Error 多重逗号，导致解析无法解析!!");
+                        Debug.Write("Error 多重逗号，导致解析无法解析!!");
                         break;
                     }
                     if (fmbtList.Count == 0)
                     {
-                        Console.WriteLine("Error 首符号不能为逗号");
+                        Debug.Write("Error 首符号不能为逗号");
                         break;
                     }
                     isComma = true;
@@ -405,7 +406,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 var nodeList = nodeListList[i];
                 if( nodeList.Count == 0 )
                 {
-                    Console.WriteLine("Error nodeList.Count == 0 ");
+                    Debug.Write("Error nodeList.Count == 0 ");
                     continue;
                 }
                 else if( nodeList.Count == 1 )
@@ -534,7 +535,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
             if (m_BraceEndToken == null )
             {
-                Console.WriteLine("Error FileMetaBraceTerm--");
+                Debug.Write("Error FileMetaBraceTerm--");
             }
         }
         private void HandleBraceTerm()
@@ -583,7 +584,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         }
                         else
                         {
-                            Console.WriteLine(" Errorr FileMetaBraceTerm.HandleBraceTerm 解析{ a = ?} 时，多个=号 Token: " + assignToken.ToLexemeAllString() );
+                            Debug.Write(" Errorr FileMetaBraceTerm.HandleBraceTerm 解析{ a = ?} 时，多个=号 Token: " + assignToken.ToLexemeAllString() );
                         }
                     }
                     else
@@ -619,7 +620,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     else
                     {
-                        Console.WriteLine("Error 在解析为{}中，数组形式 解析有问题!!");
+                        Debug.Write("Error 在解析为{}中，数组形式 解析有问题!!");
                         continue;
                     }
                 }
@@ -627,7 +628,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if ( (defineNodeList.Count != 1 && defineNodeList.Count != 2 ) || valueNodeList.Count < 1)
                     {
-                        Console.WriteLine("Error 在解析为{}中，赋值= 解析有问题!!");
+                        Debug.Write("Error 在解析为{}中，赋值= 解析有问题!!");
                         continue;
                     }
                     if( defineNodeList.Count == 2 )
@@ -723,12 +724,12 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 }
                 else if (cnode.nodeType == ENodeType.Par)
                 {
-                    Console.WriteLine("Error 不支持在[]中解析()的逻辑!!");
+                    Debug.Write("Error 不支持在[]中解析()的逻辑!!");
                     continue;
                 }
                 else if (cnode.nodeType == ENodeType.Key)
                 {
-                    Console.WriteLine("Error 不支持在[]中解析Key的逻辑!!");
+                    Debug.Write("Error 不支持在[]中解析Key的逻辑!!");
                     continue;
                 }
                 else if (cnode.nodeType == ENodeType.Brace )
@@ -775,7 +776,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if (type == 2 || type == 3)
                     {
-                        Console.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                        Debug.Write("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                         continue;
                     }
 
@@ -789,7 +790,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if (type == 1 || type == 2)
                     {
-                        Console.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                        Debug.Write("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                         continue;
                     }
 
@@ -940,7 +941,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if (fmbt != null)
                     {
-                        Console.WriteLine("Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString());
+                        Debug.Write("Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString());
                     }
                     fmbt = new FileMetaCallTerm(m_FileMeta, node);
                     fmbt.priority = int.MaxValue;
@@ -950,7 +951,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if(fmbt != null )
                     {
-                        Console.WriteLine("Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString() );
+                        Debug.Write("Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString() );
                     }
                     fmbt = new FileMetaCallTerm(m_FileMeta, node);
                     fmbt.priority = int.MaxValue;
@@ -972,7 +973,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 }
                 else
                 {
-                    Console.WriteLine("没有找到该类型: " + node.token.type.ToString()  +  " 位置: "  + node.token.ToLexemeAllString() );
+                    Debug.Write("没有找到该类型: " + node.token.type.ToString()  +  " 位置: "  + node.token.ToLexemeAllString() );
                 }
             }
         }
@@ -1013,7 +1014,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     ETokenType ett = currentTerm.token.type;
                     if (!m_CanUseDoublePlusOrMinus && (ett == ETokenType.DoubleMinus || ett == ETokenType.DoublePlus) )
                     {
-                        Console.WriteLine("Error 只有在语句中，可以使用i++ 等语法，变量与传参是禁止使用i++" +
+                        Debug.Write("Error 只有在语句中，可以使用i++ 等语法，变量与传参是禁止使用i++" +
                             "Token 位置:" + currentTerm.token.ToAllString());
                         return false;
                     }
@@ -1032,7 +1033,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     {
                         if (listNextTerm == null)
                         {
-                            Console.WriteLine("Error 表达式解析错误!! FileMetaExpress 575");
+                            Debug.Write("Error 表达式解析错误!! FileMetaExpress 575");
                             return false;
                         }
                         currentTerm.right = listNextTerm;
@@ -1043,7 +1044,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     else
                     {
-                        Console.WriteLine("Error 不能使用错误符号 !! FileMetaExpress 698" + currentTerm.token.ToLexemeAllString());
+                        Debug.Write("Error 不能使用错误符号 !! FileMetaExpress 698" + currentTerm.token.ToLexemeAllString());
                         return false;
                     }
                 }
@@ -1064,7 +1065,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     else
                     {
-                        Console.WriteLine("Error BuildTst 表达式解析错误!! 604");
+                        Debug.Write("Error BuildTst 表达式解析错误!! 604");
                         return false;
                     }
                 }
@@ -1076,7 +1077,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             }
             else
             {
-                Console.WriteLine("选择已经超出来范围!!");
+                Debug.Write("选择已经超出来范围!!");
                 return false;
             }
             return BuildTst(list);

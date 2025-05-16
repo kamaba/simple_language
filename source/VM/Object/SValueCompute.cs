@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using SimpleLanguage.Core;
@@ -278,7 +279,7 @@ namespace SimpleLanguage.VM
                     break;
                 default:
                     {
-                        Console.WriteLine("Error -------------");
+                        Debug.Write("Error -------------");
                     }
                     break;
             }
@@ -442,12 +443,12 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.UInt64:
                     {
-                        Console.WriteLine("Error -value 1");
+                        Debug.Write("Error -value 1");
                     }
                     break;
                 default:
                     {
-                        Console.WriteLine("Error -value 2");
+                        Debug.Write("Error -value 2");
                     }
                     break;
             }

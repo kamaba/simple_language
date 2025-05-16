@@ -3,6 +3,7 @@ using SimpleLanguage.Core;
 using SimpleLanguage.Core.SelfMeta;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -194,20 +195,20 @@ namespace SimpleLanguage.Core
             {
                 if(fmc.isPartial )
                 {
-                    Console.WriteLine("类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持内部嵌套类定义并行!!");
+                    Debug.Write("类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持内部嵌套类定义并行!!");
                     return null;
                 }
                 
                 if( topLevelClass.metaClass == null )
                 {
-                    Console.WriteLine("Error 上级类中的MetaClass没有绑定!!");
+                    Debug.Write("Error 上级类中的MetaClass没有绑定!!");
                     return null;
                 }
 
                 var findmc = topLevelClass.GetChildrenMetaBaseByName(fmc.name);
                 if (findmc != null)
                 {
-                    Console.WriteLine("Error 查到内部不是内部内，可能有相同成员");
+                    Debug.Write("Error 查到内部不是内部内，可能有相同成员");
                     return null;
                 }
                 else
@@ -232,7 +233,7 @@ namespace SimpleLanguage.Core
                         topLevelNamespace = topLevelNamespace.GetChildrenMetaBaseByName(nlist[i]);
                         if (topLevelNamespace == null)
                         {
-                            Console.WriteLine("Error 没有找到相当的命名空间!!!");
+                            Debug.Write("Error 没有找到相当的命名空间!!!");
                             return null;
                         }
                     }
@@ -241,7 +242,7 @@ namespace SimpleLanguage.Core
                 tmetaModule = topLevelNamespace as MetaModule;
                 if (tmetaNamespace == null && tmetaModule == null )
                 {
-                    Console.WriteLine("命名空间中，已定义其它非命名空间的类型 !!");
+                    Debug.Write("命名空间中，已定义其它非命名空间的类型 !!");
                     return null;
                 }
                 var mbb = topLevelNamespace.GetChildrenMetaBaseByName(fmc.name);
@@ -249,14 +250,14 @@ namespace SimpleLanguage.Core
                 var amn = mbb as MetaNamespace;
                 if( amn != null )
                 {
-                    Console.WriteLine("已有命名空间的定义: ");
+                    Debug.Write("已有命名空间的定义: ");
                     return null;
                 }
                 else if (amc != null)
                 {
                     if (!fmc.isPartial)
                     {
-                        Console.WriteLine("类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持文件并行 定义类");
+                        Debug.Write("类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持文件并行 定义类");
                         return null;
                     }
                     bool isPartial = true;
@@ -265,7 +266,7 @@ namespace SimpleLanguage.Core
                         if (v.Value.isPartial == false)
                         {
                             isPartial = false;
-                            Console.WriteLine("类:" + amc.name + "在: " + v.Value.token.ToAllString() + "不支持文件并行 定义类");
+                            Debug.Write("类:" + amc.name + "在: " + v.Value.token.ToAllString() + "不支持文件并行 定义类");
                             break;
                         }
                     }
@@ -304,7 +305,7 @@ namespace SimpleLanguage.Core
                 {
                     if (fmc.isConst)
                     {
-                        Console.WriteLine("Class 中，使用关键字，不允许使用Const");
+                        Debug.Write("Class 中，使用关键字，不允许使用Const");
                         return null;
                     }
                     bool isCreateClass = true;
@@ -363,7 +364,7 @@ namespace SimpleLanguage.Core
         {
             if(m_AllClassDict.ContainsKey( mc.allName ) )
             {
-                Console.WriteLine("Add Failed!!");
+                Debug.Write("Add Failed!!");
                 return;
             }
             m_AllClassDict.Add(mc.allName, mc);
@@ -568,7 +569,7 @@ namespace SimpleLanguage.Core
 
                     if( !mc.metaClass.GetMemberInterfaceFunctionByFunc(func) )
                     {
-                        Console.WriteLine("查找接口类中的要实现的函数，实现失败函数名称" + func.name + " Token位置: " );
+                        Debug.Write("查找接口类中的要实现的函数，实现失败函数名称" + func.name + " Token位置: " );
                         //func.fileMetaMemberFunction.token.sourceBeginLine.ToString()
                         isSuccess = false;
                         break;
@@ -620,7 +621,7 @@ namespace SimpleLanguage.Core
                     {
                         if( textendClass.metaMemberVariableDict.ContainsKey( v.Key ) )
                         {
-                            Console.WriteLine("Error 在类的值: " + v.Key + "  有重复定义: " + textendClass.allName + "中，值: [" + v.Key + "] Token1位置: "
+                            Debug.Write("Error 在类的值: " + v.Key + "  有重复定义: " + textendClass.allName + "中，值: [" + v.Key + "] Token1位置: "
                                 + textendClass.metaMemberVariableDict[v.Key].ToTokenString());
                             isFailed = true;
                             break;
@@ -632,7 +633,7 @@ namespace SimpleLanguage.Core
             }
             if( !isFailed )
             {
-                //Console.WriteLine("");
+                //Debug.Write("");
             }
         }
         public void HandleInterface( FileMetaClass mc )
@@ -828,7 +829,7 @@ namespace SimpleLanguage.Core
                         return parentMB as MetaClass;
                     else
                     {
-                        Console.WriteLine(" Error 查找到元素，但不是类!!!");
+                        Debug.Write(" Error 查找到元素，但不是类!!!");
                     }
                 }
                 mb = mb.parentNode;
@@ -852,7 +853,7 @@ namespace SimpleLanguage.Core
                 {
                     if (mb is MetaNamespace)
                     {
-                        Console.WriteLine("找到了已有命名空间而不是要继承的类!!");
+                        Debug.Write("找到了已有命名空间而不是要继承的类!!");
                         return null;
                     }
                     else if (mb is MetaClass)
@@ -882,7 +883,7 @@ namespace SimpleLanguage.Core
                 {
                     if (mb is MetaNamespace)
                     {
-                        Console.WriteLine("找到了已有命名空间而不是要继承的类!!");
+                        Debug.Write("找到了已有命名空间而不是要继承的类!!");
                         return null;
                     }
                     else if (mb is MetaClass)
@@ -922,7 +923,7 @@ namespace SimpleLanguage.Core
                 var c = v.Value as MetaClass;
                 if( c == null )
                 {
-                    Console.WriteLine("Errrorrrrrrr!!!");
+                    Debug.Write("Errrorrrrrrr!!!");
                     continue;
                 }
                 c.SetAnchorDeep(c.deep);

@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core.SelfMeta
@@ -170,7 +171,7 @@ namespace SimpleLanguage.Core.SelfMeta
                     return rangeMetaClass;
                 default:
                     {
-                        Console.WriteLine("Warning ClassManager GetMetaClassByEType 1111");
+                        Debug.Write("Warning ClassManager GetMetaClassByEType 1111");
                     }
                     break;
             }

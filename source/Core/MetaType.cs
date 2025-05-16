@@ -90,7 +90,7 @@ namespace SimpleLanguage.Core
                     m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
                     if(m_RawMetaClass == null )
                     {
-                        Console.WriteLine("Error 没有找到相当类: " + cmr.name);
+                        Debug.Write("Error 没有找到相当类: " + cmr.name);
                         return;
                     }
                     m_IsDefineMetaClass = true;
@@ -121,7 +121,7 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                Console.WriteLine("Error 解析数组，维度不允许有除Int之外的类型!!");
+                                Debug.Write("Error 解析数组，维度不允许有除Int之外的类型!!");
                             }
                         }
                         m_IsDefineMetaClass = true;
@@ -149,7 +149,7 @@ namespace SimpleLanguage.Core
 
                     if (m_MetaClass == null)
                     {
-                        Console.WriteLine("Error MetaDefineType RetMetaClass is Null MetaMemberVariable " + cmr?.ToTokenString());
+                        Debug.Write("Error MetaDefineType RetMetaClass is Null MetaMemberVariable " + cmr?.ToTokenString());
                         m_MetaClass = CoreMetaClassManager.objectMetaClass;
                     }
                 }
@@ -161,7 +161,7 @@ namespace SimpleLanguage.Core
         {
             if (mc == null)
             {
-                Console.WriteLine("Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
+                Debug.Write("Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
             m_IsDefineMetaClass = false;
             if ( mitc == null)

@@ -11,6 +11,7 @@ using SimpleLanguage.Core;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
@@ -48,7 +49,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         {
             if (m_NodeList.Count < 2)
             {
-                Console.WriteLine("Error import必须有2个节点!!");
+                Debug.Write("Error import必须有2个节点!!");
                 return false;
             }
             var namespaceNode = m_NodeList[0];
@@ -96,7 +97,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         mb = mb.GetChildrenMetaBaseByName(name);
                         if (!(mb is MetaNamespace))
                         {
-                            Console.WriteLine("解析Import语句发生错误，没有找到对应的命名空间路径: " + m_NamespaceStatement.tokenList[i].lexeme.ToString()
+                            Debug.Write("解析Import语句发生错误，没有找到对应的命名空间路径: " + m_NamespaceStatement.tokenList[i].lexeme.ToString()
                                     + "Token: " + m_NamespaceStatement.tokenList[i].sourceBeginLine.ToString());
                             break;
                         }
@@ -125,7 +126,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             {
                 if (m_NamespaceStatement.metaNamespaceList.Count != m_NamespaceStatement.tokenList.Count)
                 {
-                    Console.WriteLine("解析Import语句发生错误，没有找到: " + m_NamespaceStatement.namespaceString + "    Token: " + m_Token.sourceBeginChar.ToString());
+                    Debug.Write("解析Import语句发生错误，没有找到: " + m_NamespaceStatement.namespaceString + "    Token: " + m_Token.sourceBeginChar.ToString());
                 }
             }
 

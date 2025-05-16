@@ -10,6 +10,7 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Mime;
 using System.Reflection;
 using System.Text;
@@ -118,7 +119,7 @@ namespace SimpleLanguage.Core
         //    isStatic = m_FileMetaMemeberVariable?.staticToken != null;
         //    if (isStatic)
         //    {
-        //        Console.WriteLine("Error ENum中，不允许有静态关键字，而是全部是静态关键字!!");
+        //        Debug.Write("Error ENum中，不允许有静态关键字，而是全部是静态关键字!!");
         //    }
         //    if (m_FileMetaMemeberVariable.permissionToken != null)
         //    {
@@ -193,7 +194,7 @@ namespace SimpleLanguage.Core
         //                    m_DefineMetaType = m_Express.GetReturnMetaDefineType();
         //                    if (m_DefineMetaType == null)
         //                    {
-        //                        Console.WriteLine("Error 在生成Data时，没有找到." + m_FileMetaMemeberData.fileMetaCallTermValue.ToTokenString());
+        //                        Debug.Write("Error 在生成Data时，没有找到." + m_FileMetaMemeberData.fileMetaCallTermValue.ToTokenString());
         //                        return;
         //                    }
         //                    var mc = m_Express.GetReturnMetaClass();
@@ -204,7 +205,7 @@ namespace SimpleLanguage.Core
         //                    }
         //                    else
         //                    {
-        //                        Console.WriteLine("Error 在生成Data时，发现不是Data数据!!");
+        //                        Debug.Write("Error 在生成Data时，发现不是Data数据!!");
         //                    }
         //                }
         //                break;
@@ -236,7 +237,7 @@ namespace SimpleLanguage.Core
         //    {
         //        if (v.Value.IsIncludeMetaData(curMD))
         //        {
-        //            Console.WriteLine("Error 当前有循环引用数量现象，请查正!!" + md.allName);
+        //            Debug.Write("Error 当前有循环引用数量现象，请查正!!" + md.allName);
         //            continue;
         //        }
         //        var newMMD = v.Value.Copy();
@@ -283,13 +284,13 @@ namespace SimpleLanguage.Core
             m_VariableFrom = EVariableFrom.Member;
             if ( isStatic && isEnum )
             {
-                Console.WriteLine("Error ENum中，不允许有静态关键字，而是全部是静态关键字!!");
+                Debug.Write("Error ENum中，不允许有静态关键字，而是全部是静态关键字!!");
             }
             if (m_FileMetaMemeberVariable.permissionToken != null)
             {
                 if( isEnum )
                 {
-                    Console.WriteLine("Error Enum中，不允许使用public/private等权限关键字!!");
+                    Debug.Write("Error Enum中，不允许使用public/private等权限关键字!!");
                 }
                 permission = CompilerUtil.GetPerMissionByString(m_FileMetaMemeberVariable.permissionToken?.lexeme.ToString());
             }
@@ -428,7 +429,7 @@ namespace SimpleLanguage.Core
             }
             if (m_Express == null && m_DefineMetaType == null)
             {
-                Console.WriteLine("Error 表达式为空 或者 表达示必须有返回值");
+                Debug.Write("Error 表达式为空 或者 表达示必须有返回值");
             }
         }
         public int CompareTo(MetaMemberVariable mmv)
@@ -462,7 +463,7 @@ namespace SimpleLanguage.Core
                         {
                             if( dmct.metaClass == ownerMetaClass )
                             {
-                                Console.WriteLine("Error 自己类内部不允许包含 自己的实体，必须赋值为null");
+                                Debug.Write("Error 自己类内部不允许包含 自己的实体，必须赋值为null");
                                 return;
                             }
                             m_DefineMetaType = dmct;
@@ -489,7 +490,7 @@ namespace SimpleLanguage.Core
                         expressRetMetaDefineType = m_Express.GetReturnMetaDefineType();
                         if (expressRetMetaDefineType == null)
                         {
-                            Console.WriteLine("Error 表达式中返回定义类型为空 " + m_Express.ToTokenString());
+                            Debug.Write("Error 表达式中返回定义类型为空 " + m_Express.ToTokenString());
                             return;
                         }
 
@@ -513,7 +514,7 @@ namespace SimpleLanguage.Core
                     if (relation == ClassManager.EClassRelation.No)
                     {
                         sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
-                        Console.WriteLine(sb.ToString());
+                        Debug.Write(sb.ToString());
                     }
                     else if (relation == ClassManager.EClassRelation.Same)
                     {
@@ -521,7 +522,7 @@ namespace SimpleLanguage.Core
                         {
                             if (expressRetMetaDefineType.metaClass == ownerMetaClass)
                             {
-                                Console.WriteLine("Error 自己类内部不允许包含 自己的实体，必须赋值为null");
+                                Debug.Write("Error 自己类内部不允许包含 自己的实体，必须赋值为null");
                                 return;
                             }
                             SetMetaDefineType(expressRetMetaDefineType);
@@ -530,7 +531,7 @@ namespace SimpleLanguage.Core
                     else if (relation == ClassManager.EClassRelation.Parent)
                     {
                         sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
-                        Console.WriteLine(sb.ToString());
+                        Debug.Write(sb.ToString());
                     }
                     else if (relation == ClassManager.EClassRelation.Child)
                     {
@@ -538,7 +539,7 @@ namespace SimpleLanguage.Core
                         {
                             if (expressRetMetaDefineType.metaClass == ownerMetaClass)
                             {
-                                Console.WriteLine("Error 自己类内部不允许包含 自己的实体，必须赋值为null");
+                                Debug.Write("Error 自己类内部不允许包含 自己的实体，必须赋值为null");
                                 return;
                             }
                             SetMetaDefineType(expressRetMetaDefineType);
@@ -547,7 +548,7 @@ namespace SimpleLanguage.Core
                     else
                     {
                         sb.Append("表达式错误，或者是定义类型错误");
-                        Console.WriteLine(sb.ToString());
+                        Debug.Write(sb.ToString());
                     }
                 }
             }
@@ -660,7 +661,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Console.WriteLine("Error 现在配置中，不支持成员变量中使用类的()构造方式!!");
+                            Debug.Write("Error 现在配置中，不支持成员变量中使用类的()构造方式!!");
                         }
                     }
                     else if (fmbt != null)
@@ -677,7 +678,7 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                Console.WriteLine("Error 在类变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                                Debug.Write("Error 在类变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                             }
                             return null;
                         }
@@ -689,7 +690,7 @@ namespace SimpleLanguage.Core
                             var finalNode = fmct.callLink.callNodeList[fmct.callLink.callNodeList.Count - 1];
                             if( finalNode.fileMetaBraceTerm != null && !m_IsSupportConstructionFunctionConnectBraceType )
                             {
-                                Console.WriteLine("Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                                Debug.Write("Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                                 return null;
                             }
                         }
@@ -708,12 +709,12 @@ namespace SimpleLanguage.Core
                 {
                     if(fmpt != null )
                     {
-                        Console.WriteLine("Error 在类没有定义的变量中，不允许 使用()的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                        Debug.Write("Error 在类没有定义的变量中，不允许 使用()的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                         return null;
                     }
                     else if (fmbt != null)
                     {
-                        Console.WriteLine("Error 在类没有定义的变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                        Debug.Write("Error 在类没有定义的变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                         return null;
                     }
                     else if (fmct != null)
@@ -723,7 +724,7 @@ namespace SimpleLanguage.Core
                             var finalNode = fmct.callLink.callNodeList[fmct.callLink.callNodeList.Count - 1];
                             if (finalNode.fileMetaBraceTerm != null && !m_IsSupportConstructionFunctionConnectBraceType)
                             {
-                                Console.WriteLine("Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                                Debug.Write("Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                                 return null;
                             }
                         }
@@ -848,7 +849,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Console.WriteLine("Error 命名有重名!!");
+                        Debug.Write("Error 命名有重名!!");
                     }
                 }
             }

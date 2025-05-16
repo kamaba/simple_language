@@ -10,6 +10,7 @@ using SimpleLanguage.IR;
 using SimpleLanguage.VM;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.IR
@@ -44,7 +45,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                Console.WriteLine($"SVM Error 没有找到加载变量的来源类型！");
+                Debug.Write($"SVM Error 没有找到加载变量的来源类型！");
             }
             data.index = irmv.index;
             m_IRDataList.Add(data);

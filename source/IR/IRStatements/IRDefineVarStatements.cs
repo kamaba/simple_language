@@ -11,6 +11,7 @@ using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.IR
@@ -95,7 +96,7 @@ namespace SimpleLanguage.IR
                             }
                             else
                             {
-                                Console.WriteLine("Error 不支持其它 的数据成员格式");
+                                Debug.Write("Error 不支持其它 的数据成员格式");
                             }
                         }
                     }

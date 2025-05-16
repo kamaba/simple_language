@@ -13,6 +13,7 @@ using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core.Statements
@@ -156,7 +157,7 @@ namespace SimpleLanguage.Core.Statements
         {
             if(m_FileMetaKeyIfSyntax.ifExpressSyntax == null )
             {
-                Console.WriteLine("Error 没有if语句!!");
+                Debug.Write("Error 没有if语句!!");
             }
             MetaType mdt = null;
             if( m_MetaVariable != null )

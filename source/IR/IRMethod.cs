@@ -12,6 +12,7 @@ using SimpleLanguage.Core.Statements;
 using SimpleLanguage.IR.Statements;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
@@ -73,7 +74,7 @@ namespace SimpleLanguage.IR
             MetaBlockStatements mbs = mmf.metaBlockStatements;
             if (mbs == null)
             {
-                Console.WriteLine("----------------  Info 空函数!! --------------------");
+                Debug.Write("----------------  Info 空函数!! --------------------");
                 return;
             }
             IRBlockStatements irbs = new IRBlockStatements(this);
