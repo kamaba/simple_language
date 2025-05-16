@@ -11,6 +11,7 @@ using SimpleLanguage.Core.IR;
 using SimpleLanguage.IR.Statements;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.IR
@@ -95,7 +96,7 @@ namespace SimpleLanguage.IR
                     break;
                 default:
                     {
-                        Console.WriteLine("Error IR表达式错误!!");
+                        Debug.Write("Error IR表达式错误!!");
                     }
                     break;
             }
@@ -211,7 +212,7 @@ namespace SimpleLanguage.IR
                     break;
                 default:
                     {
-                        Console.WriteLine("Error 未支持表达式中的IR代码"  + opSign.ToString() );
+                        Debug.Write("Error 未支持表达式中的IR代码"  + opSign.ToString() );
                     }
                     break;
             }

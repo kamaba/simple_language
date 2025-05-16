@@ -21,7 +21,7 @@ ForWhileTest
                 break
             }
             i = i+2
-            CSharp.System.Console.WriteLine("for i= $i ")
+            CSharp.System.Debug.Write("for i= $i ")
         }
         for i = 123
         {
@@ -30,32 +30,32 @@ ForWhileTest
                 break
             }
             i++
-            CSharp.System.Console.WriteLine("i= $i ")
+            CSharp.System.Debug.Write("i= $i ")
         }
         !#
         
         #!
         for i = 0, i < 10
         {
-            CSharp.System.Console.WriteLine("i= $i ")
+            CSharp.System.Debug.Write("i= $i ")
             i++            
         }
         !#
         #!
         for i = 0, i <= 2, i+=2
         {            
-            CSharp.System.Console.WriteLine("i= $i ");
+            CSharp.System.Debug.Write("i= $i ");
             n = i * 10;
         }
         !#
         #!
         for i = 0, i < 30, i++
         {
-            CSharp.System.Console.WriteLine("i= $i ");
+            CSharp.System.Debug.Write("i= $i ");
             n = i * 10;
             #if n == 200{ break }
 
-            if n % 2 == 0 {CSharp.System.Console.WriteLine("这是一个偶数 = $i ");continue }
+            if n % 2 == 0 {CSharp.System.Debug.Write("这是一个偶数 = $i ");continue }
         }
         !#
         #! 暂不支持 List,Map,Set,Queue,Link
@@ -98,14 +98,14 @@ ForWhileTest
             if( i == 5 ){
             continue;}
             if i > 10{ break;}
-            CSharp.System.Console.WriteLine(" ioooo = $i ");
+            CSharp.System.Debug.Write(" ioooo = $i ");
         }
         !#
         i = 10
         while
         {
             i++;
-            CSharp.System.Console.WriteLine(" ioooo = $i ");
+            CSharp.System.Debug.Write(" ioooo = $i ");
             if( i > 13 ){break;}
         }
         while true{ m = 20;}

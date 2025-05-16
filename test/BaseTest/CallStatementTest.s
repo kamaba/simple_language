@@ -27,7 +27,7 @@ CallStatementTest
         range ran = range(1,3)
         array arr = array(1,2)
         xc = global.pi
-        CSharp.System.Console.WriteLine("abc")
+        CSharp.System.Debug.Write("abc")
         string aaa = string("aaa");
     }
 }

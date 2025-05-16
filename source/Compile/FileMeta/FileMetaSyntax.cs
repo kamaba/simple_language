@@ -13,6 +13,7 @@ using SimpleLanguage.Compile.Parse;
 using static SimpleLanguage.Compile.Parse.StructParse;
 using System.Xml.Linq;
 using System.Runtime.Intrinsics.X86;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
 {    
@@ -118,7 +119,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             {
                 if (ifSyntax.ifExpressSyntax != null)
                 {
-                    Console.WriteLine("Error 不能有多个if语句!!");
+                    Debug.Write("Error 不能有多个if语句!!");
                 }
                 ifSyntax.SetFileMetaConditionExpressSyntax(fms);
             }
@@ -223,7 +224,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 var parlist = castnode.parNode.childList;
                 if (parlist.Count == 0)
                 {
-                    Console.WriteLine("Error Case语句不允许没有检查值!!");
+                    Debug.Write("Error Case语句不允许没有检查值!!");
                 }
                 List<Node> childList = new List<Node>();
                 bool isComma = false;
@@ -246,7 +247,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         var type = curNode.token.type;
                         if (type != ETokenType.Number && type != ETokenType.String)
                         {
-                            Console.WriteLine("Error 逗号分割只允许number,string");
+                            Debug.Write("Error 逗号分割只允许number,string");
                             break;
                         }
                         if (type != nextNode.token.type)
@@ -257,7 +258,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     if (!isSame)
                     {
-                        Console.WriteLine("Error 使用逗号切割开后，类型不相同!!");
+                        Debug.Write("Error 使用逗号切割开后，类型不相同!!");
                     }
                     for (int i = 0; i < childList.Count; i++)
                     {
@@ -476,7 +477,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 var parlist = castnode.parNode.childList;
                 if (parlist.Count == 0)
                 {
-                    Console.WriteLine("Error Case语句不允许没有检查值!!");
+                    Debug.Write("Error Case语句不允许没有检查值!!");
                 }
                 List<Node> childList = new List<Node>();
                 bool isComma = false;
@@ -499,7 +500,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         var type = curNode.token.type;
                         if (type != ETokenType.Number && type != ETokenType.String)
                         {
-                            Console.WriteLine("Error 逗号分割只允许number,string");
+                            Debug.Write("Error 逗号分割只允许number,string");
                             break;
                         }
                         if (type != nextNode.token.type)
@@ -510,7 +511,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     if (!isSame)
                     {
-                        Console.WriteLine("Error 使用逗号切割开后，类型不相同!!");
+                        Debug.Write("Error 使用逗号切割开后，类型不相同!!");
                     }
                     for (int i = 0; i < childList.Count; i++)
                     {
@@ -859,14 +860,14 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             Token labelToken = null;
             if (akss.keyContent.Count != 1 )
             {
-                Console.WriteLine("Error 解析Goto Label语法，只支持 goto id;的语法!!");
+                Debug.Write("Error 解析Goto Label语法，只支持 goto id;的语法!!");
             }
             else
             {
                 labelToken = akss.keyContent[0].token;
                 if (labelToken.type != ETokenType.Identifier)
                 {
-                    Console.WriteLine("Error 解析GotoLabel中 后边必须使用普通字符");
+                    Debug.Write("Error 解析GotoLabel中 后边必须使用普通字符");
                 }
             }
             var fms = new FileMetaKeyGotoLabelSyntax( fm, cnode.token, labelToken);

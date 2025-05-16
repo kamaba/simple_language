@@ -3,6 +3,7 @@ using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.Intrinsics.X86;
 using System.Security.Cryptography;
@@ -83,7 +84,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Console.WriteLine("Error Optimaze don't support that ExpressType");
+                        Debug.Write("Error Optimaze don't support that ExpressType");
                     }
                     break;
             }
@@ -114,7 +115,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Console.WriteLine(" Error VisitFileMetaExpress fileMetaNode 不是符号!!");
+                    Debug.Write(" Error VisitFileMetaExpress fileMetaNode 不是符号!!");
                 }
             }
             else if (leftNode != null && rightNode == null)
@@ -141,7 +142,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Console.WriteLine(" Error VisitFileMetaExpress left and right都为空!!");
+                Debug.Write(" Error VisitFileMetaExpress left and right都为空!!");
             }
             return null;
         }
@@ -156,7 +157,7 @@ namespace SimpleLanguage.Core
             {
                 case FileMetaSymbolTerm fmst:
                     {
-                        Console.WriteLine("Error CreateExpressNode 创建表达项不能为符号");
+                        Debug.Write("Error CreateExpressNode 创建表达项不能为符号");
                     }
                     break;
                 case FileMetaConstValueTerm fmcvt:
@@ -177,13 +178,13 @@ namespace SimpleLanguage.Core
                     break;
                 case FileMetaParTerm fmpt:
                     {
-                        //Console.WriteLine("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
+                        //Debug.Write("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
                         men = VisitFileMetaExpress(mc, mbs, mdt, fmpt.root );
                     }
                     break;
                 case FileMetaTermExpress fmte:
                     {
-                        //Console.WriteLine("Error CreateExpressNode 创建表达项不能为符号");
+                        //Debug.Write("Error CreateExpressNode 创建表达项不能为符号");
                         cep.fme = fmte.root;
                         men = CreateExpressNode(cep);
                     }
@@ -195,7 +196,7 @@ namespace SimpleLanguage.Core
                     }
                     break;
                 default:
-                    Console.WriteLine("Error CreateExpressNode 创建表达项不能为符号");
+                    Debug.Write("Error CreateExpressNode 创建表达项不能为符号");
                     break;
             }
             return men;
@@ -270,7 +271,7 @@ namespace SimpleLanguage.Core
                         break;
                     case FileMetaParTerm fmpt:
                         {
-                            //Console.WriteLine("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
+                            //Debug.Write("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
                             MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByPar((root as FileMetaParTerm), cep.metaType, ownerClass, cep.mbs);
                             if (mnoen != null)
                                 return mnoen;
@@ -280,14 +281,14 @@ namespace SimpleLanguage.Core
                         break;
                     case FileMetaTermExpress fmte:
                         {
-                            //Console.WriteLine("Error CreateExpressNode 创建表达项不能为符号");
+                            //Debug.Write("Error CreateExpressNode 创建表达项不能为符号");
                             cep.metaClass = ownerClass;
                             men = CreateExpressNode(cep);
                         }
                         break;
                     case FileMetaBracketTerm fmbt:
                         {
-                            //Console.WriteLine("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
+                            //Debug.Write("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
                             
                             MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode((root as FileMetaBracketTerm),  ownerClass, cep.mbs, cep.equalMetaVariable );
                             if (mnoen != null)
@@ -295,7 +296,7 @@ namespace SimpleLanguage.Core
                         }
                         break;
                     default:
-                        Console.WriteLine("Error CreateExpressNode 创建表达项不能为符号");
+                        Debug.Write("Error CreateExpressNode 创建表达项不能为符号");
                         break;
                 }
                 if( men != null )
@@ -359,7 +360,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Console.WriteLine("Error 没有找到合适的表达式 位置: " + fmte.token?.ToLexemeAllString());
+                Debug.Write("Error 没有找到合适的表达式 位置: " + fmte.token?.ToLexemeAllString());
             }
             return null;
         }

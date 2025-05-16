@@ -11,6 +11,7 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using static SimpleLanguage.Core.MetaVariable;
 
@@ -110,13 +111,13 @@ namespace SimpleLanguage.Core.Statements
                     {
                         if (matchTypeClass == null)
                         {
-                            Console.WriteLine("Error 解析case中，前边的类型没有找到!" + m_FileMetaKeyCaseSyntax.variableToken.ToLexemeAllString());
+                            Debug.Write("Error 解析case中，前边的类型没有找到!" + m_FileMetaKeyCaseSyntax.variableToken.ToLexemeAllString());
                             return;
                         }
                         string token2name = m_FileMetaKeyCaseSyntax.variableToken.lexeme.ToString();
                         if (thenMetaStatements.GetIsMetaVariable(token2name))
                         {
-                            Console.WriteLine("Error 已有定义变量名称!!" + m_FileMetaKeyCaseSyntax.variableToken.ToLexemeAllString());
+                            Debug.Write("Error 已有定义变量名称!!" + m_FileMetaKeyCaseSyntax.variableToken.ToLexemeAllString());
                             return;
                         }
                         MetaType mdt = new MetaType(matchTypeClass);
@@ -141,13 +142,13 @@ namespace SimpleLanguage.Core.Statements
                     }
                     else
                     {
-                        Console.WriteLine("Error 解析case 中，内容为空!!");
+                        Debug.Write("Error 解析case 中，内容为空!!");
                         return;
                     }
                 }
                 if( switchCaseType == SwitchCaseType.None )
                 {
-                    Console.WriteLine("Error 解析Case失败!!");
+                    Debug.Write("Error 解析Case失败!!");
                     return;
                 }
                 thenMetaStatements.SetTRMetaVariable(trMetaVariable);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -50,7 +51,7 @@ namespace SimpleLanguage.Core
         {
             if( string.IsNullOrEmpty( name ) )
             {
-                Console.WriteLine("Error 严重错误，获取模式不传名称!!");
+                Debug.Write("Error 严重错误，获取模式不传名称!!");
                 return null;
             }
             if(m_AllMetaModuleDict.ContainsKey( name ) )
@@ -77,7 +78,7 @@ namespace SimpleLanguage.Core
             outerMetaModuleDict.Add(mm.name, mm);
             if( m_AllMetaModuleDict.ContainsKey( mm.name ) )
             {
-                Console.WriteLine("Error 严重错误，模块有重名!!!");
+                Debug.Write("Error 严重错误，模块有重名!!!");
                 return;
             }
             m_AllMetaModuleDict.Add(mm.name, mm);

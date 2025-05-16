@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using SimpleLanguage.Compile;
@@ -83,7 +84,7 @@ namespace SimpleLanguage.Core
 
             if( mc == null)
             {
-                Console.WriteLine("Error 获取返回值错误  Etype: " + eType.ToString() );
+                Debug.Write("Error 获取返回值错误  Etype: " + eType.ToString() );
             }
 
             m_MetaDefineType = new MetaType(mc);

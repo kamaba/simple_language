@@ -17,6 +17,7 @@ using SimpleLanguage.Compile.Parse;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Runtime.Intrinsics.X86;
 using SimpleLanguage.IR;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Project
 {
@@ -61,13 +62,13 @@ namespace SimpleLanguage.Project
             MetaClass project = ClassManager.instance.GetClassByName("Project");
             if (project == null)
             {
-                Console.WriteLine("Error project!!");
+                Debug.Write("Error project!!");
                 return;
             }
             MetaMemberFunction mmf = project.GetFirstMetaMemberFunctionByName("Test");
             if (mmf == null)
             {
-                Console.WriteLine("Error project.Main函数!!");
+                Debug.Write("Error project.Main函数!!");
                 return;
             }
             var irmethod = IRManager.instance.GetIRMethod(mmf.allName);
@@ -79,13 +80,13 @@ namespace SimpleLanguage.Project
             MetaClass projectEntoer = ClassManager.instance.GetClassByName("Project");
             if (projectEntoer == null)
             {
-                Console.WriteLine("Error 没有找到Project!!");
+                Debug.Write("Error 没有找到Project!!");
                 return;
             }
             MetaMemberFunction mmf = projectEntoer.GetFirstMetaMemberFunctionByName("Main");
             if (mmf == null)
             {
-                Console.WriteLine("Error 没有找到Project.Main函数!!");
+                Debug.Write("Error 没有找到Project.Main函数!!");
                 return;
             }
             var irmethod = IRManager.instance.GetIRMethod(mmf.allName);

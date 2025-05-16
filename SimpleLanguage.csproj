@@ -6,6 +6,8 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <ApplicationIcon />
     <StartupObject />
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+    <IncludeSymbols>True</IncludeSymbols>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -2,6 +2,7 @@ using SimpleLanguage.Compile.Grammer;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Compile 
@@ -15,7 +16,7 @@ namespace SimpleLanguage.Compile
             var nsArr = ns.Split('.');
             if (nsArr.Length == 0)
             {
-                Console.WriteLine("命名空间名称不能为空字符");
+                Debug.Write("命名空间名称不能为空字符");
                 return false;
             }
             if (nsArr.Length == 1)

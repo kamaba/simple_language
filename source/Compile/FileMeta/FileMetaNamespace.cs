@@ -10,6 +10,7 @@ using SimpleLanguage.Core;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
@@ -53,14 +54,14 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         {
             if (m_NodeList.Count != 2)
             {
-                Console.WriteLine("Error  ParseFileDefineNamespace 解析自定义空间!!");
+                Debug.Write("Error  ParseFileDefineNamespace 解析自定义空间!!");
                 return false;
             }
             m_Token = m_NodeList[0].token;
 
             if (m_Token == null)
             {
-                Console.WriteLine("Error 没有查找namespaceToken");
+                Debug.Write("Error 没有查找namespaceToken");
                 return false;
             }
             isSearchNamespace = m_NodeList[1].blockNode == null;

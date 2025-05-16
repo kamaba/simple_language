@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using SimpleLanguage.Compile;
@@ -515,7 +516,7 @@ namespace SimpleLanguage.Core
                             break;
                         default:
                             {
-                                Console.WriteLine("Error Not Support string < <= > >=sign operator!!");
+                                Debug.Write("Error Not Support string < <= > >=sign operator!!");
                             }
                             break;
                     }

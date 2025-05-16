@@ -95,19 +95,19 @@ ProjectEnter
     {
         if x > 1
         {
-            Console.WriteLine("执行x>1的内容");
+            Debug.Write("执行x>1的内容");
         }
         elif x > 3
         {
-            Console.WriteLine("执行x>3的内容");
+            Debug.Write("执行x>3的内容");
         }
         elif x > 14
         {
-            Console.WriteLine("执行x>14的内容");
+            Debug.Write("执行x>14的内容");
         }
         else
         {
-            Console.WriteLine("执行else的内容");
+            Debug.Write("执行else的内容");
         }
     }
 }

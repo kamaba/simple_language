@@ -24,7 +24,7 @@ ProjectEnter
                 Console.Write( "," );
             }
         }
-        Console.WriteLine();
+        Debug.Write();
     }
     SelectedSort( int[] arr )
     {        
@@ -55,7 +55,7 @@ ProjectEnter
                 Console.Write( "," );
             }
         }
-        Console.WriteLine();
+        Debug.Write();
     }
     InsertSort( Array<int> arr )
     {

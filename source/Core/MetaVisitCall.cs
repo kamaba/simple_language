@@ -11,6 +11,7 @@ using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -63,7 +64,7 @@ namespace SimpleLanguage.Core
             {
                 if (vmv == null && string.IsNullOrEmpty(m_AtName))
                 {
-                    Console.WriteLine("Error VisitMetaVariable访问变量访问位置不能同时为空!!");
+                    Debug.Write("Error VisitMetaVariable访问变量访问位置不能同时为空!!");
                     return;
                 }
                 m_TargetMetaVariable = vmv;
@@ -71,7 +72,7 @@ namespace SimpleLanguage.Core
                 var gmit = m_SourceMetaVariable.metaDefineType.GetMetaInputTemplateByIndex();
                 if (gmit == null)
                 {
-                    Console.WriteLine("Error 访问的Array中，没有找到模版 名称!!");
+                    Debug.Write("Error 访问的Array中，没有找到模版 名称!!");
                     return;
                 }
                 m_DefineMetaType = new MetaType(gmit);
@@ -138,7 +139,7 @@ namespace SimpleLanguage.Core
                 var gmit = m_LocalMetaVariable.metaDefineType.GetMetaInputTemplateByIndex();
                 if (gmit == null)
                 {
-                    Console.WriteLine("Error 访问的Array中，没有找到模版 名称!!");
+                    Debug.Write("Error 访问的Array中，没有找到模版 名称!!");
                     return;
                 }
                 m_DefineMetaType = new MetaType(gmit);
@@ -245,7 +246,7 @@ namespace SimpleLanguage.Core
         {
             if (!m_MetaFunction.IsEqualMetaInputParamCollection(m_MetaInputParamCollection))
             {
-                Console.WriteLine("Error 验证失败,函数与输入参数不匹配!!");
+                Debug.Write("Error 验证失败,函数与输入参数不匹配!!");
                 return false;
             }
             return true;
@@ -466,7 +467,7 @@ namespace SimpleLanguage.Core
                     }
                 default:
                     {
-                        Console.WriteLine("Error MetaVisiCall IsNull!");
+                        Debug.Write("Error MetaVisiCall IsNull!");
                     }
                     break;
             }
@@ -491,7 +492,7 @@ namespace SimpleLanguage.Core
             //    MetaVariable mv = m_CurrentMetaBase as MetaVariable;
             //    //if (mv != null && (!mv.isTemplateClass && mv.metaDefineType.metaClass == null))
             //    //{
-            //    //    //Console.WriteLine("Error 未解析到:" + mv.allName + "位置在:" + mv.ToFormatString());
+            //    //    //Debug.Write("Error 未解析到:" + mv.allName + "位置在:" + mv.ToFormatString());
             //    //    return;
             //    //}
             //}

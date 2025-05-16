@@ -9,6 +9,7 @@
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Compile.Parse
@@ -407,7 +408,7 @@ namespace SimpleLanguage.Compile.Parse
                 {
                     if( endPoint == 0 )     // 2f
                     {
-                        Console.WriteLine("Error 读取浮点形必须有小数点!!!");
+                        Debug.Write("Error 读取浮点形必须有小数点!!!");
                         AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float);
                         break;
                     }
@@ -524,7 +525,7 @@ namespace SimpleLanguage.Compile.Parse
                 {
                     if( endPoint > 2 )
                     {
-                        Console.WriteLine("Error ReadNumber ... !!!");
+                        Debug.Write("Error ReadNumber ... !!!");
                     }
                     //else if( endPoint == 3 )
                     //{
@@ -543,7 +544,7 @@ namespace SimpleLanguage.Compile.Parse
                             if( frontChar == '.' )
                             {
                                 //LexelLogData lld = new LexelLogData() { m_}
-                                Console.WriteLine("Error 不允许直接使用  number.function的方式，而是必须使用数据识别符才可以使用，例: 2.0f.ToString()");
+                                Debug.Write("Error 不允许直接使用  number.function的方式，而是必须使用数据识别符才可以使用，例: 2.0f.ToString()");
                                 m_Buffer.Remove(m_Buffer.Length - 1, 1);
                                 AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Int32);
                                 AddToken(ETokenType.Period, frontChar );
@@ -592,7 +593,7 @@ namespace SimpleLanguage.Compile.Parse
                         }
                         else
                         {
-                            Console.WriteLine("Error 读取0x类型，数字在0-9 a-f之间, 当前值: " + m_TempChar);
+                            Debug.Write("Error 读取0x类型，数字在0-9 a-f之间, 当前值: " + m_TempChar);
                         }
                     }
                     else
@@ -621,7 +622,7 @@ namespace SimpleLanguage.Compile.Parse
                         }
                         else
                         {
-                            Console.WriteLine("Error 读取0o类型，数字在0-7  当前值: " + m_TempChar);
+                            Debug.Write("Error 读取0o类型，数字在0-7  当前值: " + m_TempChar);
                         }
                     }
                     else
@@ -655,7 +656,7 @@ namespace SimpleLanguage.Compile.Parse
                         }
                         else
                         {
-                            Console.WriteLine("Error 读取0b类型，数字在0/1/-  当前值: " + m_TempChar);
+                            Debug.Write("Error 读取0b类型，数字在0/1/-  当前值: " + m_TempChar);
                         }
                     }
                     else
@@ -704,7 +705,7 @@ namespace SimpleLanguage.Compile.Parse
             }
             else
             {
-                Console.WriteLine("Error 不允许@后边加其它符号!!");
+                Debug.Write("Error 不允许@后边加其它符号!!");
             }
         }
         /// <summary> 读取 }  </summary>
@@ -818,13 +819,13 @@ namespace SimpleLanguage.Compile.Parse
                                     break;
                                 }
                             default:
-                                Console.WriteLine("Error 读字符的时候，不支持当前的符号!! : |" + m_CurChar);
+                                Debug.Write("Error 读字符的时候，不支持当前的符号!! : |" + m_CurChar);
                                 break;
                         }
                     }
                     else if (m_TempChar == '\n')
                     {
-                        Console.WriteLine("Error NotInterrupt 读字符的时候，不允许换行，请使用/r/t 一类的换行符!!");
+                        Debug.Write("Error NotInterrupt 读字符的时候，不允许换行，请使用/r/t 一类的换行符!!");
                         m_Builder.Append(m_TempChar);
                     }
                     else if (m_TempChar == '"')
@@ -884,7 +885,7 @@ namespace SimpleLanguage.Compile.Parse
                     }
                     else if (m_TempChar == '}')
                     {
-                        Console.WriteLine("Error  不允许}独立出现，一般与{配对出现，如果要显示}请使用\\}");
+                        Debug.Write("Error  不允许}独立出现，一般与{配对出现，如果要显示}请使用\\}");
                         break;
                     }
                     else if (m_TempChar == '$')
@@ -980,7 +981,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Console.WriteLine("读取Sharp中[]内容出错!!!");
+                    Debug.Write("读取Sharp中[]内容出错!!!");
                     break;
                 }
 
@@ -1018,7 +1019,7 @@ namespace SimpleLanguage.Compile.Parse
             {
                 if( offset >= m_Length)
                 {
-                    Console.WriteLine("注释没有结尾!!");
+                    Debug.Write("注释没有结尾!!");
                     break;
                 }
                 
@@ -1090,7 +1091,7 @@ namespace SimpleLanguage.Compile.Parse
             }
             else
             {
-                Console.WriteLine("Error 不允许@后边加其它符号!!");
+                Debug.Write("Error 不允许@后边加其它符号!!");
             }
         }
         void ReadSharp()
@@ -1347,7 +1348,7 @@ namespace SimpleLanguage.Compile.Parse
                     tokenType = ETokenType.Interface;
                     break;
                 case "virtual":
-                    Console.WriteLine("Error virtual 但不能在代码中使用!!");
+                    Debug.Write("Error virtual 但不能在代码中使用!!");
                     tokenType = ETokenType.None;
                     return;
                 case "override":
@@ -1610,7 +1611,7 @@ namespace SimpleLanguage.Compile.Parse
                             }
                             else
                             {
-                                Console.WriteLine("Error 解析错误，无法解析这种类型的字符: + " + m_CurChar + "行号: " + m_SourceLine  );
+                                Debug.Write("Error 解析错误，无法解析这种类型的字符: + " + m_CurChar + "行号: " + m_SourceLine  );
                             }
                             break;
                     }

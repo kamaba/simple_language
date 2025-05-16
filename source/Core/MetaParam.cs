@@ -4,6 +4,7 @@ using SimpleLanguage.Core.Statements;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.ConstrainedExecution;
 using System.Security.Cryptography;
@@ -526,7 +527,7 @@ namespace SimpleLanguage.Core
             {
                 if (metaMemberParam.expressNode == null)
                 {
-                    Console.WriteLine("Error AddMetaDefineParam 参数前边已定义表达式，后边必须跟进默认值表达式!!");
+                    Debug.Write("Error AddMetaDefineParam 参数前边已定义表达式，后边必须跟进默认值表达式!!");
                 }
             }
             else
@@ -758,7 +759,7 @@ namespace SimpleLanguage.Core
             }
             if(isAllSame )
             {
-                Console.WriteLine("全都相似");
+                Debug.Write("全都相似");
             }
             return mc;
         }

@@ -129,7 +129,7 @@ namespace SimpleLanguage.Compile.Parse
             }
             else
             {
-                Console.WriteLine("错误 !!1 AddParseClassNodeInfo");
+                Debug.Write("错误 !!1 AddParseClassNodeInfo");
                 return;
             }
             m_FileMeta.AddFileMetaAllClass(fmc);
@@ -145,7 +145,7 @@ namespace SimpleLanguage.Compile.Parse
             }
             else
             {
-                Console.WriteLine("错误 !!1 AddParseVariableInfo");
+                Debug.Write("错误 !!1 AddParseVariableInfo");
                 return;
             }
         }
@@ -161,7 +161,7 @@ namespace SimpleLanguage.Compile.Parse
             }
             else
             {
-                Console.WriteLine("错误 !!1 AddParseFunctionNodeInfo");
+                Debug.Write("错误 !!1 AddParseFunctionNodeInfo");
                 return;
             }
 
@@ -177,7 +177,7 @@ namespace SimpleLanguage.Compile.Parse
             }
             else
             {
-                Console.WriteLine("错误 !!1 AddParseFunctionNodeInfo");
+                Debug.Write("错误 !!1 AddParseFunctionNodeInfo");
                 return;
             }
 
@@ -200,7 +200,7 @@ namespace SimpleLanguage.Compile.Parse
             }
             else
             {
-                Console.WriteLine("错误 !!1 AddParseFunctionNodeInfo");
+                Debug.Write("错误 !!1 AddParseFunctionNodeInfo");
                 return;
             }
 
@@ -256,7 +256,7 @@ namespace SimpleLanguage.Compile.Parse
                             break;
                         default:
                             {
-                                Console.WriteLine("Error 不允许 在File头级目录中出现 : " + node.token.lexeme.ToString());
+                                Debug.Write("Error 不允许 在File头级目录中出现 : " + node.token.lexeme.ToString());
                             }
                             break;
                     }
@@ -267,7 +267,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Console.WriteLine("Error 不允许 在File头级目录中出现2 : " + node.token?.lexeme.ToString());
+                    Debug.Write("Error 不允许 在File头级目录中出现2 : " + node.token?.lexeme.ToString());
                 }
             }
 
@@ -279,13 +279,13 @@ namespace SimpleLanguage.Compile.Parse
                 m_FileMeta.SetDeep(0);
 #endif
 
-                Console.WriteLine("解析成Code代码结构文件成功!!! 下一步，可以生产Meta文件了");
+                Debug.Write("解析成Code代码结构文件成功!!! 下一步，可以生产Meta文件了");
 
-                Console.WriteLine("生成FileMeta文件成功!!! 下一步，可以 进行混合了 ");
+                Debug.Write("生成FileMeta文件成功!!! 下一步，可以 进行混合了 ");
             }
             else
             {
-                Console.WriteLine("解析出现错误 ParseFile : " + currentNodeInfo.parseType.ToString());
+                Debug.Write("解析出现错误 ParseFile : " + currentNodeInfo.parseType.ToString());
                 return;
             }
             return;
@@ -332,7 +332,7 @@ namespace SimpleLanguage.Compile.Parse
                         }
                         else
                         {
-                            Console.WriteLine("Error 在+-符前边不允许有其它非const类型存在!");
+                            Debug.Write("Error 在+-符前边不允许有其它非const类型存在!");
                             continue;
                         }
                     }
@@ -369,7 +369,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Console.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                    Debug.Write("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                     continue;
                 }
             }
@@ -481,7 +481,7 @@ namespace SimpleLanguage.Compile.Parse
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Error Data数据中，不允许使用除自定义以后的字段!!" + curNode?.token?.ToLexemeAllString());
+                                    Debug.Write("Error Data数据中，不允许使用除自定义以后的字段!!" + curNode?.token?.ToLexemeAllString());
                                 }
                             }
                         }
@@ -517,7 +517,7 @@ namespace SimpleLanguage.Compile.Parse
 
                     if( nextNode == null )
                     {
-                        Console.WriteLine("Error 后边必须有延伸位...");
+                        Debug.Write("Error 后边必须有延伸位...");
                         continue;
                     }
 
@@ -546,12 +546,12 @@ namespace SimpleLanguage.Compile.Parse
                             }
                             else
                             {
-                                Console.WriteLine("Error 如果是 x=-??的形式，在符号后边");
+                                Debug.Write("Error 如果是 x=-??的形式，在符号后边");
                             }
                         }
                         else
                         {
-                            Console.WriteLine("Error 如果是 x=-??的形式，在符号后边");
+                            Debug.Write("Error 如果是 x=-??的形式，在符号后边");
                         }
                     }
                     else if(nextNode.nodeType == ENodeType.Brace )
@@ -623,7 +623,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Console.WriteLine("Error 报错，不允许 解析Data有其它的类型出现!" + curNode.token.ToLexemeAllString() );
+                    Debug.Write("Error 报错，不允许 解析Data有其它的类型出现!" + curNode.token.ToLexemeAllString() );
                 }
 
                 if (isParseEnd)
@@ -655,7 +655,7 @@ namespace SimpleLanguage.Compile.Parse
                     if (curNodexxx.nodeType == ENodeType.Key
                         && curNodexxx.token.type == ETokenType.Enum)
                     {
-                        Console.WriteLine("error 不允许在enum 内容里边再嵌套enum");
+                        Debug.Write("error 不允许在enum 内容里边再嵌套enum");
                         return;
                     }
                 }
@@ -739,7 +739,7 @@ namespace SimpleLanguage.Compile.Parse
                         }
                         else
                         {
-                            Console.WriteLine("在解析enum member 中 成员变量 如果是identifier格式，则后边不允许跟当前格式");
+                            Debug.Write("在解析enum member 中 成员变量 如果是identifier格式，则后边不允许跟当前格式");
                         }
                     }
                     else
@@ -778,7 +778,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Console.WriteLine("Error 解析Enum memeber 时，不允许有其它形式的存在!");
+                    Debug.Write("Error 解析Enum memeber 时，不允许有其它形式的存在!");
                 }
 
                 if(isParse )
@@ -811,7 +811,7 @@ namespace SimpleLanguage.Compile.Parse
                 //    }
                 //    else
                 //    {
-                //        Console.WriteLine("Error 不允许在Class1()后 不能增加其它内容!!");
+                //        Debug.Write("Error 不允许在Class1()后 不能增加其它内容!!");
                 //        break;
                 //    }
                 //}
@@ -835,7 +835,7 @@ namespace SimpleLanguage.Compile.Parse
                 //    }
                 //    else
                 //    {
-                //        Console.WriteLine("Error 在语句中直接使用{}不符合语法要求!!!");
+                //        Debug.Write("Error 在语句中直接使用{}不符合语法要求!!!");
                 //    }
                 //}
                 #endregion
@@ -923,16 +923,42 @@ namespace SimpleLanguage.Compile.Parse
                 {
                     if( namespaceNode != null )
                     {
-                        Console.WriteLine("Error 在解析namespace 中，后边跟着参数多于正常语法!!");
+                        Debug.Write("Error 在解析namespace 中，后边跟着参数多于正常语法!!");
                     }
                     namespaceNode = nextNode;
                     conNode.Add(namespaceNode);
+
+                    if( pnode.parseIndex + 1 < pnode.childList.Count )
+                    {
+                        var next2Node =  pnode.childList[pnode.parseIndex + 1];
+                        if( next2Node?.nodeType == ENodeType.LineEnd )
+                        {
+                            if (pnode.parseIndex + 2 < pnode.childList.Count)
+                            {
+                                var next3Node = pnode.childList[pnode.parseIndex + 2];
+                                if( next3Node?.nodeType == ENodeType.Brace )
+                                {
+                                    currentNode.blockNode = next2Node;
+                                    isBlock = true;
+                                    pnode.parseIndex += 3;
+                                    break;
+                                }
+                            }
+                        }
+                        else if( next2Node?.nodeType == ENodeType.Brace )
+                        {
+                            currentNode.blockNode = next2Node;
+                            isBlock = true;
+                            pnode.parseIndex += 2;
+                            break;
+                        }
+                    }
                 }
                 else if(nextNode.nodeType == ENodeType.LineEnd )
                 {
                     if (ProjectManager.isUseForceSemiColonInLineEnd)
                     {
-                        Console.WriteLine("Error 在解析namespace 中，需要强制;号结束");
+                        Debug.Write("Error 在解析namespace 中，需要强制;号结束");
                         break;
                     }
                     else
@@ -952,7 +978,7 @@ namespace SimpleLanguage.Compile.Parse
             {
                 if(namespaceNode == null )
                 {
-                    Console.WriteLine("Error 在解析namespace 中，没有找到namespace设置的名称!!");
+                    Debug.Write("Error 在解析namespace 中，没有找到namespace设置的名称!!");
                 }
                 FileMetaNamespace fmn = new FileMetaNamespace(currentNode, namespaceNode);
 
@@ -972,7 +998,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Console.WriteLine("Error 暂不允许使用namespace 定义命名空间!!!" + ist.ToFormatString() + " 位置: " + currentNode.token.ToLexemeAllString());
+                    Debug.Write("Error 暂不允许使用namespace 定义命名空间!!!" + ist.ToFormatString() + " 位置: " + currentNode.token.ToLexemeAllString());
 
                 }
             }
@@ -1008,7 +1034,7 @@ namespace SimpleLanguage.Compile.Parse
                         var next3Node = bracketNode.childList[index1 + 1];
                         if (next3Node?.nodeType != ENodeType.SemiColon)
                         {
-                            Console.WriteLine("Error 应该使用;结束语句!!");
+                            Debug.Write("Error 应该使用;结束语句!!");
                         }
                     }
                 }
@@ -1034,7 +1060,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Console.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                    Debug.Write("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                     continue;
                 }
             }
@@ -1138,17 +1164,17 @@ namespace SimpleLanguage.Compile.Parse
                         }
                         else if (nextNode.nodeType == ENodeType.IdentifierLink)  // Class1 c1
                         {
-                            Console.WriteLine("Error 不允许在顶级Class里边有变量的存在!!");
+                            Debug.Write("Error 不允许在顶级Class里边有变量的存在!!");
                             continue;
                         }
                         else if (nextNode?.nodeType == ENodeType.Assign) //Class1 = "test1", [],{}, (2+3); Class2(10);
                         {
-                            Console.WriteLine("Error 不允许在顶级Class里边有 新建Class1的存在");
+                            Debug.Write("Error 不允许在顶级Class里边有 新建Class1的存在");
                             continue;
                         }
                         else
                         {
-                            Console.WriteLine("Error 不允许在顶级Class里边有 新建Class1的存在1111111");
+                            Debug.Write("Error 不允许在顶级Class里边有 新建Class1的存在1111111");
                             continue;
                         }
                     }
@@ -1165,7 +1191,7 @@ namespace SimpleLanguage.Compile.Parse
                         }
                         else
                         {
-                            Console.WriteLine("Error 不允许在顶级namespace里边有 新建namespace的存在1111111");
+                            Debug.Write("Error 不允许在顶级namespace里边有 新建namespace的存在1111111");
                             continue;
                         }
                     }
@@ -1185,10 +1211,6 @@ namespace SimpleLanguage.Compile.Parse
                         isCanAdd = true;
                         break;
                     }
-                    else
-                    {
-                        Console.WriteLine("Error 该解析只允许 有 classname/namespacename\n{}的结构!");
-                    }
                 }
                 else if (curNode?.nodeType == ENodeType.Brace)
                 {
@@ -1198,7 +1220,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Console.WriteLine("Error 不允许在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString() );
+                    Debug.Write("Error 不允许在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString() );
                 }
             }
 
@@ -1219,12 +1241,12 @@ namespace SimpleLanguage.Compile.Parse
                     }
                     else
                     {
-                        Console.WriteLine("Error 对于 namespace A.B{}的格式 多了一个参数!1");
+                        Debug.Write("Error 对于 namespace A.B{}的格式 多了一个参数!1");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Error 没有发现是Class还是Namespace的关键字!");
+                    Debug.Write("Error 没有发现是Class还是Namespace的关键字!");
                 }
             }
         }
@@ -1372,7 +1394,7 @@ namespace SimpleLanguage.Compile.Parse
                     //    }
                     //    else
                     //    {
-                    //        Console.WriteLine("Error 解析： “ + " + next2Node?.token?.ToLexemeAllString());
+                    //        Debug.Write("Error 解析： “ + " + next2Node?.token?.ToLexemeAllString());
                     //    }
                     //}
                 }
@@ -1413,7 +1435,7 @@ namespace SimpleLanguage.Compile.Parse
                             break;
                         }
                     }
-                    Console.WriteLine("Error 不允许--------------------");
+                    Debug.Write("Error 不允许--------------------");
                 }
             }
 
@@ -1430,7 +1452,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Console.WriteLine("正常处理");
+                    Debug.Write("正常处理");
                     return;
                 }
             }
@@ -1448,7 +1470,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Console.WriteLine("Error 未111111111111123123123");
+                    Debug.Write("Error 未111111111111123123123");
                 }
             }
             ParseInClass(pnode);

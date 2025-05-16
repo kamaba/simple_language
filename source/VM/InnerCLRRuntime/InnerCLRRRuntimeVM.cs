@@ -1,6 +1,7 @@
 ﻿using SimpleLanguage.IR;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.VM.Runtime
@@ -56,7 +57,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_StaticVariableValueArray.Length)
             {
-                Console.WriteLine("执行的参数超出范围!!");
+                Debug.Write("执行的参数超出范围!!");
                 return;
             }
             ObjectManager.SetValueByValue(ref val, ref m_StaticVariableValueArray[index] );
@@ -65,7 +66,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_StaticVariableValueArray.Length)
             {
-                Console.WriteLine("执行的栈超出范围!!");
+                Debug.Write("执行的栈超出范围!!");
                 return;
             }
             ObjectManager.SetValueByValue( ref m_StaticVariableValueArray[index], ref svalue );

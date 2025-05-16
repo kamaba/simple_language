@@ -19,6 +19,7 @@ using System.Timers;
 using SimpleLanguage.Compile.Parse;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Security.Cryptography.X509Certificates;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Project
 {
@@ -48,19 +49,19 @@ namespace SimpleLanguage.Project
 
             if( !directory.Exists)
             {
-                Console.WriteLine("Error 项目加载路径不正确!!");
+                Debug.Write("Error 项目加载路径不正确!!");
             }
 
             string[] paths = Directory.GetFiles(ProjectManager.projectPath, "*.sp", SearchOption.TopDirectoryOnly);
             if( paths.Length == 0 )
             {
-                Console.WriteLine("Error 项目加载路径没有找到sp文件!!");
+                Debug.Write("Error 项目加载路径没有找到sp文件!!");
             }
 
 
             if (!File.Exists(paths[0]))
             {
-                Console.WriteLine("Error 项目加载路径不正确!!");
+                Debug.Write("Error 项目加载路径不正确!!");
                 return;
             }
             m_ProjectFile = new FileMeta(paths[0]);
@@ -87,7 +88,7 @@ namespace SimpleLanguage.Project
 
             ProjectClass.ParseCompileClass();
 
-            Console.WriteLine(m_ProjectFile.ToFormatString());
+            Debug.Write(m_ProjectFile.ToFormatString());
         }
 
         public static void Compile( string path, ProjectData pd )
@@ -137,7 +138,7 @@ namespace SimpleLanguage.Project
                 if( !fileParseList[i].IsExists() )
                 {
                     isSuccess = false;
-                    Console.WriteLine("没有找到要编译的文件: " + fileParseList[i].filePath);
+                    Debug.Write("没有找到要编译的文件: " + fileParseList[i].filePath);
                     break;
                 }
             }
@@ -150,7 +151,7 @@ namespace SimpleLanguage.Project
             {
                 fileParseList[i].StructParse();
 
-                Console.WriteLine(fileParseList[i].ToFormatString());
+                Debug.Write(fileParseList[i].ToFormatString());
             }
         }
         public static void StructParseComplete()
@@ -175,12 +176,12 @@ namespace SimpleLanguage.Project
             if (grammerParseCount < parseListCount)
                 return;
 
-            Console.WriteLine("");
+            Debug.Write("");
         }
         public static void Update(object sender, ElapsedEventArgs e)
         {
             //timeAdd += 100;
-            //Console.WriteLine("currentTime: " + timeAdd.ToString());
+            //Debug.Write("currentTime: " + timeAdd.ToString());
         }
 
         public static void CompileFileAllEnd()
@@ -224,9 +225,9 @@ namespace SimpleLanguage.Project
             MetaVariableManager.instance.ParseMetaClassMemberExpress();
             MethodManager.instance.ParseMetaExpress();
             MethodManager.instance.ParseStatements();
-            Console.WriteLine("-------------------------解析完成后的格式输出 开始--------------------------");
+            Debug.Write("-------------------------解析完成后的格式输出 开始--------------------------");
             Console.Write(ModuleManager.instance.ToFormatString() + Environment.NewLine);
-            Console.WriteLine("-------------------------解析完成后的格式输出 结束--------------------------");
+            Debug.Write("-------------------------解析完成后的格式输出 结束--------------------------");
         }
     }
 }

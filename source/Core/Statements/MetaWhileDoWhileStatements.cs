@@ -10,6 +10,7 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
 
@@ -43,7 +44,7 @@ namespace SimpleLanguage.Core.Statements
             {
                 if (m_FileMetaKeyForSyntax.conditionExpress == null)
                 {
-                    Console.WriteLine("Error for in express后边没有表达式!!");
+                    Debug.Write("Error for in express后边没有表达式!!");
                 }
 
 
@@ -67,7 +68,7 @@ namespace SimpleLanguage.Core.Statements
                 var mnoen = m_ConditionExpress as MetaNewObjectExpressNode;
                 if (mcallEn == null && mnoen == null)
                 {
-                    Console.WriteLine("Error For in 表达式，应该是个数组形式");
+                    Debug.Write("Error For in 表达式，应该是个数组形式");
                     return;
                 }
                 if( mcallEn != null )
@@ -82,7 +83,7 @@ namespace SimpleLanguage.Core.Statements
                 MetaType mdt = m_ForInContent.metaDefineType;
                 if ( !mdt.IsCanForIn() )
                 {
-                    Console.WriteLine("Error For in 表达式，应该是个数组形式!");
+                    Debug.Write("Error For in 表达式，应该是个数组形式!");
                     return;
                 }
                 var forMVMC = mdt.GetMetaInputTemplateByIndex();
@@ -94,14 +95,14 @@ namespace SimpleLanguage.Core.Statements
                 var fmcd = m_FileMetaKeyForSyntax.fileMetaClassDefine as FileMetaCallSyntax;
                 if( fmcd == null )
                 {
-                    Console.WriteLine("Error For x in X必须有!!");
+                    Debug.Write("Error For x in X必须有!!");
                     return;
                 }
                 string dname = fmcd.variableRef.name;
                 var dmv = m_ThenMetaStatements.GetMetaVariableByName(dname);
                 if (dmv != null )
                 {
-                    Console.WriteLine("Error 在 for .. in 中，不允许从for 外边定义遍历变量!!");
+                    Debug.Write("Error 在 for .. in 中，不允许从for 外边定义遍历变量!!");
                     return;
                 }
                 else
@@ -167,7 +168,7 @@ namespace SimpleLanguage.Core.Statements
                 }
                 if (m_ForMetaVariable == null)
                 {
-                    Console.WriteLine("Error 没有找到相应的变量!!");
+                    Debug.Write("Error 没有找到相应的变量!!");
                 }
                 m_ThenMetaStatements.UpdateMetaVariableDict(m_ForMetaVariable);
 

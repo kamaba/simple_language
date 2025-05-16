@@ -9,6 +9,7 @@
 using SimpleLanguage.Compile.CoreFileMeta;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Compile.Parse
 {
@@ -43,9 +44,9 @@ namespace SimpleLanguage.Compile.Parse
         }
         public void BuildEnd()
         {
-            Console.WriteLine($"---------------File:{m_FileMeta.path}  Token节点  开始:-------------------------");
-            Console.WriteLine(m_RootNode.ToFormatString());
-            Console.WriteLine($"---------------File:{m_FileMeta.path}  Token节点  结束:-------------------------");
+            Debug.Write($"---------------File:{m_FileMeta.path}  Token节点  开始:-------------------------");
+            Debug.Write(m_RootNode.ToFormatString());
+            Debug.Write($"---------------File:{m_FileMeta.path}  Token节点  结束:-------------------------");
         }
         public void AddImportNode( Token token )
         {
@@ -111,7 +112,7 @@ namespace SimpleLanguage.Compile.Parse
             }
             else
             {
-                Console.WriteLine("现在@符必须使用.@方式!!");
+                Debug.Write("现在@符必须使用.@方式!!");
             }
             m_TokenIndex++;
 
@@ -232,7 +233,7 @@ namespace SimpleLanguage.Compile.Parse
         {
             if (currentNode == null)
             {
-                Console.WriteLine("Error CurrentNode is NULL!!" + token?.ToLexemeAllString());
+                Debug.Write("Error CurrentNode is NULL!!" + token?.ToLexemeAllString());
                 return;
             }
             switch (token.type)
@@ -276,7 +277,7 @@ namespace SimpleLanguage.Compile.Parse
                         }
                         else
                         {
-                            Console.WriteLine("Error 不对称{}");
+                            Debug.Write("Error 不对称{}");
                         }
                     }
                     break;
@@ -341,7 +342,7 @@ namespace SimpleLanguage.Compile.Parse
                         }
                         else
                         {
-                            Console.WriteLine("Error 不对称()");
+                            Debug.Write("Error 不对称()");
                         }
                     }
                     break;
@@ -369,7 +370,7 @@ namespace SimpleLanguage.Compile.Parse
                         }
                         else
                         {
-                            Console.WriteLine("Error 不对称[]");
+                            Debug.Write("Error 不对称[]");
                         }
                     }
                     break;
@@ -639,8 +640,8 @@ namespace SimpleLanguage.Compile.Parse
                     break;
                 default:
                     {
-                        Console.WriteLine("Line:{0} Source: {1}", token.sourceBeginLine, 
-                            token.sourceBeginChar);
+                        Debug.Write( string.Format("Line:{0} Source: {1}", token.sourceBeginLine, 
+                            token.sourceBeginChar) );
                         throw new Exception( "不支持的语法 " );
                     }
             }

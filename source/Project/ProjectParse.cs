@@ -297,7 +297,7 @@ namespace SimpleLanguage.Project
                         }
                         else
                         {
-                            Console.WriteLine("Error 未识别到" + usetype);
+                            Debug.Write("Error 未识别到" + usetype);
                             continue;
                         }
                     }
@@ -468,7 +468,7 @@ namespace SimpleLanguage.Project
             int ct = this.metaMemberDataDict.Count;
             if ( fmc.memberVariableList.Count > 0 || fmc.memberFunctionList.Count > 0)
             {
-                Console.WriteLine("Error Data中不允许有Variable 和 Function!!");
+                Debug.Write("Error Data中不允许有Variable 和 Function!!");
             }
         }
 
@@ -575,7 +575,7 @@ namespace SimpleLanguage.Project
             MetaBase mb = ProjectManager.globalData.GetChildrenMetaBaseByName(fmd.name);
             if (mb != null)
             {
-                Console.WriteLine("Error ProjectParse ParseGlobalVariable已有定义类: " + allName + "中 已有: " + fmd.token?.ToLexemeAllString() + "的元素!!");
+                Debug.Write("Error ProjectParse ParseGlobalVariable已有定义类: " + allName + "中 已有: " + fmd.token?.ToLexemeAllString() + "的元素!!");
                 return;
             }
             //需要在做Data处理的时候 ，再处理该逻辑
@@ -668,7 +668,7 @@ namespace SimpleLanguage.Project
             {
                 if (ds.type == DefineStruct.EDefineStructType.Namespace)
                 {
-                    Console.WriteLine("Error 不能在class里，添加namespace!");
+                    Debug.Write("Error 不能在class里，添加namespace!");
                 }
                 else if (ds.type == DefineStruct.EDefineStructType.Class)
                 {

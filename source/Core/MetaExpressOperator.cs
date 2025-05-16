@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using SimpleLanguage.Compile;
@@ -276,7 +277,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Console.WriteLine("Error 没有适合的符号!!!" + ett.ToString());
+                        Debug.Write("Error 没有适合的符号!!!" + ett.ToString());
                     }
                     break;
             }
@@ -393,7 +394,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Console.WriteLine("Error 错误，左右值不对!!");
+                Debug.Write("Error 错误，左右值不对!!");
             }
         }
         public void ParseAddOrMinus()

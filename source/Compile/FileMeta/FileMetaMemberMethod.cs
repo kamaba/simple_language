@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile.Parse;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
 {
@@ -37,7 +38,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             var valueNodeList = new List<Node>();
             if (!FileMetatUtil.SplitNodeList(nodeList, listDefieNode, valueNodeList, ref m_AssignToken))
             {
-                Console.WriteLine("Error 解析NodeList出现错误~~~");
+                Debug.Write("Error 解析NodeList出现错误~~~");
                 return false;
             }
             m_Express = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.ParamVariable);
@@ -46,12 +47,12 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             Node typeNode = null;
             if (!GetNameAndTypeNode(listDefieNode, ref nameNode, ref typeNode))
             {
-                Console.WriteLine("Error 没有找到该定义名称 必须使用例: X = 10; 的格式");
+                Debug.Write("Error 没有找到该定义名称 必须使用例: X = 10; 的格式");
                 return false;
             }
             if (nameNode == null)
             {
-                Console.WriteLine("Error 没有找到该定义名称 必须使用例: X = 10; 的格式");
+                Debug.Write("Error 没有找到该定义名称 必须使用例: X = 10; 的格式");
                 return false;
             }
             m_Token = nameNode?.token;
@@ -196,7 +197,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         else
                         {
                             isError = true;
-                            Console.WriteLine("Error 解析过了一次权限!!");
+                            Debug.Write("Error 解析过了一次权限!!");
                         }
                     }
                     else if (token.type == ETokenType.Override)
@@ -204,7 +205,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (virtualToken != null)
                         {
                             isError = true;
-                            Console.WriteLine("Error 解析过了一次Override!!");
+                            Debug.Write("Error 解析过了一次Override!!");
                         }
                         virtualToken = token;
                     }
@@ -217,7 +218,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (getToken != null)
                         {
                             isError = true;
-                            Console.WriteLine(" Error 解析类型多个get");
+                            Debug.Write(" Error 解析类型多个get");
                         }
                         getToken = token;
                     }
@@ -226,7 +227,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (setToken != null)
                         {
                             isError = true;
-                            Console.WriteLine(" Error 解析类型多个set");
+                            Debug.Write(" Error 解析类型多个set");
                         }
                         setToken = token;
                     }
@@ -239,7 +240,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (interfaceToken != null)
                         {
                             isError = true;
-                            Console.WriteLine("Error 解析interface已使用过一次，不允许重复使用!!");
+                            Debug.Write("Error 解析interface已使用过一次，不允许重复使用!!");
                         }
                         interfaceToken = token;
                     }
@@ -248,21 +249,21 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if( finalNode != null )
                         {
                             isError = true;
-                            Console.WriteLine(" Error 解析类型多个final");
+                            Debug.Write(" Error 解析类型多个final");
                         }
                         finalToken = token;
                     }
                     else
                     {
                         isError = true;
-                        Console.WriteLine("Error 有其它未知类型在class中");
+                        Debug.Write("Error 有其它未知类型在class中");
                         break;
                     }
                 }
             }
             if(finalNode == null )
             {
-                Console.WriteLine("Eror 没有找到合适的函数类型: 位置: " + nodeList[0].token?.ToLexemeAllString());
+                Debug.Write("Eror 没有找到合适的函数类型: 位置: " + nodeList[0].token?.ToLexemeAllString());
                 return false;
             }
 
@@ -278,12 +279,12 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             }
             else
             {
-                Console.WriteLine("Error 解析位置 Token: " + m_Token?.ToLexemeAllString() );
+                Debug.Write("Error 解析位置 Token: " + m_Token?.ToLexemeAllString() );
                 return false;
             }
             if( isError )
             {
-                Console.WriteLine("ParseFunction 解析函数");
+                Debug.Write("ParseFunction 解析函数");
             }
             m_VirtualOverrideToken = virtualToken;            
             m_PermissionToken = permissionToken;
@@ -330,7 +331,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 FileMetaParamterDefine cdp = new FileMetaParamterDefine(m_FileMeta, nodelist);
                 if (nameSet.Contains(cdp.name))
                 {
-                    Console.WriteLine("Error 参数名称有重名!!!");
+                    Debug.Write("Error 参数名称有重名!!!");
                 }
                 AddMetaParamter(cdp);
             }
@@ -352,7 +353,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     FileMetaTemplateDefine cdp = new FileMetaTemplateDefine(m_FileMeta, cnode);
                     if (m_MetaTemplatesList.Find( a=> a.name == cdp.name ) != null )
                     {
-                        Console.WriteLine("Error 参数名称有重名!!!");
+                        Debug.Write("Error 参数名称有重名!!!");
                         continue;
                     }
                     AddMetaTemplate(cdp);
