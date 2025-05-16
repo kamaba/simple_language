@@ -39,26 +39,67 @@ Class3
 
 }
 
+
+data RectShape
+{
+    x = 0
+    y = 0
+    width = 0
+    height = 0
+}
+data CircleShape
+{
+    x = 0
+    y = 0
+    r = 1.0f
+}
+enum EShape extends data
+{
+    r1 = RectShape(){x = 1, y = 1, width = 100, height = 100 }
+    r2 = RectShape(){ x = 2, y = 2, width = 200, height = 200 }
+    c1 = CircleShape(){ x = 1, y = 2, r = 100 }
+    c2 = CircleShape() { x = 2, y = 2, r = 300 }
+    mut cd = CircleShape()
+}   
+
 CastTObject
 {
+    static enumcast()
+    {
+        EShape shape = EShape.r1;
+
+        if shape == EShape.r1
+        {
+
+        }
+        elif shape == EShape.cd
+        {
+            EShape.cd = CircleShape(){ x = 100, y = 100, r = 1000 }
+            #这里变了，则shape也会变  不能直接使用shape复制
+            #r = shape.cast<CircleShape>().r  # r=1000
+            outstr = shape.cast<CircleShape>().r
+            Console.Write("shapeCastCircleShape.R=" + outstr )
+        }
+    }
     static Fun()
     {
         #数字类型转换
+        enumcast()
         int a1 = 10;
         float a2 = 10.0f;
         double a3 = 10.0d;
         long a4 = 1000000;
         string a5 = "2323";
         string a6 = "mdme";
-        b1 = a1.Cast<float>();  #在int类中，找Cast重载，查看Template 为float的方式
-        b2 = a2.Cast<String>(); # 在float中找Cast重载, 查看Template == String的方式
+        b1 = a1.cast<float>();  #在int类中，找Cast重载，查看Template 为float的方式
+        b2 = a2.cast<String>(); # 在float中找Cast重载, 查看Template == String的方式
         c = a1;   
         int c2 = c;  #相当于c.Cast<Int32>();
         double c3 = b2;  #相当于b.Cast<Double>();
 
         #类的转换
         Class1 cc1 = {};
-        cf = cc1.Cast<Float>();    #查看Class1中的Template为Float型时的方法
+        cf = cc1.cast<Float>();    #查看Class1中的Template为Float型时的方法
         Class2 cc2 = {};
         Class1 cc3 = cc2;             # 父子类转掀 c2.Cast<Class1>(); 
         Class2 cc4 = c3.Cast<Class2>();     #从父类向子类转换，一般为空

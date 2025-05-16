@@ -7,15 +7,18 @@
 //****************************************************************************
 
 using SimpleLanguage.Core.Statements;
-using SimpleLanguage.IR;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.IR.Statements
+namespace SimpleLanguage.IR
 {
-    public class MetaIRSwitchStatements : MetaIRStatements
+    public class IRSwitchStatements : IRStatements
     {
+        public IRSwitchStatements(IRMethod method)
+        {
+            this.irMethod = method;
+        }
         public List<IRBase> ParseIRStatements(MetaSwitchStatements ms)
         {
             IRData insNode = new IRData();

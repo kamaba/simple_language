@@ -6,16 +6,15 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Core.IRStatements;
 using SimpleLanguage.Core.Statements;
-using SimpleLanguage.IR;
+using SimpleLanguage.IR.Statements;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.IR.Statements
+namespace SimpleLanguage.IR
 {
-    public class IRBlockStatements : MetaIRStatements
+    public class IRBlockStatements : IRStatements
     {
         public IRBlockStatements( IRMethod irmthod )
         {
@@ -42,61 +41,61 @@ namespace SimpleLanguage.IR.Statements
                         break;
                     case MetaDefineVarStatements mns:
                         {
-                            MetaIRDefineVarStatements mirns = new MetaIRDefineVarStatements(irMethod);
+                            IRDefineVarStatements mirns = new IRDefineVarStatements(irMethod);
                             mirns.ParseIRStatements(mns);
                         }
                         break;
                     case MetaAssignStatements mas:
                         {
-                            MetaIRAssignStatements miras = new MetaIRAssignStatements();
+                            IRAssignStatements miras = new IRAssignStatements(irMethod);
                             miras.ParseIRStatements(mas);
                         }
                         break;
                     case MetaBreakStatements mbreaks:
                         {
-                            MetaIRBreakStatements mirbs = new MetaIRBreakStatements();
+                            IRBreakStatements mirbs = new IRBreakStatements(irMethod);
                             mirbs.ParseIRStatements(mbreaks);
                         }
                         break;
                     case MetaContinueStatements mcs:
                         {
-                            MetaIRContinueStatements mircs = new MetaIRContinueStatements();
+                            IRContinueStatements mircs = new IRContinueStatements(irMethod);
                             mircs.ParseIRStatements(mcs);
                         }
                         break;
                     case MetaGotoLabelStatements mgls:
                         {
-                            MetaIRGotoLabelStatements mirgls = new MetaIRGotoLabelStatements();
+                            IRGotoLabelStatements mirgls = new IRGotoLabelStatements(irMethod);
                             mirgls.ParseIRStatements(mgls);
                         }
                         break;
                     case MetaIfStatements mif:
                         {
-                            MetaIRIfStatements mirif = new MetaIRIfStatements();
+                            IRIfStatements mirif = new IRIfStatements(irMethod);
                             mirif.ParseIRStatements(mif);
                         }
                         break;
                     case MetaReturnStatements mirrs:
                         {
-                            MetaIRReturnStatements mirrss = new MetaIRReturnStatements();
+                            IRReturnStatements mirrss = new IRReturnStatements(irMethod);
                             mirrss.ParseIRStatements(mirrs);
                         }
                         break;
                     case MetaSwitchStatements mswitchs:
                         {
-                            MetaIRSwitchStatements mirss = new MetaIRSwitchStatements();
+                            IRSwitchStatements mirss = new IRSwitchStatements(irMethod);
                             mirss.ParseIRStatements(mswitchs);
                         }
                         break;
                     case MetaForStatements mfors:
                         {
-                            MetaIRForStatements mirfors = new MetaIRForStatements();
+                            IRForStatements mirfors = new IRForStatements(irMethod);
                             mirfors.ParseIRStatements(mfors);
                         }
                         break;
                     case MetaWhileDoWhileStatements mwdws:
                         {
-                            MetaIRWhileDoWhileStatements mirwdws = new MetaIRWhileDoWhileStatements();
+                            IRWhileDoWhileStatements mirwdws = new IRWhileDoWhileStatements(irMethod);
                             mirwdws.ParseIRStatements(mwdws);
                         }
                         break;

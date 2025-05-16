@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.IR.Statements
+namespace SimpleLanguage.IR
 {
     public class IRStatementsManager
     {

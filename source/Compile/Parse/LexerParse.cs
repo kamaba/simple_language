@@ -1610,7 +1610,7 @@ namespace SimpleLanguage.Compile.Parse
                             }
                             else
                             {
-                                Console.WriteLine("Error 解析错误，无法解析这种类型的字符: + " + m_CurChar );
+                                Console.WriteLine("Error 解析错误，无法解析这种类型的字符: + " + m_CurChar + "行号: " + m_SourceLine  );
                             }
                             break;
                     }

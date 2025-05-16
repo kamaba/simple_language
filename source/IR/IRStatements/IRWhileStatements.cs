@@ -13,10 +13,14 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.IR.Statements
+namespace SimpleLanguage.IR
 {
-    public class MetaIRForStatements : MetaIRStatements
+    public class IRForStatements : IRStatements
     {
+        public IRForStatements(IRMethod method)
+        {
+            this.irMethod = method;
+        }
         public IRNop startIRData = null;       //for开始执行起点
         public IRNop forStartIRData = null;    //for 循环返回起点
         public IRBranch ifIRData = null;            //判断是否到终点if判断
@@ -141,8 +145,12 @@ namespace SimpleLanguage.IR.Statements
         //}
     }
 
-    public class MetaIRWhileDoWhileStatements : MetaIRStatements
+    public class IRWhileDoWhileStatements : IRStatements
     {
+        public IRWhileDoWhileStatements(IRMethod method)
+        {
+            this.irMethod = method;
+        }
         public IRNop startIRData = null;       //while 开始执行起点
         public IRNop whileStartIRData = null;    //while 循环返回起点
         public IRBranch ifIRData = null;            //判断是否到终点if判断

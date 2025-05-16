@@ -6,17 +6,20 @@
 //  Description:  handle assign statements syntax to instruction r!
 //****************************************************************************
 
-using SimpleLanguage.IR;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.IR.Statements
+namespace SimpleLanguage.IR
 {
-    public class MetaIRAssignStatements : MetaIRStatements
+    public class IRAssignStatements : IRStatements
     {
+        public IRAssignStatements(IRMethod method)
+        {
+            this.irMethod = method;
+        }
         protected IRExpress m_IRExpress = null;
         protected IRStoreVariable m_StoreVariable = null;
         public void ParseIRStatements( MetaAssignStatements ms )

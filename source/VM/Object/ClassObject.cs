@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 using SimpleLanguage.IR;
 
@@ -24,7 +25,8 @@ namespace SimpleLanguage.VM
         public ClassObject value => m_Object;
 
         private ClassObject m_Object = null;
-        private byte[] m_Data = null;
+        private byte[] m_Data = null;   /*  m_Data  结构  bit形，只有运算时要用 1-> byte 2->sbyte   3-> int16  4-> uint16    */
+        private short[] m_Type = null;
         private SObject[] m_MemberVariableObjectArray = null;
 
         private IRMetaClass m_IRMetaClass;
@@ -36,12 +38,15 @@ namespace SimpleLanguage.VM
 
             int byteCount = irmc.byteCount;
             m_Data = new byte[byteCount];
+            typeId = irmc.id;
 
             var mvdict = irmc.localIRMetaVariableList;
             m_MemberVariableObjectArray = new SObject[mvdict.Count];
-            for( int i = 0; i < mvdict.Count; i++ )
+            m_Type = new short[mvdict.Count];
+            for ( int i = 0; i < mvdict.Count; i++ )
             {
                 var obj = ObjectManager.CreateObjectByDefineType(mvdict[i].irMetaClass);
+                m_Type[i] = obj.typeId;
                 m_MemberVariableObjectArray[i] = obj;
             }
         }

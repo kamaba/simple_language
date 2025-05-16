@@ -6,15 +6,13 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Core.Statements;
-using SimpleLanguage.IR;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.IR.Statements
+namespace SimpleLanguage.IR
 {
-    public class MetaIRStatements
+    public class IRStatements
     {
         public IRMethod irMethod { get; protected set; } = null;
         public List<IRBase> irStatements => m_IRStatements;

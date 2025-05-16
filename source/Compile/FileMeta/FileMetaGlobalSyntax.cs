@@ -43,8 +43,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public FileMetaImportSyntax(List<Node> _nodeList)
         {
             m_NodeList = _nodeList;
-
-            ParseImportSyntax();
         }
         private bool ParseImportSyntax()
         {
@@ -75,6 +73,8 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         }
         public void Parse()
         {
+            ParseImportSyntax();
+
             MetaBase mb = ModuleManager.instance.selfModule;
             List<Token> tokenList = new List<Token>();
             bool isCSharp = false;
@@ -133,7 +133,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append( m_Token.lexeme.ToString() + " " + m_NamespaceStatement.ToFormatString() );
+            sb.Append( this.m_Token?.lexeme.ToString() + " " + m_NamespaceStatement?.ToFormatString() );
             if (m_AsToken != null )
             {
                 sb.Append( " " + m_AsToken.lexeme.ToString());

@@ -16,8 +16,12 @@ using System.Text;
 
 namespace SimpleLanguage.IR.Statements
 {
-    public class MetaIRBreakStatements : MetaIRStatements
+    public class IRBreakStatements : IRStatements
     {
+        public IRBreakStatements(IRMethod method)
+        {
+            this.irMethod = method;
+        }
         public IRBranch irBrach = null;
         public void ParseIRStatements(MetaBreakStatements ms)
         {
@@ -37,8 +41,12 @@ namespace SimpleLanguage.IR.Statements
             //}
         }
     }
-    public class MetaIRContinueStatements : MetaIRStatements
+    public class IRContinueStatements : IRStatements
     {
+        public IRContinueStatements(IRMethod method)
+        {
+            this.irMethod = method;
+        }
         public IRBranch irBrach = null;
         public void ParseIRStatements(MetaContinueStatements mcs )
         {
@@ -58,8 +66,12 @@ namespace SimpleLanguage.IR.Statements
             //}
         }
     }
-    public class MetaIRGotoLabelStatements : MetaIRStatements
+    public class IRGotoLabelStatements : IRStatements
     {
+        public IRGotoLabelStatements(IRMethod method)
+        {
+            this.irMethod = method;
+        }
         public IRLabel labelIR = null;
         public void ParseIRStatements(MetaGotoLabelStatements mgls )
         {

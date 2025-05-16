@@ -22,11 +22,18 @@ namespace SimpleLanguage.Parse
 
         }
     }
+    public enum EUseDefineType
+    {
+        NoUseProjectConfigNamespace,        //不使用项目内部配置
+        LimitUseProjectConfigNamespace,//限制使用配置后的命名空间 类自由创作
+        LimitUseProjectConfigNamespaceAndClass,//限制使用配置后的命名空间与类
+    }
     public class ProjectManager
     {
         public static string projectPath { get; set; } = "";
         public static ProjectData data => m_Data;
-        public static bool isUseDefineNamespace { get; set; } = true;
+        public static EUseDefineType useDefineNamespaceType { get; set; } = EUseDefineType.NoUseProjectConfigNamespace;
+        public static bool isUseNamespaceSearch { get; set; } = true;
         public static bool isUseForceSemiColonInLineEnd { get; set; } = false;
         // 第一位是否只能使用this. base.的方式
         public static bool isFirstPosMustUseThisBaseOrStaticClassName { get; set; } = false;

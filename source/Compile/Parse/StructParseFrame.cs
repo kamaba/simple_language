@@ -948,7 +948,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
             }
 
-            if (isBlock)
+            if (isBlock)        //是否使用 namespace N{}的格式 如果不是{}格式，认为是搜索模式
             {
                 if(namespaceNode == null )
                 {
@@ -966,7 +966,7 @@ namespace SimpleLanguage.Compile.Parse
             {
                 conNode.Insert(0, currentNode);
                 FileDefineNamespace ist = new FileDefineNamespace(conNode);
-                if (ProjectManager.isUseDefineNamespace)
+                if (ProjectManager.useDefineNamespaceType == EUseDefineType.NoUseProjectConfigNamespace )
                 {
                     m_FileMeta.AddFileDefineNamespace(ist);
                 }

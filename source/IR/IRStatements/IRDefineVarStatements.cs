@@ -9,18 +9,16 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
-using SimpleLanguage.IR;
-using SimpleLanguage.IR.Statements;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.IR.Statements
+namespace SimpleLanguage.IR
 {
-    public class MetaIRDefineVarStatements : MetaIRStatements
+    public class IRDefineVarStatements : IRStatements
     {
         IRExpress m_IRExpress = null;
-        public MetaIRDefineVarStatements( IRMethod _method ) 
+        public IRDefineVarStatements( IRMethod _method ) 
         {
             this.irMethod = _method;
         }
