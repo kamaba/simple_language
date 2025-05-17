@@ -31,7 +31,7 @@ namespace SimpleLanguage.CSharp
         {
             if (mb is MetaClass)
             {
-                MetaClass mc = mb as MetaClass;
+                MetaClassCSharp mc = mb as MetaClassCSharp;
 
                 Type type = mc.csharpType;
 
@@ -104,8 +104,7 @@ namespace SimpleLanguage.CSharp
                 {
                     if (ttype.IsClass)
                     {
-                        MetaClass mc = new MetaClass(ttype.Name, ttype);
-                        mc.SetRefFromType(RefFromType.CSharp);
+                        MetaClassCSharp mc = new MetaClassCSharp(ttype.Name, ttype);                        
                         if (mb is MetaModule)
                         {
                             MetaModule mm = mb as MetaModule;
@@ -114,7 +113,7 @@ namespace SimpleLanguage.CSharp
                                 mm.AddMetaClass(mc);
                             }
                         }
-                        if (mb is MetaNamespace)
+                        else if (mb is MetaNamespace)
                         {
                             MetaNamespace mn = mb as MetaNamespace;
                             if (mn != null)
@@ -122,10 +121,14 @@ namespace SimpleLanguage.CSharp
                                 mn.AddMetaClass(mc);
                             }
                         }
-                        else if (mb is MetaClass)
+                        else if (mb is MetaClassCSharp)
                         {
-                            MetaClass gmc = mb as MetaClass;
+                            MetaClassCSharp gmc = mb as MetaClassCSharp;
                             gmc.AddChildrenMetaClass(mc);
+                        }
+                        else
+                        {
+                            Debug.Write("在CSharpManager里边，没有找到相对应的MetaClass");
                         }
                         ClassManager.instance.AddDictMetaClass(mc);
                         return mc;

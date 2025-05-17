@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "1_NamespaceTest1.sl";
+            path = "3_NumberTest.sl";
             group = "temp";
             tag = "all";
             a = 200
@@ -34,13 +34,27 @@ const data ProjectConfig
                 {
                     type = "namespace"
                 }
-                T =
-                {
-                    type = "namespace"
-                }
                 Math =
                 {
                     type = "class"
+                }
+                Layer1_1 =
+                {
+                    type = "namespace"
+                    child ={
+                        Layer2_1 =
+                        {
+                            type="namespace"
+                        }
+                        Layer2_2 =
+                        {
+                            type="namespace"
+                        }
+                    }
+                }
+                Layer1_1 =
+                {
+                    type = "namespace"
                 }
             }
         } 
@@ -60,6 +74,7 @@ Project
        #ObjectTest.Fun();    
        #EnumTest.fun()   
        #CommitTest.fun();
+       NumberTest.fun()
     }
     static Test()
     {

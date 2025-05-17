@@ -153,7 +153,7 @@ namespace SimpleLanguage.Core
 
 
         private FileMetaParamterDefine m_FileMetaParamter = null;
-        private MetaVariable m_MetaVariable = null;
+        protected MetaVariable m_MetaVariable = null;
         private MetaExpressNode m_MetaExpressNode = null;
         public static bool operator ==(MetaDefineParam lmm, MetaDefineParam rmm)
         {
@@ -228,6 +228,11 @@ namespace SimpleLanguage.Core
             //    return true;
 
             return false;
+        }
+        public MetaDefineParam(MetaClass mc, MetaBlockStatements mbs )
+        {
+            m_OwnerMetaClass = mc;
+            m_OwnerMetaBlockStatements = mbs;
         }
         public MetaDefineParam( MetaClass mc, MetaBlockStatements mbs, FileMetaParamterDefine fmp )
         {

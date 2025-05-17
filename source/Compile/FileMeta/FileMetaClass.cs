@@ -413,6 +413,41 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         {
             m_TopLevelFileMetaNamespace = mn;
         }
+        public void AddExtendMetaNamespace( FileMetaNamespace fmn )
+        {
+            if( m_TopLevelFileMetaNamespace != null )
+            {
+
+            }
+            else
+            {
+                if( fmn.isSearchNamespace == false )
+                {
+                    return;
+                }
+                var list = fmn.namespaceStatementBlock.namespaceList;
+                if ( list?.Count < 1 )
+                {
+                    return;
+                }
+                if(this.m_NamespaceBlock != null )
+                {
+                    string lastName = this.m_NamespaceBlock.namespaceList[this.m_NamespaceBlock.namespaceList.Count - 1];
+
+                    if(list[list.Count-1] == lastName )
+                    {
+                        var namespaceNameNode = fmn.namespaceNameNode;
+                        if ( namespaceNameNode.extendLinkNodeList.Count >= 2 )
+                        {
+                            namespaceNameNode.extendLinkNodeList.RemoveRange(namespaceNameNode.extendLinkNodeList.Count - 2, 2);
+                            FileMetaNamespace fmnnew = new FileMetaNamespace(fmn.namespaceNode, namespaceNameNode);
+                            NamespaceManager.instance.CreateMetaNamespaceByFileMetaNamespace(fmnnew);
+                            m_TopLevelFileMetaNamespace = fmnnew;
+                        }
+                    }
+                }
+            }
+        }
         public void SetPartialToken( Token partialToken )
         {
             m_PartialToken = partialToken;

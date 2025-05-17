@@ -57,7 +57,7 @@ namespace SimpleLanguage.Core.IR
                     irCallFun.Parse(cnode.methodCall);
                     irList.Add(irCallFun);
                 }
-                else if (cnode.visitType == MetaVisitNode.EVisitType.NewClassMethodCall)
+                else if (cnode.visitType == MetaVisitNode.EVisitType.NewClass)
                 {
                     var irmc = _irMethod.irManager.GetIRMetaClassByName(cnode.callerMetaClass.allName);
                     IRNew irnew = new IRNew(m_IRMethod, irmc);
@@ -101,7 +101,7 @@ namespace SimpleLanguage.Core.IR
                     irCallFun.Parse(cnode.methodCall);
                     irList.Add(irCallFun);
                 }
-                else if (cnode.visitType == MetaVisitNode.EVisitType.NewClassMethodCall )
+                else if (cnode.visitType == MetaVisitNode.EVisitType.NewClass )
                 {
                     var irmc = _irManager.GetIRMetaClassByName(cnode.callerMetaClass.allName);
                     IRNew irnew = new IRNew( m_IRMethod, irmc);

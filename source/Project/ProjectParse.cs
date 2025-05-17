@@ -585,6 +585,30 @@ namespace SimpleLanguage.Project
             mmd.ParseMetaExpress();
             ProjectManager.globalData.AddMetaMemberData(mmd);
         }
+
+        public bool IsIncludeDefineStruct( List<string> liststr )
+        {
+            DefineStruct dc = namespaceRoot;
+            for( int k = 0; k < liststr.Count; k++ )
+            {
+                string nameByIndex = liststr[k];
+
+                bool isFind = false;
+                for (int i = 0; i < dc.childDefineStruct.Count; i++)
+                {
+                    var cdsc = dc.childDefineStruct[i];
+                    if( cdsc.name == nameByIndex )
+                    {
+                        isFind = true;
+                        dc = cdsc;
+                        break;
+                    }
+                }
+                if (!isFind) return false;
+            }
+
+            return true;
+        }
     }
     public class ProjectParse
     {
@@ -643,7 +667,7 @@ namespace SimpleLanguage.Project
                 }
                 else if( ds.type == DefineStruct.EDefineStructType.Class )
                 {
-                    MetaClass mc = new MetaClass(ds.name, EType.Class);
+                    MetaClass mc = new MetaClass(ds.name, EClassDefineType.StructDefine );
                     mm.AddMetaClass(mc);
                     newParentMB = mc;
 

@@ -18,7 +18,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public IEnumerableMetaClass() : base(DefaultObject.Array.ToString())
         {
             m_Type = EType.Array;
-            m_IsInnerDefineCompile = true;
+            m_ClassDefineType = EClassDefineType.InnerDefine;
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             //m_MetaTemplateList.Add(new TemplateMetaClass("T"));
         }
@@ -28,7 +28,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public ArrayIteratorMetaClass() : base(DefaultObject.Class.ToString())
         {
             m_Type = EType.Class;
-            m_IsInnerDefineCompile = true;
+            m_ClassDefineType = EClassDefineType.InnerDefine;
         }
         public override void ParseInnerVariable()
         {
@@ -50,7 +50,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public ArrayMetaClass():base( DefaultObject.Array.ToString() )
         {
             m_Type = EType.Array;
-            m_IsInnerDefineCompile = true;
+            m_ClassDefineType = EClassDefineType.InnerDefine;
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_MetaTemplateList.Add( new MetaTemplate(this, "T") );
         }

@@ -77,7 +77,7 @@ namespace SimpleLanguage.VM.Runtime
             m_StaticVariableValueArray = new SValue[staticArray.Count];
             for (int i = 0; i < staticArray.Count; i++)
             {
-                //m_StaticVariableValueArray[i] = ObjectManager.CreateValueByDefineType(staticArray[i].metaVariable.metaDefineType);
+                m_StaticVariableValueArray[i] = ObjectManager.CreateValueByDefineType( staticArray[i].irMetaClass );
             }
             //InnverCLRRuntimeVM.RootInnerCLRRuntime 
             RuntimeMethod clrRuntime = new RuntimeMethod(IRManager.instance.irDataList);

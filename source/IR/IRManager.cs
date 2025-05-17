@@ -38,10 +38,9 @@ namespace SimpleLanguage.IR
         public Dictionary<int, string> IRStringDict = new Dictionary<int,string>();
         public Dictionary<int, SValue> IRConstDict = new Dictionary<int, SValue>();
         public List<IRMetaVariable> staticVariableList => m_StaticVariableList;
-        public List<IRMetaVariable>allVariableList => m_AllVariableList;
 
         private List<IRMetaVariable> m_StaticVariableList = new List<IRMetaVariable>();
-        private List<IRMetaVariable> m_AllVariableList = new List<IRMetaVariable>();
+        private Dictionary<int,IRMetaVariable> m_AllVariableDict = new Dictionary<int,IRMetaVariable>();
         private List<IRData> m_IRDataList = new List<IRData>();
 
         private List<IRMetaClass> m_IRMetaClassList = new List<IRMetaClass>();
@@ -59,6 +58,8 @@ namespace SimpleLanguage.IR
                 case EType.UInt32: return EIROpCode.LoadConstUInt32;
                 case EType.Int64: return EIROpCode.LoadConstInt64;
                 case EType.UInt64: return EIROpCode.LoadConstUInt64;
+                case EType.Float: return EIROpCode.LoadConstFloat;
+                case EType.Double: return EIROpCode.LoadConstDouble;
                 case EType.String: return EIROpCode.LoadConstString;
                 case EType.Null:return EIROpCode.LoadConstNull;
                 default:
@@ -109,11 +110,15 @@ namespace SimpleLanguage.IR
                 irmc.CreateMetaClassData(v.Value);
                 m_IRMetaClassList.Add(irmc);
             }
-            foreach (var v in ClassManager.instance.allDataDict )
+            foreach( var v in m_IRMetaClassList)
             {
-                IRMetaClass irmc = new IRMetaClass(this);
-                irmc.CreateMetaClassData(v.Value);
-                m_IRMetaClassList.Add(irmc);
+                v.CreateIRMetaMemberVariable();
+
+                foreach( var v2 in v.localIRMetaVariableList )
+                {
+                    m_AllVariableDict.Add(v2.GetHashCode(), v2);
+                }
+
             }
             foreach ( var v in classDict )
             {
@@ -165,6 +170,8 @@ namespace SimpleLanguage.IR
             }
             foreach ( var v in m_StaticVariableList )
             {
+                m_AllVariableDict.Add(v.GetHashCode(), v);
+
                 IRExpress irexp = new IRExpress(IRManager.instance, v.express );
                 m_IRDataList.AddRange(irexp.IRDataList);
 

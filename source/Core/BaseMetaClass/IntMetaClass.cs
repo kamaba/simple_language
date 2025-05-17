@@ -20,7 +20,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Int16;
-            m_IsInnerDefineCompile = true;
+            m_ClassDefineType = EClassDefineType.InnerDefine;
         }
         public static MetaClass CreateMetaClass()
         {
@@ -35,7 +35,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.UInt16;
-            m_IsInnerDefineCompile = true;
+            m_ClassDefineType = EClassDefineType.InnerDefine;
         }
         public static MetaClass CreateMetaClass()
         {
@@ -50,7 +50,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Int32;
-            m_IsInnerDefineCompile = true;
+            m_ClassDefineType = EClassDefineType.InnerDefine;
         }
         public override void ParseInnerFunction()
         {
@@ -58,7 +58,7 @@ namespace SimpleLanguage.Core.SelfMeta
         }
         public void AddCoreFunction()
         {
-            MetaMemberFunction ToString = new MetaMemberFunction( this, "ToString" );              
+            MetaMemberFunction ToString = new MetaMemberFunction( this, "toString" );              
             ToString.SetMetaDefineType(new MetaType(CoreMetaClassManager.stringMetaClass));
             AddMetaMemberFunction(ToString);
             ToString.AddCSharpMetaStatements("SimpleLanguage.VM.Int32Object", "Int32ToString" );
@@ -69,6 +69,10 @@ namespace SimpleLanguage.Core.SelfMeta
             ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
             return mc;
         }
+        public static string MetaToString(Int32 v)
+        {
+            return v.ToString();
+        }
     }
     public class UInt32MetaClass : MetaClass
     {
@@ -76,7 +80,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.UInt32;
-            m_IsInnerDefineCompile = true;
+            m_ClassDefineType = EClassDefineType.InnerDefine;
         }
         public static MetaClass CreateMetaClass()
         {
@@ -91,7 +95,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Int64;
-            m_IsInnerDefineCompile = true;
+            m_ClassDefineType = EClassDefineType.InnerDefine;
         }
         public static MetaClass CreateMetaClass()
         {
@@ -106,7 +110,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.UInt64;
-            m_IsInnerDefineCompile = true;
+            m_ClassDefineType = EClassDefineType.InnerDefine;
         }
         public static MetaClass CreateMetaClass()
         {

@@ -4,12 +4,17 @@
 —————————————————————————————————————————————————————————
 
 ## 命名空间的使用
-1. 命名空间，需要在<b><i> sp </b></i>工程定义中，先预定好一些路径，才可以在代码中，引用使用 例: sp中  namespace[ "Application.Core", "Appcalition.UI", "Application.Logic", "Application.Logic.Net" ] 如果没有定义，则在工程中使用，出现错误报错!!
+1. 命名空间，的使用，在项目配置中分三种模式
+    - 全部在工程内部定义，包括命名空间，类。 该模式下在其它文件内部不允许再次定义命名空间，及类相关，有使用选项 LimitUseNamespaceAndClass
+    - 全在工程内部定义命名空间，但类，可以自由定义，该模式下，其它文件内部，不允许 定义命名空间，只允许定义类相关内容，使用选项LimitUseNamespace
+    - 可以在工程内部定义，但不限在文件中定义，该模式下，可以在工程内部定义，也可以在文件中随意定义命名空间，及类相关内部，使用选项
+
+需要在<b><i> sp </b></i>工程定义中，先预定好一些路径，才可以在代码中，引用使用 例: sp中  namespace[ "Application.Core", "Appcalition.UI", "Application.Logic", "Application.Logic.Net" ] 如果没有定义，则在工程中使用，出现错误报错!!
 2. 在空间中使用,在工程配置中定义命名空间后，需要在使用import 命名空间名称.命名空间子名称;的方式引入, 也可以使用as 关键字，进行命名空间名称替换，防止引导冲突。
 3. 在引导类时，也可以根据全局命名空间引导使用，如果使用外部模块，则要使用模块的名称，再使用命名空间的名称
 
 命名空间配置实例:
-```csharp
+```javascript
 file:test.sp
 
 
@@ -17,36 +22,41 @@ const data ProjectConfig
 {
     name = "Test1";
     desc = "这是一个测试用例";    
-    globalNamespace          #命名空间设计
+    proojectStruct =          #命名空间设计
     {
-        Application
+        Std =
         {
-            Core
+            type = "namespace"
+            child = 
             {
-                Game{}
-                Instance{}
-                UI{}
+                Collection =
+                {
+                    type = "namespace"
+                }
+                Math =
+                {
+                    type = "class"
+                }
+                Layer1_1 =
+                {
+                    type = "namespace"
+                    child ={
+                        Layer2_1 =
+                        {
+                            type="namespace"
+                        }
+                        Layer2_2 =
+                        {
+                            type="namespace"
+                        }
+                    }
+                }
+                Layer1_1 =
+                {
+                    type = "namespace"
+                }
             }
-            Math
-            {
-                Util{}
-                Ext{}
-            }
-            Render
-            {
-                Camera{}
-                Mass{}
-                Entry{}
-            }
-            Util
-            {
-            }
-        }
-        QT
-        {
-            Math{}
-            Express{}
-        }
+        } 
     }
 }
 

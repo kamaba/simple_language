@@ -86,7 +86,7 @@ namespace SimpleLanguage.Core
             ParameterInfo[] pis = methodInfo.GetParameters();
             for (int i = 0; i < pis.Length; i++)
             {
-                MetaDefineParam mdp = new MetaDefineParam(m_OwnerMetaClass, null, pis[i]);
+                MetaDefineParamCSharp mdp = new MetaDefineParamCSharp(m_OwnerMetaClass, null, pis[i]);
                 m_MetaMemberParamCollection.AddMetaDefineParam(mdp);
             }
 

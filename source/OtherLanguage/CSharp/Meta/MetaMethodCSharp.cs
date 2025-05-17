@@ -6,10 +6,15 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public partial class MetaMethodCall
+    public class MetaMethodCallCSharp : MetaMethodCall
     {
         public MethodInfo methodInfo;
         public System.Object instance;
+        public MetaMethodCallCSharp(MetaVariable mv, MetaFunction _fun, MetaInputParamCollection _metaInputParamCollection = null) 
+            : base(mv, _fun, _metaInputParamCollection)
+        {
+            ParseCSharp();
+        }
 
         public void ParseCSharp()
         {

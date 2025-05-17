@@ -16,193 +16,17 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public class MetaVisitVariable : MetaVariable
-    {
-        /*
-         * 访问变量 一般使用 $x $x 必须先定义
-         * int a = 20; Array arr = Array<int>( 1,2,3); 
-         * int b = arr.$a; 这里的$a就是访问变量，使用arr为localMV, 使用m_VisitMetaVariable 是a 如果是常量，则保存
-         * 常量的  arr.$0  m_VisitMV = null; m_AtName = "0";  返回值本身就是一个变量，相当于已经访问过了，在defineType
-         * 中，返回模版类中的名称
-         */
-        public enum EVisitType
-        {
-            Link,
-            AT
-        }
-        public MetaVariable sourceMetaVariable => m_SourceMetaVariable;
-        public MetaVariable targetMetaVariable => m_TargetMetaVariable;
-
-        MetaVariable m_SourceMetaVariable = null;
-        EVisitType m_VisitType = EVisitType.AT;
-        MetaVariable m_TargetMetaVariable = null;
-        string m_AtName = "";
-
-        public MetaVisitVariable( MetaVariable source, MetaVariable target )
-        {
-            m_VisitType = EVisitType.Link;
-            m_SourceMetaVariable = source;
-            m_TargetMetaVariable = target;
-            m_DefineMetaType = target.metaDefineType;
-        }
-        public int GetIRMemberIndex()
-        {
-            var mmv = m_SourceMetaVariable as MetaMemberVariable;
-            if (mmv != null ) 
-            {
-                //return mmv.ownerMetaClass.GetLocalMemberVariableIndex(mmv);
-            }
-            return -1;
-        }
-        public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaVariable vmv)
-        {
-            m_Name = _name;
-            m_AtName = _name;
-            m_OwnerMetaClass = mc;
-            m_SourceMetaVariable = lmv;
-            if (lmv.isArray)
-            {
-                if (vmv == null && string.IsNullOrEmpty(m_AtName))
-                {
-                    Debug.Write("Error VisitMetaVariable访问变量访问位置不能同时为空!!");
-                    return;
-                }
-                m_TargetMetaVariable = vmv;
-
-                var gmit = m_SourceMetaVariable.metaDefineType.GetMetaInputTemplateByIndex();
-                if (gmit == null)
-                {
-                    Debug.Write("Error 访问的Array中，没有找到模版 名称!!");
-                    return;
-                }
-                m_DefineMetaType = new MetaType(gmit);
-            }
-        }
-        public override string ToFormatString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            if(m_VisitType == EVisitType.Link)
-            {
-                if(m_SourceMetaVariable != null )
-                {
-                    sb.Append("[" + m_SourceMetaVariable.metaDefineType.allName + "]");
-                    sb.Append(m_SourceMetaVariable.name);
-                    sb.Append( "." );
-                }
-                sb.Append("[" + m_TargetMetaVariable.metaDefineType.allName+ "]");
-                sb.Append(m_TargetMetaVariable.name);
-            }
-            else
-            {
-                sb.Append(m_SourceMetaVariable.name);
-                if (m_SourceMetaVariable.isArray)
-                {
-                    sb.Append("[");
-                    //sb.Append(m_DefineMetaType.ToFormatString());
-                    sb.Append(m_Name);
-                    sb.Append("]");
-                    //sb.Append(m_Express.ToFormatString());
-                }
-                else
-                {
-                    sb.Append(m_TargetMetaVariable.name);
-                }
-            }
-
-            return sb.ToString();
-        }
-    }
-    public class MetaIteratorVariable : MetaVariable
-    {
-#pragma warning disable CS0414 // 字段“MetaIteratorVariable.m_Index”已被赋值，但从未使用过它的值
-        int m_Index = 0;
-#pragma warning restore CS0414 // 字段“MetaIteratorVariable.m_Index”已被赋值，但从未使用过它的值
-        MetaVariable m_LocalMetaVariable = null;
-        MetaType m_OrgMetaDefineType = null;
-        MetaVariable m_IndexMetaVariable = null;
-        MetaVariable m_ValueMetaVariable = null;
-
-        public MetaIteratorVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaType orgMC )
-        {
-            m_Name = _name;
-            m_OwnerMetaClass = mc;
-            m_OwnerMetaBlockStatements = mbs;
-            m_LocalMetaVariable = lmv;
-            m_OrgMetaDefineType = orgMC;
-            m_IndexMetaVariable = new MetaVariable("index", EVariableFrom.ArrayInner, mbs, mc, new MetaType(CoreMetaClassManager.int32MetaClass));
-            m_ValueMetaVariable = new MetaVariable("value", EVariableFrom.ArrayInner, mbs, mc, new MetaType(orgMC.metaClass));
-            m_IndexMetaVariable.AddPingToken(lmv.pingToken);
-            m_ValueMetaVariable.AddPingToken(lmv.pingToken);
-            if (lmv.isArray)
-            {
-                var gmit = m_LocalMetaVariable.metaDefineType.GetMetaInputTemplateByIndex();
-                if (gmit == null)
-                {
-                    Debug.Write("Error 访问的Array中，没有找到模版 名称!!");
-                    return;
-                }
-                m_DefineMetaType = new MetaType(gmit);
-            }
-            else
-            {
-                m_DefineMetaType = lmv.metaDefineType;
-            }
-        }
-        public MetaClass GetIteratorMetaClass()
-        {
-            return m_OrgMetaDefineType.metaClass;
-        }
-
-
-        public override MetaVariable GetMetaVaraible(string name)
-        {
-            if( name == "index" )
-            {
-                return m_IndexMetaVariable;
-            }
-            else if( name == "value" )
-            {
-                return m_ValueMetaVariable;
-            }
-            if (m_MetaVariableDict.ContainsKey(name))
-            {
-                return m_MetaVariableDict[name];
-            }
-            return m_OrgMetaDefineType.metaClass.GetMetaMemberVariableByName( name );
-        }
-        public override string ToFormatString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append(m_LocalMetaVariable.name);
-            if (m_LocalMetaVariable.isArray)
-            {
-                sb.Append("[");
-                //sb.Append(m_DefineMetaType.ToFormatString());
-                sb.Append(m_Name);
-                sb.Append("]");
-                //sb.Append(m_Express.ToFormatString());
-            }
-            else
-            {
-
-            }
-
-            return sb.ToString();
-        }
-    }
-    public partial class MetaMethodCall
+    public class MetaMethodCall
     {
         public MetaVariable callerMetaVariable => m_CallerMetaVariable;
         public MetaClass callerMetaClass => m_CallerMetaClass;
         public MetaFunction function => m_MetaFunction;
         public MetaInputParamCollection metaInputParamCollection => m_MetaInputParamCollection;
 
-        private MetaVariable m_CallerMetaVariable = null;
-        private MetaClass m_CallerMetaClass = null;
-        private MetaFunction m_MetaFunction = null;
-        private MetaInputParamCollection m_MetaInputParamCollection = null;
+        protected MetaVariable m_CallerMetaVariable = null;
+        protected MetaClass m_CallerMetaClass = null;
+        protected MetaFunction m_MetaFunction = null;
+        protected MetaInputParamCollection m_MetaInputParamCollection = null;
         public bool isConstruction { get; set; } = false;
         public bool isStaticCall { get; set; } = false;
 
@@ -212,7 +36,6 @@ namespace SimpleLanguage.Core
             m_MetaFunction = _fun;
             m_MetaInputParamCollection = _metaInputParamCollection;
             isStaticCall = false;
-            ParseCSharp();
         }
         public MetaMethodCall(MetaClass mc, MetaFunction _fun, MetaInputParamCollection _param = null)
         {
@@ -229,7 +52,6 @@ namespace SimpleLanguage.Core
             {
                 isStaticCall = false;
             }
-            ParseCSharp();
         }
         public void SetCallerMetaVariable( MetaVariable metaVariable)
         {
@@ -332,7 +154,7 @@ namespace SimpleLanguage.Core
             VisitVariable,
             IteratorVariable,
             MethodCall,
-            NewClassMethodCall,
+            NewClass,
             NewData,
             Enum,
         }
@@ -354,6 +176,16 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
+        public static MetaVisitNode CreateByConstExpress(  MetaConstExpressNode constExpress, MetaVariable _variable)
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.constValueExpress = constExpress;
+            vn.variable = _variable;
+            vn.visitType = EVisitType.ConstValue;
+
+            return vn;
+        }
         public static MetaVisitNode CreateByEnumDefaultValue( MetaEnum me, MetaVariable _variable )
         {
             MetaVisitNode vn = new MetaVisitNode();
@@ -362,12 +194,12 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CreateByNewMethodCall(MetaMethodCall _methodCall, MetaBraceOrBracketStatementsContent mb )
+        public static MetaVisitNode CreateByNew(MetaMethodCall _methodCall, MetaBraceOrBracketStatementsContent mb )
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.metaBraceStatementsContent = mb;
-            vn.visitType = EVisitType.NewClassMethodCall;
+            vn.visitType = EVisitType.NewClass;
             vn.methodCall = _methodCall;
 
             return vn;
@@ -405,7 +237,7 @@ namespace SimpleLanguage.Core
             {
                 case EVisitType.MethodCall:
                     {
-                        return methodCall.GetRetMetaType();
+                        return methodCall.callerMetaVariable.metaDefineType;
                     }
                     case EVisitType.VisitVariable:
                     {
@@ -415,9 +247,9 @@ namespace SimpleLanguage.Core
                     {
                         return variable.metaDefineType;
                     }
-                case EVisitType.NewClassMethodCall:
+                case EVisitType.NewClass:
                     {
-                        return methodCall.callerMetaVariable.metaDefineType;
+                        return new MetaType(this.callerMetaClass);
                     }
                 case EVisitType.NewData:
                     {
@@ -457,9 +289,9 @@ namespace SimpleLanguage.Core
                     {
                         return methodCall.function.returnMetaVariable;
                     }
-                case EVisitType.NewClassMethodCall:
+                case EVisitType.NewClass:
                     {
-                        return methodCall.function.thisMetaVariable;
+                        return variable;
                     }
                 case EVisitType.Enum:
                     {
@@ -518,14 +350,19 @@ namespace SimpleLanguage.Core
                         sb.Append(this.visitVariable.ToFormatString());
                     }
                     break;
+                case EVisitType.ConstValue:
+                    {
+                        sb.Append(this.constValueExpress.value.ToString());
+                    }
+                    break;
                 case EVisitType.Variable:
                     {
                         sb.Append(this.variable.ToFormatString());
                     }
                     break;
-                case EVisitType.NewClassMethodCall:
+                case EVisitType.NewClass:
                     {
-                        sb.Append(this.methodCall.ToFormatString());
+                        sb.Append(this.variable.ToFormatString());
                     }
                     break;
                 default:

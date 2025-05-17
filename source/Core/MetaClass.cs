@@ -21,6 +21,12 @@ using System.Reflection;
 
 namespace SimpleLanguage.Core
 {
+    public enum EClassDefineType
+    {
+        StructDefine,
+        InnerDefine,
+        CodeDefine
+    }
     public partial class MetaClass : MetaBase
     {
         public MetaNamespace topLevelMetaNamespace
@@ -41,7 +47,7 @@ namespace SimpleLanguage.Core
 
         }
         public EType eType => m_Type;
-        public bool isInnerDefineInCompile => m_IsInnerDefineCompile;
+        public EClassDefineType classDefineType => m_ClassDefineType;
         public MetaClass extendClass => m_ExtendClass;
         public int extendLevel => m_ExtendLevel;
         public List<MetaClass> interfaceClass => m_InterfaceClass;
@@ -95,11 +101,17 @@ namespace SimpleLanguage.Core
         protected Dictionary<string, List<MetaMemberFunction>> m_MetaMemberFunctionListDict = new Dictionary<string, List<MetaMemberFunction>>();
         protected List<MetaMemberFunction> m_TempInnerFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected MetaExpressNode m_DefaultExpressNode = null;
-        protected bool m_IsInnerDefineCompile = false;
+        protected EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
 
         protected MetaClass()
         {
 
+        }
+        public MetaClass(string _name, EClassDefineType ecdt )
+        {
+            m_Name = _name;
+            m_Type = EType.Class;
+            m_ClassDefineType = ecdt;
         }
 
         public MetaClass(string _name, EType _type  = EType.Class )
@@ -158,17 +170,19 @@ namespace SimpleLanguage.Core
         public virtual void ParseInnerFunction()
         {
         }
-        public void ParseInner()
+        public virtual void ParseInner()
         {
-            ParseCSharp();
-
             ParseInnerVariable();
             ParseInnerFunction();
 
         }
+        public void SetClassDefineType( EClassDefineType ecdt )
+        {
+            this.m_ClassDefineType = ecdt;
+        }
         public void ParseExtendsRelation()
         {
-            if( this.isInnerDefineInCompile )
+            if( this.classDefineType == EClassDefineType.InnerDefine )
             {
                 return;
             }
@@ -689,14 +703,15 @@ namespace SimpleLanguage.Core
                 }
                 return null;
             }
+            
             var mmf = m_MetaMemberFunctionListDict[name];
-
             for (int i = 0; i < mmf.Count; i++)
             {
                 var fun = mmf[i];
                 if (fun.IsEqualMetaInputParamCollection(mmpc))
                     return fun;
             }
+
             return null;
         }
         //该方法，只能查找Cast<T1>() 模版函数使用 不能用Class<T>{ Fun() } 这种的
@@ -715,7 +730,7 @@ namespace SimpleLanguage.Core
         //        }
         //        return null;
         //    }
-           
+
 
         //    var mmf = m_MetaMemberFunctionListDict[name];
 

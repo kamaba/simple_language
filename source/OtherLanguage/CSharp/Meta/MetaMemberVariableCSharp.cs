@@ -21,7 +21,7 @@ namespace SimpleLanguage.Core
             m_Name = fi.Name;
             fieldInfo = fi;
             m_FromType = EFromType.CSharp;
-            string typeName = MetaType.GetClassNameByCSharpType( fi.DeclaringType );
+            string typeName = MetaTypeCSharp.GetClassNameByCSharpType( fi.DeclaringType );
             var defineMetaClassType = ClassManager.instance.GetClassByName(typeName);
             m_DefineMetaType = new MetaType(defineMetaClassType);
 
