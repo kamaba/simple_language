@@ -81,16 +81,12 @@ namespace SimpleLanguage.VM.Runtime
                 for (int i = 0; i < m_IRMethod.methodLocalVariableList.Count; i++)
                 {
                     var mev = m_IRMethod.methodLocalVariableList[i];
-                    //var mdt = mev.metaDefineType;
-                    //if (mdt.metaClass != null)
-                    //{
-                    //    //SObject sobj = ObjectManager.CreateObjectByDefineType(mdt);
-                    //    //m_LocalVariableObjectArray[i] = sobj;
-                    //}
+                    SObject sobj = ObjectManager.CreateObjectByDefineType(mev.irMetaClass);
+                    m_LocalVariableObjectArray[i] = sobj;
                 }
                 for (int i = 0; i < m_LocalVariableObjectArray.Length; i++)
                 {
-                    //Debug.Write("Variable_" + i.ToString() + m_LocalVariableObjectArray[i].ToString());
+                    Debug.Write("Variable_" + i.ToString() + m_LocalVariableObjectArray[i].ToString());
                 }
 
                 var count = m_IRMethod.IRDataList.Count;
@@ -388,7 +384,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.CallCSharpStatements:
                     {
-                        //var mfc = iri.opValue as IRCallFunction;
+                        var mfc = iri.opValue as IRCallFunction;
                         //Object[] paramsObj = new Object[mfc.paramCount];
                         //for (int i = 0; i < paramsObj.Length; i++)
                         //{

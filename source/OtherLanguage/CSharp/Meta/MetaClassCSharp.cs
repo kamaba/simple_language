@@ -7,52 +7,23 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public partial class MetaClass
+    public class MetaClassCSharp : MetaClass
     {
-        //#if SupportCSharp
         public System.Type csharpType => m_CSharpType;
-        System.Type m_CSharpType;
-        //#endif
 
-        public MetaClass(string _name, System.Type type) :
-            this(_name)
+
+        System.Type m_CSharpType;
+
+        public MetaClassCSharp(string _name, System.Type type) :
+            base( _name, EClassDefineType.InnerDefine )
         {
             m_CSharpType = type;
+            m_RefFromType = RefFromType.CSharp;
         }
         public System.Type GetCSharpType()
         {
             if( m_CSharpType == null )
             {
-                if( this == CoreMetaClassManager.objectMetaClass )
-                {
-                    m_CSharpType = typeof(System.Object);
-                }
-                else
-                {
-                    switch (eType)
-                    {
-                        case EType.Null:
-                            {
-                                m_CSharpType = typeof(System.Nullable);
-                            }
-                            break;
-                        case EType.Int32:
-                            {
-                                m_CSharpType = typeof(System.Int32);
-                            }
-                            break;
-                        case EType.String:
-                            {
-                                m_CSharpType = typeof(System.String);
-                            }
-                            break;
-                        default:
-                            {
-                                m_CSharpType = CSharpManager.FindCSharpType(allName);
-                            }
-                            break;
-                    }
-                }
             }
             return m_CSharpType;
         }
@@ -87,62 +58,73 @@ namespace SimpleLanguage.Core
             }
 
         }
-        public MetaMemberFunction GetCSharpMemberFunctionAndCreateByNameAndInputParamCollect(string name, bool isStatic, MetaInputParamCollection mipc)
+
+        public override MetaMemberVariable GetMetaMemberVariableByName(string name)
         {
-            MetaMemberFunction mmf = GetMetaMemberFunctionByNameAndInputParamCollect(name, mipc);
-            if( mmf == null && refFromType == RefFromType.CSharp )
+            MetaMemberVariable mmv = base.GetMetaMemberVariableByName(name);
+            
+            if( mmv != null )
             {
-                BindingFlags bf = System.Reflection.BindingFlags.Public;
-                if(isStatic)
-                {
-                    bf |= BindingFlags.Static;
-                }
-#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
-                Binder binder = null;
-#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
-
-                System.Type[] types = mipc.GetCSharpParamTypes();
-
-                MethodInfo mi = m_CSharpType.GetMethod(name, types );
-                if (mi == null) return null;
-                MetaMemberFunction cmmf = new MetaMemberFunction(this, mi);
-                AddMetaMemberFunction(cmmf, false );
-                return cmmf;
+                return mmv;
             }
-            return mmf;
-        }
-        public MetaVariable GetCSharpMemberVariableAndCreateByName( string name )
-        {
-            MetaMemberVariable mmv = GetMetaMemberVariableByName(name);
-            if(mmv == null && refFromType == RefFromType.CSharp )
+            if (m_RefFromType == RefFromType.CSharp)
             {
-                FieldInfo fi = m_CSharpType.GetField(name);
-                if (fi != null )
-                {
-                    MetaMemberVariable cmmv = new MetaMemberVariable(this, fi);
-                    AddMetaMemberVariable(cmmv);
-                    return cmmv;
-                }
-                PropertyInfo pi = m_CSharpType.GetProperty(name);
-                if( pi != null )
-                {
-                    MetaMemberFunction mmf = new MetaMemberFunction(this, pi);
-                    AddMetaMemberFunction(mmf, false);
-                    return mmf;
-                }
+                mmv = GetCSharpMemberVariableAndCreateByName(name);
             }
             return mmv;
         }
-        public MetaBase GetCSharpMetaBaseOrCreateMetaBaseByName(string name, bool isStatic, MetaInputParamCollection mipc)
+        public MetaMemberVariable GetCSharpMemberVariableAndCreateByName(string name)
         {
-            if( mipc != null )
+            FieldInfo fi = m_CSharpType.GetField(name);
+            if (fi != null)
             {
-                return GetCSharpMemberFunctionAndCreateByNameAndInputParamCollect(name, isStatic, mipc);
+                MetaMemberVariable cmmv = new MetaMemberVariable(this, fi);
+                AddMetaMemberVariable(cmmv);
+                return cmmv;
             }
-            else
+            //PropertyInfo pi = m_CSharpType.GetProperty(name);
+            //if (pi != null)
+            //{
+            //    MetaMemberFunction mmf = new MetaMemberFunction(this, pi);
+            //    AddMetaMemberFunction(mmf, false);
+            //    return mmf;
+            //}
+            return null;
+        }
+        public override MetaMemberFunction GetMetaMemberFunctionByNameAndInputParamCollect(string name, MetaInputParamCollection mmpc, bool isIncludeExtendClass = true)
+        {
+            MetaMemberFunction findmmf = base.GetMetaMemberFunctionByNameAndInputParamCollect(name, mmpc, isIncludeExtendClass);
+
+            if( findmmf != null )
             {
-                return GetCSharpMemberVariableAndCreateByName(name);
+                return findmmf;
             }
+
+            if (m_RefFromType == RefFromType.CSharp)
+            {
+                findmmf = GetCSharpMemberFunctionAndCreateByNameAndInputParamCollect(name, false, mmpc);
+            }
+            return findmmf;
+        }
+
+        public MetaMemberFunction GetCSharpMemberFunctionAndCreateByNameAndInputParamCollect(string name, bool isStatic, MetaInputParamCollection mipc)
+        {
+            BindingFlags bf = System.Reflection.BindingFlags.Public;
+            if (isStatic)
+            {
+                bf |= BindingFlags.Static;
+            }
+#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
+            Binder binder = null;
+#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
+
+            System.Type[] types = mipc.GetCSharpParamTypes();
+
+            MethodInfo mi = m_CSharpType.GetMethod(name, types);
+            if (mi == null) return null;
+            MetaMemberFunction cmmf = new MetaMemberFunction(this, mi);
+            AddMetaMemberFunction(cmmf, false);
+            return cmmf;
         }
     }
 }

@@ -17,7 +17,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Byte;
-            m_IsInnerDefineCompile = true;
+            m_ClassDefineType = EClassDefineType.InnerDefine;
             //System.Type type = typeof(System.Char);
             //MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Char, '0');
             //mc.SetDefaultExpressNode(mcen);
@@ -40,7 +40,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.SByte;
-            m_IsInnerDefineCompile = true;
+            m_ClassDefineType = EClassDefineType.InnerDefine;
         }
         public static MetaClass CreateMetaClass()
         {

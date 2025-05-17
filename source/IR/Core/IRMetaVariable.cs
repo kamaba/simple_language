@@ -45,30 +45,34 @@ namespace SimpleLanguage.IR
             m_IRMetaVariableFrom = mv.variableFrom == MetaVariable.EVariableFrom.Argument 
                 ?  IRMetaVariableFrom.Argument : IRMetaVariableFrom.LocalStatement;
             //m_IRMetaClass = IRManager.instance.GetIRMetaClassById(mv.meta)
+            m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mv.metaDefineType.allName);
         }
-        public IRMetaVariable(MetaMemberEnum mme)
+        public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme)
         {
             m_MetaVariable = mme;
             id = mme.GetHashCode();
             name = mme.ownerMetaClass.allName + "." + mme.name;
             m_ExpressNode = mme.express;
             m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
+            m_IRMetaClass = irmc;
         }
-        public IRMetaVariable(MetaMemberData mmd)
+        public IRMetaVariable(IRMetaClass irmc, MetaMemberData mmd)
         {
             m_MetaVariable = mmd;
             id = mmd.GetHashCode();
             name = mmd.ownerMetaClass.allName + "." + mmd.name;
             m_ExpressNode = mmd.expressNode;
             m_IRMetaVariableFrom = mmd.isStatic ? IRMetaVariableFrom.Static : IRMetaVariableFrom.Member;
+            m_IRMetaClass = irmc;
         }
-        public IRMetaVariable( MetaMemberVariable mmv )
+        public IRMetaVariable( IRMetaClass irmc, MetaMemberVariable mmv )
         {
             m_MetaVariable = mmv;
             id = mmv.GetHashCode();
             name = mmv.ownerMetaClass.allName + "." + mmv.name;
             m_ExpressNode = mmv.express;
             m_IRMetaVariableFrom = IRMetaVariableFrom.Member;
+            m_IRMetaClass = irmc;
         }
 
         public override string ToString()

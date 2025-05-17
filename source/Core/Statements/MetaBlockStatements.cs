@@ -99,6 +99,14 @@ namespace SimpleLanguage.Core.Statements
             m_Deep = dp;
             nextMetaStatements?.SetDeep(deep + 1);
         }
+        public MetaVariable GetMetaVariable( string name )
+        {
+            if( m_MetaVariableDict.ContainsKey(name) )
+            {
+                return m_MetaVariableDict[name];
+            }
+            return null;
+        }
         public bool AddMetaVariable(MetaVariable mv)
         {
             if (m_MetaVariableDict.ContainsKey(mv.name))

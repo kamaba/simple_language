@@ -1,6 +1,7 @@
 ﻿using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.SelfMeta;
+using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -56,13 +57,23 @@ namespace SimpleLanguage.Core
             string typeName = type.Name;
             switch (typeName)
             {
+                case "Byte":
+                    return CoreMetaClassManager.byteMetaClass;
+                case "SByte":
+                    return CoreMetaClassManager.sbyteMetaClass;
                 case "Int16":
                     return CoreMetaClassManager.int16MetaClass;
+                case "UInt16":
+                    return CoreMetaClassManager.uint16MetaClass;
                 case "Int32":
                     return CoreMetaClassManager.int32MetaClass;
+                case "UInt32":
+                    return CoreMetaClassManager.uint32MetaClass;
                 case "Int64":
                     return CoreMetaClassManager.int64MetaClass;
-                case "Float":
+                case "UInt64":
+                    return CoreMetaClassManager.uint64MetaClass;
+                case "Single":
                     return CoreMetaClassManager.floatMetaClass;
                 case "Double":
                     return CoreMetaClassManager.doubleMetaClass;
@@ -208,8 +219,23 @@ namespace SimpleLanguage.Core
                 var findmc = topLevelClass.GetChildrenMetaBaseByName(fmc.name);
                 if (findmc != null)
                 {
-                    Debug.Write("Error 查到内部不是内部内，可能有相同成员");
-                    return null;
+                    MetaClass findmc2 = findmc as MetaClass;
+                    if( findmc2 != null )
+                    {
+                        if( findmc2.classDefineType == EClassDefineType.StructDefine )
+                        {
+                            findmc2.BindFileMetaClass(fmc);
+                            findmc2.SetClassDefineType(EClassDefineType.CodeDefine);
+                            findmc2.ParseFileMetaClassTemplate(fmc);
+                            findmc2.ParseFileMetaClassMemeberVarAndFunc(fmc);
+                            return findmc2;
+                        }
+                    }
+                    else
+                    {
+                        Debug.Write("Error 查到内部不是内部内，可能有相同成员");
+                        return null;
+                    }
                 }
                 else
                 {
@@ -255,10 +281,21 @@ namespace SimpleLanguage.Core
                 }
                 else if (amc != null)
                 {
-                    if (!fmc.isPartial)
+                    if (ProjectManager.useDefineNamespaceType == EUseDefineType.LimitUseProjectConfigNamespaceAndClass)
                     {
-                        Debug.Write("类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持文件并行 定义类");
-                        return null;
+                        amc.BindFileMetaClass(fmc);
+                        amc.SetClassDefineType(EClassDefineType.CodeDefine);
+                        amc.ParseFileMetaClassTemplate(fmc);
+                        amc.ParseFileMetaClassMemeberVarAndFunc(fmc);
+                        return amc;
+                    }
+                    else
+                    {
+                        if (!fmc.isPartial)
+                        {
+                            Debug.Write("类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持文件并行 定义类");
+                            return null;
+                        }
                     }
                     bool isPartial = true;
                     foreach (var v in amc.fileMetaClassDict)
@@ -283,9 +320,12 @@ namespace SimpleLanguage.Core
                 }
             }
 
-
-            if( isCanAddBind ) 
+            if( isCanAddBind )
             {
+                if (ProjectManager.useDefineNamespaceType == EUseDefineType.LimitUseProjectConfigNamespaceAndClass)
+                {
+                    Debug.Write("Error 使用的强定制类节点的方式中，没有查找到相关的类，所以不允许定义该类，请先在工程中定义类");
+                }
                 MetaClass newmc = null;
                 if (fmc.isEnum)
                 {
@@ -293,6 +333,18 @@ namespace SimpleLanguage.Core
                     newme.BindFileMetaClass(fmc);
                     newme.ParseFileMetaEnumMemeberEnum(fmc);
                     newmc = newme;
+
+
+                    if (tmetaClass != null)
+                    {
+                        tmetaClass.AddChildrenMetaClass(newme);
+                    }
+                    else if (tmetaNamespace != null)
+                        tmetaNamespace.AddMetaClass(newme);
+                    else
+                    {
+                        tmetaModule.AddMetaClass(newme);
+                    }
                 }
                 else if (fmc.isData)
                 {
@@ -300,6 +352,18 @@ namespace SimpleLanguage.Core
                     newmc = newmd;
                     newmd.BindFileMetaClass(fmc);
                     newmd.ParseFileMetaDataMemeberData(fmc);
+
+
+                    if (tmetaClass != null)
+                    {
+                        tmetaClass.AddChildrenMetaClass(newmd);
+                    }
+                    else if (tmetaNamespace != null)
+                        tmetaNamespace.AddMetaClass(newmd);
+                    else
+                    {
+                        tmetaModule.AddMetaClass(newmd);
+                    }
                 }
                 else
                 {
@@ -312,7 +376,7 @@ namespace SimpleLanguage.Core
                     if (m_AllClassDict.ContainsKey(fmc.name))
                     {
                         var newmc2 = m_AllClassDict[fmc.name];
-                        if (newmc2.isInnerDefineInCompile)
+                        if (newmc2.classDefineType == EClassDefineType.InnerDefine )
                         {
                             newmc = newmc2;
                             isCreateClass = false;
@@ -323,33 +387,39 @@ namespace SimpleLanguage.Core
                     {
                         newmc = new MetaClass(fmc.name);
 
-                        newmc.BindFileMetaClass(fmc);
-                        newmc.ParseFileMetaClassTemplate(fmc);
-                        newmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
-                    }
-                    else
-                    {
-                        newmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
+                        if (tmetaClass != null)
+                        {
+                            tmetaClass.AddChildrenMetaClass(newmc);
+                        }
+                        else if (tmetaNamespace != null)
+                            tmetaNamespace.AddMetaClass(newmc);
+                        else
+                        {
+                            tmetaModule.AddMetaClass(newmc);
+                        }
                     }
 
+                    newmc.BindFileMetaClass(fmc);
+                    newmc.SetClassDefineType(EClassDefineType.CodeDefine);
+                    newmc.ParseFileMetaClassTemplate(fmc);
+                    newmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
+
                 }
-                if (tmetaClass != null)
-                {
-                    tmetaClass.AddChildrenMetaClass(newmc);
-                }
-                else if (tmetaNamespace != null)
-                    tmetaNamespace.AddMetaClass(newmc);
-                else
-                    tmetaModule.AddMetaClass(newmc);
 
 
                 if (newmc is MetaData)
                 {
-                    m_AllDataDict.Add(newmc.allName, newmc as MetaData);
+                    if( !m_AllDataDict.ContainsKey(newmc.allName ) )
+                    {
+                        m_AllDataDict.Add(newmc.allName, newmc as MetaData);
+                    }
                 }
                 else
                 {
-                    m_AllClassDict.Add(newmc.allName, newmc);
+                    if (!m_AllClassDict.ContainsKey(newmc.allName))
+                    {
+                        m_AllClassDict.Add(newmc.allName, newmc);
+                    }
                 }
 
 

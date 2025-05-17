@@ -711,7 +711,7 @@ namespace SimpleLanguage.Core
             MetaClass createMC = null;
             if (!m_MetaDefineType.isDefineMetaClass)
             {
-                if (fmcn.visitType == MetaVisitNode.EVisitType.NewClassMethodCall)
+                if (fmcn.visitType == MetaVisitNode.EVisitType.NewClass)
                 {
                     m_MetaDefineType.SetMetaClass(fmcn.methodCall.function.ownerMetaClass);
                 }
@@ -738,10 +738,10 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            if (fmcn != null && fmcn.methodCall?.instance != null)
-            {
-                m_MetaBraceOrBracketStatementsContent = fmcn.metaBraceStatementsContent;
-            }
+            ////if (fmcn != null && fmcn.methodCall?.instance != null)
+            ////{
+            ////    m_MetaBraceOrBracketStatementsContent = fmcn.metaBraceStatementsContent;
+            ////}
             var list = fmct.callLink?.callNodeList;
             if (list != null && list.Count > 0)
             {
@@ -1070,7 +1070,7 @@ namespace SimpleLanguage.Core
                 bool isNewClass = false;
                 bool isNewData = false;
                 bool isNewEnum = false;
-                if ( mcl.finalCallNode?.visitType ==  MetaVisitNode.EVisitType.NewClassMethodCall)
+                if ( mcl.finalCallNode?.visitType ==  MetaVisitNode.EVisitType.NewClass)
                 {
                     isNewClass = true;
                 }

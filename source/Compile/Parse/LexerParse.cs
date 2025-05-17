@@ -131,10 +131,6 @@ namespace SimpleLanguage.Compile.Parse
                 return true;
             return false;
         }
-        bool IsBINDigit(char c)
-        {
-            return (c == '0' || c == '1');
-        }
         private bool IsIdentifier(char ch)
         {
             return (ch == '_' || char.IsLetterOrDigit(ch));
@@ -583,18 +579,13 @@ namespace SimpleLanguage.Compile.Parse
                 do
                 {
                     m_TempChar = ReadChar();
-                    if (char.IsDigit(m_TempChar) 
-                        || 'a' <= m_TempChar && m_TempChar <= 'z'
-                        || 'A' <= m_TempChar && m_TempChar <= 'Z')
+                    if (IsHexDigit(m_TempChar))
                     {
-                        if (IsHexDigit(m_TempChar))
-                        {
-                            m_Builder.Append(m_TempChar);
-                        }
-                        else
-                        {
-                            Debug.Write("Error 读取0x类型，数字在0-9 a-f之间, 当前值: " + m_TempChar);
-                        }
+                        m_Builder.Append(m_TempChar);
+                    }
+                    else if (m_TempChar == '_')
+                    {
+
                     }
                     else
                     {
@@ -612,18 +603,13 @@ namespace SimpleLanguage.Compile.Parse
                 do
                 {
                     m_TempChar = ReadChar();
-                    if (char.IsDigit(m_TempChar)
-                        || 'a' <= m_TempChar && m_TempChar <= 'z'
-                        || 'A' <= m_TempChar && m_TempChar <= 'Z')
+                    if ( '0' <= m_TempChar && m_TempChar <= '7')
                     {
-                        if (IsOCTDigit(m_TempChar))
-                        {
-                            m_Builder.Append(m_TempChar);
-                        }
-                        else
-                        {
-                            Debug.Write("Error 读取0o类型，数字在0-7  当前值: " + m_TempChar);
-                        }
+                        m_Builder.Append(m_TempChar);
+                    }
+                    else if (m_TempChar == '_')
+                    {
+
                     }
                     else
                     {
@@ -641,23 +627,14 @@ namespace SimpleLanguage.Compile.Parse
                 do
                 {
                     m_TempChar = ReadChar();
-                    if (char.IsDigit(m_TempChar)
-                        || 'a' <= m_TempChar && m_TempChar <= 'z'
-                        || 'A' <= m_TempChar && m_TempChar <= 'Z'
-                        || m_TempChar == '_' )
+                    if (49 == m_TempChar
+                        || 48 == m_TempChar )
                     {
-                        if (IsBINDigit(m_TempChar) )
-                        {
-                            m_Builder.Append(m_TempChar);
-                        }
-                        else if(m_TempChar == '_')
-                        {
+                        m_Builder.Append(m_TempChar);
+                    }
+                    else if( m_TempChar == '_' )
+                    {
 
-                        }
-                        else
-                        {
-                            Debug.Write("Error 读取0b类型，数字在0/1/-  当前值: " + m_TempChar);
-                        }
                     }
                     else
                     {

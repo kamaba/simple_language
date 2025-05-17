@@ -20,7 +20,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Enum;
-            m_IsInnerDefineCompile = true;
+            m_ClassDefineType = EClassDefineType.InnerDefine;
         }
         public override void ParseInnerFunction()
         {

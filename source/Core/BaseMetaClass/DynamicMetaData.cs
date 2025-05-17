@@ -16,7 +16,7 @@ namespace SimpleLanguage.Core.SelfMeta
     {
         public DynamicMetaData():base(DefaultObject.Data.ToString())
         {
-            m_IsInnerDefineCompile = true;
+            m_ClassDefineType = EClassDefineType.InnerDefine;
         }        
         public MetaClass Cast( MetaTemplate mc )
         {

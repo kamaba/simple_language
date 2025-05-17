@@ -1,10 +1,37 @@
+import CSharp.System
+import CSharp.SimpleLanguage.Core.SelfMeta
 
-data XC{ a = 2
-b = 10
+data XC
+{
+    a = 2
+    b = 10
+}
+
+public class Int32 
+{
+    public Int32 value
+
+    public string toString()
+    {
+        ret IntMetaClass.MetaToString( this.value )
+    }
+}
+public class Float
+{
+    public Float value
+
+    public string toString()
+    {
+        ret FloatMetaClass.MetaToString( this.value )
+    }
+}
+public class String
+{
+    public String value
 }
 NumberTest
 {
-    static Fun()
+    static fun()
     {
         i1 = 1;
         i2 = 1i;
@@ -13,10 +40,10 @@ NumberTest
         f0 = 2.0;         #  end:null point:1
         f1 = 2.321f;      #  end:f point:1
         f2 = 2f;          # end:f point:0  报错
-        f4 = 2i.ToString();   # end:t point:1
-        f5 = 2.0f.ToString();    #
-        f6 = 23.223d.ToFloat();
-        ul111 = 0xff22.ToString();
+        f4 = 2i.toString();   # end:t point:1
+        #f5 = 2.0f.toString();    #
+        #f6 = 23.223d.toFloat();
+        #ul111 = 0xff22.toString();
         c = 1+1.3;
         d = 2.0 * 3.2132123123123;    
         d1 = 3.0d;
@@ -29,7 +56,10 @@ NumberTest
         h3 = 0x1abfe;    #报错
         o1 = 0o1132;
         o2 = 0o23;      #报错
-        bin1 = 0b1111_1111;
+        bin1 = 0b1100_1111;
+
+        #Console.Write( "printlfn: " + i1)
+
         #!
         !#
     }

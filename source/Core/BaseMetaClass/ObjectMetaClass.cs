@@ -16,7 +16,7 @@ namespace SimpleLanguage.Core.SelfMeta
     {
         public ObjectMetaClass():base(DefaultObject.Object.ToString())
         {
-            m_IsInnerDefineCompile = true;
+            m_ClassDefineType = EClassDefineType.InnerDefine;
         }        
         public MetaClass Cast( MetaTemplate mc )
         {
@@ -37,8 +37,8 @@ namespace SimpleLanguage.Core.SelfMeta
             //Cast.SetDefineMetaClass(CoreMetaClassManager.int32MetaClass);
             //AddMetaMemberFunction(Cast);
 
-            MetaMemberVariable mmvobjectid = new MetaMemberVariable(this, "objectid", CoreMetaClassManager.int32MetaClass);
-            AddMetaMemberVariable(mmvobjectid);
+            //MetaMemberVariable mmvobjectid = new MetaMemberVariable(this, "objectid", CoreMetaClassManager.int32MetaClass);
+            //AddMetaMemberVariable(mmvobjectid);
 
             //MetaMemberVariable mmvname = new MetaMemberVariable(this, "name", CoreMetaClassManager.stringMetaClass);
             //AddMetaMemberVariable(mmvname);

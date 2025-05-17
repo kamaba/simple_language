@@ -1,15 +1,32 @@
 import Std;
 
-namespace Std.T;    #这种方式 只适合于在外屋已经定义类名后，然后在该节点下有类名的前缀
+namespace Std.Layer1_1;    #这种方式 只适合于在外屋已经定义类名后，然后在该节点下有类名的前缀
 
-namespace Std.T
+namespace Std.Layer1_1
 {
     class TClass
     {
         
     }
+    class Layer2_1.TClass2
+    {
+
+    }
+}
+namespace Std.NewDe
+{
+
 }
 
+Layer1_1.TClass3
+{
+
+}
+
+Mawangye
+{
+    
+}
 
 
 # import 是导入包与命名空间，只允许命名空间的导入

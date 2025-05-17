@@ -12,9 +12,10 @@ namespace SimpleLanguage.Core
     {
         public System.Type GetCSharpType()
         {
-            MetaClass mc = m_Express.GetReturnMetaClass();
+            MetaClass orgmc = m_Express.GetReturnMetaClass();
 
-            System.Type type = mc.GetCSharpType();
+            System.Type type = MetaTypeCSharp.FindCSharpType(orgmc);
+
             return type;
         }
     }
@@ -39,10 +40,11 @@ namespace SimpleLanguage.Core
             return m_CShpartParamTypes;
         }
     }
-    public partial class MetaDefineParam
+    public class MetaDefineParamCSharp : MetaDefineParam
     {
         private ParameterInfo parameterInfo;
-        public MetaDefineParam(MetaClass mc, MetaBlockStatements mbs, ParameterInfo pi)
+        public MetaDefineParamCSharp(MetaClass mc, MetaBlockStatements mbs, ParameterInfo pi)
+            :base( mc,  mbs )
         {
             m_OwnerMetaClass = mc;
 
@@ -52,7 +54,7 @@ namespace SimpleLanguage.Core
 
             var defineMetaClassType = ClassManager.instance.GetMetaClassByCSharpType(pi.ParameterType);
             MetaType mdt = new MetaType(defineMetaClassType);
-            m_MetaVariable = new MetaVariable( pi.Name, EVariableFrom.None, mbs, mc, mdt );
+            m_MetaVariable = new MetaVariable( pi.Name, EVariableFrom.Argument, mbs, mc, mdt );
         }
     }
 }

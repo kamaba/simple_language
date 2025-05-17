@@ -72,6 +72,10 @@ namespace SimpleLanguage.VM
                 sobj = new StringObject("");
                 sobj.typeId = 10;
             }
+            else if( mdt.allName == "Object" )
+            {
+                sobj = new ClassObject(mdt);
+            }
             else
             {
                 sobj = new ClassObject(mdt);

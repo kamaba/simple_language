@@ -102,7 +102,7 @@ namespace SimpleLanguage.Compile.Parse
         {
             if (currentNodeInfo.parseType == EParseNodeType.File)
             {
-                currentNodeInfo.codeFile.AddFileMetaNamespace(fmn);
+                currentNodeInfo.codeFile.AddFileSearchNamespace(fmn);
             }
             else if (currentNodeInfo.parseType == EParseNodeType.Namespace)
             {
@@ -991,15 +991,29 @@ namespace SimpleLanguage.Compile.Parse
             else   
             {
                 conNode.Insert(0, currentNode);
-                FileDefineNamespace ist = new FileDefineNamespace(conNode);
                 if (ProjectManager.useDefineNamespaceType == EUseDefineType.NoUseProjectConfigNamespace )
                 {
+                    FileMetaNamespace ist = new FileMetaNamespace(conNode[0], conNode[1]);
                     m_FileMeta.AddFileDefineNamespace(ist);
                 }
                 else
                 {
-                    Debug.Write("Error 暂不允许使用namespace 定义命名空间!!!" + ist.ToFormatString() + " 位置: " + currentNode.token.ToLexemeAllString());
-
+                    if( conNode.Count == 2 )
+                    {
+                        FileMetaNamespace fmn = new FileMetaNamespace(conNode[0], conNode[1]);
+                        if (!ProjectManager.data.IsIncludeDefineStruct(fmn.namespaceStatementBlock.namespaceList))
+                        {
+                            Debug.Write("Error 暂不允许使用namespace 定义命名空间!!!" + fmn.ToFormatString() + " 位置: " + currentNode.token.ToLexemeAllString());
+                        }
+                        else
+                        {
+                            m_FileMeta.AddFileSearchNamespace(fmn);
+                        }
+                    }
+                    else
+                    {
+                        Debug.Write("Error 在查找namespace过程中，位数是不正确的!");
+                    }
                 }
             }
 
@@ -1229,6 +1243,7 @@ namespace SimpleLanguage.Compile.Parse
                 if(isClass == 1 )
                 {
                     AddFileMetaClasss(curNode, nodeList);
+                    ParseNamespaceOrTopClass(pnode);
                 }
                 else if( isClass == 2 )
                 {

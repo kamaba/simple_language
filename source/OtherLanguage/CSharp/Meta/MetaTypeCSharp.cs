@@ -1,12 +1,15 @@
-﻿using SimpleLanguage.CSharp;
+﻿using SimpleLanguage.Core.SelfMeta;
+using SimpleLanguage.CSharp;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.Core
 {
-    public partial class MetaType
+    public class MetaTypeCSharp
     {
         public static string GetClassNameByCSharpType(System.Type type)
         {
@@ -30,6 +33,60 @@ namespace SimpleLanguage.Core
 #pragma warning disable CS0162 // 检测到无法访问的代码
             return "Object";
 #pragma warning restore CS0162 // 检测到无法访问的代码
+        }
+        public static System.Type FindCSharpType( MetaClass mc )
+        {
+            System.Type type = null;
+
+            if (mc == CoreMetaClassManager.byteMetaClass)
+            {
+                type = typeof(System.Byte);
+            }
+            if (mc == CoreMetaClassManager.sbyteMetaClass)
+            {
+                type = typeof(System.SByte);
+            }
+            if (mc == CoreMetaClassManager.int16MetaClass)
+            {
+                type = typeof(System.Int16);
+            }
+            if (mc == CoreMetaClassManager.uint16MetaClass)
+            {
+                type = typeof(System.UInt16);
+            }
+            if (mc == CoreMetaClassManager.int32MetaClass)
+            {
+                type = typeof(System.Int32);
+            }
+            if (mc == CoreMetaClassManager.uint32MetaClass)
+            {
+                type = typeof(System.UInt32);
+            }
+            if (mc == CoreMetaClassManager.int64MetaClass)
+            {
+                type = typeof(System.Int64);
+            }
+            if (mc == CoreMetaClassManager.uint64MetaClass)
+            {
+                type = typeof(System.UInt64);
+            }
+            else if (mc == CoreMetaClassManager.floatMetaClass)
+            {
+                type = typeof(System.Single);
+            }
+            else if (mc == CoreMetaClassManager.doubleMetaClass)
+            {
+                type = typeof(System.Double);
+            }
+            else if( mc == CoreMetaClassManager.stringMetaClass )
+            {
+                type = typeof(System.String);
+            }
+            else
+            {
+                type = CSharpManager.FindCSharpType(mc.allName);
+            }
+            return type;
         }
     }
 }

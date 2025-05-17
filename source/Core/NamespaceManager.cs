@@ -37,7 +37,7 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public void CreateMetaNamespaceByFineDefineNamespace( FileDefineNamespace fns, MetaBase parentNode = null )
+        public void CreateMetaNamespaceByFineDefineNamespace( FileMetaNamespace fns, MetaBase parentNode = null )
         {
             MetaBase mb = parentNode;
             if( parentNode == null )
@@ -51,19 +51,24 @@ namespace SimpleLanguage.Core
                 mb = parentNode.GetChildrenMetaBaseByName(name);
                 if (mb == null)
                 {
-                    mb = new MetaNamespace(name);
                     if (ProjectManager.useDefineNamespaceType == EUseDefineType.NoUseProjectConfigNamespace )
                     {
+                        mb = new MetaNamespace(name);
+                    }
+                    else
+                    {
                         Debug.Write("Error 在使用namespace 时，在项目定义中，没有找到相关的定义!!  位置:" + fns.namespaceStatementBlock.tokenList[i].ToLexemeAllString());
+                        mb = new MetaNamespace(name);
                         (mb as MetaNamespace).isNotAllowCreateName = true;
                     }
                     parentNode.AddMetaBase(name, mb);
-
                     metaNamespaceDict.Add((mb as MetaNamespace).namespaceName, mb as MetaNamespace);
                 }
-               
-                parentNode = mb;
-                fns.metaNamespaceList.Add(mb as MetaNamespace);
+                else
+                {
+                    parentNode = mb;
+                    fns.metaNamespaceList.Add(mb as MetaNamespace);
+                }
             }
         }
         public void CreateMetaNamespaceByFileMetaNamespace( FileMetaNamespace fmn )

@@ -18,7 +18,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public RangeIteratorMetaClass() : base(DefaultObject.Class.ToString())
         {
             m_Type = EType.Class;
-            m_IsInnerDefineCompile = true;
+            m_ClassDefineType = EClassDefineType.InnerDefine;
         }
         public override void ParseInnerVariable()
         {
@@ -41,7 +41,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             m_Type = EType.Range;
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
-            m_IsInnerDefineCompile = true;
+            m_ClassDefineType = EClassDefineType.InnerDefine;
             m_MetaTemplateList.Add( new MetaTemplate(this, "T") );
         }
         public override void ParseInnerVariable()
