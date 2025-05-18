@@ -1,4 +1,3 @@
-import CSharp.System
 import CSharp.SimpleLanguage.Core.SelfMeta
 
 data XC
@@ -13,17 +12,14 @@ public class Int32
 
     public string toString()
     {
-        ret IntMetaClass.MetaToString( this.value )
+        string str = ""
+        str = Int32MetaClass.MetaToString( this.value )
+        ret str
     }
 }
 public class Float
 {
     public Float value
-
-    public string toString()
-    {
-        ret FloatMetaClass.MetaToString( this.value )
-    }
 }
 public class String
 {

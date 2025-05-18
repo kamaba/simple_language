@@ -9,6 +9,7 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
+using SimpleLanguage.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -166,7 +167,17 @@ namespace SimpleLanguage.Core
         public MetaClass callerMetaClass { get; private set; }= null;
         public MetaBraceOrBracketStatementsContent metaBraceStatementsContent { get; private set; } = null;
 
-        public static MetaVisitNode CraeteByNew( MetaClass mc, MetaBraceOrBracketStatementsContent mb)
+        public static MetaVisitNode CraeteByNewClass(MetaClass mc, MetaBraceOrBracketStatementsContent mb)
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.callerMetaClass = mc;
+            vn.metaBraceStatementsContent = mb;
+            vn.visitType = EVisitType.NewClass;
+
+            return vn;
+        }
+        public static MetaVisitNode CraeteByNewData(MetaClass mc, MetaBraceOrBracketStatementsContent mb)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
@@ -237,7 +248,7 @@ namespace SimpleLanguage.Core
             {
                 case EVisitType.MethodCall:
                     {
-                        return methodCall.callerMetaVariable.metaDefineType;
+                        return methodCall.function.returnMetaVariable.metaDefineType;
                     }
                     case EVisitType.VisitVariable:
                     {
@@ -362,7 +373,7 @@ namespace SimpleLanguage.Core
                     break;
                 case EVisitType.NewClass:
                     {
-                        sb.Append(this.variable.ToFormatString());
+                        sb.Append(this.callerMetaClass.ToFormatString());
                     }
                     break;
                 default:

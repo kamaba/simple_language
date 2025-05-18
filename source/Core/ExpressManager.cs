@@ -1,6 +1,7 @@
 ﻿using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
+using SimpleLanguage.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -251,17 +252,8 @@ namespace SimpleLanguage.Core
                         break;
                     case FileMetaCallTerm fmct:
                         {
-                            var auc = new AllowUseSettings();
-                            auc.useNotStatic = !cep.isStatic;
-                            auc.useNotConst = cep.isConst;
-                            auc.parseFrom = cep.parsefrom;
-
-                            MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByCall((root as FileMetaCallTerm), cep.metaType, ownerClass, cep.mbs, auc );
-                            if (mnoen != null)
-                                return mnoen;
-
-                            MetaCallLinkExpressNode men2 = new MetaCallLinkExpressNode( fmct.callLink, ownerClass, cep.mbs ); 
-                            men = men2;
+                            //fmct.callLink
+                            //CreateNewOrCalllink
                         }
                         break;
                     case FileMetaBraceTerm fmbt:
@@ -316,6 +308,64 @@ namespace SimpleLanguage.Core
             mn.Parse(auc2);
 
             return mn;
+        }
+
+        public static void CreateNewOrCalllink( CreateExpressParam cep, out MetaNewObjectExpressNode mnoen, out MetaCallLinkExpressNode men2 )
+        {
+            mnoen = null;
+            men2 = null;
+            MetaClass omc = cep.metaClass;
+            MetaBlockStatements mbs = cep.mbs;
+            var fmct = cep.fme as FileMetaCallTerm;
+            if (fmct == null) return;
+            if (fmct.callLink == null) return;
+            if (fmct.callLink.callNodeList.Count <= 0) return;
+
+            AllowUseSettings aus = new AllowUseSettings() { parseFrom = cep.parsefrom };
+
+            MetaCallLink mcl = new MetaCallLink(fmct.callLink, cep.metaClass, cep.mbs);
+            if (!mcl.Parse(aus)) return;
+            mcl.CalcReturnType();
+
+            bool isNewClass = false;
+            bool isNewData = false;
+            bool isNewEnum = false;
+            if (mcl.finalCallNode?.visitType == MetaVisitNode.EVisitType.NewClass)
+            {
+                isNewClass = true;
+            }
+            else if (mcl.finalCallNode?.visitType == MetaVisitNode.EVisitType.NewData)
+            {
+                isNewData = true;
+            }
+            //else if (mcl.finalMetaCallNode.callNodeType == ECallNodeType.EnumNewValue)
+            //{
+            //    isNewEnum = true;
+            //}
+            if (mcl.finalCallNode.methodCall != null)
+            {
+                if ((mcl.finalCallNode.methodCall.function as MetaMemberFunction).isConstructInitFunction)
+                {
+                    isNewClass = true;
+                }
+            }
+            MetaType retmt = mcl.GetMetaDeineType();
+            if (isNewClass)
+            {
+                mnoen = new MetaNewObjectExpressNode(fmct, mcl, retmt, omc, mbs, mcl.finalCallNode.methodCall);
+            }
+            else if (isNewData)
+            {
+                mnoen = new MetaNewObjectExpressNode(fmct, mcl, retmt, omc, mbs, mcl.finalCallNode.methodCall);
+            }
+            else if (isNewEnum)
+            {
+                mnoen = new MetaNewObjectExpressNode(fmct, mcl, retmt, omc, mbs, null);
+            }
+            else
+            {
+                men2 = new MetaCallLinkExpressNode(fmct.callLink, omc, mbs);
+            }
         }
 
         public static MetaExpressNode CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(CreateExpressParam cep )

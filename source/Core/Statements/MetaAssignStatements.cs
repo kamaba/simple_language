@@ -10,6 +10,7 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Parse;
+using SimpleLanguage.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -85,7 +86,7 @@ namespace SimpleLanguage.Core.Statements
             {
                 m_IsNeedSetMetaVariable = true;
                 m_JudgmentValueMetaVariable = new MetaVariable("autocreate_" + GetHashCode(), MetaVariable.EVariableFrom.LocalStatement, m_MetaBlockStatements, m_MetaBlockStatements.ownerMetaClass, m_MetaDefineType);
-                m_JudgmentValueMetaVariable.AddPingToken(m_ExpressNode.GetToken());
+                //m_JudgmentValueMetaVariable.AddPingToken(m_ExpressNode.GetToken());
             }
         }
     }

@@ -58,10 +58,10 @@ namespace SimpleLanguage.Core.SelfMeta
         }
         public void AddCoreFunction()
         {
-            MetaMemberFunction ToString = new MetaMemberFunction( this, "toString" );              
-            ToString.SetMetaDefineType(new MetaType(CoreMetaClassManager.stringMetaClass));
-            AddMetaMemberFunction(ToString);
-            ToString.AddCSharpMetaStatements("SimpleLanguage.VM.Int32Object", "Int32ToString" );
+            //MetaMemberFunction ToString = new MetaMemberFunction( this, "toString" );              
+            //ToString.SetMetaDefineType(new MetaType(CoreMetaClassManager.stringMetaClass));
+            //AddMetaMemberFunction(ToString);
+            //ToString.AddCSharpMetaStatements("SimpleLanguage.VM.Int32Object", "Int32ToString" );
         }
         public static MetaClass CreateMetaClass()
         {
@@ -69,7 +69,7 @@ namespace SimpleLanguage.Core.SelfMeta
             ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
             return mc;
         }
-        public static string MetaToString(Int32 v)
+        public static string MetaToString( Int32 v )
         {
             return v.ToString();
         }

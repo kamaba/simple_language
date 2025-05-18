@@ -8,8 +8,8 @@ using System.Diagnostics;
 using System.Runtime.ConstrainedExecution;
 using System.Text;
 using SimpleLanguage.Compile.CoreFileMeta;
-using SimpleLanguage.Core;
 using System.Security.Cryptography;
+using SimpleLanguage.Core;
 
 namespace SimpleLanguage.Core
 {

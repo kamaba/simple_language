@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿//****************************************************************************
+//  File:      MetaExpressConst.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2025/5/18 12:00:00
+//  Description: 
+//****************************************************************************
 using System.Diagnostics;
-using System.Security.Cryptography;
 using System.Text;
-using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Core.Statements;
-using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Core
 {
@@ -79,25 +80,32 @@ namespace SimpleLanguage.Core
             }
         }
 
-
         private FileMetaConstValueTerm m_FileMetaConstValueTerm = null;
         public object value { get; set; } = null;
+        public EType eType { get; private set; } = EType.None;
 
         public MetaClass m_MetaClass = null;
-        public MetaConstExpressNode(FileMetaConstValueTerm fmct )
+        public MetaConstExpressNode(FileMetaConstValueTerm fmct)
         {
             m_FileMetaConstValueTerm = fmct;
 
-            Parse1(fmct.token.GetEType(), fmct.token.lexeme);
+            eType = fmct.token.GetEType();
+
+            Parse1(eType, fmct.token.lexeme);
         }
-        public MetaConstExpressNode(EType etype, object val)
+        public MetaConstExpressNode(EType _eType, object val)
         {
-            Parse1(etype, val);
+            eType = _eType;
+            Parse1(_eType, val);
+        }
+        public MetaConstExpressNode(MetaType mt, object val)
+        {
+            Parse1(eType, val);
         }
         private void Parse1(EType _etype, object val)
         {
             eType = _etype;
-            switch( eType )
+            switch (eType)
             {
                 case EType.Boolean:
                     {
@@ -118,11 +126,11 @@ namespace SimpleLanguage.Core
                 return m_MetaDefineType;
             }
             //MetaType mdt = null;
-            if( eType == EType.Null )
+            if (eType == EType.Null)
             {
                 m_MetaDefineType = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
-            if (eType == EType.Class )
+            if (eType == EType.Class)
             {
                 m_MetaDefineType = new MetaType(m_MetaClass);
             }
@@ -130,7 +138,7 @@ namespace SimpleLanguage.Core
             {
                 MetaClass mc = CoreMetaClassManager.GetMetaClassByEType(eType);
 
-                if( mc == null )
+                if (mc == null)
                 {
                 }
                 else
@@ -150,7 +158,6 @@ namespace SimpleLanguage.Core
             }
             return m_MetaDefineType;
         }
-        public override Token GetToken() { return m_FileMetaConstValueTerm?.token; }
         public void ComputeAddRight(MetaConstExpressNode right)
         {
             switch (right.eType)
@@ -296,12 +303,12 @@ namespace SimpleLanguage.Core
                     break;
             }
         }
-        public void ComputeEqualComputeRight(MetaConstExpressNode right, ELeftRightOpSign opSign )
+        public void ComputeEqualComputeRight(MetaConstExpressNode right, ELeftRightOpSign opSign)
         {
             switch (right.eType)
             {
                 case EType.Byte:
-                    switch(opSign)
+                    switch (opSign)
                     {
                         case ELeftRightOpSign.Equal:
                             eType = EType.Boolean;
@@ -421,27 +428,27 @@ namespace SimpleLanguage.Core
                     {
                         case ELeftRightOpSign.Equal:
                             eType = EType.Boolean;
-                            value = (UInt32)value == (UInt32)right.value;
+                            value = (uint)value == (uint)right.value;
                             break;
                         case ELeftRightOpSign.NotEqual:
                             eType = EType.Boolean;
-                            value = (UInt32)value != (UInt32)right.value;
+                            value = (uint)value != (uint)right.value;
                             break;
                         case ELeftRightOpSign.Greater:
                             eType = EType.Boolean;
-                            value = (UInt32)value > (UInt32)right.value;
+                            value = (uint)value > (uint)right.value;
                             break;
                         case ELeftRightOpSign.GreaterOrEqual:
                             eType = EType.Boolean;
-                            value = (UInt32)value >= (UInt32)right.value;
+                            value = (uint)value >= (uint)right.value;
                             break;
                         case ELeftRightOpSign.Less:
                             eType = EType.Boolean;
-                            value = (UInt32)value < (UInt32)right.value;
+                            value = (uint)value < (uint)right.value;
                             break;
                         case ELeftRightOpSign.LessOrEqual:
                             eType = EType.Boolean;
-                            value = (UInt32)value <= (UInt32)right.value;
+                            value = (uint)value <= (uint)right.value;
                             break;
                     }
                     break;
@@ -450,27 +457,27 @@ namespace SimpleLanguage.Core
                     {
                         case ELeftRightOpSign.Equal:
                             eType = EType.Boolean;
-                            value = (Int64)value == (Int64)right.value;
+                            value = (long)value == (long)right.value;
                             break;
                         case ELeftRightOpSign.NotEqual:
                             eType = EType.Boolean;
-                            value = (Int64)value != (Int64)right.value;
+                            value = (long)value != (long)right.value;
                             break;
                         case ELeftRightOpSign.Greater:
                             eType = EType.Boolean;
-                            value = (Int64)value > (Int64)right.value;
+                            value = (long)value > (long)right.value;
                             break;
                         case ELeftRightOpSign.GreaterOrEqual:
                             eType = EType.Boolean;
-                            value = (Int64)value >= (Int64)right.value;
+                            value = (long)value >= (long)right.value;
                             break;
                         case ELeftRightOpSign.Less:
                             eType = EType.Boolean;
-                            value = (Int64)value < (Int64)right.value;
+                            value = (long)value < (long)right.value;
                             break;
                         case ELeftRightOpSign.LessOrEqual:
                             eType = EType.Boolean;
-                            value = (Int64)value <= (Int64)right.value;
+                            value = (long)value <= (long)right.value;
                             break;
                     }
                     break;
@@ -479,27 +486,27 @@ namespace SimpleLanguage.Core
                     {
                         case ELeftRightOpSign.Equal:
                             eType = EType.Boolean;
-                            value = (UInt64)value == (UInt64)right.value;
+                            value = (ulong)value == (ulong)right.value;
                             break;
                         case ELeftRightOpSign.NotEqual:
                             eType = EType.Boolean;
-                            value = (UInt64)value != (UInt64)right.value;
+                            value = (ulong)value != (ulong)right.value;
                             break;
                         case ELeftRightOpSign.Greater:
                             eType = EType.Boolean;
-                            value = (UInt64)value > (UInt64)right.value;
+                            value = (ulong)value > (ulong)right.value;
                             break;
                         case ELeftRightOpSign.GreaterOrEqual:
                             eType = EType.Boolean;
-                            value = (UInt64)value >= (UInt64)right.value;
+                            value = (ulong)value >= (ulong)right.value;
                             break;
                         case ELeftRightOpSign.Less:
                             eType = EType.Boolean;
-                            value = (UInt64)value < (UInt64)right.value;
+                            value = (ulong)value < (ulong)right.value;
                             break;
                         case ELeftRightOpSign.LessOrEqual:
                             eType = EType.Boolean;
-                            value = (UInt64)value <= (UInt64)right.value;
+                            value = (ulong)value <= (ulong)right.value;
                             break;
                     }
                     break;
@@ -527,7 +534,7 @@ namespace SimpleLanguage.Core
         {
             string signEn = "";
             string str = value.ToString();
-            switch(eType)
+            switch (eType)
             {
                 case EType.Null:
                     {
@@ -590,11 +597,11 @@ namespace SimpleLanguage.Core
         public override string ToTokenString()
         {
             StringBuilder sb = new StringBuilder();
-            if(m_FileMetaConstValueTerm!= null )
+            if (m_FileMetaConstValueTerm != null)
             {
                 sb.Append(m_FileMetaConstValueTerm.ToTokenString());
             }
             return sb.ToString();
-        }        
+        }
     }
 }

@@ -6,6 +6,7 @@
 //  Description: 
 //****************************************************************************
 using SimpleLanguage.Core;
+using SimpleLanguage.Core.SelfMeta;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -22,6 +23,12 @@ namespace SimpleLanguage.VM
         public void SetValue(String _val)
         {
             value = _val;
+        }
+        public static StringObject SetToString( Int32MetaClass mc )
+        {
+            StringObject s = new StringObject("");
+
+            return s;
         }
         public override string ToFormatString()
         {

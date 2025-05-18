@@ -8,6 +8,7 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
+using SimpleLanguage.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -698,11 +699,11 @@ namespace SimpleLanguage.Core
                         auc.useNotConst = false;
                         auc.useNotStatic = true;
 
-                        MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByCall(fmct, m_DefineMetaType, ownerMetaClass, null, auc );
-                        if( mnoen != null )
-                        {
-                            return mnoen;
-                        }
+                        //MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByCall(fmct, m_DefineMetaType, ownerMetaClass, null, auc );
+                        //if( mnoen != null )
+                        //{
+                        //    return mnoen;
+                        //}
                     }
                 }
                 else
@@ -731,11 +732,11 @@ namespace SimpleLanguage.Core
                         AllowUseSettings auc = new AllowUseSettings();
                         auc.useNotConst = false;
                         auc.useNotStatic = true;
-                        MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByCall(fmct, m_DefineMetaType, ownerMetaClass, null, auc );
-                        if (mnoen != null)
-                        {
-                            return mnoen;
-                        }
+                        //MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByCall(fmct, m_DefineMetaType, ownerMetaClass, null, auc );
+                        //if (mnoen != null)
+                        //{
+                        //    return mnoen;
+                        //}
                     }
                 }
                 CreateExpressParam cep = new CreateExpressParam();

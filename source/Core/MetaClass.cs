@@ -18,6 +18,7 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using System.Linq;
 using System.Runtime.Intrinsics.X86;
 using System.Reflection;
+using SimpleLanguage.Core;
 
 namespace SimpleLanguage.Core
 {
@@ -570,7 +571,7 @@ namespace SimpleLanguage.Core
         }
         public void AddMetaMemberFunction(MetaMemberFunction mmf, bool isAddMethod = true )
         {
-            if(m_MetaMemberFunctionListDict.ContainsKey(mmf.name ) )
+            if(this.m_MetaMemberFunctionListDict.ContainsKey(mmf.name ) )
             {
                 var list = m_MetaMemberFunctionListDict[mmf.name];
 

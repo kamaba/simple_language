@@ -17,6 +17,7 @@ using System.Net;
 using SimpleLanguage.Compile;
 using static SimpleLanguage.Core.ExpressManager;
 using System.Diagnostics;
+using SimpleLanguage.Core;
 
 namespace SimpleLanguage.Core.Statements
 {

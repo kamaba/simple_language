@@ -12,12 +12,10 @@ namespace SimpleLanguage.Core
         //#ifdef CSharp
         public MethodInfo methodInfo;
         public PropertyInfo propertyInfo;
-        
-        public bool isCSharp { get; set; }  = false;
+        public bool isCharp => methodCallType == EMethodCallType.CSharp;
+
         public MetaMemberFunction(MetaClass mc, MethodInfo mi) : base(mc)
         {
-            isCSharp = true;
-
             methodInfo = mi;
 
             m_Name = mi.Name;
@@ -28,8 +26,6 @@ namespace SimpleLanguage.Core
         }
         public MetaMemberFunction(MetaClass mc, string _name, MethodInfo mi) : base(mc)
         {
-            isCSharp = true;
-
             methodInfo = mi;
 
             m_Name = _name;
@@ -40,8 +36,6 @@ namespace SimpleLanguage.Core
         }
         public MetaMemberFunction(MetaClass mc, PropertyInfo pi) : base(mc)
         {
-            isCSharp = true;
-
             propertyInfo = pi;
 
             m_MethodCallType = EMethodCallType.CSharp;
@@ -89,9 +83,16 @@ namespace SimpleLanguage.Core
                 MetaDefineParamCSharp mdp = new MetaDefineParamCSharp(m_OwnerMetaClass, null, pis[i]);
                 m_MetaMemberParamCollection.AddMetaDefineParam(mdp);
             }
+            Init();
 
-            var defineMetaClass = ClassManager.instance.GetMetaClassByCSharpType(methodInfo.ReturnType);
-            m_DefineMetaType = new MetaType(defineMetaClass);
+            if( methodInfo.DeclaringType != null )
+            {
+                var defineMetaClass = ClassManager.instance.GetMetaClassByCSharpType(methodInfo.ReturnType);
+                m_DefineMetaType = new MetaType(defineMetaClass);
+
+                m_ReturnMetaVariable.SetMetaDefineType(m_DefineMetaType);
+            }
+
 
             m_MetaBlockStatements = new MetaBlockStatements(this, null);
             m_MetaBlockStatements.isOnFunction = true;

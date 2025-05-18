@@ -56,7 +56,7 @@ namespace SimpleLanguage.IR
             if (mf is MetaMemberFunction)
             {
                 MetaMemberFunction mmf = mf as MetaMemberFunction;
-                if (mmf.isCSharp)
+                if (mmf.methodCallType == EMethodCallType.CSharp )
                 {
                     m_MethodInfo = mmf.methodInfo;
 

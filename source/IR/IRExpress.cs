@@ -9,6 +9,7 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.IR;
 using SimpleLanguage.IR.Statements;
+using SimpleLanguage.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -39,7 +40,7 @@ namespace SimpleLanguage.IR
                         IRData irdata = new IRData();
                         irdata.opCode = IRManager.GetConstIROpCode(mcn.eType);
                         irdata.opValue = mcn.value;
-                        irdata.SetDebugInfoByToken( mcn.GetToken() );
+                        //irdata.SetDebugInfoByToken( mcn.GetToken() );
                         AddIRData(irdata);
                     }
                     break;
@@ -58,7 +59,7 @@ namespace SimpleLanguage.IR
                         CreateIRDataOne(leftNode);
                         CreateIRDataOne(rightNode);
                         var signData = CreateLeftAndRightIRData(moen.opSign);
-                        signData.SetDebugInfoByToken( moen.GetToken() );
+                        //signData.SetDebugInfoByToken( moen.GetToken() );
                         AddIRData(signData);
                     }
                     break;

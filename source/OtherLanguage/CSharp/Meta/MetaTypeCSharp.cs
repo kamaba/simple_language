@@ -21,6 +21,8 @@ namespace SimpleLanguage.Core
             {
                 case "Boolean":
                     return "Boolean";
+                case "SByte":
+                    return "SByte";
                 case "Byte":
                     return "Byte";
                 case "Single":
@@ -42,31 +44,31 @@ namespace SimpleLanguage.Core
             {
                 type = typeof(System.Byte);
             }
-            if (mc == CoreMetaClassManager.sbyteMetaClass)
+            else if (mc == CoreMetaClassManager.sbyteMetaClass)
             {
                 type = typeof(System.SByte);
             }
-            if (mc == CoreMetaClassManager.int16MetaClass)
+            else if (mc == CoreMetaClassManager.int16MetaClass)
             {
                 type = typeof(System.Int16);
             }
-            if (mc == CoreMetaClassManager.uint16MetaClass)
+            else if (mc == CoreMetaClassManager.uint16MetaClass)
             {
                 type = typeof(System.UInt16);
             }
-            if (mc == CoreMetaClassManager.int32MetaClass)
+            else if (mc == CoreMetaClassManager.int32MetaClass)
             {
                 type = typeof(System.Int32);
             }
-            if (mc == CoreMetaClassManager.uint32MetaClass)
+            else if(mc == CoreMetaClassManager.uint32MetaClass )
             {
                 type = typeof(System.UInt32);
             }
-            if (mc == CoreMetaClassManager.int64MetaClass)
+            else if (mc == CoreMetaClassManager.int64MetaClass)
             {
                 type = typeof(System.Int64);
             }
-            if (mc == CoreMetaClassManager.uint64MetaClass)
+            else if (mc == CoreMetaClassManager.uint64MetaClass)
             {
                 type = typeof(System.UInt64);
             }

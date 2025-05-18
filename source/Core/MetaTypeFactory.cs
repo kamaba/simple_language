@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Core.Type;
+using SimpleLanguage.Core.SelfMeta;
 
 namespace SimpleLanguage.Core
 {
@@ -34,6 +35,50 @@ namespace SimpleLanguage.Core
 
         //        return type;
         //    }
+        public static int GetOpLevelByMetaType( MetaType mt)
+        {
+            if( mt.metaClass == CoreMetaClassManager.booleanMetaClass)
+            {
+                return 0;
+            }
+            else if (mt.metaClass == CoreMetaClassManager.byteMetaClass
+                || mt.metaClass == CoreMetaClassManager.sbyteMetaClass)
+            {
+                return 1;
+            }
+            else if (mt.metaClass == CoreMetaClassManager.int16MetaClass
+                || mt.metaClass == CoreMetaClassManager.uint16MetaClass)
+            {
+                return 2;
+            }
+            else if (mt.metaClass == CoreMetaClassManager.int32MetaClass
+                || mt.metaClass == CoreMetaClassManager.uint32MetaClass)
+            {
+                return 3;
+            }
+            else if (mt.metaClass == CoreMetaClassManager.int64MetaClass
+                || mt.metaClass == CoreMetaClassManager.uint64MetaClass)
+            {
+                return 4;
+            }
+            else if (mt.metaClass == CoreMetaClassManager.floatMetaClass)
+            {
+                return 5;
+            }
+            else if (mt.metaClass == CoreMetaClassManager.doubleMetaClass)
+            {
+                return 6;
+            }
+            else if (mt.metaClass == CoreMetaClassManager.arrayMetaClass)
+            {
+                return 8;
+            }
+            else if (mt.metaClass == CoreMetaClassManager.stringMetaClass)
+            {
+                return 11;
+            }
+            return 10;
+        }
         public static int GetOpLevel(EType defineType)
         {
             if (defineType == EType.Boolean)

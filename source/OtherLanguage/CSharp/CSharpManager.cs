@@ -8,23 +8,37 @@
 
 using SimpleLanguage.Core;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Data;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace SimpleLanguage.CSharp
 {
     class CSharpManager
     {
+        static System.Reflection.Assembly[] allAssembly = AppDomain.CurrentDomain.GetAssemblies();
+
+        static List<Assembly> canSearchAssemblyList = new List<Assembly>();
         static CSharpManager()
         {
+            InitCanSearchAssemblyList();
+        }
+        public static void InitCanSearchAssemblyList()
+        {
+            foreach( var am in allAssembly )
+            {
+                if (am.FullName != "SimpleLanguage, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+                        && am.FullName != "System.Console, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")
+                {
+                    continue;
+                }
+                canSearchAssemblyList.Add(am);
+            }
 
         }
         public static MetaBase GetCSharpFunction( MetaBase mb, string name )
@@ -59,12 +73,10 @@ namespace SimpleLanguage.CSharp
         }
         public static Type FindCSharpType( string name )
         {
-            System.Reflection.Assembly[] all = AppDomain.CurrentDomain.GetAssemblies();
-
             string allName = name;
-            for (int k = 0; k < all.Length; k++)
+            for (int k = 0; k < canSearchAssemblyList.Count; k++)
             {
-                Assembly am = all[k];
+                Assembly am = canSearchAssemblyList[k];
                 var modules = am.GetModules();
                 var types = am.GetExportedTypes();
                 var typeInfos = am.DefinedTypes;
@@ -81,7 +93,6 @@ namespace SimpleLanguage.CSharp
         }
         public static MetaBase FindAndCreateMetaBase( MetaBase mb, string name )
         {
-            System.Reflection.Assembly[] all = AppDomain.CurrentDomain.GetAssemblies();
 
             string allName = name;
             if (mb != null)
@@ -95,11 +106,18 @@ namespace SimpleLanguage.CSharp
                     allName = mb.allName + "." + name;
                 }
             }
-            for( int k = 0; k < all.Length; k++ )
+            for( int k = 0; k < canSearchAssemblyList.Count; k++ )
             {
-                Assembly am = all[k];
-
-                var ttype = am.GetType(allName);
+                Assembly am = canSearchAssemblyList[k];
+                Type ttype = null;
+                foreach( var x in am.DefinedTypes )
+                {
+                    if( x.FullName == allName )
+                    {
+                        ttype = x;
+                        break;
+                    }
+                }
                 if (ttype != null )
                 {
                     if (ttype.IsClass)
@@ -148,31 +166,34 @@ namespace SimpleLanguage.CSharp
                         }
                     }
                 }
-
-                string[] namespaces = am.GetTypes()
-                    .Select(t => t.Namespace)
-                    .Where(ns => !string.IsNullOrEmpty(ns))
-                    .Distinct()
-                    .ToArray();
-
-                for (int l = 0; l < namespaces.Length; l++)
+                else
                 {
-                    string cuns = namespaces[l];
-                    if( cuns.IndexOf(allName) != -1 )
-                    {
-                        MetaNamespace nmn = new MetaNamespace(name);
-                        nmn.SetRefFromType(RefFromType.CSharp);
-                        if (mb is MetaNamespace mn)
-                        {
-                            mn.AddMetaNamespace(nmn);
-                            return nmn;
-                        }
-                        else if(mb is MetaModule mm )
-                        {
-                            mm.AddMetaNamespace(nmn); 
-                            return nmn;
-                        }
+                    string[] namespaces = am.GetTypes()
+                        .Select(t => t.Namespace)
+                        .Where(ns => !string.IsNullOrEmpty(ns))
+                        .Distinct()
+                        .ToArray();
 
+                    for (int l = 0; l < namespaces.Length; l++)
+                    {
+                        string cuns = namespaces[l];
+                        int index = cuns.IndexOf(allName);
+                        if (index == 0)
+                        {
+                            MetaNamespace nmn = new MetaNamespace(name);
+                            nmn.SetRefFromType(RefFromType.CSharp);
+                            if (mb is MetaNamespace mn)
+                            {
+                                mn.AddMetaNamespace(nmn);
+                                return nmn;
+                            }
+                            else if (mb is MetaModule mm)
+                            {
+                                mm.AddMetaNamespace(nmn);
+                                return nmn;
+                            }
+
+                        }
                     }
                 }
             }
