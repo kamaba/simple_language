@@ -28,7 +28,7 @@ namespace SimpleLanguage.Core.Statements
             MetaType mdt = new MetaType( CoreMetaClassManager.objectMetaClass );
 
 
-            ExpressManager.CreateExpressParam cep2 = new ExpressManager.CreateExpressParam()
+            CreateExpressParam cep2 = new CreateExpressParam()
             {
                 mbs = m_OwnerMetaBlockStatements,
                 metaType = mdt,
@@ -37,7 +37,7 @@ namespace SimpleLanguage.Core.Statements
                 isConst = false,
                 parsefrom = EParseFrom.StatementRightExpress
             };
-            m_Express = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
+            m_Express = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
             if (m_Express != null)
             {
                 m_Express.CalcReturnType();
@@ -85,7 +85,7 @@ namespace SimpleLanguage.Core.Statements
             {
                 MetaType mdt = new MetaType(returnMetaClass);
 
-                ExpressManager.CreateExpressParam cep2 = new ExpressManager.CreateExpressParam()
+                CreateExpressParam cep2 = new CreateExpressParam()
                 {
                     mbs = m_OwnerMetaBlockStatements,
                     metaType = mdt,
@@ -94,7 +94,7 @@ namespace SimpleLanguage.Core.Statements
                     isConst = false,
                     parsefrom = EParseFrom.StatementRightExpress
                 };
-                m_Express = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
+                m_Express = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
             }
             if (m_Express != null)
             {

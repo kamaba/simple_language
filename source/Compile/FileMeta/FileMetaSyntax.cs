@@ -5,14 +5,10 @@
 //  DateTime: 2022/5/12 12:00:00
 //  Description: 
 //****************************************************************************
-using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile.Parse;
-using static SimpleLanguage.Compile.Parse.StructParse;
-using System.Xml.Linq;
-using System.Runtime.Intrinsics.X86;
 using System.Diagnostics;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
@@ -108,7 +104,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         private FileMetaKeyOnlySyntax m_ElseExpressSyntax = null;
 
 
-        public static FileMetaKeyIfSyntax ParseIfSyntax( FileMeta fm, SyntaxNodeStruct sns)
+        public static FileMetaKeyIfSyntax ParseIfSyntax( FileMeta fm, StructParse.SyntaxNodeStruct sns)
         {
             FileMetaKeyIfSyntax ifSyntax = new FileMetaKeyIfSyntax(fm);
             FileMetaBaseTerm conditionExpress = FileMetatUtil.CreateFileMetaExpress(fm, sns.keyContent, FileMetaTermExpress.EExpressType.Common);
@@ -824,7 +820,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
         private FileMetaBaseTerm m_ReturnExpress = null;
 
-        public static FileMetaKeyReturnSyntax ParseIfSyntax(FileMeta fm, SyntaxNodeStruct akss)
+        public static FileMetaKeyReturnSyntax ParseIfSyntax(FileMeta fm, StructParse.SyntaxNodeStruct akss)
         {           
             var cnode = akss.keyNode;
             FileMetaBaseTerm conditionExpress = FileMetatUtil.CreateFileMetaExpress(fm, akss.keyContent, FileMetaTermExpress.EExpressType.Common);
@@ -854,7 +850,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
         private Token m_LabelToken = null;
 
-        public static FileMetaKeyGotoLabelSyntax ParseIfSyntax(FileMeta fm, SyntaxNodeStruct akss)
+        public static FileMetaKeyGotoLabelSyntax ParseIfSyntax(FileMeta fm, StructParse.SyntaxNodeStruct akss)
         {
             var cnode = akss.keyNode;
             Token labelToken = null;

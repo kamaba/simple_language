@@ -397,7 +397,7 @@ namespace SimpleLanguage.Core
 
             if (m_Express != null)
             {
-                ExpressManager.instance.CalcParseLevel(parseLevel, m_Express);
+                ExpressManager.CalcParseLevel(parseLevel, m_Express);
             }
         }
         public void CreateExpress()
@@ -743,10 +743,10 @@ namespace SimpleLanguage.Core
                 cep.metaClass = ownerMetaClass;
                 cep.metaType = m_DefineMetaType;
                 cep.fme = root;
-                return ExpressManager.instance.CreateExpressNode(cep);
+                return ExpressManager.CreateExpressNode(cep);
             }
 
-            MetaExpressNode mn = ExpressManager.instance.VisitFileMetaExpress(ownerMetaClass, null, m_DefineMetaType, root);
+            MetaExpressNode mn = ExpressManager.VisitFileMetaExpress(ownerMetaClass, null, m_DefineMetaType, root);
 
             AllowUseSettings auc2 = new AllowUseSettings();
             auc2.useNotConst = isConst;

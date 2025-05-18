@@ -384,12 +384,13 @@ namespace SimpleLanguage.Core
             while (rootMs.IsNotEnd() )
             {
                 var childFms = rootMs.GetCurrentSyntaxAndMove();
-                HandleMetaSyntax(currentBlockStatements, ref beforeStatements,  rootMs, childFms );
+                HandleMetaSyntax(currentBlockStatements, ref beforeStatements,  childFms );
             }
             return beforeStatements;
         }
-        public static MetaStatements HandleMetaSyntax(MetaBlockStatements currentBlockStatements, ref MetaStatements beforeStatements, 
-            FileMetaSyntax fms, FileMetaSyntax childFms )
+        public static MetaStatements HandleMetaSyntax(MetaBlockStatements currentBlockStatements, 
+            ref MetaStatements beforeStatements,
+            FileMetaSyntax childFms )
         {
             switch (childFms)
             {
@@ -423,7 +424,7 @@ namespace SimpleLanguage.Core
                         beforeStatements = metaForStatements;
                     }
                     break;
-                case FileMetaConditionExpressSyntax fmkes:
+                case FileMetaConditionExpressSyntax fmkes:  //dowhile/while conditionvarabile
                     {     
                         if (fmkes.token.type == ETokenType.While
                             || fmkes.token.type == ETokenType.DoWhile )
@@ -507,7 +508,7 @@ namespace SimpleLanguage.Core
                         }
                     }
                     break;
-                case FileMetaDefineVariableSyntax fmvs:
+                case FileMetaDefineVariableSyntax fmvs: // x = 2;
                     {
                         bool isDefineVarStatements = false;
                         string name1 = fmvs.name;
@@ -532,14 +533,14 @@ namespace SimpleLanguage.Core
                         }
                     }
                     break;
-                case FileMetaCallSyntax fmcs:
+                case FileMetaCallSyntax fmcs:       //a.value.SetH(100);
                     {
                         var mcs = new Statements.MetaCallStatements(currentBlockStatements, fmcs );
                         beforeStatements.SetNextStatements(mcs);
                         beforeStatements = mcs;
                         return mcs;
                     }
-                case FileMetaKeyReturnSyntax fmrs:
+                case FileMetaKeyReturnSyntax fmrs:      //ret 100
                     {
                         if( fmrs.token?.type == ETokenType.Return )
                         {
@@ -561,7 +562,7 @@ namespace SimpleLanguage.Core
                         }
                     }
                     break;
-                case FileMetaKeyGotoLabelSyntax fmkgls:
+                case FileMetaKeyGotoLabelSyntax fmkgls: //goto 1// label 1
                     {
                         var metaGotoStatements = new MetaGotoLabelStatements(currentBlockStatements, fmkgls);
                         beforeStatements.SetNextStatements(metaGotoStatements);

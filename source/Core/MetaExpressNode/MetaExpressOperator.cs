@@ -12,7 +12,7 @@ using SimpleLanguage.Core;
 
 namespace SimpleLanguage.Core
 {
-    public class MetaUnaryOpExpressNode : MetaExpressNode
+    public sealed class MetaUnaryOpExpressNode : MetaExpressNode
     {
         public ESingleOpSign opSign => m_OpSign;
         public MetaExpressNode value => m_Value;
@@ -206,7 +206,7 @@ namespace SimpleLanguage.Core
         }
     }
 
-    public class MetaOpExpressNode : MetaExpressNode
+    public sealed class MetaOpExpressNode : MetaExpressNode
     {
         public bool isEqualType { get; set; } = false;
         public MetaExpressNode left => m_Left;

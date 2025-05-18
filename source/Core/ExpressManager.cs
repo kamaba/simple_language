@@ -21,21 +21,33 @@ namespace SimpleLanguage.Core
         public bool ifUnaryExpressValueIsConstThenCompute = true;// if unary express's value node is const type, then force compute 
         public bool ifOpExpressLeftAndRightIsConstThenCompute = true;
     }
+    public struct CreateExpressParam
+    {
+        public MetaBlockStatements mbs;
+        public MetaClass metaClass;
+        public MetaType metaType;
+        public MetaType parentMetaType;
+        public MetaVariable equalMetaVariable;
+        public FileMetaBaseTerm fme;
+        public bool isStatic;
+        public bool isConst;
+        public EParseFrom parsefrom;
+
+        public CreateExpressParam()
+        {
+            mbs = null;
+            metaClass = null;
+            equalMetaVariable = null;
+            metaType = null;
+            parentMetaType = null;
+            fme = null;
+            isStatic = false;
+            isConst = false;
+            parsefrom = EParseFrom.None;
+        }
+    }
     public class ExpressManager
     {
-        public static ExpressManager s_Instance = null;
-        public static ExpressManager instance
-        {
-            get
-            {
-                if (s_Instance == null)
-                {
-                    s_Instance = new ExpressManager();
-                }
-                return s_Instance;
-            }
-        }
-
         public static ExpressOptimizeConfig expressOptimizeConfig = new ExpressOptimizeConfig();
         public static bool IsCanExpressCampute( MetaClass mc )
         {
@@ -47,7 +59,53 @@ namespace SimpleLanguage.Core
                 return true;
             return false;
         }
-        public MetaExpressNode CreateOptimizeAfterExpress( MetaExpressNode men, ExpressOptimizeConfig config = null )
+        public static MetaExpressNode CreateExpressNodeByCEP(CreateExpressParam cep)
+        {
+            FileMetaBaseTerm fmte = cep.fme;
+            MetaBlockStatements mbs = cep.mbs;
+            MetaType mdt = cep.metaType;
+            MetaVariable equalMetaVariable = cep.equalMetaVariable;
+            MetaClass mc = cep.metaClass;
+
+            if (fmte != null)
+            {
+                FileMetaIfSyntaxTerm ifExpressTerm = fmte as FileMetaIfSyntaxTerm;
+                FileMetaMatchSyntaxTerm switchExpressTerm = fmte as FileMetaMatchSyntaxTerm;
+                FileMetaParTerm parExpressTerm = fmte as FileMetaParTerm;
+                if (ifExpressTerm != null)
+                {
+                    MetaExecuteStatementsNode mesn = MetaExecuteStatementsNode.CreateMetaExecuteStatementsNodeByIfExpress(mdt, mc, mbs, ifExpressTerm.ifSyntax);
+                    if (mesn != null)
+                    {
+                        return mesn;
+                    }
+                }
+                else if (switchExpressTerm != null)
+                {
+                    MetaExecuteStatementsNode mesn = MetaExecuteStatementsNode.CreateMetaExecuteStatementsNodeBySwitchExpress(mdt, mc, mbs, switchExpressTerm.switchSyntax);
+                    if (mesn != null)
+                    {
+                        return mesn;
+                    }
+                }
+                else if (parExpressTerm != null)
+                {
+                    MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByPar(parExpressTerm, mdt, mc, mbs);
+                    if (mnoen != null)
+                        return mnoen;
+                }
+                else
+                {
+                    return CreateExpressNodeInMetaFunctionCommonStatements(cep);
+                }
+            }
+            else
+            {
+                Debug.Write("Error 没有找到合适的表达式 位置: " + fmte.token?.ToLexemeAllString());
+            }
+            return null;
+        }
+        public static MetaExpressNode CreateOptimizeAfterExpress( MetaExpressNode men, ExpressOptimizeConfig config = null )
         {
             if( config == null )
             {
@@ -91,7 +149,7 @@ namespace SimpleLanguage.Core
             }
             return men;
         }
-        public MetaExpressNode VisitFileMetaExpress(MetaClass mc, MetaBlockStatements mbs, MetaType mdt, FileMetaBaseTerm fme)
+        public static MetaExpressNode VisitFileMetaExpress(MetaClass mc, MetaBlockStatements mbs, MetaType mdt, FileMetaBaseTerm fme)
         {
             if (fme == null) return null;
 
@@ -147,7 +205,7 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public MetaExpressNode CreateExpressNode( CreateExpressParam cep  )
+        public static MetaExpressNode CreateExpressNode( CreateExpressParam cep  )
         {
             MetaClass mc = cep.metaClass;
             var fme = cep.fme;
@@ -202,32 +260,7 @@ namespace SimpleLanguage.Core
             }
             return men;
         }
-        public struct CreateExpressParam
-        {
-            public MetaBlockStatements mbs;
-            public MetaClass metaClass;
-            public MetaType metaType;
-            public MetaType parentMetaType;
-            public MetaVariable equalMetaVariable;
-            public FileMetaBaseTerm fme;
-            public bool isStatic;
-            public bool isConst;
-            public EParseFrom parsefrom;
-
-            public CreateExpressParam()
-            {
-                mbs = null;
-                metaClass = null;
-                equalMetaVariable = null;
-                metaType = null;
-                parentMetaType = null;
-                fme = null;
-                isStatic = false;
-                isConst = false;
-                parsefrom = EParseFrom.None;
-            }
-        }
-        public MetaExpressNode CreateExpressNodeInMetaFunctionCommonStatements(CreateExpressParam cep )
+        public static MetaExpressNode CreateExpressNodeInMetaFunctionCommonStatements(CreateExpressParam cep )
         {
             MetaClass ownerClass = cep.mbs?.ownerMetaClass;
             var root = cep.fme.root;
@@ -368,53 +401,7 @@ namespace SimpleLanguage.Core
             }
         }
 
-        public static MetaExpressNode CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(CreateExpressParam cep )
-        {
-            FileMetaBaseTerm fmte = cep.fme;
-            MetaBlockStatements mbs = cep.mbs;
-            MetaType mdt = cep.metaType;
-            MetaVariable equalMetaVariable = cep.equalMetaVariable;
-            MetaClass mc = cep.metaClass;
-
-            if (fmte != null)
-            {
-                FileMetaIfSyntaxTerm ifExpressTerm = fmte as FileMetaIfSyntaxTerm;
-                FileMetaMatchSyntaxTerm switchExpressTerm = fmte as FileMetaMatchSyntaxTerm;
-                FileMetaParTerm parExpressTerm = fmte as FileMetaParTerm;
-                if (ifExpressTerm != null)
-                {
-                    MetaExecuteStatementsNode mesn = MetaExecuteStatementsNode.CreateMetaExecuteStatementsNodeByIfExpress(mdt, mc, mbs, ifExpressTerm.ifSyntax);
-                    if (mesn != null)
-                    {
-                        return mesn;
-                    }
-                }
-                else if (switchExpressTerm != null)
-                {
-                    MetaExecuteStatementsNode mesn = MetaExecuteStatementsNode.CreateMetaExecuteStatementsNodeBySwitchExpress(mdt, mc, mbs, switchExpressTerm.switchSyntax);
-                    if (mesn != null)
-                    {
-                        return mesn;
-                    }
-                }
-                else if(parExpressTerm != null )
-                {
-                    MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByPar(parExpressTerm, mdt, mc, mbs);
-                    if (mnoen != null)
-                        return mnoen;
-                }
-                else
-                {
-                    return ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep);
-                }
-            }
-            else
-            {
-                Debug.Write("Error 没有找到合适的表达式 位置: " + fmte.token?.ToLexemeAllString());
-            }
-            return null;
-        }
-        public int CalcParseLevel( int level, MetaExpressNode men )
+        public static int CalcParseLevel( int level, MetaExpressNode men )
         {
             switch( men )
             {

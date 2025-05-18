@@ -80,7 +80,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             m_OwnerMetaClass = mc;
 
-            ExpressManager.CreateExpressParam cep = new ExpressManager.CreateExpressParam()
+            CreateExpressParam cep = new CreateExpressParam()
             {
                 mbs = m_OwnerMetaBlockStatements,
                 metaType = new MetaType(CoreMetaClassManager.objectMetaClass),
@@ -89,7 +89,7 @@ namespace SimpleLanguage.Core
                 isConst = false,
                 parsefrom = EParseFrom.InputParamExpress
             };
-            m_Express = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep);
+            m_Express = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep);
         }
         public MetaInputParam( MetaExpressNode inputExpress )
         {
@@ -254,7 +254,7 @@ namespace SimpleLanguage.Core
 
             if (m_FileMetaParamter.express != null)
             {
-                ExpressManager.CreateExpressParam cep = new ExpressManager.CreateExpressParam()
+                CreateExpressParam cep = new CreateExpressParam()
                 {
                     mbs = null,
                     metaType = new MetaType(CoreMetaClassManager.objectMetaClass),
@@ -263,7 +263,7 @@ namespace SimpleLanguage.Core
                     isConst = false,
                     parsefrom = EParseFrom.InputParamExpress
                 };
-                m_MetaExpressNode = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep);               
+                m_MetaExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep);               
             }
         }
         public MetaDefineParam(string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaType mt )

@@ -6,11 +6,6 @@
 //  Description: Meta class's ir attribute
 //****************************************************************************
 
-using SimpleLanguage.IR;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
 using SimpleLanguage.Core;
 
 namespace SimpleLanguage.IR
