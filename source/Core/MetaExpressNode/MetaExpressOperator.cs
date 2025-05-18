@@ -8,6 +8,7 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using SimpleLanguage.Parse;
+using SimpleLanguage.Core;
 
 namespace SimpleLanguage.Core
 {
@@ -49,11 +50,11 @@ namespace SimpleLanguage.Core
         {
             if ( m_OpSign == ESingleOpSign.Not)
             {
-                eType = EType.Boolean;
+                m_MetaDefineType.SetMetaClass( CoreMetaClassManager.booleanMetaClass );
             }
             else
             {
-                eType = m_Value.eType;
+                m_MetaDefineType = m_Value.metaDefineType;
             }
         }
         public MetaExpressNode SimulateCompute()
@@ -61,6 +62,7 @@ namespace SimpleLanguage.Core
             var mcen = value as MetaConstExpressNode;
             if (mcen != null)
             {
+                var eType = mcen.eType;
                 switch (opSign)
                 {
                     case ESingleOpSign.Neg:
@@ -98,7 +100,6 @@ namespace SimpleLanguage.Core
                         break;
                     case ESingleOpSign.Not:
                         {
-                            mcen.SetEType(EType.Boolean);
                             switch (eType)
                             {
                                 case EType.Byte:
@@ -147,7 +148,6 @@ namespace SimpleLanguage.Core
                         break;
                     case ESingleOpSign.Xor:
                         {
-                            mcen.SetEType(EType.Boolean);
                             switch (eType)
                             {
                                 case EType.Byte:
@@ -182,12 +182,6 @@ namespace SimpleLanguage.Core
                 }
             }
             return this;
-        }
-
-
-        public override Token GetToken() 
-        { 
-            return tokeType; 
         }
         public override string ToFormatString()
         {
@@ -313,18 +307,6 @@ namespace SimpleLanguage.Core
         {
             m_Right = _right;
         }
-        public override Token GetToken()
-        {
-            if (m_FileMetaBaseTerm != null)
-            {
-                return m_FileMetaBaseTerm.token;
-            }
-            if(m_SignToken != null )
-            {
-                return m_SignToken;
-            }
-            return base.GetToken();
-        }
         public override void Parse(AllowUseSettings auc)
         {
             m_Left.Parse(auc);
@@ -387,7 +369,7 @@ namespace SimpleLanguage.Core
                     case ELeftRightOpSign.Or:
                     case ELeftRightOpSign.And:
                         {
-                            eType = EType.Boolean;
+                            m_MetaDefineType.SetMetaClass(CoreMetaClassManager.booleanMetaClass);
                         }
                         break;
                 }
@@ -401,45 +383,45 @@ namespace SimpleLanguage.Core
         {
             if (m_Left.opLevel < m_Right.opLevel)
             {
-                eType = m_Right.eType;
+                m_MetaDefineType = m_Right.metaDefineType;
             }
             else if (m_Left.opLevel > m_Right.opLevel)
             {
-                eType = m_Left.eType;
+                m_MetaDefineType = m_Left.metaDefineType;
             }
             else
             {
-                eType = m_Left.eType;
+                m_MetaDefineType = m_Left.metaDefineType;
             }
         }
         public void ParseDivide()
         {
             if (m_Left.opLevel < m_Right.opLevel)
             {
-                eType = m_Right.eType;
+                m_MetaDefineType = m_Right.metaDefineType;
             }
             else if (m_Left.opLevel > m_Right.opLevel)
             {
-                eType = m_Left.eType;
+                m_MetaDefineType = m_Left.metaDefineType;
             }
             else
             {
-                eType = m_Left.eType;
+                m_MetaDefineType = m_Left.metaDefineType;
             }
         }
         public void ParseMultiplyOrModulo()
         {
             if (m_Left.opLevel < m_Right.opLevel)
             {
-                eType = m_Left.eType;
+                m_MetaDefineType = m_Left.metaDefineType;
             }
             else if (m_Left.opLevel > m_Right.opLevel)
             {
-                eType = m_Left.eType;
+                m_MetaDefineType = m_Left.metaDefineType;
             }
             else
             {
-                eType = m_Left.eType;
+                m_MetaDefineType = m_Left.metaDefineType;
             }
         }
         public MetaExpressNode SimulateCompute(ExpressOptimizeConfig config)

@@ -8,10 +8,7 @@
 
 using SimpleLanguage.Core.Statements;
 using SimpleLanguage.IR.Statements;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 
 namespace SimpleLanguage.IR
 {
@@ -36,7 +33,6 @@ namespace SimpleLanguage.IR
                     case MetaBlockStatements mbs:
                         {
                             blockStart = new IRNop(irMethod);
-                            blockStart.data.SetDebugInfoByToken(ms.GetToken());
                             m_IRStatements.Add(blockStart);
                         }
                         break;

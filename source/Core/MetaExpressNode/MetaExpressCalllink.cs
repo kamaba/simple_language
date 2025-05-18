@@ -7,6 +7,7 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using SimpleLanguage.Parse;
+using SimpleLanguage.Core;
 
 namespace SimpleLanguage.Core
 {
@@ -36,7 +37,6 @@ namespace SimpleLanguage.Core
                 m_MetaCallLink.Parse( auc );
             }
         }
-        public override Token GetToken() { return m_MetaCallLink.GetToken(); }
         public override int CalcParseLevel(int level)
         {
             if (m_MetaCallLink != null)
@@ -48,11 +48,6 @@ namespace SimpleLanguage.Core
             if(m_MetaCallLink != null )
             {
                 m_MetaCallLink.CalcReturnType();
-                var egmc = m_MetaCallLink.ExecuteGetMetaClass();
-                if( egmc != null )
-                {
-                    eType = egmc.eType;
-                }
             }
         }
         public MetaVariable GetMetaVariable()

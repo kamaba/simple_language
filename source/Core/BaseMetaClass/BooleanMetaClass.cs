@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using SimpleLanguage.Core;
 
 namespace SimpleLanguage.Core.SelfMeta
 {

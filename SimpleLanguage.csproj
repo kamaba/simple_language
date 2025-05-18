@@ -23,13 +23,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="source\Core\新文件夹\**" />
     <Compile Remove="source\IR\新文件夹\**" />
     <Compile Remove="source\MakeBin\**" />
-    <EmbeddedResource Remove="source\Core\新文件夹\**" />
     <EmbeddedResource Remove="source\IR\新文件夹\**" />
     <EmbeddedResource Remove="source\MakeBin\**" />
-    <None Remove="source\Core\新文件夹\**" />
     <None Remove="source\IR\新文件夹\**" />
     <None Remove="source\MakeBin\**" />
   </ItemGroup>

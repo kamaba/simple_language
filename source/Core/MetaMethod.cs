@@ -24,6 +24,7 @@ namespace SimpleLanguage.Core
     }
     public class MetaFunction : MetaVariable
     {
+
         public virtual string functionAllName {
             get
             {
@@ -44,9 +45,7 @@ namespace SimpleLanguage.Core
         protected MetaDefineTemplateCollection m_MetaMemberTemplateCollection = new MetaDefineTemplateCollection();
         protected EMethodCallType m_MethodCallType = EMethodCallType.Local;
         protected bool m_IsMustNeedReturnStatements = false;
-        protected IRMethod m_IRMethod = null;
         private List<LabelData> m_LabelDataList = new List<LabelData>();
-
         public MetaFunction(MetaClass mc)
         {
             m_MetaMemberParamCollection = new MetaDefineParamCollection(false, true);
@@ -118,7 +117,7 @@ namespace SimpleLanguage.Core
         }
         public bool TranslateIR()
         {
-            m_IRMethod = IRManager.instance.TranslateIRByFunction(this);
+            var m_IRMethod = IRManager.instance.TranslateIRByFunction(this);
 
             return m_IRMethod != null;
         }

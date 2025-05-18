@@ -7,7 +7,6 @@
 //****************************************************************************
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
-using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,7 +14,7 @@ using System.Text;
 
 namespace SimpleLanguage.Core.Statements
 {
-    public partial class MetaBlockStatements : MetaStatements
+    public class MetaBlockStatements : MetaStatements
     {
         public override MetaFunction ownerMetaFunction => m_OwnerMetaFunction;
         public MetaStatements ownerMetaStatements => m_OwnerMetaStatements;
@@ -51,14 +50,6 @@ namespace SimpleLanguage.Core.Statements
             mbs.m_ChildrenMetaBlockStatementsList.Add(this);
             m_OwnerMetaFunction = mbs.ownerMetaFunction;
             m_FileMetaBlockSyntax = fmbs;
-        }
-        public override Token GetToken()
-        {
-            if( m_FileMetaBlockSyntax != null )
-            {
-                return m_FileMetaBlockSyntax.beginBlock;
-            }
-            return null;
         }
         public void SetFileMetaBlockSyntax( FileMetaBlockSyntax blockSyntax )
         {

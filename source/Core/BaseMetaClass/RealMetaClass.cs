@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using SimpleLanguage.Core;
 
 namespace SimpleLanguage.Core.SelfMeta
 {
@@ -42,7 +43,7 @@ namespace SimpleLanguage.Core.SelfMeta
             MetaMemberFunction ToString = new MetaMemberFunction(this, "toString");
             ToString.SetMetaDefineType(new MetaType(CoreMetaClassManager.stringMetaClass));
             AddMetaMemberFunction(ToString);
-            ToString.AddCSharpMetaStatements("SimpleLanguage.VM.Int32Object", "FloatToString");
+            //ToString.AddCSharpMetaStatements("SimpleLanguage.VM.Int32Object", "FloatToString");
         }
         public MetaClass Cast( MetaTemplate mt)
         {
@@ -91,12 +92,12 @@ namespace SimpleLanguage.Core.SelfMeta
             MetaMemberFunction toFloat = new MetaMemberFunction(this, "toFloat");
             toFloat.SetMetaDefineType(new MetaType(CoreMetaClassManager.floatMetaClass));
             AddMetaMemberFunction(toFloat);
-            toFloat.AddCSharpMetaStatements("SimpleLanguage.VM.DoubleObject", "DoubleToFloat");
+            //toFloat.AddCSharpMetaStatements("SimpleLanguage.VM.DoubleObject", "DoubleToFloat");
 
             MetaMemberFunction ToString = new MetaMemberFunction(this, "toString");
             ToString.SetMetaDefineType(new MetaType(CoreMetaClassManager.stringMetaClass));
             AddMetaMemberFunction(ToString);
-            ToString.AddCSharpMetaStatements("SimpleLanguage.VM.DoubleObject", "DoubleToString");
+            //ToString.AddCSharpMetaStatements("SimpleLanguage.VM.DoubleObject", "DoubleToString");
         }
         public static string MetaToString( double v )
         {

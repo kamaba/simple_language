@@ -7,4 +7,10 @@ Array<T>
     {
         
     }
+
+    public Array<T> join( Array<T> con )
+    {
+        ret null
+    }
+    
 }

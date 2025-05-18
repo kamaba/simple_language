@@ -8,6 +8,7 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
+using SimpleLanguage.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

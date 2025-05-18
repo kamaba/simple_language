@@ -38,7 +38,7 @@ namespace SimpleLanguage.IR
 
                 if (mires.ifElseState == MetaIfStatements.IfElseState.If || mires.ifElseState == MetaIfStatements.IfElseState.ElseIf)
                 {
-                    startNop.data.SetDebugInfoByToken(mires.finalExpress.GetToken());
+                    //startNop.data.SetDebugInfoByToken(mires.finalExpress.GetToken());
 
                     m_IrExpress = new IRExpress(_irMethod, mires.finalExpress);
                     conditionStatList.Add(m_IrExpress);

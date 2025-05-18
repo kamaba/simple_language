@@ -6,18 +6,12 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Core;
-using SimpleLanguage.IR;
-using SimpleLanguage.Core.Statements;
-using SimpleLanguage.Parse;
-using System;
-using System.Collections.Generic;
-using System.Text;
+
 using SimpleLanguage.Compile;
 
 namespace SimpleLanguage.Core.Statements
 {
-    public partial class MetaStatements : MetaBase
+    public class MetaStatements : MetaBase
     {
         public MetaStatements nextMetaStatements => m_NextMetaStatements;
         public MetaBlockStatements parentBlockStatements => m_OwnerMetaBlockStatements;
@@ -42,15 +36,15 @@ namespace SimpleLanguage.Core.Statements
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
         protected MetaStatements m_NextMetaStatements = null;
         protected bool m_IsNeedCastState = false;
-        public void SetOwnerMetaFunctionBlock(MetaBlockStatements mbs )
-        {
-            m_OwnerMetaBlockStatements = mbs;
-        }
         protected MetaStatements()
         {  }
         protected MetaStatements(MetaBlockStatements mf )
         {
             m_OwnerMetaBlockStatements = mf;
+        }
+        public void SetOwnerMetaFunctionBlock(MetaBlockStatements mbs)
+        {
+            m_OwnerMetaBlockStatements = mbs;
         }
         public virtual void SetTRMetaVariable( MetaVariable mv )
         {
@@ -73,10 +67,6 @@ namespace SimpleLanguage.Core.Statements
             m_NextMetaStatements = ms;
         }
         public virtual MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
-        {
-            return null;
-        }
-        public virtual Token GetToken()
         {
             return null;
         }

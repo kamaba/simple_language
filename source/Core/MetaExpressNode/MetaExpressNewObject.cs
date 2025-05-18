@@ -8,6 +8,7 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using SimpleLanguage.Parse;
+using SimpleLanguage.Core;
 
 namespace SimpleLanguage.Core
 {
@@ -326,7 +327,7 @@ namespace SimpleLanguage.Core
                     cep.metaType = new MetaType(CoreMetaClassManager.int32MetaClass);
                     cep.fme = fas;
                     cep.equalMetaVariable = m_EqualMetaVariable;
-                   MetaExpressNode men = ExpressManager.instance.CreateExpressNode(cep);
+                    MetaExpressNode men = ExpressManager.instance.CreateExpressNode(cep);
                     MetaBraceAssignStatements mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
                     m_AssignStatementsList.Add(mas);
                 }
@@ -621,8 +622,6 @@ namespace SimpleLanguage.Core
             //MetaMemberFunction mmf = m_MetaDefineType.metaClass.GetMetaMemberConstructFunction(mipc);
 
             //m_MetaConstructFunctionCall = new MetaMethodCall(m_MetaDefineType.metaClass, mmf, mipc);
-
-            eType = EType.Array;
         }
 
         // 1..x
@@ -875,37 +874,29 @@ namespace SimpleLanguage.Core
 
             m_MetaConstructFunctionCall = new MetaMethodCall(m_MetaDefineType.metaClass, mmf, mipc );
 
-            eType = EType.Array;
+            //eType = EType.Array;
         }
         private void Init()
         {
-            if(m_MetaConstructFunctionCall != null )
-            {
-                eType = m_MetaDefineType.metaClass.eType;
-            }
-            else
-            {
-                if(m_MetaDefineType.isEnum )
-                {
-                    eType = EType.Enum;
-                }    
-                else if( m_MetaDefineType.isData )
-                {
-                    eType = EType.Data;
-                }
-                else
-                {
-                    eType = EType.Class;
-                }
-            }
-        }
-        public override Token GetToken()
-        {
-            if(m_FileMetaConstValueTerm  != null)
-            {
-                return m_FileMetaConstValueTerm.token;
-            }
-            return base.GetToken();
+            //if(m_MetaConstructFunctionCall != null )
+            //{
+            //    eType = m_MetaDefineType.metaClass.eType;
+            //}
+            //else
+            //{
+            //    if(m_MetaDefineType.isEnum )
+            //    {
+            //        eType = EType.Enum;
+            //    }    
+            //    else if( m_MetaDefineType.isData )
+            //    {
+            //        eType = EType.Data;
+            //    }
+            //    else
+            //    {
+            //        eType = EType.Class;
+            //    }
+            //}
         }
         public override void Parse(AllowUseSettings auc)
         {
@@ -1056,62 +1047,6 @@ namespace SimpleLanguage.Core
                 return mnoen;
             }
         }
-        public static MetaNewObjectExpressNode CreateNewObjectExpressNodeByCall(FileMetaCallTerm root, MetaType mt, MetaClass omc, MetaBlockStatements mbs, AllowUseSettings auc )
-        {
-            var fmct = (root as FileMetaCallTerm);
-            if (fmct == null) return null;
-
-            if (fmct != null && fmct.callLink != null && fmct.callLink.callNodeList.Count > 0 )
-            {
-                FileMetaCallNode finalNode = fmct.callLink.callNodeList[fmct.callLink.callNodeList.Count - 1];
-                MetaCallLink mcl = new MetaCallLink(fmct.callLink, omc, mbs );
-                if (!mcl.Parse(auc)) return null;
-                mcl.CalcReturnType();
-                bool isNewClass = false;
-                bool isNewData = false;
-                bool isNewEnum = false;
-                if ( mcl.finalCallNode?.visitType ==  MetaVisitNode.EVisitType.NewClass)
-                {
-                    isNewClass = true;
-                }
-                else if( mcl.finalCallNode?.visitType == MetaVisitNode.EVisitType.NewData )
-                {
-                    isNewData = true;
-                }
-                //else if (mcl.finalMetaCallNode.callNodeType == ECallNodeType.EnumNewValue)
-                //{
-                //    isNewEnum = true;
-                //}
-                if (mcl.finalCallNode.methodCall != null)
-                {
-                    if ( (mcl.finalCallNode.methodCall.function as MetaMemberFunction).isConstructInitFunction )
-                    {
-                        isNewClass = true;
-                    }
-                }
-                MetaType retmt = mcl.GetMetaDeineType();
-                if (isNewClass)
-                {
-                    MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(root, mcl, retmt, omc, mbs, mcl.finalCallNode.methodCall );
-
-                    return mnoen;
-                }
-                else if( isNewData )
-                {
-                    MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(root, mcl, retmt, omc, mbs, mcl.finalCallNode.methodCall);
-
-                    return mnoen;
-                }
-                else if (isNewEnum)
-                {
-                    MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(root, mcl, retmt, omc, mbs, null);
-
-                    return mnoen;
-                }
-            }
-
-            return null;
-        }       
     }
     public class MetaExecuteStatementsNode : MetaExpressNode
     {

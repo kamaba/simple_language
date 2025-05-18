@@ -21,7 +21,7 @@ namespace SimpleLanguage.Core
             var mmf = m_MetaFunction as MetaMemberFunction;
             if ( mmf != null )
             {
-                if( mmf.isCSharp )
+                if(mmf.methodCallType == EMethodCallType.CSharp)
                 {
                     if( mmf.isStatic == false )
                     {

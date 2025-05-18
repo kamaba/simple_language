@@ -14,6 +14,11 @@ namespace SimpleLanguage.Core
         {
             MetaClass orgmc = m_Express.GetReturnMetaClass();
 
+            if( orgmc is MetaClassCSharp mcc )
+            {
+                return mcc.csharpType;
+            }
+
             System.Type type = MetaTypeCSharp.FindCSharpType(orgmc);
 
             return type;
