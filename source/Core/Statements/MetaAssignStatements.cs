@@ -9,15 +9,9 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Parse;
-using SimpleLanguage.Core;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Security.Cryptography;
 using System.Text;
-using static SimpleLanguage.Core.ExpressManager;
-using static SimpleLanguage.Core.Statements.MetaIfStatements;
 
 namespace SimpleLanguage.Core.Statements
 {
@@ -278,7 +272,7 @@ namespace SimpleLanguage.Core.Statements
                     parsefrom = EParseFrom.StatementRightExpress,
                     equalMetaVariable = m_MetaVariable
                 };
-                m_ExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(cep);
+                m_ExpressNode = ExpressManager.CreateExpressNodeByCEP(cep);
                 
                 if (m_ExpressNode == null)
                 {

@@ -150,7 +150,7 @@ namespace SimpleLanguage.Core
                         mbs = m_OwnerMetaBlockStatements,
                         parsefrom = EParseFrom.StatementRightExpress
                     };
-                    m_Express = ExpressManager.CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(cep);
+                    m_Express = ExpressManager.CreateExpressNodeByCEP(cep);
 
                     if (m_Express == null)
                     {
@@ -300,10 +300,10 @@ namespace SimpleLanguage.Core
                 cep.metaClass = ownerMetaClass;
                 cep.metaType = m_DefineMetaType;
                 cep.fme = root;
-                return ExpressManager.instance.CreateExpressNode(cep);
+                return ExpressManager.CreateExpressNode(cep);
             }
 
-            MetaExpressNode mn = ExpressManager.instance.VisitFileMetaExpress(ownerMetaClass, null, m_DefineMetaType, root);
+            MetaExpressNode mn = ExpressManager.VisitFileMetaExpress(ownerMetaClass, null, m_DefineMetaType, root);
 
             AllowUseSettings auc2 = new AllowUseSettings();
             auc2.useNotConst = isConst;

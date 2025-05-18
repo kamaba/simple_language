@@ -6,22 +6,16 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.IR;
 using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Parse;
 using System;
-using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile.CoreFileMeta;
-using System.Net;
 using SimpleLanguage.Compile;
-using static SimpleLanguage.Core.ExpressManager;
 using System.Diagnostics;
-using SimpleLanguage.Core;
 
 namespace SimpleLanguage.Core.Statements
 {
-    public partial class MetaDefineVarStatements : MetaStatements
+    public class MetaDefineVarStatements : MetaStatements
     {
         public MetaExpressNode expressNode => m_ExpressNode;
         public MetaVariable defineVarMetaVariable => m_DefineVarMetaVariable;
@@ -139,7 +133,7 @@ namespace SimpleLanguage.Core.Statements
                 cep.metaType = mdt;
                 cep.mbs = m_OwnerMetaBlockStatements;
 
-                m_ExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionNewStatementsWithIfOrSwitch(cep);
+                m_ExpressNode = ExpressManager.CreateExpressNodeByCEP(cep);
                 m_ExpressNode.CalcReturnType();
                 expressRetMetaDefineType = m_ExpressNode.GetReturnMetaDefineType();
                 if (m_ExpressNode == null)

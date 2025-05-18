@@ -10,7 +10,6 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using SimpleLanguage.Parse;
-using SimpleLanguage.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -153,13 +152,13 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    ExpressManager.CreateExpressParam cep = new ExpressManager.CreateExpressParam()
+                    CreateExpressParam cep = new CreateExpressParam()
                     {
                         mbs = m_OwnerMetaFunctionBlock,
                         metaType = null,
                         fme = firstNode,
                     };
-                    m_ExpressNode = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep);
+                    m_ExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep);
                     m_ExpressNode.CalcReturnType();
                     m_MetaClass = null;// CoreMetaClassManager.GetMetaClassByEType(m_ExpressNode.eType);
                     m_CallNodeType = ECallNodeType.Express;

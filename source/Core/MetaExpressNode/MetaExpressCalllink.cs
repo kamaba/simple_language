@@ -2,12 +2,8 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
-using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
-using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
-using SimpleLanguage.Parse;
-using SimpleLanguage.Core;
 
 namespace SimpleLanguage.Core
 {

@@ -52,7 +52,7 @@ namespace SimpleLanguage.Core.Statements
                 m_ForInContent = null;
                 if (m_FileMetaKeyForSyntax.conditionExpress != null)
                 {
-                    ExpressManager.CreateExpressParam cep2 = new ExpressManager.CreateExpressParam()
+                    CreateExpressParam cep2 = new CreateExpressParam()
                     {
                         mbs = m_OwnerMetaBlockStatements,
                         metaType = null,
@@ -61,7 +61,7 @@ namespace SimpleLanguage.Core.Statements
                         isConst = false,
                         parsefrom = EParseFrom.StatementRightExpress
                     };
-                    m_ConditionExpress = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
+                    m_ConditionExpress = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
                     m_ConditionExpress.CalcReturnType();
                 }
 
@@ -175,7 +175,7 @@ namespace SimpleLanguage.Core.Statements
 
                 if (m_FileMetaKeyForSyntax.conditionExpress != null)
                 {
-                    ExpressManager.CreateExpressParam cep2 = new ExpressManager.CreateExpressParam()
+                    CreateExpressParam cep2 = new CreateExpressParam()
                     {
                         mbs = m_ThenMetaStatements,
                         metaType = m_ForMetaVariable.metaDefineType,
@@ -184,7 +184,7 @@ namespace SimpleLanguage.Core.Statements
                         isConst = false,
                         parsefrom = EParseFrom.StatementRightExpress
                     };
-                    m_ConditionExpress = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
+                    m_ConditionExpress = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
                     m_ConditionExpress.CalcReturnType();
                 }
             }
@@ -309,7 +309,7 @@ namespace SimpleLanguage.Core.Statements
             {
                 MetaType mdt = new MetaType(m_OwnerMetaBlockStatements.ownerMetaClass);
 
-                ExpressManager.CreateExpressParam cep2 = new ExpressManager.CreateExpressParam()
+                CreateExpressParam cep2 = new CreateExpressParam()
                 {
                     mbs = m_OwnerMetaBlockStatements,
                     metaType = mdt,
@@ -318,7 +318,7 @@ namespace SimpleLanguage.Core.Statements
                     isConst = false,
                     parsefrom = EParseFrom.StatementRightExpress
                 };
-                m_ConditionExpress = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
+                m_ConditionExpress = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
             }
             MetaMemberFunction.CreateMetaSyntax(m_FileMetaKeyWhileSyntax.executeBlockSyntax, m_ThenMetaStatements );
 

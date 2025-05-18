@@ -218,7 +218,7 @@ namespace SimpleLanguage.Core
                         mbs = m_OwnerMetaBlockStatements,
                         parsefrom = EParseFrom.StatementRightExpress
                     };
-                    m_Express = ExpressManager.instance.CreateExpressNode(cep);
+                    m_Express = ExpressManager.CreateExpressNode(cep);
                     if (m_Express == null)
                     {
                         Debug.Write("Error 没有解析到Express的内容 在MetaMemberData 里边 372");

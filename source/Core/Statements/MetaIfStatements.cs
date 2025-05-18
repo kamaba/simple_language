@@ -53,7 +53,7 @@ namespace SimpleLanguage.Core.Statements
                 if( conditionExpress != null )
                 {
                     m_Express = conditionExpress;
-                    m_FinalExpress = ExpressManager.instance.CreateOptimizeAfterExpress(m_Express);
+                    m_FinalExpress = ExpressManager.CreateOptimizeAfterExpress(m_Express);
                 }
 
                 m_ThenMetaStatements = new MetaBlockStatements(mbs, ifexpress.executeBlockSyntax);
@@ -165,7 +165,7 @@ namespace SimpleLanguage.Core.Statements
             {
                 mdt = m_MetaVariable.metaDefineType;
             }
-            ExpressManager.CreateExpressParam cep = new ExpressManager.CreateExpressParam()
+            CreateExpressParam cep = new CreateExpressParam()
             {
                 mbs = m_OwnerMetaBlockStatements,
                 metaType = mdt,
@@ -174,7 +174,7 @@ namespace SimpleLanguage.Core.Statements
                 isConst = false,
                 parsefrom = EParseFrom.StatementRightExpress
             };
-            var express = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep );
+            var express = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep );
 
             MetaIfStatements.MetaElseIfStatements msis = new MetaIfStatements.MetaElseIfStatements(m_OwnerMetaBlockStatements, m_FileMetaKeyIfSyntax.ifExpressSyntax, express);
             AddIfEslseStateStatements(msis, IfElseState.If );
@@ -187,7 +187,7 @@ namespace SimpleLanguage.Core.Statements
             {
                 var fmsthen = m_FileMetaKeyIfSyntax.elseIfExpressSyntax[i];
 
-                ExpressManager.CreateExpressParam cep2 = new ExpressManager.CreateExpressParam()
+                CreateExpressParam cep2 = new CreateExpressParam()
                 {
                     mbs = m_OwnerMetaBlockStatements,
                     metaType = mdt,
@@ -196,7 +196,7 @@ namespace SimpleLanguage.Core.Statements
                     isConst = false,
                     parsefrom = EParseFrom.StatementRightExpress
                 };
-                var express2 = ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
+                var express2 = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
 
                 MetaIfStatements.MetaElseIfStatements msis2 = new MetaIfStatements.MetaElseIfStatements(m_OwnerMetaBlockStatements, fmsthen, express2 );
                 AddIfEslseStateStatements(msis2, IfElseState.ElseIf );

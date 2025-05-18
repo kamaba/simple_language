@@ -321,13 +321,13 @@ namespace SimpleLanguage.Core
                 {
                     var fas = splitList[i];
 
-                    ExpressManager.CreateExpressParam cep = new ExpressManager.CreateExpressParam();
+                    CreateExpressParam cep = new CreateExpressParam();
                     cep.metaClass = m_OwnerMetaClass;
                     cep.mbs = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(CoreMetaClassManager.int32MetaClass);
                     cep.fme = fas;
                     cep.equalMetaVariable = m_EqualMetaVariable;
-                    MetaExpressNode men = ExpressManager.instance.CreateExpressNode(cep);
+                    MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
                     MetaBraceAssignStatements mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
                     m_AssignStatementsList.Add(mas);
                 }
@@ -593,7 +593,7 @@ namespace SimpleLanguage.Core
             return sb.ToString();
         }
     }
-    public class MetaNewObjectExpressNode : MetaExpressNode
+    public sealed class MetaNewObjectExpressNode : MetaExpressNode
     {
         public MetaMethodCall constructFunctionCall => m_MetaConstructFunctionCall;
         public MetaBraceOrBracketStatementsContent metaBraceOrBracketStatementsContent => m_MetaBraceOrBracketStatementsContent;
