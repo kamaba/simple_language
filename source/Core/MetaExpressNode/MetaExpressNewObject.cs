@@ -70,7 +70,6 @@ namespace SimpleLanguage.Core
                     {
                         m_MetaMemberData = new MetaMemberData(mt.metaClass as MetaData, fmos );
                         m_MetaMemberData.SetOwnerBlockstatements(m_OwnerMetaBlockStatements);
-                        m_MetaMemberData.ParseName();
                         m_MetaMemberData.ParseDefineMetaType();
                         m_MetaExpress = m_MetaMemberData.expressNode;
                         m_MetaMemberData.ParseMetaExpress();
@@ -322,8 +321,8 @@ namespace SimpleLanguage.Core
                     var fas = splitList[i];
 
                     CreateExpressParam cep = new CreateExpressParam();
-                    cep.metaClass = m_OwnerMetaClass;
-                    cep.mbs = m_OwnerMetaBlockStatements;
+                    cep.ownerMetaClass = m_OwnerMetaClass;
+                    cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(CoreMetaClassManager.int32MetaClass);
                     cep.fme = fas;
                     cep.equalMetaVariable = m_EqualMetaVariable;

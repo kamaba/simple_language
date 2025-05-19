@@ -35,14 +35,14 @@ namespace SimpleLanguage.Core.SelfMeta
             //AddMetaMemberFunction(Cast);
             m_Type = EType.Float;
 
-            MetaMemberFunction ToInt32 = new MetaMemberFunction(this, "toInt32");
-            ToInt32.isOverrideFunction = true;
-            AddInnerMetaMemberFunction(ToInt32);
+            //MetaMemberFunction ToInt32 = new MetaMemberFunction(this, "toInt32");
+            //ToInt32.isOverrideFunction = true;
+            //AddInnerMetaMemberFunction(ToInt32);
 
 
-            MetaMemberFunction ToString = new MetaMemberFunction(this, "toString");
-            ToString.SetMetaDefineType(new MetaType(CoreMetaClassManager.stringMetaClass));
-            AddMetaMemberFunction(ToString);
+            //MetaMemberFunction ToString = new MetaMemberFunction(this, "toString");
+            //ToString.SetMetaDefineType(new MetaType(CoreMetaClassManager.stringMetaClass));
+            //AddMetaMemberFunction(ToString);
             //ToString.AddCSharpMetaStatements("SimpleLanguage.VM.Int32Object", "FloatToString");
         }
         public MetaClass Cast( MetaTemplate mt)
@@ -89,14 +89,14 @@ namespace SimpleLanguage.Core.SelfMeta
         }
         public void AddCoreFunction()
         {
-            MetaMemberFunction toFloat = new MetaMemberFunction(this, "toFloat");
-            toFloat.SetMetaDefineType(new MetaType(CoreMetaClassManager.floatMetaClass));
-            AddMetaMemberFunction(toFloat);
-            //toFloat.AddCSharpMetaStatements("SimpleLanguage.VM.DoubleObject", "DoubleToFloat");
+            //MetaMemberFunction toFloat = new MetaMemberFunction(this, "toFloat");
+            //toFloat.SetMetaDefineType(new MetaType(CoreMetaClassManager.floatMetaClass));
+            //AddMetaMemberFunction(toFloat);
+            ////toFloat.AddCSharpMetaStatements("SimpleLanguage.VM.DoubleObject", "DoubleToFloat");
 
-            MetaMemberFunction ToString = new MetaMemberFunction(this, "toString");
-            ToString.SetMetaDefineType(new MetaType(CoreMetaClassManager.stringMetaClass));
-            AddMetaMemberFunction(ToString);
+            //MetaMemberFunction ToString = new MetaMemberFunction(this, "toString");
+            //ToString.SetMetaDefineType(new MetaType(CoreMetaClassManager.stringMetaClass));
+            //AddMetaMemberFunction(ToString);
             //ToString.AddCSharpMetaStatements("SimpleLanguage.VM.DoubleObject", "DoubleToString");
         }
         public static string MetaToString( double v )

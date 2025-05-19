@@ -17,6 +17,7 @@ namespace SimpleLanguage.IR
         LocalStatement,
         Member,
         Static,
+        Return,
     }
     public class IRMetaVariable
     {

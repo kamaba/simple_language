@@ -36,7 +36,12 @@ namespace SimpleLanguage.IR
             {
                 if(mfc.callerMetaVariable!=null )
                 {
-                    IRLoadVariable irload = new IRLoadVariable(m_IRMethod, mfc.callerMetaVariable.GetHashCode());
+                    IRMetaVariableFrom irmvf = IRMetaVariableFrom.LocalStatement;
+                    if( mfc.callerMetaVariable.isArgument )
+                    {
+                        irmvf = IRMetaVariableFrom.Argument;
+                    }
+                    IRLoadVariable irload = new IRLoadVariable(m_IRMethod, mfc.callerMetaVariable.GetHashCode(), irmvf);
                     AddIRRangeData(irload.IRDataList);
                 }
                 else

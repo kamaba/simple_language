@@ -49,7 +49,12 @@ namespace SimpleLanguage.IR
                         storeLocal.data.SetDebugInfoByToken(mires.boolConditionVariable.pingToken);
                         conditionStatList.Add(storeLocal);
 
-                        IRLoadVariable loadLocal = new IRLoadVariable(_irMethod, mires.boolConditionVariable.GetHashCode());
+                        IRMetaVariableFrom irmvf = IRMetaVariableFrom.LocalStatement;
+                        if (mires.boolConditionVariable.isArgument)
+                        {
+                            irmvf = IRMetaVariableFrom.Argument;
+                        }
+                        IRLoadVariable loadLocal = new IRLoadVariable(_irMethod, mires.boolConditionVariable.GetHashCode(), irmvf);
                         loadLocal.data.SetDebugInfoByToken(mires.boolConditionVariable.pingToken);
                         conditionStatList.Add(loadLocal);
                     }

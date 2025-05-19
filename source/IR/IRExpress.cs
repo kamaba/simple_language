@@ -9,9 +9,6 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.IR;
 using SimpleLanguage.IR.Statements;
-using SimpleLanguage.Core;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 

@@ -2,6 +2,7 @@
 using SimpleLanguage.CSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using static SimpleLanguage.Core.MetaVariable;
@@ -17,6 +18,12 @@ namespace SimpleLanguage.Core
             if( orgmc is MetaClassCSharp mcc )
             {
                 return mcc.csharpType;
+            }
+
+            if(orgmc == null )
+            {
+                Debug.Write("Error 没有发现表达式类型MetaClass!");
+                return typeof(object);
             }
 
             System.Type type = MetaTypeCSharp.FindCSharpType(orgmc);

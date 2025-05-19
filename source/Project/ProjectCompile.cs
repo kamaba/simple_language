@@ -211,7 +211,6 @@ namespace SimpleLanguage.Project
             ClassManager.instance.ParseExtendsRelation();
             ClassManager.instance.ParseInterfaceRelation();
             ClassManager.instance.ParseTemplateRelation();
-            ClassManager.instance.ParseMemberVariableName();
             ClassManager.instance.ParseMemberFunctionName();
             ClassManager.instance.HandleExtendData();
             ClassManager.instance.ParseMemberVariableDefineMetaType();
