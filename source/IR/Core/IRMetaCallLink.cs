@@ -44,9 +44,19 @@ namespace SimpleLanguage.Core.IR
                         IRLoadVariable irVar = new IRLoadVariable(m_IRMethod.irManager, mv.GetHashCode());
                         irList.Add(irVar);
                     }
+                    else if( mv.variableFrom == MetaVariable.EVariableFrom.Member )
+                    {
+                        IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, (mv as MetaMemberVariable).index, IRMetaVariableFrom.Member);
+                        irList.Add(irVar);
+                    }
+                    else if( mv.variableFrom == MetaVariable.EVariableFrom.Argument )
+                    {
+                        IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mv.GetHashCode(), IRMetaVariableFrom.Argument );
+                        irList.Add(irVar);
+                    }
                     else
                     {
-                        IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mv.GetHashCode(), IRMetaVariableFrom.Member );
+                        IRLoadVariable irVar = new IRLoadVariable(m_IRMethod, mv.GetHashCode(), IRMetaVariableFrom.LocalStatement );
                         irList.Add(irVar);
                     }
                 }
