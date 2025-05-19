@@ -32,25 +32,27 @@ namespace SimpleLanguage.IR
             {
                 irmv = _irMethod.GetIRArgumentById(id);
                 data.opCode = EIROpCode.LoadArgument;
+                data.index = irmv.index;
                 //data.SetDebugInfoByToken( mv.pingToken );
             }
             else if (irmvf == IRMetaVariableFrom.Member)
             {
-                irmv = _irMethod.GetIRLocalVariableById(id);
+                //irmv = _irMethod.GetIRLocalVariableById(id);
                 //data.SetDebugInfoByToken(mv.pingToken);
+                data.index = id;
                 data.opCode = EIROpCode.LoadNotStaticField;
             }
             else if (irmvf == IRMetaVariableFrom.LocalStatement)
             {
                 irmv = _irMethod.GetIRLocalVariableById(id);
                 data.opCode = EIROpCode.LoadLocal;
+                data.index = irmv.index;
                 //data.SetDebugInfoByToken(mv.pingToken);
             }
             else
             {
                 Debug.Write($"SVM Error 没有找到加载变量的来源类型！");
             }
-            data.index = irmv.index;
             m_IRDataList.Add(data);
         }
         public override string ToIRString()
