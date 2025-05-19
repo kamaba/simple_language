@@ -167,14 +167,14 @@ namespace SimpleLanguage.Core.Statements
             }
             CreateExpressParam cep = new CreateExpressParam()
             {
-                mbs = m_OwnerMetaBlockStatements,
+                ownerMBS = m_OwnerMetaBlockStatements,
                 metaType = mdt,
                 fme = m_FileMetaKeyIfSyntax.ifExpressSyntax.conditionExpress,
                 isStatic = false,
                 isConst = false,
                 parsefrom = EParseFrom.StatementRightExpress
             };
-            var express = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep );
+            var express = ExpressManager.CreateExpressNode(cep );
 
             MetaIfStatements.MetaElseIfStatements msis = new MetaIfStatements.MetaElseIfStatements(m_OwnerMetaBlockStatements, m_FileMetaKeyIfSyntax.ifExpressSyntax, express);
             AddIfEslseStateStatements(msis, IfElseState.If );
@@ -189,14 +189,14 @@ namespace SimpleLanguage.Core.Statements
 
                 CreateExpressParam cep2 = new CreateExpressParam()
                 {
-                    mbs = m_OwnerMetaBlockStatements,
+                    ownerMBS = m_OwnerMetaBlockStatements,
                     metaType = mdt,
                     fme = fmsthen.conditionExpress,
                     isStatic = false,
                     isConst = false,
                     parsefrom = EParseFrom.StatementRightExpress
                 };
-                var express2 = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
+                var express2 = ExpressManager.CreateExpressNode(cep2);
 
                 MetaIfStatements.MetaElseIfStatements msis2 = new MetaIfStatements.MetaElseIfStatements(m_OwnerMetaBlockStatements, fmsthen, express2 );
                 AddIfEslseStateStatements(msis2, IfElseState.ElseIf );

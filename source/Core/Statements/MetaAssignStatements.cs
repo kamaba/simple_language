@@ -264,8 +264,9 @@ namespace SimpleLanguage.Core.Statements
             {
                 CreateExpressParam cep = new CreateExpressParam()
                 {
-                    mbs = m_OwnerMetaBlockStatements,
+                    ownerMBS = m_OwnerMetaBlockStatements,
                     metaType = expressMdt,
+                    ownerMetaClass = ownerMetaClass,
                     fme = m_FileMetaOpAssignSyntax.express,
                     isStatic = false,
                     isConst = false,
@@ -306,6 +307,7 @@ namespace SimpleLanguage.Core.Statements
                 Debug.Write("Error 类: " + ownerMetaClass?.allName + "没有找到变量:[" + m_FileMetaOpAssignSyntax.express.ToFormatString() + "]的定义!!! 69 ");
                 return;
             }
+            m_FinalMetaExpress.Parse(new AllowUseSettings() { });
             m_FinalMetaExpress.CalcReturnType();
 
             MetaType expressRetMetaDefineType = m_FinalMetaExpress.GetReturnMetaDefineType();

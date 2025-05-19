@@ -25,21 +25,24 @@ namespace SimpleLanguage.IR
             data.index = irmv.index;
             m_IRDataList.Add(data);
         }
-        public IRLoadVariable(IRMethod _irMethod, int id) : base(_irMethod)
+        public IRLoadVariable(IRMethod _irMethod, int id, IRMetaVariableFrom irmvf ) : base(_irMethod)
         {
-            var irmv = _irMethod.GetIRLocalVariableById(id);
-            if (irmv.irMetaVariableFrom == IRMetaVariableFrom.Argument )
+            IRMetaVariable irmv = null;
+            if (irmvf == IRMetaVariableFrom.Argument )
             {
+                irmv = _irMethod.GetIRArgumentById(id);
                 data.opCode = EIROpCode.LoadArgument;
                 //data.SetDebugInfoByToken( mv.pingToken );
             }
-            else if (irmv.irMetaVariableFrom == IRMetaVariableFrom.Member)
+            else if (irmvf == IRMetaVariableFrom.Member)
             {
+                irmv = _irMethod.GetIRLocalVariableById(id);
                 //data.SetDebugInfoByToken(mv.pingToken);
                 data.opCode = EIROpCode.LoadNotStaticField;
             }
-            else if (irmv.irMetaVariableFrom == IRMetaVariableFrom.LocalStatement )
+            else if (irmvf == IRMetaVariableFrom.LocalStatement)
             {
+                irmv = _irMethod.GetIRLocalVariableById(id);
                 data.opCode = EIROpCode.LoadLocal;
                 //data.SetDebugInfoByToken(mv.pingToken);
             }

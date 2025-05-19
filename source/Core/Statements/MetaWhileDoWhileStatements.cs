@@ -54,14 +54,14 @@ namespace SimpleLanguage.Core.Statements
                 {
                     CreateExpressParam cep2 = new CreateExpressParam()
                     {
-                        mbs = m_OwnerMetaBlockStatements,
+                        ownerMBS = m_OwnerMetaBlockStatements,
                         metaType = null,
                         fme = m_FileMetaKeyForSyntax.conditionExpress,
                         isStatic = false,
                         isConst = false,
                         parsefrom = EParseFrom.StatementRightExpress
                     };
-                    m_ConditionExpress = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
+                    m_ConditionExpress = ExpressManager.CreateExpressNode(cep2);
                     m_ConditionExpress.CalcReturnType();
                 }
 
@@ -177,14 +177,14 @@ namespace SimpleLanguage.Core.Statements
                 {
                     CreateExpressParam cep2 = new CreateExpressParam()
                     {
-                        mbs = m_ThenMetaStatements,
+                        ownerMBS = m_ThenMetaStatements,
                         metaType = m_ForMetaVariable.metaDefineType,
                         fme = m_FileMetaKeyForSyntax.conditionExpress,
                         isStatic = false,
                         isConst = false,
                         parsefrom = EParseFrom.StatementRightExpress
                     };
-                    m_ConditionExpress = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
+                    m_ConditionExpress = ExpressManager.CreateExpressNode(cep2);
                     m_ConditionExpress.CalcReturnType();
                 }
             }
@@ -311,14 +311,14 @@ namespace SimpleLanguage.Core.Statements
 
                 CreateExpressParam cep2 = new CreateExpressParam()
                 {
-                    mbs = m_OwnerMetaBlockStatements,
+                    ownerMBS = m_OwnerMetaBlockStatements,
                     metaType = mdt,
                     fme = m_FileMetaKeyWhileSyntax.conditionExpress,
                     isStatic = false,
                     isConst = false,
                     parsefrom = EParseFrom.StatementRightExpress
                 };
-                m_ConditionExpress = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
+                m_ConditionExpress = ExpressManager.CreateExpressNode(cep2);
             }
             MetaMemberFunction.CreateMetaSyntax(m_FileMetaKeyWhileSyntax.executeBlockSyntax, m_ThenMetaStatements );
 

@@ -457,7 +457,6 @@ namespace SimpleLanguage.Project
                     continue;
 
                 MetaMemberData mmd = new MetaMemberData(this, v, i, true );
-                mmd.ParseName();
                 mmd.ParseDefineMetaType();
                 mmd.ParseMetaExpress();
                 AddMetaMemberData(mmd);
@@ -580,7 +579,6 @@ namespace SimpleLanguage.Project
             }
             //需要在做Data处理的时候 ，再处理该逻辑
             MetaMemberData mmd = new MetaMemberData(ProjectManager.globalData, fmd, ProjectManager.globalData.metaMemberDataDict.Count, true );
-            mmd.ParseName();
             mmd.ParseDefineMetaType();
             mmd.ParseMetaExpress();
             ProjectManager.globalData.AddMetaMemberData(mmd);
@@ -637,7 +635,6 @@ namespace SimpleLanguage.Project
             m_ProjectData.BindFileMetaClass(fmc);
             m_ProjectData.ParseFileMetaDataMemeberData(fmc);
             BuildDefineNameStruct();
-            m_ProjectData.ParseMetaMemberVariableName();
             m_ProjectData.ParseMetaMemberFunctionName();
             m_ProjectData.ParseMemberVariableDefineMetaType();
             m_ProjectData.ParseMemberFunctionDefineMetaType();

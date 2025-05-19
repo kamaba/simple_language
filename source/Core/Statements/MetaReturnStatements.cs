@@ -30,14 +30,14 @@ namespace SimpleLanguage.Core.Statements
 
             CreateExpressParam cep2 = new CreateExpressParam()
             {
-                mbs = m_OwnerMetaBlockStatements,
+                ownerMBS = m_OwnerMetaBlockStatements,
                 metaType = mdt,
                 fme = m_FileMetaReturnSyntax.returnExpress,
                 isStatic = false,
                 isConst = false,
                 parsefrom = EParseFrom.StatementRightExpress
             };
-            m_Express = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
+            m_Express = ExpressManager.CreateExpressNode(cep2);
             if (m_Express != null)
             {
                 m_Express.CalcReturnType();
@@ -87,14 +87,14 @@ namespace SimpleLanguage.Core.Statements
 
                 CreateExpressParam cep2 = new CreateExpressParam()
                 {
-                    mbs = m_OwnerMetaBlockStatements,
+                    ownerMBS = m_OwnerMetaBlockStatements,
                     metaType = mdt,
                     fme = m_FileMetaReturnSyntax.returnExpress,
                     isStatic = false,
                     isConst = false,
                     parsefrom = EParseFrom.StatementRightExpress
                 };
-                m_Express = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep2);
+                m_Express = ExpressManager.CreateExpressNode(cep2);
             }
             if (m_Express != null)
             {

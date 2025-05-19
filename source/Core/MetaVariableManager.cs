@@ -56,6 +56,7 @@ namespace SimpleLanguage.Core
 
             foreach (var v in metaMemeberVariableList)
             {
+                v.ParseMetaExpress();
                 v.CalcReturnType();
                 v.ParseChildMemberData();
             }

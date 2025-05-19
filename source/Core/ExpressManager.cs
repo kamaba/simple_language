@@ -23,27 +23,51 @@ namespace SimpleLanguage.Core
     }
     public struct CreateExpressParam
     {
-        public MetaBlockStatements mbs;
-        public MetaClass metaClass;
+        public MetaBlockStatements ownerMBS;
+        public MetaClass ownerMetaClass;
         public MetaType metaType;
         public MetaType parentMetaType;
         public MetaVariable equalMetaVariable;
         public FileMetaBaseTerm fme;
         public bool isStatic;
         public bool isConst;
+        public bool allowUseIfSyntax;
+        public bool allowUseSwitchSyntax;
+        public bool allowUseParSyntax;
+        public bool allowUseBraceSyntax;
         public EParseFrom parsefrom;
 
         public CreateExpressParam()
         {
-            mbs = null;
-            metaClass = null;
+            ownerMBS = null;
+            ownerMetaClass = null;
             equalMetaVariable = null;
             metaType = null;
             parentMetaType = null;
             fme = null;
             isStatic = false;
             isConst = false;
+            allowUseIfSyntax = false;
+            allowUseSwitchSyntax = false;
+            allowUseParSyntax = false;
+            allowUseBraceSyntax = false;
             parsefrom = EParseFrom.None;
+        }
+        public CreateExpressParam( CreateExpressParam clone )
+        {
+            ownerMBS = clone.ownerMBS;
+            ownerMetaClass = clone.ownerMetaClass;
+            equalMetaVariable = clone.equalMetaVariable;
+            metaType = clone.metaType;
+            parentMetaType = clone.parentMetaType;
+            fme = clone.fme;
+            isStatic = clone.isStatic;
+            isConst = clone.isConst;
+            allowUseIfSyntax = clone.allowUseIfSyntax;
+            allowUseSwitchSyntax = clone.allowUseSwitchSyntax;
+            allowUseParSyntax = clone.allowUseParSyntax;
+            allowUseBraceSyntax = clone.allowUseBraceSyntax;
+            parsefrom = clone.parsefrom;
         }
     }
     public class ExpressManager
@@ -62,16 +86,20 @@ namespace SimpleLanguage.Core
         public static MetaExpressNode CreateExpressNodeByCEP(CreateExpressParam cep)
         {
             FileMetaBaseTerm fmte = cep.fme;
-            MetaBlockStatements mbs = cep.mbs;
+            MetaBlockStatements mbs = cep.ownerMBS;
             MetaType mdt = cep.metaType;
             MetaVariable equalMetaVariable = cep.equalMetaVariable;
-            MetaClass mc = cep.metaClass;
+            MetaClass mc = cep.ownerMetaClass;
 
-            if (fmte != null)
+            if (fmte == null)
             {
-                FileMetaIfSyntaxTerm ifExpressTerm = fmte as FileMetaIfSyntaxTerm;
-                FileMetaMatchSyntaxTerm switchExpressTerm = fmte as FileMetaMatchSyntaxTerm;
-                FileMetaParTerm parExpressTerm = fmte as FileMetaParTerm;
+                Debug.Write("CreateExpressNode FileMetaBaseTerm 为空 !!");
+                return null;
+            }
+            
+            FileMetaIfSyntaxTerm ifExpressTerm = fmte as FileMetaIfSyntaxTerm;
+            if ( cep.allowUseIfSyntax )
+            {
                 if (ifExpressTerm != null)
                 {
                     MetaExecuteStatementsNode mesn = MetaExecuteStatementsNode.CreateMetaExecuteStatementsNodeByIfExpress(mdt, mc, mbs, ifExpressTerm.ifSyntax);
@@ -80,7 +108,17 @@ namespace SimpleLanguage.Core
                         return mesn;
                     }
                 }
-                else if (switchExpressTerm != null)
+            }
+            else if( ifExpressTerm != null )
+            {
+                Debug.Write("不允许使用If语句!!");
+                return null;
+            }
+
+            FileMetaMatchSyntaxTerm switchExpressTerm = fmte as FileMetaMatchSyntaxTerm;
+            if ( cep.allowUseSwitchSyntax )
+            {
+                if (switchExpressTerm != null)
                 {
                     MetaExecuteStatementsNode mesn = MetaExecuteStatementsNode.CreateMetaExecuteStatementsNodeBySwitchExpress(mdt, mc, mbs, switchExpressTerm.switchSyntax);
                     if (mesn != null)
@@ -88,20 +126,155 @@ namespace SimpleLanguage.Core
                         return mesn;
                     }
                 }
-                else if (parExpressTerm != null)
+            }
+            else if (switchExpressTerm != null)
+            {
+                Debug.Write("不允许使用Switch语句!!");
+                return null;
+            }
+
+            FileMetaParTerm parExpressTerm = fmte as FileMetaParTerm;
+            if (cep.allowUseParSyntax)
+            {
+                if (parExpressTerm != null)
                 {
                     MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByPar(parExpressTerm, mdt, mc, mbs);
                     if (mnoen != null)
                         return mnoen;
                 }
-                else
+            }
+            else if (parExpressTerm != null)
+            {
+                Debug.Write("不允许使用Switch语句!!");
+                return null;
+            }
+
+            return CreateExpressNode(cep);
+        }
+        public static MetaExpressNode CreateExpressNode(CreateExpressParam cep)
+        {
+            if(cep.fme == null )
+            {
+                return null;
+            }
+            MetaClass ownerClass = cep.ownerMetaClass;
+            var root = cep.fme.root;
+            if (root.left == null && root.right == null)
+            {
+                MetaExpressNode men = null;
+                switch (root)
                 {
-                    return CreateExpressNodeInMetaFunctionCommonStatements(cep);
+
+                    case FileMetaSymbolTerm fmst:
+                        {
+                            Debug.Write("Error CreateExpressNode 创建表达项不能为符号");
+                        }
+                        break;
+                    case FileMetaConstValueTerm fmcvt:
+                        {
+                            if (fmcvt.token.type == ETokenType.NumberArrayLink)
+                            {
+                                MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(fmcvt, ownerClass, cep.ownerMBS);
+
+                                return mnoen;
+                            }
+                            else
+                            {
+                                men = new MetaConstExpressNode(fmcvt);
+                                return men;
+                            }
+                        }
+                        break;
+                    case FileMetaCallTerm fmct:     //className.functionname().varname;
+                        {
+                            MetaCallLinkExpressNode men2 = new MetaCallLinkExpressNode(fmct.callLink, cep.ownerMetaClass, cep.ownerMBS);
+                            return men2;
+                        }
+                        break;
+                    case FileMetaBraceTerm fmbt:  // {1,2,3} {a=10,b=20}
+                        {
+                            men = new MetaNewObjectExpressNode(fmbt, cep.metaType, ownerClass, cep.ownerMBS, cep.equalMetaVariable);
+                            return men;
+                        }
+                        break;
+                    case FileMetaParTerm fmpt:  //  (1,2)
+                        {
+                            //Debug.Write("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
+                            MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByPar((root as FileMetaParTerm), cep.metaType, ownerClass, cep.ownerMBS);
+                            if (mnoen != null)
+                                return mnoen;
+
+                            //men = CreateMetaClassByFileMetaClass( ownerClass, selfMC, mbs, fmpt.express);
+                        }
+                        break;
+                    case FileMetaTermExpress fmte:
+                        {
+                            //Debug.Write("Error CreateExpressNode 创建表达项不能为符号");
+                            cep.ownerMetaClass = ownerClass;
+                            men = CreateExpressNode(cep);
+                            return men;
+                        }
+                        break;
+                    case FileMetaBracketTerm fmbt:
+                        {
+                            //Debug.Write("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
+
+                            MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode((root as FileMetaBracketTerm), ownerClass, cep.ownerMBS, cep.equalMetaVariable);
+                            if (mnoen != null)
+                                return mnoen;
+                        }
+                        break;
+                    default:
+                        Debug.Write("Error CreateExpressNode 创建表达项不能为符号");
+                        break;
                 }
             }
             else
             {
-                Debug.Write("Error 没有找到合适的表达式 位置: " + fmte.token?.ToLexemeAllString());
+                CreateExpressParam clonecep = new CreateExpressParam(cep);
+                clonecep.fme = root.left;
+                MetaExpressNode leftNode = CreateExpressNode(clonecep);
+                clonecep.fme = root.right;
+                MetaExpressNode rightNode = CreateExpressNode(clonecep);
+
+                if (leftNode != null && rightNode != null)
+                {
+                    if (root is FileMetaSymbolTerm)
+                    {
+                        return new MetaOpExpressNode(root as FileMetaSymbolTerm, cep.metaType, leftNode, rightNode);
+                    }
+                    else
+                    {
+                        Debug.Write(" Error VisitFileMetaExpress fileMetaNode 不是符号!!");
+                    }
+                }
+                else if (leftNode != null && rightNode == null)
+                {
+                    if (root is FileMetaSymbolTerm)
+                    {
+                        return new MetaUnaryOpExpressNode(root as FileMetaSymbolTerm, leftNode);
+                    }
+                    else
+                    {
+                        return leftNode;
+                    }
+                }
+                else if (leftNode == null && rightNode != null)
+                {
+                    if (root is FileMetaSymbolTerm)
+                    {
+                        return new MetaUnaryOpExpressNode(root as FileMetaSymbolTerm, rightNode);
+                    }
+                    else
+                    {
+                        return rightNode;
+                    }
+                }
+                else
+                {
+                    Debug.Write(" Error VisitFileMetaExpress left and right都为空!!");
+                }
+                return null;
             }
             return null;
         }
@@ -149,206 +322,13 @@ namespace SimpleLanguage.Core
             }
             return men;
         }
-        public static MetaExpressNode VisitFileMetaExpress(MetaClass mc, MetaBlockStatements mbs, MetaType mdt, FileMetaBaseTerm fme)
-        {
-            if (fme == null) return null;
-
-            var OpSign = fme;
-            if (fme.left == null && fme.right == null)
-            {
-                CreateExpressParam cep = new CreateExpressParam();
-                cep.metaClass = mc;
-                cep.mbs = mbs;
-                cep.metaType = mdt;
-                cep.fme =   fme;
-                return CreateExpressNode(cep);
-            }
-            MetaExpressNode leftNode = VisitFileMetaExpress(mc, mbs, mdt, fme.left );
-            MetaExpressNode rightNode = VisitFileMetaExpress(mc, mbs, mdt, fme.right );
-
-            if (leftNode != null && rightNode != null)
-            {
-                if (fme is FileMetaSymbolTerm)
-                {
-                    return new MetaOpExpressNode(fme as FileMetaSymbolTerm, mdt, leftNode, rightNode );
-                }
-                else
-                {
-                    Debug.Write(" Error VisitFileMetaExpress fileMetaNode 不是符号!!");
-                }
-            }
-            else if (leftNode != null && rightNode == null)
-            {
-                if (fme is FileMetaSymbolTerm)
-                {
-                    return new MetaUnaryOpExpressNode(fme as FileMetaSymbolTerm, leftNode);
-                }
-                else
-                {
-                    return leftNode;
-                }
-            }
-            else if (leftNode == null && rightNode != null)
-            {
-                if (fme is FileMetaSymbolTerm)
-                {
-                    return new MetaUnaryOpExpressNode(fme as FileMetaSymbolTerm, rightNode);
-                }
-                else
-                {
-                    return rightNode;
-                }
-            }
-            else
-            {
-                Debug.Write(" Error VisitFileMetaExpress left and right都为空!!");
-            }
-            return null;
-        }
-        public static MetaExpressNode CreateExpressNode( CreateExpressParam cep  )
-        {
-            MetaClass mc = cep.metaClass;
-            var fme = cep.fme;
-            var mdt = cep.metaType;
-            var mbs = cep.mbs;
-            MetaExpressNode men = null;
-            switch ( fme )
-            {
-                case FileMetaSymbolTerm fmst:
-                    {
-                        Debug.Write("Error CreateExpressNode 创建表达项不能为符号");
-                    }
-                    break;
-                case FileMetaConstValueTerm fmcvt:
-                    {
-                        men = new MetaConstExpressNode(fmcvt);
-                    }
-                    break;
-                case FileMetaCallTerm fmct:
-                    {
-                        MetaCallLinkExpressNode men2 = new MetaCallLinkExpressNode(fmct.callLink, mc, mbs );
-                        men = men2;
-                    }
-                    break;
-                case FileMetaBraceTerm fmbt:
-                    {
-                        men = new MetaNewObjectExpressNode( fmbt, mdt, mc, mbs, cep.equalMetaVariable );
-                    }
-                    break;
-                case FileMetaParTerm fmpt:
-                    {
-                        //Debug.Write("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
-                        men = VisitFileMetaExpress(mc, mbs, mdt, fmpt.root );
-                    }
-                    break;
-                case FileMetaTermExpress fmte:
-                    {
-                        //Debug.Write("Error CreateExpressNode 创建表达项不能为符号");
-                        cep.fme = fmte.root;
-                        men = CreateExpressNode(cep);
-                    }
-                    break;
-                case FileMetaBracketTerm fmbt2: // a = [1,2,3]
-                    {
-                        cep.fme = fmbt2.root;
-                        men = CreateExpressNodeInMetaFunctionCommonStatements(cep);
-                    }
-                    break;
-                default:
-                    Debug.Write("Error CreateExpressNode 创建表达项不能为符号");
-                    break;
-            }
-            return men;
-        }
-        public static MetaExpressNode CreateExpressNodeInMetaFunctionCommonStatements(CreateExpressParam cep )
-        {
-            MetaClass ownerClass = cep.mbs?.ownerMetaClass;
-            var root = cep.fme.root;
-            if (root.left == null && root.right == null)
-            {
-                MetaExpressNode men = null;
-                switch (root)
-                {
-                    case FileMetaConstValueTerm fmcvt:
-                        {
-                            if( fmcvt.token.type == ETokenType.NumberArrayLink )
-                            {
-                                MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(fmcvt, ownerClass, cep.mbs);
-
-                                return mnoen;
-                            }
-                            else
-                            {
-                                men = new MetaConstExpressNode(fmcvt);
-                            }
-                        }
-                        break;
-                    case FileMetaCallTerm fmct:
-                        {
-                            //fmct.callLink
-                            //CreateNewOrCalllink
-                        }
-                        break;
-                    case FileMetaBraceTerm fmbt:
-                        {
-                            men = new MetaNewObjectExpressNode(fmbt, cep.metaType, ownerClass, cep.mbs, cep.equalMetaVariable );
-                        }
-                        break;
-                    case FileMetaParTerm fmpt:
-                        {
-                            //Debug.Write("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
-                            MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByPar((root as FileMetaParTerm), cep.metaType, ownerClass, cep.mbs);
-                            if (mnoen != null)
-                                return mnoen;
-
-                            //men = CreateMetaClassByFileMetaClass( ownerClass, selfMC, mbs, fmpt.express);
-                        }
-                        break;
-                    case FileMetaTermExpress fmte:
-                        {
-                            //Debug.Write("Error CreateExpressNode 创建表达项不能为符号");
-                            cep.metaClass = ownerClass;
-                            men = CreateExpressNode(cep);
-                        }
-                        break;
-                    case FileMetaBracketTerm fmbt:
-                        {
-                            //Debug.Write("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
-                            
-                            MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode((root as FileMetaBracketTerm),  ownerClass, cep.mbs, cep.equalMetaVariable );
-                            if (mnoen != null)
-                                return mnoen;
-                        }
-                        break;
-                    default:
-                        Debug.Write("Error CreateExpressNode 创建表达项不能为符号");
-                        break;
-                }
-                if( men != null )
-                {
-                    AllowUseSettings auc = new AllowUseSettings();
-                    auc.useNotStatic = !cep.isStatic;
-                    auc.useNotConst = cep.isConst;
-                    men.Parse(auc);
-                    return men;
-                }
-            }
-
-            MetaExpressNode mn = VisitFileMetaExpress(ownerClass, cep.mbs, cep.metaType, root);
-            AllowUseSettings auc2 = new AllowUseSettings();
-            auc2.useNotStatic = !cep.isStatic;
-            auc2.useNotConst = cep.isConst;
-            mn.Parse(auc2);
-
-            return mn;
-        }
-
+       
         public static void CreateNewOrCalllink( CreateExpressParam cep, out MetaNewObjectExpressNode mnoen, out MetaCallLinkExpressNode men2 )
         {
             mnoen = null;
             men2 = null;
-            MetaClass omc = cep.metaClass;
-            MetaBlockStatements mbs = cep.mbs;
+            MetaClass omc = cep.ownerMetaClass;
+            MetaBlockStatements mbs = cep.ownerMBS;
             var fmct = cep.fme as FileMetaCallTerm;
             if (fmct == null) return;
             if (fmct.callLink == null) return;
@@ -356,7 +336,7 @@ namespace SimpleLanguage.Core
 
             AllowUseSettings aus = new AllowUseSettings() { parseFrom = cep.parsefrom };
 
-            MetaCallLink mcl = new MetaCallLink(fmct.callLink, cep.metaClass, cep.mbs);
+            MetaCallLink mcl = new MetaCallLink(fmct.callLink, cep.ownerMetaClass, cep.ownerMBS);
             if (!mcl.Parse(aus)) return;
             mcl.CalcReturnType();
 
@@ -400,7 +380,6 @@ namespace SimpleLanguage.Core
                 men2 = new MetaCallLinkExpressNode(fmct.callLink, omc, mbs);
             }
         }
-
         public static int CalcParseLevel( int level, MetaExpressNode men )
         {
             switch( men )

@@ -8,20 +8,13 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Core;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net.Mime;
-using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
-using static SimpleLanguage.Core.ExpressManager;
-using static SimpleLanguage.Core.MetaBraceOrBracketStatementsContent;
 
 namespace SimpleLanguage.Core
 {
-    public partial class MetaMemberEnum : MetaVariable
+    public sealed class MetaMemberEnum : MetaVariable
     {
         public EFromType fromType => m_FromType;
         public int index => m_Index;
@@ -56,45 +49,37 @@ namespace SimpleLanguage.Core
         public static int s_ExpressLevel = 1500000000;
         public MetaConstExpressNode constExpressNode => m_Express as MetaConstExpressNode;
 
-        public MetaMemberEnum(MetaMemberEnum mmv ) : base( mmv )
-        {
-            m_FromType = EFromType.Manual;
-            m_DefineMetaType = mmv.m_DefineMetaType;
-            m_IsInnerDefine = mmv.m_IsInnerDefine;
-            m_Express = mmv.m_Express;
-            m_VariableFrom = EVariableFrom.Static;
-        }
-        public MetaMemberEnum(MetaClass mc, string _name)
-        {
-            m_Name = _name;
-            m_FromType = EFromType.Manual;
-            m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-            m_IsInnerDefine = true;
-            m_VariableFrom = EVariableFrom.Static;
+        //public MetaMemberEnum(MetaClass mc, string _name)
+        //{
+        //    m_Name = _name;
+        //    m_FromType = EFromType.Manual;
+        //    m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+        //    m_IsInnerDefine = true;
+        //    m_VariableFrom = EVariableFrom.Static;
 
-            SetOwnerMetaClass(mc);
-        } 
-        public MetaMemberEnum( MetaClass ownerMc, string _name, MetaTemplate mt )
-        {
-            m_Name = _name;
-            m_FromType = EFromType.Manual;
-            m_DefineMetaType = new MetaType( mt );
-            m_IsInnerDefine = true;
-            m_VariableFrom = EVariableFrom.Static;
+        //    SetOwnerMetaClass(mc);
+        //} 
+        //public MetaMemberEnum( MetaClass ownerMc, string _name, MetaTemplate mt )
+        //{
+        //    m_Name = _name;
+        //    m_FromType = EFromType.Manual;
+        //    m_DefineMetaType = new MetaType( mt );
+        //    m_IsInnerDefine = true;
+        //    m_VariableFrom = EVariableFrom.Static;
 
-            SetOwnerMetaClass(ownerMc);
-        }
-        public MetaMemberEnum(MetaClass mc, string _name, MetaClass _defineTypeClass )
-        {
-            m_Name = _name;
-            m_IsInnerDefine = true;
-            m_FromType = EFromType.Manual;
-            m_DefineMetaType = new MetaType(_defineTypeClass);
-            m_DefineMetaType.SetMetaClass(_defineTypeClass);
-            m_VariableFrom = EVariableFrom.Static;
+        //    SetOwnerMetaClass(ownerMc);
+        //}
+        //public MetaMemberEnum(MetaClass mc, string _name, MetaClass _defineTypeClass )
+        //{
+        //    m_Name = _name;
+        //    m_IsInnerDefine = true;
+        //    m_FromType = EFromType.Manual;
+        //    m_DefineMetaType = new MetaType(_defineTypeClass);
+        //    m_DefineMetaType.SetMetaClass(_defineTypeClass);
+        //    m_VariableFrom = EVariableFrom.Static;
 
-            SetOwnerMetaClass(mc);
-        }
+        //    SetOwnerMetaClass(mc);
+        //}
         public MetaMemberEnum( MetaClass mc, FileMetaMemberVariable fmmv )
         {
             m_FileMetaMemeberVariable = fmmv;
@@ -129,13 +114,6 @@ namespace SimpleLanguage.Core
 
             SetOwnerMetaClass(mtc);
         }
-        public override void ParseName()
-        {
-            if (m_FileMetaMemeberVariable != null)
-            {
-                m_Name = m_FileMetaMemeberVariable.name;
-            }
-        }
         public override void ParseDefineMetaType()
         {
             if (m_FileMetaMemeberVariable != null)
@@ -146,9 +124,10 @@ namespace SimpleLanguage.Core
                     {
                         fme = m_FileMetaMemeberVariable.express,
                         metaType = m_DefineMetaType,
+                        ownerMetaClass = m_OwnerMetaClass,
                         equalMetaVariable = this,
-                        mbs = m_OwnerMetaBlockStatements,
-                        parsefrom = EParseFrom.StatementRightExpress
+                        ownerMBS = m_OwnerMetaBlockStatements,
+                        parsefrom = EParseFrom.MemberVariableExpress
                     };
                     m_Express = ExpressManager.CreateExpressNodeByCEP(cep);
 
@@ -158,6 +137,14 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
+        }
+        public override bool ParseMetaExpress()
+        {
+            if(m_Express != null )
+            {
+                m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
+            }
+            return true;
         }
         public void SetExpress( MetaConstExpressNode mcen )
         {
@@ -297,20 +284,21 @@ namespace SimpleLanguage.Core
                     }
                 }
                 CreateExpressParam cep = new CreateExpressParam();
-                cep.metaClass = ownerMetaClass;
+                cep.ownerMetaClass = ownerMetaClass;
                 cep.metaType = m_DefineMetaType;
                 cep.fme = root;
                 return ExpressManager.CreateExpressNode(cep);
             }
 
-            MetaExpressNode mn = ExpressManager.VisitFileMetaExpress(ownerMetaClass, null, m_DefineMetaType, root);
+            //MetaExpressNode mn = ExpressManager.CreateExpressNode(ownerMetaClass, null, m_DefineMetaType, root);
 
-            AllowUseSettings auc2 = new AllowUseSettings();
-            auc2.useNotConst = isConst;
-            auc2.useNotStatic = !isStatic;
-            mn.Parse(auc2);
+            //AllowUseSettings auc2 = new AllowUseSettings();
+            //auc2.useNotConst = isConst;
+            //auc2.useNotStatic = !isStatic;
+            //mn.Parse(auc2);
 
-            return mn;
+            //return mn;
+            return null;
         }
         //public override string ToFormatString()
         //{

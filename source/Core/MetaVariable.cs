@@ -139,10 +139,6 @@ namespace SimpleLanguage.Core
         //{
         //    //m_FromExpressNodeCreate = men;
         //}
-        public virtual void ParseName()
-        {
-
-        }
         public virtual void ParseDefineMetaType()
         {
 

@@ -82,18 +82,26 @@ namespace SimpleLanguage.Core
 
             CreateExpressParam cep = new CreateExpressParam()
             {
-                mbs = m_OwnerMetaBlockStatements,
+                ownerMBS = m_OwnerMetaBlockStatements,
+                ownerMetaClass = m_OwnerMetaClass,
                 metaType = new MetaType(CoreMetaClassManager.objectMetaClass),
                 fme = m_FileInputParamNode.express,
                 isStatic = false,
                 isConst = false,
                 parsefrom = EParseFrom.InputParamExpress
             };
-            m_Express = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep);
+            m_Express = ExpressManager.CreateExpressNode(cep);
         }
         public MetaInputParam( MetaExpressNode inputExpress )
         {
             m_Express = inputExpress;
+        }
+        public override void Parse()
+        {
+            if (m_Express != null)
+            {
+                m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.InputParamExpress } );
+            }
         }
         public override void CaleReturnType()
         {
@@ -256,14 +264,14 @@ namespace SimpleLanguage.Core
             {
                 CreateExpressParam cep = new CreateExpressParam()
                 {
-                    mbs = null,
+                    ownerMBS = null,
                     metaType = new MetaType(CoreMetaClassManager.objectMetaClass),
                     fme = m_FileMetaParamter.express,
                     isStatic = false,
                     isConst = false,
                     parsefrom = EParseFrom.InputParamExpress
                 };
-                m_MetaExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep);               
+                m_MetaExpressNode = ExpressManager.CreateExpressNode(cep);               
             }
         }
         public MetaDefineParam(string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaType mt )
@@ -710,6 +718,7 @@ namespace SimpleLanguage.Core
         {
             for (int i = 0; i < metaParamList.Count; i++)
             {
+                metaParamList[i].Parse();
                 metaParamList[i].CaleReturnType();
             }
         }

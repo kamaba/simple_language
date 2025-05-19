@@ -156,6 +156,14 @@ namespace SimpleLanguage.IR
         {
             return m_MethodLocalVariableList.Find(a => a.id == id);
         }
+        public IRMetaVariable GetIRArgumentById( int id )
+        {
+            return m_MethodArgumentList.Find(a => a.id == id);
+        }
+        public IRMetaVariable GetReturnVariableById( int id )
+        {
+            return m_MethodReturnList.Find(a => a.id == id);
+        }
         public string ToIRString()
         {
             StringBuilder sb = new StringBuilder();

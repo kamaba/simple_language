@@ -8,7 +8,7 @@ data XC
 
 public class Int32 
 {
-    public Int32 value
+    public Int32 value = null
 
     public string toString()
     {
@@ -19,11 +19,11 @@ public class Int32
 }
 public class Float
 {
-    public Float value
+    public Float value = null
 }
 public class String
 {
-    public String value
+    public String value = null
 }
 NumberTest
 {

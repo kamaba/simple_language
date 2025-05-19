@@ -99,7 +99,6 @@ namespace SimpleLanguage.Core
                 {
                     mmv.SetName(mmv.name + "__repeat__");
                 }
-                mmv.ParseName();
                 mmv.ParseDefineMetaType();
                 AddMetaMemberData(mmv);
 

@@ -12,7 +12,7 @@ using SimpleLanguage.Core.SelfMeta;
 
 namespace SimpleLanguage.Core
 {
-    public class MetaConstExpressNode : MetaExpressNode
+    public sealed class MetaConstExpressNode : MetaExpressNode
     {
         public static MetaConstExpressNode operator +(MetaConstExpressNode left, MetaConstExpressNode right)
         {
@@ -83,8 +83,6 @@ namespace SimpleLanguage.Core
         private FileMetaConstValueTerm m_FileMetaConstValueTerm = null;
         public object value { get; set; } = null;
         public EType eType { get; private set; } = EType.None;
-
-        public MetaClass m_MetaClass = null;
         public MetaConstExpressNode(FileMetaConstValueTerm fmct)
         {
             m_FileMetaConstValueTerm = fmct;
@@ -119,44 +117,37 @@ namespace SimpleLanguage.Core
                     break;
             }
         }
-        public override MetaType GetReturnMetaDefineType()
+        public override void CalcReturnType()
         {
             if (m_MetaDefineType != null)
             {
-                return m_MetaDefineType;
+                return;
             }
             //MetaType mdt = null;
             if (eType == EType.Null)
             {
                 m_MetaDefineType = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
-            if (eType == EType.Class)
+            MetaClass mc = CoreMetaClassManager.GetMetaClassByEType(eType);
+
+            if (mc == null)
             {
-                m_MetaDefineType = new MetaType(m_MetaClass);
+                m_MetaDefineType = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
             else
             {
-                MetaClass mc = CoreMetaClassManager.GetMetaClassByEType(eType);
-
-                if (mc == null)
+                MetaInputTemplateCollection mitc = new MetaInputTemplateCollection();
+                if (eType == EType.Array)
                 {
+                    MetaType mitp = new MetaType(CoreMetaClassManager.int32MetaClass);
+                    mitc.AddMetaTemplateParamsList(mitp);
+                    m_MetaDefineType = new MetaType(mc, mitc);
                 }
                 else
                 {
-                    MetaInputTemplateCollection mitc = new MetaInputTemplateCollection();
-                    if (eType == EType.Array)
-                    {
-                        MetaType mitp = new MetaType(CoreMetaClassManager.int32MetaClass);
-                        mitc.AddMetaTemplateParamsList(mitp);
-                        m_MetaDefineType = new MetaType(mc, mitc);
-                    }
-                    else
-                    {
-                        m_MetaDefineType = new MetaType(mc);
-                    }
+                    m_MetaDefineType = new MetaType(mc);
                 }
             }
-            return m_MetaDefineType;
         }
         public void ComputeAddRight(MetaConstExpressNode right)
         {

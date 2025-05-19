@@ -154,11 +154,11 @@ namespace SimpleLanguage.Core
                 {
                     CreateExpressParam cep = new CreateExpressParam()
                     {
-                        mbs = m_OwnerMetaFunctionBlock,
+                        ownerMBS = m_OwnerMetaFunctionBlock,
                         metaType = null,
                         fme = firstNode,
                     };
-                    m_ExpressNode = ExpressManager.CreateExpressNodeInMetaFunctionCommonStatements(cep);
+                    m_ExpressNode = ExpressManager.CreateExpressNode(cep);
                     m_ExpressNode.CalcReturnType();
                     m_MetaClass = null;// CoreMetaClassManager.GetMetaClassByEType(m_ExpressNode.eType);
                     m_CallNodeType = ECallNodeType.Express;
@@ -187,7 +187,7 @@ namespace SimpleLanguage.Core
             {
                 m_MetaInputParamCollection = new MetaInputParamCollection(m_FileMetaCallNode.fileMetaParTerm, m_OwnerMetaClass, m_OwnerMetaFunctionBlock);
 
-                m_MetaInputParamCollection?.CaleReturnType();
+                m_MetaInputParamCollection.CaleReturnType();
             }
 
             if (m_FrontCallNode != null)
@@ -600,7 +600,7 @@ namespace SimpleLanguage.Core
                                 if( retmmd.memberDataType == EMemberDataType.MemberClass )
                                 {
                                     m_MetaClass = m_MetaVariable.metaDefineType.metaClass;
-                                    m_MetaVariable = retmmd.metaVariable;
+                                    m_MetaVariable = retmmd;
                                     m_CallNodeType = ECallNodeType.MemberVariableName;
                                 }
                                 else if (retmmd.memberDataType == EMemberDataType.ConstValue)
@@ -881,7 +881,7 @@ namespace SimpleLanguage.Core
                 if (m_MetaVariable != null)
                 {
                     var tmv = m_MetaVariable;
-                    if (m_AllowUseSettings.useNotStatic == false && m_MetaVariable.isStatic == false)
+                    if (m_AllowUseSettings.useNotStatic == false && m_MetaVariable.isStatic )
                     {
                         if (frontCNT == ECallNodeType.FunctionInnerVariableName
                             || frontCNT == ECallNodeType.MemberVariableName

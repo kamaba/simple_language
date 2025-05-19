@@ -19,14 +19,12 @@ namespace SimpleLanguage.Core.Statements
     {
         public MetaExpressNode expressNode => m_ExpressNode;
         public MetaVariable defineVarMetaVariable => m_DefineVarMetaVariable;
-        public MetaVariable thisVariable => m_ThisVariable;
 
         private FileMetaDefineVariableSyntax m_FileMetaDefineVariableSyntax = null;
         private FileMetaOpAssignSyntax m_FileMetaOpAssignSyntax = null;
         private FileMetaCallSyntax m_FileMetaCallSyntax = null;
 
         private MetaVariable m_DefineVarMetaVariable = null;
-        private MetaVariable m_ThisVariable = null;
         private MetaExpressNode m_ExpressNode = null;
         private bool m_IsNeedCastStatements = false;
         public MetaDefineVarStatements( MetaBlockStatements mbs ) : base(mbs)
@@ -55,22 +53,6 @@ namespace SimpleLanguage.Core.Statements
             m_OwnerMetaBlockStatements.AddOnlyNameMetaVariable(m_Name);
             Parse();
         }
-        public Compile.Token GetToken()
-        {
-            if (m_FileMetaDefineVariableSyntax != null)
-            {
-                return m_FileMetaDefineVariableSyntax.token;
-            }
-            if (m_FileMetaOpAssignSyntax != null)
-            {
-                return m_FileMetaOpAssignSyntax.assignToken;
-            }
-            if (m_FileMetaCallSyntax != null)
-            {
-                return m_FileMetaCallSyntax.token;
-            }
-            return null;
-        }
         private void Parse()
         {
             string defineName = m_Name;
@@ -88,8 +70,6 @@ namespace SimpleLanguage.Core.Statements
 
                 m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
                 m_DefineVarMetaVariable.AddPingToken(m_FileMetaDefineVariableSyntax.token);
-                m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_DefineVarMetaVariable);
-
                 fileExpress = m_FileMetaDefineVariableSyntax.express;
             }
             else if (m_FileMetaOpAssignSyntax != null)
@@ -108,7 +88,6 @@ namespace SimpleLanguage.Core.Statements
                     }
                 }
                 m_DefineVarMetaVariable.AddPingToken(token);
-                m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_DefineVarMetaVariable);
 
                 fileExpress = m_FileMetaOpAssignSyntax.express;
             }
@@ -116,13 +95,13 @@ namespace SimpleLanguage.Core.Statements
             {
                 m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
                 m_DefineVarMetaVariable.AddPingToken(m_FileMetaCallSyntax.token);
-                m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_DefineVarMetaVariable);
             }
             if(m_DefineVarMetaVariable == null )
             {
                 Debug.Write("Error {0} MetaVariable is Null", defineName);
                 return;
             }
+            m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_DefineVarMetaVariable);
 
             MetaType expressRetMetaDefineType = null;
             if (fileExpress != null)
@@ -131,16 +110,17 @@ namespace SimpleLanguage.Core.Statements
                 cep.fme = fileExpress;
                 cep.equalMetaVariable = m_DefineVarMetaVariable;
                 cep.metaType = mdt;
-                cep.mbs = m_OwnerMetaBlockStatements;
+                cep.ownerMBS = m_OwnerMetaBlockStatements;
 
                 m_ExpressNode = ExpressManager.CreateExpressNodeByCEP(cep);
-                m_ExpressNode.CalcReturnType();
-                expressRetMetaDefineType = m_ExpressNode.GetReturnMetaDefineType();
                 if (m_ExpressNode == null)
                 {
                     Debug.Write("Error 解析新建变量语句时，表达式解析为空!!__1");
                     return;
                 }
+                m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                m_ExpressNode.CalcReturnType();
+                expressRetMetaDefineType = m_ExpressNode.GetReturnMetaDefineType();               
                 if (expressRetMetaDefineType == null)
                 {
                     Debug.Write("Error 解析新建变量语句时，表达式返回类型为空!!__2");

@@ -5,22 +5,11 @@
 //  DateTime: 2025/5/6 12:00:00
 //  Description: class's memeber variable metadata and member 'data' metadata
 //****************************************************************************
-using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Core;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net.Mime;
-using System.Reflection;
-using System.Runtime.ConstrainedExecution;
-using System.Runtime.Intrinsics.X86;
-using System.Security.Cryptography;
 using System.Text;
-using System.Xml.Linq;
-using static SimpleLanguage.Core.ExpressManager;
-using static SimpleLanguage.Core.MetaBraceOrBracketStatementsContent;
 
 namespace SimpleLanguage.Core
 {
@@ -32,7 +21,7 @@ namespace SimpleLanguage.Core
         MemberArray,
         MemberClass,
     }
-    public partial class MetaMemberData : MetaVariable
+    public sealed class MetaMemberData : MetaVariable
     {
         public override bool isConst { get { return m_IsConst; } }
         public EMemberDataType memberDataType => m_MemberDataType;
@@ -49,6 +38,7 @@ namespace SimpleLanguage.Core
         private bool m_IsStatic = false;
         private bool m_IsWithName = false;
 
+
         protected Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
 
         private FileMetaMemberData m_FileMetaMemeberData = null;
@@ -60,6 +50,7 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = new MetaType(mc);
             SetOwnerMetaClass(mc);
             m_IsConst = mc.isConst;
+            ParseName();
         }
         public MetaMemberData(MetaData mc, FileMetaMemberData fmmd, int index, bool isStatic )
         {
@@ -82,6 +73,8 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             SetOwnerMetaClass(parentNode.ownerMetaClass);
             m_IsConst = parentNode.isConst;
+
+            ParseName();
         }
         public MetaMemberData( MetaMemberData parentNode, string name, int _index, MetaExpressNode men )
         {
@@ -148,7 +141,7 @@ namespace SimpleLanguage.Core
 
             return true;
         }
-        public override void ParseName()
+        private void ParseName()
         {
             if (m_FileMetaMemeberData != null)
             {
@@ -215,7 +208,7 @@ namespace SimpleLanguage.Core
                         fme = curFMBT,
                         metaType = m_DefineMetaType,
                         equalMetaVariable = this,
-                        mbs = m_OwnerMetaBlockStatements,
+                        ownerMBS = m_OwnerMetaBlockStatements,
                         parsefrom = EParseFrom.StatementRightExpress
                     };
                     m_Express = ExpressManager.CreateExpressNode(cep);
@@ -231,6 +224,7 @@ namespace SimpleLanguage.Core
             if (m_Express != null)
             {
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
+                m_Express.CalcReturnType();
                 m_DefineMetaType = m_Express.GetReturnMetaDefineType();
                 if (m_DefineMetaType == null)
                 {

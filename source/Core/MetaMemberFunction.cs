@@ -263,7 +263,7 @@ namespace SimpleLanguage.Core
         {
             m_MetaMemberTemplateCollection.AddMetaDefineTemplate(mt);
         }
-        public override void ParseName()
+        public void ParseName()
         {
             for (int i = 0; i < m_MetaMemberParamCollection.metaParamList.Count; i++)
             {

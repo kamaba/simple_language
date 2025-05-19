@@ -470,13 +470,6 @@ namespace SimpleLanguage.Core
                 it.Value.ParseTemplateRelation();
             }
         }
-        public void ParseMemberVariableName()
-        {
-            foreach (var it in m_AllClassDict)
-            {
-                it.Value.ParseMetaMemberVariableName();
-            }
-        }
         public void ParseMemberFunctionName()
         {
             foreach (var it in m_AllClassDict)
