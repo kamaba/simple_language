@@ -62,7 +62,7 @@ namespace SimpleLanguage.VM
                 sobj = new BoolObject(false);
                 sobj.typeId = 1;
             }
-            else if (mdt.allName == "int32" )
+            else if (mdt.allName == "Int32" )
             {
                 sobj = new Int32Object(0);
                 sobj.typeId = 3;
@@ -71,10 +71,6 @@ namespace SimpleLanguage.VM
             {
                 sobj = new StringObject("");
                 sobj.typeId = 10;
-            }
-            else if( mdt.allName == "Object" )
-            {
-                sobj = new ClassObject(mdt);
             }
             else
             {

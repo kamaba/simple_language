@@ -7,7 +7,7 @@ C1
 
     static public int a1 = 100;
     private a2 = 20;
-    private long a3;
+    private long a3;    #不允许使用没有等号的情况 除了class之外 ，其它的类型都需要有=号
     C2 a4;
     static C2 a5;
     a6 = C2();
@@ -30,7 +30,7 @@ partial C2
     }
 }
 
-C3 :: C1
+C3 extends C1
 {
     x = 1;
     z = 2;
@@ -41,7 +41,7 @@ Class2
     static int m2 = 20;
 }
 
-C4 :: C3
+C4 extends C3
 {
     bool ab = 10 <= 10 / (20+1 * 35 - (32/15) );
     bx = -20;
