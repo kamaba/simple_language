@@ -7,13 +7,10 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
-using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
-using SimpleLanguage.IR.Statements;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
 using System.Text;
 
 namespace SimpleLanguage.IR
@@ -32,12 +29,18 @@ namespace SimpleLanguage.IR
         private List<IRMetaVariable> m_MethodReturnList = new List<IRMetaVariable>();
         private List<IRData> m_LabelList = new List<IRData>();
         private List<IRData> m_IRDataList = new List<IRData>();
-        public IRMethod(IRManager irma)
+
+        private MetaFunction m_BindMetaFunction = null;
+        public IRMethod(IRManager irma, MetaFunction func )
         {
             irManager = irma;
+            m_BindMetaFunction = func;
+            this.id = func.allName;
         }
-        public void Parse( MetaFunction mf )
+        public void Parse()
         {
+            var mf = m_BindMetaFunction;
+
             id = mf.allName;
 
             if (mf.thisMetaVariable != null)

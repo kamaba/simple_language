@@ -6,6 +6,8 @@
 //  Description:  handle assign statements syntax to instruction r!
 //****************************************************************************
 
+using SimpleLanguage.Core;
+using SimpleLanguage.Core.IR;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using System;
@@ -30,8 +32,9 @@ namespace SimpleLanguage.IR
                 m_IRStatements.Add(m_IRExpress);
             }
 
-            //ms.leftMetaExpress.metaCallLink.ParseToIRDataList(irMethod, true );
-            //m_IRStatements.AddRange(ms.leftMetaExpress.metaCallLink.irList);
+            IRMetaCallLink irmc = new IRMetaCallLink();            
+            irmc.ParseToIRDataList(irMethod, ms.leftMetaExpress.metaCallLink.callNodeList);
+            m_IRStatements.AddRange(irmc.irList);
         }
     }
 }

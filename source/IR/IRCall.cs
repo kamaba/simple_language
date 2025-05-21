@@ -6,23 +6,23 @@
 //  Description: 
 //****************************************************************************
 
+
 using SimpleLanguage.Core;
-using SimpleLanguage.IR;
-using SimpleLanguage.VM;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
-using System.Text;
 
 namespace SimpleLanguage.IR
 {
     public class IRCallFunction : IRBase
     {
+        public IRMethod irRuntimeMethod => m_IRRuntimeMethod;
         public int paramCount { get; set; } = 0;
         public bool target { get; set; } = false;
 
         private MethodInfo m_MethodInfo = null;
+        private IRMethod m_IRRuntimeMethod = null;
+
         public IRCallFunction(IRMethod _irMethod) : base(_irMethod)
         {
         }
@@ -73,9 +73,12 @@ namespace SimpleLanguage.IR
                     return;
                 }
             }
+
+            m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(mf.allName);
+
             IRData datacall = new IRData();
             datacall.opCode = EIROpCode.Call;
-            datacall.opValue = this;
+            datacall.opValue = m_IRRuntimeMethod;
             datacall.SetDebugInfoByToken( mf.pingToken );
             AddIRData(datacall);
         }

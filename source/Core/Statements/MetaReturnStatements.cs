@@ -8,16 +8,14 @@
 
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Parse;
-using SimpleLanguage.Core;
-using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace SimpleLanguage.Core.Statements
 {
-    public partial class MetaReturnStatements : MetaStatements
+    public sealed  class MetaReturnStatements : MetaStatements
     {
+        public MetaExpressNode express => m_Express;
+
         private FileMetaKeyReturnSyntax m_FileMetaReturnSyntax;
         private MetaType m_ReturnMetaDefineType;
         private MetaExpressNode m_Express = null;

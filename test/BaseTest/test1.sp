@@ -52,7 +52,7 @@ const data ProjectConfig
                         }
                     }
                 }
-                Layer1_1 =
+                Layer1_2 =
                 {
                     type = "namespace"
                 }

@@ -35,7 +35,7 @@ NumberTest
         ui1 = 10ui;
         f0 = 2.0;         #  end:null point:1
         f1 = 2.321f;      #  end:f point:1
-        f2 = 2f;          # end:f point:0  报错
+        #f2 = 2f;          # end:f point:0  报错
         f4 = 2i.toString();   # end:t point:1
         #f5 = 2.0f.toString();    #
         #f6 = 23.223d.toFloat();

@@ -54,8 +54,6 @@ namespace SimpleLanguage.Project
             s_CompileBeforeFunction = compile.GetMetaDefineGetSetMemberFunctionByName("CompileBefore",false,false);
             s_CompileAfterFunction = compile.GetMetaDefineGetSetMemberFunctionByName("CompileAfter", false, false);
 
-            s_CompileBeforeFunction.TranslateIR();
-            s_CompileAfterFunction.TranslateIR();
         }
         public static void RunTest()
         {

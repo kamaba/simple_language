@@ -90,6 +90,7 @@ namespace SimpleLanguage.IR
                 AddIRMethod(irm);
             }
 
+            ParseIRMethod();
         }
         public IRMetaClass GetIRMetaClassById( short id )
         {
@@ -187,9 +188,15 @@ namespace SimpleLanguage.IR
             {
                 return IRMethodDict[mf.functionAllName];
             }
-            IRMethod irmethod = new IRMethod(this);
-            irmethod.Parse(mf);
+            IRMethod irmethod = new IRMethod(this, mf );
             return irmethod;
+        }
+        public void ParseIRMethod()
+        {
+            foreach( var v in IRMethodDict )
+            {
+                v.Value.Parse();
+            }
         }
         public int AddStringIRStack( string strMsg )
         {

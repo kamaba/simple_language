@@ -23,7 +23,7 @@ namespace SimpleLanguage.Core.IR
         private IRMethod m_IRMethod = null;
         public List<IRBase> irList = new List<IRBase>();
 
-        public void ParseToIRDataList(IRMethod _irMethod, List<MetaVisitNode> cnlist, bool isSave = false)
+        public void ParseToIRDataList(IRMethod _irMethod, List<MetaVisitNode> cnlist)
         {
             m_IRMethod = _irMethod;
 
@@ -64,7 +64,7 @@ namespace SimpleLanguage.Core.IR
                 {
                     var mfc = cnode.methodCall;
                     IRCallFunction irCallFun = new IRCallFunction(m_IRMethod);
-                    irCallFun.Parse(cnode.methodCall);
+                    irCallFun.Parse(mfc);
                     irList.Add(irCallFun);
                 }
                 else if (cnode.visitType == MetaVisitNode.EVisitType.NewClass)
