@@ -115,13 +115,6 @@ namespace SimpleLanguage.Core
             }
             return false;
         }
-        public bool TranslateIR()
-        {
-            var m_IRMethod = IRManager.instance.TranslateIRByFunction(this);
-
-            return m_IRMethod != null;
-        }
-
         public override string ToStatementString()
         {
             StringBuilder sb = new StringBuilder();

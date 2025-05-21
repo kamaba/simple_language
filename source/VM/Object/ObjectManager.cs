@@ -62,12 +62,61 @@ namespace SimpleLanguage.VM
                 sobj = new BoolObject(false);
                 sobj.typeId = 1;
             }
-            else if (mdt.allName == "Int32" )
+            else if (mdt.allName == "Object")
+            {
+                sobj = new ClassObject(mdt);
+            }
+            else if (mdt.allName == "Byte")
+            {
+                sobj = new ByteObject(0);
+                sobj.typeId = 3;
+            }
+            else if (mdt.allName == "SByte")
+            {
+                sobj = new SByteObject(0);
+                sobj.typeId = 3;
+            }
+            else if (mdt.allName == "Int16")
+            {
+                sobj = new Int16Object(0);
+                sobj.typeId = 3;
+            }
+            else if (mdt.allName == "UInt16")
+            {
+                sobj = new UInt16Object(0);
+                sobj.typeId = 3;
+            }
+            else if (mdt.allName == "Int32")
             {
                 sobj = new Int32Object(0);
                 sobj.typeId = 3;
             }
-            else if (mdt.allName == "string")
+            else if (mdt.allName == "UInt32")
+            {
+                sobj = new UInt32Object(0);
+                sobj.typeId = 3;
+            }
+            else if (mdt.allName == "Int64")
+            {
+                sobj = new Int64Object(0);
+                sobj.typeId = 3;
+            }
+            else if (mdt.allName == "UInt64")
+            {
+                sobj = new UInt64Object(0);
+                sobj.typeId = 3;
+            }
+            else if (mdt.allName == "Float")
+            {
+                sobj = new FloatObject();
+                sobj.typeId = 4;
+            }
+            else if (mdt.allName == "Double")
+            {
+                sobj = new DoubleObject();
+                sobj.typeId = 5;
+            }
+            else if (mdt.allName == "String")
             {
                 sobj = new StringObject("");
                 sobj.typeId = 10;

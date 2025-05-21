@@ -154,13 +154,6 @@ namespace SimpleLanguage.Core
                 v.Value.SetDeep(deep + 1);
             }
         }
-        public void AllFunctionTranslateIR()
-        {
-            foreach( var v in m_MetaMemberAllNameFunctionDict )
-            {
-                v.Value.TranslateIR();
-            }
-        }       
         public void SetDefaultExpressNode( MetaExpressNode defaultExpressNode )
         {
             m_DefaultExpressNode = defaultExpressNode;

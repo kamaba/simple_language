@@ -23,18 +23,14 @@ namespace SimpleLanguage.IR
         private IRExpress m_ReturnValueExpress = null;
         public void ParseIRStatements(MetaReturnStatements ms)
         {
-            //if( m_Express != null )
-            //{
-            //    m_ReturnValueExpress = new IRExpress( irMethod, m_Express );
-            //    m_IRStatements.Add( m_ReturnValueExpress );
+            if (ms.express != null)
+            {
+                m_ReturnValueExpress = new IRExpress(this.irMethod, ms.express );
+                m_IRStatements.Add(m_ReturnValueExpress);
 
-            //    //IRStoreVariable
-
-            //    //IRData storeNode = new IRData();
-            //    //storeNode.opCode = EIROpCode.StoreReturn;
-            //    //storeNode.index = 0;
-            //    //m_IRDataList.Add(storeNode);
-            //}
+                IRStoreVariable irsv = IRStoreVariable.CreateStaticReturnIRSV();
+                m_IRStatements.Add(irsv);
+            }
         }
     }
 

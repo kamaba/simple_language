@@ -99,9 +99,19 @@ namespace SimpleLanguage.IR
             //}
         }
 
-        public IRStoreVariable( IRMetaVariable irmv )
+        public IRStoreVariable()
         {
 
+        }
+        public static IRStoreVariable CreateStaticReturnIRSV( )
+        {
+            IRStoreVariable irsv = new IRStoreVariable( );
+            IRData storeNode = new IRData();
+            storeNode.opCode = EIROpCode.StoreReturn;
+            storeNode.index = 0;
+            irsv.IRDataList.Add(storeNode);
+
+            return irsv;
         }
         public override string ToIRString()
         {

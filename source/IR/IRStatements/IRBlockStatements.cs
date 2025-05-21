@@ -6,6 +6,7 @@
 //  Description: 
 //****************************************************************************
 
+using SimpleLanguage.Core.IR;
 using SimpleLanguage.Core.Statements;
 using SimpleLanguage.IR.Statements;
 using System.Diagnostics;
@@ -105,6 +106,13 @@ namespace SimpleLanguage.IR
                             IRWhileDoWhileStatements mirwdws = new IRWhileDoWhileStatements(irMethod);
                             mirwdws.ParseIRStatements(mwdws);
                             m_IRStatements.AddRange(mirwdws.irStatements);
+                        }
+                        break;
+                    case MetaCallStatements mcs:
+                        {
+                            IRCallStatements ircs = new IRCallStatements(irMethod);
+                            ircs.ParseIRStatements(mcs);
+                            m_IRStatements.AddRange(ircs.irStatements);
                         }
                         break;
                     case MetaOtherPlatformStatements mops:

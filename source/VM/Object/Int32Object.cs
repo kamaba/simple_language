@@ -100,9 +100,9 @@ namespace SimpleLanguage.VM
         public UInt32 value;
         public UInt32Object()
         { }
-        public UInt32Object(object obj)
+        public UInt32Object(UInt32 obj)
         {
-            value = (UInt32)obj;
+            value = obj;
             m_Etype = EType.UInt32;
         }
         public void SetValue(UInt32 _val)
