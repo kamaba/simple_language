@@ -7,11 +7,6 @@
 //****************************************************************************
 
 using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
-using SimpleLanguage.Core;
-
 namespace SimpleLanguage.VM
 {
     public partial struct SValue
@@ -24,10 +19,12 @@ namespace SimpleLanguage.VM
         public ushort uint16Value;
         public int int32Value;
         public uint uint32Value;
-        public string stringValue;
-        public ClassObject sobject;
         public long int64Value;
         public ulong uint64Value;
+        public float floatValue;
+        public double doubleValue;
+        public string stringValue;
+        public ClassObject sobject;
 
         public void SetNullValue()
         {
@@ -83,6 +80,16 @@ namespace SimpleLanguage.VM
             eType = EType.UInt64;
             uint64Value = val;
         }
+        public void SetFloatValue(Single val)
+        {
+            eType = EType.Float;
+            floatValue = val;
+        }
+        public void SetDoubleValue(Double val)
+        {
+            eType = EType.Double;
+            doubleValue = val;
+        }
         public void SetStringValue(string val)
         {
             eType = EType.String;
@@ -127,6 +134,14 @@ namespace SimpleLanguage.VM
                 case EType.UInt64:
                     {
                         return uint64Value;
+                    }
+                case EType.Float:
+                    {
+                        return floatValue;
+                    }
+                case EType.Double:
+                    {
+                        return doubleValue;
                     }
                 case EType.String:
                     {
@@ -199,6 +214,18 @@ namespace SimpleLanguage.VM
                         uint64Value = uint64obj.value;
                     }
                     break;
+                case FloatObject floatobj:
+                    {
+                        eType = EType.Float;
+                        floatValue = floatobj.value;
+                    }
+                    break;
+                case DoubleObject doubleobj:
+                    {
+                        eType = EType.Double;
+                        doubleValue = doubleobj.value;
+                    }
+                    break;
                 case StringObject stringobj:
                     {
                         eType = EType.String;
@@ -254,6 +281,16 @@ namespace SimpleLanguage.VM
                             case EType.UInt64:
                                 {
                                     uint64Value = (ulong)(tobj);
+                                }
+                                break;
+                            case EType.Float:
+                                {
+                                    floatValue = (float)(tobj);
+                                }
+                                break;
+                            case EType.Double:
+                                {
+                                    doubleValue = (double)(tobj);
                                 }
                                 break;
                             case EType.String:
@@ -316,6 +353,14 @@ namespace SimpleLanguage.VM
                 case EType.UInt64:
                     {
                         return uint64Value;
+                    }
+                case EType.Float:
+                    {
+                        return floatValue;
+                    }
+                case EType.Double:
+                    {
+                        return doubleValue;
                     }
                 case EType.String:
                     {
@@ -382,6 +427,18 @@ namespace SimpleLanguage.VM
                     {
                         eType = EType.UInt64;
                         uint64Value = (ulong)obj;
+                    }
+                    break;
+                case Single f:
+                    {
+                        eType = EType.Float;
+                        floatValue = (float)obj;
+                    }
+                    break;
+                case Double d:
+                    {
+                        eType = EType.Double;
+                        doubleValue = (double)obj;
                     }
                     break;
                 case String str:

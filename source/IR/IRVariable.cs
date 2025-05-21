@@ -69,34 +69,30 @@ namespace SimpleLanguage.IR
     public class IRStoreVariable : IRBase
     {
         public IRData data = new IRData();
-        public IRStoreVariable(IRMethod _irMethod, int id ) : base(_irMethod)
+        public IRStoreVariable(IRMethod _irMethod, int id, IRMetaVariableFrom irmvf) : base(_irMethod)
         {
-            IRMetaVariable irmv = _irMethod.GetIRLocalVariableById(id);
-            data.opCode = EIROpCode.LoadLocal;
-            data.index = irmv.index; 
+            IRMetaVariable irmv = null;
+            if (irmvf == IRMetaVariableFrom.Member)
+            {
+                data.index = id;
+                data.opCode = EIROpCode.StoreNotStaticField;
+            }
+            else if (irmvf == IRMetaVariableFrom.Member2)
+            {
+                data.index = id;
+                data.opCode = EIROpCode.StoreNotStaticField_R1;
+            }
+            else if (irmvf == IRMetaVariableFrom.LocalStatement)
+            {
+                irmv = _irMethod.GetIRLocalVariableById(id);
+                data.opCode = EIROpCode.StoreLocal;
+                data.index = irmv.index;
+            }
+            else
+            {
+                Debug.Write($"SVM Error 没有找到加载变量的来源类型！");
+            }
             m_IRDataList.Add(data);
-            //var vmv = mv as MetaVisitVariable;
-            //var mmv = mv as MetaMemberVariable;
-            //if (vmv != null)
-            //{
-            //    var localVariable = vmv.sourceMetaVariable;
-            //    if (localVariable is MetaVariable)
-            //    {
-            //        if (localVariable is MetaVisitVariable)
-            //        {
-            //            IRStoreVariable parentIRStore = new IRStoreVariable(_irMethod, localVariable as MetaVisitVariable);
-            //            m_IRDataList.AddRange(parentIRStore.IRDataList);
-            //        }
-            //        else
-            //        {
-            //            IRLoadVariable irload = new IRLoadVariable(_irMethod, localVariable as MetaVariable);
-            //            m_IRDataList.AddRange(irload.IRDataList);
-            //        }
-            //    }
-            //    data.opCode = EIROpCode.StoreNotStaticField;
-            //    data.index = vmv.GetIRMemberIndex();
-            //    m_IRDataList.Add(data);
-            //}
         }
 
         public IRStoreVariable()

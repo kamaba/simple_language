@@ -271,7 +271,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadConstUInt16:
                     {
-                        m_ValueStack[m_ValueIndex++].SetInt16Value((Int16)iri.opValue);
+                        m_ValueStack[m_ValueIndex++].SetUInt16Value((UInt16)iri.opValue);
                     }
                     break;
                 case EIROpCode.LoadConstInt32:
@@ -281,7 +281,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadConstUInt32:
                     {
-                        m_ValueStack[m_ValueIndex++].SetInt32Value((Int32)iri.opValue);
+                        m_ValueStack[m_ValueIndex++].SetUInt32Value((UInt32)iri.opValue);
                     }
                     break;
                 case EIROpCode.LoadConstInt64:
@@ -292,6 +292,16 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.LoadConstUInt64:
                     {
                         m_ValueStack[m_ValueIndex++].SetUInt64Value((UInt64)iri.opValue);
+                    }
+                    break;
+                case EIROpCode.LoadConstFloat:
+                    {
+                        m_ValueStack[m_ValueIndex++].SetFloatValue((Single)iri.opValue);
+                    }
+                    break;
+                case EIROpCode.LoadConstDouble:
+                    {
+                        m_ValueStack[m_ValueIndex++].SetDoubleValue((Double)iri.opValue);
                     }
                     break;
                 case EIROpCode.LoadConstString:
@@ -332,20 +342,39 @@ namespace SimpleLanguage.VM.Runtime
                     }
                     break;
                 case EIROpCode.StoreNotStaticField:
+                case EIROpCode.StoreNotStaticField_R1:                    
                     {
                         // -2在存储的值 -1表示要存储的对象 0位表示要存储的位置
-                        var v = m_ValueStack[m_ValueIndex-1];
-                        if (v.eType == EType.Class)
+                        var v = m_ValueStack[m_ValueIndex - 1];
+                        SValue sv = m_ValueStack[m_ValueIndex - 2];
+                        switch ( v.eType )
                         {
-                            (v.sobject as ClassObject).SetMemberVariableSValue(iri.index, m_ValueStack[m_ValueIndex - 2]);
+                            case EType.Boolean:
+                            case EType.Byte: v.int8Value = sv.int8Value; break;
+                            case EType.SByte: v.sint8Value = sv.sint8Value; break;
+                            case EType.Int16: v.int16Value = sv.int16Value; break;
+                            case EType.UInt16: v.uint16Value = sv.uint16Value; break;
+                            case EType.Int32: v.int32Value = sv.int32Value; break;
+                            case EType.UInt32: v.uint32Value = sv.uint32Value; break;
+                            case EType.Int64: v.int64Value = sv.int64Value; break;
+                            case EType.UInt64: v.uint64Value = sv.uint64Value; break;
+                            case EType.Float: v.floatValue = sv.floatValue; break;
+                            case EType.Double: v.doubleValue = sv.doubleValue; break;
+                            case EType.String: v.stringValue = sv.stringValue; break;
+                            case EType.Class:
+                                {
+                                    (v.sobject as ClassObject).SetMemberVariableSValue(iri.index, m_ValueStack[m_ValueIndex - 2]);
+                                }
+                                break;
+                            default:
+                                {
+                                    Debug.Write("Error StoreNotStaticField Path:" + iri.debugInfo.path + " Line: " + iri.debugInfo.beginLine);
+                                }
+                                break;
                         }
-                        else
-                        {
-                            Debug.Write("Error StoreNotStaticField Path:" + iri.debugInfo.path + " Line: " + iri.debugInfo.beginLine );
-                        }
-                        m_ValueIndex-=2;
+                        m_ValueIndex = (ushort)(m_ValueIndex - ( (iri.opCode == EIROpCode.StoreNotStaticField_R1) ? (short)-1 : (short)-2));
                     }
-                    break; 
+                    break;
                 case EIROpCode.LoadStaticField:
                     {
                         InnerCLRRuntimeVM.GetStaticVariable(iri.index, ref m_ValueStack[m_ValueIndex++]);
@@ -400,9 +429,12 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.NewObject:
                     {
                         IRMetaClass mdt = iri.opValue as IRMetaClass;
-                        ClassObject co = new ClassObject(mdt);
-                        ObjectManager.AddClassObject(co);
-                        m_ValueStack[m_ValueIndex++].SetSObject( co );
+                        SObject sob = ObjectManager.CreateObjectByDefineType(mdt);
+                        if( sob is ClassObject co )
+                        {
+                            ObjectManager.AddClassObject(co);
+                        }
+                        m_ValueStack[m_ValueIndex++].SetSObject(sob);
                     }
                     break;
                 case EIROpCode.Label:

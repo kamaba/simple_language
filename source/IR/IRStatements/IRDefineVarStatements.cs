@@ -7,12 +7,8 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
-using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 
 namespace SimpleLanguage.IR
 {
@@ -41,7 +37,7 @@ namespace SimpleLanguage.IR
                     m_IRStatements.Add(m_IRExpress);
                 }
             }
-            IRStoreVariable irStoreVar = new IRStoreVariable(irMethod, ms.defineVarMetaVariable.GetHashCode() );
+            IRStoreVariable irStoreVar = new IRStoreVariable(irMethod, ms.defineVarMetaVariable.GetHashCode(), IRMetaVariableFrom.LocalStatement );
             //if(m_FileMetaOpAssignSyntax != null )
             //{
             //    irStoreVar.data.SetDebugInfoByToken(m_FileMetaOpAssignSyntax.assignToken);
@@ -51,101 +47,7 @@ namespace SimpleLanguage.IR
             if ( mnoen!= null )
             {
                 var mt = mnoen.GetReturnMetaDefineType();
-
-                if( mt.isData )
-                {
-                    MetaData md = (mt.metaClass as MetaData);
-                    bool isFZ = false;
-                    foreach ( var v in md.metaMemberDataDict )
-                    {
-                        isFZ = false;
-                        // Class1{ a = 1; b = 2 }  如果已经配置 {}内容，则不走默认赋值，而是走{}内容赋值
-                        for (int j = 0; j < mnoen.metaBraceOrBracketStatementsContent?.assignStatementsList.Count; j++)
-                        {
-                            var asl = mnoen.metaBraceOrBracketStatementsContent.assignStatementsList[j];
-
-                            if (asl.metaMemberData.name == v.Key )
-                            {
-                                //IRLoadVariable mmvsNodeVar = new IRLoadVariable(irMethod, m_MetaVariable);
-                                //m_IRStatements.Add(mmvsNodeVar);
-
-                                //IRStoreVariable irStoreNodeVar3 = new IRStoreVariable(irMethod, asl.metaMemberData );
-                                //m_IRStatements.Add(irStoreNodeVar3);
-                                isFZ = true;
-                                break;
-                            }
-                        }
-
-                        if (isFZ == false)
-                        {
-                            if (v.Value.memberDataType == EMemberDataType.MemberClass
-                                || v.Value.memberDataType == EMemberDataType.ConstValue )
-                            {
-                                IRExpress irexp = new IRExpress(irMethod, v.Value.expressNode );
-                                m_IRStatements.Add(irexp);
-
-                                //IRLoadVariable irLoadVar1 = new IRLoadVariable(irMethod, m_MetaVariable);
-                                //m_IRStatements.Add(irLoadVar1);
-
-                                IRStoreVariable irStoreVar2 = new IRStoreVariable(irMethod, v.Value.GetHashCode() );
-                                m_IRStatements.Add(irStoreVar2);
-                            }
-                            else if( v.Value.memberDataType == EMemberDataType.MemberArray )
-                            {
-
-                            }
-                            else
-                            {
-                                Debug.Write("Error 不支持其它 的数据成员格式");
-                            }
-                        }
-                    }
-                }
-                else if (mt.isEnum)
-                {
-                }
-                else
-                {
-                    MetaClass metaClass = mt.metaClass;
-                    //var mmvs = metaClass.localMetaMemberVariables;
-
-                    //bool isFZ = false;
-                    //for (int i = 0; i < mmvs.Count; i++)
-                    //{
-                    //    isFZ = false;
-                    //    // Class1{ a = 1; b = 2 }  如果已经配置 {}内容，则不走默认赋值，而是走{}内容赋值
-                    //    for (int j = 0; j < mnoen.metaBraceOrBracketStatementsContent?.assignStatementsList.Count; j++)
-                    //    {
-                    //        var asl = mnoen.metaBraceOrBracketStatementsContent.assignStatementsList[j];
-
-                    //        if (asl.metaMemberVariable.name == mmvs[i].name)
-                    //        {
-                    //            IRLoadVariable mmvsNodeVar = new IRLoadVariable(irMethod, m_MetaVariable);
-                    //            m_IRStatements.Add(mmvsNodeVar);
-
-                    //            IRStoreVariable irStoreNodeVar3 = new IRStoreVariable(irMethod, asl.metaMemberVariable);
-                    //            m_IRStatements.Add(irStoreNodeVar3);
-                    //            isFZ = true;
-                    //            break;
-                    //        }
-                    //    }
-
-                    //    if (isFZ == false)
-                    //    {
-                    //        IRExpress irexp = new IRExpress(irMethod, mmvs[i].express);
-                    //        m_IRStatements.Add(irexp);
-
-                    //        IRLoadVariable irLoadVar1 = new IRLoadVariable(irMethod, m_MetaVariable);
-                    //        m_IRStatements.Add(irLoadVar1);
-
-                    //        IRStoreVariable irStoreVar2 = new IRStoreVariable(irMethod, mmvs[i]);
-                    //        m_IRStatements.Add(irStoreVar2);
-                    //    }
-                    }
-                    // Class1().Init();
-                    //var irCallFun = new IRCallFunction(irMethod, mnoen.constructFunctionCall);
-                    //m_IRStatements.Add(irCallFun);
-                }
+                
             }
         //public override string ToIRString()
         //{
@@ -166,6 +68,6 @@ namespace SimpleLanguage.IR
         //    }
         //    sb.AppendLine("}");
         //    return sb.ToString();
-        //}
+        }
     }
 }

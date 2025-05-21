@@ -1,10 +1,6 @@
 ﻿using SimpleLanguage.IR;
-using SimpleLanguage.VM;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
-using System.Text;
 
 namespace SimpleLanguage.VM
 {
@@ -57,7 +53,7 @@ namespace SimpleLanguage.VM
         {
             SObject sobj = null;
 
-            if (mdt.allName == "boolean" )
+            if (mdt.allName == "Boolean" )
             {
                 sobj = new BoolObject(false);
                 sobj.typeId = 1;
@@ -127,65 +123,6 @@ namespace SimpleLanguage.VM
             }
             return sobj;
         }
-        public static SObject CreateObject(IRMetaClass mc)
-        {
-            SObject sobj = null;
-            //EType etype = mc.eType;
-            /*
-            if (mc.metaType.defineType == EType.Byte)
-            {
-                ByteObject obj = new ByteObject();
-                sobj = obj;
-            }
-            else if (mc.metaType.defineType == EType.Boolean)
-            {
-                BoolObject obj = new BoolObject();
-                sobj = obj;
-            }
-            else if (mc.metaType.defineType == EType.Char)
-            {
-                CharObject obj = new CharObject();
-                sobj = obj;
-            }
-            else if (mc.metaType.defineType == EType.Int16)
-            {
-                Int16Object obj = new Int16Object();
-                sobj = obj;
-            }
-            else if (mc.metaType.defineType == EType.UInt16)
-            {
-                UInt16Object obj = new UInt16Object();
-                sobj = obj;
-            }
-            else if (mc.metaType.defineType == EType.Int32)
-            {
-                Int32Object obj = new Int32Object();
-                sobj = obj;
-            }
-            else if (mc.metaType.defineType == EType.UInt32)
-            {
-                UInt32Object obj = new UInt32Object();
-                sobj = obj;
-            }
-            else if (mc.metaType.defineType == EType.Int64)
-            {
-                UInt64Object obj = new UInt64Object();
-                sobj = obj;
-            }
-            else if (mc.metaType.defineType == EType.String)
-            {
-                StringObject obj = new StringObject();
-                sobj = obj;
-            }
-            else
-            {
-                ClassObject obj = new ClassObject(mc);
-                sobj = obj;
-            }
-            */
-
-            return sobj;
-        }
         public static void SetObjectByValue(SObject obj, ref SValue svalue)
         {
 
@@ -208,6 +145,40 @@ namespace SimpleLanguage.VM
                         boolObj.SetValue(svalue.int8Value==1);
                     }
                     break;
+                case EType.Byte:
+                    {
+                        AnyObject anyObject = obj as AnyObject;
+                        if (anyObject != null)
+                        {
+                            anyObject.SetValue(EType.Byte, svalue.int8Value);
+                            return;
+                        }
+                        ByteObject byteObj = obj as ByteObject;
+                        if (byteObj == null)
+                        {
+                            Debug.Write("该类型不是Byte类型!!");
+                            return;
+                        }
+                        byteObj.SetValue(svalue.int8Value);
+                    }
+                    break;
+                case EType.SByte:
+                    {
+                        AnyObject anyObject = obj as AnyObject;
+                        if (anyObject != null)
+                        {
+                            anyObject.SetValue(EType.SByte, svalue.sint8Value);
+                            return;
+                        }
+                        SByteObject byteObj = obj as SByteObject;
+                        if (byteObj == null)
+                        {
+                            Debug.Write("该类型不是SByte类型!!");
+                            return;
+                        }
+                        byteObj.SetValue(svalue.sint8Value);
+                    }
+                    break;
                 case EType.Int16:
                     {
                         AnyObject anyObject = obj as AnyObject;
@@ -216,13 +187,30 @@ namespace SimpleLanguage.VM
                             anyObject.SetValue(EType.Int16, svalue.int16Value);
                             return;
                         }
-                        Int16Object int32Obj = obj as Int16Object;
-                        if (int32Obj == null)
+                        Int16Object int16Obj = obj as Int16Object;
+                        if (int16Obj == null)
                         {
                             Debug.Write("该类型不是Int32类型!!");
                             return;
                         }
-                        int32Obj.SetValue(svalue.int16Value);
+                        int16Obj.SetValue(svalue.int16Value);
+                    }
+                    break;
+                case EType.UInt16:
+                    {
+                        AnyObject anyObject = obj as AnyObject;
+                        if (anyObject != null)
+                        {
+                            anyObject.SetValue(EType.UInt16, svalue.uint16Value);
+                            return;
+                        }
+                        UInt16Object uint16Obj = obj as UInt16Object;
+                        if (uint16Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        uint16Obj.SetValue(svalue.uint16Value);
                     }
                     break;
                 case EType.Int32:
@@ -242,6 +230,23 @@ namespace SimpleLanguage.VM
                         int32Obj.SetValue(svalue.int32Value);
                     }
                     break;
+                case EType.UInt32:
+                    {
+                        AnyObject anyObject = obj as AnyObject;
+                        if (anyObject != null)
+                        {
+                            anyObject.SetValue(EType.UInt32, svalue.uint32Value);
+                            return;
+                        }
+                        UInt32Object uint32Obj = obj as UInt32Object;
+                        if (uint32Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        uint32Obj.SetValue(svalue.uint32Value);
+                    }
+                    break;
                 case EType.Int64:
                     {
                         AnyObject anyObject = obj as AnyObject;
@@ -257,6 +262,23 @@ namespace SimpleLanguage.VM
                             return;
                         }
                         int64Obj.SetValue(svalue.int64Value);
+                    }
+                    break;
+                case EType.UInt64:
+                    {
+                        AnyObject anyObject = obj as AnyObject;
+                        if (anyObject != null)
+                        {
+                            anyObject.SetValue(EType.UInt64, svalue.uint64Value);
+                            return;
+                        }
+                        UInt64Object uint64Obj = obj as UInt64Object;
+                        if (uint64Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        uint64Obj.SetValue(svalue.uint64Value);
                     }
                     break;
                 case EType.String:
@@ -276,6 +298,40 @@ namespace SimpleLanguage.VM
                         stringObj.SetValue(svalue.stringValue);
                     }
                     break;
+                case EType.Float:
+                    {
+                        AnyObject anyObject = obj as AnyObject;
+                        if (anyObject != null)
+                        {
+                            anyObject.SetValue(EType.Float, svalue.floatValue);
+                            return;
+                        }
+                        FloatObject floatObj = obj as FloatObject;
+                        if (floatObj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        floatObj.SetValue(svalue.floatValue);
+                    }
+                    break;
+                case EType.Double:
+                    {
+                        AnyObject anyObject = obj as AnyObject;
+                        if (anyObject != null)
+                        {
+                            anyObject.SetValue(EType.Double, svalue.doubleValue);
+                            return;
+                        }
+                        DoubleObject doubleObj = obj as DoubleObject;
+                        if (doubleObj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        doubleObj.SetValue(svalue.doubleValue);
+                    }
+                    break;
                 case EType.Class:
                     {
                         AnyObject anyObject = obj as AnyObject;
@@ -293,7 +349,7 @@ namespace SimpleLanguage.VM
                         ClassObject classObj = obj as ClassObject;
                         if (classObj == null)
                         {
-                            Debug.Write("该类型不是Int32类型!!");
+                            Debug.Write("该类型不是Class类型!!");
                             return;
                         }
                         classObj.SetValue(svalue.sobject);
@@ -311,9 +367,19 @@ namespace SimpleLanguage.VM
                         target.SetInt8Value(svalue.int8Value);
                     }
                     break;
+                case EType.SByte:
+                    {
+                        target.SetSInt8Value(svalue.sint8Value );
+                    }
+                    break;
                 case EType.Int16:
                     {
                         target.SetInt16Value(svalue.int16Value);
+                    }
+                    break;
+                case EType.UInt16:
+                    {
+                        target.SetUInt16Value(svalue.uint16Value);
                     }
                     break;
                 case EType.Int32:
@@ -321,9 +387,19 @@ namespace SimpleLanguage.VM
                         target.SetInt32Value(svalue.int32Value);
                     }
                     break;
+                case EType.UInt32:
+                    {
+                        target.SetUInt32Value(svalue.uint32Value);
+                    }
+                    break;
                 case EType.Int64:
                     {
                         target.SetInt64Value(svalue.int64Value);
+                    }
+                    break;
+                case EType.UInt64:
+                    {
+                        target.SetUInt64Value(svalue.uint64Value);
                     }
                     break;
                 case EType.String:
