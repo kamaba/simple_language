@@ -17,26 +17,33 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
+    public enum EMethodCallStackType
+    {
+        StaticStack,
+        DynamicStack,
+        CurrentStack,
+    }
     public class MetaMethodCall
     {
         public MetaVariable callerMetaVariable => m_CallerMetaVariable;
         public MetaClass callerMetaClass => m_CallerMetaClass;
         public MetaFunction function => m_MetaFunction;
         public MetaInputParamCollection metaInputParamCollection => m_MetaInputParamCollection;
+        public EMethodCallStackType methodCallStackType => m_MethodCallStackType;
 
         protected MetaVariable m_CallerMetaVariable = null;
         protected MetaClass m_CallerMetaClass = null;
         protected MetaFunction m_MetaFunction = null;
         protected MetaInputParamCollection m_MetaInputParamCollection = null;
+        protected EMethodCallStackType m_MethodCallStackType = EMethodCallStackType.DynamicStack;
         public bool isConstruction { get; set; } = false;
-        public bool isStaticCall { get; set; } = false;
 
         public MetaMethodCall(MetaVariable mv, MetaFunction _fun, MetaInputParamCollection _metaInputParamCollection = null)
         {
             m_CallerMetaVariable = mv;
             m_MetaFunction = _fun;
             m_MetaInputParamCollection = _metaInputParamCollection;
-            isStaticCall = false;
+            m_MethodCallStackType = EMethodCallStackType.DynamicStack;
         }
         public MetaMethodCall(MetaClass mc, MetaFunction _fun, MetaInputParamCollection _param = null)
         {
@@ -47,16 +54,20 @@ namespace SimpleLanguage.Core
             if (tmmf != null )
             {
                 isConstruction = tmmf.isConstructInitFunction;
-                isStaticCall = tmmf.isStatic;
+                m_MethodCallStackType = tmmf.isStatic ? EMethodCallStackType.StaticStack : EMethodCallStackType.DynamicStack;
             }
             else
             {
-                isStaticCall = false;
+                m_MethodCallStackType = EMethodCallStackType.DynamicStack;
             }
         }
         public void SetCallerMetaVariable( MetaVariable metaVariable)
         {
             m_CallerMetaVariable = metaVariable;
+        }
+        public void SetMethodCallStackType(EMethodCallStackType tmmf )
+        {
+            m_MethodCallStackType = tmmf;
         }
         public void Parse()
         {
@@ -165,15 +176,18 @@ namespace SimpleLanguage.Core
         public MetaVisitVariable visitVariable { get; private set; } = null;
         public MetaMethodCall methodCall { get; private set; } = null;
         public MetaClass callerMetaClass { get; private set; }= null;
-        public MetaBraceOrBracketStatementsContent metaBraceStatementsContent { get; private set; } = null;
+        public MetaBraceOrBracketStatementsContent metaBraceStatementsContent => m_MetaBraceStatementsContent;
 
-        public static MetaVisitNode CraeteByNewClass(MetaClass mc, MetaBraceOrBracketStatementsContent mb)
+        private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent = null;
+
+        public static MetaVisitNode CraeteByNewClass(MetaClass mc, MetaBraceOrBracketStatementsContent mb, MetaVariable mv = null )
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.callerMetaClass = mc;
-            vn.metaBraceStatementsContent = mb;
+            vn.m_MetaBraceStatementsContent = mb;
             vn.visitType = EVisitType.NewClass;
+            vn.variable = mv;
 
             return vn;
         }
@@ -182,7 +196,7 @@ namespace SimpleLanguage.Core
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.callerMetaClass = mc;
-            vn.metaBraceStatementsContent = mb;
+            vn.m_MetaBraceStatementsContent = mb;
             vn.visitType = EVisitType.NewData;
 
             return vn;
@@ -202,16 +216,6 @@ namespace SimpleLanguage.Core
             MetaVisitNode vn = new MetaVisitNode();
             vn.variable = _variable;
             vn.visitType = EVisitType.Variable;
-
-            return vn;
-        }
-        public static MetaVisitNode CreateByNew(MetaMethodCall _methodCall, MetaBraceOrBracketStatementsContent mb )
-        {
-            MetaVisitNode vn = new MetaVisitNode();
-
-            vn.metaBraceStatementsContent = mb;
-            vn.visitType = EVisitType.NewClass;
-            vn.methodCall = _methodCall;
 
             return vn;
         }
@@ -273,10 +277,6 @@ namespace SimpleLanguage.Core
                     break;
             }
             return new MetaType(CoreMetaClassManager.objectMetaClass);
-        }
-        public void SetMetaBraceStatementsContent(MetaBraceOrBracketStatementsContent mbbsc )
-        {
-            this.metaBraceStatementsContent = mbbsc;
         }
         public MetaClass GetMetaClass()
         {

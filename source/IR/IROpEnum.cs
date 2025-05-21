@@ -44,6 +44,7 @@ namespace SimpleLanguage.IR
         StoreLocal,            
         StoreStaticField,
         StoreNotStaticField,
+        StoreNotStaticField_R1,
         StoreReturn,
         
         //运算指令

@@ -52,6 +52,12 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             m_MetaExpress = men;
         }
+        public MetaBraceAssignStatements(MetaBlockStatements mbs, MetaExpressNode men, MetaMemberVariable mmv )
+        {
+            m_OwnerMetaBlockStatements = mbs;
+            m_MetaExpress = men;
+            this.m_MetaMemberVariable = mmv;
+        }
         public MetaBraceAssignStatements(MetaBlockStatements mbs, MetaType mt, FileMetaOpAssignSyntax fmos)
         {
             m_FileMetaOpAssignSyntax = fmos;
@@ -142,6 +148,10 @@ namespace SimpleLanguage.Core
                 return m_MetaExpress.GetReturnMetaClass();
             }
             return null;
+        }
+        public void SetDefineName( string definaname )
+        {
+            this.m_DefineName = definaname;
         }
         public bool CalcReturnType()
         {
@@ -284,6 +294,14 @@ namespace SimpleLanguage.Core
         private MetaData m_NewMetaData = null;
         private MetaData m_NewTempMetaData = null;
         private EStatementsContentType m_ContentType = EStatementsContentType.None;
+
+        public MetaBraceOrBracketStatementsContent( MetaBlockStatements mbs, MetaClass mc )
+        {
+            m_OwnerMetaBlockStatements = mbs;
+            m_OwnerMetaClass = mc;
+            m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+        }
+
         public MetaBraceOrBracketStatementsContent(FileMetaBraceTerm fileMetaBraceTerm, MetaBlockStatements mbs, MetaClass mc)
         {
             m_FileMetaBraceTerm = fileMetaBraceTerm;

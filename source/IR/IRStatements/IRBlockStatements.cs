@@ -127,7 +127,6 @@ namespace SimpleLanguage.IR
                         }
                         break;
                 }
-                m_IRStatements.AddRange(irStatements);
                 nextmbs = nextmbs.nextMetaStatements;
             }
         }

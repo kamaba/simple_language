@@ -6,12 +6,7 @@
 //  Description:  compute left and right value's method example: +-*/%&|^>><<
 //****************************************************************************
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Text;
-using SimpleLanguage.Core;
 
 namespace SimpleLanguage.VM
 {

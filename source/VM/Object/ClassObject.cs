@@ -75,19 +75,54 @@ namespace SimpleLanguage.VM
             var mmv = m_MemberVariableObjectArray[index];
             switch (mmv)
             {
+                case ByteObject byteob:
+                    {
+                        svalue.SetInt8Value(byteob.value);
+                    }
+                    break;
+                case SByteObject sbyteobj:
+                    {
+                        svalue.SetSInt8Value(sbyteobj.value);
+                    }
+                    break;
                 case Int16Object int16Obj:
                     {
-                        svalue.SetInt16Value( int16Obj.value );
+                        svalue.SetInt16Value(int16Obj.value);
+                    }
+                    break;
+                case UInt16Object uint16Obj:
+                    {
+                        svalue.SetUInt16Value(uint16Obj.value);
                     }
                     break;
                 case Int32Object int32Obj:
                     {
-                        svalue.SetInt32Value( int32Obj.value );
+                        svalue.SetInt32Value(int32Obj.value);
+                    }
+                    break;
+                case UInt32Object uint32Obj:
+                    {
+                        svalue.SetUInt32Value(uint32Obj.value);
                     }
                     break;
                 case Int64Object int64Obj:
                     {
-                        svalue.SetInt64Value( int64Obj.value );
+                        svalue.SetInt64Value(int64Obj.value);
+                    }
+                    break;
+                case UInt64Object uint64Obj:
+                    {
+                        svalue.SetUInt64Value(uint64Obj.value);
+                    }
+                    break;
+                case FloatObject floatobj:
+                    {
+                        svalue.SetFloatValue(floatobj.value);
+                    }
+                    break;
+                case DoubleObject doubleobj:
+                    {
+                        svalue.SetDoubleValue(doubleobj.value);
                     }
                     break;
                 case StringObject stringObj:
@@ -122,6 +157,28 @@ namespace SimpleLanguage.VM
                         classObj.SetNull();
                     }
                     break;
+                case EType.Byte:
+                    {
+                        ByteObject byteObj = m_MemberVariableObjectArray[index] as ByteObject;
+                        if (byteObj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        byteObj.SetValue(svalue.int8Value);
+                    }
+                    break;
+                case EType.SByte:
+                    {
+                        SByteObject sbyteObj = m_MemberVariableObjectArray[index] as SByteObject;
+                        if (sbyteObj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        sbyteObj.SetValue(svalue.sint8Value);
+                    }
+                    break;
                 case EType.Int16:
                     {
                         Int16Object int32Obj = m_MemberVariableObjectArray[index] as Int16Object;
@@ -131,6 +188,17 @@ namespace SimpleLanguage.VM
                             return;
                         }
                         int32Obj.SetValue(svalue.int16Value);
+                    }
+                    break;
+                case EType.UInt16:
+                    {
+                        UInt16Object uint16Obj = m_MemberVariableObjectArray[index] as UInt16Object;
+                        if (uint16Obj == null)
+                        {
+                            Debug.Write("该类型不是Int16类型!!");
+                            return;
+                        }
+                        uint16Obj.SetValue(svalue.uint16Value);
                     }
                     break;
                 case EType.Int32:
@@ -144,6 +212,17 @@ namespace SimpleLanguage.VM
                         int32Obj.SetValue(svalue.int32Value);
                     }
                     break;
+                case EType.UInt32:
+                    {
+                        UInt32Object uint32Obj = m_MemberVariableObjectArray[index] as UInt32Object;
+                        if (uint32Obj == null)
+                        {
+                            Debug.Write("该类型不是UInt32类型!!");
+                            return;
+                        }
+                        uint32Obj.SetValue(svalue.uint32Value);
+                    }
+                    break;
                 case EType.Int64:
                     {
                         Int64Object int64Obj = m_MemberVariableObjectArray[index] as Int64Object;
@@ -153,6 +232,39 @@ namespace SimpleLanguage.VM
                             return;
                         }
                         int64Obj.SetValue(svalue.int64Value);
+                    }
+                    break;
+                case EType.UInt64:
+                    {
+                        UInt64Object uint64Obj = m_MemberVariableObjectArray[index] as UInt64Object;
+                        if (uint64Obj == null)
+                        {
+                            Debug.Write("该类型不是Int64类型!!");
+                            return;
+                        }
+                        uint64Obj.SetValue(svalue.uint64Value);
+                    }
+                    break;
+                case EType.Float:
+                    {
+                        FloatObject floatObj = m_MemberVariableObjectArray[index] as FloatObject;
+                        if (floatObj == null)
+                        {
+                            Debug.Write("该类型不是float类型!!");
+                            return;
+                        }
+                        floatObj.SetValue(svalue.floatValue);
+                    }
+                    break;
+                case EType.Double:
+                    {
+                        DoubleObject doubleObj = m_MemberVariableObjectArray[index] as DoubleObject;
+                        if (doubleObj == null)
+                        {
+                            Debug.Write("该类型不是Double类型!!");
+                            return;
+                        }
+                        doubleObj.SetValue(svalue.doubleValue);
                     }
                     break;
                 case EType.String:

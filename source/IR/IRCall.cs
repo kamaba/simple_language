@@ -32,7 +32,7 @@ namespace SimpleLanguage.IR
             {
                 return;
             }
-            if( !mfc.isStaticCall )
+            if( mfc.methodCallStackType == EMethodCallStackType.DynamicStack)
             {
                 if(mfc.callerMetaVariable!=null )
                 {

@@ -45,7 +45,7 @@ namespace SimpleLanguage.IR
 
                     if (mires.metaAssignManager?.isNeedSetMetaVariable == true)
                     {
-                        IRStoreVariable storeLocal = new IRStoreVariable(_irMethod, mires.boolConditionVariable.GetHashCode());
+                        IRStoreVariable storeLocal = new IRStoreVariable(_irMethod, mires.boolConditionVariable.GetHashCode(), IRMetaVariableFrom.LocalStatement);
                         storeLocal.data.SetDebugInfoByToken(mires.boolConditionVariable.pingToken);
                         conditionStatList.Add(storeLocal);
 

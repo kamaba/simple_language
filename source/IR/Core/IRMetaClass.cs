@@ -26,6 +26,17 @@ namespace SimpleLanguage.IR
     {
         static short s_TypeLength = 1000;
         public short id { get; set; } = 0;
+
+        public bool IsCoreMetaClass()
+        {
+            if( this.allName == "Int32"
+                || this.allName == "String"
+                || this.allName == "Float")
+            {
+                return true;
+            }
+            return false;
+        }
         public IRMetaClass( IRManager manager )
         {
             irManager = manager;
