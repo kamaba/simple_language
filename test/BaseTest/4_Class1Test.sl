@@ -1,17 +1,17 @@
-import Application.Core;
+import Std;
 
-#namespace Application.MFC;
+namespace Std.Math
 
-partial N1.N2.N3.Class3
+partial N1.N2.N3.ClassN1_2_3_1
 {
     X1 = 100;
 }
 
-Class1
+ClassG1
 {
 
 }
-Application.Class1
+Std.Class_std1
 {
 
 }
@@ -20,9 +20,9 @@ namespace N1
 {
     namespace N2.N3
     {
-        Class1
+        Class1_2_3_1
         {
-            Class1_1
+            Class1_2_3_11_1
             {
 
             }
@@ -31,14 +31,14 @@ namespace N1
         {
             namespace N5
             {
-                Class3 extends N2.N3.Class1.Class1_1
+                ClassN1_2_3_4_3 extends N2.N3.Class1_2_3_1.Class1_2_3_11_1
                 {
 
                 }
             }
         }
     }
-    Class2
+    ClassN1_1
     {
 
     }

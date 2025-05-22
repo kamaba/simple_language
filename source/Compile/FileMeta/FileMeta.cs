@@ -7,8 +7,10 @@
 //****************************************************************************
 using SimpleLanguage.Core;
 using SimpleLanguage.CSharp;
+using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
@@ -182,7 +184,20 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         {
             for (int i = 0; i < m_FileDefineNamespaceList.Count; i++)
             {
-                NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(m_FileDefineNamespaceList[i]);
+                var fmn = m_FileDefineNamespaceList[i];
+                NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(fmn);
+            }
+            for (int i = 0; i < m_FileSearchNamespaceList.Count; i++)
+            {
+                var fmn = m_FileSearchNamespaceList[i];
+                if (ProjectManager.useDefineNamespaceType != EUseDefineType.NoUseProjectConfigNamespace)
+                {
+                    if (!ProjectManager.data.IsIncludeDefineStruct(fmn.namespaceStatementBlock.namespaceList))
+                    {
+                        Debug.Write("Error 暂不允许使用namespace 定义命名空间!!!" + fmn.ToFormatString() + " 位置: " + fmn.token.ToLexemeAllString());
+                    }
+                }
+                NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(fmn);
             }
         }
         public void CombineFileMeta()
@@ -190,11 +205,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             for (int i = 0; i < m_FileImportSyntax.Count; i++)
             {
                 m_FileImportSyntax[i].Parse();
-            }
-            for( int i = 0; i < m_FileSearchNamespaceList.Count; i++ )
-            {
-                var t1 = m_FileSearchNamespaceList[i];
-                NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(t1);                
             }
             for (int i = 0; i < m_FileMetaAllClassList.Count; i++)
             {

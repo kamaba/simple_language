@@ -85,6 +85,13 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             m_NamespaceNode = namespaceNode;
             m_NamespaceNameNode = namespaceNameNode;
 
+
+            if (namespaceNode == null)
+            {
+                Debug.Write("Error 在解析namespace 中，没有找到namespace设置的名称!!");
+                return;
+            }
+
             Node blockNode = namespaceNode.blockNode;
 
             m_Token = m_NamespaceNode.token;

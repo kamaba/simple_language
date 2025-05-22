@@ -259,7 +259,7 @@ namespace SimpleLanguage.Core
                         topLevelNamespace = topLevelNamespace.GetChildrenMetaBaseByName(nlist[i]);
                         if (topLevelNamespace == null)
                         {
-                            Debug.Write("Error 没有找到相当的命名空间!!!");
+                            Debug.WriteLine("Error 没有找到相当的命名空间!!!");
                             return null;
                         }
                     }
@@ -268,7 +268,7 @@ namespace SimpleLanguage.Core
                 tmetaModule = topLevelNamespace as MetaModule;
                 if (tmetaNamespace == null && tmetaModule == null )
                 {
-                    Debug.Write("命名空间中，已定义其它非命名空间的类型 !!");
+                    Debug.WriteLine("命名空间中，已定义其它非命名空间的类型 !!");
                     return null;
                 }
                 var mbb = topLevelNamespace.GetChildrenMetaBaseByName(fmc.name);
@@ -990,7 +990,12 @@ namespace SimpleLanguage.Core
                     continue;
                 }
                 c.SetAnchorDeep(c.deep);
-                sb.Append(v.Value.GetFormatString( true ));
+
+                if( c.classDefineType == EClassDefineType.CodeDefine )
+                {
+                    sb.Append(v.Value.GetFormatString(true));
+                }
+
             }
             return sb.ToString();
         }

@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "3_NumberTest.sl";
+            path = "4_Class1Test.sl";
             group = "temp";
             tag = "all";
             a = 200
@@ -74,7 +74,7 @@ Project
        #ObjectTest.Fun();    
        #EnumTest.fun()   
        #CommitTest.fun();
-       NumberTest.fun()
+       #NumberTest.fun()
     }
     static Test()
     {

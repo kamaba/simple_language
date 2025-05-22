@@ -821,7 +821,7 @@ namespace SimpleLanguage.Core
             if(isShowNamespace)
             {
                 stringBuilder.Append("class ");
-                if ( topLevelMetaNamespace != null )
+                if (topLevelMetaNamespace != null)
                 {
                     stringBuilder.Append(topLevelMetaNamespace.allName + ".");
                 }
