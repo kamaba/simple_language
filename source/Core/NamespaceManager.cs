@@ -5,6 +5,7 @@ using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -25,41 +26,29 @@ namespace SimpleLanguage.Core
         }
         public Dictionary<string, MetaNamespace> metaNamespaceDict = new Dictionary<string, MetaNamespace>();
        
-        public MetaNamespace GetNamespaceByString( string nsString )
-        {
-            if( string.IsNullOrEmpty( nsString ) )
-            {
-                return null;
-            }
-            if (metaNamespaceDict.ContainsKey(nsString))
-            {
-                return metaNamespaceDict[nsString];
-            }
-            return null;
-        }
         public void CreateMetaNamespaceByFineDefineNamespace( FileMetaNamespace fns, MetaBase parentNode = null )
         {
+            CreateMetaNamespaceHandle(fns, parentNode);
+        }
+        void CreateMetaNamespaceHandle(FileMetaNamespace fns, MetaBase parentNode = null)
+        {
             MetaBase mb = parentNode;
-            if( parentNode == null )
+            if (parentNode == null)
             {
                 parentNode = ModuleManager.instance.selfModule;
             }
             fns.metaNamespaceList.Clear();
-            for (int i = 0; i < fns.namespaceStatementBlock.tokenList.Count; i++ )
+            for (int i = 0; i < fns.namespaceStatementBlock.tokenList.Count; i++)
             {
                 string name = fns.namespaceStatementBlock.tokenList[i].lexeme.ToString();
                 mb = parentNode.GetChildrenMetaBaseByName(name);
                 if (mb == null)
                 {
-                    if (ProjectManager.useDefineNamespaceType == EUseDefineType.NoUseProjectConfigNamespace )
+                    mb = new MetaNamespace(name);
+                    if (ProjectManager.useDefineNamespaceType != EUseDefineType.NoUseProjectConfigNamespace)
                     {
-                        mb = new MetaNamespace(name);
-                    }
-                    else
-                    {
-                        Debug.Write("Error 在使用namespace 时，在项目定义中，没有找到相关的定义!!  位置:" + fns.namespaceStatementBlock.tokenList[i].ToLexemeAllString());
-                        mb = new MetaNamespace(name);
                         (mb as MetaNamespace).isNotAllowCreateName = true;
+                        Debug.Write("Error 在使用namespace 时，在项目定义中，没有找到相关的定义!!  位置:" + fns.namespaceStatementBlock.tokenList[i].ToLexemeAllString());
                     }
                     parentNode.AddMetaBase(name, mb);
                     metaNamespaceDict.Add((mb as MetaNamespace).namespaceName, mb as MetaNamespace);

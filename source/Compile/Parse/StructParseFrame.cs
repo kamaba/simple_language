@@ -102,13 +102,12 @@ namespace SimpleLanguage.Compile.Parse
         {
             if (currentNodeInfo.parseType == EParseNodeType.File)
             {
-                currentNodeInfo.codeFile.AddFileSearchNamespace(fmn);
+                currentNodeInfo.codeFile.AddFileMetaAllNamespace(fmn);
             }
             else if (currentNodeInfo.parseType == EParseNodeType.Namespace)
             {
                 currentNodeInfo.codeNamespace.AddFileNamespace(fmn);
             }
-            m_FileMeta.AddFileMetaAllNamespace(fmn);
 
             ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fmn);
             m_CurrentNodeInfoStack.Push(pcni);
@@ -250,7 +249,8 @@ namespace SimpleLanguage.Compile.Parse
                         case ETokenType.Private:
                         case ETokenType.Internal:
                         case ETokenType.Projected:
-                            {
+                        case ETokenType.Partial:
+                        {
                                 ParseNamespaceOrTopClass(pnode);
                             }
                             break;
@@ -902,7 +902,6 @@ namespace SimpleLanguage.Compile.Parse
         {
             Node currentNode = pnode.GetParseNode();
 
-            List<Node> conNode = new List<Node>();
             bool isBlock = false;
             Node namespaceNode = null;
             while (pnode.parseIndex < pnode.childList.Count)
@@ -926,7 +925,6 @@ namespace SimpleLanguage.Compile.Parse
                         Debug.Write("Error 在解析namespace 中，后边跟着参数多于正常语法!!");
                     }
                     namespaceNode = nextNode;
-                    conNode.Add(namespaceNode);
 
                     if( pnode.parseIndex + 1 < pnode.childList.Count )
                     {
@@ -968,55 +966,20 @@ namespace SimpleLanguage.Compile.Parse
                 {
                     break;
                 }
-                else
-                {
-                    conNode.Add(nextNode);
-                }
             }
+            FileMetaNamespace fmn = new FileMetaNamespace(currentNode, namespaceNode);
 
             if (isBlock)        //是否使用 namespace N{}的格式 如果不是{}格式，认为是搜索模式
             {
-                if(namespaceNode == null )
-                {
-                    Debug.Write("Error 在解析namespace 中，没有找到namespace设置的名称!!");
-                }
-                FileMetaNamespace fmn = new FileMetaNamespace(currentNode, namespaceNode);
-
+                m_FileMeta.AddFileDefineNamespace(fmn);
                 AddParseNamespaceNodeInfo(fmn);
-
                 ParseNamespaceOrTopClass(currentNode.blockNode);
-
                 m_CurrentNodeInfoStack.Pop();
             }
             else   
             {
-                conNode.Insert(0, currentNode);
-                if (ProjectManager.useDefineNamespaceType == EUseDefineType.NoUseProjectConfigNamespace )
-                {
-                    FileMetaNamespace ist = new FileMetaNamespace(conNode[0], conNode[1]);
-                    m_FileMeta.AddFileDefineNamespace(ist);
-                }
-                else
-                {
-                    if( conNode.Count == 2 )
-                    {
-                        FileMetaNamespace fmn = new FileMetaNamespace(conNode[0], conNode[1]);
-                        if (!ProjectManager.data.IsIncludeDefineStruct(fmn.namespaceStatementBlock.namespaceList))
-                        {
-                            Debug.Write("Error 暂不允许使用namespace 定义命名空间!!!" + fmn.ToFormatString() + " 位置: " + currentNode.token.ToLexemeAllString());
-                        }
-                        else
-                        {
-                            m_FileMeta.AddFileSearchNamespace(fmn);
-                        }
-                    }
-                    else
-                    {
-                        Debug.Write("Error 在查找namespace过程中，位数是不正确的!");
-                    }
-                }
+                m_FileMeta.AddFileSearchNamespace(fmn);
             }
-
         }
         /*
         public void ParseParContrent(Node pnode)
@@ -1199,6 +1162,24 @@ namespace SimpleLanguage.Compile.Parse
                             curNode.blockNode = nextNode;
                             continue;
                         }
+                        else if( nextNode?.nodeType == ENodeType.LineEnd )
+                        {
+                            if (index + 1 < pnode.childList.Count)
+                            {
+                                var nextNode2 = pnode.childList[index+1];
+                                if( nextNode2?.nodeType == ENodeType.Brace )
+                                {
+                                    curNode.blockNode = nextNode2;
+                                    isCanAdd = true;
+                                    pnode.parseIndex += 2;
+                                    break;
+                                }
+                                else
+                                {
+                                    continue;
+                                }
+                            }
+                        }
                         else if (nextNode?.nodeType == ENodeType.SemiColon)
                         {
                             continue;
@@ -1250,9 +1231,18 @@ namespace SimpleLanguage.Compile.Parse
                     if (nodeList.Count == 2)
                     {
                         FileMetaNamespace fmn = new FileMetaNamespace(nodeList[0], nodeList[1]);
-                        AddParseNamespaceNodeInfo(fmn);
-                        ParseNamespaceOrTopClass(pnode);
+                        AddParseNamespaceNodeInfo(fmn);                        
+                        if (nodeList[1].blockNode != null )
+                        {
+                            m_FileMeta.AddFileDefineNamespace(fmn);
+                            ParseNamespaceOrTopClass(nodeList[1].blockNode);
+                        }
+                        else
+                        {
+                            m_FileMeta.AddFileSearchNamespace(fmn);
+                        }
                         m_CurrentNodeInfoStack.Pop();
+                        ParseNamespaceOrTopClass(pnode);
                     }
                     else
                     {

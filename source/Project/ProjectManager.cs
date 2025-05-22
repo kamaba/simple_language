@@ -32,7 +32,7 @@ namespace SimpleLanguage.Parse
     {
         public static string projectPath { get; set; } = "";
         public static ProjectData data => m_Data;
-        public static EUseDefineType useDefineNamespaceType { get; set; } = EUseDefineType.LimitUseProjectConfigNamespace;
+        public static EUseDefineType useDefineNamespaceType { get; set; } = EUseDefineType.NoUseProjectConfigNamespace;
         public static bool isUseNamespaceSearch { get; set; } = true;
         public static bool isUseForceSemiColonInLineEnd { get; set; } = false;
         // 第一位是否只能使用this. base.的方式
