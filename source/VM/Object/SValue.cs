@@ -385,13 +385,12 @@ namespace SimpleLanguage.VM
                         sint8Value = (SByte)obj;
                     }
                     break;
-                //case Char ch:
-                //    {
-                //        eType = EType.Char;
-                //        charValue = (char)obj;
-
-                //    }
-                //    break;
+                case Char ch:
+                    {
+                        eType = EType.String;
+                        stringValue = (string)obj;
+                    }
+                   break;
                 case Int16 int16:
                     {
                         eType = EType.Int16;

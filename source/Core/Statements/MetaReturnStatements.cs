@@ -8,6 +8,7 @@
 
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
+using SimpleLanguage.IR;
 using System.Text;
 
 namespace SimpleLanguage.Core.Statements
@@ -23,21 +24,24 @@ namespace SimpleLanguage.Core.Statements
         {
             m_FileMetaReturnSyntax = fmrs;
 
-            MetaType mdt = new MetaType( CoreMetaClassManager.objectMetaClass );
+            MetaType mdt = mbs.ownerMetaFunction.metaDefineType;
 
 
             CreateExpressParam cep2 = new CreateExpressParam()
             {
+                ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass,
                 ownerMBS = m_OwnerMetaBlockStatements,
                 metaType = mdt,
                 fme = m_FileMetaReturnSyntax.returnExpress,
                 isStatic = false,
                 isConst = false,
-                parsefrom = EParseFrom.StatementRightExpress
+                parsefrom = EParseFrom.StatementRightExpress,
+                equalMetaVariable = mbs.ownerMetaFunction.returnMetaVariable
             };
             m_Express = ExpressManager.CreateExpressNode(cep2);
             if (m_Express != null)
             {
+                m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
                 m_Express.CalcReturnType();
                 m_ReturnMetaDefineType = m_Express.GetReturnMetaDefineType();
             }
@@ -69,7 +73,7 @@ namespace SimpleLanguage.Core.Statements
     }
 
 
-    public partial class MetaTRStatements : MetaStatements
+    public sealed class MetaTRStatements : MetaStatements
     {
         public MetaClass returnMetaClass;
         public MetaExpressNode m_Express = null;

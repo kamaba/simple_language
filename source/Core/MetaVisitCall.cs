@@ -329,21 +329,10 @@ namespace SimpleLanguage.Core
         }
         public void CalcReturnType()
         {
-            //m_MetaInputParamCollection?.CaleReturnType();
-            //if (m_CallNodeType == ECallNodeType.VariableName)
-            //{
-            //    MetaVariable mv = m_CurrentMetaBase as MetaVariable;
-            //    //if (mv != null && (!mv.isTemplateClass && mv.metaDefineType.metaClass == null))
-            //    //{
-            //    //    //Debug.Write("Error 未解析到:" + mv.allName + "位置在:" + mv.ToFormatString());
-            //    //    return;
-            //    //}
-            //}
-            //else if (m_CallNodeType == ECallNodeType.DataName )
-            //{
-            //    MetaData md = m_CurrentMetaBase as MetaData;
-            //    return;
-            //}
+            if (visitType == EVisitType.VisitVariable )
+            {
+                GetMetaDefineType();
+            }
         }
         public string ToFormatString()
         {
