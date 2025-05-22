@@ -26,7 +26,6 @@ namespace SimpleLanguage
         Bit,
         Byte,
         SByte,
-        //Char,
         Int16,
         UInt16,
         Int32,

@@ -87,9 +87,6 @@ namespace SimpleLanguage.IR
         And,                    //&&
         Or,                     //||
 
-        Convert,                //
-        Convert_Int8ToInt32,    
-
         Label,   
         Beq,                    // if x1 == x2 then execute(code) equal move instruct index
         Beq_Un,                 // same top but value is unsign!
@@ -115,6 +112,17 @@ namespace SimpleLanguage.IR
         CallCSharpStatements,
         Calli,
         CastClass,
+
+        Convert_I8,
+        Convert_SI8,
+        Convert_I16,
+        Convert_UI16,
+        Convert_I32,
+        Convert_UI32,
+        Convert_I64,
+        Convert_UI64,
+        Convert_R4,
+        Convert_R8,
 
         Ret,          
     }

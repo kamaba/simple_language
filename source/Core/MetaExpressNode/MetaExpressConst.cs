@@ -5,6 +5,7 @@
 //  DateTime: 2025/5/18 12:00:00
 //  Description: 
 //****************************************************************************
+using System;
 using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Compile.CoreFileMeta;
@@ -121,6 +122,70 @@ namespace SimpleLanguage.Core
         {
             if (m_MetaDefineType != null)
             {
+                if (m_MetaDefineType.metaClass == CoreMetaClassManager.booleanMetaClass)
+                {
+                    eType = EType.Boolean;
+                    value = Convert.ToBoolean(value);
+                }
+                else if (m_MetaDefineType.metaClass == CoreMetaClassManager.byteMetaClass)
+                {
+                    eType = EType.Byte;
+                    value = Convert.ToByte(value);
+                }
+                else if (m_MetaDefineType.metaClass == CoreMetaClassManager.sbyteMetaClass)
+                {
+                    eType = EType.SByte;
+                    value = Convert.ToSByte(value);
+                }
+                else if (m_MetaDefineType.metaClass == CoreMetaClassManager.int16MetaClass)
+                {
+                    eType = EType.Int16;
+                    value = Convert.ToInt16(value);
+                }
+                else if (m_MetaDefineType.metaClass == CoreMetaClassManager.uint16MetaClass)
+                {
+                    eType = EType.UInt16;
+                    value = Convert.ToUInt16(value);
+                }
+                else if (m_MetaDefineType.metaClass == CoreMetaClassManager.int32MetaClass)
+                {
+                    eType = EType.Int32;
+                    value = Convert.ToInt32(value);
+                }
+                else if (m_MetaDefineType.metaClass == CoreMetaClassManager.uint32MetaClass)
+                {
+                    eType = EType.UInt32;
+                    value = Convert.ToUInt32(value);
+                }
+                else if (m_MetaDefineType.metaClass == CoreMetaClassManager.int64MetaClass)
+                {
+                    eType = EType.Int64;
+                    value = Convert.ToInt64(value);
+                }
+                else if (m_MetaDefineType.metaClass == CoreMetaClassManager.uint64MetaClass)
+                {
+                    eType = EType.UInt64;
+                    value = Convert.ToUInt64(value);
+                }
+                else if (m_MetaDefineType.metaClass == CoreMetaClassManager.floatMetaClass)
+                {
+                    eType = EType.Float;
+                    value = Convert.ToSingle(value);
+                }
+                else if (m_MetaDefineType.metaClass == CoreMetaClassManager.doubleMetaClass)
+                {
+                    eType = EType.Double;
+                    value = Convert.ToDouble(value);
+                }
+                else if (m_MetaDefineType.metaClass == CoreMetaClassManager.stringMetaClass)
+                {
+                    eType = EType.String;
+                    value = value.ToString();
+                }
+                else
+                {
+                    eType = EType.Class;
+                }
                 return;
             }
             //MetaType mdt = null;

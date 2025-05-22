@@ -1,19 +1,13 @@
-﻿using SimpleLanguage.IR;
+﻿
 using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Parse;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.ConstrainedExecution;
 using System.Text;
 using SimpleLanguage.Compile.CoreFileMeta;
-using System.Security.Cryptography;
-using SimpleLanguage.Core;
 
 namespace SimpleLanguage.Core
 {
-    public partial class MetaType : MetaBase
+    public sealed class MetaType : MetaBase
     {
         public override string name
         {

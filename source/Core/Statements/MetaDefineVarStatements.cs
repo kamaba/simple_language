@@ -111,6 +111,7 @@ namespace SimpleLanguage.Core.Statements
                 cep.equalMetaVariable = m_DefineVarMetaVariable;
                 cep.metaType = mdt;
                 cep.ownerMBS = m_OwnerMetaBlockStatements;
+                cep.ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass;
 
                 m_ExpressNode = ExpressManager.CreateExpressNodeByCEP(cep);
                 if (m_ExpressNode == null)

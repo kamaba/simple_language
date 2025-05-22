@@ -272,6 +272,44 @@ namespace SimpleLanguage.VM
                             sint8Value = (sbyte)(sint8Value >> svalSbyte);
                     }
                     break;
+                case EType.Float:
+                    {
+                        float svalFloat = (float)svalue.GetValueObject();
+                        if (sign == 0)
+                            floatValue += svalFloat;
+                        else if (sign == 1)
+                            floatValue -= svalFloat;
+                        else if (sign == 2)
+                            floatValue *= svalFloat;
+                        else if (sign == 3)
+                            floatValue /= svalFloat;
+                        else if (sign == 4)
+                            floatValue %= svalFloat;
+                        else
+                        {
+                            Debug.Write("Error 不支持Float 的这种类型的操作");
+                        }
+                    }
+                    break;
+                case EType.Double:
+                    {
+                        double svalDouble = (double)svalue.GetValueObject();
+                        if (sign == 0)
+                            doubleValue += svalDouble;
+                        else if (sign == 1)
+                            doubleValue -= svalDouble;
+                        else if (sign == 2)
+                            doubleValue *= svalDouble;
+                        else if (sign == 3)
+                            doubleValue /= svalDouble;
+                        else if (sign == 4)
+                            doubleValue %= svalDouble;
+                        else
+                        {
+                            Debug.Write("Error 不支持Double 的这种类型的操作");
+                        }
+                    }
+                    break;
                 default:
                     {
                         Debug.Write("Error -------------");
@@ -283,7 +321,7 @@ namespace SimpleLanguage.VM
         {
             if (sval.eType == EType.String)
             {
-                stringValue = GetValueObject().ToString() + sval.GetValueObject().ToString();
+                stringValue = this.GetValueObject().ToString() + sval.GetValueObject().ToString();
             }
             else if (this.eType == EType.String)
             {
