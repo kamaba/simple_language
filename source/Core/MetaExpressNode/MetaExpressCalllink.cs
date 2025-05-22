@@ -45,6 +45,8 @@ namespace SimpleLanguage.Core
             {
                 m_MetaCallLink.CalcReturnType();
             }
+
+            m_MetaDefineType = GetReturnMetaDefineType();
         }
         public MetaVariable GetMetaVariable()
         {

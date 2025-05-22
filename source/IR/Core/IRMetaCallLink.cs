@@ -6,11 +6,7 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Core;
 using SimpleLanguage.IR;
-using SimpleLanguage.VM;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;

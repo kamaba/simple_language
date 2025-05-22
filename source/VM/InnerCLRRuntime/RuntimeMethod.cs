@@ -62,7 +62,7 @@ namespace SimpleLanguage.VM.Runtime
                 for (int i = 0; i < m_IRMethod.methodReturnVariableList.Count; i++)
                 {
                     SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodReturnVariableList[i].irMetaClass);
-                    sobj.SetVoid();
+                    //sobj.SetVoid();
                     m_ReturnObjectArray[i] = sobj;
                 }
                 m_ArgumentObjectArray = new SObject[m_IRMethod.methodArgumentList.Count];

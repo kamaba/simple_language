@@ -32,9 +32,12 @@ namespace SimpleLanguage.IR
                 m_IRStatements.Add(m_IRExpress);
             }
 
-            IRMetaCallLink irmc = new IRMetaCallLink();            
-            irmc.ParseToIRDataList(irMethod, ms.leftMetaExpress.metaCallLink.callNodeList);
-            m_IRStatements.AddRange(irmc.irList);
+            //IRMetaCallLink irmc = new IRMetaCallLink();            
+            //irmc.ParseToIRDataList(irMethod, ms.leftMetaExpress.metaCallLink.callNodeList);
+            //m_IRStatements.AddRange(irmc.irList);
+
+            IRStoreVariable irsv = new IRStoreVariable(irMethod, ms.leftMetaExpress.GetMetaVariable().GetHashCode(), IRMetaVariableFrom.LocalStatement);
+            m_IRStatements.Add(irsv);
         }
     }
 }
