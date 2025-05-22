@@ -309,6 +309,56 @@ namespace SimpleLanguage.VM.Runtime
                         m_ValueStack[m_ValueIndex++].SetStringValue( (String)iri.opValue );
                     }
                     break;
+                case EIROpCode.Convert_I8:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.Byte);
+                    }
+                    break;
+                case EIROpCode.Convert_SI8:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.SByte);
+                    }
+                    break;
+                case EIROpCode.Convert_I16:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.Int16);
+                    }
+                    break;
+                case EIROpCode.Convert_UI16:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.UInt16);
+                    }
+                    break;
+                case EIROpCode.Convert_I32:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.Int32);
+                    }
+                    break;
+                case EIROpCode.Convert_UI32:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.UInt32);
+                    }
+                    break;
+                case EIROpCode.Convert_I64:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.Int64);
+                    }
+                    break;
+                case EIROpCode.Convert_UI64:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.UInt64);
+                    }
+                    break;
+                case EIROpCode.Convert_R4:
+                    {
+                        m_ValueStack[m_ValueIndex-1].ConvertByEType(EType.Float);
+                    }
+                    break;
+                case EIROpCode.Convert_R8:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.Double);
+                    }
+                    break;
                 case EIROpCode.LoadArgument:
                     {
                         var vval = GetArgumentValue(iri.index);

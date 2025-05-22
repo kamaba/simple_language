@@ -57,6 +57,10 @@ namespace SimpleLanguage.Core
             }
             return m_MetaDefineType?.metaClass;
         }
+        public virtual void SetMetaType( MetaType mt )
+        {
+            m_MetaDefineType = mt;
+        }
         public virtual MetaType GetReturnMetaDefineType()
         {
             return m_MetaDefineType;

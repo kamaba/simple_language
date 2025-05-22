@@ -206,15 +206,24 @@ namespace SimpleLanguage.Core
         }
     }
 
+    public class ConvertType
+    {
+        public EType oriType;
+        public EType targetType;
+    }
     public sealed class MetaOpExpressNode : MetaExpressNode
     {
         public bool isEqualType { get; set; } = false;
         public MetaExpressNode left => m_Left;
         public MetaExpressNode right => m_Right;
         public ELeftRightOpSign opSign => m_OpLevelSign;
+        public ConvertType leftConvert => m_LeftConvert;
+        public ConvertType rightConvert => m_RightConvert;
 
         private MetaExpressNode m_Left = null;
         private MetaExpressNode m_Right = null;
+        private ConvertType m_LeftConvert = null;
+        private ConvertType m_RightConvert = null;
         private ELeftRightOpSign m_OpLevelSign;
         private Token m_SignToken = null;
 
@@ -384,10 +393,32 @@ namespace SimpleLanguage.Core
             if (m_Left.opLevel < m_Right.opLevel)
             {
                 m_MetaDefineType = m_Right.metaDefineType;
+                //m_Left.metaDefineType.SetMetaClass(m_MetaDefineType.metaClass);
+                //m_Left.CalcReturnType();
+
+                if( m_Right.opLevel < 10 )
+                {
+                    m_LeftConvert = new ConvertType()
+                    {
+                        oriType = m_Left.metaDefineType.metaClass.eType,
+                        targetType = m_MetaDefineType.metaClass.eType
+                    };
+                }
             }
             else if (m_Left.opLevel > m_Right.opLevel)
             {
                 m_MetaDefineType = m_Left.metaDefineType;
+                //MetaType newmt = new MetaType(m_MetaDefineType.metaClass);
+                //m_Right.SetMetaType(newmt);
+                //m_Right.CalcReturnType();
+                if( m_Left.opLevel < 10 )
+                {
+                    m_RightConvert = new ConvertType()
+                    {
+                        oriType = m_Right.metaDefineType.metaClass.eType,
+                        targetType = m_MetaDefineType.metaClass.eType
+                    };
+                }
             }
             else
             {

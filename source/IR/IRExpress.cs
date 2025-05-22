@@ -54,7 +54,17 @@ namespace SimpleLanguage.IR
                         MetaExpressNode leftNode = moen.left;
                         MetaExpressNode rightNode = moen.right;
                         CreateIRDataOne(leftNode);
+                        if( moen.leftConvert != null )
+                        {
+                            IRConvert ircovn = new IRConvert(m_IRMethod, moen.leftConvert.oriType, moen.leftConvert.targetType);
+                            AddIRData(ircovn.data);
+                        }
                         CreateIRDataOne(rightNode);
+                        if (moen.rightConvert != null)
+                        {
+                            IRConvert ircovn = new IRConvert(m_IRMethod, moen.rightConvert.oriType, moen.rightConvert.targetType);
+                            AddIRData(ircovn.data);
+                        }
                         var signData = CreateLeftAndRightIRData(moen.opSign);
                         //signData.SetDebugInfoByToken( moen.GetToken() );
                         AddIRData(signData);

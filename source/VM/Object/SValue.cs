@@ -7,6 +7,7 @@
 //****************************************************************************
 
 using System;
+using System.Diagnostics;
 namespace SimpleLanguage.VM
 {
     public partial struct SValue
@@ -94,6 +95,85 @@ namespace SimpleLanguage.VM
         {
             eType = EType.String;
             stringValue = val;
+        }
+        public void ConvertByEType(EType neType )
+        {
+            object cur = GetValueObject();
+            
+            switch (neType)
+            {
+                case EType.Byte:
+                    {
+                        eType = EType.Byte;
+                        int8Value = Convert.ToByte(cur);
+                    }
+                    break;
+                case EType.SByte:
+                    {
+                        eType = EType.SByte;
+                        sint8Value = Convert.ToSByte(cur);
+                    }
+                    break;
+                case EType.Int16:
+                    {
+                        eType = EType.Int16;
+                        int16Value = Convert.ToInt16(cur);
+                    }
+                    break;
+                case EType.UInt16:
+                    {
+                        eType = EType.Double;
+                        doubleValue = Convert.ToUInt16(cur);
+                    }
+                    break;
+                case EType.Int32:
+                    {
+                        eType = EType.Int32;
+                        int32Value = Convert.ToInt32(cur);
+                    }
+                    break;
+                case EType.UInt32:
+                    {
+                        eType = EType.UInt32;
+                        uint32Value = Convert.ToUInt32(cur);
+                    }
+                    break;
+                case EType.Int64:
+                    {
+                        eType = EType.Int64;
+                        int64Value = Convert.ToInt64(cur);
+                    }
+                    break;
+                case EType.UInt64:
+                    {
+                        eType = EType.UInt64;
+                        uint64Value = Convert.ToUInt64(cur);
+                    }
+                    break;
+                case EType.Float:
+                    {
+                        eType = EType.Float;
+                        floatValue = Convert.ToSingle(cur);
+                    }
+                    break;
+                case EType.Double:
+                    {
+                        eType = EType.Double;
+                        doubleValue = Convert.ToDouble(cur);
+                    }
+                    break;
+                case EType.String:
+                    {
+                        eType = EType.String;
+                        stringValue = cur.ToString();
+                    }
+                    break;
+                default:
+                    {
+                        Debug.Write("Error 异常类型在ConvertByEType中");
+                    }
+                    break;
+            }
         }
         public Object GetValueObject()
         {

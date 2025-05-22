@@ -329,10 +329,7 @@ namespace SimpleLanguage.Core
         }
         public void CalcReturnType()
         {
-            if (visitType == EVisitType.VisitVariable )
-            {
-                GetMetaDefineType();
-            }
+            GetMetaDefineType();
         }
         public string ToFormatString()
         {
