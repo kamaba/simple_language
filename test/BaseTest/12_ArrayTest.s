@@ -165,6 +165,10 @@ ArrayTest
         {
             i = a.index + 1
         }
+        for a in [1..5] 
+        {
+            i = a.index + 1
+        }
         for i = 0, i < arr1.count()
         {
             i++

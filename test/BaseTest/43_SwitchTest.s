@@ -17,9 +17,9 @@ SwitchTest
     {
         #!  等丰富类型后，加入类型匹配
         t = Class2();
-        switch t.Type()
+        switch t.type
         {
-            case int{ idok = 20; }
+            case int a{ idok = 20; }
             case float{}
             default{}
         }

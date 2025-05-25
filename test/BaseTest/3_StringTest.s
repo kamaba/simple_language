@@ -1,10 +1,12 @@
+import CSharp.System;
+
 StringTest
 {
     Class1{
         a1 = 20;
         static string Printf( string x )
         {
-            CSharp.System.Console.Write("---------------------: " + x );
+            Console.Write("---------------------: " + this.a1 + x );
             ret "m";
         }
     }

@@ -23,7 +23,7 @@ partial C2
     x = 1;
     static int x2 = 10;
 
-    C2( int a, float b )
+    _init_( int a, float b )
     {
         this.x = 10;
         this.x1 = C2.x2;
