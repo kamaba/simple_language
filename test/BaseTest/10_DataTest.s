@@ -10,7 +10,7 @@ const static data RenBook
         rent_time = "2011-12-20";
         rent_day = 7;
    }
-   r2 = {
+   data R2 = {
         renp1 = "liu",
         time = "2011-12-12"
    }
@@ -118,8 +118,17 @@ DataTest
         #RenBook rrv1 = renBookClass.toData<RenBook>();  #数据也可以使用ToData<T>()方法转回，如果有不对应问题，则报错，如果发现数据不全多覆盖少覆盖问题，则提示!
 
         RenBook.name = "啥啥";   #如果data前不带const标识，则可以修改里边的成员
+        
+        # 如果RenBook3.name发生了变化 ，则回调中，有调用
+        Event.AddDirty( RenBook3.name, (){
+
+        });
+        Event.ClearDirty( RenBook3.name )
 
         RenBook3.name = "是否";
+        if( RenBook3.name.dirty )
+        {
+        }
 
         # 如果data数据向函数传参，则会自动变为匿名类，然后传值,所以每个data也会生成一个匿名类
 

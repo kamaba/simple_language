@@ -15,7 +15,7 @@ MF
 {
     static fun()
     {
-        C c
+        C c = C(){}
         c.a = 100
     }
 }
