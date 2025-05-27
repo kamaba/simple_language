@@ -1129,7 +1129,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Console.Write("Error 没有发该RetMC的类别MetaCommon");
+                    Debug.Write("Error 没有发该RetMC的类别MetaCommon");
                 }
 
             }

@@ -32,7 +32,7 @@ namespace N1
 
             re1 = c2.c1.a2
 
-            Console.Write("ret=" +　re1 );
+            Debug.Write("ret=" +　re1 );
         }
     }
 }

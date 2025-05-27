@@ -51,7 +51,7 @@ NumberTest
         #o2 = 0o23;      #报错
         #bin1 = 0b1100_1111;
 
-        Console.Write( "printlfn===: " + d1 )
+        Debug.Write( "printlfn===: " + d1 )
 
         #!
         !#

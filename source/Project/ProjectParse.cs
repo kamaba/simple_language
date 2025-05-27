@@ -41,7 +41,7 @@ namespace SimpleLanguage.Project
                 var findPath = mmd.GetString("path", true);
                 if (findPath == null)
                 {
-                    Console.Write("在ProjectConfig 中的CompileFileData必须有path节点!!");
+                    Debug.Write("在ProjectConfig 中的CompileFileData必须有path节点!!");
                     return;
                 }
                 path = findPath;
@@ -49,7 +49,7 @@ namespace SimpleLanguage.Project
                 //var findPath = mdc.GetMetaMemberVariableByName("path");
                 //if (findPath == null)
                 //{
-                //    Console.Write("在ProjectConfig 中的CompileFileData必须有path节点!!");
+                //    Debug.Write("在ProjectConfig 中的CompileFileData必须有path节点!!");
                 //    return;
                 //}
                 //path = findPath.constExpressNode.ToTokenString();
@@ -378,7 +378,7 @@ namespace SimpleLanguage.Project
 
                     if (repaceStringDict.ContainsKey(orgString))
                     {
-                        Console.Write("Error GlobalReplace中，存在两个相同的关键字!!");
+                        Debug.Write("Error GlobalReplace中，存在两个相同的关键字!!");
                         continue;
                     }
                     repaceStringDict.Add(orgString, replaceString);
@@ -623,13 +623,13 @@ namespace SimpleLanguage.Project
         {
             if( m_FileMetaData == null )
             {
-                Console.Write("Error 没有解析成功Config.sp文件!!");
+                Debug.Write("Error 没有解析成功Config.sp文件!!");
                 return;
             }
             FileMetaClass fmc = m_FileMetaData.GetFileMetaClassByName("ProjectConfig");
             if(fmc == null )
             {
-                Console.Write("Error 解析工程文件，没有找到ProjectConfig!!");
+                Debug.Write("Error 解析工程文件，没有找到ProjectConfig!!");
                 return;
             }
             m_ProjectData.BindFileMetaClass(fmc);

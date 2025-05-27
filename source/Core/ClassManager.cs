@@ -198,9 +198,9 @@ namespace SimpleLanguage.Core
         public MetaClass AddClass( FileMetaClass fmc )
         {
             bool isCanAddBind = false;
-            MetaNamespace tmetaNamespace = null;
-            MetaModule tmetaModule = null;
-            MetaClass tmetaClass = null;
+            MetaNamespace finalTopMetaNamespace = null;
+            MetaModule finalTopMetaModule = ModuleManager.instance.selfModule;
+            MetaClass finalTopMetaClass = null;
             FileMetaClass topLevelClass = fmc.topLevelFileMetaClass;
             if ( topLevelClass != null )
             {
@@ -239,39 +239,42 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    tmetaClass = topLevelClass.metaClass;
+                    finalTopMetaClass = topLevelClass.metaClass;
                     isCanAddBind = true;
                 }
             }
             else
             {
-                MetaBase topLevelNamespace = ModuleManager.instance.selfModule;
-                var lastMetaNamespace = fmc.GetLasatMetaNamespace();
-                if( lastMetaNamespace != null )
+                if(fmc.topLevelFileMetaNamespace != null )
                 {
-                    topLevelNamespace = lastMetaNamespace;
-                }
-                if (fmc.namespaceBlock != null )
-                {
-                    var nlist = fmc.namespaceBlock.namespaceList;
-                    for (int i = 0; i < nlist.Count; i++)
+                    finalTopMetaNamespace = NamespaceManager.instance.SearchFinalNamespace(fmc.topLevelFileMetaNamespace);
+
+                    if( fmc.namespaceBlock?.namespaceList.Count > 0 )
                     {
-                        topLevelNamespace = topLevelNamespace.GetChildrenMetaBaseByName(nlist[i]);
-                        if (topLevelNamespace == null)
-                        {
-                            Debug.WriteLine("Error 没有找到相当的命名空间!!!");
-                            return null;
-                        }
+                        finalTopMetaNamespace = NamespaceManager.instance.FindFinalMetaNamespaceByNSBlock(fmc.namespaceBlock, finalTopMetaNamespace);
                     }
                 }
-                tmetaNamespace = topLevelNamespace as MetaNamespace;
-                tmetaModule = topLevelNamespace as MetaModule;
-                if (tmetaNamespace == null && tmetaModule == null )
+
+                if (finalTopMetaNamespace == null && fmc.namespaceBlock?.namespaceList?.Count > 0 )
                 {
-                    Debug.WriteLine("命名空间中，已定义其它非命名空间的类型 !!");
-                    return null;
+                    finalTopMetaNamespace = NamespaceManager.instance.FindFinalMetaNamespaceByNSBlock(fmc.namespaceBlock);
+                   
+                    if (finalTopMetaNamespace == null )
+                    {
+                        Debug.Write("命名空间中，已定义其它非命名空间的类型 !!");
+                        return null;
+                    }
                 }
-                var mbb = topLevelNamespace.GetChildrenMetaBaseByName(fmc.name);
+                MetaBase mbb = null;
+                if (finalTopMetaNamespace != null)
+                {
+                    mbb = finalTopMetaNamespace.GetChildrenMetaBaseByName(fmc.name);
+                }
+                else
+                if( finalTopMetaModule != null)
+                {
+                    mbb = finalTopMetaModule.GetChildrenMetaBaseByName(fmc.name);
+                }
                 var amc = mbb as MetaClass;
                 var amn = mbb as MetaNamespace;
                 if( amn != null )
@@ -335,15 +338,15 @@ namespace SimpleLanguage.Core
                     newmc = newme;
 
 
-                    if (tmetaClass != null)
+                    if ( finalTopMetaClass != null)
                     {
-                        tmetaClass.AddChildrenMetaClass(newme);
+                        finalTopMetaClass.AddChildrenMetaClass(newme);
                     }
-                    else if (tmetaNamespace != null)
-                        tmetaNamespace.AddMetaClass(newme);
+                    else if (finalTopMetaNamespace != null)
+                        finalTopMetaNamespace.AddMetaClass(newme);
                     else
                     {
-                        tmetaModule.AddMetaClass(newme);
+                        finalTopMetaModule.AddMetaClass(newme);
                     }
                 }
                 else if (fmc.isData)
@@ -354,15 +357,15 @@ namespace SimpleLanguage.Core
                     newmd.ParseFileMetaDataMemeberData(fmc);
 
 
-                    if (tmetaClass != null)
+                    if (finalTopMetaClass != null)
                     {
-                        tmetaClass.AddChildrenMetaClass(newmd);
+                        finalTopMetaClass.AddChildrenMetaClass(newmd);
                     }
-                    else if (tmetaNamespace != null)
-                        tmetaNamespace.AddMetaClass(newmd);
+                    else if (finalTopMetaNamespace != null)
+                        finalTopMetaNamespace.AddMetaClass(newmd);
                     else
                     {
-                        tmetaModule.AddMetaClass(newmd);
+                        finalTopMetaModule.AddMetaClass(newmd);
                     }
                 }
                 else
@@ -387,15 +390,15 @@ namespace SimpleLanguage.Core
                     {
                         newmc = new MetaClass(fmc.name);
 
-                        if (tmetaClass != null)
+                        if (finalTopMetaClass != null)
                         {
-                            tmetaClass.AddChildrenMetaClass(newmc);
+                            finalTopMetaClass.AddChildrenMetaClass(newmc);
                         }
-                        else if (tmetaNamespace != null)
-                            tmetaNamespace.AddMetaClass(newmc);
+                        else if (finalTopMetaNamespace != null)
+                            finalTopMetaNamespace.AddMetaClass(newmc);
                         else
                         {
-                            tmetaModule.AddMetaClass(newmc);
+                            finalTopMetaModule.AddMetaClass(newmc);
                         }
                     }
 
@@ -959,9 +962,9 @@ namespace SimpleLanguage.Core
         }
         public void PrintAllClassName()
         {
-            Console.Write("---------------ClassBegin-----------" + Environment.NewLine);
-            Console.Write(ToAllClassName());
-            Console.Write("--------------ClassEnd-------------" + Environment.NewLine);
+            Debug.Write("---------------ClassBegin-----------" + Environment.NewLine);
+            Debug.Write(ToAllClassName());
+            Debug.Write("--------------ClassEnd-------------" + Environment.NewLine);
         }
         public string ToAllClassName()
         {
@@ -974,9 +977,9 @@ namespace SimpleLanguage.Core
         }
         public void PrintAlllClassContent()
         {
-            Console.Write("---------------ClassBegin-----------" + Environment.NewLine);
-            Console.Write(ToAllClassContent());
-            Console.Write("--------------ClassEnd-------------" + Environment.NewLine);
+            Debug.Write("---------------ClassBegin-----------" + Environment.NewLine);
+            Debug.Write(ToAllClassContent());
+            Debug.Write("--------------ClassEnd-------------" + Environment.NewLine);
         }
         public string ToAllClassContent()
         {

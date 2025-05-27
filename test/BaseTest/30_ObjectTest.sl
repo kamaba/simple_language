@@ -140,14 +140,14 @@ ObjectTest
         #t2 = c1.ct3.GetT().t2;                                       #测试调用对象链
         #t2  = c1.ct3.t;
         
-        CSharp.System.Console.Write("Class1 Value: " + vx );     
+        CSharp.System.Debug.Write("Class1 Value: " + vx );     
 
-        #CSharp.System.Console.Write("Class1 Value: " + c1.ct3.t );     #测试调用对象链
+        #CSharp.System.Debug.Write("Class1 Value: " + c1.ct3.t );     #测试调用对象链
 
         #aynn = {name = "mypc", wodm = Class1(), womd2 = Class2() };    #测试匿名对象
         #if aynn.name == "mypc"
         #{
-             #CSharp.System.Console.Write("aynn is mypc" );
+             #CSharp.System.Debug.Write("aynn is mypc" );
         #}        
     }
 }

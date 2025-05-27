@@ -58,11 +58,11 @@ InterfaceTest
     {
         Class1 c1 = Class1_1();
         v1 = c1.Fun()
-        CSharp.Console.Write("-------------" + v1 );
+        CSharp.Debug.Write("-------------" + v1 );
 
         Class1 c2 = Class2_1();
         v2 = c2.Fun2();
-        CSharp.Console.Write("-------------" + v2 );
+        CSharp.Debug.Write("-------------" + v2 );
 
     }
 }

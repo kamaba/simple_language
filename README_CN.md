@@ -56,7 +56,7 @@ DemoClass
     PrintAddRes()
     {
         # 如果a=10 b=100的话 输入 a[10]+b[200]=210
-        Console.Write( "a[@this.a]+b[@this.b]=" + Add().ToString() );
+        Debug.Write( "a[@this.a]+b[@this.b]=" + Add().ToString() );
     }
 }
 

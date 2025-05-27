@@ -17,7 +17,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 {
     public partial class FileMetaNamespace : FileMetaBase
     {
-        public bool isSearchNamespace { get; set; } = false;
+        public bool isSearchNamespace => m_IsSearchNamespace;
         public Node namespaceNode => m_NamespaceNode;
         public Node namespaceNameNode => m_NamespaceNameNode;
 
@@ -25,6 +25,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         private Node m_NamespaceNameNode = null;
         private Token m_BraceBeginToken = null;
         private Token m_BraceEndToken = null;
+        private bool m_IsSearchNamespace = false;
 
         //private List<Node> m_NodeList = new List<Node>();
         public new string name
@@ -38,17 +39,17 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 return "";
             }
         }
-        public List<MetaNamespace> metaNamespaceList
-        {
-            get
-            {
-                if (m_NamespaceStateBlock != null)
-                {
-                    return m_NamespaceStateBlock.metaNamespaceList;
-                }
-                return null;
-            }
-        }
+        //public List<MetaNamespace> metaNamespaceList
+        //{
+        //    get
+        //    {
+        //        if (m_NamespaceStateBlock != null)
+        //        {
+        //            return m_NamespaceStateBlock.metaNamespaceList;
+        //        }
+        //        return null;
+        //    }
+        //}
         public NamespaceStatementBlock namespaceStatementBlock => m_NamespaceStateBlock;
         protected NamespaceStatementBlock m_NamespaceStateBlock { get; set; }
 
@@ -95,12 +96,12 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             Node blockNode = namespaceNode.blockNode;
 
             m_Token = m_NamespaceNode.token;
-            isSearchNamespace = true;
+            m_IsSearchNamespace = true;
             if (blockNode != null )
             {
                 m_BraceBeginToken = blockNode.token;
                 m_BraceEndToken = blockNode.endToken;
-                isSearchNamespace = false;
+                m_IsSearchNamespace = false;
             }
             m_NamespaceStateBlock = NamespaceStatementBlock.CreateStateBlock(m_NamespaceNameNode.linkTokenList);
 

@@ -75,7 +75,7 @@ Application.Core.UI.Layout
 
     PrintWidthAndHeight()
     {
-        Console.Write("width=@this.width ,height=@this.height " );
+        Debug.Write("width=@this.width ,height=@this.height " );
     }
 }
 namespace Application
@@ -86,7 +86,7 @@ namespace Application
         {            
             static PrintCore1Class()
             {
-                Console.Write("Core1Class");
+                Debug.Write("Core1Class");
             }
         }
     }
@@ -94,14 +94,14 @@ namespace Application
     {
         static PrintUtilClass()
         {
-            Console.Write("UtilClass");
+            Debug.Write("UtilClass");
         }
     }
     HelloClass
     {
         static PrintHello()
         {
-            Console.Write("Hello");
+            Debug.Write("Hello");
         }
     }
 }
@@ -109,7 +109,7 @@ Core.MyClass
 {
     static PrintMyClass()
     {
-        Console.Write("MyClass");
+        Debug.Write("MyClass");
     }
 }
 

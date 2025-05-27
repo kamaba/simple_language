@@ -78,7 +78,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             MetaBase mb = null;
             for( int i = 0; i < m_FileImportSyntax.Count; i++ )
             {
-                MetaNamespace mn = m_FileImportSyntax[i].lastMetaNamespace;
+                MetaNamespace mn = NamespaceManager.instance.FindImportNamespace( m_FileImportSyntax[i], fmcv.name ) as MetaNamespace;
                 if (mn == null) { continue; }
                 if( mn.refFromType == RefFromType.CSharp )
                 {
@@ -100,9 +100,8 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             MetaBase mb = null;
 #pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
             for (int i = 0; i < m_FileImportSyntax.Count; i++)
-            {                
-                MetaNamespace mn = m_FileImportSyntax[i].lastMetaNamespace;
-                MetaBase findMN = NamespaceManager.FindMetaBaseByNamespaceToParentAndName(mn, classList[0] );
+            {
+                MetaBase findMN = NamespaceManager.instance.FindImportNamespace(m_FileImportSyntax[i], classList[0]);
                 if (findMN == null)
                     continue;
                 for ( int j = 1; j < classList.Count; j++ )
@@ -135,7 +134,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
             for (int i = 0; i < m_FileImportSyntax.Count; i++)
             {
-                MetaBase mn = m_FileImportSyntax[i].lastMetaNamespace;
+                MetaBase mn = NamespaceManager.instance.FindImportNamespace( m_FileImportSyntax[i], name );
                 MetaBase findMB = null;
                 while (mn != null)
                 {
@@ -164,7 +163,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 #pragma warning disable CS0162 // 检测到无法访问的代码
             for (int i = 0; i < m_FileImportSyntax.Count; i++)
             {
-                MetaBase mn = m_FileImportSyntax[i].lastMetaNamespace;
+                MetaBase mn = NamespaceManager.instance.FindImportNamespace(m_FileImportSyntax[i], name);
                 while (true)
                 {
                     var fmn = mn.GetChildrenMetaBaseByName(name);

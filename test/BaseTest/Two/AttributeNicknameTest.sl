@@ -42,7 +42,7 @@ Class1
                     m = 10;
                 }
             }
-            Console.Write( "a2 = " + a2 );
+            Debug.Write( "a2 = " + a2 );
         }
     }
 }

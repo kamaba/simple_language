@@ -14,7 +14,7 @@ Class1
     }
     Print( aaa )
     {
-        Console.Write( aaa );
+        Debug.Write( aaa );
     }
 }
 
@@ -22,7 +22,7 @@ TempTest
 {    
     static Print( aaa )
     {
-        Console.Write( aaa );
+        Debug.Write( aaa );
     }
     static GetA()
     {
@@ -85,8 +85,8 @@ TempTest
         #int b1 = 10;
         #int c1 = a+b1;
         #string cs = c.ToString();
-        #Console.Write( cs );
+        #Debug.Write( cs );
         #string aaa = "mmm";
-        #Console.Write( aaa );
+        #Debug.Write( aaa );
     }
 }

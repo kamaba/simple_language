@@ -39,7 +39,7 @@ CallLinkTest
         c4.c41 = newc1.index;
         newcx1 = newc1.value;
         result1 = newcx1;
-        CSharp.System.Console.Write("Class1 Value: " + result1 );
+        CSharp.System.Debug.Write("Class1 Value: " + result1 );
     }
 }
 #!

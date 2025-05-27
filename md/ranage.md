@@ -22,7 +22,7 @@ ProjectEnter
       r4.step = 2       #设置r4的步进 与SetStep方法一样
       for v in r1   
       {
-         CSharp.System.Console.Write("value=$v");
+         CSharp.System.Debug.Write("value=$v");
       }
 
       a1 = r1.Cast<Array<int>>();   #转化成数组，并且申请成数组的内存空间 相当于遍历，然后给数组赋值
