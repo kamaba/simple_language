@@ -272,7 +272,7 @@ namespace SimpleLanguage.Core
                     }
                 default:
                     {
-                        Console.Write("Error ---------" + visitType.ToString() );
+                        Debug.Write("Error ---------" + visitType.ToString() );
                     }
                     break;
             }
@@ -283,7 +283,7 @@ namespace SimpleLanguage.Core
             var mt = GetMetaDefineType();
             if( mt == null )
             {
-                Console.Write("Error");
+                Debug.Write("Error");
                 return null;
             }
             return mt.metaClass;

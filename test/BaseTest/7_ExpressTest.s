@@ -30,10 +30,10 @@ Class1
         int x2 = 20;
         int a2 = 20;
         {
-            Console.Write( "p1=" + x2  + " x=" + this.a );
+            Debug.Write( "p1=" + x2  + " x=" + this.a );
         }
         Class2 c;
-        Console.Write("aaaaaaaaa");
+        Debug.Write("aaaaaaaaa");
     }
 }
 
@@ -77,8 +77,8 @@ namespace Application
                     {
                         if( this.x == 35 )
                         {
-                            System.Console.Write( "x=" + this.x22 );
-                            Console.Write("x= @this.x22 " + x33 );
+                            System.Debug.Write( "x=" + this.x22 );
+                            Debug.Write("x= @this.x22 " + x33 );
                             ret Class2.mc2;
                         }
                     }

@@ -40,11 +40,11 @@ GenClass
     {
         Level1<int> l1 = Level1<int>()
         l2 = l1.add()
-        Console.Write( "Addresult: " + l2 )
+        Debug.Write( "Addresult: " + l2 )
 
         float a = Level1.min<float>( 1.3, 2.5 )
 
-        Console.Write("Flaoat" + a )
+        Debug.Write("Flaoat" + a )
     }
 }
 #!

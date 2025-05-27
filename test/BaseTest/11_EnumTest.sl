@@ -161,7 +161,7 @@ EnumTest
         
         for b3 in reson.values
         {
-            Console.Write("Book3: " + b3 );
+            Debug.Write("Book3: " + b3 );
         }
         #这里要进行重写values 要解析完GameState后， 调用values时，需要进行重建 array<GameState extends> 然后存一个变量
         

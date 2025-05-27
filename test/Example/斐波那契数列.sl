@@ -24,7 +24,7 @@ FB
                 second = next
             }
 
-            Console.Write("output$next“)
+            Debug.Write("output$next“)
         }
     }
 }

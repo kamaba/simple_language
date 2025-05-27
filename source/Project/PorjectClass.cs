@@ -110,7 +110,7 @@ namespace SimpleLanguage.Project
                     {
                         if (!(nodeNS is MetaNamespace))
                         {
-                            Console.Write("Error 解析namespace添加命名空间节点时，发现已有定义类!!");
+                            Debug.Write("Error 解析namespace添加命名空间节点时，发现已有定义类!!");
                             return;
                         }
                         nodeNS = cfindNode as MetaNamespace;

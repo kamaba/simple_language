@@ -18,6 +18,6 @@ if( true )
         }
 
         if( true )
-            console.Write(" true" );
+            Debug.Write(" true" );
 
        

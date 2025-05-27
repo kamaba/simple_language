@@ -46,27 +46,27 @@ ProjectEnter
             int index = b3.index;
             string name = b3.name;
             string value = b3.ToString();
-            Console.Write("Book3: " + b3 );
+            Debug.Write("Book3: " + b3 );
         }                
         cc = EColor.Red
         switch cc
         {
             case EColor.Red
             {
-                Console.Write( "red" );
+                Debug.Write( "red" );
             }
             case EColor.Green
             {
-                Console.Write("green")
+                Debug.Write("green")
             }
             default{
-                Console.write("default")
+                Debug.write("default")
             }
         }
 
         if cc == EColor.Blue
         {
-            Console.Write( cc.ToString() );
+            Debug.Write( cc.ToString() );
         }
     }
 }

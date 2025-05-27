@@ -214,7 +214,7 @@ const data ProjectConfig
     ]
     globalReplace #全局宏替换
     {
-        print = "Console.Write";
+        print = "Debug.Write";
         println = "Debug.Write";
     }
     exportModule =             #导出dll

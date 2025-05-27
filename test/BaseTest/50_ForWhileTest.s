@@ -69,7 +69,7 @@ ForWhileTest
         #!  暂不支持Array<int>
         Array<int> arr = [1,2,3];
         for v in arr{
-            CSharp.System.Console.Write(" v= $v ")
+            CSharp.System.Debug.Write(" v= $v ")
         }
         !# 
         #!  暂不支持 Array<object>
@@ -112,7 +112,7 @@ ForWhileTest
         i = 30;
         dowhile i < 20
         {
-            #CSharp.System.Console.Write("dowhile execute" );
+            #CSharp.System.Debug.Write("dowhile execute" );
             x = 30;
         }
         dowhile false

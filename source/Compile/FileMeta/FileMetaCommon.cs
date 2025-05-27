@@ -5,9 +5,8 @@
 //  DateTime: 2022/5/12 12:00:00
 //  Description: 
 //****************************************************************************
-using SimpleLanguage.Compile.Grammer;
+
 using SimpleLanguage.Core;
-using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -17,7 +16,7 @@ using System.Diagnostics;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
 {
-    public partial class NamespaceStatementBlock
+    public sealed class NamespaceStatementBlock
     {
         private string m_NamespaceString = null;
         private List<string> m_NamespaceList = null;
@@ -82,27 +81,27 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             }
         }
         public List<Token> tokenList => m_TokenList;
-        public List<MetaNamespace> metaNamespaceList => m_MetaNamespaceList;
+        //public List<MetaNamespace> metaNamespaceList => m_MetaNamespaceList;
         protected List<Token> m_TokenList = new List<Token>();
 
-        protected List<MetaNamespace> m_MetaNamespaceList = new List<MetaNamespace>();
-        public MetaNamespace lastMetaNamespace
-        {
-            get
-            {
-                if (m_MetaNamespaceList.Count <= 0) return null;
-                return m_MetaNamespaceList[m_MetaNamespaceList.Count - 1];
-            }
-        }
+        //protected List<MetaNamespace> m_MetaNamespaceList = new List<MetaNamespace>();
+        //public MetaNamespace lastMetaNamespace
+        //{
+        //    get
+        //    {
+        //        if (m_MetaNamespaceList.Count <= 0) return null;
+        //        return m_MetaNamespaceList[m_MetaNamespaceList.Count - 1];
+        //    }
+        //}
 
         protected NamespaceStatementBlock(List<Token> token)
         {
             m_TokenList = token;
         }
-        public void AddMetaNamespace( MetaNamespace metaNamespace)
-        {
-            m_MetaNamespaceList.Add( metaNamespace );
-        }
+        //public void AddMetaNamespace( MetaNamespace metaNamespace)
+        //{
+        //    m_MetaNamespaceList.Add( metaNamespace );
+        //}
         public static NamespaceStatementBlock CreateStateBlock( List<Token> token )
         {
             bool isIdentifier = true;

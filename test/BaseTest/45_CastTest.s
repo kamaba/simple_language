@@ -78,7 +78,7 @@ CastTObject
             #这里变了，则shape也会变  不能直接使用shape复制
             #r = shape.cast<CircleShape>().r  # r=1000
             outstr = shape.cast<CircleShape>().r
-            Console.Write("shapeCastCircleShape.R=" + outstr )
+            Debug.Write("shapeCastCircleShape.R=" + outstr )
         }
     }
     static Fun()
@@ -131,7 +131,7 @@ Class1
     }
     Print( aaa )
     {
-        Console.Write( aaa );
+        Debug.Write( aaa );
     }
 }
 
@@ -139,7 +139,7 @@ TempTest
 {    
     static Print( aaa )
     {
-        Console.Write( aaa );
+        Debug.Write( aaa );
     }
     static GetA()
     {
@@ -202,9 +202,9 @@ TempTest
         #int b1 = 10;
         #int c1 = a+b1;
         #string cs = c.ToString();
-        #Console.Write( cs );
+        #Debug.Write( cs );
         #string aaa = "mmm";
-        #Console.Write( aaa );
+        #Debug.Write( aaa );
     }
 }
 

@@ -24,7 +24,7 @@ RangeTest
 
         for v in r1
         {
-            CSharp.System.Console.Write("value=$v ");
+            CSharp.System.Debug.Write("value=$v ");
         }
     }
 }

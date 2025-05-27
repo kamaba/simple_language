@@ -11,12 +11,12 @@ C2
     Print()
     {
         this.c1.b = 20;
-        System.Console.Write(" OK   $this.c1.b " );
+        System.Debug.Write(" OK   $this.c1.b " );
     }
     static SPrint()
     {
-        Console.Write(" SPRint" );
-        Console.Write("aaa");
+        Debug.Write(" SPRint" );
+        Debug.Write("aaa");
     }
 }
 CSharpTest

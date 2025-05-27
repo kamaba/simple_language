@@ -1,6 +1,7 @@
 ﻿using SimpleLanguage.Compile;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -88,9 +89,9 @@ namespace SimpleLanguage.Core
         }
         public void PrintAllNamespace()
         {
-            Console.Write("---------------NamespaceBegin-----------" + Environment.NewLine);
-            Console.Write(ToAllNamespace());
-            Console.Write("--------------NamespaceEnd-------------");
+            Debug.Write("---------------NamespaceBegin-----------" + Environment.NewLine);
+            Debug.Write(ToAllNamespace());
+            Debug.Write("--------------NamespaceEnd-------------");
         }
         public string ToAllNamespace()
         {

@@ -8,7 +8,7 @@ JJ
         {
             for j = 1, j <= i, j++
             {
-                Console.Write("$jx$i=" + j*i )
+                Debug.Write("$jx$i=" + j*i )
             }
         }
     }

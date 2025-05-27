@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "4_Class1Test.sl";
+            path = "2_NamespaceTest1.sl";
             group = "temp";
             tag = "all";
             a = 200

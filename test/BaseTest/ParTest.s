@@ -35,11 +35,11 @@ Class1
         int x2 = 20;
         int a2 = 20;
         {
-            Console.Write( "p1=" + p1 , " x=" + a );
+            Debug.Write( "p1=" + p1 , " x=" + a );
         }
 
         Class2 c;
-        Console.Write("aaaaaaaaa");
+        Debug.Write("aaaaaaaaa");
     }
 }
 
@@ -82,19 +82,19 @@ namespace Application
                     {
                         if( x == 35 )
                         {
-                            System.Console.Write( "x=" + x );
-                            #Console.Write("x= $x ");
+                            System.Debug.Write( "x=" + x );
+                            #Debug.Write("x= $x ");
                             ret mc2;
                         }
                     }
                     a3a = true ? x > 15 : false
                     if a3a
                     {
-                        Console.Write("value > 15" )
+                        Debug.Write("value > 15" )
                     }
                     else
                     {
-                        Console.Write("Value < 15 );
+                        Debug.Write("Value < 15 );
                     }
                 }
 

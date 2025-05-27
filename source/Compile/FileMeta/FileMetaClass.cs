@@ -7,11 +7,9 @@
 //****************************************************************************
 using SimpleLanguage.Compile.Parse;
 using SimpleLanguage.Core;
-using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
@@ -51,7 +49,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         private List<FileMetaClassDefine> m_InterfaceClassList = new List<FileMetaClassDefine>();
         private List<FileMetaClass> m_ChildrenClassList = new List<FileMetaClass>();
         private List<FileMetaTemplateDefine> m_TemplateParamList = new List<FileMetaTemplateDefine>();
-
 
         private List<FileMetaMemberVariable> m_MemberVariableList = new List<FileMetaMemberVariable>();
         private List<FileMetaMemberFunction> m_MemberFunctionList = new List<FileMetaMemberFunction>();
@@ -380,16 +377,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
             return true;
         }
-        public MetaNamespace GetLasatMetaNamespace()
-        {
-            if ( topLevelFileMetaNamespace != null
-                && topLevelFileMetaNamespace.namespaceStatementBlock != null 
-                && topLevelFileMetaNamespace.namespaceStatementBlock.lastMetaNamespace != null)
-            {
-                return topLevelFileMetaNamespace.namespaceStatementBlock.lastMetaNamespace;
-            }
-            return null;
-        }
         public void AddFileMemberData(FileMetaMemberData fmmd)
         {
             m_MemberDataList.Add(fmmd);
@@ -421,10 +408,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             }
             else
             {
-                if( fmn.isSearchNamespace == false )
-                {
-                    return;
-                }
                 var list = fmn.namespaceStatementBlock.namespaceList;
                 if ( list?.Count < 1 )
                 {
@@ -435,15 +418,16 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     string lastName = this.m_NamespaceBlock.namespaceList[this.m_NamespaceBlock.namespaceList.Count - 1];
 
                     if(list[list.Count-1] == lastName )
-                    {
-                        var namespaceNameNode = fmn.namespaceNameNode;
-                        if ( namespaceNameNode.extendLinkNodeList.Count >= 2 )
+                    { 
+                        var namespaceNameNode = new Node(fmn.namespaceNameNode.token);
+                        List<Node> extendLinkNodeList = new List<Node>();
+                        for ( int i = 0; i < fmn.namespaceNameNode.extendLinkNodeList.Count -2; i++ )
                         {
-                            namespaceNameNode.extendLinkNodeList.RemoveRange(namespaceNameNode.extendLinkNodeList.Count - 2, 2);
-                            FileMetaNamespace fmnnew = new FileMetaNamespace(fmn.namespaceNode, namespaceNameNode);
-                            NamespaceManager.instance.CreateMetaNamespaceByFileMetaNamespace(fmnnew);
-                            m_TopLevelFileMetaNamespace = fmnnew;
+                            extendLinkNodeList.Add(fmn.namespaceNameNode.extendLinkNodeList[i]);
                         }
+                        namespaceNameNode.SetLinkNode(extendLinkNodeList);
+                        FileMetaNamespace fmnnew = new FileMetaNamespace(fmn.namespaceNode, namespaceNameNode);
+                        m_TopLevelFileMetaNamespace = fmnnew;
                     }
                 }
             }

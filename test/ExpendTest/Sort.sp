@@ -15,13 +15,13 @@ ProjectEnter
                 }
             }
         }
-        Console.Write("Bubble整理后的序列");
+        Debug.Write("Bubble整理后的序列");
         for v in arr
         {
-            Console.Write( v );
+            Debug.Write( v );
             if v.next == null
             {
-                Console.Write( "," );
+                Debug.Write( "," );
             }
         }
         Debug.Write();
@@ -46,13 +46,13 @@ ProjectEnter
                 arr[i] = t;
             }
         }
-        Console.Write("Selected整理后的序列");
+        Debug.Write("Selected整理后的序列");
         for v in arr
         {
-            Console.Write( v );
+            Debug.Write( v );
             if v.next == null
             {
-                Console.Write( "," );
+                Debug.Write( "," );
             }
         }
         Debug.Write();
@@ -148,13 +148,13 @@ ProjectEnter
     static Main()
     {
         arr = int[]{ 10,32, 15, 31, 2, 44, 19, 26, 30, 8, 22, 1, 6 };
-        Console.Write("原来的序列");
+        Debug.Write("原来的序列");
         for v in arr
         {
-            Console.Write( v );
+            Debug.Write( v );
             if v.next == null
             {
-                Console.Write( "," );
+                Debug.Write( "," );
             }
         }
         BubbleSort( arr );

@@ -124,7 +124,7 @@ namespace SimpleLanguage.Compile.Parse
         }
         public void PrintFormatString()
         {
-            Console.Write(m_File.ToFormatString());
+            Debug.Write(m_File.ToFormatString());
         }
     }
 }

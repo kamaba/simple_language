@@ -26,7 +26,7 @@ namespace Application
                 {
                     if( x = 35 )
                     {
-                        System.Console.Write( "x=" + x );
+                        System.Debug.Write( "x=" + x );
                     }
                 }
             }
@@ -70,11 +70,11 @@ Class1
         int x = 20;
         int a = 20;
         {
-            Console.Write( "p1=" + p1 , " x=" + a );
+            Debug.Write( "p1=" + p1 , " x=" + a );
         }
 
         Class2 c;
-        Console.Write("").m.A(2).a += 10;
+        Debug.Write("").m.A(2).a += 10;
     }
     pinrt( int p1 = ( 20 / ( 11 / 11 ) + 1 ), int p2 = 2 + 20 / (10 * 10 ) )
     {

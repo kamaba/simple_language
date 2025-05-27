@@ -225,7 +225,7 @@ namespace SimpleLanguage.Project
             MethodManager.instance.ParseMetaExpress();
             MethodManager.instance.ParseStatements();
             Debug.Write("-------------------------解析完成后的格式输出 开始--------------------------");
-            Console.Write(ModuleManager.instance.ToFormatString() + Environment.NewLine);
+            Debug.Write(ModuleManager.instance.ToFormatString() + Environment.NewLine);
             Debug.Write("-------------------------解析完成后的格式输出 结束--------------------------");
         }
     }

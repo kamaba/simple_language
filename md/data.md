@@ -86,7 +86,7 @@ ProjectEnter
 {
     static Main()
     {
-        Console.Write( Book );      #把Book当格式化输入字符
+        Debug.Write( Book );      #把Book当格式化输入字符
 
         BookRef = Book;                 #把Book 再作用引用 BookRef
 
@@ -100,7 +100,7 @@ ProjectEnter
 
         if Book.name == "OK" 
         {
-            Console.Write("书名为OK");
+            Debug.Write("书名为OK");
         }    
 
         #Json bookJson = Book.ToJson();

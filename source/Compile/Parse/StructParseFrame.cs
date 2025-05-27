@@ -585,12 +585,12 @@ namespace SimpleLanguage.Compile.Parse
                         }
                         else
                         {
-                            Console.Write("Error 在定义Data数据的时候，如果有折行，只允许 =\n{} =\n[] 两种形式! ");
+                            Debug.Write("Error 在定义Data数据的时候，如果有折行，只允许 =\n{} =\n[] 两种形式! ");
                         }
                     }
                     else
                     {
-                        Console.Write("Error 在定义Data数据的时候，不允许=号后边有其它形式的存在");
+                        Debug.Write("Error 在定义Data数据的时候，不允许=号后边有其它形式的存在");
                     }
 
                     if( parseType > 0 )
@@ -1139,6 +1139,10 @@ namespace SimpleLanguage.Compile.Parse
                         {
                             continue;
                         }
+                        else if (nextNode.nodeType == ENodeType.Brace)
+                        {
+                            continue;
+                        }
                         else if (nextNode.nodeType == ENodeType.IdentifierLink)  // Class1 c1
                         {
                             Debug.Write("Error 不允许在顶级Class里边有变量的存在!!");
@@ -1211,6 +1215,10 @@ namespace SimpleLanguage.Compile.Parse
                 {
                     curNode.blockNode = nextNode;
                     isCanAdd = true;
+                    if (isClass == 0)
+                    {
+                        isClass = 1;
+                    }
                     break;
                 }
                 else

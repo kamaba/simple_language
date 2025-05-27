@@ -30,17 +30,17 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public NamespaceStatementBlock namespaceStatement => m_NamespaceStatement;
         public NamespaceStatementBlock asNameStatement => m_AsNameStatement;
 
-        public MetaNamespace lastMetaNamespace
-        {
-            get
-            {
-                if (m_NamespaceStatement != null)
-                {
-                    return m_NamespaceStatement.lastMetaNamespace;
-                }
-                return null;
-            }
-        }
+        //public MetaNamespace lastMetaNamespace
+        //{
+        //    get
+        //    {
+        //        if (m_NamespaceStatement != null)
+        //        {
+        //            return m_NamespaceStatement.lastMetaNamespace;
+        //        }
+        //        return null;
+        //    }
+        //}
         public FileMetaImportSyntax(List<Node> _nodeList)
         {
             m_NodeList = _nodeList;
@@ -103,7 +103,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         }
                         else
                         {
-                            m_NamespaceStatement.AddMetaNamespace(mb as MetaNamespace);
+                            //m_NamespaceStatement.AddMetaNamespace(mb as MetaNamespace);
                         }
                     }
                 }
@@ -119,15 +119,15 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     mn.SetRefFromType(RefFromType.CSharp);
                     curmb.AddMetaBase(name, mn);
                     curmb = mn;
-                    m_NamespaceStatement.AddMetaNamespace(mn as MetaNamespace);
+                    //m_NamespaceStatement.AddMetaNamespace(mn as MetaNamespace);
                 }
             }
             else
             {
-                if (m_NamespaceStatement.metaNamespaceList.Count != m_NamespaceStatement.tokenList.Count)
-                {
-                    Debug.Write("解析Import语句发生错误，没有找到: " + m_NamespaceStatement.namespaceString + "    Token: " + m_Token.sourceBeginChar.ToString());
-                }
+                //if (m_NamespaceStatement.metaNamespaceList.Count != m_NamespaceStatement.tokenList.Count)
+                //{
+                //    Debug.Write("解析Import语句发生错误，没有找到: " + m_NamespaceStatement.namespaceString + "    Token: " + m_Token.sourceBeginChar.ToString());
+                //}
             }
 
         }

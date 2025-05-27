@@ -8,8 +8,8 @@ BindCSharpTest
 {    
     static fun()
     {
-        Console.Write( "test" );
-        CSharp.System.Console.Write("Test2");
-        System.Console.Write("Test3");
+        Debug.Write( "test" );
+        CSharp.System.Debug.Write("Test2");
+        System.Debug.Write("Test3");
     }
 }
