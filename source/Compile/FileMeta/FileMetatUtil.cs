@@ -138,7 +138,10 @@ namespace SimpleLanguage.Compile
             }
             else if( node.nodeType == ENodeType.Key )
             {
-
+                if( node.token.type == ETokenType.Null )
+                {
+                    fmbt = new FileMetaConstValueTerm(fm, node.token);
+                }
             }
             else if (node.nodeType == ENodeType.Par)
             {

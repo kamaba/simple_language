@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "2_NamespaceTest1.sl";
+            path = "3_StringTest.sl";
             group = "temp";
             tag = "all";
             a = 200
@@ -75,6 +75,7 @@ Project
        #EnumTest.fun()   
        #CommitTest.fun();
        #NumberTest.fun()
+       StringTest.fun()
     }
     static Test()
     {

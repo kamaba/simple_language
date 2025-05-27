@@ -56,19 +56,19 @@ namespace SimpleLanguage.Core.SelfMeta
         }
         public override void ParseInnerVariable()
         {
-            MetaMemberVariable m_Count = new MetaMemberVariable(this, "m_Count", CoreMetaClassManager.uint32MetaClass);
-            AddMetaMemberVariable(m_Count);
+            //MetaMemberVariable m_Count = new MetaMemberVariable(this, "m_Count", CoreMetaClassManager.uint32MetaClass);
+            //AddMetaMemberVariable(m_Count);
 
-            MetaMemberVariable m_Bound1 = new MetaMemberVariable(this, "m_Bound1", CoreMetaClassManager.uint16MetaClass);
-            AddMetaMemberVariable(m_Bound1);
-            MetaMemberVariable m_Bound2 = new MetaMemberVariable(this, "m_Bound2", CoreMetaClassManager.uint16MetaClass);
-            AddMetaMemberVariable(m_Bound2);
+            //MetaMemberVariable m_Bound1 = new MetaMemberVariable(this, "m_Bound1", CoreMetaClassManager.uint16MetaClass);
+            //AddMetaMemberVariable(m_Bound1);
+            //MetaMemberVariable m_Bound2 = new MetaMemberVariable(this, "m_Bound2", CoreMetaClassManager.uint16MetaClass);
+            //AddMetaMemberVariable(m_Bound2);
 
-            MetaMemberVariable m_Index = new MetaMemberVariable(this, "m_Index", CoreMetaClassManager.int32MetaClass);
-            AddMetaMemberVariable(m_Index);
+            //MetaMemberVariable m_Index = new MetaMemberVariable(this, "m_Index", CoreMetaClassManager.int32MetaClass);
+            //AddMetaMemberVariable(m_Index);
 
-            MetaMemberVariable m_Value = new MetaMemberVariable(this, "m_Value", new MetaTemplate(this, "T") );
-            AddMetaMemberVariable(m_Value);
+            //MetaMemberVariable m_Value = new MetaMemberVariable(this, "m_Value", new MetaTemplate(this, "T") );
+            //AddMetaMemberVariable(m_Value);
         }
         public override void ParseInnerFunction()
         {

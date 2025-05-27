@@ -2,6 +2,10 @@ import Application;
 
 namespace N1
 {
+    N2.Class1
+    {
+
+    }
     namespace N2.N3
     {
         partial Class3 extends Class1

@@ -1,30 +1,47 @@
+import CSharp.System
+
+public class Float
+{    
+    public string toString()
+    {
+        string str = ""
+        str = Int32MetaClass.MetaToString( this )
+        ret str
+    }
+}
 StringTest
 {
+    Class2
+    {
+        int a = 0;
+    }
     Class1{
         a1 = 20;
-        static string Printf( string x )
+        Class2 c2 = null
+        static string printf( string x )
         {
-            CSharp.System.Debug.Write("---------------------: " + x );
+            Debug.WriteLine("---------------------: " + x );
             ret "m";
         }
     }
-    static Fun()
+    static fun()
     {
         a1 = "aabcc";
         a2 = "aaacc" + "deee";
         a3 = "aa" + 3;
-        a4 = "aa" + 20.0f.ToString();
-        Class1.Printf( a2 );
+        a4 = "aa" + 20.0f.toString();
+        Class1.printf( a2 );
         
         int a = 1;
         int b = 2;
+        #!
         a5 = "${ a+b+(3+10+"aadf").ToString() }";    #{}任何时刻，都表示可以执行自己的内部语句  
         a6 = "print a=@Class1.Printf('ass') ";
 
         Class1 c1;
         a7 = "print c1.a1=$c1.a1 ";
-        a8 = @" /nskemsikeaae/t/r' ";
-        a9 = @"asdfasdf{a4} @c1.a1 ";
+        a8 = " /nskemsikeaae/t/r' ";
+        a9 = "asdfasdf{a4} @c1.a1 ";
                
         c1 = 'a';
         c2 = "a";
