@@ -37,7 +37,6 @@ namespace SimpleLanguage.Core
         private int m_Index = -1;
         private FileMetaMemberVariable m_FileMetaMemeberVariable;
         private MetaExpressNode m_Express = null;
-        private bool m_IsEnumValue = false;
         private bool m_IsInnerDefine = false;
         private List<MetaGenTemplate> m_MetaGenTemplateList = null;
 
@@ -134,31 +133,20 @@ namespace SimpleLanguage.Core
 
             SetOwnerMetaClass(mc);
         }
-        public MetaMemberVariable( MetaClass mc, FileMetaMemberVariable fmmv, bool isEnum = false )
+        public MetaMemberVariable( MetaClass mc, FileMetaMemberVariable fmmv )
         {
             m_FileMetaMemeberVariable = fmmv;
-            m_IsEnumValue = isEnum;
             m_Name = fmmv.name;
             AddPingToken( fmmv.nameToken );
             m_Index = mc.metaMemberVariableDict.Count;
-            fmmv.SetMetaMemberVariable(this);
             m_FromType = EFromType.Code;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             isStatic = m_FileMetaMemeberVariable?.staticToken != null;
             m_VariableFrom = EVariableFrom.Member;
-            if ( isStatic && isEnum )
-            {
-                Debug.Write("Error ENum中，不允许有静态关键字，而是全部是静态关键字!!");
-            }
             if (m_FileMetaMemeberVariable.permissionToken != null)
             {
-                if( isEnum )
-                {
-                    Debug.Write("Error Enum中，不允许使用public/private等权限关键字!!");
-                }
                 permission = CompilerUtil.GetPerMissionByString(m_FileMetaMemeberVariable.permissionToken?.lexeme.ToString());
             }
-
             SetOwnerMetaClass(mc);
         }
         public MetaMemberVariable(MetaGenTemplateClass mtc, MetaMemberVariable mmv, List<MetaGenTemplate> mgt) : base(mmv)
@@ -177,16 +165,13 @@ namespace SimpleLanguage.Core
         {
             if (m_FileMetaMemeberVariable != null)
             {
-                if(m_IsEnumValue == false )
+                if (m_FileMetaMemeberVariable.classDefineRef != null)
                 {
-                    if (m_FileMetaMemeberVariable.classDefineRef != null)
-                    {
-                        m_DefineMetaType = new MetaType(m_FileMetaMemeberVariable.classDefineRef, ownerMetaClass);
-                    }
-                    else
-                    {
+                    m_DefineMetaType = new MetaType(m_FileMetaMemeberVariable.classDefineRef, ownerMetaClass);
+                }
+                else
+                {
 
-                    }
                 }
             }
         }
@@ -265,6 +250,10 @@ namespace SimpleLanguage.Core
             else
             {
                 m_Express = CreateExpressNodeInClassMetaVariable();
+            }
+            if( this.m_Express == null )
+            {
+                Debug.WriteLine($"Error { this.ownerMetaClass.allName + "." + this.m_Name }配置成员变量时，必须需要有等号及后续的表达式!!");
             }
         }        
         public void CalcReturnType()
@@ -511,20 +500,14 @@ namespace SimpleLanguage.Core
                     }
                     else if (fmbt != null)
                     {
-                        if( m_IsEnumValue )
+                        if (m_IsSupportConstructionFunctionOnlyBraceType)
                         {
                         }
                         else
                         {
-                            if (m_IsSupportConstructionFunctionOnlyBraceType)
-                            {
-                            }
-                            else
-                            {
-                                Debug.Write("Error 在类变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
-                                return null;
-                            }
-                        }
+                            Debug.Write("Error 在类变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                            return null;
+                        }                        
                     }
                     else if (fmct != null)
                     {
@@ -613,7 +596,7 @@ namespace SimpleLanguage.Core
 
                     for ( int j = 0; j < fmmv.fileMetaMemberVariable.Count; j++ )
                     {
-                        MetaMemberVariable mmv = new MetaMemberVariable(mdc, fmmv.fileMetaMemberVariable[j] as FileMetaMemberVariable, false);
+                        MetaMemberVariable mmv = new MetaMemberVariable(mdc, fmmv.fileMetaMemberVariable[j] as FileMetaMemberVariable);
 
                         mmv.ParseChildMemberData();
                         mmv.CalcDefineClassType();
@@ -639,7 +622,7 @@ namespace SimpleLanguage.Core
 
                     MetaDynamicClass mdc = new MetaDynamicClass(i.GetHashCode().ToString());
 
-                    MetaMemberVariable mmd = new MetaMemberVariable(mdc, fmmv, false);
+                    MetaMemberVariable mmd = new MetaMemberVariable(mdc, fmmv);
                     if (AddMetaVariable(mmd))
                     {
                         this.AddMetaBase(mmd.name, mmd);

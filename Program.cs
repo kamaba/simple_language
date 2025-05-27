@@ -2,6 +2,7 @@
 using SimpleLanguage.Parse;
 using SimpleLanguage.Project;
 using System;
+using System.Diagnostics;
 
 namespace SimpleLanguage
 {
@@ -56,7 +57,7 @@ namespace SimpleLanguage
         {
             CommandInputArgs inputArgs = new CommandInputArgs(args);
             ProjectManager.Run( "../../../test/BaseTest", inputArgs );
-            Console.ReadKey();            
+            Console.ReadKey();
         }
     }
 }

@@ -160,7 +160,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_ArgumentObjectArray.Length)
             {
-                Debug.Write("执行的参数超出范围!!");
+                Debug.WriteLine("执行的参数超出范围!!");
                 return;
             }
             ObjectManager.SetObjectByValue(m_ArgumentObjectArray[index], ref svalue);
@@ -169,7 +169,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_LocalVariableObjectArray.Length)
             {
-                Debug.Write("执行的栈超出范围!!");
+                Debug.WriteLine("执行的栈超出范围!!");
                 return;
             }
             ObjectManager.SetObjectByValue(m_LocalVariableObjectArray[index], ref svalue);
@@ -204,7 +204,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 pushChar = '\t' + pushChar;
             }
-            Debug.Write(pushChar + "[VMRuntime] [Push] Method: [" + funName +"]-------------------------" );
+            Debug.WriteLine(pushChar + "[VMRuntime] [Push] Method: [" + funName +"]" );
             level++;
 
             var topClrRuntime = InnerCLRRuntimeVM.topCLRRuntime;
@@ -228,8 +228,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 pushChar = '\t' + pushChar;
             }
-            Debug.Write("");
-            Debug.Write(pushChar  + "[VMRuntime] [Pop] Method: [" + funName + "]-------------------------");
+            Debug.WriteLine(pushChar  + "[VMRuntime] [Pop] Method: [" + funName + "]");
         }
         public unsafe void RunInstruction( IRData iri )
         {

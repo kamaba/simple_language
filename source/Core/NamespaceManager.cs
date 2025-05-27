@@ -94,7 +94,7 @@ namespace SimpleLanguage.Core
             {
                 if(PS_fmn.topLevelFileMetaNamespace != null )
                 {
-                    PS_fmn = fns.topLevelFileMetaNamespace;
+                    PS_fmn = PS_fmn.topLevelFileMetaNamespace;
                     list.Add(PS_fmn);
                 }
                 else

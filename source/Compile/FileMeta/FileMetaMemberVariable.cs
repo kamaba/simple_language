@@ -6,18 +6,15 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Core;
-using SimpleLanguage.Parse;
-using System;
+
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile.Parse;
-using static SimpleLanguage.Compile.CoreFileMeta.FileMetaMemberVariable;
 using System.Diagnostics;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
 {
-    public partial class FileMetaMemberVariable : FileMetaBase
+    public sealed class FileMetaMemberVariable : FileMetaBase
     {
         public enum EMemberDataType
         {
@@ -33,9 +30,8 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public Token permissionToken => m_PermissionToken;
         public Token staticToken => m_StaticToken;
         public Token nameToken => m_Token;
-        public FileMetaBaseTerm express =>m_Express;
-
-        private MetaMemberVariable m_MetaMemberVariable = null;
+        public FileMetaBaseTerm express => m_Express;
+        public Token assignToken => m_AssignToken;
 
         private FileMetaClassDefine m_ClassDefineRef;
         private Token m_AssignToken = null;
@@ -463,10 +459,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             }
 
             return !isError;
-        }
-        public void SetMetaMemberVariable( MetaMemberVariable mmv )
-        {
-            m_MetaMemberVariable = mmv;
         }
         public void AddFileMemberVariable(FileMetaMemberVariable fmmd)
         {
