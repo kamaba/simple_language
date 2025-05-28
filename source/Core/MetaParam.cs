@@ -723,7 +723,6 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("(");
             for( int i = 0; i < m_MetaInputParamList.Count; i++ )
             {
                 sb.Append(m_MetaInputParamList[i].ToFormatString());
@@ -732,7 +731,6 @@ namespace SimpleLanguage.Core
                     sb.Append(",");
                 }
             }
-            sb.Append(")");
             return sb.ToString();
         }
     }

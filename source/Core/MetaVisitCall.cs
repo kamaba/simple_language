@@ -146,7 +146,7 @@ namespace SimpleLanguage.Core
             {
                 sb.Append(this.m_MetaFunction.allName);
                 sb.Append("( ");
-                sb.Append(this.metaInputParamCollection.ToString());
+                sb.Append(this.metaInputParamCollection.ToFormatString() );
                 sb.Append(" )");
             }
             else

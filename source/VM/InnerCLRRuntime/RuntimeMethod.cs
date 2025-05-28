@@ -6,14 +6,9 @@
 //  Description: master use .net clr system. new create method instance than running code virtual machine 
 //****************************************************************************
 using SimpleLanguage.IR;
-using SimpleLanguage.VM;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
-
 namespace SimpleLanguage.VM.Runtime
 {
     public class RuntimeMethod
