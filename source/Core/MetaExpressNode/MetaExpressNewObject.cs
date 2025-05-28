@@ -799,7 +799,7 @@ namespace SimpleLanguage.Core
                         MetaInputParamCollection mipc = new MetaInputParamCollection(m_FileMetaParTerm, ownerMC, mbs);
                         for (int i = 0; i < mipc.count; i++)
                         {
-                            var mp = mipc.metaParamList[i] as MetaInputParam;
+                            var mp = mipc.metaInputParamList[i];
                             mp.CaleReturnType();
                             mtList.Add(mp.GetRetMetaClass());
                         }
@@ -1010,10 +1010,10 @@ namespace SimpleLanguage.Core
                     sb.Append("(");
                     if( m_MetaConstructFunctionCall.metaInputParamCollection != null )
                     {
-                        int count = m_MetaConstructFunctionCall.metaInputParamCollection.metaParamList.Count;
+                        int count = m_MetaConstructFunctionCall.metaInputParamCollection.metaInputParamList.Count;
                         for ( int i = 0; i < count; i++ )
                         {
-                            var mp = m_MetaConstructFunctionCall.metaInputParamCollection.metaParamList[i];
+                            var mp = m_MetaConstructFunctionCall.metaInputParamCollection.metaInputParamList[i];
                             sb.Append(mp.ToFormatString());
                             if( i < count - 1 )
                             {
@@ -1044,7 +1044,7 @@ namespace SimpleLanguage.Core
 
             MetaInputParamCollection mpc = new MetaInputParamCollection(root, omc, mbs);
 
-            if( mpc.metaParamList.Count > 0 )
+            if( mpc.metaInputParamList.Count > 0 )
             {
                 MetaMemberFunction mmf = mt.GetMetaMemberConstructFunction(mpc);
 

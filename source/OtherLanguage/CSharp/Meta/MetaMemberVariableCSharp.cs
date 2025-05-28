@@ -7,27 +7,20 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-//    public partial class MetaMemberData
-//    {
-
-//    }
-    public partial class MetaMemberVariable
+    public sealed class MetaMemberVariableCSharp : MetaMemberVariable
     {
         public PropertyInfo propertyInfo;
         public FieldInfo fieldInfo;
 
-        public MetaMemberVariable(MetaClass mc, FieldInfo fi)
+        public MetaMemberVariableCSharp(MetaClass mc, FieldInfo fi):base(mc, fi.Name)
         {
-            m_Name = fi.Name;
             fieldInfo = fi;
             m_FromType = EFromType.CSharp;
             string typeName = MetaTypeCSharp.GetClassNameByCSharpType( fi.DeclaringType );
             var defineMetaClassType = ClassManager.instance.GetClassByName(typeName);
             m_DefineMetaType = new MetaType(defineMetaClassType);
-
-            SetOwnerMetaClass(mc);
         }
-        public MetaMemberVariable(MetaClass mc, PropertyInfo pi)
+        public MetaMemberVariableCSharp(MetaClass mc, PropertyInfo pi) : base(mc, pi.Name)
         {
             m_Name = pi.Name;
             propertyInfo = pi;

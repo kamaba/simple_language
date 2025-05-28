@@ -16,7 +16,7 @@ namespace SimpleLanguage.IR
         {
             m_MethodInfo = methodInfo;
 
-            MetaFunction mf = new MetaMemberFunction( mbs.ownerMetaClass, _name, m_MethodInfo);
+            MetaFunction mf = new MetaMemberFunctionCSharp( mbs.ownerMetaClass, _name, m_MethodInfo);
 
             var mipc = new MetaInputParamCollection(mbs.ownerMetaClass, mbs);
             metaFunctionCall = new MetaMethodCall(mbs.ownerMetaClass, mf, mipc );

@@ -24,7 +24,6 @@ namespace SimpleLanguage.Core
     }
     public class MetaFunction : MetaVariable
     {
-
         public virtual string functionAllName {
             get
             {
@@ -107,12 +106,12 @@ namespace SimpleLanguage.Core
         {
             return m_MetaMemberTemplateCollection.GetMetaDefineTemplateByName(name);
         }
-        public virtual bool IsEqualMetaTemplateCollectionAndMetaParamCollection( MetaInputTemplateCollection mitc, MetaParamCollectionBase mpc )
+        public virtual bool IsEqualMetaTemplateCollectionAndMetaParamCollection( MetaInputTemplateCollection mitc, MetaDefineParamCollection mpc )
         {
-            if (m_MetaMemberParamCollection.IsEqualMetaTemplateAndParamCollection(mitc, mpc) )
-            {
-                return true;
-            }
+            //if (m_MetaMemberParamCollection.IsEqualMetaTemplateAndParamCollection(mitc, mpc) )
+            //{
+            //    return true;
+            //}
             return false;
         }
         public override string ToStatementString()

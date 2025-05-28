@@ -129,7 +129,7 @@ namespace SimpleLanguage.Core
 
             Init();
         }
-        void Init()
+        protected void Init()
         {
             m_ConstructInitFunction = name == "_init_";
             if(m_DefineMetaType == null )
@@ -199,7 +199,7 @@ namespace SimpleLanguage.Core
             m_MetaBlockStatements = new MetaBlockStatements(this);
             m_MetaBlockStatements.isOnFunction = true;
 
-            var list = mmf.metaMemberParamCollection.metaParamList;
+            var list = mmf.metaMemberParamCollection.metaDefineParamList;
             MetaGenTemplateClass mgtc = m_OwnerMetaClass as MetaGenTemplateClass;
             m_MetaMemberParamCollection = new MetaDefineParamCollection();
             for (int k = 0; k < list.Count; k++)
@@ -265,9 +265,9 @@ namespace SimpleLanguage.Core
         }
         public void ParseName()
         {
-            for (int i = 0; i < m_MetaMemberParamCollection.metaParamList.Count; i++)
+            for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
             {
-                MetaDefineParam mpl = m_MetaMemberParamCollection.metaParamList[i] as MetaDefineParam;
+                MetaDefineParam mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
                 mpl.Parse();
                 if (mpl.isTemplate)
                 {
@@ -345,9 +345,9 @@ namespace SimpleLanguage.Core
         }
         public override bool ParseMetaExpress()
         {
-            for (int i = 0; i < m_MetaMemberParamCollection.metaParamList.Count; i++)
+            for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
             {
-                m_MetaMemberParamCollection.metaParamList[i].CaleReturnType();
+                m_MetaMemberParamCollection.metaDefineParamList[i].CaleReturnType();
             }
             return true;
         }
@@ -373,10 +373,6 @@ namespace SimpleLanguage.Core
                 }
             }
             m_MetaBlockStatements.SetDeep(deep);
-        }
-        public void Check()
-        {
-            m_MetaMemberParamCollection.CheckParse();
         }
         public static MetaStatements CreateMetaSyntax( FileMetaSyntax rootMs, MetaBlockStatements currentBlockStatements)
         {    

@@ -122,7 +122,12 @@ namespace SimpleLanguage.Core
         {
             if (m_MetaDefineType != null)
             {
-                if (m_MetaDefineType.metaClass == CoreMetaClassManager.booleanMetaClass)
+                if( m_MetaDefineType.metaClass == CoreMetaClassManager.nullMetaClass  )
+                {
+                    eType = EType.Null;
+                    value = "null";
+                }
+                else if (m_MetaDefineType.metaClass == CoreMetaClassManager.booleanMetaClass)
                 {
                     eType = EType.Boolean;
                     value = Convert.ToBoolean(value);
@@ -191,26 +196,29 @@ namespace SimpleLanguage.Core
             //MetaType mdt = null;
             if (eType == EType.Null)
             {
-                m_MetaDefineType = new MetaType(CoreMetaClassManager.objectMetaClass);
-            }
-            MetaClass mc = CoreMetaClassManager.GetMetaClassByEType(eType);
-
-            if (mc == null)
-            {
-                m_MetaDefineType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                m_MetaDefineType = new MetaType(CoreMetaClassManager.nullMetaClass);
             }
             else
             {
-                MetaInputTemplateCollection mitc = new MetaInputTemplateCollection();
-                if (eType == EType.Array)
+                MetaClass mc = CoreMetaClassManager.GetMetaClassByEType(eType);
+
+                if (mc == null)
                 {
-                    MetaType mitp = new MetaType(CoreMetaClassManager.int32MetaClass);
-                    mitc.AddMetaTemplateParamsList(mitp);
-                    m_MetaDefineType = new MetaType(mc, mitc);
+                    m_MetaDefineType = new MetaType(CoreMetaClassManager.objectMetaClass);
                 }
                 else
                 {
-                    m_MetaDefineType = new MetaType(mc);
+                    MetaInputTemplateCollection mitc = new MetaInputTemplateCollection();
+                    if (eType == EType.Array)
+                    {
+                        MetaType mitp = new MetaType(CoreMetaClassManager.int32MetaClass);
+                        mitc.AddMetaTemplateParamsList(mitp);
+                        m_MetaDefineType = new MetaType(mc, mitc);
+                    }
+                    else
+                    {
+                        m_MetaDefineType = new MetaType(mc);
+                    }
                 }
             }
         }

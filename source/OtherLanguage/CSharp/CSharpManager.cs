@@ -16,6 +16,7 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using System.Data;
 using System.Linq;
 using System.Collections.Generic;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.CSharp
 {
@@ -53,7 +54,7 @@ namespace SimpleLanguage.CSharp
 
                 if (pi != null)
                 {
-                    MetaMemberVariable mv = new MetaMemberVariable(mc, pi);
+                    MetaMemberVariableCSharp mv = new MetaMemberVariableCSharp(mc, pi);
 
                     mc.AddMetaMemberVariable(mv);
 
@@ -91,10 +92,30 @@ namespace SimpleLanguage.CSharp
             }
             return null;
         }
+        public static bool IsFindMetaCSharpNamespace( string allName )
+        {
+            for (int k = 0; k < canSearchAssemblyList.Count; k++)
+            {
+                Assembly am = canSearchAssemblyList[k];
+                var gts = am.GetTypes();
+                string[] namespaces = gts
+                    .Select(t => t.Namespace)
+                    .Where(ns => !string.IsNullOrEmpty(ns))
+                    .Distinct()
+                    .ToArray();
+
+                for (int l = 0; l < namespaces.Length; l++)
+                {
+                    string cuns = namespaces[l];
+                    if (cuns == allName)
+                        return true;
+                }
+            }
+            return false;
+        }
         public static MetaBase FindAndCreateMetaBase( MetaBase mb, string name )
         {
-
-            string allName = name;
+            string frontName = "";
             if (mb != null)
             {
                 if( mb is MetaModule )
@@ -103,67 +124,59 @@ namespace SimpleLanguage.CSharp
                 }
                 else
                 {
-                    allName = mb.allName + "." + name;
+                    frontName = mb.allName;
                 }
             }
-            for( int k = 0; k < canSearchAssemblyList.Count; k++ )
+            MetaBase getmb = FindCSharpClassOrNameSpace(frontName, name);
+            if (getmb == null) return null;
+
+            if ( getmb is MetaClass mc )
+            {
+                if( mb is MetaNamespace mbmn )
+                {
+                    mbmn.AddMetaClass(mc);
+                }
+                else if( mb is MetaClass mcn )
+                {
+                    mcn.AddChildrenMetaClass(mc);
+                }
+            }
+            else if( getmb is MetaNamespace mn )
+            {
+                if (mb is MetaNamespace mbmn)
+                {
+                    mbmn.AddMetaNamespace(mn);
+                }
+            }
+            
+            return getmb;
+        }
+        public static MetaBase FindCSharpClassOrNameSpace( string frontName, string name )
+        {
+            string allName = frontName + "." + name;
+            for (int k = 0; k < canSearchAssemblyList.Count; k++)
             {
                 Assembly am = canSearchAssemblyList[k];
                 Type ttype = null;
-                foreach( var x in am.DefinedTypes )
+                foreach (var x in am.DefinedTypes)
                 {
-                    if( x.FullName == allName )
+                    if (x.FullName == allName)
                     {
                         ttype = x;
                         break;
                     }
                 }
-                if (ttype != null )
+                if (ttype != null)
                 {
                     if (ttype.IsClass)
                     {
                         MetaClassCSharp mc = new MetaClassCSharp(ttype.Name, ttype);                        
-                        if (mb is MetaModule)
-                        {
-                            MetaModule mm = mb as MetaModule;
-                            if (mm != null)
-                            {
-                                mm.AddMetaClass(mc);
-                            }
-                        }
-                        else if (mb is MetaNamespace)
-                        {
-                            MetaNamespace mn = mb as MetaNamespace;
-                            if (mn != null)
-                            {
-                                mn.AddMetaClass(mc);
-                            }
-                        }
-                        else if (mb is MetaClassCSharp)
-                        {
-                            MetaClassCSharp gmc = mb as MetaClassCSharp;
-                            gmc.AddChildrenMetaClass(mc);
-                        }
-                        else
-                        {
-                            Debug.Write("在CSharpManager里边，没有找到相对应的MetaClass");
-                        }
-                        ClassManager.instance.AddDictMetaClass(mc);
                         return mc;
                     }
                     else if (ttype.IsTypeDefinition)
                     {
-                        MetaNamespace nmn = new MetaNamespace(ttype.Name);
-                        nmn.SetRefFromType(RefFromType.CSharp);
-                        if (mb is MetaNamespace)
-                        {
-                            MetaNamespace mn = mb as MetaNamespace;
-                            if (mn != null)
-                            {
-                                mn.AddMetaNamespace(nmn);
-                                return nmn;
-                            }
-                        }
+                        MetaNamespaceCSharp nmn = new MetaNamespaceCSharp(ttype.Name);
+                        return nmn;
                     }
                 }
                 else
@@ -177,22 +190,10 @@ namespace SimpleLanguage.CSharp
                     for (int l = 0; l < namespaces.Length; l++)
                     {
                         string cuns = namespaces[l];
-                        int index = cuns.IndexOf(allName);
-                        if (index == 0)
+                        if (cuns == allName)
                         {
-                            MetaNamespace nmn = new MetaNamespace(name);
-                            nmn.SetRefFromType(RefFromType.CSharp);
-                            if (mb is MetaNamespace mn)
-                            {
-                                mn.AddMetaNamespace(nmn);
-                                return nmn;
-                            }
-                            else if (mb is MetaModule mm)
-                            {
-                                mm.AddMetaNamespace(nmn);
-                                return nmn;
-                            }
-
+                            MetaNamespaceCSharp nmn = new MetaNamespaceCSharp(name);
+                            return nmn;
                         }
                     }
                 }

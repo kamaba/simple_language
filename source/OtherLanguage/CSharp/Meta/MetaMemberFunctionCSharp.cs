@@ -7,14 +7,14 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public partial class MetaMemberFunction
+    public sealed class MetaMemberFunctionCSharp : MetaMemberFunction
     {
         //#ifdef CSharp
         public MethodInfo methodInfo;
         public PropertyInfo propertyInfo;
         public bool isCharp => methodCallType == EMethodCallType.CSharp;
 
-        public MetaMemberFunction(MetaClass mc, MethodInfo mi) : base(mc)
+        public MetaMemberFunctionCSharp(MetaClass mc, MethodInfo mi) : base(mc)
         {
             methodInfo = mi;
 
@@ -24,7 +24,7 @@ namespace SimpleLanguage.Core
 
             HandleMethodInfo();
         }
-        public MetaMemberFunction(MetaClass mc, string _name, MethodInfo mi) : base(mc)
+        public MetaMemberFunctionCSharp(MetaClass mc, string _name, MethodInfo mi) : base(mc)
         {
             methodInfo = mi;
 
@@ -34,7 +34,7 @@ namespace SimpleLanguage.Core
 
             HandleMethodInfo();
         }
-        public MetaMemberFunction(MetaClass mc, PropertyInfo pi) : base(mc)
+        public MetaMemberFunctionCSharp(MetaClass mc, PropertyInfo pi) : base(mc)
         {
             propertyInfo = pi;
 
@@ -83,7 +83,7 @@ namespace SimpleLanguage.Core
                 MetaDefineParamCSharp mdp = new MetaDefineParamCSharp(m_OwnerMetaClass, null, pis[i]);
                 m_MetaMemberParamCollection.AddMetaDefineParam(mdp);
             }
-            Init();
+            base.Init();
 
             if( methodInfo.DeclaringType != null )
             {

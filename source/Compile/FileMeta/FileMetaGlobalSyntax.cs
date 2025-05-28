@@ -8,6 +8,7 @@
 
 using SimpleLanguage.Compile.Parse;
 using SimpleLanguage.Core;
+using SimpleLanguage.CSharp;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
@@ -16,31 +17,19 @@ using System.Text;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
 {
-    public partial class FileMetaImportSyntax : FileMetaBase
+    public sealed class FileMetaImportSyntax : FileMetaBase
     {
         public Token m_AsToken;
         public Token m_AsNameToken;
         List<Token> m_ImportNameListToken = new List<Token>();
         private List<Node> m_NodeList = new List<Node>();
-        private NamespaceStatementBlock m_NamespaceStatement;
+        private NamespaceStatementBlock m_NamespaceStatement = null;
 #pragma warning disable CS0649 // 从未对字段“FileMetaImportSyntax.m_AsNameStatement”赋值，字段将一直保持其默认值 null
-        private NamespaceStatementBlock m_AsNameStatement;
+        private NamespaceStatementBlock m_AsNameStatement = null;
 #pragma warning restore CS0649 // 从未对字段“FileMetaImportSyntax.m_AsNameStatement”赋值，字段将一直保持其默认值 null
 
         public NamespaceStatementBlock namespaceStatement => m_NamespaceStatement;
         public NamespaceStatementBlock asNameStatement => m_AsNameStatement;
-
-        //public MetaNamespace lastMetaNamespace
-        //{
-        //    get
-        //    {
-        //        if (m_NamespaceStatement != null)
-        //        {
-        //            return m_NamespaceStatement.lastMetaNamespace;
-        //        }
-        //        return null;
-        //    }
-        //}
         public FileMetaImportSyntax(List<Node> _nodeList)
         {
             m_NodeList = _nodeList;
@@ -103,7 +92,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         }
                         else
                         {
-                            //m_NamespaceStatement.AddMetaNamespace(mb as MetaNamespace);
+                            m_FileMeta.AddImportMetaNamespace(mb as MetaNamespace);
                         }
                     }
                 }
@@ -111,23 +100,35 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
             if( isCSharp )
             {
+                if(tokenList.Count < 1 )
+                {
+                    Debug.WriteLine("Error 在使用import引用CSharp库时，至少需要一个命名空间");
+                    return;
+                }
+
                 MetaBase curmb = ModuleManager.instance.csharpModule;
+
+                string allname = "";
                 for ( int i = 0; i < tokenList.Count; i++ )
                 {
                     string name = tokenList[i].lexeme.ToString();
-                    MetaNamespace mn = new MetaNamespace(name);
-                    mn.SetRefFromType(RefFromType.CSharp);
-                    curmb.AddMetaBase(name, mn);
-                    curmb = mn;
-                    //m_NamespaceStatement.AddMetaNamespace(mn as MetaNamespace);
+
+                    if( string.IsNullOrEmpty(allname) )
+                    {
+                        allname = name;
+                    }
+                    else
+                    {
+                        allname = allname + "." + name;
+                    }
+                    if ( CSharpManager.IsFindMetaCSharpNamespace(allname) )
+                    {
+                        MetaNamespaceCSharp mn = new MetaNamespaceCSharp(name);
+                        curmb.AddMetaBase(name, mn);
+                        curmb = mn;
+                        m_FileMeta.AddImportMetaNamespace(mn);
+                    }
                 }
-            }
-            else
-            {
-                //if (m_NamespaceStatement.metaNamespaceList.Count != m_NamespaceStatement.tokenList.Count)
-                //{
-                //    Debug.Write("解析Import语句发生错误，没有找到: " + m_NamespaceStatement.namespaceString + "    Token: " + m_Token.sourceBeginChar.ToString());
-                //}
             }
 
         }

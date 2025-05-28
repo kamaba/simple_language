@@ -35,7 +35,7 @@ namespace SimpleLanguage.Core
 
             for( int i = 0; i < preperties.Length; i++ )
             {
-                MetaMemberVariable mv = new MetaMemberVariable(this, preperties[i]);
+                MetaMemberVariableCSharp mv = new MetaMemberVariableCSharp(this, preperties[i]);
 
                 AddMetaMemberVariable(mv);
             }
@@ -44,7 +44,7 @@ namespace SimpleLanguage.Core
             {
                 var f = fields[i];
 
-                MetaMemberVariable mv = new MetaMemberVariable(this, f );
+                MetaMemberVariableCSharp mv = new MetaMemberVariableCSharp(this, f );
 
                 AddMetaMemberVariable(mv);
             }
@@ -52,7 +52,7 @@ namespace SimpleLanguage.Core
             var methods = m_CSharpType.GetMethods();
             for( int i = 0; i < methods.Length; i++ )
             {
-                MetaMemberFunction mmf = new MetaMemberFunction(this, methods[i]);
+                MetaMemberFunctionCSharp mmf = new MetaMemberFunctionCSharp(this, methods[i]);
 
                 AddMetaMemberFunction(mmf);
             }
@@ -78,7 +78,7 @@ namespace SimpleLanguage.Core
             FieldInfo fi = m_CSharpType.GetField(name);
             if (fi != null)
             {
-                MetaMemberVariable cmmv = new MetaMemberVariable(this, fi);
+                MetaMemberVariableCSharp cmmv = new MetaMemberVariableCSharp(this, fi);
                 AddMetaMemberVariable(cmmv);
                 return cmmv;
             }
@@ -102,12 +102,12 @@ namespace SimpleLanguage.Core
 
             if (m_RefFromType == RefFromType.CSharp)
             {
-                findmmf = GetCSharpMemberFunctionAndCreateByNameAndInputParamCollect(name, false, mmpc);
+                findmmf = GetCSharpMemberFunctionAndCreateByNameAndInputParamCollect(name, false, mmpc );
             }
             return findmmf;
         }
 
-        public MetaMemberFunction GetCSharpMemberFunctionAndCreateByNameAndInputParamCollect(string name, bool isStatic, MetaInputParamCollection mipc)
+        public MetaMemberFunctionCSharp GetCSharpMemberFunctionAndCreateByNameAndInputParamCollect(string name, bool isStatic, MetaInputParamCollection mipc)
         {
             BindingFlags bf = System.Reflection.BindingFlags.Public;
             if (isStatic)
@@ -118,11 +118,11 @@ namespace SimpleLanguage.Core
             Binder binder = null;
 #pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
 
-            System.Type[] types = mipc.GetCSharpParamTypes();
+            System.Type[] types = MetaInputParamCollectionCSharp.GetCSharpParamTypes(mipc);
 
             MethodInfo mi = m_CSharpType.GetMethod(name, types);
             if (mi == null) return null;
-            MetaMemberFunction cmmf = new MetaMemberFunction(this, mi);
+            MetaMemberFunctionCSharp cmmf = new MetaMemberFunctionCSharp(this, mi);
             AddMetaMemberFunction(cmmf, false);
             return cmmf;
         }

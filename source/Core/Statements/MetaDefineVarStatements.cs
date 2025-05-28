@@ -116,7 +116,7 @@ namespace SimpleLanguage.Core.Statements
                 m_ExpressNode = ExpressManager.CreateExpressNodeByCEP(cep);
                 if (m_ExpressNode == null)
                 {
-                    Debug.Write("Error 解析新建变量语句时，表达式解析为空!!__1");
+                    Debug.WriteLine("Error 解析新建变量语句时，表达式解析为空!!__1");
                     return;
                 }
                 m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
@@ -124,7 +124,7 @@ namespace SimpleLanguage.Core.Statements
                 expressRetMetaDefineType = m_ExpressNode.GetReturnMetaDefineType();               
                 if (expressRetMetaDefineType == null)
                 {
-                    Debug.Write("Error 解析新建变量语句时，表达式返回类型为空!!__2");
+                    Debug.WriteLine("Error 解析新建变量语句时，表达式返回类型为空!!__2");
                     return;
                 }
             }
@@ -159,7 +159,7 @@ namespace SimpleLanguage.Core.Statements
                             MetaCallLinkExpressNode expressMDT = m_ExpressNode as MetaCallLinkExpressNode;
                             if (expressMDT == null )
                             {
-                                Debug.Write("Error Enum模式，只允许是调用模式[CallLinkExpress]");
+                                Debug.WriteLine("Error Enum模式，只允许是调用模式[CallLinkExpress]");
                             }
                             else
                             {
