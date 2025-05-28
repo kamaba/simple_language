@@ -1,4 +1,5 @@
-﻿using SimpleLanguage.Core.Statements;
+﻿using SimpleLanguage.Compile.CoreFileMeta;
+using SimpleLanguage.Core.Statements;
 using SimpleLanguage.CSharp;
 using System;
 using System.Collections.Generic;
@@ -9,11 +10,11 @@ using static SimpleLanguage.Core.MetaVariable;
 
 namespace SimpleLanguage.Core
 {
-    public partial class MetaInputParam
+    public sealed class MetaInputParamCSharp
     {
-        public System.Type GetCSharpType()
+        public static System.Type GetCSharpType(MetaInputParam mip )
         {
-            MetaClass orgmc = m_Express.GetReturnMetaClass();
+            MetaClass orgmc = mip.express.GetReturnMetaClass();
 
             if( orgmc is MetaClassCSharp mcc )
             {
@@ -31,22 +32,23 @@ namespace SimpleLanguage.Core
             return type;
         }
     }
-    public partial class MetaInputParamCollection
+    public sealed class MetaInputParamCollectionCSharp
     {
         System.Type[] m_CShpartParamTypes;
         bool m_IsHaveParse = false;
-        public System.Type[] GetCSharpParamTypes()
-        {
-            if(m_IsHaveParse )
-            {
-                return m_CShpartParamTypes;
-            }
-            m_CShpartParamTypes = new System.Type[count];
 
-            for( int i = 0; i < count; i++ )
+        public static System.Type[]  GetCSharpParamTypes( MetaInputParamCollection mipc )
+        {
+            //if(m_IsHaveParse )
+            //{
+            //    return m_CShpartParamTypes;
+            //}
+            var m_CShpartParamTypes = new System.Type[mipc.count];
+
+            for (int i = 0; i < mipc.count; i++)
             {
-                MetaInputParam mip = metaParamList[i] as MetaInputParam;
-                m_CShpartParamTypes[i] = mip.GetCSharpType();
+                MetaInputParam mip = mipc.metaInputParamList[i];
+                m_CShpartParamTypes[i] = MetaInputParamCSharp.GetCSharpType(mip);
             }
 
             return m_CShpartParamTypes;

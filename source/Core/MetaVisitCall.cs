@@ -109,14 +109,14 @@ namespace SimpleLanguage.Core
             if (m_MetaFunction != null)
             {
                 sb.Append(m_MetaFunction.name + "(");
-                int inputCount = m_MetaInputParamCollection?.metaParamList.Count ?? 0;
-                List<MetaParam> mpList = m_MetaFunction.metaMemberParamCollection.metaParamList;
-                int defineCount = m_MetaFunction.metaMemberParamCollection.count;
+                int inputCount = m_MetaInputParamCollection?.metaInputParamList.Count ?? 0;
+                List<MetaDefineParam> mpList = m_MetaFunction.metaMemberParamCollection.metaDefineParamList;
+                int defineCount = m_MetaFunction.metaMemberParamCollection.maxParamCount;
                 for (int i = 0; i < defineCount; i++)
                 {
                     if (i < inputCount)
                     {
-                        MetaInputParam mip = m_MetaInputParamCollection.metaParamList[i] as MetaInputParam;
+                        MetaInputParam mip = m_MetaInputParamCollection.metaInputParamList[i];
                         sb.Append(mip.ToStatementString());
                     }
                     else
@@ -142,17 +142,27 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            if (m_CallerMetaVariable != null)
+            if( this.methodCallStackType == EMethodCallStackType.StaticStack )
             {
-                sb.Append(m_CallerMetaVariable.name );
+                sb.Append(this.m_MetaFunction.allName);
+                sb.Append("( ");
+                sb.Append(this.metaInputParamCollection.ToString());
+                sb.Append(" )");
             }
+            else
+            {
+                if (this.m_CallerMetaVariable != null)
+                {
+                    sb.Append(m_CallerMetaVariable.name);
+                }
 
-            if (m_CallerMetaClass != null)
-            {
-                sb.Append("[" + m_CallerMetaClass.ToDefineTypeString() + "]");
+                if (m_CallerMetaClass != null)
+                {
+                    sb.Append("[" + m_CallerMetaClass.ToDefineTypeString() + "]");
+                }
+                sb.Append(".");
+                sb.Append(ToCommonString());
             }
-            sb.Append(".");
-            sb.Append(ToCommonString());
             return sb.ToString();
         }
     }

@@ -25,7 +25,7 @@ namespace SimpleLanguage.Core
         ManualAndCSharp = 6,     //手动注入的c#代码进逻辑解析
         All = 7
     }
-    public partial class MetaMemberVariable : MetaVariable, IComparable<MetaMemberVariable>
+    public class MetaMemberVariable : MetaVariable, IComparable<MetaMemberVariable>
     {
         public EFromType fromType => m_FromType;
         public int index => m_Index;
@@ -33,7 +33,7 @@ namespace SimpleLanguage.Core
         public int parseLevel { get; set; } = -1;
         public bool isInnerDefine => m_IsInnerDefine;
 
-        private EFromType m_FromType = EFromType.Code;
+        protected EFromType m_FromType = EFromType.Code;
         private int m_Index = -1;
         private FileMetaMemberVariable m_FileMetaMemeberVariable;
         private MetaExpressNode m_Express = null;

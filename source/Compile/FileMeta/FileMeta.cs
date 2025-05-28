@@ -34,6 +34,8 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         private List<FileMetaNamespace> m_FileMetaAllNamespaceList = new List<FileMetaNamespace>();
         private List<FileMetaClass> m_FileMetaAllClassList = new List<FileMetaClass>();
 
+        private List<MetaNamespace> m_ImportMetaNamespaceList = new List<MetaNamespace>();
+
         public FileMeta( string p )
         {
             m_Path = p;
@@ -62,6 +64,14 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         {
             fmc.SetFileMeta(this);
             m_FileMetaAllClassList.Add(fmc);
+        }
+        public void AddImportMetaNamespace(MetaNamespace mn)
+        {
+            if (m_ImportMetaNamespaceList.IndexOf(mn) >= 0)
+            {
+                return;
+            }
+            m_ImportMetaNamespaceList.Add(mn);
         }
         public FileMetaClass GetFileMetaClassByName( string name )
         {
@@ -132,29 +142,19 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 }
             }
 
-            for (int i = 0; i < m_FileImportSyntax.Count; i++)
+            for (int i = 0; i < m_ImportMetaNamespaceList.Count; i++)
             {
-                MetaBase mn = NamespaceManager.instance.FindImportNamespace( m_FileImportSyntax[i], name );
-                MetaBase findMB = null;
-                while (mn != null)
+                var imn = m_ImportMetaNamespaceList[i];
+                if( imn.refFromType == RefFromType.CSharp )
                 {
-                    var fmn = mn.GetChildrenMetaBaseByName(name);
-                    if (fmn != null)
-                    {
-                        findMB = fmn;
-                        break;
-                    }
-//#ifdef CSharp
-                    else if( mn.refFromType == RefFromType.CSharp )
-                    {
-                        findMB = CSharpManager.FindAndCreateMetaBase(mn, name);
-                        if (findMB != null)
-                            return findMB;
-                    }
-//#endif
-                    mn = mn.parentNode;
+                    var findMB = CSharpManager.FindAndCreateMetaBase(imn, name);
+                    if (findMB != null)
+                        return findMB;
                 }
-                if (findMB != null) return findMB;
+                else
+                {
+                    return imn.GetChildrenMetaBaseByName(name);
+                }
             }
             return null;
         }

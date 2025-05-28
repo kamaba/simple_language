@@ -1,11 +1,12 @@
 import CSharp.System
+import CSharp.SimpleLanguage.Core
 
 public class Float
 {    
     public string toString()
     {
         string str = ""
-        str = Int32MetaClass.MetaToString( this )
+        str = SelfMeta.FloatMetaClass.MetaToString( this )
         ret str
     }
 }
@@ -20,7 +21,7 @@ StringTest
         Class2 c2 = null
         static string printf( string x )
         {
-            Debug.WriteLine("---------------------: " + x );
+            Console.WriteLine("---------------------: " + x );
             ret "m";
         }
     }

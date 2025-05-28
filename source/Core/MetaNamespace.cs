@@ -8,8 +8,6 @@ namespace SimpleLanguage.Core
 {
     public partial class MetaNamespace : MetaBase
     {
-        private string m_NamespaceName = null;
-
         public bool isNotAllowCreateName { get; set; } = false;
         public string namespaceName
         {
@@ -51,13 +49,13 @@ namespace SimpleLanguage.Core
                 return parentNode as MetaNamespace;
             }
         }
+        private string m_NamespaceName = null;
+        private Dictionary<string, MetaNamespace> m_MetaNamespaceDict = new Dictionary<string, MetaNamespace>();
+        private Dictionary<string, MetaClass> m_MetaClassDict = new Dictionary<string, MetaClass>();
         public MetaNamespace(string _name)
         {
             m_Name = _name;
         }
-        public Dictionary<string, MetaNamespace> m_MetaNamespaceDict = new Dictionary<string, MetaNamespace>();
-        public Dictionary<string, MetaClass> m_MetaClassDict = new Dictionary<string, MetaClass>();
-
         public void AddMetaNamespace(MetaNamespace mn)
         {
             m_MetaNamespaceDict.Add(mn.name, mn);
@@ -69,23 +67,6 @@ namespace SimpleLanguage.Core
             m_MetaClassDict.Add(mc.name, mc);
 
             AddMetaBase(mc.name, mc);
-        }
-        public MetaBase GetMetaBaseByAllName( string allName )
-        {
-            List<string> list = new List<string>();
-            if(CompilerUtil.CheckNameList( allName, list ) )
-            {
-                MetaBase findMB = this;
-                for( int i = 0; i < list.Count; i++ )
-                {
-                    findMB = findMB.GetChildrenMetaBaseByName(list[i]);
-                    if (findMB == null) break;
-                }
-                return findMB;
-            }
-
-
-            return null;
         }
         public void PrintAllNamespace()
         {

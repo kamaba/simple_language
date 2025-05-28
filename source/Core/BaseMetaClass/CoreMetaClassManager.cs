@@ -16,6 +16,7 @@ namespace SimpleLanguage.Core.SelfMeta
     public enum DefaultObject
     {
         Void,
+        Null,
         Object,
         Boolean,
         Byte,
@@ -53,6 +54,7 @@ namespace SimpleLanguage.Core.SelfMeta
                 return s_Instance;
             }
         }
+        public static MetaClass nullMetaClass { get; private set; } = null;
         public static MetaClass objectMetaClass { get; private set; } = null;
         public static MetaClass stringMetaClass { get; private set; } = null;
         public static MetaClass voidMetaClass { get; set; } = null;
@@ -80,6 +82,7 @@ namespace SimpleLanguage.Core.SelfMeta
 
         static CoreMetaClassManager()
         {
+            nullMetaClass = NullMetaClass.CreateMetaClass();
             objectMetaClass = ObjectMetaClass.CreateMetaClass();
             voidMetaClass = VoidMetaClass.CreateMetaClass();
             booleanMetaClass = BooleanMetaClass.CreateMetaClass();
@@ -139,6 +142,8 @@ namespace SimpleLanguage.Core.SelfMeta
             {
                 case EType.Void:
                     return voidMetaClass;
+                case EType.Null:
+                    return nullMetaClass;
                 case EType.Boolean:
                     return booleanMetaClass;
                 case EType.Byte:
@@ -171,7 +176,7 @@ namespace SimpleLanguage.Core.SelfMeta
                     return rangeMetaClass;
                 default:
                     {
-                        Debug.Write("Warning ClassManager GetMetaClassByEType 1111");
+                        Debug.WriteLine("Warning ClassManager GetMetaClassByEType 1111");
                     }
                     break;
             }
@@ -183,6 +188,8 @@ namespace SimpleLanguage.Core.SelfMeta
             {
                 case "void":
                     return DefaultObject.Void.ToString();
+                case "null":
+                    return DefaultObject.Null.ToString();
                 case "object":
                     return DefaultObject.Object.ToString();
                 case "bool":

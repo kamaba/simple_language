@@ -53,25 +53,21 @@ namespace SimpleLanguage.IR
             paramCount = mfc.metaInputParamCollection.count;
             for (int j = 0; j < paramCount; j++)
             {
-                MetaInputParam mip = mfc.metaInputParamCollection.metaParamList[j] as MetaInputParam;
+                MetaInputParam mip = mfc.metaInputParamCollection.metaInputParamList[j];
                 IRExpress irexpress = new IRExpress(m_IRMethod, mip.express);
                 AddIRRangeData(irexpress.IRDataList);
             }
             MetaFunction mf = mfc.function;
-            if (mf is MetaMemberFunction)
+            MetaMemberFunctionCSharp mmf = mf as MetaMemberFunctionCSharp;
+            if (mmf != null)
             {
-                MetaMemberFunction mmf = mf as MetaMemberFunction;
-                if (mmf.methodCallType == EMethodCallType.CSharp )
-                {
-                    m_MethodInfo = mmf.methodInfo;
-
-                    IRData data = new IRData();
-                    data.opCode = EIROpCode.CallCSharpMethod;
-                    data.opValue = this;
-                    data.SetDebugInfoByToken( mmf.GetToken() );
-                    AddIRData(data);
-                    return;
-                }
+                m_MethodInfo = mmf.methodInfo;
+                IRData data = new IRData();
+                data.opCode = EIROpCode.CallCSharpMethod;
+                data.opValue = this;
+                data.SetDebugInfoByToken(mmf.GetToken());
+                AddIRData(data);
+                return;
             }
 
             m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(mf.allName);

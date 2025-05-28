@@ -55,7 +55,7 @@ namespace SimpleLanguage.IR
                 imp.index = 0;
                 m_MethodReturnList.Add(imp);
             }
-            var list2 = mf.metaMemberParamCollection.metaParamList;
+            var list2 = mf.metaMemberParamCollection.metaDefineParamList;
             for( int i = 0; i < list2.Count; i++ )
             {
                 MetaDefineParam mdp = list2[i] as MetaDefineParam;

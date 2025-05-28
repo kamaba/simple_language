@@ -202,7 +202,7 @@ namespace SimpleLanguage.Core.Statements
         }
         public void SetMetaMemberParamCollection( MetaDefineParamCollection mmpc )
         {
-            var list = mmpc.GetMetaDefineList();
+            var list = mmpc.metaDefineParamList;
             for ( int i = 0; i < list.Count; i++ )
             {
                 var mmpcp = list[i];

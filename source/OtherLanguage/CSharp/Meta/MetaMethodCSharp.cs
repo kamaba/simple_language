@@ -18,22 +18,19 @@ namespace SimpleLanguage.Core
 
         public void ParseCSharp()
         {
-            var mmf = m_MetaFunction as MetaMemberFunction;
+            var mmf = m_MetaFunction as MetaMemberFunctionCSharp;
             if ( mmf != null )
             {
-                if(mmf.methodCallType == EMethodCallType.CSharp)
+                if(mmf.isStatic == false)
                 {
-                    if( mmf.isStatic == false )
-                    {
-                        instance = new object();
-                    }
-                    methodInfo = mmf.methodInfo;
+                    instance = new object();
                 }
+                methodInfo = mmf.methodInfo;
             }
         }
         public object Execute()
         {
-            var paramsTypes = m_MetaInputParamCollection.GetCSharpParamTypes();
+            var paramsTypes = MetaInputParamCollectionCSharp.GetCSharpParamTypes(m_MetaInputParamCollection);
             Object[] paramsObjs = new Object[paramsTypes.Length];
 
             return methodInfo.Invoke(instance, paramsObjs);
