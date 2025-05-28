@@ -27,14 +27,14 @@ StringTest
     }
     static fun()
     {
-        a1 = "aabcc";
-        a2 = "aaacc" + "deee";
-        a3 = "aa" + 3;
+        #a1 = "aabcc";
+        #a2 = "aaacc" + "deee";
+        #a3 = "aa" + 3;
         a4 = "aa" + 20.0f.toString();
-        Class1.printf( a2 );
+        Class1.printf( a4 );
         
-        int a = 1;
-        int b = 2;
+        #int a = 1;
+        #int b = 2;
         #!
         a5 = "${ a+b+(3+10+"aadf").ToString() }";    #{}任何时刻，都表示可以执行自己的内部语句  
         a6 = "print a=@Class1.Printf('ass') ";

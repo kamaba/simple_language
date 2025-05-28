@@ -11,21 +11,13 @@ namespace SimpleLanguage.Core
     {
         public System.Type csharpType => m_CSharpType;
 
-
-        System.Type m_CSharpType;
+        private System.Type m_CSharpType = null;
 
         public MetaClassCSharp(string _name, System.Type type) :
             base( _name, EClassDefineType.InnerDefine )
         {
             m_CSharpType = type;
             m_RefFromType = RefFromType.CSharp;
-        }
-        public System.Type GetCSharpType()
-        {
-            if( m_CSharpType == null )
-            {
-            }
-            return m_CSharpType;
         }
         public void ParseCSharp()
         {
@@ -56,7 +48,6 @@ namespace SimpleLanguage.Core
 
                 AddMetaMemberFunction(mmf);
             }
-
         }
 
         public override MetaMemberVariable GetMetaMemberVariableByName(string name)

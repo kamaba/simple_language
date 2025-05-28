@@ -73,13 +73,13 @@ namespace SimpleLanguage.Core.IR
                     {
                         IRStoreVariable irsv = new IRStoreVariable(m_IRMethod, cnode.variable.GetHashCode(), IRMetaVariableFrom.LocalStatement);
                         irList.Add(irsv);
-
-                        IRLoadVariable irlv = new IRLoadVariable(m_IRMethod, cnode.variable.GetHashCode(), IRMetaVariableFrom.LocalStatement);
-                        irList.Add(irlv);
                     }
 
                     if( irmc.IsCoreMetaClass() == false )
                     {
+                        IRLoadVariable irlv = new IRLoadVariable(m_IRMethod, cnode.variable.GetHashCode(), IRMetaVariableFrom.LocalStatement);
+                        irList.Add(irlv);
+
                         bool isUseAssign = false;
                         for (int x = 0; x < irmc.localIRMetaVariableList.Count; x++)
                         {
