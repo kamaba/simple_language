@@ -117,7 +117,7 @@ namespace SimpleLanguage.Core.Statements
         }
         private void Parse()
         {
-            var metaCallLink = new MetaCallLink(m_FileMetaOpAssignSyntax.variableRef, m_OwnerMetaBlockStatements?.ownerMetaClass, m_OwnerMetaBlockStatements );
+            var metaCallLink = new MetaCallLink(m_FileMetaOpAssignSyntax.variableRef, m_OwnerMetaBlockStatements?.ownerMetaClass, m_OwnerMetaBlockStatements, null);
 
             if (metaCallLink == null)
             {

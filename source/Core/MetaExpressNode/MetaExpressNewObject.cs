@@ -39,7 +39,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             if (fmcl != null)
             {
-                m_MetaExpress = new MetaCallLinkExpressNode(fmcl, mt.metaClass, mbs);
+                m_MetaExpress = new MetaCallLinkExpressNode(fmcl, mt.metaClass, mbs, null);
                 AllowUseSettings auc = new AllowUseSettings();
                 auc.useNotConst = false;
                 auc.useNotStatic = false;
@@ -215,7 +215,7 @@ namespace SimpleLanguage.Core
                     }
                 case FileMetaCallTerm callTerm:
                     {
-                        MetaCallLinkExpressNode clen = new MetaCallLinkExpressNode(callTerm.callLink, mc, mbs);
+                        MetaCallLinkExpressNode clen = new MetaCallLinkExpressNode(callTerm.callLink, mc, mbs, null);
                         AllowUseSettings auc = new AllowUseSettings();
                         auc.useNotConst = false;
                         auc.useNotStatic = false;

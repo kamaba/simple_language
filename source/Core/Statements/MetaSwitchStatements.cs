@@ -83,7 +83,7 @@ namespace SimpleLanguage.Core.Statements
             {
                 if ( m_FileMetaKeyCaseSyntax.defineClassCallLink != null )
                 {
-                    MetaCallLinkExpressNode mcen = new MetaCallLinkExpressNode(m_FileMetaKeyCaseSyntax.defineClassCallLink, null, null);
+                    MetaCallLinkExpressNode mcen = new MetaCallLinkExpressNode(m_FileMetaKeyCaseSyntax.defineClassCallLink, null, null, null);
                     mcen.Parse(new AllowUseSettings() { });
                     mcen.CalcReturnType();
 
@@ -233,7 +233,7 @@ namespace SimpleLanguage.Core.Statements
         {
             if(m_FileMetaKeySwitchSyntax.fileMetaVariableRef != null )
             {
-                m_MetaCallLink = new MetaCallLink(m_FileMetaKeySwitchSyntax.fileMetaVariableRef, ownerMetaClass, m_OwnerMetaBlockStatements);               
+                m_MetaCallLink = new MetaCallLink(m_FileMetaKeySwitchSyntax.fileMetaVariableRef, ownerMetaClass, m_OwnerMetaBlockStatements, null);               
             }
             else
             {

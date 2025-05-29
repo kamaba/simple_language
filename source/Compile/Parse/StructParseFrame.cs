@@ -1265,13 +1265,13 @@ namespace SimpleLanguage.Compile.Parse
         }
         public void ParseInClass( Node pnode )
         {
-            List<Node> nodeList = new List<Node>();
-
-            Node nextNode = null;
-            if(pnode.parseIndex >= pnode.childList.Count)
+            if (pnode.parseIndex >= pnode.childList.Count)
             {
                 return;
             }
+
+            List<Node> nodeList = new List<Node>();
+            Node nextNode = null;
             int index = pnode.parseIndex;
 
             int parseType = 0;      // 1->是类class\n{}  2->函数 init()\n{}      3->变量  int a;  int a=20; a = 20; a = {}\n a = {};
@@ -1279,149 +1279,54 @@ namespace SimpleLanguage.Compile.Parse
             for ( index = pnode.parseIndex; index < pnode.childList.Count;)
             {
                 var curNode = pnode.childList[index++];
-
                 nextNode = null;
-                if (index < pnode.childList.Count)
-                {
-                    nextNode = pnode.childList[index];
-                }
                 
-                if (curNode.nodeType == ENodeType.Key)          // public class int object void
+                if(curNode.nodeType == ENodeType.IdentifierLink)  //Class1
                 {
                     nodeList.Add(curNode);
-                }
-                else if (curNode.nodeType == ENodeType.ConstValue)
-                {
-                    nodeList.Add(curNode);
-                }
-                else if (curNode.nodeType == ENodeType.Comma )
-                {
-                    nodeList.Add(curNode);
-                }
-                else if(curNode.nodeType == ENodeType.IdentifierLink)  //Class1
-                {
-                    nodeList.Add(curNode);
-                    if (nextNode?.nodeType == ENodeType.Par)   //Class1()
+                    if (index < pnode.childList.Count)
                     {
-                        parseType = 2;
-                        index++;
-                        curNode.parNode = nextNode;
+                        nextNode = pnode.childList[index];
                     }
-                    else if (nextNode?.nodeType == ENodeType.Angle)   //Class1<T>   Func<T>( T t );  array<int> arr1;
+                    if (nextNode?.nodeType == ENodeType.Angle)   //Class1<T>   Func<T>( T t );  array<int> arr1;
                     {
                         curNode.angleNode = nextNode;
                         index++;
-                        if( index < pnode.childList.Count)
+
+                        if (index < pnode.childList.Count)
                         {
-                            if(pnode.childList[index].nodeType == ENodeType.IdentifierLink )
-                            {
-                                parseType = 3;
-                            }
+                            nextNode = pnode.childList[index];
                         }
                     }
-                    else if( nextNode?.nodeType == ENodeType.IdentifierLink )
+
+                    if (nextNode?.nodeType == ENodeType.Par)   //Class1()
                     {
-                        parseType = 3;
+                        index++;
+                        if( parseType == 0 )
+                            parseType = 2;
+                        curNode.parNode = nextNode;
                     }
                 }
                 else if( curNode.nodeType == ENodeType.Assign )
                 {
                     nodeList.Add(curNode);
                     parseType = 3;
-                    bool isLineEnd = false;
-                    for (int index2 = index; index2 < pnode.childList.Count; index2++)
-                    {
-                        var node2 = pnode.childList[index2];
-                        if (ProjectManager.isUseForceSemiColonInLineEnd)
-                        {
-                            if (node2.nodeType == ENodeType.SemiColon)
-                            {
-                                isLineEnd = true;
-                            }
-                        }
-                        else
-                        {
-                            if (node2.nodeType == ENodeType.LineEnd)
-                            {
-                                isLineEnd = true;
-                            }
-                            else if(node2.nodeType == ENodeType.SemiColon )
-                            {
-                                if (pnode.childList.Count > index2 + 1)
-                                {
-                                    if (pnode.childList[index2 + 1].nodeType == ENodeType.LineEnd )
-                                    {
-                                        index2++;
-                                        isLineEnd = true;
-                                    }
-                                }
-                                isLineEnd = true;
-                            }
-                        }
-                        if (isLineEnd)
-                        {
-                            index = index2 + 1;
-                            break;
-                        }
-                        else
-                        {
-                            nodeList.Add(node2);
-                        }
-                    }
-                    break;
-                    //index++;
-                    //if (index < pnode.childList.Count)
-                    //{
-                    //    var next2Node = pnode.childList[index];
-                    //    if (next2Node.nodeType == ENodeType.LineEnd) //只允许有一次回车  name = \n
-                    //    {
-                    //        next2Node = pnode.childList[++index];
-                    //    }
-                    //    if (next2Node.nodeType == ENodeType.Symbol
-                    //        || next2Node.nodeType == ENodeType.ConstValue
-                    //        || next2Node.nodeType == ENodeType.Par
-                    //        || next2Node.nodeType == ENodeType.Bracket
-                    //        || next2Node.nodeType == ENodeType.IdentifierLink)
-                    //    {
-                    //        nodeList.Add(curNode);
-                    //        nodeList.Add(nextNode);
-                    //        int j = 0;
-                    //        for (j = index; j < pnode.childList.Count; j++)
-                    //        {
-                    //            if ((pnode.childList[j].nodeType == ENodeType.LineEnd
-                    //                || pnode.childList[j].nodeType == ENodeType.SemiColon))
-                    //            {
-                    //                j++;
-                    //                break;
-                    //            }
-                    //            nodeList.Add(pnode.childList[j]);
-                    //        }
-                    //        index = j;
-                    //        FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, nodeList);
-                    //        nodeList.Clear();
-
-                    //        if (currentNodeInfo.parseType == EParseNodeType.Class)
-                    //        {
-                    //            currentNodeInfo.codeClass.AddFileMemberVariable(fmmd);
-                    //        }
-                    //    }
-                    //    else
-                    //    {
-                    //        Debug.Write("Error 解析： “ + " + next2Node?.token?.ToLexemeAllString());
-                    //    }
-                    //}
                 }
                 else if (curNode.nodeType == ENodeType.LineEnd)
                 {
-                    if (nextNode?.nodeType == ENodeType.Brace)
+                    if (index < pnode.childList.Count)
                     {
-                        block  = nextNode;
-                        index++;
-                        break;
+                        nextNode = pnode.childList[index];
+                        if (nextNode.nodeType == ENodeType.Brace)
+                        {
+                            block = nextNode;
+                            index++;
+                            break;
+                        }
                     }
                     if (!ProjectManager.isUseForceSemiColonInLineEnd)
                     {
-                        if(parseType == 3 )
+                        if( parseType == 3 )
                         {
                             break;
                         }
@@ -1432,27 +1337,17 @@ namespace SimpleLanguage.Compile.Parse
                     block = curNode;
                     break;
                 }
+                else if (curNode.nodeType == ENodeType.SemiColon)
+                {
+                    break;
+                }
                 else
                 {
-                    if (ProjectManager.isUseForceSemiColonInLineEnd)
-                    {
-                        if (curNode.nodeType == ENodeType.SemiColon)
-                        {
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        if (curNode.nodeType == ENodeType.SemiColon)
-                        {
-                            break;
-                        }
-                    }
-                    Debug.Write("Error 不允许--------------------");
+                    nodeList.Add(curNode);
                 }
             }
-
             pnode.parseIndex = index;
+
             if(parseType == 0 )
             {
                 parseType = 1;
@@ -1462,11 +1357,6 @@ namespace SimpleLanguage.Compile.Parse
                 if(nodeList.Count > 0 && block != null )
                 {
                     AddFileMetaClasss(block, nodeList);
-                }
-                else
-                {
-                    Debug.Write("正常处理");
-                    return;
                 }
             }
             else if( parseType == 2 )

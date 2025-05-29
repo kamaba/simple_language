@@ -252,7 +252,8 @@ namespace SimpleLanguage.Core
             {
                 foreach( var it2 in it.Value )
                 {
-                    it2.ParseDefineMetaType();
+                    if( !it2.isTemplateFunction)
+                        it2.ParseDefineMetaType();
                 }
             }
         }
@@ -447,6 +448,7 @@ namespace SimpleLanguage.Core
                 MetaGenTemplateClass tmc = new MetaGenTemplateClass(this);
                 AddGenTemplateMetaClass(tmc);
 
+                string extenName = "";
                 for (int i = 0; i < metaTemplateList.Count; i++)
                 {
                     var classTemplate = metaTemplateList[i];
@@ -454,7 +456,17 @@ namespace SimpleLanguage.Core
 
                     MetaGenTemplate mgt = new MetaGenTemplate(classTemplate, inputTemplate);
                     tmc.AddMetaGenTemplate(mgt);
+
+                    if( string.IsNullOrEmpty(extenName ) )
+                    {
+                        extenName = inputTemplate.metaClass.name;
+                    }
+                    else
+                    {
+                        extenName = extenName + "," + inputTemplate.metaClass.name;
+                    }
                 }
+                tmc.SetName(this.name + "<" + extenName + ">");
                 tmc.UpdateGenMember();
                 tmc.SetDeep(m_Deep + 1);
 

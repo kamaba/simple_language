@@ -78,7 +78,8 @@ namespace SimpleLanguage.Core
         {
             foreach (var v in metaMemberFunctionDict)
             {
-                v.Value.ParseStatements();
+                if (!v.Value.isTemplateFunction)
+                    v.Value.ParseStatements();
             }
         }
     }

@@ -16,8 +16,9 @@ using System.Diagnostics;
 
 namespace SimpleLanguage.Core
 {
-    public partial class MetaMemberFunction : MetaFunction
+    public class MetaMemberFunction : MetaFunction
     {
+        public MetaMapTemplateDict mapTemplateDict => m_MapTemplateDict;
         public override string functionAllName
         {
             get
@@ -40,7 +41,7 @@ namespace SimpleLanguage.Core
                 return m_FunctionAllName;
             }
         }
-
+        public bool isTemplateFunction => m_IsTemplateFunction;
         public bool isWithInterface { get; set; } = false;
         public bool isOverrideFunction { get; set; } = false;
         public bool isConstructInitFunction => m_ConstructInitFunction;
@@ -49,17 +50,13 @@ namespace SimpleLanguage.Core
         public bool isFinal { get; set; } = false;
         public bool isCanRewrite { get; set; } = false;
         public bool isTemplateInParam { get; set; } = false;
-        public bool isCastFunction
-        {
-            get
-            {
-                return m_Name == "Cast";
-            }
-        }
 
+        private bool m_IsTemplateFunction = false;
         private string m_FunctionAllName = null;
         private bool m_ConstructInitFunction = false;
         protected FileMetaMemberFunction m_FileMetaMemberFunction = null;
+        private MetaMapTemplateDict m_MapTemplateDict = new MetaMapTemplateDict();
+        protected List<MetaMemberFunction> m_TemplateMemberFunctionList = new List<MetaMemberFunction>();
 
         public MetaMemberFunction( MetaClass mc ):base(mc)
         {
@@ -95,6 +92,8 @@ namespace SimpleLanguage.Core
             var templateCount = fmmf.metaTemplatesList.Count;         // Cast<T1>() 里边的T1 可以是多个
             for( int i = 0; i < templateCount; i++ )
             {
+                m_IsTemplateFunction = true;
+
                 var template = fmmf.metaTemplatesList[i];
 
                 MetaTemplate mdt = new MetaTemplate( ownerMetaClass, template );
@@ -263,6 +262,10 @@ namespace SimpleLanguage.Core
         {
             m_MetaMemberTemplateCollection.AddMetaDefineTemplate(mt);
         }
+        public void AddTemplateMemberFunction( MetaMemberFunction mmf )
+        {
+            this.m_TemplateMemberFunctionList.Add(mmf);
+        }
         public void ParseName()
         {
             for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
@@ -342,12 +345,24 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
+
+            for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
+            {
+                MetaDefineParam mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
+                if( !m_IsTemplateFunction )
+                {
+                    mpl.ParseMetaDefineType();
+                    mpl.CreateExpress();
+                }
+            }
         }
         public override bool ParseMetaExpress()
         {
             for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
             {
-                m_MetaMemberParamCollection.metaDefineParamList[i].CaleReturnType();
+                MetaDefineParam mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
+                mpl.Parse();
+                mpl.CaleReturnType();
             }
             return true;
         }

@@ -16,12 +16,14 @@ using System.Diagnostics;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
 {
-    public partial class FileMetaParamterDefine : FileMetaBase
+    public class FileMetaParamterDefine : FileMetaBase
     {
         public FileMetaClassDefine classDefineRef => m_ClassDefineRef;
         public FileMetaBaseTerm express => m_Express;
+        public Token paramsToken => m_ParamsToken;
 
         private Token m_AssignToken = null;
+        private Token m_ParamsToken = null;
         private FileMetaClassDefine m_ClassDefineRef = null;
         private FileMetaBaseTerm m_Express;
         public FileMetaParamterDefine(FileMeta fileMeta, List<Node> list)
@@ -41,11 +43,13 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 Debug.Write("Error 解析NodeList出现错误~~~");
                 return false;
             }
-            m_Express = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.ParamVariable);
+            if(valueNodeList.Count > 0 )
+                m_Express = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.ParamVariable);
+
 
             Node nameNode = null;
             Node typeNode = null;
-            if (!GetNameAndTypeNode(listDefieNode, ref nameNode, ref typeNode))
+            if (!GetNameAndTypeNode(listDefieNode, ref nameNode, ref typeNode, ref m_ParamsToken ))
             {
                 Debug.Write("Error 没有找到该定义名称 必须使用例: X = 10; 的格式");
                 return false;
@@ -58,20 +62,43 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             m_Token = nameNode?.token;
 
             if( typeNode != null )
-                m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, typeNode.linkTokenList );             
+                m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, typeNode );             
 
             return true;
         }
-        public bool GetNameAndTypeNode(List<Node> defineNodeList, ref Node nameNode, ref Node typeNode)
+        public bool GetNameAndTypeNode(List<Node> listDefieNode, ref Node nameNode, ref Node typeNode, ref Token paramstoken )
         {
-            if (defineNodeList.Count == 2)
+            List<Node> removeNodeList = new List<Node>();
+            for (int i = 0; i < listDefieNode.Count - 1; i++)
             {
-                typeNode = defineNodeList[0];
-                nameNode = defineNodeList[1];
+                var curNode = listDefieNode[i];
+                Node nextNode = listDefieNode[i + 1];
+                if ( nextNode.nodeType == ENodeType.Bracket)
+                {
+                    curNode.bracketNode = nextNode;
+                    removeNodeList.Add(nextNode);
+                }
+                else if(curNode.nodeType == ENodeType.Key && curNode.token.type == ETokenType.Params )
+                {
+                    typeNode = curNode;
+                    paramstoken = curNode.token;
+                    removeNodeList.Add(curNode);
+                }
+
             }
-            else if (defineNodeList.Count == 1)
+            for( int i = 0; i < removeNodeList.Count; i++)
             {
-                nameNode = defineNodeList[0];
+                listDefieNode.Remove(removeNodeList[i]);
+            }
+
+            if (listDefieNode.Count == 2)
+            {
+                typeNode = listDefieNode[0];
+                nameNode = listDefieNode[1];
+            }
+            else if (listDefieNode.Count == 1)
+            {
+                nameNode = listDefieNode[0];
             }
             else
             {
@@ -166,16 +193,20 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             List<Token> interfaceNameTokenList = new List<Token>();
             List<List<Token>> interfaceTokenList = new List<List<Token>>();
             List<Token> list = new List<Token>();
-            Node finalNode = null;
+            Node funNameNode = null;
             while (addCount < nodeList.Count)
             {
                 var cnode = nodeList[addCount++];
 
                 if (cnode.nodeType == ENodeType.IdentifierLink)
                 {
-                    if (addCount == nodeList.Count)
+                    if (cnode.parNode != null)
                     {
-                        finalNode = cnode;
+                        if(funNameNode != null )
+                        {
+                            Debug.WriteLine("Error 已有函数实体，不能同时出现两个函数实体!");
+                        }
+                        funNameNode = cnode;
                     }
                     else
                     {
@@ -246,7 +277,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     else if( token.type == ETokenType.Final )
                     {
-                        if( finalNode != null )
+                        if(finalToken != null )
                         {
                             isError = true;
                             Debug.Write(" Error 解析类型多个final");
@@ -261,16 +292,16 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                 }
             }
-            if(finalNode == null )
+            if(funNameNode == null )
             {
                 Debug.Write("Eror 没有找到合适的函数类型: 位置: " + nodeList[0].token?.ToLexemeAllString());
                 return false;
             }
 
-            ParseParam(finalNode.parNode);
-            ParseTemplate(finalNode.angleNode);
+            ParseParam(funNameNode.parNode);
+            ParseTemplate(funNameNode.angleNode);
 
-            m_Token = finalNode.token;
+            m_Token = funNameNode.token;
             if ( m_BlockNode != null)
             {
                 m_LeftBraceToken = m_BlockNode.token;

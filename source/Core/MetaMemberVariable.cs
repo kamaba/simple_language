@@ -158,6 +158,7 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = mmv.m_DefineMetaType;
             m_VariableFrom = EVariableFrom.Member;
             m_PintTokenList = mmv.m_PintTokenList;
+            m_FileMetaMemeberVariable = mmv.m_FileMetaMemeberVariable;
 
             SetOwnerMetaClass(mtc);
         }
@@ -570,7 +571,10 @@ namespace SimpleLanguage.Core
         {
             if (m_Express != null)
             {
-                m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });                
+                if( m_DefineMetaType.isTemplate == false )
+                {
+                    m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
+                }                 
             }
             return true;
         }

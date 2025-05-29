@@ -16,6 +16,8 @@ namespace SimpleLanguage.Compile
         public int sourceBeginChar { get; protected set; }         //开始所在列
         public int sourceEndLine { get; protected set; }            //结束所在行
         public int sourceEndChar { get; protected set; }            //结束所在行
+
+        private List<Token> m_ChildrenTokensList = new List<Token>();
         public Token( string _path, ETokenType tokenType, object _lexeme, int sourceLine, int sourceChar, object _extend = null )
         {
             this.path = _path;
@@ -59,6 +61,10 @@ namespace SimpleLanguage.Compile
             this.sourceEndChar = token.sourceEndChar;
             this.sourceEndLine = token.sourceEndLine;
         }    
+        public void AddChildrenToken( Token token )
+        {
+            m_ChildrenTokensList.Add( token );
+        }
         public override string ToString()
         {
             return lexeme.ToString();

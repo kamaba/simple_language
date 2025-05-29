@@ -4,38 +4,77 @@ public class Class1
 {
     public int a = 20
 
-    public static Class1 default = Class1(){a = 0}
-
-    public static Class1 _reload_( Class1 left, Class1 right, string sign )
-    {
-        Class1 c = Class1(){a = 0}
-        if( sign == "+" )
-        {
-            c.a = left.a + right.a
-        }
-        ret c
-    }
+    public static Class1 instance = Class1(){a = 0}
 }
 
-
+# where (T1 limit Class1), (T2 limit int, string, data)
+public class Level2<T1,T2>
+{
+    T1 t1 = T1.instance
+    T2 t2 = T2.instance
+}
 public class Level1<T> 
 {
-    T t1 = T.default;
-    T t2 = T.default;
+    qqq{
+
+    }
+    q2
+    {        
+    }
+    enum q3
+    {
+
+    }
+    data q4
+    {
+
+    }
+
+    fn1()
+    {
+
+    }
+    fn2(){
+
+    }
+
+    T t1 = T.instance
+    T t2 = T.instance;
+
+    _init_( T it1 )
+    {
+        this.t1 = it1
+    }
 
     public T add()
     {
-        ret this.t1 + this.t2
+        T t = T()
+        ret t
     }    
+
+    # where (T2 limite Int32,String),
+    static T2 test<T2>( T it1, T2 it2 )
+    {
+        T2 t2n = T2.instance
+
+        ret t2n
+    }
 
     public static T2 min<T2>( T2 t1, T2 t2 )
     {
-        ret t1 ? t1 > t2 : t2
+        #r1 = t1 ? t1 > t2 : t2        
+        #ret r1 
+        #ret t1 ? t1 > t2 : t2
+        ret t2
     }
 }
 
 GenClass
 {
+    Level1<string> ls = Level1<string>("aaa")
+    #Level1<string> ls2 = null
+    #Level1<string> ls3 = ()     #报错，提示，不允许这种形式
+    #Level1<string> ls4 = {}
     static fun()
     {
         Level1<int> l1 = Level1<int>()
@@ -64,8 +103,7 @@ public class ListC<T>
 }
 !#
 
+# 关于生成类的规则 
+# 1. 使用T可以定义生成类里边的元素，在检索语句，或者是 其它元素调用时 会生成相关的新类
 
-# 系统重载符号  使用_reload_ 进行重载， 基本都是 left,right, sign 
-# 可以重载 的符号有 + - * / % ** // += -= *= /= %= &&
-# 重载需要进行类生成 
-# 重载函数，需要进行语句解析时，进行多维函数生成
+# 关于生成函数的规则 

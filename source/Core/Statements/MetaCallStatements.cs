@@ -32,7 +32,7 @@ namespace SimpleLanguage.Core.Statements
             m_AllowUseSettings.callConstructFunction = true;
             m_AllowUseSettings.callFunction = true;
 
-            m_MetaCallLink = new MetaCallLink(fmcl.variableRef, mbs.ownerMetaClass, mbs);
+            m_MetaCallLink = new MetaCallLink(fmcl.variableRef, mbs.ownerMetaClass, mbs, null);
             m_MetaCallLink.Parse(m_AllowUseSettings);
             m_MetaCallLink.CalcReturnType();
         }
