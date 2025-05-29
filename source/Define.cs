@@ -158,6 +158,8 @@ namespace SimpleLanguage
         LessOrEqual,
         /// <summary> 1..2 </summary>
         NumberArrayLink,
+        /// <summary> params </summary>
+        Params,
         /// <summary> => </summary>
         Lambda,
         /// <summary> if </summary>

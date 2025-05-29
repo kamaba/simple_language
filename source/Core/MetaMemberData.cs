@@ -174,7 +174,7 @@ namespace SimpleLanguage.Core
                     case FileMetaMemberData.EMemberDataType.Class:    // data Data{ $childData = Class1{}$ }
                         {
                             m_MemberDataType = EMemberDataType.MemberClass;
-                            m_Express = new MetaCallLinkExpressNode(m_FileMetaMemeberData.fileMetaCallTermValue.callLink, null, null);
+                            m_Express = new MetaCallLinkExpressNode(m_FileMetaMemeberData.fileMetaCallTermValue.callLink, null, null, null);
                         }
                         break;
                     case FileMetaMemberData.EMemberDataType.Array:      // data Data{ $childArray = [  ]$ }

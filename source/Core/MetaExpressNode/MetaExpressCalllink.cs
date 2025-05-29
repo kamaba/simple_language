@@ -12,14 +12,22 @@ namespace SimpleLanguage.Core
         public MetaCallLink metaCallLink => m_MetaCallLink;
 
         private MetaCallLink m_MetaCallLink = null;
-        public MetaCallLinkExpressNode( FileMetaCallLink fmcl, MetaClass mc, MetaBlockStatements mbs )
+
+        private MetaVariable m_EqualMetaVariable = null;
+        public MetaCallLinkExpressNode( FileMetaCallLink fmcl, MetaClass mc, MetaBlockStatements mbs, MetaVariable mv )
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
-           
-            if(fmcl != null )
+            m_EqualMetaVariable = mv;
+            if (fmcl != null )
             {
-                m_MetaCallLink = new MetaCallLink( fmcl, mc, mbs );
+                MetaMapTemplateDict mmtd = null;
+                if (mc.isGenTemplate)
+                {
+                    mmtd = (mc as MetaGenTemplateClass).metaMapTemplateDict;
+                }
+
+                m_MetaCallLink = new MetaCallLink( fmcl, mc, mbs, mmtd);
             }
         }
         public MetaCallLinkExpressNode( MetaCallLink mcl )

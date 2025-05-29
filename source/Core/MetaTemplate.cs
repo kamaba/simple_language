@@ -6,7 +6,7 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public partial class MetaTemplate : MetaBase
+    public class MetaTemplate : MetaBase
     {
         public List<MetaClass> constraintMetaClassList => m_ConstraintMetaClassList;
         public MetaClass ownerClass => m_OwnerClass;
@@ -122,5 +122,16 @@ namespace SimpleLanguage.Core
 
             return sb.ToString();
         }
+    }
+
+    public class MetaMapTemplate
+    {
+        public string oriName { get; set; } = "";
+
+        public MetaType replaceMt { get; set; } = null;
+    }
+    public class MetaMapTemplateDict
+    {
+        public Dictionary<string, MetaType> mapTemplateDict = new Dictionary<string, MetaType>();
     }
 }

@@ -388,9 +388,14 @@ namespace SimpleLanguage.Compile.Parse
                         m_TokenIndex++;
                     }
                     break;
+                case ETokenType.QuestionMark: //?
+                    {
+                        AddKeyNode(token, false);
+                    }
+                    break;
                 case ETokenType.Colon:       //:
                     {
-                        AddKeyNode(token);
+                        AddKeyNode(token, false);
                     }
                     break;
                 case ETokenType.SemiColon:      //;
@@ -629,6 +634,7 @@ namespace SimpleLanguage.Compile.Parse
                 case ETokenType.Default:
                 case ETokenType.Var:
                 case ETokenType.Next:
+                case ETokenType.Params:
                     {
                         AddKeyNode(token);
                     }

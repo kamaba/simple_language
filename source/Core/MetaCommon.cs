@@ -26,7 +26,6 @@ namespace SimpleLanguage.Core
     public enum ECallNodeType
     {
         Null,
-        TemplateName,
         NamespaceName,
         ClassName,
         TypeName,
@@ -79,6 +78,7 @@ namespace SimpleLanguage.Core
         public MetaVariable m_MetaVariable { get; private  set; } = null;
         public MetaFunction m_MetaFunction { get; private set; } = null;
 
+        private MetaMapTemplateDict m_MapTemplateDict = new MetaMapTemplateDict();
         private MetaBlockStatements m_OwnerMetaFunctionBlock = null;
         private MetaClass m_OwnerMetaClass = null;
         private MetaInputParamCollection m_MetaInputParamCollection = null;
@@ -101,7 +101,7 @@ namespace SimpleLanguage.Core
             m_IsArray = m_FileMetaCallNode.isArray;
             for (int i = 0; i < m_FileMetaCallNode.arrayNodeList.Count; i++)
             {
-                MetaCallLink cmcl = new MetaCallLink(m_FileMetaCallNode.arrayNodeList[i], mc, mbs);
+                MetaCallLink cmcl = new MetaCallLink(m_FileMetaCallNode.arrayNodeList[i], mc, mbs, m_MapTemplateDict);
                 m_MetaArrayCallNodeList.Add(cmcl);
             }
 
@@ -113,6 +113,10 @@ namespace SimpleLanguage.Core
             {
                 m_MetaBraceStatementsContent = new MetaBraceOrBracketStatementsContent( m_FileMetaCallNode.fileMetaBraceTerm, m_OwnerMetaFunctionBlock, m_OwnerMetaClass);
             }
+        }
+        public void UpdateMetaMapTemplateDict(MetaMapTemplateDict mmtd )
+        {
+            m_MapTemplateDict = mmtd;
         }
         public void SetFrontCallNode(MetaCallNode mcn)
         {
@@ -170,6 +174,15 @@ namespace SimpleLanguage.Core
         bool CreateCallNode()
         {
             name = m_FileMetaCallNode.name;
+
+            if(m_MapTemplateDict.mapTemplateDict.ContainsKey(name))
+            {
+                m_CallNodeType = ECallNodeType.ClassName;
+                m_MetaClass = m_MapTemplateDict.mapTemplateDict[name].metaClass;
+                
+                return true;
+            }
+
             string fatherName = m_FrontCallNode?.name;
             bool isAt = m_FileMetaCallNode.atToken != null;
             // 当前是否是第一个元素
@@ -701,29 +714,29 @@ namespace SimpleLanguage.Core
                             Debug.WriteLine("Error 函数没有返回类型"); 
                         }
                     }
-                    else if (frontCNT == ECallNodeType.TemplateName)
-                    {
-                        var mt = m_FrontCallNode.m_MetaTemplate;
-                        if (mt != null)
-                        {
-                            if (mt.constraintMetaClassList.Count > 0)
-                            {
-                                for (int i = 0; i < mt.constraintMetaClassList.Count; i++)
-                                {
-                                    var constraintClass = mt.constraintMetaClassList[i];
-                                    tempMetaBase = GetFunctionOrVariableByOwnerClass(constraintClass, name, false);
-                                    if (tempMetaBase != null)
-                                    {
-                                        break;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                tempMetaBase = GetFunctionOrVariableByOwnerClass(CoreMetaClassManager.objectMetaClass, name, false);
-                            }
-                        }
-                    }
+                    //else if (frontCNT == ECallNodeType.TemplateName)
+                    //{
+                    //    var mt = m_FrontCallNode.m_MetaTemplate;
+                    //    if (mt != null)
+                    //    {
+                    //        if (mt.constraintMetaClassList.Count > 0)
+                    //        {
+                    //            for (int i = 0; i < mt.constraintMetaClassList.Count; i++)
+                    //            {
+                    //                var constraintClass = mt.constraintMetaClassList[i];
+                    //                tempMetaBase = GetFunctionOrVariableByOwnerClass(constraintClass, name, false);
+                    //                if (tempMetaBase != null)
+                    //                {
+                    //                    break;
+                    //                }
+                    //            }
+                    //        }
+                    //        else
+                    //        {
+                    //            tempMetaBase = GetFunctionOrVariableByOwnerClass(CoreMetaClassManager.objectMetaClass, name, false);
+                    //        }
+                    //    }
+                    //}
                     else
                     {
                         Debug.WriteLine("Error 暂不支持上节点的类型: " + frontCNT.ToString());
@@ -1065,6 +1078,10 @@ namespace SimpleLanguage.Core
         {
             MetaBase retMC = null;
 
+            if( m_AllowUseSettings.parseFrom == EParseFrom.MemberVariableExpress )
+            {
+            }
+
             // 查找定义关键字的class => range   array
             if (m_Token.extend != null)
             {                
@@ -1405,11 +1422,13 @@ namespace SimpleLanguage.Core
 
         private MetaVisitNode m_FinalCallNode = null;
         private List<MetaVisitNode> m_VisitNodeList = new List<MetaVisitNode>();
-        public MetaCallLink(FileMetaCallLink fmcl, MetaClass metaClass, MetaBlockStatements mbs )
+        private MetaMapTemplateDict m_MapTemplateDict = new MetaMapTemplateDict();
+        public MetaCallLink(FileMetaCallLink fmcl, MetaClass metaClass, MetaBlockStatements mbs, MetaMapTemplateDict mmtd )
         {
             m_FileMetaCallLink = fmcl;
             m_OwnerMetaClass = metaClass;
             m_OwnerMetaBlockStatements = mbs;
+            m_MapTemplateDict = mmtd;
             CreateCallLinkNode();
         }
         private void CreateCallLinkNode()
@@ -1418,7 +1437,8 @@ namespace SimpleLanguage.Core
             if (m_FileMetaCallLink.callNodeList.Count > 0)
             {
                 FileMetaCallNode fmcn = m_FileMetaCallLink.callNodeList[0];
-                var firstNode = new MetaCallNode(null, fmcn, m_OwnerMetaClass, m_OwnerMetaBlockStatements, this );
+                var firstNode = new MetaCallNode(null, fmcn, m_OwnerMetaClass, m_OwnerMetaBlockStatements, this);
+                firstNode.UpdateMetaMapTemplateDict(m_MapTemplateDict);
                 frontMetaNode = firstNode;
                 m_CallNodeList.Add(firstNode);
             }
@@ -1428,6 +1448,7 @@ namespace SimpleLanguage.Core
                 var cn2 = m_FileMetaCallLink.callNodeList[i + 1];
                 var fmn = new MetaCallNode(cn1, cn2, m_OwnerMetaClass, m_OwnerMetaBlockStatements, this);
                 fmn.SetFrontCallNode(frontMetaNode);
+                fmn.UpdateMetaMapTemplateDict(m_MapTemplateDict);
                 m_CallNodeList.Add(fmn);
                 frontMetaNode = fmn;
             }
@@ -1510,12 +1531,12 @@ namespace SimpleLanguage.Core
                             MetaVisitNode fvn = m_VisitNodeList[m_VisitNodeList.Count - 1];                            
                             m_VisitNodeList.Remove(fvn);
 
-                            MetaMemberVariable mmv = frontNode.m_MetaClass.GetMetaMemberVariableByName("value");
+                            //MetaMemberVariable mmv = frontNode.m_MetaClass.GetMetaMemberVariableByName("value");
 
-                            MetaBraceAssignStatements mas = new MetaBraceAssignStatements(frontNode.ownerMetaFunctionBlock,fvn.constValueExpress, mmv);
-                            MetaBraceOrBracketStatementsContent mbobs = new MetaBraceOrBracketStatementsContent(frontNode.ownerMetaFunctionBlock, frontNode.m_MetaClass);
+                            //MetaBraceAssignStatements mas = new MetaBraceAssignStatements(frontNode.ownerMetaFunctionBlock,fvn.constValueExpress, mmv);
+                            //MetaBraceOrBracketStatementsContent mbobs = new MetaBraceOrBracketStatementsContent(frontNode.ownerMetaFunctionBlock, frontNode.m_MetaClass);
                             
-                            mbobs.assignStatementsList.Add(mas);
+                            //mbobs.assignStatementsList.Add(mas);
 
                             string name = "auto_constvalue_" + fvn.constValueExpress.eType.ToString() + "_" + fvn.constValueExpress.value.ToString();
                             newmv = frontNode.ownerMetaFunctionBlock.GetMetaVariable(name);
@@ -1528,7 +1549,7 @@ namespace SimpleLanguage.Core
                                 frontNode.ownerMetaFunctionBlock.AddMetaVariable(newmv);
                             }
 
-                            MetaVisitNode mvn1 = MetaVisitNode.CraeteByNewClass(frontNode.m_MetaClass, mbobs, newmv);
+                            MetaVisitNode mvn1 = MetaVisitNode.CraeteByNewClass(frontNode.m_MetaClass, null, newmv);
                             m_VisitNodeList.Add(mvn1);
 
 

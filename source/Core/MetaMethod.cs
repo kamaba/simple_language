@@ -32,7 +32,6 @@ namespace SimpleLanguage.Core
         }
         public MetaVariable thisMetaVariable => m_ThisMetaVariable;
         public MetaVariable returnMetaVariable => m_ReturnMetaVariable;
-        public bool fixedParam { get; set; } = true;
         public EMethodCallType methodCallType => m_MethodCallType;
         public MetaDefineParamCollection metaMemberParamCollection => m_MetaMemberParamCollection;
         public MetaBlockStatements metaBlockStatements => m_MetaBlockStatements;

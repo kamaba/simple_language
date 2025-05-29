@@ -159,22 +159,82 @@ namespace SimpleLanguage.Core
                 return m_MetaVariable != null ? m_MetaVariable.metaDefineType.isGenTemplateClass : false;
             }
         }
+        public bool isExtendParams => m_FileMetaParamter?.paramsToken != null;
 
-
-        private FileMetaParamterDefine m_FileMetaParamter = null;
+        protected FileMetaParamterDefine m_FileMetaParamter = null;
+        protected MetaExpressNode m_MetaExpressNode = null;
         protected MetaVariable m_MetaVariable = null;
-        private MetaExpressNode m_MetaExpressNode = null;
-        public static bool operator ==(MetaDefineParam lmm, MetaDefineParam rmm)
+
+        public MetaDefineParam(MetaClass mc, MetaBlockStatements mbs)
         {
-            return MetaDefineParam.Equals(lmm, rmm);
+            m_OwnerMetaClass = mc;
+            m_OwnerMetaBlockStatements = mbs;
         }
-        public static bool operator !=(MetaDefineParam lmm, MetaDefineParam rmm)
+        public MetaDefineParam(MetaClass mc, MetaBlockStatements mbs, FileMetaParamterDefine fmp)
         {
-            return !MetaDefineParam.Equals(lmm, rmm);
+            m_OwnerMetaClass = mc;
+            m_OwnerMetaBlockStatements = mbs;
+            m_FileMetaParamter = fmp;
         }
-        public override int GetHashCode()
+        public MetaDefineParam(string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaType mt)
         {
-            return base.GetHashCode();
+            m_OwnerMetaClass = ownerMC;
+            m_OwnerMetaBlockStatements = mbs;
+            MetaType mdt = new MetaType(mt);
+            m_MetaVariable = new MetaVariable(_name, MetaVariable.EVariableFrom.Argument, mbs, ownerMC, mdt);
+            m_MetaVariable.AddPingToken(this.m_FileMetaParamter.token);
+        }
+        public MetaDefineParam(string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaTemplate mt)
+        {
+            m_OwnerMetaClass = ownerMC;
+            m_OwnerMetaBlockStatements = mbs;
+            MetaType mdt = new MetaType(mt);
+            m_MetaVariable = new MetaVariable(_name, MetaVariable.EVariableFrom.Argument, mbs, ownerMC, mdt);
+            m_MetaVariable.AddPingToken(this.m_FileMetaParamter?.token);
+        }
+
+        public void ParseMetaDefineType()
+        {
+            MetaType mdt = null;
+            if (m_FileMetaParamter.classDefineRef != null)
+            {
+                mdt = new MetaType(m_FileMetaParamter.classDefineRef, m_OwnerMetaClass);
+            }
+            else
+            {
+                mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
+            }
+            m_MetaVariable = new MetaVariable(m_FileMetaParamter.classDefineRef.name, MetaVariable.EVariableFrom.Argument,
+                m_OwnerMetaBlockStatements, m_OwnerMetaClass, mdt);
+            m_MetaVariable.AddPingToken(m_FileMetaParamter.token);
+        }
+        public void CreateExpress()
+        {
+            if (m_FileMetaParamter.express != null)
+            {
+                CreateExpressParam cep = new CreateExpressParam()
+                {
+                    ownerMBS = null,
+                    metaType = new MetaType(CoreMetaClassManager.objectMetaClass),
+                    fme = m_FileMetaParamter.express,
+                    isStatic = false,
+                    isConst = false,
+                    parsefrom = EParseFrom.InputParamExpress
+                };
+                m_MetaExpressNode = ExpressManager.CreateExpressNode(cep);
+            }
+        }
+        public override void Parse()
+        {
+            if (m_MetaExpressNode != null)
+            {
+                AllowUseSettings auc = new AllowUseSettings();
+                auc.useNotConst = false;
+                auc.useNotStatic = false;
+                auc.callConstructFunction = true;
+                auc.callFunction = true;
+                m_MetaExpressNode.Parse(auc);
+            }
         }
         public bool EqualDefineMetaParam(MetaDefineParam param)
         {
@@ -218,135 +278,27 @@ namespace SimpleLanguage.Core
         {
             return m_MetaVariable.name.Equals(name);
         }
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-                return false;
-
-            if (GetType() != obj.GetType())
-                return false;
-
-
-            MetaDefineParam rec = obj as MetaDefineParam;
-            if (rec == null) return false;
-
-            //if (rec.m_DefineMetaClassType == null || m_DefineMetaClassType == null ) return false;
-
-            //if (rec.m_DefineMetaClassType == m_DefineMetaClassType && rec.m_DefineMetaClassType.name == m_DefineMetaClassType.name)
-            //    return true;
-
-            return false;
-        }
-        public MetaDefineParam(MetaClass mc, MetaBlockStatements mbs )
-        {
-            m_OwnerMetaClass = mc;
-            m_OwnerMetaBlockStatements = mbs;
-        }
-        public MetaDefineParam( MetaClass mc, MetaBlockStatements mbs, FileMetaParamterDefine fmp )
-        {
-            m_OwnerMetaClass = mc;
-            m_OwnerMetaBlockStatements = mbs;
-            m_FileMetaParamter = fmp;
-            MetaType mdt = null;
-            if (m_FileMetaParamter.classDefineRef != null )
-            {
-                mdt = new MetaType(fmp.classDefineRef, mc);
-            }
-            else
-            {
-                mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
-            }
-            m_MetaVariable = new MetaVariable(fmp.name, MetaVariable.EVariableFrom.Argument, mbs, mc, mdt );
-            m_MetaVariable.AddPingToken(fmp.token);
-
-            if (m_FileMetaParamter.express != null)
-            {
-                CreateExpressParam cep = new CreateExpressParam()
-                {
-                    ownerMBS = null,
-                    metaType = new MetaType(CoreMetaClassManager.objectMetaClass),
-                    fme = m_FileMetaParamter.express,
-                    isStatic = false,
-                    isConst = false,
-                    parsefrom = EParseFrom.InputParamExpress
-                };
-                m_MetaExpressNode = ExpressManager.CreateExpressNode(cep);               
-            }
-        }
-        public MetaDefineParam(string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaType mt )
-        {
-            m_OwnerMetaClass = ownerMC;
-            m_OwnerMetaBlockStatements = mbs;
-            MetaType mdt = new MetaType(mt);
-            m_MetaVariable = new MetaVariable(_name, MetaVariable.EVariableFrom.Argument, mbs, ownerMC, mdt);
-            m_MetaVariable.AddPingToken(this.m_FileMetaParamter.token);
-        }
-        public MetaDefineParam( string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaClass _defineMetaClass, MetaExpressNode _expressNode )
-        {
-            MetaType mdt = new MetaType(_defineMetaClass);
-            m_MetaVariable = new MetaVariable(_name, MetaVariable.EVariableFrom.None, mbs, ownerMC, mdt );
-            m_MetaVariable.AddPingToken(this.m_FileMetaParamter.token);
-            m_MetaExpressNode = _expressNode;
-        }
-        public MetaDefineParam( string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaTemplate mt )
-        {
-            m_OwnerMetaClass = ownerMC;
-            m_OwnerMetaBlockStatements = mbs;
-            MetaType mdt = new MetaType(mt);
-            m_MetaVariable = new MetaVariable(_name, MetaVariable.EVariableFrom.Argument, mbs, ownerMC, mdt);
-            m_MetaVariable.AddPingToken(this.m_FileMetaParamter?.token);
-        }
-        public Compile.Token GetToken()
-        {
-            if(m_FileMetaParamter != null )
-            {
-                return m_FileMetaParamter.token;
-            }
-            return null;
-        }
-        public override void Parse()
-        {            
-            if(m_MetaExpressNode != null )
-            {
-                AllowUseSettings auc = new AllowUseSettings();
-                auc.useNotConst = false;
-                auc.useNotStatic = false;
-                auc.callConstructFunction = true;
-                auc.callFunction = true;
-                m_MetaExpressNode.Parse(auc);
-            }
-        }
         public void SetOwnerMetaClass(MetaClass mc) { m_OwnerMetaClass = mc; }
         public void SetOwnerMetaBlockStatements(MetaBlockStatements mbs) { m_OwnerMetaBlockStatements = mbs; }
         public void SetMetaType( MetaType mt )
         {
             m_MetaVariable.SetMetaDefineType(mt);
-        }
-        public void SetMetaVariable( MetaVariable mv )
-        {
-            m_MetaVariable = mv;
-        }
-        public MetaExpressNode CreateExpressNodeInFunctionDefineParam()
-        {
-            //m_Express = null;// ExpressManager.instance.CreateExpressNodeInMetaFunctionCommonStatements(ownerMetaClass, m_DefineMetaClassType, m_FileMetaParamter.express);
-            return null;
-        }
+        }       
         public override void CaleReturnType()
         {
-            //if(m_Express != null )
-            //{
-            //    m_Express.ParseExpress();                
-            //    m_Express.CalcReturnType();
-            //}
-            //if( !isTemplate )
-            //{
-            //    ExpressManager.CalcDefineClassType(ref m_DefineMetaClassType, m_Express, m_OwnerMetaClass, m_OwnerMetaBlockStatements?.ownerMetaFunction, defineName, ref m_IsNeedCastStatements );
-            //}
-
-            //if (m_MetaVariable != null)
-            //{
-            //    m_MetaVariable.SetRetMetaClass(m_DefineMetaClassType);
-            //}
+            if(m_MetaExpressNode != null )
+            {
+                m_MetaExpressNode.CalcReturnType();
+            }
+            if( !isTemplate )
+            {
+               // ExpressManager.CalcDefineClassType(ref m_DefineMetaClassType, m_Express, m_OwnerMetaClass, m_OwnerMetaBlockStatements?.ownerMetaFunction, defineName, ref m_IsNeedCastStatements );
+            }
+            
+            if (m_MetaVariable != null)
+            {
+                //m_MetaVariable.SetRetMetaClass(m_DefineMetaClassType);
+            }
         }
         public override string ToFormatString()
         {
@@ -356,9 +308,9 @@ namespace SimpleLanguage.Core
         }
     }
 
-
     public sealed class MetaDefineParamCollection
     {
+        public bool isExtendParams => m_IsExtendParams;
         public int maxParamCount => m_MetaDefineParamList.Count;
         public List<MetaDefineParam> metaDefineParamList => m_MetaDefineParamList;
         public bool isCanCallFunction { get; private set; } = true;
@@ -366,7 +318,7 @@ namespace SimpleLanguage.Core
         public int minParamCount => m_MinParamCount;
         public bool isHaveDefaultParamExpress { get; set; } = false;
 
-
+        private bool m_IsExtendParams = false;
         private int m_MinParamCount  = 0;
         private List<MetaDefineParam> m_MetaDefineParamList = new List<MetaDefineParam>();
         public MetaDefineParamCollection()
@@ -399,8 +351,18 @@ namespace SimpleLanguage.Core
         }
         public void AddMetaDefineParam(MetaDefineParam metaMemberParam)
         {
+            if( m_IsExtendParams )
+            {
+                Debug.WriteLine("Error Params 模式下，只允许 使用一个参数，多余参数为无效模式");
+                return;
+            }
+
             metaMemberParam.SetParentCollection(this);
             m_MetaDefineParamList.Add(metaMemberParam);
+            if( metaMemberParam.isExtendParams )
+            {
+                m_IsExtendParams = true;
+            }
 
             if(isHaveDefaultParamExpress)
             {
@@ -428,24 +390,52 @@ namespace SimpleLanguage.Core
             {
                 inputCount = mpc.metaInputParamList.Count;
             }
-            if (m_MetaDefineParamList.Count >= inputCount )
+            if ( m_IsExtendParams )
             {
-                for (int i = 0; i < m_MetaDefineParamList.Count; i++)
+                //传入值 ，可以与定义值不同，因为使用params 的方式 后边一般跟一个对象数组，或者是类型数组进行限制                
+                if(m_MetaDefineParamList.Count == 0 )
                 {
-                    MetaDefineParam a = m_MetaDefineParamList[i];
-                    if (a == null)
-                        return false;
-                    MetaInputParam b = null;
-                    if( mpc != null && i < inputCount )
-                    {
-                        b = mpc.metaInputParamList[i];
-                    }
-                    if (!MetaInputParamCollection.CheckInputMetaParam(a, b))
-                        return false;
+                    return false;
                 }
-                return true;
+                var mdp = m_MetaDefineParamList[m_MetaDefineParamList.Count - 1];
+                if( mdp.isExtendParams && mdp.metaVariable.isArray )
+                {
+                    var mdt = mdp.metaVariable.metaDefineType;
+
+                    for( int i = 0; i < mpc.metaInputParamList.Count; i++ ) 
+                    {
+                        var mip = mpc.metaInputParamList[i];
+                        if( mip.GetRetMetaClass() != mdt.metaClass )
+                        {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+
+                return false;
             }
-            return false;
+            else
+            {
+                if (m_MetaDefineParamList.Count >= inputCount)
+                {
+                    for (int i = 0; i < m_MetaDefineParamList.Count; i++)
+                    {
+                        MetaDefineParam a = m_MetaDefineParamList[i];
+                        if (a == null)
+                            return false;
+                        MetaInputParam b = null;
+                        if (mpc != null && i < inputCount)
+                        {
+                            b = mpc.metaInputParamList[i];
+                        }
+                        if (!MetaInputParamCollection.CheckInputMetaParam(a, b))
+                            return false;
+                    }
+                    return true;
+                }
+                return false;
+            }
         }
         public bool IsEqualMetaDefineParamCollection(MetaDefineParamCollection mdpc)
         {
@@ -558,18 +548,34 @@ namespace SimpleLanguage.Core
     {
         public List<MetaInputParam> metaInputParamList => m_MetaInputParamList;
         public int count { get { return m_MetaInputParamList.Count; } }
-        public bool isStatic { get; set; } = false;
-        public bool isNeedAllConst { get; set; } = false;
         public bool fixedParam { get { return minParamCount == maxParamCount; } }
-        public int minParamCount { get; set; } = 0;
+        public int minParamCount => m_MinParamCount;
         public int maxParamCount { get { return m_MetaInputParamList.Count; } }
-        public bool isAllConst { get; set; } = false;
         public bool isCanCallFunction { get; set; } = true;
 
+        private int m_MinParamCount = 0;
         private MetaClass m_OwnerMetaClass = null;
         private MetaBlockStatements m_MetaBlockStatements = null;
         private List<MetaInputParam> m_MetaInputParamList = new List<MetaInputParam>();
 
+        public MetaInputParamCollection(MetaClass mc, MetaBlockStatements mbs)
+        {
+            m_OwnerMetaClass = mc;
+            m_MetaBlockStatements = mbs;
+        }
+        public MetaInputParamCollection(FileMetaParTerm fmpt, MetaClass mc, MetaBlockStatements mbs)
+        {
+            m_OwnerMetaClass = mc;
+            m_MetaBlockStatements = mbs;
+            var splitList = fmpt.SplitParamList();
+            List<FileInputParamNode> list = new List<FileInputParamNode>();
+            for (int i = 0; i < splitList.Count; i++)
+            {
+                FileInputParamNode fnpn = new FileInputParamNode(splitList[i]);
+                list.Add(fnpn);
+            }
+            ParseList(list);
+        }
         public void Clear()
         {
             m_MetaInputParamList.Clear();
@@ -625,24 +631,6 @@ namespace SimpleLanguage.Core
         }
         */
 
-        public MetaInputParamCollection(MetaClass mc, MetaBlockStatements mbs)
-        {
-            m_OwnerMetaClass = mc;
-            m_MetaBlockStatements = mbs;
-        }
-        public MetaInputParamCollection(FileMetaParTerm fmpt, MetaClass mc, MetaBlockStatements mbs )
-        {
-            m_OwnerMetaClass = mc;
-            m_MetaBlockStatements = mbs;
-            var splitList = fmpt.SplitParamList();
-            List<FileInputParamNode> list = new List<FileInputParamNode>();
-            for (int i = 0; i < splitList.Count; i++)
-            {
-                FileInputParamNode fnpn = new FileInputParamNode(splitList[i]);
-                list.Add(fnpn);
-            }
-            ParseList( list );
-        }
         public void ParseList( List<FileInputParamNode> splitList )
         {
             for (int i = 0; i < splitList.Count; i++)

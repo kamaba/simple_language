@@ -6,7 +6,6 @@
 //  Description:  word lexer parse to token
 //****************************************************************************
 
-using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,6 +16,7 @@ namespace SimpleLanguage.Compile.Parse
     //词法解析
     public class LexerParse
     {
+        public Token currentToken => m_CurrentToken;
         public List<Token> listTokens => m_ListTokens;
         public List<Token> GetListTokensWidthEnd()
         {
@@ -31,6 +31,7 @@ namespace SimpleLanguage.Compile.Parse
         private char m_TempChar;                             //临时字符
         private StringBuilder m_Builder = new StringBuilder();
         private List<Token> m_ListTokens = new List<Token>();
+        private Token m_CurrentToken = null;
         private string m_Buffer;                    
         private int m_Length = 0;                      
         private int m_SourceLine = 0;                  //解析到当前的行数
@@ -42,6 +43,8 @@ namespace SimpleLanguage.Compile.Parse
             m_Path = path;
             m_Buffer = buffer;
             m_Length = buffer.Length;
+            m_SourceChar = 0;
+            m_SourceLine = 0;
         }
         public void SetSourcePosition( int line, int _char )
         {
@@ -107,13 +110,27 @@ namespace SimpleLanguage.Compile.Parse
         }
         void AddToken( ETokenType type, object lexeme, int sourceLine, int sourceChar)
         {
-            m_ListTokens.Add(new Token(m_Path, type, lexeme, sourceLine, sourceChar));
+            m_CurrentToken = new Token(m_Path, type, lexeme, sourceLine, sourceChar);
+            m_ListTokens.Add(m_CurrentToken);
             m_Builder.Length = 0;
         }
         void AddToken( ETokenType type, object lexeme, object extend, int sourceLine, int sourceChar )
         {
-            m_ListTokens.Add(new Token(m_Path, type, lexeme, sourceLine, sourceChar, extend));
+            m_CurrentToken = new Token(m_Path, type, lexeme, sourceLine, sourceChar, extend);
+            m_ListTokens.Add(m_CurrentToken);
             m_Builder.Clear();
+        }
+        void AddChildrenToken(ETokenType type, object lexeme)
+        {
+            var token = new Token(m_Path, type, lexeme, m_SourceLine, m_SourceChar );
+            AddChildrenToken(token);
+        }
+        public void AddChildrenToken( Token token )
+        {
+            if( m_CurrentToken != null )
+            {
+                m_CurrentToken.AddChildrenToken(token);
+            }
         }
         bool IsHexDigit(char c)
         {
@@ -122,12 +139,6 @@ namespace SimpleLanguage.Compile.Parse
             if ('a' <= c && c <= 'f')
                 return true;
             if ('A' <= c && c <= 'F')
-                return true;
-            return false;
-        }
-        bool IsOCTDigit(char c)
-        {
-            if ('0' <= c && c < '8')
                 return true;
             return false;
         }
@@ -658,8 +669,8 @@ namespace SimpleLanguage.Compile.Parse
         {
             switch (ReadChar())
             {
-                case '?': AddToken(ETokenType.EmptyRet, "??"); return;
-                case '.': AddToken(ETokenType.QuestionMarkDot, "?."); return;
+                //case '?': AddToken(ETokenType.EmptyRet, "??"); return;
+                //case '.': AddToken(ETokenType.QuestionMarkDot, "?."); return;
                 default: AddToken(ETokenType.QuestionMark, "?"); UndoChar(); return;
             }
         }
@@ -667,16 +678,17 @@ namespace SimpleLanguage.Compile.Parse
         void ReadAt()
         {
             var ch = ReadChar();
-            if ( ch == '\"' )
-            {
-                ReadString(true);
-            }
+            //if ( ch == '\"' )
+            //{
+            //    ReadString(true);
+            //}
             //else if (ch == '{')
             //{
             //    ReadChar();
             //    AddToken( ETokenType.LeftBrace);
             //}
-            else if( Char.IsNumber( ch ) || Char.IsLetter( ch ) )
+            //else 
+            if( Char.IsNumber( ch ) || Char.IsLetter( ch ) )
             {
                 AddToken(ETokenType.At, '@' );
             }
@@ -710,26 +722,15 @@ namespace SimpleLanguage.Compile.Parse
             //    }
             //}
         }
-        void ReadCharAddToken()
+        void ReadOrigenString()
         {
+            m_Builder.Clear();
             do
             {
-                m_TempChar = ReadChar();
+                this.m_TempChar = ReadChar();
                 if (m_TempChar == '\'')
                 {
-                    char t = char.MinValue;
-                    if( char.TryParse(m_Builder.ToString(), out char t2 ) )
-                    {
-                        t = t2;
-                    }
-                    else
-                    {
-                        if( m_Builder.Length > 0 )
-                        {
-                            t = m_Builder[0];
-                        }
-                    }
-                    AddToken(ETokenType.String, t, EType.String );
+                    AddToken(ETokenType.String, m_Builder.ToString(), EType.String );
                     m_Index++;
                     m_SourceChar++;
                     break;
@@ -743,183 +744,185 @@ namespace SimpleLanguage.Compile.Parse
         /// <summary> 读取字符串 </summary>
         void ReadString( bool isWithAtOp ) 
         {
-            if( isWithAtOp )
+            //if( isWithAtOp )
+            //{
+            //    do
+            //    {
+            //        m_TempChar = ReadChar();
+            //        if( m_TempChar == '"' )
+            //        {
+            //            AddToken(ETokenType.String, m_Builder.ToString());
+            //            m_Index++;
+            //            m_SourceChar++;
+            //            break;
+            //        }
+            //        else
+            //        {
+            //            m_Builder.Append(m_TempChar);
+            //        }
+            //    } while (true);
+            //}
+            //else
+            //{
+
+            var stringBuilder = new StringBuilder();
+            stringBuilder.Append( m_Builder.ToString() );
+            AddToken(ETokenType.String,"" );
+            do
             {
-                do
+                m_TempChar = ReadChar();
+                if (m_TempChar == '\\')
                 {
                     m_TempChar = ReadChar();
-                    if( m_TempChar == '"' )
+                    switch (m_TempChar)
                     {
-                        AddToken(ETokenType.String, m_Builder.ToString());
+                        case '\'': m_Builder.Append('\''); break;
+                        case '\"': m_Builder.Append('\"'); break;
+                        case '\\': m_Builder.Append('\\'); break;
+                        case '$': m_Builder.Append('$'); break;
+                        case 'a': m_Builder.Append('\a'); break;
+                        case 'b': m_Builder.Append('\b'); break;
+                        case 'f': m_Builder.Append('\f'); break;
+                        case 'n': m_Builder.Append('\n'); break;
+                        case 'r': m_Builder.Append('\r'); break;
+                        case 't': m_Builder.Append('\t'); break;
+                        case 'v': m_Builder.Append('\v'); break;
+                        case '0': m_Builder.Append('\0'); break;
+                        case '/': m_Builder.Append("/"); break;
+                        case '{': m_Builder.Append("{"); break;
+                        case '}': m_Builder.Append("}"); break;
+                        case 'u':
+                            {
+                                var hex = new System.Text.StringBuilder();
+                                for (int i = 0; i < 4; i++)
+                                {
+                                    hex.Append(ReadChar());
+                                }
+                                m_Builder.Append((char)System.Convert.ToUInt16(hex.ToString(), 16));
+                                break;
+                            }
+                        default:
+                            Debug.Write("Error 读字符的时候，不支持当前的符号!! : |" + m_CurChar);
+                            break;
+                    }
+                }
+                else if (this.m_TempChar == '\n')
+                {
+                    Debug.Write("Error NotInterrupt 读字符的时候，不允许换行，请使用/r/t 一类的换行符!!");
+                    m_Builder.Append(m_TempChar);
+                }
+                else if (m_TempChar == '"')
+                {
+                    stringBuilder.Append(m_Builder);
+                    currentToken.SetLexeme(stringBuilder.ToString());
+                    m_Index++;
+                    m_SourceChar++;
+                    break;
+                }
+                else if (m_TempChar == '{')
+                {
+                    stringBuilder.Append(m_Builder);
+                    AddChildrenToken(ETokenType.String, m_Builder.ToString());
+                    m_Builder.Clear();
+                    int braceLevel = 0;
+                    int startLine = m_SourceLine;
+                    int startChar = m_SourceChar;
+                    do
+                    {
+                        var tchar = ReadChar();
+                        if (tchar == END_CHAR)
+                            break;
+                        
+                        if( tchar == '}' )
+                        {
+                            if ( braceLevel == 0 )
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                braceLevel--;
+                            }
+                        }
+                        else if( tchar == '{' )
+                        {
+                            braceLevel++;
+                        }
+                        m_Builder.Append(tchar);
+                    } while (true);
+
+                    LexerParse lp = new LexerParse(m_Path, m_Builder.ToString());
+                    lp.SetSourcePosition(startLine, startChar);
+                    lp.ParseToTokenList();
+                    var token1 = new Token();
+                    token1.SetExtend("param");
+                    for ( int i = 0; i < lp.listTokens.Count; i++ )
+                    {
+                        token1.AddChildrenToken(lp.listTokens[i]);
+                    }
+                    AddChildrenToken(token1);
+                    stringBuilder.Append("{" + m_Builder + "}");
+                    m_Builder.Clear();
+
+                    var nextTempChar = ReadChar();
+                    if (nextTempChar == '\"')
+                    {
                         m_Index++;
                         m_SourceChar++;
+                        currentToken.SetLexeme(stringBuilder.ToString());
                         break;
                     }
                     else
                     {
-                        m_Builder.Append(m_TempChar);
+                        UndoChar();
                     }
-                } while (true);
-            }
-            else
-            {
-                do
+                }
+                else if (m_TempChar == '}')
                 {
-                    m_TempChar = ReadChar();
-                    if (m_TempChar == '\\')
+                    Debug.Write("Error  不允许}独立出现，一般与{配对出现，如果要显示}请使用\\}");
+                    break;
+                }
+                else if (m_TempChar == '$')
                     {
-                        m_TempChar = ReadChar();
-                        switch (m_TempChar)
+                        var nextChar = ReadChar();
+                        if( nextChar == '{' )
                         {
-                            case '\'': m_Builder.Append('\''); break;
-                            case '\"': m_Builder.Append('\"'); break;
-                            case '\\': m_Builder.Append('\\'); break;
-                            case 'a': m_Builder.Append('\a'); break;
-                            case 'b': m_Builder.Append('\b'); break;
-                            case 'f': m_Builder.Append('\f'); break;
-                            case 'n': m_Builder.Append('\n'); break;
-                            case 'r': m_Builder.Append('\r'); break;
-                            case 't': m_Builder.Append('\t'); break;
-                            case 'v': m_Builder.Append('\v'); break;
-                            case '0': m_Builder.Append('\0'); break;
-                            case '/': m_Builder.Append("/"); break;
-                            case '{': m_Builder.Append("{"); break;
-                            case '}': m_Builder.Append("}"); break;
-                            case 'u':
-                                {
-                                    var hex = new System.Text.StringBuilder();
-                                    for (int i = 0; i < 4; i++)
-                                    {
-                                        hex.Append(ReadChar());
-                                    }
-                                    m_Builder.Append((char)System.Convert.ToUInt16(hex.ToString(), 16));
-                                    break;
-                                }
-                            default:
-                                Debug.Write("Error 读字符的时候，不支持当前的符号!! : |" + m_CurChar);
-                                break;
-                        }
-                    }
-                    else if (m_TempChar == '\n')
-                    {
-                        Debug.Write("Error NotInterrupt 读字符的时候，不允许换行，请使用/r/t 一类的换行符!!");
-                        m_Builder.Append(m_TempChar);
-                    }
-                    else if (m_TempChar == '"')
-                    {
-                        AddToken(ETokenType.String, m_Builder.ToString());
-                        m_Index++;
-                        m_SourceChar++;
-                        break;
-                    }
-                    else if (m_TempChar == '{')
-                    {
-                        AddToken(ETokenType.String, m_Builder.ToString());
-                        AddToken(ETokenType.Plus, '+');
-                        AddToken(ETokenType.LeftPar, '(');
-                        int braceLevel = 0;
-                        int startLine = m_SourceLine;
-                        int startChar = m_SourceChar;
-                        do
-                        {
-                            var tchar = ReadChar();
-                            if( tchar == '}' )
-                            {
-                                if ( braceLevel == 0 )
-                                {
-                                    break;
-                                }
-                                else
-                                {
-                                    braceLevel--;
-                                }
-                            }
-                            else if( tchar == '{' )
-                            {
-                                braceLevel++;
-                            }
-                            m_Builder.Append(tchar);
-                        } while (true);
-
-                        LexerParse lp = new LexerParse(m_Path, m_Builder.ToString());
-                        lp.SetSourcePosition(startLine, startChar);
-                        lp.ParseToTokenList();
-                        m_ListTokens.AddRange(lp.listTokens);
-                        m_Builder.Clear();
-                        AddToken(ETokenType.RightPar, ')');
-
-                        var nextTempChar = ReadChar();
-                        if (nextTempChar == '\"')
-                        {
-                            m_Index++;
-                            m_SourceChar++;
-                            break;
-                        }
-                        else
-                        {
+                            AddToken(ETokenType.String, m_Builder.ToString());
                             AddToken(ETokenType.Plus, '+');
-                        }                        
-                    }
-                    else if (m_TempChar == '}')
-                    {
-                        Debug.Write("Error  不允许}独立出现，一般与{配对出现，如果要显示}请使用\\}");
-                        break;
-                    }
-                    else if (m_TempChar == '$')
-                    {
-                        AddToken(ETokenType.String, m_Builder.ToString());
-                        AddToken(ETokenType.Plus, '+');
-                        //AddToken(ETokenType.LeftPar, '(');
-                        int startLine = m_SourceLine;
-                        int startChar = m_SourceChar;
-                        int level = 0;
-                        bool isCheckEndAtString = false;
-                        do
-                        {
-                            var tempChar = ReadChar();
-                            if ( tempChar == ' ' || tempChar == '\"')
+                            AddToken(ETokenType.LeftPar, '(');
+                            int braceLevel = 0;
+                            int startLine = m_SourceLine;
+                            int startChar = m_SourceChar;
+                            do
                             {
-                                if(level == 0)
+                                var tchar = ReadChar();
+                                if (tchar == '}')
                                 {
-                                    isCheckEndAtString = tempChar != '\"';
-                                    break;
+                                    if (braceLevel == 0)
+                                    {
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        braceLevel--;
+                                    }
                                 }
-                                else
+                                else if (tchar == '{')
                                 {
-                                    m_Builder.Append(tempChar);
+                                    braceLevel++;
                                 }
-                            }
-                            else if( tempChar == '(' || tempChar == '[' )
-                            {
-                                m_Builder.Append(tempChar);
-                                level++;
-                            }
-                            else if( tempChar == ')' || tempChar == ']' )
-                            {
-                                m_Builder.Append(tempChar);
-                                level--;
-                            }
-                            else if( tempChar == '\'' )
-                            {
-                                m_Builder.Append('\"');
-                            }
-                            else
-                            {
-                                m_Builder.Append(tempChar);
-                            }
-                        } while (true);
+                                m_Builder.Append(tchar);
+                            } while (true);
 
-                        LexerParse lp = new LexerParse(m_Path, m_Builder.ToString());
-                        lp.SetSourcePosition(startLine-1, startChar-1);
-                        lp.ParseToTokenList();
-                        m_ListTokens.AddRange(lp.listTokens);
-                        m_Builder.Clear();
-                        //AddToken(ETokenType.RightPar, ')');
+                            LexerParse lp = new LexerParse(m_Path, m_Builder.ToString());
+                            lp.SetSourcePosition(startLine, startChar);
+                            lp.ParseToTokenList();
+                            m_ListTokens.AddRange(lp.listTokens);
+                            m_Builder.Clear();
+                            AddToken(ETokenType.RightPar, ')');
 
-                        if (isCheckEndAtString)//是否需要检查，后边的字符需要+符号处理
-                        {
                             var nextTempChar = ReadChar();
-                            if( nextTempChar == '\"')
+                            if (nextTempChar == '\"')
                             {
                                 m_Index++;
                                 m_SourceChar++;
@@ -930,14 +933,80 @@ namespace SimpleLanguage.Compile.Parse
                                 AddToken(ETokenType.Plus, '+');
                             }
                         }
+                        else
+                        {
+                            AddToken(ETokenType.String, m_Builder.ToString());
+                            AddToken(ETokenType.Plus, '+');
+                            //AddToken(ETokenType.LeftPar, '(');
+                            int startLine = m_SourceLine;
+                            int startChar = m_SourceChar;
+                            int level = 0;
+                            bool isCheckEndAtString = false;
+                            do
+                            {
+                                var tempChar = ReadChar();
+                                if (tempChar == ' ' || tempChar == '\"')
+                                {
+                                    if (level == 0)
+                                    {
+                                        isCheckEndAtString = tempChar != '\"';
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        m_Builder.Append(tempChar);
+                                    }
+                                }
+                                else if (tempChar == '(' || tempChar == '[')
+                                {
+                                    m_Builder.Append(tempChar);
+                                    level++;
+                                }
+                                else if (tempChar == ')' || tempChar == ']')
+                                {
+                                    m_Builder.Append(tempChar);
+                                    level--;
+                                }
+                                else if (tempChar == '\'')
+                                {
+                                    m_Builder.Append('\"');
+                                }
+                                else
+                                {
+                                    m_Builder.Append(tempChar);
+                                }
+                            } while (true);
+
+                            LexerParse lp = new LexerParse(m_Path, m_Builder.ToString());
+                            lp.SetSourcePosition(startLine - 1, startChar - 1);
+                            lp.ParseToTokenList();
+                            m_ListTokens.AddRange(lp.listTokens);
+                            m_Builder.Clear();
+                            //AddToken(ETokenType.RightPar, ')');
+
+                            if (isCheckEndAtString)//是否需要检查，后边的字符需要+符号处理
+                            {
+                                var nextTempChar = ReadChar();
+                                if (nextTempChar == '\"')
+                                {
+                                    m_Index++;
+                                    m_SourceChar++;
+                                    break;
+                                }
+                                else
+                                {
+                                    AddToken(ETokenType.Plus, '+');
+                                }
+                            }
+                        }
                     }
-                    else
-                    {
-                        m_Builder.Append(m_TempChar);
-                    }
+                else
+                {
+                    m_Builder.Append(m_TempChar);
                 }
-                while (true);
             }
+            while (true);
+            //}
         }      
         void SharpLevel( int topLevel )
         {
@@ -1331,6 +1400,9 @@ namespace SimpleLanguage.Compile.Parse
                 case "override":
                     tokenType = ETokenType.Override;
                     break;
+                case "params":
+                    tokenType = ETokenType.Params;
+                    break;
                 case "tr":
                     tokenType = ETokenType.Transience;
                     break;
@@ -1406,9 +1478,7 @@ namespace SimpleLanguage.Compile.Parse
         }
         /// <summary> 解析字符串 </summary>
         public void ParseToTokenList() 
-        {
-            m_SourceChar = 0;
-            m_SourceLine = 0;      
+        {    
             m_CurChar = END_CHAR;
             m_Builder.Clear();
             m_ListTokens.Clear();
@@ -1569,7 +1639,7 @@ namespace SimpleLanguage.Compile.Parse
                             break;
                         case '\'':
                             {
-                                ReadCharAddToken();
+                                ReadOrigenString();
                             }
                             break;
                         case '0':

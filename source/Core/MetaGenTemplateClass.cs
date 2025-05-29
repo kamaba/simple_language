@@ -10,17 +10,16 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile;
-using SimpleLanguage.Core;
-using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Core.Statements;
 
 namespace SimpleLanguage.Core
 {
     public class MetaGenTemplateClass : MetaClass
     {
+        public MetaMapTemplateDict metaMapTemplateDict => m_MetaMapTemplateDict;
         public override bool isGenTemplate { get { return true; } }
 
         protected List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
+        protected MetaMapTemplateDict m_MetaMapTemplateDict = new MetaMapTemplateDict();
         public MetaGenTemplateClass(MetaClass mc) : base(mc)
         {
 
@@ -68,6 +67,7 @@ namespace SimpleLanguage.Core
         public void AddMetaGenTemplate( MetaGenTemplate mgt )
         {
             m_MetaGenTemplateList.Add(mgt);
+            m_MetaMapTemplateDict.mapTemplateDict.Add(mgt.name, mgt.metaType);
         }
         public MetaGenTemplate GetMetaGenTemplate( string name )
         {
@@ -85,6 +85,8 @@ namespace SimpleLanguage.Core
                     MetaMemberVariable mgmv = new MetaMemberVariable( this, v, m_MetaGenTemplateList );
                     addList.Add(mgmv.name, mgmv);
                     mgmv.UpdateGenMemberVariable();
+                    mgmv.CreateExpress();
+                    mgmv.ParseMetaExpress();
                 }
             }
             m_MetaMemberVariableDict = addList;

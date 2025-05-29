@@ -116,15 +116,18 @@ namespace SimpleLanguage.Core.IR
                     }
                     else
                     {
-                        for (int y = 0; y < cnode.metaBraceStatementsContent.assignStatementsList.Count; y++)
+                        if(cnode.metaBraceStatementsContent != null )
                         {
-                            var asl = cnode.metaBraceStatementsContent.assignStatementsList[y];
+                            for (int y = 0; y < cnode.metaBraceStatementsContent.assignStatementsList.Count; y++)
+                            {
+                                var asl = cnode.metaBraceStatementsContent.assignStatementsList[y];
 
-                            IRExpress irexp = new IRExpress(_irMethod, asl.expressNode);
-                            irList.Add(irexp);
+                                IRExpress irexp = new IRExpress(_irMethod, asl.expressNode);
+                                irList.Add(irexp);
 
-                            IRStoreVariable irStoreNodeVar3 = new IRStoreVariable(_irMethod, cnode.variable.GetHashCode(), IRMetaVariableFrom.LocalStatement );
-                            irList.Add(irStoreNodeVar3);
+                                IRStoreVariable irStoreNodeVar3 = new IRStoreVariable(_irMethod, cnode.variable.GetHashCode(), IRMetaVariableFrom.LocalStatement);
+                                irList.Add(irStoreNodeVar3);
+                            }
                         }
                     }
                 }

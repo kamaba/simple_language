@@ -89,7 +89,7 @@ namespace SimpleLanguage.Core
                     }
                     m_IsDefineMetaClass = true;
 
-                    m_InputTemplateCollection = new MetaInputTemplateCollection(cmr.inputTemplateNodeList, mc );
+                    m_InputTemplateCollection = new MetaInputTemplateCollection(cmr.inputTemplateNodeList, m_RawMetaClass);
 
                     if( m_InputTemplateCollection.isTemplateName )
                     {
