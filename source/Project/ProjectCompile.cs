@@ -211,10 +211,11 @@ namespace SimpleLanguage.Project
             ClassManager.instance.ParseExtendsRelation();
             ClassManager.instance.ParseInterfaceRelation();
             ClassManager.instance.ParseTemplateRelation();
-            ClassManager.instance.ParseMemberFunctionName();
             ClassManager.instance.HandleExtendData();
             ClassManager.instance.ParseMemberVariableDefineMetaType();
             ClassManager.instance.ParseMemberFunctionDefineMetaType();
+            ClassManager.instance.ParseTemplateMemberVariableDefineMetaType();
+            ClassManager.instance.ParseTemplateMemberFunctionDefineMetaType();
             m_ProjectParse.ParseGlobalVariable();
             ClassManager.instance.CheckInterfaces();
             ClassManager.instance.ParseDefineComplete();
@@ -222,8 +223,16 @@ namespace SimpleLanguage.Project
             ClassManager.instance.ParseMemberEnumExpress();
             MetaVariableManager.instance.ParseMetaDataMemberExpress();
             MetaVariableManager.instance.ParseMetaClassMemberExpress();
-            MethodManager.instance.ParseMetaExpress();
-            MethodManager.instance.ParseStatements();
+
+            MethodManager.instance.CreateMetaExpress(0);
+            MethodManager.instance.ParseMetaExpress(0);
+            MethodManager.instance.ParseStatements(0);
+            MethodManager.instance.CreateMetaExpress(1);
+            MethodManager.instance.ParseMetaExpress(1);
+            MethodManager.instance.ParseStatements(1);
+            MethodManager.instance.CreateMetaExpress(2);
+            MethodManager.instance.ParseMetaExpress(2);
+            MethodManager.instance.ParseStatements(2);
             Debug.Write("-------------------------解析完成后的格式输出 开始--------------------------");
             Debug.Write(ModuleManager.instance.ToFormatString() + Environment.NewLine);
             Debug.Write("-------------------------解析完成后的格式输出 结束--------------------------");

@@ -1,4 +1,12 @@
-﻿using SimpleLanguage.Compile;
+﻿//****************************************************************************
+//  File:      MetaNamespace.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/5/30 12:00:00
+//  Description: Meta enum's attribute
+//****************************************************************************
+
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

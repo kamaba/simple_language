@@ -38,7 +38,7 @@ namespace SimpleLanguage.Core
         private FileMetaMemberVariable m_FileMetaMemeberVariable;
         private MetaExpressNode m_Express = null;
         private bool m_IsInnerDefine = false;
-        private List<MetaGenTemplate> m_MetaGenTemplateList = null;
+        private Dictionary< string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
 
         private bool m_IsSupportConstructionFunctionOnlyBraceType = false;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
         private bool m_IsSupportConstructionFunctionConnectBraceType = true;  //是否支持构造函数名称后边加{}形式    Class1{ a = Class2(){} } 不支持
@@ -149,9 +149,9 @@ namespace SimpleLanguage.Core
             }
             SetOwnerMetaClass(mc);
         }
-        public MetaMemberVariable(MetaGenTemplateClass mtc, MetaMemberVariable mmv, List<MetaGenTemplate> mgt) : base(mmv)
+        public MetaMemberVariable(MetaGenTemplateClass mtc, MetaMemberVariable mmv, Dictionary<string,MetaGenTemplate> mgt) : base(mmv)
         {
-            m_MetaGenTemplateList = mgt;
+            m_MetaGenTemplateDict = mgt;
             m_Name = mmv.m_Name;
             m_IsInnerDefine = mmv.m_IsInnerDefine;
             m_FromType = mmv.m_FromType;
@@ -168,22 +168,30 @@ namespace SimpleLanguage.Core
             {
                 if (m_FileMetaMemeberVariable.classDefineRef != null)
                 {
-                    m_DefineMetaType = new MetaType(m_FileMetaMemeberVariable.classDefineRef, ownerMetaClass);
+                    string tname = m_FileMetaMemeberVariable.classDefineRef.name;
+
+                    if(m_MetaGenTemplateDict.ContainsKey(tname ) )
+                    {
+                        m_DefineMetaType = m_MetaGenTemplateDict[tname].metaType;
+                    }
+                    else
+                    {
+                        m_DefineMetaType = new MetaType(m_FileMetaMemeberVariable.classDefineRef, ownerMetaClass);
+                    }
                 }
                 else
                 {
-
                 }
             }
         }
         public void UpdateGenMemberVariable()
         {
-            if (m_MetaGenTemplateList != null)
+            if (m_MetaGenTemplateDict.Count > 0 && m_DefineMetaType.isTemplate )
             {
-                for (int i = 0; i < m_MetaGenTemplateList.Count; i++)
+                foreach( var v in m_MetaGenTemplateDict )
                 {
-                    MetaGenTemplate mgt = m_MetaGenTemplateList[i];
-                    if (mgt.name == m_DefineMetaType.metaTemplate.name)
+                    MetaGenTemplate mgt = v.Value;
+                    if (mgt.name == m_DefineMetaType.metaTemplate?.name)
                     {
                         m_DefineMetaType = mgt.metaType;
                     }

@@ -1,48 +1,24 @@
-﻿using SimpleLanguage.Compile.CoreFileMeta;
+﻿//****************************************************************************
+//  File:      ClassManager.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/5/30 12:00:00
+//  Description: Meta enum's attribute
+//****************************************************************************
+
+using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
-using SimpleLanguage.Core;
-using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
-using System.Reflection;
-using System.Runtime.ConstrainedExecution;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace SimpleLanguage.Core
 {
     public class MetaParam
     {
-        public bool isAllConst
-        {
-            get
-            {
-                if(m_ParentCollection != null)
-                {
-                    return m_ParentCollection.isAllConst;
-                }
-                return false;
-            }
-        }
-        public bool isCanCallFunction
-        {
-            get
-            {
-                if (m_ParentCollection != null)
-                {
-                    return m_ParentCollection.isCanCallFunction;
-                }
-                return true;
-            }
-        }
-        public MetaClass ownerMetaClass => m_OwnerMetaClass;
-        public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
-
-        protected MetaClass m_OwnerMetaClass;
-        protected MetaBlockStatements m_OwnerMetaBlockStatements;
-        protected MetaDefineParamCollection m_ParentCollection;
+        public string name => m_Name;
+        protected string m_Name = "";
 
         public virtual void Parse()
         {
@@ -51,16 +27,8 @@ namespace SimpleLanguage.Core
         public virtual void CaleReturnType()
         {
         }
-        public void SetParentCollection(MetaDefineParamCollection cbase )
-        {
-            m_ParentCollection = cbase;
-        }
         public virtual string ToTypeName()
         {
-            //if(m_ReturnMetaType != null )
-            //{
-            //    return m_ReturnMetaType.defineType.ToString();
-            //}
             return "";
         }
         public virtual string ToFormatString()
@@ -68,12 +36,16 @@ namespace SimpleLanguage.Core
             return "";
         }
     }
+
+
     public class MetaInputParam : MetaParam
     {
         public MetaExpressNode express => m_Express;
 
         protected FileInputParamNode m_FileInputParamNode;
         protected MetaExpressNode m_Express = null;
+        protected MetaBlockStatements m_OwnerMetaBlockStatements;
+        protected MetaClass m_OwnerMetaClass = null;
         public MetaInputParam( FileInputParamNode fipn, MetaClass mc, MetaBlockStatements mbs )
         {
             m_FileInputParamNode = fipn;
@@ -141,76 +113,82 @@ namespace SimpleLanguage.Core
     }
     public class MetaDefineParam : MetaParam
     {
+        //public MetaClass ownerMetaClass => m_OwnerMetaFunction != null ? m_OwnerMetaFunction.ownerMetaClass : null;
+        //public MetaFunction ownerMetaFunction => m_OwnerMetaFunction;
         public FileMetaParamterDefine fileMetaParamter => m_FileMetaParamter;
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaExpressNode expressNode => m_MetaExpressNode;
-        public bool isTemplate
-        {
-            get
-            {
-                return m_MetaVariable != null ? m_MetaVariable.metaDefineType.isTemplate : false;
-            }
-        }
+        public bool isFunctionTemplate => m_IsFunctionTemplate;
+        public bool isClassTemplate => m_IsClassTemplate;
         public bool isMust { get { return m_MetaExpressNode == null; } }            //是否为非省略参数
-        public bool isTemplateMetaClass
-        {
-            get
-            {
-                return m_MetaVariable != null ? m_MetaVariable.metaDefineType.isGenTemplateClass : false;
-            }
-        }
         public bool isExtendParams => m_FileMetaParamter?.paramsToken != null;
 
+        protected bool m_IsFunctionTemplate = false;
+        protected bool m_IsClassTemplate = false;
         protected FileMetaParamterDefine m_FileMetaParamter = null;
         protected MetaExpressNode m_MetaExpressNode = null;
         protected MetaVariable m_MetaVariable = null;
+        protected MetaFunction m_OwnerMetaFunction = null;
 
-        public MetaDefineParam(MetaClass mc, MetaBlockStatements mbs)
+        public MetaDefineParam( string _name, MetaFunction mf )
         {
-            m_OwnerMetaClass = mc;
-            m_OwnerMetaBlockStatements = mbs;
+            m_Name = _name;
+            m_OwnerMetaFunction = mf;
         }
-        public MetaDefineParam(MetaClass mc, MetaBlockStatements mbs, FileMetaParamterDefine fmp)
+        public MetaDefineParam(MetaFunction mf, FileMetaParamterDefine fmp)
         {
-            m_OwnerMetaClass = mc;
-            m_OwnerMetaBlockStatements = mbs;
+            m_OwnerMetaFunction = mf;
             m_FileMetaParamter = fmp;
+            m_Name = m_FileMetaParamter.name;
         }
-        public MetaDefineParam(string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaType mt)
+        public MetaDefineParam(string _name, MetaFunction mf, MetaType mt)
         {
-            m_OwnerMetaClass = ownerMC;
-            m_OwnerMetaBlockStatements = mbs;
+            m_Name = _name;
+            m_OwnerMetaFunction = mf;
             MetaType mdt = new MetaType(mt);
-            m_MetaVariable = new MetaVariable(_name, MetaVariable.EVariableFrom.Argument, mbs, ownerMC, mdt);
-            m_MetaVariable.AddPingToken(this.m_FileMetaParamter.token);
+            m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.Argument, null, mf.ownerMetaClass, mdt);
         }
-        public MetaDefineParam(string _name, MetaClass ownerMC, MetaBlockStatements mbs, MetaTemplate mt)
+        public MetaDefineParam(string _name, MetaFunction mf, MetaTemplate mt)
         {
-            m_OwnerMetaClass = ownerMC;
-            m_OwnerMetaBlockStatements = mbs;
+            m_Name = _name;
+            m_OwnerMetaFunction =mf;
             MetaType mdt = new MetaType(mt);
-            m_MetaVariable = new MetaVariable(_name, MetaVariable.EVariableFrom.Argument, mbs, ownerMC, mdt);
+            m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.Argument, null, m_OwnerMetaFunction.ownerMetaClass, mdt);
             m_MetaVariable.AddPingToken(this.m_FileMetaParamter?.token);
         }
 
         public void ParseMetaDefineType()
         {
+            string typename = "";
             MetaType mdt = null;
-            if (m_FileMetaParamter.classDefineRef != null)
+            if (m_FileMetaParamter?.classDefineRef != null)
             {
-                mdt = new MetaType(m_FileMetaParamter.classDefineRef, m_OwnerMetaClass);
+                typename = m_FileMetaParamter.classDefineRef.name;
+                if (m_OwnerMetaFunction != null)
+                {
+                    m_IsFunctionTemplate = m_OwnerMetaFunction.IsDefineTemplate(typename);
+                }
+                if(m_OwnerMetaFunction.ownerMetaClass != null )
+                {
+                    m_IsClassTemplate = m_OwnerMetaFunction.ownerMetaClass.isDefineTemplate(typename);
+                }
+
+                mdt = new MetaType(m_FileMetaParamter.classDefineRef, m_OwnerMetaFunction.ownerMetaClass);
             }
             else
             {
                 mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
-            m_MetaVariable = new MetaVariable(m_FileMetaParamter.classDefineRef.name, MetaVariable.EVariableFrom.Argument,
-                m_OwnerMetaBlockStatements, m_OwnerMetaClass, mdt);
-            m_MetaVariable.AddPingToken(m_FileMetaParamter.token);
+            m_MetaVariable = new MetaVariable( m_Name, MetaVariable.EVariableFrom.Argument,
+                null, m_OwnerMetaFunction.ownerMetaClass, mdt);
+            if(m_FileMetaParamter != null )
+            {
+                m_MetaVariable.AddPingToken(m_FileMetaParamter.token);
+            }
         }
         public void CreateExpress()
         {
-            if (m_FileMetaParamter.express != null)
+            if (m_FileMetaParamter?.express != null)
             {
                 CreateExpressParam cep = new CreateExpressParam()
                 {
@@ -278,8 +256,6 @@ namespace SimpleLanguage.Core
         {
             return m_MetaVariable.name.Equals(name);
         }
-        public void SetOwnerMetaClass(MetaClass mc) { m_OwnerMetaClass = mc; }
-        public void SetOwnerMetaBlockStatements(MetaBlockStatements mbs) { m_OwnerMetaBlockStatements = mbs; }
         public void SetMetaType( MetaType mt )
         {
             m_MetaVariable.SetMetaDefineType(mt);
@@ -290,7 +266,7 @@ namespace SimpleLanguage.Core
             {
                 m_MetaExpressNode.CalcReturnType();
             }
-            if( !isTemplate )
+            //if( !isTemplate )
             {
                // ExpressManager.CalcDefineClassType(ref m_DefineMetaClassType, m_Express, m_OwnerMetaClass, m_OwnerMetaBlockStatements?.ownerMetaFunction, defineName, ref m_IsNeedCastStatements );
             }
@@ -357,7 +333,6 @@ namespace SimpleLanguage.Core
                 return;
             }
 
-            metaMemberParam.SetParentCollection(this);
             m_MetaDefineParamList.Add(metaMemberParam);
             if( metaMemberParam.isExtendParams )
             {
@@ -483,65 +458,6 @@ namespace SimpleLanguage.Core
             }
             sb.Append(")");
             return sb.ToString();
-        }
-    }
-    public class MetaDefineTemplateCollection
-    {
-        public List<MetaTemplate> metaTemplateList => m_MetaTemplateList;
-
-        protected List<MetaTemplate> m_MetaTemplateList = new List<MetaTemplate>();
-
-        public int count { get { return m_MetaTemplateList.Count; } }
-       
-        public MetaTemplate GetMetaDefineTemplateByName( string _name )
-        {
-            for( int i = 0; i < m_MetaTemplateList.Count; i++ )
-            {
-                if (m_MetaTemplateList[i].name == _name)
-                    return m_MetaTemplateList[i];
-            }
-            return null;
-        }
-        public bool IsEqualMetaInputTemplateCollection(MetaInputTemplateCollection mpc)
-        {
-            if (mpc == null)
-            {
-                return m_MetaTemplateList.Count == 0;
-            }
-
-            if (m_MetaTemplateList.Count == mpc.metaTemplateParamsList.Count)
-            {
-                for (int i = 0; i < m_MetaTemplateList.Count; i++)
-                {
-                    MetaTemplate a = m_MetaTemplateList[i];
-                    MetaType b = mpc.metaTemplateParamsList[i];
-                    if ( MatchMetaInputTemplate(a, b))
-                        return true;
-                }
-            }
-            return false;
-        }
-        public virtual bool MatchMetaInputTemplate(MetaTemplate a, MetaType b)
-        {
-            if (a.IsInConstraintMetaClass(b.metaClass) )
-                return true;
-            return false;
-        }
-        public virtual void AddMetaDefineTemplate(MetaTemplate defineTemplate)
-        {
-            m_MetaTemplateList.Add(defineTemplate);
-        }
-        public virtual string ToFormatString()
-        {
-            //    StringBuilder sb = new StringBuilder();
-            //    for (int i = 0; i < metaParamList.Count; i++)
-            //    {
-            //        sb.Append(metaParamList[i].ToTypeName());
-            //        if (i < metaParamList.Count - 1)
-            //            sb.Append("_");
-            //    }
-            //    return sb.ToString();
-            return "";
         }
     }
     public sealed class MetaInputParamCollection

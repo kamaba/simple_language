@@ -143,6 +143,10 @@ namespace SimpleLanguage.Core
         {
 
         }
+        public virtual void CreateMetaExpress()
+        {
+
+        }
         public virtual bool ParseMetaExpress()
         {
             return true;

@@ -1,4 +1,4 @@
-import Application;
+import Std
 
 public class Class1
 {
@@ -50,7 +50,7 @@ public class Level1<T>
     {
         T t = T()
         ret t
-    }    
+    }
 
     # where (T2 limite Int32,String),
     static T2 test<T2>( T it1, T2 it2 )
@@ -71,7 +71,7 @@ public class Level1<T>
 
 GenClass
 {
-    Level1<string> ls = Level1<string>("aaa")
+    Level1<Level2<int,int>> ls = Level1<Level2<int,int>>("aaa")
     #Level1<string> ls2 = null
     #Level1<string> ls3 = ()     #报错，提示，不允许这种形式
     #Level1<string> ls4 = {}

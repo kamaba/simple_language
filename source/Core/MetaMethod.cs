@@ -1,10 +1,15 @@
-﻿
-using SimpleLanguage.IR;
+﻿//****************************************************************************
+//  File:      MethodMethod.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/5/30 12:00:00
+//  Description: Meta enum's attribute
+//****************************************************************************
+
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -40,6 +45,7 @@ namespace SimpleLanguage.Core
         protected MetaVariable m_ThisMetaVariable = null;
         protected MetaVariable m_ReturnMetaVariable = null;
         protected MetaDefineParamCollection m_MetaMemberParamCollection = null;
+        private Dictionary<string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
         protected MetaDefineTemplateCollection m_MetaMemberTemplateCollection = new MetaDefineTemplateCollection();
         protected EMethodCallType m_MethodCallType = EMethodCallType.Local;
         protected bool m_IsMustNeedReturnStatements = false;
@@ -48,7 +54,19 @@ namespace SimpleLanguage.Core
         {
             m_MetaMemberParamCollection = new MetaDefineParamCollection(false, true);
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-            SetOwnerMetaClass(mc);           
+            SetOwnerMetaClass(mc);
+        }
+        public bool IsDefineTemplate(string name)
+        {
+            return m_MetaGenTemplateDict.ContainsKey(name);
+        }
+        public MetaGenTemplate GetMetaGenTemplate( string name )
+        {
+            if(m_MetaGenTemplateDict.ContainsKey( name ) )
+            {
+                return m_MetaGenTemplateDict[name];
+            }
+            return null;
         }
 
         public void AddMetaStatements(MetaStatements state)

@@ -1,10 +1,16 @@
-﻿using SimpleLanguage.Compile;
+﻿//****************************************************************************
+//  File:      MetaEnum.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2025/5/30 12:00:00
+//  Description: Meta enum's attribute
+//****************************************************************************
+using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace SimpleLanguage.Core

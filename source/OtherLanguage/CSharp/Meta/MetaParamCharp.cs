@@ -57,18 +57,16 @@ namespace SimpleLanguage.Core
     public class MetaDefineParamCSharp : MetaDefineParam
     {
         private ParameterInfo parameterInfo;
-        public MetaDefineParamCSharp(MetaClass mc, MetaBlockStatements mbs, ParameterInfo pi)
-            :base( mc,  mbs )
+        public MetaDefineParamCSharp(MetaFunction mf, ParameterInfo pi)
+            :base(pi.Name, mf)
         {
-            m_OwnerMetaClass = mc;
-
-            m_OwnerMetaBlockStatements = mbs;
+            m_OwnerMetaFunction = mf;
 
             parameterInfo = pi;
 
             var defineMetaClassType = ClassManager.instance.GetMetaClassByCSharpType(pi.ParameterType);
             MetaType mdt = new MetaType(defineMetaClassType);
-            m_MetaVariable = new MetaVariable( pi.Name, EVariableFrom.Argument, mbs, mc, mdt );
+            m_MetaVariable = new MetaVariable( pi.Name, EVariableFrom.Argument, null, mf.ownerMetaClass, mdt );
         }
     }
 }
