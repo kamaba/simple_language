@@ -75,18 +75,32 @@ namespace SimpleLanguage.IR
             ParseClass();
 
             //代码定义的成员函数
-            var mmfDict = MethodManager.instance.metaMemberFunctionDict;
+            var mmfDict = MethodManager.instance.metaOriginalFunctionList;
             foreach (var v in mmfDict)
             {
-                IRMethod irm = TranslateIRByFunction(v.Value);
+                IRMethod irm = TranslateIRByFunction(v);
+                AddIRMethod(irm);
+            }
+            //代码定义的成员函数
+            var mmfDict2 = MethodManager.instance.metaOriginalFunctionList;
+            foreach (var v in mmfDict2)
+            {
+                IRMethod irm = TranslateIRByFunction(v);
+                AddIRMethod(irm);
+            }
+            //代码定义的成员函数
+            var mmfDict3 = MethodManager.instance.metaOriginalFunctionList;
+            foreach (var v in mmfDict3)
+            {
+                IRMethod irm = TranslateIRByFunction(v);
                 AddIRMethod(irm);
             }
 
             //动态解析出来的函数
-            var dynamicMmfDict = MethodManager.instance.dynamicMetaMemberFunctionDict;
-            foreach (var v in dynamicMmfDict)
+            var dynamicMmfDict4 = MethodManager.instance.metaDynamicFunctionList;
+            foreach (var v in dynamicMmfDict4)
             {
-                IRMethod irm = TranslateIRByFunction(v.Value);
+                IRMethod irm = TranslateIRByFunction(v);
                 AddIRMethod(irm);
             }
 

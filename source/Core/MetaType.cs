@@ -53,7 +53,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    m_MetaTemplate = mc.GetTemplateMetaClassByName(finalNode.name );  //在语句中使用类中的T
+                    m_MetaTemplate = mc.GetTemplateMetaClassByName( finalNode.name );  //在语句中使用类中的T
                 }
             }
             if( m_MetaClass == null )

@@ -154,6 +154,10 @@ namespace SimpleLanguage.Core
                 v.Value.SetDeep(deep + 1);
             }
         }
+        public bool isDefineTemplate( string name )
+        {
+            return m_MetaTemplateList.Find(a => a.name == name) != null;   
+        }
         public void SetDefaultExpressNode( MetaExpressNode defaultExpressNode )
         {
             m_DefaultExpressNode = defaultExpressNode;
@@ -229,16 +233,6 @@ namespace SimpleLanguage.Core
         public void ParseTemplateRelation()
         {
         }
-        public void ParseMetaMemberFunctionName()
-        {
-            foreach (var it in m_MetaMemberFunctionListDict )
-            {
-                foreach( var it2 in it.Value )
-                {
-                    it2.ParseName();
-                }
-            }
-        }
         public void ParseMemberVariableDefineMetaType()
         {
             foreach (var it in m_MetaMemberVariableDict)
@@ -252,8 +246,7 @@ namespace SimpleLanguage.Core
             {
                 foreach( var it2 in it.Value )
                 {
-                    if( !it2.isTemplateFunction)
-                        it2.ParseDefineMetaType();
+                    it2.ParseDefineMetaType();
                 }
             }
         }
@@ -352,8 +345,9 @@ namespace SimpleLanguage.Core
         public virtual void ParseDefineComplete()
         {
             AddDefineConstructFunction();
+            //AddDefineInstanceValue();
 
-            if(m_DefaultExpressNode == null && isTemplateClass == false )
+            if (m_DefaultExpressNode == null && isTemplateClass == false )
             {
                 MetaType mdt = new MetaType(this);
                 var defaultFunction = GetMetaMemberConstructDefaultFunction();
@@ -434,7 +428,7 @@ namespace SimpleLanguage.Core
         }
         public MetaGenTemplateClass GenerateTemplateClass( MetaInputTemplateCollection mic )
         {
-            if (isTemplateClass == false)
+            if (this.isTemplateClass == false)
             {
                 Debug.Write("Error 该类不是模版类,不能生成模版生成类!!");
                 return null;
@@ -590,11 +584,11 @@ namespace SimpleLanguage.Core
 
             if( isAddMethod )
             {
-                MethodManager.instance.AddMemeberFunction(mmf);
+                MethodManager.instance.AddOriginalMemeberFunction(mmf);
             }
             else
             {
-                MethodManager.instance.AddDynamicMemberFunction(mmf);
+                MethodManager.instance.AddDynamicMemeberFunction(mmf);
             }
         }
         public void RemoveMetaMemberFunction( MetaMemberFunction mmf )
@@ -612,11 +606,21 @@ namespace SimpleLanguage.Core
         public void AddDefineConstructFunction()
         {
             MetaMemberFunction mmf = GetMetaMemberConstructDefaultFunction();
-            if( mmf == null )
+            if (mmf == null)
             {
                 mmf = new MetaMemberFunction(this, "_init_");
                 mmf.SetDefineMetaClass(this);
                 AddMetaMemberFunction(mmf);
+            }
+        }
+        public void AddDefineInstanceValue()
+        {
+            MetaMemberVariable mmv = this.GetChildrenMetaBaseByName( "instance" ) as MetaMemberVariable;
+            if (mmv == null)
+            {
+                mmv = new MetaMemberVariable(this, "instance");
+                mmv.SetDefineMetaClass(this);
+                AddMetaMemberVariable(mmv);
             }
         }
         public void HandleExtendClassVariable()

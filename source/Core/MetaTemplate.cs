@@ -1,6 +1,12 @@
-﻿using SimpleLanguage.Compile.CoreFileMeta;
-using SimpleLanguage.Core.SelfMeta;
-using System;
+﻿//****************************************************************************
+//  File:      MetaTemplate.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/5/30 12:00:00
+//  Description: Meta enum's attribute
+//****************************************************************************
+
+using SimpleLanguage.Compile.CoreFileMeta;
 using System.Collections.Generic;
 using System.Text;
 
@@ -8,12 +14,14 @@ namespace SimpleLanguage.Core
 {
     public class MetaTemplate : MetaBase
     {
+        public bool isInFunction => m_IsInFunction;
         public List<MetaClass> constraintMetaClassList => m_ConstraintMetaClassList;
         public MetaClass ownerClass => m_OwnerClass;
 
         protected FileMetaTemplateDefine m_FileMetaTemplateDefine = null;
         protected MetaClass m_OwnerClass = null;
         protected List<MetaClass> m_ConstraintMetaClassList = new List<MetaClass>();
+        protected bool m_IsInFunction = false;
         public MetaTemplate( MetaClass mc, FileMetaTemplateDefine fmtd)
         {
             m_Name = fmtd.name;
@@ -124,14 +132,64 @@ namespace SimpleLanguage.Core
         }
     }
 
-    public class MetaMapTemplate
-    {
-        public string oriName { get; set; } = "";
 
-        public MetaType replaceMt { get; set; } = null;
-    }
-    public class MetaMapTemplateDict
+    public class MetaDefineTemplateCollection
     {
-        public Dictionary<string, MetaType> mapTemplateDict = new Dictionary<string, MetaType>();
+        public List<MetaTemplate> metaTemplateList => m_MetaTemplateList;
+        public int count { get { return m_MetaTemplateList.Count; } }
+
+
+        protected List<MetaTemplate> m_MetaTemplateList = new List<MetaTemplate>();
+
+        public MetaTemplate GetMetaDefineTemplateByName(string _name)
+        {
+            for (int i = 0; i < m_MetaTemplateList.Count; i++)
+            {
+                if (m_MetaTemplateList[i].name == _name)
+                    return m_MetaTemplateList[i];
+            }
+            return null;
+        }
+        public bool IsEqualMetaInputTemplateCollection(MetaInputTemplateCollection mpc)
+        {
+            if (mpc == null)
+            {
+                return m_MetaTemplateList.Count == 0;
+            }
+
+            if (m_MetaTemplateList.Count == mpc.metaTemplateParamsList.Count)
+            {
+                for (int i = 0; i < m_MetaTemplateList.Count; i++)
+                {
+                    MetaTemplate a = m_MetaTemplateList[i];
+                    MetaType b = mpc.metaTemplateParamsList[i];
+                    if (MatchMetaInputTemplate(a, b))
+                        return true;
+                }
+            }
+            return false;
+        }
+        public virtual bool MatchMetaInputTemplate(MetaTemplate a, MetaType b)
+        {
+            if (a.IsInConstraintMetaClass(b.metaClass))
+                return true;
+            return false;
+        }
+        public virtual void AddMetaDefineTemplate(MetaTemplate defineTemplate)
+        {
+            m_MetaTemplateList.Add(defineTemplate);
+        }
+        public virtual string ToFormatString()
+        {
+            //    StringBuilder sb = new StringBuilder();
+            //    for (int i = 0; i < metaParamList.Count; i++)
+            //    {
+            //        sb.Append(metaParamList[i].ToTypeName());
+            //        if (i < metaParamList.Count - 1)
+            //            sb.Append("_");
+            //    }
+            //    return sb.ToString();
+            return "";
+        }
     }
 }

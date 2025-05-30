@@ -1,6 +1,10 @@
-﻿using SimpleLanguage.IR;
-using SimpleLanguage.Core.Statements;
-using SimpleLanguage.VM.Runtime;
+﻿//****************************************************************************
+//  File:      MethodManager.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/5/30 12:00:00
+//  Description: Meta enum's attribute
+//****************************************************************************
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -22,9 +26,17 @@ namespace SimpleLanguage.Core
                 return s_Instance;
             }
         }
+        public List<MetaMemberFunction> metaOriginalFunctionList => m_MetaOriginalFunctionList;
+        public List<MetaMemberFunction> metaClassTemplateGenFunctionList => m_MetaClassTemplateGenFunctionList;
+        public List<MetaMemberFunction> metaFunctionTemplateFunctionList => m_MetaFunctionTemplateFunctionList;
+        public List<MetaMemberFunction> metaDynamicFunctionList => m_MetaDynamicFunctionList;
 
-        public Dictionary<int, MetaMemberFunction> metaMemberFunctionDict = new Dictionary<int, MetaMemberFunction>();
-        public Dictionary<int, MetaMemberFunction> dynamicMetaMemberFunctionDict = new Dictionary<int, MetaMemberFunction>();
+        private Dictionary<string, MetaFunction> m_MetaAllFunctionDict = new Dictionary<string, MetaFunction>();
+
+        private List<MetaMemberFunction> m_MetaOriginalFunctionList = new List<MetaMemberFunction>();
+        private List<MetaMemberFunction> m_MetaClassTemplateGenFunctionList = new List<MetaMemberFunction>();
+        private List<MetaMemberFunction> m_MetaFunctionTemplateFunctionList = new List<MetaMemberFunction>();
+        private List<MetaMemberFunction> m_MetaDynamicFunctionList = new List<MetaMemberFunction>();
 
 
         public static MetaVariable GetMetaVariableInMetaClass( MetaClass mc, FileMetaCallLink fmcl )
@@ -49,37 +61,86 @@ namespace SimpleLanguage.Core
             }
             return mv;
         }
-        public void AddMemeberFunction( MetaMemberFunction mmf )
+        public void AddMetaAllFunction( MetaFunction mf )
         {
-            if(metaMemberFunctionDict.ContainsKey( mmf.GetHashCode() ) )
+            if(m_MetaAllFunctionDict.ContainsKey(mf.functionAllName ) )
             {
                 return;
             }
-            metaMemberFunctionDict.Add(mmf.GetHashCode(), mmf);
+            m_MetaAllFunctionDict.Add(mf.functionAllName, mf);
         }
-        public void AddDynamicMemberFunction( MetaMemberFunction mmf )
+        public void AddOriginalMemeberFunction(MetaMemberFunction mmf)
         {
-            if (dynamicMetaMemberFunctionDict.ContainsKey(mmf.GetHashCode()))
+            if (m_MetaOriginalFunctionList.IndexOf(mmf) == -1)
             {
-                return;
-            }
-            dynamicMetaMemberFunctionDict.Add(mmf.GetHashCode(), mmf);
-            
-        }
-        public void ParseMetaExpress()
-        {
-            var tempDict = new Dictionary<int, MetaMemberFunction>(metaMemberFunctionDict);
-            foreach (var v in tempDict)
-            {
-                v.Value.ParseMetaExpress();
+                m_MetaOriginalFunctionList.Add(mmf);
+                AddMetaAllFunction(mmf);
             }
         }
-        public void ParseStatements()
+        public void AddClassTemplateMemeberFunction(MetaMemberFunction mmf)
         {
-            foreach (var v in metaMemberFunctionDict)
+            if (m_MetaClassTemplateGenFunctionList.IndexOf(mmf) == -1)
             {
-                if (!v.Value.isTemplateFunction)
-                    v.Value.ParseStatements();
+                m_MetaClassTemplateGenFunctionList.Add(mmf);
+                AddMetaAllFunction(mmf);
+            }
+        }
+        public void AddFunctionTemplateMemeberFunction(MetaMemberFunction mmf)
+        {
+            if (m_MetaFunctionTemplateFunctionList.IndexOf(mmf) == -1)
+            {
+                m_MetaFunctionTemplateFunctionList.Add(mmf);
+                AddMetaAllFunction(mmf);
+            }
+        }
+        public void AddDynamicMemeberFunction(MetaMemberFunction mmf)
+        {
+            if (m_MetaDynamicFunctionList.IndexOf(mmf) == -1)
+            {
+                m_MetaDynamicFunctionList.Add(mmf);
+                AddMetaAllFunction(mmf);
+            }
+        }
+        public void CreateMetaExpress( int type )
+        {
+            List<MetaMemberFunction> list = type switch
+            {
+                1 => m_MetaClassTemplateGenFunctionList,
+                2 => m_MetaFunctionTemplateFunctionList,
+                3 => m_MetaDynamicFunctionList,
+                _ => m_MetaOriginalFunctionList,
+            };
+            foreach (var v in list)
+            {
+                v.CreateMetaExpress();
+            }
+        }
+        public void ParseMetaExpress(int type)
+        {
+            List<MetaMemberFunction> list = type switch
+            {
+                1 => m_MetaClassTemplateGenFunctionList,
+                2 => m_MetaFunctionTemplateFunctionList,
+                3 => m_MetaDynamicFunctionList,
+                _ => m_MetaOriginalFunctionList,
+            };
+            foreach (var v in list)
+            {
+                v.ParseMetaExpress();
+            }
+        }
+        public void ParseStatements( int type )
+        {
+            List<MetaMemberFunction> list = type switch
+            {
+                1 => m_MetaClassTemplateGenFunctionList,
+                2 => m_MetaFunctionTemplateFunctionList,
+                3 => m_MetaDynamicFunctionList,
+                _ => m_MetaOriginalFunctionList,
+            };
+            foreach (var v in list)
+            {
+                v.ParseMetaExpress();
             }
         }
     }

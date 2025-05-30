@@ -78,7 +78,7 @@ namespace SimpleLanguage.Core
         public MetaVariable m_MetaVariable { get; private  set; } = null;
         public MetaFunction m_MetaFunction { get; private set; } = null;
 
-        private MetaMapTemplateDict m_MapTemplateDict = new MetaMapTemplateDict();
+        private Dictionary<string,MetaType> m_MapTemplateDict = new Dictionary<string, MetaType>();
         private MetaBlockStatements m_OwnerMetaFunctionBlock = null;
         private MetaClass m_OwnerMetaClass = null;
         private MetaInputParamCollection m_MetaInputParamCollection = null;
@@ -114,13 +114,13 @@ namespace SimpleLanguage.Core
                 m_MetaBraceStatementsContent = new MetaBraceOrBracketStatementsContent( m_FileMetaCallNode.fileMetaBraceTerm, m_OwnerMetaFunctionBlock, m_OwnerMetaClass);
             }
         }
-        public void UpdateMetaMapTemplateDict(MetaMapTemplateDict mmtd )
-        {
-            m_MapTemplateDict = mmtd;
-        }
         public void SetFrontCallNode(MetaCallNode mcn)
         {
             m_FrontCallNode = mcn;
+        }
+        public void SetMapTemplateDict( Dictionary<string, MetaType> dict )
+        {
+            m_MapTemplateDict = dict;
         }
         public bool ParseNode(AllowUseSettings _auc)
         {
@@ -175,10 +175,10 @@ namespace SimpleLanguage.Core
         {
             name = m_FileMetaCallNode.name;
 
-            if(m_MapTemplateDict.mapTemplateDict.ContainsKey(name))
+            if(m_MapTemplateDict.ContainsKey(name))
             {
                 m_CallNodeType = ECallNodeType.ClassName;
-                m_MetaClass = m_MapTemplateDict.mapTemplateDict[name].metaClass;
+                m_MetaClass = m_MapTemplateDict[name].metaClass;
                 
                 return true;
             }
@@ -1422,8 +1422,8 @@ namespace SimpleLanguage.Core
 
         private MetaVisitNode m_FinalCallNode = null;
         private List<MetaVisitNode> m_VisitNodeList = new List<MetaVisitNode>();
-        private MetaMapTemplateDict m_MapTemplateDict = new MetaMapTemplateDict();
-        public MetaCallLink(FileMetaCallLink fmcl, MetaClass metaClass, MetaBlockStatements mbs, MetaMapTemplateDict mmtd )
+        private Dictionary<string, MetaType> m_MapTemplateDict = new Dictionary<string, MetaType>();
+        public MetaCallLink(FileMetaCallLink fmcl, MetaClass metaClass, MetaBlockStatements mbs, Dictionary<string, MetaType> mmtd )
         {
             m_FileMetaCallLink = fmcl;
             m_OwnerMetaClass = metaClass;
@@ -1438,7 +1438,7 @@ namespace SimpleLanguage.Core
             {
                 FileMetaCallNode fmcn = m_FileMetaCallLink.callNodeList[0];
                 var firstNode = new MetaCallNode(null, fmcn, m_OwnerMetaClass, m_OwnerMetaBlockStatements, this);
-                firstNode.UpdateMetaMapTemplateDict(m_MapTemplateDict);
+                firstNode.SetMapTemplateDict(m_MapTemplateDict);
                 frontMetaNode = firstNode;
                 m_CallNodeList.Add(firstNode);
             }
@@ -1448,7 +1448,7 @@ namespace SimpleLanguage.Core
                 var cn2 = m_FileMetaCallLink.callNodeList[i + 1];
                 var fmn = new MetaCallNode(cn1, cn2, m_OwnerMetaClass, m_OwnerMetaBlockStatements, this);
                 fmn.SetFrontCallNode(frontMetaNode);
-                fmn.UpdateMetaMapTemplateDict(m_MapTemplateDict);
+                fmn.SetMapTemplateDict(m_MapTemplateDict);
                 m_CallNodeList.Add(fmn);
                 frontMetaNode = fmn;
             }

@@ -1,5 +1,12 @@
-﻿using SimpleLanguage.Compile.CoreFileMeta;
-using SimpleLanguage.Core;
+﻿//****************************************************************************
+//  File:      ClassManager.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/5/30 12:00:00
+//  Description: Meta enum's attribute
+//****************************************************************************
+
+using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Parse;
 using System;
@@ -42,6 +49,7 @@ namespace SimpleLanguage.Core
 
 
         private Dictionary<string, MetaClass> m_AllClassDict = new Dictionary<string, MetaClass>();
+        private Dictionary<string, MetaClass> m_TemplateClassDict = new Dictionary<string, MetaClass>();
         private List<MetaDynamicClass> m_DynamicClassList = new List<MetaDynamicClass>();
 
         private Dictionary<string, MetaData> m_AllDataDict = new Dictionary<string, MetaData>();
@@ -421,7 +429,7 @@ namespace SimpleLanguage.Core
                 {
                     if (!m_AllClassDict.ContainsKey(newmc.allName))
                     {
-                        m_AllClassDict.Add(newmc.allName, newmc);
+                        AddDictMetaClass(newmc);
                     }
                 }
 
@@ -440,6 +448,11 @@ namespace SimpleLanguage.Core
                 Debug.Write("Add Failed!!");
                 return;
             }
+            if( mc.isTemplateClass )
+            {
+                m_TemplateClassDict.Add(mc.allName, mc);
+            }
+
             m_AllClassDict.Add(mc.allName, mc);
         }
         public void ParseInterfaceRelation()
@@ -473,13 +486,6 @@ namespace SimpleLanguage.Core
                 it.Value.ParseTemplateRelation();
             }
         }
-        public void ParseMemberFunctionName()
-        {
-            foreach (var it in m_AllClassDict)
-            {
-                it.Value.ParseMetaMemberFunctionName();
-            }
-        }
         public void HandleExtendData()
         {
             List<MetaClass> allMClassList = new List<MetaClass>();
@@ -498,14 +504,40 @@ namespace SimpleLanguage.Core
         {
             foreach (var it in m_AllClassDict)
             {
-                it.Value.ParseMemberVariableDefineMetaType();
+                if( !it.Value.isTemplateClass )
+                {
+                    it.Value.ParseMemberVariableDefineMetaType();
+                }
+            }
+        }
+        public void ParseTemplateMemberVariableDefineMetaType()
+        {
+            foreach (var it in m_TemplateClassDict )
+            {
+                foreach (var v in it.Value.metaGenTemplateClassList)
+                {
+                    v.ParseMemberVariableDefineMetaType();
+                }
             }
         }
         public void ParseMemberFunctionDefineMetaType()
         {
             foreach (var it in m_AllClassDict)
             {
-                it.Value.ParseMemberFunctionDefineMetaType();
+                if (!it.Value.isTemplateClass)
+                {
+                    it.Value.ParseMemberFunctionDefineMetaType();
+                }
+            }
+        }
+        public void ParseTemplateMemberFunctionDefineMetaType()
+        {
+            foreach (var it in m_TemplateClassDict)
+            {
+                foreach (var v in it.Value.metaGenTemplateClassList)
+                {
+                    v.ParseMemberFunctionDefineMetaType();
+                }
             }
         }
         public void CheckInterfaces()

@@ -21,10 +21,10 @@ namespace SimpleLanguage.Core
             m_EqualMetaVariable = mv;
             if (fmcl != null )
             {
-                MetaMapTemplateDict mmtd = null;
+                Dictionary<string, MetaType> mmtd = new Dictionary<string, MetaType>();
                 if (mc.isGenTemplate)
                 {
-                    mmtd = (mc as MetaGenTemplateClass).metaMapTemplateDict;
+                    (mc as MetaGenTemplateClass).GetMetaTemplateMT(mmtd);
                 }
 
                 m_MetaCallLink = new MetaCallLink( fmcl, mc, mbs, mmtd);

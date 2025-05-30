@@ -15,14 +15,11 @@ namespace SimpleLanguage.Core
 {
     public class MetaGenTemplateClass : MetaClass
     {
-        public MetaMapTemplateDict metaMapTemplateDict => m_MetaMapTemplateDict;
-        public override bool isGenTemplate { get { return true; } }
+        public override bool isGenTemplate => true;
 
-        protected List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
-        protected MetaMapTemplateDict m_MetaMapTemplateDict = new MetaMapTemplateDict();
+        protected Dictionary<string,MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string,MetaGenTemplate>();
         public MetaGenTemplateClass(MetaClass mc) : base(mc)
         {
-
         }
         public override void SetDeep(int deep)
         {
@@ -42,11 +39,29 @@ namespace SimpleLanguage.Core
         }
         public MetaType GetGenTemplateByIndex( int index )
         {
-            if( index >= 0 && index < m_MetaGenTemplateList.Count )
+            int i = 0;
+            foreach( var v in m_MetaGenTemplateDict )
             {
-                return m_MetaGenTemplateList[index].metaType;
+                if( i == index )
+                {
+                    return v.Value.metaType;
+                }
+                i++;
             }
             return null;
+        }
+
+        public void GetMetaTemplateMT( Dictionary<string, MetaType> mtdict )
+        {
+            foreach( var v in m_MetaGenTemplateDict )
+            {
+                var cmg = v.Value;
+                if(mtdict.ContainsKey(cmg.name ))
+                {
+                    continue;
+                }
+                mtdict.Add(cmg.name, cmg.metaType);
+            }
         }
         public override MetaMemberVariable GetMetaMemberVariableByName(string name)
         {
@@ -66,28 +81,24 @@ namespace SimpleLanguage.Core
         }
         public void AddMetaGenTemplate( MetaGenTemplate mgt )
         {
-            m_MetaGenTemplateList.Add(mgt);
-            m_MetaMapTemplateDict.mapTemplateDict.Add(mgt.name, mgt.metaType);
+            m_MetaGenTemplateDict.Add(mgt.name, mgt);
         }
         public MetaGenTemplate GetMetaGenTemplate( string name )
         {
-            var ret = m_MetaGenTemplateList.Find(a => a.name == name);
-
-            return ret;
+            if( m_MetaGenTemplateDict.ContainsKey(name) )
+            {
+                return m_MetaGenTemplateDict[name];
+            }
+            return null;
         }
         public void UpdateGenMember()
         {
             Dictionary<string, MetaMemberVariable> addList = new Dictionary<string, MetaMemberVariable>();
             foreach ( var v in m_MetaMemberVariableDict.Values )
             {
-                if( v.metaDefineType.metaTemplate != null )
-                {
-                    MetaMemberVariable mgmv = new MetaMemberVariable( this, v, m_MetaGenTemplateList );
-                    addList.Add(mgmv.name, mgmv);
-                    mgmv.UpdateGenMemberVariable();
-                    mgmv.CreateExpress();
-                    mgmv.ParseMetaExpress();
-                }
+                MetaMemberVariable mgmv = new MetaMemberVariable( this, v, m_MetaGenTemplateDict );
+                addList.Add(mgmv.name, mgmv);
+                mgmv.UpdateGenMemberVariable();
             }
             m_MetaMemberVariableDict = addList;
 
@@ -104,8 +115,12 @@ namespace SimpleLanguage.Core
                         var curFun = v.Value[j];
 
                         MetaMemberFunction mgmf = new MetaMemberFunction(this);
-                        mgmf.UpdateGenMemberFunction( curFun );
+                        mgmf.UpdateGenMemberFunctionByTemplateClass( curFun );
                         list.Add(mgmf);
+                        if( mgmf.isTemplateClassFunction )
+                        {
+                            MethodManager.instance.AddClassTemplateMemeberFunction(mgmf);
+                        }
                     }
                 }
             }
@@ -113,13 +128,14 @@ namespace SimpleLanguage.Core
         }
         public bool Adapter(MetaInputTemplateCollection mitc)
         {
-            if( mitc.metaTemplateParamsList.Count == m_MetaGenTemplateList.Count )
+            if( mitc.metaTemplateParamsList.Count == m_MetaGenTemplateDict.Count )
             {
-                for( int i = 0; i < mitc.metaTemplateParamsList.Count; i++ )
-                {
-                    var mtpl = mitc.metaTemplateParamsList[i];
-                    var mgtl = m_MetaGenTemplateList[i];
-                    if( !mgtl.EqualWithMetaType(mtpl) )
+                int i = 0;
+                foreach( var v in m_MetaGenTemplateDict )
+                {                    
+                    var mtpl = mitc.metaTemplateParamsList[i++];
+                    var mgtl = v.Value;
+                    if (!mgtl.EqualWithMetaType(mtpl))
                     {
                         return false;
                     }
@@ -136,12 +152,12 @@ namespace SimpleLanguage.Core
 
             sb.Append(m_Name);
             sb.Append("<");
-            for (int i = 0; i < m_MetaGenTemplateList.Count; i++)
+            foreach( var v in m_MetaGenTemplateDict )
             {
-                sb.Append(m_MetaGenTemplateList[i].ToDefineTypeString());
+                sb.Append(v.Value.ToDefineTypeString());
 
-                if (i < m_MetaGenTemplateList.Count - 1)
-                    sb.Append(",");
+                //if (i < v.e)
+                //    sb.Append(",");
             }
             sb.Append(">");
 
@@ -158,16 +174,16 @@ namespace SimpleLanguage.Core
             stringBuilder.Append(" ");
 
             stringBuilder.Append("class " + name);
-            if (m_MetaGenTemplateList.Count > 0)
+            if (m_MetaGenTemplateDict.Count > 0)
             {
                 stringBuilder.Append("<");
-                for (int i = 0; i < m_MetaGenTemplateList.Count; i++)
+                foreach( var v in m_MetaGenTemplateDict )
                 {
-                    stringBuilder.Append(m_MetaGenTemplateList[i].ToDefineTypeString());
-                    if (i < m_MetaGenTemplateList.Count - 1)
-                    {
-                        stringBuilder.Append(",");
-                    }
+                    stringBuilder.Append(v.Value.ToDefineTypeString());
+                    //if (i < m_MetaGenTemplateList.Count - 1)
+                    //{
+                    //    stringBuilder.Append(",");
+                    //}
                 }
                 stringBuilder.Append(">");
             }

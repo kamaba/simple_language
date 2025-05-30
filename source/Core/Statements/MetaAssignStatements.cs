@@ -10,6 +10,7 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
@@ -117,7 +118,9 @@ namespace SimpleLanguage.Core.Statements
         }
         private void Parse()
         {
-            var metaCallLink = new MetaCallLink(m_FileMetaOpAssignSyntax.variableRef, m_OwnerMetaBlockStatements?.ownerMetaClass, m_OwnerMetaBlockStatements, null);
+            Dictionary<string, MetaType> mmtd = new Dictionary<string, MetaType>();
+
+            var metaCallLink = new MetaCallLink(m_FileMetaOpAssignSyntax.variableRef, m_OwnerMetaBlockStatements?.ownerMetaClass, m_OwnerMetaBlockStatements, mmtd );
 
             if (metaCallLink == null)
             {
