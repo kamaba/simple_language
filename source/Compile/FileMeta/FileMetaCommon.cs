@@ -265,7 +265,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 m_BeginParToken = m_FileMetaParTerm.token;
                 m_EndParToken = m_FileMetaParTerm.endToken;
             }
-            if ( m_Node.angleNode != null )      // LinkCall.Call<int,string, NS.Class1>()
+            if (m_Node.angleNode != null)      // LinkCall.Call<int,string, NS.Class1>()
             {
                 isTemplate = true;
                 m_BeginAngleToken = m_Node.angleNode.token;
@@ -274,14 +274,14 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 for (int i = 0; i < list.Count; i++)
                 {
                     if (list[i].nodeType == ENodeType.Comma)
-                    {                       
+                    {
                         continue;
                     }
-                    var aa = new FileInputTemplateNode(m_FileMeta, list[i] );
+                    var aa = new FileInputTemplateNode(m_FileMeta, list[i]);
                     m_InputTemplateNodeList.Add(aa);
                 }
             }
-            if( m_Node.bracketNode != null )     //[1,2,3,4]
+            if ( m_Node.bracketNode != null )     //[1,2,3,4]
             {
                 isArray = true;
                 m_FileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, m_Node);
@@ -538,25 +538,11 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
         private List<Token> m_TokenList = new List<Token>();
         private bool m_IsInputTemplateData = false;
-        public FileMetaClassDefine( FileMeta fm, List<Token> _tokenList, Node angleNode = null )
+        public FileMetaClassDefine(FileMeta fm, List<Token> _tokenList )
         {
             m_FileMeta = fm;
             m_TokenList = _tokenList;
-            m_ClassNameToken = _tokenList[_tokenList.Count-1];
-            if (angleNode != null)
-            {
-                m_IsInputTemplateData = true;
-                m_AngleTokenBegin = angleNode.token;
-                m_AngleTokenEnd = angleNode.endToken;
-                for (int i = 0; i < angleNode.childList.Count; i++)
-                {
-                    var cnode = angleNode.childList[i];
-                    if (cnode.nodeType == ENodeType.Comma)
-                        continue;
-                    FileInputTemplateNode fmcn = new FileInputTemplateNode(fm, cnode);
-                    m_InputTemplateNodeList.Add(fmcn);
-                }
-            }
+            m_ClassNameToken = _tokenList[_tokenList.Count - 1];
         }
         public FileMetaClassDefine( FileMeta fm, Node node, Node mutNode = null )
         {

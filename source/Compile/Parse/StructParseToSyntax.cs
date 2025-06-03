@@ -372,11 +372,6 @@ namespace SimpleLanguage.Compile.Parse
                 Debug.Write("Error 发生错误，有符号的情况，必须有前置变量");
                 return null;
             }
-            else if (beforeNodeList.Count > 5)
-            {
-                Debug.Write("Error 发生错误，前置不允许超过4个");
-                return null;
-            }
 
             Token staticToken = null;
             Token dynamicToken = null;
@@ -389,7 +384,7 @@ namespace SimpleLanguage.Compile.Parse
             Node parseNode = new Node(null);
             parseNode.childList = beforeNodeList;
             parseNode.parseIndex = 0;
-            HandleLinkNode(parseNode);
+            HandleBeforeNode(parseNode);
             var handleBeforeList = parseNode.childList;
 
             List<Node> defineNodeList = new List<Node>();

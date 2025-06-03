@@ -1,7 +1,11 @@
-﻿using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.CSharp;
-using System;
-using System.Collections.Generic;
+﻿//****************************************************************************
+//  File:      MetaClassCSharp.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2023/5/12 12:00:00
+//  Description: 
+//****************************************************************************
+
 using System.Reflection;
 using System.Text;
 

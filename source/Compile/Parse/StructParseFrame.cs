@@ -17,6 +17,8 @@ using System.Runtime.Intrinsics.X86;
 using System.Reflection;
 using System.Xml.Linq;
 using System.Diagnostics;
+using static SimpleLanguage.Compile.CoreFileMeta.FileMetaClass;
+using System.Xml;
 
 namespace SimpleLanguage.Compile.Parse
 {
@@ -279,13 +281,13 @@ namespace SimpleLanguage.Compile.Parse
                 m_FileMeta.SetDeep(0);
 #endif
 
-                Debug.Write("解析成Code代码结构文件成功!!! 下一步，可以生产Meta文件了");
+                Debug.WriteLine("解析成Code代码结构文件成功!!! 下一步，可以生产Meta文件了");
 
-                Debug.Write("生成FileMeta文件成功!!! 下一步，可以 进行混合了 ");
+                Debug.WriteLine("生成FileMeta文件成功!!! 下一步，可以 进行混合了 ");
             }
             else
             {
-                Debug.Write("解析出现错误 ParseFile : " + currentNodeInfo.parseType.ToString());
+                Debug.WriteLine("解析出现错误 ParseFile : " + currentNodeInfo.parseType.ToString());
                 return;
             }
             return;
@@ -449,12 +451,12 @@ namespace SimpleLanguage.Compile.Parse
 
                                 continue;
                             }
-                            else if (next2Node.nodeType == ENodeType.Angle)   //Class1<T>   Func<T>( T t );  array<int> arr1;
-                            {
-                                curNode.angleNode = next2Node;
-                                index = j;
-                                continue;
-                            }
+                            //else if (next2Node.nodeType == ENodeType.Angle)   //Class1<T>   Func<T>( T t );  array<int> arr1;
+                            //{
+                            //    curNode.angleNode = next2Node;
+                            //    index = j;
+                            //    continue;
+                            //}
                             else if (next2Node.nodeType == ENodeType.Brace)
                             {
                                 curNode.blockNode = next2Node;
@@ -717,20 +719,20 @@ namespace SimpleLanguage.Compile.Parse
                                 }
                             }
                         }
-                        else if (nextNode?.nodeType == ENodeType.Angle)    // Class1<>
+                        else if (nextNode?.nodeType == ENodeType.LeftAngle)    // Class1<>
                         {
                             var next2Node = pnode.childList[index + 1];
                             if (next2Node?.nodeType == ENodeType.Brace)  // Class1<int>(){}
                             {
                                 index += 2;
-                                curNode.angleNode = nextNode;
+                                //curNode.angleNode = nextNode;
                                 curNode.blockNode = next2Node;
                                 blockNode = curNode;
                             }
                             else
                             {
                                 index++;
-                                curNode.angleNode = nextNode;
+                                //curNode.angleNode = nextNode;
                             }
                         }
                         else if (nextNode?.nodeType == ENodeType.LineEnd
@@ -1101,13 +1103,7 @@ namespace SimpleLanguage.Compile.Parse
             {
                 curNode = pnode.childList[index++];
                 pnode.parseIndex = index;
-
-                nextNode = null;
-                if (index < pnode.childList.Count)
-                {
-                    nextNode = pnode.childList[index];
-                }
-                
+                                
                 if (curNode.nodeType == ENodeType.Key)
                 {
                     if( curNode.token.type == ETokenType.Namespace )
@@ -1120,6 +1116,14 @@ namespace SimpleLanguage.Compile.Parse
                     }
                     nodeList.Add(curNode);
                 }
+                else if (curNode.nodeType == ENodeType.LeftAngle)   //Class1<T> 
+                {
+                    nodeList.Add(curNode);
+                }
+                else if (curNode.nodeType == ENodeType.RightAngle)   //Class1<T>   Func<T>( T t );  array<int> arr1;
+                {
+                    nodeList.Add(curNode);
+                }
                 else if (curNode.nodeType == ENodeType.Comma)
                 {
                     nodeList.Add(curNode);
@@ -1127,93 +1131,28 @@ namespace SimpleLanguage.Compile.Parse
                 else if(curNode.nodeType == ENodeType.IdentifierLink)  //Class1
                 {
                     nodeList.Add(curNode);
-                    if( isClass == 1 )
-                    {
-                        if (nextNode.nodeType == ENodeType.Angle)   //Class1<>
-                        {
-                            pnode.parseIndex++;
-                            index++;
-                            curNode.angleNode = nextNode;
-                        }
-                        else if (nextNode.nodeType == ENodeType.LineEnd)
-                        {
-                            continue;
-                        }
-                        else if (nextNode.nodeType == ENodeType.Brace)
-                        {
-                            continue;
-                        }
-                        else if (nextNode.nodeType == ENodeType.IdentifierLink)  // Class1 c1
-                        {
-                            Debug.Write("Error 不允许在顶级Class里边有变量的存在!!");
-                            continue;
-                        }
-                        else if (nextNode?.nodeType == ENodeType.Assign) //Class1 = "test1", [],{}, (2+3); Class2(10);
-                        {
-                            Debug.Write("Error 不允许在顶级Class里边有 新建Class1的存在");
-                            continue;
-                        }
-                        else
-                        {
-                            Debug.Write("Error 不允许在顶级Class里边有 新建Class1的存在1111111");
-                            continue;
-                        }
-                    }
-                    else if( isClass == 2  )
-                    {
-                        if (nextNode?.nodeType == ENodeType.Brace)
-                        {
-                            curNode.blockNode = nextNode;
-                            continue;
-                        }
-                        else if( nextNode?.nodeType == ENodeType.LineEnd )
-                        {
-                            if (index + 1 < pnode.childList.Count)
-                            {
-                                var nextNode2 = pnode.childList[index+1];
-                                if( nextNode2?.nodeType == ENodeType.Brace )
-                                {
-                                    curNode.blockNode = nextNode2;
-                                    isCanAdd = true;
-                                    pnode.parseIndex += 2;
-                                    break;
-                                }
-                                else
-                                {
-                                    continue;
-                                }
-                            }
-                        }
-                        else if (nextNode?.nodeType == ENodeType.SemiColon)
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            Debug.Write("Error 不允许在顶级namespace里边有 新建namespace的存在1111111");
-                            continue;
-                        }
-                    }
                 }
                 else if( curNode.nodeType == ENodeType.LineEnd )
                 {
-                    if( nextNode?.nodeType == ENodeType.Brace )
+                    nextNode = null;
+                    if (index < pnode.childList.Count)
+                    {
+                        nextNode = pnode.childList[index];
+                    }
+                    if ( nextNode?.nodeType == ENodeType.Brace )
                     {
                         if(isClass == 0 )
                         {
                             isClass = 1;
                         }
-                        curNode.blockNode = nextNode;
                         curNode = nextNode;
                         index++;
-                        pnode.parseIndex++;
                         isCanAdd = true;
                         break;
                     }
                 }
-                else if (curNode?.nodeType == ENodeType.Brace)
+                else if (curNode.nodeType == ENodeType.Brace )
                 {
-                    curNode.blockNode = nextNode;
                     isCanAdd = true;
                     if (isClass == 0)
                     {
@@ -1226,8 +1165,9 @@ namespace SimpleLanguage.Compile.Parse
                     Debug.Write("Error 不允许在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString() );
                 }
             }
+            pnode.parseIndex = index;
 
-            if(isCanAdd )
+            if (isCanAdd )
             {
                 if(isClass == 1 )
                 {
@@ -1272,6 +1212,7 @@ namespace SimpleLanguage.Compile.Parse
 
             List<Node> nodeList = new List<Node>();
             Node nextNode = null;
+            Node lastIdetifiNode = null;
             int index = pnode.parseIndex;
 
             int parseType = 0;      // 1->是类class\n{}  2->函数 init()\n{}      3->变量  int a;  int a=20; a = 20; a = {}\n a = {};
@@ -1279,41 +1220,59 @@ namespace SimpleLanguage.Compile.Parse
             for ( index = pnode.parseIndex; index < pnode.childList.Count;)
             {
                 var curNode = pnode.childList[index++];
-                nextNode = null;
-                
-                if(curNode.nodeType == ENodeType.IdentifierLink)  //Class1
+                if (curNode.nodeType == ENodeType.Key)
+                {
+                    if (curNode.token.type == ETokenType.Class
+                        || curNode.token.type == ETokenType.Enum
+                        || curNode.token.type == ETokenType.Data )
+                    {
+                        parseType = 1;
+                    }
+                    nodeList.Add(curNode);
+                }
+                else if( curNode.nodeType == ENodeType.ConstValue )
                 {
                     nodeList.Add(curNode);
-                    if (index < pnode.childList.Count)
-                    {
-                        nextNode = pnode.childList[index];
-                    }
-                    if (nextNode?.nodeType == ENodeType.Angle)   //Class1<T>   Func<T>( T t );  array<int> arr1;
-                    {
-                        curNode.angleNode = nextNode;
-                        index++;
-
-                        if (index < pnode.childList.Count)
-                        {
-                            nextNode = pnode.childList[index];
-                        }
-                    }
-
-                    if (nextNode?.nodeType == ENodeType.Par)   //Class1()
-                    {
-                        index++;
-                        if( parseType == 0 )
-                            parseType = 2;
-                        curNode.parNode = nextNode;
-                    }
                 }
-                else if( curNode.nodeType == ENodeType.Assign )
+                else if (curNode.nodeType == ENodeType.LeftAngle)   //Class1<T> 
+                {
+                    nodeList.Add(curNode);
+                }
+                else if (curNode.nodeType == ENodeType.RightAngle)   //Class1<T>   Func<T>( T t );  array<int> arr1;
+                {
+                    nodeList.Add(curNode);
+                }
+                else if (curNode.nodeType == ENodeType.Assign)
                 {
                     nodeList.Add(curNode);
                     parseType = 3;
                 }
+                else if (curNode.nodeType == ENodeType.Comma)
+                {
+                    nodeList.Add(curNode);
+                }
+                else if (curNode.nodeType == ENodeType.Par)   //Class1()
+                {
+                    index++;
+                    if(lastIdetifiNode != null )
+                    {
+                        lastIdetifiNode.parNode = curNode;
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Error 没有发现lastIdetificationNode !");
+                    }
+                    if (parseType == 0)
+                        parseType = 2;
+                }
+                else if (curNode.nodeType == ENodeType.IdentifierLink)  //Class1
+                {
+                    nodeList.Add(curNode);
+                    lastIdetifiNode = curNode;
+                }
                 else if (curNode.nodeType == ENodeType.LineEnd)
                 {
+                    nextNode = null;
                     if (index < pnode.childList.Count)
                     {
                         nextNode = pnode.childList[index];
@@ -1323,27 +1282,28 @@ namespace SimpleLanguage.Compile.Parse
                             index++;
                             break;
                         }
-                    }
-                    if (!ProjectManager.isUseForceSemiColonInLineEnd)
-                    {
-                        if( parseType == 3 )
+                        if (!ProjectManager.isUseForceSemiColonInLineEnd)
                         {
-                            break;
+                            if (parseType == 3)
+                            {
+                                break;
+                            }
                         }
                     }
                 }
-                else if( curNode.nodeType == ENodeType.Brace )
+                else if (curNode.nodeType == ENodeType.Brace)
                 {
                     block = curNode;
-                    break;
-                }
-                else if (curNode.nodeType == ENodeType.SemiColon)
-                {
+                    if( lastIdetifiNode! != null )
+                    {
+                        lastIdetifiNode.blockNode = curNode;
+                    }
+                    index++;
                     break;
                 }
                 else
                 {
-                    nodeList.Add(curNode);
+                    Debug.Write("Error 不允许在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
                 }
             }
             pnode.parseIndex = index;
@@ -1377,7 +1337,85 @@ namespace SimpleLanguage.Compile.Parse
                 }
             }
             ParseInClass(pnode);
-        }       
+        }
+
+        //处理 ident <> () {} [] . 的结合 与子元素的统一处理
+        public static void HandleBeforeNode(Node node, Node inputFinaleNode = null)
+        {
+            int index = node.parseIndex;
+            if (index < 0 || index >= node.childList.Count)
+                return;
+
+            Node currentExpressNode = node.parseCurrent;
+            if (inputFinaleNode == null)
+            {
+                node.parseIndex++;
+                HandleBeforeNode(node, currentExpressNode);
+                return;
+            }
+
+            Node finalNode = inputFinaleNode.finalNode;
+            if (finalNode?.nodeType == ENodeType.IdentifierLink) //Class1???
+            {
+                if (currentExpressNode.nodeType == ENodeType.LeftAngle)       //Class<>??
+                {
+                    finalNode.angleNode = currentExpressNode;            //Class<>
+                    node.childList.Remove(currentExpressNode);
+                    HandleBeforeNode(node, node.parseCurrent);
+                }
+                else if( currentExpressNode.nodeType == ENodeType.RightAngle )
+                {
+                    finalNode.angleNode.token = currentExpressNode.token;
+                    return;
+                }
+                else if (currentExpressNode.nodeType == ENodeType.Par)             //Class()?
+                {
+                    finalNode.parNode = currentExpressNode;
+                    node.childList.Remove(currentExpressNode);
+                    HandleBeforeNode(currentExpressNode);
+
+                    if (currentExpressNode.extendLinkNodeList.Count > 0)
+                    {
+                        finalNode.SetLinkNode(currentExpressNode.extendLinkNodeList);   // Q.Map()[.Cast]
+                        HandleBeforeNode(node, finalNode);           //Q.Map().[Cast]
+                        return;
+                    }
+                    else
+                    {
+                        HandleBeforeNode(node, finalNode);
+                        return;
+                    }
+                }
+                else if (currentExpressNode.nodeType == ENodeType.Brace)           // M.Class(){}
+                {
+                    finalNode.blockNode = currentExpressNode;
+                    node.childList.Remove(currentExpressNode);
+                    HandleBeforeNode(currentExpressNode);
+                    HandleBeforeNode(node, finalNode);
+                    return;
+                }
+                else if (currentExpressNode.nodeType == ENodeType.Bracket)         //Class[]
+                {
+                    finalNode.bracketNode = currentExpressNode;
+                    node.childList.Remove(currentExpressNode);
+                    HandleBeforeNode(currentExpressNode);
+
+                    if (currentExpressNode.extendLinkNodeList.Count > 0)
+                    {
+                        finalNode.SetLinkNode(currentExpressNode.extendLinkNodeList);   // Array[1].20;
+                        HandleBeforeNode(node, finalNode);                        // Array[1].Fun( 1, 2 );
+                        return;
+                    }
+                    else
+                    {
+                        HandleBeforeNode(node, finalNode);
+                        return;
+                    }
+                }
+            }
+            node.parseIndex++;
+            HandleBeforeNode(node, currentExpressNode);
+        }
         //处理 ident <> () {} [] . 的结合 与子元素的统一处理
         public static void HandleLinkNode(Node node, Node inputFinaleNode =null )
         {
@@ -1396,9 +1434,9 @@ namespace SimpleLanguage.Compile.Parse
             Node finalNode = inputFinaleNode.finalNode;
             if (finalNode?.nodeType == ENodeType.IdentifierLink) //Class1???
             {
-                if (currentExpressNode.nodeType == ENodeType.Angle)       //Class<>??
+                if (currentExpressNode.nodeType == ENodeType.LeftAngle )       //Class<>??
                 {
-                    finalNode.angleNode = currentExpressNode;            //Class<>
+                    //finalNode.angleNode = currentExpressNode;            //Class<>
                     node.childList.Remove(currentExpressNode);
 
                     HandleLinkNode(currentExpressNode);

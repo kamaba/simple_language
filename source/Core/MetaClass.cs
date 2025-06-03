@@ -6,9 +6,7 @@
 //  Description: Meta class's attribute
 //****************************************************************************
 
-using SimpleLanguage.IR;
 using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,10 +14,6 @@ using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Linq;
-using System.Runtime.Intrinsics.X86;
-using System.Reflection;
-using SimpleLanguage.Core;
-
 namespace SimpleLanguage.Core
 {
     public enum EClassDefineType
@@ -273,16 +267,16 @@ namespace SimpleLanguage.Core
         }
         public void ParseFileMetaClassTemplate( FileMetaClass fmc )
         {
-            for (int i = 0; i < fmc.templateParamList.Count; i++)
+            for (int i = 0; i < fmc.templateDefineList.Count; i++)
             {
-                string tTemplateName = fmc.templateParamList[i].name;
+                string tTemplateName = fmc.templateDefineList[i].name;
                 if ( m_MetaTemplateList.Find(a => a.name == tTemplateName) != null)
                 {
                     Debug.Write("Error 定义模式名称重复!!");
                 }
                 else
                 {
-                    m_MetaTemplateList.Add(new MetaTemplate( this, fmc.templateParamList[i]));
+                    m_MetaTemplateList.Add(new MetaTemplate( this, fmc.templateDefineList[i]));
                 }
             }
         }
@@ -468,7 +462,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Debug.Write("Error 传进来的模版参数与类定义的参数长度对不上!!");
+                Debug.WriteLine("Error 传进来的模版参数与类定义的参数长度对不上!!");
                 return null;
             }
         }

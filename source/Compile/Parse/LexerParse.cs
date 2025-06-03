@@ -315,11 +315,11 @@ namespace SimpleLanguage.Compile.Parse
             if (m_TempChar == '=')
             {
                 AddToken(ETokenType.GreaterOrEqual, ">=");
-            } 
+            }
             else if (m_TempChar == '>')
             {
                 AddToken(ETokenType.Shr, ">>");
-            } 
+            }
             else 
             {
                 AddToken(ETokenType.Greater, ">");
@@ -338,7 +338,7 @@ namespace SimpleLanguage.Compile.Parse
             {
                 AddToken(ETokenType.Shi, "<<");
                 UndoChar();
-            } 
+            }
             else
             {
                 AddToken(ETokenType.Less, "<");
