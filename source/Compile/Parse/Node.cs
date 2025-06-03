@@ -36,7 +36,8 @@ namespace SimpleLanguage.Compile.Parse
         Null,
         Root,
         Brace,
-        Angle,
+        LeftAngle,
+        RightAngle,
         Par,
         Bracket,
         Symbol,
@@ -64,7 +65,7 @@ namespace SimpleLanguage.Compile.Parse
         public Node parNode { get; set; } = null;             //(小括号的节点
         public Node blockNode { get; set; } = null;           //{大括号的节点
         public Node bracketNode { get; set; } = null;         //[中括号的节点
-        public Node angleNode { get; set; } = null;           //<尖括号的节点
+        public Node angleNode { get; set; } = null;
         public Token linkToken;                 //.节点
         public Token atToken;                   // $节点
         public Node lastNode = null;            // 最后处理的节点
@@ -142,24 +143,24 @@ namespace SimpleLanguage.Compile.Parse
         {
             m_ExtendLinkNodeList = nodeList;
         }
-        public void SetParList( List<Node> nodes )
-        {
-            if( nodes.Count == 1 )
-            {
-                if( nodes[0].nodeType == ENodeType.Par )
-                {
-                    parNode = nodes[0];
-                    return;
-                }
-            }
-            if (parNode == null)
-                parNode = new Node(null);
-            parNode.childList = nodes;
-        }
-        public void SetPar( Node node )
-        {
-            parNode = node;
-        }
+        //public void SetParList( List<Node> nodes )
+        //{
+        //    if( nodes.Count == 1 )
+        //    {
+        //        if( nodes[0].nodeType == ENodeType.Par )
+        //        {
+        //            parNode = nodes[0];
+        //            return;
+        //        }
+        //    }
+        //    if (parNode == null)
+        //        parNode = new Node(null);
+        //    parNode.childList = nodes;
+        //}
+        //public void SetPar( Node node )
+        //{
+        //    parNode = node;
+        //}
         public void AddChild(Node c, bool setParent = true)
         {
             if (setParent)
@@ -196,9 +197,14 @@ namespace SimpleLanguage.Compile.Parse
                         sb.Append("  [   ]  ");
                     }
                     break;
-                case ENodeType.Angle:
+                case ENodeType.LeftAngle:
                     {
-                        sb.Append("   <    >  ");
+                        sb.Append(" < ");
+                    }
+                    break;
+                case ENodeType.RightAngle:
+                    {
+                        sb.Append(" > ");
                     }
                     break;
                 case ENodeType.Par:
@@ -323,7 +329,16 @@ namespace SimpleLanguage.Compile.Parse
                     }
                 }
             }
-            else if (nodeType == ENodeType.Angle )
+            else if (nodeType == ENodeType.LeftAngle)
+            {
+                sb.Append(token?.lexeme.ToString() + " ");
+                for (int i = 0; i < childList.Count; i++)
+                {
+                    sb.Append(childList[i].ToFormatString());
+                }
+                sb.Append(endToken?.lexeme.ToString());
+            }
+            else if (nodeType == ENodeType.RightAngle)
             {
                 sb.Append(token?.lexeme.ToString() + " ");
                 for (int i = 0; i < childList.Count; i++)

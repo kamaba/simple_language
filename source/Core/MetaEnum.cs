@@ -77,7 +77,7 @@ namespace SimpleLanguage.Core
             {
                 Debug.Write("Error Enum中不允许有Function!!");
             }
-            if (fmc.templateParamList.Count > 0)
+            if (fmc.templateDefineList.Count > 0)
             {
                 Debug.Write("Error 在Enum定义中，不允许使用Template模板的形式!");
             }

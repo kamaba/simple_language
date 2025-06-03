@@ -63,9 +63,11 @@ const data ProjectConfig
 
 Project
 {
+    #!
     Test1{
         a = 20;
     }
+    !#
     static Main()
     {        
         #global.pi = 3.1415f;
@@ -85,10 +87,12 @@ Project
     static Global()
     {
     }
+    #!
     static void SetXC( int a )
     {
         #global.xc.a = a;
     }
+    !#
 }
 
 

@@ -299,7 +299,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             }
 
             ParseParam(funNameNode.parNode);
-            ParseTemplate(funNameNode.angleNode);
+            //ParseTemplate(funNameNode.angleNode);
 
             m_Token = funNameNode.token;
             if ( m_BlockNode != null)

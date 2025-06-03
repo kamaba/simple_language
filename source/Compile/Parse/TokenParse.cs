@@ -92,12 +92,8 @@ namespace SimpleLanguage.Compile.Parse
         {
             m_TokenIndex++;
         }
-        private Node AddKeyNode(Token token, bool isEndAngleSign = true )
+        private Node AddKeyNode(Token token )
         {
-            if (isEndAngleSign)
-            {
-                EndAngleSign();
-            }
             Node node = new Node(token);
             node.nodeType = ENodeType.Key;
             currentNode.AddChild(node);
@@ -120,7 +116,6 @@ namespace SimpleLanguage.Compile.Parse
         }
         private Node AddSymbol( Token token )
         {
-            EndAngleSign();
             Node node = new Node(token);
             node.nodeType = ENodeType.Symbol;
             currentNode.AddChild(node);
@@ -183,27 +178,6 @@ namespace SimpleLanguage.Compile.Parse
             var node = AddSymbol(code);
             node.priority = SignComputePriority.Level2_LinkOp;
         }
-        private void EndAngleSign()
-        {
-            Node cnode = null;
-            if (currentNodeStack.Count > 0)
-            {
-                cnode = currentNodeStack.Peek();
-                if (cnode.nodeType == ENodeType.Angle)
-                {
-                    currentNodeStack.Pop();
-                    currentNode = cnode.parent;
-                    cnode.nodeType = ENodeType.Symbol;
-                    //currentNode.AddChild(cnode);
-                    for( int i = 0; i < cnode.childList.Count; i++ )
-                    {
-                        currentNode.AddChild(cnode.childList[i]);
-                    }
-                    cnode.childList.Clear();
-
-                }
-            }
-        }
         private void AddAndCompareSymbol(Token code)
         {
             var node = AddSymbol(code);
@@ -253,8 +227,6 @@ namespace SimpleLanguage.Compile.Parse
                     break;
                 case ETokenType.LeftBrace: //{
                     {
-                        EndAngleSign();
-
                         Node node = new Node(token);
                         node.nodeType = ENodeType.Brace;
                         m_TokenIndex++;
@@ -284,44 +256,21 @@ namespace SimpleLanguage.Compile.Parse
                 case ETokenType.Less:         // <
                     {
                         Node node = new Node(token);
-                        node.nodeType = ENodeType.Angle;
+                        node.nodeType = ENodeType.LeftAngle;
                         m_TokenIndex++;
-                        currentNodeStack.Push(node);
-
                         currentNode.AddChild(node);
-                        currentNode = node;
                     }
                     break;
                 case ETokenType.Greater:            // >
                     {
+                        Node node = new Node(token);
+                        node.nodeType = ENodeType.RightAngle;
+                        currentNode.AddChild(node);
                         m_TokenIndex++;
-
-                        bool isPair = false;
-                        Node cnode = null;
-                        if( currentNodeStack.Count > 0 )
-                        {
-                            cnode = currentNodeStack.Peek();
-                            if (cnode.nodeType == ENodeType.Angle)
-                            {
-                                currentNodeStack.Pop();
-                                cnode.endToken = token;
-                                currentNode = cnode.parent;
-                                isPair = true;
-                            }
-                        }
-
-                        if( !isPair )
-                        {
-                            Node node = new Node(token);
-                            node.nodeType = ENodeType.Symbol;
-                            currentNode.AddChild(node);
-                        }
                     }
                     break;
                 case ETokenType.LeftPar: //(
                     {
-                        EndAngleSign();
-
                         Node node = new Node(token);
                         node.nodeType = ENodeType.Par;
                         m_TokenIndex++;
@@ -348,8 +297,6 @@ namespace SimpleLanguage.Compile.Parse
                     break;
                 case ETokenType.LeftBracket://[
                     {
-                        EndAngleSign();
-
                         Node node = new Node(token);
                         node.nodeType = ENodeType.Bracket;
                         m_TokenIndex++;
@@ -390,12 +337,12 @@ namespace SimpleLanguage.Compile.Parse
                     break;
                 case ETokenType.QuestionMark: //?
                     {
-                        AddKeyNode(token, false);
+                        AddKeyNode(token);
                     }
                     break;
                 case ETokenType.Colon:       //:
                     {
-                        AddKeyNode(token, false);
+                        AddKeyNode(token);
                     }
                     break;
                 case ETokenType.SemiColon:      //;
@@ -454,32 +401,7 @@ namespace SimpleLanguage.Compile.Parse
                     break;
                 case ETokenType.Shr:               //  >>
                     {
-                        if (currentNodeStack.Count > 1)
-                        {
-                            var cnode1 = currentNodeStack.Pop();
-                            var cnode2 = currentNodeStack.Pop();
-                            if (cnode1.nodeType == ENodeType.Angle && cnode2.nodeType == ENodeType.Angle )
-                            {
-                                m_TokenIndex++;
-                                Token token1 = new Token(token.path, ETokenType.Greater, ">", token.sourceBeginLine,
-                                    token.sourceBeginChar);
-                                Token token2 = new Token(token.path, ETokenType.Greater, ">", token.sourceBeginLine,
-                                    token.sourceBeginChar + 1 );
-                                cnode1.endToken = token1;
-                                cnode2.endToken = token2;
-                                currentNode = cnode2.parent;
-                            }
-                            else
-                            {
-                                currentNodeStack.Push(cnode2);
-                                currentNodeStack.Push(cnode1);
-                                AddBitMoveOperatorSymbol(token);
-                            }
-                        }
-                        else
-                        {
-                            AddBitMoveOperatorSymbol(token);
-                        }
+                        AddBitMoveOperatorSymbol(token);
                     }
                     break;
                 case ETokenType.GreaterOrEqual:  // >=
@@ -540,7 +462,6 @@ namespace SimpleLanguage.Compile.Parse
                 case ETokenType.BoolValue:
                 case ETokenType.NumberArrayLink:
                     {
-                        EndAngleSign();
                         Node node = new Node(token);
                         node.nodeType = ENodeType.ConstValue;
                         if ( currentNode.linkToken != null)

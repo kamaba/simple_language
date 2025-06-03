@@ -1,4 +1,11 @@
-﻿
+﻿//****************************************************************************
+//  File:      MetaType.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2023/5/12 12:00:00
+//  Description: 
+//****************************************************************************
+
 using SimpleLanguage.Core.SelfMeta;
 using System.Collections.Generic;
 using System.Diagnostics;

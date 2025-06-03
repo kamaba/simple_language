@@ -6,17 +6,33 @@ public class Class1
 
     public static Class1 instance = Class1(){a = 0}
 }
+List0<T>
+{
+
+}
+List1<T>
+{
+
+}
+List2<T>
+{
+
+}
+Map<T1,T2>
+{
+
+}
 
 # where (T1 limit Class1), (T2 limit int, string, data)
-public class Level2<T1,T2>
+public class Level2<T1,T2> extends Level1<List0<T2> > interface List1<List2<Map<T2,string> > >, Map<T2,string>
 {
     T1 t1 = T1.instance
     T2 t2 = T2.instance
 }
 public class Level1<T> 
 {
-    qqq{
-
+    qqq<T>
+    {
     }
     q2
     {        
@@ -49,6 +65,11 @@ public class Level1<T>
     public T add()
     {
         T t = T()
+
+        List0<Map<T, T> > list = List0<Map<T, T> >()
+
+        ls.Test<List<int> >().Test2<Map<T,String> >() = 10
+
         ret t
     }
 
@@ -62,7 +83,7 @@ public class Level1<T>
 
     public static T2 min<T2>( T2 t1, T2 t2 )
     {
-        #r1 = t1 ? t1 > t2 : t2        
+        #r1 = t1 ? t1 < t2 && t1 > t2 : t2        
         #ret r1 
         #ret t1 ? t1 > t2 : t2
         ret t2
@@ -71,7 +92,15 @@ public class Level1<T>
 
 GenClass
 {
-    Level1<Level2<int,int>> ls = Level1<Level2<int,int>>("aaa")
+    cl2<T,T2,T3> extends Level1<int>
+    {
+
+    }
+    Level1<Level2<int,int> > ls = Level1<Level2<int,int> >("aaa")
+    ls2 = ( GenClass.x < 3) == 4 > 3
+    ls3 = 10 ? x < 11 && x < 3 || 13 > x && 12 > x : 4
+    Level1b < Level2b || Level3b > Level4b
+    static x = 100;
     #Level1<string> ls2 = null
     #Level1<string> ls3 = ()     #报错，提示，不允许这种形式
     #Level1<string> ls4 = {}

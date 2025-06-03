@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
 {
@@ -27,7 +28,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         private List<FileMetaClassDefine> interfaceClassList => m_InterfaceClassList;
         public FileMetaNamespace topLevelFileMetaNamespace => m_TopLevelFileMetaNamespace;
         public FileMetaClass topLevelFileMetaClass => m_TopLevelFileMetaClass;
-        public List<FileMetaTemplateDefine> templateParamList => m_TemplateParamList;
+        public List<FileMetaTemplateDefine> templateDefineList => m_TemplateDefineList;
         public NamespaceStatementBlock namespaceBlock => m_NamespaceBlock;
         public List<FileMetaMemberVariable> memberVariableList => m_MemberVariableList;
         public List<FileMetaMemberFunction> memberFunctionList => m_MemberFunctionList;
@@ -48,7 +49,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         private FileMetaClassDefine m_ExtendClass = null;
         private List<FileMetaClassDefine> m_InterfaceClassList = new List<FileMetaClassDefine>();
         private List<FileMetaClass> m_ChildrenClassList = new List<FileMetaClass>();
-        private List<FileMetaTemplateDefine> m_TemplateParamList = new List<FileMetaTemplateDefine>();
+        private List<FileMetaTemplateDefine> m_TemplateDefineList = new List<FileMetaTemplateDefine>();
 
         private List<FileMetaMemberVariable> m_MemberVariableList = new List<FileMetaMemberVariable>();
         private List<FileMetaMemberFunction> m_MemberFunctionList = new List<FileMetaMemberFunction>();
@@ -82,12 +83,10 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             bool isError = false;
 #pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
             List<Token> classNameTokenList = new List<Token>();
-            List<Token> inheritNameTokenList = new List<Token>();
-            List<Token> interfaceNameTokenList = new List<Token>();
-            List<List<Token>> interfaceTokenList = new List<List<Token>>();
             List<Token> list = new List<Token>();
 
             Node angleNode = null;
+            Node lastNode = null;
             int addCount = 0;
             while (addCount < m_NodeList.Count)
             {
@@ -95,75 +94,80 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
                 if (cnode.nodeType == ENodeType.IdentifierLink)
                 {
-                    if (interfaceToken != null)
+                    if (interfaceToken != null || m_ExtendsToken != null )
                     {
-                        if (interfaceNameTokenList.Count > 0)
+                        List<FileMetaClassDefine> fcdList = new List<FileMetaClassDefine>();
+                        addCount = ReadClassDefineStruct(addCount -1, m_NodeList, fcdList);
+                        if (m_ExtendsToken != null && interfaceToken == null)
                         {
-                            Debug.Write("Error 字符两次赋值 90 ");
+                            if(m_ExtendClass != null )
+                            {
+                                Debug.Write("Error 已有继承类,请勿多重继承!");
+                            }
+                            if(fcdList.Count == 0 )
+                            {
+                                Debug.Write("Error 继承关键字后边没有相应的内容!");
+                            }
+                            if (fcdList.Count > 1)
+                            {
+                                Debug.Write("Error 继承只能单继承，不能多继承!!");
+                            }
+                            m_ExtendClass = fcdList[0];
                         }
-                        interfaceNameTokenList = cnode.linkTokenList;
-                    }
-                    else if (m_ExtendsToken != null && interfaceToken == null)
-                    {
-                        if (inheritNameTokenList.Count > 0)
+                        else if (interfaceToken != null )
                         {
-                            Debug.Write("Error 字符两次赋值 99");
+                            if (fcdList.Count == 0)
+                            {
+                                Debug.Write("Error 接口关键字后边没有相应的内容!");
+                            }
+                            m_InterfaceClassList.AddRange(fcdList);
                         }
-                        inheritNameTokenList = cnode.linkTokenList;
                     }
                     else
                     {
                         if (classNameTokenList.Count > 0)
                         {
                             Debug.Write("Error 字符两次赋值 107");
-                            for( int i = 0; i < classNameTokenList.Count; i++ )
+                            for (int i = 0; i < classNameTokenList.Count; i++)
                             {
                                 Debug.Write(classNameTokenList[i].lexeme.ToString());
                             }
                         }
                         classNameTokenList = cnode.linkTokenList;
-                    }
-                    if (cnode.angleNode != null)
-                    {
-                        if (inheritNameTokenList.Count == 0)
+
+                        bool isTemplate = false;
+                        int cAddCount = addCount;
+                        while (cAddCount < m_NodeList.Count)
                         {
-                            List<List<Node>> angleNodeListList = new List<List<Node>>();
-                            List<Node> angleNodeList = new List<Node>();
-                            for (int i = 0; i < cnode.angleNode.childList.Count; i++)
+                            var cnode2 = m_NodeList[cAddCount++];
+                            if (cnode2.nodeType == ENodeType.LeftAngle)
                             {
-                                var caNode = cnode.angleNode.childList[i];
-                                if (caNode.nodeType == ENodeType.Comma)
-                                {
-                                    if (angleNodeListList.Count < 0)
-                                    {
-                                        Debug.Write("Error 解析<,> 不允许第一位出现逗号!!");
-                                    }
-                                    else
-                                    {
-                                        angleNodeListList.Add(angleNodeList);
-                                    }
-                                    continue;
-                                }
-                                angleNodeList.Add(caNode);
+                                isTemplate = true;
                             }
-                            if (angleNodeListList.Count < 0)
+                            else if (cnode2.nodeType == ENodeType.RightAngle)
                             {
-                                Debug.Write("Error 解析<,> 不允许第一位出现逗号!!");
+                                break;
+                            }
+                            else if( cnode2.nodeType == ENodeType.Comma )
+                            {
+                                continue;
+                            }
+                            else if (cnode2.nodeType == ENodeType.IdentifierLink)
+                            {
+                                if (isTemplate)
+                                {
+                                    FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, cnode2);
+                                    m_TemplateDefineList.Add(fmtd);
+                                }
                             }
                             else
                             {
-                                angleNodeListList.Add(angleNodeList);
-                            }
-                            for (int i = 0; i < angleNodeListList.Count; i++)
-                            {
-                                var anll = angleNodeList[i];
-                                FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, anll);
-                                m_TemplateParamList.Add(fmtd);
+                                Debug.WriteLine("Error 不支持其它格式 在类后续的模板限定中!");
                             }
                         }
-                        else
+                        if (isTemplate)
                         {
-                            angleNode = cnode.angleNode;
+                            addCount = cAddCount;
                         }
                     }
                 }
@@ -187,7 +191,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     else if (token.type == ETokenType.Const)
                     {
-                        if(m_ConstToken == null )
+                        if (m_ConstToken == null)
                         {
                             m_ConstToken = token;
                         }
@@ -197,9 +201,9 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                             Debug.Write("Error 解析过了一次Const!!");
                         }
                     }
-                    else if( token.type == ETokenType.Partial )
+                    else if (token.type == ETokenType.Partial)
                     {
-                        if(m_PartialToken != null )
+                        if (m_PartialToken != null)
                         {
                             isError = true;
                             Debug.Write("Error 解析过了一次Class!!");
@@ -225,7 +229,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         }
                         m_ClassToken = token;
                     }
-                    
+
                     else if (token.type == ETokenType.Enum)
                     {
                         if (m_EnumToken != null)
@@ -247,21 +251,10 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     else if (token.type == ETokenType.Data)
                     {
-                        if( m_EnumToken != null)
+                        if (m_EnumToken != null)
                         {
-                            if( m_ExtendsToken != null )
-                            {
-                                if (inheritNameTokenList.Count > 0)
-                                {
-                                    Debug.Write("Error 字符两次赋值 99");
-                                }
-                                inheritNameTokenList = cnode.linkTokenList;
-                            }
-                            else
-                            {
-                                isError = true;
-                                Debug.Write("Error 解析过了一次Enum!!");
-                            }
+                            isError = true;
+                            Debug.Write("Error 解析过了一次Enum!!");
                         }
                         else
                         {
@@ -278,7 +271,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                             m_DataToken = token;
                         }
                     }
-                    else if (token.type == ETokenType.Extends )
+                    else if (token.type == ETokenType.Extends)
                     {
                         if (m_ExtendsToken != null)
                         {
@@ -299,8 +292,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     else if (token.type == ETokenType.Comma)
                     {
                         commaToken = token;
-                        interfaceTokenList.Add(interfaceNameTokenList);
-                        interfaceNameTokenList = new List<Token>();
                     }
                     else
                     {
@@ -309,11 +300,12 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         break;
                     }
                 }
+                lastNode = cnode;
             }
 
             if(m_EnumToken != null )
             {
-                if(interfaceToken != null || interfaceNameTokenList.Count > 0 )
+                if(interfaceToken != null  )
                 {
                     Debug.Write("Error Enum方式，不支持接口方式");
                     return false;
@@ -328,12 +320,11 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     Debug.Write("Error Enum方式，不支持partial的使用!!");
                     return false;
                 }
-                SetParentClassNameToken(inheritNameTokenList, angleNode);
 
             }
             else if (m_DataToken != null)
             {
-                if (interfaceToken != null || interfaceNameTokenList.Count > 0)
+                if (interfaceToken != null )
                 {
                     Debug.Write("Error Data方式，不支持接口方式");
                     return false;
@@ -352,21 +343,11 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             }
             else
             {
-                if (interfaceNameTokenList.Count > 0)
-                {
-                    interfaceTokenList.Add(interfaceNameTokenList);
-                }
 
                 if (classNameTokenList.Count == 0)
                 {
                     Debug.Write("Error 解析类型名称错误!!");
-                }
-                SetParentClassNameToken(inheritNameTokenList, angleNode);
-                for (int i = 0; i < interfaceTokenList.Count; i++)
-                {
-                    var incn = interfaceTokenList[i];
-                    AddInterfaceClassNameToken(incn);
-                }
+                }                
             }
             m_Token = classNameTokenList[classNameTokenList.Count - 1];
             if (classNameTokenList.Count > 1)
@@ -376,6 +357,128 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             SetPermissionToken(permissionToken);
 
             return true;
+        }
+        public class ParseStructTemp
+        {
+            public ParseStructTemp parentPSt { get; set; } = null;
+            public Node nameNode { get; set; } = null;
+            public Node angleNode { get; set; } = null;
+
+            public List<ParseStructTemp> angleContentNodeList = new List<ParseStructTemp>();
+
+            public void AddParseStructTemplate( ParseStructTemp pst )
+            {
+                angleContentNodeList.Add(pst);
+                pst.parentPSt = this;
+            }
+
+            public void GenFileInputTemplateNode( Node node, FileMeta fm )
+            {
+                node.angleNode = angleNode;
+                for ( int i = 0; i < angleContentNodeList.Count; i++ )
+                {
+                    node.angleNode.AddChild( angleContentNodeList[i].nameNode);
+                    if(angleContentNodeList[i].angleContentNodeList.Count > 0 )
+                    {
+                        angleContentNodeList[i].GenFileInputTemplateNode(angleContentNodeList[i].nameNode, fm );
+                    }
+                }
+            }
+        }
+        public int ReadClassDefineStruct( int cAddCount, List<Node> m_NodeList, List<FileMetaClassDefine> fcdList )
+        {
+            List<ParseStructTemp> rootPST = new List<ParseStructTemp>();
+            ParseStructTemp curPST = null;
+            while (cAddCount < m_NodeList.Count)
+            {
+                var cnode2 = m_NodeList[cAddCount];
+                
+                if (cnode2.nodeType == ENodeType.RightAngle)
+                {
+                    if (curPST == null)
+                    {
+                        cAddCount++;
+                        break;
+                    }
+                    if (curPST.angleNode != null)
+                    {
+                        curPST.angleNode.endToken = cnode2.token;
+                        if (curPST.parentPSt == null)
+                        {
+                            cAddCount++;
+                            break;
+                        }
+                        else
+                        {
+                            curPST = curPST.parentPSt;
+                        }
+                    }
+                    else
+                    {
+                        if (curPST.parentPSt == null)
+                        {
+                            cAddCount++;
+                            break;
+                        }
+                        else
+                        {
+                            curPST = curPST.parentPSt;
+                        }
+                    }
+                }
+                else if (cnode2.nodeType == ENodeType.Comma)
+                {
+                    cAddCount++;
+                    continue;
+                }
+                else if (cnode2.nodeType == ENodeType.IdentifierLink)
+                {
+                    ParseStructTemp newpst = null;
+                    if (curPST == null)
+                    {
+                        newpst = new ParseStructTemp();
+                        newpst.nameNode = cnode2;
+                        rootPST.Add(newpst);
+                    }
+                    else
+                    {
+                        newpst = new ParseStructTemp();
+                        newpst.nameNode = cnode2;
+                        curPST.AddParseStructTemplate(newpst);
+                    }
+                    
+                    if( cAddCount + 1 < m_NodeList.Count )
+                    {
+                        var nextNode = m_NodeList[cAddCount + 1];
+                        if (nextNode.nodeType == ENodeType.LeftAngle)
+                        {
+                            cAddCount++;
+                            newpst.angleNode = nextNode;
+                            curPST = newpst;
+                        }
+                    }                    
+                }
+                else if( cnode2.nodeType == ENodeType.Key && cnode2.token.type == ETokenType.Interface )
+                {
+                    cAddCount++;
+                    break;
+                }
+                else
+                {
+                    Debug.WriteLine("Error 不支持其它格式 在类后续的模板限定中!");
+                }
+                cAddCount++;
+            }
+            for( int i = 0; i < rootPST.Count; i++ )
+            {
+                var pst = rootPST[i];
+                Node nameNode = pst.nameNode;
+                pst.GenFileInputTemplateNode(nameNode, m_FileMeta);
+                FileMetaClassDefine fmcd = new FileMetaClassDefine(m_FileMeta, pst.nameNode, null );
+                fcdList.Add(fmcd);
+            }
+
+            return cAddCount;
         }
         public void AddFileMemberData(FileMetaMemberData fmmd)
         {
@@ -440,18 +543,14 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         {
             m_PermissionToken = permissionToken;
         }
-        public void SetParentClassNameToken(List<Token> tokenList, Node angleNode)
-        {
-            if( tokenList != null && tokenList.Count > 0 )
-            {
-                FileMetaClassDefine fmcd = new FileMetaClassDefine(m_FileMeta, tokenList, angleNode);
-                SetExtendClass(fmcd);
-            }
-        }
-        public void AddInterfaceClassNameToken(List<Token> tokenList)
-        {
-            AddInterfaceClass(new FileMetaClassDefine(m_FileMeta, tokenList));
-        }
+        //public void SetParentClassNameToken(List<Token> tokenList, Node angleNode)
+        //{
+        //    if( tokenList != null && tokenList.Count > 0 )
+        //    {
+        //        FileMetaClassDefine fmcd = new FileMetaClassDefine(m_FileMeta, tokenList, angleNode);
+        //        SetExtendClass(fmcd);
+        //    }
+        //}
         public void SetMetaClass( MetaClass mc )
         {
             m_MetaClass = mc;
@@ -619,13 +718,13 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 }
                 stringBuilder.Append(name);
 
-                if (m_TemplateParamList.Count > 0)
+                if (m_TemplateDefineList.Count > 0)
                 {
                     stringBuilder.Append("<");
-                    for (int i = 0; i < m_TemplateParamList.Count; i++)
+                    for (int i = 0; i < m_TemplateDefineList.Count; i++)
                     {
-                        stringBuilder.Append(m_TemplateParamList[i].ToFormatString());
-                        if (i < m_TemplateParamList.Count - 1)
+                        stringBuilder.Append(m_TemplateDefineList[i].ToFormatString());
+                        if (i < m_TemplateDefineList.Count - 1)
                         {
                             stringBuilder.Append(",");
                         }
