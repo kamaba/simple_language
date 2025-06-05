@@ -101,34 +101,6 @@ namespace SimpleLanguage.Core
                 AddMetaAllFunction(mmf);
             }
         }
-        public void CreateMetaExpress( int type )
-        {
-            List<MetaMemberFunction> list = type switch
-            {
-                1 => m_MetaClassTemplateGenFunctionList,
-                2 => m_MetaFunctionTemplateFunctionList,
-                3 => m_MetaDynamicFunctionList,
-                _ => m_MetaOriginalFunctionList,
-            };
-            foreach (var v in list)
-            {
-                v.CreateMetaExpress();
-            }
-        }
-        public void ParseMetaExpress(int type)
-        {
-            List<MetaMemberFunction> list = type switch
-            {
-                1 => m_MetaClassTemplateGenFunctionList,
-                2 => m_MetaFunctionTemplateFunctionList,
-                3 => m_MetaDynamicFunctionList,
-                _ => m_MetaOriginalFunctionList,
-            };
-            foreach (var v in list)
-            {
-                v.ParseMetaExpress();
-            }
-        }
         public void ParseStatements( int type )
         {
             List<MetaMemberFunction> list = type switch
@@ -140,7 +112,9 @@ namespace SimpleLanguage.Core
             };
             foreach (var v in list)
             {
+                v.CreateMetaExpress();
                 v.ParseMetaExpress();
+                v.ParseStatements();
             }
         }
     }

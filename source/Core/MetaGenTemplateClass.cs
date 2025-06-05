@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Compile;
 
@@ -15,11 +16,64 @@ namespace SimpleLanguage.Core
 {
     public class MetaGenTemplateClass : MetaClass
     {
+        public bool initTemplateMemberVariable => m_InitTemplateMemberVariable;
+        public bool initTemplateMemberFunction => m_InitTemplateMemberFunction;
+
         public override bool isGenTemplate => true;
 
+        private bool m_InitTemplateMemberVariable = false;
+        private bool m_InitTemplateMemberFunction = false;
         protected Dictionary<string,MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string,MetaGenTemplate>();
+        protected List<MetaMemberFunction> m_GenMetaMemberFunctions = new List<MetaMemberFunction>();
+
         public MetaGenTemplateClass(MetaClass mc) : base(mc)
         {
+        }
+
+        public static MetaGenTemplateClass GenerateTemplateClass( MetaClass mc, MetaInputTemplateCollection mic)
+        {
+            if (mc.isTemplateClass == false)
+            {
+                Debug.Write("Error 该类不是模版类,不能生成模版生成类!!");
+                return null;
+            }
+            if (mic == null)
+            {
+                return null;
+            }
+            if (mc.metaTemplateList.Count == mic.metaTemplateParamsList.Count)
+            {
+                MetaGenTemplateClass tmc = new MetaGenTemplateClass(mc);
+                mc.AddGenTemplateMetaClass(tmc);
+
+                string extenName = "";
+                for (int i = 0; i < mc.metaTemplateList.Count; i++)
+                {
+                    var classTemplate = mc.metaTemplateList[i];
+                    var inputTemplate = mic.metaTemplateParamsList[i];
+
+                    MetaGenTemplate mgt = new MetaGenTemplate(classTemplate, inputTemplate);
+                    tmc.AddMetaGenTemplate(mgt);
+
+                    if (string.IsNullOrEmpty(extenName))
+                    {
+                        extenName = inputTemplate.metaClass.name;
+                    }
+                    else
+                    {
+                        extenName = extenName + "," + inputTemplate.metaClass.name;
+                    }
+                }
+                tmc.SetName(mc.name + "<" + extenName + ">");
+                tmc.SetDeep(mc.deep + 1);
+
+                return tmc;
+            }
+            else
+            {
+                Debug.WriteLine("Error 传进来的模版参数与类定义的参数长度对不上!!");
+                return null;
+            }            
         }
         public override void SetDeep(int deep)
         {
@@ -91,7 +145,20 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public void UpdateGenMember()
+        public void ParseTemplateClassMemberFunction()
+        {
+            foreach (var it in m_MetaMemberFunctionListDict)
+            {
+                foreach (var it2 in it.Value)
+                {
+                    if (!it2.isTemplateFunction)
+                    {
+                        it2.ParseTemplateClassDefine();
+                    }
+                }
+            }
+        }
+        public void UpdateGenMemberDefineMetaType()
         {
             Dictionary<string, MetaMemberVariable> addList = new Dictionary<string, MetaMemberVariable>();
             foreach ( var v in m_MetaMemberVariableDict.Values )

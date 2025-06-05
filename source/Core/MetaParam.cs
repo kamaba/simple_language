@@ -11,6 +11,7 @@ using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -116,6 +117,7 @@ namespace SimpleLanguage.Core
         //public MetaClass ownerMetaClass => m_OwnerMetaFunction != null ? m_OwnerMetaFunction.ownerMetaClass : null;
         //public MetaFunction ownerMetaFunction => m_OwnerMetaFunction;
         public FileMetaParamterDefine fileMetaParamter => m_FileMetaParamter;
+        public string metaDefineTypeName => m_MetaDefineTypeName;
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaExpressNode expressNode => m_MetaExpressNode;
         public bool isFunctionTemplate => m_IsFunctionTemplate;
@@ -129,39 +131,29 @@ namespace SimpleLanguage.Core
         protected MetaExpressNode m_MetaExpressNode = null;
         protected MetaVariable m_MetaVariable = null;
         protected MetaFunction m_OwnerMetaFunction = null;
+        protected string m_MetaDefineTypeName = "";
 
         public MetaDefineParam( string _name, MetaFunction mf )
         {
             m_Name = _name;
             m_OwnerMetaFunction = mf;
+            m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.Argument,
+                null, m_OwnerMetaFunction.ownerMetaClass, null );
         }
         public MetaDefineParam(MetaFunction mf, FileMetaParamterDefine fmp)
         {
             m_OwnerMetaFunction = mf;
             m_FileMetaParamter = fmp;
             m_Name = m_FileMetaParamter.name;
-        }
-        public MetaDefineParam(string _name, MetaFunction mf, MetaType mt)
-        {
-            m_Name = _name;
-            m_OwnerMetaFunction = mf;
-            MetaType mdt = new MetaType(mt);
-            m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.Argument, null, mf.ownerMetaClass, mdt);
-        }
-        public MetaDefineParam(string _name, MetaFunction mf, MetaTemplate mt)
-        {
-            m_Name = _name;
-            m_OwnerMetaFunction =mf;
-            MetaType mdt = new MetaType(mt);
-            m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.Argument, null, m_OwnerMetaFunction.ownerMetaClass, mdt);
-            m_MetaVariable.AddPingToken(this.m_FileMetaParamter?.token);
-        }
 
+            m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.Argument,
+                null, m_OwnerMetaFunction.ownerMetaClass, null );
+        }
         public void ParseMetaDefineType()
         {
             string typename = "";
             MetaType mdt = null;
-            if (m_FileMetaParamter?.classDefineRef != null)
+            if ( this.m_FileMetaParamter?.classDefineRef != null)
             {
                 typename = m_FileMetaParamter.classDefineRef.name;
                 if (m_OwnerMetaFunction != null)
@@ -179,8 +171,7 @@ namespace SimpleLanguage.Core
             {
                 mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
-            m_MetaVariable = new MetaVariable( m_Name, MetaVariable.EVariableFrom.Argument,
-                null, m_OwnerMetaFunction.ownerMetaClass, mdt);
+            m_MetaVariable.SetMetaDefineType(mdt);
             if(m_FileMetaParamter != null )
             {
                 m_MetaVariable.AddPingToken(m_FileMetaParamter.token);
@@ -648,7 +639,6 @@ namespace SimpleLanguage.Core
         private bool m_IsTemplateName = false;
         public MetaInputTemplateCollection()
         {
-
         }
         public MetaInputTemplateCollection(List<FileInputTemplateNode> callNodeList, MetaClass mc )
         {
@@ -656,10 +646,10 @@ namespace SimpleLanguage.Core
             {
                 MetaType mp = new MetaType( callNodeList[i], mc );
                 m_MetaTemplateParamsList.Add(mp);
-                if( mp.isTemplate )
-                {
-                    m_IsTemplateName = true;
-                }
+                //if( mp.isTemplate )
+                //{
+                //    m_IsTemplateName = true;
+                //}
             }
         }
         public void AddMetaTemplateParamsList( MetaType mp )
@@ -680,33 +670,33 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    if( cmdt.metaTemplate == null && nmdt.metaTemplate == null )
-                    {
-                        var cmc = cmdt.metaClass;
-                        var nmc = nmdt.metaClass;
-                        if (ClassManager.IsNumberMetaClass(cmc) && ClassManager.IsNumberMetaClass(nmc))
-                        {
-                            if (i == 0)
-                            {
-                                mc = MetaTypeFactory.GetOpLevel(cmc.eType) > MetaTypeFactory.GetOpLevel(nmc.eType) ? cmc : nmc;
-                            }
-                            else
-                            {
-                                mc = MetaTypeFactory.GetOpLevel(mc.eType) > MetaTypeFactory.GetOpLevel(nmc.eType) ? mc : nmc;
-                            }
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        if(cmdt.metaTemplate == nmdt.metaTemplate )
-                        {
-                            isAllSame = true;
-                        }
-                    }
+                    //if( cmdt.metaTemplate == null && nmdt.metaTemplate == null )
+                    //{
+                    //    var cmc = cmdt.metaClass;
+                    //    var nmc = nmdt.metaClass;
+                    //    if (ClassManager.IsNumberMetaClass(cmc) && ClassManager.IsNumberMetaClass(nmc))
+                    //    {
+                    //        if (i == 0)
+                    //        {
+                    //            mc = MetaTypeFactory.GetOpLevel(cmc.eType) > MetaTypeFactory.GetOpLevel(nmc.eType) ? cmc : nmc;
+                    //        }
+                    //        else
+                    //        {
+                    //            mc = MetaTypeFactory.GetOpLevel(mc.eType) > MetaTypeFactory.GetOpLevel(nmc.eType) ? mc : nmc;
+                    //        }
+                    //    }
+                    //    else
+                    //    {
+                    //        break;
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    if(cmdt.metaTemplate == nmdt.metaTemplate )
+                    //    {
+                    //        isAllSame = true;
+                    //    }
+                    //}
                 }
             }
             if( isAllSame )

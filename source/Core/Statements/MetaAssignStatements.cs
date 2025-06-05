@@ -329,15 +329,15 @@ namespace SimpleLanguage.Core.Statements
 
                 MetaType mdt = m_MetaVariable.metaDefineType;
 
-                if( mdt.metaTemplate != null )
-                {
-                    if( expressRetMetaDefineType?.metaTemplate != mdt.metaTemplate )
-                    {
-                        Debug.Write("Error 模版与类定义的模版不相同!!");
-                    }
-                }
-                else
-                {
+                //if( mdt.metaTemplate != null )
+                //{
+                //    if( expressRetMetaDefineType?.metaTemplate != mdt.metaTemplate )
+                //    {
+                //        Debug.Write("Error 模版与类定义的模版不相同!!");
+                //    }
+                //}
+                //else
+                //{
                     ClassManager.EClassRelation relation = ClassManager.EClassRelation.No;
                     MetaClass curClass = mdt.metaClass;
 
@@ -397,7 +397,7 @@ namespace SimpleLanguage.Core.Statements
                         sb.Append("表达式错误，或者是定义类型错误");
                         Debug.Write(sb.ToString());
                     }
-                }
+                //}
             }
             else
             {

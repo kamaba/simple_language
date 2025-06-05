@@ -384,8 +384,7 @@ namespace SimpleLanguage.Compile.Parse
             Node parseNode = new Node(null);
             parseNode.childList = beforeNodeList;
             parseNode.parseIndex = 0;
-            HandleBeforeNode(parseNode);
-            var handleBeforeList = parseNode.childList;
+            var handleBeforeList = HandleBeforeNode(parseNode);           
 
             List<Node> defineNodeList = new List<Node>();
             for (int i = 0; i < handleBeforeList.Count; i++)

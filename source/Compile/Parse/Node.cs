@@ -58,6 +58,7 @@ namespace SimpleLanguage.Compile.Parse
          *   class{ static printf(){} a(){ return a } int b; } printf() a() 和b 就是子内容节点
          */
         public int priority { get; set; } = -1;
+        public bool isDel { get; set; } = false;
 
         public Token token = null;              // 
         public Token endToken = null;           // )}]

@@ -82,16 +82,6 @@ namespace SimpleLanguage.Core
 
             SetOwnerMetaClass(mc);
         } 
-        public MetaMemberVariable( MetaClass ownerMc, string _name, MetaTemplate mt )
-        {
-            m_Name = _name;
-            m_FromType = EFromType.Manual;
-            m_DefineMetaType = new MetaType( mt );
-            m_IsInnerDefine = true;
-            m_VariableFrom = EVariableFrom.Member;
-
-            SetOwnerMetaClass(ownerMc);
-        }
         //public MetaMemberVariable(MetaMemberVariable parentNode, FileMetaMemberVariable fmmv, int _index)
         //{
         //    m_Name = m_FileMetaMemeberVariable.name;
@@ -140,6 +130,7 @@ namespace SimpleLanguage.Core
             AddPingToken( fmmv.nameToken );
             m_Index = mc.metaMemberVariableDict.Count;
             m_FromType = EFromType.Code;
+            m_DefineTypeName = m_FileMetaMemeberVariable.classDefineRef?.name;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             isStatic = m_FileMetaMemeberVariable?.staticToken != null;
             m_VariableFrom = EVariableFrom.Member;
@@ -153,6 +144,7 @@ namespace SimpleLanguage.Core
         {
             m_MetaGenTemplateDict = mgt;
             m_Name = mmv.m_Name;
+            m_DefineTypeName = mmv.m_DefineTypeName;
             m_IsInnerDefine = mmv.m_IsInnerDefine;
             m_FromType = mmv.m_FromType;
             m_DefineMetaType = mmv.m_DefineMetaType;
@@ -164,38 +156,26 @@ namespace SimpleLanguage.Core
         }
         public override void ParseDefineMetaType()
         {
-            if (m_FileMetaMemeberVariable != null)
+            if ( !string.IsNullOrEmpty(m_DefineTypeName ) )
             {
-                if (m_FileMetaMemeberVariable.classDefineRef != null)
+                if (m_MetaGenTemplateDict.ContainsKey(m_DefineTypeName))
                 {
-                    string tname = m_FileMetaMemeberVariable.classDefineRef.name;
-
-                    if(m_MetaGenTemplateDict.ContainsKey(tname ) )
-                    {
-                        m_DefineMetaType = m_MetaGenTemplateDict[tname].metaType;
-                    }
-                    else
-                    {
-                        m_DefineMetaType = new MetaType(m_FileMetaMemeberVariable.classDefineRef, ownerMetaClass);
-                    }
+                    m_DefineMetaType = m_MetaGenTemplateDict[m_DefineTypeName].metaType;
                 }
                 else
                 {
+                    if( m_FileMetaMemeberVariable.classDefineRef != null )
+                    {
+                        m_DefineMetaType = MetaType.NewMetaTypeByMemeberDefine(m_FileMetaMemeberVariable.classDefineRef, ownerMetaClass);
+                    }
                 }
             }
         }
         public void UpdateGenMemberVariable()
         {
-            if (m_MetaGenTemplateDict.Count > 0 && m_DefineMetaType.isTemplate )
+            if(m_MetaGenTemplateDict.ContainsKey(this.m_DefineTypeName ) )
             {
-                foreach( var v in m_MetaGenTemplateDict )
-                {
-                    MetaGenTemplate mgt = v.Value;
-                    if (mgt.name == m_DefineMetaType.metaTemplate?.name)
-                    {
-                        m_DefineMetaType = mgt.metaType;
-                    }
-                }
+                m_DefineMetaType = m_MetaGenTemplateDict[this.m_DefineTypeName].metaType;
             }
         }
         public virtual int CalcParseLevelBeCall(int level)
@@ -579,10 +559,7 @@ namespace SimpleLanguage.Core
         {
             if (m_Express != null)
             {
-                if( m_DefineMetaType.isTemplate == false )
-                {
-                    m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
-                }                 
+                m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
             }
             return true;
         }

@@ -26,25 +26,33 @@ namespace SimpleLanguage.Core
         public MetaClass metaClass => m_MetaClass;
         public bool isEnum => m_MetaClass is MetaEnum;
         public bool isData => m_MetaClass is MetaData;
-        public MetaTemplate metaTemplate => m_MetaTemplate;
-        public MetaMemberVariable enumValue => m_EnumValue;
-        public bool isTemplate => m_MetaTemplate is MetaTemplate;
+        public MetaMemberEnum enumValue => m_EnumValue;
         public bool isGenTemplateClass => m_MetaClass is MetaGenTemplateClass;
         public bool isArray => m_MetaClass?.eType == EType.Array;
         public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
         public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData;
         public bool isDefineMetaClass => m_IsDefineMetaClass;
-        private List<MetaTemplate> defineMetaTemplateList => m_DefineMetaTemplateList;
 
         private MetaInputTemplateCollection m_InputTemplateCollection = null;
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
         private MetaClass m_RawMetaClass = null;                    // List<int> => list
         private MetaExpressNode m_DefaultExpressNode = null;        // int a => a = 0;
-        private MetaTemplate m_MetaTemplate = null;                 // T t  => T
-        private List<MetaTemplate> m_DefineMetaTemplateList = new List<MetaTemplate>();     //  Array<T1,T2> 一般用在返回值类型定义中
-        private MetaMemberVariable m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
+        private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
         private bool m_IsDefineMetaClass = false;
 
+
+        //public MetaTemplate metaTemplate => m_MetaTemplate;
+        //public bool isTemplate => m_MetaTemplate is MetaTemplate;
+        //private List<MetaTemplate> defineMetaTemplateList => m_DefineMetaTemplateList;
+        //private MetaTemplate m_MetaTemplate = null;                 // T t  => T
+        //private List<MetaTemplate> m_DefineMetaTemplateList = new List<MetaTemplate>();     //  Array<T1,T2> 一般用在返回值类型定义中
+
+
+        public MetaType( MetaType mt )
+        {
+            this.m_MetaClass = mt.m_MetaClass;
+            this.m_RawMetaClass = mt.m_RawMetaClass;
+        }
         public MetaType(FileInputTemplateNode fm, MetaClass mc)
         {
             m_RawMetaClass = ClassManager.instance.GetMetaClassByInputTemplateAndFileMeta(mc, fm);
@@ -58,28 +66,19 @@ namespace SimpleLanguage.Core
                     m_InputTemplateCollection = new MetaInputTemplateCollection(finalNode.inputTemplateNodeList, mc);
                     m_MetaClass = m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
                 }
-                else
-                {
-                    m_MetaTemplate = mc.GetTemplateMetaClassByName( finalNode.name );  //在语句中使用类中的T
-                }
             }
             if( m_MetaClass == null )
             {
                 m_MetaClass = m_RawMetaClass;
             }
         }
-        public MetaType( MetaClass mc, List<MetaTemplate> defineMetaTemplateList )
-        {
-            m_RawMetaClass = m_MetaClass = mc;
-            m_DefineMetaTemplateList = defineMetaTemplateList;
-        }
         public MetaType( FileMetaClassDefine cmr, MetaClass mc )
         {
             if (cmr == null) return;
 
             string templateName = cmr.name;
-            m_MetaTemplate = mc.GetTemplateMetaClassByName(templateName);
-            if (m_MetaTemplate != null)
+            var metaTemplate = mc.GetTemplateMetaClassByName(templateName);
+            if (metaTemplate != null)
             {
                 m_MetaClass = null;
                 m_IsDefineMetaClass = true;
@@ -156,8 +155,7 @@ namespace SimpleLanguage.Core
                 }
             }
 
-        }
-       
+        }       
         public MetaType(MetaClass mc, MetaInputTemplateCollection mitc = null )
         {
             if (mc == null)
@@ -179,17 +177,99 @@ namespace SimpleLanguage.Core
             }
 
         }
-        public MetaType( MetaTemplate mt )
+        //public MetaType( MetaTemplate mt )
+        //{
+        //    m_MetaTemplate = mt;
+        //}
+        //public MetaType( MetaType mdt )
+        //{
+        //    m_RawMetaClass = mdt.m_RawMetaClass;
+        //    m_MetaClass = mdt.m_MetaClass;
+        //    m_MetaTemplate = mdt.m_MetaTemplate;
+        //    m_InputTemplateCollection = mdt.m_InputTemplateCollection;
+        //}
+
+        public static MetaType NewMetaTypeByMemeberDefine(FileMetaClassDefine cmr, MetaClass mc)
         {
-            m_MetaTemplate = mt;
+            MetaType mt = new MetaType(CoreMetaClassManager.objectMetaClass);
+            if (cmr == null) return mt;
+
+            string templateName = cmr.name;
+            var metaTemplate = mc.GetTemplateMetaClassByName(templateName);
+            if (metaTemplate != null)
+            {
+                mt.m_MetaClass = null;
+                mt.m_IsDefineMetaClass = true;
+            }
+            else
+            {
+                if (cmr.isInputTemplateData)
+                {
+                    mt.m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
+                    if (mt.m_RawMetaClass == null)
+                    {
+                        Debug.Write("Error 没有找到相当类: " + cmr.name);
+                        return mt;
+                    }
+                    mt.m_IsDefineMetaClass = true;
+
+                    if(cmr.inputTemplateNodeList?.Count > 0 )
+                    {
+                        mt.m_InputTemplateCollection = new MetaInputTemplateCollection(cmr.inputTemplateNodeList, mt.m_RawMetaClass);
+                        mt.m_MetaClass = mt.m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(mt.m_InputTemplateCollection);
+                    }
+                }
+                else
+                {
+                    if (cmr.isArray)
+                    {
+                        mt.m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
+                        List<int> arrayList = new List<int>();
+                        for (int i = 0; i < cmr.arrayTokenList.Count; i++)
+                        {
+                            var token = cmr.arrayTokenList[i];
+                            if (token.GetEType() == EType.UInt32 || token.GetEType() == EType.Int32)
+                            {
+                                arrayList.Add(int.Parse(token.lexeme.ToString()));
+                            }
+                            else
+                            {
+                                Debug.Write("Error 解析数组，维度不允许有除Int之外的类型!!");
+                            }
+                        }
+                        mt.m_IsDefineMetaClass = true;
+                        MetaType mitp = new MetaType(mt.m_RawMetaClass);
+                        mt.m_InputTemplateCollection = new MetaInputTemplateCollection();
+                        mt.m_InputTemplateCollection.AddMetaTemplateParamsList(mitp);
+
+                        mt.m_MetaClass = CoreMetaClassManager.arrayMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(mt.m_InputTemplateCollection);
+                    }
+                    else
+                    {
+                        mt.m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
+
+                        if (mt.m_RawMetaClass != null)
+                        {
+                            mt.m_IsDefineMetaClass = true;
+                        }
+                        else
+                        {
+                            mt.m_IsDefineMetaClass = false;
+                        }
+                        mt.m_MetaClass = mt.m_RawMetaClass;
+                    }
+
+                    if (mt.m_MetaClass == null)
+                    {
+                        Debug.Write("Error MetaDefineType RetMetaClass is Null MetaMemberVariable " + cmr?.ToTokenString());
+                        mt.m_MetaClass = CoreMetaClassManager.objectMetaClass;
+                    }
+                }
+            }
+            return mt;
         }
-        public MetaType( MetaType mdt )
-        {
-            m_RawMetaClass = mdt.m_RawMetaClass;
-            m_MetaClass = mdt.m_MetaClass;
-            m_MetaTemplate = mdt.m_MetaTemplate;
-            m_InputTemplateCollection = mdt.m_InputTemplateCollection;
-        }
+
+
         public bool IsCanForIn()
         {
             if(m_MetaClass is MetaEnum )//m_MetaClass is MetaData ||  )
@@ -200,11 +280,11 @@ namespace SimpleLanguage.Core
 
             return false;
         }
-        public void SetEnumValue( MetaMemberVariable mmv )
-        {
-            m_EnumValue = mmv;
-            m_MetaClass = mmv.ownerMetaClass;
-        }
+        //public void SetEnumValue( MetaMemberVariable mmv )
+        //{
+        //    m_EnumValue = mmv;
+        //    m_MetaClass = mmv.ownerMetaClass;
+        //}
         public MetaMemberFunction GetMetaMemberConstructFunction( MetaInputParamCollection input = null)
         {
             return m_MetaClass?.GetMetaMemberConstructFunction(input);
@@ -214,13 +294,13 @@ namespace SimpleLanguage.Core
             if (mdtL == null || mdtR == null)
                 return false;
 
-            if( mdtL.isTemplate )
-            {
-                if (mdtL.metaTemplate == mdtR.metaTemplate && mdtL.metaTemplate != null)
-                {
-                    return true;
-                }
-            }
+            //if( mdtL.isTemplate )
+            //{
+            //    if (mdtL.metaTemplate == mdtR.metaTemplate && mdtL.metaTemplate != null)
+            //    {
+            //        return true;
+            //    }
+            //}
             if (mdtL.metaClass == mdtR.metaClass && mdtL.metaClass != null )
             {
                 if( mdtL.m_InputTemplateCollection != null )
@@ -263,10 +343,6 @@ namespace SimpleLanguage.Core
             m_MetaClass = mc;
             m_IsDefineMetaClass = true;
         }
-        public void ClearMetaTemplate()
-        {
-            m_MetaTemplate = null;
-        }
         public void SetMetaInputTemplateCollection( MetaInputTemplateCollection mitc )
         {
             m_InputTemplateCollection = mitc;
@@ -282,28 +358,20 @@ namespace SimpleLanguage.Core
         }
         public MetaExpressNode GetDefaultExpressNode()
         {
-            if( m_MetaTemplate == null )
+            if (m_DefaultExpressNode != null)
             {
-                if (m_DefaultExpressNode != null)
-                {
-                    return m_DefaultExpressNode;
-                }
-                else
-                {
-                    return m_MetaClass.defaultExpressNode;
-                }
+                return m_DefaultExpressNode;
             }
-            return null;
+            else
+            {
+                return m_MetaClass.defaultExpressNode;
+            }
         }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
 
-            if(m_MetaTemplate != null )
-            {
-                sb.Append(m_MetaTemplate.allName);
-            }
-            else if (m_MetaClass is MetaGenTemplateClass)
+            if (m_MetaClass is MetaGenTemplateClass)
             {
                 sb.Append((m_MetaClass as MetaGenTemplateClass).ToDefineTypeString());
             }

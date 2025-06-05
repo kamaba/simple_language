@@ -123,39 +123,37 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
             if (!FileMetatUtil.SplitNodeList(m_NodeList, bedoreNodeList, afterNodeList, ref m_AssignToken))
             {
-                Debug.Write("Error 解析NodeList出现错误~~~");
+                Debug.WriteLine("Error 解析NodeList出现错误~~~");
                 return false;
             }
             if (bedoreNodeList.Count < 1)
             {
-                Debug.Write("Error listDefieNode 不能为空~");
+                Debug.WriteLine("Error listDefieNode 不能为空~");
                 return false;
             }
 
             Node beforeNode = new Node( null );
             beforeNode.childList = bedoreNodeList;
             beforeNode.parseIndex = 0;
-            StructParse.HandleLinkNode(beforeNode);
-            var defineNodeList = beforeNode.childList;
-
+            var defineNodeList = StructParse.HandleBeforeNode(beforeNode);
 
             Node nameNode = null;
             Node typeNode = null;
             Node mutNode = null;
             if (!GetNameAndTypeToken(defineNodeList, ref typeNode, ref mutNode, ref nameNode, ref m_PermissionToken, ref m_StaticToken))
             {
-                Debug.Write("Error 没有找到该定义名称 必须使用例: X = 10; 的格式");
+                Debug.WriteLine("Error 没有找到该定义名称 必须使用例: X = 103; 的格式");
                 return false;
             }
 
             if (nameNode == null)
             {
-                Debug.Write("Error 没有找到该定义名称 必须使用例: X = 10; 的格式");
+                Debug.WriteLine("Error 没有找到该定义名称 必须使用例: X = 104; 的格式");
                 return false;
             }
             if (nameNode.extendLinkNodeList.Count > 0)
             {
-                Debug.Write("Error 没有找到该定义名称 必须使用例: X = 10; 的格式");
+                Debug.WriteLine("Error 没有找到该定义名称 必须使用例: X = 105; 的格式");
                 return false;
             }
             m_Token = nameNode.token;
@@ -203,7 +201,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if( type == 2 || type == 3 )
                     {
-                        Debug.Write("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                        Debug.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                         continue;
                     }
 
@@ -217,7 +215,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if (type == 1 || type == 3)
                     {
-                        Debug.Write("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                        Debug.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                         continue;
                     }
 
@@ -231,7 +229,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if (type == 1 || type == 2 )
                     {
-                        Debug.Write("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                        Debug.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                         continue;
                     }
 
@@ -243,7 +241,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 }
                 else
                 {
-                    Debug.Write("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                    Debug.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                     continue;
                 }
             }
@@ -313,7 +311,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             //    //        var next4Node = curParentNode.childList[++index];
             //    //        if (next4Node.nodeType != ENodeType.SemiColon)
             //    //        {
-            //    //            Debug.Write("Error 应该使用;结束语句!!");
+            //    //            Debug.WriteLine("Error 应该使用;结束语句!!");
             //    //        }
             //    //        else
             //    //        {
@@ -349,7 +347,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             //            var next3Node = curParentNode.childList[++index];
             //            if (next3Node.nodeType != ENodeType.SemiColon)
             //            {
-            //                Debug.Write("Error 应该使用;结束语句!!");
+            //                Debug.WriteLine("Error 应该使用;结束语句!!");
             //            }
             //            else
             //            {
@@ -373,7 +371,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             //            var next3Node = curParentNode.childList[++index];
             //            if (next3Node.nodeType != ENodeType.SemiColon)
             //            {
-            //                Debug.Write("Error 应该使用;结束语句!!");
+            //                Debug.WriteLine("Error 应该使用;结束语句!!");
             //            }
             //            else
             //            {
@@ -383,12 +381,12 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             //    }
             //    else
             //    {
-            //        Debug.Write("Error 不允许=号后边非Const值!!");
+            //        Debug.WriteLine("Error 不允许=号后边非Const值!!");
             //    }
             //}
             //else
             //{
-            //    Debug.Write("Error 不允许=号后边没值!!");
+            //    Debug.WriteLine("Error 不允许=号后边没值!!");
             //}
         }
         public bool GetNameAndTypeToken(List<Node> defineNodeList, ref Node typeNode, ref Node mutNode, ref Node nameNode, ref Token permissionToken, ref Token staticToken)
@@ -415,7 +413,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (permissionToken != null)
                         {
                             isError = true;
-                            Debug.Write("Error 多重定义名称的权限定义!!");
+                            Debug.WriteLine("Error 多重定义名称的权限定义!!");
                         }
                         permissionToken = token;
                     }
@@ -424,7 +422,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (staticToken != null)
                         {
                             isError = true;
-                            Debug.Write("Error 多重定义名称的静态定义!!");
+                            Debug.WriteLine("Error 多重定义名称的静态定义!!");
                         }
                         staticToken = token;
                     }
@@ -437,13 +435,13 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (mutNode != null)
                         {
                             isError = true;
-                            Debug.Write("Error 多重定义名称的Mut定义!!");
+                            Debug.WriteLine("Error 多重定义名称的Mut定义!!");
                         }
                         mutNode = cnode;
                     }
                     else
                     {
-                        Debug.Write("Error 解析变量中，不允许的类型存在!!");
+                        Debug.WriteLine("Error 解析变量中，不允许的类型存在!!");
                     }
                 }
             }
