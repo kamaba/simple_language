@@ -183,7 +183,6 @@ namespace SimpleLanguage.Project
             //timeAdd += 100;
             //Debug.Write("currentTime: " + timeAdd.ToString());
         }
-
         public static void CompileFileAllEnd()
         {           
             for ( int i = 0; i < fileParseList.Count; i++ )
@@ -214,24 +213,21 @@ namespace SimpleLanguage.Project
             ClassManager.instance.HandleExtendData();
             ClassManager.instance.ParseMemberVariableDefineMetaType();
             ClassManager.instance.ParseMemberFunctionDefineMetaType();
-            ClassManager.instance.ParseTemplateMemberVariableDefineMetaType();
-            ClassManager.instance.ParseTemplateMemberFunctionDefineMetaType();
             m_ProjectParse.ParseGlobalVariable();
             ClassManager.instance.CheckInterfaces();
             ClassManager.instance.ParseDefineComplete();
             ClassManager.instance.PrintAlllClassContent();
+
+            ClassManager.instance.UpdateTemplateMetaMemberDefineMetaType();
+            ClassManager.instance.ParseTemplateMemberVariableDefineMetaType();
+            ClassManager.instance.ParseTemplateMemberFunctionDefineMetaType();
+
             ClassManager.instance.ParseMemberEnumExpress();
             MetaVariableManager.instance.ParseMetaDataMemberExpress();
             MetaVariableManager.instance.ParseMetaClassMemberExpress();
 
-            MethodManager.instance.CreateMetaExpress(0);
-            MethodManager.instance.ParseMetaExpress(0);
             MethodManager.instance.ParseStatements(0);
-            MethodManager.instance.CreateMetaExpress(1);
-            MethodManager.instance.ParseMetaExpress(1);
             MethodManager.instance.ParseStatements(1);
-            MethodManager.instance.CreateMetaExpress(2);
-            MethodManager.instance.ParseMetaExpress(2);
             MethodManager.instance.ParseStatements(2);
             Debug.Write("-------------------------解析完成后的格式输出 开始--------------------------");
             Debug.Write(ModuleManager.instance.ToFormatString() + Environment.NewLine);

@@ -58,6 +58,7 @@ namespace SimpleLanguage.Core
         private bool m_ConstructInitFunction = false;
         protected FileMetaMemberFunction m_FileMetaMemberFunction = null;
         protected List<MetaMemberFunction> m_TemplateMemberFunctionList = new List<MetaMemberFunction>();
+        protected MetaMemberFunction m_OriginalMetaMemberFunction = null;
 
         public MetaMemberFunction( MetaClass mc ):base(mc)
         {
@@ -184,9 +185,8 @@ namespace SimpleLanguage.Core
         }
         public void UpdateGenMemberFunctionByTemplateClass( MetaMemberFunction mmf )
         {
-            MetaGenTemplateClass mtc = m_OwnerMetaClass as MetaGenTemplateClass;
+            m_OriginalMetaMemberFunction = mmf;
             m_Name = mmf.m_Name;
-            SetOwnerMetaClass(mtc);
             m_FileMetaMemberFunction = mmf.m_FileMetaMemberFunction;
             isStatic = mmf.isStatic;
             isGet = mmf.isGet;
@@ -198,48 +198,7 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = new MetaType(mmf.m_DefineMetaType);
             m_MetaBlockStatements = new MetaBlockStatements(this);
             m_MetaBlockStatements.isOnFunction = true;
-
-            var list = mmf.metaMemberParamCollection.metaDefineParamList;
-            MetaGenTemplateClass mgtc = m_OwnerMetaClass as MetaGenTemplateClass;
             m_MetaMemberParamCollection = new MetaDefineParamCollection();
-            for (int k = 0; k < list.Count; k++)
-            {
-                MetaDefineParam mdp = list[k];
-                if (mdp.isFunctionTemplate)
-                {
-                    MetaDefineParam nmdp = new MetaDefineParam(mdp.name, mmf, new MetaType(CoreMetaClassManager.objectMetaClass));
-                    m_MetaMemberParamCollection.AddMetaDefineParam(nmdp);
-                    continue;
-                }
-                else if (mdp.isClassTemplate)
-                {
-                    string pTName = mdp.metaVariable.metaDefineType.metaTemplate.name;
-                    var find = mgtc.GetMetaGenTemplate(pTName);
-                    if (find != null)
-                    {
-                        MetaDefineParam nmdp = new MetaDefineParam(mdp.metaVariable.name, mmf, new MetaType(find.metaType));
-                        m_MetaMemberParamCollection.AddMetaDefineParam(nmdp);
-                    }
-                }
-                else
-                {
-                    MetaDefineParam nmdp = new MetaDefineParam(mdp.name, mmf, mdp?.metaVariable?.metaDefineType);
-                    m_MetaMemberParamCollection.AddMetaDefineParam(nmdp);
-                }
-            }
-
-            if (mmf.returnMetaVariable != null)
-            {
-                m_DefineMetaType = new MetaType(mmf.returnMetaVariable.metaDefineType);
-                m_ReturnMetaVariable = new MetaVariable(mmf.returnMetaVariable.name, EVariableFrom.LocalStatement, m_MetaBlockStatements, this.ownerMetaClass, m_DefineMetaType);
-            }
-            if ( mmf.metaBlockStatements != null )
-            {
-                m_MetaBlockStatements.AddFrontToEndStatements(mmf.metaBlockStatements);
-                //MetaStatements ms = mmf.metaBlockStatements.GenTemplateClassStatement(m_OwnerMetaClass as MetaGenTemplateClass, m_MetaBlockStatements);
-                //m_MetaBlockStatements.SetNextStatements(ms);
-            }
-            
         }
         public void AddMetaDefineParam( MetaDefineParam mdp )
         {
@@ -253,9 +212,53 @@ namespace SimpleLanguage.Core
         {
             this.m_TemplateMemberFunctionList.Add(mmf);
         }
+        public void ParseTemplateClassDefine()
+        {
+            var mmf = this.m_OriginalMetaMemberFunction;
+            var list = m_OriginalMetaMemberFunction.metaMemberParamCollection.metaDefineParamList;
+            //var list = metaMemberParamCollection.metaDefineParamList;
+            for (int k = 0; k < list.Count; k++)
+            {
+                MetaDefineParam mdp = list[k];
+                if (mdp.isFunctionTemplate)
+                {
+                    MetaDefineParam nmdp = new MetaDefineParam(mdp.name, this );
+                    m_MetaMemberParamCollection.AddMetaDefineParam(nmdp);
+                    continue;
+                }
+                else if (mdp.isClassTemplate)
+                {
+                    string pTName = mdp.metaDefineTypeName;
+                    var find = (m_OwnerMetaClass as MetaGenTemplateClass).GetMetaGenTemplate(pTName);
+                    if (find != null)
+                    {
+                        //MetaDefineParam nmdp = new MetaDefineParam(mdp.name, mmf, new MetaType(find.metaType));
+                        //m_MetaMemberParamCollection.AddMetaDefineParam(nmdp);
+                    }
+                }
+                else
+                {
+                    //MetaDefineParam nmdp = new MetaDefineParam(mdp.name, mmf, mdp?.metaVariable?.metaDefineType);
+                    //m_MetaMemberParamCollection.AddMetaDefineParam(nmdp);
+                }
+            }
+
+            if (mmf.returnMetaVariable != null)
+            {
+                m_DefineMetaType = new MetaType(mmf.returnMetaVariable.metaDefineType);
+                m_ReturnMetaVariable = new MetaVariable(mmf.returnMetaVariable.name, EVariableFrom.LocalStatement, m_MetaBlockStatements, this.ownerMetaClass, m_DefineMetaType);
+            }
+            if (mmf.metaBlockStatements != null)
+            {
+                m_MetaBlockStatements.AddFrontToEndStatements(mmf.metaBlockStatements);
+                MetaStatements ms = mmf.metaBlockStatements.GenTemplateClassStatement(m_OwnerMetaClass as MetaGenTemplateClass, m_MetaBlockStatements);
+                m_MetaBlockStatements.SetNextStatements(ms);
+            }
+            ParseDefineMetaType();
+        }
         public override void ParseDefineMetaType()
         {
-            if (m_FileMetaMemberFunction != null)
+            if (this.m_FileMetaMemberFunction != null)
             {
                 if (m_FileMetaMemberFunction.defineMetaClass != null)
                 {
@@ -282,12 +285,12 @@ namespace SimpleLanguage.Core
                         
                         if( retMT == null )
                         {
-                            MetaTemplate getoriTemplate = m_MetaMemberTemplateCollection.GetMetaDefineTemplateByName(cname);
-                            if (getoriTemplate != null)
-                            {
-                                m_IsTemplateFunction = true;
-                                retMT = new MetaType(getoriTemplate);
-                            }
+                            //MetaTemplate getoriTemplate = m_MetaMemberTemplateCollection.GetMetaDefineTemplateByName(cname);
+                            //if (getoriTemplate != null)
+                            //{
+                            //    m_IsTemplateFunction = true;
+                            //    retMT = new MetaType(getoriTemplate);
+                            //}
                         }
                         
                         if( retMT == null )
@@ -361,7 +364,7 @@ namespace SimpleLanguage.Core
         }
         public void ParseStatements()
         {
-            if( m_FileMetaMemberFunction != null )
+            if( this.m_FileMetaMemberFunction != null )
             {
                 if(m_ThisMetaVariable != null )
                 {

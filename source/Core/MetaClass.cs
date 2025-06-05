@@ -240,7 +240,10 @@ namespace SimpleLanguage.Core
             {
                 foreach( var it2 in it.Value )
                 {
-                    it2.ParseDefineMetaType();
+                    if( !it2.isTemplateFunction )
+                    {
+                        it2.ParseDefineMetaType();
+                    }
                 }
             }
         }
@@ -312,6 +315,10 @@ namespace SimpleLanguage.Core
             {
                 MetaMemberFunction mmf = new MetaMemberFunction(this, v2 );
                 AddMetaMemberFunction(mmf);
+                if( mmf.isTemplateFunction )
+                {
+                    MethodManager.instance.AddFunctionTemplateMemeberFunction(mmf);
+                }
             }            
         }
         public bool CompareInputTemplateList( MetaInputTemplateCollection mitc )
@@ -420,58 +427,12 @@ namespace SimpleLanguage.Core
         {
             m_MetaGenTemplateClassList.Add(mtc);
         }
-        public MetaGenTemplateClass GenerateTemplateClass( MetaInputTemplateCollection mic )
-        {
-            if (this.isTemplateClass == false)
-            {
-                Debug.Write("Error 该类不是模版类,不能生成模版生成类!!");
-                return null;
-            }
-            if(mic == null )
-            {
-                return null;
-            }
-            if (metaTemplateList.Count == mic.metaTemplateParamsList.Count)
-            {
-                MetaGenTemplateClass tmc = new MetaGenTemplateClass(this);
-                AddGenTemplateMetaClass(tmc);
-
-                string extenName = "";
-                for (int i = 0; i < metaTemplateList.Count; i++)
-                {
-                    var classTemplate = metaTemplateList[i];
-                    var inputTemplate = mic.metaTemplateParamsList[i];
-
-                    MetaGenTemplate mgt = new MetaGenTemplate(classTemplate, inputTemplate);
-                    tmc.AddMetaGenTemplate(mgt);
-
-                    if( string.IsNullOrEmpty(extenName ) )
-                    {
-                        extenName = inputTemplate.metaClass.name;
-                    }
-                    else
-                    {
-                        extenName = extenName + "," + inputTemplate.metaClass.name;
-                    }
-                }
-                tmc.SetName(this.name + "<" + extenName + ">");
-                tmc.UpdateGenMember();
-                tmc.SetDeep(m_Deep + 1);
-
-                return tmc;
-            }
-            else
-            {
-                Debug.WriteLine("Error 传进来的模版参数与类定义的参数长度对不上!!");
-                return null;
-            }
-        }
         public MetaGenTemplateClass GetGenTemplateMetaClassIfNotThenGenTemplateClass(MetaInputTemplateCollection mtic )
         {
             MetaGenTemplateClass mtc = GetGenTemplateMetaClass(mtic);
             if( mtc == null )
             {
-                mtc = GenerateTemplateClass(mtic);
+                mtc = MetaGenTemplateClass.GenerateTemplateClass(this, mtic);
             }
             if( mtc == null )
             {

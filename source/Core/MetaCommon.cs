@@ -803,7 +803,7 @@ namespace SimpleLanguage.Core
                             MetaGenTemplateClass mtc = curmc.GetGenTemplateMetaClass(tmitc);
                             if (mtc == null)
                             {
-                                mtc = curmc.GenerateTemplateClass(tmitc);
+                                mtc = MetaGenTemplateClass.GenerateTemplateClass(curmc, tmitc);
                             }
                             if (mtc == null)
                             {

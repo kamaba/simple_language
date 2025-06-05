@@ -510,6 +510,16 @@ namespace SimpleLanguage.Core
                 }
             }
         }
+        public void UpdateTemplateMetaMemberDefineMetaType()
+        {
+            foreach (var it in m_TemplateClassDict)
+            {
+                foreach (var v in it.Value.metaGenTemplateClassList)
+                {
+                    v.UpdateGenMemberDefineMetaType();
+                }
+            }
+        }
         public void ParseTemplateMemberVariableDefineMetaType()
         {
             foreach (var it in m_TemplateClassDict )
@@ -536,7 +546,7 @@ namespace SimpleLanguage.Core
             {
                 foreach (var v in it.Value.metaGenTemplateClassList)
                 {
-                    v.ParseMemberFunctionDefineMetaType();
+                    v.ParseTemplateClassMemberFunction();
                 }
             }
         }

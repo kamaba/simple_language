@@ -28,7 +28,7 @@ namespace SimpleLanguage.Core
             Member,
             ArrayInner,
         }
-
+        public string defineTypeName => m_DefineTypeName;
         public bool isStatic { get; protected set; } = false;
         public virtual bool isConst { get; set; } = false;
         public bool isArgument => m_VariableFrom == EVariableFrom.Argument;
@@ -54,11 +54,13 @@ namespace SimpleLanguage.Core
         //protected MetaDefineParam m_FromMetaDefineParamCreate = null;
         //protected MetaExpressNode m_FromExpressNodeCreate = null;
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
+        protected string m_DefineTypeName = "";
         public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
         protected MetaVariable() { }
         public MetaVariable( MetaVariable mv )
         {
             m_Name = mv.m_Name;
+            m_DefineTypeName = mv.m_DefineTypeName;
             m_DefineMetaType = mv.m_DefineMetaType;
             m_OwnerMetaClass = mv.m_OwnerMetaClass;
             m_OwnerMetaBlockStatements = mv.m_OwnerMetaBlockStatements;
@@ -153,16 +155,12 @@ namespace SimpleLanguage.Core
         }
         public void GenTemplateMetaVaraible( MetaGenTemplateClass mgt, MetaBlockStatements mbs )
         {
-            //m_OwnerMetaBlockStatements = mbs;
+            m_OwnerMetaBlockStatements = mbs;
             m_OwnerMetaClass = mgt;
-            if(m_DefineMetaType.isTemplate )
+            var tmc = mgt.GetMetaGenTemplate(m_DefineTypeName);
+            if (tmc != null)
             {
-                var tmc = mgt.GetMetaGenTemplate(m_DefineMetaType.metaTemplate.name);
-                if( tmc != null )
-                {
-                    m_DefineMetaType.ClearMetaTemplate();
-                    m_DefineMetaType.SetMetaClass(tmc.metaType.metaClass);
-                }
+                m_DefineMetaType.SetMetaClass(tmc.metaType.metaClass);
             }
         }
         public bool AddMetaVariable( MetaVariable mv )
