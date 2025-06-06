@@ -215,47 +215,50 @@ namespace SimpleLanguage.Core
         }
         public void ParseTemplateClassDefine()
         {
-            var mmf = this.m_OriginalMetaMemberFunction;
-            var list = m_OriginalMetaMemberFunction.metaMemberParamCollection.metaDefineParamList;
-            //var list = metaMemberParamCollection.metaDefineParamList;
-            for (int k = 0; k < list.Count; k++)
+            if( this.m_OriginalMetaMemberFunction != null )
             {
-                MetaDefineParam mdp = list[k];
-                if (mdp.isFunctionTemplate)
+                var mmf = this.m_OriginalMetaMemberFunction;
+                var list = m_OriginalMetaMemberFunction.metaMemberParamCollection.metaDefineParamList;
+                //var list = metaMemberParamCollection.metaDefineParamList;
+                for (int k = 0; k < list.Count; k++)
                 {
-                    MetaDefineParam nmdp = new MetaDefineParam(mdp.name, this );
-                    m_MetaMemberParamCollection.AddMetaDefineParam(nmdp);
-                    continue;
-                }
-                else if (mdp.isClassTemplate)
-                {
-                    string pTName = mdp.metaDefineTypeName;
-                    var find = (m_OwnerMetaClass as MetaGenTemplateClass).GetMetaGenTemplate(pTName);
-                    if (find != null)
+                    MetaDefineParam mdp = list[k];
+                    if (mdp.isFunctionTemplate)
                     {
-                        //MetaDefineParam nmdp = new MetaDefineParam(mdp.name, mmf, new MetaType(find.metaType));
+                        MetaDefineParam nmdp = new MetaDefineParam(mdp.name, this);
+                        m_MetaMemberParamCollection.AddMetaDefineParam(nmdp);
+                        continue;
+                    }
+                    else if (mdp.isClassTemplate)
+                    {
+                        string pTName = mdp.metaDefineTypeName;
+                        var find = (m_OwnerMetaClass as MetaGenTemplateClass).GetMetaGenTemplate(pTName);
+                        if (find != null)
+                        {
+                            //MetaDefineParam nmdp = new MetaDefineParam(mdp.name, mmf, new MetaType(find.metaType));
+                            //m_MetaMemberParamCollection.AddMetaDefineParam(nmdp);
+                        }
+                    }
+                    else
+                    {
+                        //MetaDefineParam nmdp = new MetaDefineParam(mdp.name, mmf, mdp?.metaVariable?.metaDefineType);
                         //m_MetaMemberParamCollection.AddMetaDefineParam(nmdp);
                     }
                 }
-                else
-                {
-                    //MetaDefineParam nmdp = new MetaDefineParam(mdp.name, mmf, mdp?.metaVariable?.metaDefineType);
-                    //m_MetaMemberParamCollection.AddMetaDefineParam(nmdp);
-                }
-            }
 
-            if (mmf.returnMetaVariable != null)
-            {
-                m_DefineMetaType = new MetaType(mmf.returnMetaVariable.metaDefineType);
-                m_ReturnMetaVariable = new MetaVariable(mmf.returnMetaVariable.name, EVariableFrom.LocalStatement, m_MetaBlockStatements, this.ownerMetaClass, m_DefineMetaType);
+                if (mmf.returnMetaVariable != null)
+                {
+                    m_DefineMetaType = new MetaType(mmf.returnMetaVariable.metaDefineType);
+                    m_ReturnMetaVariable = new MetaVariable(mmf.returnMetaVariable.name, EVariableFrom.LocalStatement, m_MetaBlockStatements, this.ownerMetaClass, m_DefineMetaType);
+                }
+                if (mmf.metaBlockStatements != null)
+                {
+                    m_MetaBlockStatements.AddFrontToEndStatements(mmf.metaBlockStatements);
+                    MetaStatements ms = mmf.metaBlockStatements.GenTemplateClassStatement(m_OwnerMetaClass as MetaGenTemplateClass, m_MetaBlockStatements);
+                    m_MetaBlockStatements.SetNextStatements(ms);
+                }
+                ParseDefineMetaType();
             }
-            if (mmf.metaBlockStatements != null)
-            {
-                m_MetaBlockStatements.AddFrontToEndStatements(mmf.metaBlockStatements);
-                MetaStatements ms = mmf.metaBlockStatements.GenTemplateClassStatement(m_OwnerMetaClass as MetaGenTemplateClass, m_MetaBlockStatements);
-                m_MetaBlockStatements.SetNextStatements(ms);
-            }
-            ParseDefineMetaType();
         }
         public override void ParseDefineMetaType()
         {
@@ -296,12 +299,21 @@ namespace SimpleLanguage.Core
                         
                         if( retMT == null )
                         {
-                            //MetaTemplate getoriTemplate = m_MetaMemberTemplateCollection.GetMetaDefineTemplateByName(cname);
-                            //if (getoriTemplate != null)
-                            //{
-                            //    m_IsTemplateFunction = true;
-                            //    retMT = new MetaType(getoriTemplate);
-                            //}
+                            MetaTemplate getoriTemplate = m_MetaMemberTemplateCollection.GetMetaDefineTemplateByName(cname);
+                            if (getoriTemplate != null)
+                            {
+                                m_IsTemplateFunction = true;
+                                retMT = new MetaType(getoriTemplate);
+                            }
+                        }
+                        if( retMT == null )
+                        {
+                            MetaTemplate getoriTemplate = m_OwnerMetaClass.GetTemplateMetaClassByName(cname);
+                            if (getoriTemplate != null)
+                            {
+                                m_IsTemplateClassFunction = true;
+                                retMT = new MetaType(getoriTemplate);
+                            }
                         }
                         
                         if( retMT == null )

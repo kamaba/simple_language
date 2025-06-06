@@ -504,10 +504,7 @@ namespace SimpleLanguage.Core
         {
             foreach (var it in m_AllClassDict)
             {
-                if( !it.Value.isTemplateClass )
-                {
-                    it.Value.ParseMemberVariableDefineMetaType();
-                }
+                it.Value.ParseMemberVariableDefineMetaType();
             }
         }
         public void UpdateTemplateMetaMemberDefineMetaType()
@@ -534,10 +531,7 @@ namespace SimpleLanguage.Core
         {
             foreach (var it in m_AllClassDict)
             {
-                if (!it.Value.isTemplateClass)
-                {
-                    it.Value.ParseMemberFunctionDefineMetaType();
-                }
+                it.Value.ParseMemberFunctionDefineMetaType();
             }
         }
         public void ParseTemplateMemberFunctionDefineMetaType()

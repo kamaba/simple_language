@@ -240,10 +240,7 @@ namespace SimpleLanguage.Core
             {
                 foreach( var it2 in it.Value )
                 {
-                    if( !it2.isTemplateFunction )
-                    {
-                        it2.ParseDefineMetaType();
-                    }
+                    it2.ParseDefineMetaType();
                 }
             }
         }

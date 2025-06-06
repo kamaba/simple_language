@@ -72,7 +72,7 @@ public class Level1<T>
 
         List0<int> lint11 = List0<int>()
 
-        Level1.test<List<int> >( t, lint11 ) = null
+        Level1.test<List0<int> >( t, lint11 ) = null
 
         ret t
     }

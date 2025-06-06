@@ -29,6 +29,7 @@ namespace SimpleLanguage.Core
         NamespaceName,
         ClassName,
         TypeName,
+        TemplateName,
         EnumName,
         EnumDefaultValue,
         EnumValueArray,
@@ -714,29 +715,47 @@ namespace SimpleLanguage.Core
                             Debug.WriteLine("Error 函数没有返回类型"); 
                         }
                     }
-                    //else if (frontCNT == ECallNodeType.TemplateName)
-                    //{
-                    //    var mt = m_FrontCallNode.m_MetaTemplate;
-                    //    if (mt != null)
-                    //    {
-                    //        if (mt.constraintMetaClassList.Count > 0)
-                    //        {
-                    //            for (int i = 0; i < mt.constraintMetaClassList.Count; i++)
-                    //            {
-                    //                var constraintClass = mt.constraintMetaClassList[i];
-                    //                tempMetaBase = GetFunctionOrVariableByOwnerClass(constraintClass, name, false);
-                    //                if (tempMetaBase != null)
-                    //                {
-                    //                    break;
-                    //                }
-                    //            }
-                    //        }
-                    //        else
-                    //        {
-                    //            tempMetaBase = GetFunctionOrVariableByOwnerClass(CoreMetaClassManager.objectMetaClass, name, false);
-                    //        }
-                    //    }
-                    //}
+                    else if (frontCNT == ECallNodeType.TemplateName)
+                    {
+                        var mt = m_FrontCallNode.m_MetaTemplate;
+                        if (mt != null)
+                        {
+                            if (mt.constraintMetaClassList.Count > 0)
+                            {
+                                for (int i = 0; i < mt.constraintMetaClassList.Count; i++)
+                                {
+                                    var constraintClass = mt.constraintMetaClassList[i];
+                                    tempMetaBase = GetFunctionOrVariableByOwnerClass(constraintClass, name, false);
+                                    if (tempMetaBase != null)
+                                    {
+                                        break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if( name == "instance" )
+                                {
+
+                                }
+                                else
+                                {
+                                    tempMetaBase = GetFunctionOrVariableByOwnerClass(CoreMetaClassManager.objectMetaClass, name, false);
+
+                                    if( tempMetaBase is MetaMemberVariable )
+                                    {
+                                        m_MetaVariable = (MetaMemberVariable)tempMetaBase;
+                                        m_CallNodeType = ECallNodeType.MemberVariableName;
+                                    }
+                                    else if( tempMetaBase is MetaMemberFunction )
+                                    {
+                                        m_MetaFunction = (MetaMemberFunction)tempMetaBase;
+                                        m_CallNodeType = ECallNodeType.MemberFunctionName;
+                                    }
+                                }
+                            }
+                        }
+                    }
                     else
                     {
                         Debug.WriteLine("Error 暂不支持上节点的类型: " + frontCNT.ToString());
@@ -1031,10 +1050,9 @@ namespace SimpleLanguage.Core
                 {
 
                 }
-                //else if (calcMetaBase is MetaTemplate)
-                //{
-                //    m_CallNodeType = ECallNodeType.TemplateName;
-                //}
+                else if ( m_MetaTemplate != null )
+                {
+                }
                 else
                 {
                     Debug.WriteLine("Error !! 非函数类型!!" + m_FileMetaCallNode.token.ToLexemeAllString());
@@ -1091,6 +1109,11 @@ namespace SimpleLanguage.Core
                     retMC = CoreMetaClassManager.GetMetaClassByEType(etype);                    
                 }
             }
+            //查找类模型
+            if( retMC == null)
+            {
+                retMC = mc.GetTemplateMetaClassByName(inputname);
+            }
             // 查找 coreModule的模块
             if( retMC== null )
             {
@@ -1143,6 +1166,11 @@ namespace SimpleLanguage.Core
                 {
                     m_MetaClass = retMC as MetaClass;
                     m_CallNodeType = ECallNodeType.ClassName;
+                }
+                else if( retMC is MetaTemplate )
+                {
+                    m_MetaTemplate = retMC as MetaTemplate;
+                    m_CallNodeType = ECallNodeType.TemplateName;
                 }
                 else
                 {
