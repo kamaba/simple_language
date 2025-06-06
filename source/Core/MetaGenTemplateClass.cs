@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Compile;
+using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Core
 {
@@ -169,29 +170,32 @@ namespace SimpleLanguage.Core
             }
             m_MetaMemberVariableDict = addList;
 
-            Dictionary<string, List<MetaMemberFunction>> addFunctionList = new Dictionary<string, List<MetaMemberFunction>>();
-            foreach (var v in m_MetaMemberFunctionListDict)
+            if( ProjectManager.compileUseTemplateClassGenClassFunction )
             {
-                if (v.Value.Count > 0)
+                Dictionary<string, List<MetaMemberFunction>> addFunctionList = new Dictionary<string, List<MetaMemberFunction>>();
+                foreach (var v in m_MetaMemberFunctionListDict)
                 {
-                    var list = new List<MetaMemberFunction>();
-                    addFunctionList.Add(v.Key, list);
-
-                    for (int j = 0; j < v.Value.Count; j++)
+                    if (v.Value.Count > 0)
                     {
-                        var curFun = v.Value[j];
+                        var list = new List<MetaMemberFunction>();
+                        addFunctionList.Add(v.Key, list);
 
-                        MetaMemberFunction mgmf = new MetaMemberFunction(this);
-                        mgmf.UpdateGenMemberFunctionByTemplateClass( curFun );
-                        list.Add(mgmf);
-                        if( !mgmf.isTemplateFunction )
+                        for (int j = 0; j < v.Value.Count; j++)
                         {
-                            MethodManager.instance.AddClassTemplateMemeberFunction(mgmf);
+                            var curFun = v.Value[j];
+
+                            MetaMemberFunction mgmf = new MetaMemberFunction(this);
+                            mgmf.UpdateGenMemberFunctionByTemplateClass(curFun);
+                            list.Add(mgmf);
+                            if (!mgmf.isTemplateFunction)
+                            {
+                                MethodManager.instance.AddClassTemplateMemeberFunction(mgmf);
+                            }
                         }
                     }
                 }
+                m_MetaMemberFunctionListDict = addFunctionList;
             }
-            m_MetaMemberFunctionListDict = addFunctionList;
         }
         public bool Adapter(MetaInputTemplateCollection mitc)
         {

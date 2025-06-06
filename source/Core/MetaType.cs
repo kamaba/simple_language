@@ -50,8 +50,8 @@ namespace SimpleLanguage.Core
 
         public MetaType(MetaTemplate mt)
         { 
-        }
 
+        }
         public MetaType( MetaType mt )
         {
             this.m_MetaClass = mt.m_MetaClass;
@@ -203,6 +203,7 @@ namespace SimpleLanguage.Core
             if (metaTemplate != null)
             {
                 mt.m_MetaClass = null;
+                mt.m_MetaTemplate = metaTemplate;
                 mt.m_IsDefineMetaClass = true;
             }
             else
