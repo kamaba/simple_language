@@ -195,6 +195,7 @@ namespace SimpleLanguage.Core
             m_IsMustNeedReturnStatements = mmf.m_IsMustNeedReturnStatements;
             m_MethodCallType = mmf.m_MethodCallType;
             isTemplateInParam = mmf.isTemplateInParam;
+            m_IsTemplateFunction = mmf.m_IsTemplateFunction;
             m_DefineMetaType = new MetaType(mmf.m_DefineMetaType);
             m_MetaBlockStatements = new MetaBlockStatements(this);
             m_MetaBlockStatements.isOnFunction = true;
@@ -281,6 +282,16 @@ namespace SimpleLanguage.Core
                                 m_IsTemplateClassFunction = true;
                                 retMT = getgenTemplate.metaType;
                             }
+                        }
+
+                        var gmgt = GetMetaGenTemplate(cname);
+                        if ( gmgt != null )
+                        {
+                            if( retMT != null )
+                            {
+                                Debug.WriteLine("Error 定义模板类与函数里边重复!");
+                            }
+                            retMT = gmgt.metaType;
                         }
                         
                         if( retMT == null )

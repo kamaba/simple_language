@@ -45,7 +45,7 @@ namespace SimpleLanguage.Core
         protected MetaVariable m_ThisMetaVariable = null;
         protected MetaVariable m_ReturnMetaVariable = null;
         protected MetaDefineParamCollection m_MetaMemberParamCollection = null;
-        private Dictionary<string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
+        protected Dictionary<string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
         protected MetaDefineTemplateCollection m_MetaMemberTemplateCollection = new MetaDefineTemplateCollection();
         protected EMethodCallType m_MethodCallType = EMethodCallType.Local;
         protected bool m_IsMustNeedReturnStatements = false;

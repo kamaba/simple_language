@@ -118,7 +118,7 @@ namespace SimpleLanguage.Core
             MethodInfo mi = m_CSharpType.GetMethod(name, types);
             if (mi == null) return null;
             MetaMemberFunctionCSharp cmmf = new MetaMemberFunctionCSharp(this, mi);
-            AddMetaMemberFunction(cmmf, false);
+            AddMetaMemberFunction(cmmf);
             return cmmf;
         }
     }

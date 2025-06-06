@@ -956,6 +956,14 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     AddFileMetaTerm(fmn);
                     fmbt = null;
                 }
+                else if( node.nodeType == ENodeType.LeftAngle 
+                    || node.nodeType == ENodeType.RightAngle )
+                {
+                    FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(m_FileMeta, node.token);
+                    fmn.priority = SignComputePriority.Level6_Compare;
+                    AddFileMetaTerm(fmn);
+                    fmbt = null;
+                }
                 else if( node.nodeType == ENodeType.ConstValue )
                 {
                     if( node.extendLinkNodeList.Count > 0 )

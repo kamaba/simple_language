@@ -184,7 +184,7 @@ namespace SimpleLanguage.Core
                         MetaMemberFunction mgmf = new MetaMemberFunction(this);
                         mgmf.UpdateGenMemberFunctionByTemplateClass( curFun );
                         list.Add(mgmf);
-                        if( mgmf.isTemplateClassFunction )
+                        if( !mgmf.isTemplateFunction )
                         {
                             MethodManager.instance.AddClassTemplateMemeberFunction(mgmf);
                         }
