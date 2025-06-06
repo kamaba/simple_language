@@ -26,8 +26,8 @@ Map<T1,T2>
 # where (T1 limit Class1), (T2 limit int, string, data)
 public class Level2<T1,T2> extends Level1<List0<T2> > interface List1<List2<Map<T2,string> > >, Map<T2,string>
 {
-    T1 t1 = T1.instance
-    T2 t2 = T2.instance
+    T1 t21 = T1.instance
+    T2 t22 = T2.instance
 }
 public class Level1<T> 
 {
@@ -66,9 +66,13 @@ public class Level1<T>
     {
         T t = T()
 
-        #List0<Map<T, T> > list = List0<Map<T, T> >()
+        List0<Map<T, T> > list = List0<Map<T, T> >()
 
-        #ls.Test<List<int> >().Test2<Map<T,String> >() = 10
+        Level2<int,string> level222 = {}
+
+        List0<int> lint11 = List0<int>()
+
+        Level1.test<List<int> >( t, lint11 ) = null
 
         ret t
     }

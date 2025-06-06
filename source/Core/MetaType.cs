@@ -27,6 +27,11 @@ namespace SimpleLanguage.Core
         public bool isEnum => m_MetaClass is MetaEnum;
         public bool isData => m_MetaClass is MetaData;
         public MetaMemberEnum enumValue => m_EnumValue;
+
+        // 采用模板类表示法，仿C#做法，而不是C++，这种做法有效减少了，代码生成的数据，后续数据类型
+        public MetaTemplate metaTemplate => m_MetaTemplate;
+        public bool isTemplate => m_MetaTemplate is MetaTemplate;
+        private List<MetaTemplate> defineMetaTemplateList => m_DefineMetaTemplateList;
         public bool isGenTemplateClass => m_MetaClass is MetaGenTemplateClass;
         public bool isArray => m_MetaClass?.eType == EType.Array;
         public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
@@ -40,13 +45,12 @@ namespace SimpleLanguage.Core
         private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
         private bool m_IsDefineMetaClass = false;
 
+        private MetaTemplate m_MetaTemplate = null;                 // T t  => T
+        private List<MetaTemplate> m_DefineMetaTemplateList = new List<MetaTemplate>();     //  Array<T1,T2> 一般用在返回值类型定义中
 
-        //public MetaTemplate metaTemplate => m_MetaTemplate;
-        //public bool isTemplate => m_MetaTemplate is MetaTemplate;
-        //private List<MetaTemplate> defineMetaTemplateList => m_DefineMetaTemplateList;
-        //private MetaTemplate m_MetaTemplate = null;                 // T t  => T
-        //private List<MetaTemplate> m_DefineMetaTemplateList = new List<MetaTemplate>();     //  Array<T1,T2> 一般用在返回值类型定义中
-
+        public MetaType(MetaTemplate mt)
+        { 
+        }
 
         public MetaType( MetaType mt )
         {
@@ -90,7 +94,7 @@ namespace SimpleLanguage.Core
                     m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
                     if(m_RawMetaClass == null )
                     {
-                        Debug.Write("Error 没有找到相当类: " + cmr.name);
+                        Debug.WriteLine("Error 没有找到相当类: " + cmr.name);
                         return;
                     }
                     m_IsDefineMetaClass = true;
@@ -121,7 +125,7 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                Debug.Write("Error 解析数组，维度不允许有除Int之外的类型!!");
+                                Debug.WriteLine("Error 解析数组，维度不允许有除Int之外的类型!!");
                             }
                         }
                         m_IsDefineMetaClass = true;
@@ -149,7 +153,7 @@ namespace SimpleLanguage.Core
 
                     if (m_MetaClass == null)
                     {
-                        Debug.Write("Error MetaDefineType RetMetaClass is Null MetaMemberVariable " + cmr?.ToTokenString());
+                        Debug.WriteLine("Error MetaDefineType RetMetaClass is Null MetaMemberVariable " + cmr?.ToTokenString());
                         m_MetaClass = CoreMetaClassManager.objectMetaClass;
                     }
                 }
@@ -160,7 +164,7 @@ namespace SimpleLanguage.Core
         {
             if (mc == null)
             {
-                Debug.Write("Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
+                Debug.WriteLine("Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
             m_IsDefineMetaClass = false;
             if ( mitc == null)
@@ -208,12 +212,12 @@ namespace SimpleLanguage.Core
                     mt.m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
                     if (mt.m_RawMetaClass == null)
                     {
-                        Debug.Write("Error 没有找到相当类: " + cmr.name);
+                        Debug.WriteLine("Error 没有找到相当类: " + cmr.name);
                         return mt;
                     }
                     mt.m_IsDefineMetaClass = true;
 
-                    if(cmr.inputTemplateNodeList?.Count > 0 )
+                    if (cmr.inputTemplateNodeList?.Count > 0)
                     {
                         mt.m_InputTemplateCollection = new MetaInputTemplateCollection(cmr.inputTemplateNodeList, mt.m_RawMetaClass);
                         mt.m_MetaClass = mt.m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(mt.m_InputTemplateCollection);
@@ -234,7 +238,7 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                Debug.Write("Error 解析数组，维度不允许有除Int之外的类型!!");
+                                Debug.WriteLine("Error 解析数组，维度不允许有除Int之外的类型!!");
                             }
                         }
                         mt.m_IsDefineMetaClass = true;
@@ -261,7 +265,91 @@ namespace SimpleLanguage.Core
 
                     if (mt.m_MetaClass == null)
                     {
-                        Debug.Write("Error MetaDefineType RetMetaClass is Null MetaMemberVariable " + cmr?.ToTokenString());
+                        Debug.WriteLine("Error MetaDefineType RetMetaClass is Null MetaMemberVariable " + cmr?.ToTokenString());
+                        mt.m_MetaClass = CoreMetaClassManager.objectMetaClass;
+                    }
+                }
+            }
+            return mt;
+        }
+        public static MetaType NewMetaTypeByStatement(FileMetaClassDefine cmr, MetaClass mc)
+        {
+            MetaType mt = new MetaType(CoreMetaClassManager.objectMetaClass);
+            if (cmr == null) return mt;
+
+            string templateName = cmr.name;
+            var metaTemplate = mc.GetTemplateMetaClassByName(templateName);
+            if (metaTemplate != null)
+            {
+                mt.m_MetaClass = null;
+                mt.m_IsDefineMetaClass = true;
+            }
+            else
+            {
+                if (cmr.isInputTemplateData)
+                {
+                    mt.m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
+                    if (mt.m_RawMetaClass == null)
+                    {
+                        Debug.WriteLine("Error 没有找到相当类: " + cmr.name);
+                        return mt;
+                    }
+                    mt.m_IsDefineMetaClass = true;
+
+                    if (cmr.inputTemplateNodeList?.Count > 0)
+                    {
+                        mt.m_InputTemplateCollection = new MetaInputTemplateCollection(cmr.inputTemplateNodeList, mt.m_RawMetaClass);
+                        mt.m_MetaClass = mt.m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(mt.m_InputTemplateCollection);
+
+                        var mgtc = (mt.m_MetaClass as MetaGenTemplateClass);
+                        mgtc.UpdateGenMemberDefineMetaType();
+                        mgtc.ParseTemplateClassMemberFunction();
+
+                    }
+                }
+                else
+                {
+                    if (cmr.isArray)
+                    {
+                        mt.m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
+                        List<int> arrayList = new List<int>();
+                        for (int i = 0; i < cmr.arrayTokenList.Count; i++)
+                        {
+                            var token = cmr.arrayTokenList[i];
+                            if (token.GetEType() == EType.UInt32 || token.GetEType() == EType.Int32)
+                            {
+                                arrayList.Add(int.Parse(token.lexeme.ToString()));
+                            }
+                            else
+                            {
+                                Debug.WriteLine("Error 解析数组，维度不允许有除Int之外的类型!!");
+                            }
+                        }
+                        mt.m_IsDefineMetaClass = true;
+                        MetaType mitp = new MetaType(mt.m_RawMetaClass);
+                        mt.m_InputTemplateCollection = new MetaInputTemplateCollection();
+                        mt.m_InputTemplateCollection.AddMetaTemplateParamsList(mitp);
+
+                        mt.m_MetaClass = CoreMetaClassManager.arrayMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(mt.m_InputTemplateCollection);
+                    }
+                    else
+                    {
+                        mt.m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
+
+                        if (mt.m_RawMetaClass != null)
+                        {
+                            mt.m_IsDefineMetaClass = true;
+                        }
+                        else
+                        {
+                            mt.m_IsDefineMetaClass = false;
+                        }
+                        mt.m_MetaClass = mt.m_RawMetaClass;
+                    }
+
+                    if (mt.m_MetaClass == null)
+                    {
+                        Debug.WriteLine("Error MetaDefineType RetMetaClass is Null MetaMemberVariable " + cmr?.ToTokenString());
                         mt.m_MetaClass = CoreMetaClassManager.objectMetaClass;
                     }
                 }

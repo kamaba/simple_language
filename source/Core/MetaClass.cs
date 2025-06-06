@@ -315,9 +315,10 @@ namespace SimpleLanguage.Core
             {
                 MetaMemberFunction mmf = new MetaMemberFunction(this, v2 );
                 AddMetaMemberFunction(mmf);
-                if( mmf.isTemplateFunction )
+                //原生函数，只添加 非模板类的，非模板函数的
+                if( !mmf.isTemplateFunction && !this.isTemplateClass )
                 {
-                    MethodManager.instance.AddFunctionTemplateMemeberFunction(mmf);
+                    MethodManager.instance.AddOriginalMemeberFunction(mmf);
                 }
             }            
         }
@@ -516,7 +517,7 @@ namespace SimpleLanguage.Core
         {
             m_TempInnerFunctionList.Add(mmf);
         }
-        public void AddMetaMemberFunction(MetaMemberFunction mmf, bool isAddMethod = true )
+        public void AddMetaMemberFunction(MetaMemberFunction mmf )
         {
             if(this.m_MetaMemberFunctionListDict.ContainsKey(mmf.name ) )
             {
@@ -536,15 +537,6 @@ namespace SimpleLanguage.Core
                 m_MetaMemberAllNameFunctionDict.Add(mmf.functionAllName, mmf);
             }
             AddMetaBase(mmf.functionAllName, mmf);
-
-            if( isAddMethod )
-            {
-                MethodManager.instance.AddOriginalMemeberFunction(mmf);
-            }
-            else
-            {
-                MethodManager.instance.AddDynamicMemeberFunction(mmf);
-            }
         }
         public void RemoveMetaMemberFunction( MetaMemberFunction mmf )
         {
@@ -560,13 +552,13 @@ namespace SimpleLanguage.Core
         }
         public void AddDefineConstructFunction()
         {
-            MetaMemberFunction mmf = GetMetaMemberConstructDefaultFunction();
-            if (mmf == null)
-            {
-                mmf = new MetaMemberFunction(this, "_init_");
-                mmf.SetDefineMetaClass(this);
-                AddMetaMemberFunction(mmf);
-            }
+            //MetaMemberFunction mmf = GetMetaMemberConstructDefaultFunction();
+            //if (mmf == null)
+            //{
+            //    mmf = new MetaMemberFunction(this, "_init_");
+            //    mmf.SetDefineMetaClass(this);
+            //    AddMetaMemberFunction(mmf);
+            //}
         }
         public void AddDefineInstanceValue()
         {
