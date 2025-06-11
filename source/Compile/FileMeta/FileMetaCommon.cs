@@ -693,11 +693,13 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         private Token m_InToken = null;
         private List<FileInputTemplateNode> m_InClassNameTokenList = new List<FileInputTemplateNode>();
         private Node m_Node = null;
-        public FileMetaTemplateDefine( FileMeta fm, Node node )
+        private Node m_ExtendsNode = null;
+        public FileMetaTemplateDefine( FileMeta fm, Node node, Node extendsNode = null )
         {
             m_FileMeta = fm;
             m_Node = node;
             m_Token = node.token;
+            m_ExtendsNode = extendsNode;
         }
         public FileMetaTemplateDefine( FileMeta fm, List<Node> nodeList )
         {

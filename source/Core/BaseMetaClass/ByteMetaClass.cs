@@ -18,14 +18,6 @@ namespace SimpleLanguage.Core.SelfMeta
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Byte;
             m_ClassDefineType = EClassDefineType.InnerDefine;
-            //System.Type type = typeof(System.Char);
-            //MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Char, '0');
-            //mc.SetDefaultExpressNode(mcen);
-
-            //MetaMemberVariable mmv = new MetaMemberVariable( mc, "value");
-            ////mmv.metaType = new MetaType() { defineType = EType.Char };
-
-            //mc.AddMetaMemberVariable(mmv);
         }
         public static MetaClass CreateMetaClass()
         {

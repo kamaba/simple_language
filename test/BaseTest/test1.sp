@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "4_GenClass.sl";
+            path = "12_ArrayTest.sl";
             group = "temp";
             tag = "all";
             a = 200
@@ -78,7 +78,8 @@ Project
        #CommitTest.fun();
        #NumberTest.fun()
        #StringTest.fun()
-       GenClass.fun()
+       #GenClass.fun()
+       ArrayTest.fun()
     }
     static Test()
     {

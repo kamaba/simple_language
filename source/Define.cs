@@ -185,16 +185,18 @@ namespace SimpleLanguage
         Import,
         /// <summary> as </summary>
         As,
+        /// <summary> is </summary>
+        Is,
         /// <summary> switch </summary>
         Switch,
         /// <summary> case </summary>
         Case,
         /// <summary> default </summary>
         Default,
+        /// <summary> extern  </summary>
+        Extern,
         /// <summary> public </summary>
         Public,
-        /// <summary> internal </summary>
-        Internal,
         /// <summary> projected </summary>
         Projected,
         /// <summary> private</summary>
@@ -203,6 +205,8 @@ namespace SimpleLanguage
         Interface,
         /// <summary> extends </summary>
         Extends,
+        /// <summary> virtual </summary>
+        Virtual,
         /// <summary> override </summary>
         Override,
         /// <summary> const </summary>
@@ -220,7 +224,7 @@ namespace SimpleLanguage
         /// <summary> let </summary>
         Let,
         /// <summary> new </summary>
-        //New,
+        New,
         /// <summary> partial </summary>
         Partial,
         /// <summary> namespace </summary>

@@ -47,6 +47,8 @@ namespace SimpleLanguage.Compile.Parse
         LineEnd,
         Assign,
         ConstValue,
+        PrefixAtSymbol,
+        PrefixDollerSymbol,
         IdentifierLink,
         Key,
         End,

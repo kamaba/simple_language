@@ -9,9 +9,11 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.IR;
+using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -112,13 +114,14 @@ namespace SimpleLanguage.Core
 
         //    Parse();
         //}
-        public MetaMemberVariable(MetaClass mc, string _name, MetaClass _defineTypeClass )
+        public MetaMemberVariable(MetaClass mc, string _name, MetaClass _defineTypeClass, MetaConstExpressNode men = null )
         {
             m_Name = _name;
             m_IsInnerDefine = true;
             m_FromType = EFromType.Manual;
             m_DefineMetaType = new MetaType(_defineTypeClass);
             m_DefineMetaType.SetMetaClass(_defineTypeClass);
+            m_Express = men;
             m_VariableFrom = EVariableFrom.Member;
 
             SetOwnerMetaClass(mc);
@@ -242,7 +245,9 @@ namespace SimpleLanguage.Core
             }
             if( this.m_Express == null )
             {
-                Debug.WriteLine($"Error { this.ownerMetaClass.allName + "." + this.m_Name }配置成员变量时，必须需要有等号及后续的表达式!!");
+                var ld = Log.AddInStructMeta( EError.MemberNeedExpress, $"Error [{this.ownerMetaClass.allName + "." + this.m_Name} ]配置成员变量时，必须需要有等号及后续的表达式!!");
+                ld.demo = "T t";
+                ld.advan = "T t = null";
             }
         }        
         public void CalcReturnType()

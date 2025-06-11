@@ -69,7 +69,7 @@ namespace SimpleLanguage.Core
             {
                 return 6;
             }
-            else if (mt.metaClass == CoreMetaClassManager.arrayMetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.listMetaClass)
             {
                 return 8;
             }

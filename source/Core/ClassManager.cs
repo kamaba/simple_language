@@ -618,7 +618,7 @@ namespace SimpleLanguage.Core
         }
         public static EClassRelation ValidateClassRelationByMetaClass( MetaClass curClass, MetaClass compareClass )
         {
-            if( curClass == CoreMetaClassManager.objectMetaClass )
+            if ( curClass == CoreMetaClassManager.objectMetaClass )
             {
                 return EClassRelation.Child;
             }

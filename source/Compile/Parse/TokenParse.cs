@@ -511,8 +511,8 @@ namespace SimpleLanguage.Compile.Parse
                         AddKeyNode(token);
                     }
                     break;
+                case ETokenType.Extern:
                 case ETokenType.Public:
-                case ETokenType.Internal:
                 case ETokenType.Projected:
                 case ETokenType.Private:
                     {
@@ -558,6 +558,11 @@ namespace SimpleLanguage.Compile.Parse
                 case ETokenType.Params:
                     {
                         AddKeyNode(token);
+                    }
+                    break;
+                case ETokenType.At:             //@
+                    {
+                        AddAtOpSign(token);
                     }
                     break;
                 case ETokenType.Dollar:

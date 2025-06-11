@@ -6,16 +6,14 @@
 //  Description: 
 //****************************************************************************
 using SimpleLanguage.Core.MetaObjects;
-using SimpleLanguage.VM;
+using System.Runtime.InteropServices;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SimpleLanguage.Core.SelfMeta
 {
     public class IEnumerableMetaClass : MetaClass
     {
-        public IEnumerableMetaClass() : base(DefaultObject.Array.ToString())
+        public IEnumerableMetaClass() : base(DefaultObject.List.ToString())
         {
             m_Type = EType.Array;
             m_ClassDefineType = EClassDefineType.InnerDefine;
@@ -23,16 +21,17 @@ namespace SimpleLanguage.Core.SelfMeta
             //m_MetaTemplateList.Add(new TemplateMetaClass("T"));
         }
     }
-    public class ArrayIteratorMetaClass : MetaClass
+    public class ListIteratorMetaClass : MetaClass
     {
-        public ArrayIteratorMetaClass() : base(DefaultObject.Class.ToString())
+        public ListIteratorMetaClass() : base(DefaultObject.List.ToString())
         {
             m_Type = EType.Class;
             m_ClassDefineType = EClassDefineType.InnerDefine;
         }
         public override void ParseInnerVariable()
         {
-            MetaMemberVariable index = new MetaMemberVariable(this, "index", CoreMetaClassManager.int32MetaClass);
+            MetaConstExpressNode ecen = new MetaConstExpressNode(EType.Int32, 0);
+            MetaMemberVariable index = new MetaMemberVariable(this, "index", CoreMetaClassManager.int32MetaClass, ecen);
             AddMetaMemberVariable(index);
 
             //MetaMemberVariable tvalue = new MetaMemberVariable(this, "value", CoreMetaClassManager.templateMetaClass);
@@ -40,14 +39,14 @@ namespace SimpleLanguage.Core.SelfMeta
         }
         public static MetaClass CreateMetaClass()
         {
-            ArrayIteratorMetaClass mc = new ArrayIteratorMetaClass();
+            ListIteratorMetaClass mc = new ListIteratorMetaClass();
             ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
             return mc;
         }
     }
-    public class ArrayMetaClass : MetaClass
+    public class ListMetaClass : MetaClass
     {
-        public ArrayMetaClass():base( DefaultObject.Array.ToString() )
+        public ListMetaClass():base( DefaultObject.List.ToString() )
         {
             m_Type = EType.Array;
             m_ClassDefineType = EClassDefineType.InnerDefine;
@@ -116,13 +115,18 @@ namespace SimpleLanguage.Core.SelfMeta
         }
         public static MetaClass CreateMetaClass()
         {
-            MetaClass mc = new ArrayMetaClass();
+            MetaClass mc = new ListMetaClass();
             ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
             return mc;
         }
-        public static int GetMetaClassCount( MetaArrayObject amo )
+        public static int SetListCount(Int32 v)
         {
-            return amo.count();
+            IntPtr ptr = Marshal.AllocHGlobal(v * Marshal.SizeOf(typeof(int)));
+            if (ptr != IntPtr.Zero)
+            {
+                return ptr.ToInt32();
+            }
+            return -1;
         }
     }
 }

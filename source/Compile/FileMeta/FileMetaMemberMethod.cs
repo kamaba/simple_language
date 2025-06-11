@@ -222,7 +222,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     if (token.type == ETokenType.Public
                         || token.type == ETokenType.Private
                         || token.type == ETokenType.Projected
-                        || token.type == ETokenType.Internal)
+                        || token.type == ETokenType.Extern )
                     {
                         if (permissionToken == null)
                         {
@@ -313,8 +313,11 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             }
             else
             {
-                Debug.WriteLine("Error 解析位置 Token: " + m_Token?.ToLexemeAllString() );
-                return false;
+                if( interfaceToken == null )
+                {
+                    Debug.WriteLine("Error 解析位置 Token: " + m_Token?.ToLexemeAllString());
+                    return false;
+                }
             }
             if( isError )
             {
