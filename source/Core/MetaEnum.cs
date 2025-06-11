@@ -45,7 +45,7 @@ namespace SimpleLanguage.Core
             {
                 MetaInputTemplateCollection mitc = new MetaInputTemplateCollection();
                 mitc.AddMetaTemplateParamsList(new MetaType(this.extendClass));
-                var mt = new MetaType(CoreMetaClassManager.arrayMetaClass, mitc);
+                var mt = new MetaType(CoreMetaClassManager.listMetaClass, mitc);
                 m_MetaVariable = new MetaVariable( "values", MetaVariable.EVariableFrom.Static, null, this, mt);
                 m_MetaVariable.SetIsStatic( true );
                 foreach ( var v in m_MetaMemberEnumDict )

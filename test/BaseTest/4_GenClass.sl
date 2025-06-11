@@ -23,8 +23,7 @@ Map<T1,T2>
 
 }
 
-# where (T1 limit Class1), (T2 limit int, string, data)
-public class Level2<T1,T2> extends Level1<List0<T2> > interface List1<List2<Map<T2,string> > >, Map<T2,string>
+public class Level2<T1 ,T2> extends Level1<List0<T2> > interface List1<List2<Map<T2,string> > >, Map<T2,string>
 {
     T1 t21 = T1.instance
     T2 t22 = T2.instance
@@ -113,7 +112,7 @@ GenClass
     {
         Level1<int> l1 = Level1<int>()
         l2 = l1.add()
-        Debug.Write( "Addresult: " + l2 )
+        #Debug.Write( "Addresult: " + l2 )
 
         float a = Level1.min<float>( 1.3, 2.5 )
 
@@ -141,3 +140,10 @@ public class ListC<T>
 # 1. 使用T可以定义生成类里边的元素，在检索语句，或者是 其它元素调用时 会生成相关的新类
 
 # 关于生成函数的规则 
+# 关于类模板为直接生成型，在编译时，已经生成了新的类模板
+# 还有一种为，在代码运行时，生成，未来JIT方式，可以在运行时，生成新类
+# 模板函数 默认为不生成新的函数，直接在编译是，把模板编译进代码中，在执行时，再虚拟机中替换运行
+# 如果开启了AOT模式，模板函数，即在编译时生成，这种方式 会生成多种的模板函数，如果检查到代码中包含了类模板，仍然要生成 比如 class C1<T>{ fun(){  T t = null } }仍然会认为是模板类，在后期生成，属于自己的函数体  
+# 如果是类模板，但是普通 函数，则只编译一份，然后类似于继承方式，共同使用。  
+# 如果是纯模板函数  则在最后生成一份属于自己的函数体
+# 未来，在导出C语言的时候，函数体会有所不同。

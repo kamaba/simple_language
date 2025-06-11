@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Security.Cryptography;
 using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
-using SimpleLanguage.Parse;
-using SimpleLanguage.Core;
-
 namespace SimpleLanguage.Core
 {
     public class MetaBraceAssignStatements
@@ -235,7 +231,7 @@ namespace SimpleLanguage.Core
                     {
                         if(mv is MetaMemberData )
                         {
-                            MetaType mt = new MetaType(CoreMetaClassManager.arrayMetaClass);
+                            MetaType mt = new MetaType(CoreMetaClassManager.listMetaClass);
                             MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmbt, mt.metaClass, mbs, mv );
                             return mnoe;
                         }
@@ -346,6 +342,7 @@ namespace SimpleLanguage.Core
                     cep.equalMetaVariable = m_EqualMetaVariable;
                     MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
                     MetaBraceAssignStatements mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
+                    mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);
                 }
                 m_ContentType = EStatementsContentType.ArrayValue;
@@ -632,7 +629,7 @@ namespace SimpleLanguage.Core
             var metaInputTemplateCollection = new MetaInputTemplateCollection();
             //MetaType mitp = new MetaType(MetaDynamicClass);
             //metaInputTemplateCollection.AddMetaTemplateParamsList(mitp);
-            m_MetaDefineType = new MetaType(CoreMetaClassManager.arrayMetaClass, metaInputTemplateCollection);
+            m_MetaDefineType = new MetaType(CoreMetaClassManager.listMetaClass, metaInputTemplateCollection);
 
             //MetaInputParamCollection mipc = new MetaInputParamCollection(mc, mbs);
             //mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaBraceOrBracketStatementsContent.count)));
@@ -775,7 +772,7 @@ namespace SimpleLanguage.Core
                         MetaClass mc = m_MetaBraceOrBracketStatementsContent.GetMaxLevelMetaClassType();
                         metaInputTemplateCollection.AddMetaTemplateParamsList(new MetaType(mc));
 
-                        m_MetaDefineType.SetRawMetaClass(CoreMetaClassManager.arrayMetaClass);
+                        m_MetaDefineType.SetRawMetaClass(CoreMetaClassManager.listMetaClass );
 
                         //if (fmcn.metaTemplateParamsCollection == null)
                         //{
@@ -856,7 +853,7 @@ namespace SimpleLanguage.Core
                 var metaInputTemplateCollection = new MetaInputTemplateCollection();
                 MetaClass mc = m_MetaBraceOrBracketStatementsContent.GetMaxLevelMetaClassType();
                 metaInputTemplateCollection.AddMetaTemplateParamsList(new MetaType(mc));
-                m_MetaDefineType = new MetaType(CoreMetaClassManager.arrayMetaClass, metaInputTemplateCollection);
+                m_MetaDefineType = new MetaType(CoreMetaClassManager.listMetaClass, metaInputTemplateCollection);
             }
             Init();
         }
@@ -871,7 +868,7 @@ namespace SimpleLanguage.Core
 
             Init();
         }
-        // Array<int> arr = [1,2,3]
+        // List<int> arr = [1,2,3]
         public MetaNewObjectExpressNode( FileMetaBracketTerm fmbt, MetaClass mc, MetaBlockStatements mbs, MetaVariable equalMV )
         {
             m_OwnerMetaClass = mc;
@@ -883,7 +880,7 @@ namespace SimpleLanguage.Core
             var metaInputTemplateCollection = new MetaInputTemplateCollection();
             MetaType mitp = new MetaType(inputType);
             metaInputTemplateCollection.AddMetaTemplateParamsList(mitp);
-            m_MetaDefineType = new MetaType(CoreMetaClassManager.arrayMetaClass, metaInputTemplateCollection);
+            m_MetaDefineType = new MetaType(CoreMetaClassManager.listMetaClass, metaInputTemplateCollection);
 
             MetaInputParamCollection mipc = new MetaInputParamCollection( mc, mbs );
             mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaBraceOrBracketStatementsContent.count) ) );

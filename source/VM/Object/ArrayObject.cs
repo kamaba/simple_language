@@ -18,7 +18,7 @@ namespace SimpleLanguage.VM
 
         public Array m_Array = null;
 
-        public ArrayObject() 
+        public ArrayObject()
         { }
         public void SetValue( Byte _val )
         {

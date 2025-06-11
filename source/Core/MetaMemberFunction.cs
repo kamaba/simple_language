@@ -43,7 +43,7 @@ namespace SimpleLanguage.Core
         }
         public bool isTemplateFunction => m_IsTemplateFunction;
         public bool isTemplateClassFunction => m_IsTemplateClassFunction;
-        public bool isWithInterface { get; set; } = false;
+        public bool isWithInterface => m_IsWithInterface;
         public bool isOverrideFunction { get; set; } = false;
         public bool isConstructInitFunction => m_ConstructInitFunction;
         public bool isGet { get; set; } = false;
@@ -56,6 +56,7 @@ namespace SimpleLanguage.Core
         private bool m_IsTemplateFunction = false;
         private string m_FunctionAllName = null;
         private bool m_ConstructInitFunction = false;
+        protected bool m_IsWithInterface = false;
         protected FileMetaMemberFunction m_FileMetaMemberFunction = null;
         protected List<MetaMemberFunction> m_TemplateMemberFunctionList = new List<MetaMemberFunction>();
         protected MetaMemberFunction m_OriginalMetaMemberFunction = null;
@@ -81,7 +82,7 @@ namespace SimpleLanguage.Core
             }
             if( fmmf.interfaceToken != null )
             {
-                isWithInterface = true;
+                m_IsWithInterface = true;
             }
 
             var paramCount = fmmf.metaParamtersList.Count;
@@ -406,7 +407,10 @@ namespace SimpleLanguage.Core
                     Debug.Write("Error 该函数没有定义内容！！");
                 }
             }
-            m_MetaBlockStatements.SetDeep(deep);
+            if( !m_IsWithInterface)
+            {
+                m_MetaBlockStatements.SetDeep(deep);
+            }
         }
         public static MetaStatements CreateMetaSyntax( FileMetaSyntax rootMs, MetaBlockStatements currentBlockStatements)
         {    

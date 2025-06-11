@@ -247,9 +247,9 @@ namespace SimpleLanguage.Compile.Parse
                         case ETokenType.Data:
                         case ETokenType.Enum:
                         case ETokenType.Class:
+                        case ETokenType.Extern:
                         case ETokenType.Public:
                         case ETokenType.Private:
-                        case ETokenType.Internal:
                         case ETokenType.Projected:
                         case ETokenType.Partial:
                             {
@@ -624,6 +624,7 @@ namespace SimpleLanguage.Compile.Parse
                     else
                     {
                         Debug.WriteLine("Error StructParseFrame.ParseClassNode 解析的类后边不用使用;号结尾!! ");
+                        Debug.WriteLine("一般是只定义了类变量，没有赋值，正常后边应该可以使用=null赋值");
                         break;
                     }
                 }
@@ -1314,7 +1315,10 @@ namespace SimpleLanguage.Compile.Parse
 
             AddParseFunctionNodeInfo(cpf);
 
-            ParseSyntax(blockNode);
+            if(blockNode != null )
+            {
+                ParseSyntax(blockNode);
+            }
 
             m_CurrentNodeInfoStack.Pop();
         }

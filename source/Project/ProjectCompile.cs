@@ -228,6 +228,9 @@ namespace SimpleLanguage.Project
 
             MethodManager.instance.ParseStatements(0);
             MethodManager.instance.ParseStatements(1);
+
+            Log.PrintLog();
+
             Debug.Write("-------------------------解析完成后的格式输出 开始--------------------------");
             Debug.Write(ModuleManager.instance.ToFormatString() + Environment.NewLine);
             Debug.Write("-------------------------解析完成后的格式输出 结束--------------------------");

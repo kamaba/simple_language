@@ -736,7 +736,9 @@ namespace SimpleLanguage.Core
                             {
                                 if( name == "instance" )
                                 {
-
+                                    m_MetaVariable = new MetaVariable("instance", MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaFunctionBlock,
+                                        null, null);
+                                    m_CallNodeType = ECallNodeType.MemberVariableName;
                                 }
                                 else
                                 {
@@ -777,7 +779,7 @@ namespace SimpleLanguage.Core
                     MetaClass curmc = m_MetaClass;
                     if (this.m_IsArray)
                     {
-                        curmc = CoreMetaClassManager.arrayMetaClass;
+                        curmc = CoreMetaClassManager.listMetaClass;
                     }
                     if (curmc.isTemplateClass)
                     {
@@ -792,7 +794,7 @@ namespace SimpleLanguage.Core
                                 tmitc = m_MetaTemplateParamsCollection;
                             }
                         }
-                        else if (curmc == CoreMetaClassManager.arrayMetaClass)
+                        else if (curmc == CoreMetaClassManager.listMetaClass )
                         {
                             if (m_MetaInputParamCollection == null)
                             {
@@ -1016,7 +1018,7 @@ namespace SimpleLanguage.Core
                             {
                                 m_MetaInputParamCollection.AddMetaInputParam(new MetaInputParam(mcen3));
                             }
-                            MetaClass tmc = CoreMetaClassManager.arrayMetaClass;
+                            MetaClass tmc = CoreMetaClassManager.listMetaClass;
                             MetaClass templateMC = tmc.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_MetaTemplateParamsCollection);
                             if (templateMC != null)
                             {

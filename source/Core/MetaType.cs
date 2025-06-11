@@ -133,7 +133,7 @@ namespace SimpleLanguage.Core
                         m_InputTemplateCollection = new MetaInputTemplateCollection();
                         m_InputTemplateCollection.AddMetaTemplateParamsList(mitp);
 
-                        m_MetaClass = CoreMetaClassManager.arrayMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
+                        m_MetaClass = CoreMetaClassManager.listMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
                     }
 
                     if (m_MetaClass == null)
@@ -247,7 +247,7 @@ namespace SimpleLanguage.Core
                         mt.m_InputTemplateCollection = new MetaInputTemplateCollection();
                         mt.m_InputTemplateCollection.AddMetaTemplateParamsList(mitp);
 
-                        mt.m_MetaClass = CoreMetaClassManager.arrayMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(mt.m_InputTemplateCollection);
+                        mt.m_MetaClass = CoreMetaClassManager.listMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(mt.m_InputTemplateCollection);
                     }
                     else
                     {
@@ -331,7 +331,7 @@ namespace SimpleLanguage.Core
                         mt.m_InputTemplateCollection = new MetaInputTemplateCollection();
                         mt.m_InputTemplateCollection.AddMetaTemplateParamsList(mitp);
 
-                        mt.m_MetaClass = CoreMetaClassManager.arrayMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(mt.m_InputTemplateCollection);
+                        mt.m_MetaClass = CoreMetaClassManager.listMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(mt.m_InputTemplateCollection);
                     }
                     else
                     {

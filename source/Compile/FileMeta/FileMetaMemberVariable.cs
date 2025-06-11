@@ -407,7 +407,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     var token = cnode.token;
                     if (token.type == ETokenType.Public
                         || token.type == ETokenType.Projected
-                        || token.type == ETokenType.Internal
+                        || token.type == ETokenType.Extern
                         || token.type == ETokenType.Private)
                     {
                         if (permissionToken != null)
@@ -441,7 +441,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     else
                     {
-                        Debug.WriteLine("Error 解析变量中，不允许的类型存在!!");
+                        Debug.WriteLine("Error 解析变量中，不允许的类型存在!!" + token.ToLexemeAllString() );
                     }
                 }
             }

@@ -6,6 +6,7 @@
 //  Description:  word lexer parse to token
 //****************************************************************************
 
+using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -415,7 +416,9 @@ namespace SimpleLanguage.Compile.Parse
                 {
                     if( endPoint == 0 )     // 2f
                     {
-                        Debug.Write("Error 读取浮点形必须有小数点!!!");
+                        var ld = Log.AddInHandleToken( m_Path, m_SourceLine, m_SourceChar, EError.None, "读取浮点形必须有小数点!!!" );
+                        ld.demo = "2f";
+                        ld.advan = "2.0f";
                         AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float);
                         break;
                     }
@@ -1209,6 +1212,9 @@ namespace SimpleLanguage.Compile.Parse
                 case "as":
                     tokenType = ETokenType.As;
                     break;
+                case "is":
+                    tokenType = ETokenType.Is;
+                    break;
                 case "namespace":
                     tokenType = ETokenType.Namespace;
                     break;
@@ -1378,11 +1384,11 @@ namespace SimpleLanguage.Compile.Parse
                 case "goto":
                     tokenType = ETokenType.Goto;
                     break;
+                case "extern":
+                    tokenType = ETokenType.Extern;
+                    break;
                 case "public":
                     tokenType = ETokenType.Public;
-                    break;
-                case "internal":
-                    tokenType = ETokenType.Internal;
                     break;
                 case "protected":
                     tokenType = ETokenType.Projected;
@@ -1395,7 +1401,7 @@ namespace SimpleLanguage.Compile.Parse
                     break;
                 case "virtual":
                     Debug.Write("Error virtual 但不能在代码中使用!!");
-                    tokenType = ETokenType.None;
+                    tokenType = ETokenType.Virtual;
                     return;
                 case "override":
                     tokenType = ETokenType.Override;
@@ -1658,7 +1664,8 @@ namespace SimpleLanguage.Compile.Parse
                             }
                             else
                             {
-                                Debug.Write("Error 解析错误，无法解析这种类型的字符: + " + m_CurChar + "行号: " + m_SourceLine  );
+                                var ld = Log.AddInHandleToken(m_Path, m_SourceLine, m_SourceChar, EError.UnMatchChar, $"解析错误，无法解析这种类型的字符[ {this.m_CurChar} ]");
+                                
                             }
                             break;
                     }

@@ -135,40 +135,55 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         }
                         classNameTokenList = cnode.linkTokenList;
 
-                        bool isTemplate = false;
-                        int cAddCount = addCount;
-                        while (cAddCount < m_NodeList.Count)
+                        Node nnode = null;
+                        if (addCount < m_NodeList.Count)
                         {
-                            var cnode2 = m_NodeList[cAddCount++];
-                            if (cnode2.nodeType == ENodeType.LeftAngle)
+                            nnode = m_NodeList[addCount];
+                        }
+
+                        if( nnode?.nodeType == ENodeType.LeftAngle )
+                        {
+                            int cAddCount = addCount + 1;
+                            bool templateInExtends = false;
+                            Node templateNode = null;
+                            Node templateExtendsNode = null;
+                            while (cAddCount < m_NodeList.Count)
                             {
-                                isTemplate = true;
-                            }
-                            else if (cnode2.nodeType == ENodeType.RightAngle)
-                            {
-                                break;
-                            }
-                            else if( cnode2.nodeType == ENodeType.Comma )
-                            {
-                                continue;
-                            }
-                            else if (cnode2.nodeType == ENodeType.IdentifierLink)
-                            {
-                                if (isTemplate)
+                                var cnode2 = m_NodeList[cAddCount++];
+                                if (cnode2.nodeType == ENodeType.RightAngle)
                                 {
-                                    FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, cnode2);
+                                    FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, templateNode, templateExtendsNode);
                                     m_TemplateDefineList.Add(fmtd);
+                                    break;
+                                }
+                                else if (cnode2.nodeType == ENodeType.Comma)
+                                {
+                                    continue;
+                                }
+                                else if (cnode2.nodeType == ENodeType.Key && cnode2.token?.type == ETokenType.Extends)
+                                {
+                                    templateInExtends = true;
+                                    continue;
+                                }
+                                else if (cnode2.nodeType == ENodeType.IdentifierLink)
+                                {
+                                    if (templateInExtends)
+                                    {
+                                        templateExtendsNode = cnode2;
+                                    }
+                                    else
+                                    {
+                                        templateNode = cnode2;
+                                    }
+                                }
+                                else
+                                {
+                                    Debug.WriteLine("Error 不支持其它格式 在类后续的模板限定中!");
                                 }
                             }
-                            else
-                            {
-                                Debug.WriteLine("Error 不支持其它格式 在类后续的模板限定中!");
-                            }
-                        }
-                        if (isTemplate)
-                        {
                             addCount = cAddCount;
                         }
+
                     }
                 }
                 else
@@ -177,7 +192,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     if (token.type == ETokenType.Public
                         || token.type == ETokenType.Private
                         || token.type == ETokenType.Projected
-                        || token.type == ETokenType.Internal)
+                        || token.type == ETokenType.Extern )
                     {
                         if (permissionToken == null)
                         {
@@ -431,7 +446,8 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     cAddCount++;
                     continue;
                 }
-                else if (cnode2.nodeType == ENodeType.IdentifierLink)
+                else if (cnode2.nodeType == ENodeType.IdentifierLink
+                    || (cnode2.nodeType == ENodeType.Key && cnode2.token.type == ETokenType.Object ))
                 {
                     ParseStructTemp newpst = null;
                     if (curPST == null)
