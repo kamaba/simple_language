@@ -26,6 +26,7 @@ namespace SimpleLanguage.Core
         private bool m_InitTemplateMemberFunction = false;
         protected Dictionary<string,MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string,MetaGenTemplate>();
         protected List<MetaMemberFunction> m_GenMetaMemberFunctions = new List<MetaMemberFunction>();
+        protected string m_GenTemplateClassName = "";
 
         public MetaGenTemplateClass(MetaClass mc) : base(mc)
         {

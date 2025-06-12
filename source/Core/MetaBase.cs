@@ -1,5 +1,11 @@
-﻿using SimpleLanguage.Core.SelfMeta;
-using System;
+﻿//****************************************************************************
+//  File:      MetaBase.cs
+// ------------------------------------------------
+//  Copyright (c) author: Like Cheng kamaba233@gmail.com
+//  DateTime: 2025/5/17 12:00:00
+//  Description:  
+//****************************************************************************
+
 using System.Collections.Generic;
 using System.Text;
 
@@ -76,27 +82,28 @@ namespace SimpleLanguage.Core
         public virtual void SetAnchorDeep(int addep )
         {
             m_AnchorDeep = addep;
-            foreach( var v in childrenNameNodeDict )
+            foreach( var v in m_ChildrenNameNodeDict)
             {
                 v.Value.SetAnchorDeep(addep);
             }
         }
         public virtual MetaBase GetChildrenMetaBaseByName( string name )
         {
-            if (childrenNameNodeDict.ContainsKey(name))
-                return childrenNameNodeDict[name];
+            if (m_ChildrenNameNodeDict.ContainsKey(name))
+                return m_ChildrenNameNodeDict[name];
 
             return null;
         }
+        //该函数，只为调试效果时候使用，在编译逻辑里边不体现！
         public virtual MetaBase GetMetaBaseInParentNodeContainByName(string inputname)
         {
             MetaBase findParentClassMB = null;
             MetaBase tmb2 = this.parentNode;
             while (tmb2 != null)
             {
-                if (tmb2.childrenNameNodeDict.ContainsKey(inputname))
+                if (tmb2.m_ChildrenNameNodeDict.ContainsKey(inputname))
                 {
-                    findParentClassMB = tmb2.childrenNameNodeDict[inputname];
+                    findParentClassMB = tmb2.m_ChildrenNameNodeDict[inputname];
                     break;
                 }
                 if (tmb2.parentNode == null) break;
@@ -141,15 +148,15 @@ namespace SimpleLanguage.Core
         //}
         public virtual bool IsIncludeMetaBase( string name )
         {
-            return childrenNameNodeDict.ContainsKey(name);
+            return m_ChildrenNameNodeDict.ContainsKey(name);
         }
         public virtual bool AddMetaBase(string name, MetaBase mb)
         {
-            if ( !childrenNameNodeDict.ContainsKey(name))
+            if ( !m_ChildrenNameNodeDict.ContainsKey(name))
             {
                 mb.m_ParentNode = this;
                 mb.m_Deep = this.deep + 1;
-                childrenNameNodeDict.Add(name, mb);
+                m_ChildrenNameNodeDict.Add(name, mb);
                 return true;
             }
             return false;
@@ -157,7 +164,7 @@ namespace SimpleLanguage.Core
         public bool RemoveMetaBase( MetaBase mb )
         {
             string key = "";
-            foreach( var v in childrenNameNodeDict )
+            foreach( var v in m_ChildrenNameNodeDict)
             {
                 if( v.Value == mb )
                 {
@@ -167,7 +174,7 @@ namespace SimpleLanguage.Core
             }
             if( string.IsNullOrEmpty( key ) )
             {
-                childrenNameNodeDict.Remove(key);
+                m_ChildrenNameNodeDict.Remove(key);
                 return true;
             }
             return false;

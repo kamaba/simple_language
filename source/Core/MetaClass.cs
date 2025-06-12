@@ -14,6 +14,7 @@ using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Linq;
+using SimpleLanguage.Parse;
 namespace SimpleLanguage.Core
 {
     public enum EClassDefineType
@@ -39,8 +40,28 @@ namespace SimpleLanguage.Core
                 if (parentNode == null) return null;
                 return parentNode as MetaClass;
             }
-
         }
+        public List<MetaClass> metaClassList
+        {
+            get
+            {
+                List<MetaClass> list = new List<MetaClass>();
+                foreach (var v in m_ChildrenMetaClassDict.Values)
+                {
+                    list.Add(v);
+                }
+                return list;
+            }
+        }
+        public string allClassName
+        {
+            get
+            {
+                return this.allName + "_" + m_MetaTemplateList.Count;
+            }
+        }
+        public string className => this.name + "_" + m_MetaTemplateList.Count;
+
         public EType eType => m_Type;
         public EClassDefineType classDefineType => m_ClassDefineType;
         public MetaClass extendClass => m_ExtendClass;
@@ -208,7 +229,10 @@ namespace SimpleLanguage.Core
                 var c = v.Value;
                 if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
                 {
-                    Debug.Write($"Error 继承的类:{allName} 在继承的父类{m_ExtendClass.allName} 中已包含:{c.name} ");
+                    var ld = Log.AddInStructMeta( EError.None, $"Error 继承的类123:{allName} 在继承的父类{m_ExtendClass.allName} 中已包含:{c.name} " );
+                    ld.valDict.Add(EMetaType.MetaClass, this );
+                    ld.valDict.Add(EMetaType.MetaExtendsClass, m_ExtendClass);
+                    ld.valDict.Add(EMetaType.MetaMemberVariable, c);
                     continue;
                 }
                 this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
@@ -218,7 +242,7 @@ namespace SimpleLanguage.Core
                 var c = v.Value;
                 if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
                 {
-                    Debug.Write($"Error 继承的类:{allName} 在继承的父类{m_ExtendClass.allName} 中已包含:{c.name} ");
+                    Debug.WriteLine($"Error 继承的类321:{allName} 在继承的父类{m_ExtendClass.allName} 中已包含:{c.name} ");
                     continue;
                 }
                 this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
@@ -406,12 +430,12 @@ namespace SimpleLanguage.Core
         }
         public void AddChildrenMetaClass(MetaClass mc)
         {
-            if ( m_ChildrenMetaClassDict.ContainsKey(mc.name))
+            if ( m_ChildrenMetaClassDict.ContainsKey(mc.className))
             {
                 return;
             }
-            m_ChildrenMetaClassDict.Add(mc.name, mc);
-            AddMetaBase(mc.name, mc);
+            m_ChildrenMetaClassDict.Add(mc.className, mc);
+            AddMetaBase(mc.className, mc);
         }
         public MetaClass GetChildrenMetaClass( string name )
         {
@@ -431,6 +455,7 @@ namespace SimpleLanguage.Core
             if( mtc == null )
             {
                 mtc = MetaGenTemplateClass.GenerateTemplateClass(this, mtic);
+                ClassManager.instance.AddGenTemplateClass(mtc);
             }
             if( mtc == null )
             {
@@ -757,6 +782,11 @@ namespace SimpleLanguage.Core
             }
             return true;
         }
+
+        public override string ToString()
+        {
+            return this.allClassName;
+        }
         public override string ToFormatString()
         {
             return GetFormatString(false);
@@ -839,7 +869,7 @@ namespace SimpleLanguage.Core
                 stringBuilder.Append(Global.tabChar);
             stringBuilder.Append("{" + Environment.NewLine);
 
-            foreach (var v in childrenNameNodeDict)
+            foreach (var v in m_ChildrenNameNodeDict)
             {
                 MetaBase mb = v.Value;
                 if (mb is MetaClass)

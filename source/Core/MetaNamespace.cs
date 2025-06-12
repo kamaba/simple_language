@@ -16,6 +16,19 @@ namespace SimpleLanguage.Core
 {
     public partial class MetaNamespace : MetaBase
     {
+        public List<MetaClass> metaClassList
+        {
+            get
+            {
+                List<MetaClass> list = new List<MetaClass>();
+                foreach( var v in m_MetaClassDict.Values )
+                {
+                    list.Add( v );
+                }
+                return list;
+            }
+        }
+
         public bool isNotAllowCreateName { get; set; } = false;
         public string namespaceName
         {
@@ -89,7 +102,7 @@ namespace SimpleLanguage.Core
             {
                 sb.Append("[NoAllowCreate]");
             }
-            foreach (var v in childrenNameNodeDict )
+            foreach (var v in m_ChildrenNameNodeDict)
             {
                 sb.Append("namespace " + v.Key + Environment.NewLine );
             }
@@ -105,7 +118,7 @@ namespace SimpleLanguage.Core
                 sb.Append(Global.tabChar);
             sb.Append("{" + Environment.NewLine);
 
-            foreach (var v in childrenNameNodeDict)
+            foreach (var v in m_ChildrenNameNodeDict)
             {
                 MetaBase mb = v.Value;
                 if (mb is MetaNamespace)

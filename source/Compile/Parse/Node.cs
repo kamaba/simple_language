@@ -33,7 +33,7 @@ namespace SimpleLanguage.Compile.Parse
     }
     public enum ENodeType
     {
-        Null,
+        None,
         Root,
         Brace,
         LeftAngle,
@@ -73,7 +73,7 @@ namespace SimpleLanguage.Compile.Parse
         public Token atToken;                   // $节点
         public Node lastNode = null;            // 最后处理的节点
 
-        public ENodeType nodeType { get; set; } = ENodeType.Null;
+        public ENodeType nodeType { get; set; } = ENodeType.None;
         private List<Node> m_ExtendLinkNodeList { get; set; } = new List<Node>();
         public List<Node> childList { get; set; } = new List<Node>();    //子内容节点
 

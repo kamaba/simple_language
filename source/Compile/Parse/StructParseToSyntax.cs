@@ -35,7 +35,7 @@ namespace SimpleLanguage.Compile.Parse
             public ESyntaxNodeStructType eSyntaxNodeType = ESyntaxNodeStructType.None;
 
             public ETokenType tokenType = ETokenType.None;
-            public ENodeType curNodeType = ENodeType.Null;
+            public ENodeType curNodeType = ENodeType.None;
             public int moveIndex = 0;
             public Node keyNode { get; private set; } = null;
             public List<Node> keyContent = new List<Node>();                //关键字后跟条件语句  if () switch() for()
@@ -159,7 +159,7 @@ namespace SimpleLanguage.Compile.Parse
             int tCurIndex = 0;
             Node curNode = null;
             Token curToken = null;
-            ENodeType curNodeType = ENodeType.Null;
+            ENodeType curNodeType = ENodeType.None;
             while (pnode.parseIndex < pnode.childList.Count)
             {
                 tCurIndex = pnode.parseIndex + index++;
@@ -263,7 +263,7 @@ namespace SimpleLanguage.Compile.Parse
                         || ttt == ETokenType.Continue
                         || ttt == ETokenType.Label
                         || ttt == ETokenType.Goto
-                        || ttt == ETokenType.Const )
+                        || ttt == ETokenType.Const)
                     {
                         keynodeStruct.SetMainKeyNode(curNode);
                     }
@@ -271,10 +271,10 @@ namespace SimpleLanguage.Compile.Parse
                     {
                         keynodeStruct.AddContent(curNode);
                     }
-                    else if (ttt == ETokenType.Var )
+                    else if (ttt == ETokenType.Var)
                     {
                         keynodeStruct.AddContent(curNode);
-                    }                    
+                    }
                     else if (ttt == ETokenType.In)
                     {
                         keynodeStruct.AddContent(curNode);
@@ -301,7 +301,7 @@ namespace SimpleLanguage.Compile.Parse
                     //}
                     else
                     {
-                        Debug.Write("Error 解析异常关键字" + curNode.token.ToLexemeAllString());
+                        Log.AddInHandleNode(curNode.token, 0, "Error 解析异常关键字");
                     }
                 }
                 else
@@ -483,8 +483,8 @@ namespace SimpleLanguage.Compile.Parse
             {
                 if(afterNodeList[0].nodeType == ENodeType.Key
                     && afterNodeList[0].token?.type != ETokenType.This
-                    && afterNodeList[0].token?.type != ETokenType.Base)
-                    Debug.Write("Error 暂不支持 a = if/switch{}语法");
+                    && afterNodeList[0].token?.type != ETokenType.Base )
+                    Debug.WriteLine("Error 暂不支持 a = if/switch{}语法");
                 //var fme22 = HandleCreateFileMetaSyntaxByPNode(afterNodeList);
                 //if ((afterNodeList[0].token.type == ETokenType.If
                 //    || afterNodeList[0].token.type == ETokenType.Switch)

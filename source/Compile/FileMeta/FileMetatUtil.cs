@@ -136,13 +136,6 @@ namespace SimpleLanguage.Compile
                     fmbt.priority = SignComputePriority.Level1;
                 }
             }
-            else if( node.nodeType == ENodeType.Key )
-            {
-                if( node.token.type == ETokenType.Null )
-                {
-                    fmbt = new FileMetaConstValueTerm(fm, node.token);
-                }
-            }
             else if (node.nodeType == ENodeType.Par)
             {
                 fmbt = new FileMetaParTerm(fm, node, expressType);
