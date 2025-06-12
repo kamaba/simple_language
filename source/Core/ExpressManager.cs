@@ -1,14 +1,15 @@
-﻿using SimpleLanguage.Compile.CoreFileMeta;
+﻿//****************************************************************************
+//  File:      ExpressManager.cs
+// ------------------------------------------------
+//  Copyright (c) author: Like Cheng kamaba233@gmail.com
+//  DateTime: 2025/5/17 12:00:00
+//  Description:  
+//****************************************************************************
+
+using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
-using SimpleLanguage.Core;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.ConstrainedExecution;
-using System.Runtime.Intrinsics.X86;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace SimpleLanguage.Core
 {

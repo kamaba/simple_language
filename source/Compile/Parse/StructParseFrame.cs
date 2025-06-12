@@ -281,13 +281,13 @@ namespace SimpleLanguage.Compile.Parse
                 m_FileMeta.SetDeep(0);
 #endif
 
-                Debug.WriteLine("解析成Code代码结构文件成功!!! 下一步，可以生产Meta文件了");
-
-                Debug.WriteLine("生成FileMeta文件成功!!! 下一步，可以 进行混合了 ");
+                Log.AddProcess( EProcess.ParseNode, EError.None, "解析成Code代码结构文件成功!!! 下一步，可以生产Meta文件了 \n " +
+                    "生成FileMeta文件成功!!! 下一步，可以 进行混合了");
             }
             else
             {
-                Debug.WriteLine("解析出现错误 ParseFile : " + currentNodeInfo.parseType.ToString());
+
+                Log.AddProcess(EProcess.ParseNode, EError.ParseFileError, "解析出现错误 ParseFile : " + currentNodeInfo.parseType.ToString() );
                 return;
             }
             return;

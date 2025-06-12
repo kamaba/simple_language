@@ -4,10 +4,13 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public partial class MetaModule : MetaBase
+    public class MetaModule : MetaBase
     {
-        public List<MetaNamespace> m_MetaNamespaceList = new List<MetaNamespace>();
-        public List<MetaClass> m_MetaClassList = new List<MetaClass>();
+        public List<MetaClass> metaClassList => m_MetaClassList;
+
+        private List<MetaNamespace> m_MetaNamespaceList = new List<MetaNamespace>();
+
+        private List<MetaClass> m_MetaClassList = new List<MetaClass>();
 
         public MetaModule( string _name )
         {
@@ -42,7 +45,7 @@ namespace SimpleLanguage.Core
             StringBuilder sb = new StringBuilder();
 
             sb.Append("module " + name + Environment.NewLine + "{"  + Environment.NewLine );
-            foreach (var v in childrenNameNodeDict)
+            foreach (var v in m_ChildrenNameNodeDict)
             {
                 MetaBase mb = v.Value;
                 if( mb is MetaNamespace )

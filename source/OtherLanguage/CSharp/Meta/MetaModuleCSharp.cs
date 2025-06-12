@@ -6,8 +6,12 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public partial class MetaModule
+    public class MetaModuleCSharp : MetaModule
     {
+        public MetaModuleCSharp(string _name) : base(_name)
+        {
+        }
+
         public MetaBase GetCSharpMetaClassOrNamespaceAndCreateByName( string name )
         {
             var mb = this.GetChildrenMetaBaseByName(name);

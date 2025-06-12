@@ -461,6 +461,7 @@ namespace SimpleLanguage.Compile.Parse
                 case ETokenType.String:
                 case ETokenType.BoolValue:
                 case ETokenType.NumberArrayLink:
+                case ETokenType.Null:
                     {
                         Node node = new Node(token);
                         node.nodeType = ENodeType.ConstValue;
@@ -519,7 +520,6 @@ namespace SimpleLanguage.Compile.Parse
                         AddKeyNode(token);
                     }
                     break;
-                case ETokenType.Null:
                 case ETokenType.Base:         //base
                 case ETokenType.This:           //this
                 case ETokenType.Object:

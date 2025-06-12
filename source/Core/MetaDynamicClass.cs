@@ -34,7 +34,7 @@ namespace SimpleLanguage.Core
                 stringBuilder.Append(Global.tabChar);
             stringBuilder.Append("{" + Environment.NewLine);
 
-            foreach (var v in childrenNameNodeDict)
+            foreach (var v in m_ChildrenNameNodeDict )
             {
                 MetaBase mb = v.Value;
                 if (mb is MetaMemberVariable )
