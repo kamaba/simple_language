@@ -779,7 +779,7 @@ namespace SimpleLanguage.Core
                     MetaClass curmc = m_MetaClass;
                     if (this.m_IsArray)
                     {
-                        curmc = CoreMetaClassManager.listMetaClass;
+                        curmc = CoreMetaClassManager.arrayMetaClass;
                     }
                     if (curmc.isTemplateClass)
                     {
@@ -794,7 +794,7 @@ namespace SimpleLanguage.Core
                                 tmitc = m_MetaTemplateParamsCollection;
                             }
                         }
-                        else if (curmc == CoreMetaClassManager.listMetaClass )
+                        else if (curmc == CoreMetaClassManager.arrayMetaClass )
                         {
                             if (m_MetaInputParamCollection == null)
                             {
@@ -1018,7 +1018,7 @@ namespace SimpleLanguage.Core
                             {
                                 m_MetaInputParamCollection.AddMetaInputParam(new MetaInputParam(mcen3));
                             }
-                            MetaClass tmc = CoreMetaClassManager.listMetaClass;
+                            MetaClass tmc = CoreMetaClassManager.arrayMetaClass;
                             MetaClass templateMC = tmc.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_MetaTemplateParamsCollection);
                             if (templateMC != null)
                             {

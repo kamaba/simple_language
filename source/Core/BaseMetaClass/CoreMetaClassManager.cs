@@ -31,7 +31,7 @@ namespace SimpleLanguage.Core.SelfMeta
         Float,
         Double,
         String,
-        List,
+        Array,
         Range,
         Template,
         Class,
@@ -70,13 +70,13 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass uint64MetaClass { get; private set; } = null;
         public static MetaClass floatMetaClass { get; private set; } = null;
         public static MetaClass doubleMetaClass { get; private set; } = null;
-        public static MetaClass listMetaClass { get; private set; } = null;
+        public static MetaClass arrayMetaClass { get; private set; } = null;
         public static MetaClass rangeMetaClass { get; private set; } = null;
         public static MetaClass typeMetaClass { get; private set; } = null;
         public static MetaClass dynamicMetaClass { get; private set; } = null;
         public static MetaClass dynamicMetaData { get; private set; } = null;
         public static MetaClass enumMetaData { get; private set; } = null;
-        public static MetaClass listIteratorMetaClass { get; set; } = null;
+        public static MetaClass arrayIteratorMetaClass { get; set; } = null;
 
         public static List<MetaClass> s_InnerDefineMetaClassList = new List<MetaClass>();
 
@@ -98,8 +98,8 @@ namespace SimpleLanguage.Core.SelfMeta
             floatMetaClass = FloatMetaClass.CreateMetaClass();
             doubleMetaClass = DoubleMetaClass.CreateMetaClass();
             stringMetaClass = StringMetaClass.CreateMetaClass();
-            listIteratorMetaClass = ListIteratorMetaClass.CreateMetaClass();
-            listMetaClass = ListMetaClass.CreateMetaClass();
+            arrayIteratorMetaClass = ArrayIteratorMetaClass.CreateMetaClass();
+            arrayMetaClass = ArrayMetaClass.CreateMetaClass();
             rangeMetaClass = RangeMetaClass.CreateMetaClass();
             typeMetaClass = TypeMetaClass.CreateMetaClass();
             dynamicMetaClass = DynamicMetaClass.CreateMetaClass();
@@ -121,8 +121,8 @@ namespace SimpleLanguage.Core.SelfMeta
             s_InnerDefineMetaClassList.Add(floatMetaClass);
             s_InnerDefineMetaClassList.Add(doubleMetaClass);
             s_InnerDefineMetaClassList.Add(stringMetaClass);
-            s_InnerDefineMetaClassList.Add(listIteratorMetaClass);
-            s_InnerDefineMetaClassList.Add(listMetaClass);
+            s_InnerDefineMetaClassList.Add(arrayIteratorMetaClass);
+            s_InnerDefineMetaClassList.Add(arrayMetaClass);
             s_InnerDefineMetaClassList.Add(rangeMetaClass);
             s_InnerDefineMetaClassList.Add(typeMetaClass);
             s_InnerDefineMetaClassList.Add(dynamicMetaClass);
@@ -171,7 +171,7 @@ namespace SimpleLanguage.Core.SelfMeta
                 case EType.String:
                     return stringMetaClass;
                 case EType.Array:
-                    return listMetaClass;
+                    return arrayMetaClass;
                 case EType.Range:
                     return rangeMetaClass;
                 default:

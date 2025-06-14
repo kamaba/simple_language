@@ -30,7 +30,7 @@ namespace SimpleLanguage.Core.SelfMeta
         }
         public static MetaClass CreateMetaClass()
         {
-            ListIteratorMetaClass mc = new ListIteratorMetaClass();
+            ArrayIteratorMetaClass mc = new ArrayIteratorMetaClass();
             ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
             return mc;
         }

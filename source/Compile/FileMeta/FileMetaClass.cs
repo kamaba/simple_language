@@ -613,24 +613,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
             return metaClassList;
         }
-        public MetaClass GetExtendMetaClass()
-        {
-            if( m_ExtendClass != null )
-            {
-                MetaClass getmc = ClassManager.instance.GetMetaClassByRef( metaClass, m_ExtendClass );
-                if (getmc == null)
-                {
-                    //Debug.Write(" CheckExtendAndInterface 在判断继承的时候，发没的:" + m_ExtendClass.allName + "  类"
-                    //    + "位置行: " + m_ExtendClass.token.sourceBeginLine.ToString() );
-
-
-                    m_ExtendClass.AddError2(0);
-                }
-                return getmc;
-            }
-            return null;
-        }
-
         public override void SetDeep(int _deep)
         {
             m_Deep = _deep;

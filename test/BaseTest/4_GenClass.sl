@@ -23,6 +23,123 @@ Map<T1,T2>
 
 }
 
+public class IList
+{
+    interface int add(object value)
+    #interface void clear()
+    #interface bool contains( object value )
+    #interface int indexOf( object value )
+    #interface void insert( int index, object val )
+    #interface void remove( object value )
+    #interface void removeAt( int index )
+}
+public class IList<T>
+{
+    #interface T getValue( int index )
+    interface void insert( int index, T t )
+}
+
+public class List extends List<object>
+{
+
+}
+
+public class List<T> interface IList<T>
+{
+    private Int32 _count = 0;
+    #UInt16 m_Bound1 = 0;
+    #UInt16 m_Bound2 = 0;
+
+    int _index = -1;
+    T _value = null
+
+    int _listPtr = 0;
+
+    _init_( int _count = 0 )
+    {
+        #this.m_Count = _count
+        #this.m_Bound1 = _b1
+        this._listPtr = ListMetaClass.SetListCount( _count )
+    }
+    #!
+    _init_( short _count = 0s, short _b1 = 0s )
+    {
+        this.m_Count = _count;
+        this.m_Bound1 = _b1;
+    } 
+    !#   
+    
+    override add( T t )
+    {
+        var r1 = null;  #CSharp.SL.Core.MetaArrayClass.Add( this, t );
+        if r1 != null
+        {
+            this.m_Count++
+        }
+    }
+    #!
+    bool removeAt( int index )
+    {
+        byte ret1 = 1;  #CSharp.SL.Core.MetaArrayClass.RemoveIndex( this, index )
+        if( ret1 == 1 )
+        {
+            this.m_Count--;
+        }
+        ret true ? ret1 == 1 : false
+    }
+    bool remove( T t )
+    {
+        CSharp.SL.Core.MetaArrayClass.Remove( this, t );
+        ret false
+    }
+    int get index()
+    {
+        ret this.m_Index;
+    }
+    #[index]
+    public T _index_( int _index )
+    {
+        Ptr obj = CSharp.SL.Core.MetaArrayClass.GetValue( this, _index )
+        return obj.cast<T>()
+    }
+    #["index"]
+    public T _index_( string _index )
+    {
+        int index = _index.tryCast<int>(-1);
+        if( index != -1 )
+        {
+            ret this._index_( index );
+        }
+        ret T.default;
+    }
+    set index( int a )
+    {
+        this.m_Index = a;
+    }
+    get T value()
+    {
+        ret this.m_Value;
+    }
+    public void set value( T t )
+    {
+        this.m_Value = t;
+    }
+    bool contraint( T t )
+    {
+        ret CSharp.SL.Core.MetaArrayClass.In( this, t )
+    }
+    int get count()
+    {
+        ret CSharp.SL.Core.MetaArrayClass.Count( this )
+    }
+    void set count( int _c )
+    {
+        int arr = CSharp.SL.Core.MetaArrayClass.SetArrayCount( this, _c )
+        this.m_Count = arr
+    }
+    !#
+}
+
 public class Level2<T1 ,T2> extends Level1<List0<T2> > interface List1<List2<Map<T2,string> > >, Map<T2,string>
 {
     T1 t21 = T1.instance
