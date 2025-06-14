@@ -823,22 +823,34 @@ namespace SimpleLanguage.Core
         }
         public MetaClass GetMetaClassByClassDefine( MetaClass ownerClass, FileMetaClassDefine fmcd)
         {
-            return GetMetaClassByListString(ownerClass, fmcd.stringList);
+            return GetMetaClassByListString(ownerClass, fmcd.stringList, fmcd.inputTemplateNodeList.Count );
         }
         // 在ownerClass类中，通过当前的ownerClass的父节点逐查，直到没有父节点，如果找到了当前的节点后，开始往stringList下边找
-        public MetaClass GetMetaClassByListString( MetaClass ownerClass, List<string> stringList)
+        public MetaClass GetMetaClassByListString( MetaClass ownerClass, List<string> stringList, int templateCount )
         {
             if (stringList.Count == 0)
                 return null;
             if (ownerClass == null)
                 return null;
 
-            MetaBase findMB = CoreMetaClassManager.GetCoreMetaClass(stringList[0]);
-            if(findMB is MetaClass )
+
+            MetaBase findMB = null;
+            string firstName = "";
+            if( stringList.Count == 1 )
             {
-                return findMB as MetaClass;
+                firstName = stringList[0] + "_" + templateCount;
+                findMB = CoreMetaClassManager.GetCoreMetaClass(stringList[0]);
+                if (findMB is MetaClass)
+                {
+                    return findMB as MetaClass;
+                }
             }
-            findMB = ClassManager.instance.GetClassByName(stringList[0]);
+            else
+            {
+                firstName = stringList[0];
+            }
+
+            findMB = ClassManager.instance.GetClassByName(firstName);
             if(findMB != null )
             {
                 return findMB as MetaClass;
@@ -850,6 +862,10 @@ namespace SimpleLanguage.Core
                 for (int i = 0; i < stringList.Count; i++)
                 {
                     string name = stringList[i];
+                    if( i == stringList.Count - 1 )
+                    {
+                        name = name + "_" + templateCount;
+                    }
                     if (parentMB != null)
                     {
                         if (findMB == null)
@@ -975,7 +991,7 @@ namespace SimpleLanguage.Core
         {
             var nlist = fitn.nameList;
             FileMeta fm = fitn.fileMeta;
-            MetaClass mc = GetMetaClassByListString( ownerClass, nlist );
+            MetaClass mc = GetMetaClassByListString( ownerClass, nlist, fitn.inputTemplateCount );
             if (mc == null)
             {
                 var mb = fm.GetMetaBaseFileMetaClass(nlist);

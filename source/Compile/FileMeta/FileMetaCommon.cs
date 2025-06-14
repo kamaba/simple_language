@@ -182,6 +182,22 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 return _nameList;
             }
         }
+        public int inputTemplateCount
+        {
+            get
+            {
+                int templateCount = 0;
+                if (m_DefineClassCallLink != null)
+                {
+                    int cn = m_DefineClassCallLink.callNodeList.Count;
+                    if( cn > 0 )
+                    {
+                        return m_DefineClassCallLink.callNodeList[cn - 1].inputTemplateNodeList.Count;
+                    }
+                }
+                return templateCount;
+            }
+        }
 
         private FileMetaCallLink m_DefineClassCallLink;
         private FileMeta m_FileMeta = null;

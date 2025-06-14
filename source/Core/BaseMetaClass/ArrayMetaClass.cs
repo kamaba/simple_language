@@ -13,7 +13,7 @@ namespace SimpleLanguage.Core.SelfMeta
 {
     public class IEnumerableMetaClass : MetaClass
     {
-        public IEnumerableMetaClass() : base(DefaultObject.List.ToString())
+        public IEnumerableMetaClass() : base(DefaultObject.Array.ToString())
         {
             m_Type = EType.Array;
             m_ClassDefineType = EClassDefineType.InnerDefine;
@@ -21,9 +21,9 @@ namespace SimpleLanguage.Core.SelfMeta
             //m_MetaTemplateList.Add(new TemplateMetaClass("T"));
         }
     }
-    public class ListIteratorMetaClass : MetaClass
+    public class ArrayIteratorMetaClass : MetaClass
     {
-        public ListIteratorMetaClass() : base(DefaultObject.List.ToString())
+        public ArrayIteratorMetaClass() : base(DefaultObject.Array.ToString())
         {
             m_Type = EType.Class;
             m_ClassDefineType = EClassDefineType.InnerDefine;
@@ -39,14 +39,14 @@ namespace SimpleLanguage.Core.SelfMeta
         }
         public static MetaClass CreateMetaClass()
         {
-            ListIteratorMetaClass mc = new ListIteratorMetaClass();
+            ArrayIteratorMetaClass mc = new ArrayIteratorMetaClass();
             ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
             return mc;
         }
     }
-    public class ListMetaClass : MetaClass
+    public class ArrayMetaClass : MetaClass
     {
-        public ListMetaClass():base( DefaultObject.List.ToString() )
+        public ArrayMetaClass():base( DefaultObject.Array.ToString() )
         {
             m_Type = EType.Array;
             m_ClassDefineType = EClassDefineType.InnerDefine;
@@ -115,13 +115,13 @@ namespace SimpleLanguage.Core.SelfMeta
         }
         public static MetaClass CreateMetaClass()
         {
-            MetaClass mc = new ListMetaClass();
+            MetaClass mc = new ArrayMetaClass();
             ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
             return mc;
         }
-        public static int SetListCount(Int32 v)
+        public static int SetArrayLength(UInt32 v)
         {
-            IntPtr ptr = Marshal.AllocHGlobal(v * Marshal.SizeOf(typeof(int)));
+            IntPtr ptr = Marshal.AllocHGlobal((int)v);
             if (ptr != IntPtr.Zero)
             {
                 return ptr.ToInt32();

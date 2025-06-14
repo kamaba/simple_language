@@ -107,7 +107,7 @@ namespace SimpleLanguage.Core
                 for( int j = 0; j < template.inClassNameTokenList.Count; j++)       //判断是否使用例似于where(csharp) in []
                 {
                     var inClassToken = template.inClassNameTokenList[j];
-                    MetaClass gmc = ClassManager.instance.GetMetaClassByListString( ownerMetaClass, inClassToken.nameList);
+                    MetaClass gmc = ClassManager.instance.GetMetaClassByListString( ownerMetaClass, inClassToken.nameList, inClassToken.inputTemplateCount );
                     if( gmc == null )
                     {
                         Debug.Write("Error 没有查找到inClass的类名, " + inClassToken.ToFormatString());

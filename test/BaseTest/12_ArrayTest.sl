@@ -2,126 +2,40 @@
 import CSharp.SimpleLanguage.Core.SelfMeta;
 
 
-public class IList
+public class Type
 {
-    interface int add(object value)
-    #interface void clear()
-    #interface bool contains( object value )
-    #interface int indexOf( object value )
-    #interface void insert( int index, object val )
-    #interface void remove( object value )
-    #interface void removeAt( int index )
-}
-public class IList<T>
-{
-    #interface T getValue( int index )
-    interface void insert( int index, T t )
+    public int length = 4
 }
 
-public class List extends List<object>
+public class Array
 {
+    public int length = 0
+    public int rank = 1
 
+    int _listPtr = 0
+    _init_( uint length )
+    {
+        uint allSize = length * 4
+
+        this._listPtr = ArrayMetaClass.SetArrayLength( allSize )
+
+    }
+    _init_( uint length, Type type )
+    {        
+        uint allSize = length * type.length
+        this._listPtr = ArrayMetaClass.SetArrayLength( allSize )
+    }
+    _init_( uint length, Type type, int rank )
+    {
+        uint unitLength = type.length
+        this.length = length
+        this.rank = rank
+        uint allSize = length * type.length
+
+        this._listPtr = ArrayMetaClass.SetArrayLength( allSize )
+    }
 }
 
-public class List<T> interface IList, IList<T>
-{
-    private Int32 _count = 0;
-    #UInt16 m_Bound1 = 0;
-    #UInt16 m_Bound2 = 0;
-
-    int _index = -1;
-    T _value = null
-
-    int _listPtr = 0;
-
-    _init_( int _count = 0 )
-    {
-        #this.m_Count = _count
-        #this.m_Bound1 = _b1
-        this._listPtr = ListMetaClass.SetListCount( _count )
-    }
-    #!
-    _init_( short _count = 0s, short _b1 = 0s )
-    {
-        this.m_Count = _count;
-        this.m_Bound1 = _b1;
-    } 
-    !#   
-    
-    override int add( object obj )
-    {
-
-    }
-    override add( T t )
-    {
-        var r1 = null;  #CSharp.SL.Core.MetaArrayClass.Add( this, t );
-        if r1 != null
-        {
-            this.m_Count++
-        }
-    }
-    #!
-    bool removeAt( int index )
-    {
-        byte ret1 = 1;  #CSharp.SL.Core.MetaArrayClass.RemoveIndex( this, index )
-        if( ret1 == 1 )
-        {
-            this.m_Count--;
-        }
-        ret true ? ret1 == 1 : false
-    }
-    bool remove( T t )
-    {
-        CSharp.SL.Core.MetaArrayClass.Remove( this, t );
-        ret false
-    }
-    int get index()
-    {
-        ret this.m_Index;
-    }
-    #[index]
-    public T _index_( int _index )
-    {
-        Ptr obj = CSharp.SL.Core.MetaArrayClass.GetValue( this, _index )
-        return obj.cast<T>()
-    }
-    #["index"]
-    public T _index_( string _index )
-    {
-        int index = _index.tryCast<int>(-1);
-        if( index != -1 )
-        {
-            ret this._index_( index );
-        }
-        ret T.default;
-    }
-    set index( int a )
-    {
-        this.m_Index = a;
-    }
-    get T value()
-    {
-        ret this.m_Value;
-    }
-    public void set value( T t )
-    {
-        this.m_Value = t;
-    }
-    bool contraint( T t )
-    {
-        ret CSharp.SL.Core.MetaArrayClass.In( this, t )
-    }
-    int get count()
-    {
-        ret CSharp.SL.Core.MetaArrayClass.Count( this )
-    }
-    void set count( int _c )
-    {
-        int arr = CSharp.SL.Core.MetaArrayClass.SetArrayCount( this, _c )
-        this.m_Count = arr
-    }
-    !#
-}
 ArrayTest
 {
     ArrClass
@@ -130,11 +44,14 @@ ArrayTest
     }
     static fun()
     {  
-        a1 = [1,2,3,4,5];    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  相当于List<int>(5){1,2,3,4,5}
-        var a42 = [[1.2,1.3,1.5],[3,4,5]];    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于 List<List<float>>{ {1.2, 1.3, 1.5}, {3,4,5} };
+        a1 = [1,2,3,4,5];    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
+        #var a42 = [[1.2,1.3,1.4,1.5],[3,4,5]];    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于  
+        #Array( 2, Array.type ){ Array(5, float.type ){ 1.2, 1.3, 1.4, 1.5 }, Array( 3, int.tye ){3,4,5}   } 
         #!
-        a2 = List(5){1,2,3,4,5.0f};   #默认int List 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  List<int>(5){1,2,3,4,5}        
-        a3 = List( 20 );               # 长度为20的List
+        a2 = Array(5, int.type ){1,2,3,4,5.0f};   #默认int List 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  先申请 int 长度为5的数组，然后把后边的数据进行填存，但这时
+        #发现5.0f写入时，会提示  存在 float-> int 
+        a3 = Array( 20 );               # 长度为20的List
+        a4 = Array( 3 ){ Array(), Array(), Array() }   # 请申一个3x1的数组 内容为null
              
         
         var a4 = [1.2,1.3,1.5];    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于 List<float>{ 1.2, 1.3, 1.5};
@@ -142,11 +59,11 @@ ArrayTest
         a5 = ["aa", 1, "232", 1.0f];  # 相当于List<Object>( "aa", 1, "232", 1.0f, XC() );
         
         # c# 的方法  List<ArrClass2> arr2 = new ArrClass2[100]; 这里边使用的是 arr2 = ArrClass2[100];
-        int[] a6 = List<Int32>(4);  # 数组表示使用 List<T>() new List对象 长度为4的int
+        int[] a6 = Array(4, ArrClass2.type );  # 数组表示使用 List<T>() new List对象 长度为4的int
         
-        float[] a7 = List<float>(){ 1.2, 2.2, 3.4 };  #  需要{}的内容特殊处理   
+        float[] a7 = ArrayOf<float>(){ 1.2, 2.2, 3.4 };  #  需要{}的内容特殊处理   
         
-        List<float> a8 = List( 20 ){1,2,3,5,3.3};   #申请一个长度为20的数组
+        float[] a8 = Array( 20 ){1,2,3,5,3.3};   #申请一个长度为20的数组  通过后边数据决定 其实使用的是ArrayInt
        
         a9 = List( 27 ).gen(3); #申请一个三维数组，边界分别为3,3,3     
         
@@ -215,6 +132,7 @@ ArrayTest
     }
 }
 # 3.1.1 先实现了，在函数里，直接调用C#层写的方法。
-# 5. Range 转成List
-# 7. value, index成为不能使用关键字
-# list 如果重写Set 则是相当于 array[?] = 20;这种的写法  如果重写 _setValue__( int index, T t )   T _getValue_( int index )  每个都有__SetValue__ 方法
+# 3.1.2 数据创建 两种方式 一种为  Array( 个数, 类型 )  如果不传类型， 默认为object 即 对象类型，在访问的时候，是个指针引用  个数必须是 uint型 当uint=0时，只创建数据对象，不创建数组
+# 3.1.3 创建Array() 时，默认为1
+# 3.1.4 Array 没有具体的Add方法，只有 Copy
+# 3.1.5 Array(){ Array(){ Array(){} } } 可申请多维数组，多维数组时，必须有数量    Array(5){ Array(2){   Array(10){}, Array(12){}  } }   即为一个 5x2x12的三维数据

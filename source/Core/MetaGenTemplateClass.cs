@@ -28,7 +28,7 @@ namespace SimpleLanguage.Core
         protected List<MetaMemberFunction> m_GenMetaMemberFunctions = new List<MetaMemberFunction>();
         protected string m_GenTemplateClassName = "";
 
-        public MetaGenTemplateClass(MetaClass mc) : base(mc)
+        public MetaGenTemplateClass(string name ) : base( name )
         {
         }
 
@@ -45,7 +45,7 @@ namespace SimpleLanguage.Core
             }
             if (mc.metaTemplateList.Count == mic.metaTemplateParamsList.Count)
             {
-                MetaGenTemplateClass tmc = new MetaGenTemplateClass(mc);
+                MetaGenTemplateClass tmc = new MetaGenTemplateClass(mc.name);
                 mc.AddGenTemplateMetaClass(tmc);
 
                 string extenName = "";
