@@ -28,6 +28,11 @@ namespace SimpleLanguage.Parse
         AddClassNameSame,
         StructMetaEnd,
 
+
+        StructFileMetaStart,
+        StructClassNameRepeat,
+        StructFileMetaEnd,
+
         ProcessStart,
         ParseFileError,
         ProcessEnd,
@@ -180,6 +185,18 @@ namespace SimpleLanguage.Parse
                 sourceBeginLine = token.sourceBeginLine,
                 sourceEndLine = token.sourceEndLine,
                 errorType = LogData.EErrorType.HandleNode,
+                time = DateTime.Now
+            };
+            ld.message = msg;
+            ld.error = err;
+            logDataList.Add(ld);
+            return ld;
+        }
+        public static LogData AddInStructFileMeta(EError err, string msg)
+        {
+            LogData ld = new LogData()
+            {
+                errorType = LogData.EErrorType.StructFileMeta,
                 time = DateTime.Now
             };
             ld.message = msg;

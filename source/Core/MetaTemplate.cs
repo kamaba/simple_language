@@ -15,12 +15,12 @@ namespace SimpleLanguage.Core
     public class MetaTemplate : MetaBase
     {
         public bool isInFunction => m_IsInFunction;
-        public List<MetaClass> constraintMetaClassList => m_ConstraintMetaClassList;
+        public MetaClass extendsMetaClass => m_ExtendsMetaClass;
         public MetaClass ownerClass => m_OwnerClass;
 
         protected FileMetaTemplateDefine m_FileMetaTemplateDefine = null;
         protected MetaClass m_OwnerClass = null;
-        protected List<MetaClass> m_ConstraintMetaClassList = new List<MetaClass>();
+        protected MetaClass m_ExtendsMetaClass = null;
         protected bool m_IsInFunction = false;
         public MetaTemplate( MetaClass mc, FileMetaTemplateDefine fmtd)
         {
@@ -37,49 +37,29 @@ namespace SimpleLanguage.Core
         {
             if (m_FileMetaTemplateDefine != null)
             {
-                for (int i = 0; i < m_FileMetaTemplateDefine.inClassNameTokenList.Count; i++)
+                if( m_FileMetaTemplateDefine.inClassNameTemplateNode != null )
                 {
-                    var mc = ClassManager.instance.GetMetaClassByInputTemplateAndFileMeta(m_OwnerClass, m_FileMetaTemplateDefine.inClassNameTokenList[i]);
-                    m_ConstraintMetaClassList.Add(mc);
+                    m_ExtendsMetaClass = ClassManager.instance.GetMetaClassByInputTemplateAndFileMeta(m_OwnerClass, m_FileMetaTemplateDefine.inClassNameTemplateNode );
                 }
             }
         }
-        public void AddInConstraintMetaClass(MetaClass mc)
+        public void SetInConstraintMetaClass(MetaClass mc)
         {
-            m_ConstraintMetaClassList.Add(mc);
+            m_ExtendsMetaClass = mc;
         }
         public bool IsInConstraintMetaClass(MetaClass mc)
         {
-            if (m_ConstraintMetaClassList.Count == 0) return true;
-
-            // 还需要处理继承关系的类
-            return m_ConstraintMetaClassList.Find(a => a == mc) != null;
+            return m_ExtendsMetaClass != null;
         }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
 
             sb.Append(m_Name);
-            if (constraintMetaClassList.Count > 0)
+            if (m_ExtendsMetaClass != null )
             {
-                sb.Append(" in ");
-                if (constraintMetaClassList.Count == 1)
-                {
-                    sb.Append(constraintMetaClassList[0].allName);
-                }
-                else
-                {
-                    sb.Append("[");
-                    for (int i = 0; i < constraintMetaClassList.Count; i++)
-                    {
-                        sb.Append(constraintMetaClassList[i].allName);
-                        if (i < constraintMetaClassList.Count - 1)
-                        {
-                            sb.Append(",");
-                        }
-                    }
-                    sb.Append("]");
-                }
+                sb.Append(" extends ");
+                sb.Append(m_ExtendsMetaClass.allName);
             }
 
             return sb.ToString();

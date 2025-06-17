@@ -14,6 +14,7 @@ using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Diagnostics;
+using System.Runtime.Intrinsics.X86;
 
 namespace SimpleLanguage.Core
 {
@@ -104,16 +105,16 @@ namespace SimpleLanguage.Core
                 AddMetaDefineTemplate(mdt);
 
                 //下边的代码未来要转移支解析Meta过程中
-                for( int j = 0; j < template.inClassNameTokenList.Count; j++)       //判断是否使用例似于where(csharp) in []
+                if( template.inClassNameTemplateNode != null )       //判断是否使用例似于where(csharp) in []
                 {
-                    var inClassToken = template.inClassNameTokenList[j];
-                    MetaClass gmc = ClassManager.instance.GetMetaClassByListString( ownerMetaClass, inClassToken.nameList, inClassToken.inputTemplateCount );
+                    var inClassToken = template.inClassNameTemplateNode;
+                    MetaClass gmc = ClassManager.instance.GetMetaClassByListString( ownerMetaClass, inClassToken.nameList );
                     if( gmc == null )
                     {
                         Debug.Write("Error 没有查找到inClass的类名, " + inClassToken.ToFormatString());
                         continue;
                     }
-                    mdt.AddInConstraintMetaClass(gmc);
+                    mdt.SetInConstraintMetaClass(gmc);
                 }
             }
             m_MetaBlockStatements = new MetaBlockStatements(this, null);
@@ -319,25 +320,7 @@ namespace SimpleLanguage.Core
                         
                         if( retMT == null )
                         {
-                            var rawMC = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(m_OwnerMetaClass, cmr);
-                            List<MetaTemplate> templates = new List<MetaTemplate>();
-                            if (cmr.inputTemplateNodeList.Count > 0)
-                            {
-                                Debug.Write("Error 没有找到MetaTemplate相关信息，语法错误!!");
-                                //for ( int i = 0; i < cmr.inputTemplateNodeList.Count; i++ )
-                                //{
-                                //    MetaTemplate cmt = m_MetaMemberTemplateCollection.GetMetaDefineTemplateByName(cmr.inputTemplateNodeList[i].nameList[0]);
-                                //    if( cmt != null )
-                                //    {
-                                //        templates.Add( cmt );
-                                //    }
-                                //    else
-                                //    {
-                                //        // T2 Create<T1> 没有从<>找到T2
-                                //        Debug.Write("Error 没有找到MetaTemplate相关信息，语法错误!!");
-                                //    }
-                                //}
-                            }
+                            var rawMC = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance(m_OwnerMetaClass, cmr);
                             retMT = new MetaType(rawMC);
                         }
 

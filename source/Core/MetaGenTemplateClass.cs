@@ -106,6 +106,10 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
+        public bool IsMatchByMetaTemplateClass( List<MetaGenTemplate> mgtList )
+        {
+            return false;
+        }
 
         public void GetMetaTemplateMT( Dictionary<string, MetaType> mtdict )
         {

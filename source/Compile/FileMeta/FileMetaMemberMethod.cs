@@ -122,7 +122,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             return sb.ToString();
         }
     }
-    public partial class FileMetaFunction : FileMetaBase
+    public class FileMetaFunction : FileMetaBase
     {
         public FileMetaClassDefine defineMetaClass => m_DefineMetaClass;
         public FileMetaBlockSyntax fileMetaBlockSyntax => m_FileMetaBlockSyntax;
@@ -151,7 +151,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             fmtd.SetFileMeta(m_FileMeta);
         }
     }
-    public partial class FileMetaMemberFunction : FileMetaFunction
+    public class FileMetaMemberFunction : FileMetaFunction
     {
         public Token interfaceToken => m_InterfaceToken;
         public Token staticToken => m_StaticToken;
@@ -310,14 +310,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 m_LeftBraceToken = m_BlockNode.token;
                 m_RightBraceToken = m_BlockNode.endToken;
                 m_FileMetaBlockSyntax = new FileMetaBlockSyntax(m_FileMeta, m_LeftBraceToken, m_RightBraceToken);
-            }
-            else
-            {
-                if( interfaceToken == null )
-                {
-                    Debug.WriteLine("Error 解析位置 Token: " + m_Token?.ToLexemeAllString());
-                    return false;
-                }
             }
             if( isError )
             {

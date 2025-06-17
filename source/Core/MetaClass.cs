@@ -15,6 +15,7 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Linq;
 using SimpleLanguage.Parse;
+using System.Runtime.Intrinsics.X86;
 
 namespace SimpleLanguage.Core
 {
@@ -23,6 +24,12 @@ namespace SimpleLanguage.Core
         StructDefine,
         InnerDefine,
         CodeDefine
+    }
+    public enum EParseStep
+    {
+        None,
+        Register,
+
     }
     public partial class MetaClass : MetaBase
     {
@@ -61,6 +68,8 @@ namespace SimpleLanguage.Core
         public EClassDefineType classDefineType => m_ClassDefineType;
         public MetaClass extendClass => m_ExtendClass;
         public int extendLevel => m_ExtendLevel;
+        public bool isInterfaceClass => m_IsInterfaceClass;
+        public bool onlySearchNode => m_OnlySearchNode;
         public List<MetaClass> interfaceClass => m_InterfaceClass;
         public MetaExpressNode defaultExpressNode => m_DefaultExpressNode;
         public Dictionary<string, MetaMemberVariable> allMetaMemberVariableDict
@@ -106,6 +115,8 @@ namespace SimpleLanguage.Core
         protected List<MetaMemberFunction> m_TempInnerFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected MetaExpressNode m_DefaultExpressNode = null;
         protected EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
+        protected bool m_IsInterfaceClass = false;
+        protected bool m_OnlySearchNode = false;
 
         protected MetaClass()
         {
@@ -129,7 +140,10 @@ namespace SimpleLanguage.Core
             m_Type = mc.m_Type;
             m_FileMetaClassDict = mc.m_FileMetaClassDict;
             m_ExtendClass = mc.m_ExtendClass;
-            m_ExtendLevel = m_ExtendClass.m_ExtendLevel + 1;
+            if(m_ExtendClass != null )
+            {
+                m_ExtendLevel = m_ExtendClass.m_ExtendLevel + 1;
+            }
             m_InterfaceClass = mc.m_InterfaceClass;
             m_ChildrenMetaClassDict = mc.m_ChildrenMetaClassDict;
 
@@ -161,6 +175,12 @@ namespace SimpleLanguage.Core
         {
             m_DefaultExpressNode = defaultExpressNode;
         }
+        //public virtual void Parse()
+        //{
+        //    ParseExtendsRelation();
+        //    ParseTemplateRelation();
+        //    HandleExtendData();
+        //}
         public virtual void ParseInnerVariable()
         {
         }
@@ -192,13 +212,9 @@ namespace SimpleLanguage.Core
             foreach( var v in m_FileMetaClassDict )
             {
                 var mc = v.Value;
-                MetaClass getmc = GetExtendMetaClass(mc);
+                MetaClass getmc = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance( this, mc.fileMetaExtendClass );
                 if (getmc != null)
                 {
-                    if( mc.templateDefineList.Count > 0 )
-                    {
-
-                    }
                     mc.metaClass.SetExtendClass(getmc);
                 }
                 else
@@ -206,23 +222,6 @@ namespace SimpleLanguage.Core
                     mc.metaClass.SetExtendClass(CoreMetaClassManager.objectMetaClass);
                 }
             }
-        }
-        public MetaClass GetExtendMetaClass(FileMetaClass fmc )
-        {
-            if (fmc.extendClass != null)
-            {
-                MetaClass getmc = ClassManager.instance.GetMetaClassByRef( this, fmc.extendClass );
-                if (getmc == null)
-                {
-                    //Debug.Write(" CheckExtendAndInterface 在判断继承的时候，发没的:" + m_ExtendClass.allName + "  类"
-                    //    + "位置行: " + m_ExtendClass.token.sourceBeginLine.ToString() );
-
-
-                    fmc.extendClass.AddError2(0);
-                }
-                return getmc;
-            }
-            return null;
         }
 
         public virtual void HandleExtendData()
@@ -254,9 +253,6 @@ namespace SimpleLanguage.Core
                 }
                 this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
             }
-        }
-        public void ParseTemplateRelation()
-        {
         }
         public void ParseMemberVariableDefineMetaType()
         {
@@ -315,22 +311,21 @@ namespace SimpleLanguage.Core
                 {
                     mmv.SetName(mmv.name + "__repeat__");
                 }
-                AddMetaMemberVariable(mmv);
             }
             foreach (var v2 in fmc.memberFunctionList)
             {
                 MetaMemberFunction mmf = new MetaMemberFunction(this, v2 );
                 AddMetaMemberFunction(mmf);
-                //原生函数，只添加 非模板类的，非模板函数的
-                if( !mmf.isTemplateFunction )
-                {
-                    MethodManager.instance.AddOriginalMemeberFunction(mmf);
-                }
             }            
         }
         //解析 自动构建函数  
         public virtual void ParseDefineComplete()
         {
+            if(m_IsInterfaceClass )
+            {
+                return;
+            }
+
             AddDefineConstructFunction();
             //AddDefineInstanceValue();
 
@@ -400,20 +395,6 @@ namespace SimpleLanguage.Core
                 return m_ChildrenMetaClassDict[name];
             }
             return null;
-        }
-        public MetaGenTemplateClass GetGenTemplateMetaClassIfNotThenGenTemplateClass(MetaInputTemplateCollection mtic )
-        {
-            MetaGenTemplateClass mtc = GetGenTemplateMetaClass(mtic);
-            if( mtc == null )
-            {
-                mtc = MetaGenTemplateClass.GenerateTemplateClass(this, mtic);
-                ClassManager.instance.AddGenTemplateClass(mtc);
-            }
-            if( mtc == null )
-            {
-                Debug.Write("Error 没有找到合适的Template");
-            }
-            return mtc;
         }
         public MetaClass GetChildrenMetaClassByName( string name )
         {

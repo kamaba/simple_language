@@ -703,11 +703,10 @@ namespace SimpleLanguage.Compile.CoreFileMeta
     public class FileMetaTemplateDefine : FileMetaBase
     {
         public Token inToken => m_InToken;
-        public Node getNode => m_Node;
-        public List<FileInputTemplateNode> inClassNameTokenList => m_InClassNameTokenList;
+        public FileInputTemplateNode inClassNameTemplateNode => m_InClassNameTemplateNode;
 
         private Token m_InToken = null;
-        private List<FileInputTemplateNode> m_InClassNameTokenList = new List<FileInputTemplateNode>();
+        private FileInputTemplateNode m_InClassNameTemplateNode = null;
         private Node m_Node = null;
         private Node m_ExtendsNode = null;
         public FileMetaTemplateDefine( FileMeta fm, Node node, Node extendsNode = null )
@@ -726,19 +725,19 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 return;
             }
             m_Token = nodeList[0].token;
-            if( nodeList.Count > 2 )
+            if( nodeList.Count == 2 )
             {
                 m_InToken = nodeList[1].token;
-                for( int i = 2; i <= nodeList.Count; i++ )
-                {
-                    FileInputTemplateNode fitn = new FileInputTemplateNode(fm, nodeList[i]);
-                    m_InClassNameTokenList.Add(fitn);
-                }
+                m_InClassNameTemplateNode = new FileInputTemplateNode(fm, nodeList[2] );
             }
             else if( nodeList.Count == 2 )
             {
                 Debug.Write("Error 在<T in> or <T []> or <T ClassName> 使用方法不正确,请使用 <T in []>或者是 <T in ClassName> !!");
             }
+        }
+        public void Parse()
+        {
+
         }
         public override string ToFormatString()
         {
@@ -749,23 +748,23 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             {
                 sb.Append( " " + m_InToken?.lexeme.ToString() + " ");
             }
-            if(m_InClassNameTokenList.Count == 1 )
+            if(m_InClassNameTemplateNode != null )
             {
-                sb.Append(m_InClassNameTokenList[0].ToFormatString());
+                sb.Append(m_InClassNameTemplateNode.ToFormatString());
             }
-            else if(m_InClassNameTokenList.Count > 1 )
-            {
-                sb.Append("[");
-                for (int i = 0; i < m_InClassNameTokenList.Count; i++)
-                {
-                    sb.Append(m_InClassNameTokenList[i].ToFormatString());
-                    if (i < m_InClassNameTokenList.Count - 1)
-                    {
-                        sb.Append(",");
-                    }
-                }
-                sb.Append("]");
-            }
+            //else if(m_InClassNameTokenList.Count > 1 )
+            //{
+            //    sb.Append("[");
+            //    for (int i = 0; i < m_InClassNameTokenList.Count; i++)
+            //    {
+            //        sb.Append(m_InClassNameTokenList[i].ToFormatString());
+            //        if (i < m_InClassNameTokenList.Count - 1)
+            //        {
+            //            sb.Append(",");
+            //        }
+            //    }
+            //    sb.Append("]");
+            //}
             return sb.ToString();
         }
     }
