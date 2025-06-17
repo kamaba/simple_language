@@ -45,15 +45,23 @@ namespace SimpleLanguage.Core
             }
         }
         public Dictionary<string, MetaClass> allClassDict => m_AllClassDict;
+        public SortedDictionary<int, List<MetaClass>> parseMemberSortedListMetaClassDict => m_ParseMemberSortedListMetaClassDict;
         public Dictionary<string, MetaData> allDataDict => m_AllDataDict;
         public List<MetaDynamicClass> dynamicClassList => m_DynamicClassList;
+        public List<MetaClass> preBatchHandleMetaClassList => m_PreBatchHandleMetaClassList;
 
 
         private Dictionary<string, MetaClass> m_AllClassDict = new Dictionary<string, MetaClass>();
         private List<MetaGenTemplateClass> m_GenTemplateClassList = new List<MetaGenTemplateClass>();
         private List<MetaDynamicClass> m_DynamicClassList = new List<MetaDynamicClass>();
 
+        // 1- 90 -> 从继承 object算为10层 最高九层的继承 无模板类处理   处理接口带T的行为101-90 处理extends带T的行为 201-209 处理  被接口化实现
+        //与被继承子元素的带T的处理301-309
+        private SortedDictionary<int, List<MetaClass>> m_ParseMemberSortedListMetaClassDict = new SortedDictionary<int, List<MetaClass>>();
+
         private Dictionary<string, MetaData> m_AllDataDict = new Dictionary<string, MetaData>();
+
+        private List<MetaClass> m_PreBatchHandleMetaClassList = new List<MetaClass>();
 
         public MetaClass GetClassByName(string name)
         {
@@ -133,6 +141,13 @@ namespace SimpleLanguage.Core
             m_AllClassDict.Add(dc.allName, dc);
             return true;
         }
+        public void AddPreBatchHandleMetaClassList(MetaClass mc)
+        {
+            if (m_PreBatchHandleMetaClassList.IndexOf(mc) == -1)
+            {
+                m_PreBatchHandleMetaClassList.Add(mc);
+            }
+        }
         public MetaData FindMetaData( MetaData md )
         {
             foreach( var v in m_AllDataDict )
@@ -157,9 +172,9 @@ namespace SimpleLanguage.Core
             m_AllDataDict.Add(dc.name, dc);
             return true;
         }
-        public MetaClass FindMetaClass( List<MetaClass> mcList, string name, int templateCount = 0)
+        public MetaClass FindMetaClass( List<MetaClass> mcList, string name)
         {
-            var find1 = mcList.Find(x => x.name == name && x.metaTemplateList.Count == templateCount);
+            var find1 = mcList.Find(x => x.name == name );
 
             return find1;
         }
@@ -227,6 +242,8 @@ namespace SimpleLanguage.Core
             MetaModule finalTopMetaModule = ModuleManager.instance.selfModule;
             MetaClass finalTopMetaClass = null;
             FileMetaClass topLevelClass = fmc.topLevelFileMetaClass;
+            MetaClass findTemplateParentMetaClass = null;
+            bool isCreateTemplateClass = false;
             if ( topLevelClass != null )
             {
                 if(fmc.isPartial )
@@ -241,7 +258,7 @@ namespace SimpleLanguage.Core
                     return null;
                 }
 
-                var findmc = FindMetaClass(topLevelClass.metaClass.metaClassList, fmc.name, fmc.templateDefineList.Count);
+                var findmc = FindMetaClass(topLevelClass.metaClass.metaClassList, fmc.name );
                 if (findmc != null)
                 {
                     MetaClass findmc2 = findmc as MetaClass;
@@ -293,12 +310,12 @@ namespace SimpleLanguage.Core
                 MetaBase mbb = null;
                 if (finalTopMetaNamespace != null)
                 {
-                    mbb = FindMetaClass(finalTopMetaNamespace.metaClassList, fmc.name, fmc.templateDefineList.Count);
+                    mbb = FindMetaClass(finalTopMetaNamespace.metaClassList, fmc.name );
                 }
                 else
                 if( finalTopMetaModule != null)
                 {
-                    mbb = FindMetaClass(finalTopMetaModule.metaClassList, fmc.name, fmc.templateDefineList.Count);
+                    mbb = FindMetaClass(finalTopMetaModule.metaClassList, fmc.name );
                 }
                 var amc = mbb as MetaClass;
                 var amn = mbb as MetaNamespace;
@@ -314,33 +331,44 @@ namespace SimpleLanguage.Core
                         amc.BindFileMetaClass(fmc);
                         amc.SetClassDefineType(EClassDefineType.CodeDefine);
                         amc.ParseFileMetaClassTemplate(fmc);
+                        var newmc2 = amc.ParseFileMetaClassTemplate(fmc);
                         amc.ParseFileMetaClassMemeberVarAndFunc(fmc);
                         return amc;
                     }
                     else
                     {
-                        if (!fmc.isPartial)
+                        var findamc = amc.GetTemplateMetaClassByTemplateCount(fmc.templateDefineList.Count);
+                        if ( findamc == null )
                         {
-                            Debug.Write("类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持文件并行 定义类");
-                            return null;
+                            isCanAddBind = true;
+                            findTemplateParentMetaClass = amc;
+                            isCreateTemplateClass = true;
+                        }
+                        else
+                        {
+                            if (!fmc.isPartial)
+                            {
+                                Debug.Write("类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持文件并行 定义类");
+                                return null;
+                            }
+                            bool isPartial = true;
+                            foreach (var v in amc.fileMetaClassDict)
+                            {
+                                if (v.Value.isPartial == false)
+                                {
+                                    isPartial = false;
+                                    Debug.Write("类:" + amc.name + "在: " + v.Value.token.ToAllString() + "不支持文件并行 定义类");
+                                    break;
+                                }
+                            }
+                            if (isPartial == false)
+                            {
+                                return null;
+                            }
+                            amc.BindFileMetaClass(fmc);
+                            return amc;
                         }
                     }
-                    bool isPartial = true;
-                    foreach (var v in amc.fileMetaClassDict)
-                    {
-                        if (v.Value.isPartial == false)
-                        {
-                            isPartial = false;
-                            Debug.Write("类:" + amc.name + "在: " + v.Value.token.ToAllString() + "不支持文件并行 定义类");
-                            break;
-                        }
-                    }
-                    if (isPartial == false)
-                    {
-                        return null;
-                    }
-                    amc.BindFileMetaClass(fmc);
-                    return amc;
                 }
                 else
                 {
@@ -400,22 +428,20 @@ namespace SimpleLanguage.Core
                         Debug.Write("Class 中，使用关键字，不允许使用Const");
                         return null;
                     }
-                    bool isCreateClass = true;
-                    string className = fmc.name + "_" + fmc.templateDefineList.Count;
-                    if (m_AllClassDict.ContainsKey(className))
+                    if (isCreateTemplateClass)
                     {
-                        var newmc2 = m_AllClassDict[className];
-                        if (newmc2.classDefineType == EClassDefineType.InnerDefine )
-                        {
-                            newmc = newmc2;
-                            isCreateClass = false;
-                        }
+                        newmc = findTemplateParentMetaClass;
+                        newmc = newmc.ParseFileMetaClassTemplate(fmc);
+                        newmc.BindFileMetaClass(fmc);
+                        newmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
                     }
-
-                    if (isCreateClass)
+                    else
                     {
                         newmc = new MetaClass(fmc.name);
-
+                        newmc.BindFileMetaClass(fmc);
+                        newmc.SetClassDefineType(EClassDefineType.CodeDefine);
+                        var newmc2 = newmc.ParseFileMetaClassTemplate(fmc);
+                        newmc2.ParseFileMetaClassMemeberVarAndFunc(fmc);
                         if (finalTopMetaClass != null)
                         {
                             finalTopMetaClass.AddChildrenMetaClass(newmc);
@@ -427,31 +453,9 @@ namespace SimpleLanguage.Core
                             finalTopMetaModule.AddMetaClass(newmc);
                         }
                     }
-
-                    newmc.BindFileMetaClass(fmc);
-                    newmc.SetClassDefineType(EClassDefineType.CodeDefine);
-                    newmc.ParseFileMetaClassTemplate(fmc);
-                    newmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
-
                 }
 
-
-                if (newmc is MetaData asnewmd)
-                {
-                    if( !m_AllDataDict.ContainsKey(asnewmd.allClassName) )
-                    {
-                        m_AllDataDict.Add(asnewmd.allClassName, asnewmd);
-                    }
-                }
-                else
-                {
-                    if (!m_AllClassDict.ContainsKey(newmc.allClassName))
-                    {
-                        AddDictMetaClass(newmc);
-                    }
-                }
-
-
+                AddPreBatchHandleMetaClassList(newmc);
                 return newmc;
             }
             else
@@ -487,16 +491,10 @@ namespace SimpleLanguage.Core
         }
         public void ParseExtendsRelation()
         {
-            foreach (var it in m_AllClassDict)
+            var list = new List<MetaClass>(m_PreBatchHandleMetaClassList);
+            foreach (var it in list )
             {
-                it.Value.ParseExtendsRelation();
-            }
-        }
-        public void ParseTemplateRelation()
-        {
-            foreach (var it in m_AllClassDict)
-            {
-                it.Value.ParseTemplateRelation();
+                it.ParseExtendsRelation();
             }
         }
         public void HandleExtendData()
@@ -513,11 +511,14 @@ namespace SimpleLanguage.Core
                 it.HandleExtendData();
             }
         }
-        public void ParseMemberVariableDefineMetaType()
+        public void ParsePreBatchMetaClassList()
         {
-            foreach (var it in m_AllClassDict)
+            var list = new List<MetaClass>(preBatchHandleMetaClassList);
+            preBatchHandleMetaClassList.Clear();
+            foreach (var it in list)
             {
-                it.Value.ParseMemberVariableDefineMetaType();
+                it.ParseMemberVariableDefineMetaType();
+                it.ParseMemberFunctionDefineMetaType();
             }
         }
         public void UpdateTemplateMetaMemberDefineMetaType()
@@ -811,50 +812,32 @@ namespace SimpleLanguage.Core
                 {
                     return mb2 as MetaClass;
                 }
-            }
-            else
-            {
-                string className = fmcv.allName + "_" + fmcv.inputTemplateNodeList.Count;
-                mb2 = ClassManager.instance.GetClassByName(className);
-                if (mb2 != null && mb2 is MetaClass)
-                    return mb2 as MetaClass;
-            }            
+            }  
             return null;
         }
         public MetaClass GetMetaClassByClassDefine( MetaClass ownerClass, FileMetaClassDefine fmcd)
         {
-            return GetMetaClassByListString(ownerClass, fmcd.stringList, fmcd.inputTemplateNodeList.Count );
+            return GetMetaClassByListString(ownerClass, fmcd.stringList );
         }
         // 在ownerClass类中，通过当前的ownerClass的父节点逐查，直到没有父节点，如果找到了当前的节点后，开始往stringList下边找
-        public MetaClass GetMetaClassByListString( MetaClass ownerClass, List<string> stringList, int templateCount )
+        public MetaClass GetMetaClassByListString( MetaClass ownerClass, List<string> stringList )
         {
             if (stringList.Count == 0)
                 return null;
             if (ownerClass == null)
                 return null;
 
-
-            MetaBase findMB = null;
             string firstName = "";
-            if( stringList.Count == 1 )
-            {
-                firstName = stringList[0] + "_" + templateCount;
-                findMB = CoreMetaClassManager.GetCoreMetaClass(stringList[0]);
-                if (findMB is MetaClass)
-                {
-                    return findMB as MetaClass;
-                }
-            }
-            else
+            if ( stringList.Count == 1 )
             {
                 firstName = stringList[0];
             }
-
-            findMB = ClassManager.instance.GetClassByName(firstName);
-            if(findMB != null )
+            MetaBase findMB = CoreMetaClassManager.GetCoreMetaClass(firstName);
+            if (findMB is MetaClass mc )
             {
-                return findMB as MetaClass;
+                return mc;
             }
+
             MetaBase mb = ownerClass;
             while (true)
             {
@@ -862,10 +845,6 @@ namespace SimpleLanguage.Core
                 for (int i = 0; i < stringList.Count; i++)
                 {
                     string name = stringList[i];
-                    if( i == stringList.Count - 1 )
-                    {
-                        name = name + "_" + templateCount;
-                    }
                     if (parentMB != null)
                     {
                         if (findMB == null)
@@ -977,12 +956,6 @@ namespace SimpleLanguage.Core
                         return mb as MetaClass;
                     }
                 }
-                else
-                {
-                    mb = ClassManager.instance.GetClassByName(fmcd.allName);
-                    if (mb != null && mb is MetaClass)
-                        return mb as MetaClass;
-                }
             }
             return mc;
         }
@@ -991,7 +964,7 @@ namespace SimpleLanguage.Core
         {
             var nlist = fitn.nameList;
             FileMeta fm = fitn.fileMeta;
-            MetaClass mc = GetMetaClassByListString( ownerClass, nlist, fitn.inputTemplateCount );
+            MetaClass mc = GetMetaClassByListString( ownerClass, nlist );
             if (mc == null)
             {
                 var mb = fm.GetMetaBaseFileMetaClass(nlist);
@@ -1009,6 +982,112 @@ namespace SimpleLanguage.Core
                 }
             }
             return mc;
+        }
+
+        public MetaClass GetMetaClassAndRegisterExptendTemplateClassInstance( MetaClass curMc, FileMetaClassDefine fmcd)
+        {
+            if (fmcd == null) return null;
+
+            MetaClass getmc = ClassManager.instance.GetMetaClassByRef(curMc, fmcd );
+            if (getmc == null)
+            {
+                Log.AddInStructMeta(EError.StructMetaStart, " CheckExtendAndInterface 在判断继承的时候，发没的:" + fmcd.allName + "  类");
+                //    + "位置行: " + m_ExtendClass.token.sourceBeginLine.ToString() );
+
+            }
+            else
+            {
+                if(fmcd.inputTemplateNodeList.Count == 0 )
+                {
+                    return getmc;
+                }
+                var findfn = getmc.GetTemplateMetaClassByTemplateCount(fmcd.inputTemplateNodeList.Count);
+                if (findfn != null)
+                {
+                    getmc = findfn;
+                }
+                List<MetaClass> regMCList = new List<MetaClass>();
+                //这里，要注册实体模板类
+                for (int i = 0; i < fmcd.inputTemplateNodeList.Count; i++)
+                {
+                    var t = ClassManager.instance.RegisterTemplateDefineMetaTemplateClass(curMc , getmc, fmcd.inputTemplateNodeList[i]);
+                    regMCList.Add(t);
+                }
+                if (findfn != null)
+                {
+                    bool isNeedReg = true;
+                    for (int i = 0; i < regMCList.Count; i++)
+                    {
+                        if (regMCList[i] == null)
+                        {
+                            isNeedReg = false;
+                            break;
+                        }
+                    }
+                    if (isNeedReg)
+                    {
+                        getmc = findfn.AddInstanceMetaClass(regMCList);
+                    }
+                }
+            }
+            return getmc;
+        }
+        public MetaClass RegisterTemplateDefineMetaTemplateClass( MetaClass ownerMc, MetaClass templateMC, FileInputTemplateNode fmtd)
+        {
+            var newmc = ClassManager.instance.GetMetaClassByListString(ownerMc, fmtd.nameList);
+            if (newmc != null)
+            {
+                if (fmtd.inputTemplateCount == 0)
+                {
+                    return newmc;
+                }
+                var findfn = newmc.GetTemplateMetaClassByTemplateCount(fmtd.inputTemplateCount);
+
+                List<MetaClass> regMCList = new List<MetaClass>();
+                //这里，要注册实体模板类
+                for (int i = 0; i < fmtd.defineClassCallLink.callNodeList.Count; i++)
+                {
+                    var dcc = fmtd.defineClassCallLink.callNodeList[i];
+
+                    for (int j = 0; j < dcc.inputTemplateNodeList.Count; j++)
+                    {
+                        var itn = dcc.inputTemplateNodeList[j];
+                        var t = RegisterTemplateDefineMetaTemplateClass(ownerMc, newmc, itn);
+                        regMCList.Add(t);
+                    }
+                }
+                if (findfn != null)
+                {
+                    bool isNeedReg = true;
+                    for (int i = 0; i < regMCList.Count; i++)
+                    {
+                        if (regMCList[i] == null)
+                        {
+                            isNeedReg = false;
+                            break;
+                        }
+                    }
+                    if (isNeedReg)
+                    {
+                        newmc = findfn.AddInstanceMetaClass(regMCList);
+                    }
+                }
+                if (newmc != null)
+                {
+                    return newmc;
+                }
+            }
+            else
+            {
+                if (fmtd.nameList.Count == 1)
+                {
+                    if (ownerMc.isDefineTemplate(fmtd.nameList[0]))
+                    {
+
+                    }
+                }
+            }
+            return newmc;
         }
         public void PrintAllClassName()
         {

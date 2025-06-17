@@ -8,24 +8,23 @@ public class Class1
 }
 List0<T>
 {
-
+    T getA(){ ret null}
 }
-List1<T>
+List1<T> extends List0<T>
 {
-
+    T getB(){ ret null}
 }
-List2<T>
+List2<T> extends List1<List0<object> >
 {
-
+    T getC(){ ret null} 
 }
 Map<T1,T2>
 {
-
 }
 
-public class IList
+public interface IList
 {
-    interface int add(object value)
+    int add(object value)
     #interface void clear()
     #interface bool contains( object value )
     #interface int indexOf( object value )
@@ -33,18 +32,26 @@ public class IList
     #interface void remove( object value )
     #interface void removeAt( int index )
 }
-public class IList<T>
+public interface IList<T>
 {
     #interface T getValue( int index )
-    interface void insert( int index, T t )
+    void insert( int index, T t )
 }
-
-public class List extends List<object>
+public interface ILInstList<T> extends IList<object>
 {
-
+    void insert2( int index, T t )
+}
+public interface IList2<T>
+{
+    void T getABC()
 }
 
-public class List<T> interface IList<T>
+public class List extends List<object> interface IList2<List<int> >    #如果出现T会报错
+{
+    override List<int> getABC(){ ret null }
+}
+
+public class List<T> interface IList<T>, IList
 {
     private Int32 _count = 0;
     #UInt16 m_Bound1 = 0;
@@ -142,8 +149,14 @@ public class List<T> interface IList<T>
 
 public class Level2<T1 ,T2> extends Level1<List0<T2> > interface List1<List2<Map<T2,string> > >, Map<T2,string>
 {
-    T1 t21 = T1.instance
-    T2 t22 = T2.instance
+    T1 t21 = null
+    T2 t22 = null
+
+    int x = 30
+    {
+        get(){ ret value }
+        set( int v ){ value = v }
+    }
 }
 public class Level1<T> 
 {
@@ -170,8 +183,8 @@ public class Level1<T>
 
     }
 
-    T t1 = T.instance
-    T t2 = T.instance;
+    T t1 = null
+    T t2 = null
 
     _init_( T it1 )
     {
@@ -264,3 +277,20 @@ public class ListC<T>
 # 如果是类模板，但是普通 函数，则只编译一份，然后类似于继承方式，共同使用。  
 # 如果是纯模板函数  则在最后生成一份属于自己的函数体
 # 未来，在导出C语言的时候，函数体会有所不同。
+
+
+
+#! 解析过程 
+1. 先解析类的 名称，类别(class/enum/data), 绑定模板, 是否内部类
+2. 解析模板的时候，确定该类是否注册过，非模板类，  结构是   类树结构，都为无模板模式，即使没有，有onlyRead标记，告知，只负责查找时候使用，  在该类下边，进行 模板类的查找 
+3. 因为前边注册过所有的类，这时候，先解析第一批，已注册的类，通过 extendlevel排序后，再进行[成员]变量的解析,解析的同时，还会再注册一批新的 注册类
+4. 后边这批都是注册的模板类，肯定是能从类列表找到的，所以类的metatype已关联
+5. 在解析完上边的，剩余一批还没有解析的模板类实体类，然后再去创建该模板实体类
+6. 这时候就解析完了所有的类结构，和接口的结构
+!#
+
+#! 类的查找过程
+1. 可以从 import的方式查找类
+2. 可以从当前类定义位置查找类
+3. 查找到类后，进行模板匹配，匹配的类，是真实的类
+!#

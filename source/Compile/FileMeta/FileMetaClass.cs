@@ -7,6 +7,7 @@
 //****************************************************************************
 using SimpleLanguage.Compile.Parse;
 using SimpleLanguage.Core;
+using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,7 +25,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public bool isData { get { return m_DataToken != null; } }
         public bool isPartial => m_PartialToken != null;
         public MetaClass metaClass => m_MetaClass;
-        public FileMetaClassDefine extendClass => m_ExtendClass;
+        public FileMetaClassDefine fileMetaExtendClass => m_FileMetaExtendClass;
         private List<FileMetaClassDefine> interfaceClassList => m_InterfaceClassList;
         public FileMetaNamespace topLevelFileMetaNamespace => m_TopLevelFileMetaNamespace;
         public FileMetaClass topLevelFileMetaClass => m_TopLevelFileMetaClass;
@@ -37,6 +38,8 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         #region Token
         protected Token m_PermissionToken = null;
         protected Token m_PartialToken = null;
+        protected Token m_PreInterfaceToken = null;
+        protected Token m_SufInterfaceToken = null;
         protected Token m_ClassToken = null;
         protected Token m_EnumToken = null;
         protected Token m_DataToken = null;
@@ -46,7 +49,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         private MetaClass m_MetaClass = null;
         private FileMetaNamespace m_TopLevelFileMetaNamespace = null;
         private FileMetaClass m_TopLevelFileMetaClass = null;
-        private FileMetaClassDefine m_ExtendClass = null;
+        private FileMetaClassDefine m_FileMetaExtendClass = null;
         private List<FileMetaClassDefine> m_InterfaceClassList = new List<FileMetaClassDefine>();
         private List<FileMetaClass> m_ChildrenClassList = new List<FileMetaClass>();
         private List<FileMetaTemplateDefine> m_TemplateDefineList = new List<FileMetaTemplateDefine>();
@@ -77,7 +80,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
             Token permissionToken = null;
             Token m_ExtendsToken = null;
-            Token interfaceToken = null;
             Token commaToken = null;
 #pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
             bool isError = false;
@@ -94,31 +96,32 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
                 if (cnode.nodeType == ENodeType.IdentifierLink)
                 {
-                    if (interfaceToken != null || m_ExtendsToken != null )
+                    if ( m_SufInterfaceToken != null || m_ExtendsToken != null )
                     {
                         List<FileMetaClassDefine> fcdList = new List<FileMetaClassDefine>();
                         addCount = ReadClassDefineStruct(addCount -1, m_NodeList, fcdList);
-                        if (m_ExtendsToken != null && interfaceToken == null)
+                        if (m_ExtendsToken != null && m_SufInterfaceToken == null)
                         {
-                            if(m_ExtendClass != null )
+                            if(m_FileMetaExtendClass != null )
                             {
-                                Debug.Write("Error 已有继承类,请勿多重继承!");
+                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 已有继承类,请勿多重继承!");
+
                             }
-                            if(fcdList.Count == 0 )
+                            if (fcdList.Count == 0 )
                             {
-                                Debug.Write("Error 继承关键字后边没有相应的内容!");
+                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 继承关键字后边没有相应的内容!");
                             }
                             if (fcdList.Count > 1)
                             {
-                                Debug.Write("Error 继承只能单继承，不能多继承!!");
+                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 继承只能单继承，不能多继承!!");
                             }
-                            m_ExtendClass = fcdList[0];
+                            m_FileMetaExtendClass = fcdList[0];
                         }
-                        else if (interfaceToken != null )
+                        else if (m_SufInterfaceToken != null )
                         {
                             if (fcdList.Count == 0)
                             {
-                                Debug.Write("Error 接口关键字后边没有相应的内容!");
+                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "接口关键字后边没有相应的内容!");
                             }
                             m_InterfaceClassList.AddRange(fcdList);
                         }
@@ -127,7 +130,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     {
                         if (classNameTokenList.Count > 0)
                         {
-                            Debug.Write("Error 字符两次赋值 107");
+                            Log.AddInStructFileMeta(EError.StructClassNameRepeat, "Error 字符两次赋值 107");
                             for (int i = 0; i < classNameTokenList.Count; i++)
                             {
                                 Debug.Write(classNameTokenList[i].lexeme.ToString());
@@ -158,6 +161,9 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                                 }
                                 else if (cnode2.nodeType == ENodeType.Comma)
                                 {
+                                    FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, templateNode, templateExtendsNode);
+                                    m_TemplateDefineList.Add(fmtd);
+                                    templateNode = null;
                                     continue;
                                 }
                                 else if (cnode2.nodeType == ENodeType.Key && cnode2.token?.type == ETokenType.Extends)
@@ -178,7 +184,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                                 }
                                 else
                                 {
-                                    Debug.WriteLine("Error 不支持其它格式 在类后续的模板限定中!");
+                                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 不支持其它格式 在类后续的模板限定中!");
                                 }
                             }
                             addCount = cAddCount;
@@ -201,7 +207,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         else
                         {
                             isError = true;
-                            Debug.Write("Error 解析过了一次权限!!");
+                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次权限!!");
                         }
                     }
                     else if (token.type == ETokenType.Const)
@@ -213,7 +219,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         else
                         {
                             isError = true;
-                            Debug.Write("Error 解析过了一次Const!!");
+                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Const!!");
                         }
                     }
                     else if (token.type == ETokenType.Partial)
@@ -221,7 +227,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (m_PartialToken != null)
                         {
                             isError = true;
-                            Debug.Write("Error 解析过了一次Class!!");
+                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Class!!");
                         }
                         m_PartialToken = token;
                     }
@@ -230,37 +236,36 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (m_EnumToken != null)
                         {
                             isError = true;
-                            Debug.Write("Error 解析过了一次Enum!!");
+                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Enum!!");
                         }
                         if (m_DataToken != null)
                         {
                             isError = true;
-                            Debug.Write("Error 解析过了一次data!!");
+                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次data!!");
                         }
                         if (m_ClassToken != null)
                         {
                             isError = true;
-                            Debug.Write("Error 解析过了一次Class!!");
+                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Class!!");
                         }
                         m_ClassToken = token;
                     }
-
                     else if (token.type == ETokenType.Enum)
                     {
                         if (m_EnumToken != null)
                         {
                             isError = true;
-                            Debug.Write("Error 解析过了一次Enum!!");
+                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Enum!!");
                         }
                         if (m_DataToken != null)
                         {
                             isError = true;
-                            Debug.Write("Error 解析过了一次data!!");
+                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次data!!");
                         }
                         if (m_ClassToken != null)
                         {
                             isError = true;
-                            Debug.Write("Error 解析过了一次Class!!");
+                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Class!!");
                         }
                         m_EnumToken = token;
                     }
@@ -269,19 +274,19 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (m_EnumToken != null)
                         {
                             isError = true;
-                            Debug.Write("Error 解析过了一次Enum!!");
+                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Enum!!");
                         }
                         else
                         {
                             if (m_DataToken != null)
                             {
                                 isError = true;
-                                Debug.Write("Error 解析过了一次data!!");
+                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次data!!");
                             }
                             if (m_ClassToken != null)
                             {
                                 isError = true;
-                                Debug.Write("Error 解析过了一次Class!!");
+                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Class!!");
                             }
                             m_DataToken = token;
                         }
@@ -291,18 +296,56 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (m_ExtendsToken != null)
                         {
                             isError = true;
-                            Debug.Write("Error 解析过了一次Extend!!");
+                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Extend!!");
                         }
                         m_ExtendsToken = token;
                     }
                     else if (token.type == ETokenType.Interface)
                     {
-                        if (interfaceToken != null)
+                        if (m_EnumToken != null)
                         {
                             isError = true;
-                            Debug.Write("Error 解析类时，已发现用过interface标记，不可重复使用该标记");
+                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Enum!!");
                         }
-                        interfaceToken = token;
+                        if (m_DataToken != null)
+                        {
+                            isError = true;
+                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次data!!");
+                        }
+                        if (classNameTokenList.Count > 0 )    //后置
+                        {
+                            if (m_PreInterfaceToken != null)
+                            {
+                                isError = true;
+                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
+                            }
+                            if (m_SufInterfaceToken != null)
+                            {
+                                isError = true;
+                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
+                            }
+                            m_SufInterfaceToken = token;
+
+                        }
+                        else
+                        {
+                            if (m_ClassToken != null)
+                            {
+                                isError = true;
+                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析interface与class不可以周时出现!!");
+                            }
+                            if (m_PreInterfaceToken != null)
+                            {
+                                isError = true;
+                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
+                            }
+                            if (m_SufInterfaceToken != null)
+                            {
+                                isError = true;
+                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
+                            }
+                            m_PreInterfaceToken = token;
+                        }
                     }
                     else if (token.type == ETokenType.Comma)
                     {
@@ -310,8 +353,8 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     else
                     {
-                        isError = true;
-                        Debug.Write("Error 有其它未知类型在class中");
+                        isError = true; 
+                        Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 有其它未知类型在class中");
                         break;
                     }
                 }
@@ -320,38 +363,49 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
             if(m_EnumToken != null )
             {
-                if(interfaceToken != null  )
+                if (m_PreInterfaceToken != null)
                 {
-                    Debug.Write("Error Enum方式，不支持接口方式");
+                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Enum方式，与enum同级，不允许同时出现");
+                    return false;
+                }
+                if (m_SufInterfaceToken != null)
+                {
+                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Enum方式，不支持接口方式");
+                    Debug.Write("");
                     return false;
                 }
                 if (permissionToken != null)
                 {
-                    Debug.Write("Error Enum方式，不支持权限的使用!!");
+                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Enum方式，不支持权限的使用!!");
                     return false;
                 }
                 if (m_PartialToken != null)
                 {
-                    Debug.Write("Error Enum方式，不支持partial的使用!!");
+                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Enum方式，不支持partial的使用!!");
                     return false;
                 }
 
             }
             else if (m_DataToken != null)
             {
-                if (interfaceToken != null )
+                if (m_PreInterfaceToken != null)
                 {
-                    Debug.Write("Error Data方式，不支持接口方式");
+                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Enum方式，与data同级，不允许同时出现");
+                    return false;
+                }
+                if (m_SufInterfaceToken != null)
+                {
+                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Enum方式，不支持接口方式");
                     return false;
                 }
                 if (permissionToken != null)
                 {
-                    Debug.Write("Error Data方式，不支持权限的使用!!");
+                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Data方式，不支持权限的使用!!");
                     return false;
                 }
                 if (m_PartialToken != null)
                 {
-                    Debug.Write("Error Data方式，不支持partial的使用!!");
+                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Data方式，不支持partial的使用!!");
                     return false;
                 }
 
@@ -361,7 +415,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
                 if (classNameTokenList.Count == 0)
                 {
-                    Debug.Write("Error 解析类型名称错误!!");
+                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析类型名称错误!!");
                 }                
             }
             m_Token = classNameTokenList[classNameTokenList.Count - 1];
@@ -581,10 +635,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             fmc.SetFileMetaClass(this);
             m_ChildrenClassList.Add(fmc);
         }
-        public void SetExtendClass(FileMetaClassDefine fileMetaClassVariable )
-        {
-            m_ExtendClass = fileMetaClassVariable;
-        }
         public void AddInterfaceClass(FileMetaClassDefine fmcv )
         {
             m_InterfaceClassList.Add(fmcv);
@@ -730,9 +780,9 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     stringBuilder.Append(">");
                 }
 
-                if (extendClass != null)
+                if ( m_FileMetaExtendClass != null)
                 {
-                    stringBuilder.Append(" extends " + extendClass.ToFormatString());
+                    stringBuilder.Append(" extends " + m_FileMetaExtendClass.ToFormatString());
                 }
                 if (interfaceClassList.Count > 0)
                 {

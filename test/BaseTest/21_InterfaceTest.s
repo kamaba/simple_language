@@ -3,15 +3,15 @@ import Application.Core;
 #namespace Application.MFC;
 
 
-Class1
+interface Class1
 {
-    interface string interfaceFun1()  #必须定义返回值
+    string interfaceFun1()  #必须定义返回值
 }
-Class2
+interface Class2
 {
-    interface int interfaceFun2()
+    int interfaceFun2()
 }
-Class3  #如果被接口了，发现没有接口，需要报错
+interface Class3  #如果被接口了，发现没有接口，需要报错
 {
     interface3(){};
 }
@@ -68,3 +68,5 @@ InterfaceTest
 }
 
 
+# 接口，必须以inetreface 定义结构，后， 在使用接口时使用interface 接口调用
+# 如果有extends 类，则要看父类中是否有 interface 的方法， 如果有，则必须实现父类的方式，否则，子类不允许使用，父类如果是实例时，则不允许调用该方法  在实现的时候，必须使用override字段，标名，是个要实现的方法。

@@ -111,7 +111,6 @@ namespace SimpleLanguage.Core
                     mmv.SetName(mmv.name + "__repeat__");
                 }
                 AddMetaMemberEnum(mmv);
-                MetaVariableManager.instance.AddMetaEnumVariable(mmv);
             }
         }
         public override void HandleExtendData()

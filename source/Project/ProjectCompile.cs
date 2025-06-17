@@ -209,11 +209,12 @@ namespace SimpleLanguage.Project
 
             ClassManager.instance.ParseExtendsRelation();
             ClassManager.instance.ParseInterfaceRelation();
-            ClassManager.instance.ParseTemplateRelation();
+
             ClassManager.instance.HandleExtendData();
-            ClassManager.instance.ParseMemberVariableDefineMetaType();
-            ClassManager.instance.ParseMemberFunctionDefineMetaType();
+
+            ClassManager.instance.ParsePreBatchMetaClassList();
             m_ProjectParse.ParseGlobalVariable();
+
             ClassManager.instance.CheckInterfaces();
             ClassManager.instance.ParseDefineComplete();
             ClassManager.instance.PrintAlllClassContent();

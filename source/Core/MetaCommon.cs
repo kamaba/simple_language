@@ -720,16 +720,18 @@ namespace SimpleLanguage.Core
                         var mt = m_FrontCallNode.m_MetaTemplate;
                         if (mt != null)
                         {
-                            if (mt.constraintMetaClassList.Count > 0)
+                            if (mt.extendsMetaClass != null)
                             {
-                                for (int i = 0; i < mt.constraintMetaClassList.Count; i++)
+                                tempMetaBase = GetFunctionOrVariableByOwnerClass(mt.extendsMetaClass, name, false);
+                                if (tempMetaBase is MetaMemberVariable)
                                 {
-                                    var constraintClass = mt.constraintMetaClassList[i];
-                                    tempMetaBase = GetFunctionOrVariableByOwnerClass(constraintClass, name, false);
-                                    if (tempMetaBase != null)
-                                    {
-                                        break;
-                                    }
+                                    m_MetaVariable = (MetaMemberVariable)tempMetaBase;
+                                    m_CallNodeType = ECallNodeType.MemberVariableName;
+                                }
+                                else if (tempMetaBase is MetaMemberFunction)
+                                {
+                                    m_MetaFunction = (MetaMemberFunction)tempMetaBase;
+                                    m_CallNodeType = ECallNodeType.MemberFunctionName;
                                 }
                             }
                             else

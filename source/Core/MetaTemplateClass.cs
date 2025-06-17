@@ -36,20 +36,36 @@ namespace SimpleLanguage.Core
                 it.ParseInConstraint();
             }
         }
-        public void ParseFileMetaClassTemplate(FileMetaClass fmc)
+        public MetaClass ParseFileMetaClassTemplate(FileMetaClass fmc)
         {
-            for (int i = 0; i < fmc.templateDefineList.Count; i++)
+            if(fmc.templateDefineList.Count > 0)
             {
-                string tTemplateName = fmc.templateDefineList[i].name;
-                if (m_MetaTemplateList.Find(a => a.name == tTemplateName) != null)
+                MetaClass templateClass = null;
+
+                if( this.m_MetaTemplateClassDict.ContainsKey(fmc.templateDefineList.Count ) )
                 {
-                    Debug.Write("Error 定义模式名称重复!!");
+                    templateClass = this.m_MetaTemplateClassDict[fmc.templateDefineList.Count];
                 }
                 else
                 {
-                    m_MetaTemplateList.Add(new MetaTemplate(this, fmc.templateDefineList[i]));
+                    templateClass = new MetaClass(this);
+                    this.m_MetaTemplateClassDict.Add(fmc.templateDefineList.Count, templateClass);
+                    for (int i = 0; i < fmc.templateDefineList.Count; i++)
+                    {
+                        string tTemplateName = fmc.templateDefineList[i].name;
+                        if (templateClass.m_MetaTemplateList.Find(a => a.name == tTemplateName) != null)
+                        {
+                            Debug.Write("Error 定义模式名称重复!!");
+                        }
+                        else
+                        {
+                            templateClass.m_MetaTemplateList.Add(new MetaTemplate(this, fmc.templateDefineList[i]));
+                        }
+                    }
                 }
+                return templateClass;
             }
+            return this;
         }
         public bool CompareInputTemplateList(MetaInputTemplateCollection mitc)
         {
@@ -94,6 +110,78 @@ namespace SimpleLanguage.Core
                 }
             }
             return null;
+        }
+        public MetaClass GetTemplateMetaClassByTemplateCount( int count )
+        {
+            if( count == 0 )
+            {
+                return this;
+            }
+            if( this.m_MetaTemplateClassDict.ContainsKey(count ) )
+            {
+                return this.m_MetaTemplateClassDict[count];
+            }
+            return null;
+        }
+        public MetaGenTemplateClass AddInstanceMetaClass( List<MetaClass> list )
+        {
+            if( this.m_MetaTemplateList.Count == list.Count )
+            {
+                List<MetaGenTemplate> list2 = new List<MetaGenTemplate>();
+                string extenName = "";
+                for (int i = 0; i < this.metaTemplateList.Count; i++)
+                {
+                    var classTemplate = this.metaTemplateList[i];
+
+                    MetaGenTemplate mgt = new MetaGenTemplate(classTemplate, new MetaType(list[i] ) );
+                    list2.Add( mgt );
+
+                    if (string.IsNullOrEmpty(extenName))
+                    {
+                        extenName = list[i].name;
+                    }
+                    else
+                    {
+                        extenName = extenName + "," + list[i].name;
+                    }
+                }
+
+                MetaGenTemplateClass tmc = GetGenTemplateMetaClassByTemplateList(list2);
+                if( tmc == null )
+                {
+                    tmc = new MetaGenTemplateClass(this.name);
+                    this.AddGenTemplateMetaClass(tmc);
+                    tmc.SetName( this.name + "<" + extenName + ">");
+                    tmc.SetDeep(this.deep + 1);
+                }
+                return tmc;
+            }
+            return null;
+        }
+        public MetaGenTemplateClass GetGenTemplateMetaClassByTemplateList( List<MetaGenTemplate> list)
+        {
+            foreach( var v in m_MetaGenTemplateClassList )
+            {
+                if( v.IsMatchByMetaTemplateClass(list) )
+                {
+                    return v;
+                }
+            }
+            return null;
+        }
+        public MetaGenTemplateClass GetGenTemplateMetaClassIfNotThenGenTemplateClass(MetaInputTemplateCollection mtic)
+        {
+            MetaGenTemplateClass mtc = GetGenTemplateMetaClass(mtic);
+            if (mtc == null)
+            {
+                mtc = MetaGenTemplateClass.GenerateTemplateClass(this, mtic);
+                ClassManager.instance.AddGenTemplateClass(mtc);
+            }
+            if (mtc == null)
+            {
+                Debug.Write("Error 没有找到合适的Template");
+            }
+            return mtc;
         }
     }
 }
