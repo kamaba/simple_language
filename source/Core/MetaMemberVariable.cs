@@ -41,7 +41,7 @@ namespace SimpleLanguage.Core
         private FileMetaMemberVariable m_FileMetaMemeberVariable;
         private MetaExpressNode m_Express = null;
         private bool m_IsInnerDefine = false;
-        private Dictionary< string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
+        //private Dictionary< string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
 
         private bool m_IsSupportConstructionFunctionOnlyBraceType = false;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
         private bool m_IsSupportConstructionFunctionConnectBraceType = true;  //是否支持构造函数名称后边加{}形式    Class1{ a = Class2(){} } 不支持
@@ -144,56 +144,49 @@ namespace SimpleLanguage.Core
             }
             SetOwnerMetaClass(mc);
         }
-        public MetaMemberVariable(MetaGenTemplateClass mtc, MetaMemberVariable mmv, Dictionary<string,MetaGenTemplate> mgt) : base(mmv)
-        {
-            m_MetaGenTemplateDict = mgt;
-            m_Name = mmv.m_Name;
-            m_DefineTypeName = mmv.m_DefineTypeName;
-            m_IsInnerDefine = mmv.m_IsInnerDefine;
-            m_FromType = mmv.m_FromType;
-            m_DefineMetaType = mmv.m_DefineMetaType;
-            m_VariableFrom = EVariableFrom.Member;
-            m_PintTokenList = mmv.m_PintTokenList;
-            m_FileMetaMemeberVariable = mmv.m_FileMetaMemeberVariable;
+        //public MetaMemberVariable(MetaGenTemplateClass mtc, MetaMemberVariable mmv, Dictionary<string,MetaGenTemplate> mgt) : base(mmv)
+        //{
+        //    m_MetaGenTemplateDict = mgt;
+        //    m_Name = mmv.m_Name;
+        //    m_DefineTypeName = mmv.m_DefineTypeName;
+        //    m_IsInnerDefine = mmv.m_IsInnerDefine;
+        //    m_FromType = mmv.m_FromType;
+        //    m_DefineMetaType = mmv.m_DefineMetaType;
+        //    m_VariableFrom = EVariableFrom.Member;
+        //    m_PintTokenList = mmv.m_PintTokenList;
+        //    m_FileMetaMemeberVariable = mmv.m_FileMetaMemeberVariable;
 
-            SetOwnerMetaClass(mtc);
-        }
+        //    SetOwnerMetaClass(mtc);
+        //}
         public override void ParseDefineMetaType()
         {
             if ( !string.IsNullOrEmpty(m_DefineTypeName ) )
             {
-                if (m_MetaGenTemplateDict.ContainsKey(m_DefineTypeName))
+                if( m_FileMetaMemeberVariable.classDefineRef != null )
                 {
-                    m_DefineMetaType = m_MetaGenTemplateDict[m_DefineTypeName].metaType;
-                }
-                else
-                {
-                    if( m_FileMetaMemeberVariable.classDefineRef != null )
+                    string typename = m_FileMetaMemeberVariable.classDefineRef.name;
+                    MetaTemplate getoriTemplate = m_OwnerMetaClass.GetMetaTemplateByName(typename);
+                    if (getoriTemplate != null)
                     {
-                        string typename = m_FileMetaMemeberVariable.classDefineRef.name;
-                        MetaTemplate getoriTemplate = m_OwnerMetaClass.GetMetaTemplateByName(typename);
-                        if (getoriTemplate != null)
-                        {
-                            m_DefineMetaType = new MetaType(getoriTemplate);
-                        }
-                        else
-                        {
-                            var curMc = m_OwnerMetaClass.GetTreeStructNode(); 
-
-                            var retMC = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance(curMc, m_FileMetaMemeberVariable.classDefineRef);
-                            m_DefineMetaType = new MetaType(retMC);
-                        }
+                        m_DefineMetaType = new MetaType(getoriTemplate);
                     }
-                }
+                    else
+                    {
+                        var curMc = m_OwnerMetaClass.GetTreeStructNode(); 
+
+                        var retMC = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance(curMc, m_FileMetaMemeberVariable.classDefineRef);
+                        m_DefineMetaType = new MetaType(retMC);
+                    }
+                }                
             }
         }
-        public void UpdateGenMemberVariable()
-        {
-            if(m_MetaGenTemplateDict.ContainsKey(this.m_DefineTypeName ) )
-            {
-                m_DefineMetaType = m_MetaGenTemplateDict[this.m_DefineTypeName].metaType;
-            }
-        }
+        //public void UpdateGenMemberVariable()
+        //{
+        //    if(m_MetaGenTemplateDict.ContainsKey(this.m_DefineTypeName ) )
+        //    {
+        //        m_DefineMetaType = m_MetaGenTemplateDict[this.m_DefineTypeName].metaType;
+        //    }
+        //}
         public virtual int CalcParseLevelBeCall(int level)
         {
             parseLevel = level - 1;

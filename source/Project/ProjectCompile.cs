@@ -208,12 +208,7 @@ namespace SimpleLanguage.Project
             ClassManager.instance.ParseInterfaceRelation();
             ClassManager.instance.ParseInitMetaClassList();
             m_ProjectParse.ParseGlobalVariable();
-            ClassManager.instance.ParseGenTemplateMetaClassList();
-
-
-            //ClassManager.instance.UpdateTemplateMetaMemberDefineMetaType();
-            //ClassManager.instance.ParseTemplateMemberVariableDefineMetaType();
-            //ClassManager.instance.ParseTemplateMemberFunctionDefineMetaType();
+            ClassManager.instance.ParseDefineMetaTypeGenTemplateMetaClassList();
 
             ClassManager.instance.HandleExtendData();
             ClassManager.instance.CheckInterfaces();

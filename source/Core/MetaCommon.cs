@@ -762,7 +762,25 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
-           
+            
+            if( m_CallNodeType == ECallNodeType.ClassName )
+            {
+                MetaClass curmc = m_MetaClass;
+
+                if (m_FileMetaCallNode.inputTemplateNodeList.Count > 0)
+                {
+                    MetaClass curmc2 = ClassManager.instance.GetMetaClassAndRegisterExpendTemplateClassInstanceByTemplateList(m_OwnerMetaClass, m_MetaClass, m_FileMetaCallNode.inputTemplateNodeList);
+                    var mgtc333 = curmc2 as MetaGenTemplateClass;
+                    if (mgtc333 == null)
+                    {
+                        Log.AddInStructMeta(EError.None, "查找模板类，没有找到对应的模板类");
+                        return false;
+                    }
+                    ClassManager.instance.ParseGenTemplateMetaClassList();
+                    m_MetaClass = curmc2;
+                    //m_MetaTemplateParamsCollection = new MetaInputTemplateCollection(m_FileMetaCallNode.inputTemplateNodeList, this.m_OwnerMetaFunctionBlock, this.m_MetaClass );
+                }
+            }
 
             //下边的代码未重构后，未经过验证，需要验证
             if (m_IsFunction)
@@ -779,12 +797,13 @@ namespace SimpleLanguage.Core
                     if (m_FileMetaCallNode.inputTemplateNodeList.Count > 0)
                     {
                         MetaClass curmc2 = ClassManager.instance.GetMetaClassAndRegisterExpendTemplateClassInstanceByTemplateList(m_OwnerMetaClass, m_MetaClass, m_FileMetaCallNode.inputTemplateNodeList);
-                        if( curmc2 is not MetaGenTemplateClass )
+                        var mgtc333 = curmc2 as MetaGenTemplateClass;
+                        if (mgtc333 == null)
                         {
                             Log.AddInStructMeta(EError.None, "查找模板类，没有找到对应的模板类");
                             return false;
                         }
-                        curmc2.Parse();
+                        ClassManager.instance.ParseGenTemplateMetaClassList();
                         curmc = curmc2;
                         //m_MetaTemplateParamsCollection = new MetaInputTemplateCollection(m_FileMetaCallNode.inputTemplateNodeList, this.m_OwnerMetaFunctionBlock, this.m_MetaClass );
                     }

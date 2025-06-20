@@ -210,7 +210,6 @@ public class Level1<T>
         ret t
     }
 
-    # where (T2 limite Int32,String),
     static T2 test<T2>( T it1, T2 it2 )
     {
         T2 t2n = T2.instance
