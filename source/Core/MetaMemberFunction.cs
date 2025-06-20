@@ -310,7 +310,7 @@ namespace SimpleLanguage.Core
                         }
                         if( retMT == null )
                         {
-                            MetaTemplate getoriTemplate = m_OwnerMetaClass.GetTemplateMetaClassByName(cname);
+                            MetaTemplate getoriTemplate = m_OwnerMetaClass.GetMetaTemplateByName(cname);
                             if (getoriTemplate != null)
                             {
                                 m_IsTemplateClassFunction = true;

@@ -1,5 +1,11 @@
-﻿using SimpleLanguage.Compile;
-using SimpleLanguage.Compile.CoreFileMeta;
+﻿//****************************************************************************
+//  File:      MetaDynamicClass.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2025/5/30 12:00:00
+//  Description: meta dynamic class  
+//****************************************************************************
+
 using System;
 using System.Collections.Generic;
 using System.Text;

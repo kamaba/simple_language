@@ -50,7 +50,7 @@ namespace SimpleLanguage.Compile
             switch( permission )
             {
                 case EPermission.Public: return "public";
-                case EPermission.Internal: return "internal";
+                case EPermission.Export: return "export";
                 case EPermission.Protected: return "protected";
                 case EPermission.Private: return "private";
             }
@@ -61,7 +61,7 @@ namespace SimpleLanguage.Compile
             switch (str)
             {
                 case "public": return EPermission.Public;
-                case "internal": return EPermission.Internal;
+                case "export": return EPermission.Export;
                 case "protected": return EPermission.Protected;
                 case "private": return EPermission.Private;
                 default:return EPermission.Null;

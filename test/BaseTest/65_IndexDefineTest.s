@@ -21,13 +21,13 @@ EList<T> extends List<T>
     {
         base.add(t)
     }
-    _index_( int index )
+    override get _index_( int index )
     {
-
+        ret base._index_(index)
     }
-    override _index_( string aa )
+    override set _index_( int index, string aa )
     {
-
+        base._index_(aa)
     }
 }
 
@@ -39,17 +39,17 @@ IndexTest
        
         a1 = [1,2,3,4,5];    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  相当于Array<int>(5){1,2,3,4,5}
         
-        va1 = a1.$1         #读取下标为1的值  = 2
+        va1 = a1.@1         #读取下标为1的值  = 2
 
         var map1 = Map<string, string>();
         map1.add("a", "map1" );
         map1.add("b", "map2" );
-        mv = map1.$"a";
+        mv = map1.@"a";
 
-        EList<C> el = EList<C>();
+        EList<C> el = {};
         el.add(C(20));
         el.add(C(30));
-        el.add(C(40));
-        ax = el.$"2".a  #使用重写_index_
+        el.add(C(40));      #这里记住，在创建类时，只允许函数形式创建，不允许 C(40){} 这种方式  也不允许 使用 C(20).fun() 的方式调用
+        ax = el.@"2".a  #使用重写_index_
     }
 }

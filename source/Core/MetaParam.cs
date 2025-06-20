@@ -9,8 +9,10 @@
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
+using SimpleLanguage.Parse;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.ConstrainedExecution;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -151,25 +153,45 @@ namespace SimpleLanguage.Core
         }
         public void ParseMetaDefineType()
         {
-            string typename = "";
-            MetaType mdt = null;
+            MetaType mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
             if ( this.m_FileMetaParamter?.classDefineRef != null)
             {
-                typename = m_FileMetaParamter.classDefineRef.name;
+                string typename = m_FileMetaParamter.classDefineRef.name;
+
+                MetaTemplate mtemplate = null;
                 if (m_OwnerMetaFunction != null)
                 {
-                    m_IsFunctionTemplate = m_OwnerMetaFunction.IsDefineTemplate(typename);
+                    mtemplate = m_OwnerMetaFunction.GetMetaDefineTemplateByName( typename );
                 }
-                if(m_OwnerMetaFunction.ownerMetaClass != null )
+                if( mtemplate == null )
                 {
-                    m_IsClassTemplate = m_OwnerMetaFunction.ownerMetaClass.isDefineTemplate(typename);
+                    if (m_OwnerMetaFunction.ownerMetaClass != null)
+                    {
+                        mtemplate = m_OwnerMetaFunction.ownerMetaClass.GetMetaTemplateByName(typename);
+                        m_IsClassTemplate = true;
+                    }
                 }
-
-                mdt = new MetaType(m_FileMetaParamter.classDefineRef, m_OwnerMetaFunction.ownerMetaClass);
-            }
-            else
-            {
-                mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
+                else
+                {
+                    m_IsFunctionTemplate = true;
+                }
+                
+                if(mtemplate != null )
+                {
+                    mdt = new MetaType(mtemplate);
+                }
+                else
+                {
+                    var findmc = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance(m_OwnerMetaFunction.ownerMetaClass, m_FileMetaParamter.classDefineRef);
+                    if( findmc == null )
+                    {
+                        Log.AddInStructMeta(EError.None, $"没有发现在参数{m_FileMetaParamter.token.ToLexemeAllString()} 的相关类");
+                    }
+                    else
+                    {
+                        mdt = new MetaType(findmc);
+                    }
+                }
             }
             m_MetaVariable.SetMetaDefineType(mdt);
             if(m_FileMetaParamter != null )
@@ -640,18 +662,43 @@ namespace SimpleLanguage.Core
         public MetaInputTemplateCollection()
         {
         }
-        public MetaInputTemplateCollection(List<FileInputTemplateNode> callNodeList, MetaClass mc )
-        {
-            for (int i = 0; i < callNodeList.Count; i++)
-            {
-                MetaType mp = new MetaType( callNodeList[i], mc );
-                m_MetaTemplateParamsList.Add(mp);
-                //if( mp.isTemplate )
-                //{
-                //    m_IsTemplateName = true;
-                //}
-            }
-        }
+        //public MetaInputTemplateCollection(List<FileInputTemplateNode> callNodeList, MetaBlockStatements bms, MetaClass mc )
+        //{
+        //    for (int i = 0; i < callNodeList.Count; i++)
+        //    {
+        //        var cnc = callNodeList[i];
+        //        string cname = "";
+        //        if( cnc.nameList.Count == 1 )
+        //        {
+        //            cname = cnc.nameList[0];
+        //        }
+
+        //        MetaTemplate mgtc = null;
+        //        if (mgtc != null)
+        //        {
+        //            mgtc = mc.GetMetaTemplateByName(cname);
+        //            if (mgtc != null)
+        //            {
+        //            }
+        //        }
+        //        if (mgtc == null)
+        //        {
+        //            bms.ownerMetaFunction.GetMetaDefineTemplateByName(cname);
+        //        }
+        //        if( mgtc == null )
+        //        {
+        //            //var getmc = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance(mc, cnc.defineClassCallLink);
+
+        //            MetaType mp = new MetaType(getmc);
+        //            m_MetaTemplateParamsList.Add(mp);
+        //        }
+
+        //        //if( mp.isTemplate )
+        //        //{
+        //        //    m_IsTemplateName = true;
+        //        //}
+        //    }
+        //}
         public void AddMetaTemplateParamsList( MetaType mp )
         {
             m_MetaTemplateParamsList.Add(mp);

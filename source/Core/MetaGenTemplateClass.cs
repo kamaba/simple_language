@@ -19,19 +19,22 @@ namespace SimpleLanguage.Core
     {
         public bool initTemplateMemberVariable => m_InitTemplateMemberVariable;
         public bool initTemplateMemberFunction => m_InitTemplateMemberFunction;
+        public MetaClass metaTemplateClass => m_MetaTemplateClass;
 
         public override bool isGenTemplate => true;
 
         private bool m_InitTemplateMemberVariable = false;
         private bool m_InitTemplateMemberFunction = false;
-        protected Dictionary<string,MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string,MetaGenTemplate>();
+        protected List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
         protected List<MetaMemberFunction> m_GenMetaMemberFunctions = new List<MetaMemberFunction>();
         protected string m_GenTemplateClassName = "";
+        protected MetaClass m_MetaTemplateClass = null;
 
-        public MetaGenTemplateClass(string name ) : base( name )
+        public MetaGenTemplateClass( MetaClass mtc, List<MetaGenTemplate> list ) : base(mtc.name)
         {
+            m_MetaTemplateClass = mtc;
+            m_MetaGenTemplateList = list;
         }
-
         public static MetaGenTemplateClass GenerateTemplateClass( MetaClass mc, MetaInputTemplateCollection mic)
         {
             if (mc.isTemplateClass == false)
@@ -45,7 +48,7 @@ namespace SimpleLanguage.Core
             }
             if (mc.metaTemplateList.Count == mic.metaTemplateParamsList.Count)
             {
-                MetaGenTemplateClass tmc = new MetaGenTemplateClass(mc.name);
+                MetaGenTemplateClass tmc = new MetaGenTemplateClass(mc, null);
                 mc.AddGenTemplateMetaClass(tmc);
 
                 string extenName = "";
@@ -95,27 +98,34 @@ namespace SimpleLanguage.Core
         }
         public MetaType GetGenTemplateByIndex( int index )
         {
-            int i = 0;
-            foreach( var v in m_MetaGenTemplateDict )
+            if(index < m_MetaGenTemplateList.Count && index >= 0  )
             {
-                if( i == index )
-                {
-                    return v.Value.metaType;
-                }
-                i++;
+                return m_MetaGenTemplateList[index].metaType;
             }
             return null;
         }
         public bool IsMatchByMetaTemplateClass( List<MetaGenTemplate> mgtList )
         {
-            return false;
+            if (mgtList == null || mgtList.Count == 0) return false;
+            if (mgtList.Count != m_MetaGenTemplateList.Count) return false;
+            bool flag = true;
+            for( int i = 0; i < mgtList.Count; i++ )
+            {
+                var c1 = mgtList[i];
+                var c2 = m_MetaGenTemplateList[i];
+                if( c1.metaType.metaClass != c2.metaType.metaClass )
+                {
+                    flag = false;
+                    break;
+                }
+            }
+            return flag;
         }
-
         public void GetMetaTemplateMT( Dictionary<string, MetaType> mtdict )
         {
-            foreach( var v in m_MetaGenTemplateDict )
+            foreach( var v in m_MetaGenTemplateList )
             {
-                var cmg = v.Value;
+                var cmg = v;
                 if(mtdict.ContainsKey(cmg.name ))
                 {
                     continue;
@@ -141,15 +151,31 @@ namespace SimpleLanguage.Core
         }
         public void AddMetaGenTemplate( MetaGenTemplate mgt )
         {
-            m_MetaGenTemplateDict.Add(mgt.name, mgt);
+            m_MetaGenTemplateList.Add(mgt);
         }
         public MetaGenTemplate GetMetaGenTemplate( string name )
         {
-            if( m_MetaGenTemplateDict.ContainsKey(name) )
+            return m_MetaGenTemplateList.Find( a=> a.name == name  );
+        }
+        public void Parse()
+        { 
+        }
+        public override void ParseMemberVariableDefineMetaType()
+        {
+            foreach (var it in m_MetaTemplateClass.metaMemberVariableDict)
             {
-                return m_MetaGenTemplateDict[name];
+                it.Value.ParseDefineMetaType();
             }
-            return null;
+        }
+        public override void ParseMemberFunctionDefineMetaType()
+        {
+            foreach (var it in m_MetaTemplateClass.metaMemberFunctionListDict)
+            {
+                foreach (var it2 in it.Value)
+                {
+                    it2.ParseDefineMetaType();
+                }
+            }
         }
         public void ParseTemplateClassMemberFunction()
         {
@@ -169,7 +195,7 @@ namespace SimpleLanguage.Core
             Dictionary<string, MetaMemberVariable> addList = new Dictionary<string, MetaMemberVariable>();
             foreach ( var v in m_MetaMemberVariableDict.Values )
             {
-                MetaMemberVariable mgmv = new MetaMemberVariable( this, v, m_MetaGenTemplateDict );
+                MetaMemberVariable mgmv = new MetaMemberVariable( this, v, null );
                 addList.Add(mgmv.name, mgmv);
                 mgmv.UpdateGenMemberVariable();
             }
@@ -204,14 +230,14 @@ namespace SimpleLanguage.Core
         }
         public bool Adapter(MetaInputTemplateCollection mitc)
         {
-            if( mitc.metaTemplateParamsList.Count == m_MetaGenTemplateDict.Count )
+            if( mitc.metaTemplateParamsList.Count == m_MetaGenTemplateList.Count )
             {
                 int i = 0;
-                foreach( var v in m_MetaGenTemplateDict )
+                foreach( var v in m_MetaGenTemplateList)
                 {                    
                     var mtpl = mitc.metaTemplateParamsList[i++];
-                    var mgtl = v.Value;
-                    if (!mgtl.EqualWithMetaType(mtpl))
+                    var mgtl = v;
+                    if ( v.metaType.metaClass != mtpl.metaClass )
                     {
                         return false;
                     }
@@ -222,20 +248,29 @@ namespace SimpleLanguage.Core
             return false;
         }
 
+        public override string ToString()
+        {           
+            return this.ToDefineTypeString();
+        }
         public override string ToDefineTypeString()
         {
             StringBuilder sb = new StringBuilder();
 
             sb.Append(m_Name);
-            sb.Append("<");
-            foreach( var v in m_MetaGenTemplateDict )
+            if (m_MetaGenTemplateList.Count > 0)
             {
-                sb.Append(v.Value.ToDefineTypeString());
-
-                //if (i < v.e)
-                //    sb.Append(",");
+                sb.Append("<");
+                for (int i = 0; i < m_MetaGenTemplateList.Count; i++)
+                {
+                    var v = m_MetaGenTemplateList[i];
+                    sb.Append(v.ToDefineTypeString());
+                    if (i < m_MetaGenTemplateList.Count - 1)
+                    {
+                        sb.Append(",");
+                    }
+                }
+                sb.Append(">");
             }
-            sb.Append(">");
 
             return sb.ToString();
         }
@@ -250,16 +285,17 @@ namespace SimpleLanguage.Core
             stringBuilder.Append(" ");
 
             stringBuilder.Append("class " + name);
-            if (m_MetaGenTemplateDict.Count > 0)
+            if (m_MetaGenTemplateList.Count > 0)
             {
                 stringBuilder.Append("<");
-                foreach( var v in m_MetaGenTemplateDict )
+                for( int i = 0; i < m_MetaGenTemplateList.Count; i++ )
                 {
-                    stringBuilder.Append(v.Value.ToDefineTypeString());
-                    //if (i < m_MetaGenTemplateList.Count - 1)
-                    //{
-                    //    stringBuilder.Append(",");
-                    //}
+                    var v = m_MetaGenTemplateClassList[i];
+                    stringBuilder.Append(v.ToDefineTypeString());
+                    if (i < m_MetaGenTemplateList.Count - 1)
+                    {
+                        stringBuilder.Append(",");
+                    }
                 }
                 stringBuilder.Append(">");
             }

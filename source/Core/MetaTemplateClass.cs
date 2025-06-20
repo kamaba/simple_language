@@ -40,6 +40,7 @@ namespace SimpleLanguage.Core
         {
             if(fmc.templateDefineList.Count > 0)
             {
+                m_OnlySearchNode = true;
                 MetaClass templateClass = null;
 
                 if( this.m_MetaTemplateClassDict.ContainsKey(fmc.templateDefineList.Count ) )
@@ -49,6 +50,7 @@ namespace SimpleLanguage.Core
                 else
                 {
                     templateClass = new MetaClass(this);
+                    templateClass.m_TemplateParentClass = this;
                     this.m_MetaTemplateClassDict.Add(fmc.templateDefineList.Count, templateClass);
                     for (int i = 0; i < fmc.templateDefineList.Count; i++)
                     {
@@ -64,6 +66,10 @@ namespace SimpleLanguage.Core
                     }
                 }
                 return templateClass;
+            }
+            else
+            {
+                m_OnlySearchNode = false;
             }
             return this;
         }
@@ -88,7 +94,7 @@ namespace SimpleLanguage.Core
             }
             return false;
         }
-        public MetaTemplate GetTemplateMetaClassByName(string _name)
+        public MetaTemplate GetMetaTemplateByName(string _name)
         {
             return m_MetaTemplateList.Find(a => a.name == _name);
         }
@@ -98,6 +104,7 @@ namespace SimpleLanguage.Core
         }
         public void AddGenTemplateMetaClass(MetaGenTemplateClass mtc)
         {
+            mtc.SetDeep(this.m_Deep + 1);
             m_MetaGenTemplateClassList.Add(mtc);
         }
         public MetaGenTemplateClass GetGenTemplateMetaClass(MetaInputTemplateCollection mitc)
@@ -128,31 +135,20 @@ namespace SimpleLanguage.Core
             if( this.m_MetaTemplateList.Count == list.Count )
             {
                 List<MetaGenTemplate> list2 = new List<MetaGenTemplate>();
-                string extenName = "";
                 for (int i = 0; i < this.metaTemplateList.Count; i++)
                 {
                     var classTemplate = this.metaTemplateList[i];
 
                     MetaGenTemplate mgt = new MetaGenTemplate(classTemplate, new MetaType(list[i] ) );
                     list2.Add( mgt );
-
-                    if (string.IsNullOrEmpty(extenName))
-                    {
-                        extenName = list[i].name;
-                    }
-                    else
-                    {
-                        extenName = extenName + "," + list[i].name;
-                    }
                 }
 
                 MetaGenTemplateClass tmc = GetGenTemplateMetaClassByTemplateList(list2);
                 if( tmc == null )
                 {
-                    tmc = new MetaGenTemplateClass(this.name);
+                    tmc = new MetaGenTemplateClass(this, list2); 
+                    ClassManager.instance.AddMetaGenTemplateClassList(tmc);
                     this.AddGenTemplateMetaClass(tmc);
-                    tmc.SetName( this.name + "<" + extenName + ">");
-                    tmc.SetDeep(this.deep + 1);
                 }
                 return tmc;
             }

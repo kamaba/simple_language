@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.Core
 {
@@ -169,7 +170,19 @@ namespace SimpleLanguage.Core
                 {
                     if( m_FileMetaMemeberVariable.classDefineRef != null )
                     {
-                        m_DefineMetaType = MetaType.NewMetaTypeByMemeberDefine(m_FileMetaMemeberVariable.classDefineRef, ownerMetaClass);
+                        string typename = m_FileMetaMemeberVariable.classDefineRef.name;
+                        MetaTemplate getoriTemplate = m_OwnerMetaClass.GetMetaTemplateByName(typename);
+                        if (getoriTemplate != null)
+                        {
+                            m_DefineMetaType = new MetaType(getoriTemplate);
+                        }
+                        else
+                        {
+                            var curMc = m_OwnerMetaClass.GetTreeStructNode(); 
+
+                            var retMC = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance(curMc, m_FileMetaMemeberVariable.classDefineRef);
+                            m_DefineMetaType = new MetaType(retMC);
+                        }
                     }
                 }
             }

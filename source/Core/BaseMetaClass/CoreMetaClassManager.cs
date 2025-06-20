@@ -134,6 +134,7 @@ namespace SimpleLanguage.Core.SelfMeta
             foreach( var v in s_InnerDefineMetaClassList )
             {
                 v.ParseInner();
+                ClassManager.instance.AddDictMetaClass(v);
             }
         }
         public static MetaClass GetMetaClassByEType(EType etype)

@@ -16,7 +16,6 @@ namespace SimpleLanguage
         Null,
         Export,
         Public,
-        Internal,
         Protected,
         Private
     }
@@ -46,10 +45,8 @@ namespace SimpleLanguage
         Array,
         Range,
         String,
-        Decimal,
         Float2,
     }
-
     //token类型
     public enum ETokenType
     {

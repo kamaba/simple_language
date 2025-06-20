@@ -18,8 +18,8 @@ ProjectEnter
 {
    static Main()
    {
-      a1 = Array<int>(3); #申请一个int型，长度为3的数组
-      a2 = [1,2,3,4,5];    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  相当于Array<int>(5){1,2,3,4,5}
+      a1 = Array(3, int.runtimeType ); #申请一个int型，长度为3的数组
+      a2 = [1,2,3,4,5];    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  相当于Array(5, int.runtimeType ){1,2,3,4,5}
       a3 = Array(5){1,2,3,4,5.0f};   #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  相当于Array<float>(5){1.0,2.0,3.0,4.0,5.0}        
       a4 = array( 20 );               # 长度为20的Array<object>
              
@@ -32,9 +32,9 @@ ProjectEnter
         
       Array<float> a8 = Array( 20 ){1,2,3,5,3.3};   #申请一个长度为20的数组
        
-      a9 = array( 27, 3 ); #申请一个二维数组，边界分别为 int[9,3]
+      a9 = Array( 27, int.runtimeType, 3 ); #申请一个二维数组，边界分别为 int[9,3]
       
-      bb2 = int[10,20]{ 1,2,3,4,5 };    # 等于 Array<int>( 100, 10 )  {1,2,3,4,5};        
+      bb2 = Array( 100, int.runtimeType, 10 ){ 1,2,3,4,5 };    # 等于 Array<int>( 100, 10 )  {1,2,3,4,5};        
              
       int[] bb3 = [1,2,3,4,5 ];    #与上相同  Array<int>(5){ 1,2,3,4,5}
     }
@@ -57,9 +57,9 @@ ProjectEnter
       arr1 = Array<ArrNodeClass>(30);     #申请一个该类型的数组对象，但长度为0
 
       arr1[1] = { i = 20 };   #直接设置数组下标为1的内容
-      arr1.$0 = ArrNodeClass();
-      arr1.$0.instValue();             #实体化$0,相当于 arr1[0] = ArrNodeClass();
-      arr1.$0.instValue().i = 10;         #使用$值下标，进行值置换，如果$0为空，则需要先实体化对象才可      以，设置，否则会有空对象报错, 可以调用instValue进行初始化，如果已有内容，则不进行new对象
+      arr1.@0 = ArrNodeClass();
+      arr1.@0.instValue();             #实体化$0,相当于 arr1[0] = ArrNodeClass();
+      arr1.@0.instValue().i = 10;         #使用$值下标，进行值置换，如果$0为空，则需要先实体化对象才可      以，设置，否则会有空对象报错, 可以调用instValue进行初始化，如果已有内容，则不进行new对象
       arr1[1000].i = 10000; # 在编译时，处理是否有超过长度现象，如果有的话，则编译不通过
       
       int i11 = 11;
@@ -105,7 +105,7 @@ ProjectEnter
 }
 ```
 ## 数组的一些注意事项
-- 或者是 arr.IsIn( 2 ); 是否包含在该数组当中
+- 或者是 arr.isIn( 2 ); 是否包含在该数组当中
 - 数组有当前游标的概念， Array arr1 = Array(14);  arr1.index = 0;  给游标赋值   arr1.value = 20; 相当于 arr1[arr1.index] = 20; 即给当前游标赋值
 - 在for a in arr1 中，给是数组的迭代，当迭代时，a 有默认的索引值index
 - 如果是数组或者其它容器，可以使用 arr1.$0 = 10; 来表示值，效果与 arr1[0] = 10; 一样

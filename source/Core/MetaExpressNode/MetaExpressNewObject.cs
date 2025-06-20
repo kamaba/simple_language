@@ -124,7 +124,8 @@ namespace SimpleLanguage.Core
                 m_DefineName = m_FileMetaDefineVariableSyntax.name;
 
                 var fmcd = m_FileMetaDefineVariableSyntax.fileMetaClassDefine;
-                var mdt = new MetaType(fmcd, mt.metaClass);
+                var getMC = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance(mbs.ownerMetaClass, fmcd);
+                var mdt = new MetaType(getMC);
                 m_MetaMemberVariable = new MetaMemberVariable(null, m_DefineName, mdt.metaClass);
 
                 var fileExpress = m_FileMetaDefineVariableSyntax.express;

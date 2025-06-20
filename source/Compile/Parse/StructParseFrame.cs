@@ -642,7 +642,7 @@ namespace SimpleLanguage.Compile.Parse
                         }
                         if (!ProjectManager.isUseForceSemiColonInLineEnd)
                         {
-                            if (parseType == 3)
+                            if (parseType == 3 || parseType == 2 )
                             {
                                 break;
                             }
