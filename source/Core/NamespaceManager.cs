@@ -1,4 +1,11 @@
-﻿using SimpleLanguage.Compile;
+﻿//****************************************************************************
+//  File:      NamespaceManager.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/6/12 12:00:00
+//  Description: 
+//****************************************************************************
+using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Compile.Grammer;
 using SimpleLanguage.Parse;

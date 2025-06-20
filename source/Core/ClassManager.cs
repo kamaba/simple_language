@@ -46,7 +46,7 @@ namespace SimpleLanguage.Core
         public Dictionary<string, MetaClass> allClassDict => m_AllClassDict;
         public Dictionary<string, MetaData> allDataDict => m_AllDataDict;
         public List<MetaDynamicClass> dynamicClassList => m_DynamicClassList;
-        public List<MetaGenTemplateClass> genTemplateMetaClassList => m_GenTemplateMetaClassList;
+        public List<MetaGenTemplateClass> needHandleTemplateMetaClassList => m_NeedHandleTemplateMetaClassList;
         public List<MetaClass> preInitHandleMetaClassList => m_InitHandleMetaClassList;
 
 
@@ -55,15 +55,8 @@ namespace SimpleLanguage.Core
         private Dictionary<string, MetaData> m_AllDataDict = new Dictionary<string, MetaData>();
 
         private List<MetaGenTemplateClass> m_GenTemplateMetaClassList = new List<MetaGenTemplateClass>();
+        private List<MetaGenTemplateClass> m_NeedHandleTemplateMetaClassList = new List<MetaGenTemplateClass>();
         private List<MetaClass> m_InitHandleMetaClassList = new List<MetaClass>();
-
-        //public SortedDictionary<int, List<MetaClass>> parseMemberSortedListMetaClassDict => m_ParseMemberSortedListMetaClassDict;
-        //private List<MetaGenTemplateClass> m_GenTemplateClassList = new List<MetaGenTemplateClass>();
-
-        // 1- 90 -> 从继承 object算为10层 最高九层的继承 无模板类处理   处理接口带T的行为101-90 处理extends带T的行为 201-209 处理  被接口化实现
-        //与被继承子元素的带T的处理301-309
-        //private SortedDictionary<int, List<MetaClass>> m_ParseMemberSortedListMetaClassDict = new SortedDictionary<int, List<MetaClass>>();
-
 
         public MetaClass GetClassByName(string name, int templateCount = 0 )
         {
@@ -149,6 +142,21 @@ namespace SimpleLanguage.Core
             {
                 m_GenTemplateMetaClassList.Add(mc);
             }
+        }
+        public void AddNeedHandleTemplateMetaClassList(MetaGenTemplateClass mc)
+        {
+            if (m_NeedHandleTemplateMetaClassList.IndexOf(mc) == -1)
+            {
+                m_NeedHandleTemplateMetaClassList.Add(mc);
+            }
+            
+        }
+        public bool IsMetaGenTemplateClass(MetaGenTemplateClass mc )
+        {
+            if (m_GenTemplateMetaClassList.IndexOf(mc) != -1)
+                return true;
+
+            return false;
         }
         public void AddInitHandleMetaClassList(MetaClass mc)
         {
@@ -528,96 +536,56 @@ namespace SimpleLanguage.Core
                     it2.Value.ParseMemberVariableDefineMetaType();
                     it2.Value.ParseMemberFunctionDefineMetaType();
                     AddDictMetaClass(it2.Value);
-
-                    //for (int i = 0; i < it2.Value.metaGenTemplateClassList.Count; i++)
-                    //{
-                    //    var it2c = it2.Value.metaGenTemplateClassList[i];
-                    //    it2c.ParseMemberVariableDefineMetaType();
-                    //    it2c.ParseMemberFunctionDefineMetaType();
-                    //}
                 }
 
             }
         }
-        public void ParseGenTemplateMetaClassList()
+        public void ParseDefineMetaTypeGenTemplateMetaClassList()
         {
-            var list = new List<MetaClass>(m_GenTemplateMetaClassList);
-            m_GenTemplateMetaClassList.Clear();
+            var list = new List<MetaGenTemplateClass>(m_NeedHandleTemplateMetaClassList);
+            m_NeedHandleTemplateMetaClassList.Clear();
             foreach (var it in list)
             {
                 it.ParseMemberVariableDefineMetaType();
                 it.ParseMemberFunctionDefineMetaType();
+                AddMetaGenTemplateClassList(it);
             }
         }
-        //public void UpdateTemplateMetaMemberDefineMetaType()
-        //{
-        //    foreach (var it in m_GenTemplateClassList )
-        //    {
-        //        it.UpdateGenMemberDefineMetaType();
-        //    }
-        //}
-        //public void ParseTemplateMemberVariableDefineMetaType()
-        //{
-        //    foreach (var it in m_GenTemplateClassList)
-        //    {
-        //        it.ParseMemberVariableDefineMetaType();
-        //    }
-        //}
-        public void ParseMemberFunctionDefineMetaType()
+        public void ParseGenTemplateMetaClassList()
         {
-            foreach (var it in m_AllClassDict)
+            if (m_NeedHandleTemplateMetaClassList.Count==0) return;
+
+            var list = new List<MetaGenTemplateClass>(m_NeedHandleTemplateMetaClassList);
+            m_NeedHandleTemplateMetaClassList.Clear();
+            foreach (var it in list)
             {
-                it.Value.ParseMemberFunctionDefineMetaType();
+                it.Parse();
+                AddMetaGenTemplateClassList(it);
             }
         }
-        //public void ParseTemplateMemberFunctionDefineMetaType()
-        //{
-        //    foreach (var it in m_GenTemplateClassList)
-        //    {
-        //        it.ParseTemplateClassMemberFunction();
-        //    }
-        //}
         public void CheckInterfaces()
         {
-            foreach (var it in m_AllClassDict)
+            foreach (var it in m_InitHandleMetaClassList )
             {
-                it.Value.CheckInterface();
+                it.CheckInterface();
             }
         }
         public void ParseDefineComplete()
         {
-            foreach (var it in m_AllClassDict)
+            foreach (var it in m_InitHandleMetaClassList )
             {
-                it.Value.ParseDefineComplete();
+                it.ParseDefineComplete();
             }
         }
         public void ParseMemberEnumExpress()
         {
-            foreach (var it in m_AllClassDict)
+            foreach (var it in m_InitHandleMetaClassList )
             {
-                if( it.Value is MetaEnum me )
+                if( it is MetaEnum me )
                 {
                     me.ParseMemberMetaEnumExpress();
                 }
             }
-        }
-        public static bool IsNumberMetaClass( MetaClass mc )
-        {
-            switch( mc.eType )
-            {
-                //case EType.Char:
-                case EType.Int16:
-                case EType.UInt16:
-                case EType.Int32:
-                case EType.UInt32:
-                case EType.Int64:
-                case EType.UInt64:
-                case EType.Float:
-                case EType.Double:
-                    return true;
-            }
-
-            return false;
         }
         //public static EClassRelation ValidateClassRelation( string curName, string compareName )
         //{

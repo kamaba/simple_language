@@ -6,12 +6,9 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 
 namespace SimpleLanguage.Core
 {
@@ -147,7 +144,7 @@ namespace SimpleLanguage.Core
                 if( tmc == null )
                 {
                     tmc = new MetaGenTemplateClass(this, list2); 
-                    ClassManager.instance.AddMetaGenTemplateClassList(tmc);
+                    ClassManager.instance.AddNeedHandleTemplateMetaClassList(tmc);
                     this.AddGenTemplateMetaClass(tmc);
                 }
                 return tmc;

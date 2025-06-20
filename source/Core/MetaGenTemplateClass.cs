@@ -157,15 +157,48 @@ namespace SimpleLanguage.Core
         {
             return m_MetaGenTemplateList.Find( a=> a.name == name  );
         }
-        public void Parse()
-        { 
+        public override void Parse()
+        {
+            ParseMemberVariableDefineMetaType();
+            ParseMemberFunctionDefineMetaType();
+
+            HandleExtendData();
+            ParseDefineComplete();
+
+            foreach (var it in m_MetaTemplateClass.metaMemberVariableDict)
+            {
+                it.Value.ParseMetaExpress();
+            }
+            foreach (var it in m_MetaTemplateClass.metaMemberFunctionListDict)
+            {
+                foreach (var it2 in it.Value)
+                {
+                    it2.ParseMetaExpress();
+                    it2.ParseStatements();
+                }
+            }
         }
         public override void ParseMemberVariableDefineMetaType()
         {
             foreach (var it in m_MetaTemplateClass.metaMemberVariableDict)
             {
-                it.Value.ParseDefineMetaType();
+                ParseDefineMetaType( it.Value );
             }
+        }
+        void ParseDefineMetaType( MetaMemberVariable mmv )
+        {
+            MetaMemberVariable mgmv = new MetaMemberVariable(this, mmv.name );
+            MetaGenTemplate mgt = m_MetaGenTemplateList.Find( a=> a.name == mmv.defineTypeName );
+            if ( mgt != null )
+            {
+                mgmv.SetMetaDefineType( mgt.metaType );
+            }
+            else
+            {
+                Log.AddInStructMeta(EError.None, "没有找到对应的模板定义在解析模板类时");
+                return;
+            }
+            m_MetaMemberVariableDict.Add(mgmv.name, mgmv);
         }
         public override void ParseMemberFunctionDefineMetaType()
         {
@@ -177,29 +210,9 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        public void ParseTemplateClassMemberFunction()
-        {
-            foreach (var it in m_MetaMemberFunctionListDict)
-            {
-                foreach (var it2 in it.Value)
-                {
-                    if (!it2.isTemplateFunction)
-                    {
-                        it2.ParseTemplateClassDefine();
-                    }
-                }
-            }
-        }
         public void UpdateGenMemberDefineMetaType()
         {
-            Dictionary<string, MetaMemberVariable> addList = new Dictionary<string, MetaMemberVariable>();
-            foreach ( var v in m_MetaMemberVariableDict.Values )
-            {
-                MetaMemberVariable mgmv = new MetaMemberVariable( this, v, null );
-                addList.Add(mgmv.name, mgmv);
-                mgmv.UpdateGenMemberVariable();
-            }
-            m_MetaMemberVariableDict = addList;
+            
 
             if( ProjectManager.compileUseTemplateClassGenClassFunction )
             {
