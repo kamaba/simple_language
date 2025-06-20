@@ -3,19 +3,13 @@
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2023/1/09 12:00:00
-//  Description: 
+//  Description: project class manager
 //****************************************************************************
 
 using SimpleLanguage.Core;
 using SimpleLanguage.VM.Runtime;
 using SimpleLanguage.Parse;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using SimpleLanguage.Compile.Parse;
 using SimpleLanguage.Compile.CoreFileMeta;
-using System.Runtime.Intrinsics.X86;
 using SimpleLanguage.IR;
 using System.Diagnostics;
 

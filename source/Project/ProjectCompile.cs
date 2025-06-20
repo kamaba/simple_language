@@ -6,11 +6,9 @@
 //  Description:  compile configuration in the .sp file. and execute configuration relative logic.
 //****************************************************************************
 
-using SimpleLanguage.Compile.Grammer;
 using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Project;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
@@ -18,7 +16,6 @@ using System.IO;
 using System.Timers;
 using SimpleLanguage.Compile.Parse;
 using SimpleLanguage.Compile.CoreFileMeta;
-using System.Security.Cryptography.X509Certificates;
 using System.Diagnostics;
 
 namespace SimpleLanguage.Project
@@ -209,19 +206,19 @@ namespace SimpleLanguage.Project
 
             ClassManager.instance.ParseExtendsRelation();
             ClassManager.instance.ParseInterfaceRelation();
+            ClassManager.instance.ParseInitMetaClassList();
+            m_ProjectParse.ParseGlobalVariable();
+            ClassManager.instance.ParseGenTemplateMetaClassList();
+
+
+            //ClassManager.instance.UpdateTemplateMetaMemberDefineMetaType();
+            //ClassManager.instance.ParseTemplateMemberVariableDefineMetaType();
+            //ClassManager.instance.ParseTemplateMemberFunctionDefineMetaType();
 
             ClassManager.instance.HandleExtendData();
-
-            ClassManager.instance.ParsePreBatchMetaClassList();
-            m_ProjectParse.ParseGlobalVariable();
-
             ClassManager.instance.CheckInterfaces();
             ClassManager.instance.ParseDefineComplete();
             ClassManager.instance.PrintAlllClassContent();
-
-            ClassManager.instance.UpdateTemplateMetaMemberDefineMetaType();
-            ClassManager.instance.ParseTemplateMemberVariableDefineMetaType();
-            ClassManager.instance.ParseTemplateMemberFunctionDefineMetaType();
 
             ClassManager.instance.ParseMemberEnumExpress();
             MetaVariableManager.instance.ParseMetaDataMemberExpress();

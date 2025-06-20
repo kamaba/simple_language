@@ -73,7 +73,9 @@ namespace SimpleLanguage.Core.Statements
                 }
                 else
                 {
-                    mdt = MetaType.NewMetaTypeByStatement(fmcd, ownerMetaClass);
+                    var retMC = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance(ownerMetaClass, fmcd);
+                    (retMC as MetaGenTemplateClass).Parse();
+                    mdt = new MetaType(retMC); 
                 }
 
                 m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );

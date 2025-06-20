@@ -16,6 +16,7 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using System.Linq;
 using SimpleLanguage.Parse;
 using System.Runtime.Intrinsics.X86;
+using SimpleLanguage.IR;
 
 namespace SimpleLanguage.Core
 {
@@ -61,7 +62,7 @@ namespace SimpleLanguage.Core
                 return list;
             }
         }
-        public virtual string allClassName=> this.allName ;
+        public virtual string allClassName=> this.allName;
         public virtual string className => this.name;
 
         public EType eType => m_Type;
@@ -70,6 +71,7 @@ namespace SimpleLanguage.Core
         public int extendLevel => m_ExtendLevel;
         public bool isInterfaceClass => m_IsInterfaceClass;
         public bool onlySearchNode => m_OnlySearchNode;
+        public MetaClass templateParentClass => m_TemplateParentClass;
         public List<MetaClass> interfaceClass => m_InterfaceClass;
         public MetaExpressNode defaultExpressNode => m_DefaultExpressNode;
         public Dictionary<string, MetaMemberVariable> allMetaMemberVariableDict
@@ -95,7 +97,10 @@ namespace SimpleLanguage.Core
             }
         }
 
+
+        public Dictionary<int, MetaClass> metaTemplateClassDict => m_MetaTemplateClassDict;
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
+        public Dictionary<string, List<MetaMemberFunction>> metaMemberFunctionListDict => m_MetaMemberFunctionListDict;
         public Dictionary<string, MetaMemberVariable> metaExtendMemeberVariableDict => m_MetaExtendMemeberVariableDict;
         public Dictionary<Token, FileMetaClass> fileMetaClassDict => m_FileMetaClassDict;
         //public Dictionary<string, List<MetaMemberFunction>> metaMemberFunctionListDict => m_MetaMemberFunctionListDict;
@@ -117,6 +122,7 @@ namespace SimpleLanguage.Core
         protected EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
         protected bool m_IsInterfaceClass = false;
         protected bool m_OnlySearchNode = false;
+        protected MetaClass m_TemplateParentClass = null;
 
         protected MetaClass()
         {
@@ -175,12 +181,12 @@ namespace SimpleLanguage.Core
         {
             m_DefaultExpressNode = defaultExpressNode;
         }
-        //public virtual void Parse()
-        //{
+        public virtual void Parse()
+        {
         //    ParseExtendsRelation();
         //    ParseTemplateRelation();
         //    HandleExtendData();
-        //}
+        }
         public virtual void ParseInnerVariable()
         {
         }
@@ -206,7 +212,7 @@ namespace SimpleLanguage.Core
             }
             if (this.extendClass != null)
             {
-                Debug.Write("已绑定过了继承类 : " + extendClass.name);
+                Log.AddInStructMeta(EError.None, "已绑定过了继承类 : " + extendClass.name );
                 return;
             }
             foreach( var v in m_FileMetaClassDict )
@@ -220,6 +226,23 @@ namespace SimpleLanguage.Core
                 else
                 {
                     mc.metaClass.SetExtendClass(CoreMetaClassManager.objectMetaClass);
+                }
+            }
+        }
+        public void UpdateInterfaceMetaClass()
+        {
+            foreach( var v in this.fileMetaClassDict )
+            {
+                for( int i = 0; i < v.Value.interfaceClassList.Count; i++ )
+                {
+                    var icd = v.Value.interfaceClassList[i];
+                    MetaClass getmc = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance(this, icd );
+                    if (getmc == null)
+                    {
+                        Log.AddInStructMeta(EError.None, "没有找到接口相关的定义类!!");
+                        continue;
+                    }
+                    AddInterfaceClass(getmc);
                 }
             }
         }
@@ -248,20 +271,20 @@ namespace SimpleLanguage.Core
                 var c = v.Value;
                 if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
                 {
-                    Debug.WriteLine($"Error 继承的类321:{allName} 在继承的父类{m_ExtendClass.allName} 中已包含:{c.name} ");
+                    Log.AddInStructMeta(EError.None, $"Error 继承的类321:{allName} 在继承的父类{m_ExtendClass.allName} 中已包含:{c.name} ");
                     continue;
                 }
                 this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
             }
         }
-        public void ParseMemberVariableDefineMetaType()
+        public virtual void ParseMemberVariableDefineMetaType()
         {
             foreach (var it in m_MetaMemberVariableDict)
             {
                 it.Value.ParseDefineMetaType();
             }
         }
-        public void ParseMemberFunctionDefineMetaType()
+        public virtual void ParseMemberFunctionDefineMetaType()
         {
             foreach (var it in m_MetaMemberFunctionListDict)
             {
@@ -311,6 +334,7 @@ namespace SimpleLanguage.Core
                 {
                     mmv.SetName(mmv.name + "__repeat__");
                 }
+                AddMetaMemberVariable(mmv);
             }
             foreach (var v2 in fmc.memberFunctionList)
             {
@@ -430,6 +454,10 @@ namespace SimpleLanguage.Core
             if (!m_InterfaceClass.Contains(aic))
             {
                 m_InterfaceClass.Add(aic);
+            }
+            else
+            {
+                Log.AddInStructMeta(EError.None, "重复添加接口");
             }
         }
         public void AddMetaMemberVariable( MetaMemberVariable mmv, bool isAddManager = true )
@@ -707,7 +735,11 @@ namespace SimpleLanguage.Core
 
         public override string ToString()
         {
-            return this.allClassName;
+            StringBuilder stringBuilder = new StringBuilder();
+
+            stringBuilder.Append(allClassName);
+
+            return stringBuilder.ToString();
         }
         public override string ToFormatString()
         {

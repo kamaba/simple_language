@@ -49,7 +49,6 @@ namespace SimpleLanguage.IR
                     return 8;
                 case EType.Int128:
                 case EType.UInt128:
-                case EType.Decimal:
                     return 16;
                 case EType.Float2:
                     return 8;

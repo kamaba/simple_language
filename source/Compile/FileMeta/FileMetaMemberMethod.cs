@@ -32,12 +32,16 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
             ParseBuildMetaParamter( list );
         }
-        public bool ParseBuildMetaParamter(List<Node> nodeList)
+        public bool ParseBuildMetaParamter(List<Node> inputNodeList )
         {
-            if (nodeList == null) return false;
+            if (inputNodeList == null) return false;
 
             var listDefieNode = new List<Node>();
             var valueNodeList = new List<Node>();
+            Node beforeNode = new Node(null);
+            beforeNode.childList = inputNodeList;
+            beforeNode.parseIndex = 0;
+            var nodeList = StructParse.HandleBeforeNode(beforeNode);
             if (!FileMetatUtil.SplitNodeList(nodeList, listDefieNode, valueNodeList, ref m_AssignToken))
             {
                 Debug.WriteLine("Error 解析NodeList出现错误~~~");
@@ -51,7 +55,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             Node typeNode = null;
             if (!GetNameAndTypeNode(listDefieNode, ref nameNode, ref typeNode, ref m_ParamsToken ))
             {
-                Debug.WriteLine("Error 没有找到该定义名称 必须使用例: X = 102; 的格式");
+                Log.AddInStructFileMeta( EError.UnMatchChar, "Error 没有找到该定义名称 必须使用例: X = 102; 的格式");
                 return false;
             }
             if (nameNode == null)
@@ -113,7 +117,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 sb.Append(Global.tabChar);
             if (m_ClassDefineRef != null)
                 sb.Append(" " + m_ClassDefineRef.ToFormatString());
-            sb.Append(" " + m_Token.lexeme.ToString());
+            sb.Append(" " + m_Token?.lexeme.ToString());
             if (m_AssignToken != null)
             {
                 sb.Append(" " + m_AssignToken.lexeme.ToString());
@@ -207,7 +211,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     {
                         if(funNameNode != null )
                         {
-                            Debug.WriteLine("Error 已有函数实体，不能同时出现两个函数实体!");
+                            Log.AddInStructFileMeta( EError.UnMatchChar, "Error 已有函数实体，不能同时出现两个函数实体!");
                         }
                         funNameNode = cnode;
                     }

@@ -18,8 +18,8 @@ class XC
 enum Book
 {
     B1 = { int i2 = 20, string url = "http://www.baidu.com", XC xc1= XC(), anonC = { string name = "xx", age = 20 } };
-    C1 = 1;
-    string Str;
+    C1 = 1
+    string Str = null
 }
 MixColor
 {

@@ -8,14 +8,17 @@ public class Class1
 }
 List0<T>
 {
+    T t = null
     T getA(){ ret null}
 }
 List1<T> extends List0<T>
 {
+    T t = null
     T getB(){ ret null}
 }
 List2<T> extends List1<List0<object> >
 {
+    T t = null
     T getC(){ ret null} 
 }
 Map<T1,T2>
@@ -25,7 +28,7 @@ Map<T1,T2>
 public interface IList
 {
     int add(object value)
-    #interface void clear()
+    void clear( IList<int> a )
     #interface bool contains( object value )
     #interface int indexOf( object value )
     #interface void insert( int index, object val )
@@ -53,6 +56,7 @@ public class List extends List<object> interface IList2<List<int> >    #如果�
 
 public class List<T> interface IList<T>, IList
 {
+    List<string> _listObj = null
     private Int32 _count = 0;
     #UInt16 m_Bound1 = 0;
     #UInt16 m_Bound2 = 0;
@@ -195,7 +199,7 @@ public class Level1<T>
     {
         T t = T()
 
-        List0<Map<T, T> > list = List0<Map<T, T> >()
+        List0<Map<T, T> > list = new()
 
         Level2<int,string> level222 = {}
 
@@ -249,22 +253,6 @@ GenClass
         Debug.Write("Flaoat" + a )
     }
 }
-#!
-public class ListC<T>
-{
-    Array<T> m_Array = Array<T>(4);
-    
-    public T getIndex( int index )
-    {
-        if index < 0 || index > count
-        {
-            ret null
-        }
-
-        ret m_Array[index]
-    }
-}
-!#
 
 # 关于生成类的规则 
 # 1. 使用T可以定义生成类里边的元素，在检索语句，或者是 其它元素调用时 会生成相关的新类

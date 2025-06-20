@@ -26,7 +26,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public bool isPartial => m_PartialToken != null;
         public MetaClass metaClass => m_MetaClass;
         public FileMetaClassDefine fileMetaExtendClass => m_FileMetaExtendClass;
-        private List<FileMetaClassDefine> interfaceClassList => m_InterfaceClassList;
+        public List<FileMetaClassDefine> interfaceClassList => m_InterfaceClassList;
         public FileMetaNamespace topLevelFileMetaNamespace => m_TopLevelFileMetaNamespace;
         public FileMetaClass topLevelFileMetaClass => m_TopLevelFileMetaClass;
         public List<FileMetaTemplateDefine> templateDefineList => m_TemplateDefineList;
@@ -189,7 +189,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                             }
                             addCount = cAddCount;
                         }
-
                     }
                 }
                 else
@@ -643,25 +642,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         {
             m_TopLevelFileMetaClass = fmc;
             innerClass = true;
-        }
-        public List<MetaClass> GetInterfaceMetaClass()
-        {
-            List<MetaClass> metaClassList = new List<MetaClass>();
-            if( m_InterfaceClassList != null )
-            {
-                for( int i = 0; i < m_InterfaceClassList.Count; i++ )
-                {
-                    MetaClass getmc = ClassManager.instance.GetMetaClassByRef(metaClass, m_InterfaceClassList[i] );
-                    if (getmc == null)
-                    {
-                        m_InterfaceClassList[i].AddError2( 0);
-                        break;
-                    }
-                    metaClassList.Add(getmc);
-                }
-            }
-
-            return metaClassList;
         }
         public override void SetDeep(int _deep)
         {

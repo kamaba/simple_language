@@ -8,7 +8,7 @@ FB
         int second = 1;
         next = 0
         n = arr.length;
-        for i = 0, i < n， 不++
+        for i = 0, i < n，i++
         {
             if i == 0
             {
@@ -24,7 +24,7 @@ FB
                 second = next
             }
 
-            Debug.Write("output$next“)
+            Debug.Write("output$next “)
         }
     }
 }

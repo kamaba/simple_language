@@ -13,7 +13,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.Core
 {
@@ -45,28 +44,32 @@ namespace SimpleLanguage.Core
             }
         }
         public Dictionary<string, MetaClass> allClassDict => m_AllClassDict;
-        public SortedDictionary<int, List<MetaClass>> parseMemberSortedListMetaClassDict => m_ParseMemberSortedListMetaClassDict;
         public Dictionary<string, MetaData> allDataDict => m_AllDataDict;
         public List<MetaDynamicClass> dynamicClassList => m_DynamicClassList;
-        public List<MetaClass> preBatchHandleMetaClassList => m_PreBatchHandleMetaClassList;
+        public List<MetaGenTemplateClass> genTemplateMetaClassList => m_GenTemplateMetaClassList;
+        public List<MetaClass> preInitHandleMetaClassList => m_InitHandleMetaClassList;
 
 
         private Dictionary<string, MetaClass> m_AllClassDict = new Dictionary<string, MetaClass>();
-        private List<MetaGenTemplateClass> m_GenTemplateClassList = new List<MetaGenTemplateClass>();
-        private List<MetaDynamicClass> m_DynamicClassList = new List<MetaDynamicClass>();
+        private List<MetaDynamicClass> m_DynamicClassList = new List<MetaDynamicClass>();         
+        private Dictionary<string, MetaData> m_AllDataDict = new Dictionary<string, MetaData>();
+
+        private List<MetaGenTemplateClass> m_GenTemplateMetaClassList = new List<MetaGenTemplateClass>();
+        private List<MetaClass> m_InitHandleMetaClassList = new List<MetaClass>();
+
+        //public SortedDictionary<int, List<MetaClass>> parseMemberSortedListMetaClassDict => m_ParseMemberSortedListMetaClassDict;
+        //private List<MetaGenTemplateClass> m_GenTemplateClassList = new List<MetaGenTemplateClass>();
 
         // 1- 90 -> 从继承 object算为10层 最高九层的继承 无模板类处理   处理接口带T的行为101-90 处理extends带T的行为 201-209 处理  被接口化实现
         //与被继承子元素的带T的处理301-309
-        private SortedDictionary<int, List<MetaClass>> m_ParseMemberSortedListMetaClassDict = new SortedDictionary<int, List<MetaClass>>();
+        //private SortedDictionary<int, List<MetaClass>> m_ParseMemberSortedListMetaClassDict = new SortedDictionary<int, List<MetaClass>>();
 
-        private Dictionary<string, MetaData> m_AllDataDict = new Dictionary<string, MetaData>();
 
-        private List<MetaClass> m_PreBatchHandleMetaClassList = new List<MetaClass>();
-
-        public MetaClass GetClassByName(string name)
+        public MetaClass GetClassByName(string name, int templateCount = 0 )
         {
-            if (m_AllClassDict.ContainsKey(name))
-                return m_AllClassDict[name];
+            string nname = name + "_" + templateCount;
+            if (m_AllClassDict.ContainsKey(nname))
+                return m_AllClassDict[nname];
             return null;
         }
         public MetaClass GetMetaClassByCSharpType(System.Type type)
@@ -111,7 +114,6 @@ namespace SimpleLanguage.Core
                 topLevelNamespace = ModuleManager.instance.selfModule;
             }
             topLevelNamespace.AddMetaBase(mc.name, mc);
-            AddDictMetaClass(mc);
             return true;
         }
         public void AddGenTemplateClass(MetaGenTemplateClass mc )
@@ -120,7 +122,7 @@ namespace SimpleLanguage.Core
             if( find1 == null )
             {
                 mc.metaGenTemplateClassList.Add(mc);
-                m_GenTemplateClassList.Add(mc);
+                //m_GenTemplateClassList.Add(mc);
             }
         }
         public MetaDynamicClass FindDynamicClass( MetaClass dc )
@@ -141,11 +143,18 @@ namespace SimpleLanguage.Core
             m_AllClassDict.Add(dc.allName, dc);
             return true;
         }
-        public void AddPreBatchHandleMetaClassList(MetaClass mc)
+        public void AddMetaGenTemplateClassList(MetaGenTemplateClass mc)
         {
-            if (m_PreBatchHandleMetaClassList.IndexOf(mc) == -1)
+            if (m_GenTemplateMetaClassList.IndexOf(mc) == -1)
             {
-                m_PreBatchHandleMetaClassList.Add(mc);
+                m_GenTemplateMetaClassList.Add(mc);
+            }
+        }
+        public void AddInitHandleMetaClassList(MetaClass mc)
+        {
+            if (m_InitHandleMetaClassList.IndexOf(mc) == -1)
+            {
+                m_InitHandleMetaClassList.Add(mc);
             }
         }
         public MetaData FindMetaData( MetaData md )
@@ -386,6 +395,7 @@ namespace SimpleLanguage.Core
                 if (fmc.isEnum)
                 {
                     MetaEnum newme = new MetaEnum(fmc.name);
+                    AddInitHandleMetaClassList(newme);
                     newme.BindFileMetaClass(fmc);
                     newme.ParseFileMetaEnumMemeberEnum(fmc);
                     newmc = newme;
@@ -405,6 +415,7 @@ namespace SimpleLanguage.Core
                 else if (fmc.isData)
                 {
                     var newmd = new MetaData( fmc );
+                    AddInitHandleMetaClassList(newmd);
                     newmc = newmd;
                     newmd.BindFileMetaClass(fmc);
                     newmd.ParseFileMetaDataMemeberData(fmc);
@@ -438,6 +449,7 @@ namespace SimpleLanguage.Core
                     else
                     {
                         newmc = new MetaClass(fmc.name);
+                        AddInitHandleMetaClassList(newmc);
                         newmc.BindFileMetaClass(fmc);
                         newmc.SetClassDefineType(EClassDefineType.CodeDefine);
                         var newmc2 = newmc.ParseFileMetaClassTemplate(fmc);
@@ -455,7 +467,6 @@ namespace SimpleLanguage.Core
                     }
                 }
 
-                AddPreBatchHandleMetaClassList(newmc);
                 return newmc;
             }
             else
@@ -465,33 +476,24 @@ namespace SimpleLanguage.Core
         }       
         public void AddDictMetaClass( MetaClass mc )
         {
-            if(m_AllClassDict.ContainsKey( mc.allClassName ) )
+            string acn = mc.allClassName + "_" + mc.metaTemplateList.Count;
+            if (m_AllClassDict.ContainsKey(acn) )
             {
                 Log.AddInStructMeta(EError.AddClassNameSame, $"已包含类:{mc.allName} 又进行了重进添加!");
                 return;
             }
-            m_AllClassDict.Add(mc.allClassName, mc);
+            m_AllClassDict.Add(acn, mc);
         }
         public void ParseInterfaceRelation()
         {
             foreach (var it in m_AllClassDict)
             {
-                foreach( var it2 in it.Value.fileMetaClassDict )
-                {
-                    var ifmc = it2.Value.GetInterfaceMetaClass();
-                    if (ifmc.Count > 0)
-                    {
-                        for (int i = 0; i < ifmc.Count; i++)
-                        {
-                            it.Value.AddInterfaceClass(ifmc[i]);
-                        }
-                    }
-                }
+                it.Value.UpdateInterfaceMetaClass();
             }
         }
         public void ParseExtendsRelation()
         {
-            var list = new List<MetaClass>(m_PreBatchHandleMetaClassList);
+            var list = new List<MetaClass>(m_InitHandleMetaClassList);
             foreach (var it in list )
             {
                 it.ParseExtendsRelation();
@@ -511,30 +513,56 @@ namespace SimpleLanguage.Core
                 it.HandleExtendData();
             }
         }
-        public void ParsePreBatchMetaClassList()
+        public void ParseInitMetaClassList()
         {
-            var list = new List<MetaClass>(preBatchHandleMetaClassList);
-            preBatchHandleMetaClassList.Clear();
+            foreach (var it in m_InitHandleMetaClassList )
+            {
+                if (it.onlySearchNode == false)
+                {
+                    it.ParseMemberVariableDefineMetaType();
+                    it.ParseMemberFunctionDefineMetaType();
+                    AddDictMetaClass(it);
+                }
+                foreach (var it2 in it.metaTemplateClassDict)
+                {
+                    it2.Value.ParseMemberVariableDefineMetaType();
+                    it2.Value.ParseMemberFunctionDefineMetaType();
+                    AddDictMetaClass(it2.Value);
+
+                    //for (int i = 0; i < it2.Value.metaGenTemplateClassList.Count; i++)
+                    //{
+                    //    var it2c = it2.Value.metaGenTemplateClassList[i];
+                    //    it2c.ParseMemberVariableDefineMetaType();
+                    //    it2c.ParseMemberFunctionDefineMetaType();
+                    //}
+                }
+
+            }
+        }
+        public void ParseGenTemplateMetaClassList()
+        {
+            var list = new List<MetaClass>(m_GenTemplateMetaClassList);
+            m_GenTemplateMetaClassList.Clear();
             foreach (var it in list)
             {
                 it.ParseMemberVariableDefineMetaType();
                 it.ParseMemberFunctionDefineMetaType();
             }
         }
-        public void UpdateTemplateMetaMemberDefineMetaType()
-        {
-            foreach (var it in m_GenTemplateClassList )
-            {
-                it.UpdateGenMemberDefineMetaType();
-            }
-        }
-        public void ParseTemplateMemberVariableDefineMetaType()
-        {
-            foreach (var it in m_GenTemplateClassList)
-            {
-                it.ParseMemberVariableDefineMetaType();
-            }
-        }
+        //public void UpdateTemplateMetaMemberDefineMetaType()
+        //{
+        //    foreach (var it in m_GenTemplateClassList )
+        //    {
+        //        it.UpdateGenMemberDefineMetaType();
+        //    }
+        //}
+        //public void ParseTemplateMemberVariableDefineMetaType()
+        //{
+        //    foreach (var it in m_GenTemplateClassList)
+        //    {
+        //        it.ParseMemberVariableDefineMetaType();
+        //    }
+        //}
         public void ParseMemberFunctionDefineMetaType()
         {
             foreach (var it in m_AllClassDict)
@@ -542,13 +570,13 @@ namespace SimpleLanguage.Core
                 it.Value.ParseMemberFunctionDefineMetaType();
             }
         }
-        public void ParseTemplateMemberFunctionDefineMetaType()
-        {
-            foreach (var it in m_GenTemplateClassList)
-            {
-                it.ParseTemplateClassMemberFunction();
-            }
-        }
+        //public void ParseTemplateMemberFunctionDefineMetaType()
+        //{
+        //    foreach (var it in m_GenTemplateClassList)
+        //    {
+        //        it.ParseTemplateClassMemberFunction();
+        //    }
+        //}
         public void CheckInterfaces()
         {
             foreach (var it in m_AllClassDict)
@@ -591,20 +619,20 @@ namespace SimpleLanguage.Core
 
             return false;
         }
-        public static EClassRelation ValidateClassRelation( string curName, string compareName )
-        {
-            MetaClass currentClass = instance.GetClassByName(curName);
-            if (currentClass == null)
-            {
-                return EClassRelation.CurClassError;
-            }
-            MetaClass compareClass = instance.GetClassByName(compareName);
-            if (compareClass == null)
-            {
-                return EClassRelation.CompareClassError;
-            }
-            return ValidateClassRelationByMetaClass(currentClass, compareClass);
-        }
+        //public static EClassRelation ValidateClassRelation( string curName, string compareName )
+        //{
+        //    MetaClass currentClass = instance.GetClassByName(curName);
+        //    if (currentClass == null)
+        //    {
+        //        return EClassRelation.CurClassError;
+        //    }
+        //    MetaClass compareClass = instance.GetClassByName(compareName);
+        //    if (compareClass == null)
+        //    {
+        //        return EClassRelation.CompareClassError;
+        //    }
+        //    return ValidateClassRelationByMetaClass(currentClass, compareClass);
+        //}
         public static bool IsNumberClass( MetaClass curClass )
         {
             if (curClass == CoreMetaClassManager.byteMetaClass
@@ -746,36 +774,36 @@ namespace SimpleLanguage.Core
         public void HandleInterface( FileMetaClass mc )
         {
         }
-        public MetaClass GetMetaClassByName(string inputname, MetaClass ownerClass = null, FileMeta fm = null )
-        {
-            MetaClass fmc = CoreMetaClassManager.GetCoreMetaClass(inputname);
-            if( fmc != null )
-            {
-                return fmc;
-            }
-            fmc = ClassManager.instance.GetClassByName(inputname);
-            if (fmc != null)
-            {
-                return fmc;
-            }
+        //public MetaClass GetMetaClassByName(string inputname, MetaClass ownerClass = null, FileMeta fm = null )
+        //{
+        //    MetaClass fmc = CoreMetaClassManager.GetCoreMetaClass(inputname);
+        //    if( fmc != null )
+        //    {
+        //        return fmc;
+        //    }
+        //    fmc = ClassManager.instance.GetClassByName(inputname);
+        //    if (fmc != null)
+        //    {
+        //        return fmc;
+        //    }
 
-            if( ownerClass != null )
-            {
-                //子类
-                MetaBase tmb = ownerClass.GetChildrenMetaBaseByName(inputname);
-                if (tmb != null && tmb is MetaClass)
-                {
-                    return tmb as MetaClass;
-                }
-            }
-            //引入文件的类或者是命名空间
-            if (fm == null)
-            {
-                fmc = fm.GetMetaBaseByName(inputname) as MetaClass;
-            }
+        //    if( ownerClass != null )
+        //    {
+        //        //子类
+        //        MetaBase tmb = ownerClass.GetChildrenMetaBaseByName(inputname);
+        //        if (tmb != null && tmb is MetaClass)
+        //        {
+        //            return tmb as MetaClass;
+        //        }
+        //    }
+        //    //引入文件的类或者是命名空间
+        //    if (fm == null)
+        //    {
+        //        fmc = fm.GetMetaBaseByName(inputname) as MetaClass;
+        //    }
 
-            return fmc;
-        }
+        //    return fmc;
+        //}
         //public MetaBase GetMetaBaseByName(MetaClass ownerClass, string name)
         //{
         //    MetaBase mb = ownerClass;
@@ -997,42 +1025,47 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                if(fmcd.inputTemplateNodeList.Count == 0 )
+                getmc = GetMetaClassAndRegisterExpendTemplateClassInstanceByTemplateList(curMc, getmc, fmcd.inputTemplateNodeList);
+            }
+            return getmc;
+        }
+        public MetaClass GetMetaClassAndRegisterExpendTemplateClassInstanceByTemplateList( MetaClass curMc, MetaClass getmc, List<FileInputTemplateNode> inputTemplateNodeList )
+        {
+            if (inputTemplateNodeList.Count == 0)
+            {
+                return getmc;
+            }
+            var findfn = getmc.GetTemplateMetaClassByTemplateCount(inputTemplateNodeList.Count);
+            if (findfn != null)
+            {
+                getmc = findfn;
+            }
+            List<MetaClass> regMCList = new List<MetaClass>();
+            //这里，要注册实体模板类
+            for (int i = 0; i < inputTemplateNodeList.Count; i++)
+            {
+                var t = RegisterTemplateDefineMetaTemplateClass(curMc, inputTemplateNodeList[i]);
+                regMCList.Add(t);
+            }
+            if (findfn != null)
+            {
+                bool isNeedReg = true;
+                for (int i = 0; i < regMCList.Count; i++)
                 {
-                    return getmc;
-                }
-                var findfn = getmc.GetTemplateMetaClassByTemplateCount(fmcd.inputTemplateNodeList.Count);
-                if (findfn != null)
-                {
-                    getmc = findfn;
-                }
-                List<MetaClass> regMCList = new List<MetaClass>();
-                //这里，要注册实体模板类
-                for (int i = 0; i < fmcd.inputTemplateNodeList.Count; i++)
-                {
-                    var t = ClassManager.instance.RegisterTemplateDefineMetaTemplateClass(curMc , getmc, fmcd.inputTemplateNodeList[i]);
-                    regMCList.Add(t);
-                }
-                if (findfn != null)
-                {
-                    bool isNeedReg = true;
-                    for (int i = 0; i < regMCList.Count; i++)
+                    if (regMCList[i] == null)
                     {
-                        if (regMCList[i] == null)
-                        {
-                            isNeedReg = false;
-                            break;
-                        }
+                        isNeedReg = false;
+                        break;
                     }
-                    if (isNeedReg)
-                    {
-                        getmc = findfn.AddInstanceMetaClass(regMCList);
-                    }
+                }
+                if (isNeedReg)
+                {
+                    getmc = findfn.AddInstanceMetaClass(regMCList);
                 }
             }
             return getmc;
         }
-        public MetaClass RegisterTemplateDefineMetaTemplateClass( MetaClass ownerMc, MetaClass templateMC, FileInputTemplateNode fmtd)
+        public MetaClass RegisterTemplateDefineMetaTemplateClass( MetaClass ownerMc, FileInputTemplateNode fmtd)
         {
             var newmc = ClassManager.instance.GetMetaClassByListString(ownerMc, fmtd.nameList);
             if (newmc != null)
@@ -1052,7 +1085,7 @@ namespace SimpleLanguage.Core
                     for (int j = 0; j < dcc.inputTemplateNodeList.Count; j++)
                     {
                         var itn = dcc.inputTemplateNodeList[j];
-                        var t = RegisterTemplateDefineMetaTemplateClass(ownerMc, newmc, itn);
+                        var t = RegisterTemplateDefineMetaTemplateClass(ownerMc, itn);
                         regMCList.Add(t);
                     }
                 }
