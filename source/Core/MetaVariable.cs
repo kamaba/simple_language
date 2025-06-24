@@ -28,9 +28,9 @@ namespace SimpleLanguage.Core
             Member,
             ArrayInner,
         }
-        public string defineTypeName => m_DefineTypeName;
         public bool isStatic { get; protected set; } = false;
         public virtual bool isConst { get; set; } = false;
+        public virtual bool isParsed => m_IsParsed;
         public bool isArgument => m_VariableFrom == EVariableFrom.Argument;
         public bool isGlobal => m_VariableFrom == EVariableFrom.Global;
         public bool isArray
@@ -47,6 +47,7 @@ namespace SimpleLanguage.Core
         protected MetaType m_DefineMetaType = null;
         protected EVariableFrom m_VariableFrom;
         protected List<Token> m_PintTokenList = new List<Token>();
+        protected bool m_IsParsed = false;
         //用来存放扩展包含变量
         protected Dictionary<string, MetaVariable> m_MetaVariableDict = new Dictionary<string, MetaVariable>();
 
@@ -142,6 +143,10 @@ namespace SimpleLanguage.Core
         //    //m_FromExpressNodeCreate = men;
         //}
         public virtual void ParseDefineMetaType()
+        {
+
+        }
+        public virtual void Parse()
         {
 
         }

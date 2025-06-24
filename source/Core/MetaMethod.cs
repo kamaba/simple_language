@@ -44,7 +44,7 @@ namespace SimpleLanguage.Core
         protected MetaVariable m_ThisMetaVariable = null;
         protected MetaVariable m_ReturnMetaVariable = null;
         protected MetaDefineParamCollection m_MetaMemberParamCollection = null;
-        protected Dictionary<string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
+        //protected Dictionary<string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
         protected MetaDefineTemplateCollection m_MetaMemberTemplateCollection = new MetaDefineTemplateCollection();
         protected EMethodCallType m_MethodCallType = EMethodCallType.Local;
         protected bool m_IsMustNeedReturnStatements = false;
@@ -55,18 +55,18 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             SetOwnerMetaClass(mc);
         }
-        public bool IsDefineTemplate(string name)
-        {
-            return m_MetaGenTemplateDict.ContainsKey(name);
-        }
-        public MetaGenTemplate GetMetaGenTemplate( string name )
-        {
-            if(m_MetaGenTemplateDict.ContainsKey( name ) )
-            {
-                return m_MetaGenTemplateDict[name];
-            }
-            return null;
-        }
+        //public bool IsDefineTemplate(string name)
+        //{
+        //    return m_MetaGenTemplateDict.ContainsKey(name);
+        //}
+        //public MetaGenTemplate GetMetaGenTemplate( string name )
+        //{
+        //    if(m_MetaGenTemplateDict.ContainsKey( name ) )
+        //    {
+        //        return m_MetaGenTemplateDict[name];
+        //    }
+        //    return null;
+        //}
 
         public void AddMetaStatements(MetaStatements state)
         {

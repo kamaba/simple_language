@@ -27,11 +27,7 @@ namespace SimpleLanguage.Core
         public bool isEnum => m_MetaClass is MetaEnum;
         public bool isData => m_MetaClass is MetaData;
         public MetaMemberEnum enumValue => m_EnumValue;
-
-        // 采用模板类表示法，仿C#做法，而不是C++，这种做法有效减少了，代码生成的数据，后续数据类型
-        public MetaTemplate metaTemplate => m_MetaTemplate;
-        public bool isTemplate => m_MetaTemplate is MetaTemplate;
-        private List<MetaTemplate> defineMetaTemplateList => m_DefineMetaTemplateList;
+        public List<MetaType> templateMetaTypeList => m_TemplateMetaTypeList;
         public bool isGenTemplateClass => m_MetaClass is MetaGenTemplateClass;
         public bool isArray => m_MetaClass?.eType == EType.Array;
         public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
@@ -41,12 +37,12 @@ namespace SimpleLanguage.Core
         private MetaInputTemplateCollection m_InputTemplateCollection = null;
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
         private MetaClass m_RawMetaClass = null;                    // List<int> => list
+        private MetaTemplate m_MetaTemplate = null;
         private MetaExpressNode m_DefaultExpressNode = null;        // int a => a = 0;
         private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
         private bool m_IsDefineMetaClass = false;
 
-        private MetaTemplate m_MetaTemplate = null;                 // T t  => T
-        private List<MetaTemplate> m_DefineMetaTemplateList = new List<MetaTemplate>();     //  Array<T1,T2> 一般用在返回值类型定义中
+        private List<MetaType> m_TemplateMetaTypeList = new List<MetaType>();     //  Array<T1,T2> 一般用在返回值类型定义中
 
         public MetaType(MetaTemplate mt)
         {
@@ -56,7 +52,7 @@ namespace SimpleLanguage.Core
         {
             this.m_MetaClass = mt.m_MetaClass;
             this.m_RawMetaClass = mt.m_RawMetaClass;
-            m_MetaTemplate = mt.m_MetaTemplate;
+            //m_MetaTemplate = mt.m_MetaTemplate;
             m_InputTemplateCollection = mt.m_InputTemplateCollection;
         }
         //public MetaType(FileInputTemplateNode fm, MetaClass mc)
@@ -375,6 +371,22 @@ namespace SimpleLanguage.Core
         //    m_EnumValue = mmv;
         //    m_MetaClass = mmv.ownerMetaClass;
         //}
+        public bool IsIncludeTemplate()
+        {
+            for( int i = 0; i < m_TemplateMetaTypeList.Count; i++ )
+            {
+                var tmt = m_TemplateMetaTypeList[i];
+                if( tmt.IsIncludeTemplate() == false )
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        public void AddTemplateMetaType( MetaType mt )
+        {
+            m_TemplateMetaTypeList.Add(mt);
+        }
         public MetaMemberFunction GetMetaMemberConstructFunction( MetaInputParamCollection input = null)
         {
             return m_MetaClass?.GetMetaMemberConstructFunction(input);

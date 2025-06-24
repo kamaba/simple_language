@@ -35,6 +35,7 @@ namespace SimpleLanguage.Core
         public MetaExpressNode express => m_Express;
         public int parseLevel { get; set; } = -1;
         public bool isInnerDefine => m_IsInnerDefine;
+        public FileMetaMemberVariable fileMetaMemeberVariable => m_FileMetaMemeberVariable;
 
         protected EFromType m_FromType = EFromType.Code;
         private int m_Index = -1;
@@ -164,29 +165,12 @@ namespace SimpleLanguage.Core
             {
                 if( m_FileMetaMemeberVariable.classDefineRef != null )
                 {
-                    string typename = m_FileMetaMemeberVariable.classDefineRef.name;
-                    MetaTemplate getoriTemplate = m_OwnerMetaClass.GetMetaTemplateByName(typename);
-                    if (getoriTemplate != null)
-                    {
-                        m_DefineMetaType = new MetaType(getoriTemplate);
-                    }
-                    else
-                    {
-                        var curMc = m_OwnerMetaClass.GetTreeStructNode(); 
+                    var curMc = m_OwnerMetaClass.GetTreeStructNode();
 
-                        var retMC = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance(curMc, m_FileMetaMemeberVariable.classDefineRef);
-                        m_DefineMetaType = new MetaType(retMC);
-                    }
+                    m_DefineMetaType = ClassManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(curMc, m_FileMetaMemeberVariable.classDefineRef);                    
                 }                
             }
         }
-        //public void UpdateGenMemberVariable()
-        //{
-        //    if(m_MetaGenTemplateDict.ContainsKey(this.m_DefineTypeName ) )
-        //    {
-        //        m_DefineMetaType = m_MetaGenTemplateDict[this.m_DefineTypeName].metaType;
-        //    }
-        //}
         public virtual int CalcParseLevelBeCall(int level)
         {
             parseLevel = level - 1;

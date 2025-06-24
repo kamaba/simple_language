@@ -156,34 +156,10 @@ namespace SimpleLanguage.Core
             MetaType mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
             if ( this.m_FileMetaParamter?.classDefineRef != null)
             {
-                string typename = m_FileMetaParamter.classDefineRef.name;
-
-                MetaTemplate mtemplate = null;
-                if (m_OwnerMetaFunction != null)
+                if(m_OwnerMetaFunction.ownerMetaClass is MetaGenTemplateClass mgtc )
                 {
-                    mtemplate = m_OwnerMetaFunction.GetMetaDefineTemplateByName( typename );
-                }
-                if( mtemplate == null )
-                {
-                    if (m_OwnerMetaFunction.ownerMetaClass != null)
-                    {
-                        mtemplate = m_OwnerMetaFunction.ownerMetaClass.GetMetaTemplateByName(typename);
-                        m_IsClassTemplate = true;
-                    }
-                }
-                else
-                {
-                    m_IsFunctionTemplate = true;
-                }
-                
-                if(mtemplate != null )
-                {
-                    mdt = new MetaType(mtemplate);
-                }
-                else
-                {
-                    var findmc = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance(m_OwnerMetaFunction.ownerMetaClass, m_FileMetaParamter.classDefineRef);
-                    if( findmc == null )
+                    var findmc = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance(mgtc, m_FileMetaParamter.classDefineRef);
+                    if (findmc == null)
                     {
                         Log.AddInStructMeta(EError.None, $"没有发现在参数{m_FileMetaParamter.token.ToLexemeAllString()} 的相关类");
                     }
@@ -191,6 +167,15 @@ namespace SimpleLanguage.Core
                     {
                         mdt = new MetaType(findmc);
                     }
+                    if( mdt.IsIncludeTemplate() )
+                    {
+                        m_IsClassTemplate = true;
+                    }
+                }
+                else
+                {
+                    var curMc = m_OwnerMetaFunction.ownerMetaClass.GetTreeStructNode();
+                    mdt = ClassManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(curMc, m_FileMetaParamter.classDefineRef);
                 }
             }
             m_MetaVariable.SetMetaDefineType(mdt);

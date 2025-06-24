@@ -32,8 +32,7 @@ namespace SimpleLanguage.Core.Statements
             m_AllowUseSettings.callConstructFunction = true;
             m_AllowUseSettings.callFunction = true;
 
-            Dictionary<string, MetaType> mtDict = new Dictionary<string, MetaType>();
-            m_MetaCallLink = new MetaCallLink(fmcl.variableRef, mbs.ownerMetaClass, mbs, mtDict);
+            m_MetaCallLink = new MetaCallLink(fmcl.variableRef, mbs.ownerMetaClass, mbs );
             m_MetaCallLink.Parse(m_AllowUseSettings);
             m_MetaCallLink.CalcReturnType();
         }

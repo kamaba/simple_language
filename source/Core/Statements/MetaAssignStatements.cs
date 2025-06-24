@@ -118,9 +118,7 @@ namespace SimpleLanguage.Core.Statements
         }
         private void Parse()
         {
-            Dictionary<string, MetaType> mmtd = new Dictionary<string, MetaType>();
-
-            var metaCallLink = new MetaCallLink(m_FileMetaOpAssignSyntax.variableRef, m_OwnerMetaBlockStatements?.ownerMetaClass, m_OwnerMetaBlockStatements, mmtd );
+            var metaCallLink = new MetaCallLink(m_FileMetaOpAssignSyntax.variableRef, m_OwnerMetaBlockStatements?.ownerMetaClass, m_OwnerMetaBlockStatements );
 
             if (metaCallLink == null)
             {

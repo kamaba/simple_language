@@ -14,7 +14,6 @@ using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Diagnostics;
-using System.Runtime.Intrinsics.X86;
 
 namespace SimpleLanguage.Core
 {
@@ -52,6 +51,7 @@ namespace SimpleLanguage.Core
         public bool isFinal { get; set; } = false;
         public bool isCanRewrite { get; set; } = false;
         public bool isTemplateInParam { get; set; } = false;
+        public FileMetaMemberFunction fileMetaMemberFunction => m_FileMetaMemberFunction;
 
         private bool m_IsTemplateClassFunction = false;
         private bool m_IsTemplateFunction = false;
@@ -59,12 +59,27 @@ namespace SimpleLanguage.Core
         private bool m_ConstructInitFunction = false;
         protected bool m_IsWithInterface = false;
         protected FileMetaMemberFunction m_FileMetaMemberFunction = null;
-        protected List<MetaMemberFunction> m_TemplateMemberFunctionList = new List<MetaMemberFunction>();
+        protected List<MetaGenTempalteFunction> m_GenTempalteFunctionList = new List<MetaGenTempalteFunction>();
         protected MetaMemberFunction m_OriginalMetaMemberFunction = null;
 
         public MetaMemberFunction( MetaClass mc ):base(mc)
         {
 
+        }
+        public MetaMemberFunction(MetaMemberFunction mmf ) : base(mmf.ownerMetaClass)
+        {
+            m_MetaMemberParamCollection = mmf.m_MetaMemberParamCollection;
+            m_FileMetaMemberFunction = mmf.m_FileMetaMemberFunction;
+            m_Name = mmf.m_Name;
+
+            isStatic = mmf.isStatic;
+            isGet = mmf.isGet;
+            isSet = mmf.isSet;
+            isFinal = mmf.isFinal;
+            m_MetaBlockStatements = mmf.m_MetaBlockStatements;
+            m_ConstructInitFunction = mmf.m_ConstructInitFunction;
+            m_ReturnMetaVariable = mmf.m_ReturnMetaVariable;
+            m_DefineMetaType = mmf.m_DefineMetaType;
         }
         public MetaMemberFunction( MetaClass mc, FileMetaMemberFunction fmmf):base( mc )
         {
@@ -211,9 +226,39 @@ namespace SimpleLanguage.Core
         {
             m_MetaMemberTemplateCollection.AddMetaDefineTemplate(mt);
         }
-        public void AddTemplateMemberFunction( MetaMemberFunction mmf )
+        public MetaGenTempalteFunction AddGenTemplateMemberFunctionBySelf( List<MetaClass> list )
         {
-            this.m_TemplateMemberFunctionList.Add(mmf);
+            List<MetaGenTemplate> mgtList = new List<MetaGenTemplate>(list.Count);
+            for( int i = 0; i < list.Count; i++ )
+            {
+                var l1 = this.m_MetaMemberTemplateCollection.metaTemplateList[i];
+                MetaGenTemplate mgt = new MetaGenTemplate(l1, new MetaType(list[i]));
+                mgtList.Add(mgt);
+            }
+
+           MetaGenTempalteFunction mgtf = new MetaGenTempalteFunction( this, mgtList);
+
+            this.m_GenTempalteFunctionList.Add(mgtf);
+
+            mgtf.Parse();
+
+            return mgtf;
+        }
+        public MetaGenTempalteFunction GetGenTemplateFunction( List<MetaClass> mcList )
+        {
+            for( int i = 0; i < m_GenTempalteFunctionList.Count; i++ )
+            {
+                var c = m_GenTempalteFunctionList[i];
+                if( c.MatchInputTemplateInsance( mcList ) )
+                {
+                    return c;
+                }
+            }
+            return null;
+        }
+        public override void Parse()
+        {
+            base.Parse();
         }
         public void ParseTemplateClassDefine()
         {
@@ -289,15 +334,15 @@ namespace SimpleLanguage.Core
                             }
                         }
 
-                        var gmgt = GetMetaGenTemplate(cname);
-                        if ( gmgt != null )
-                        {
-                            if( retMT != null )
-                            {
-                                Debug.WriteLine("Error 定义模板类与函数里边重复!");
-                            }
-                            retMT = gmgt.metaType;
-                        }
+                        //var gmgt = GetMetaGenTemplate(cname);
+                        //if ( gmgt != null )
+                        //{
+                        //    if( retMT != null )
+                        //    {
+                        //        Debug.WriteLine("Error 定义模板类与函数里边重复!");
+                        //    }
+                        //    retMT = gmgt.metaType;
+                        //}
                         
                         if( retMT == null )
                         {
