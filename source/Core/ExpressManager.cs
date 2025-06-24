@@ -337,7 +337,7 @@ namespace SimpleLanguage.Core
 
             AllowUseSettings aus = new AllowUseSettings() { parseFrom = cep.parsefrom };
 
-            MetaCallLink mcl = new MetaCallLink(fmct.callLink, cep.ownerMetaClass, cep.ownerMBS, null);
+            MetaCallLink mcl = new MetaCallLink(fmct.callLink, cep.ownerMetaClass, cep.ownerMBS );
             if (!mcl.Parse(aus)) return;
             mcl.CalcReturnType();
 

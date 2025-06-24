@@ -21,13 +21,7 @@ namespace SimpleLanguage.Core
             m_EqualMetaVariable = mv;
             if (fmcl != null )
             {
-                Dictionary<string, MetaType> mmtd = new Dictionary<string, MetaType>();
-                if (mc.isGenTemplate)
-                {
-                    (mc as MetaGenTemplateClass).GetMetaTemplateMT(mmtd);
-                }
-
-                m_MetaCallLink = new MetaCallLink( fmcl, mc, mbs, mmtd);
+                m_MetaCallLink = new MetaCallLink( fmcl, mc, mbs );
             }
         }
         public MetaCallLinkExpressNode( MetaCallLink mcl )

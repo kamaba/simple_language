@@ -9,6 +9,7 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
+using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
@@ -79,13 +80,12 @@ namespace SimpleLanguage.Core
         public MetaVariable m_MetaVariable { get; private  set; } = null;
         public MetaFunction m_MetaFunction { get; private set; } = null;
 
-        private Dictionary<string,MetaType> m_MapTemplateDict = new Dictionary<string, MetaType>();
         private MetaBlockStatements m_OwnerMetaFunctionBlock = null;
         private MetaClass m_OwnerMetaClass = null;
         private MetaInputParamCollection m_MetaInputParamCollection = null;
         //private MetaInputTemplateCollection m_MetaTemplateParamsCollection  = null;
         private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent  = null;
-        private MetaExpressNode m_ExpressNode = null;    // a+b+([expressNode[3+20+10.0f]).ToString() 中的3+20+10.f就是表示式 , Enum.Value(expressNode) , fun(expressNode)
+        private MetaExpressNode m_ExpressNode = null;    // a+b+([expressNode[3+20+10.0f]).ToString() 中的3+20+10.f就是表示式 , fun(expressNode)
         private List<MetaCallLink> m_MetaArrayCallNodeList = new List<MetaCallLink>();
         protected MetaCallNode()
         { }
@@ -102,7 +102,7 @@ namespace SimpleLanguage.Core
             m_IsArray = m_FileMetaCallNode.isArray;
             for (int i = 0; i < m_FileMetaCallNode.arrayNodeList.Count; i++)
             {
-                MetaCallLink cmcl = new MetaCallLink(m_FileMetaCallNode.arrayNodeList[i], mc, mbs, m_MapTemplateDict);
+                MetaCallLink cmcl = new MetaCallLink(m_FileMetaCallNode.arrayNodeList[i], mc, mbs);
                 m_MetaArrayCallNodeList.Add(cmcl);
             }
 
@@ -115,10 +115,10 @@ namespace SimpleLanguage.Core
         {
             m_FrontCallNode = mcn;
         }
-        public void SetMapTemplateDict( Dictionary<string, MetaType> dict )
-        {
-            m_MapTemplateDict = dict;
-        }
+        //public void SetMapTemplateDict( Dictionary<string, MetaType> dict )
+        //{
+        //    m_MapTemplateDict = dict;
+        //}
         public bool ParseNode(AllowUseSettings _auc)
         {
             m_AllowUseSettings = _auc;
@@ -172,14 +172,6 @@ namespace SimpleLanguage.Core
         {
             name = m_FileMetaCallNode.name;
 
-            if(m_MapTemplateDict.ContainsKey(name))
-            {
-                m_CallNodeType = ECallNodeType.ClassName;
-                m_MetaClass = m_MapTemplateDict[name].metaClass;
-                
-                return true;
-            }
-
             string fatherName = m_FrontCallNode?.name;
             bool isAt = m_FileMetaCallNode.atToken != null;
             // 当前是否是第一个元素
@@ -206,7 +198,7 @@ namespace SimpleLanguage.Core
 
             if (!isFirst && frontCNT == ECallNodeType.Null )
             {
-                Debug.WriteLine("Error 前边节点没有发现MetaBase!!");
+                Log.AddInStructMeta( EError.None, "Error 前边节点没有发现MetaBase!!");
                 return false;
             }
 
@@ -238,7 +230,7 @@ namespace SimpleLanguage.Core
                         else
                         {
                             //Array1.0.x 不允许
-                            Debug.WriteLine("Error 在Array.后边如果使用变量或者是数字常量，必须使用Array.$方式!!");
+                            Log.AddInStructMeta(EError.None, "Error 在Array.后边如果使用变量或者是数字常量，必须使用Array.$方式!!");
                         }
                     }
                 }
@@ -264,7 +256,7 @@ namespace SimpleLanguage.Core
                             else
                             {
                                 //Array1.0.x 不允许
-                                Debug.Write("Error 在Array.后边如果使用变量或者是数字常量，必须使用Array.$方式!!");
+                                Log.AddInStructMeta(EError.None, "Error 在Array.后边如果使用变量或者是数字常量，必须使用Array.$方式!!");
                             }
                         }
                     }
@@ -291,7 +283,7 @@ namespace SimpleLanguage.Core
                 {
                     if (m_IsFunction)
                     {
-                        Debug.WriteLine("Error 不允许global的函数形式!!");
+                        Log.AddInStructMeta(EError.None, "Error 不允许global的函数形式!!");
                     }
                     else
                     {
@@ -301,25 +293,25 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.WriteLine("Error  不允许 使用global 只有第一位置可以使用This关键字" + m_Token.ToLexemeAllString());
+                    Log.AddInStructMeta(EError.None, "Error  不允许 使用global 只有第一位置可以使用This关键字" + m_Token.ToLexemeAllString());
                 }
             }
             else if (etype == ETokenType.This)
             {
                 if (this.m_AllowUseSettings.parseFrom == EParseFrom.MemberVariableExpress)
                 {
-                    Debug.WriteLine("Error 不允许在成员变量中使用this关键字" + m_Token.ToLexemeAllString());
+                    Log.AddInStructMeta(EError.None, "Error 不允许在成员变量中使用this关键字" + m_Token.ToLexemeAllString());
                 }
                 if (this.m_AllowUseSettings.parseFrom == EParseFrom.InputParamExpress)
                 {
-                    Debug.WriteLine("Error 不允许在输入变量中中使用this关键字" + m_Token.ToLexemeAllString());
+                    Log.AddInStructMeta(EError.None, "Error 不允许在输入变量中中使用this关键字" + m_Token.ToLexemeAllString());
                 }
                 //this.普通的函数，变量，get/set方法
                 if (isFirst)
                 {
                     if (m_IsFunction)
                     {
-                        Debug.WriteLine("Error 不允许this的函数形式!!" + m_Token.ToLexemeAllString() );
+                        Log.AddInStructMeta(EError.None, "Error 不允许this的函数形式!!" + m_Token.ToLexemeAllString() );
                     }
                     else
                     {
@@ -330,24 +322,24 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.WriteLine("Error 只有第一位置可以使用This关键字" + m_Token.ToLexemeAllString());
+                    Log.AddInStructMeta(EError.None, "Error 只有第一位置可以使用This关键字" + m_Token.ToLexemeAllString());
                 }
             }
             else if (etype == ETokenType.Base)
             {
                 if (this.m_AllowUseSettings.parseFrom == EParseFrom.MemberVariableExpress)
                 {
-                    Debug.WriteLine("Error 不允许在成员变量中使用base关键字" + m_Token.ToLexemeAllString());
+                    Log.AddInStructMeta(EError.None, "Error 不允许在成员变量中使用base关键字" + m_Token.ToLexemeAllString());
                 }
                 if (this.m_AllowUseSettings.parseFrom == EParseFrom.InputParamExpress)
                 {
-                    Debug.WriteLine("Error 不允许在输入变量中中使用base关键字" + m_Token.ToLexemeAllString());
+                    Log.AddInStructMeta(EError.None, "Error 不允许在输入变量中中使用base关键字" + m_Token.ToLexemeAllString());
                 }
 
                 MetaClass parentClass = m_OwnerMetaClass.parentNode as MetaClass;
                 if ( parentClass == null )
                 {
-                    Debug.WriteLine("Error 使用base没有找到父节点!!");
+                    Log.AddInStructMeta(EError.None, "Error 使用base没有找到父节点!!");
                     return false;
                 }
 
@@ -355,7 +347,7 @@ namespace SimpleLanguage.Core
                 {
                     if (m_IsFunction)
                     {
-                        Debug.WriteLine("Error 不允许base的函数形式!!");
+                        Log.AddInStructMeta(EError.None, "Error 不允许base的函数形式!!");
                     }
                     else
                     {
@@ -365,7 +357,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.WriteLine("Error 只有第一位置可以使用base关键字" + m_Token.ToLexemeAllString());
+                    Log.AddInStructMeta(EError.None, "Error 只有第一位置可以使用base关键字" + m_Token.ToLexemeAllString());
                 }
             }
             else if (etype == ETokenType.Type)
@@ -413,7 +405,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Debug.WriteLine("Error 在Namespace下不存在在方式!");
+                            Log.AddInStructMeta(EError.None, "Error 在Namespace下不存在在方式!");
                         }
                     }
                     //else if( frontCNT == ECallNodeType.ExternalNamespaceName )
@@ -451,7 +443,7 @@ namespace SimpleLanguage.Core
                             {
                                 if( !mmv.isStatic )
                                 {
-                                    Debug.WriteLine("Error 调用非静态成员，不能使用Class.Variable的方式!");
+                                    Log.AddInStructMeta(EError.None, "Error 调用非静态成员，不能使用Class.Variable的方式!");
                                     return false;
                                 }
                                 m_MetaVariable = mmv;
@@ -466,12 +458,12 @@ namespace SimpleLanguage.Core
                                 {
                                     if( !mmf.isStatic )
                                     {
-                                        Debug.WriteLine("Error 调用非静态成员，不能使用Class.Variable的方式!");
+                                        Log.AddInStructMeta(EError.None, "Error 调用非静态成员，不能使用Class.Variable的方式!");
                                         return false;
                                     }
                                     if (mmf.isConstructInitFunction && !m_AllowUseSettings.callConstructFunction)
                                     {
-                                        Debug.WriteLine("Error 不允许使用构造函数" + m_Token.ToLexemeAllString());
+                                        Log.AddInStructMeta(EError.None, "Error 不允许使用构造函数" + m_Token.ToLexemeAllString());
                                         return false;
                                     }
                                     m_MetaFunction = mmf;
@@ -497,7 +489,7 @@ namespace SimpleLanguage.Core
                         m_MetaVariable = retmmd;
                         if (retmmd == null)
                         {
-                            Debug.WriteLine($"Error 没有找到{name} 的MetaData数据!");
+                            Log.AddInStructMeta(EError.None, $"Error 没有找到{name} 的MetaData数据!");
                             return false;
                         }
                         if (retmmd.memberDataType == EMemberDataType.MemberClass)
@@ -541,7 +533,7 @@ namespace SimpleLanguage.Core
                             {
                                 if (m_IsFunction)// Enum e = Enum.MetaVaraible( 2 )
                                 {
-                                    Debug.WriteLine("不能使用Enum.metaVariable(2) 这样的格式!");
+                                    Log.AddInStructMeta(EError.None, "不能使用Enum.metaVariable(2) 这样的格式!");
                                     return false;
                                 }
                                 else
@@ -552,7 +544,7 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                Debug.WriteLine("Error 不能使用Enum.xxxx未发现后续!");
+                                Log.AddInStructMeta(EError.None, "Error 不能使用Enum.xxxx未发现后续!");
                                 return false;
                             }
                         }
@@ -604,7 +596,7 @@ namespace SimpleLanguage.Core
                                 m_MetaVariable = retmmd;
                                 if( retmmd == null )
                                 {
-                                    Debug.WriteLine($"Error 没有找到{name} 的MetaData数据!");
+                                    Log.AddInStructMeta(EError.None, $"Error 没有找到{name} 的MetaData数据!");
                                     return false;
                                 }
                                 if( retmmd.memberDataType == EMemberDataType.MemberClass )
@@ -641,7 +633,7 @@ namespace SimpleLanguage.Core
                                 {
                                     if( mmf.isStatic )
                                     {
-                                        Debug.WriteLine("Error 该位置为非静态函数查找 但找到了静态函数!!" + m_FileMetaCallNode.token?.ToAllString());
+                                        Log.AddInStructMeta(EError.None, "Error 该位置为非静态函数查找 但找到了静态函数!!" + m_FileMetaCallNode.token?.ToAllString());
                                         return false;
                                     }
                                     if( m_MetaInputParamCollection == null )
@@ -708,7 +700,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Debug.WriteLine("Error 函数没有返回类型"); 
+                            Log.AddInStructMeta(EError.None, "Error 函数没有返回类型"); 
                         }
                     }
                     else if (frontCNT == ECallNodeType.TemplateName)
@@ -758,12 +750,38 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Debug.WriteLine("Error 暂不支持上节点的类型: " + frontCNT.ToString());
+                        Log.AddInStructMeta(EError.None, "Error 暂不支持上节点的类型: " + frontCNT.ToString());
                     }
                 }
             }
-            
-            if( m_CallNodeType == ECallNodeType.ClassName )
+
+            //如果检查到在函数体里边的T,需要对T进行实例化，看是类的T还是模板函数的T
+            if (m_CallNodeType == ECallNodeType.TemplateName)
+            {
+                if (m_OwnerMetaClass is MetaGenTemplateClass mgtc)
+                {
+                    var find2 = mgtc.GetMetaGenTemplate(name);
+                    if (find2 != null)
+                    {
+                        m_MetaClass = find2.metaType.metaClass;
+                        m_CallNodeType = ECallNodeType.ClassName;
+                    }
+                    else
+                    {
+                        if(m_OwnerMetaFunctionBlock?.ownerMetaFunction is MetaGenTempalteFunction mgtf )
+                        {
+                            var find3 = mgtf.GetMetaGenTemplate(name);
+                            if( find3 != null )
+                            {
+                                m_MetaClass = find3.metaType.metaClass;
+                                m_CallNodeType = ECallNodeType.ClassName;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if ( m_CallNodeType == ECallNodeType.ClassName )
             {
                 MetaClass curmc = m_MetaClass;
 
@@ -780,6 +798,34 @@ namespace SimpleLanguage.Core
                     m_MetaClass = curmc2;
                     //m_MetaTemplateParamsCollection = new MetaInputTemplateCollection(m_FileMetaCallNode.inputTemplateNodeList, this.m_OwnerMetaFunctionBlock, this.m_MetaClass );
                 }
+            }             
+            else if( m_CallNodeType == ECallNodeType.MemberFunctionName )
+            {
+                if( m_MetaFunction is MetaMemberFunction mmf )
+                {
+                    if( mmf.isTemplateFunction )
+                    {
+                        List<MetaClass> mclist = new List<MetaClass>();
+                        if (m_FileMetaCallNode.inputTemplateNodeList.Count > 0)
+                        {
+                            MetaClass curmc2 = ClassManager.instance.GetMetaClassAndRegisterExpendTemplateFunctionInstanceByTemplateList(m_OwnerMetaClass, null, m_OwnerMetaFunctionBlock.ownerMetaFunction as MetaGenTempalteFunction, m_FileMetaCallNode.inputTemplateNodeList);                            
+                            ClassManager.instance.ParseGenTemplateMetaClassList();
+                            mclist.Add(curmc2);
+                        }
+                        MetaGenTempalteFunction mgtfind = mmf.GetGenTemplateFunction(mclist);
+                        if( mgtfind == null )
+                        {
+                            m_MetaFunction = mmf.AddGenTemplateMemberFunctionBySelf(mclist);
+                            m_MetaFunction.Parse();
+                            IRManager.instance.TranslateIRByFunction(m_MetaFunction);
+                        }
+                        else
+                        {
+                            m_MetaFunction = mgtfind;
+                        }
+
+                    }
+                }
             }
 
             //下边的代码未重构后，未经过验证，需要验证
@@ -787,7 +833,7 @@ namespace SimpleLanguage.Core
             {                
                 if ( m_MetaNamespace != null || m_MetaMoule != null )
                 {
-                    Debug.WriteLine("Error 函数调用与命名空间冲突!!");
+                    Log.AddInStructMeta(EError.None, "Error 函数调用与命名空间冲突!!");
                     return false;
                 }
                 else if ( m_MetaClass != null )
@@ -852,7 +898,7 @@ namespace SimpleLanguage.Core
                         MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputParamCollect("_init_", m_MetaInputParamCollection);
                         if (mmf == null)
                         {
-                            Debug.WriteLine("Error 没有找到相关的_init_类!!");
+                            Log.AddInStructMeta(EError.None, "Error 没有找到相关的_init_类!!");
                             return false;
                         }
                         m_MetaClass = curmc;
@@ -865,7 +911,7 @@ namespace SimpleLanguage.Core
                         MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputParamCollect("_init_", m_MetaInputParamCollection);
                         if (mmf == null)
                         {
-                            Debug.WriteLine("Error 没有找到 关于类中" + curmc.allName + "的_init_方法!)");
+                            Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + curmc.allName + "的_init_方法!)");
                             return false;
                         }
                         m_MetaClass = curmc;
@@ -876,7 +922,7 @@ namespace SimpleLanguage.Core
                         {
                             if( m_AllowUseSettings.parseFrom == EParseFrom.InputParamExpress  )
                             {
-                                Debug.WriteLine("Error 在InputParam 里边，构建函数，只允许 使用ClassName() 的方式, " +
+                                Log.AddInStructMeta(EError.None, "Error 在InputParam 里边，构建函数，只允许 使用ClassName() 的方式, " +
                                     "不允许使用 ClassName(){}的方式" + m_FileMetaCallNode.fileMetaBraceTerm.ToTokenString() );
                                 return false;
                             }
@@ -888,7 +934,7 @@ namespace SimpleLanguage.Core
 
                     if (!m_AllowUseSettings.callFunction && m_IsFunction)
                     {
-                        Debug.WriteLine("Error 当前位置不允许有函数调用方式使用!!!" + m_Token?.ToLexemeAllString());
+                        Log.AddInStructMeta(EError.None, "Error 当前位置不允许有函数调用方式使用!!!" + m_Token?.ToLexemeAllString());
                     }
                 }
                 else if( m_MetaData != null )
@@ -898,7 +944,7 @@ namespace SimpleLanguage.Core
                     {
                         if (m_AllowUseSettings.parseFrom == EParseFrom.InputParamExpress)
                         {
-                            Debug.WriteLine("Error 在InputParam 里边，构建函数，只允许 使用ClassName() 的方式, " +
+                            Log.AddInStructMeta(EError.None, "Error 在InputParam 里边，构建函数，只允许 使用ClassName() 的方式, " +
                                 "不允许使用 ClassName(){}的方式" + m_FileMetaCallNode.fileMetaBraceTerm.ToTokenString());
                             return false;
                         }
@@ -917,7 +963,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.WriteLine("Error 使用函数调用与当前节点不吻合!!");
+                    Log.AddInStructMeta(EError.None, "Error 使用函数调用与当前节点不吻合!!");
                     return false;
                 }
             }
@@ -933,7 +979,7 @@ namespace SimpleLanguage.Core
                             || frontCNT == ECallNodeType.This
                             || frontCNT == ECallNodeType.Base)
                         {
-                            Debug.WriteLine("Error 1 静态调用，不能调用非静态字段!!");
+                            Log.AddInStructMeta(EError.None, "Error 1 静态调用，不能调用非静态字段!!");
                             return false;
                         }
                     }
@@ -979,7 +1025,7 @@ namespace SimpleLanguage.Core
                         {
                             if (m_MetaArrayCallNodeList.Count > 3)
                             {
-                                Debug.Write("Error 数组不能超过三维!!");
+                                Log.AddInStructMeta(EError.None, "Error 数组不能超过三维!!");
                             }
                             //m_MetaTemplateParamsCollection = new MetaInputTemplateCollection();
                             //m_MetaTemplateParamsCollection.AddMetaTemplateParamsList(new MetaType(m_MetaClass));
@@ -1068,7 +1114,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.WriteLine("Error !! 非函数类型!!" + m_FileMetaCallNode.token.ToLexemeAllString());
+                    Log.AddInStructMeta(EError.None, "Error !! 非函数类型!!" + m_FileMetaCallNode.token.ToLexemeAllString());
                 }
             }
             return true;
@@ -1083,7 +1129,7 @@ namespace SimpleLanguage.Core
                     m_MetaFunction = mb as MetaFunction;
                     if (m_MetaFunction.isStatic)
                     {
-                        Debug.WriteLine("Error this.xxx() 不允许使用静态函数");
+                        Log.AddInStructMeta(EError.None, "Error this.xxx() 不允许使用静态函数");
                         return false;
                     }
                 }
@@ -1463,13 +1509,11 @@ namespace SimpleLanguage.Core
 
         private MetaVisitNode m_FinalCallNode = null;
         private List<MetaVisitNode> m_VisitNodeList = new List<MetaVisitNode>();
-        private Dictionary<string, MetaType> m_MapTemplateDict = new Dictionary<string, MetaType>();
-        public MetaCallLink(FileMetaCallLink fmcl, MetaClass metaClass, MetaBlockStatements mbs, Dictionary<string, MetaType> mmtd )
+        public MetaCallLink(FileMetaCallLink fmcl, MetaClass metaClass, MetaBlockStatements mbs)
         {
             m_FileMetaCallLink = fmcl;
             m_OwnerMetaClass = metaClass;
             m_OwnerMetaBlockStatements = mbs;
-            m_MapTemplateDict = mmtd;
             CreateCallLinkNode();
         }
         private void CreateCallLinkNode()
@@ -1479,7 +1523,6 @@ namespace SimpleLanguage.Core
             {
                 FileMetaCallNode fmcn = m_FileMetaCallLink.callNodeList[0];
                 var firstNode = new MetaCallNode(null, fmcn, m_OwnerMetaClass, m_OwnerMetaBlockStatements, this);
-                firstNode.SetMapTemplateDict(m_MapTemplateDict);
                 frontMetaNode = firstNode;
                 m_CallNodeList.Add(firstNode);
             }
@@ -1489,7 +1532,6 @@ namespace SimpleLanguage.Core
                 var cn2 = m_FileMetaCallLink.callNodeList[i + 1];
                 var fmn = new MetaCallNode(cn1, cn2, m_OwnerMetaClass, m_OwnerMetaBlockStatements, this);
                 fmn.SetFrontCallNode(frontMetaNode);
-                fmn.SetMapTemplateDict(m_MapTemplateDict);
                 m_CallNodeList.Add(fmn);
                 frontMetaNode = fmn;
             }

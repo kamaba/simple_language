@@ -233,7 +233,7 @@ namespace SimpleLanguage.Core.Statements
         {
             if(m_FileMetaKeySwitchSyntax.fileMetaVariableRef != null )
             {
-                m_MetaCallLink = new MetaCallLink(m_FileMetaKeySwitchSyntax.fileMetaVariableRef, ownerMetaClass, m_OwnerMetaBlockStatements, null);               
+                m_MetaCallLink = new MetaCallLink(m_FileMetaKeySwitchSyntax.fileMetaVariableRef, ownerMetaClass, m_OwnerMetaBlockStatements );               
             }
             else
             {

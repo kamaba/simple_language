@@ -979,7 +979,64 @@ namespace SimpleLanguage.Core
             }
             return mc;
         }
+        //public MetaType GetMetaTemplateClassAndRegisterExptendTemplateFunction(MetaFunction mf, FileMetaClassDefine fmcd)
+        //{
+        //    if (fmcd == null) return null;
 
+        //    MetaClass getmc = ClassManager.instance.GetMetaClassByRef(curMc, fmcd);
+        //    if (getmc == null)
+        //    {
+        //        Log.AddInStructMeta(EError.StructMetaStart, " CheckExtendAndInterface 在判断继承的时候，发没的:" + fmcd.allName + "  类");
+        //        //    + "位置行: " + m_ExtendClass.token.sourceBeginLine.ToString() );
+
+        //    }
+        //    else
+        //    {
+        //        return GetMetaTemplateClassByTemplateList(curMc, getmc, fmcd.inputTemplateNodeList);
+        //    }
+        //    return null;
+        //}
+        #region 模板类定义处理区
+        public MetaType GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(MetaClass curMc, FileMetaClassDefine fmcd)
+        {
+            if (fmcd == null) return null;
+
+            MetaClass getmc = ClassManager.instance.GetMetaClassByRef(curMc, fmcd);
+            if (getmc == null)
+            {
+                Log.AddInStructMeta(EError.StructMetaStart, " CheckExtendAndInterface 在判断继承的时候，发没的:" + fmcd.allName + "  类");
+                //    + "位置行: " + m_ExtendClass.token.sourceBeginLine.ToString() );
+
+            }
+            else
+            {
+                return GetMetaTemplateClassByTemplateList(curMc, getmc, fmcd.inputTemplateNodeList);
+            }
+            return null;
+        }
+        public MetaType GetMetaTemplateClassByTemplateList(MetaClass curMc, MetaClass getmc, List<FileInputTemplateNode> inputTemplateNodeList)
+        {
+            if (inputTemplateNodeList.Count == 0)
+            {
+                return new MetaType(getmc);
+            }
+            var findfn = getmc.GetTemplateMetaClassByTemplateCount(inputTemplateNodeList.Count);
+            if (findfn != null)
+            {
+                getmc = findfn;
+            }
+            var mt = new MetaType(getmc);
+            //这里，要注册实体模板类
+            for (int i = 0; i < inputTemplateNodeList.Count; i++)
+            {
+                MetaType mt2 = GetTemplateDefineMetaTemplateClass(curMc, curMc, inputTemplateNodeList[i]);
+
+                mt.AddTemplateMetaType(mt2);
+            }
+            return mt;
+        }
+        #endregion
+        #region 模板类处理区
         public MetaClass GetMetaClassAndRegisterExptendTemplateClassInstance( MetaClass curMc, FileMetaClassDefine fmcd)
         {
             if (fmcd == null) return null;
@@ -1032,6 +1089,52 @@ namespace SimpleLanguage.Core
                 }
             }
             return getmc;
+        }
+        public MetaType GetTemplateDefineMetaTemplateClass(MetaClass ownerMc, MetaClass findMc, FileInputTemplateNode fmtd)
+        {
+            var newmc = ClassManager.instance.GetMetaClassByListString(ownerMc, fmtd.nameList);
+            if (newmc != null)
+            {
+                if (fmtd.inputTemplateCount == 0)
+                {
+                    return new MetaType(newmc);
+                }
+                var findfn = newmc.GetTemplateMetaClassByTemplateCount(fmtd.inputTemplateCount);
+                
+                var mt = new MetaType(findfn);
+                for (int i = 0; i < fmtd.defineClassCallLink.callNodeList.Count; i++)
+                {
+                    var dcc = fmtd.defineClassCallLink.callNodeList[i];
+
+                    for (int j = 0; j < dcc.inputTemplateNodeList.Count; j++)
+                    {
+                        var itn = dcc.inputTemplateNodeList[j];
+                        var mt2 = GetTemplateDefineMetaTemplateClass(ownerMc, findfn, itn);
+                        mt.AddTemplateMetaType(mt2);
+                    }
+                }
+                return mt;
+            }
+            else
+            {
+                if(fmtd.nameList.Count == 1 )
+                {
+                    var mt = findMc.GetMetaTemplateByName(fmtd.nameList[0]);
+                    if( mt == null )
+                    {
+                        Log.AddInStructMeta(EError.None, "没有找到模板类中，对应的模板，请仔细检查模板的命名与使用模板命名是否对应");
+                    }
+                    else
+                    {
+                        return new MetaType(mt);
+                    }
+                }
+                else
+                {
+                    Log.AddInStructMeta(EError.None, "使用模板类中使用.连接符号，模板中不允许使用.");
+                }
+            }
+            return new MetaType(newmc);
         }
         public MetaClass RegisterTemplateDefineMetaTemplateClass( MetaClass ownerMc, FileInputTemplateNode fmtd)
         {
@@ -1090,6 +1193,145 @@ namespace SimpleLanguage.Core
             }
             return newmc;
         }
+        #endregion
+        #region 模板函数处理区
+        public MetaClass GetMetaClassAndRegisterExptendTemplateFunctionClassInstance(MetaClass curMc, MetaGenTempalteFunction mgtf, FileMetaClassDefine fmcd)
+        {
+            if (fmcd == null) return null;
+
+            MetaClass getmc = ClassManager.instance.GetMetaClassByRef(curMc, fmcd);
+            if (getmc == null)
+            {
+                var mgtc = (curMc as MetaGenTemplateClass).GetMetaGenTemplate(fmcd.stringList[0]);
+                if( mgtc != null)
+                {
+                    return mgtc.metaType.metaClass;
+                }
+                else
+                {
+                    var gmgt2 = mgtf.GetMetaGenTemplate(fmcd.stringList[0]);
+                    if ( gmgt2 != null )
+                    {
+                        return gmgt2.metaType.metaClass;
+                    }
+                    else
+                    {
+                        Log.AddInStructMeta(EError.None, "没有找到相关的模板或者是定义!");
+                    }
+                }
+
+            }
+            else
+            {
+                getmc = GetMetaClassAndRegisterExpendTemplateFunctionInstanceByTemplateList(curMc, getmc, mgtf, fmcd.inputTemplateNodeList);
+            }
+            return getmc;
+        }
+        public MetaClass GetMetaClassAndRegisterExpendTemplateFunctionInstanceByTemplateList(MetaClass curMc, MetaClass getmc, MetaGenTempalteFunction mgtf, List<FileInputTemplateNode> inputTemplateNodeList)
+        {
+            if (inputTemplateNodeList.Count == 0)
+            {
+                return getmc;
+            }
+            var findfn = getmc.GetTemplateMetaClassByTemplateCount(inputTemplateNodeList.Count);
+            if (findfn != null)
+            {
+                getmc = findfn;
+            }
+            List<MetaClass> regMCList = new List<MetaClass>();
+            //这里，要注册实体模板类
+            for (int i = 0; i < inputTemplateNodeList.Count; i++)
+            {
+                var t = RegisterTemplateDefineMetaTemplateFunction(curMc, mgtf, inputTemplateNodeList[i]);
+                regMCList.Add(t);
+            }
+            if (findfn != null)
+            {
+                bool isNeedReg = true;
+                for (int i = 0; i < regMCList.Count; i++)
+                {
+                    if (regMCList[i] == null)
+                    {
+                        isNeedReg = false;
+                        break;
+                    }
+                }
+                if (isNeedReg)
+                {
+                    getmc = findfn.AddInstanceMetaClass(regMCList);
+                }
+            }
+            return getmc;
+        }
+        public MetaClass RegisterTemplateDefineMetaTemplateFunction(MetaClass ownerMc, MetaGenTempalteFunction mgtf, FileInputTemplateNode fmtd)
+        {
+            var newmc = ClassManager.instance.GetMetaClassByListString(ownerMc, fmtd.nameList);
+            if (newmc != null)
+            {
+                if (fmtd.inputTemplateCount == 0)
+                {
+                    return newmc;
+                }
+                var findfn = newmc.GetTemplateMetaClassByTemplateCount(fmtd.inputTemplateCount);
+
+                List<MetaClass> regMCList = new List<MetaClass>();
+                //这里，要注册实体模板类
+                for (int i = 0; i < fmtd.defineClassCallLink.callNodeList.Count; i++)
+                {
+                    var dcc = fmtd.defineClassCallLink.callNodeList[i];
+
+                    for (int j = 0; j < dcc.inputTemplateNodeList.Count; j++)
+                    {
+                        var itn = dcc.inputTemplateNodeList[j];
+                        var t = RegisterTemplateDefineMetaTemplateFunction(ownerMc, mgtf, itn);
+                        regMCList.Add(t);
+                    }
+                }
+                if (findfn != null)
+                {
+                    bool isNeedReg = true;
+                    for (int i = 0; i < regMCList.Count; i++)
+                    {
+                        if (regMCList[i] == null)
+                        {
+                            isNeedReg = false;
+                            break;
+                        }
+                    }
+                    if (isNeedReg)
+                    {
+                        newmc = findfn.AddInstanceMetaClass(regMCList);
+                    }
+                }               
+                return newmc;
+            }
+            else
+            {
+                if (fmtd.nameList.Count == 1)
+                {
+                    var mgtc = (ownerMc as MetaGenTemplateClass).GetMetaGenTemplate(fmtd.nameList[0]);
+                    if (mgtc != null)
+                    {
+                        return mgtc.metaType.metaClass;
+                    }
+                    else
+                    {
+                        var gmgt2 = mgtf.GetMetaGenTemplate(fmtd.nameList[0]);
+                        if (gmgt2 != null)
+                        {
+                            return gmgt2.metaType.metaClass;
+                        }
+                        else
+                        {
+                            Log.AddInStructMeta(EError.None, "没有找到相关的模板或者是定义!1324");
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        #endregion
         public void PrintAllClassName()
         {
             Debug.Write("---------------ClassBegin-----------" + Environment.NewLine);

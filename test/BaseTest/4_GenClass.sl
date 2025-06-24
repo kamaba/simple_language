@@ -56,7 +56,8 @@ public class List extends List<object> interface IList2<List<int> >    #如果�
 
 public class List<T> interface IList<T>, IList
 {
-    List<string> _listObj = null
+    List0<List1<T> > _listObj1 = null
+    List<string> _listObj2 = null
     private Int32 _count = 0;
     #UInt16 m_Bound1 = 0;
     #UInt16 m_Bound2 = 0;
@@ -205,19 +206,19 @@ public class Level1<T>
 
         List0<int> lint11 = List0<int>()
 
-        Level1.test<List0<int> >( t, lint11 ) = null
+        t2 = Level1.test<List0<int> >( t, lint11 )
 
         ret t
     }
 
     static T2 test<T2>( T it1, T2 it2 )
     {
-        T2 t2n = T2.instance
+        List0<Map< T2, List2<T2> > > t2n = null
 
         ret t2n
     }
 
-    public static T2 min<T2>( T2 t1, T2 t2 )
+    public static T2 min<T2 extends ClassRoom >( T2 t1, T2 t2 )
     {
         #r1 = t1 ? t1 < t2 && t1 > t2 : t2        
         #rx1 = if t1 < t2 { tr t1 } else{ tr t2 }
@@ -225,6 +226,10 @@ public class Level1<T>
         #ret t1 ? t1 > t2 : t2
         ret t2
     }
+}
+ClassRoom
+{
+    
 }
 
 GenClass
