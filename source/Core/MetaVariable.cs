@@ -28,49 +28,49 @@ namespace SimpleLanguage.Core
             Member,
             ArrayInner,
         }
-        public bool isStatic { get; protected set; } = false;
-        public virtual bool isConst { get; set; } = false;
+        public virtual bool isStatic => m_IsStatic;
+        public virtual bool isConst => m_IsConst;
         public virtual bool isParsed => m_IsParsed;
         public bool isArgument => m_VariableFrom == EVariableFrom.Argument;
         public bool isGlobal => m_VariableFrom == EVariableFrom.Global;
         public bool isArray
         {
             get { return m_DefineMetaType != null ? m_DefineMetaType.isArray : false ; }
-        }        
-        
+        }
+
+        public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
         public EVariableFrom variableFrom => m_VariableFrom;
         public MetaType metaDefineType => m_DefineMetaType;
         public MetaClass ownerMetaClass => m_OwnerMetaClass;
         public Token pingToken => m_PintTokenList.Count > 0 ? m_PintTokenList[0] : null;
+
+        #region 属性
 
         protected MetaClass m_OwnerMetaClass = null;
         protected MetaType m_DefineMetaType = null;
         protected EVariableFrom m_VariableFrom;
         protected List<Token> m_PintTokenList = new List<Token>();
         protected bool m_IsParsed = false;
+        protected bool m_IsStatic = false;
+        protected bool m_IsConst = false;
         //用来存放扩展包含变量
         protected Dictionary<string, MetaVariable> m_MetaVariableDict = new Dictionary<string, MetaVariable>();
-
-        //protected MetaNewStatements m_FromMetaNewStatementsCreate = null;
-        //protected MetaDefineParam m_FromMetaDefineParamCreate = null;
-        //protected MetaExpressNode m_FromExpressNodeCreate = null;
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
         protected string m_DefineTypeName = "";
-        public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
-        protected MetaVariable() { }
-        public MetaVariable( MetaVariable mv )
-        {
-            m_Name = mv.m_Name;
-            m_DefineTypeName = mv.m_DefineTypeName;
-            m_DefineMetaType = mv.m_DefineMetaType;
-            m_OwnerMetaClass = mv.m_OwnerMetaClass;
-            m_OwnerMetaBlockStatements = mv.m_OwnerMetaBlockStatements;
-            m_MetaVariableDict = mv.m_MetaVariableDict;
-            m_PintTokenList = mv.m_PintTokenList;
+        #endregion
 
-            isStatic = mv.isStatic;
-            isConst = mv.isConst;
+        protected MetaVariable() { }
+        public MetaVariable(MetaVariable mv) : base(mv)
+        {
+            m_OwnerMetaClass = mv.m_OwnerMetaClass;
+            m_DefineMetaType = mv.m_DefineMetaType;
             m_VariableFrom = mv.m_VariableFrom;
+            m_PintTokenList = mv.m_PintTokenList;
+            m_IsParsed = mv.m_IsParsed;
+
+            m_MetaVariableDict = mv.m_MetaVariableDict;
+            m_OwnerMetaBlockStatements = mv.m_OwnerMetaBlockStatements;
+            m_DefineTypeName = mv.m_DefineTypeName;
         }
         public MetaVariable(string _name, EVariableFrom from, MetaBlockStatements mbs, MetaClass ownerClass, MetaType mdt )
         {
@@ -87,10 +87,14 @@ namespace SimpleLanguage.Core
         public virtual void SetOwnerMetaClass(MetaClass ownerclass)
         {
             m_OwnerMetaClass = ownerclass;
+
+            if(m_OwnerMetaBlockStatements != null )
+            {
+            }
         }
         public void SetIsStatic( bool iss )
         {
-            this.isStatic = iss;
+            this.m_IsStatic = iss;
         }
         public void AddPingToken( string path, int beginline, int beginpos, int endline, int endpos )
         {
@@ -130,18 +134,6 @@ namespace SimpleLanguage.Core
         {
             m_OwnerMetaBlockStatements = mbs;
         }
-        //public void SetFromMetaNewStatementsCreate(MetaNewStatements ns)
-        //{
-        //    //m_FromMetaNewStatementsCreate = ns;
-        //}
-        //public void SetFromMetaDefineParamCreate(MetaDefineParam mdp)
-        //{
-        //    //m_FromMetaDefineParamCreate = mdp;
-        //}
-        //public void SetFromExpressNodeCreate( MetaExpressNode men)
-        //{
-        //    //m_FromExpressNodeCreate = men;
-        //}
         public virtual void ParseDefineMetaType()
         {
 

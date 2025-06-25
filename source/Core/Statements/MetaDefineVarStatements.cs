@@ -66,17 +66,7 @@ namespace SimpleLanguage.Core.Statements
             if ( m_FileMetaDefineVariableSyntax != null )
             {
                 var fmcd = m_FileMetaDefineVariableSyntax.fileMetaClassDefine;
-                //var gmgt = metaFunction.GetMetaGenTemplate(fmcd.name);
-                //if ( gmgt != null )
-                //{
-                //    mdt = gmgt.metaType;
-                //}
-                //else
-                //{
-                    var retMC = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance(ownerMetaClass, fmcd);
-                    (retMC as MetaGenTemplateClass).Parse();
-                    mdt = new MetaType(retMC); 
-                //}
+                mdt = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, m_OwnerMetaBlockStatements.ownerMetaFunction as MetaGenTempalteFunction, fmcd);                
 
                 m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
                 m_DefineVarMetaVariable.AddPingToken(m_FileMetaDefineVariableSyntax.token);

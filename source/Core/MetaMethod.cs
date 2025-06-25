@@ -8,6 +8,7 @@
 
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -54,6 +55,18 @@ namespace SimpleLanguage.Core
             m_MetaMemberParamCollection = new MetaDefineParamCollection(false, true);
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             SetOwnerMetaClass(mc);
+        }
+        public MetaFunction( MetaFunction mf ):base(mf) 
+        {
+            m_MetaBlockStatements = mf.m_MetaBlockStatements;
+            m_ThisMetaVariable = mf.m_ThisMetaVariable;
+            m_ReturnMetaVariable = mf.m_ReturnMetaVariable;
+            m_MetaMemberParamCollection = mf.m_MetaMemberParamCollection;
+            //m_MetaGenTemplateDict = mf.m_MetaGenTemplateDict;
+            m_MetaMemberTemplateCollection = mf.m_MetaMemberTemplateCollection;
+            m_MethodCallType = mf.m_MethodCallType;
+            m_IsMustNeedReturnStatements = mf.m_IsMustNeedReturnStatements;
+            m_LabelDataList = mf.m_LabelDataList;
         }
         //public bool IsDefineTemplate(string name)
         //{

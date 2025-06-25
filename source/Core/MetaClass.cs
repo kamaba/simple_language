@@ -70,6 +70,7 @@ namespace SimpleLanguage.Core
         public MetaClass extendClass => m_ExtendClass;
         public int extendLevel => m_ExtendLevel;
         public bool isInterfaceClass => m_IsInterfaceClass;
+        //只有模板类 没有无模板类的情况
         public bool onlySearchNode => m_OnlySearchNode;
         public MetaClass templateParentClass => m_TemplateParentClass;
         public List<MetaClass> interfaceClass => m_InterfaceClass;
@@ -109,8 +110,10 @@ namespace SimpleLanguage.Core
         protected int m_ExtendLevel = 0;
         protected EType m_Type = EType.None;
         protected Dictionary<Token, FileMetaClass> m_FileMetaClassDict = new Dictionary<Token, FileMetaClass>();
-        protected MetaClass m_ExtendClass  = null;
+        protected MetaClass m_ExtendClass = null;
+        protected MetaType m_ExtendClassMetaType = null;
         protected List<MetaClass> m_InterfaceClass = new List<MetaClass>();
+        protected List<MetaType> m_InterfaceMetaType = new List<MetaType>();
         protected Dictionary<string, MetaClass> m_ChildrenMetaClassDict = new Dictionary<string, MetaClass>();
         protected Dictionary<int, MetaClass> m_MetaTemplateClassDict = new Dictionary<int, MetaClass>();
         protected Dictionary<string, MetaMemberVariable> m_MetaMemberVariableDict = new Dictionary<string, MetaMemberVariable>();
@@ -204,7 +207,7 @@ namespace SimpleLanguage.Core
 
             this.m_ClassDefineType = ecdt;
         }
-        public void ParseExtendsRelation()
+        public virtual void ParseExtendsRelation()
         {
             if( this.classDefineType == EClassDefineType.InnerDefine )
             {
@@ -218,31 +221,54 @@ namespace SimpleLanguage.Core
             foreach( var v in m_FileMetaClassDict )
             {
                 var mc = v.Value;
-                MetaClass getmc = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance( this, mc.fileMetaExtendClass );
-                if (getmc != null)
+                if(mc.fileMetaExtendClass == null )
                 {
-                    mc.metaClass.SetExtendClass(getmc);
+                    continue;
+                }
+                if(this.m_ExtendClassMetaType != null )
+                {
+                    Log.AddInStructMeta(EError.None, "已绑定过了继承类 : " + mc.metaClass.extendClass.name );
+                    continue;
+                }
+
+                MetaType getmt = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance( this, mc.fileMetaExtendClass );
+                if (getmt != null)
+                {
+                    this.m_ExtendClassMetaType = getmt;
                 }
                 else
                 {
-                    mc.metaClass.SetExtendClass(CoreMetaClassManager.objectMetaClass);
+                    Log.AddInStructMeta(EError.None, "没有发现继承类的类型!!! " + mc.metaClass.extendClass.name );
                 }
             }
+            if( this.m_MetaTemplateList.Count == 0 && this.m_ExtendClassMetaType != null )
+            {
+                this.m_ExtendClass = this.m_ExtendClassMetaType.metaClass;
+            }
         }
-        public void UpdateInterfaceMetaClass()
+        public virtual void UpdateInterfaceMetaClass()
         {
-            foreach( var v in this.fileMetaClassDict )
+            m_InterfaceMetaType.Clear();
+            foreach ( var v in this.fileMetaClassDict )
             {
                 for( int i = 0; i < v.Value.interfaceClassList.Count; i++ )
                 {
                     var icd = v.Value.interfaceClassList[i];
-                    MetaClass getmc = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance(this, icd );
-                    if (getmc == null)
+
+                    MetaType getmt = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(this, icd );
+                    if (getmt == null )
                     {
                         Log.AddInStructMeta(EError.None, "没有找到接口相关的定义类!!");
                         continue;
                     }
-                    AddInterfaceClass(getmc);
+                    m_InterfaceMetaType.Add(getmt);
+                }
+            }
+            if (this.m_MetaTemplateList.Count == 0)
+            {
+                for( int i = 0; i < m_InterfaceMetaType.Count; i++ )
+                {
+                    AddInterfaceClass(m_InterfaceMetaType[i].metaClass);
                 }
             }
         }

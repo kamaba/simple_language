@@ -26,6 +26,7 @@ namespace SimpleLanguage.Core
         public MetaClass metaClass => m_MetaClass;
         public bool isEnum => m_MetaClass is MetaEnum;
         public bool isData => m_MetaClass is MetaData;
+        public bool isTemplate => m_MetaTemplate != null;
         public MetaMemberEnum enumValue => m_EnumValue;
         public List<MetaType> templateMetaTypeList => m_TemplateMetaTypeList;
         public bool isGenTemplateClass => m_MetaClass is MetaGenTemplateClass;
@@ -33,8 +34,10 @@ namespace SimpleLanguage.Core
         public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
         public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData;
         public bool isDefineMetaClass => m_IsDefineMetaClass;
+        public MetaTemplate metaTemplate => m_MetaTemplate;
 
-        private MetaInputTemplateCollection m_InputTemplateCollection = null;
+
+        //private MetaInputTemplateCollection m_InputTemplateCollection = null;
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
         private MetaClass m_RawMetaClass = null;                    // List<int> => list
         private MetaTemplate m_MetaTemplate = null;
@@ -53,7 +56,7 @@ namespace SimpleLanguage.Core
             this.m_MetaClass = mt.m_MetaClass;
             this.m_RawMetaClass = mt.m_RawMetaClass;
             //m_MetaTemplate = mt.m_MetaTemplate;
-            m_InputTemplateCollection = mt.m_InputTemplateCollection;
+            //m_InputTemplateCollection = mt.m_InputTemplateCollection;
         }
         //public MetaType(FileInputTemplateNode fm, MetaClass mc)
         //{
@@ -100,9 +103,9 @@ namespace SimpleLanguage.Core
             else
             {
                 m_RawMetaClass = mc;
-                m_InputTemplateCollection = mitc;
+                //m_InputTemplateCollection = mitc;
 
-                m_MetaClass = m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
+                //m_MetaClass = m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
             }
 
         }      
@@ -405,29 +408,29 @@ namespace SimpleLanguage.Core
             //}
             if (mdtL.metaClass == mdtR.metaClass && mdtL.metaClass != null )
             {
-                if( mdtL.m_InputTemplateCollection != null )
-                {
-                    if(mdtR.m_InputTemplateCollection != null )
-                    {
-                        if (mdtL.m_InputTemplateCollection.metaTemplateParamsList.Count
-                            == mdtR.m_InputTemplateCollection?.metaTemplateParamsList.Count)
-                        {
-                            for (int i = 0; i < mdtL.m_InputTemplateCollection.metaTemplateParamsList.Count; i++)
-                            {
-                                var mtpl = mdtL.m_InputTemplateCollection.metaTemplateParamsList[i];
-                                var mtpr = mdtR.m_InputTemplateCollection.metaTemplateParamsList[i];
-                                if (EqualMetaDefineType(mtpl, mtpr))
-                                {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    return true;
-                }
+                //if( mdtL.m_InputTemplateCollection != null )
+                //{
+                //    if(mdtR.m_InputTemplateCollection != null )
+                //    {
+                //        if (mdtL.m_InputTemplateCollection.metaTemplateParamsList.Count
+                //            == mdtR.m_InputTemplateCollection?.metaTemplateParamsList.Count)
+                //        {
+                //            for (int i = 0; i < mdtL.m_InputTemplateCollection.metaTemplateParamsList.Count; i++)
+                //            {
+                //                var mtpl = mdtL.m_InputTemplateCollection.metaTemplateParamsList[i];
+                //                var mtpr = mdtR.m_InputTemplateCollection.metaTemplateParamsList[i];
+                //                if (EqualMetaDefineType(mtpl, mtpr))
+                //                {
+                //                    return true;
+                //                }
+                //            }
+                //        }
+                //    }
+                //}
+                //else
+                //{
+                //    return true;
+                //}
             }
 
             return false;
@@ -438,16 +441,34 @@ namespace SimpleLanguage.Core
         }
         public void UpdateMetaClassByRawMetaClassAndInputTemplateCollection()
         {
-            m_MetaClass = m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
+            //m_MetaClass = m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
         }
+        //public void UpdateMetaTypeTemplateByGenMetaClass()
+        //{
+        //    if ( m_MetaTemplate != null )
+        //    {
+        //        if( m_RawMetaClass is MetaGenTemplateClass mgtc )
+        //        {
+        //            var gmgt = mgtc.GetMetaGenTemplate(m_MetaTemplate.name);
+        //            if( gmgt != null )
+        //            {
+        //                m_MetaClass = gmgt.metaType.metaClass;
+        //            }
+        //        }
+        //    }
+        //}
         public void SetMetaClass( MetaClass mc )
         {
             m_MetaClass = mc;
             m_IsDefineMetaClass = true;
         }
+        public void SetMetaTemplate( MetaTemplate mt )
+        {
+            m_MetaTemplate = mt;
+        }
         public void SetMetaInputTemplateCollection( MetaInputTemplateCollection mitc )
         {
-            m_InputTemplateCollection = mitc;
+            //m_InputTemplateCollection = mitc;
         }
         public MetaType GetMetaInputTemplateByIndex( int index = 0 )
         {

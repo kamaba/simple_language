@@ -75,6 +75,16 @@ namespace SimpleLanguage.Core
             m_IsInnerDefine = mmv.m_IsInnerDefine;
             m_Express = mmv.m_Express;
             m_VariableFrom = EVariableFrom.Member;
+
+            m_FileMetaMemeberVariable = mmv.m_FileMetaMemeberVariable;
+            m_Name = mmv.m_Name;
+            m_PintTokenList = mmv.m_PintTokenList;
+            m_Index = mmv.m_Index;
+            m_FromType = mmv.m_FromType;
+            m_DefineTypeName = mmv.m_DefineTypeName;      
+            m_DefineMetaType = mmv.m_DefineMetaType;
+            m_IsStatic = mmv.m_IsStatic;
+            m_Permission = mmv.m_Permission;
         }
         public MetaMemberVariable(MetaClass mc, string _name)
         {
@@ -137,11 +147,11 @@ namespace SimpleLanguage.Core
             m_FromType = EFromType.Code;
             m_DefineTypeName = m_FileMetaMemeberVariable.classDefineRef?.name;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-            isStatic = m_FileMetaMemeberVariable?.staticToken != null;
+            m_IsStatic = m_FileMetaMemeberVariable?.staticToken != null;
             m_VariableFrom = EVariableFrom.Member;
             if (m_FileMetaMemeberVariable.permissionToken != null)
             {
-                permission = CompilerUtil.GetPerMissionByString(m_FileMetaMemeberVariable.permissionToken?.lexeme.ToString());
+                m_Permission = CompilerUtil.GetPerMissionByString(m_FileMetaMemeberVariable.permissionToken?.lexeme.ToString());
             }
             SetOwnerMetaClass(mc);
         }
@@ -165,9 +175,7 @@ namespace SimpleLanguage.Core
             {
                 if( m_FileMetaMemeberVariable.classDefineRef != null )
                 {
-                    var curMc = m_OwnerMetaClass.GetTreeStructNode();
-
-                    m_DefineMetaType = ClassManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(curMc, m_FileMetaMemeberVariable.classDefineRef);                    
+                    m_DefineMetaType = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(m_OwnerMetaClass, m_FileMetaMemeberVariable.classDefineRef);                    
                 }                
             }
         }
