@@ -8,7 +8,10 @@ public class Class1
 }
 List0<T>
 {
-    T t = null
+    List1<List2<T> > t = null
+    T t1 = null
+    List1<T> t2 = null
+    List0<int> t3 = null
     T getA(){ ret null}
 }
 List1<T> extends List0<T>
@@ -158,12 +161,21 @@ public class Level2<T1 ,T2> extends Level1<List0<T2> > interface List1<List2<Map
     T2 t22 = null
 
     int x = 30
+    #!
     {
         get(){ ret value }
         set( int v ){ value = v }
     }
+    !#
 }
-public class Level1<T> 
+public class Gift
+{
+    _init_( int a )
+    {
+
+    }
+}
+public class Level1<T extends Gift> 
 {
     qqq<T>
     {
@@ -198,7 +210,7 @@ public class Level1<T>
 
     public T add()
     {
-        T t = T()
+        T t = new(1)
 
         List0<Map<T, T> > list = new()
 
@@ -229,7 +241,7 @@ public class Level1<T>
 }
 ClassRoom
 {
-    
+
 }
 
 GenClass

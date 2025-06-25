@@ -62,7 +62,7 @@ namespace SimpleLanguage.Core
         }
         void HandleMethodInfo()
         {
-            isStatic = methodInfo.IsStatic;
+            m_IsStatic = methodInfo.IsStatic;
 
             if (methodInfo.IsVirtual)
             {
@@ -71,11 +71,11 @@ namespace SimpleLanguage.Core
 
             if (methodInfo.IsPublic)
             {
-                permission = EPermission.Public;
+                m_Permission = EPermission.Public;
             }
             else if (methodInfo.IsPrivate)
             {
-                permission = EPermission.Private;
+                m_Permission = EPermission.Private;
             }
             ParameterInfo[] pis = methodInfo.GetParameters();
             for (int i = 0; i < pis.Length; i++)

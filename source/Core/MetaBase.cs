@@ -3,11 +3,10 @@
 // ------------------------------------------------
 //  Copyright (c) author: Like Cheng kamaba233@gmail.com
 //  DateTime: 2025/5/17 12:00:00
-//  Description:  
+//  Description:  Core MetaBase is a basement class, attribute value has name or tree's deepvalue or tree struct node!
 //****************************************************************************
 
 using System.Collections.Generic;
-using System.Text;
 
 namespace SimpleLanguage.Core
 {
@@ -19,7 +18,7 @@ namespace SimpleLanguage.Core
     }
     public class MetaBase
     {
-        public EPermission permission = EPermission.Public;
+        public EPermission permission => m_Permission;
         public virtual string name => m_Name;
         public int deep => m_Deep;
         public int realDeep
@@ -53,27 +52,39 @@ namespace SimpleLanguage.Core
         }
 
 
-        protected RefFromType m_RefFromType;
+        protected EPermission m_Permission = EPermission.Public;
+        protected RefFromType m_RefFromType = RefFromType.Local;
         protected string m_Name = "";
         protected string m_AllName = "";
         protected int m_Deep = 0;
         protected int m_AnchorDeep = 0;
         protected MetaBase m_ParentNode = null;
         protected Dictionary<string, MetaBase> m_ChildrenNameNodeDict = new Dictionary<string, MetaBase>();
-       
+
         public MetaBase()
         {
             m_Deep = 0;
             m_AnchorDeep = 0;
             m_RefFromType = RefFromType.Local;
         }
-        public void SetRefFromType( RefFromType rft )
+        public MetaBase( MetaBase mb )
         {
-            m_RefFromType = rft;
+            m_Name = mb.m_Name;
+            m_AllName = mb.m_AllName;
+            m_Deep = mb.m_Deep;
+            m_AnchorDeep = mb.m_AnchorDeep;
+            m_RefFromType = mb.m_RefFromType;
+            m_ParentNode = mb.m_ParentNode;
+            m_ChildrenNameNodeDict = mb.m_ChildrenNameNodeDict;
+            m_Permission = mb.m_Permission;
         }
-        public void SetName(string _name)
+        public void SetRefFromType(  RefFromType type )
         {
-            m_Name = _name;
+            this.m_RefFromType = type;
+        }
+        public void SetName( string _name )
+        {
+            m_Name = name;
         }
         public virtual void SetDeep(int deep)
         {
@@ -129,23 +140,6 @@ namespace SimpleLanguage.Core
             }
             return findParentClassMB;
         }
-
-        //public MetaBase GetMetaBaseInParentAndInChildrenMetaBaseByName(string inputname )
-        //{
-        //    //子类
-        //    MetaBase fmc = GetChildrenMetaBaseByName(inputname);
-        //    if (fmc != null )
-        //    {
-        //        return fmc;
-        //    }
-        //    //上级节点类或者是命名空间
-        //    fmc = GetMetaBaseInParentNodeContainByName(inputname);
-        //    if (fmc != null)
-        //    {
-        //        return fmc;
-        //    }
-        //    return null;
-        //}
         public virtual bool IsIncludeMetaBase( string name )
         {
             return m_ChildrenNameNodeDict.ContainsKey(name);

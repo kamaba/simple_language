@@ -34,10 +34,7 @@ namespace SimpleLanguage.Core
         private EMemberDataType m_MemberDataType = EMemberDataType.None;
         private int m_Index = -1;
         private bool m_End = false;
-        private bool m_IsConst = false;
-        private bool m_IsStatic = false;
         private bool m_IsWithName = false;
-
 
         protected Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
 

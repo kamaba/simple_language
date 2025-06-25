@@ -234,6 +234,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public bool isCallFunction { get; set; } = false;
         public bool isTemplate { get; set; } = false;
         public bool isArray { get; set; } = false;
+        public Node node => m_Node;
         public FileMeta fileMeta => m_FileMeta;
 
         private Node m_Node = null;

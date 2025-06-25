@@ -15,9 +15,12 @@ namespace SimpleLanguage.Core
     {
         public List<MetaGenTemplate> metaGenTemplateList => m_MetaGenTemplateList;
 
+        protected MetaMemberFunction m_OriginalMetaMemberFunction = null;
         protected List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
-        public MetaGenTempalteFunction(MetaMemberFunction mmc, List<MetaGenTemplate> list ) : base(mmc)
+        public MetaGenTempalteFunction(MetaMemberFunction mmc, List<MetaGenTemplate> list ) : base(mmc.ownerMetaClass)
         {
+            m_OriginalMetaMemberFunction = mmc;
+            UpdateGenMemberFunctionByTemplateClass(mmc);
             m_MetaGenTemplateList = list;
         }
         public MetaGenTempalteFunction(MetaClass mc, string _name) : base(mc)
@@ -51,6 +54,41 @@ namespace SimpleLanguage.Core
             }
             return true;
 
+        }
+        public void UpdateGenMemberFunctionByTemplateClass(MetaMemberFunction mmf)
+        {
+            m_MetaMemberParamCollection = mmf.metaMemberParamCollection;
+            for( int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++ )
+            {
+                //MetaMemberParamCollection.metaDefineParamList[i].
+            }
+            m_FileMetaMemberFunction = mmf.fileMetaMemberFunction;
+            m_Name = mmf.name;
+
+            m_IsStatic = mmf.isStatic;
+            isGet = mmf.isGet;
+            isSet = mmf.isSet;
+            isFinal = mmf.isFinal;
+            m_MetaBlockStatements = mmf.metaBlockStatements;
+            m_ConstructInitFunction = mmf.isConstructInitFunction;
+            m_ReturnMetaVariable = mmf.returnMetaVariable;
+            m_DefineMetaType = mmf.metaDefineType;
+
+            //    m_OriginalMetaMemberFunction = mmf;
+            //    m_Name = mmf.m_Name;
+            //    m_FileMetaMemberFunction = mmf.m_FileMetaMemberFunction;
+            //    isStatic = mmf.isStatic;
+            //    isGet = mmf.isGet;
+            //    isSet = mmf.isSet;
+            //    isFinal = mmf.isFinal;
+            //    m_IsMustNeedReturnStatements = mmf.m_IsMustNeedReturnStatements;
+            //    m_MethodCallType = mmf.m_MethodCallType;
+            //    isTemplateInParam = mmf.isTemplateInParam;
+            //    m_IsTemplateFunction = mmf.m_IsTemplateFunction;
+            //    m_DefineMetaType = new MetaType(mmf.m_DefineMetaType);
+            //    m_MetaBlockStatements = new MetaBlockStatements(this);
+            //    m_MetaBlockStatements.isOnFunction = true;
+            //    m_MetaMemberParamCollection = new MetaDefineParamCollection();
         }
         public MetaGenTemplate GetMetaGenTemplate( string name )
         {

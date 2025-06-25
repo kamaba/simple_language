@@ -88,7 +88,7 @@ namespace SimpleLanguage.Core
             m_Index = mc.metaMemberVariableDict.Count;
             m_FromType = EFromType.Code;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-            isStatic = true;// enum 成员全部为static
+            m_IsStatic = true;// enum 成员全部为static
             m_VariableFrom = EVariableFrom.Static;
             if (fmmv.staticToken != null )
             {
@@ -97,7 +97,7 @@ namespace SimpleLanguage.Core
             if (m_FileMetaMemeberVariable.permissionToken != null)
             {
                 Debug.Write("Error Enum中，不允许使用public/private等权限关键字!!");
-                permission = CompilerUtil.GetPerMissionByString(m_FileMetaMemeberVariable.permissionToken?.lexeme.ToString());
+                m_Permission = CompilerUtil.GetPerMissionByString(m_FileMetaMemeberVariable.permissionToken?.lexeme.ToString());
             }
 
             SetOwnerMetaClass(mc);

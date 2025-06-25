@@ -816,9 +816,7 @@ namespace SimpleLanguage.Core
                             }
                             if (isSame)
                             {
-                                var mitc1 = new MetaInputTemplateCollection();
-                                mitc1.AddMetaTemplateParamsList(new MetaType(mtList[0]));
-                                m_MetaDefineType.SetMetaInputTemplateCollection(mitc1);
+                                m_MetaDefineType.AddTemplateMetaType(new MetaType(mtList[0]));
                             }
                         }
                     }

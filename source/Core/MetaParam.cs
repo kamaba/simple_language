@@ -158,15 +158,8 @@ namespace SimpleLanguage.Core
             {
                 if(m_OwnerMetaFunction.ownerMetaClass is MetaGenTemplateClass mgtc )
                 {
-                    var findmc = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance(mgtc, m_FileMetaParamter.classDefineRef);
-                    if (findmc == null)
-                    {
-                        Log.AddInStructMeta(EError.None, $"没有发现在参数{m_FileMetaParamter.token.ToLexemeAllString()} 的相关类");
-                    }
-                    else
-                    {
-                        mdt = new MetaType(findmc);
-                    }
+                    TypeManager.instance.UpdateMetaType(m_MetaVariable.metaDefineType, mgtc );
+
                     if( mdt.IsIncludeTemplate() )
                     {
                         m_IsClassTemplate = true;
@@ -175,7 +168,7 @@ namespace SimpleLanguage.Core
                 else
                 {
                     var curMc = m_OwnerMetaFunction.ownerMetaClass.GetTreeStructNode();
-                    mdt = ClassManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(curMc, m_FileMetaParamter.classDefineRef);
+                    mdt = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(curMc, m_FileMetaParamter.classDefineRef);
                 }
             }
             m_MetaVariable.SetMetaDefineType(mdt);
