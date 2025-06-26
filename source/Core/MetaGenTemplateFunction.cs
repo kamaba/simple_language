@@ -8,6 +8,7 @@
 
 using SimpleLanguage.Core.Statements;
 using System.Collections.Generic;
+using System.Text;
 
 namespace SimpleLanguage.Core
 {
@@ -96,6 +97,34 @@ namespace SimpleLanguage.Core
         }
         public override void Parse()
         {
+        }
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(m_DefineMetaType.ToFormatString());
+            sb.Append(" ");
+            sb.Append(allName);
+            sb.Append("<");
+            for( int i = 0; i < m_MetaGenTemplateList.Count; i++ )
+            {
+                var mgt = m_MetaGenTemplateList[i];
+                sb.Append(mgt.ToString());
+            }
+            sb.Append(">");           
+            sb.Append("(");
+
+            for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
+            {
+                MetaDefineParam mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
+                sb.Append(mpl.ToString());
+                if (i < m_MetaMemberParamCollection.metaDefineParamList.Count - 1)
+                {
+                    sb.Append(",");
+                }
+            }
+            sb.Append(")");
+
+            return sb.ToString();
         }
     }
 }

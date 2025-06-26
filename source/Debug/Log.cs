@@ -135,6 +135,7 @@ namespace SimpleLanguage.Parse
         static List<LogData> logDataList = new List<LogData>();
         public static void AddCodeFileLog( LogData data )
         {
+            Console.WriteLine(data.ToString());
             logDataList.Add(data);
         }
         public static void AddInInitProject(Token token, EError err, string msg)
@@ -148,7 +149,7 @@ namespace SimpleLanguage.Parse
             };
             ld.message = msg;
             ld.error = err;
-            logDataList.Add(ld);
+            AddCodeFileLog(ld);
         }
         public static LogData AddProcess(EProcess proc, EError err, string msg)
         {
@@ -158,7 +159,7 @@ namespace SimpleLanguage.Parse
             };
             ld.message = msg;
             ld.error = err;
-            logDataList.Add(ld);
+            AddCodeFileLog(ld);
 
             return ld;
         }
@@ -174,7 +175,7 @@ namespace SimpleLanguage.Parse
             };
             ld.message = msg;
             ld.error = err;
-            logDataList.Add(ld);
+            AddCodeFileLog(ld);
             return ld;
         }
         public static LogData AddInHandleNode(Token token, EError err, string msg)
@@ -189,7 +190,7 @@ namespace SimpleLanguage.Parse
             };
             ld.message = msg;
             ld.error = err;
-            logDataList.Add(ld);
+            AddCodeFileLog(ld);
             return ld;
         }
         public static LogData AddInStructFileMeta(EError err, string msg)
@@ -201,7 +202,7 @@ namespace SimpleLanguage.Parse
             };
             ld.message = msg;
             ld.error = err;
-            logDataList.Add(ld);
+            AddCodeFileLog(ld);
             return ld;
         }
         public static LogData AddInStructMeta(EError err, string msg)
@@ -213,7 +214,24 @@ namespace SimpleLanguage.Parse
             };
             ld.message = msg;
             ld.error = err;
-            logDataList.Add(ld);
+            AddCodeFileLog(ld);
+            return ld;
+        }
+        public static LogData AddInStructMeta(EError err, string msg, Token token )
+        {
+            LogData ld = new LogData()
+            {
+                errorType = LogData.EErrorType.StructMeta,
+                time = DateTime.Now,
+                sourceBeginLine = token.sourceBeginLine,
+                sourceBeginChar = token.sourceBeginChar,
+                sourceEndLine = token.sourceEndLine,   
+                sourceEndChar = token.sourceEndChar,
+                filePath = token.path,
+            };
+            ld.message = msg;
+            ld.error = err;
+            AddCodeFileLog(ld);
             return ld;
         }
         static void AddLog( Token token, EError err, string msg )
@@ -223,7 +241,7 @@ namespace SimpleLanguage.Parse
                 sourceEndLine = token.sourceEndLine,  };
             ld.message = msg;
             ld.error = err;
-            logDataList.Add(ld);
+            AddCodeFileLog(ld);
         }
 
         public static void PrintLog()

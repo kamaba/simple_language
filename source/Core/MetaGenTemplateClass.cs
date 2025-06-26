@@ -174,7 +174,7 @@ namespace SimpleLanguage.Core
         }
         public override void ParseMemberVariableDefineMetaType()
         {
-            foreach (var it in m_MetaTemplateClass.metaMemberVariableDict)
+            foreach (var it in this.m_MetaTemplateClass.metaMemberVariableDict)
             {
                 ParseMetaMemberVariableDefineMetaType( it.Value );
             }
@@ -230,10 +230,11 @@ namespace SimpleLanguage.Core
             else
             {
                 list = new List<MetaMemberFunction>();
+                m_MetaMemberFunctionListDict.Add(mgmf.name, list);
             }
             list.Add(mgmf);
 
-            m_MetaMemberAllNameFunctionDict.Add(mgmf.name, mgmf );
+            m_MetaMemberAllNameFunctionDict.Add(mgmf.functionAllName, mgmf );
         }
         //public void UpdateGenMemberDefineMetaType()
         //{           
@@ -289,6 +290,7 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
+            sb.Append(" [Gen] ");
             sb.Append(m_Name);
             if (m_MetaGenTemplateList.Count > 0)
             {

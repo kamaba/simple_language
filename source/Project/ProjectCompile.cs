@@ -204,8 +204,6 @@ namespace SimpleLanguage.Project
                 ClassManager.instance.AddClass(fns);
             }
 
-            ClassManager.instance.ParseExtendsRelation();
-            ClassManager.instance.ParseInterfaceRelation();
             ClassManager.instance.ParseInitMetaClassList();
             m_ProjectParse.ParseGlobalVariable();
             ClassManager.instance.ParseDefineMetaTypeGenTemplateMetaClassList();

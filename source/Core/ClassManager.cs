@@ -457,10 +457,10 @@ namespace SimpleLanguage.Core
                     else
                     {
                         newmc = new MetaClass(fmc.name);
-                        AddInitHandleMetaClassList(newmc);
                         newmc.BindFileMetaClass(fmc);
                         newmc.SetClassDefineType(EClassDefineType.CodeDefine);
                         var newmc2 = newmc.ParseFileMetaClassTemplate(fmc);
+                        AddInitHandleMetaClassList(newmc2);
                         newmc2.ParseFileMetaClassMemeberVarAndFunc(fmc);
                         if (finalTopMetaClass != null)
                         {
@@ -492,31 +492,11 @@ namespace SimpleLanguage.Core
             }
             m_AllClassDict.Add(acn, mc);
         }
-        public void ParseInterfaceRelation()
-        {
-            foreach (var it in m_AllClassDict)
-            {
-                it.Value.UpdateInterfaceMetaClass();
-            }
-        }
-        public void ParseExtendsRelation()
-        {
-            var list = new List<MetaClass>(m_InitHandleMetaClassList);
-            foreach (var it in list )
-            {
-                it.ParseExtendsRelation();
-            }
-        }
         public void HandleExtendData()
         {
-            List<MetaClass> allMClassList = new List<MetaClass>();
-            foreach (var it in m_AllClassDict)
-            {
-                allMClassList.Add(it.Value);
-            }
-            allMClassList.Sort((x, y) => x.extendLevel - y.extendLevel);
+            m_InitHandleMetaClassList.Sort((x, y) => x.extendLevel - y.extendLevel);
             
-            foreach (var it in allMClassList)
+            foreach (var it in m_InitHandleMetaClassList )
             {
                 it.HandleExtendData();
             }
@@ -525,19 +505,11 @@ namespace SimpleLanguage.Core
         {
             foreach (var it in m_InitHandleMetaClassList )
             {
-                if (it.onlySearchNode == false) 
-                {
-                    it.ParseMemberVariableDefineMetaType();
-                    it.ParseMemberFunctionDefineMetaType();
-                    AddDictMetaClass(it);
-                }
-                foreach (var it2 in it.metaTemplateClassDict)
-                {
-                    it2.Value.ParseMemberVariableDefineMetaType();
-                    it2.Value.ParseMemberFunctionDefineMetaType();
-                    AddDictMetaClass(it2.Value);
-                }
-
+                it.ParseExtendsRelation();
+                it.UpdateInterfaceMetaClass();
+                it.ParseMemberVariableDefineMetaType();
+                it.ParseMemberFunctionDefineMetaType();
+                AddDictMetaClass(it);
             }
         }
         public void ParseDefineMetaTypeGenTemplateMetaClassList()
@@ -793,7 +765,9 @@ namespace SimpleLanguage.Core
         {
             if (fmcv == null) return null;
 
-            MetaClass mb = GetMetaClassByClassDefine(mc, fmcv);
+            MetaClass mc2 = mc.GetTreeStructNode();
+
+            MetaClass mb = GetMetaClassByClassDefine(mc2, fmcv);
             if (mb != null)
                 return mb;
 
@@ -878,7 +852,17 @@ namespace SimpleLanguage.Core
         }
         public MetaClass GetMetaClassByNameAndFileMeta(MetaClass ownerClass, FileMeta fm, List<string> stringList )
         {
-            MetaClass mc = GetMetaClassByListString(ownerClass, stringList);
+            var newownerclass = ownerClass;
+            if (ownerClass.isTemplateClass) 
+            { 
+                newownerclass = ownerClass.templateParentClass; 
+            }
+            else if (ownerClass is MetaGenTemplateClass mgtc)
+            {
+                newownerclass = mgtc.metaTemplateClass.templateParentClass;
+            }
+
+            MetaClass mc = GetMetaClassByListString(newownerclass, stringList);
 
             if( mc == null )
             {
@@ -960,8 +944,7 @@ namespace SimpleLanguage.Core
         {
             if (fmcd == null) return null;
 
-            var curMc2 = curMc.GetTreeStructNode();
-            MetaClass getmc = GetMetaClassByRef(curMc2, fmcd );
+            MetaClass getmc = GetMetaClassByRef(curMc, fmcd );
             if (getmc == null)
             {
                 Log.AddInStructMeta(EError.StructMetaStart, " CheckExtendAndInterface 在判断继承的时候，发没的:" + fmcd.allName + "  类");
@@ -970,7 +953,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                getmc = GetMetaClassAndRegisterExpendTemplateClassInstanceByTemplateList(curMc2, getmc, fmcd.inputTemplateNodeList);
+                getmc = GetMetaClassAndRegisterExpendTemplateClassInstanceByTemplateList(curMc, getmc, fmcd.inputTemplateNodeList);
             }
             return getmc;
         }
@@ -980,6 +963,8 @@ namespace SimpleLanguage.Core
             {
                 return getmc;
             }
+            var curMc2 = curMc.GetTreeStructNode();
+
             var findfn = getmc.GetTemplateMetaClassByTemplateCount(inputTemplateNodeList.Count);
             if( findfn == null )
             {
@@ -991,7 +976,7 @@ namespace SimpleLanguage.Core
             //这里，要注册实体模板类
             for (int i = 0; i < inputTemplateNodeList.Count; i++)
             {
-                var t = RegisterTemplateDefineMetaTemplateClass(curMc, inputTemplateNodeList[i]);
+                var t = RegisterTemplateDefineMetaTemplateClass(curMc2, inputTemplateNodeList[i]);
                 regMCList.Add(t);
             }
             if (findfn != null)
@@ -1014,7 +999,9 @@ namespace SimpleLanguage.Core
         }
         public MetaClass RegisterTemplateDefineMetaTemplateClass( MetaClass ownerMc, FileInputTemplateNode fmtd)
         {
-            var newmc = GetMetaClassByNameAndFileMeta(ownerMc, fmtd.fileMeta, fmtd.nameList);
+            var ownerMc2 = ownerMc.GetTreeStructNode();
+
+            var newmc = GetMetaClassByNameAndFileMeta(ownerMc2, fmtd.fileMeta, fmtd.nameList);
             if (newmc != null)
             {
                 if (fmtd.inputTemplateCount == 0)

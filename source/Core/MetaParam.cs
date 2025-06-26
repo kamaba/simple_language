@@ -167,8 +167,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    var curMc = m_OwnerMetaFunction.ownerMetaClass.GetTreeStructNode();
-                    mdt = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(curMc, m_FileMetaParamter.classDefineRef);
+                    mdt = TypeManager.instance.GetMetaTypeByTemplateFunction(m_OwnerMetaFunction.ownerMetaClass, m_OwnerMetaFunction as MetaMemberFunction, m_FileMetaParamter.classDefineRef);
                 }
             }
             m_MetaVariable.SetMetaDefineType(mdt);

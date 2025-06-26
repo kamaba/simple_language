@@ -304,19 +304,16 @@ namespace SimpleLanguage.Core
                     else
                     {
                         FileMetaClassDefine cmr = m_FileMetaMemberFunction.defineMetaClass;
-                        string cname = cmr.name;
-                        m_DefineMetaType = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance( m_OwnerMetaClass, cmr );
+                        m_DefineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction( m_OwnerMetaClass, this, cmr );
+                        m_ReturnMetaVariable.SetMetaDefineType(m_DefineMetaType);
 
-                        MetaTemplate getoriTemplate = m_OwnerMetaClass.GetMetaTemplateByName(cname);
-                        if (getoriTemplate != null)
+                        if (m_DefineMetaType.IsIncludeClassTemplate(m_OwnerMetaClass  ))
                         {
                             m_IsTemplateClassFunction = true;
                         }
-                        m_ReturnMetaVariable.SetMetaDefineType(m_DefineMetaType);
                     }
                 }
             }
-
             for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
             {
                 MetaDefineParam mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
@@ -588,7 +585,24 @@ namespace SimpleLanguage.Core
 
         public override string ToString()
         {
-            return allName;
+            StringBuilder sb = new StringBuilder();
+            sb.Append(m_DefineMetaType.ToFormatString());
+            sb.Append(" ");
+            sb.Append( allName );
+            sb.Append("(");
+
+            for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
+            {
+                MetaDefineParam mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
+                sb.Append(mpl.ToString());
+                if( i < m_MetaMemberParamCollection.metaDefineParamList.Count -1  )
+                {
+                    sb.Append(",");
+                }
+            }
+            sb.Append(")");
+
+            return sb.ToString();
         }
         public override string ToFormatString()
         {
