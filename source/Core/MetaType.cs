@@ -58,26 +58,6 @@ namespace SimpleLanguage.Core
             //m_MetaTemplate = mt.m_MetaTemplate;
             //m_InputTemplateCollection = mt.m_InputTemplateCollection;
         }
-        //public MetaType(FileInputTemplateNode fm, MetaClass mc)
-        //{
-        //    m_RawMetaClass = ClassManager.instance.GetMetaClassByInputTemplateAndFileMeta(mc, fm);
-        //    if (fm.defineClassCallLink?.callNodeList.Count > 0)
-        //    {
-        //        var finalNode = fm.defineClassCallLink?.callNodeList[fm.defineClassCallLink.callNodeList.Count - 1];
-
-        //        if (finalNode.inputTemplateNodeList.Count > 0)
-        //        {
-        //            m_IsDefineMetaClass = true;
-        //            m_InputTemplateCollection = new MetaInputTemplateCollection(finalNode.inputTemplateNodeList, mc);
-        //            m_MetaClass = m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
-        //        }
-        //    }
-        //    if( m_MetaClass == null )
-        //    {
-        //        m_MetaClass = m_RawMetaClass;
-        //    }
-        //}
-
         public MetaType( MetaClass mc )
         {
             if (mc == null)
@@ -109,256 +89,6 @@ namespace SimpleLanguage.Core
             }
 
         }      
-        //public MetaType( FileMetaClassDefine cmr, MetaClass mc )
-        //{
-        //    if (cmr == null) return;
-        //    string templateName = cmr.name;
-        //    var metaTemplate = mc.GetTemplateMetaClassByName(templateName);
-        //    if (metaTemplate != null)
-        //    {
-        //        m_MetaClass = null;
-        //        m_IsDefineMetaClass = true;
-        //    }
-        //    else
-        //    {
-        //        if (cmr.isInputTemplateData)
-        //        {
-        //            m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
-        //            if(m_RawMetaClass == null )
-        //            {
-        //                Debug.WriteLine("Error 没有找到相当类: " + cmr.name);
-        //                return;
-        //            }
-        //            m_IsDefineMetaClass = true;
-
-        //            m_InputTemplateCollection = new MetaInputTemplateCollection(cmr.inputTemplateNodeList, m_RawMetaClass);
-
-        //            if( m_InputTemplateCollection.isTemplateName )
-        //            {
-        //                m_MetaClass = m_RawMetaClass;
-        //            }
-        //            else
-        //            {
-        //                m_MetaClass = m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
-        //            }
-        //        }
-        //        else
-        //        {
-        //            if (cmr.isArray)
-        //            {
-        //                m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
-        //                List<int> arrayList = new List<int>();
-        //                for (int i = 0; i < cmr.arrayTokenList.Count; i++)
-        //                {
-        //                    var token = cmr.arrayTokenList[i];
-        //                    if (token.GetEType() == EType.UInt32 || token.GetEType() == EType.Int32)
-        //                    {
-        //                        arrayList.Add(int.Parse(token.lexeme.ToString()));
-        //                    }
-        //                    else
-        //                    {
-        //                        Debug.WriteLine("Error 解析数组，维度不允许有除Int之外的类型!!");
-        //                    }
-        //                }
-        //                m_IsDefineMetaClass = true;
-        //                MetaType mitp = new MetaType(m_RawMetaClass);
-        //                m_InputTemplateCollection = new MetaInputTemplateCollection();
-        //                m_InputTemplateCollection.AddMetaTemplateParamsList(mitp);
-
-        //                m_MetaClass = CoreMetaClassManager.arrayMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
-        //            }
-
-        //            if (m_MetaClass == null)
-        //            {
-        //                m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
-
-        //                if (m_RawMetaClass != null)
-        //                {
-        //                    m_IsDefineMetaClass = true;
-        //                }
-        //                else
-        //                {
-        //                    m_IsDefineMetaClass = false;
-        //                }
-        //                m_MetaClass = m_RawMetaClass;
-        //            }
-
-        //            if (m_MetaClass == null)
-        //            {
-        //                Debug.WriteLine("Error MetaDefineType RetMetaClass is Null MetaMemberVariable " + cmr?.ToTokenString());
-        //                m_MetaClass = CoreMetaClassManager.objectMetaClass;
-        //            }
-        //        }
-        //    }
-
-        //}
-
-        //public static MetaType NewMetaTypeByMemeberDefine(FileMetaClassDefine cmr, MetaClass mc)
-        //{
-        //    MetaType mt = new MetaType(CoreMetaClassManager.objectMetaClass);
-        //    if (cmr == null) return mt;
-
-        //    string templateName = cmr.name;
-        //    var metaTemplate = mc.GetTemplateMetaClassByName(templateName);
-        //    if (metaTemplate != null)
-        //    {
-        //        mt.m_MetaClass = null;
-        //        mt.m_MetaTemplate = metaTemplate;
-        //        mt.m_IsDefineMetaClass = true;
-        //    }
-        //    else
-        //    {
-        //        if (cmr.isInputTemplateData)
-        //        {
-        //            mt.m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
-        //            if (mt.m_RawMetaClass == null)
-        //            {
-        //                Debug.WriteLine("Error 没有找到相当类: " + cmr.name);
-        //                return mt;
-        //            }
-        //            mt.m_IsDefineMetaClass = true;
-
-        //            if (cmr.inputTemplateNodeList?.Count > 0)
-        //            {
-        //                mt.m_InputTemplateCollection = new MetaInputTemplateCollection(cmr.inputTemplateNodeList, mt.m_RawMetaClass);
-        //                mt.m_MetaClass = mt.m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(mt.m_InputTemplateCollection);
-        //            }
-        //        }
-        //        else
-        //        {
-        //            if (cmr.isArray)
-        //            {
-        //                mt.m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
-        //                List<int> arrayList = new List<int>();
-        //                for (int i = 0; i < cmr.arrayTokenList.Count; i++)
-        //                {
-        //                    var token = cmr.arrayTokenList[i];
-        //                    if (token.GetEType() == EType.UInt32 || token.GetEType() == EType.Int32)
-        //                    {
-        //                        arrayList.Add(int.Parse(token.lexeme.ToString()));
-        //                    }
-        //                    else
-        //                    {
-        //                        Debug.WriteLine("Error 解析数组，维度不允许有除Int之外的类型!!");
-        //                    }
-        //                }
-        //                mt.m_IsDefineMetaClass = true;
-        //                MetaType mitp = new MetaType(mt.m_RawMetaClass);
-        //                mt.m_InputTemplateCollection = new MetaInputTemplateCollection();
-        //                mt.m_InputTemplateCollection.AddMetaTemplateParamsList(mitp);
-
-        //                mt.m_MetaClass = CoreMetaClassManager.arrayMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(mt.m_InputTemplateCollection);
-        //            }
-        //            else
-        //            {
-        //                mt.m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
-
-        //                if (mt.m_RawMetaClass != null)
-        //                {
-        //                    mt.m_IsDefineMetaClass = true;
-        //                }
-        //                else
-        //                {
-        //                    mt.m_IsDefineMetaClass = false;
-        //                }
-        //                mt.m_MetaClass = mt.m_RawMetaClass;
-        //            }
-
-        //            if (mt.m_MetaClass == null)
-        //            {
-        //                Debug.WriteLine("Error MetaDefineType RetMetaClass is Null MetaMemberVariable " + cmr?.ToTokenString());
-        //                mt.m_MetaClass = CoreMetaClassManager.objectMetaClass;
-        //            }
-        //        }
-        //    }
-        //    return mt;
-        //}
-        //public static MetaType NewMetaTypeByStatement(FileMetaClassDefine cmr, MetaClass mc)
-        //{
-        //    MetaType mt = new MetaType(CoreMetaClassManager.objectMetaClass);
-        //    if (cmr == null) return mt;
-
-        //    string templateName = cmr.name;
-        //    var metaTemplate = mc.GetTemplateMetaClassByName(templateName);
-        //    if (metaTemplate != null)
-        //    {
-        //        mt.m_MetaClass = null;
-        //        mt.m_IsDefineMetaClass = true;
-        //    }
-        //    else
-        //    {
-        //        if (cmr.isInputTemplateData)
-        //        {
-        //            mt.m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
-        //            if (mt.m_RawMetaClass == null)
-        //            {
-        //                Debug.WriteLine("Error 没有找到相当类: " + cmr.name);
-        //                return mt;
-        //            }
-        //            mt.m_IsDefineMetaClass = true;
-
-        //            if (cmr.inputTemplateNodeList?.Count > 0)
-        //            {
-        //                mt.m_InputTemplateCollection = new MetaInputTemplateCollection(cmr.inputTemplateNodeList, mt.m_RawMetaClass);
-        //                mt.m_MetaClass = mt.m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(mt.m_InputTemplateCollection);
-
-        //                var mgtc = (mt.m_MetaClass as MetaGenTemplateClass);
-        //                mgtc.UpdateGenMemberDefineMetaType();
-        //                mgtc.ParseTemplateClassMemberFunction();
-
-        //            }
-        //        }
-        //        else
-        //        {
-        //            if (cmr.isArray)
-        //            {
-        //                mt.m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
-        //                List<int> arrayList = new List<int>();
-        //                for (int i = 0; i < cmr.arrayTokenList.Count; i++)
-        //                {
-        //                    var token = cmr.arrayTokenList[i];
-        //                    if (token.GetEType() == EType.UInt32 || token.GetEType() == EType.Int32)
-        //                    {
-        //                        arrayList.Add(int.Parse(token.lexeme.ToString()));
-        //                    }
-        //                    else
-        //                    {
-        //                        Debug.WriteLine("Error 解析数组，维度不允许有除Int之外的类型!!");
-        //                    }
-        //                }
-        //                mt.m_IsDefineMetaClass = true;
-        //                MetaType mitp = new MetaType(mt.m_RawMetaClass);
-        //                mt.m_InputTemplateCollection = new MetaInputTemplateCollection();
-        //                mt.m_InputTemplateCollection.AddMetaTemplateParamsList(mitp);
-
-        //                mt.m_MetaClass = CoreMetaClassManager.arrayMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(mt.m_InputTemplateCollection);
-        //            }
-        //            else
-        //            {
-        //                mt.m_RawMetaClass = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(mc, cmr);
-
-        //                if (mt.m_RawMetaClass != null)
-        //                {
-        //                    mt.m_IsDefineMetaClass = true;
-        //                }
-        //                else
-        //                {
-        //                    mt.m_IsDefineMetaClass = false;
-        //                }
-        //                mt.m_MetaClass = mt.m_RawMetaClass;
-        //            }
-
-        //            if (mt.m_MetaClass == null)
-        //            {
-        //                Debug.WriteLine("Error MetaDefineType RetMetaClass is Null MetaMemberVariable " + cmr?.ToTokenString());
-        //                mt.m_MetaClass = CoreMetaClassManager.objectMetaClass;
-        //            }
-        //        }
-        //    }
-        //    return mt;
-        //}
-
-
         public bool IsCanForIn()
         {
             if(m_MetaClass is MetaEnum )//m_MetaClass is MetaData ||  )
@@ -380,6 +110,38 @@ namespace SimpleLanguage.Core
             {
                 var tmt = m_TemplateMetaTypeList[i];
                 if( tmt.IsIncludeTemplate() == false )
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        public bool IsIncludeClassTemplate(MetaClass ownerClass)
+        {
+            if (m_MetaTemplate != null && ownerClass.isTemplateClass)
+            {
+                return ownerClass.metaTemplateList.IndexOf(m_MetaTemplate) != -1;
+            }
+            for (int i = 0; i < m_TemplateMetaTypeList.Count; i++)
+            {
+                var tmt = m_TemplateMetaTypeList[i];
+                if (tmt.IsIncludeClassTemplate(ownerClass))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        public bool IsIncludeFunctionTemplate( MetaMemberFunction mmf )
+        {
+            if (m_MetaTemplate != null && mmf.isTemplateFunction )
+            {
+                return mmf.metaMemberTemplateCollection.metaTemplateList.IndexOf(m_MetaTemplate) != -1;
+            }
+            for (int i = 0; i < m_TemplateMetaTypeList.Count; i++)
+            {
+                var tmt = m_TemplateMetaTypeList[i];
+                if (tmt.IsIncludeFunctionTemplate(mmf))
                 {
                     return false;
                 }

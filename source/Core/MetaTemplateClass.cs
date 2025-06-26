@@ -37,7 +37,10 @@ namespace SimpleLanguage.Core
         {
             if(fmc.templateDefineList.Count > 0)
             {
-                m_OnlySearchNode = true;
+                if(m_OnlySearchNode == null )
+                {
+                    m_OnlySearchNode = true;
+                }
                 MetaClass templateClass = null;
 
                 if( this.m_MetaTemplateClassDict.ContainsKey(fmc.templateDefineList.Count ) )
@@ -46,7 +49,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    templateClass = new MetaClass(this);
+                    templateClass = new MetaClass(fmc.name);
                     templateClass.m_TemplateParentClass = this;
                     this.m_MetaTemplateClassDict.Add(fmc.templateDefineList.Count, templateClass);
                     for (int i = 0; i < fmc.templateDefineList.Count; i++)
@@ -66,7 +69,10 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                m_OnlySearchNode = false;
+                if (m_OnlySearchNode == null)
+                {
+                    m_OnlySearchNode = false;
+                }
             }
             return this;
         }
@@ -114,6 +120,18 @@ namespace SimpleLanguage.Core
                 }
             }
             return null;
+        }
+        public MetaGenTemplateClass AddInstanceMetaClass(MetaInputTemplateCollection mitc)
+        {
+            List<MetaClass> list = new List<MetaClass>();
+            foreach (var item in mitc.metaTemplateParamsList)
+            {
+                if( item.isTemplate == false )
+                {
+                    list.Add(item.metaClass);
+                }
+            }
+            return AddInstanceMetaClass(list);
         }
         public MetaClass GetTemplateMetaClassByTemplateCount( int count )
         {

@@ -71,7 +71,7 @@ namespace SimpleLanguage.Core
         public int extendLevel => m_ExtendLevel;
         public bool isInterfaceClass => m_IsInterfaceClass;
         //只有模板类 没有无模板类的情况
-        public bool onlySearchNode => m_OnlySearchNode;
+        public bool onlySearchNode => m_OnlySearchNode != null ? m_OnlySearchNode==true : false;
         public MetaClass templateParentClass => m_TemplateParentClass;
         public List<MetaClass> interfaceClass => m_InterfaceClass;
         public MetaExpressNode defaultExpressNode => m_DefaultExpressNode;
@@ -124,7 +124,7 @@ namespace SimpleLanguage.Core
         protected MetaExpressNode m_DefaultExpressNode = null;
         protected EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
         protected bool m_IsInterfaceClass = false;
-        protected bool m_OnlySearchNode = false;
+        protected bool? m_OnlySearchNode = null;
         protected MetaClass m_TemplateParentClass = null;
 
         protected MetaClass()
@@ -275,7 +275,7 @@ namespace SimpleLanguage.Core
 
         public virtual void HandleExtendData()
         {
-            if(m_ExtendClass == null )
+            if( this.m_ExtendClass == null )
             {
                 return;
             }
@@ -550,13 +550,13 @@ namespace SimpleLanguage.Core
         }
         public void AddDefineConstructFunction()
         {
-            //MetaMemberFunction mmf = GetMetaMemberConstructDefaultFunction();
-            //if (mmf == null)
-            //{
-            //    mmf = new MetaMemberFunction(this, "_init_");
-            //    mmf.SetDefineMetaClass(this);
-            //    AddMetaMemberFunction(mmf);
-            //}
+            MetaMemberFunction mmf = GetMetaMemberConstructDefaultFunction();
+            if (mmf == null)
+            {
+                mmf = new MetaMemberFunction(this, "_init_");
+                mmf.SetDefineMetaClass(this);
+                AddMetaMemberFunction(mmf);
+            }
         }
         public void AddDefineInstanceValue()
         {
@@ -763,7 +763,33 @@ namespace SimpleLanguage.Core
         {
             StringBuilder stringBuilder = new StringBuilder();
 
+            if (this.isGenTemplate)
+            {
+                stringBuilder.Append(" [Gen] ");
+            }
+            else
+            {
+                if (this.isTemplateClass)
+                {
+                    stringBuilder.Append(" [Template] ");
+                }
+            }              
+
             stringBuilder.Append(allClassName);
+
+            if( this.isTemplateClass )
+            {
+                stringBuilder.Append("<");
+                for( int i = 0; i < this.metaTemplateList.Count; i++ )
+                {
+                    stringBuilder.Append(this.metaTemplateList[i].name);
+                    if(i < this.metaTemplateList.Count - 1 )
+                    {
+                        stringBuilder.Append(",");
+                    }
+                }
+                stringBuilder.Append(">");
+            }
 
             return stringBuilder.ToString();
         }

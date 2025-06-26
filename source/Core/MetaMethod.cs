@@ -40,6 +40,7 @@ namespace SimpleLanguage.Core
         public EMethodCallType methodCallType => m_MethodCallType;
         public MetaDefineParamCollection metaMemberParamCollection => m_MetaMemberParamCollection;
         public MetaBlockStatements metaBlockStatements => m_MetaBlockStatements;
+        public MetaDefineTemplateCollection metaMemberTemplateCollection => m_MetaMemberTemplateCollection;
 
         protected MetaBlockStatements m_MetaBlockStatements = null;
         protected MetaVariable m_ThisMetaVariable = null;
