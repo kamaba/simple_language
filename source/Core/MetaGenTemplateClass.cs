@@ -163,7 +163,7 @@ namespace SimpleLanguage.Core
             {
                 it.Value.ParseMetaExpress();
             }
-            foreach (var it in m_MetaTemplateClass.metaMemberFunctionListDict)
+            foreach (var it in this.m_MetaTemplateClass.metaMemberFunctionListDict)
             {
                 foreach (var it2 in it.Value)
                 {
