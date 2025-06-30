@@ -1454,6 +1454,9 @@ namespace SimpleLanguage.Compile.Parse
                     tokenType = ETokenType.BoolValue;
                     extend = EType.Boolean;
                     break;
+                case "new":
+                    tokenType = ETokenType.New;
+                    break;
                 case "range":
                     tokenType = ETokenType.Identifier;
                     extend = EType.Range;

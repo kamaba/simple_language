@@ -7,6 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile.CoreFileMeta;
+using SimpleLanguage.Core.SelfMeta;
 using System.Collections.Generic;
 using System.Text;
 
@@ -40,6 +41,10 @@ namespace SimpleLanguage.Core
                 if( m_FileMetaTemplateDefine.inClassNameTemplateNode != null )
                 {
                     m_ExtendsMetaClass = ClassManager.instance.GetMetaClassByInputTemplateAndFileMeta(m_OwnerClass, m_FileMetaTemplateDefine.inClassNameTemplateNode );
+                }
+                else
+                {
+                    m_ExtendsMetaClass = CoreMetaClassManager.objectMetaClass;
                 }
             }
         }

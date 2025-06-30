@@ -9,6 +9,7 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
+using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
@@ -35,6 +36,10 @@ namespace SimpleLanguage.Core.Statements
             m_MetaCallLink = new MetaCallLink(fmcl.variableRef, mbs.ownerMetaClass, mbs );
             m_MetaCallLink.Parse(m_AllowUseSettings);
             m_MetaCallLink.CalcReturnType();
+        }
+        public override void UpdateOwnerMetaClass(MetaClass ownerclass)
+        {
+            base.UpdateOwnerMetaClass(ownerclass);
         }
         public override string ToFormatString()
         {

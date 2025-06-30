@@ -62,6 +62,7 @@ namespace SimpleLanguage.Core
         protected bool m_IsWithInterface = false;
         protected FileMetaMemberFunction m_FileMetaMemberFunction = null;
         protected List<MetaGenTempalteFunction> m_GenTempalteFunctionList = new List<MetaGenTempalteFunction>();
+        protected Dictionary<int, MetaMemberFunction> m_MetaTemplateFunctionDict = new Dictionary<int, MetaMemberFunction>();
         #endregion
 
         public MetaMemberFunction( MetaClass mc ):base(mc)
@@ -72,7 +73,7 @@ namespace SimpleLanguage.Core
         {
             m_MetaMemberParamCollection = new MetaDefineParamCollection(true, false);
             m_FileMetaMemberFunction = fmmf;
-            m_Name = fmmf.name;
+            this.m_Name = fmmf.name;
 
             m_IsStatic = fmmf.staticToken != null;
             isGet = fmmf.getToken != null;
@@ -180,6 +181,11 @@ namespace SimpleLanguage.Core
         }
         public override void SetOwnerMetaClass(MetaClass ownerclass)
         {
+            for(int i = 0; i < m_GenTempalteFunctionList.Count; i++ )
+            {
+                m_GenTempalteFunctionList[i].SetOwnerMetaClass(ownerclass);
+            }
+
             base.SetOwnerMetaClass(ownerclass);
         }
         public Token GetToken()
@@ -208,6 +214,18 @@ namespace SimpleLanguage.Core
         public void AddMetaDefineTemplate ( MetaTemplate mt )
         {
             m_MetaMemberTemplateCollection.AddMetaDefineTemplate(mt);
+        }
+        public MetaMemberFunction GetTemplateMetaFunctionByTemplateCount(int count)
+        {
+            if (count == 0)
+            {
+                return this;
+            }
+            if (this.m_MetaTemplateFunctionDict.ContainsKey(count))
+            {
+                return this.m_MetaTemplateFunctionDict[count];
+            }
+            return null;
         }
         //如果是模板函数，需要在实例化类后，进行新的实体函数的解析
         public MetaGenTempalteFunction AddGenTemplateMemberFunctionBySelf( List<MetaClass> list )

@@ -652,6 +652,10 @@ namespace SimpleLanguage.Compile.Parse
                 else if (curNode.nodeType == ENodeType.Brace)
                 {
                     block = curNode;
+                    if (parseType == 3 || parseType == 2)
+                    {
+                        nodeList.Add(curNode);
+                    }
                     break;
                 }
                 else
@@ -1492,6 +1496,7 @@ namespace SimpleLanguage.Compile.Parse
             }
             return handleBeforeList;
         }
+        //判断>> 还是> > 具体是否是表达式
         private static bool IsCommonExpressNode( Node node )
         {
             int isAngleFlagIndex = 0;
@@ -1502,6 +1507,10 @@ namespace SimpleLanguage.Compile.Parse
                 {
                     if(cnode.nodeType ==  ENodeType.RightAngle )
                     {
+                        if( cnode.extendLinkNodeList.Count > 0 )
+                        {
+                            return false;
+                        }
                         isAngleFlagIndex--;
                     }
                     else if (cnode.nodeType == ENodeType.Key)
@@ -1561,6 +1570,10 @@ namespace SimpleLanguage.Compile.Parse
                 {
                     parentNode.angleNode.endToken = cnode.token;
                     node.parseIndex++;
+                    if( cnode.extendLinkNodeList?.Count > 0 )
+                    {
+                        parentNode.SetLinkNode(cnode.extendLinkNodeList);
+                    }
                     return;
                 }
                 else if (cnode.nodeType == ENodeType.IdentifierLink)
@@ -1644,7 +1657,8 @@ namespace SimpleLanguage.Compile.Parse
             }
 
             Node finalNode = inputFinaleNode.finalNode;
-            if (finalNode?.nodeType == ENodeType.IdentifierLink) //Class1???
+            if (finalNode?.nodeType == ENodeType.IdentifierLink
+                || finalNode?.token?.type == ETokenType.New ) //Class1???
             {
                 if (currentExpressNode.nodeType == ENodeType.LeftAngle )       //Class<>??
                 {
@@ -1666,6 +1680,7 @@ namespace SimpleLanguage.Compile.Parse
                     else
                     {
                         _HandleExpressNodeProcess(currentExpressNode);
+                        _HandleExpressNodeProcess(node, finalNode);
                         return;
                     }
                 }

@@ -30,9 +30,9 @@ namespace SimpleLanguage.Core.SelfMeta
         }
         public override void ParseInnerVariable()
         {
-            MetaConstExpressNode ecen = new MetaConstExpressNode(EType.Int32, 0);
-            MetaMemberVariable index = new MetaMemberVariable(this, "index", CoreMetaClassManager.int32MetaClass, ecen);
-            AddMetaMemberVariable(index);
+            //MetaConstExpressNode ecen = new MetaConstExpressNode(EType.Int32, 0);
+            //MetaMemberVariable index = new MetaMemberVariable(this, "index", CoreMetaClassManager.int32MetaClass, ecen);
+            //AddMetaMemberVariable(index);
 
             //MetaMemberVariable tvalue = new MetaMemberVariable(this, "value", CoreMetaClassManager.templateMetaClass);
             //AddMetaMemberVariable(tvalue);

@@ -253,22 +253,22 @@ namespace SimpleLanguage.Core.Statements
                 nextMetaStatements.SetTRMetaVariable(mv);
             }
         }
-        public override MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
-        {
-            MetaDefineVarStatements mns = new MetaDefineVarStatements(parentMs);
-            mns.m_FileMetaDefineVariableSyntax = m_FileMetaDefineVariableSyntax;
-            mns.m_FileMetaOpAssignSyntax = m_FileMetaOpAssignSyntax;
-            mns.m_FileMetaCallSyntax = m_FileMetaCallSyntax;
-            mns.m_IsNeedCastStatements = m_IsNeedCastStatements;
-            mns.m_DefineVarMetaVariable = new MetaVariable(m_DefineVarMetaVariable);
-            mns.m_ExpressNode = m_ExpressNode;
-            mns.m_DefineVarMetaVariable.GenTemplateMetaVaraible( mgt, parentMs );
-            if (m_NextMetaStatements != null)
-            {
-                m_NextMetaStatements.GenTemplateClassStatement(mgt, parentMs);
-            }
-            return mns;
-        }
+        //public override MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
+        //{
+        //    MetaDefineVarStatements mns = new MetaDefineVarStatements(parentMs);
+        //    mns.m_FileMetaDefineVariableSyntax = m_FileMetaDefineVariableSyntax;
+        //    mns.m_FileMetaOpAssignSyntax = m_FileMetaOpAssignSyntax;
+        //    mns.m_FileMetaCallSyntax = m_FileMetaCallSyntax;
+        //    mns.m_IsNeedCastStatements = m_IsNeedCastStatements;
+        //    mns.m_DefineVarMetaVariable = new MetaVariable(m_DefineVarMetaVariable);
+        //    mns.m_ExpressNode = m_ExpressNode;
+        //    mns.m_DefineVarMetaVariable.GenTemplateMetaVaraible( mgt, parentMs );
+        //    if (m_NextMetaStatements != null)
+        //    {
+        //        m_NextMetaStatements.GenTemplateClassStatement(mgt, parentMs);
+        //    }
+        //    return mns;
+        //}
         public override void SetDeep(int dp)
         {
             base.SetDeep(dp);

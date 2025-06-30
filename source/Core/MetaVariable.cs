@@ -56,7 +56,6 @@ namespace SimpleLanguage.Core
         //用来存放扩展包含变量
         protected Dictionary<string, MetaVariable> m_MetaVariableDict = new Dictionary<string, MetaVariable>();
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
-        protected string m_DefineTypeName = "";
         #endregion
 
         protected MetaVariable() { }
@@ -66,11 +65,12 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = mv.m_DefineMetaType;
             m_VariableFrom = mv.m_VariableFrom;
             m_PintTokenList = mv.m_PintTokenList;
+            m_IsStatic = mv.m_IsStatic;
+            m_IsConst = mv.m_IsConst;
             m_IsParsed = mv.m_IsParsed;
 
             m_MetaVariableDict = mv.m_MetaVariableDict;
             m_OwnerMetaBlockStatements = mv.m_OwnerMetaBlockStatements;
-            m_DefineTypeName = mv.m_DefineTypeName;
         }
         public MetaVariable(string _name, EVariableFrom from, MetaBlockStatements mbs, MetaClass ownerClass, MetaType mdt )
         {
@@ -87,10 +87,6 @@ namespace SimpleLanguage.Core
         public virtual void SetOwnerMetaClass(MetaClass ownerclass)
         {
             m_OwnerMetaClass = ownerclass;
-
-            if(m_OwnerMetaBlockStatements != null )
-            {
-            }
         }
         public void SetIsStatic( bool iss )
         {
@@ -149,17 +145,7 @@ namespace SimpleLanguage.Core
         public virtual bool ParseMetaExpress()
         {
             return true;
-        }
-        public void GenTemplateMetaVaraible( MetaGenTemplateClass mgt, MetaBlockStatements mbs )
-        {
-            m_OwnerMetaBlockStatements = mbs;
-            m_OwnerMetaClass = mgt;
-            var tmc = mgt.GetMetaGenTemplate(m_DefineTypeName);
-            if (tmc != null)
-            {
-                m_DefineMetaType.SetMetaClass(tmc.metaType.metaClass);
-            }
-        }
+        }        
         public bool AddMetaVariable( MetaVariable mv )
         {
             if(m_MetaVariableDict.ContainsKey(mv.name) )

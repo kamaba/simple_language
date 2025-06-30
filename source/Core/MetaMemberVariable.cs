@@ -44,7 +44,7 @@ namespace SimpleLanguage.Core
         private bool m_IsInnerDefine = false;
         //private Dictionary< string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
 
-        private bool m_IsSupportConstructionFunctionOnlyBraceType = false;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
+        private bool m_IsSupportConstructionFunctionOnlyBraceType = true;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
         private bool m_IsSupportConstructionFunctionConnectBraceType = true;  //是否支持构造函数名称后边加{}形式    Class1{ a = Class2(){} } 不支持
         private bool m_IsSupportConstructionFunctionOnlyParType = true; //是否支持构造函数使用 仅()形式    Class1{ a = () } 不支持
 #pragma warning disable CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseStaticMetaMemeberFunction”已被赋值，但从未使用过它的值
@@ -80,8 +80,7 @@ namespace SimpleLanguage.Core
             m_Name = mmv.m_Name;
             m_PintTokenList = mmv.m_PintTokenList;
             m_Index = mmv.m_Index;
-            m_FromType = mmv.m_FromType;
-            m_DefineTypeName = mmv.m_DefineTypeName;      
+            m_FromType = mmv.m_FromType;  
             m_DefineMetaType = mmv.m_DefineMetaType;
             m_IsStatic = mmv.m_IsStatic;
             m_Permission = mmv.m_Permission;
@@ -145,7 +144,6 @@ namespace SimpleLanguage.Core
             AddPingToken( fmmv.nameToken );
             m_Index = mc.metaMemberVariableDict.Count;
             m_FromType = EFromType.Code;
-            m_DefineTypeName = m_FileMetaMemeberVariable.classDefineRef?.name;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             m_IsStatic = m_FileMetaMemeberVariable?.staticToken != null;
             m_VariableFrom = EVariableFrom.Member;
@@ -171,12 +169,9 @@ namespace SimpleLanguage.Core
         //}
         public override void ParseDefineMetaType()
         {
-            if ( !string.IsNullOrEmpty(m_DefineTypeName ) )
+            if (m_FileMetaMemeberVariable?.classDefineRef != null)
             {
-                if( m_FileMetaMemeberVariable.classDefineRef != null )
-                {
-                    m_DefineMetaType = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(m_OwnerMetaClass, m_FileMetaMemeberVariable.classDefineRef);                    
-                }                
+                m_DefineMetaType = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(m_OwnerMetaClass, m_FileMetaMemeberVariable.classDefineRef);
             }
         }
         public virtual int CalcParseLevelBeCall(int level)
@@ -233,13 +228,16 @@ namespace SimpleLanguage.Core
         }
         public void CreateExpress()
         {
-            if(m_FileMetaMemeberVariable?.DataType == FileMetaMemberVariable.EMemberDataType.Array )
+            if( this.m_FileMetaMemeberVariable != null )
             {
-                m_Express = CreateExpressNodeInClassMetaVariable();
-            }
-            else
-            {
-                m_Express = CreateExpressNodeInClassMetaVariable();
+                if (this.m_FileMetaMemeberVariable?.DataType == FileMetaMemberVariable.EMemberDataType.Array)
+                {
+                    m_Express = CreateExpressNodeInClassMetaVariable();
+                }
+                else
+                {
+                    m_Express = CreateExpressNodeInClassMetaVariable();
+                }
             }
             if( this.m_Express == null )
             {

@@ -3,45 +3,20 @@
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/5/30 12:00:00
-//  Description: Meta enum's attribute
+//  Description: Meta params about info class!
 //****************************************************************************
 
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
-using SimpleLanguage.Parse;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.ConstrainedExecution;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public class MetaParam
-    {
-        public string name => m_Name;
-        protected string m_Name = "";
 
-        public virtual void Parse()
-        {
-            
-        }
-        public virtual void CaleReturnType()
-        {
-        }
-        public virtual string ToTypeName()
-        {
-            return "";
-        }
-        public virtual string ToFormatString()
-        {
-            return "";
-        }
-    }
-
-
-    public class MetaInputParam : MetaParam
+    public class MetaInputParam
     {
         public MetaExpressNode express => m_Express;
 
@@ -71,14 +46,14 @@ namespace SimpleLanguage.Core
         {
             m_Express = inputExpress;
         }
-        public override void Parse()
+        public virtual void Parse()
         {
             if (m_Express != null)
             {
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.InputParamExpress } );
             }
         }
-        public override void CaleReturnType()
+        public virtual void CaleReturnType()
         {
             if(m_Express != null )
             {
@@ -93,7 +68,7 @@ namespace SimpleLanguage.Core
             }
             return CoreMetaClassManager.objectMetaClass;
         }
-        public override string ToFormatString()
+        public virtual string ToFormatString()
         {
             return m_Express?.ToFormatString();
         }
@@ -106,23 +81,12 @@ namespace SimpleLanguage.Core
             return sb.ToString();
         }
     }
-    public class MetaOutputParam : MetaParam
+    public class MetaDefineParam 
     {
-        public MetaExpressNode express;
-        public MetaOutputParam(FileInputParamNode fipn, MetaClass mc, MetaBlockStatements mbs)
-        {
-            //express = ExpressManager.instance.CreateMetaClassByFileMetaClass(mc, mbs, null, fipn.express);
-        }
-    }
-    public class MetaDefineParam : MetaParam
-    {
-        //public MetaClass ownerMetaClass => m_OwnerMetaFunction != null ? m_OwnerMetaFunction.ownerMetaClass : null;
-        //public MetaFunction ownerMetaFunction => m_OwnerMetaFunction;
-        public FileMetaParamterDefine fileMetaParamter => m_FileMetaParamter;
-        public string metaDefineTypeName => m_MetaDefineTypeName;
+        public string name => m_Name;
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaExpressNode expressNode => m_MetaExpressNode;
-        public bool isFunctionTemplate => m_IsFunctionTemplate;
+        //public bool isFunctionTemplate => m_IsFunctionTemplate;
         public bool isClassTemplate => m_IsClassTemplate;
         public bool isMust { get { return m_MetaExpressNode == null; } }            //是否为非省略参数
         public bool isExtendParams => m_FileMetaParamter?.paramsToken != null;
@@ -133,7 +97,7 @@ namespace SimpleLanguage.Core
         protected MetaExpressNode m_MetaExpressNode = null;
         protected MetaVariable m_MetaVariable = null;
         protected MetaFunction m_OwnerMetaFunction = null;
-        protected string m_MetaDefineTypeName = "";
+        protected string m_Name = "";
 
         public MetaDefineParam( string _name, MetaFunction mf )
         {
@@ -192,7 +156,7 @@ namespace SimpleLanguage.Core
                 m_MetaExpressNode = ExpressManager.CreateExpressNode(cep);
             }
         }
-        public override void Parse()
+        public virtual void Parse()
         {
             if (m_MetaExpressNode != null)
             {
@@ -250,7 +214,7 @@ namespace SimpleLanguage.Core
         {
             m_MetaVariable.SetMetaDefineType(mt);
         }       
-        public override void CaleReturnType()
+        public virtual void CaleReturnType()
         {
             if(m_MetaExpressNode != null )
             {
@@ -266,7 +230,7 @@ namespace SimpleLanguage.Core
                 //m_MetaVariable.SetRetMetaClass(m_DefineMetaClassType);
             }
         }
-        public override string ToFormatString()
+        public virtual string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
             sb.Append(m_MetaVariable?.ToFormatString());
@@ -285,19 +249,26 @@ namespace SimpleLanguage.Core
         public bool isHaveDefaultParamExpress { get; set; } = false;
 
         private bool m_IsExtendParams = false;
-        private int m_MinParamCount  = 0;
+        private int m_MinParamCount = 0;
         private List<MetaDefineParam> m_MetaDefineParamList = new List<MetaDefineParam>();
         public MetaDefineParamCollection()
         {
 
         }
         public MetaDefineParamCollection(bool _isAllConst, bool _isCanCallFunction)
-        { 
-            isAllConst = _isAllConst; isCanCallFunction = _isCanCallFunction; 
+        {
+            isAllConst = _isAllConst; isCanCallFunction = _isCanCallFunction;
         }
         public void Clear()
         {
             m_MetaDefineParamList.Clear();
+        }
+        public void SetOwnerMetaClass( MetaClass ownerclass)
+        {
+            for (int i = 0; i < m_MetaDefineParamList.Count; i++)
+            {
+                var dParam = m_MetaDefineParamList[i];
+            }
         }
         public MetaDefineParam GetMetaDefineParamByName( string name )
         {
@@ -366,10 +337,9 @@ namespace SimpleLanguage.Core
                 if( mdp.isExtendParams && mdp.metaVariable.isArray )
                 {
                     var mdt = mdp.metaVariable.metaDefineType;
-
                     for( int i = 0; i < mpc.metaInputParamList.Count; i++ ) 
                     {
-                        var mip = mpc.metaInputParamList[i];
+                        var mip = mpc.metaInputParamList[i];                        
                         if( mip.GetRetMetaClass() != mdt.metaClass )
                         {
                             return false;
@@ -389,6 +359,7 @@ namespace SimpleLanguage.Core
                         MetaDefineParam a = m_MetaDefineParamList[i];
                         if (a == null)
                             return false;
+                        //if( a.metaDefineTypeName )
                         MetaInputParam b = null;
                         if (mpc != null && i < inputCount)
                         {
@@ -427,7 +398,7 @@ namespace SimpleLanguage.Core
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < m_MetaDefineParamList.Count; i++)
             {
-                sb.Append(m_MetaDefineParamList[i].ToTypeName());
+                sb.Append(m_MetaDefineParamList[i].name );
                 if (i < m_MetaDefineParamList.Count - 1)
                     sb.Append("_");
             }

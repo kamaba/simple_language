@@ -285,6 +285,7 @@ namespace SimpleLanguage.Compile.Parse
                     }
                     else if (ttt == ETokenType.This
                        || ttt == ETokenType.Base
+                       || ttt == ETokenType.New 
                         )
                     {
                         keynodeStruct.AddContent(curNode);
@@ -483,7 +484,8 @@ namespace SimpleLanguage.Compile.Parse
             {
                 if(afterNodeList[0].nodeType == ENodeType.Key
                     && afterNodeList[0].token?.type != ETokenType.This
-                    && afterNodeList[0].token?.type != ETokenType.Base )
+                    && afterNodeList[0].token?.type != ETokenType.Base
+                    && afterNodeList[0].token?.type != ETokenType.New )
                     Debug.WriteLine("Error 暂不支持 a = if/switch{}语法");
                 //var fme22 = HandleCreateFileMetaSyntaxByPNode(afterNodeList);
                 //if ((afterNodeList[0].token.type == ETokenType.If
