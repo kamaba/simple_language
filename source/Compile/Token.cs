@@ -32,6 +32,10 @@ namespace SimpleLanguage.Compile
             this.sourceEndLine = endSourceLine;
             this.sourceEndChar = endSourceChar;
         }
+        public void SetType(  ETokenType type )
+        {
+            this.type = type;
+        }
         public void SetLexeme( object _lexeme )
         {
             this.lexeme = _lexeme;

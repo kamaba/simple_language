@@ -91,6 +91,13 @@ namespace SimpleLanguage.Compile.Parse
         private void AddAnnotation(Token code)
         {
             m_TokenIndex++;
+
+            var ntoken = new Token(code);
+            ntoken.SetType( ETokenType.LineEnd );
+            Node node = new Node(ntoken);
+            node.nodeType = ENodeType.LineEnd;
+
+            currentNode.AddChild(node);
         }
         private Node AddKeyNode(Token token )
         {
@@ -556,6 +563,7 @@ namespace SimpleLanguage.Compile.Parse
                 case ETokenType.Var:
                 case ETokenType.Next:
                 case ETokenType.Params:
+                case ETokenType.New:
                     {
                         AddKeyNode(token);
                     }

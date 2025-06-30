@@ -509,6 +509,7 @@ namespace SimpleLanguage.Core
                 it.UpdateInterfaceMetaClass();
                 it.ParseMemberVariableDefineMetaType();
                 it.ParseMemberFunctionDefineMetaType();
+                it.ParseMetaInConstraint();
                 AddDictMetaClass(it);
             }
         }
@@ -965,7 +966,15 @@ namespace SimpleLanguage.Core
             }
             var curMc2 = curMc.GetTreeStructNode();
 
-            var findfn = getmc.GetTemplateMetaClassByTemplateCount(inputTemplateNodeList.Count);
+            MetaClass findfn = null;
+            if(getmc is MetaGenTemplateClass mgtc )
+            {
+                findfn = mgtc.metaTemplateClass;
+            }
+            else
+            {
+                findfn = getmc.GetTemplateMetaClassByTemplateCount(inputTemplateNodeList.Count);
+            }
             if( findfn == null )
             {
                 Log.AddInStructMeta(EError.None, $"在查找{getmc.name}的模板类{inputTemplateNodeList.Count} 时没有发现相对应的模板类!");

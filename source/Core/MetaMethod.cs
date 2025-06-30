@@ -46,7 +46,6 @@ namespace SimpleLanguage.Core
         protected MetaVariable m_ThisMetaVariable = null;
         protected MetaVariable m_ReturnMetaVariable = null;
         protected MetaDefineParamCollection m_MetaMemberParamCollection = null;
-        //protected Dictionary<string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
         protected MetaDefineTemplateCollection m_MetaMemberTemplateCollection = new MetaDefineTemplateCollection();
         protected EMethodCallType m_MethodCallType = EMethodCallType.Local;
         protected bool m_IsMustNeedReturnStatements = false;
@@ -63,25 +62,31 @@ namespace SimpleLanguage.Core
             m_ThisMetaVariable = mf.m_ThisMetaVariable;
             m_ReturnMetaVariable = mf.m_ReturnMetaVariable;
             m_MetaMemberParamCollection = mf.m_MetaMemberParamCollection;
-            //m_MetaGenTemplateDict = mf.m_MetaGenTemplateDict;
             m_MetaMemberTemplateCollection = mf.m_MetaMemberTemplateCollection;
             m_MethodCallType = mf.m_MethodCallType;
             m_IsMustNeedReturnStatements = mf.m_IsMustNeedReturnStatements;
             m_LabelDataList = mf.m_LabelDataList;
         }
-        //public bool IsDefineTemplate(string name)
-        //{
-        //    return m_MetaGenTemplateDict.ContainsKey(name);
-        //}
-        //public MetaGenTemplate GetMetaGenTemplate( string name )
-        //{
-        //    if(m_MetaGenTemplateDict.ContainsKey( name ) )
-        //    {
-        //        return m_MetaGenTemplateDict[name];
-        //    }
-        //    return null;
-        //}
-
+        public override void SetOwnerMetaClass(MetaClass ownerclass)
+        {
+            base.SetOwnerMetaClass(ownerclass);
+            if(m_MetaBlockStatements != null )
+            {
+                m_MetaBlockStatements.UpdateOwnerMetaClass(ownerclass);
+            }
+            if (m_ThisMetaVariable != null)
+            {
+                m_ThisMetaVariable.SetOwnerMetaClass(ownerclass);
+            }
+            if (m_ReturnMetaVariable != null)
+            {
+                m_ReturnMetaVariable.SetOwnerMetaClass(ownerclass);
+            }
+            if(m_MetaMemberParamCollection != null )
+            {
+                m_MetaMemberParamCollection.SetOwnerMetaClass(ownerclass);
+            }
+        }
         public void AddMetaStatements(MetaStatements state)
         {
             m_MetaBlockStatements.AddFrontStatements(state);

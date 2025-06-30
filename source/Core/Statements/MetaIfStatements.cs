@@ -216,18 +216,22 @@ namespace SimpleLanguage.Core.Statements
                 }
             }
         }
-        public override MetaStatements GenTemplateClassStatement( MetaGenTemplateClass mgt, MetaBlockStatements mbs )
+        public override void UpdateOwnerMetaClass(MetaClass ownerclass)
         {
-            //for (int i = 0; i < m_MetaElseIfStatements.Count; i++)
-            //{
-            //    m_MetaElseIfStatements[i].thenMetaStatements?.GenTemplateClassStatement(mgt);
-            //}
-            //if (m_NextMetaStatements != null)
-            //{
-            //    m_NextMetaStatements.GenTemplateClassStatement(mgt);
-            //}
-            return null;
+            base.UpdateOwnerMetaClass(ownerclass);
         }
+        //public override MetaStatements GenTemplateClassStatement( MetaGenTemplateClass mgt, MetaBlockStatements mbs )
+        //{
+        //    //for (int i = 0; i < m_MetaElseIfStatements.Count; i++)
+        //    //{
+        //    //    m_MetaElseIfStatements[i].thenMetaStatements?.GenTemplateClassStatement(mgt);
+        //    //}
+        //    //if (m_NextMetaStatements != null)
+        //    //{
+        //    //    m_NextMetaStatements.GenTemplateClassStatement(mgt);
+        //    //}
+        //    return null;
+        //}
         public override void SetDeep(int dp)
         {
             for (int i = 0; i < m_MetaElseIfStatements.Count; i++)

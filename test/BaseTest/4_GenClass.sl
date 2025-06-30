@@ -13,8 +13,13 @@ List0<T>
     List1<T> t2 = null
     List0<int> t3 = null
     T getA(){ ret null}
+
+    _init_( int c )
+    {
+
+    }
 }
-List1<T> extends List0<T>
+List1<T:string> extends List0<T>
 {
     T t = null
     T getB(){ ret null}
@@ -175,7 +180,7 @@ public class Gift
 
     }
 }
-public class Level1<T extends Gift> 
+public class Level1<T> 
 {
     qqq<T>
     {
@@ -210,15 +215,15 @@ public class Level1<T extends Gift>
 
     public T add()
     {
-        T t = new(1)
+        T t = new()
 
-        List0<Map<T, T> > list = new()
+        List0<Map<T, T> > list = new(1)
 
         Level2<int,string> level222 = {}
 
         List0<int> lint11 = List0<int>()
 
-        t2 = Level1.test<List0<int> >( t, lint11 )
+        t250 = Level1<int>.test<List0<List1<long> > >( t, List0<List1<long> >() )
 
         ret t
     }
@@ -229,8 +234,12 @@ public class Level1<T extends Gift>
 
         ret t2n
     }
+    static T test<T2,T3>( T2 it2, T3 it3 )
+    {
+        ret null
+    }
 
-    public static T2 min<T2 extends ClassRoom >( T2 t1, T2 t2 )
+    public static T2 min<T2:ClassRoom >( T2 t1, T2 t2 )
     {
         #r1 = t1 ? t1 < t2 && t1 > t2 : t2        
         #rx1 = if t1 < t2 { tr t1 } else{ tr t2 }

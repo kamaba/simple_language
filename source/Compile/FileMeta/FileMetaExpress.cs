@@ -964,6 +964,16 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     AddFileMetaTerm(fmn);
                     fmbt = null;
                 }
+                else if( node.nodeType == ENodeType.Brace )
+                {
+                    if (fmbt != null)
+                    {
+                        Debug.WriteLine("Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString());
+                    }
+                    fmbt = new FileMetaCallTerm(m_FileMeta, node);
+                    fmbt.priority = int.MaxValue;
+                    AddFileMetaTerm(fmbt);
+                }
                 else if( node.nodeType == ENodeType.ConstValue )
                 {
                     if( node.extendLinkNodeList.Count > 0 )
@@ -979,8 +989,9 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     AddFileMetaTerm(fmbt);
                 }
                 else if( node.nodeType == ENodeType.Key 
-                    && (node.token?.type == ETokenType.This 
-                    || node.token?.type == ETokenType.Base ) )
+                    && (node.token?.type == ETokenType.This
+                    || node.token?.type == ETokenType.Base
+                    || node.token?.type == ETokenType.New ) )
                 {
                     if (fmbt != null)
                     {

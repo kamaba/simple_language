@@ -155,6 +155,13 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                                 var cnode2 = m_NodeList[cAddCount++];
                                 if (cnode2.nodeType == ENodeType.RightAngle)
                                 {
+                                    if(templateNode == null )
+                                    {
+                                        var ld = Log.AddInStructFileMeta(EError.None, "没有找到模板定义T");
+                                        ld.filePath = cnode2.token.path;
+                                        ld.sourceBeginLine = cnode2.token.sourceBeginLine;
+                                        break;
+                                    }
                                     FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, templateNode, templateExtendsNode);
                                     m_TemplateDefineList.Add(fmtd);
                                     break;
@@ -166,7 +173,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                                     templateNode = null;
                                     continue;
                                 }
-                                else if (cnode2.nodeType == ENodeType.Key && cnode2.token?.type == ETokenType.Extends)
+                                else if (cnode2.nodeType == ENodeType.Key && cnode2.token?.type == ETokenType.Colon )
                                 {
                                     templateInExtends = true;
                                     continue;

@@ -66,9 +66,24 @@ namespace SimpleLanguage.Core.Statements
         {
             m_NextMetaStatements = ms;
         }
-        public virtual MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
+        //public virtual MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
+        //{
+        //    return null;
+        //}
+        public virtual void UpdateOwnerMetaClass( MetaClass ownerclass )
         {
-            return null;
+            if(m_TrMetaVariable != null )
+            {
+                m_TrMetaVariable.SetOwnerMetaClass(ownerclass);
+            }
+            if( m_NextMetaStatements != null )
+            {
+                m_NextMetaStatements.UpdateOwnerMetaClass(ownerclass);
+            }
+        }
+        public virtual void UpdateTemplateMetaTypeByMetaFunction( MetaFunction mf )
+        {
+
         }
     }
 }

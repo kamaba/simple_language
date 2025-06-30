@@ -656,8 +656,15 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < mmf.Count; i++)
             {
                 var fun = mmf[i];
-                if (fun.IsEqualMetaInputParamCollection(mmpc))
+                if( fun.isTemplateFunction )
+                {
                     return fun;
+                }
+                else
+                {
+                    if (fun.IsEqualMetaInputParamCollection(mmpc))
+                        return fun;
+                }
             }
 
             return null;

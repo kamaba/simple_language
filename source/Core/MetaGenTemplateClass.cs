@@ -161,14 +161,20 @@ namespace SimpleLanguage.Core
 
             foreach (var it in m_MetaTemplateClass.metaMemberVariableDict)
             {
-                it.Value.ParseMetaExpress();
+                UpdateTemplateInstanceMetaMemberVariableExpress(it.Value);
             }
             foreach (var it in this.m_MetaTemplateClass.metaMemberFunctionListDict)
             {
                 foreach (var it2 in it.Value)
                 {
-                    it2.ParseMetaExpress();
-                    it2.ParseStatements();
+                    if( !it2.isTemplateFunction )
+                    {
+                        UpdateTemplateInstanceStatement(it2);
+                    }
+                    else
+                    {
+
+                    }
                 }
             }
         }
@@ -183,7 +189,7 @@ namespace SimpleLanguage.Core
         {
             MetaMemberVariable mgmv = new MetaMemberVariable(mmv);
             mgmv.SetOwnerMetaClass(this);
-            TypeManager.instance.UpdateMetaType(mgmv.metaDefineType, this);
+            TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mgmv.metaDefineType, this, null );
             m_MetaMemberVariableDict.Add(mgmv.name, mgmv);
         }
         public override void ParseMemberFunctionDefineMetaType()
@@ -192,10 +198,7 @@ namespace SimpleLanguage.Core
             {
                 foreach (var it2 in it.Value)
                 {
-                    if(it2.isTemplateFunction == false )
-                    {
-                        ParseMetaMemberFunctionDefineMetaType(it2);
-                    }
+                    ParseMetaMemberFunctionDefineMetaType(it2);
                 }
             }
         }
@@ -215,11 +218,11 @@ namespace SimpleLanguage.Core
                     mmp.ParseMetaDefineType();
                     mgmf.metaMemberParamCollection.AddMetaDefineParam(mmp);
                 }
-            }
 
-            if (!mgmf.isTemplateFunction)
-            {
-                MethodManager.instance.AddClassTemplateMemeberFunction(mgmf);
+                if (!mgmf.isTemplateFunction )
+                {
+                    MethodManager.instance.AddClassTemplateMemeberFunction(mgmf);
+                }
             }
 
             List<MetaMemberFunction> list = null;
@@ -236,32 +239,6 @@ namespace SimpleLanguage.Core
 
             m_MetaMemberAllNameFunctionDict.Add(mgmf.functionAllName, mgmf );
         }
-        //public void UpdateGenMemberDefineMetaType()
-        //{           
-
-        //    if( ProjectManager.compileUseTemplateClassGenClassFunction )
-        //    {
-        //        Dictionary<string, List<MetaMemberFunction>> addFunctionList = new Dictionary<string, List<MetaMemberFunction>>();
-        //        foreach (var v in m_MetaMemberFunctionListDict)
-        //        {
-        //            if (v.Value.Count > 0)
-        //            {
-        //                var list = new List<MetaMemberFunction>();
-        //                addFunctionList.Add(v.Key, list);
-
-        //                for (int j = 0; j < v.Value.Count; j++)
-        //                {
-        //                    var curFun = v.Value[j];
-
-        //                    MetaMemberFunction mgmf = new MetaMemberFunction(this);
-        //                    mgmf.UpdateGenMemberFunctionByTemplateClass(curFun);
-        //                    list.Add(mgmf);
-        //                }
-        //            }
-        //        }
-        //        m_MetaMemberFunctionListDict = addFunctionList;
-        //    }
-        //}
         public bool Adapter(MetaInputTemplateCollection mitc)
         {
             if( mitc.metaTemplateParamsList.Count == m_MetaGenTemplateList.Count )
@@ -281,7 +258,25 @@ namespace SimpleLanguage.Core
 
             return false;
         }
+        public void UpdateTemplateInstanceMetaMemberVariableExpress( MetaMemberVariable mmv )
+        {
+            TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mmv.metaDefineType, this, null );
+        }
+        public void UpdateTemplateInstanceStatement(MetaMemberFunction mmf)
+        {
+            for( int i = 0; i < mmf.metaMemberParamCollection.metaDefineParamList.Count; i++ )
+            {
+                var mdp = mmf.metaMemberParamCollection.metaDefineParamList[i];
+                TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mdp.metaVariable.metaDefineType, this, mmf as MetaGenTempalteFunction );
+            }
 
+            var list = mmf.GetCalcMetaVariableList();
+
+            for( int i = 0; i < list.Count; i++ )
+            {
+                TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(list[i].metaDefineType, this, mmf as MetaGenTempalteFunction );
+            }
+        }
         public override string ToString()
         {           
             return this.ToDefineTypeString();

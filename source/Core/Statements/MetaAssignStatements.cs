@@ -10,7 +10,6 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
@@ -406,14 +405,19 @@ namespace SimpleLanguage.Core.Statements
             return;
         }
 
-        public override MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
-        {
-            if (m_NextMetaStatements != null)
-            {
-                //m_NextMetaStatements.GenTemplateClassStatement(mgt);
-            }
+        //public override MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
+        //{
+        //    if (m_NextMetaStatements != null)
+        //    {
+        //        //m_NextMetaStatements.GenTemplateClassStatement(mgt);
+        //    }
 
-            return null;
+        //    return null;
+        //}
+        public override void UpdateOwnerMetaClass(MetaClass ownerclass)
+        {
+            m_MetaVariable?.SetOwnerMetaClass(ownerclass);
+            base.UpdateOwnerMetaClass(ownerclass);
         }
         public override string ToFormatString()
         {

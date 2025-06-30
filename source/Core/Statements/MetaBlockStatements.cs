@@ -209,28 +209,28 @@ namespace SimpleLanguage.Core.Statements
                 AddMetaVariable(mmpcp.metaVariable);
             }
         }
-        public override MetaStatements GenTemplateClassStatement( MetaGenTemplateClass mgt, MetaBlockStatements parentMs )
-        {
-            MetaBlockStatements mbs = new MetaBlockStatements( parentMs );
-            mbs.SetFileMetaBlockSyntax(m_FileMetaBlockSyntax);
-            mbs.parent = parentMs;
-            Dictionary<string,MetaVariable> tMvList = new Dictionary<string, MetaVariable>();
-            foreach (var v in m_MetaVariableDict)
-            {
-                MetaVariable nmv = new MetaVariable(v.Value);
-                nmv.GenTemplateMetaVaraible(mgt, mbs);
-                tMvList.Add(nmv.name, nmv);
-            }
-            m_MetaVariableDict = tMvList;
+        //public override MetaStatements GenTemplateClassStatement( MetaGenTemplateClass mgt, MetaBlockStatements parentMs )
+        //{
+        //    MetaBlockStatements mbs = new MetaBlockStatements( parentMs );
+        //    mbs.SetFileMetaBlockSyntax(m_FileMetaBlockSyntax);
+        //    mbs.parent = parentMs;
+        //    Dictionary<string,MetaVariable> tMvList = new Dictionary<string, MetaVariable>();
+        //    foreach (var v in m_MetaVariableDict)
+        //    {
+        //        MetaVariable nmv = new MetaVariable(v.Value);
+        //        nmv.GenTemplateMetaVaraible(mgt, mbs);
+        //        tMvList.Add(nmv.name, nmv);
+        //    }
+        //    m_MetaVariableDict = tMvList;
 
-            if (m_NextMetaStatements != null)
-            {
-                m_NextMetaStatements = m_NextMetaStatements.GenTemplateClassStatement( mgt, mbs );
-            }
-            mbs.SetNextStatements( m_NextMetaStatements );
+        //    if (m_NextMetaStatements != null)
+        //    {
+        //        m_NextMetaStatements = m_NextMetaStatements.GenTemplateClassStatement( mgt, mbs );
+        //    }
+        //    mbs.SetNextStatements( m_NextMetaStatements );
 
-            return mbs;
-        }
+        //    return mbs;
+        //}
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
