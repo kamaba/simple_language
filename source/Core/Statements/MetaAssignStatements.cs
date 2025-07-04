@@ -304,7 +304,7 @@ namespace SimpleLanguage.Core.Statements
 
             if (m_FinalMetaExpress == null)
             {
-                Debug.Write("Error 类: " + ownerMetaClass?.allName + "没有找到变量:[" + m_FileMetaOpAssignSyntax.express.ToFormatString() + "]的定义!!! 69 ");
+                Debug.Write("Error 类: " + ownerMetaClass?.allClassName + "没有找到变量:[" + m_FileMetaOpAssignSyntax.express.ToFormatString() + "]的定义!!! 69 ");
                 return;
             }
             m_FinalMetaExpress.Parse(new AllowUseSettings() { });
@@ -351,15 +351,15 @@ namespace SimpleLanguage.Core.Statements
                     }
 
                     StringBuilder sb = new StringBuilder();
-                    sb.Append("Warning 在类: " + m_OwnerMetaBlockStatements?.ownerMetaClass.allName + " 函数: " + m_OwnerMetaBlockStatements.ownerMetaFunction?.name + "中  ");
+                    sb.Append("Warning 在类: " + m_OwnerMetaBlockStatements?.ownerMetaClass.allClassName + " 函数: " + m_OwnerMetaBlockStatements.ownerMetaFunction?.name + "中  ");
                     if (curClass != null)
                     {
-                        sb.Append(" 定义类 : " + curClass.allName);
+                        sb.Append(" 定义类 : " + curClass.allClassName);
                     }
                     sb.Append(" 名称为: " + m_Name?.ToString());
                     sb.Append("与后边赋值语句中 ");
                     if (compareClass != null)
-                        sb.Append("表达式类为: " + compareClass.allName);
+                        sb.Append("表达式类为: " + compareClass.allClassName );
                     if (relation == ClassManager.EClassRelation.No)
                     {
                         sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");

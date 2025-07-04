@@ -211,7 +211,7 @@ namespace SimpleLanguage.Project
             ClassManager.instance.HandleExtendData();
             ClassManager.instance.CheckInterfaces();
             ClassManager.instance.ParseDefineComplete();
-            ClassManager.instance.PrintAlllClassContent();
+            //ClassManager.instance.PrintAlllClassContent();
 
             ClassManager.instance.ParseMemberEnumExpress();
             MetaVariableManager.instance.ParseMetaDataMemberExpress();

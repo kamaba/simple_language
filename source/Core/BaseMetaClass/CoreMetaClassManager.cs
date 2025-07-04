@@ -239,10 +239,10 @@ namespace SimpleLanguage.Core.SelfMeta
                 default:return name;
             }
         }
-        public static MetaClass GetCoreMetaClass( string name )
+        public static MetaNode GetCoreMetaClass( string name )
         {
             string name1 = GetSelfMetaName(name);
-            return ModuleManager.instance.coreModule.GetChildrenMetaBaseByName(name1) as MetaClass;
+            return ModuleManager.instance.coreModule.metaNode.GetChildrenMetaNodeByName(name1);
         }
     }
 }

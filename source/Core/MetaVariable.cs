@@ -248,11 +248,11 @@ namespace SimpleLanguage.Core
             {
                 if (m_SourceMetaVariable != null)
                 {
-                    sb.Append("[" + m_SourceMetaVariable.metaDefineType.allName + "]");
+                    sb.Append("[" + m_SourceMetaVariable.metaDefineType.name + "]");
                     sb.Append(m_SourceMetaVariable.name);
                     sb.Append(".");
                 }
-                sb.Append("[" + m_TargetMetaVariable.metaDefineType.allName + "]");
+                sb.Append("[" + m_TargetMetaVariable.metaDefineType.name + "]");
                 sb.Append(m_TargetMetaVariable.name);
             }
             else

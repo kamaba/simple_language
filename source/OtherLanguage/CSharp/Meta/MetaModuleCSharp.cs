@@ -12,18 +12,19 @@ namespace SimpleLanguage.Core
         {
         }
 
-        public MetaBase GetCSharpMetaClassOrNamespaceAndCreateByName( string name )
+        public MetaClass GetCSharpMetaClassOrNamespaceAndCreateByName( string name )
         {
-            var mb = this.GetChildrenMetaBaseByName(name);
+            //var mb = this.GetChildrenMetaBaseByName(name);
 
-            if( mb == null && refFromType == RefFromType.CSharp )
-            {
-                mb = CSharpManager.FindAndCreateMetaBase( this, name);
+            //if( mb == null && refFromType == RefFromType.CSharp )
+            //{
+            //    mb = CSharpManager.FindAndCreateMetaBase( this, name);
 
-                return mb;
-            }
+            //    return mb;
+            //}
 
-            return mb;
+            //return mb;
+            return null;
         }
     }
 }

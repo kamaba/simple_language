@@ -7,12 +7,10 @@
 //****************************************************************************
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
-using SimpleLanguage.Compile.Grammer;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -34,14 +32,14 @@ namespace SimpleLanguage.Core
         public Dictionary<string, MetaNamespace> metaNamespaceDict = new Dictionary<string, MetaNamespace>();       
 
         //type = 0 all namespace/class/data/enum   1 namespace  2class/data
-        public MetaBase FindImportNamespace(FileMetaImportSyntax fmis, string name )
+        public MetaNode FindImportNamespace(FileMetaImportSyntax fmis, string name )
         {
-            MetaBase parentNode = ModuleManager.instance.selfModule;
+            MetaNode parentNode = ModuleManager.instance.selfModule.metaNode;
 
-            MetaBase resultMB = null;
+            MetaNode resultMB = null;
             for( int i = 0; i < fmis.namespaceStatement.namespaceList.Count; i++ )
             {
-                resultMB = parentNode.GetChildrenMetaBaseByName(fmis.namespaceStatement.namespaceList[i]);
+                resultMB = parentNode.GetChildrenMetaNodeByName(fmis.namespaceStatement.namespaceList[i]);
                 if( resultMB != null )
                 {
                     if( resultMB.name == name )
@@ -54,16 +52,16 @@ namespace SimpleLanguage.Core
 
             return null;
         }
-        public MetaBase SearchTopLevelFileMetaNamespace(FileMetaNamespace fns, MetaBase parentNode = null)
+        public MetaNode SearchTopLevelFileMetaNamespace(FileMetaNamespace fns, MetaNode parentNode = null)
         {
-            MetaBase findNode = parentNode;
+            MetaNode findNode = parentNode;
             if ( fns.topLevelFileMetaNamespace != null )
             {
                 findNode = SearchTopLevelFileMetaNamespace(fns.topLevelFileMetaNamespace, findNode);
                 for (int i = 0; i < fns.topLevelFileMetaNamespace.namespaceStatementBlock.tokenList.Count; i++)
                 {
                     string name = fns.topLevelFileMetaNamespace.namespaceStatementBlock.tokenList[i].lexeme.ToString();
-                    var findNode2 = findNode.GetChildrenMetaBaseByName(name);
+                    var findNode2 = findNode.GetChildrenMetaNodeByName(name);
                     if( findNode2 == null )
                     {
                         break;
@@ -73,25 +71,24 @@ namespace SimpleLanguage.Core
             }
             return findNode;
         }
-        public MetaNamespace GetParentChildrenNode(FileMetaNamespace fns, MetaBase parentNode )
+        public MetaNode GetParentChildrenNode(FileMetaNamespace fns, MetaNode parentNode )
         {
             var findNode = parentNode;
             for (int i = 0; i < fns.namespaceStatementBlock.tokenList.Count; i++)
             {
                 string name = fns.namespaceStatementBlock.tokenList[i].lexeme.ToString();
-                var findNode2 = findNode.GetChildrenMetaBaseByName(name);
+                var findNode2 = findNode.GetChildrenMetaNodeByName(name);
                 if (findNode2 == null)
                 {
                     break;
                 }
                 findNode = findNode2;
             }
-            return findNode as MetaNamespace;
+            return findNode;
         }
-        public MetaNamespace SearchFinalNamespace(FileMetaNamespace fns )
+        public MetaNode SearchFinalNamespace(FileMetaNamespace fns )
         {
-            MetaBase findNode = ModuleManager.instance.selfModule;
-
+            MetaNode findNode = ModuleManager.instance.selfModule.metaNode;
 
             List<FileMetaNamespace> list = new List<FileMetaNamespace>();
 
@@ -121,47 +118,56 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            return findNode as MetaNamespace;
+            return findNode;
         }
-        public void CreateMetaNamespaceByFineDefineNamespace( FileMetaNamespace fns, MetaBase parentNode = null )
+        public void CreateMetaNamespaceByFineDefineNamespace( FileMetaNamespace fns, MetaNode parentNode = null )
         {
             FileMetaNamespace fnsc = fns;
             if ( parentNode == null )
             {
-                parentNode = ModuleManager.instance.selfModule;
+                parentNode = ModuleManager.instance.selfModule.metaNode;
             }
             parentNode = SearchTopLevelFileMetaNamespace(fns, parentNode);
 
             CreateMetaNamespaceHandle(fnsc, parentNode);
         }
-        void CreateMetaNamespaceHandle(FileMetaNamespace fns, MetaBase parentNode = null)
+        void CreateMetaNamespaceHandle(FileMetaNamespace fns, MetaNode parentNode = null)
         {
-            MetaBase mb = parentNode;
+            MetaNode mnode = parentNode;
             if (parentNode == null)
             {
-                parentNode = ModuleManager.instance.selfModule;
+                parentNode = ModuleManager.instance.selfModule.metaNode;
             }
             //fns.metaNamespaceList.Clear();
             for (int i = 0; i < fns.namespaceStatementBlock.tokenList.Count; i++)
             {
                 string name = fns.namespaceStatementBlock.tokenList[i].lexeme.ToString();
-                mb = parentNode.GetChildrenMetaBaseByName(name);
-                if (mb == null)
+                parentNode = parentNode.GetChildrenMetaNodeByName(name);
+                bool isCreate = true;
+                if (parentNode != null)
                 {
-                    mb = new MetaNamespace(name);
-                    if (ProjectManager.useDefineNamespaceType != EUseDefineType.NoUseProjectConfigNamespace)
+                    if (parentNode.metaNamespace == null)
                     {
-                        (mb as MetaNamespace).isNotAllowCreateName = true;
-                        Debug.Write("Error 在使用namespace 时，在项目定义中，没有找到相关的定义!!  位置:" + fns.namespaceStatementBlock.tokenList[i].ToLexemeAllString());
+                        isCreate = true;
                     }
-                    parentNode.AddMetaBase(name, mb);
-                    metaNamespaceDict.Add((mb as MetaNamespace).namespaceName, mb as MetaNamespace);
-                    parentNode = mb;
+                    else
+                    {
+                        isCreate = false;
+                    }
                 }
                 else
                 {
-                    parentNode = mb;
-                    //fns.metaNamespaceList.Add(mb as MetaNamespace);
+                    isCreate = true;
+                }
+                if( isCreate )
+                {
+                    var mn = new MetaNamespace(name);
+                    if (ProjectManager.useDefineNamespaceType != EUseDefineType.NoUseProjectConfigNamespace)
+                    {
+                        mn.isNotAllowCreateName = true;
+                        Debug.Write("Error 在使用namespace 时，在项目定义中，没有找到相关的定义!!  位置:" + fns.namespaceStatementBlock.tokenList[i].ToLexemeAllString());
+                    }
+                    parentNode = parentNode.AddMetaNamespace(mn);
                 }
             }
         }
@@ -172,9 +178,9 @@ namespace SimpleLanguage.Core
             {
                 //mn = fmn.topLevelFileMetaNamespace.namespaceStatementBlock;
             }
-            CreateMetaNamespaceByFineDefineNamespace(fmn, mn);
+            //CreateMetaNamespaceByFineDefineNamespace(fmn, mn);
         }
-        public MetaNamespace FindFinalMetaNamespaceByNSBlock( NamespaceStatementBlock nsb, MetaBase root = null )
+        public MetaNode FindFinalMetaNamespaceByNSBlock( NamespaceStatementBlock nsb, MetaNode root = null )
         {
             if( nsb.namespaceList.Count == 0 )
             {
@@ -183,12 +189,12 @@ namespace SimpleLanguage.Core
 
             if( root == null )
             {
-                root = ModuleManager.instance.selfModule;
+                root = ModuleManager.instance.selfModule.metaNode;
             }
             for (int i = 0; i < nsb.tokenList.Count; i++)
             {
                 string name = nsb.tokenList[i].lexeme.ToString();
-                var findNode2 = root.GetChildrenMetaBaseByName(name);
+                var findNode2 = root.GetChildrenMetaNodeByName(name);
                 if (findNode2 == null)
                 {
                     break;
@@ -196,7 +202,10 @@ namespace SimpleLanguage.Core
                 root = findNode2;
                 if ( i == nsb.tokenList.Count - 1 )
                 {
-                    return findNode2 as MetaNamespace;
+                    if (findNode2.metaNamespace != null)
+                    {
+                        return findNode2;
+                    }
                 }
             }
             return null;
@@ -212,49 +221,49 @@ namespace SimpleLanguage.Core
             string tempname = "";
             if ( CompilerUtil.CheckNameList(nsString, list))
             {
-                MetaNamespace parentMetaNamespace = null;
-                for ( int i = 0; i < list.Count; i++ )
-                {
-                    tempname = list[i];
-                    if ( i == 0 )
-                    {
-                        var metabase = selfModule.GetChildrenMetaBaseByName(tempname);
-                        if (metabase != null)
-                        {
-                            parentMetaNamespace = metabase as MetaNamespace;
-                            if(parentMetaNamespace == null )
-                            {
-                                Debug.Write("已有类: " + tempname + "与添加的命名空间冲突!!");
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            parentMetaNamespace = new MetaNamespace(tempname);
-                            selfModule.AddMetaNamespace(parentMetaNamespace);
-                        }                
-                    }
-                    else
-                    {
-                        var metabase = parentMetaNamespace.GetChildrenMetaBaseByName(tempname);
-                        if( metabase != null )
-                        {
-                            parentMetaNamespace = metabase as MetaNamespace;
-                            if (parentMetaNamespace == null)
-                            {
-                                Debug.Write("已有类: " + tempname + "与添加的命名空间冲突!!");
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            var mn = new MetaNamespace(tempname);
-                            parentMetaNamespace.AddMetaNamespace(mn);
-                            parentMetaNamespace = mn;
-                        }
-                    }
-                }
-                metaNamespaceDict.Add(nsString, parentMetaNamespace);
+                //MetaNamespace parentMetaNamespace = null;
+                //for ( int i = 0; i < list.Count; i++ )
+                //{
+                //    tempname = list[i];
+                //    if ( i == 0 )
+                //    {
+                //        var metabase = selfModule.GetChildrenMetaBaseByName(tempname);
+                //        if (metabase != null)
+                //        {
+                //            parentMetaNamespace = metabase as MetaNamespace;
+                //            if(parentMetaNamespace == null )
+                //            {
+                //                Debug.Write("已有类: " + tempname + "与添加的命名空间冲突!!");
+                //                return;
+                //            }
+                //        }
+                //        else
+                //        {
+                //            parentMetaNamespace = new MetaNamespace(tempname);
+                //            selfModule.AddMetaNamespace(parentMetaNamespace);
+                //        }                
+                //    }
+                //    else
+                //    {
+                //        var metabase = parentMetaNamespace.GetChildrenMetaBaseByName(tempname);
+                //        if( metabase != null )
+                //        {
+                //            parentMetaNamespace = metabase as MetaNamespace;
+                //            if (parentMetaNamespace == null)
+                //            {
+                //                Debug.Write("已有类: " + tempname + "与添加的命名空间冲突!!");
+                //                return;
+                //            }
+                //        }
+                //        else
+                //        {
+                //            var mn = new MetaNamespace(tempname);
+                //            parentMetaNamespace.AddMetaNamespace(mn);
+                //            parentMetaNamespace = mn;
+                //        }
+                //    }
+                //}
+                //metaNamespaceDict.Add(nsString, parentMetaNamespace);
             }
             else
             {
@@ -268,28 +277,12 @@ namespace SimpleLanguage.Core
             MetaBase childMB = null;
             while( cur != null )
             {
-                childMB = cur.GetChildrenMetaBaseByName(nodeName);
-                if (childMB != null)
-                    return childMB;
-                cur = cur.parentNode;
+                //childMB = cur.GetChildrenMetaBaseByName(nodeName);
+                //if (childMB != null)
+                //    return childMB;
+                //cur = cur.parentNode;
             }
             return childMB;
-        }
-
-        public void PrintAllNamespace()
-        {
-            Debug.Write("---------------NamespaceBegin-----------" + Environment.NewLine);
-            Debug.Write(ToAllNamespace());
-            Debug.Write("--------------NamespaceEnd-------------" + Environment.NewLine);
-        }
-        public string ToAllNamespace()
-        {
-            StringBuilder sb = new StringBuilder();
-            foreach (var v in metaNamespaceDict )
-            {
-                sb.Append("namespace " + v.Key + Environment.NewLine);
-            }
-            return sb.ToString();
         }
     }
 }

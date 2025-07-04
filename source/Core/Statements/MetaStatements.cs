@@ -54,13 +54,13 @@ namespace SimpleLanguage.Core.Statements
                 m_NextMetaStatements.SetTRMetaVariable(mv);
             }
         }
-        public override void SetDeep( int dp )
+        public void SetDeep( int dp )
         {
-            m_Deep = dp;
-            if(m_NextMetaStatements != null )
-            {
-                m_NextMetaStatements.SetDeep(deep);
-            }
+            //m_Deep = dp;
+            //if(m_NextMetaStatements != null )
+            //{
+            //    m_NextMetaStatements.SetDeep(deep);
+            //}
         }
         public virtual void SetNextStatements( MetaStatements ms )
         {

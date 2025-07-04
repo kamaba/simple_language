@@ -40,9 +40,10 @@ namespace SimpleLanguage.Core
             m_IsDynamic = dynamic;
         }
 
-        public override MetaBase GetChildrenMetaBaseByName(string name)
+        public MetaBase GetChildrenMetaBaseByName(string name)
         {
-            return base.GetChildrenMetaBaseByName(name);
+            //return base.GetChildrenMetaBaseByName(name);
+            return null;
         }
         public void AddPingToken(Token tok)
         {
@@ -63,7 +64,6 @@ namespace SimpleLanguage.Core
                 return;
             }
             m_MetaMemberDataDict.Add(mmd.name, mmd);
-            AddMetaBase(mmd.name, mmd);
         }
         public List<MetaMemberData> GetMetaMemberDataList()
         {
@@ -89,7 +89,7 @@ namespace SimpleLanguage.Core
                 MetaBase mb = GetChildrenMetaBaseByName(v.name);
                 if (mb != null)
                 {
-                    Debug.Write("Error MetaData MetaDataMember已有定义类: " + allName + "中 已有: " + v.token?.ToLexemeAllString() + "的元素!!");
+                    Debug.Write("Error MetaData MetaDataMember已有定义类: " + m_AllName + "中 已有: " + v.token?.ToLexemeAllString() + "的元素!!");
                     isHave = true;
                 }
                 else
@@ -125,53 +125,53 @@ namespace SimpleLanguage.Core
                 {
                     stringBuilder.Append("const ");
                 }
-                if (topLevelMetaNamespace != null)
-                {
-                    stringBuilder.Append(topLevelMetaNamespace.allName + ".");
-                }
-                stringBuilder.Append(name + " = {");
-                foreach (var v in m_ChildrenNameNodeDict)
-                {
-                    MetaBase mb = v.Value;
-                    if (mb is MetaMemberData)
-                    {
-                        stringBuilder.Append((mb as MetaMemberData).ToFormatString());
-                        stringBuilder.Append(",");
-                    }
-                }
+                //if (topLevelMetaNamespace != null)
+                //{
+                //    stringBuilder.Append(topLevelMetaNamespace.allName + ".");
+                //}
+                //stringBuilder.Append(name + " = {");
+                //foreach (var v in m_ChildrenNameNodeDict)
+                //{
+                //    MetaBase mb = v.Value;
+                //    if (mb is MetaMemberData)
+                //    {
+                //        stringBuilder.Append((mb as MetaMemberData).ToFormatString());
+                //        stringBuilder.Append(",");
+                //    }
+                //}
                 stringBuilder.Append("}");
             }
             else
             {
-                for (int i = 0; i < realDeep; i++)
-                    stringBuilder.Append(Global.tabChar);
-                if (isConst)
-                {
-                    stringBuilder.Append("const ");
-                }
-                if (topLevelMetaNamespace != null)
-                {
-                    stringBuilder.Append(topLevelMetaNamespace.allName + ".");
-                }
-                stringBuilder.Append(name + " ");
+                //for (int i = 0; i < realDeep; i++)
+                //    stringBuilder.Append(Global.tabChar);
+                //if (isConst)
+                //{
+                //    stringBuilder.Append("const ");
+                //}
+                //if (topLevelMetaNamespace != null)
+                //{
+                //    stringBuilder.Append(topLevelMetaNamespace.allName + ".");
+                //}
+                //stringBuilder.Append(name + " ");
 
-                stringBuilder.Append(Environment.NewLine);
-                for (int i = 0; i < realDeep; i++)
-                    stringBuilder.Append(Global.tabChar);
-                stringBuilder.Append("{" + Environment.NewLine);
+                //stringBuilder.Append(Environment.NewLine);
+                //for (int i = 0; i < realDeep; i++)
+                //    stringBuilder.Append(Global.tabChar);
+                //stringBuilder.Append("{" + Environment.NewLine);
 
-                foreach (var v in m_ChildrenNameNodeDict)
-                {
-                    MetaBase mb = v.Value;
-                    if (mb is MetaMemberData)
-                    {
-                        stringBuilder.Append((mb as MetaMemberData).ToFormatString2(m_IsDynamic));
-                        stringBuilder.Append(Environment.NewLine);
-                    }
-                }
+                //foreach (var v in m_ChildrenNameNodeDict)
+                //{
+                //    MetaBase mb = v.Value;
+                //    if (mb is MetaMemberData)
+                //    {
+                //        stringBuilder.Append((mb as MetaMemberData).ToFormatString2(m_IsDynamic));
+                //        stringBuilder.Append(Environment.NewLine);
+                //    }
+                //}
 
-                for (int i = 0; i < realDeep; i++)
-                    stringBuilder.Append(Global.tabChar);
+                //for (int i = 0; i < realDeep; i++)
+                //    stringBuilder.Append(Global.tabChar);
                 stringBuilder.Append("}" + Environment.NewLine);
             }
 

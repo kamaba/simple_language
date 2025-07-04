@@ -27,7 +27,7 @@ namespace SimpleLanguage.IR
                 mnoen = ms.expressNode as MetaNewObjectExpressNode;
                 if (mnoen != null)
                 {
-                    IRMetaClass irmc = IRManager.instance.GetIRMetaClassByName(ms.expressNode.GetReturnMetaClass().allName);
+                    IRMetaClass irmc = IRManager.instance.GetIRMetaClassByName(ms.expressNode.GetReturnMetaClass().allClassName );
                     IRNew irNew = new IRNew( irMethod, irmc );
                     m_IRStatements.Add( irNew );
                 }

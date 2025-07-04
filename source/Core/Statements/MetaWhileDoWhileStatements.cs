@@ -7,12 +7,8 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile.CoreFileMeta;
-using SimpleLanguage.Parse;
-using SimpleLanguage.Core;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.Intrinsics.X86;
 using System.Text;
 
 namespace SimpleLanguage.Core.Statements
@@ -191,9 +187,9 @@ namespace SimpleLanguage.Core.Statements
             //必须放到最后，因为 前边有变量需要建立
             MetaMemberFunction.CreateMetaSyntax(m_FileMetaKeyForSyntax.executeBlockSyntax, m_ThenMetaStatements);
         }
-        public override void SetDeep(int dp)
+        public void SetDeep(int dp)
         {
-            m_Deep = dp;
+            //m_Deep = dp;
             m_ThenMetaStatements?.SetDeep(dp);
             nextMetaStatements?.SetDeep(dp);
         }
@@ -201,10 +197,10 @@ namespace SimpleLanguage.Core.Statements
         {
             StringBuilder sb = new StringBuilder();
 
-            for (int i = 0; i < deep; i++)
-            {
-                sb.Append(Global.tabChar);
-            }
+            //for (int i = 0; i < deep; i++)
+            //{
+            //    sb.Append(Global.tabChar);
+            //}
             sb.Append("for ");
             if (m_IsForIn)
             {
@@ -213,48 +209,48 @@ namespace SimpleLanguage.Core.Statements
                 sb.Append(m_ForInContent.name);
             }
             sb.Append(Environment.NewLine);
-            for (int i = 0; i < deep; i++)
-            {
-                sb.Append(Global.tabChar);
-            }
+            //for (int i = 0; i < deep; i++)
+            //{
+            //    sb.Append(Global.tabChar);
+            //}
             sb.Append("{");
             sb.Append(Environment.NewLine);
 
             if (!m_IsForIn)
             {
-                for (int i = 0; i < deep + 1; i++)
-                {
-                    sb.Append(Global.tabChar);
-                }
-                if (m_DefineVarStatements != null)
-                {
-                    sb.Append(m_DefineVarStatements.ToFormatString());
-                }
-                if ( m_AssignStatements != null)
-                {
-                    sb.Append(m_AssignStatements.ToFormatString());
-                }
-                if (m_StepStatements != null)
-                {
-                    for (int i = 0; i < deep + 1; i++)
-                    {
-                        sb.Append(Global.tabChar);
-                    }
-                    sb.Append(m_StepStatements.ToFormatString());
-                }
+                //for (int i = 0; i < deep + 1; i++)
+                //{
+                //    sb.Append(Global.tabChar);
+                //}
+                //if (m_DefineVarStatements != null)
+                //{
+                //    sb.Append(m_DefineVarStatements.ToFormatString());
+                //}
+                //if ( m_AssignStatements != null)
+                //{
+                //    sb.Append(m_AssignStatements.ToFormatString());
+                //}
+                //if (m_StepStatements != null)
+                //{
+                //    for (int i = 0; i < deep + 1; i++)
+                //    {
+                //        sb.Append(Global.tabChar);
+                //    }
+                //    sb.Append(m_StepStatements.ToFormatString());
+                //}
 
-                if (m_ConditionExpress != null)
-                {
-                    sb.Append(Environment.NewLine);
-                    for (int i = 0; i < deep + 1; i++)
-                    {
-                        sb.Append(Global.tabChar);
-                    }
-                    sb.Append("if ");
-                    sb.Append(m_ConditionExpress.ToFormatString());
-                    sb.Append("{break;}");
-                    sb.Append(Environment.NewLine);
-                }
+                //if (m_ConditionExpress != null)
+                //{
+                //    sb.Append(Environment.NewLine);
+                //    for (int i = 0; i < deep + 1; i++)
+                //    {
+                //        sb.Append(Global.tabChar);
+                //    }
+                //    sb.Append("if ");
+                //    sb.Append(m_ConditionExpress.ToFormatString());
+                //    sb.Append("{break;}");
+                //    sb.Append(Environment.NewLine);
+                //}
                 sb.Append(m_ThenMetaStatements?.nextMetaStatements?.ToFormatString());
 
             }
@@ -264,10 +260,10 @@ namespace SimpleLanguage.Core.Statements
             }
 
             sb.Append(Environment.NewLine);
-            for (int i = 0; i < deep; i++)
-            {
-                sb.Append(Global.tabChar);
-            }
+            //for (int i = 0; i < deep; i++)
+            //{
+            //    sb.Append(Global.tabChar);
+            //}
             sb.Append("}");
             sb.Append(Environment.NewLine);
 
@@ -329,9 +325,9 @@ namespace SimpleLanguage.Core.Statements
                 m_ConditionExpress.CalcReturnType();
             }
         }
-        public override void SetDeep(int dp)
+        public void SetDeep(int dp)
         {
-            m_Deep = dp;
+            //m_Deep = dp;
             m_ThenMetaStatements?.SetDeep(dp);
             nextMetaStatements?.SetDeep(dp);
         }
@@ -340,27 +336,27 @@ namespace SimpleLanguage.Core.Statements
             StringBuilder sb = new StringBuilder();
 
             StringBuilder sb2 = new StringBuilder();
-            if (m_ConditionExpress != null)
-            {
-                for (int i = 0; i < deep + 1; i++)
-                {
-                    sb2.Append(Global.tabChar);
-                }
-                sb2.Append("if ");
-                sb2.Append(m_ConditionExpress.ToFormatString());
-                sb2.Append("{break;}");
-            }
+            //if (m_ConditionExpress != null)
+            //{
+            //    for (int i = 0; i < deep + 1; i++)
+            //    {
+            //        sb2.Append(Global.tabChar);
+            //    }
+            //    sb2.Append("if ");
+            //    sb2.Append(m_ConditionExpress.ToFormatString());
+            //    sb2.Append("{break;}");
+            //}
 
-            for (int i = 0; i < deep; i++)
-            {
-                sb.Append(Global.tabChar);
-            }
-            sb.Append( m_IsWhile ? "while " : "dowhile ");           
-            sb.Append(Environment.NewLine);
-            for (int i = 0; i < deep; i++)
-            {
-                sb.Append(Global.tabChar);
-            }
+            //for (int i = 0; i < deep; i++)
+            //{
+            //    sb.Append(Global.tabChar);
+            //}
+            //sb.Append( m_IsWhile ? "while " : "dowhile ");           
+            //sb.Append(Environment.NewLine);
+            //for (int i = 0; i < deep; i++)
+            //{
+            //    sb.Append(Global.tabChar);
+            //}
             sb.Append("{");
             sb.Append(Environment.NewLine);
 
@@ -386,10 +382,10 @@ namespace SimpleLanguage.Core.Statements
                 }
             }
 
-            for (int i = 0; i < deep; i++)
-            {
-                sb.Append(Global.tabChar);
-            }
+            //for (int i = 0; i < deep; i++)
+            //{
+            //    sb.Append(Global.tabChar);
+            //}
             sb.Append("}");
             sb.Append(Environment.NewLine);
 

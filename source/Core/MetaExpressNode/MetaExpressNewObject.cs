@@ -84,8 +84,8 @@ namespace SimpleLanguage.Core
                             m_MetaMemberData = (mt.metaClass as MetaData).GetMemberDataByName(m_DefineName);
                             if (m_MetaMemberData == null)
                             {
-                                Debug.Write("Error 在类" + mt.metaClass?.allName + "函数: " + mbs?.ownerMetaFunction.name
-                                    + " 没有找到: 类" + mt.metaClass?.allName + " 变量:" + m_DefineName);
+                                Debug.Write("Error 在类" + mt.metaClass?.allClassName + "函数: " + mbs?.ownerMetaFunction.name
+                                    + " 没有找到: 类" + mt.metaClass?.allClassName + " 变量:" + m_DefineName);
                             }
                             m_MetaExpress = CreateExpressNodeInNewObjectStatements(m_MetaMemberData, m_OwnerMetaBlockStatements, m_FileMetaOpAssignSyntax?.express);
                         }
@@ -98,8 +98,8 @@ namespace SimpleLanguage.Core
                             m_MetaMemberVariable = mt.metaClass.GetMetaMemberVariableByName(m_DefineName);
                             if (m_MetaMemberVariable == null)
                             {
-                                Debug.Write("Error 在类" + mt.metaClass?.allName + "函数: " + mbs?.ownerMetaFunction.name
-                                    + " 没有找到: 类" + mt.metaClass?.allName + " 变量:" + m_DefineName);
+                                Debug.Write("Error 在类" + mt.metaClass?.allClassName + "函数: " + mbs?.ownerMetaFunction.name
+                                    + " 没有找到: 类" + mt.metaClass?.allClassName + " 变量:" + m_DefineName);
                             }
                             m_MetaExpress = CreateExpressNodeInNewObjectStatements(m_MetaMemberVariable, m_OwnerMetaBlockStatements, m_FileMetaOpAssignSyntax?.express);
                         }
@@ -108,7 +108,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.Write("Error 在类" + mbs.ownerMetaClass?.allName + "函数: " + mbs.ownerMetaFunction.name
+                    Debug.Write("Error 在类" + mbs.ownerMetaClass?.allClassName + "函数: " + mbs.ownerMetaFunction.name
                         + " 语句: " + fmos.variableRef.ToTokenString());
                 }
             }
@@ -958,7 +958,7 @@ namespace SimpleLanguage.Core
 
             if( m_MetaDefineType.isEnum )
             {
-                sb.Append(m_MetaDefineType.allName);
+                sb.Append(m_MetaDefineType.name );
                 sb.Append(".");
                 sb.Append(m_MetaDefineType.enumValue.name);
                 if(m_MetaEnumValue != null)
@@ -970,7 +970,7 @@ namespace SimpleLanguage.Core
             }
             else if( m_MetaDefineType.isData )
             {
-                sb.Append(m_MetaDefineType.allName);
+                sb.Append(m_MetaDefineType.name);
                 sb.Append("{");
                 if (m_MetaBraceOrBracketStatementsContent != null)
                 {
@@ -995,7 +995,7 @@ namespace SimpleLanguage.Core
             {
                 if ( m_MetaDefineType != null )
                 {
-                    sb.Append(m_MetaDefineType.allName + "()");
+                    sb.Append(m_MetaDefineType.name + "()");
                     sb.Append(".");
                 }
                 if(m_MetaConstructFunctionCall.callerMetaVariable != null )

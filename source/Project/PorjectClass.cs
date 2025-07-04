@@ -63,9 +63,9 @@ namespace SimpleLanguage.Project
                 Debug.Write("Error project.Main函数!!");
                 return;
             }
-            var irmethod = IRManager.instance.GetIRMethod(mmf.allName);
-            InnerCLRRuntimeVM.Init();
-            InnerCLRRuntimeVM.RunIRMethod(irmethod);
+            //var irmethod = IRManager.instance.GetIRMethod(mmf.allName);
+            //InnerCLRRuntimeVM.Init();
+            //InnerCLRRuntimeVM.RunIRMethod(irmethod);
         }
         public static void RunMain()
         {
@@ -81,21 +81,21 @@ namespace SimpleLanguage.Project
                 Debug.Write("Error 没有找到Project.Main函数!!");
                 return;
             }
-            var irmethod = IRManager.instance.GetIRMethod(mmf.allName);
-            InnerCLRRuntimeVM.Init();
-            InnerCLRRuntimeVM.RunIRMethod(irmethod);
+            //var irmethod = IRManager.instance.GetIRMethod(mmf.allname);
+            //InnerCLRRuntimeVM.Init();
+            //InnerCLRRuntimeVM.RunIRMethod(irmethod);
         }
-        public static void AddDefineNamespace( MetaBase parentRoot, DefineStruct dns, bool isAddCurrent = true )
+        public static void AddDefineNamespace( MetaNode parentRoot, DefineStruct dns, bool isAddCurrent = true )
         {
             if (parentRoot == null) return;
 
-            MetaBase parMS = null;
+            MetaNode parMS = null;
             if ( dns != null )
             {
                 MetaNamespace nodeNS = null;
                 if (isAddCurrent)
                 {
-                    var cfindNode = parentRoot.GetChildrenMetaBaseByName(dns.name);
+                    var cfindNode = parentRoot.GetChildrenMetaNodeByName(dns.name);
                     if (cfindNode == null)
                     {
                         nodeNS = new MetaNamespace(dns.name);
@@ -107,17 +107,9 @@ namespace SimpleLanguage.Project
                             Debug.Write("Error 解析namespace添加命名空间节点时，发现已有定义类!!");
                             return;
                         }
-                        nodeNS = cfindNode as MetaNamespace;
+                        nodeNS = cfindNode.metaNamespace;
                     }
-                    if (parentRoot is MetaModule)
-                    {
-                        (parentRoot as MetaModule).AddMetaNamespace(nodeNS);
-                    }
-                    else if (parentRoot is MetaNamespace)
-                    {
-                        (parentRoot as MetaNamespace).AddMetaNamespace(nodeNS);
-                    }
-                    parMS = nodeNS;
+                    parMS = parentRoot.AddMetaNamespace(nodeNS);
                 }
                 else
                 {
@@ -134,7 +126,7 @@ namespace SimpleLanguage.Project
             NamespaceManager.instance.metaNamespaceDict.Clear();
 
             ProjectData data = ProjectManager.data;
-            AddDefineNamespace( ModuleManager.instance.selfModule, data.namespaceRoot, false );
+            AddDefineNamespace( ModuleManager.instance.selfModule.metaNode, data.namespaceRoot, false );
 
             var fileList = data.compileFileData.compileFileDataUnitList;
             var filter = data.compileFilterData;

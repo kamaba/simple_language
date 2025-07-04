@@ -37,41 +37,17 @@ namespace SimpleLanguage.Core
         {
             if(fmc.templateDefineList.Count > 0)
             {
-                if(m_OnlySearchNode == null )
+                for (int i = 0; i < fmc.templateDefineList.Count; i++)
                 {
-                    m_OnlySearchNode = true;
-                }
-                MetaClass templateClass = null;
-
-                if( this.m_MetaTemplateClassDict.ContainsKey(fmc.templateDefineList.Count ) )
-                {
-                    templateClass = this.m_MetaTemplateClassDict[fmc.templateDefineList.Count];
-                }
-                else
-                {
-                    templateClass = new MetaClass(fmc.name);
-                    templateClass.m_TemplateParentClass = this;
-                    this.m_MetaTemplateClassDict.Add(fmc.templateDefineList.Count, templateClass);
-                    for (int i = 0; i < fmc.templateDefineList.Count; i++)
+                    string tTemplateName = fmc.templateDefineList[i].name;
+                    if ( m_MetaTemplateList.Find(a => a.name == tTemplateName) != null)
                     {
-                        string tTemplateName = fmc.templateDefineList[i].name;
-                        if (templateClass.m_MetaTemplateList.Find(a => a.name == tTemplateName) != null)
-                        {
-                            Debug.Write("Error 定义模式名称重复!!");
-                        }
-                        else
-                        {
-                            templateClass.m_MetaTemplateList.Add(new MetaTemplate(this, fmc.templateDefineList[i]));
-                        }
+                        Debug.Write("Error 定义模式名称重复!!");
                     }
-                }
-                return templateClass;
-            }
-            else
-            {
-                if (m_OnlySearchNode == null)
-                {
-                    m_OnlySearchNode = false;
+                    else
+                    {
+                        m_MetaTemplateList.Add(new MetaTemplate(this, fmc.templateDefineList[i]));
+                    }
                 }
             }
             return this;
@@ -107,7 +83,7 @@ namespace SimpleLanguage.Core
         }
         public void AddGenTemplateMetaClass(MetaGenTemplateClass mtc)
         {
-            mtc.SetDeep(this.m_Deep + 1);
+            //mtc.SetDeep(this.m_Deep + 1);
             m_MetaGenTemplateClassList.Add(mtc);
         }
         public MetaGenTemplateClass GetGenTemplateMetaClass(MetaInputTemplateCollection mitc)
@@ -132,18 +108,6 @@ namespace SimpleLanguage.Core
                 }
             }
             return AddInstanceMetaClass(list);
-        }
-        public MetaClass GetTemplateMetaClassByTemplateCount( int count )
-        {
-            if( count == 0 )
-            {
-                return this;
-            }
-            if( this.m_MetaTemplateClassDict.ContainsKey(count ) )
-            {
-                return this.m_MetaTemplateClassDict[count];
-            }
-            return null;
         }
         public MetaGenTemplateClass AddInstanceMetaClass( List<MetaClass> list )
         {

@@ -251,6 +251,7 @@ namespace SimpleLanguage.Project
     {
         public enum EDefineStructType
         {
+            Module,
             Namespace,
             Class,
             Data,
@@ -278,7 +279,7 @@ namespace SimpleLanguage.Project
             string usetype = "namespace";
 
             List<MetaMemberData> mdChild = new List<MetaMemberData>();
-            foreach (var ns in mmd.childrenNameNodeDict)
+            foreach (var ns in mmd.metaMemberDataDict )
             {
                 MetaMemberData cmmd = ns.Value as MetaMemberData;
                 if (cmmd != null)
@@ -303,9 +304,9 @@ namespace SimpleLanguage.Project
                     }
                     else if (cmmd.name == "child")
                     {
-                        foreach (var ns2 in cmmd.childrenNameNodeDict)
+                        foreach (var ns2 in cmmd.metaMemberDataDict )
                         {
-                            MetaMemberData cmmd2 = ns2.Value as MetaMemberData;
+                            MetaMemberData cmmd2 = ns2.Value;
                             if (cmmd2 != null)
                             {
                                 DefineStruct ds = new DefineStruct(EDefineStructType.Namespace);
@@ -438,7 +439,7 @@ namespace SimpleLanguage.Project
         public CompileFileData compileFileData { get; set; } = new CompileFileData();
         public CompileOptionData compileOptionData { get; set; } = new CompileOptionData();
         public CompileFilterData compileFilterData { get; set; } = new CompileFilterData();
-        public DefineStruct namespaceRoot { get; set; } = new DefineStruct( DefineStruct.EDefineStructType.Namespace );
+        public DefineStruct namespaceRoot { get; set; } = new DefineStruct( DefineStruct.EDefineStructType.Module );
         public GlobalImportData globalImportData { get; set; } = new GlobalImportData();
         public GlobalReplaceData globalReplaceData { get; set; } = new GlobalReplaceData();
         public GlobalVariableData globalVariableData { get; set; } = new GlobalVariableData();
@@ -519,9 +520,9 @@ namespace SimpleLanguage.Project
                     break;
                 case "proojectStruct":
                     {
-                        foreach (var ns in mmd.childrenNameNodeDict)
+                        foreach (var ns in mmd.metaMemberDataDict )
                         {
-                            MetaMemberData cmmd = ns.Value as MetaMemberData;
+                            MetaMemberData cmmd = ns.Value;
                             if (cmmd != null)
                             {
                                 DefineStruct ds = new DefineStruct(DefineStruct.EDefineStructType.Namespace);
@@ -574,7 +575,7 @@ namespace SimpleLanguage.Project
             MetaBase mb = ProjectManager.globalData.GetChildrenMetaBaseByName(fmd.name);
             if (mb != null)
             {
-                Debug.Write("Error ProjectParse ParseGlobalVariable已有定义类: " + allName + "中 已有: " + fmd.token?.ToLexemeAllString() + "的元素!!");
+                Debug.Write("Error ProjectParse ParseGlobalVariable已有定义类: " + allClassName + "中 已有: " + fmd.token?.ToLexemeAllString() + "的元素!!");
                 return;
             }
             //需要在做Data处理的时候 ，再处理该逻辑
@@ -648,54 +649,56 @@ namespace SimpleLanguage.Project
         }
         void BuildDefineNameStruct()
         {
-            BuildDefineNameStructNode(m_ProjectData.namespaceRoot, ModuleManager.instance.selfModule);
+            BuildDefineNameStructNode(m_ProjectData.namespaceRoot, ModuleManager.instance.selfModule.metaNode );
         }
-        public void BuildDefineNameStructNode( DefineStruct ds, MetaBase parentMb )
+        public void BuildDefineNameStructNode( DefineStruct ds, MetaNode parentMb )
         {
-            MetaBase newParentMB = null;
-            if( parentMb is MetaModule mm )
+            MetaNode newParentMB = null;
+            if ( ds.type != DefineStruct.EDefineStructType.Module )
             {
-                if( ds.type == DefineStruct.EDefineStructType.Namespace )
+                if (parentMb.isMetaModule)
                 {
-                    MetaNamespace mn = new MetaNamespace(ds.name);
-                    mm.AddMetaNamespace(mn);
-                    newParentMB = mn;
+                    if (ds.type == DefineStruct.EDefineStructType.Namespace)
+                    {
+                        MetaNamespace mn = new MetaNamespace(ds.name);
+                        newParentMB = parentMb.AddMetaNamespace(mn);
+                    }
+                    else if (ds.type == DefineStruct.EDefineStructType.Class)
+                    {
+                        MetaClass mc = new MetaClass(ds.name, EClassDefineType.StructDefine);
+                        newParentMB = parentMb.AddMetaClass(mc);
+                    }
                 }
-                else if( ds.type == DefineStruct.EDefineStructType.Class )
+                else if (parentMb.isMetaNamespace)
                 {
-                    MetaClass mc = new MetaClass(ds.name, EClassDefineType.StructDefine );
-                    mm.AddMetaClass(mc);
-                    newParentMB = mc;
-
+                    if (ds.type == DefineStruct.EDefineStructType.Namespace)
+                    {
+                        MetaNamespace mn = new MetaNamespace(ds.name);
+                        newParentMB = parentMb.AddMetaNamespace(mn);
+                    }
+                    else if (ds.type == DefineStruct.EDefineStructType.Class)
+                    {
+                        MetaClass mc = new MetaClass(ds.name, EType.Class);
+                        newParentMB = parentMb.AddMetaClass(mc);
+                    }
+                }
+                else if (parentMb.IsMetaClass())
+                {
+                    if (ds.type == DefineStruct.EDefineStructType.Namespace)
+                    {
+                        Debug.Write("Error 不能在class里，添加namespace!");
+                        return;
+                    }               
+                    else if (ds.type == DefineStruct.EDefineStructType.Class)
+                    {
+                        MetaClass mc = new MetaClass(ds.name, EType.Class);
+                        newParentMB = parentMb.AddMetaClass(mc);
+                    }
                 }
             }
-            else if (parentMb is MetaNamespace mn2)
+            else
             {
-                if (ds.type == DefineStruct.EDefineStructType.Namespace)
-                {
-                    MetaNamespace mn = new MetaNamespace(ds.name);
-                    mn2.AddMetaNamespace(mn);
-                    newParentMB = mn;
-                }
-                else if (ds.type == DefineStruct.EDefineStructType.Class)
-                {
-                    MetaClass mc = new MetaClass(ds.name, EType.Class);
-                    mn2.AddMetaClass(mc);
-                    newParentMB = mc;
-                }
-            }
-            else if (parentMb is MetaClass mc2 )
-            {
-                if (ds.type == DefineStruct.EDefineStructType.Namespace)
-                {
-                    Debug.Write("Error 不能在class里，添加namespace!");
-                }
-                else if (ds.type == DefineStruct.EDefineStructType.Class)
-                {
-                    MetaClass mc = new MetaClass(ds.name, EType.Class);
-                    mc2.AddChildrenMetaClass(mc);
-                    newParentMB = mc;
-                }
+                newParentMB = parentMb;
             }
 
             for (int i = 0; i < ds.childDefineStruct.Count; i++ )

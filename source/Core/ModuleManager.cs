@@ -67,14 +67,14 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public MetaBase GetChildrenMetaBaseByName( string name )
+        public MetaNode GetChildrenMetaNodeByName( string name )
         {
-            MetaBase m2 = selfModule.GetChildrenMetaBaseByName(name);
+            MetaNode m2 = selfModule.metaNode.GetChildrenMetaNodeByName(name);
             if (m2 != null)
             {
                 return m2;
             }
-            return coreModule.GetChildrenMetaBaseByName(name);
+            return coreModule.metaNode.GetChildrenMetaNodeByName(name);
         }
         public void AddMetaMdoule( MetaModule mm )
         {

@@ -92,11 +92,11 @@ namespace SimpleLanguage.IR
                         IRMetaClass irmc = null;
                         if (m_IRManager != null)
                         {
-                            irmc = m_IRManager.GetIRMetaClassByName(mnoe.GetReturnMetaDefineType().allName);
+                            irmc = m_IRManager.GetIRMetaClassByName(mnoe.GetReturnMetaDefineType().name);
                         }
                         else
                         {
-                            irmc = m_IRMethod.irManager.GetIRMetaClassByName(mnoe.GetReturnMetaDefineType().allName);
+                            irmc = m_IRMethod.irManager.GetIRMetaClassByName(mnoe.GetReturnMetaDefineType().name);
                         }
                         IRNew irnew = new IRNew(m_IRMethod, irmc);
                         m_IRDataList.AddRange(irnew.IRDataList);

@@ -64,7 +64,7 @@ namespace SimpleLanguage.Core
                     }
                 }
                 //tmc.SetName(mc.name + "<" + extenName + ">");
-                tmc.SetDeep(mc.deep + 1);
+                //tmc.SetDeep(mc.deep + 1);
 
                 return tmc;
             }
@@ -74,21 +74,18 @@ namespace SimpleLanguage.Core
                 return null;
             }            
         }
-        public override void SetDeep(int deep)
+        public void SetDeep(int deep)
         {
-            m_Deep = deep;
-            foreach (var v in m_MetaMemberVariableDict)
-            {
-                v.Value.SetDeep(m_Deep + 1);
-            }
+            //m_Deep = deep;
+            //foreach (var v in m_MetaMemberVariableDict)
+            //{
+            //    v.Value.SetDeep(m_Deep + 1);
+            //}
 
-            foreach (var v in m_MetaMemberFunctionListDict)
-            {
-                foreach (var v2 in v.Value)
-                {
-                    v2.SetDeep(m_Deep + 1);
-                }
-            }
+            //foreach (var v in metaMemberFunctionTemplateNodeDict)
+            //{
+            //    v.Value.SetDeep(m_Deep + 1);
+            //}
         }
         public MetaType GetGenTemplateByIndex( int index )
         {
@@ -163,20 +160,21 @@ namespace SimpleLanguage.Core
             {
                 UpdateTemplateInstanceMetaMemberVariableExpress(it.Value);
             }
-            foreach (var it in this.m_MetaTemplateClass.metaMemberFunctionListDict)
-            {
-                foreach (var it2 in it.Value)
-                {
-                    if( !it2.isTemplateFunction )
-                    {
-                        UpdateTemplateInstanceStatement(it2);
-                    }
-                    else
-                    {
+            //foreach (var it in this.m_MetaTemplateClass.metaMemberFunctionDict )
+            //{
+            //    var it2 = it.Value;
+            //    //foreach (var it2 in it.Value)
+            //    {
+            //        if( !it2.isTemplateFunction )
+            //        {
+            //            UpdateTemplateInstanceStatement(it2);
+            //        }
+            //        else
+            //        {
 
-                    }
-                }
-            }
+            //        }
+            //    }
+            //}
         }
         public override void ParseMemberVariableDefineMetaType()
         {
@@ -194,11 +192,12 @@ namespace SimpleLanguage.Core
         }
         public override void ParseMemberFunctionDefineMetaType()
         {
-            foreach (var it in m_MetaTemplateClass.metaMemberFunctionListDict)
+            foreach (var it in m_MetaTemplateClass.metaMemberFunctionTemplateNodeDict )
             {
-                foreach (var it2 in it.Value)
+                var it2 = it.Value;
+                //foreach (var it2 in it.Value)
                 {
-                    ParseMetaMemberFunctionDefineMetaType(it2);
+                    //ParseMetaMemberFunctionDefineMetaType(it2);
                 }
             }
         }
@@ -225,19 +224,18 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            List<MetaMemberFunction> list = null;
-            if (m_MetaMemberFunctionListDict.ContainsKey(mgmf.name))
-            {
-                list = m_MetaMemberFunctionListDict[mgmf.name];
-            }
-            else
-            {
-                list = new List<MetaMemberFunction>();
-                m_MetaMemberFunctionListDict.Add(mgmf.name, list);
-            }
-            list.Add(mgmf);
+            MetaMemberFunction list = null;
+            //if (m_MetaMemberFunctionDict.ContainsKey(mgmf.name))
+            //{
+            //    list = m_MetaMemberFunctionDict[mgmf.name];
+            //}
+            //else
+            //{
+            //    m_MetaMemberFunctionDict.Add(mgmf.name, list);
+            //}
+            ////list.Add(mgmf);
 
-            m_MetaMemberAllNameFunctionDict.Add(mgmf.functionAllName, mgmf );
+            //m_MetaMemberFunctionDict.Add(mgmf.functionAllName, mgmf );
         }
         public bool Adapter(MetaInputTemplateCollection mitc)
         {
@@ -309,60 +307,60 @@ namespace SimpleLanguage.Core
             StringBuilder stringBuilder = new StringBuilder();
 
             stringBuilder.Clear();
-            for (int i = 0; i < realDeep; i++)
-                stringBuilder.Append(Global.tabChar);
-            stringBuilder.Append(permission.ToFormatString());
-            stringBuilder.Append(" ");
+            //for (int i = 0; i < realDeep; i++)
+            //    stringBuilder.Append(Global.tabChar);
+            //stringBuilder.Append(permission.ToFormatString());
+            //stringBuilder.Append(" ");
 
-            stringBuilder.Append("class " + name);
-            if (m_MetaGenTemplateList.Count > 0)
-            {
-                stringBuilder.Append("<");
-                for( int i = 0; i < m_MetaGenTemplateList.Count; i++ )
-                {
-                    var v = m_MetaGenTemplateClassList[i];
-                    stringBuilder.Append(v.ToDefineTypeString());
-                    if (i < m_MetaGenTemplateList.Count - 1)
-                    {
-                        stringBuilder.Append(",");
-                    }
-                }
-                stringBuilder.Append(">");
-            }
-            if (m_ExtendClass != null)
-            {
-                stringBuilder.Append(" :: ");
-                stringBuilder.Append(m_ExtendClass.allName);
-                var mtl = m_ExtendClass.metaTemplateList;
-                if (mtl.Count > 0)
-                {
-                    stringBuilder.Append("<");
-                    for (int i = 0; i < mtl.Count; i++)
-                    {
-                        stringBuilder.Append(mtl[i].ToFormatString());
-                        if (i < mtl.Count - 1)
-                        {
-                            stringBuilder.Append(",");
-                        }
-                    }
-                    stringBuilder.Append(">");
-                }
-            }
-            if (m_InterfaceClass.Count > 0)
-            {
-                stringBuilder.Append(" interface ");
-            }
-            for (int i = 0; i < m_InterfaceClass.Count; i++)
-            {
-                stringBuilder.Append(m_InterfaceClass[i].allName);
-                if (i != m_InterfaceClass.Count - 1)
-                    stringBuilder.Append(",");
-            }
-            stringBuilder.Append(Environment.NewLine);
+            //stringBuilder.Append("class " + name);
+            //if (m_MetaGenTemplateList.Count > 0)
+            //{
+            //    stringBuilder.Append("<");
+            //    for( int i = 0; i < m_MetaGenTemplateList.Count; i++ )
+            //    {
+            //        var v = m_MetaGenTemplateClassList[i];
+            //        stringBuilder.Append(v.ToDefineTypeString());
+            //        if (i < m_MetaGenTemplateList.Count - 1)
+            //        {
+            //            stringBuilder.Append(",");
+            //        }
+            //    }
+            //    stringBuilder.Append(">");
+            //}
+            //if (m_ExtendClass != null)
+            //{
+            //    stringBuilder.Append(" :: ");
+            //    stringBuilder.Append(m_ExtendClass.allName);
+            //    var mtl = m_ExtendClass.metaTemplateList;
+            //    if (mtl.Count > 0)
+            //    {
+            //        stringBuilder.Append("<");
+            //        for (int i = 0; i < mtl.Count; i++)
+            //        {
+            //            stringBuilder.Append(mtl[i].ToFormatString());
+            //            if (i < mtl.Count - 1)
+            //            {
+            //                stringBuilder.Append(",");
+            //            }
+            //        }
+            //        stringBuilder.Append(">");
+            //    }
+            //}
+            //if (m_InterfaceClass.Count > 0)
+            //{
+            //    stringBuilder.Append(" interface ");
+            //}
+            //for (int i = 0; i < m_InterfaceClass.Count; i++)
+            //{
+            //    stringBuilder.Append(m_InterfaceClass[i].allName);
+            //    if (i != m_InterfaceClass.Count - 1)
+            //        stringBuilder.Append(",");
+            //}
+            //stringBuilder.Append(Environment.NewLine);
 
-            for (int i = 0; i < realDeep; i++)
-                stringBuilder.Append(Global.tabChar);
-            stringBuilder.Append("{" + Environment.NewLine);
+            //for (int i = 0; i < realDeep; i++)
+            //    stringBuilder.Append(Global.tabChar);
+            //stringBuilder.Append("{" + Environment.NewLine);
 
             foreach (var v in m_MetaMemberVariableDict)
             {
@@ -370,18 +368,18 @@ namespace SimpleLanguage.Core
                 stringBuilder.Append(Environment.NewLine);
             }
 
-            foreach (var v in m_MetaMemberFunctionListDict)
+            foreach (var v in m_MetaMemberFunctionTemplateNodeDict )
             {
-                foreach (var v2 in v.Value)
-                {
-                    stringBuilder.Append(v2.ToFormatString());
-                    stringBuilder.Append(Environment.NewLine);
-                }
+                //foreach (var v2 in v.Value)
+                //{
+                //    stringBuilder.Append(v2.ToFormatString());
+                //    stringBuilder.Append(Environment.NewLine);
+                //}
             }
 
             stringBuilder.Append(Environment.NewLine);
-            for (int i = 0; i < realDeep; i++)
-                stringBuilder.Append(Global.tabChar);
+            //for (int i = 0; i < realDeep; i++)
+            //    stringBuilder.Append(Global.tabChar);
             stringBuilder.Append("}" + Environment.NewLine);
 
             return stringBuilder.ToString();

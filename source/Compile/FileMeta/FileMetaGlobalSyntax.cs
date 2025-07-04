@@ -65,7 +65,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         {
             ParseImportSyntax();
 
-            MetaBase mb = ModuleManager.instance.selfModule;
+            MetaNode mb = ModuleManager.instance.selfModule.metaNode;
             List<Token> tokenList = new List<Token>();
             bool isCSharp = false;
             for (int i = 0; i < m_NamespaceStatement.tokenList.Count; i++)
@@ -83,8 +83,8 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     else
                     {
-                        mb = mb.GetChildrenMetaBaseByName(name);
-                        if (!(mb is MetaNamespace))
+                        mb = mb.GetChildrenMetaNodeByName(name);
+                        if (!mb.isMetaNamespace )
                         {
                             Debug.Write("解析Import语句发生错误，没有找到对应的命名空间路径: " + m_NamespaceStatement.tokenList[i].lexeme.ToString()
                                     + "Token: " + m_NamespaceStatement.tokenList[i].sourceBeginLine.ToString());
@@ -92,7 +92,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         }
                         else
                         {
-                            m_FileMeta.AddImportMetaNamespace(mb as MetaNamespace);
+                            m_FileMeta.AddImportMetaNamespace(mb.metaNamespace);
                         }
                     }
                 }
@@ -106,7 +106,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     return;
                 }
 
-                MetaBase curmb = ModuleManager.instance.csharpModule;
+                MetaNode curmb = ModuleManager.instance.csharpModule.metaNode;
 
                 string allname = "";
                 for ( int i = 0; i < tokenList.Count; i++ )
@@ -124,8 +124,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     if ( CSharpManager.IsFindMetaCSharpNamespace(allname) )
                     {
                         MetaNamespaceCSharp mn = new MetaNamespaceCSharp(name);
-                        curmb.AddMetaBase(name, mn);
-                        curmb = mn;
+                        curmb = curmb.AddMetaNamespace(mn);
                         m_FileMeta.AddImportMetaNamespace(mn);
                     }
                 }

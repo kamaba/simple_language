@@ -35,13 +35,13 @@ namespace SimpleLanguage.IR
         {
             irManager = irma;
             m_BindMetaFunction = func;
-            this.id = func.allName;
+            this.id = func.name;
         }
         public void Parse()
         {
             var mf = m_BindMetaFunction;
 
-            id = mf.allName;
+            id = mf.name;
 
             if (mf.thisMetaVariable != null)
             {

@@ -27,10 +27,6 @@ namespace SimpleLanguage.Core
         {
             m_Type = EType.Enum;
         }
-        public override MetaBase GetChildrenMetaBaseByName(string name)
-        {
-            return base.GetChildrenMetaBaseByName(name);
-        }
         public MetaMemberVariable GetMemberVariableByName(string name)
         {
             if (m_MetaMemberVariableDict.ContainsKey(name))
@@ -69,7 +65,7 @@ namespace SimpleLanguage.Core
                 return;
             }
             m_MetaMemberEnumDict.Add(mmd.name, mmd);
-            AddMetaBase(mmd.name, mmd);
+            //AddMetaBase(mmd.name, mmd);
         }
         public void ParseFileMetaEnumMemeberEnum(FileMetaClass fmc)
         {
@@ -97,10 +93,10 @@ namespace SimpleLanguage.Core
             bool isHave = false;
             foreach (var v in fmc.memberVariableList)
             {
-                MetaBase mb = GetChildrenMetaBaseByName(v.name);
+                MetaBase mb = GetMetaMemberVariableByName(v.name);
                 if (mb != null)
                 {
-                    Debug.Write("Error Enum MetaMemberData已有定义类: " + allName + "中 已有: " + v.token?.ToLexemeAllString() + "的元素!!");
+                    Debug.Write("Error Enum MetaMemberData已有定义类: " + m_AllName + "中 已有: " + v.token?.ToLexemeAllString() + "的元素!!");
                     isHave = true;
                 }
                 else
@@ -368,46 +364,46 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        public override string ToFormatString()
-        {
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.Clear();
-            for (int i = 0; i < realDeep; i++)
-                stringBuilder.Append(Global.tabChar);
-            stringBuilder.Append(permission.ToFormatString());
-            stringBuilder.Append(" ");
-            stringBuilder.Append("enum ");
-            if (topLevelMetaNamespace != null)
-            {
-                stringBuilder.Append(topLevelMetaNamespace.allName + ".");
-            }
-            stringBuilder.Append(name);
+        //public override string ToFormatString()
+        //{
+        //    StringBuilder stringBuilder = new StringBuilder();
+        //    stringBuilder.Clear();
+        //    for (int i = 0; i < realDeep; i++)
+        //        stringBuilder.Append(Global.tabChar);
+        //    stringBuilder.Append(permission.ToFormatString());
+        //    stringBuilder.Append(" ");
+        //    stringBuilder.Append("enum ");
+        //    if (topLevelMetaNamespace != null)
+        //    {
+        //        stringBuilder.Append(topLevelMetaNamespace.allName + ".");
+        //    }
+        //    stringBuilder.Append(name);
 
-            stringBuilder.Append(Environment.NewLine);
-            for (int i = 0; i < realDeep; i++)
-                stringBuilder.Append(Global.tabChar);
-            stringBuilder.Append("{" + Environment.NewLine);
+        //    stringBuilder.Append(Environment.NewLine);
+        //    for (int i = 0; i < realDeep; i++)
+        //        stringBuilder.Append(Global.tabChar);
+        //    stringBuilder.Append("{" + Environment.NewLine);
 
-            foreach (var v in m_MetaMemberEnumDict )
-            {
-                MetaMemberEnum mmv = v.Value;                
-                if (mmv.fromType == EFromType.Code)
-                {
-                    stringBuilder.Append(mmv.ToFormatString());
-                    stringBuilder.Append(Environment.NewLine);
-                }
-                else
-                {
-                    stringBuilder.Append("Errrrrroooorrr ---" + mmv.ToFormatString());
-                    stringBuilder.Append(Environment.NewLine);
-                }
-            }
+        //    foreach (var v in m_MetaMemberEnumDict )
+        //    {
+        //        MetaMemberEnum mmv = v.Value;                
+        //        if (mmv.fromType == EFromType.Code)
+        //        {
+        //            stringBuilder.Append(mmv.ToFormatString());
+        //            stringBuilder.Append(Environment.NewLine);
+        //        }
+        //        else
+        //        {
+        //            stringBuilder.Append("Errrrrroooorrr ---" + mmv.ToFormatString());
+        //            stringBuilder.Append(Environment.NewLine);
+        //        }
+        //    }
 
-            for (int i = 0; i < realDeep; i++)
-                stringBuilder.Append(Global.tabChar);
-            stringBuilder.Append("}" + Environment.NewLine);
+        //    for (int i = 0; i < realDeep; i++)
+        //        stringBuilder.Append(Global.tabChar);
+        //    stringBuilder.Append("}" + Environment.NewLine);
 
-            return stringBuilder.ToString();
-        }
+        //    return stringBuilder.ToString();
+        //}
     }
 }

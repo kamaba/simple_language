@@ -61,7 +61,7 @@ namespace SimpleLanguage.IR
                 {
                     if (mt != null)
                     {
-                        m_StringBuilder.Append(" val mt:[" + mt.allName + "] ");
+                        m_StringBuilder.Append(" val mt:[" + mt.name + "] ");
                     }
                     else if( irm != null )
                     {

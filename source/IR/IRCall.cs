@@ -70,7 +70,7 @@ namespace SimpleLanguage.IR
                 return;
             }
 
-            m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(mf.allName);
+            m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(mf.name);
 
             IRData datacall = new IRData();
             datacall.opCode = EIROpCode.Call;

@@ -180,7 +180,7 @@ public class Gift
 
     }
 }
-public class Level1<T> 
+public class Level1<T:int> 
 {
     qqq<T>
     {
