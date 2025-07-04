@@ -80,7 +80,7 @@ namespace SimpleLanguage.IR
         }
         public void CreateMetaClassData( MetaClass mc )
         {
-            allName = mc.allName;
+            allName = mc.allClassName;
             if (mc is MetaEnum me)
             {
             }

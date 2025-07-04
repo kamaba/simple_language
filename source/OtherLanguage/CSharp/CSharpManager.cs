@@ -113,7 +113,7 @@ namespace SimpleLanguage.CSharp
             }
             return false;
         }
-        public static MetaBase FindAndCreateMetaBase( MetaBase mb, string name )
+        public static MetaNode FindAndCreateMetaBase(MetaNode mb, string name )
         {
             string frontName = "";
             if (mb != null)
@@ -127,31 +127,14 @@ namespace SimpleLanguage.CSharp
                     frontName = mb.allName;
                 }
             }
-            MetaBase getmb = FindCSharpClassOrNameSpace(frontName, name);
+            MetaNode getmb = FindCSharpClassOrNameSpace(frontName, name);
             if (getmb == null) return null;
 
-            if ( getmb is MetaClass mc )
-            {
-                if( mb is MetaNamespace mbmn )
-                {
-                    mbmn.AddMetaClass(mc);
-                }
-                else if( mb is MetaClass mcn )
-                {
-                    mcn.AddChildrenMetaClass(mc);
-                }
-            }
-            else if( getmb is MetaNamespace mn )
-            {
-                if (mb is MetaNamespace mbmn)
-                {
-                    mbmn.AddMetaNamespace(mn);
-                }
-            }
+            getmb.AddMetaNode(mb);
             
             return getmb;
         }
-        public static MetaBase FindCSharpClassOrNameSpace( string frontName, string name )
+        public static MetaNode FindCSharpClassOrNameSpace( string frontName, string name )
         {
             string allName = frontName + "." + name;
             for (int k = 0; k < canSearchAssemblyList.Count; k++)
@@ -171,12 +154,12 @@ namespace SimpleLanguage.CSharp
                     if (ttype.IsClass)
                     {
                         MetaClassCSharp mc = new MetaClassCSharp(ttype.Name, ttype);                        
-                        return mc;
+                        return new MetaNode(mc);
                     }
                     else if (ttype.IsTypeDefinition)
                     {
                         MetaNamespaceCSharp nmn = new MetaNamespaceCSharp(ttype.Name);
-                        return nmn;
+                        return new MetaNode(nmn);
                     }
                 }
                 else
@@ -193,7 +176,7 @@ namespace SimpleLanguage.CSharp
                         if (cuns == allName)
                         {
                             MetaNamespaceCSharp nmn = new MetaNamespaceCSharp(name);
-                            return nmn;
+                            return new MetaNode(nmn);
                         }
                     }
                 }

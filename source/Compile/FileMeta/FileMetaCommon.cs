@@ -624,14 +624,14 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
             }
         }
-        public MetaBase GetChildrenMetaBase(MetaBase mb)
+        public MetaNode GetChildrenMetaNode(MetaNode mb)
         {
             if (mb == null) return null;
-            MetaBase mb2 = mb;
+            MetaNode mb2 = mb;
             var list = stringList;
             for (int i = 0; i < list.Count; i++)
             {
-                mb2 = mb2.GetChildrenMetaBaseByName(list[i]);
+                mb2 = mb2.GetChildrenMetaNodeByName(list[i]);
                 if (mb2 == null)
                     break;
             }

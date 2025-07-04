@@ -282,7 +282,7 @@ namespace SimpleLanguage.Core
             {
                 if (v.Value.IsIncludeMetaData(curMD))
                 {
-                    Debug.Write("Error 当前有循环引用数量现象，请查正!!" + md.allName);
+                    Debug.Write("Error 当前有循环引用数量现象，请查正!!" + md.allClassName );
                     continue;
                 }
                 var newMMD = v.Value.Copy();
@@ -319,7 +319,7 @@ namespace SimpleLanguage.Core
 
                     if (AddMetaMemberData(mmd))
                     {
-                        this.AddMetaBase(mmd.name, mmd);
+                        //this.AddMetaBase(mmd.name, mmd);
 
                         mmd.ParseChildMemberData();
                     }

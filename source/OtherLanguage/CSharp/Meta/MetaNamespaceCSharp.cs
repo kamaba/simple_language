@@ -1,9 +1,4 @@
 ﻿using SimpleLanguage.CSharp;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.Core
 {
@@ -13,40 +8,41 @@ namespace SimpleLanguage.Core
         {
             m_RefFromType = RefFromType.CSharp;
         }
-        public override MetaBase GetChildrenMetaBaseByName(string name )
+        public MetaBase GetChildrenMetaBaseByName(string name )
         {
-            MetaBase mb = base.GetChildrenMetaBaseByName(name); 
+            //MetaBase mb = base.GetChildrenMetaBaseByName(name); 
 
-            if( mb != null )
-            {
-                return mb;
-            }
-            mb = CSharpManager.FindCSharpClassOrNameSpace(this.allName, name);
+            //if( mb != null )
+            //{
+            //    return mb;
+            //}
+            //mb = CSharpManager.FindCSharpClassOrNameSpace(this.allName, name);
 
-            if( mb != null )
-            {
-                this.AddMetaBase(name, mb);
-                if( mb is MetaClass mc )
-                {
-                    ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.csharpModule);
-                }
-            }
+            //if( mb != null )
+            //{
+            //    this.AddMetaBase(name, mb);
+            //    if( mb is MetaClass mc )
+            //    {
+            //        ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.csharpModule);
+            //    }
+            //}
 
-            return mb;
+            //return mb;
+            return null;
         }
 
-        public MetaBase GetCSharpMetaClassOrNamespaceAndCreateByName( string name )
-        {
-            var mb = this.GetChildrenMetaBaseByName(name);
+        //public MetaBase GetCSharpMetaClassOrNamespaceAndCreateByName( string name )
+        //{
+        //    var mb = this.GetChildrenMetaBaseByName(name);
 
-            if( mb == null && refFromType == RefFromType.CSharp )
-            {
-                mb = CSharpManager.FindAndCreateMetaBase(this, name);
+        //    if( mb == null && refFromType == RefFromType.CSharp )
+        //    {
+        //        mb = CSharpManager.FindAndCreateMetaBase(this, name);
 
-                return mb;
-            }
+        //        return mb;
+        //    }
 
-            return mb;
-        }
+        //    return mb;
+        //}
     }
 }

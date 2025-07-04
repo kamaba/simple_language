@@ -83,40 +83,41 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         {
             m_FileMetaClassList.Add(mc);
         }
-        public MetaBase GetMetaBaseByFileMetaClassRef( FileMetaClassDefine fmcv )
+        public MetaNode GetMetaBaseByFileMetaClassRef( FileMetaClassDefine fmcv )
         {
-            MetaBase mb = null;
+            MetaNode mb = null;
             for( int i = 0; i < m_FileImportSyntax.Count; i++ )
             {
-                MetaNamespace mn = NamespaceManager.instance.FindImportNamespace( m_FileImportSyntax[i], fmcv.name ) as MetaNamespace;
-                if (mn == null) { continue; }
-                if( mn.refFromType == RefFromType.CSharp )
+                MetaNode mn = NamespaceManager.instance.FindImportNamespace( m_FileImportSyntax[i], fmcv.name );
+                if (mn == null) continue;
+                if (mn.isMetaNamespace == false ) { continue; }
+                if (mn.metaNamespace.refFromType == RefFromType.CSharp)
                 {
-                    Object obj = CSharpManager.GetObject(fmcv, mn);
+                    Object obj = CSharpManager.GetObject(fmcv, mn.metaNamespace);
                 }
                 else
                 {
-                    mb = fmcv.GetChildrenMetaBase( mn );
+                    mb = fmcv.GetChildrenMetaNode(mn);
                     if (mb != null)
                         return mb;
                 }
             }
             return null;
         }
-        public MetaBase GetMetaBaseFileMetaClass( List<string> classList )
+        public MetaNode GetMetaNodeFileMetaClass( List<string> classList )
         {
             if (classList.Count == 0) return null;
 #pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
-            MetaBase mb = null;
+            MetaNode mb = null;
 #pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
             for (int i = 0; i < m_FileImportSyntax.Count; i++)
             {
-                MetaBase findMN = NamespaceManager.instance.FindImportNamespace(m_FileImportSyntax[i], classList[0]);
+                MetaNode findMN = NamespaceManager.instance.FindImportNamespace(m_FileImportSyntax[i], classList[0]);
                 if (findMN == null)
                     continue;
                 for ( int j = 1; j < classList.Count; j++ )
                 {
-                    findMN = findMN.GetChildrenMetaBaseByName(classList[i]);
+                    findMN = findMN.GetChildrenMetaNodeByName(classList[i]);
                     if (findMN == null)
                         continue;
                 }
@@ -126,38 +127,39 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             }
             return null;
         }
-        public MetaBase GetMetaBaseByName( string name )
-        {
-            MetaModule mm = ModuleManager.instance.GetMetaModuleByName(name);
-            if( mm != null )
-            {
-                return mm;
-            }
-            else
-            {
-                MetaBase m2 = ModuleManager.instance.GetChildrenMetaBaseByName(name);
-                if (m2 != null)
-                {
-                    return m2;
-                }
-            }
+        //public MetaNode GetMetaBaseByName( string name )
+        //{
+        //    MetaModule mm = ModuleManager.instance.GetMetaModuleByName(name);
+        //    if( mm != null )
+        //    {
+        //        return mm;
+        //    }
+        //    else
+        //    {
+        //        MetaNode m2 = ModuleManager.instance.GetChildrenMetaNodeByName(name);
+        //        if (m2 != null)
+        //        {
+        //            return m2;
+        //        }
+        //    }
 
-            for (int i = 0; i < m_ImportMetaNamespaceList.Count; i++)
-            {
-                var imn = m_ImportMetaNamespaceList[i];
-                if( imn.refFromType == RefFromType.CSharp )
-                {
-                    var findMB = CSharpManager.FindAndCreateMetaBase(imn, name);
-                    if (findMB != null)
-                        return findMB;
-                }
-                else
-                {
-                    return imn.GetChildrenMetaBaseByName(name);
-                }
-            }
-            return null;
-        }
+        //    for (int i = 0; i < m_ImportMetaNamespaceList.Count; i++)
+        //    {
+        //        var imn = m_ImportMetaNamespaceList[i];
+        //        if( imn.refFromType == RefFromType.CSharp )
+        //        {
+        //            MetaNode getmb = CSharpManager.FindCSharpClassOrNameSpace(imn.name, name);
+        //            if (getmb != null)
+        //                return getmb;
+        //        }
+        //        else
+        //        {
+        //            //return imn.GetChildrenMetaBaseByName(name);
+        //        }
+        //    }
+        //    return null;
+        //}
+        /*
         public T GetMetaBaseTByName<T>(string name) where T : MetaBase
         {
 #pragma warning disable CS0162 // 检测到无法访问的代码
@@ -166,19 +168,20 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 MetaBase mn = NamespaceManager.instance.FindImportNamespace(m_FileImportSyntax[i], name);
                 while (true)
                 {
-                    var fmn = mn.GetChildrenMetaBaseByName(name);
-                    if (fmn != null && fmn.GetType() == typeof(T) )
-                    {
-                        return fmn as T;
-                    }
-                    mn = mn.parentNode;
-                    if (mn == null)
-                        continue;
+                    //var fmn = mn.GetChildrenMetaBaseByName(name);
+                    //if (fmn != null && fmn.GetType() == typeof(T) )
+                    //{
+                    //    return fmn as T;
+                    //}
+                    //mn = mn.parentNode;
+                    //if (mn == null)
+                    //    continue;
                 }
             }
 #pragma warning restore CS0162 // 检测到无法访问的代码
             return default(T);
         }
+        */
         public void CreateNamespace()
         {
             for (int i = 0; i < m_FileDefineNamespaceList.Count; i++)

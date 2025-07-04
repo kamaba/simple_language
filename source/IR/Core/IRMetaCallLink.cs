@@ -65,7 +65,7 @@ namespace SimpleLanguage.Core.IR
                 }
                 else if (cnode.visitType == MetaVisitNode.EVisitType.NewClass)
                 {
-                    var irmc = _irMethod.irManager.GetIRMetaClassByName(cnode.callerMetaClass.allName);
+                    var irmc = _irMethod.irManager.GetIRMetaClassByName(cnode.callerMetaClass.name);
                     IRNew irnew = new IRNew(m_IRMethod, irmc);
                     irList.Add(irnew);
 
@@ -90,7 +90,7 @@ namespace SimpleLanguage.Core.IR
                                 {
                                     var asl = cnode.metaBraceStatementsContent.assignStatementsList[y];
 
-                                    if (asl.metaMemberVariable.allName == lirmv.name)
+                                    if (asl.metaMemberVariable.name == lirmv.name)
                                     {
                                         IRExpress irexp = new IRExpress(_irMethod, asl.expressNode);
                                         irList.Add(irexp);
@@ -166,7 +166,7 @@ namespace SimpleLanguage.Core.IR
                 }
                 else if (cnode.visitType == MetaVisitNode.EVisitType.NewClass )
                 {
-                    var irmc = _irManager.GetIRMetaClassByName(cnode.callerMetaClass.allName);
+                    var irmc = _irManager.GetIRMetaClassByName(cnode.callerMetaClass.allClassName);
                     IRNew irnew = new IRNew( m_IRMethod, irmc);
                     irList.Add(irnew);
 

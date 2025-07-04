@@ -38,17 +38,17 @@ namespace SimpleLanguage.IR
         {
             m_MetaVariable = mv;
             id = mv.GetHashCode();
-            name = mv.ownerMetaBlockStatements?.ownerMetaFunction.allName + "_local[" + mv.allName + "]";
+            name = mv.ownerMetaBlockStatements?.ownerMetaFunction.name + "_local[" + mv.name + "]";
             m_IRMetaVariableFrom = mv.variableFrom == MetaVariable.EVariableFrom.Argument 
                 ?  IRMetaVariableFrom.Argument : IRMetaVariableFrom.LocalStatement;
             //m_IRMetaClass = IRManager.instance.GetIRMetaClassById(mv.meta)
-            m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mv.metaDefineType.allName);
+            m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mv.metaDefineType.name );
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme)
         {
             m_MetaVariable = mme;
             id = mme.GetHashCode();
-            name = mme.ownerMetaClass.allName + "." + mme.name;
+            name = mme.ownerMetaClass.allClassName + "." + mme.name;
             m_ExpressNode = mme.express;
             m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
             m_IRMetaClass = irmc;
@@ -57,7 +57,7 @@ namespace SimpleLanguage.IR
         {
             m_MetaVariable = mmd;
             id = mmd.GetHashCode();
-            name = mmd.ownerMetaClass.allName + "." + mmd.name;
+            name = mmd.ownerMetaClass.allClassName + "." + mmd.name;
             m_ExpressNode = mmd.expressNode;
             m_IRMetaVariableFrom = mmd.isStatic ? IRMetaVariableFrom.Static : IRMetaVariableFrom.Member;
             m_IRMetaClass = irmc;
@@ -66,7 +66,7 @@ namespace SimpleLanguage.IR
         {
             m_MetaVariable = mmv;
             id = mmv.GetHashCode();
-            name = mmv.ownerMetaClass.allName + "." + mmv.name;
+            name = mmv.ownerMetaClass.allClassName + "." + mmv.name;
             m_ExpressNode = mmv.express;
             m_IRMetaVariableFrom = IRMetaVariableFrom.Member;
             m_IRMetaClass = irmc;

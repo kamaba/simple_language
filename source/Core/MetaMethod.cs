@@ -32,7 +32,7 @@ namespace SimpleLanguage.Core
         public virtual string functionAllName {
             get
             {
-                return allName;
+                return name;
             }
         }
         public MetaVariable thisMetaVariable => m_ThisMetaVariable;

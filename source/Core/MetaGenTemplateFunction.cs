@@ -103,7 +103,7 @@ namespace SimpleLanguage.Core
             StringBuilder sb = new StringBuilder();
             sb.Append(m_DefineMetaType.ToFormatString());
             sb.Append(" ");
-            sb.Append(allName);
+            sb.Append(name);
             sb.Append("<");
             for( int i = 0; i < m_MetaGenTemplateList.Count; i++ )
             {

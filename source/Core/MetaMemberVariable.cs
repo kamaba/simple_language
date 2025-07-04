@@ -241,7 +241,7 @@ namespace SimpleLanguage.Core
             }
             if( this.m_Express == null )
             {
-                var ld = Log.AddInStructMeta( EError.MemberNeedExpress, $"Error [{this.ownerMetaClass.allName + "." + this.m_Name} ]配置成员变量时，必须需要有等号及后续的表达式!!");
+                var ld = Log.AddInStructMeta( EError.MemberNeedExpress, $"Error [{this.ownerMetaClass.allClassName + "." + this.m_Name} ]配置成员变量时，必须需要有等号及后续的表达式!!");
                 ld.demo = "T t";
                 ld.advan = "T t = null";
             }
@@ -338,7 +338,7 @@ namespace SimpleLanguage.Core
                     //sb.Append("Warning 在类: " + metaFunction?.ownerMetaClass.allName + " 函数: " + metaFunction?.name + "中  ");
                     if (curClass != null)
                     {
-                        sb.Append(" 定义类 : " + curClass.allName);
+                        sb.Append(" 定义类 : " + curClass.allClassName );
                     }
                     if (defineName != null)
                     {
@@ -346,7 +346,7 @@ namespace SimpleLanguage.Core
                     }
                     sb.Append("与后边赋值语句中 ");
                     if (compareClass != null)
-                        sb.Append("表达式类为: " + compareClass.allName);
+                        sb.Append("表达式类为: " + compareClass.allClassName );
                     if (relation == ClassManager.EClassRelation.No)
                     {
                         sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
@@ -613,11 +613,7 @@ namespace SimpleLanguage.Core
                     MetaDynamicClass mdc = new MetaDynamicClass(i.GetHashCode().ToString());
 
                     MetaMemberVariable mmd = new MetaMemberVariable(mdc, fmmv);
-                    if (AddMetaVariable(mmd))
-                    {
-                        this.AddMetaBase(mmd.name, mmd);
-                    }
-                    else
+                    if ( !AddMetaVariable(mmd))
                     {
                         Debug.Write("Error 命名有重名!!");
                     }

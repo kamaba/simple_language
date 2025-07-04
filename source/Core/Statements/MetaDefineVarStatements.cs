@@ -193,10 +193,10 @@ namespace SimpleLanguage.Core.Statements
                         }
 
                         StringBuilder sb = new StringBuilder();
-                        sb.Append("Warning 在类: " + metaFunction?.ownerMetaClass.allName + " 函数: " + metaFunction?.name + "中  ");
+                        sb.Append("Warning 在类: " + metaFunction?.ownerMetaClass.allClassName + " 函数: " + metaFunction?.name + "中  ");
                         if (curClass != null)
                         {
-                            sb.Append(" 定义类 : " + curClass.allName);
+                            sb.Append(" 定义类 : " + curClass.allClassName );
                         }
                         if (defineName != null)
                         {
@@ -204,7 +204,7 @@ namespace SimpleLanguage.Core.Statements
                         }
                         sb.Append("与后边赋值语句中 ");
                         if (compareClass != null)
-                            sb.Append("表达式类为: " + compareClass.allName);
+                            sb.Append("表达式类为: " + compareClass.allClassName );
                         if (relation == ClassManager.EClassRelation.No)
                         {
                             sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
@@ -269,7 +269,7 @@ namespace SimpleLanguage.Core.Statements
         //    }
         //    return mns;
         //}
-        public override void SetDeep(int dp)
+        public void SetDeep(int dp)
         {
             base.SetDeep(dp);
             if (m_ExpressNode is MetaExecuteStatementsNode)
@@ -281,36 +281,36 @@ namespace SimpleLanguage.Core.Statements
         {
             StringBuilder sb = new StringBuilder();
 
-            for (int i = 0; i < realDeep; i++)
-                sb.Append(Global.tabChar);
-            sb.Append(m_DefineVarMetaVariable.ToFormatString());
-            sb.Append(" = ");
-            if(m_DefineVarMetaVariable.metaDefineType.isData )
-            {
-                sb.Append(m_ExpressNode.ToFormatString());
-            }
-            else if(m_DefineVarMetaVariable.metaDefineType.isEnum )
-            {
-            }
-            else
-            {
-                if (m_IsNeedCastState)
-                {
-                    sb.Append("(");
-                }
-                sb.Append(m_ExpressNode.ToFormatString());
-                if (m_IsNeedCastState)
-                {
-                    sb.Append(").cast<" + m_DefineVarMetaVariable.metaDefineType.metaClass.allName + ">()");
-                }
-                sb.Append(";");
-            }
+            //for (int i = 0; i < realDeep; i++)
+            //    sb.Append(Global.tabChar);
+            //sb.Append(m_DefineVarMetaVariable.ToFormatString());
+            //sb.Append(" = ");
+            //if(m_DefineVarMetaVariable.metaDefineType.isData )
+            //{
+            //    sb.Append(m_ExpressNode.ToFormatString());
+            //}
+            //else if(m_DefineVarMetaVariable.metaDefineType.isEnum )
+            //{
+            //}
+            //else
+            //{
+            //    if (m_IsNeedCastState)
+            //    {
+            //        sb.Append("(");
+            //    }
+            //    sb.Append(m_ExpressNode.ToFormatString());
+            //    if (m_IsNeedCastState)
+            //    {
+            //        sb.Append(").cast<" + m_DefineVarMetaVariable.metaDefineType.metaClass.allName + ">()");
+            //    }
+            //    sb.Append(";");
+            //}
 
-            if ( nextMetaStatements != null )
-            {
-                sb.Append(Environment.NewLine);
-                sb.Append(nextMetaStatements.ToFormatString());
-            }
+            //if ( nextMetaStatements != null )
+            //{
+            //    sb.Append(Environment.NewLine);
+            //    sb.Append(nextMetaStatements.ToFormatString());
+            //}
 
             return sb.ToString();
 

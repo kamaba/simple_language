@@ -144,7 +144,7 @@ namespace SimpleLanguage.Core
 
             if( this.methodCallStackType == EMethodCallStackType.StaticStack )
             {
-                sb.Append(this.m_MetaFunction.allName);
+                sb.Append(this.m_MetaFunction.name);
                 sb.Append("( ");
                 sb.Append(this.metaInputParamCollection.ToFormatString() );
                 sb.Append(" )");

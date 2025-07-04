@@ -29,10 +29,10 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < realDeep; i++)
                 stringBuilder.Append(Global.tabChar);
             
-            if (topLevelMetaNamespace != null)
-            {
-                stringBuilder.Append(topLevelMetaNamespace.allName + ".");
-            }
+            //if (topLevelMetaNamespace != null)
+            //{
+            //    stringBuilder.Append(topLevelMetaNamespace.allName + ".");
+            //}
             stringBuilder.Append(name + " ");
 
             stringBuilder.Append(Environment.NewLine);
@@ -40,15 +40,15 @@ namespace SimpleLanguage.Core
                 stringBuilder.Append(Global.tabChar);
             stringBuilder.Append("{" + Environment.NewLine);
 
-            foreach (var v in m_ChildrenNameNodeDict )
-            {
-                MetaBase mb = v.Value;
-                if (mb is MetaMemberVariable )
-                {
-                    stringBuilder.Append((mb as MetaMemberVariable ).ToFormatString());
-                    stringBuilder.Append(Environment.NewLine);
-                }
-            }
+            //foreach (var v in m_ChildrenNameNodeDict )
+            //{
+            //    MetaBase mb = v.Value;
+            //    if (mb is MetaMemberVariable )
+            //    {
+            //        stringBuilder.Append((mb as MetaMemberVariable ).ToFormatString());
+            //        stringBuilder.Append(Environment.NewLine);
+            //    }
+            //}
 
             for (int i = 0; i < realDeep; i++)
                 stringBuilder.Append(Global.tabChar);

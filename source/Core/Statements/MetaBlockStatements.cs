@@ -85,10 +85,10 @@ namespace SimpleLanguage.Core.Statements
             }
             return null;
         }
-        public override void SetDeep(int dp)
+        public void SetDeep(int dp)
         {
-            m_Deep = dp;
-            nextMetaStatements?.SetDeep(deep + 1);
+            //m_Deep = dp;
+            //nextMetaStatements?.SetDeep(deep + 1);
         }
         public MetaVariable GetMetaVariable( string name )
         {
@@ -103,7 +103,7 @@ namespace SimpleLanguage.Core.Statements
             if (m_MetaVariableDict.ContainsKey(mv.name))
             {
                 Token token = m_FileMetaBlockSyntax?.token;
-                Debug.Write("error Class: [" + ownerMetaClass?.allName + "] Method: [" + ownerMetaFunction.functionAllName + "]" 
+                Debug.Write("error Class: [" + ownerMetaClass?.allClassName + "] Method: [" + ownerMetaFunction.functionAllName + "]" 
                     + "已定义过了变量名称!!! MBS:" + token?.ToLexemeAllString() + " var:" + mv.ToFormatString() );
                 return false;
             }

@@ -14,11 +14,11 @@ namespace SimpleLanguage.Core
         {
             if (mc == null) return null;
             
-            if( mc.isTemplateClass) { return mc.templateParentClass; }
-            else if( mc is MetaGenTemplateClass mgtc )
-            {
-                return mgtc.metaTemplateClass.templateParentClass;
-            }
+            //if( mc.isTemplateClass) { return mc.templateParentClass; }
+            //else if( mc is MetaGenTemplateClass mgtc )
+            //{
+            //    return mgtc.metaTemplateClass.templateParentClass;
+            //}
             return mc;
         }
     }

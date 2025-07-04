@@ -20,7 +20,7 @@ namespace SimpleLanguage.Core
         {
             get
             {
-                return m_MetaClass?.allName;
+                return m_MetaClass?.allClassName;
             }
         }
         public MetaClass metaClass => m_MetaClass;
@@ -262,7 +262,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                sb.Append(m_MetaClass?.allName);
+                sb.Append(m_MetaClass?.allClassName);
             }
             return sb.ToString();
         }

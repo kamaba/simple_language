@@ -29,10 +29,10 @@ namespace SimpleLanguage.Core
             if( defineMetaClassType == null )
             {
                 string[] fullname = pi.DeclaringType.FullName.Split(".");
-                MetaBase fmc = ModuleManager.instance.csharpModule;
+                MetaNode fmc = ModuleManager.instance.csharpModule.metaNode;
                 for( int i = 0; i < fullname.Length; i++ )
                 {
-                    var cfmc = fmc.GetChildrenMetaBaseByName(fullname[i]);
+                    var cfmc = fmc.GetChildrenMetaNodeByName(fullname[i]);
                     if(cfmc != null )
                     {
                         fmc = cfmc;
@@ -40,7 +40,7 @@ namespace SimpleLanguage.Core
                     }
                     fmc = CSharpManager.FindAndCreateMetaBase(fmc, fullname[i]);
                 }
-                defineMetaClassType = fmc as MetaClass;
+                defineMetaClassType = fmc.GetMetaClassByTemplateCount(0);
             }
 
             m_DefineMetaType = new MetaType(defineMetaClassType);

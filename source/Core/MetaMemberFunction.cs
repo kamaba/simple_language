@@ -13,11 +13,120 @@ using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
-using System.Diagnostics;
-using System.Runtime.ConstrainedExecution;
+using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Core
 {
+    public class MetaMemberFunctionTemplateNode
+    {
+        //模板数据匹配，只有在是模板函数时处理
+        protected Dictionary<int, MetaMemberFunctionNode> m_MetaTemplateFunctionNodeDict = new Dictionary<int, MetaMemberFunctionNode>();
+
+        public void SetDeep(int deep)
+        {
+        }
+        public MetaMemberFunction IsSameMetaMemeberFunction(MetaMemberFunction mmf)
+        {
+            MetaMemberFunctionNode find = null;
+            if (m_MetaTemplateFunctionNodeDict.ContainsKey(mmf.metaMemberTemplateCollection.count))
+            {
+                find = m_MetaTemplateFunctionNodeDict[mmf.metaMemberTemplateCollection.count];
+            }
+            else
+            {
+                find = new MetaMemberFunctionNode();
+            }
+            return find.IsSameMetaMemeberFunction(mmf);
+        }
+
+
+        public void AddMetaMemberFunction(MetaMemberFunction mmf)
+        {
+            MetaMemberFunctionNode find = null;
+            if (m_MetaTemplateFunctionNodeDict.ContainsKey(mmf.metaMemberTemplateCollection.count))
+            {
+                find = m_MetaTemplateFunctionNodeDict[mmf.metaMemberTemplateCollection.count];
+            }
+            else
+            {
+                find = new MetaMemberFunctionNode();
+            }
+            find.AddMetaMemberFunction(mmf);
+        }
+    }
+    public class MetaMemberFunctionNode
+    {
+        //参数个数匹配，可以相同参数的不同类接口
+        protected Dictionary<int, List<MetaMemberFunction>> m_MetaParamFunctionDict = new Dictionary<int, List<MetaMemberFunction>>();
+
+        public void SetDeep(int deep)
+        {
+        }
+        public MetaMemberFunction IsSameMetaMemeberFunction( MetaMemberFunction mmf )
+        {
+            List<MetaMemberFunction> list = null;
+            if (m_MetaParamFunctionDict.ContainsKey(mmf.metaMemberParamCollection.metaDefineParamList.Count))
+            {
+                list = m_MetaParamFunctionDict[mmf.metaMemberParamCollection.metaDefineParamList.Count];
+            }
+            else
+            {
+                list = new List<MetaMemberFunction>();
+            }
+
+            MetaMemberFunction find2 = null;
+            for (int i = 0; i < list.Count; i++)
+            {
+                var curFun = list[i];
+                if (curFun.metaMemberParamCollection.IsEqualMetaDefineParamCollection(mmf.metaMemberParamCollection))
+                {
+                    find2 = curFun;
+                    break;
+                }
+            }
+            if (find2 == null)
+            {
+                list.Add(mmf);
+                return null;
+            }
+            else
+            {
+                Log.AddInStructMeta(EError.None, "发现已经定义过某某类" + mmf.functionAllName);
+                return find2;
+            }
+        }
+        public void AddMetaMemberFunction( MetaMemberFunction mmf )
+        {
+            List<MetaMemberFunction> list = null;
+            if (m_MetaParamFunctionDict.ContainsKey(mmf.metaMemberParamCollection.metaDefineParamList.Count))
+            {
+                list = m_MetaParamFunctionDict[mmf.metaMemberParamCollection.metaDefineParamList.Count];
+            }
+            else
+            {
+                list = new List<MetaMemberFunction>();
+            }
+
+            MetaMemberFunction find2 = null;
+            for (int i = 0; i < list.Count; i++)
+            {
+                var curFun = list[i];
+                if (curFun.metaMemberParamCollection.IsEqualMetaDefineParamCollection(mmf.metaMemberParamCollection))
+                {
+                    find2 = curFun;
+                    break;
+                }
+            }
+            if (find2 == null)
+            {
+                list.Add(mmf);
+            }
+            else
+            {
+                Log.AddInStructMeta(EError.None, "发现已经定义过某某类" + mmf.functionAllName);
+            }
+        }
+    }
     public class MetaMemberFunction : MetaFunction
     {
         public override string functionAllName
@@ -28,6 +137,20 @@ namespace SimpleLanguage.Core
                 {
                     StringBuilder sb = new StringBuilder();
                     sb.Append(name);
+                    if(m_MetaMemberTemplateCollection.metaTemplateList.Count > 0 )
+                    {
+                        sb.Append("<");
+                        for( int i = 0; i < m_MetaMemberTemplateCollection.metaTemplateList.Count; i++ )
+                        {
+                            var mtl = m_MetaMemberTemplateCollection.metaTemplateList[i];
+                            sb.Append(mtl.name);
+                            if( i < m_MetaMemberTemplateCollection.metaTemplateList.Count-1 )
+                            {
+                                sb.Append(",");
+                            }
+                        }
+                        sb.Append(">");
+                    }
                     if( m_MetaMemberParamCollection?.maxParamCount > 0 )
                     {
                         sb.Append("_");
@@ -61,8 +184,11 @@ namespace SimpleLanguage.Core
         protected bool m_ConstructInitFunction = false;
         protected bool m_IsWithInterface = false;
         protected FileMetaMemberFunction m_FileMetaMemberFunction = null;
+
+        //模板生成函数，如果匹配了，模板函数后，再进行看是否生成过该函数
         protected List<MetaGenTempalteFunction> m_GenTempalteFunctionList = new List<MetaGenTempalteFunction>();
-        protected Dictionary<int, MetaMemberFunction> m_MetaTemplateFunctionDict = new Dictionary<int, MetaMemberFunction>();
+
+
         #endregion
 
         public MetaMemberFunction( MetaClass mc ):base(mc)
@@ -111,10 +237,10 @@ namespace SimpleLanguage.Core
                 if( template.inClassNameTemplateNode != null )       //判断是否使用例似于where(csharp) where T : object
                 {
                     var inClassToken = template.inClassNameTemplateNode;
-                    MetaClass gmc = ClassManager.instance.GetMetaClassByNameAndFileMeta( ownerMetaClass, inClassToken.fileMeta, inClassToken.nameList );
+                    MetaClass gmc = null;// ClassManager.instance.GetMetaClassByNameAndFileMeta( ownerMetaClass, inClassToken.fileMeta, inClassToken.nameList );
                     if( gmc == null )
                     {
-                        Debug.Write("Error 没有查找到inClass的类名, " + inClassToken.ToFormatString());
+                        Log.AddInStructMeta( EError.None, "Error 没有查找到inClass的类名, " + inClassToken.ToFormatString());
                         continue;
                     }
                     mdt.SetInConstraintMetaClass(gmc);
@@ -174,9 +300,9 @@ namespace SimpleLanguage.Core
             }
             m_ReturnMetaVariable = new MetaVariable("return_" + GetHashCode().ToString(), EVariableFrom.Argument, null, m_OwnerMetaClass, m_DefineMetaType);
         }
-        public override void SetDeep(int deep)
+        public void SetDeep(int deep)
         {
-            m_Deep = deep;
+            //m_Deep = deep;
             m_MetaBlockStatements?.SetDeep(deep);
         }
         public override void SetOwnerMetaClass(MetaClass ownerclass)
@@ -221,11 +347,18 @@ namespace SimpleLanguage.Core
             {
                 return this;
             }
-            if (this.m_MetaTemplateFunctionDict.ContainsKey(count))
-            {
-                return this.m_MetaTemplateFunctionDict[count];
-            }
+            //if (this.m_MetaTemplateFunctionDict.ContainsKey(count))
+            //{
+            //    return this.m_MetaTemplateFunctionDict[count];
+            //}
             return null;
+        }
+        public void AddTemplateMetaMemberFunction( MetaMemberFunction mmf )
+        {
+            //if (!this.m_MetaTemplateFunctionDict.ContainsKey(mmf.metaMemberTemplateCollection.count))
+            //{
+            //    this.m_MetaTemplateFunctionDict.Add(mmf.metaMemberTemplateCollection.count, mmf);
+            //}
         }
         //如果是模板函数，需要在实例化类后，进行新的实体函数的解析
         public MetaGenTempalteFunction AddGenTemplateMemberFunctionBySelf( List<MetaClass> list )
@@ -258,57 +391,20 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
+        public void RemoveMetaMemberFunction( MetaMemberFunction mmf )
+        {
+
+        }
         public override void Parse()
         {
             base.Parse();
         }
-        //public void ParseTemplateClassDefine()
-        //{
-        //    if( this.m_OriginalMetaMemberFunction != null )
-        //    {
-        //        var mmf = this.m_OriginalMetaMemberFunction;
-        //        var list = m_OriginalMetaMemberFunction.metaMemberParamCollection.metaDefineParamList;
-        //        //var list = metaMemberParamCollection.metaDefineParamList;
-        //        for (int k = 0; k < list.Count; k++)
-        //        {
-        //            MetaDefineParam mdp = list[k];
-        //            if (mdp.isFunctionTemplate)
-        //            {
-        //                MetaDefineParam nmdp = new MetaDefineParam(mdp.name, this);
-        //                m_MetaMemberParamCollection.AddMetaDefineParam(nmdp);
-        //                continue;
-        //            }
-        //            else if (mdp.isClassTemplate)
-        //            {
-        //                string pTName = mdp.metaDefineTypeName;
-        //                var find = (m_OwnerMetaClass as MetaGenTemplateClass).GetMetaGenTemplate(pTName);
-        //                if (find != null)
-        //                {
-        //                    //MetaDefineParam nmdp = new MetaDefineParam(mdp.name, mmf, new MetaType(find.metaType));
-        //                    //m_MetaMemberParamCollection.AddMetaDefineParam(nmdp);
-        //                }
-        //            }
-        //            else
-        //            {
-        //                //MetaDefineParam nmdp = new MetaDefineParam(mdp.name, mmf, mdp?.metaVariable?.metaDefineType);
-        //                //m_MetaMemberParamCollection.AddMetaDefineParam(nmdp);
-        //            }
-        //        }
+        public void CreateTemplateChildFunction()
+        {
+            MetaMemberFunction mgmf = new MetaMemberFunction(this);
 
-        //        if (mmf.returnMetaVariable != null)
-        //        {
-        //            m_DefineMetaType = new MetaType(mmf.returnMetaVariable.metaDefineType);
-        //            m_ReturnMetaVariable = new MetaVariable(mmf.returnMetaVariable.name, EVariableFrom.LocalStatement, m_MetaBlockStatements, this.ownerMetaClass, m_DefineMetaType);
-        //        }
-        //        if (mmf.metaBlockStatements != null)
-        //        {
-        //            m_MetaBlockStatements.AddFrontToEndStatements(mmf.metaBlockStatements);
-        //            MetaStatements ms = mmf.metaBlockStatements.GenTemplateClassStatement(m_OwnerMetaClass as MetaGenTemplateClass, m_MetaBlockStatements);
-        //            m_MetaBlockStatements.SetNextStatements(ms);
-        //        }
-        //        ParseDefineMetaType();
-        //    }
-        //}
+            AddTemplateMetaMemberFunction(mgmf);
+        }
         public override void ParseDefineMetaType()
         {
             if (this.m_FileMetaMemberFunction != null)
@@ -317,7 +413,7 @@ namespace SimpleLanguage.Core
                 {
                     if (m_ConstructInitFunction)
                     {
-                        Debug.Write("Error 当前类:" + allName + " 是构建Init类，不允许有返回类型 ");
+                        Log.AddInStructMeta(EError.None, "Error 当前类:" + m_AllName + " 是构建Init类，不允许有返回类型 ");
                     }
                     else
                     {
@@ -378,12 +474,12 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.Write("Error 该函数没有定义内容！！");
+                    Log.AddInStructMeta(EError.None, "Error 该函数没有定义内容！！");
                 }
             }
             if( !m_IsWithInterface)
             {
-                m_MetaBlockStatements.SetDeep(deep);
+                //m_MetaBlockStatements.SetDeep(deep);
             }
         }
         public static MetaStatements CreateMetaSyntax( FileMetaSyntax rootMs, MetaBlockStatements currentBlockStatements)
@@ -443,7 +539,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Debug.Write("Error FileMetaConditionExpressSyntax: 暂不支持该类型的解析!!");
+                            Log.AddInStructMeta(EError.None, "Error FileMetaConditionExpressSyntax: 暂不支持该类型的解析!!");
                         }
                     }
                     break;
@@ -473,7 +569,7 @@ namespace SimpleLanguage.Core
                             {
                                 if (currentBlockStatements.GetIsMetaVariable(name1))
                                 {
-                                    Debug.Write("Error 如果使用了var/data/dynamic/int 等前缀，有重复定义的行为" + fmos.variableRef.ToTokenString());
+                                    Log.AddInStructMeta(EError.None, "Error 如果使用了var/data/dynamic/int 等前缀，有重复定义的行为" + fmos.variableRef.ToTokenString());
                                     isDefineVarStatements = false;
                                 }
                                 else
@@ -489,7 +585,7 @@ namespace SimpleLanguage.Core
                                     MetaBase mb = ownerclass.GetMetaMemberVariableByName(name1);
                                     if (mb != null)
                                     {
-                                        Debug.Write("Error 如果是使用类成员，必须使用this.变量的方式" + fmos.variableRef.ToTokenString());
+                                        Log.AddInStructMeta(EError.None, "Error 如果是使用类成员，必须使用this.变量的方式" + fmos.variableRef.ToTokenString());
                                     }
                                     else
                                     {
@@ -502,7 +598,7 @@ namespace SimpleLanguage.Core
                         {
                             //if (currentBlockStatements.ownerMetaFunction?.isConstructFunction)
                             //{
-                            //    Debug.Write("Error 构造函数中，不允许使用定义字段，必须使用this.非静态或者是类名.静态字段赋值!" + fmos.variableRef.ToTokenString());
+                            //    Log.AddInStructMeta( EError.None, "Error 构造函数中，不允许使用定义字段，必须使用this.非静态或者是类名.静态字段赋值!" + fmos.variableRef.ToTokenString());
                             //}
                             MetaDefineVarStatements mnvs11 = new MetaDefineVarStatements( currentBlockStatements, fmos );
                             beforeStatements.SetNextStatements(mnvs11);
@@ -523,14 +619,14 @@ namespace SimpleLanguage.Core
                         if (currentBlockStatements.GetIsMetaVariable(name1))
                         {
                             isDefineVarStatements = true;
-                            Debug.Write("Error 定义变量名称与类函数临时名称一样!!" + fmvs.token?.ToLexemeAllString());                            
+                            Log.AddInStructMeta(EError.None, "Error 定义变量名称与类函数临时名称一样!!" + fmvs.token?.ToLexemeAllString());                            
                         }
                         else
                         {
                             isDefineVarStatements = currentBlockStatements.ownerMetaClass.GetMetaMemberVariableByName(name1) == null;
                             if (!isDefineVarStatements)
                             {
-                                Debug.Write("Error 定义变量名称与类定义名称一样!!" + fmvs.token?.ToLexemeAllString());
+                                Log.AddInStructMeta(EError.None, "Error 定义变量名称与类定义名称一样!!" + fmvs.token?.ToLexemeAllString());
                             }
                         }
                         if ( isDefineVarStatements )
@@ -566,7 +662,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Debug.Write("Error 生成MetaStatements出错KeyReturnSyntax类型错误!!");
+                            Log.AddInStructMeta(EError.None, "Error 生成MetaStatements出错KeyReturnSyntax类型错误!!");
                         }
                     }
                     break;
@@ -578,7 +674,7 @@ namespace SimpleLanguage.Core
                         return metaGotoStatements;
                     }
                 default:
-                    Debug.Write("Waning 还有没有解析的语句!! MetaMemberFunction 314");
+                    Log.AddInStructMeta(EError.None, "Waning 还有没有解析的语句!! MetaMemberFunction 314");
                     break;
             }
             return null;
@@ -606,7 +702,7 @@ namespace SimpleLanguage.Core
             StringBuilder sb = new StringBuilder();
             sb.Append(m_DefineMetaType.ToFormatString());
             sb.Append(" ");
-            sb.Append( allName );
+            sb.Append( m_AllName );
             sb.Append("(");
 
             for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
@@ -626,8 +722,8 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            for (int i = 0; i < realDeep; i++)
-                sb.Append(Global.tabChar);
+            //for (int i = 0; i < realDeep; i++)
+            //    sb.Append(Global.tabChar);
 
             sb.Append(permission.ToFormatString() + " ");
             if (isStatic)

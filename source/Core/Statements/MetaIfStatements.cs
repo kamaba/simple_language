@@ -107,7 +107,7 @@ namespace SimpleLanguage.Core.Statements
                     {
                         sb.Append(Global.tabChar);
                     }
-                    sb.Append(m_BoolConditionVariable.metaDefineType.metaClass.allName);
+                    sb.Append(m_BoolConditionVariable.metaDefineType.metaClass.allClassName);
                     sb.Append(" ");
                     sb.Append(m_BoolConditionVariable.name);
                     sb.Append(" = ");
@@ -232,7 +232,7 @@ namespace SimpleLanguage.Core.Statements
         //    //}
         //    return null;
         //}
-        public override void SetDeep(int dp)
+        public void SetDeep(int dp)
         {
             for (int i = 0; i < m_MetaElseIfStatements.Count; i++)
             {

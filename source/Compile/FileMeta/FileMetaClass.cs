@@ -631,10 +631,10 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         {
             m_MetaClass = mc;
         }
-        public MetaBase GetChildrenMetaBaseByName( string name )
-        {
-            return  m_MetaClass.GetChildrenMetaBaseByName(name);
-        }
+        //public MetaBase GetChildrenMetaBaseByName( string name )
+        //{
+        //    return  m_MetaClass.GetChildrenMetaBaseByName(name);
+        //}
         public void AddFileMetaClass( FileMetaClass fmc )
         {
             fmc.m_Deep = this.deep + 1;
