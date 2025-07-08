@@ -8,10 +8,10 @@ public class Class1
 }
 List0<T>
 {
-    List1<List2<T> > t = null
-    T t1 = null
-    List1<T> t2 = null
-    List0<int> t3 = null
+    List1<List2<T> > list0t = null
+    T list0t1 = null
+    List1<T> list0t2 = null
+    List0<int> list0t3 = null
     T getA(){ ret null}
 
     _init_( int c )
@@ -21,12 +21,12 @@ List0<T>
 }
 List1<T:string> extends List0<T>
 {
-    T t = null
+    T list1t = null
     T getB(){ ret null}
 }
 List2<T> extends List1<List0<object> >
 {
-    T t = null
+    T list2t = null
     T getC(){ ret null} 
 }
 Map<T1,T2>

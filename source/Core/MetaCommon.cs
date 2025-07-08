@@ -394,17 +394,16 @@ namespace SimpleLanguage.Core
                 var selfClass = CoreMetaClassManager.GetCoreMetaClass(name);
                 if (selfClass != null)
                 {
-                    //m_MetaClass = selfClass;
+                    m_MetaClass = selfClass.GetMetaClassByTemplateCount(0);
                     m_CallNodeType = ECallNodeType.TypeName;
                 }
             }
             else if (etype == ETokenType.Identifier)
             {
-                MetaBase tempMetaBase = null;
                 if (isFirst)
                 {
                     // Class1. ns. Int32[]
-                    tempMetaBase = GetFirstNode(name, m_OwnerMetaClass );
+                    GetFirstNode(name, m_OwnerMetaClass );
                 }
                 else
                 {
@@ -482,7 +481,7 @@ namespace SimpleLanguage.Core
                             if(tmb == null )
                             {
                                 //查找静态函数
-                                MetaMemberFunction mmf = m_FrontCallNode.m_MetaClass.GetMetaMemberFunctionByNameAndInputParamCollect(name, m_MetaInputParamCollection);
+                                MetaMemberFunction mmf = m_FrontCallNode.m_MetaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParam(name, m_MetaTemplateParamsCollection, m_MetaInputParamCollection);
                                 if (mmf != null)
                                 {
                                     if( !mmf.isStatic )
@@ -739,7 +738,7 @@ namespace SimpleLanguage.Core
                         {
                             if (mt.extendsMetaClass != null)
                             {
-                                tempMetaBase = GetFunctionOrVariableByOwnerClass(mt.extendsMetaClass, name, false);
+                                var tempMetaBase = GetFunctionOrVariableByOwnerClass(mt.extendsMetaClass, name, false);
                                 if (tempMetaBase is MetaMemberVariable)
                                 {
                                     m_MetaVariable = (MetaMemberVariable)tempMetaBase;
@@ -761,7 +760,7 @@ namespace SimpleLanguage.Core
                                 }
                                 else
                                 {
-                                    tempMetaBase = GetFunctionOrVariableByOwnerClass(CoreMetaClassManager.objectMetaClass, name, false);
+                                    var tempMetaBase = GetFunctionOrVariableByOwnerClass(CoreMetaClassManager.objectMetaClass, name, false);
 
                                     if( tempMetaBase is MetaMemberVariable )
                                     {
@@ -926,7 +925,7 @@ namespace SimpleLanguage.Core
                             //    tmitc.AddMetaTemplateParamsList(mitp);
                             //}
                         }
-                        MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputParamCollect("_init_", m_MetaInputParamCollection);
+                        MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", m_MetaTemplateParamsCollection, m_MetaInputParamCollection);
                         if (mmf == null)
                         {
                             Log.AddInStructMeta(EError.None, "Error 没有找到相关的_init_类!!");
@@ -939,7 +938,7 @@ namespace SimpleLanguage.Core
                     else
                     {
                         //ArrClass()
-                        MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputParamCollect("_init_", m_MetaInputParamCollection);
+                        MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", m_MetaTemplateParamsCollection, m_MetaInputParamCollection);
                         if (mmf == null)
                         {
                             Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + curmc.allClassName + "的_init_方法!)");
@@ -1182,14 +1181,14 @@ namespace SimpleLanguage.Core
                 return false;
             }
         }
-        public MetaBase GetFirstNode(string inputname, MetaClass mc)
+        public bool GetFirstNode(string inputname, MetaClass mc)
         {
-            MetaBase retMC = null;
 
             if( m_AllowUseSettings.parseFrom == EParseFrom.MemberVariableExpress )
             {
             }
 
+            MetaNode retMC = null;
             // 查找定义关键字的class => range   array
             if (m_Token.extend != null)
             {                
@@ -1199,103 +1198,92 @@ namespace SimpleLanguage.Core
                     var retMC2 = CoreMetaClassManager.GetMetaClassByEType(etype);
                     if ( retMC2 != null )
                     {
-                        //retMC = retMC2.metaNode;
+                        retMC = retMC2.metaNode;
                     }
                 }
             }
             //查找类模型
             if( retMC == null)
             {
-                retMC = mc.GetMetaTemplateByName(inputname);
-            }
-            // 查找 coreModule的模块
-            if( retMC== null )
-            {
-                //retMC = ModuleManager.instance.GetMetaModuleByName(inputname);
-            }
-            //查找core中的定义
-            if( retMC == null )
-            {
-                //retMC = CoreMetaClassManager.GetCoreMetaClass(inputname); 
-            }
-            //查找selfModule中的定义
-            if (retMC == null )
-            {
-                //retMC = ModuleManager.instance.selfModule.GetChildrenMetaNodeByName(inputname);
-            }
-            //查找父类或子类中包含的节点
-            if( retMC == null )
-            {
-                //retMC = mc.metaNode.GetChildrenMetaNodeByName(inputname);
+                var t = mc.GetMetaTemplateByName(inputname);
+                if ( t != null )
+                {
+                    m_MetaTemplate = t;
+                    m_CallNodeType = ECallNodeType.TemplateName;
+                    return true;
+                }
             }
             //通过fileMeta查找是否有首定义字符
-            if( retMC == null )
+            if (retMC == null)
             {
-                //retMC = m_FileMetaCallNode.fileMeta.GetMetaBaseByName(inputname);
+                retMC = ClassManager.instance.GetMetaClassByNameAndFileMeta(m_OwnerMetaClass, m_FileMetaCallNode.fileMeta, new List<string>(1) { inputname });
+            }
+            //查找父类或子类中包含的节点
+            if ( retMC == null )
+            {
+                retMC = mc.metaNode.GetChildrenMetaNodeByName(inputname);
             }
             if (retMC != null)
             {
-                if( retMC is MetaModule )
+                if( retMC.isMetaModule )
                 {
-                    //m_MetaMoule = retMC as MetaModule;
+                    m_MetaMoule = retMC.metaModule;
                     m_CallNodeType = ECallNodeType.NamespaceName;
                 }
-                else if (retMC is MetaNamespace)
+                else if (retMC.isMetaNamespace )
                 {
-                    m_MetaNamespace = retMC as MetaNamespace;
+                    m_MetaNamespace = retMC.metaNamespace;
                     m_CallNodeType = ECallNodeType.NamespaceName;
                 }
-                else if (retMC is MetaData)
+                else if (retMC.isMetaData)
                 {
-                    m_MetaData = retMC as MetaData;
+                    m_MetaData = retMC.metaData;
                     m_CallNodeType = ECallNodeType.DataName;
                 }
-                else if (retMC is MetaEnum)
+                else if (retMC.isMetaEnum)
                 {
-                    m_MetaEnum = retMC as MetaEnum;
+                    m_MetaEnum = retMC.metaEnum;
                     m_MetaVariable = m_MetaEnum.metaVariable;
                     m_CallNodeType = ECallNodeType.EnumName;
                 }
-                else if (retMC is MetaClass)
+                else if (retMC.IsMetaClass() )
                 {
-                    m_MetaClass = retMC as MetaClass;
+                    m_MetaClass = retMC.GetMetaClassByTemplateCount(0);
                     m_CallNodeType = ECallNodeType.ClassName;
-                }
-                else if( retMC is MetaTemplate )
-                {
-                    m_MetaTemplate = retMC as MetaTemplate;
-                    m_CallNodeType = ECallNodeType.TemplateName;
                 }
                 else
                 {
                     Debug.WriteLine("Error 没有发该RetMC的类别MetaCommon");
                 }
-
             }
 
             //函数内成员
             if ( retMC == null )
             {
-                retMC = m_OwnerMetaFunctionBlock?.GetMetaVariableByName(inputname);
+                MetaVariable mv = m_OwnerMetaFunctionBlock?.GetMetaVariableByName(inputname);
                 if( retMC != null )
                 {
-                    m_MetaVariable = retMC as MetaVariable;
+                    m_MetaVariable = mv;
                     m_CallNodeType = ECallNodeType.FunctionInnerVariableName;
                 }
-                //var ownerFun = m_OwnerMetaFunctionBlock?.ownerMetaFunction;
-                //if (ownerFun != null)
-                //{
-                //    ////函数的参数是否是模版，如果是，则返回
-                //    //var metaDefineParam = ownerFun.GetMetaDefineParamByName(inputname);
-                //    //if (metaDefineParam != null)
-                //    //{
-                //    //    retMC = metaDefineParam.metaVariable;
-                //    //}
-                //}
+                var ownerFun = m_OwnerMetaFunctionBlock?.ownerMetaFunction;
+                if (ownerFun != null)
+                {
+                    //函数的参数是否是模版，如果是，则返回
+                    var metaDefineParam = ownerFun.GetMetaDefineParamByName(inputname);
+                    if (metaDefineParam != null)
+                    {
+                        if( metaDefineParam.metaVariable != null )
+                        {
+                            m_MetaVariable = mv;
+                            m_CallNodeType = ECallNodeType.FunctionInnerVariableName;
+                        }
+                    }
+                }
             }
             if (m_IsFunction)
             {
-                MetaMemberFunction mmf = mc?.GetMetaMemberFunctionByNameAndInputParamCollect(inputname, m_MetaInputParamCollection);
+                MetaMemberFunction mmf = mc?.GetMetaMemberFunctionByNameAndInputTemplateInputParam(inputname, m_MetaTemplateParamsCollection, m_MetaInputParamCollection);
                 if( mmf != null )
                 {
                     if( m_CallNodeType == ECallNodeType.Null )
@@ -1305,11 +1293,11 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Debug.WriteLine("Error 已定义了其它的形式" + m_CallNodeType.ToString());
+                        Log.AddInStructMeta( EError.None, "Error 已定义了其它的形式" + m_CallNodeType.ToString());
                     }
                 }
             }
-            return retMC;
+            return true;
         }
         public MetaBase HandleCastFunction(MetaClass mc)
         {
@@ -1360,15 +1348,15 @@ namespace SimpleLanguage.Core
                 {
                     return HandleCastFunction(mc);
                 }
-                return mc.GetMetaMemberFunctionByNameAndInputParamCollect(inputname, m_MetaInputParamCollection, true );                
+                return mc.GetMetaMemberFunctionByNameAndInputTemplateInputParam(inputname, null, m_MetaInputParamCollection, true );                
             }
             else
             {
                 var gmb = mc.GetMetaMemberVariableByName(inputname);
                 if (gmb == null)
                 {
-                    return mc.GetMetaDefineGetSetMemberFunctionByName(inputname, m_AllowUseSettings.getterFunction,
-                        m_AllowUseSettings.setterFunction);
+                    //return mc.GetMetaDefineGetSetMemberFunctionByName(inputname, m_AllowUseSettings.getterFunction,
+                    //    m_AllowUseSettings.setterFunction);
                 }
                 else
                 {

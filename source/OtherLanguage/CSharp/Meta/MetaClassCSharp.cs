@@ -86,9 +86,9 @@ namespace SimpleLanguage.Core
             //}
             return null;
         }
-        public override MetaMemberFunction GetMetaMemberFunctionByNameAndInputParamCollect(string name, MetaInputParamCollection mmpc, bool isIncludeExtendClass = true)
+        public override MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParam(string name, MetaInputTemplateCollection mitc, MetaInputParamCollection mmpc, bool isIncludeExtendClass = true)
         {
-            MetaMemberFunction findmmf = base.GetMetaMemberFunctionByNameAndInputParamCollect(name, mmpc, isIncludeExtendClass);
+            MetaMemberFunction findmmf = base.GetMetaMemberFunctionByNameAndInputTemplateInputParam(name, mitc, mmpc, isIncludeExtendClass);
 
             if( findmmf != null )
             {

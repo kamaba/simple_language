@@ -99,7 +99,7 @@ namespace SimpleLanguage.Core
         }
         public bool AddMetaClass( MetaClass mc, MetaModule mm = null )
         {
-            MetaNode topLevelNamespace = mm.metaNode;
+            MetaNode topLevelNamespace = mm?.metaNode;
             if (topLevelNamespace == null)
             {
                 topLevelNamespace = ModuleManager.instance.selfModule.metaNode;
@@ -186,12 +186,6 @@ namespace SimpleLanguage.Core
         {
             m_AllDataDict.Add(dc.name, dc);
             return true;
-        }
-        public MetaClass FindMetaClass( List<MetaClass> mcList, string name)
-        {
-            var find1 = mcList.Find(x => x.name == name );
-
-            return find1;
         }
         public bool CompareMetaClassMemberVariable(MetaClass curClass, MetaClass cpClass)
         {
@@ -405,10 +399,10 @@ namespace SimpleLanguage.Core
                         return null;
                     }
                     var newmc = new MetaClass(fmc.name);
-                    finalTopMetaNode.AddMetaClass(newmc);
                     newmc.BindFileMetaClass(fmc);
                     newmc.SetClassDefineType(EClassDefineType.CodeDefine);
                     newmc.ParseFileMetaClassTemplate(fmc);
+                    finalTopMetaNode.AddMetaClass(newmc);
                     newmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
 
                     AddInitHandleMetaClassList(newmc);
@@ -446,7 +440,6 @@ namespace SimpleLanguage.Core
             {
                 it.ParseExtendsRelation();
                 it.UpdateInterfaceMetaClass();
-                it.ParseMemberTemplateFunction();
                 it.ParseMemberVariableDefineMetaType();
                 it.ParseMemberFunctionDefineMetaType();
                 it.ParseMetaInConstraint();
@@ -592,7 +585,7 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
-            var list = mc.metaClass.GetMemberFunctionList();
+            var list = mc.metaClass.allMetaMemberFunctionList;
             for ( int i = 0; i < list.Count; i++ )
             {
                 var func = list[i];
@@ -817,24 +810,15 @@ namespace SimpleLanguage.Core
         {
             var nlist = fitn.nameList;
             FileMeta fm = fitn.fileMeta;
-            //MetaNode mc = GetMetaClassByNameAndFileMeta( ownerClass, fitn.fileMeta, nlist );
-            //if (mc == null)
-            //{
-            //    var mb = fm.GetMetaBaseFileMetaClass(nlist);
-            //    if (mb != null)
-            //    {
-            //        if (mb is MetaNamespace)
-            //        {
-            //            Debug.Write("找到了已有命名空间而不是要继承的类!!");
-            //            return null;
-            //        }
-            //        else if (mb is MetaClass)
-            //        {
-            //            mc = mb as MetaClass;
-            //        }
-            //    }
-            //}
-            //return mc;
+            MetaNode mn = GetMetaClassByNameAndFileMeta(ownerClass, fitn.fileMeta, nlist);
+            if (mn == null)
+            {
+                var mb = mn.GetMetaClassByTemplateCount(fitn.inputTemplateCount);
+                if (mb != null)
+                {
+                    return mb;
+                }
+            }
             return null;
         }
         //public MetaType GetMetaTemplateClassAndRegisterExptendTemplateFunction(MetaFunction mf, FileMetaClassDefine fmcd)
