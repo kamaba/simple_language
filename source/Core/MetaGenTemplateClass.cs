@@ -10,8 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using SimpleLanguage.Compile;
-using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Core
 {
@@ -21,8 +19,8 @@ namespace SimpleLanguage.Core
 
         public override bool isGenTemplate => true;
 
-        protected List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
-        protected MetaClass m_MetaTemplateClass = null;
+        private List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
+        private MetaClass m_MetaTemplateClass = null;
 
         public MetaGenTemplateClass( MetaClass mtc, List<MetaGenTemplate> list ) : base(mtc.name)
         {
@@ -74,9 +72,10 @@ namespace SimpleLanguage.Core
                 return null;
             }            
         }
-        public void SetDeep(int deep)
+        public override void SetDeep(int deep)
         {
-            //m_Deep = deep;
+            m_Deep = deep;
+            base.SetDeep(deep);
             //foreach (var v in m_MetaMemberVariableDict)
             //{
             //    v.Value.SetDeep(m_Deep + 1);

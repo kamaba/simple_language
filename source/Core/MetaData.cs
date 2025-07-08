@@ -26,6 +26,7 @@ namespace SimpleLanguage.Core
         public MetaData( FileMetaClass md )
         {
             m_Name = md.name;
+            m_AllName = md.name;
             m_Type = EType.Data;
             m_IsConst =  md.isConst;
             m_IsStatic = md.isStatic;
@@ -34,16 +35,11 @@ namespace SimpleLanguage.Core
         public MetaData(string _name, bool constToken, bool staticToken, bool dynamic ) : base(_name)
         {
             m_Name = _name;
+            m_AllName = _name;
             m_Type = EType.Data;
             m_IsConst = constToken;
             m_IsStatic = staticToken;
             m_IsDynamic = dynamic;
-        }
-
-        public MetaBase GetChildrenMetaBaseByName(string name)
-        {
-            //return base.GetChildrenMetaBaseByName(name);
-            return null;
         }
         public void AddPingToken(Token tok)
         {
@@ -86,7 +82,7 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < fmc.memberDataList.Count; i++)
             {
                 var v = fmc.memberDataList[i];
-                MetaBase mb = GetChildrenMetaBaseByName(v.name);
+                MetaNode mb = m_MetaNode.GetChildrenMetaNodeByName(v.name);
                 if (mb != null)
                 {
                     Debug.Write("Error MetaData MetaDataMember已有定义类: " + m_AllName + "中 已有: " + v.token?.ToLexemeAllString() + "的元素!!");

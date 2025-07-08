@@ -10,7 +10,6 @@
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace SimpleLanguage.Core
 {
@@ -144,12 +143,11 @@ namespace SimpleLanguage.Core
                 return new MetaType(getmc.GetMetaClassByTemplateCount(0));
             }
             var findfn = getmc.GetMetaClassByTemplateCount(inputTemplateNodeList.Count);
-            if (findfn != null)
+            if (findfn == null)
             {
-                //getmc = findfn;
+                return null;
             }
-            /*
-            var mt = new MetaType(getmc);
+            var mt = new MetaType(findfn);
             //这里，要注册实体模板类
             for (int i = 0; i < inputTemplateNodeList.Count; i++)
             {
@@ -159,54 +157,49 @@ namespace SimpleLanguage.Core
             }
 
             return mt;
-            */
-            return null;
         }
         MetaType GetAndRegisterTemplateDefineMetaTemplateClass(MetaClass ownerMc, MetaClass findMc, FileInputTemplateNode fmtd)
         {
-            var newmc = ClassManager.instance.GetMetaClassByNameAndFileMeta(ownerMc, fmtd.fileMeta, fmtd.nameList);
+            var newmn = ClassManager.instance.GetMetaClassByNameAndFileMeta(ownerMc, fmtd.fileMeta, fmtd.nameList);
             FileMetaCallNode cnode = null;
-            if (newmc != null)
+            if (newmn != null)
             {
-                //if (fmtd.inputTemplateCount == 0)
-                //{
-                //    return new MetaType(newmc);
-                //}
-                //var findfn = newmc.GetTemplateMetaClassByTemplateCount(fmtd.inputTemplateCount);
+                var findfn = newmn.GetMetaClassByTemplateCount(fmtd.inputTemplateCount);
+                if(findfn == null )
+                {
+                    Log.AddInStructMeta(EError.None, $"没有发现{fmtd.nameList}找到的类!");
+                    return null;
+                }
 
-                //var mt = new MetaType(findfn);
-
-                //List<MetaClass> regMCList = new List<MetaClass>();
-                //bool isNeedReg = true;
-                //for (int i = 0; i < fmtd.defineClassCallLink.callNodeList.Count; i++)
-                //{
-                //    var dcc = fmtd.defineClassCallLink.callNodeList[i];
-                //    cnode = dcc;
-
-                //    for (int j = 0; j < dcc.inputTemplateNodeList.Count; j++)
-                //    {
-                //        var itn = dcc.inputTemplateNodeList[j];
-                //        var mt2 = GetAndRegisterTemplateDefineMetaTemplateClass(ownerMc, findfn, itn);
-                //        if (mt2.isTemplate)
-                //        {
-                //            isNeedReg = false;
-                //        }
-                //        regMCList.Add(mt2.metaClass);
-                //        mt.AddTemplateMetaType(mt2);
-                //    }
-                //}
-                //if (findfn != null && isNeedReg)
-                //{
-                //    newmc = findfn.AddInstanceMetaClass(regMCList);
-                //    return new MetaType(newmc);
-                //}
-                //return mt;
+                var mt = new MetaType(findfn);
+                List<MetaClass> regMCList = new List<MetaClass>();
+                bool isNeedReg = true;
+                for (int i = 0; i < fmtd.defineClassCallLink.callNodeList.Count; i++)
+                {
+                    var dcc = fmtd.defineClassCallLink.callNodeList[i];   
+                    for (int j = 0; j < dcc.inputTemplateNodeList.Count; j++)
+                    {
+                        var itn = dcc.inputTemplateNodeList[j];
+                        var mt2 = GetAndRegisterTemplateDefineMetaTemplateClass(ownerMc, findfn, itn);
+                        if (mt2.isTemplate)
+                        {
+                            isNeedReg = false;
+                        }
+                        regMCList.Add(mt2.metaClass);
+                        mt.AddTemplateMetaType(mt2);
+                    }
+                }
+                if (findfn != null && isNeedReg)
+                {
+                    var newtc = findfn.AddInstanceMetaClass(regMCList);
+                }
+                return mt;
             }
             else
             {
                 if (fmtd.nameList.Count == 1)
                 {
-                    var mt = findMc.GetMetaTemplateByName(fmtd.nameList[0]);
+                    var mt = ownerMc.GetMetaTemplateByName(fmtd.nameList[0]);
                     if (mt == null)
                     {
                         Log.AddInStructMeta(EError.None, "没有找到模板类中，对应的模板，请仔细检查模板的命名与使用模板命名是否对应", cnode?.token );
@@ -221,7 +214,6 @@ namespace SimpleLanguage.Core
                     Log.AddInStructMeta(EError.None, "使用模板类中使用.连接符号，模板中不允许使用.");
                 }
             }
-            //return new MetaType(newmc);
             return null;
         }
         #endregion
@@ -367,11 +359,11 @@ namespace SimpleLanguage.Core
             {
                 return new MetaType(curMc);
             }
-            var findfn = mmf.GetTemplateMetaFunctionByTemplateCount(inputTemplateNodeList.Count);
-            if (findfn != null)
-            {
-                var getmc = HandleInputTemplateNodeList2(curMc, mmf, inputTemplateNodeList);
-            }
+            //var findfn = mmf.GetMetaDefineTemplateByName(inputTemplateNodeList.Count);
+            //if (findfn != null)
+            //{
+            //    var getmc = HandleInputTemplateNodeList2(curMc, mmf, inputTemplateNodeList);
+            //}
             //return new MetaType(null);
             return null;
         }

@@ -572,7 +572,7 @@ namespace SimpleLanguage.Project
                 return;
             }
 
-            MetaBase mb = ProjectManager.globalData.GetChildrenMetaBaseByName(fmd.name);
+            MetaMemberData mb = ProjectManager.globalData.GetMemberDataByName(fmd.name);
             if (mb != null)
             {
                 Debug.Write("Error ProjectParse ParseGlobalVariable已有定义类: " + allClassName + "中 已有: " + fmd.token?.ToLexemeAllString() + "的元素!!");

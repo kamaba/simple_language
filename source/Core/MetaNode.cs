@@ -42,7 +42,6 @@ namespace SimpleLanguage.Core
         public MetaNamespace metaNamespace => m_MetaNamespace;
         public MetaData metaData => m_MetaData;
         public MetaEnum metaEnum => m_MetaEnum;
-
         public int anchorDeep => m_AnchorDeep;
 
         public List<MetaClass> metaClassList
@@ -63,7 +62,7 @@ namespace SimpleLanguage.Core
             {
                 if (string.IsNullOrEmpty(m_AllName))
                 {
-                    m_AllName = m_ParentNode != null && !(m_ParentNode is MetaModule) ? parentNode.allName + "." + m_Name : m_Name;
+                    m_AllName = m_ParentNode != null && !(m_ParentNode.isMetaModule) ? parentNode.allName + "." + m_Name : m_Name;
                 }
                 return m_AllName;
             }
@@ -75,34 +74,8 @@ namespace SimpleLanguage.Core
                 return m_ParentNode != null ? m_ParentNode.allNameIncludeModule + "." + m_Name : m_Name;
             }
         }
-        //public MetaNamespace topLevelMetaNamespace
-        //{
-        //    get
-        //    {
-        //        if (parentNode == null) return null;
-        //        //return parentNode as MetaNamespace;
-        //        return null;
-        //    }
-        //}
-        //public MetaClass topLevelMetaClass
-        //{
-        //    get
-        //    {
-        //        if (parentNode == null) return null;
-        //        //return parentNode as MetaClass;
-        //        return null;
-        //    }
-        //}
-        //public MetaNamespace parentMetaNamespace
-        //{
-        //    get
-        //    {
-        //        if (parentNode == null) return null;
-        //        return parentNode.m_MetaNamespace as MetaNamespace;
-        //    }
-        //}
+        
         public Dictionary<int, MetaClass> metaTemplateClassDict => m_MetaTemplateClassDict;
-        //public Dictionary<string, MetaNode> childrenNameNodeDict => m_ChildrenNameNodeDict;
 
 
         #region 属性
@@ -111,17 +84,18 @@ namespace SimpleLanguage.Core
         protected MetaNode m_ParentNode = null;
 
         protected EStructNodeType m_EStructNodeType = EStructNodeType.Namespace;
-        protected Dictionary<int, MetaClass> m_MetaTemplateClassDict = new Dictionary<int, MetaClass>();
         protected MetaModule m_MetaModule = null;
         protected MetaNamespace m_MetaNamespace = null;
+        // 模板个数类
+        protected Dictionary<int, MetaClass> m_MetaTemplateClassDict = new Dictionary<int, MetaClass>();
         protected MetaData m_MetaData = null;
         protected MetaEnum m_MetaEnum = null;
         protected string m_Name = "";
         protected string m_AllName = "";
         // 子节点
         protected Dictionary<string, MetaNode> m_ChildrenMetaNodeDict = new Dictionary<string, MetaNode>();
-        // 模板个数类
-        protected Dictionary<string, MetaNode> m_MetaTemplateClassNodeDict = new Dictionary<string, MetaNode>();
+        
+        //protected Dictionary<string, MetaNode> m_MetaTemplateClassNodeDict = new Dictionary<string, MetaNode>();
         #endregion
 
         public MetaNode()
@@ -134,31 +108,40 @@ namespace SimpleLanguage.Core
             m_EStructNodeType = EStructNodeType.Module;
             this.m_MetaModule = mm;
             this.m_Name = mm.name;
+            mm.SetMetaNode(this);
         }
         public MetaNode(MetaNamespace mn)
         {
             m_EStructNodeType = EStructNodeType.Namespace;
             this.m_MetaNamespace = mn;
             this.m_Name = mn.name;
+            mn.SetMetaNode(this);
         }
         public MetaNode(MetaData md)
         {
             m_EStructNodeType = EStructNodeType.Data;
             this.m_MetaData = md;
             this.m_Name = md.name;
+            md.SetMetaNode(this);
         }
         public MetaNode(MetaEnum me)
         {
             m_EStructNodeType = EStructNodeType.Enum;
             this.m_MetaEnum = me;
             this.m_Name = me.name;
+            me.SetMetaNode(this);
         }
-        public MetaNode(MetaClass me)
+        public MetaNode(MetaClass mc)
         {
             m_EStructNodeType = EStructNodeType.Class;
-            me.SetMetaNode( this );
-            this.m_MetaTemplateClassDict.Add(me.metaTemplateList.Count, me);
-            this.m_Name = me.name;
+            mc.SetMetaNode( this );
+            this.m_Name = mc.name;
+            if (this.m_MetaTemplateClassDict.ContainsKey(mc.metaTemplateList.Count ) )
+            {
+                Log.AddInStructMeta(EError.None, $"已有该模板数量的类{mc.name} :{mc.metaTemplateList.Count}");
+                return;
+            }
+            this.m_MetaTemplateClassDict.Add(mc.metaTemplateList.Count, mc);
         }
         public MetaNode AddMetaNamespace(MetaNamespace namespaceName)
         {           
@@ -193,9 +176,31 @@ namespace SimpleLanguage.Core
         }
         public MetaNode AddMetaClass( MetaClass mc )
         {
-            MetaNode node = new MetaNode(mc);
-
-            AddMetaNode(node);
+            MetaNode node = null;
+            if (m_ChildrenMetaNodeDict.ContainsKey(mc.name))
+            {
+                node = m_ChildrenMetaNodeDict[mc.name];
+                
+                if(node != null )
+                {
+                    if( node.m_MetaTemplateClassDict.ContainsKey( mc.metaTemplateList.Count ) )
+                    {
+                        Log.AddInStructMeta(EError.None, "添加metanode节点有问题! 有重复");
+                        return null;
+                    }
+                    else
+                    {
+                        mc.SetMetaNode(node);
+                        node.m_MetaTemplateClassDict.Add(mc.metaTemplateList.Count, mc);
+                    }
+                }
+            }
+            else
+            {
+                node = new MetaNode(mc);
+                node.m_ParentNode = this;
+                m_ChildrenMetaNodeDict.Add(node.name, node);
+            }
 
             return node;
         }
@@ -244,63 +249,62 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public MetaNode GetMetaBaseByTopLevel(string _name)
-        {
-            //if ( m_ChildrenMetaClassDict.ContainsKey(_name))
-            //return m_ChildrenMetaClassDict[_name];
+        //public MetaNode GetMetaBaseByTopLevel(string _name)
+        //{
+        //    //if ( m_ChildrenMetaClassDict.ContainsKey(_name))
+        //    //return m_ChildrenMetaClassDict[_name];
 
-            MetaNode parentMB = parentNode;
-            while (true)
-            {
-                if (parentMB != null)
-                {
-                    //var rmb = parentMB.GetChildrenMetaBaseByName(_name);
-                    //if (rmb != null) return rmb;
+        //    MetaNode parentMB = parentNode;
+        //    while (true)
+        //    {
+        //        if (parentMB != null)
+        //        {
+        //            //var rmb = parentMB.GetChildrenMetaBaseByName(_name);
+        //            //if (rmb != null) return rmb;
 
-                    //parentMB = parentMB.parentNode;
-                }
-                else
-                    break;
-            }
-            return null;
-        }
+        //            //parentMB = parentMB.parentNode;
+        //        }
+        //        else
+        //            break;
+        //    }
+        //    return null;
+        //}
         public void SetDeep(int deep)
         {
-            //base.SetDeep(deep);
-            //foreach (var v in m_MetaNamespaceList)
-            //{
-            //    v.SetDeep(deep + 1);
-            //}
-            //foreach (var v in m_MetaClassList)
-            //{
-            //    v.SetDeep(deep + 1);
-            //}
+            if ( m_MetaModule != null )
+            {
+                m_MetaModule.SetDeep(deep);
+            }
+            if( m_MetaNamespace != null )
+            {
+                m_MetaNamespace.SetDeep(deep);
+            }
+            if (m_MetaData != null)
+            {
+                m_MetaData.SetDeep(deep);
+            }
+            if (m_MetaEnum != null)
+            {
+                m_MetaEnum.SetDeep(deep);
+            }
+            foreach (var v in m_MetaTemplateClassDict)
+            {
+                v.Value.SetDeep(deep);
+            }
+            foreach (var v in m_ChildrenMetaNodeDict)
+            {
+                v.Value.SetDeep(deep);
+            }
         }
         public virtual void SetAnchorDeep(int addep)
         {
             m_AnchorDeep = addep;
-            //foreach (var v in m_ChildrenNameNodeDict)
-            //{
-            //    v.Value.SetAnchorDeep(addep);
-            //}
+            foreach (var v in m_ChildrenMetaNodeDict)
+            {
+                v.Value.SetAnchorDeep(deep);
+            }
         }
         //该函数，只为调试效果时候使用，在编译逻辑里边不体现！
-        public virtual MetaNode GetMetaBaseInParentNodeContainByName(string inputname)
-        {
-            MetaNode findParentClassMB = null;
-            MetaNode tmb2 = this.parentNode;
-            while (tmb2 != null)
-            {
-                //if (tmb2.m_ChildrenNameNodeDict.ContainsKey(inputname))
-                //{
-                //    findParentClassMB = tmb2.m_ChildrenNameNodeDict[inputname];
-                //    break;
-                //}
-                //if (tmb2.parentNode == null) break;
-                //tmb2 = tmb2.parentNode;
-            }
-            return findParentClassMB;
-        }
         public virtual MetaNode GetMetaBaseInParentByName(string inputname, bool isInclude = true)
         {
             if (m_Name == inputname && isInclude)
@@ -309,60 +313,93 @@ namespace SimpleLanguage.Core
             MetaNode tmb2 = this.parentNode;
             while (tmb2 != null)
             {
-                //if (tmb2.m_Name == inputname)
-                //{
-                //    findParentClassMB = tmb2;
-                //    break;
-                //}
-                //if (tmb2.parentNode == null) break;
-                //tmb2 = tmb2.parentNode;
+                if (tmb2.m_ChildrenMetaNodeDict.ContainsKey(inputname))
+                {
+                    findParentClassMB = tmb2.m_ChildrenMetaNodeDict[inputname];
+                    break;
+                }
+                if (tmb2.parentNode == null) break;
+                tmb2 = tmb2.parentNode;
             }
             return findParentClassMB;
         }
-        public bool RemoveMetaBase(MetaNode mb)
+        public bool RemoveMetaChildNode(MetaNode mb)
         {
             string key = "";
-            //foreach (var v in m_ChildrenNameNodeDict)
-            //{
-            //    if (v.Value == mb)
-            //    {
-            //        key = v.Key;
-            //        break;
-            //    }
-            //}
-            //if (string.IsNullOrEmpty(key))
-            //{
-            //    m_ChildrenNameNodeDict.Remove(key);
-            //    return true;
-            //}
+            foreach (var v in m_ChildrenMetaNodeDict )
+            {
+                if (v.Value == mb)
+                {
+                    key = v.Key;
+                    break;
+                }
+            }
+            if (string.IsNullOrEmpty(key))
+            {
+                m_ChildrenMetaNodeDict.Remove(key);
+                return true;
+            }
             return false;
         }
         public string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
 
-            //sb.Append("module " + name + Environment.NewLine + "{" + Environment.NewLine);
-            //foreach (var v in m_ChildrenNameNodeDict)
-            //{
-            //    MetaBase mb = v.Value;
-            //    if (mb is MetaNamespace)
-            //    {
-            //        sb.Append((mb as MetaNamespace).ToFormatString());
-            //        sb.Append(Environment.NewLine);
-            //    }
-            //    else if (mb is MetaClass)
-            //    {
-            //        sb.Append(mb.ToFormatString());
-            //        sb.Append(Environment.NewLine);
-            //    }
-            //    else
-            //    {
-            //        sb.Append("Errrrrroooorrr ---" + mb.ToFormatString());
-            //        sb.Append(Environment.NewLine);
-            //    }
-            //}
-            //sb.Append("}");
-
+            if( m_MetaModule != null )
+            {
+                sb.Append(m_MetaModule.ToFormatString());
+                sb.AppendLine("{");
+                foreach (var v in m_ChildrenMetaNodeDict)
+                {
+                    sb.Append(v.Value.ToFormatString());
+                }
+                sb.AppendLine("");
+                sb.Append("}"); 
+            }
+            else if( m_MetaNamespace != null )
+            {
+                sb.Append(m_MetaNamespace.ToFormatString());
+                sb.AppendLine("{");
+                foreach (var v in m_ChildrenMetaNodeDict)
+                {
+                    sb.Append(v.Value.ToFormatString());
+                }
+                sb.AppendLine("");
+                sb.Append("}");
+            }
+            else if (m_MetaData != null)
+            {
+                sb.Append(m_MetaData.ToFormatString());
+                sb.AppendLine("{");
+                foreach (var v in m_ChildrenMetaNodeDict)
+                {
+                    sb.Append(v.Value.ToFormatString());
+                }
+                sb.AppendLine("");
+                sb.Append("}");
+            }
+            else if (m_MetaEnum != null)
+            {
+                sb.Append(m_MetaEnum.ToFormatString());
+                sb.AppendLine("{");
+                foreach (var v in m_ChildrenMetaNodeDict)
+                {
+                    sb.Append(v.Value.ToFormatString());
+                }
+                sb.AppendLine("");
+                sb.Append("}");
+            }
+            else if( m_MetaTemplateClassDict.Count > 0 )
+            {
+                foreach( var v in m_MetaTemplateClassDict )
+                {
+                    sb.Append(v.Value.ToFormatString());
+                    sb.AppendLine("{");
+                    sb.Append(v.Value);
+                    sb.AppendLine("");
+                    sb.Append("}");
+                }
+            }
             return sb.ToString();
         }
 

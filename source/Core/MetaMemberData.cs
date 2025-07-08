@@ -36,7 +36,7 @@ namespace SimpleLanguage.Core
         private bool m_End = false;
         private bool m_IsWithName = false;
 
-        protected Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
+        private Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
 
         private FileMetaMemberData m_FileMetaMemeberData = null;
         private FileMetaOpAssignSyntax m_FileMetaOpAssignSyntax = null;

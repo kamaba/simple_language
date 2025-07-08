@@ -19,7 +19,9 @@ namespace SimpleLanguage.Core
 {
     public class MetaMemberFunctionTemplateNode
     {
-        //模板数据匹配，只有在是模板函数时处理
+        public Dictionary<int, MetaMemberFunctionNode> metaTemplateFunctionNodeDict => m_MetaTemplateFunctionNodeDict;
+
+        //模板数据匹配，只有在是模板函数时处理   fun<T>(){} fun<T1,T2>(){}
         protected Dictionary<int, MetaMemberFunctionNode> m_MetaTemplateFunctionNodeDict = new Dictionary<int, MetaMemberFunctionNode>();
 
         public void SetDeep(int deep)
@@ -40,7 +42,7 @@ namespace SimpleLanguage.Core
         }
 
 
-        public void AddMetaMemberFunction(MetaMemberFunction mmf)
+        public bool AddMetaMemberFunction(MetaMemberFunction mmf)
         {
             MetaMemberFunctionNode find = null;
             if (m_MetaTemplateFunctionNodeDict.ContainsKey(mmf.metaMemberTemplateCollection.count))
@@ -51,12 +53,21 @@ namespace SimpleLanguage.Core
             {
                 find = new MetaMemberFunctionNode();
             }
-            find.AddMetaMemberFunction(mmf);
+            return find.AddMetaMemberFunction(mmf);
+        }
+        public void ParseMemberFunctionDefineMetaType()
+        {
+            foreach( var v in m_MetaTemplateFunctionNodeDict )
+            {
+                v.Value.ParseMemberFunctionDefineMetaType();
+            }
         }
     }
     public class MetaMemberFunctionNode
     {
-        //参数个数匹配，可以相同参数的不同类接口
+        public Dictionary<int, List<MetaMemberFunction>> metaParamFunctionDict => m_MetaParamFunctionDict;
+
+        //参数个数匹配，可以相同参数的不同类接口   fun( int a ){}  fun( string a ){}  int=1
         protected Dictionary<int, List<MetaMemberFunction>> m_MetaParamFunctionDict = new Dictionary<int, List<MetaMemberFunction>>();
 
         public void SetDeep(int deep)
@@ -95,7 +106,7 @@ namespace SimpleLanguage.Core
                 return find2;
             }
         }
-        public void AddMetaMemberFunction( MetaMemberFunction mmf )
+        public bool AddMetaMemberFunction( MetaMemberFunction mmf )
         {
             List<MetaMemberFunction> list = null;
             if (m_MetaParamFunctionDict.ContainsKey(mmf.metaMemberParamCollection.metaDefineParamList.Count))
@@ -120,11 +131,32 @@ namespace SimpleLanguage.Core
             if (find2 == null)
             {
                 list.Add(mmf);
+                return true;
             }
             else
             {
                 Log.AddInStructMeta(EError.None, "发现已经定义过某某类" + mmf.functionAllName);
             }
+            return false;
+        }
+
+        public void ParseMemberFunctionDefineMetaType()
+        {
+            foreach( var v in m_MetaParamFunctionDict )
+            {
+                foreach( var v2 in v.Value )
+                {
+                    v2.ParseDefineMetaType();
+                }
+            }
+        }
+        public List<MetaMemberFunction> GetMetaMemberFunctionListByParamCount( int count )
+        {
+            if (m_MetaParamFunctionDict.ContainsKey(count))
+            {
+                return m_MetaParamFunctionDict[count];
+            }
+            return null;
         }
     }
     public class MetaMemberFunction : MetaFunction
@@ -341,25 +373,6 @@ namespace SimpleLanguage.Core
         {
             m_MetaMemberTemplateCollection.AddMetaDefineTemplate(mt);
         }
-        public MetaMemberFunction GetTemplateMetaFunctionByTemplateCount(int count)
-        {
-            if (count == 0)
-            {
-                return this;
-            }
-            //if (this.m_MetaTemplateFunctionDict.ContainsKey(count))
-            //{
-            //    return this.m_MetaTemplateFunctionDict[count];
-            //}
-            return null;
-        }
-        public void AddTemplateMetaMemberFunction( MetaMemberFunction mmf )
-        {
-            //if (!this.m_MetaTemplateFunctionDict.ContainsKey(mmf.metaMemberTemplateCollection.count))
-            //{
-            //    this.m_MetaTemplateFunctionDict.Add(mmf.metaMemberTemplateCollection.count, mmf);
-            //}
-        }
         //如果是模板函数，需要在实例化类后，进行新的实体函数的解析
         public MetaGenTempalteFunction AddGenTemplateMemberFunctionBySelf( List<MetaClass> list )
         {
@@ -398,12 +411,6 @@ namespace SimpleLanguage.Core
         public override void Parse()
         {
             base.Parse();
-        }
-        public void CreateTemplateChildFunction()
-        {
-            MetaMemberFunction mgmf = new MetaMemberFunction(this);
-
-            AddTemplateMetaMemberFunction(mgmf);
         }
         public override void ParseDefineMetaType()
         {

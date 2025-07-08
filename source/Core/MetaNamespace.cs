@@ -14,38 +14,7 @@ namespace SimpleLanguage.Core
     public class MetaNamespace : MetaBase
     {
         public bool isNotAllowCreateName { get; set; } = false;
-        public string namespaceName
-        {
-            get
-            {
-                if(m_NamespaceName == null )
-                {
-                    Stack<MetaNamespace> mnstack = new Stack<MetaNamespace>();
-                    MetaNamespace mn = this;
-                    mnstack.Push(this);
-                    //while ( true )
-                    //{
-                    //    if (mn.parentMetaNamespace != null)
-                    //    {
-                    //        mn = mn.parentMetaNamespace;
-                    //        mnstack.Push(mn);
-                    //    }
-                    //    else
-                    //        break;
-                    //}
-                    //while( true )
-                    //{
-                    //    mn = mnstack.Pop();
-                    //    m_NamespaceName = (m_NamespaceName + mn.name);
-                    //    if (mnstack.Count > 0)
-                    //        m_NamespaceName = m_NamespaceName + ".";
-                    //    else
-                    //        break;
-                    //}
-                }
-                return m_NamespaceName;
-            }
-        }
+
         private string m_NamespaceName = null;
         public MetaNamespace(string _name)
         {

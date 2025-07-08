@@ -5,13 +5,11 @@
 //  DateTime: 2025/5/30 12:00:00
 //  Description: Meta enum's attribute
 //****************************************************************************
-using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 
 namespace SimpleLanguage.Core
 {
@@ -65,7 +63,6 @@ namespace SimpleLanguage.Core
                 return;
             }
             m_MetaMemberEnumDict.Add(mmd.name, mmd);
-            //AddMetaBase(mmd.name, mmd);
         }
         public void ParseFileMetaEnumMemeberEnum(FileMetaClass fmc)
         {
