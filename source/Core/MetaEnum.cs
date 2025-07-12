@@ -7,6 +7,7 @@
 //****************************************************************************
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
+using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -171,7 +172,7 @@ namespace SimpleLanguage.Core
                     {
                         if (v.Value.express == null)
                         {
-                            Debug.Write("Error Enum Member Enum 成员第一位必须有=号");
+                            Log.AddInStructMeta( EError.None, "Warning Enum Member Enum 成员第一位必须有=号");
                             continue;
                         }
                     }

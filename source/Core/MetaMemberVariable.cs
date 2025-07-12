@@ -275,7 +275,7 @@ namespace SimpleLanguage.Core
         void CalcDefineClassType()
         {
             //var metaFunction = m_OwnerMetaBlockStatements?.ownerMetaFunction;
-            string defineName = m_Name;
+            string defineName = this.m_Name;
             if (m_DefineMetaType?.isDefineMetaClass == true )
             {
                 if (m_Express != null)

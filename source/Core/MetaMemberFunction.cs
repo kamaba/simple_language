@@ -52,6 +52,7 @@ namespace SimpleLanguage.Core
             else
             {
                 find = new MetaMemberFunctionNode();
+                m_MetaTemplateFunctionNodeDict[mmf.metaMemberTemplateCollection.count] = find;
             }
             return find.AddMetaMemberFunction(mmf);
         }
@@ -116,6 +117,7 @@ namespace SimpleLanguage.Core
             else
             {
                 list = new List<MetaMemberFunction>();
+                m_MetaParamFunctionDict[mmf.metaMemberParamCollection.metaDefineParamList.Count] = list;
             }
 
             MetaMemberFunction find2 = null;

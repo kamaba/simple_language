@@ -95,7 +95,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                sb.Append(m_MetaType.metaClass.name);
+                sb.Append(m_MetaType.metaClass.ToDefineTypeString());
             }
 
             return sb.ToString();

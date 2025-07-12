@@ -191,13 +191,9 @@ namespace SimpleLanguage.Core
         }
         public override void ParseMemberFunctionDefineMetaType()
         {
-            foreach (var it in m_MetaTemplateClass.metaMemberFunctionTemplateNodeDict )
+            foreach (var it in m_MetaTemplateClass.allMetaMemberFunctionList )
             {
-                var it2 = it.Value;
-                //foreach (var it2 in it.Value)
-                {
-                    //ParseMetaMemberFunctionDefineMetaType(it2);
-                }
+                ParseMetaMemberFunctionDefineMetaType(it);
             }
         }
         void ParseMetaMemberFunctionDefineMetaType(MetaMemberFunction mmv)
@@ -222,19 +218,7 @@ namespace SimpleLanguage.Core
                     MethodManager.instance.AddClassTemplateMemeberFunction(mgmf);
                 }
             }
-
-            MetaMemberFunction list = null;
-            //if (m_MetaMemberFunctionDict.ContainsKey(mgmf.name))
-            //{
-            //    list = m_MetaMemberFunctionDict[mgmf.name];
-            //}
-            //else
-            //{
-            //    m_MetaMemberFunctionDict.Add(mgmf.name, list);
-            //}
-            ////list.Add(mgmf);
-
-            //m_MetaMemberFunctionDict.Add(mgmf.functionAllName, mgmf );
+            AddMetaMemberFunction(mgmf);
         }
         public bool Adapter(MetaInputTemplateCollection mitc)
         {

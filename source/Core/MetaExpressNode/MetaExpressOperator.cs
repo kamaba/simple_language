@@ -1,30 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Security.Cryptography;
 using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Core.Statements;
-using SimpleLanguage.Parse;
-using SimpleLanguage.Core;
+using SimpleLanguage.VM;
 
 namespace SimpleLanguage.Core
 {
     public sealed class MetaUnaryOpExpressNode : MetaExpressNode
     {
+        private Token tokeType => tokeType;
         public ESingleOpSign opSign => m_OpSign;
         public MetaExpressNode value => m_Value;
 
         private ESingleOpSign m_OpSign = ESingleOpSign.None;
         private MetaExpressNode m_Value = null;             //左边值
-        private Token tokeType = null;
+        private Token m_TokeType = null;
 
         public MetaUnaryOpExpressNode(FileMetaSymbolTerm fme, MetaExpressNode _value )
         {
             m_Value = _value;
-            tokeType = fme.token;
+            m_TokeType = fme.token;
             if ( fme.symBolType == ETokenType.Minus )
             {
                 m_OpSign = ESingleOpSign.Neg;
@@ -54,6 +51,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
+                m_Value.CalcReturnType();
                 m_MetaDefineType = m_Value.metaDefineType;
             }
         }

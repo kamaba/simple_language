@@ -36,7 +36,6 @@
     <PackageReference Include="libLLVM.runtime.win-x64" Version="15.0.0" />
     <PackageReference Include="swigged.llvm" Version="70.0.1" />
     <PackageReference Include="System.Diagnostics.Debug" Version="4.3.0" />
-    <PackageReference Include="System.Text.Json" Version="6.0.5" />
   </ItemGroup>
 
   <ItemGroup>
