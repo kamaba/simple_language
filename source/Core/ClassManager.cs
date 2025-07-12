@@ -821,23 +821,6 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        //public MetaType GetMetaTemplateClassAndRegisterExptendTemplateFunction(MetaFunction mf, FileMetaClassDefine fmcd)
-        //{
-        //    if (fmcd == null) return null;
-
-        //    MetaClass getmc = ClassManager.instance.GetMetaClassByRef(curMc, fmcd);
-        //    if (getmc == null)
-        //    {
-        //        Log.AddInStructMeta(EError.StructMetaStart, " CheckExtendAndInterface 在判断继承的时候，发没的:" + fmcd.allName + "  类");
-        //        //    + "位置行: " + m_ExtendClass.token.sourceBeginLine.ToString() );
-
-        //    }
-        //    else
-        //    {
-        //        return GetMetaTemplateClassByTemplateList(curMc, getmc, fmcd.inputTemplateNodeList);
-        //    }
-        //    return null;
-        //}
         
         #region 模板类处理区 该区先识别当前类， 再识别是否带模板输入，如果带则拿模板类
         public MetaClass GetMetaClassAndRegisterExptendTemplateClassInstance( MetaClass curMc, FileMetaClassDefine fmcd)

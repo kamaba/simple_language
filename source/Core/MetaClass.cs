@@ -58,6 +58,7 @@ namespace SimpleLanguage.Core
             }
         }
         public List<MetaMemberFunction> allMetaMemberFunctionList => m_AllMetaMemberFunctionList;
+        public List<MetaMemberFunction> thisMetaMemberFunctionList => m_ThisMetaMemberFunctionList;
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
         public Dictionary<string, MetaMemberFunctionTemplateNode> metaMemberFunctionTemplateNodeDict => m_MetaMemberFunctionTemplateNodeDict;
         public Dictionary<string, MetaMemberVariable> metaExtendMemeberVariableDict => m_MetaExtendMemeberVariableDict;
@@ -75,7 +76,7 @@ namespace SimpleLanguage.Core
         protected Dictionary<string, MetaMemberVariable> m_MetaMemberVariableDict = new Dictionary<string, MetaMemberVariable>();
         protected Dictionary<string, MetaMemberVariable> m_MetaExtendMemeberVariableDict = new Dictionary<string, MetaMemberVariable>();
         protected Dictionary<string, MetaMemberFunctionTemplateNode> m_MetaMemberFunctionTemplateNodeDict = new Dictionary<string, MetaMemberFunctionTemplateNode>();
-        protected List<MetaMemberFunction> m_CurrentMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
+        protected List<MetaMemberFunction> m_ThisMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected List<MetaMemberFunction> m_AllMetaMemberFunctionList = new List<MetaMemberFunction>();
         protected List<MetaMemberFunction> m_TempInnerFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected MetaExpressNode m_DefaultExpressNode = null;
@@ -112,12 +113,11 @@ namespace SimpleLanguage.Core
                 m_ExtendLevel = m_ExtendClass.m_ExtendLevel + 1;
             }
             m_InterfaceClass = mc.m_InterfaceClass;
-            //m_ChildrenMetaClassDict = mc.m_ChildrenMetaClassDict;
 
             m_MetaMemberVariableDict = mc.m_MetaMemberVariableDict;
             m_MetaExtendMemeberVariableDict = mc.m_MetaExtendMemeberVariableDict;
             m_MetaMemberFunctionTemplateNodeDict = mc.m_MetaMemberFunctionTemplateNodeDict;
-            m_CurrentMetaMemberFunctionList = mc.m_CurrentMetaMemberFunctionList;
+            m_ThisMetaMemberFunctionList = mc.m_ThisMetaMemberFunctionList;
             m_DefaultExpressNode = mc.m_DefaultExpressNode;
         }
         public override void SetDeep( int deep )
@@ -127,9 +127,9 @@ namespace SimpleLanguage.Core
             {
                 v.Value.SetDeep(deep + 1);
             }
-            foreach( var v in m_MetaMemberFunctionTemplateNodeDict )
+            foreach( var v in m_ThisMetaMemberFunctionList )
             {
-                v.Value.SetDeep(deep + 1);
+                v.SetDeep(deep + 1);
             }
         }
         public void SetDefaultExpressNode( MetaExpressNode defaultExpressNode )
@@ -254,14 +254,14 @@ namespace SimpleLanguage.Core
         }
         public virtual void ParseMemberVariableDefineMetaType()
         {
-            foreach (var it in m_MetaMemberVariableDict)
+            foreach (var it in this.m_MetaMemberVariableDict)
             {
                 it.Value.ParseDefineMetaType();
             }
         }
         public virtual void ParseMemberFunctionDefineMetaType()
         {
-            foreach (var it in m_CurrentMetaMemberFunctionList)
+            foreach (var it in m_ThisMetaMemberFunctionList)
             {
                 it.ParseDefineMetaType();
             }
@@ -451,7 +451,7 @@ namespace SimpleLanguage.Core
             }
             if( find.AddMetaMemberFunction(mmf) )
             {
-                m_CurrentMetaMemberFunctionList.Add(mmf);
+                m_ThisMetaMemberFunctionList.Add(mmf);
                 m_AllMetaMemberFunctionList.Add(mmf);
             }
         }
@@ -545,7 +545,7 @@ namespace SimpleLanguage.Core
             {
                 return null;
             }
-            var tnode = m_MetaMemberFunctionTemplateNodeDict[name];
+            var tnode = this.m_MetaMemberFunctionTemplateNodeDict[name];
             int count = 0;
             if( inputTemplate != null )
             {
@@ -558,7 +558,7 @@ namespace SimpleLanguage.Core
             }
             var tfunctionNode = tnode.metaTemplateFunctionNodeDict[count];
 
-            var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputParam.count);
+            var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputParam != null ? inputParam.count : 0 );
             if (list == null) return null;
 
             for (int i = 0; i < list.Count; i++)

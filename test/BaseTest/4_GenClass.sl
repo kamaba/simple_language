@@ -190,7 +190,7 @@ public class Level1<T:int>
     }
     enum q3
     {
-
+        v = 0
     }
     data q4
     {

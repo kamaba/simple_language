@@ -40,7 +40,7 @@ namespace SimpleLanguage.Project
 
             //compile.Parse();
             compile.ParseDefineComplete();
-            var flist = compile.GetMemberFunctionList();
+            var flist = compile.thisMetaMemberFunctionList;
             for( int i = 0; i < flist.Count; i++ )
             {
                 flist[i].ParseStatements();
@@ -102,9 +102,9 @@ namespace SimpleLanguage.Project
                     }
                     else
                     {
-                        if (!(nodeNS is MetaNamespace))
+                        if (!(cfindNode.isMetaNamespace))
                         {
-                            Debug.Write("Error 解析namespace添加命名空间节点时，发现已有定义类!!");
+                            Log.AddInStructMeta( EError.None, "Error 解析namespace添加命名空间节点时，发现已有定义类!!");
                             return;
                         }
                         nodeNS = cfindNode.metaNamespace;

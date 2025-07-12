@@ -553,7 +553,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             else if (m_MemberDataType == EMemberDataType.ConstVariable )
             {
                 sb.Append(m_ClassDefineRef?.ToFormatString());
-                sb.Append( name + " = ");
+                sb.Append( " " + name + " = ");
                 sb.Append(m_Express?.ToFormatString());
             }
             else

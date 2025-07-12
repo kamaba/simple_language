@@ -403,7 +403,7 @@ namespace SimpleLanguage.Core
                 if (isFirst)
                 {
                     // Class1. ns. Int32[]
-                    GetFirstNode(name, m_OwnerMetaClass );
+                    GetFirstNode(name, m_OwnerMetaClass, this.m_FileMetaCallNode.inputTemplateNodeList.Count );
                 }
                 else
                 {
@@ -815,7 +815,7 @@ namespace SimpleLanguage.Core
                 if (this.m_FileMetaCallNode.inputTemplateNodeList.Count > 0)
                 {
                     List<MetaType> mtList = new List<MetaType>();
-                    MetaType curmc2 = TypeManager.instance.GetMetaTypeAndClassListByTemplateList(m_OwnerMetaClass, m_MetaClass, m_OwnerMetaFunctionBlock?.ownerMetaFunction as MetaMemberFunction, m_FileMetaCallNode.inputTemplateNodeList, mtList);
+                    MetaType curmc2 = TypeManager.instance.GetMetaTypeByInputTemplateList(m_OwnerMetaClass, m_MetaClass.metaNode, m_FileMetaCallNode.inputTemplateNodeList, mtList);
                     if (curmc2 != null)
                     {
                         ClassManager.instance.ParseGenTemplateMetaClassList();
@@ -1181,7 +1181,7 @@ namespace SimpleLanguage.Core
                 return false;
             }
         }
-        public bool GetFirstNode(string inputname, MetaClass mc)
+        public bool GetFirstNode(string inputname, MetaClass mc, int count )
         {
 
             if( m_AllowUseSettings.parseFrom == EParseFrom.MemberVariableExpress )
@@ -1248,7 +1248,7 @@ namespace SimpleLanguage.Core
                 }
                 else if (retMC.IsMetaClass() )
                 {
-                    m_MetaClass = retMC.GetMetaClassByTemplateCount(0);
+                    m_MetaClass = retMC.GetMetaClassByTemplateCount(count);
                     m_CallNodeType = ECallNodeType.ClassName;
                 }
                 else
@@ -1278,22 +1278,6 @@ namespace SimpleLanguage.Core
                             m_MetaVariable = mv;
                             m_CallNodeType = ECallNodeType.FunctionInnerVariableName;
                         }
-                    }
-                }
-            }
-            if (m_IsFunction)
-            {
-                MetaMemberFunction mmf = mc?.GetMetaMemberFunctionByNameAndInputTemplateInputParam(inputname, m_MetaTemplateParamsCollection, m_MetaInputParamCollection);
-                if( mmf != null )
-                {
-                    if( m_CallNodeType == ECallNodeType.Null )
-                    {
-                        m_MetaFunction = mmf;
-                        m_CallNodeType = ECallNodeType.MemberFunctionName;
-                    }
-                    else
-                    {
-                        Log.AddInStructMeta( EError.None, "Error 已定义了其它的形式" + m_CallNodeType.ToString());
                     }
                 }
             }
@@ -1746,7 +1730,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Debug.Write("Error 解析执行链出错");
+                Log.AddInStructMeta( EError.None, "Error 解析执行链出错");
                 flag = false;
             }
 
