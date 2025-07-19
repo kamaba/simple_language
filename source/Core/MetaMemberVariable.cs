@@ -78,7 +78,7 @@ namespace SimpleLanguage.Core
             m_PintTokenList = mmv.m_PintTokenList;
             m_Index = mmv.m_Index;
             m_FromType = mmv.m_FromType;  
-            m_DefineMetaType = mmv.m_DefineMetaType;
+            m_DefineMetaType = new MetaType( mmv.m_DefineMetaType );
             m_IsStatic = mmv.m_IsStatic;
             m_Permission = mmv.m_Permission;
         }

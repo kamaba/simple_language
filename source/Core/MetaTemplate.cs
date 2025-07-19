@@ -71,6 +71,11 @@ namespace SimpleLanguage.Core
         }
     }
 
+    public class TemplateBindMetaType
+    {
+        public List<MetaType> bindMetaType;
+    }
+
     public class MetaGenTemplate : MetaTemplate
     {
         public MetaType metaType => m_MetaType;

@@ -133,7 +133,8 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    return new MetaType(mt);
+                    var retmt = new MetaType(mt);
+                    return retmt;
                 }
             }
             else
