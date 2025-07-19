@@ -402,8 +402,6 @@ namespace SimpleLanguage.Core
             }
             return sb.ToString();
         }
-
-
         //------------------------------------------------
         //public void PrintAllNamespace()
         //{

@@ -62,7 +62,7 @@ namespace SimpleLanguage.Core
         public MetaVariable(MetaVariable mv) : base(mv)
         {
             m_OwnerMetaClass = mv.m_OwnerMetaClass;
-            m_DefineMetaType = mv.m_DefineMetaType;
+            m_DefineMetaType = new MetaType( mv.m_DefineMetaType );
             m_VariableFrom = mv.m_VariableFrom;
             m_PintTokenList = mv.m_PintTokenList;
             m_IsStatic = mv.m_IsStatic;

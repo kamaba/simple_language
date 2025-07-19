@@ -19,10 +19,10 @@ List0<T>
 
     }
 }
-List1<T:string> extends List0<T>
+List1<T> extends List0<T>
 {
-    T list1t = null
-    T getB(){ ret null}
+    T List1_list1t = null
+    T List1_getB(){ ret null}
 }
 List2<T> extends List1<List0<object> >
 {
@@ -162,8 +162,8 @@ public class List<T> interface IList<T>, IList
 
 public class Level2<T1 ,T2> extends Level1<List0<T2> > interface List1<List2<Map<T2,string> > >, Map<T2,string>
 {
-    T1 t21 = null
-    T2 t22 = null
+    T1 Level2_t1_t2_t21 = null
+    T2 Level2_t1_t2_t22 = null
 
     int x = 30
     #!
@@ -180,9 +180,9 @@ public class Gift
 
     }
 }
-public class Level1<T:int> 
+public class Level1<T222:int> 
 {
-    qqq<T>
+    qqq<T222>
     {
     }
     q2
@@ -205,19 +205,19 @@ public class Level1<T:int>
 
     }
 
-    T t1 = null
-    T t2 = null
+    T222 Level1_t1 = null
+    T222 Level1_t2 = null
 
-    _init_( T it1 )
+    _init_( T222 it1 )
     {
-        this.t1 = it1
+        this.Level1_t1 = it1
     }
 
-    public T add()
+    public T222 add()
     {
-        T t = new()
+        T222 t = new()
 
-        List0<Map<T, T> > list = new(1)
+        List0<Map<T222, T222> > list = new(1)
 
         Level2<int,string> level222 = {}
 
@@ -228,7 +228,7 @@ public class Level1<T:int>
         ret t
     }
 
-    static T2 test<T2>( T it1, T2 it2 )
+    static T2 test<T2>( T222 it1, T2 it2 )
     {
         List0<Map< T2, List2<T2> > > t2n = null
 
@@ -259,17 +259,17 @@ GenClass
     {
 
     }
-    Level1<Level2<int,int> > ls = {}
-    ls_21 = Level1<string>("aaa")   #正常
-    ls_22 = Level1<Level2<int,int> >("aaa")    #应该报错，因为"aaa" 不是Level2<int,int> 正确的应该传 Level2<int,int>() 这样的格式
-    ls2 = ( GenClass.x < 3) == 4 > 3
+    Level1<Level2<int,int> > GenClass_ls = {}
+    GenClass_ls_21 = Level1<string>("aaa")   #正常
+    GenClass_ls_22 = Level1<Level2<int,int> >("aaa")    #应该报错，因为"aaa" 不是Level2<int,int> 正确的应该传 Level2<int,int>() 这样的格式
+    GenClass_ls2 = ( GenClass.x < 3) == 4 > 3
     #ls3 = 10 ? x < 11 && x < 3 || 13 > x && 12 > x : 4
     #a = Level1b < Level2b || Level3b > Level4b
-    static x = 100;
+    static GenClass_x = 100;
     #Level1<string> ls2 = null
     #Level1<string> ls3 = ()     #报错，提示，不允许这种形式
     #Level1<string> ls4 = {}
-    static fun()
+    static GenClass_fun()
     {
         Level1<int> l1 = Level1<int>()
         l2 = l1.add()

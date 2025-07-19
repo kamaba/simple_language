@@ -925,7 +925,7 @@ namespace SimpleLanguage.Core
                             //    tmitc.AddMetaTemplateParamsList(mitp);
                             //}
                         }
-                        MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", m_MetaTemplateParamsCollection, m_MetaInputParamCollection);
+                        MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", null, m_MetaInputParamCollection);
                         if (mmf == null)
                         {
                             Log.AddInStructMeta(EError.None, "Error 没有找到相关的_init_类!!");

@@ -2,7 +2,7 @@ import CSharp.System;
 
 HB
 {
-    static Fun()
+    static void Fun()
     {
         fp = File.open("test.txt")
         a = fp.read()
@@ -20,5 +20,7 @@ HB
 
         fp.write(s);
         fp.close()
+
+        (i++) + (++i)
     }
 }

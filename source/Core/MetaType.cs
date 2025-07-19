@@ -10,7 +10,6 @@ using SimpleLanguage.Core.SelfMeta;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using SimpleLanguage.Compile.CoreFileMeta;
 
 namespace SimpleLanguage.Core
 {
@@ -45,7 +44,7 @@ namespace SimpleLanguage.Core
         private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
         private bool m_IsDefineMetaClass = false;
 
-        private List<MetaType> m_TemplateMetaTypeList = new List<MetaType>();     //  Array<T1,T2> 一般用在返回值类型定义中
+        private List<MetaType> m_TemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
 
         public MetaType(MetaTemplate mt)
         {
@@ -55,8 +54,10 @@ namespace SimpleLanguage.Core
         {
             this.m_MetaClass = mt.m_MetaClass;
             this.m_RawMetaClass = mt.m_RawMetaClass;
-            //m_MetaTemplate = mt.m_MetaTemplate;
-            //m_InputTemplateCollection = mt.m_InputTemplateCollection;
+            this.m_MetaTemplate = mt.m_MetaTemplate;
+            this.m_DefaultExpressNode = mt.m_DefaultExpressNode;
+            this.m_EnumValue = mt.m_EnumValue;
+            this.m_IsDefineMetaClass = mt.m_IsDefineMetaClass;
         }
         public MetaType( MetaClass mc )
         {

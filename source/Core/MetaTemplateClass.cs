@@ -21,6 +21,7 @@ namespace SimpleLanguage.Core
 
         protected List<MetaTemplate> m_MetaTemplateList = new List<MetaTemplate>();
         protected List<MetaGenTemplateClass> m_MetaGenTemplateClassList = new List<MetaGenTemplateClass>();
+        protected Dictionary<MetaTemplate, List<MetaType>> m_TemplateBindMetaTypeDict = new Dictionary<MetaTemplate, List<MetaType>>();
 
         public bool isDefineTemplate(string name)
         {
