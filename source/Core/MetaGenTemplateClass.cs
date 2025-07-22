@@ -201,21 +201,14 @@ namespace SimpleLanguage.Core
             MetaMemberFunction mgmf = new MetaMemberFunction(mmv);
             mgmf.SetOwnerMetaClass(this);
 
-            if( mgmf.isTemplateClassFunction )
+            if( !mgmf.isTemplateFunction )
             {
                 TypeManager.instance.UpdateMetaType(mgmf.metaDefineType, this);
 
-                for (int i = 0; i < mmv.fileMetaMemberFunction.metaParamtersList.Count; i++)
+                var list = mgmf.GetCalcMetaVariableList(true);
+                for ( int i = 0; i < list.Count; i++ )
                 {
-                    var param = mmv.fileMetaMemberFunction.metaParamtersList[i];
-                    MetaDefineParam mmp = new MetaDefineParam(mgmf, param);
-                    mmp.ParseMetaDefineType();
-                    mgmf.metaMemberParamCollection.AddMetaDefineParam(mmp);
-                }
-
-                if (!mgmf.isTemplateFunction )
-                {
-                    MethodManager.instance.AddClassTemplateMemeberFunction(mgmf);
+                    TypeManager.instance.UpdateMetaType(list[i].metaDefineType, this);
                 }
             }
             AddMetaMemberFunction(mgmf);

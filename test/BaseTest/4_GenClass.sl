@@ -8,10 +8,10 @@ public class Class1
 }
 List0<T>
 {
-    List1<List2<T> > list0t = null
-    T list0t1 = null
-    List1<T> list0t2 = null
-    List0<int> list0t3 = null
+    List1<List2<T> > List0_list0t = null
+    T List0_list0t1 = null
+    List1<T> List0_list0t2 = null
+    List0<int> List0_list0t3 = null
     T getA(){ ret null}
 
     _init_( int c )
@@ -223,18 +223,18 @@ public class Level1<T222:int>
 
         List0<int> lint11 = List0<int>()
 
-        t250 = Level1<int>.test<List0<List1<long> > >( t, List0<List1<long> >() )
+        t250 = Level1<int>.Level1t_test<List0<List1<long> > >( t, List0<List1<long> >() )
 
         ret t
     }
 
-    static T2 test<T2>( T222 it1, T2 it2 )
+    static T2 Level1t_test<T2>( T222 it1, T2 it2 )
     {
         List0<Map< T2, List2<T2> > > t2n = null
 
         ret t2n
     }
-    static T test<T2,T3>( T2 it2, T3 it3 )
+    static T222 Level1t_test<T2,T3>( T2 it2, T3 it3 )
     {
         ret null
     }

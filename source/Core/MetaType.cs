@@ -39,6 +39,7 @@ namespace SimpleLanguage.Core
         //private MetaInputTemplateCollection m_InputTemplateCollection = null;
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
         private MetaClass m_RawMetaClass = null;                    // List<int> => list
+        private MetaType m_ParentMetaType = null;
         private MetaTemplate m_MetaTemplate = null;
         private MetaExpressNode m_DefaultExpressNode = null;        // int a => a = 0;
         private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
@@ -50,14 +51,20 @@ namespace SimpleLanguage.Core
         {
             m_MetaTemplate = mt;
         }
-        public MetaType( MetaType mt )
+        public MetaType( MetaType mt ) : base( mt )
         {
             this.m_MetaClass = mt.m_MetaClass;
             this.m_RawMetaClass = mt.m_RawMetaClass;
+            this.m_ParentMetaType = mt.m_ParentMetaType;
             this.m_MetaTemplate = mt.m_MetaTemplate;
             this.m_DefaultExpressNode = mt.m_DefaultExpressNode;
             this.m_EnumValue = mt.m_EnumValue;
             this.m_IsDefineMetaClass = mt.m_IsDefineMetaClass;
+            for (int i = 0; i < mt.m_TemplateMetaTypeList.Count; i++)
+            {
+                MetaType mtc = new MetaType(mt.m_TemplateMetaTypeList[i]);
+                m_TemplateMetaTypeList.Add(mtc);
+            }
         }
         public MetaType( MetaClass mc )
         {
@@ -151,6 +158,7 @@ namespace SimpleLanguage.Core
         }
         public void AddTemplateMetaType( MetaType mt )
         {
+            mt.m_ParentMetaType = this;
             m_TemplateMetaTypeList.Add(mt);
         }
         public MetaMemberFunction GetMetaMemberConstructFunction( MetaInputParamCollection input = null)

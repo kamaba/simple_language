@@ -74,9 +74,35 @@ namespace SimpleLanguage.Core
             }
             return false;
         }
+        public void AddBindMetaType(MetaTemplate metaTemp, MetaType mt )
+        {
+            List<MetaType> mtList = new List<MetaType>();
+            if(m_TemplateBindMetaTypeDict.ContainsKey(metaTemp) )
+            {
+                mtList = m_TemplateBindMetaTypeDict[metaTemp];
+            }
+            else
+            {
+                m_TemplateBindMetaTypeDict.Add(metaTemp, mtList);
+            }
+
+            var find1 = mtList.Find(a => a == mt);
+            if( find1 == null )
+            {
+                mtList.Add(mt);
+            }
+        }
         public MetaTemplate GetMetaTemplateByName(string _name)
         {
             return m_MetaTemplateList.Find(a => a.name == _name);
+        }
+        public MetaTemplate GetMetaTemplateByIndex( int index )
+        {
+            if( index < 0 || index >= m_MetaTemplateList.Count )
+            {
+                return null;
+            }
+            return m_MetaTemplateList[index];
         }
         public bool IsTemplateMetaClassByName(string _name)
         {
@@ -117,6 +143,12 @@ namespace SimpleLanguage.Core
                 List<MetaGenTemplate> list2 = new List<MetaGenTemplate>();
                 for (int i = 0; i < this.metaTemplateList.Count; i++)
                 {
+                    if (list[i].isTemplateClass )
+                    {
+                        return null;
+                    }
+
+
                     var classTemplate = this.metaTemplateList[i];
 
                     MetaGenTemplate mgt = new MetaGenTemplate(classTemplate, new MetaType(list[i] ) );

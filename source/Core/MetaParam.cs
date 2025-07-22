@@ -87,12 +87,10 @@ namespace SimpleLanguage.Core
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaExpressNode expressNode => m_MetaExpressNode;
         //public bool isFunctionTemplate => m_IsFunctionTemplate;
-        public bool isClassTemplate => m_IsClassTemplate;
         public bool isMust { get { return m_MetaExpressNode == null; } }            //是否为非省略参数
         public bool isExtendParams => m_FileMetaParamter?.paramsToken != null;
 
         protected bool m_IsFunctionTemplate = false;
-        protected bool m_IsClassTemplate = false;
         protected FileMetaParamterDefine m_FileMetaParamter = null;
         protected MetaExpressNode m_MetaExpressNode = null;
         protected MetaVariable m_MetaVariable = null;
@@ -105,6 +103,15 @@ namespace SimpleLanguage.Core
             m_OwnerMetaFunction = mf;
             m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.Argument,
                 null, m_OwnerMetaFunction.ownerMetaClass, null );
+        }
+        public MetaDefineParam(MetaDefineParam mdp )
+        {
+            m_IsFunctionTemplate = mdp.m_IsFunctionTemplate;
+            m_FileMetaParamter = mdp.m_FileMetaParamter;
+            m_MetaExpressNode = mdp.m_MetaExpressNode;
+            m_MetaVariable = mdp.m_MetaVariable;
+            m_OwnerMetaFunction = mdp.m_OwnerMetaFunction;
+            m_Name = mdp.m_Name;
         }
         public MetaDefineParam(MetaFunction mf, FileMetaParamterDefine fmp)
         {
@@ -123,11 +130,6 @@ namespace SimpleLanguage.Core
                 if(m_OwnerMetaFunction.ownerMetaClass is MetaGenTemplateClass mgtc )
                 {
                     TypeManager.instance.UpdateMetaType(m_MetaVariable.metaDefineType, mgtc );
-
-                    if( mdt.IsIncludeTemplate() )
-                    {
-                        m_IsClassTemplate = true;
-                    }
                 }
                 else
                 {
@@ -243,21 +245,39 @@ namespace SimpleLanguage.Core
         public bool isExtendParams => m_IsExtendParams;
         public int maxParamCount => m_MetaDefineParamList.Count;
         public List<MetaDefineParam> metaDefineParamList => m_MetaDefineParamList;
-        public bool isCanCallFunction { get; private set; } = true;
-        public bool isAllConst { get; private set; } = false;
+        public bool isCanCallFunction => m_IsCanCallFunction;
+        public bool isAllConst => m_IsAllConst;
         public int minParamCount => m_MinParamCount;
-        public bool isHaveDefaultParamExpress { get; set; } = false;
+        public bool isHaveDefaultParamExpress => m_IsHaveDefaultParamExpress;
 
+        private bool m_IsCanCallFunction = true;
         private bool m_IsExtendParams = false;
         private int m_MinParamCount = 0;
+        private bool m_IsAllConst = false;
+        private bool m_IsHaveDefaultParamExpress = false;
         private List<MetaDefineParam> m_MetaDefineParamList = new List<MetaDefineParam>();
         public MetaDefineParamCollection()
         {
 
         }
+        public MetaDefineParamCollection(MetaDefineParamCollection mdpc )
+        {
+            m_IsCanCallFunction = mdpc.m_IsCanCallFunction;
+            m_IsExtendParams = mdpc.m_IsExtendParams;
+            m_MinParamCount = mdpc.m_MinParamCount;
+            m_IsAllConst = mdpc.m_IsAllConst;
+            m_IsHaveDefaultParamExpress = mdpc.m_IsHaveDefaultParamExpress;
+            
+            for( int i = 0; i < mdpc.m_MetaDefineParamList.Count; i++ )
+            {
+                var mdp = new MetaDefineParam(mdpc.m_MetaDefineParamList[i]);
+                m_MetaDefineParamList.Add(mdp);
+            }
+        }
         public MetaDefineParamCollection(bool _isAllConst, bool _isCanCallFunction)
         {
-            isAllConst = _isAllConst; isCanCallFunction = _isCanCallFunction;
+            m_IsAllConst = _isAllConst; 
+            m_IsCanCallFunction = _isCanCallFunction;
         }
         public void Clear()
         {
@@ -311,7 +331,7 @@ namespace SimpleLanguage.Core
             {
                 if (metaMemberParam.expressNode != null)
                 {
-                    isHaveDefaultParamExpress = true;
+                    m_IsHaveDefaultParamExpress = true;
                 }      
                 else
                 {

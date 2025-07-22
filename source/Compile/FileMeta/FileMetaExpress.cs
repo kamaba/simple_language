@@ -380,11 +380,13 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             m_EndToken = node.endToken;
             m_Node = node;
 
+            var childList = node.childList;
+
             List<List<Node>> nodeListList = new List<List<Node>>();
             List<Node> tempNodeList = new List<Node>();
-            for (int j = 0; j < m_Node.childList.Count; j++)
+            for (int j = 0; j < childList.Count; j++)
             {
-                var c2node = m_Node.childList[j];
+                var c2node = childList[j];
                 if (c2node.nodeType == ENodeType.Comma
                     || c2node.nodeType == ENodeType.SemiColon)
                 {

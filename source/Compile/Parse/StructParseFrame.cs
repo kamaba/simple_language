@@ -1347,132 +1347,37 @@ namespace SimpleLanguage.Compile.Parse
 
             m_CurrentNodeInfoStack.Pop();
         }
-        private static void HandleAngleNode( Node node, Node parentNode )
+        public void ParseSyntax(Node pnode)
         {
-            while( node.parseIndex < node.childList.Count )
-            {
-                var cnode = node.childList[node.parseIndex];
-                cnode.isDel = true;
-                if ( cnode.nodeType == ENodeType.LeftAngle )
-                {
-                    node.parseIndex++;
-                    parentNode.angleNode = cnode;           
-                }
-                else if( cnode.nodeType == ENodeType.RightAngle )
-                {
-                    parentNode.angleNode.endToken = cnode.token;
-                    node.parseIndex++;
-                    return;
-                }
-                else if( cnode.nodeType == ENodeType.IdentifierLink )
-                {
-                    node.parseIndex++;
-                    parentNode.angleNode.AddChild(cnode);
-                    if(node.parseIndex < node.childList.Count )
-                    {
-                        var nextNode = node.childList[node.parseIndex];
-                        if( nextNode.nodeType == ENodeType.LeftAngle )
-                        {
-                            HandleAngleNode( node, cnode);
-                        }
-                    }
-                }
-                else
-                {
-                    parentNode.angleNode.AddChild(cnode);
-                    node.parseIndex++;
-                }
-            }
-        }
+            Node node = pnode.parseCurrent;
+            if (node == null) return;
 
+            if (node.nodeType == ENodeType.Brace)
+            {
+                FileMetaBlockSyntax cps = new FileMetaBlockSyntax(m_FileMeta, node.token, node.endToken);
+
+                AddParseSyntaxNodeInfo(cps, true);
+
+                m_CurrentNodeInfoStack.Pop();
+
+                pnode.parseIndex++;
+            }
+            else
+            {
+                HandleCreateFileMetaSyntaxByPNode(pnode);
+            }
+            ParseSyntax(pnode);
+        }
         public static List<Node> HandleBeforeNode(Node node)
         {
             List<Node> handleBeforeList = new List<Node>();
 
-            _HandleBeforeNodeProcess(node, null);
+            _HandleExpressNodeProcess(node, null );
+            DelHandleNostList(node);
+            handleBeforeList = node.childList;
 
-            for (int i = 0; i < node.childList.Count; i++)
-            {
-                if (node.childList[i].isDel == false)
-                    handleBeforeList.Add(node.childList[i]);
-            }
             return handleBeforeList;
 
-        }
-        //处理 ident <> () {} [] . 的结合 与子元素的统一处理
-        private static void _HandleBeforeNodeProcess(Node node, Node inputFinaleNode = null)
-        {
-            int index = node.parseIndex;
-            if (index < 0 || index >= node.childList.Count)
-                return;
-
-            Node currentExpressNode = node.parseCurrent;
-            if (inputFinaleNode == null)
-            {
-                node.parseIndex++;
-                _HandleBeforeNodeProcess(node, currentExpressNode);
-                return;
-            }
-
-            Node finalNode = inputFinaleNode.finalNode;
-            if (finalNode?.nodeType == ENodeType.IdentifierLink) //Class1???
-            {
-                if (currentExpressNode.nodeType == ENodeType.LeftAngle)       //Class<>??
-                {
-                    HandleAngleNode(node, finalNode);
-                    _HandleBeforeNodeProcess(node, inputFinaleNode);
-                    return;
-                }
-                else if (currentExpressNode.nodeType == ENodeType.Par)             //Class()?
-                {
-                    finalNode.parNode = currentExpressNode;
-                    currentExpressNode.isDel = true;
-                    node.parseIndex++;
-                    _HandleBeforeNodeProcess(currentExpressNode);
-
-                    if (currentExpressNode.extendLinkNodeList.Count > 0)
-                    {
-                        finalNode.SetLinkNode(currentExpressNode.extendLinkNodeList);   // Q.Map()[.Cast]
-                        _HandleBeforeNodeProcess(node, currentExpressNode);           //Q.Map().[Cast]
-                        return;
-                    }
-                    else
-                    {
-                        _HandleBeforeNodeProcess(node, finalNode);
-                        return;
-                    }
-                }
-                else if (currentExpressNode.nodeType == ENodeType.Brace)           // M.Class(){}
-                {
-                    finalNode.blockNode = currentExpressNode;
-                    currentExpressNode.isDel = true;
-                    node.parseIndex++;
-                    _HandleBeforeNodeProcess(currentExpressNode);
-                    _HandleBeforeNodeProcess(node, finalNode);
-                    return;
-                }
-                else if (currentExpressNode.nodeType == ENodeType.Bracket)         //Class[]
-                {
-                    finalNode.bracketNode = currentExpressNode;
-                    currentExpressNode.isDel = true;
-                    node.parseIndex++;
-                    _HandleBeforeNodeProcess(currentExpressNode);
-
-                    if (currentExpressNode.extendLinkNodeList.Count > 0)
-                    {
-                        finalNode.SetLinkNode(currentExpressNode.extendLinkNodeList);   // Array[1].20;
-                        _HandleBeforeNodeProcess(node, finalNode);                        // Array[1].Fun( 1, 2 );
-                        return;
-                    }
-                    else
-                    {
-                        _HandleBeforeNodeProcess(node, finalNode);
-                        return;
-                    }
-                }
-            }
-            node.parseIndex++;
-            _HandleBeforeNodeProcess(node, currentExpressNode);
         }
         public static List<Node> HandleExpressNode( Node node )
         {
@@ -1486,15 +1391,24 @@ namespace SimpleLanguage.Compile.Parse
             }
             else
             {
-                _HandleExpressNodeProcess(node, null);
+                _HandleExpressNodeProcess(node, null );
+            }
+            DelHandleNostList(node);
+            handleBeforeList = node.childList;
 
-                for (int i = 0; i < node.childList.Count; i++)
+            return handleBeforeList;
+        }
+        public static void DelHandleNostList( Node node )
+        {
+            List<Node> list = new List<Node>();
+            for( int i = 0; i < node.childList.Count; i++ )
+            {
+                if( node.childList[i].isDel == false )
                 {
-                    if (node.childList[i].isDel == false)
-                        handleBeforeList.Add(node.childList[i]);
+                    list.Add(node.childList[i]);
                 }
             }
-            return handleBeforeList;
+            node.childList = list;
         }
         //判断>> 还是> > 具体是否是表达式
         private static bool IsCommonExpressNode( Node node )
@@ -1555,92 +1469,8 @@ namespace SimpleLanguage.Compile.Parse
 
             return false;
         }
-        private static void HandleAngleExpressNode(Node node, Node parentNode)
-        {
-            while (node.parseIndex < node.childList.Count)
-            {
-                var cnode = node.childList[node.parseIndex];
-                cnode.isDel = true;
-                if (cnode.nodeType == ENodeType.LeftAngle)
-                {
-                    node.parseIndex++;
-                    parentNode.angleNode = cnode;
-                }
-                else if (cnode.nodeType == ENodeType.RightAngle)
-                {
-                    parentNode.angleNode.endToken = cnode.token;
-                    node.parseIndex++;
-                    if( cnode.extendLinkNodeList?.Count > 0 )
-                    {
-                        parentNode.SetLinkNode(cnode.extendLinkNodeList);
-                    }
-                    return;
-                }
-                else if (cnode.nodeType == ENodeType.IdentifierLink)
-                {
-                    node.parseIndex++;
-                    if(parentNode.angleNode != null )
-                    {
-                        parentNode.angleNode.AddChild(cnode);
-                    }
-                    if (node.parseIndex < node.childList.Count)
-                    {
-                        var nextNode = node.childList[node.parseIndex];
-                        if (nextNode.nodeType == ENodeType.LeftAngle)
-                        {
-                            HandleAngleExpressNode(node, cnode);
-                        }
-                        else if (nextNode.nodeType == ENodeType.Par)      //Class<>()
-                        {
-                            parentNode.parNode = nextNode;
-                            nextNode.isDel = true;
-                            _HandleExpressNodeProcess(nextNode);
-
-                            if (nextNode.extendLinkNodeList.Count > 0)
-                            {
-                                parentNode.SetLinkNode(nextNode.extendLinkNodeList);
-                                _HandleExpressNodeProcess(node, parentNode);
-                                return;
-                            }
-                            else
-                            {
-                                parentNode = parentNode.finalNode;
-                                if (node.parseIndex < node.childList.Count)
-                                {
-                                    var next2ExpressNode = node.childList[node.parseIndex];
-                                    if (next2ExpressNode.nodeType == ENodeType.Brace)   //Class<>()?{}
-                                    {
-                                        parentNode.blockNode = next2ExpressNode;
-                                        next2ExpressNode.isDel = true;
-                                        _HandleExpressNodeProcess(node, parentNode);           //Q.Map<>(){}
-                                        return;
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            HandleAngleExpressNode(node, parentNode);
-                            return;
-                        }
-                    }
-                }
-                else
-                {
-                    node.parseIndex++;
-                    if (parentNode.angleNode != null )
-                    {
-                        parentNode.angleNode.AddChild(cnode);
-                    }
-                    else
-                    {
-                        parentNode.AddChild(cnode);
-                    }
-                }
-            }
-        }
         //处理 ident <> () {} [] . 的结合 与子元素的统一处理
-        private static void _HandleExpressNodeProcess(Node node, Node inputFinaleNode =null )
+        private static void _HandleExpressNodeProcess(Node node, Node inputFinaleNode )
         {
             if( node.parseIndex < 0 || node.parseIndex >= node.childList.Count )
             {
@@ -1652,7 +1482,7 @@ namespace SimpleLanguage.Compile.Parse
             if( inputFinaleNode == null )
             {
                 node.parseIndex++;
-                _HandleExpressNodeProcess(node, currentExpressNode );
+                _HandleExpressNodeProcess(node, currentExpressNode);
                 return;
             }
 
@@ -1662,7 +1492,7 @@ namespace SimpleLanguage.Compile.Parse
             {
                 if (currentExpressNode.nodeType == ENodeType.LeftAngle )       //Class<>??
                 {
-                    HandleAngleExpressNode(node, finalNode );
+                    HandleAngleExpressNode(node, finalNode);
                     _HandleExpressNodeProcess(node, finalNode);
                     return;
                 }
@@ -1679,7 +1509,8 @@ namespace SimpleLanguage.Compile.Parse
                     }
                     else
                     {
-                        _HandleExpressNodeProcess(currentExpressNode);
+                        _HandleExpressNodeProcess(currentExpressNode, null );
+                        DelHandleNostList(currentExpressNode);
                         _HandleExpressNodeProcess(node, finalNode);
                         return;
                     }
@@ -1689,7 +1520,7 @@ namespace SimpleLanguage.Compile.Parse
                     node.parseIndex++;
                     finalNode.blockNode = currentExpressNode;
                     currentExpressNode.isDel = true;
-                    _HandleExpressNodeProcess(currentExpressNode);
+                    _HandleExpressNodeProcess(currentExpressNode, null);
                     return;
                 }
                 else if( currentExpressNode.nodeType == ENodeType.Bracket )         //Class[]
@@ -1701,12 +1532,12 @@ namespace SimpleLanguage.Compile.Parse
                     if( currentExpressNode.extendLinkNodeList.Count > 0 )
                     {
                         finalNode.SetLinkNode(currentExpressNode.extendLinkNodeList);   // Array[1].20;
-                        _HandleExpressNodeProcess(currentExpressNode);                        // Array[1].Fun( 1, 2 );
+                        _HandleExpressNodeProcess(currentExpressNode, null );                        // Array[1].Fun( 1, 2 );
                         return;
                     }
                     else
                     {
-                        _HandleExpressNodeProcess(currentExpressNode);
+                        _HandleExpressNodeProcess(currentExpressNode, null);
                         return;
                     }
                 }
@@ -1714,26 +1545,210 @@ namespace SimpleLanguage.Compile.Parse
             node.parseIndex++;
             _HandleExpressNodeProcess( node, currentExpressNode );
         }
-        public void ParseSyntax(Node pnode)
+        private static void HandleAngleExpressNode(Node node, Node parentNode )
         {
-            Node node = pnode.parseCurrent;
-            if (node == null) return;
-
-            if ( node.nodeType == ENodeType.Brace )
+            while (node.parseIndex < node.childList.Count)
             {
-                FileMetaBlockSyntax cps = new FileMetaBlockSyntax( m_FileMeta, node.token, node.endToken);
+                var cnode = node.childList[node.parseIndex];               
+                if (cnode.nodeType == ENodeType.LeftAngle)
+                {
+                    cnode.isDel = true;
+                    node.parseIndex++;
+                    parentNode.angleNode = cnode;
+                }
+                else if (cnode.nodeType == ENodeType.RightAngle)
+                {
+                    cnode.isDel = true;
+                    parentNode.angleNode.endToken = cnode.token;
+                    node.parseIndex++;
+                    if (cnode.extendLinkNodeList?.Count > 0)
+                    {
+                        parentNode.SetLinkNode(cnode.extendLinkNodeList);
+                    }
+                    return;
+                }
+                else if (cnode.nodeType == ENodeType.IdentifierLink)
+                {
+                    node.parseIndex++;
+                    if (parentNode.angleNode != null)
+                    {
+                        cnode.isDel = true;
+                        parentNode.angleNode.AddChild(cnode);
+                    }
+                    if (node.parseIndex < node.childList.Count)
+                    {
+                        var nextNode = node.childList[node.parseIndex];
+                        if (nextNode.nodeType == ENodeType.LeftAngle)
+                        {
+                            HandleAngleExpressNode(node, cnode);
+                        }
+                        else if( nextNode.nodeType == ENodeType.RightAngle )
+                        {
+                            HandleAngleExpressNode(node, parentNode);
+                            return;
+                        }
+                        else if (nextNode.nodeType == ENodeType.Par)      //Class<>()
+                        {
+                            parentNode.parNode = nextNode;
+                            nextNode.isDel = true;
+                            _HandleExpressNodeProcess(nextNode, null);
 
-                AddParseSyntaxNodeInfo(cps, true);
-
-                m_CurrentNodeInfoStack.Pop();
-
-                pnode.parseIndex++;
+                            if (nextNode.extendLinkNodeList.Count > 0)
+                            {
+                                parentNode.SetLinkNode(nextNode.extendLinkNodeList);
+                                _HandleExpressNodeProcess(node, parentNode );
+                                return;
+                            }
+                            else
+                            {
+                                parentNode = parentNode.finalNode;
+                                if (node.parseIndex < node.childList.Count)
+                                {
+                                    var next2ExpressNode = node.childList[node.parseIndex];
+                                    if (next2ExpressNode.nodeType == ENodeType.Brace)   //Class<>()?{}
+                                    {
+                                        parentNode.blockNode = next2ExpressNode;
+                                        next2ExpressNode.isDel = true;
+                                        _HandleExpressNodeProcess(node, parentNode );           //Q.Map<>(){}
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            HandleAngleExpressNode(node, parentNode );
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    node.parseIndex++;
+                    if (parentNode.angleNode != null)
+                    {
+                        parentNode.angleNode.AddChild(cnode);
+                    }
+                    else
+                    {
+                        parentNode.AddChild(cnode);
+                    }
+                }
             }
-            else
-            {
-                HandleCreateFileMetaSyntaxByPNode(pnode);
-            }
-            ParseSyntax(pnode);
         }
+
+        //private static void HandleAngleNode(Node node, Node parentNode)
+        //{
+        //    while (node.parseIndex < node.childList.Count)
+        //    {
+        //        var cnode = node.childList[node.parseIndex];
+        //        cnode.isDel = true;
+        //        if (cnode.nodeType == ENodeType.LeftAngle)
+        //        {
+        //            node.parseIndex++;
+        //            parentNode.angleNode = cnode;
+        //        }
+        //        else if (cnode.nodeType == ENodeType.RightAngle)
+        //        {
+        //            parentNode.angleNode.endToken = cnode.token;
+        //            node.parseIndex++;
+        //            return;
+        //        }
+        //        else if (cnode.nodeType == ENodeType.IdentifierLink)
+        //        {
+        //            node.parseIndex++;
+        //            parentNode.angleNode.AddChild(cnode);
+        //            if (node.parseIndex < node.childList.Count)
+        //            {
+        //                var nextNode = node.childList[node.parseIndex];
+        //                if (nextNode.nodeType == ENodeType.LeftAngle)
+        //                {
+        //                    HandleAngleNode(node, cnode);
+        //                }
+        //            }
+        //        }
+        //        else
+        //        {
+        //            parentNode.angleNode.AddChild(cnode);
+        //            node.parseIndex++;
+        //        }
+        //    }
+        //}
+
+        ////处理 ident <> () {} [] . 的结合 与子元素的统一处理
+        //private static void _HandleBeforeNodeProcess(Node node, Node inputFinaleNode = null)
+        //{
+        //    int index = node.parseIndex;
+        //    if (index < 0 || index >= node.childList.Count)
+        //        return;
+
+        //    Node currentExpressNode = node.parseCurrent;
+        //    if (inputFinaleNode == null)
+        //    {
+        //        node.parseIndex++;
+        //        _HandleBeforeNodeProcess(node, currentExpressNode);
+        //        return;
+        //    }
+
+        //    Node finalNode = inputFinaleNode.finalNode;
+        //    if (finalNode?.nodeType == ENodeType.IdentifierLink) //Class1???
+        //    {
+        //        if (currentExpressNode.nodeType == ENodeType.LeftAngle)       //Class<>??
+        //        {
+        //            HandleAngleNode(node, finalNode);
+        //            _HandleBeforeNodeProcess(node, inputFinaleNode);
+        //            return;
+        //        }
+        //        else if (currentExpressNode.nodeType == ENodeType.Par)             //Class()?
+        //        {
+        //            finalNode.parNode = currentExpressNode;
+        //            currentExpressNode.isDel = true;
+        //            node.parseIndex++;
+        //            _HandleBeforeNodeProcess(currentExpressNode);
+
+        //            if (currentExpressNode.extendLinkNodeList.Count > 0)
+        //            {
+        //                finalNode.SetLinkNode(currentExpressNode.extendLinkNodeList);   // Q.Map()[.Cast]
+        //                _HandleBeforeNodeProcess(node, currentExpressNode);           //Q.Map().[Cast]
+        //                return;
+        //            }
+        //            else
+        //            {
+        //                _HandleBeforeNodeProcess(node, finalNode);
+        //                return;
+        //            }
+        //        }
+        //        else if (currentExpressNode.nodeType == ENodeType.Brace)           // M.Class(){}
+        //        {
+        //            finalNode.blockNode = currentExpressNode;
+        //            currentExpressNode.isDel = true;
+        //            node.parseIndex++;
+        //            _HandleBeforeNodeProcess(currentExpressNode);
+        //            _HandleBeforeNodeProcess(node, finalNode);
+        //            return;
+        //        }
+        //        else if (currentExpressNode.nodeType == ENodeType.Bracket)         //Class[]
+        //        {
+        //            finalNode.bracketNode = currentExpressNode;
+        //            currentExpressNode.isDel = true;
+        //            node.parseIndex++;
+        //            _HandleBeforeNodeProcess(currentExpressNode);
+
+        //            if (currentExpressNode.extendLinkNodeList.Count > 0)
+        //            {
+        //                finalNode.SetLinkNode(currentExpressNode.extendLinkNodeList);   // Array[1].20;
+        //                _HandleBeforeNodeProcess(node, finalNode);                        // Array[1].Fun( 1, 2 );
+        //                return;
+        //            }
+        //            else
+        //            {
+        //                _HandleBeforeNodeProcess(node, finalNode);
+        //                return;
+        //            }
+        //        }
+        //    }
+        //    node.parseIndex++;
+        //    _HandleBeforeNodeProcess(node, currentExpressNode);
+        //}
     }
 }
