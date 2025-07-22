@@ -68,7 +68,6 @@ namespace SimpleLanguage.Core
         public MetaMemberVariable( MetaMemberVariable mmv ) : base( mmv )
         {
             m_FromType = EFromType.Manual;
-            m_DefineMetaType = mmv.m_DefineMetaType;
             m_IsInnerDefine = mmv.m_IsInnerDefine;
             m_Express = mmv.m_Express;
             m_VariableFrom = EVariableFrom.Member;
@@ -78,7 +77,6 @@ namespace SimpleLanguage.Core
             m_PintTokenList = mmv.m_PintTokenList;
             m_Index = mmv.m_Index;
             m_FromType = mmv.m_FromType;  
-            m_DefineMetaType = new MetaType( mmv.m_DefineMetaType );
             m_IsStatic = mmv.m_IsStatic;
             m_Permission = mmv.m_Permission;
         }

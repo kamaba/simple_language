@@ -40,7 +40,7 @@ namespace SimpleLanguage.Core
 
         public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
         public EVariableFrom variableFrom => m_VariableFrom;
-        public MetaType metaDefineType => m_DefineMetaType;
+        public  MetaType metaDefineType => m_DefineMetaType;
         public MetaClass ownerMetaClass => m_OwnerMetaClass;
         public Token pingToken => m_PintTokenList.Count > 0 ? m_PintTokenList[0] : null;
 

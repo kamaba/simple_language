@@ -938,7 +938,7 @@ namespace SimpleLanguage.Core
                     else
                     {
                         //ArrClass()
-                        MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", m_MetaTemplateParamsCollection, m_MetaInputParamCollection);
+                        MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", null, m_MetaInputParamCollection);
                         if (mmf == null)
                         {
                             Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + curmc.allClassName + "的_init_方法!)");
@@ -1261,7 +1261,7 @@ namespace SimpleLanguage.Core
             if ( retMC == null )
             {
                 MetaVariable mv = m_OwnerMetaFunctionBlock?.GetMetaVariableByName(inputname);
-                if( retMC != null )
+                if(mv != null )
                 {
                     m_MetaVariable = mv;
                     m_CallNodeType = ECallNodeType.FunctionInnerVariableName;

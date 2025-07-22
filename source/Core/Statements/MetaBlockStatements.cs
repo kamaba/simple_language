@@ -85,7 +85,7 @@ namespace SimpleLanguage.Core.Statements
             }
             return null;
         }
-        public void SetDeep(int dp)
+        public override void SetDeep(int dp)
         {
             //m_Deep = dp;
             //nextMetaStatements?.SetDeep(deep + 1);
@@ -145,27 +145,17 @@ namespace SimpleLanguage.Core.Statements
             m_MetaVariableDict.Add(mv.name, mv);
             return true;
         }
-        public void  GetCalcMetaVariableList( List<MetaVariable> list, bool isIncludeArgument )
+        public void  GetCalcMetaVariableList( List<MetaVariable> list )
         {
-            if (isIncludeArgument)
+            foreach (var v in m_MetaVariableDict)
             {
-                foreach (var v in m_MetaVariableDict)
-                {
+                if( !v.Value.isArgument )
                     list.Add(v.Value);
-                }
-            }
-            else
-            {
-                foreach (var v in m_MetaVariableDict)
-                {
-                    if( !v.Value.isArgument )
-                        list.Add(v.Value);
-                }
-            }
+            }           
                 
             foreach( var t in m_ChildrenMetaBlockStatementsList )
             {
-                t.GetCalcMetaVariableList( list, true );
+                t.GetCalcMetaVariableList( list );
             }
         }
         public bool GetIsMetaVariable( string name, bool isFromParent = true  )

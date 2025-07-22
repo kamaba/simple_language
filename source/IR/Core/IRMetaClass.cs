@@ -62,6 +62,7 @@ namespace SimpleLanguage.IR
             {
                 if (v.isInnerDefine == false)
                 {
+                    if(v.metaDefineType.metaClass != null )
                     m_MetaTypeList.Add(v.metaDefineType.metaClass.eType);
                 }
             }

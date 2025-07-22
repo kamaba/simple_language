@@ -100,7 +100,14 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                sb.Append(m_MetaType.metaClass.ToDefineTypeString());
+                if( m_MetaType.isTemplate )
+                {
+                    sb.Append(m_MetaType.metaTemplate.name);
+                }
+                else
+                {
+                    sb.Append(m_MetaType.metaClass.ToDefineTypeString());
+                }
             }
 
             return sb.ToString();
@@ -128,9 +135,19 @@ namespace SimpleLanguage.Core
         public List<MetaTemplate> metaTemplateList => m_MetaTemplateList;
         public int count { get { return m_MetaTemplateList.Count; } }
 
-
         protected List<MetaTemplate> m_MetaTemplateList = new List<MetaTemplate>();
 
+        public MetaDefineTemplateCollection()
+        {
+
+        }
+        public MetaDefineTemplateCollection(MetaDefineTemplateCollection mdtc)
+        {
+            for( int i = 0; i < mdtc.m_MetaTemplateList.Count; i++ )
+            {
+                m_MetaTemplateList.Add(mdtc.m_MetaTemplateList[i]);
+            }
+        }
         public MetaTemplate GetMetaDefineTemplateByName(string _name)
         {
             for (int i = 0; i < m_MetaTemplateList.Count; i++)

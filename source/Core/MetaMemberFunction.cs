@@ -200,7 +200,6 @@ namespace SimpleLanguage.Core
             }
         }
         public bool isTemplateFunction => m_IsTemplateFunction;
-        public bool isTemplateClassFunction => m_IsTemplateClassFunction;
         public bool isWithInterface => m_IsWithInterface;
         public bool isOverrideFunction { get; set; } = false;
         public bool isConstructInitFunction => m_ConstructInitFunction;
@@ -212,7 +211,6 @@ namespace SimpleLanguage.Core
         public FileMetaMemberFunction fileMetaMemberFunction => m_FileMetaMemberFunction;
 
         #region 属性
-        protected bool m_IsTemplateClassFunction = false;
         protected bool m_IsTemplateFunction = false;
         protected string m_FunctionAllName = null;
         protected bool m_ConstructInitFunction = false;
@@ -298,7 +296,6 @@ namespace SimpleLanguage.Core
         }
         public MetaMemberFunction( MetaMemberFunction mmf ) : base( mmf )
         {
-            m_IsTemplateClassFunction = mmf.m_IsTemplateClassFunction;
             m_IsTemplateFunction = mmf.m_IsTemplateFunction;
             m_FunctionAllName = mmf.m_FunctionAllName;
             m_ConstructInitFunction = mmf.m_ConstructInitFunction;
@@ -429,11 +426,6 @@ namespace SimpleLanguage.Core
                         FileMetaClassDefine cmr = m_FileMetaMemberFunction.defineMetaClass;
                         m_DefineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction( m_OwnerMetaClass, this, cmr );
                         m_ReturnMetaVariable.SetMetaDefineType(m_DefineMetaType);
-
-                        if (m_DefineMetaType.IsIncludeClassTemplate(m_OwnerMetaClass  ))
-                        {
-                            m_IsTemplateClassFunction = true;
-                        }
                     }
                 }
             }
@@ -441,10 +433,6 @@ namespace SimpleLanguage.Core
             {
                 MetaDefineParam mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
                 mpl.ParseMetaDefineType();
-                if ( mpl.isClassTemplate)
-                {
-                    m_IsTemplateClassFunction = true;
-                }
             }
         }
         public override void CreateMetaExpress()
@@ -711,7 +699,7 @@ namespace SimpleLanguage.Core
             StringBuilder sb = new StringBuilder();
             sb.Append(m_DefineMetaType.ToFormatString());
             sb.Append(" ");
-            sb.Append( m_AllName );
+            sb.Append(functionAllName);
             sb.Append("(");
 
             for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)

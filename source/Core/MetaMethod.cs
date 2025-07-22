@@ -61,8 +61,8 @@ namespace SimpleLanguage.Core
             m_MetaBlockStatements = mf.m_MetaBlockStatements;
             m_ThisMetaVariable = mf.m_ThisMetaVariable;
             m_ReturnMetaVariable = mf.m_ReturnMetaVariable;
-            m_MetaMemberParamCollection = mf.m_MetaMemberParamCollection;
-            m_MetaMemberTemplateCollection = mf.m_MetaMemberTemplateCollection;
+            m_MetaMemberParamCollection = new MetaDefineParamCollection( mf.m_MetaMemberParamCollection );
+            m_MetaMemberTemplateCollection = new MetaDefineTemplateCollection(mf.m_MetaMemberTemplateCollection);
             m_MethodCallType = mf.m_MethodCallType;
             m_IsMustNeedReturnStatements = mf.m_IsMustNeedReturnStatements;
             m_LabelDataList = mf.m_LabelDataList;
@@ -94,7 +94,18 @@ namespace SimpleLanguage.Core
         public List<MetaVariable> GetCalcMetaVariableList(bool isIncludeArgument = false)
         {
             List<MetaVariable> metaVarList = new List<MetaVariable>();
-            m_MetaBlockStatements?.GetCalcMetaVariableList(metaVarList, isIncludeArgument);
+            if( isIncludeArgument )
+            {
+                for( int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++ )
+                {
+                    var mdp = m_MetaMemberParamCollection.metaDefineParamList[i];
+                    if( mdp != null )
+                    {
+                        metaVarList.Add(mdp.metaVariable);
+                    }
+                }
+            }
+            m_MetaBlockStatements?.GetCalcMetaVariableList(metaVarList);
             return metaVarList;
         }
         public LabelData GetLabelDataById(string label)
