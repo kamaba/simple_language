@@ -7,8 +7,8 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile.CoreFileMeta;
+using SimpleLanguage.Parse;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace SimpleLanguage.Core
 {
@@ -43,7 +43,7 @@ namespace SimpleLanguage.Core
                     string tTemplateName = fmc.templateDefineList[i].name;
                     if ( m_MetaTemplateList.Find(a => a.name == tTemplateName) != null)
                     {
-                        Debug.Write("Error 定义模式名称重复!!");
+                        Log.AddInStructMeta(EError.None, "Error 定义模式名称重复!!");
                     }
                     else
                     {
@@ -187,7 +187,7 @@ namespace SimpleLanguage.Core
             }
             if (mtc == null)
             {
-                Debug.Write("Error 没有找到合适的Template");
+                Log.AddInStructMeta(EError.None, "Error 没有找到合适的Template");
             }
             return mtc;
         }

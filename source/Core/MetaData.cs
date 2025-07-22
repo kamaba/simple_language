@@ -1,8 +1,8 @@
 ﻿using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
+using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -85,7 +85,7 @@ namespace SimpleLanguage.Core
                 MetaNode mb = m_MetaNode.GetChildrenMetaNodeByName(v.name);
                 if (mb != null)
                 {
-                    Debug.Write("Error MetaData MetaDataMember已有定义类: " + m_AllName + "中 已有: " + v.token?.ToLexemeAllString() + "的元素!!");
+                    Log.AddInStructMeta(EError.None, "Error MetaData MetaDataMember已有定义类: " + m_AllName + "中 已有: " + v.token?.ToLexemeAllString() + "的元素!!");
                     isHave = true;
                 }
                 else
@@ -103,7 +103,7 @@ namespace SimpleLanguage.Core
 
             if (fmc.memberVariableList.Count > 0 || fmc.memberFunctionList.Count > 0)
             {
-                Debug.Write("Error Data中不允许有Variable 和 Function!!");
+                Log.AddInStructMeta(EError.None, "Error Data中不允许有Variable 和 Function!!");
             }
         }
         public override void ParseDefineComplete()

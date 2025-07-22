@@ -8,8 +8,8 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
+using SimpleLanguage.Parse;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -92,11 +92,11 @@ namespace SimpleLanguage.Core
             m_VariableFrom = EVariableFrom.Static;
             if (fmmv.staticToken != null )
             {
-                Debug.Write("Error ENum中，不允许有静态关键字，而是全部是静态关键字!!");
+                Log.AddInStructMeta(EError.None, "Error ENum中，不允许有静态关键字，而是全部是静态关键字!!");
             }
             if (m_FileMetaMemeberVariable.permissionToken != null)
             {
-                Debug.Write("Error Enum中，不允许使用public/private等权限关键字!!");
+                Log.AddInStructMeta(EError.None, "Error Enum中，不允许使用public/private等权限关键字!!");
                 m_Permission = CompilerUtil.GetPerMissionByString(m_FileMetaMemeberVariable.permissionToken?.lexeme.ToString());
             }
 
@@ -133,7 +133,7 @@ namespace SimpleLanguage.Core
 
                     if (m_Express == null)
                     {
-                        Debug.Write("Error 没有解析到Express的内容 在MetaMemberData 里边 372");
+                        Log.AddInStructMeta(EError.None, "Error 没有解析到Express的内容 在MetaMemberData 里边 372");
                     }
                 }
             }
@@ -220,7 +220,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Debug.Write("Error 现在配置中，不支持成员变量中使用类的()构造方式!!");
+                            Log.AddInStructMeta(EError.None, "Error 现在配置中，不支持成员变量中使用类的()构造方式!!");
                         }
                     }
                     else if (fmbt != null)
@@ -235,7 +235,7 @@ namespace SimpleLanguage.Core
                             var finalNode = fmct.callLink.callNodeList[fmct.callLink.callNodeList.Count - 1];
                             if( finalNode.fileMetaBraceTerm != null && !m_IsSupportConstructionFunctionConnectBraceType )
                             {
-                                Debug.Write("Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                                Log.AddInStructMeta(EError.None, "Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                                 return null;
                             }
                         }
@@ -254,12 +254,12 @@ namespace SimpleLanguage.Core
                 {
                     if(fmpt != null )
                     {
-                        Debug.Write("Error 在类没有定义的变量中，不允许 使用()的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                        Log.AddInStructMeta(EError.None, "Error 在类没有定义的变量中，不允许 使用()的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                         return null;
                     }
                     else if (fmbt != null)
                     {
-                        Debug.Write("Error 在类没有定义的变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                        Log.AddInStructMeta(EError.None, "Error 在类没有定义的变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                         return null;
                     }
                     else if (fmct != null)
@@ -269,7 +269,7 @@ namespace SimpleLanguage.Core
                             var finalNode = fmct.callLink.callNodeList[fmct.callLink.callNodeList.Count - 1];
                             if (finalNode.fileMetaBraceTerm != null && !m_IsSupportConstructionFunctionConnectBraceType)
                             {
-                                Debug.Write("Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                                Log.AddInStructMeta(EError.None, "Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                                 return null;
                             }
                         }

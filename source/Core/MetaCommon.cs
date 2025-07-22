@@ -12,9 +12,7 @@ using SimpleLanguage.Core.Statements;
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -130,25 +128,25 @@ namespace SimpleLanguage.Core
                 else if (m_FileMetaCallSign.token.type == ETokenType.And)
                 {
                     m_CallNodeSign = ECallNodeSign.Pointer;
-                    Debug.WriteLine("Error MetaStatements Parse  不允许使用其它连接符!!");
+                    Log.AddInStructMeta(EError.None, "Error MetaStatements Parse  不允许使用其它连接符!!");
                     return false;
                 }
                 else
                 {
-                    Debug.WriteLine("Error MetaStatements Parse  不允许使用其它连接符!!");
+                    Log.AddInStructMeta(EError.None, "Error MetaStatements Parse  不允许使用其它连接符!!");
                     return false;
                 }
             }
             if (m_FileMetaCallNode == null)
             {
-                Debug.WriteLine("Error 定义原数据为空!! " + m_Token.ToLexemeAllString());
+                Log.AddInStructMeta(EError.None, "Error 定义原数据为空!! " + m_Token.ToLexemeAllString());
             }
             if (m_FileMetaCallNode.fileMetaParTerm != null && !m_IsFunction )
             {
                 var firstNode = m_FileMetaCallNode.fileMetaParTerm.fileMetaExpressList[0];
                 if (firstNode == null)
                 {
-                    Debug.WriteLine("Error 不能使用输入()中的内容 0号位的没有内容!!");
+                    Log.AddInStructMeta(EError.None, "Error 不能使用输入()中的内容 0号位的没有内容!!");
                 }
                 else
                 {
@@ -1078,7 +1076,7 @@ namespace SimpleLanguage.Core
                                 arr2 = int.Parse(token2.lexeme.ToString());
                                 if (arr2 == 0)
                                 {
-                                    Debug.WriteLine("Error 数组的第二维长度应该大于0");
+                                    Log.AddInStructMeta(EError.None, "Error 数组的第二维长度应该大于0");
                                 }
                                 count = count * arr2;
                             }
@@ -1089,7 +1087,7 @@ namespace SimpleLanguage.Core
                                 arr3 = int.Parse(token.lexeme.ToString());
                                 if (arr3 == 0)
                                 {
-                                    Debug.WriteLine("Error 数组的第三维长度应该大于0");
+                                    Log.AddInStructMeta(EError.None, "Error 数组的第三维长度应该大于0");
                                 }
                                 count = count * arr3;
                             }
@@ -1169,7 +1167,7 @@ namespace SimpleLanguage.Core
                     m_MetaVariable = mb as MetaVariable;
                     if (m_MetaVariable.isStatic)
                     {
-                        Debug.WriteLine("Error this.xxx 不允许使用静态");
+                        Log.AddInStructMeta(EError.None, "Error this.xxx 不允许使用静态");
                         return false;
                     }
                 }
@@ -1177,7 +1175,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Debug.WriteLine("Error 设置notStatic时，没有找到相应的变量!" + m_Token?.ToLexemeAllString() );
+                Log.AddInStructMeta(EError.None, "Error 设置notStatic时，没有找到相应的变量!" + m_Token?.ToLexemeAllString() );
                 return false;
             }
         }
@@ -1253,7 +1251,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.WriteLine("Error 没有发该RetMC的类别MetaCommon");
+                    Log.AddInStructMeta(EError.None, "Error 没有发该RetMC的类别MetaCommon");
                 }
             }
 
@@ -1545,7 +1543,7 @@ namespace SimpleLanguage.Core
             var m_FinalMetaCallNode = frontMetaNode;
             if( m_FinalMetaCallNode == null )
             {
-                Debug.Write("Error 连接串没有找到合适的节点  360!!!");
+                Log.AddInStructMeta(EError.None, "Error 连接串没有找到合适的节点  360!!!");
             }
         }
         public Token GetToken() { return null; }
@@ -1572,7 +1570,7 @@ namespace SimpleLanguage.Core
                         if( i < m_CallNodeList.Count - 1 )
                         {
                             flag = false;
-                            Debug.Write("Parse Statement Error 在使用NewClassName的方式，后边不允许有其它的调用!");
+                            Log.AddInStructMeta(EError.None, "Parse Statement Error 在使用NewClassName的方式，后边不允许有其它的调用!");
                         }
                     }
                 }
@@ -1679,7 +1677,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Debug.WriteLine("Error 使用NewClass方式，后边不允许跟其它变量相关内容!");
+                            Log.AddInStructMeta(EError.None, "Error 使用NewClass方式，后边不允许跟其它变量相关内容!");
                         }
                     }
                     else if( mcn.callNodeType == ECallNodeType.NewData )
@@ -1703,7 +1701,7 @@ namespace SimpleLanguage.Core
                     }
                     else if (mcn.callNodeType == ECallNodeType.IteratorVariable)
                     {
-                        Debug.Write("Meta Common Parse IteratorVariable----------------------------------------------------");
+                        Log.AddInStructMeta(EError.None, "Meta Common Parse IteratorVariable----------------------------------------------------");
                     }
                     else if (mcn.callNodeType == ECallNodeType.DataName)
                     {

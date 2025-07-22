@@ -7,8 +7,8 @@
 //****************************************************************************
 
 using SimpleLanguage.Core.SelfMeta;
+using SimpleLanguage.Parse;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -70,7 +70,7 @@ namespace SimpleLanguage.Core
         {
             if (mc == null)
             {
-                Debug.WriteLine("Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
+                Log.AddInStructMeta(EError.None, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
             m_IsDefineMetaClass = false;
             m_RawMetaClass = mc;
@@ -80,7 +80,7 @@ namespace SimpleLanguage.Core
         {
             if (mc == null)
             {
-                Debug.WriteLine("Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
+                Log.AddInStructMeta(EError.None, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
             m_IsDefineMetaClass = false;
             if ( mitc == null)

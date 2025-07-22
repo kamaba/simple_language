@@ -9,9 +9,8 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
-using System;
+using SimpleLanguage.Parse;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -226,7 +225,7 @@ namespace SimpleLanguage.Core
             {
                 if (vmv == null && string.IsNullOrEmpty(m_AtName))
                 {
-                    Debug.Write("Error VisitMetaVariable访问变量访问位置不能同时为空!!");
+                    Log.AddInStructMeta(EError.None, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
                     return;
                 }
                 m_TargetMetaVariable = vmv;
@@ -234,7 +233,7 @@ namespace SimpleLanguage.Core
                 var gmit = m_SourceMetaVariable.metaDefineType.GetMetaInputTemplateByIndex();
                 if (gmit == null)
                 {
-                    Debug.Write("Error 访问的Array中，没有找到模版 名称!!");
+                    Log.AddInStructMeta(EError.None, "Error 访问的Array中，没有找到模版 名称!!");
                     return;
                 }
                 m_DefineMetaType = new MetaType(gmit);
@@ -301,7 +300,7 @@ namespace SimpleLanguage.Core
                 var gmit = m_LocalMetaVariable.metaDefineType.GetMetaInputTemplateByIndex();
                 if (gmit == null)
                 {
-                    Debug.Write("Error 访问的Array中，没有找到模版 名称!!");
+                    Log.AddInStructMeta(EError.None, "Error 访问的Array中，没有找到模版 名称!!");
                     return;
                 }
                 m_DefineMetaType = new MetaType(gmit);
