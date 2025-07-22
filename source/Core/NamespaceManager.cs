@@ -10,7 +10,6 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace SimpleLanguage.Core
 {
@@ -164,7 +163,7 @@ namespace SimpleLanguage.Core
                     if (ProjectManager.useDefineNamespaceType != EUseDefineType.NoUseProjectConfigNamespace)
                     {
                         mn.isNotAllowCreateName = true;
-                        Debug.Write("Error 在使用namespace 时，在项目定义中，没有找到相关的定义!!  位置:" + fns.namespaceStatementBlock.tokenList[i].ToLexemeAllString());
+                        Log.AddInStructMeta(EError.None, "Error 在使用namespace 时，在项目定义中，没有找到相关的定义!!  位置:" + fns.namespaceStatementBlock.tokenList[i].ToLexemeAllString());
                     }
                     parentNode = parentNode.AddMetaNamespace(mn);
                 }
@@ -266,7 +265,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Debug.Write("NamespaceManager::AddNamespaceString 命名空间:" + nsString + "解析错误!!");
+                Log.AddInStructMeta(EError.None, "NamespaceManager::AddNamespaceString 命名空间:" + nsString + "解析错误!!");
                 return;
             }
         }

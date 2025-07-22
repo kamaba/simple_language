@@ -11,7 +11,6 @@ using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -260,7 +259,7 @@ namespace SimpleLanguage.Core
             }
             if (m_Express == null && m_DefineMetaType == null)
             {
-                Debug.Write("Error 表达式为空 或者 表达示必须有返回值");
+                Log.AddInStructMeta(EError.None, "Error 表达式为空 或者 表达示必须有返回值");
             }
         }
         public int CompareTo(MetaMemberVariable mmv)
@@ -294,7 +293,7 @@ namespace SimpleLanguage.Core
                         {
                             if( dmct.metaClass == ownerMetaClass )
                             {
-                                Debug.Write("Error 自己类内部不允许包含 自己的实体，必须赋值为null");
+                                Log.AddInStructMeta(EError.None, "Error 自己类内部不允许包含 自己的实体，必须赋值为null");
                                 return;
                             }
                             m_DefineMetaType = dmct;
@@ -321,7 +320,7 @@ namespace SimpleLanguage.Core
                         expressRetMetaDefineType = m_Express.GetReturnMetaDefineType();
                         if (expressRetMetaDefineType == null)
                         {
-                            Debug.Write("Error 表达式中返回定义类型为空 " + m_Express.ToTokenString());
+                            Log.AddInStructMeta(EError.None, "Error 表达式中返回定义类型为空 " + m_Express.ToTokenString());
                             return;
                         }
 
@@ -345,7 +344,7 @@ namespace SimpleLanguage.Core
                     if (relation == ClassManager.EClassRelation.No)
                     {
                         sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
-                        Debug.Write(sb.ToString());
+                        Log.AddInStructMeta(EError.None, sb.ToString());
                     }
                     else if (relation == ClassManager.EClassRelation.Same)
                     {
@@ -353,7 +352,7 @@ namespace SimpleLanguage.Core
                         {
                             if (expressRetMetaDefineType.metaClass == ownerMetaClass)
                             {
-                                Debug.Write("Error 自己类内部不允许包含 自己的实体，必须赋值为null");
+                                Log.AddInStructMeta(EError.None, "Error 自己类内部不允许包含 自己的实体，必须赋值为null");
                                 return;
                             }
                             SetMetaDefineType(expressRetMetaDefineType);
@@ -362,7 +361,7 @@ namespace SimpleLanguage.Core
                     else if (relation == ClassManager.EClassRelation.Parent)
                     {
                         sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
-                        Debug.Write(sb.ToString());
+                        Log.AddInStructMeta(EError.None, sb.ToString());
                     }
                     else if (relation == ClassManager.EClassRelation.Child)
                     {
@@ -370,7 +369,7 @@ namespace SimpleLanguage.Core
                         {
                             if (expressRetMetaDefineType.metaClass == ownerMetaClass)
                             {
-                                Debug.Write("Error 自己类内部不允许包含 自己的实体，必须赋值为null");
+                                Log.AddInStructMeta(EError.None, "Error 自己类内部不允许包含 自己的实体，必须赋值为null");
                                 return;
                             }
                             SetMetaDefineType(expressRetMetaDefineType);
@@ -379,7 +378,7 @@ namespace SimpleLanguage.Core
                     else
                     {
                         sb.Append("表达式错误，或者是定义类型错误");
-                        Debug.Write(sb.ToString());
+                        Log.AddInStructMeta( EError.None, sb.ToString());
                     }
                 }
             }
@@ -479,7 +478,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Debug.Write("Error 现在配置中，不支持成员变量中使用类的()构造方式!!");
+                            Log.AddInStructMeta(EError.None, "Error 现在配置中，不支持成员变量中使用类的()构造方式!!");
                             return null;
                         }
                     }
@@ -490,7 +489,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Debug.Write("Error 在类变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                            Log.AddInStructMeta(EError.None, "Error 在类变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                             return null;
                         }                        
                     }
@@ -501,7 +500,7 @@ namespace SimpleLanguage.Core
                             var finalNode = fmct.callLink.callNodeList[fmct.callLink.callNodeList.Count - 1];
                             if( finalNode.fileMetaBraceTerm != null && !m_IsSupportConstructionFunctionConnectBraceType )
                             {
-                                Debug.Write("Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                                Log.AddInStructMeta(EError.None, "Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                                 return null;
                             }
                         }
@@ -511,12 +510,12 @@ namespace SimpleLanguage.Core
                 {
                     if(fmpt != null )
                     {
-                        Debug.Write("Error 在类没有定义的变量中，不允许 使用()的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                        Log.AddInStructMeta(EError.None, "Error 在类没有定义的变量中，不允许 使用()的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                         return null;
                     }
                     else if (fmbt != null)
                     {
-                        Debug.Write("Error 在类没有定义的变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                        Log.AddInStructMeta(EError.None, "Error 在类没有定义的变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                         return null;
                     }
                     else if (fmct != null)
@@ -526,7 +525,7 @@ namespace SimpleLanguage.Core
                             var finalNode = fmct.callLink.callNodeList[fmct.callLink.callNodeList.Count - 1];
                             if (finalNode.fileMetaBraceTerm != null && !m_IsSupportConstructionFunctionConnectBraceType)
                             {
-                                Debug.Write("Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                                Log.AddInStructMeta(EError.None, "Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                                 return null;
                             }
                         }
@@ -610,7 +609,7 @@ namespace SimpleLanguage.Core
                     MetaMemberVariable mmd = new MetaMemberVariable(mdc, fmmv);
                     if ( !AddMetaVariable(mmd))
                     {
-                        Debug.Write("Error 命名有重名!!");
+                        Log.AddInStructMeta(EError.None, "Error 命名有重名!!");
                     }
                 }
             }

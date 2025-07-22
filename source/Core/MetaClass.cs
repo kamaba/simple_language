@@ -14,7 +14,6 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Linq;
 using SimpleLanguage.Parse;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.Core
 {

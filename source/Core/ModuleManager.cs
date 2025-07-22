@@ -5,10 +5,8 @@
 //  DateTime: 2022/6/12 12:00:00
 //  Description: 
 //****************************************************************************
-using System;
+using SimpleLanguage.Parse;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 
 namespace SimpleLanguage.Core
 {
@@ -58,7 +56,7 @@ namespace SimpleLanguage.Core
         {
             if( string.IsNullOrEmpty( name ) )
             {
-                Debug.Write("Error 严重错误，获取模式不传名称!!");
+                Log.AddInStructMeta(EError.None, "Error 严重错误，获取模式不传名称!!");
                 return null;
             }
             if(m_AllMetaModuleDict.ContainsKey( name ) )
@@ -85,7 +83,7 @@ namespace SimpleLanguage.Core
             outerMetaModuleDict.Add(mm.name, mm);
             if( m_AllMetaModuleDict.ContainsKey( mm.name ) )
             {
-                Debug.Write("Error 严重错误，模块有重名!!!");
+                Log.AddInStructMeta(EError.None, "Error 严重错误，模块有重名!!!");
                 return;
             }
             m_AllMetaModuleDict.Add(mm.name, mm);

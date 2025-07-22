@@ -1,8 +1,4 @@
-﻿using SimpleLanguage.Parse;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using SimpleLanguage.Core.Type;
+﻿
 using SimpleLanguage.Core.SelfMeta;
 
 namespace SimpleLanguage.Core

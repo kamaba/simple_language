@@ -10,7 +10,6 @@ using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace SimpleLanguage.Core
 {
@@ -312,7 +311,7 @@ namespace SimpleLanguage.Core
                    
                     if (finalTopMetaNode == null )
                     {
-                        Debug.Write("命名空间中，已定义其它非命名空间的类型 !!");
+                        Log.AddInStructMeta(EError.None, "命名空间中，已定义其它非命名空间的类型 !!");
                         return null;
                     }
                 }
@@ -336,7 +335,7 @@ namespace SimpleLanguage.Core
                         }
                         if (!fmc.isPartial)
                         {
-                            Debug.Write("类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持文件并行 定义类");
+                            Log.AddInStructMeta(EError.None, "类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持文件并行 定义类");
                             return null;
                         }
                         bool isPartial = true;
@@ -345,7 +344,7 @@ namespace SimpleLanguage.Core
                             if (v.Value.isPartial == false)
                             {
                                 isPartial = false;
-                                Debug.Write("类:" + findamc.name + "在: " + v.Value.token.ToAllString() + "不支持文件并行 定义类");
+                                Log.AddInStructMeta(EError.None, "类:" + findamc.name + "在: " + v.Value.token.ToAllString() + "不支持文件并行 定义类");
                                 break;
                             }
                         }
@@ -367,7 +366,7 @@ namespace SimpleLanguage.Core
             {
                 if (ProjectManager.useDefineNamespaceType == EUseDefineType.LimitUseProjectConfigNamespaceAndClass)
                 {
-                    Debug.Write("Error 使用的强定制类节点的方式中，没有查找到相关的类，所以不允许定义该类，请先在工程中定义类");
+                    Log.AddInStructMeta(EError.None, "Error 使用的强定制类节点的方式中，没有查找到相关的类，所以不允许定义该类，请先在工程中定义类");
                 }
                 if (fmc.isEnum)
                 {
@@ -395,7 +394,7 @@ namespace SimpleLanguage.Core
                 {
                     if (fmc.isConst)
                     {
-                        Debug.Write("Class 中，使用关键字，不允许使用Const");
+                        Log.AddInStructMeta(EError.None, "Class 中，使用关键字，不允许使用Const");
                         return null;
                     }
                     var newmc = new MetaClass(fmc.name);
@@ -578,7 +577,7 @@ namespace SimpleLanguage.Core
 
                     if( !mc.metaClass.GetMemberInterfaceFunctionByFunc(func) )
                     {
-                        Debug.Write("查找接口类中的要实现的函数，实现失败函数名称" + func.name + " Token位置: " );
+                        Log.AddInStructMeta(EError.None, "查找接口类中的要实现的函数，实现失败函数名称" + func.name + " Token位置: " );
                         //func.fileMetaMemberFunction.token.sourceBeginLine.ToString()
                         isSuccess = false;
                         break;
@@ -630,7 +629,7 @@ namespace SimpleLanguage.Core
                     {
                         if( textendClass.metaMemberVariableDict.ContainsKey( v.Key ) )
                         {
-                            Debug.Write("Error 在类的值: " + v.Key + "  有重复定义: " + textendClass.allClassName + "中，值: [" + v.Key + "] Token1位置: "
+                            Log.AddInStructMeta(EError.None, "Error 在类的值: " + v.Key + "  有重复定义: " + textendClass.allClassName + "中，值: [" + v.Key + "] Token1位置: "
                                 + textendClass.metaMemberVariableDict[v.Key].ToTokenString());
                             isFailed = true;
                             break;
@@ -794,7 +793,7 @@ namespace SimpleLanguage.Core
                 {
                     if (mb.isMetaNamespace )
                     {
-                        Debug.Write("找到了已有命名空间而不是要继承的类!!");
+                        Log.AddInStructMeta(EError.None, "找到了已有命名空间而不是要继承的类!!");
                         return null;
                     }
                     else if (mb.IsMetaClass())

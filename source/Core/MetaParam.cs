@@ -9,8 +9,8 @@
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
+using SimpleLanguage.Parse;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -310,7 +310,7 @@ namespace SimpleLanguage.Core
         {
             if( m_IsExtendParams )
             {
-                Debug.WriteLine("Error Params 模式下，只允许 使用一个参数，多余参数为无效模式");
+                Log.AddInStructMeta(EError.None, "Error Params 模式下，只允许 使用一个参数，多余参数为无效模式");
                 return;
             }
 
@@ -324,7 +324,7 @@ namespace SimpleLanguage.Core
             {
                 if (metaMemberParam.expressNode == null)
                 {
-                    Debug.Write("Error AddMetaDefineParam 参数前边已定义表达式，后边必须跟进默认值表达式!!");
+                    Log.AddInStructMeta(EError.None, "Error AddMetaDefineParam 参数前边已定义表达式，后边必须跟进默认值表达式!!");
                 }
             }
             else
@@ -600,7 +600,7 @@ namespace SimpleLanguage.Core
             }
             if(isAllSame )
             {
-                Debug.Write("全都相似");
+                Log.AddInStructMeta(EError.None, "全都相似");
             }
             return mc;
         }

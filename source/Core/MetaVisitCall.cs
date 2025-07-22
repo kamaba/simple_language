@@ -6,13 +6,9 @@
 //  Description:  create visit variable or method call!
 //****************************************************************************
 
-using SimpleLanguage.Compile;
 using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Core.Statements;
-using SimpleLanguage.Core;
-using System;
+using SimpleLanguage.Parse;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -80,7 +76,7 @@ namespace SimpleLanguage.Core
         {
             if (!m_MetaFunction.IsEqualMetaInputParamCollection(m_MetaInputParamCollection))
             {
-                Debug.Write("Error 验证失败,函数与输入参数不匹配!!");
+                Log.AddInStructMeta(EError.None, "Error 验证失败,函数与输入参数不匹配!!");
                 return false;
             }
             return true;
@@ -282,7 +278,7 @@ namespace SimpleLanguage.Core
                     }
                 default:
                     {
-                        Debug.Write("Error ---------" + visitType.ToString() );
+                        Log.AddInStructMeta(EError.None, "Error ---------" + visitType.ToString() );
                     }
                     break;
             }
@@ -293,7 +289,7 @@ namespace SimpleLanguage.Core
             var mt = GetMetaDefineType();
             if( mt == null )
             {
-                Debug.Write("Error");
+                Log.AddInStructMeta(EError.None, "Error");
                 return null;
             }
             return mt.metaClass;
@@ -320,7 +316,7 @@ namespace SimpleLanguage.Core
                     }
                 default:
                     {
-                        Debug.Write("Error MetaVisiCall IsNull!");
+                        Log.AddInStructMeta(EError.None, "Error MetaVisiCall IsNull!");
                     }
                     break;
             }

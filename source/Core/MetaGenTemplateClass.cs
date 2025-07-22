@@ -6,9 +6,9 @@
 //  Description: Generator Template Class's entity by Template Class
 //****************************************************************************
 
+using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -31,7 +31,7 @@ namespace SimpleLanguage.Core
         {
             if (mc.isTemplateClass == false)
             {
-                Debug.Write("Error 该类不是模版类,不能生成模版生成类!!");
+                Log.AddInStructMeta(EError.None, "Error 该类不是模版类,不能生成模版生成类!!");
                 return null;
             }
             if (mic == null)
@@ -68,7 +68,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Debug.WriteLine("Error 传进来的模版参数与类定义的参数长度对不上!!");
+                Log.AddInStructMeta(EError.None, "Error 传进来的模版参数与类定义的参数长度对不上!!");
                 return null;
             }            
         }
