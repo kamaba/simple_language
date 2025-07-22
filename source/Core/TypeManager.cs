@@ -201,7 +201,12 @@ namespace SimpleLanguage.Core
 
             if (findfn != null && isNeedReg)
             {
-                findfn.AddInstanceMetaClass(regMCList);
+                var newmc = findfn.AddInstanceMetaClass(regMCList);
+                if( newmc != null )
+                {
+                    var newmt = new MetaType(newmc);
+                    return newmt;
+                }
             }
 
             return mt;
@@ -244,6 +249,10 @@ namespace SimpleLanguage.Core
                     if (findfn != null && isNeedReg)
                     {
                         var newtc = findfn.AddInstanceMetaClass(regMCList);
+                        if(newtc != null )
+                        {
+                            return new MetaType(newtc);
+                        }
                     }
                 }
                 return mt;
