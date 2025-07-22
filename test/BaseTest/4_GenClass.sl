@@ -180,7 +180,7 @@ public class Gift
 
     }
 }
-public class Level1<T222:int> 
+public class Level1<T222> 
 {
     qqq<T222>
     {
@@ -262,7 +262,7 @@ GenClass
     Level1<Level2<int,int> > GenClass_ls = {}
     GenClass_ls_21 = Level1<string>("aaa")   #正常
     GenClass_ls_22 = Level1<Level2<int,int> >("aaa")    #应该报错，因为"aaa" 不是Level2<int,int> 正确的应该传 Level2<int,int>() 这样的格式
-    GenClass_ls2 = ( GenClass.x < 3) == 4 > 3
+    GenClass_ls2 = ( GenClass.GenClass_x < 3) == 4 > 3
     #ls3 = 10 ? x < 11 && x < 3 || 13 > x && 12 > x : 4
     #a = Level1b < Level2b || Level3b > Level4b
     static GenClass_x = 100;

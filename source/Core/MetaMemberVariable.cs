@@ -308,7 +308,7 @@ namespace SimpleLanguage.Core
                 {                    
                     ClassManager.EClassRelation relation = ClassManager.EClassRelation.No;
                     MetaConstExpressNode constExpressNode = m_Express as MetaConstExpressNode;
-                    MetaClass curClass = m_DefineMetaType.metaClass;
+                    MetaClass curClass = this.m_DefineMetaType.metaClass;
 
                     MetaClass compareClass = null;
                     MetaType expressRetMetaDefineType = null;
