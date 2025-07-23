@@ -10,9 +10,7 @@ using SimpleLanguage.Compile.Parse;
 using SimpleLanguage.Core;
 using SimpleLanguage.CSharp;
 using SimpleLanguage.Parse;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
@@ -38,7 +36,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         {
             if (m_NodeList.Count < 2)
             {
-                Debug.Write("Error import必须有2个节点!!");
+                Log.AddInStructFileMeta(EError.None, "Error import必须有2个节点!!");
                 return false;
             }
             var namespaceNode = m_NodeList[0];
@@ -86,7 +84,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         mb = mb.GetChildrenMetaNodeByName(name);
                         if (!mb.isMetaNamespace )
                         {
-                            Debug.Write("解析Import语句发生错误，没有找到对应的命名空间路径: " + m_NamespaceStatement.tokenList[i].lexeme.ToString()
+                            Log.AddInStructFileMeta(EError.None, "解析Import语句发生错误，没有找到对应的命名空间路径: " + m_NamespaceStatement.tokenList[i].lexeme.ToString()
                                     + "Token: " + m_NamespaceStatement.tokenList[i].sourceBeginLine.ToString());
                             break;
                         }
@@ -102,7 +100,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             {
                 if(tokenList.Count < 1 )
                 {
-                    Debug.WriteLine("Error 在使用import引用CSharp库时，至少需要一个命名空间");
+                    Log.AddInStructFileMeta(EError.None, "Error 在使用import引用CSharp库时，至少需要一个命名空间");
                     return;
                 }
 

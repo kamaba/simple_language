@@ -10,9 +10,7 @@ using SimpleLanguage.Core;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
 {
@@ -74,7 +72,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         {
             if (m_NodeList.Count == 0)
             {
-                Debug.Write("Error 错误 !!!");
+                Log.AddInStructFileMeta(EError.None, "Error 错误 !!!");
                 return false;
             }
 
@@ -133,7 +131,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                             Log.AddInStructFileMeta(EError.StructClassNameRepeat, "Error 字符两次赋值 107");
                             for (int i = 0; i < classNameTokenList.Count; i++)
                             {
-                                Debug.Write(classNameTokenList[i].lexeme.ToString());
+                                Log.AddInStructFileMeta(EError.None, classNameTokenList[i].lexeme.ToString());
                             }
                         }
                         classNameTokenList = cnode.linkTokenList;
@@ -377,7 +375,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 if (m_SufInterfaceToken != null)
                 {
                     Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Enum方式，不支持接口方式");
-                    Debug.Write("");
+                    Log.AddInStructFileMeta(EError.None, "");
                     return false;
                 }
                 if (permissionToken != null)
@@ -541,7 +539,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 }
                 else
                 {
-                    Debug.WriteLine("Error 不支持其它格式 在类后续的模板限定中!");
+                    Log.AddInStructFileMeta(EError.None, "Error 不支持其它格式 在类后续的模板限定中!");
                 }
                 cAddCount++;
             }

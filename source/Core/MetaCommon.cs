@@ -173,7 +173,9 @@ namespace SimpleLanguage.Core
             bool isAt = m_FileMetaCallNode.atToken != null;
             // 当前是否是第一个元素
             bool isFirst = m_FrontCallNode == null;
-            
+            int templateCount = this.m_FileMetaCallNode.inputTemplateNodeList.Count;
+
+
             ETokenType etype = m_Token.type;
             ECallNodeType frontCNT = ECallNodeType.Null;
 
@@ -407,56 +409,38 @@ namespace SimpleLanguage.Core
                 {
                     if (frontCNT == ECallNodeType.NamespaceName)
                     {
-                        //tempMetaBase = m_FrontCallNode.m_MetaNamespace.GetChildrenMetaBaseByName(name);
-                        //if(tempMetaBase is MetaNamespace )
-                        //{
-                        //    m_MetaNamespace = tempMetaBase as MetaNamespace;
-                        //    m_CallNodeType = ECallNodeType.NamespaceName;
-                        //}
-                        //else if (tempMetaBase is MetaClass)
-                        //{
-                        //    m_MetaClass = tempMetaBase as MetaClass;
-                        //    m_CallNodeType = ECallNodeType.ClassName;
-                        //}
-                        //else if (tempMetaBase is MetaData)
-                        //{
-                        //    m_MetaData = tempMetaBase as MetaData;
-                        //    m_CallNodeType = ECallNodeType.DataName;
-                        //}
-                        //else if (tempMetaBase is MetaEnum )
-                        //{
-                        //    m_MetaEnum = tempMetaBase as MetaEnum;
-                        //    m_CallNodeType = ECallNodeType.EnumName;
-                        //    m_MetaVariable = m_MetaEnum.metaVariable;
-                        //}
-                        //else
-                        //{
-                        //    Log.AddInStructMeta(EError.None, "Error 在Namespace下不存在在方式!");
-                        //}
+                        MetaNode mn = m_FrontCallNode.m_MetaNode.GetChildrenMetaNodeByName(name);
+                        if( mn != null )
+                        {
+                            if (mn.isMetaNamespace)
+                            {
+                                m_MetaNamespace = mn.metaNamespace;
+                                m_CallNodeType = ECallNodeType.NamespaceName;
+                            }
+                            else if (mn.isMetaData)
+                            {
+                                m_MetaData = mn.metaData;
+                                m_CallNodeType = ECallNodeType.DataName;
+                            }
+                            else if (mn.isMetaEnum)
+                            {
+                                m_MetaEnum = mn.metaEnum;
+                                m_MetaVariable = m_MetaEnum.metaVariable;
+                                m_CallNodeType = ECallNodeType.EnumName;
+                            }
+                            else if (mn.IsMetaClass())
+                            {
+                                m_MetaClass = mn.GetMetaClassByTemplateCount(this.m_FileMetaCallNode.inputTemplateNodeList.Count);
+                                m_CallNodeType = ECallNodeType.ClassName;
+                            }
+                            else
+                            {
+                                Log.AddInStructMeta(EError.None, "Error 没有发该RetMC的类别MetaCommon");
+                            }
+                        }
                     }
                     //else if( frontCNT == ECallNodeType.ExternalNamespaceName )
                     //{
-                    //    if (m_FrontCallNode.m_MetaNamespace != null)
-                    //    {
-                    //        tempMetaBase = m_FrontCallNode.m_MetaNamespace.GetCSharpMetaClassOrNamespaceAndCreateByName(name);
-                    //    }
-                    //    else if (m_FrontCallNode.m_MetaMoule != null)
-                    //    {
-                    //        tempMetaBase = m_FrontCallNode.m_MetaMoule.GetCSharpMetaClassOrNamespaceAndCreateByName(name);
-                    //    }
-                    //    if( tempMetaBase != null )
-                    //    {
-                    //        if( tempMetaBase is MetaNamespace )
-                    //        {
-                    //            m_MetaNamespace = tempMetaBase as MetaNamespace;
-                    //            m_CallNodeType = ECallNodeType.ExternalNamespaceName;
-                    //        }
-                    //        else if(tempMetaBase is MetaClass )
-                    //        {
-                    //            m_MetaClass = tempMetaBase as MetaClass;
-                    //            m_CallNodeType = ECallNodeType.ExternalClassName;
-                    //        }
-                    //    }
                     //}
                     else if (frontCNT == ECallNodeType.ClassName)
                     {
@@ -465,9 +449,9 @@ namespace SimpleLanguage.Core
                         if (tmb == null)
                         {
                             MetaMemberVariable mmv = m_FrontCallNode.m_MetaClass.GetMetaMemberVariableByName(name);  //查找静态变量
-                            if(mmv != null )
+                            if (mmv != null)
                             {
-                                if( !mmv.isStatic )
+                                if (!mmv.isStatic)
                                 {
                                     Log.AddInStructMeta(EError.None, "Error 调用非静态成员，不能使用Class.Variable的方式!");
                                     return false;
@@ -476,13 +460,13 @@ namespace SimpleLanguage.Core
                                 //tmb = mmv;
                                 m_CallNodeType = ECallNodeType.MemberVariableName;
                             }
-                            if(tmb == null )
+                            else
                             {
                                 //查找静态函数
                                 MetaMemberFunction mmf = m_FrontCallNode.m_MetaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParam(name, m_MetaTemplateParamsCollection, m_MetaInputParamCollection);
                                 if (mmf != null)
                                 {
-                                    if( !mmf.isStatic )
+                                    if (!mmf.isStatic)
                                     {
                                         Log.AddInStructMeta(EError.None, "Error 调用非静态成员，不能使用Class.Variable的方式!");
                                         return false;
@@ -500,7 +484,13 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            //m_MetaClass = tmb as MetaClass;
+                            if(tmb.IsMetaClass() == false )
+                            {
+                                Log.AddInStructMeta(EError.None, $"Error 在当前类: {m_FrontCallNode?.m_MetaClass.name} " +
+                                    $"里查找到了子项，但不是类{ name} ");
+                                return false;
+                            }
+                            m_MetaClass = tmb.GetMetaClassByTemplateCount(templateCount);
                             m_CallNodeType = ECallNodeType.ClassName;
                         }
                     }

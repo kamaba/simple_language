@@ -10,7 +10,6 @@ using SimpleLanguage.CSharp;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
@@ -196,7 +195,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if (!ProjectManager.data.IsIncludeDefineStruct(fmn.namespaceStatementBlock.namespaceList))
                     {
-                        Debug.Write("Error 暂不允许使用namespace 定义命名空间!!!" + fmn.ToFormatString() + " 位置: " + fmn.token.ToLexemeAllString());
+                        Log.AddInStructFileMeta( EError.None, "Error 暂不允许使用namespace 定义命名空间!!!" + fmn.ToFormatString() + " 位置: " + fmn.token.ToLexemeAllString());
                     }
                 }
                 NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(fmn);

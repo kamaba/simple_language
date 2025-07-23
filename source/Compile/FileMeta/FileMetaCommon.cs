@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using SimpleLanguage.Compile.Parse;
-using System.Diagnostics;
+using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
 {
@@ -117,7 +117,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     else
                     {
-                        Debug.Write("Error 命名空间有误，必须为X.xx.X 类似的格式!");
+                        Log.AddInStructFileMeta(EError.None, "Error 命名空间有误，必须为X.xx.X 类似的格式!");
                         return null;
                     }
                 }
@@ -125,7 +125,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if( token[i].type != ETokenType.Period )
                     {
-                        Debug.Write("Error 命名空间有误，必须为X.xx.X 类似的格式!");
+                        Log.AddInStructFileMeta(EError.None, "Error 命名空间有误，必须为X.xx.X 类似的格式!");
                         return null;
                     }
                     isIdentifier = true;
@@ -312,7 +312,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     {
                         if( i == list.Count -1 )
                         {
-                            Debug.Write("Warning [1,2,3,]有多余逗号出现??");
+                            Log.AddInStructFileMeta(EError.None, "Warning [1,2,3,]有多余逗号出现??");
                         }
                         continue;
                     }
@@ -677,10 +677,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             }
             return sb.ToString();
         }
-        public void AddError(int errorId)
-        {
-            Debug.Write(" CheckExtendAndInterface 在判断接口的时候，发没的:" + allName + "  类");
-        }
         public void AddError2(int errorId, [CallerFilePath] string pfile = "", [CallerMemberName] string pfunction = "",
             [CallerLineNumber] int line = 0)
         {
@@ -698,7 +694,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 + m_ClassNameToken.sourceBeginChar.ToString();
             str = str + " \n 在代码中文件:" + pfile + "   函数:" + pfunction + "行号: " + line.ToString();
             //Trace.WriteLine( "" )
-            Debug.Write(str);
+            Log.AddInStructFileMeta(EError.None, str);
         }
     }
     public class FileMetaTemplateDefine : FileMetaBase
@@ -710,7 +706,17 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         private FileInputTemplateNode m_InClassNameTemplateNode = null;
         private Node m_Node = null;
         private Node m_ExtendsNode = null;
-        public FileMetaTemplateDefine( FileMeta fm, Node node, Node extendsNode = null )
+        public FileMetaTemplateDefine(FileMeta fm, Node node)
+        {
+            m_FileMeta = fm;
+            m_Node = node;
+            m_Token = node.token;
+            if(node.childList.Count > 0 )
+            {
+                m_ExtendsNode = node.childList[0];
+            }
+        }
+        public FileMetaTemplateDefine(FileMeta fm, Node node, Node extendsNode )
         {
             m_FileMeta = fm;
             m_Node = node;
@@ -722,7 +728,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             m_FileMeta = fm;
             if ( nodeList.Count == 0 )
             {
-                Debug.Write("Error 在<>中没有发现元素!!");
+                Log.AddInStructFileMeta(EError.None, "Error 在<>中没有发现元素!!");
                 return;
             }
             m_Token = nodeList[0].token;
@@ -733,7 +739,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             }
             else if( nodeList.Count == 2 )
             {
-                Debug.Write("Error 在<T in> or <T []> or <T ClassName> 使用方法不正确,请使用 <T in []>或者是 <T in ClassName> !!");
+                Log.AddInStructFileMeta(EError.None, "Error 在<T in> or <T []> or <T ClassName> 使用方法不正确,请使用 <T in []>或者是 <T in ClassName> !!");
             }
         }
         public void Parse()
