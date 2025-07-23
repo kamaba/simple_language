@@ -5,13 +5,12 @@
 //  DateTime: 2022/5/12 12:00:00
 //  Description: 
 //****************************************************************************
-using SimpleLanguage.Core;
-using SimpleLanguage.Parse;
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile.Parse;
-using System.Diagnostics;
+using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
 {
@@ -74,12 +73,12 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if (isComma)
                     {
-                        Debug.WriteLine("Error 多重逗号，导致解析无法解析!!");
+                        Log.AddInStructFileMeta(EError.None, "Error 多重逗号，导致解析无法解析!!");
                         break;
                     }
                     if (fmbtList.Count == 0)
                     {
-                        Debug.WriteLine("Error 首符号不能为逗号");
+                        Log.AddInStructFileMeta(EError.None, "Error 首符号不能为逗号");
                         break;
                     }
                     isComma = true;
@@ -408,7 +407,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 var nodeList = nodeListList[i];
                 if( nodeList.Count == 0 )
                 {
-                    Debug.WriteLine("Error nodeList.Count == 0 ");
+                    Log.AddInStructFileMeta(EError.None, "Error nodeList.Count == 0 ");
                     continue;
                 }
                 else if( nodeList.Count == 1 )
@@ -537,7 +536,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
             if (m_BraceEndToken == null )
             {
-                Debug.WriteLine("Error FileMetaBraceTerm--");
+                Log.AddInStructFileMeta(EError.None, "Error FileMetaBraceTerm--");
             }
         }
         private void HandleBraceTerm()
@@ -586,7 +585,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         }
                         else
                         {
-                            Debug.WriteLine(" Errorr FileMetaBraceTerm.HandleBraceTerm 解析{ a = ?} 时，多个=号 Token: " + assignToken.ToLexemeAllString() );
+                            Log.AddInStructFileMeta(EError.None, " Errorr FileMetaBraceTerm.HandleBraceTerm 解析{ a = ?} 时，多个=号 Token: " + assignToken.ToLexemeAllString() );
                         }
                     }
                     else
@@ -622,7 +621,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     else
                     {
-                        Debug.WriteLine("Error 在解析为{}中，数组形式 解析有问题!!");
+                        Log.AddInStructFileMeta(EError.None, "Error 在解析为{}中，数组形式 解析有问题!!");
                         continue;
                     }
                 }
@@ -630,7 +629,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if ( (defineNodeList.Count != 1 && defineNodeList.Count != 2 ) || valueNodeList.Count < 1)
                     {
-                        Debug.WriteLine("Error 在解析为{}中，赋值= 解析有问题!!");
+                        Log.AddInStructFileMeta(EError.None, "Error 在解析为{}中，赋值= 解析有问题!!");
                         continue;
                     }
                     if( defineNodeList.Count == 2 )
@@ -726,12 +725,12 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 }
                 else if (cnode.nodeType == ENodeType.Par)
                 {
-                    Debug.WriteLine("Error 不支持在[]中解析()的逻辑!!");
+                    Log.AddInStructFileMeta(EError.None, "Error 不支持在[]中解析()的逻辑!!");
                     continue;
                 }
                 else if (cnode.nodeType == ENodeType.Key)
                 {
-                    Debug.WriteLine("Error 不支持在[]中解析Key的逻辑!!");
+                    Log.AddInStructFileMeta(EError.None, "Error 不支持在[]中解析Key的逻辑!!");
                     continue;
                 }
                 else if (cnode.nodeType == ENodeType.Brace )
@@ -778,7 +777,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if (type == 2 || type == 3)
                     {
-                        Debug.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                        Log.AddInStructFileMeta(EError.None, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                         continue;
                     }
 
@@ -792,7 +791,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if (type == 1 || type == 2)
                     {
-                        Debug.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                        Log.AddInStructFileMeta(EError.None, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                         continue;
                     }
 
@@ -970,7 +969,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if (fmbt != null)
                     {
-                        Debug.WriteLine("Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString());
+                        Log.AddInStructFileMeta(EError.None, "Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString());
                     }
                     fmbt = new FileMetaCallTerm(m_FileMeta, node);
                     fmbt.priority = int.MaxValue;
@@ -997,7 +996,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if (fmbt != null)
                     {
-                        Debug.WriteLine("Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString());
+                        Log.AddInStructFileMeta(EError.None, "Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString());
                     }
                     fmbt = new FileMetaCallTerm(m_FileMeta, node);
                     fmbt.priority = int.MaxValue;
@@ -1007,7 +1006,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if(fmbt != null )
                     {
-                        Debug.WriteLine("Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString() );
+                        Log.AddInStructFileMeta(EError.None, "Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString() );
                     }
                     fmbt = new FileMetaCallTerm(m_FileMeta, node);
                     fmbt.priority = int.MaxValue;
@@ -1031,7 +1030,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if (fmbt == null)
                     {
-                        Debug.WriteLine("如果使用了三元表达式，必须在第一位需要放置返回式: " + node.token.type.ToString() + " 位置: " + node.token.ToLexemeAllString());
+                        Log.AddInStructFileMeta(EError.None, "如果使用了三元表达式，必须在第一位需要放置返回式: " + node.token.type.ToString() + " 位置: " + node.token.ToLexemeAllString());
                     }
                     var nfmbt = new FileMetaThreeItemSyntaxTerm(m_FileMeta);
                     nfmbt.priority = SignComputePriority.Level1;
@@ -1039,7 +1038,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 }
                 else
                 {
-                    Debug.WriteLine("没有找到该类型: " + node.token.type.ToString()  +  " 位置: "  + node.token.ToLexemeAllString() );
+                    Log.AddInStructFileMeta(EError.None, "没有找到该类型: " + node.token.type.ToString()  +  " 位置: "  + node.token.ToLexemeAllString() );
                 }
             }
         }
@@ -1080,7 +1079,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     ETokenType ett = currentTerm.token.type;
                     if (!m_CanUseDoublePlusOrMinus && (ett == ETokenType.DoubleMinus || ett == ETokenType.DoublePlus) )
                     {
-                        Debug.WriteLine("Error 只有在语句中，可以使用i++ 等语法，变量与传参是禁止使用i++" +
+                        Log.AddInStructFileMeta(EError.None, "Error 只有在语句中，可以使用i++ 等语法，变量与传参是禁止使用i++" +
                             "Token 位置:" + currentTerm.token.ToAllString());
                         return false;
                     }
@@ -1099,7 +1098,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     {
                         if (listNextTerm == null)
                         {
-                            Debug.WriteLine("Error 表达式解析错误!! FileMetaExpress 575");
+                            Log.AddInStructFileMeta(EError.None, "Error 表达式解析错误!! FileMetaExpress 575");
                             return false;
                         }
                         currentTerm.right = listNextTerm;
@@ -1110,7 +1109,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     else
                     {
-                        Debug.WriteLine("Error 不能使用错误符号 !! FileMetaExpress 698" + currentTerm.token.ToLexemeAllString());
+                        Log.AddInStructFileMeta(EError.None, "Error 不能使用错误符号 !! FileMetaExpress 698" + currentTerm.token.ToLexemeAllString());
                         return false;
                     }
                 }
@@ -1131,7 +1130,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                     }
                     else
                     {
-                        Debug.WriteLine("Error BuildTst 表达式解析错误!! 604");
+                        Log.AddInStructFileMeta(EError.None, "Error BuildTst 表达式解析错误!! 604");
                         return false;
                     }
                 }
@@ -1143,7 +1142,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             }
             else
             {
-                Debug.WriteLine("选择已经超出来范围!!");
+                Log.AddInStructFileMeta(EError.None, "选择已经超出来范围!!");
                 return false;
             }
             return BuildTst(list);

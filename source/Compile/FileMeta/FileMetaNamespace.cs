@@ -6,11 +6,9 @@
 //  Description: 
 //****************************************************************************
 using SimpleLanguage.Compile.Parse;
-using SimpleLanguage.Core;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
@@ -89,7 +87,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
             if (namespaceNode == null)
             {
-                Debug.Write("Error 在解析namespace 中，没有找到namespace设置的名称!!");
+                Log.AddInStructFileMeta(EError.None, "Error 在解析namespace 中，没有找到namespace设置的名称!!");
                 return;
             }
 

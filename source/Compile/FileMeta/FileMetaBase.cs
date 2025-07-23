@@ -5,10 +5,6 @@
 //  DateTime: 2022/5/12 12:00:00
 //  Description: 
 //****************************************************************************
-using SimpleLanguage.Parse;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
 {

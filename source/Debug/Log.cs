@@ -205,6 +205,21 @@ namespace SimpleLanguage.Parse
             AddCodeFileLog(ld);
             return ld;
         }
+        public static LogData AddInStructFileMeta(EError err, string msg, Token token )
+        {
+            LogData ld = new LogData()
+            {
+                filePath = token.path,
+                errorType = LogData.EErrorType.StructFileMeta,
+                time = DateTime.Now,
+                sourceBeginLine = token.sourceBeginLine,
+                sourceEndLine = token.sourceEndLine,
+            };
+            ld.message = msg;
+            ld.error = err;
+            AddCodeFileLog(ld);
+            return ld;
+        }
         public static LogData AddInStructMeta(EError err, string msg)
         {
             LogData ld = new LogData()

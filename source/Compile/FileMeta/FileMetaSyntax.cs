@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile.Parse;
-using System.Diagnostics;
+using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
 {    
@@ -115,7 +115,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             {
                 if (ifSyntax.ifExpressSyntax != null)
                 {
-                    Debug.Write("Error 不能有多个if语句!!");
+                    Log.AddInStructFileMeta(EError.None, "Error 不能有多个if语句!!");
                 }
                 ifSyntax.SetFileMetaConditionExpressSyntax(fms);
             }
@@ -856,14 +856,14 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             Token labelToken = null;
             if (akss.keyContent.Count != 1 )
             {
-                Debug.Write("Error 解析Goto Label语法，只支持 goto id;的语法!!");
+                Log.AddInStructFileMeta(EError.None, "Error 解析Goto Label语法，只支持 goto id;的语法!!");
             }
             else
             {
                 labelToken = akss.keyContent[0].token;
                 if (labelToken.type != ETokenType.Identifier)
                 {
-                    Debug.Write("Error 解析GotoLabel中 后边必须使用普通字符");
+                    Log.AddInStructFileMeta(EError.None, "Error 解析GotoLabel中 后边必须使用普通字符");
                 }
             }
             var fms = new FileMetaKeyGotoLabelSyntax( fm, cnode.token, labelToken);

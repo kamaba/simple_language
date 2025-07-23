@@ -184,7 +184,7 @@ namespace SimpleLanguage.Core
                 {
                     if( node.m_MetaTemplateClassDict.ContainsKey( mc.metaTemplateList.Count ) )
                     {
-                        Log.AddInStructMeta(EError.None, "添加metanode节点有问题! 有重复");
+                        Log.AddInStructMeta(EError.None, "添加metanode节点有问题! 有重复:" + mc.allClassName );
                         return null;
                     }
                     else

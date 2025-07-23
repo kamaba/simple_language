@@ -10,7 +10,7 @@
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile.Parse;
-using System.Diagnostics;
+using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Compile.CoreFileMeta
 {
@@ -123,12 +123,12 @@ namespace SimpleLanguage.Compile.CoreFileMeta
 
             if (!FileMetatUtil.SplitNodeList(m_NodeList, bedoreNodeList, afterNodeList, ref m_AssignToken))
             {
-                Debug.WriteLine("Error 解析NodeList出现错误~~~");
+                Log.AddInStructFileMeta(EError.None, "Error 解析NodeList出现错误~~~");
                 return false;
             }
             if (bedoreNodeList.Count < 1)
             {
-                Debug.WriteLine("Error listDefieNode 不能为空~");
+                Log.AddInStructFileMeta(EError.None, "Error listDefieNode 不能为空~");
                 return false;
             }
 
@@ -142,18 +142,18 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             Node mutNode = null;
             if (!GetNameAndTypeToken(defineNodeList, ref typeNode, ref mutNode, ref nameNode, ref m_PermissionToken, ref m_StaticToken))
             {
-                Debug.WriteLine("Error 没有找到该定义名称 必须使用例: X = 103; 的格式");
+                Log.AddInStructFileMeta(EError.None, "Error 没有找到该定义名称 必须使用例: X = 103; 的格式");
                 return false;
             }
 
             if (nameNode == null)
             {
-                Debug.WriteLine("Error 没有找到该定义名称 必须使用例: X = 104; 的格式");
+                Log.AddInStructFileMeta(EError.None, "Error 没有找到该定义名称 必须使用例: X = 104; 的格式");
                 return false;
             }
             if (nameNode.extendLinkNodeList.Count > 0)
             {
-                Debug.WriteLine("Error 没有找到该定义名称 必须使用例: X = 105; 的格式");
+                Log.AddInStructFileMeta(EError.None, "Error 没有找到该定义名称 必须使用例: X = 105; 的格式");
                 return false;
             }
             m_Token = nameNode.token;
@@ -201,7 +201,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if( type == 2 || type == 3 )
                     {
-                        Debug.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                        Log.AddInStructFileMeta(EError.None, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                         continue;
                     }
 
@@ -215,7 +215,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if (type == 1 || type == 3)
                     {
-                        Debug.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                        Log.AddInStructFileMeta(EError.None, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                         continue;
                     }
 
@@ -229,7 +229,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 {
                     if (type == 1 || type == 2 )
                     {
-                        Debug.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                        Log.AddInStructFileMeta(EError.None, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                         continue;
                     }
 
@@ -241,7 +241,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 }
                 else
                 {
-                    Debug.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                    Log.AddInStructFileMeta(EError.None, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                     continue;
                 }
             }
@@ -413,7 +413,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (permissionToken != null)
                         {
                             isError = true;
-                            Debug.WriteLine("Error 多重定义名称的权限定义!!");
+                            Log.AddInStructFileMeta(EError.None, "Error 多重定义名称的权限定义!!");
                         }
                         permissionToken = token;
                     }
@@ -422,7 +422,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (staticToken != null)
                         {
                             isError = true;
-                            Debug.WriteLine("Error 多重定义名称的静态定义!!");
+                            Log.AddInStructFileMeta(EError.None, "Error 多重定义名称的静态定义!!");
                         }
                         staticToken = token;
                     }
@@ -435,13 +435,13 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                         if (mutNode != null)
                         {
                             isError = true;
-                            Debug.WriteLine("Error 多重定义名称的Mut定义!!");
+                            Log.AddInStructFileMeta(EError.None, "Error 多重定义名称的Mut定义!!");
                         }
                         mutNode = cnode;
                     }
                     else
                     {
-                        Debug.WriteLine("Error 解析变量中，不允许的类型存在!!" + token.ToLexemeAllString() );
+                        Log.AddInStructFileMeta(EError.None, "Error 解析变量中，不允许的类型存在!!" + token.ToLexemeAllString() );
                     }
                 }
             }

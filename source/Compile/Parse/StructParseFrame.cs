@@ -1567,6 +1567,12 @@ namespace SimpleLanguage.Compile.Parse
                     }
                     return;
                 }
+                else if( cnode.nodeType == ENodeType.Comma )
+                {
+                    cnode.isDel = true;
+                    node.parseIndex++;
+                    continue;
+                }
                 else if (cnode.nodeType == ENodeType.IdentifierLink)
                 {
                     node.parseIndex++;
@@ -1582,10 +1588,26 @@ namespace SimpleLanguage.Compile.Parse
                         {
                             HandleAngleExpressNode(node, cnode);
                         }
+                        else if( nextNode.nodeType == ENodeType.Key 
+                            && nextNode.token.type == ETokenType.Colon )
+                        {
+                            if( node.parseIndex + 1 < node.childList.Count )
+                            {
+                                nextNode.isDel = true;
+                                var nextNode2 = node.childList[node.parseIndex + 1];
+                                nextNode2.isDel = true;
+                                cnode.AddChild(nextNode2);
+                                node.parseIndex += 2;
+                            }
+                        }
                         else if( nextNode.nodeType == ENodeType.RightAngle )
                         {
                             HandleAngleExpressNode(node, parentNode);
                             return;
+                        }
+                        else if( nextNode.nodeType == ENodeType.Comma )
+                        {
+                            continue;
                         }
                         else if (nextNode.nodeType == ENodeType.Par)      //Class<>()
                         {

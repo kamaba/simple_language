@@ -350,7 +350,7 @@ namespace SimpleLanguage.Core
                     {
                         if( !(constExpressNode != null && constExpressNode.eType == EType.Null ) )
                         {
-                            if (expressRetMetaDefineType.metaClass == ownerMetaClass)
+                            if (expressRetMetaDefineType.metaClass == ownerMetaClass && !m_IsStatic )
                             {
                                 Log.AddInStructMeta(EError.None, "Error 自己类内部不允许包含 自己的实体，必须赋值为null");
                                 return;
