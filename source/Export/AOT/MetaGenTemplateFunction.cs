@@ -10,7 +10,7 @@ using SimpleLanguage.Core.Statements;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.Core
+namespace SimpleLanguage.Core.AOT
 {
     public class MetaGenTempalteFunction : MetaMemberFunction
     {
@@ -27,7 +27,7 @@ namespace SimpleLanguage.Core
         public MetaGenTempalteFunction(MetaClass mc, string _name) : base(mc)
         {
             m_Name = _name;
-            isCanRewrite = true;
+            m_IsCanRewrite = true;
             m_MetaMemberParamCollection.Clear();
 
             m_MetaBlockStatements = new MetaBlockStatements(this, null);
@@ -67,9 +67,9 @@ namespace SimpleLanguage.Core
             m_Name = mmf.name;
 
             m_IsStatic = mmf.isStatic;
-            isGet = mmf.isGet;
-            isSet = mmf.isSet;
-            isFinal = mmf.isFinal;
+            m_IsGet = mmf.isGet;
+            m_IsSet = mmf.isSet;
+            m_IsFinal = mmf.isFinal;
             m_MetaBlockStatements = mmf.metaBlockStatements;
             m_ConstructInitFunction = mmf.isConstructInitFunction;
             m_ReturnMetaVariable = mmf.returnMetaVariable;
@@ -95,8 +95,9 @@ namespace SimpleLanguage.Core
         {
             return m_MetaGenTemplateList.Find(a => a.name == name);
         }
-        public override void Parse()
+        public override bool Parse()
         {
+            return true;
         }
         public override string ToString()
         {

@@ -81,9 +81,9 @@ namespace SimpleLanguage.Project
                 Debug.Write("Error 没有找到Project.Main函数!!");
                 return;
             }
-            //var irmethod = IRManager.instance.GetIRMethod(mmf.allname);
-            //InnerCLRRuntimeVM.Init();
-            //InnerCLRRuntimeVM.RunIRMethod(irmethod);
+            var irmethod = IRManager.instance.GetIRMethod(mmf.functionAllName);
+            InnerCLRRuntimeVM.Init();
+            InnerCLRRuntimeVM.RunIRMethod(irmethod);
         }
         public static void AddDefineNamespace( MetaNode parentRoot, DefineStruct dns, bool isAddCurrent = true )
         {

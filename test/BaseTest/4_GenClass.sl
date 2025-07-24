@@ -14,6 +14,11 @@ List0<T>
     List0<int> List0_list0t3 = null
     T getA(){ ret null}
 
+    _init_()
+    {
+
+    }
+
     _init_( int c )
     {
 
@@ -79,22 +84,22 @@ public class List<T> interface IList<T>, IList
     {
         #this.m_Count = _count
         #this.m_Bound1 = _b1
-        this._listPtr = ListMetaClass.SetListCount( _count )
+        #this._listPtr = ListMetaClass.SetListCount( _count )
     }
     #!
     _init_( short _count = 0s, short _b1 = 0s )
     {
-        this.m_Count = _count;
-        this.m_Bound1 = _b1;
+        #this.m_Count = _count;
+        #this.m_Bound1 = _b1;
     } 
     !#   
     
     override add( T t )
     {
-        var r1 = null;  #CSharp.SL.Core.MetaArrayClass.Add( this, t );
-        if r1 != null
+        var Listt_r1 = null;  #CSharp.SL.Core.MetaArrayClass.Add( this, t );
+        if Listt_r1 != null
         {
-            this.m_Count++
+        #    this.m_Count++
         }
     }
     #!
@@ -208,6 +213,10 @@ public class Level1<T222>
     T222 Level1_t1 = null
     T222 Level1_t2 = null
 
+    _init_(){
+
+    }
+
     _init_( T222 it1 )
     {
         this.Level1_t1 = it1
@@ -215,31 +224,31 @@ public class Level1<T222>
 
     public T222 add()
     {
-        T222 t = new()
+        T222 Level1t_t = new()
 
-        List0<Map<T222, T222> > list = new(1)
+        List0<Map<T222, T222> > Level1t_list = new(1)
 
-        Level2<int,string> level222 = {}
+        Level2<int,string> Level1t_level222 = {}
 
-        List0<int> lint11 = List0<int>()
+        List0<int> Level1t_lint11 = List0<int>()
 
-        t250 = Level1<int>.Level1t_test<List0<List1<long> > >( t, List0<List1<long> >() )
+        Level1t_t250 = Level1<int>.Level1t_test<List0<List1<long> > >( Level1t_t, List0<List1<long> >() )
 
-        ret t
+        ret Level1t_t
     }
 
     static T2 Level1t_test<T2>( T222 it1, T2 it2 )
     {
-        List0<Map< T2, List2<T2> > > t2n = null
+        List0<Map< T2, List2<T2> > > Level1t_test_t2n = new()
 
-        ret t2n
+        ret Level1t_test_t2n
     }
     static T222 Level1t_test<T2,T3>( T2 it2, T3 it3 )
     {
         ret null
     }
 
-    public static T2 min<T2:ClassRoom >( T2 t1, T2 t2 )
+    public static T2 min<T2>( T2 t1, T2 t2 )
     {
         #r1 = t1 ? t1 < t2 && t1 > t2 : t2        
         #rx1 = if t1 < t2 { tr t1 } else{ tr t2 }
@@ -271,13 +280,13 @@ GenClass
     #Level1<string> ls4 = {}
     static GenClass_fun()
     {
-        Level1<int> l1 = Level1<int>()
-        l2 = l1.add()
-        #Debug.Write( "Addresult: " + l2 )
+        Level1<int> GenClass_fun_l1 = Level1<int>()
+        GenClass_fun_l2 = GenClass_fun_l1.add()
+        #Debug.Write( "Addresult: " + GenClass_fun_l2 )
 
-        float a = Level1.min<float>( 1.3, 2.5 )
+        float GenClass_fun_a = Level1<float>.min<float>( 1.3, 2.5 )
 
-        Debug.Write("Flaoat" + a )
+        #Debug.Write("Flaoat" + a )
     }
 }
 

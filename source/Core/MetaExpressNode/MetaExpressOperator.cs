@@ -226,12 +226,12 @@ namespace SimpleLanguage.Core
         private Token m_SignToken = null;
 
         private FileMetaSymbolTerm m_FileMetaBaseTerm = null;
-        public MetaOpExpressNode(FileMetaSymbolTerm fme, MetaType constMetaClass, MetaExpressNode _left, MetaExpressNode _right)
+        public MetaOpExpressNode(FileMetaSymbolTerm fme, MetaType mt, MetaExpressNode _left, MetaExpressNode _right)
         {
             m_Left = _left;
             m_Right = _right;
             m_FileMetaBaseTerm = fme;
-            m_MetaDefineType = constMetaClass;
+            m_MetaDefineType = mt;
 
             ETokenType ett = fme.token.type;
             m_SignToken = fme.token;
@@ -376,7 +376,14 @@ namespace SimpleLanguage.Core
                     case ELeftRightOpSign.Or:
                     case ELeftRightOpSign.And:
                         {
-                            m_MetaDefineType.SetMetaClass(CoreMetaClassManager.booleanMetaClass);
+                            if(m_MetaDefineType != null )
+                            {
+                                m_MetaDefineType.SetMetaClass(CoreMetaClassManager.booleanMetaClass);
+                            }
+                            else
+                            {
+                                m_MetaDefineType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                            }
                         }
                         break;
                 }

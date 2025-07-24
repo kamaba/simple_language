@@ -29,7 +29,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public void AddCoreFunction()
         {
             MetaMemberFunction values = new MetaMemberFunction(this, "_values_");
-            values.isGet = true;
+            values.SetIsGet( true );
             values.SetMetaDefineType(new MetaType( CoreMetaClassManager.arrayMetaClass ) );
             AddMetaMemberFunction(values);
         }

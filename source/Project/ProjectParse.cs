@@ -8,15 +8,9 @@
 
 
 using SimpleLanguage.Parse;
-using System;
 using System.Collections.Generic;
-using System.Text;
-using SimpleLanguage.Compile.Grammer;
 using SimpleLanguage.Compile.CoreFileMeta;
-using SimpleLanguage.Compile.Parse;
-using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
-using System.Security.Cryptography.X509Certificates;
 using System.Diagnostics;
 
 namespace SimpleLanguage.Project

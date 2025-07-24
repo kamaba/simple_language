@@ -113,12 +113,12 @@ namespace SimpleLanguage.CSharp
             }
             return false;
         }
-        public static MetaNode FindAndCreateMetaBase(MetaNode mb, string name )
+        public static MetaNode FindAndCreateMetaNode(MetaNode mb, string name )
         {
             string frontName = "";
             if (mb != null)
             {
-                if( mb is MetaModule )
+                if( mb.isMetaModule )
                 {
 
                 }

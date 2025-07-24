@@ -22,6 +22,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public bool isEnum { get { return m_EnumToken != null; } }
         public bool isData { get { return m_DataToken != null; } }
         public bool isPartial => m_PartialToken != null;
+        public Token preInterfaceToken => m_PreInterfaceToken;
         public MetaClass metaClass => m_MetaClass;
         public FileMetaClassDefine fileMetaExtendClass => m_FileMetaExtendClass;
         public List<FileMetaClassDefine> interfaceClassList => m_InterfaceClassList;

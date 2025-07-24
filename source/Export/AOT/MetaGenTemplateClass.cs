@@ -11,7 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.Core
+namespace SimpleLanguage.Core.AOT
 {
     public sealed class MetaGenTemplateClass : MetaClass
     {
@@ -41,7 +41,7 @@ namespace SimpleLanguage.Core
             if (mc.metaTemplateList.Count == mic.metaTemplateParamsList.Count)
             {
                 MetaGenTemplateClass tmc = new MetaGenTemplateClass(mc, null);
-                mc.AddGenTemplateMetaClass(tmc);
+                //mc.AddGenTemplateMetaClass(tmc);
 
                 string extenName = "";
                 for (int i = 0; i < mc.metaTemplateList.Count; i++)
@@ -186,7 +186,7 @@ namespace SimpleLanguage.Core
         {
             MetaMemberVariable mgmv = new MetaMemberVariable(mmv);
             mgmv.SetOwnerMetaClass(this);
-            TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mgmv.metaDefineType, this, null );
+            //TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mgmv.metaDefineType, this, null );
             m_MetaMemberVariableDict.Add(mgmv.name, mgmv);
         }
         public override void ParseMemberFunctionDefineMetaType()
@@ -203,12 +203,12 @@ namespace SimpleLanguage.Core
 
             if( !mgmf.isTemplateFunction )
             {
-                TypeManager.instance.UpdateMetaType(mgmf.metaDefineType, this);
+                //TypeManager.instance.UpdateMetaType(mgmf.metaDefineType, this);
 
                 var list = mgmf.GetCalcMetaVariableList(true);
                 for ( int i = 0; i < list.Count; i++ )
                 {
-                    TypeManager.instance.UpdateMetaType(list[i].metaDefineType, this);
+                 //   TypeManager.instance.UpdateMetaType(list[i].metaDefineType, this);
                 }
             }
             AddMetaMemberFunction(mgmf);
@@ -234,21 +234,21 @@ namespace SimpleLanguage.Core
         }
         public void UpdateTemplateInstanceMetaMemberVariableExpress( MetaMemberVariable mmv )
         {
-            TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mmv.metaDefineType, this, null );
+            //TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mmv.metaDefineType, this, null );
         }
         public void UpdateTemplateInstanceStatement(MetaMemberFunction mmf)
         {
             for( int i = 0; i < mmf.metaMemberParamCollection.metaDefineParamList.Count; i++ )
             {
                 var mdp = mmf.metaMemberParamCollection.metaDefineParamList[i];
-                TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mdp.metaVariable.metaDefineType, this, mmf as MetaGenTempalteFunction );
+                //TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mdp.metaVariable.metaDefineType, this, mmf as MetaGenTempalteFunction );
             }
 
             var list = mmf.GetCalcMetaVariableList();
 
             for( int i = 0; i < list.Count; i++ )
             {
-                TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(list[i].metaDefineType, this, mmf as MetaGenTempalteFunction );
+                //TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(list[i].metaDefineType, this, mmf as MetaGenTempalteFunction );
             }
         }
         public override string ToString()

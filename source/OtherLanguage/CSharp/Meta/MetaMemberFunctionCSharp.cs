@@ -46,8 +46,8 @@ namespace SimpleLanguage.Core
             {
                 HandleMethodInfo();
 
-                isSet = pi.CanWrite;
-                isGet = pi.CanRead;
+                SetIsSet( pi.CanWrite );
+                SetIsGet( pi.CanRead );
             }
             else
             {
@@ -66,7 +66,7 @@ namespace SimpleLanguage.Core
 
             if (methodInfo.IsVirtual)
             {
-                isOverrideFunction = methodInfo.IsFinal;
+                SetIsOverrideFunction(methodInfo.IsFinal);
             }
 
             if (methodInfo.IsPublic)

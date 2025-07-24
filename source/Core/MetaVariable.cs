@@ -133,9 +133,9 @@ namespace SimpleLanguage.Core
         {
 
         }
-        public virtual void Parse()
+        public virtual bool Parse()
         {
-
+            return true;
         }
         public virtual void CreateMetaExpress()
         {

@@ -11,9 +11,9 @@ using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
 
-namespace SimpleLanguage.Core
+namespace SimpleLanguage.Core.AOT
 {
-    public class ClassManager
+    public class MetaGenManager
     {
         public enum EClassRelation
         {
@@ -28,14 +28,14 @@ namespace SimpleLanguage.Core
             SameClassNotSameInputTemplate,
             SameClassAndSameInputTemplate,
         }
-        public static ClassManager s_Instance = null;
-        public static ClassManager instance
+        public static MetaGenManager s_Instance = null;
+        public static MetaGenManager instance
         {
             get
             {
                 if (s_Instance == null)
                 {
-                    s_Instance = new ClassManager();
+                    s_Instance = new MetaGenManager();
                 }
                 return s_Instance;
             }
@@ -43,7 +43,7 @@ namespace SimpleLanguage.Core
         public Dictionary<string, MetaClass> allClassDict => m_AllClassDict;
         public Dictionary<string, MetaData> allDataDict => m_AllDataDict;
         public List<MetaDynamicClass> dynamicClassList => m_DynamicClassList;
-        //public List<MetaGenTemplateClass> needHandleTemplateMetaClassList => m_NeedHandleTemplateMetaClassList;
+        public List<MetaGenTemplateClass> needHandleTemplateMetaClassList => m_NeedHandleTemplateMetaClassList;
         public List<MetaClass> preInitHandleMetaClassList => m_InitHandleMetaClassList;
 
 
@@ -51,8 +51,8 @@ namespace SimpleLanguage.Core
         private List<MetaDynamicClass> m_DynamicClassList = new List<MetaDynamicClass>();         
         private Dictionary<string, MetaData> m_AllDataDict = new Dictionary<string, MetaData>();
 
-        //private List<MetaGenTemplateClass> m_GenTemplateMetaClassList = new List<MetaGenTemplateClass>();
-        //private List<MetaGenTemplateClass> m_NeedHandleTemplateMetaClassList = new List<MetaGenTemplateClass>();
+        private List<MetaGenTemplateClass> m_GenTemplateMetaClassList = new List<MetaGenTemplateClass>();
+        private List<MetaGenTemplateClass> m_NeedHandleTemplateMetaClassList = new List<MetaGenTemplateClass>();
         private List<MetaClass> m_InitHandleMetaClassList = new List<MetaClass>();
 
         public MetaClass GetClassByName(string name, int templateCount = 0 )
@@ -106,15 +106,15 @@ namespace SimpleLanguage.Core
             topLevelNamespace.AddMetaClass(mc);
             return true;
         }
-        //public void AddGenTemplateClass(MetaGenTemplateClass mc )
-        //{
-        //    var find1 = mc.metaGenTemplateClassList.Find(a => a == mc);
-        //    if( find1 == null )
-        //    {
-        //        mc.metaGenTemplateClassList.Add(mc);
-        //        //m_GenTemplateClassList.Add(mc);
-        //    }
-        //}
+        public void AddGenTemplateClass(MetaGenTemplateClass mc )
+        {
+            //var find1 = mc.metaGenTemplateClassList.Find(a => a == mc);
+            //if( find1 == null )
+            //{
+            //    mc.metaGenTemplateClassList.Add(mc);
+            //    //m_GenTemplateClassList.Add(mc);
+            //}
+        }
         public MetaDynamicClass FindDynamicClass( MetaClass dc )
         {
             foreach( var v in m_DynamicClassList )
@@ -133,28 +133,28 @@ namespace SimpleLanguage.Core
             m_AllClassDict.Add(dc.allClassName, dc);
             return true;
         }
-        //public void AddMetaGenTemplateClassList(MetaGenTemplateClass mc)
-        //{
-        //    if (m_GenTemplateMetaClassList.IndexOf(mc) == -1)
-        //    {
-        //        m_GenTemplateMetaClassList.Add(mc);
-        //    }
-        //}
-        //public void AddNeedHandleTemplateMetaClassList(MetaGenTemplateClass mc)
-        //{
-        //    if (m_NeedHandleTemplateMetaClassList.IndexOf(mc) == -1)
-        //    {
-        //        m_NeedHandleTemplateMetaClassList.Add(mc);
-        //    }
+        public void AddMetaGenTemplateClassList(MetaGenTemplateClass mc)
+        {
+            if (m_GenTemplateMetaClassList.IndexOf(mc) == -1)
+            {
+                m_GenTemplateMetaClassList.Add(mc);
+            }
+        }
+        public void AddNeedHandleTemplateMetaClassList(MetaGenTemplateClass mc)
+        {
+            if (m_NeedHandleTemplateMetaClassList.IndexOf(mc) == -1)
+            {
+                m_NeedHandleTemplateMetaClassList.Add(mc);
+            }
             
-        //}
-        //public bool IsMetaGenTemplateClass(MetaGenTemplateClass mc )
-        //{
-        //    if (m_GenTemplateMetaClassList.IndexOf(mc) != -1)
-        //        return true;
+        }
+        public bool IsMetaGenTemplateClass(MetaGenTemplateClass mc )
+        {
+            if (m_GenTemplateMetaClassList.IndexOf(mc) != -1)
+                return true;
 
-        //    return false;
-        //}
+            return false;
+        }
         public void AddInitHandleMetaClassList(MetaClass mc)
         {
             if (m_InitHandleMetaClassList.IndexOf(mc) == -1)
@@ -437,11 +437,11 @@ namespace SimpleLanguage.Core
         {
             foreach (var it in m_InitHandleMetaClassList )
             {
-                it.ParseMetaInConstraint();
                 it.ParseExtendsRelation();
                 it.UpdateInterfaceMetaClass();
                 it.ParseMemberVariableDefineMetaType();
                 it.ParseMemberFunctionDefineMetaType();
+                it.ParseMetaInConstraint();
                 AddDictMetaClass(it);
             }
         }
