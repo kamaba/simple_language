@@ -702,6 +702,8 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public Token inToken => m_InToken;
         public FileInputTemplateNode inClassNameTemplateNode => m_InClassNameTemplateNode;
 
+        public Node extendNode => m_ExtendsNode;
+
         private Token m_InToken = null;
         private FileInputTemplateNode m_InClassNameTemplateNode = null;
         private Node m_Node = null;

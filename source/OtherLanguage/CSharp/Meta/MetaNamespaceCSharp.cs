@@ -8,41 +8,40 @@ namespace SimpleLanguage.Core
         {
             m_RefFromType = RefFromType.CSharp;
         }
-        public MetaBase GetChildrenMetaBaseByName(string name )
+        public MetaNode GetChildrenMetaNodeByName(string name )
         {
-            //MetaBase mb = base.GetChildrenMetaBaseByName(name); 
+            MetaNode mb = base.metaNode.GetChildrenMetaNodeByName(name);
 
-            //if( mb != null )
-            //{
-            //    return mb;
-            //}
-            //mb = CSharpManager.FindCSharpClassOrNameSpace(this.allName, name);
+            if (mb != null)
+            {
+                return mb;
+            }
+            mb = CSharpManager.FindCSharpClassOrNameSpace(this.name, name);
 
-            //if( mb != null )
-            //{
-            //    this.AddMetaBase(name, mb);
-            //    if( mb is MetaClass mc )
-            //    {
-            //        ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.csharpModule);
-            //    }
-            //}
+            if (mb != null)
+            {
+                //this.AddMetaBase(name, mb);
+                if (mb.IsMetaClass() )
+                {
+                    //ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.csharpModule);
+                }
+            }
 
-            //return mb;
-            return null;
+            return mb;
         }
 
-        //public MetaBase GetCSharpMetaClassOrNamespaceAndCreateByName( string name )
-        //{
-        //    var mb = this.GetChildrenMetaBaseByName(name);
+        public MetaNode GetCSharpMetaClassOrNamespaceAndCreateByName(string name)
+        {
+            var mb = this.m_MetaNode.GetChildrenMetaNodeByName(name);
 
-        //    if( mb == null && refFromType == RefFromType.CSharp )
-        //    {
-        //        mb = CSharpManager.FindAndCreateMetaBase(this, name);
+            if (mb == null && refFromType == RefFromType.CSharp)
+            {
+                //mb = CSharpManager.FindAndCreateMetaBase(this, name);
 
-        //        return mb;
-        //    }
+                return mb;
+            }
 
-        //    return mb;
-        //}
+            return mb;
+        }
     }
 }

@@ -93,38 +93,21 @@ namespace SimpleLanguage.Core
         public string ToDefineTypeString()
         {
             StringBuilder sb = new StringBuilder();
-            MetaGenTemplateClass mtc = m_MetaType.metaClass as MetaGenTemplateClass;
-            if (mtc != null)
+            if( m_MetaType.isTemplate )
             {
-                sb.Append(mtc.ToDefineTypeString());
+                sb.Append(m_MetaType.metaTemplate.name);
             }
             else
             {
-                if( m_MetaType.isTemplate )
-                {
-                    sb.Append(m_MetaType.metaTemplate.name);
-                }
-                else
-                {
-                    sb.Append(m_MetaType.metaClass.ToDefineTypeString());
-                }
-            }
+                sb.Append(m_MetaType.metaClass.ToDefineTypeString());
+            }           
 
             return sb.ToString();
         }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            MetaGenTemplateClass mtc = m_MetaType.metaClass as MetaGenTemplateClass;
-            if (mtc!= null)
-            {
-                sb.Append(mtc.ToFormatString());
-            }
-            else
-            {
-                sb.Append(m_MetaType.metaClass.name);
-            }
-
+            sb.Append(m_MetaType.metaClass.name);
             return sb.ToString();
         }
     }

@@ -185,19 +185,16 @@ namespace SimpleLanguage.Core
                                 return men;
                             }
                         }
-                        break;
                     case FileMetaCallTerm fmct:     //className.functionname().varname;
                         {
                             MetaCallLinkExpressNode men2 = new MetaCallLinkExpressNode(fmct.callLink, cep.ownerMetaClass, cep.ownerMBS, cep.equalMetaVariable );
                             return men2;
                         }
-                        break;
                     case FileMetaBraceTerm fmbt:  // {1,2,3} {a=10,b=20}
                         {
                             men = new MetaNewObjectExpressNode(fmbt, cep.metaType, ownerClass, cep.ownerMBS, cep.equalMetaVariable);
                             return men;
                         }
-                        break;
                     case FileMetaParTerm fmpt:  //  (1,2)
                         {
                             //Debug.Write("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
@@ -215,7 +212,6 @@ namespace SimpleLanguage.Core
                             men = CreateExpressNode(cep);
                             return men;
                         }
-                        break;
                     case FileMetaBracketTerm fmbt:
                         {
                             //Debug.Write("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");

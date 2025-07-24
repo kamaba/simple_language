@@ -196,6 +196,17 @@ namespace SimpleLanguage.IR
                 m_IRDataList.Add(insNode);
             }
         }
+        public void TranslateIRAutoAdd( MetaFunction mf )
+        {
+            if (IRMethodDict.ContainsKey(mf.functionAllName))
+            {
+                return;
+            }
+            var irm = TranslateIRByFunction(mf);
+
+            IRMethodDict.Add(mf.functionAllName, irm);
+
+        }
         public IRMethod TranslateIRByFunction( MetaFunction mf )
         {
             if(IRMethodDict.ContainsKey( mf.functionAllName ) )

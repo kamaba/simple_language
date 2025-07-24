@@ -102,18 +102,18 @@ namespace SimpleLanguage.Core
 
             SetOwnerMetaClass(mc);
         }
-        public MetaMemberEnum(MetaGenTemplateClass mtc, MetaMemberEnum mmv, List<MetaGenTemplate> mgt) : base(mmv)
-        {
-            m_MetaGenTemplateList = mgt;
-            m_Name = mmv.m_Name;
-            m_IsInnerDefine = mmv.m_IsInnerDefine;
-            m_FromType = mmv.m_FromType;
-            m_DefineMetaType = mmv.m_DefineMetaType;
-            m_VariableFrom = EVariableFrom.Static;
-            m_PintTokenList = mmv.m_PintTokenList;
+        //public MetaMemberEnum(MetaGenTemplateClass mtc, MetaMemberEnum mmv, List<MetaGenTemplate> mgt) : base(mmv)
+        //{
+        //    m_MetaGenTemplateList = mgt;
+        //    m_Name = mmv.m_Name;
+        //    m_IsInnerDefine = mmv.m_IsInnerDefine;
+        //    m_FromType = mmv.m_FromType;
+        //    m_DefineMetaType = mmv.m_DefineMetaType;
+        //    m_VariableFrom = EVariableFrom.Static;
+        //    m_PintTokenList = mmv.m_PintTokenList;
 
-            SetOwnerMetaClass(mtc);
-        }
+        //    SetOwnerMetaClass(mtc);
+        //}
         public override void ParseDefineMetaType()
         {
             if (m_FileMetaMemeberVariable != null)

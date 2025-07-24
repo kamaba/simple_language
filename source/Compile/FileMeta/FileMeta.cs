@@ -85,9 +85,9 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         public MetaNode GetMetaBaseByFileMetaClassRef( FileMetaClassDefine fmcv )
         {
             MetaNode mb = null;
-            for( int i = 0; i < m_FileImportSyntax.Count; i++ )
+            for( int i = 0; i < m_ImportMetaNamespaceList.Count; i++ )
             {
-                MetaNode mn = NamespaceManager.instance.FindImportNamespace( m_FileImportSyntax[i], fmcv.name );
+                MetaNode mn = GetMetaNodeFileMetaClass(fmcv.stringList);
                 if (mn == null) continue;
                 if (mn.isMetaNamespace == false ) { continue; }
                 if (mn.metaNamespace.refFromType == RefFromType.CSharp)
@@ -103,26 +103,89 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             }
             return null;
         }
+        public MetaNode GetMetaNodeByNamespace( MetaNode namespaceMN, List<string> classList )
+        {
+            MetaNode mb = namespaceMN;
+            for (int j = 0; j < classList.Count; j++)
+            {
+                string cname = classList[j];
+
+                mb = mb.GetChildrenMetaNodeByName(cname);
+                if( mb == null )
+                {
+                    if (namespaceMN.name == cname 
+                        && (namespaceMN.isMetaModule||namespaceMN.isMetaNamespace ) )
+                    {
+                        mb = namespaceMN;
+                        continue;
+                    }
+                    break;
+                }
+                //else
+                //{
+                //    if (imn.refFromType == RefFromType.CSharp)
+                //    {
+                //        mb = CSharpManager.FindCSharpClassOrNameSpace(imn.name, cname);
+                //    }
+                //    else
+                //    {
+                //        mb = imn.metaNode.GetChildrenMetaNodeByName(name);
+                //    }
+                //    if( mb == null )
+                //    {
+                //        break;
+                //    }
+                //}
+            }
+            return mb;
+        }
         public MetaNode GetMetaNodeFileMetaClass( List<string> classList )
         {
             if (classList.Count == 0) return null;
-#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
-            MetaNode mb = null;
-#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
-            for (int i = 0; i < m_FileImportSyntax.Count; i++)
-            {
-                MetaNode findMN = NamespaceManager.instance.FindImportNamespace(m_FileImportSyntax[i], classList[0]);
-                if (findMN == null)
-                    continue;
-                for ( int j = 1; j < classList.Count; j++ )
-                {
-                    findMN = findMN.GetChildrenMetaNodeByName(classList[i]);
-                    if (findMN == null)
-                        continue;
-                }
-                if (findMN != null)
-                    return findMN;
 
+
+            MetaNode mb = null;
+            MetaNode searchMN = null;
+            for (int i = 0; i < m_ImportMetaNamespaceList.Count; i++)
+            {
+                searchMN = m_ImportMetaNamespaceList[i].metaNode;
+
+                while(searchMN != null )
+                {
+                    mb = GetMetaNodeByNamespace(searchMN, classList);
+
+                    if (mb == null)
+                    {
+                        searchMN = searchMN.parentNode;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                if( mb != null )
+                {
+                    break;
+                }
+            }
+            return mb;
+        }
+        public MetaNode GetMetaNodeByImportNamespace( string name )
+        {
+            for (int i = 0; i < m_ImportMetaNamespaceList.Count; i++)
+            {
+                var imn = m_ImportMetaNamespaceList[i];
+                if (imn.refFromType == RefFromType.CSharp)
+                {
+                    MetaNode getmb = CSharpManager.FindCSharpClassOrNameSpace(imn.name, name);
+                    if (getmb != null)
+                        return getmb;
+                }
+                else
+                {
+                    return imn.metaNode.GetChildrenMetaNodeByName(name);
+                }
             }
             return null;
         }
@@ -158,29 +221,6 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         //    }
         //    return null;
         //}
-        /*
-        public T GetMetaBaseTByName<T>(string name) where T : MetaBase
-        {
-#pragma warning disable CS0162 // 检测到无法访问的代码
-            for (int i = 0; i < m_FileImportSyntax.Count; i++)
-            {
-                MetaBase mn = NamespaceManager.instance.FindImportNamespace(m_FileImportSyntax[i], name);
-                while (true)
-                {
-                    //var fmn = mn.GetChildrenMetaBaseByName(name);
-                    //if (fmn != null && fmn.GetType() == typeof(T) )
-                    //{
-                    //    return fmn as T;
-                    //}
-                    //mn = mn.parentNode;
-                    //if (mn == null)
-                    //    continue;
-                }
-            }
-#pragma warning restore CS0162 // 检测到无法访问的代码
-            return default(T);
-        }
-        */
         public void CreateNamespace()
         {
             for (int i = 0; i < m_FileDefineNamespaceList.Count; i++)

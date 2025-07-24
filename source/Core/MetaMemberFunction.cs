@@ -201,24 +201,30 @@ namespace SimpleLanguage.Core
         }
         public bool isTemplateFunction => m_IsTemplateFunction;
         public bool isWithInterface => m_IsWithInterface;
-        public bool isOverrideFunction { get; set; } = false;
+        public bool isOverrideFunction => m_IsOverrideFunction;
         public bool isConstructInitFunction => m_ConstructInitFunction;
-        public bool isGet { get; set; } = false;
-        public bool isSet { get; set; } = false;
-        public bool isFinal { get; set; } = false;
-        public bool isCanRewrite { get; set; } = false;
-        public bool isTemplateInParam { get; set; } = false;
+        public bool isGet => m_IsGet;
+        public bool isSet => m_IsSet;
+        public bool isFinal => m_IsFinal;
+        public bool isCanRewrite => m_IsCanRewrite;
+        public bool isTemplateInParam => m_IsTemplateInParam;
         public FileMetaMemberFunction fileMetaMemberFunction => m_FileMetaMemberFunction;
 
         #region 属性
         protected bool m_IsTemplateFunction = false;
+        protected bool m_IsOverrideFunction = false;
+        protected bool m_IsGet = false;
+        protected bool m_IsSet = false;
+        protected bool m_IsFinal = false;
+        protected bool m_IsCanRewrite = false;
+        protected bool m_IsTemplateInParam = false;
         protected string m_FunctionAllName = null;
         protected bool m_ConstructInitFunction = false;
         protected bool m_IsWithInterface = false;
         protected FileMetaMemberFunction m_FileMetaMemberFunction = null;
 
         //模板生成函数，如果匹配了，模板函数后，再进行看是否生成过该函数
-        protected List<MetaGenTempalteFunction> m_GenTempalteFunctionList = new List<MetaGenTempalteFunction>();
+        //protected List<MetaGenTempalteFunction> m_GenTempalteFunctionList = new List<MetaGenTempalteFunction>();
 
 
         #endregion
@@ -234,13 +240,13 @@ namespace SimpleLanguage.Core
             this.m_Name = fmmf.name;
 
             m_IsStatic = fmmf.staticToken != null;
-            isGet = fmmf.getToken != null;
-            isSet = fmmf.setToken != null;
-            isFinal = fmmf.finalToken != null;
+            m_IsGet = fmmf.getToken != null;
+            m_IsSet = fmmf.setToken != null;
+            m_IsFinal = fmmf.finalToken != null;
             if ( fmmf.virtualOverrideToken != null )
             {
                 if (fmmf.virtualOverrideToken.type == ETokenType.Override)
-                    isOverrideFunction = true;
+                    m_IsOverrideFunction = true;
             }
             if( fmmf.interfaceToken != null )
             {
@@ -286,7 +292,7 @@ namespace SimpleLanguage.Core
         public MetaMemberFunction( MetaClass mc, string _name ) : base( mc )
         {
             m_Name = _name;
-            isCanRewrite = true;
+            m_IsCanRewrite = true;
             m_MetaMemberParamCollection.Clear();
 
             m_MetaBlockStatements = new MetaBlockStatements(this, null);
@@ -301,7 +307,7 @@ namespace SimpleLanguage.Core
             m_ConstructInitFunction = mmf.m_ConstructInitFunction;
             m_IsWithInterface = mmf.m_IsWithInterface;
             m_FileMetaMemberFunction = mmf.m_FileMetaMemberFunction;
-            m_GenTempalteFunctionList = mmf.m_GenTempalteFunctionList;
+            //m_GenTempalteFunctionList = mmf.m_GenTempalteFunctionList;
         }
         protected void Init()
         {
@@ -330,21 +336,39 @@ namespace SimpleLanguage.Core
                 m_ThisMetaVariable = new MetaVariable( "this_" + GetHashCode().ToString(), EVariableFrom.Argument, null, m_OwnerMetaClass, new MetaType( m_OwnerMetaClass ) );
             }
             m_ReturnMetaVariable = new MetaVariable("return_" + GetHashCode().ToString(), EVariableFrom.Argument, null, m_OwnerMetaClass, m_DefineMetaType);
+
+            if(m_RefFromType == RefFromType.Local )
+            {
+                MethodManager.instance.AddOriginalMemeberFunction(this);
+            }
+
         }
-        public void SetDeep(int deep)
+        public override void SetDeep(int deep)
         {
             //m_Deep = deep;
             m_MetaBlockStatements?.SetDeep(deep);
         }
-        public override void SetOwnerMetaClass(MetaClass ownerclass)
+        public void SetIsGet(bool isGet)
         {
-            for(int i = 0; i < m_GenTempalteFunctionList.Count; i++ )
-            {
-                m_GenTempalteFunctionList[i].SetOwnerMetaClass(ownerclass);
-            }
-
-            base.SetOwnerMetaClass(ownerclass);
+            m_IsGet = isGet;
         }
+        public void SetIsSet(bool isSet)
+        {
+            m_IsSet = isSet;
+        }
+        public void SetIsOverrideFunction(bool flag )
+        {
+            m_IsOverrideFunction = flag;
+        }
+        //public override void SetOwnerMetaClass(MetaClass ownerclass)
+        //{
+        //    for(int i = 0; i < m_GenTempalteFunctionList.Count; i++ )
+        //    {
+        //        m_GenTempalteFunctionList[i].SetOwnerMetaClass(ownerclass);
+        //    }
+
+        //    base.SetOwnerMetaClass(ownerclass);
+        //}
         public Token GetToken()
         {
             if( m_FileMetaMemberFunction?.finalToken != null )
@@ -373,43 +397,42 @@ namespace SimpleLanguage.Core
             m_MetaMemberTemplateCollection.AddMetaDefineTemplate(mt);
         }
         //如果是模板函数，需要在实例化类后，进行新的实体函数的解析
-        public MetaGenTempalteFunction AddGenTemplateMemberFunctionBySelf( List<MetaClass> list )
+        //public MetaGenTempalteFunction AddGenTemplateMemberFunctionBySelf( List<MetaClass> list )
+        //{
+
+        //    MetaGenTempalteFunction mgtf = GetGenTemplateFunction(list);
+        //    if( mgtf == null )
+        //    {
+        //        List<MetaGenTemplate> mgtList = new List<MetaGenTemplate>(list.Count);
+        //        for (int i = 0; i < list.Count; i++)
+        //        {
+        //            var l1 = this.m_MetaMemberTemplateCollection.metaTemplateList[i];
+        //            MetaGenTemplate mgt = new MetaGenTemplate(l1, new MetaType(list[i]));
+        //            mgtList.Add(mgt);
+        //        }
+        //        mgtf = new MetaGenTempalteFunction(this, mgtList);
+
+        //        this.m_GenTempalteFunctionList.Add(mgtf);
+
+        //        mgtf.Parse();
+        //    }
+        //    return mgtf;
+        //}
+        //public MetaGenTempalteFunction GetGenTemplateFunction( List<MetaClass> mcList )
+        //{
+        //    for( int i = 0; i < m_GenTempalteFunctionList.Count; i++ )
+        //    {
+        //        var c = m_GenTempalteFunctionList[i];
+        //        if( c.MatchInputTemplateInsance( mcList ) )
+        //        {
+        //            return c;
+        //        }
+        //    }
+        //    return null;
+        //}
+        public override bool Parse()
         {
-            List<MetaGenTemplate> mgtList = new List<MetaGenTemplate>(list.Count);
-            for( int i = 0; i < list.Count; i++ )
-            {
-                var l1 = this.m_MetaMemberTemplateCollection.metaTemplateList[i];
-                MetaGenTemplate mgt = new MetaGenTemplate(l1, new MetaType(list[i]));
-                mgtList.Add(mgt);
-            }
-
-           MetaGenTempalteFunction mgtf = new MetaGenTempalteFunction( this, mgtList );
-
-            this.m_GenTempalteFunctionList.Add(mgtf);
-
-            mgtf.Parse();
-
-            return mgtf;
-        }
-        public MetaGenTempalteFunction GetGenTemplateFunction( List<MetaClass> mcList )
-        {
-            for( int i = 0; i < m_GenTempalteFunctionList.Count; i++ )
-            {
-                var c = m_GenTempalteFunctionList[i];
-                if( c.MatchInputTemplateInsance( mcList ) )
-                {
-                    return c;
-                }
-            }
-            return null;
-        }
-        public void RemoveMetaMemberFunction( MetaMemberFunction mmf )
-        {
-
-        }
-        public override void Parse()
-        {
-            base.Parse();
+            return base.Parse();
         }
         public override void ParseDefineMetaType()
         {
@@ -455,6 +478,7 @@ namespace SimpleLanguage.Core
         }
         public void ParseStatements()
         {
+            bool nohasContent = false;
             if( this.m_FileMetaMemberFunction != null )
             {
                 if(m_ThisMetaVariable != null )
@@ -471,12 +495,18 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddInStructMeta(EError.None, "Error 该函数没有定义内容！！");
+                    nohasContent = true;
                 }
             }
-            if( !m_IsWithInterface)
+            if( !m_IsWithInterface || this.m_OwnerMetaClass.isInterfaceClass )
             {
-                //m_MetaBlockStatements.SetDeep(deep);
+            }
+            else
+            {
+                if (nohasContent)
+                {
+                    Log.AddInStructMeta(EError.None, $"Error 类[{this.m_OwnerMetaClass.allClassName}] 该函数[{this.functionAllName}] 没有定义函数内容！！");
+                }
             }
         }
         public static MetaStatements CreateMetaSyntax( FileMetaSyntax rootMs, MetaBlockStatements currentBlockStatements)
@@ -753,6 +783,11 @@ namespace SimpleLanguage.Core
                 sb.Append(m_MetaBlockStatements.ToFormatString());
 
             return sb.ToString();
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 }

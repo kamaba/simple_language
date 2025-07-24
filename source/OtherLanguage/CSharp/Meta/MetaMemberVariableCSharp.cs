@@ -38,7 +38,7 @@ namespace SimpleLanguage.Core
                         fmc = cfmc;
                         continue;
                     }
-                    fmc = CSharpManager.FindAndCreateMetaBase(fmc, fullname[i]);
+                    fmc = CSharpManager.FindAndCreateMetaNode(fmc, fullname[i]);
                 }
                 defineMetaClassType = fmc.GetMetaClassByTemplateCount(0);
             }

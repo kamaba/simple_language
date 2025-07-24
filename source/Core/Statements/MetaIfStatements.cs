@@ -161,20 +161,28 @@ namespace SimpleLanguage.Core.Statements
                 Debug.Write("Error 没有if语句!!");
             }
             MetaType mdt = null;
-            if( m_MetaVariable != null )
+            if ( m_MetaVariable == null )
+            {
+                //m_MetaVariable = new MetaVariable("if_auto_metavariable_" + GetHashCode().ToString(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, new MetaType(CoreMetaClassManager.booleanMetaClass));
+                //m_OwnerMetaBlockStatements.AddMetaVariable(m_MetaVariable);
+            }
+            else
             {
                 mdt = m_MetaVariable.metaDefineType;
             }
+
             CreateExpressParam cep = new CreateExpressParam()
             {
                 ownerMBS = m_OwnerMetaBlockStatements,
+                ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass,
                 metaType = mdt,
                 fme = m_FileMetaKeyIfSyntax.ifExpressSyntax.conditionExpress,
                 isStatic = false,
                 isConst = false,
-                parsefrom = EParseFrom.StatementRightExpress
+                parsefrom = EParseFrom.StatementRightExpress,
             };
             var express = ExpressManager.CreateExpressNode(cep );
+            express.Parse(new AllowUseSettings());
 
             MetaIfStatements.MetaElseIfStatements msis = new MetaIfStatements.MetaElseIfStatements(m_OwnerMetaBlockStatements, m_FileMetaKeyIfSyntax.ifExpressSyntax, express);
             AddIfEslseStateStatements(msis, IfElseState.If );
@@ -194,7 +202,8 @@ namespace SimpleLanguage.Core.Statements
                     fme = fmsthen.conditionExpress,
                     isStatic = false,
                     isConst = false,
-                    parsefrom = EParseFrom.StatementRightExpress
+                    parsefrom = EParseFrom.StatementRightExpress,
+                    equalMetaVariable = m_MetaVariable,
                 };
                 var express2 = ExpressManager.CreateExpressNode(cep2);
 
@@ -232,7 +241,7 @@ namespace SimpleLanguage.Core.Statements
         //    //}
         //    return null;
         //}
-        public void SetDeep(int dp)
+        public override void SetDeep(int dp)
         {
             for (int i = 0; i < m_MetaElseIfStatements.Count; i++)
             {

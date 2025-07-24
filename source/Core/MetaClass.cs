@@ -14,6 +14,8 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Linq;
 using SimpleLanguage.Parse;
+using SimpleLanguage.IR;
+using System.Collections;
 
 namespace SimpleLanguage.Core
 {
@@ -278,6 +280,11 @@ namespace SimpleLanguage.Core
             }
             fmc.SetMetaClass(this);
             m_FileMetaClassDict.Add(fmc.token, fmc);
+
+            if(m_IsInterfaceClass == false )
+            {
+                m_IsInterfaceClass = fmc.preInterfaceToken != null;
+            }
         }
         public void ParseFileMetaClassMemeberVarAndFunc( FileMetaClass fmc )
         {

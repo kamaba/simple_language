@@ -29,27 +29,6 @@ namespace SimpleLanguage.Core
         }
         public Dictionary<string, MetaNamespace> metaNamespaceDict = new Dictionary<string, MetaNamespace>();       
 
-        //type = 0 all namespace/class/data/enum   1 namespace  2class/data
-        public MetaNode FindImportNamespace(FileMetaImportSyntax fmis, string name )
-        {
-            MetaNode parentNode = ModuleManager.instance.selfModule.metaNode;
-
-            MetaNode resultMB = null;
-            for( int i = 0; i < fmis.namespaceStatement.namespaceList.Count; i++ )
-            {
-                resultMB = parentNode.GetChildrenMetaNodeByName(fmis.namespaceStatement.namespaceList[i]);
-                if( resultMB != null )
-                {
-                    if( resultMB.name == name )
-                    {
-                        return resultMB;
-                    }
-                    parentNode = resultMB;
-                } 
-            }
-
-            return null;
-        }
         public MetaNode SearchTopLevelFileMetaNamespace(FileMetaNamespace fns, MetaNode parentNode = null)
         {
             MetaNode findNode = parentNode;

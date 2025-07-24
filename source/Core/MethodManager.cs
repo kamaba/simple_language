@@ -27,15 +27,11 @@ namespace SimpleLanguage.Core
             }
         }
         public List<MetaMemberFunction> metaOriginalFunctionList => m_MetaOriginalFunctionList;
-        public List<MetaMemberFunction> metaClassTemplateGenFunctionList => m_MetaClassTemplateGenFunctionList;
-        public List<MetaMemberFunction> metaFunctionTemplateFunctionList => m_MetaFunctionTemplateFunctionList;
         public List<MetaMemberFunction> metaDynamicFunctionList => m_MetaDynamicFunctionList;
 
         private Dictionary<string, MetaFunction> m_MetaAllFunctionDict = new Dictionary<string, MetaFunction>();
 
         private List<MetaMemberFunction> m_MetaOriginalFunctionList = new List<MetaMemberFunction>();
-        private List<MetaMemberFunction> m_MetaClassTemplateGenFunctionList = new List<MetaMemberFunction>();
-        private List<MetaMemberFunction> m_MetaFunctionTemplateFunctionList = new List<MetaMemberFunction>();
         private List<MetaMemberFunction> m_MetaDynamicFunctionList = new List<MetaMemberFunction>();
 
 
@@ -77,22 +73,6 @@ namespace SimpleLanguage.Core
                 AddMetaAllFunction(mmf);
             }
         }
-        public void AddClassTemplateMemeberFunction(MetaMemberFunction mmf)
-        {
-            if (m_MetaClassTemplateGenFunctionList.IndexOf(mmf) == -1)
-            {
-                m_MetaClassTemplateGenFunctionList.Add(mmf);
-                AddMetaAllFunction(mmf);
-            }
-        }
-        public void AddFunctionTemplateMemeberFunction(MetaMemberFunction mmf)
-        {
-            if (m_MetaFunctionTemplateFunctionList.IndexOf(mmf) == -1)
-            {
-                m_MetaFunctionTemplateFunctionList.Add(mmf);
-                AddMetaAllFunction(mmf);
-            }
-        }
         public void AddDynamicMemeberFunction(MetaMemberFunction mmf)
         {
             if (m_MetaDynamicFunctionList.IndexOf(mmf) == -1)
@@ -101,15 +81,10 @@ namespace SimpleLanguage.Core
                 AddMetaAllFunction(mmf);
             }
         }
-        public void ParseStatements( int type )
+        public void ParseStatements()
         {
-            List<MetaMemberFunction> list = type switch
-            {
-                1 => m_MetaClassTemplateGenFunctionList,
-                2 => m_MetaFunctionTemplateFunctionList,
-                3 => m_MetaDynamicFunctionList,
-                _ => m_MetaOriginalFunctionList,
-            };
+            var list = new List<MetaMemberFunction>(m_MetaOriginalFunctionList);
+            m_MetaOriginalFunctionList.Clear();
             foreach (var v in list)
             {
                 v.CreateMetaExpress();

@@ -127,14 +127,7 @@ namespace SimpleLanguage.Core
             MetaType mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
             if ( this.m_FileMetaParamter?.classDefineRef != null)
             {
-                if(m_OwnerMetaFunction.ownerMetaClass is MetaGenTemplateClass mgtc )
-                {
-                    TypeManager.instance.UpdateMetaType(m_MetaVariable.metaDefineType, mgtc );
-                }
-                else
-                {
-                    mdt = TypeManager.instance.GetMetaTypeByTemplateFunction(m_OwnerMetaFunction.ownerMetaClass, m_OwnerMetaFunction as MetaMemberFunction, m_FileMetaParamter.classDefineRef);
-                }
+                mdt = TypeManager.instance.GetMetaTypeByTemplateFunction(m_OwnerMetaFunction.ownerMetaClass, m_OwnerMetaFunction as MetaMemberFunction, m_FileMetaParamter.classDefineRef);                
             }
             m_MetaVariable.SetMetaDefineType(mdt);
             if(m_FileMetaParamter != null )
@@ -187,12 +180,6 @@ namespace SimpleLanguage.Core
         {
             if (m_MetaVariable == null)
             {
-                return true;
-            }
-            var tmc = m_MetaVariable.metaDefineType.metaClass as MetaGenTemplateClass;
-            if (tmc != null)
-            {
-                //return tmc.IsInConstraintMetaClass(mp.ownerMetaClass);
                 return true;
             }
             if( mip != null)
@@ -670,6 +657,19 @@ namespace SimpleLanguage.Core
         public void AddMetaTemplateParamsList( MetaType mp )
         {
             m_MetaTemplateParamsList.Add(mp);
+        }
+        public List<MetaClass> GetMetaClassParamsList()
+        {
+            List<MetaClass> list = new List<MetaClass>();
+
+            foreach( var v in m_MetaTemplateParamsList )
+            {
+                if (v.metaClass == null)
+                    return null;
+                list.Add(v.metaClass);
+            }
+
+            return list;
         }
         public MetaClass GetMaxLevelMetaClassType()
         {

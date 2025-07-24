@@ -28,7 +28,6 @@ namespace SimpleLanguage.Core
         public bool isTemplate => m_MetaTemplate != null;
         public MetaMemberEnum enumValue => m_EnumValue;
         public List<MetaType> templateMetaTypeList => m_TemplateMetaTypeList;
-        public bool isGenTemplateClass => m_MetaClass is MetaGenTemplateClass;
         public bool isArray => m_MetaClass?.eType == EType.Array;
         public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
         public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData;
@@ -50,6 +49,7 @@ namespace SimpleLanguage.Core
         public MetaType(MetaTemplate mt)
         {
             m_MetaTemplate = mt;
+            m_MetaClass = mt.extendsMetaClass;
         }
         public MetaType( MetaType mt ) : base( mt )
         {
@@ -243,11 +243,11 @@ namespace SimpleLanguage.Core
         }
         public MetaType GetMetaInputTemplateByIndex( int index = 0 )
         {
-            MetaGenTemplateClass mtc = m_MetaClass as MetaGenTemplateClass;
-            if (mtc != null )
-            {
-                return mtc.GetGenTemplateByIndex(index);
-            }
+            //MetaGenTemplateClass mtc = m_MetaClass as MetaGenTemplateClass;
+            //if (mtc != null )
+            //{
+            //    return mtc.GetGenTemplateByIndex(index);
+            //}
             return null;
         }
         public MetaExpressNode GetDefaultExpressNode()
@@ -265,14 +265,8 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            if (m_MetaClass is MetaGenTemplateClass)
-            {
-                sb.Append((m_MetaClass as MetaGenTemplateClass).ToDefineTypeString());
-            }
-            else
-            {
-                sb.Append(m_MetaClass?.allClassName);
-            }
+            sb.Append(m_MetaClass?.allClassName);
+
             return sb.ToString();
         }
     }
