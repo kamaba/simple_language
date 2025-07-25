@@ -209,6 +209,7 @@ namespace SimpleLanguage.Core
         public bool isCanRewrite => m_IsCanRewrite;
         public bool isTemplateInParam => m_IsTemplateInParam;
         public FileMetaMemberFunction fileMetaMemberFunction => m_FileMetaMemberFunction;
+        public MetaMemberFunction sourceMetaMemberFunction => m_SourceMetaMemberFunction;
 
         #region 属性
         protected bool m_IsTemplateFunction = false;
@@ -221,10 +222,11 @@ namespace SimpleLanguage.Core
         protected string m_FunctionAllName = null;
         protected bool m_ConstructInitFunction = false;
         protected bool m_IsWithInterface = false;
+        protected MetaMemberFunction m_SourceMetaMemberFunction = null;
         protected FileMetaMemberFunction m_FileMetaMemberFunction = null;
 
         //模板生成函数，如果匹配了，模板函数后，再进行看是否生成过该函数
-        //protected List<MetaGenTempalteFunction> m_GenTempalteFunctionList = new List<MetaGenTempalteFunction>();
+        protected List<MetaGenTempalteFunction> m_GenTempalteFunctionList = new List<MetaGenTempalteFunction>();
 
 
         #endregion
@@ -348,6 +350,10 @@ namespace SimpleLanguage.Core
             //m_Deep = deep;
             m_MetaBlockStatements?.SetDeep(deep);
         }
+        public void SetSourceMetaMemberFunction( MetaMemberFunction mmf )
+        {
+            this.m_SourceMetaMemberFunction = mmf;
+        }
         public void SetIsGet(bool isGet)
         {
             m_IsGet = isGet;
@@ -397,39 +403,39 @@ namespace SimpleLanguage.Core
             m_MetaMemberTemplateCollection.AddMetaDefineTemplate(mt);
         }
         //如果是模板函数，需要在实例化类后，进行新的实体函数的解析
-        //public MetaGenTempalteFunction AddGenTemplateMemberFunctionBySelf( List<MetaClass> list )
-        //{
+        public MetaGenTempalteFunction AddGenTemplateMemberFunctionBySelf(List<MetaClass> list)
+        {
 
-        //    MetaGenTempalteFunction mgtf = GetGenTemplateFunction(list);
-        //    if( mgtf == null )
-        //    {
-        //        List<MetaGenTemplate> mgtList = new List<MetaGenTemplate>(list.Count);
-        //        for (int i = 0; i < list.Count; i++)
-        //        {
-        //            var l1 = this.m_MetaMemberTemplateCollection.metaTemplateList[i];
-        //            MetaGenTemplate mgt = new MetaGenTemplate(l1, new MetaType(list[i]));
-        //            mgtList.Add(mgt);
-        //        }
-        //        mgtf = new MetaGenTempalteFunction(this, mgtList);
+            MetaGenTempalteFunction mgtf = GetGenTemplateFunction(list);
+            if (mgtf == null)
+            {
+                List<MetaGenTemplate> mgtList = new List<MetaGenTemplate>(list.Count);
+                for (int i = 0; i < list.Count; i++)
+                {
+                    var l1 = this.m_MetaMemberTemplateCollection.metaTemplateList[i];
+                    MetaGenTemplate mgt = new MetaGenTemplate(l1, new MetaType(list[i]));
+                    mgtList.Add(mgt);
+                }
+                mgtf = new MetaGenTempalteFunction(this, mgtList);
 
-        //        this.m_GenTempalteFunctionList.Add(mgtf);
+                this.m_GenTempalteFunctionList.Add(mgtf);
 
-        //        mgtf.Parse();
-        //    }
-        //    return mgtf;
-        //}
-        //public MetaGenTempalteFunction GetGenTemplateFunction( List<MetaClass> mcList )
-        //{
-        //    for( int i = 0; i < m_GenTempalteFunctionList.Count; i++ )
-        //    {
-        //        var c = m_GenTempalteFunctionList[i];
-        //        if( c.MatchInputTemplateInsance( mcList ) )
-        //        {
-        //            return c;
-        //        }
-        //    }
-        //    return null;
-        //}
+                mgtf.Parse();
+            }
+            return mgtf;
+        }
+        public MetaGenTempalteFunction GetGenTemplateFunction(List<MetaClass> mcList)
+        {
+            for (int i = 0; i < m_GenTempalteFunctionList.Count; i++)
+            {
+                var c = m_GenTempalteFunctionList[i];
+                if (c.MatchInputTemplateInsance(mcList))
+                {
+                    return c;
+                }
+            }
+            return null;
+        }
         public override bool Parse()
         {
             return base.Parse();

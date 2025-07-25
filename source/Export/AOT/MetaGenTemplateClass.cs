@@ -13,7 +13,7 @@ using System.Text;
 
 namespace SimpleLanguage.Core.AOT
 {
-    public sealed class MetaGenTemplateClass : MetaClass
+    public sealed class MetaGenTemplateClass2 : MetaClass
     {
         public MetaClass metaTemplateClass => m_MetaTemplateClass;
 
@@ -22,7 +22,7 @@ namespace SimpleLanguage.Core.AOT
         private List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
         private MetaClass m_MetaTemplateClass = null;
 
-        public MetaGenTemplateClass( MetaClass mtc, List<MetaGenTemplate> list ) : base(mtc.name)
+        public MetaGenTemplateClass2( MetaClass mtc, List<MetaGenTemplate> list ) : base(mtc.name)
         {
             m_MetaTemplateClass = mtc;
             m_MetaGenTemplateList = list;

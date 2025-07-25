@@ -23,6 +23,7 @@ namespace SimpleLanguage.Core
             }
         }
         public MetaClass metaClass => m_MetaClass;
+        public MetaClass templateMetaClass => m_TemplateMetaClass;
         public bool isEnum => m_MetaClass is MetaEnum;
         public bool isData => m_MetaClass is MetaData;
         public bool isTemplate => m_MetaTemplate != null;
@@ -37,7 +38,7 @@ namespace SimpleLanguage.Core
 
         //private MetaInputTemplateCollection m_InputTemplateCollection = null;
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
-        private MetaClass m_RawMetaClass = null;                    // List<int> => list
+        private MetaClass m_TemplateMetaClass = null;                    // List<int> => list
         private MetaType m_ParentMetaType = null;
         private MetaTemplate m_MetaTemplate = null;
         private MetaExpressNode m_DefaultExpressNode = null;        // int a => a = 0;
@@ -46,25 +47,14 @@ namespace SimpleLanguage.Core
 
         private List<MetaType> m_TemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
 
+        public MetaType()
+        {
+
+        }
         public MetaType(MetaTemplate mt)
         {
             m_MetaTemplate = mt;
             m_MetaClass = mt.extendsMetaClass;
-        }
-        public MetaType( MetaType mt ) : base( mt )
-        {
-            this.m_MetaClass = mt.m_MetaClass;
-            this.m_RawMetaClass = mt.m_RawMetaClass;
-            this.m_ParentMetaType = mt.m_ParentMetaType;
-            this.m_MetaTemplate = mt.m_MetaTemplate;
-            this.m_DefaultExpressNode = mt.m_DefaultExpressNode;
-            this.m_EnumValue = mt.m_EnumValue;
-            this.m_IsDefineMetaClass = mt.m_IsDefineMetaClass;
-            for (int i = 0; i < mt.m_TemplateMetaTypeList.Count; i++)
-            {
-                MetaType mtc = new MetaType(mt.m_TemplateMetaTypeList[i]);
-                m_TemplateMetaTypeList.Add(mtc);
-            }
         }
         public MetaType( MetaClass mc )
         {
@@ -73,7 +63,16 @@ namespace SimpleLanguage.Core
                 Log.AddInStructMeta(EError.None, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
             m_IsDefineMetaClass = false;
-            m_RawMetaClass = mc;
+            m_MetaClass = mc;
+        }
+        public MetaType( MetaClass mc, MetaClass templatemc )
+        {
+            if (mc == null)
+            {
+                Log.AddInStructMeta(EError.None, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
+            }
+            m_IsDefineMetaClass = false;
+            m_TemplateMetaClass = templatemc;
             m_MetaClass = mc;
         }
         public MetaType( MetaClass mc, MetaInputTemplateCollection mitc )
@@ -85,18 +84,32 @@ namespace SimpleLanguage.Core
             m_IsDefineMetaClass = false;
             if ( mitc == null)
             {
-                m_RawMetaClass = mc;
+                m_TemplateMetaClass = mc;
                 m_MetaClass = mc;
             }
             else
             {
-                m_RawMetaClass = mc;
+                m_TemplateMetaClass = mc;
                 //m_InputTemplateCollection = mitc;
 
                 //m_MetaClass = m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
             }
-
-        }      
+        }
+        public MetaType(MetaType mt) : base(mt)
+        {
+            this.m_MetaClass = mt.m_MetaClass;
+            this.m_TemplateMetaClass = mt.m_TemplateMetaClass;
+            this.m_ParentMetaType = mt.m_ParentMetaType;
+            this.m_MetaTemplate = mt.m_MetaTemplate;
+            this.m_DefaultExpressNode = mt.m_DefaultExpressNode;
+            this.m_EnumValue = mt.m_EnumValue;
+            this.m_IsDefineMetaClass = mt.m_IsDefineMetaClass;
+            for (int i = 0; i < mt.m_TemplateMetaTypeList.Count; i++)
+            {
+                MetaType mtc = new MetaType(mt.m_TemplateMetaTypeList[i]);
+                m_TemplateMetaTypeList.Add(mtc);
+            }
+        }
         public bool IsCanForIn()
         {
             if(m_MetaClass is MetaEnum )//m_MetaClass is MetaData ||  )
@@ -117,12 +130,12 @@ namespace SimpleLanguage.Core
             for( int i = 0; i < m_TemplateMetaTypeList.Count; i++ )
             {
                 var tmt = m_TemplateMetaTypeList[i];
-                if( tmt.IsIncludeTemplate() == false )
+                if( tmt.IsIncludeTemplate()  )
                 {
-                    return false;
+                    return true;
                 }
             }
-            return true;
+            return m_MetaTemplate != null;
         }
         public bool IsIncludeClassTemplate(MetaClass ownerClass)
         {
@@ -203,12 +216,20 @@ namespace SimpleLanguage.Core
                 //    return true;
                 //}
             }
-
             return false;
         }
-        public void SetRawMetaClass( MetaClass mc )
+        public void SetMetaClass(MetaClass mc)
         {
-            m_RawMetaClass = mc;
+            m_MetaClass = mc;
+            m_IsDefineMetaClass = true;
+        }
+        public void SetMetaTemplate(MetaTemplate mt)
+        {
+            m_MetaTemplate = mt;
+        }
+        public void SetTemplateMetaClass( MetaClass mc )
+        {
+            m_TemplateMetaClass = mc;
         }
         public void UpdateMetaClassByRawMetaClassAndInputTemplateCollection()
         {
@@ -228,27 +249,11 @@ namespace SimpleLanguage.Core
         //        }
         //    }
         //}
-        public void SetMetaClass( MetaClass mc )
-        {
-            m_MetaClass = mc;
-            m_IsDefineMetaClass = true;
-        }
-        public void SetMetaTemplate( MetaTemplate mt )
-        {
-            m_MetaTemplate = mt;
-        }
-        public void SetMetaInputTemplateCollection( MetaInputTemplateCollection mitc )
-        {
-            //m_InputTemplateCollection = mitc;
-        }
         public MetaType GetMetaInputTemplateByIndex( int index = 0 )
         {
-            //MetaGenTemplateClass mtc = m_MetaClass as MetaGenTemplateClass;
-            //if (mtc != null )
-            //{
-            //    return mtc.GetGenTemplateByIndex(index);
-            //}
-            return null;
+            if (index < 0 || index >= m_TemplateMetaTypeList.Count) return null;
+
+            return m_TemplateMetaTypeList[index];
         }
         public MetaExpressNode GetDefaultExpressNode()
         {

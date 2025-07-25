@@ -185,6 +185,7 @@ namespace SimpleLanguage.Core
         public MetaBraceOrBracketStatementsContent metaBraceStatementsContent => m_MetaBraceStatementsContent;
 
         private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent = null;
+        protected MetaType m_ReturnMetaType = null;
 
         public static MetaVisitNode CraeteByNewClass(MetaClass mc, MetaBraceOrBracketStatementsContent mb, MetaVariable mv = null )
         {
@@ -194,6 +195,10 @@ namespace SimpleLanguage.Core
             vn.m_MetaBraceStatementsContent = mb;
             vn.visitType = EVisitType.NewClass;
             vn.variable = mv;
+            if( mc is MetaGenTemplateClass mgtc )
+            {
+                vn.m_ReturnMetaType = new MetaType(mgtc);
+            }
 
             return vn;
         }
@@ -254,6 +259,10 @@ namespace SimpleLanguage.Core
         }
         public MetaType GetMetaDefineType()
         {
+            if( m_ReturnMetaType != null )
+            {
+                return m_ReturnMetaType;
+            }
             switch(visitType)
             {
                 case EVisitType.MethodCall:

@@ -46,7 +46,7 @@ namespace SimpleLanguage.VM
             m_Type = new short[mvdict.Count];
             for ( int i = 0; i < mvdict.Count; i++ )
             {
-                var obj = ObjectManager.CreateObjectByDefineType(mvdict[i].irMetaClass);
+                var obj = ObjectManager.CreateObjectByDefineType(mvdict[i].irMetaClass, false);
                 m_Type[i] = obj.typeId;
                 m_MemberVariableObjectArray[i] = obj;
             }

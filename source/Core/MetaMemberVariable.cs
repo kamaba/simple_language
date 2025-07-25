@@ -166,6 +166,8 @@ namespace SimpleLanguage.Core
             if (m_FileMetaMemeberVariable?.classDefineRef != null)
             {
                 m_DefineMetaType = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(m_OwnerMetaClass, m_FileMetaMemeberVariable.classDefineRef);
+
+                m_IsTemplate = m_DefineMetaType.IsIncludeTemplate();
             }
         }
         public virtual int CalcParseLevelBeCall(int level)

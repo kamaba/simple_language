@@ -12,19 +12,19 @@ using System.Text;
 
 namespace SimpleLanguage.Core.AOT
 {
-    public class MetaGenTempalteFunction : MetaMemberFunction
+    public class MetaGenTempalteFunction2 : MetaMemberFunction
     {
         public List<MetaGenTemplate> metaGenTemplateList => m_MetaGenTemplateList;
 
         protected MetaMemberFunction m_OriginalMetaMemberFunction = null;
         protected List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
-        public MetaGenTempalteFunction(MetaMemberFunction mmc, List<MetaGenTemplate> list ) : base(mmc.ownerMetaClass)
+        public MetaGenTempalteFunction2(MetaMemberFunction mmc, List<MetaGenTemplate> list ) : base(mmc.ownerMetaClass)
         {
             m_OriginalMetaMemberFunction = mmc;
             UpdateGenMemberFunctionByTemplateClass(mmc);
             m_MetaGenTemplateList = list;
         }
-        public MetaGenTempalteFunction(MetaClass mc, string _name) : base(mc)
+        public MetaGenTempalteFunction2(MetaClass mc, string _name) : base(mc)
         {
             m_Name = _name;
             m_IsCanRewrite = true;
