@@ -30,6 +30,7 @@ namespace SimpleLanguage.Core
         public virtual bool isStatic => m_IsStatic;
         public virtual bool isConst => m_IsConst;
         public virtual bool isParsed => m_IsParsed;
+        public virtual bool isTemplate => m_IsTemplate;
         public bool isArgument => m_VariableFrom == EVariableFrom.Argument;
         public bool isGlobal => m_VariableFrom == EVariableFrom.Global;
         public bool isArray
@@ -52,6 +53,7 @@ namespace SimpleLanguage.Core
         protected bool m_IsParsed = false;
         protected bool m_IsStatic = false;
         protected bool m_IsConst = false;
+        protected bool m_IsTemplate = false;
         //用来存放扩展包含变量
         protected Dictionary<string, MetaVariable> m_MetaVariableDict = new Dictionary<string, MetaVariable>();
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
@@ -82,6 +84,7 @@ namespace SimpleLanguage.Core
             {
                 m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
+            m_IsTemplate = m_DefineMetaType.IsIncludeTemplate();
         } 
         public virtual void SetOwnerMetaClass(MetaClass ownerclass)
         {

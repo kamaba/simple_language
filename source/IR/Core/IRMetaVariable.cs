@@ -30,10 +30,12 @@ namespace SimpleLanguage.IR
         public int id { get; set; } = 0;
         public string name { get; set; }
         public int index { get; set; } = 0;
+        public bool isTemplate { get; set; } = false;
 
         private MetaExpressNode m_ExpressNode = null;
         private IRMetaClass m_IRMetaClass = null;
         private IRMetaVariableFrom m_IRMetaVariableFrom = IRMetaVariableFrom.None;
+
         public IRMetaVariable( MetaVariable mv )
         {
             m_MetaVariable = mv;
@@ -43,6 +45,7 @@ namespace SimpleLanguage.IR
                 ?  IRMetaVariableFrom.Argument : IRMetaVariableFrom.LocalStatement;
             //m_IRMetaClass = IRManager.instance.GetIRMetaClassById(mv.meta)
             m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mv.metaDefineType.name );
+            isTemplate = mv.isTemplate;
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme)
         {

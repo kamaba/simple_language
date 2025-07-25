@@ -49,6 +49,7 @@ namespace SimpleLanguage.IR
         public List<EType> m_MetaTypeList = new List<EType>();
         public int byteCount = 0;
         public string allName { get; set; } = null;
+        public bool isTemplate { get; set; } = false;
 
         List<MetaMemberVariable> m_LocalMetaMemberVariables = new List<MetaMemberVariable>();
         List<MetaMemberData> m_LocalMetaMemberDatas = new List<MetaMemberData>();

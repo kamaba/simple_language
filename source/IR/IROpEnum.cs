@@ -38,6 +38,7 @@ namespace SimpleLanguage.IR
         LoadStaticField,
 
         NewObject,
+        NewTemplateObject,
         NewArray,
         Pop,
 

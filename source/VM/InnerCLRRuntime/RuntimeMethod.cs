@@ -42,7 +42,7 @@ namespace SimpleLanguage.VM.Runtime
 
             Init();
         }
-        public RuntimeMethod(List<IRData> irList )
+        public RuntimeMethod( List<IRData> irList )
         {
             m_IRDataList = irList.ToArray();
             m_ExecuteCount = (ushort)m_IRDataList.Length;
@@ -56,14 +56,14 @@ namespace SimpleLanguage.VM.Runtime
                 m_ReturnObjectArray = new SObject[m_IRMethod.methodReturnVariableList.Count];
                 for (int i = 0; i < m_IRMethod.methodReturnVariableList.Count; i++)
                 {
-                    SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodReturnVariableList[i].irMetaClass);
+                    SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodReturnVariableList[i].irMetaClass, m_IRMethod.methodReturnVariableList[i].isTemplate );
                     //sobj.SetVoid();
                     m_ReturnObjectArray[i] = sobj;
                 }
                 m_ArgumentObjectArray = new SObject[m_IRMethod.methodArgumentList.Count];
                 for (int i = 0; i < m_IRMethod.methodArgumentList.Count; i++)
                 {
-                    SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodArgumentList[i].irMetaClass);
+                    SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodArgumentList[i].irMetaClass, m_IRMethod.methodArgumentList[i].isTemplate);
                     m_ArgumentObjectArray[i] = sobj;
                 }
                 for( int i = 0; i < m_ArgumentObjectArray.Length; i++ )
@@ -76,7 +76,7 @@ namespace SimpleLanguage.VM.Runtime
                 for (int i = 0; i < m_IRMethod.methodLocalVariableList.Count; i++)
                 {
                     var mev = m_IRMethod.methodLocalVariableList[i];
-                    SObject sobj = ObjectManager.CreateObjectByDefineType(mev.irMetaClass);
+                    SObject sobj = ObjectManager.CreateObjectByDefineType(mev.irMetaClass, mev.isTemplate);
                     m_LocalVariableObjectArray[i] = sobj;
                 }
                 for (int i = 0; i < m_LocalVariableObjectArray.Length; i++)
@@ -473,12 +473,17 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.NewObject:
                     {
                         IRMetaClass mdt = iri.opValue as IRMetaClass;
-                        SObject sob = ObjectManager.CreateObjectByDefineType(mdt);
+                        SObject sob = ObjectManager.CreateObjectByDefineType(mdt, false);
                         if( sob is ClassObject co )
                         {
                             ObjectManager.AddClassObject(co);
                         }
                         m_ValueStack[m_ValueIndex++].SetSObject(sob);
+                    }
+                    break;
+                case EIROpCode.NewTemplateObject:
+                    {
+
                     }
                     break;
                 case EIROpCode.Label:

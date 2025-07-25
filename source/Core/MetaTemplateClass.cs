@@ -16,12 +16,12 @@ namespace SimpleLanguage.Core
     public partial class MetaClass
     {
         public virtual bool isGenTemplate { get { return false; } }
-        //public List<MetaGenTemplateClass> metaGenTemplateClassList => m_MetaGenTemplateClassList;
+        public List<MetaGenTemplateClass> metaGenTemplateClassList => m_MetaGenTemplateClassList;
         public bool isTemplateClass { get { return m_MetaTemplateList.Count > 0; } }        //是否是模版类
         public List<MetaTemplate> metaTemplateList => m_MetaTemplateList;
 
         protected List<MetaTemplate> m_MetaTemplateList = new List<MetaTemplate>();
-        //protected List<MetaGenTemplateClass> m_MetaGenTemplateClassList = new List<MetaGenTemplateClass>();
+        protected List<MetaGenTemplateClass> m_MetaGenTemplateClassList = new List<MetaGenTemplateClass>();
         protected Dictionary<MetaTemplate, List<MetaType>> m_TemplateBindMetaTypeDict = new Dictionary<MetaTemplate, List<MetaType>>();
 
         public bool isDefineTemplate(string name)
@@ -110,82 +110,81 @@ namespace SimpleLanguage.Core
         {
             return m_MetaTemplateList.Exists(a => a.name == _name);
         }
-        //public void AddGenTemplateMetaClass(MetaGenTemplateClass mtc)
-        //{
-        //    //mtc.SetDeep(this.m_Deep + 1);
-        //    m_MetaGenTemplateClassList.Add(mtc);
-        //}
-        //public MetaGenTemplateClass GetGenTemplateMetaClass(MetaInputTemplateCollection mitc)
-        //{
-        //    foreach (var item in m_MetaGenTemplateClassList)
-        //    {
-        //        if (item.Adapter(mitc))
-        //        {
-        //            return item;
-        //        }
-        //    }
-        //    return null;
-        //}
-        //public MetaGenTemplateClass AddInstanceMetaClass(MetaInputTemplateCollection mitc)
-        //{
-        //    List<MetaClass> list = new List<MetaClass>();
-        //    foreach (var item in mitc.metaTemplateParamsList)
-        //    {
-        //        if( item.isTemplate == false )
-        //        {
-        //            list.Add(item.metaClass);
-        //        }
-        //    }
-        //    return AddInstanceMetaClass(list);
-        //}
-        //public MetaGenTemplateClass AddInstanceMetaClass( List<MetaClass> list )
-        //{
-        //    if( this.m_MetaTemplateList.Count == list.Count )
-        //    {
-        //        List<MetaGenTemplate> list2 = new List<MetaGenTemplate>();
-        //        for (int i = 0; i < this.metaTemplateList.Count; i++)
-        //        {
-        //            if (list[i].isTemplateClass )
-        //            {
-        //                return null;
-        //            }
+        public void AddGenTemplateMetaClass(MetaGenTemplateClass mtc)
+        {
+            //mtc.SetDeep(this.m_Deep + 1);
+            m_MetaGenTemplateClassList.Add(mtc);
+        }
+        public MetaGenTemplateClass GetGenTemplateMetaClass(MetaInputTemplateCollection mitc)
+        {
+            foreach (var item in m_MetaGenTemplateClassList)
+            {
+                if (item.Adapter(mitc))
+                {
+                    return item;
+                }
+            }
+            return null;
+        }
+        public MetaGenTemplateClass AddInstanceMetaClass(MetaInputTemplateCollection mitc)
+        {
+            List<MetaClass> list = new List<MetaClass>();
+            foreach (var item in mitc.metaTemplateParamsList)
+            {
+                if (item.isTemplate == false)
+                {
+                    list.Add(item.metaClass);
+                }
+            }
+            return AddInstanceMetaClass(list);
+        }
+        public MetaGenTemplateClass AddInstanceMetaClass(List<MetaClass> list)
+        {
+            if (this.m_MetaTemplateList.Count == list.Count)
+            {
+                List<MetaGenTemplate> list2 = new List<MetaGenTemplate>();
+                for (int i = 0; i < this.metaTemplateList.Count; i++)
+                {
+                    if (list[i].isTemplateClass)
+                    {
+                        return null;
+                    }
 
 
-        //            var classTemplate = this.metaTemplateList[i];
+                    var classTemplate = this.metaTemplateList[i];
 
-        //            MetaGenTemplate mgt = new MetaGenTemplate(classTemplate, new MetaType(list[i] ) );
-        //            list2.Add( mgt );
-        //        }
+                    MetaGenTemplate mgt = new MetaGenTemplate(classTemplate, new MetaType(list[i]));
+                    list2.Add(mgt);
+                }
 
-        //        MetaGenTemplateClass tmc = GetGenTemplateMetaClassByTemplateList(list2);
-        //        if( tmc == null )
-        //        {
-        //            tmc = new MetaGenTemplateClass(this, list2); 
-        //            ClassManager.instance.AddNeedHandleTemplateMetaClassList(tmc);
-        //            this.AddGenTemplateMetaClass(tmc);
-        //        }
-        //        return tmc;
-        //    }
-        //    return null;
-        //}
-        //public MetaGenTemplateClass GetGenTemplateMetaClassByTemplateList( List<MetaGenTemplate> list)
-        //{
-        //    foreach( var v in m_MetaGenTemplateClassList )
-        //    {
-        //        if( v.IsMatchByMetaTemplateClass(list) )
-        //        {
-        //            return v;
-        //        }
-        //    }
-        //    return null;
-        //}
+                MetaGenTemplateClass tmc = GetGenTemplateMetaClassByTemplateList(list2);
+                if (tmc == null)
+                {
+                    tmc = new MetaGenTemplateClass(this, list2);
+                    tmc.Parse();
+                    this.AddGenTemplateMetaClass(tmc);
+                }
+                return tmc;
+            }
+            return null;
+        }
+        public MetaGenTemplateClass GetGenTemplateMetaClassByTemplateList(List<MetaGenTemplate> list)
+        {
+            foreach (var v in m_MetaGenTemplateClassList)
+            {
+                if (v.IsMatchByMetaTemplateClass(list))
+                {
+                    return v;
+                }
+            }
+            return null;
+        }
         //public MetaGenTemplateClass GetGenTemplateMetaClassIfNotThenGenTemplateClass(MetaInputTemplateCollection mtic)
         //{
         //    MetaGenTemplateClass mtc = GetGenTemplateMetaClass(mtic);
         //    if (mtc == null)
         //    {
         //        mtc = MetaGenTemplateClass.GenerateTemplateClass(this, mtic);
-        //        ClassManager.instance.AddGenTemplateClass(mtc);
         //    }
         //    if (mtc == null)
         //    {

@@ -44,7 +44,7 @@ namespace SimpleLanguage.Core
         public Dictionary<string, MetaData> allDataDict => m_AllDataDict;
         public List<MetaDynamicClass> dynamicClassList => m_DynamicClassList;
         //public List<MetaGenTemplateClass> needHandleTemplateMetaClassList => m_NeedHandleTemplateMetaClassList;
-        public List<MetaClass> preInitHandleMetaClassList => m_InitHandleMetaClassList;
+        //public List<MetaClass> preInitHandleMetaClassList => m_InitHandleMetaClassList;
 
 
         private Dictionary<string, MetaClass> m_AllClassDict = new Dictionary<string, MetaClass>();
@@ -146,9 +146,9 @@ namespace SimpleLanguage.Core
         //    {
         //        m_NeedHandleTemplateMetaClassList.Add(mc);
         //    }
-            
+
         //}
-        //public bool IsMetaGenTemplateClass(MetaGenTemplateClass mc )
+        //public bool IsMetaGenTemplateClass(MetaGenTemplateClass mc)
         //{
         //    if (m_GenTemplateMetaClassList.IndexOf(mc) != -1)
         //        return true;
@@ -458,7 +458,7 @@ namespace SimpleLanguage.Core
         //}
         //public void ParseGenTemplateMetaClassList()
         //{
-        //    if (m_NeedHandleTemplateMetaClassList.Count==0) return;
+        //    if (m_NeedHandleTemplateMetaClassList.Count == 0) return;
 
         //    var list = new List<MetaGenTemplateClass>(m_NeedHandleTemplateMetaClassList);
         //    m_NeedHandleTemplateMetaClassList.Clear();

@@ -429,7 +429,7 @@ namespace SimpleLanguage.Core
                                 //mmv.metaDefineType.SetMetaClass(m_NewMetaData);
                             }
                             m_DefineMetaType.SetMetaClass(m_NewMetaData);
-                            m_DefineMetaType.SetRawMetaClass(m_NewMetaData);
+                            m_DefineMetaType.SetTemplateMetaClass(m_NewMetaData);
                             m_ContentType = EStatementsContentType.DynamicData;
                             m_EqualMetaVariable?.SetMetaDefineType(m_DefineMetaType);
                         }
@@ -773,7 +773,7 @@ namespace SimpleLanguage.Core
                         MetaClass mc = m_MetaBraceOrBracketStatementsContent.GetMaxLevelMetaClassType();
                         metaInputTemplateCollection.AddMetaTemplateParamsList(new MetaType(mc));
 
-                        m_MetaDefineType.SetRawMetaClass(CoreMetaClassManager.arrayMetaClass );
+                        m_MetaDefineType.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
 
                         //if (fmcn.metaTemplateParamsCollection == null)
                         //{
