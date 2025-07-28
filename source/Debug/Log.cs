@@ -249,6 +249,30 @@ namespace SimpleLanguage.Parse
             AddCodeFileLog(ld);
             return ld;
         }
+        public static LogData AddGenIR(EError err, string msg)
+        {
+            LogData ld = new LogData()
+            {
+                errorType = LogData.EErrorType.GenIR,
+                time = DateTime.Now,
+            };
+            ld.message = msg;
+            ld.error = err;
+            AddCodeFileLog(ld);
+            return ld;
+        }
+        public static LogData AddVM( EError err, string msg )
+        {
+            LogData ld = new LogData()
+            {
+                errorType = LogData.EErrorType.VM,
+                time = DateTime.Now,
+            };
+            ld.message = msg;
+            ld.error = err;
+            AddCodeFileLog(ld);
+            return ld;
+        }
         static void AddLog( Token token, EError err, string msg )
         {
             LogData ld = new LogData() { filePath = token.path,

@@ -28,7 +28,7 @@ namespace SimpleLanguage.Core
         public virtual string name => m_Name;
         public RefFromType refFromType => m_RefFromType;
         public MetaNode metaNode => m_MetaNode;
-
+        public string pathName => m_MetaNode?.GetAllName();
 
         protected EPermission m_Permission = EPermission.Public;
         protected RefFromType m_RefFromType = RefFromType.Local;

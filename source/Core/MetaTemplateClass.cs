@@ -8,8 +8,8 @@
 
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Parse;
+using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.Intrinsics.X86;
 
 namespace SimpleLanguage.Core
 {
@@ -114,6 +114,7 @@ namespace SimpleLanguage.Core
         {
             //mtc.SetDeep(this.m_Deep + 1);
             m_MetaGenTemplateClassList.Add(mtc);
+            ClassManager.instance.AddGenTemplateClass(mtc);
         }
         public MetaGenTemplateClass GetGenTemplateMetaClass(MetaInputTemplateCollection mitc)
         {
@@ -140,6 +141,10 @@ namespace SimpleLanguage.Core
         }
         public MetaGenTemplateClass AddInstanceMetaClass(List<MetaClass> list)
         {
+            if(list.Count == 0)
+            {
+                return null;
+            }
             if (this.m_MetaTemplateList.Count == list.Count)
             {
                 List<MetaGenTemplate> list2 = new List<MetaGenTemplate>();

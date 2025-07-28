@@ -148,7 +148,7 @@ namespace SimpleLanguage.Project
             {
                 fileParseList[i].StructParse();
 
-                Debug.Write(fileParseList[i].ToFormatString());
+                Log.AddProcess( EProcess.StructMeta, EError.StructFileMetaEnd, fileParseList[i].ToFormatString());
             }
         }
         public static void StructParseComplete()

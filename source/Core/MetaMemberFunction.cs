@@ -170,6 +170,11 @@ namespace SimpleLanguage.Core
                 if(string.IsNullOrEmpty( m_FunctionAllName ) )
                 {
                     StringBuilder sb = new StringBuilder();
+                    if( m_OwnerMetaClass!= null )
+                    {
+                        sb.Append(m_OwnerMetaClass.allClassName);
+                        sb.Append(".");
+                    }
                     sb.Append(name);
                     if(m_MetaMemberTemplateCollection.metaTemplateList.Count > 0 )
                     {
@@ -339,7 +344,7 @@ namespace SimpleLanguage.Core
             }
             m_ReturnMetaVariable = new MetaVariable("return_" + GetHashCode().ToString(), EVariableFrom.Argument, null, m_OwnerMetaClass, m_DefineMetaType);
 
-            if(m_RefFromType == RefFromType.Local )
+            if(m_RefFromType == RefFromType.Local && m_FileMetaMemberFunction != null )
             {
                 MethodManager.instance.AddOriginalMemeberFunction(this);
             }
