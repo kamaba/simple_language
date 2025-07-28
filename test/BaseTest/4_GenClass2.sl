@@ -31,12 +31,12 @@ GenClass2{
     {
 
         Level1<int>  GenClass2_fun_l1 = Level1<int>()
-        GenClass2_fun_l1.setLevel1( 200 )
-        System.Console.Write("Flaoat" + GenClass2_fun_l1.Level1_t )
+        #GenClass2_fun_l1.setLevel1( 200 )
+        #System.Console.Write("Flaoat" + GenClass2_fun_l1.Level1_t )
 
-        Level1<Level1<int> > GenClass2_fun_l2 = Level1<Level1<int> >()
-        GenClass2_fun_l2.setLevel1( Level1<int>(20) )
-        System.Console.Write("Flaoat2" + GenClass2_fun_l2.Level1_t.Level1_t )
+        #Level1<Level1<int> > GenClass2_fun_l2 = Level1<Level1<int> >()
+        #GenClass2_fun_l2.setLevel1( Level1<int>(20) )
+        #System.Console.Write("Flaoat2" + GenClass2_fun_l2.Level1_t.Level1_t )
     }
 }
 

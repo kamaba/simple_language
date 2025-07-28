@@ -106,12 +106,13 @@ namespace SimpleLanguage.Core
         }
         public MetaDefineParam(MetaDefineParam mdp )
         {
+            m_Name = mdp.m_Name;
             m_IsFunctionTemplate = mdp.m_IsFunctionTemplate;
             m_FileMetaParamter = mdp.m_FileMetaParamter;
             m_MetaExpressNode = mdp.m_MetaExpressNode;
-            m_MetaVariable = mdp.m_MetaVariable;
             m_OwnerMetaFunction = mdp.m_OwnerMetaFunction;
-            m_Name = mdp.m_Name;
+            m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.Argument,
+                null, m_OwnerMetaFunction.ownerMetaClass, new MetaType(mdp.metaVariable.metaDefineType) );
         }
         public MetaDefineParam(MetaFunction mf, FileMetaParamterDefine fmp)
         {

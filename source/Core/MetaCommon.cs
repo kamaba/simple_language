@@ -43,6 +43,7 @@ namespace SimpleLanguage.Core
         MemberVariableName,
         MemberDataName,
         NewClass,
+        NewTemplate,
         NewData,
         MemberFunctionName,
         ConstValue,
@@ -314,7 +315,8 @@ namespace SimpleLanguage.Core
                         }
                         if( m_FrontDefineMetaType.isTemplate )
                         {
-                            m_MetaClass = m_FrontDefineMetaType.metaTemplate.extendsMetaClass;
+                            m_MetaTemplate = m_FrontDefineMetaType.metaTemplate;
+                            m_CallNodeType = ECallNodeType.NewClass;
                         }
                         else
                         {
@@ -903,6 +905,10 @@ namespace SimpleLanguage.Core
                 {
                     Log.AddInStructMeta(EError.None, "Error 函数调用与命名空间冲突!!");
                     return false;
+                }
+                else if( m_MetaTemplate != null )
+                {
+                    m_CallNodeType = ECallNodeType.NewTemplate;
                 }
                 else if ( m_MetaClass != null )
                 {
@@ -1685,6 +1691,11 @@ namespace SimpleLanguage.Core
                     else if( mcn.callNodeType == ECallNodeType.ConstValue )
                     {
                         MetaVisitNode mvn = MetaVisitNode.CreateByConstExpress(mcn.metaExpressValue as MetaConstExpressNode, mcn.m_MetaVariable );
+                        m_VisitNodeList.Add(mvn);
+                    }
+                    else if( mcn.callNodeType == ECallNodeType.NewTemplate )
+                    {
+                        MetaVisitNode mvn = MetaVisitNode.CreateByNewTemplate(mcn.m_MetaTemplate);
                         m_VisitNodeList.Add(mvn);
                     }
                     else if (mcn.callNodeType == ECallNodeType.NewClass )

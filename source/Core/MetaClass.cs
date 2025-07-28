@@ -133,6 +133,33 @@ namespace SimpleLanguage.Core
                 v.SetDeep(deep + 1);
             }
         }
+        public void UpdateClassAllName()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(m_MetaNode.GetAllName());
+
+            if( m_MetaTemplateList.Count > 0 )
+            {
+                sb.Append("<");
+                for( int i = 0; i < m_MetaTemplateList.Count; i++ )
+                {
+                    sb.Append(m_MetaTemplateList[i].name);
+                    if(m_MetaTemplateList[i].extendsMetaClass != null )
+                    {
+                        sb.Append(":");
+                        sb.Append(m_MetaTemplateList[i].extendsMetaClass.allClassName);
+                    }
+                    if( i < m_MetaTemplateList.Count - 1 )
+                    {
+                        sb.Append(",");
+                    }
+                }
+                sb.Append(">");
+            }
+
+            this.m_AllName = sb.ToString();
+        }
         public void SetDefaultExpressNode( MetaExpressNode defaultExpressNode )
         {
             m_DefaultExpressNode = defaultExpressNode;
@@ -504,7 +531,7 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public List<MetaMemberVariable> GetMetaMemberVariableListByFlag( bool isStatic, bool isConst )
+        public virtual List<MetaMemberVariable>  GetMetaMemberVariableListByFlag( bool isStatic, bool isConst )
         {
             List<MetaMemberVariable> mmvList = new List<MetaMemberVariable>();
             MetaMemberVariable tempMmv = null;

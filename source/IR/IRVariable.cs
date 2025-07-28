@@ -6,11 +6,8 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.IR;
-using SimpleLanguage.VM;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+
+using SimpleLanguage.Parse;
 using System.Text;
 
 namespace SimpleLanguage.IR
@@ -51,7 +48,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                Debug.Write($"SVM Error 没有找到加载变量的来源类型！");
+                Log.AddVM( EError.None, $"SVM Error 没有找到加载变量的来源类型！");
             }
             m_IRDataList.Add(data);
         }
@@ -82,6 +79,12 @@ namespace SimpleLanguage.IR
                 data.index = id;
                 data.opCode = EIROpCode.StoreNotStaticField_R1;
             }
+            else if( irmvf == IRMetaVariableFrom.Argument )
+            {
+                irmv = _irMethod.GetIRArgumentById(id);
+                data.opCode = EIROpCode.StoreLocal;
+                data.index = irmv.index;
+            }
             else if (irmvf == IRMetaVariableFrom.LocalStatement)
             {
                 irmv = _irMethod.GetIRLocalVariableById(id);
@@ -90,7 +93,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                Debug.Write($"SVM Error 没有找到加载变量的来源类型！");
+                Log.AddVM(EError.None, $"SVM Error 没有找到加载变量的来源类型！");
             }
             m_IRDataList.Add(data);
         }

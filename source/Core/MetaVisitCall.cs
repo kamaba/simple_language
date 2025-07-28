@@ -174,6 +174,7 @@ namespace SimpleLanguage.Core
             MethodCall,
             NewClass,
             NewData,
+            NewTemplate,
             Enum,
         }
         public MetaConstExpressNode constValueExpress { get; private set; } = null;
@@ -182,11 +183,22 @@ namespace SimpleLanguage.Core
         public MetaVisitVariable visitVariable { get; private set; } = null;
         public MetaMethodCall methodCall { get; private set; } = null;
         public MetaClass callerMetaClass { get; private set; }= null;
+
+        public MetaTemplate callerMetaTemplate { get; private set; } = null;
         public MetaBraceOrBracketStatementsContent metaBraceStatementsContent => m_MetaBraceStatementsContent;
 
         private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent = null;
         protected MetaType m_ReturnMetaType = null;
 
+        public static MetaVisitNode CreateByNewTemplate( MetaTemplate mt )
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.callerMetaTemplate = mt;
+            vn.visitType = EVisitType.NewTemplate;
+
+            return vn;
+        }
         public static MetaVisitNode CraeteByNewClass(MetaClass mc, MetaBraceOrBracketStatementsContent mb, MetaVariable mv = null )
         {
             MetaVisitNode vn = new MetaVisitNode();

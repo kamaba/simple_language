@@ -142,6 +142,27 @@ namespace SimpleLanguage.Core
             }
             this.m_MetaTemplateClassDict.Add(mc.metaTemplateList.Count, mc);
         }
+        public string GetAllName()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            List<string> list = new List<string>();
+            MetaNode mn = this;
+            while( mn != null )
+            {
+                list.Add(mn.name);
+                mn = mn.parentNode;
+            }
+            for( int i = list.Count-1; i >= 0; i-- )
+            {
+                sb.Append(list[i]);
+                if( i > 0 )
+                {
+                    sb.Append(".");
+                }
+            }
+            return sb.ToString();
+        }
         public MetaNode AddMetaNamespace(MetaNamespace namespaceName)
         {           
             if( m_MetaNamespace != null || this.isMetaModule )

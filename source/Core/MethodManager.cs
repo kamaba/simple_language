@@ -84,7 +84,6 @@ namespace SimpleLanguage.Core
         public void ParseStatements()
         {
             var list = new List<MetaMemberFunction>(m_MetaOriginalFunctionList);
-            m_MetaOriginalFunctionList.Clear();
             foreach (var v in list)
             {
                 v.CreateMetaExpress();

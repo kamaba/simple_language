@@ -106,15 +106,13 @@ namespace SimpleLanguage.Core
             topLevelNamespace.AddMetaClass(mc);
             return true;
         }
-        //public void AddGenTemplateClass(MetaGenTemplateClass mc )
-        //{
-        //    var find1 = mc.metaGenTemplateClassList.Find(a => a == mc);
-        //    if( find1 == null )
-        //    {
-        //        mc.metaGenTemplateClassList.Add(mc);
-        //        //m_GenTemplateClassList.Add(mc);
-        //    }
-        //}
+        public void AddGenTemplateClass(MetaGenTemplateClass mc)
+        {
+            if( !m_AllClassDict.ContainsKey(mc.allClassName ) )
+            {
+                m_AllClassDict.Add(mc.allClassName, mc);
+            }
+        }
         public MetaDynamicClass FindDynamicClass( MetaClass dc )
         {
             foreach( var v in m_DynamicClassList )
@@ -402,6 +400,7 @@ namespace SimpleLanguage.Core
                     newmc.SetClassDefineType(EClassDefineType.CodeDefine);
                     newmc.ParseFileMetaClassTemplate(fmc);
                     finalTopMetaNode.AddMetaClass(newmc);
+                    newmc.UpdateClassAllName();
                     newmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
 
                     AddInitHandleMetaClassList(newmc);
