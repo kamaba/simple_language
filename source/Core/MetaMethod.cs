@@ -31,7 +31,41 @@ namespace SimpleLanguage.Core
         public virtual string functionAllName {
             get
             {
-                return name;
+                if (string.IsNullOrEmpty(m_FunctionAllName))
+                {
+                    StringBuilder sb = new StringBuilder();
+                    if (m_OwnerMetaClass != null)
+                    {
+                        sb.Append(m_OwnerMetaClass.allClassName);
+                        sb.Append(".");
+                    }
+                    sb.Append(name);
+                    if (m_MetaMemberTemplateCollection.metaTemplateList.Count > 0)
+                    {
+                        sb.Append("<");
+                        for (int i = 0; i < m_MetaMemberTemplateCollection.metaTemplateList.Count; i++)
+                        {
+                            var mtl = m_MetaMemberTemplateCollection.metaTemplateList[i];
+                            sb.Append(mtl.name);
+                            if (i < m_MetaMemberTemplateCollection.metaTemplateList.Count - 1)
+                            {
+                                sb.Append(",");
+                            }
+                        }
+                        sb.Append(">");
+                    }
+                    if (m_MetaMemberParamCollection?.maxParamCount > 0)
+                    {
+                        sb.Append("_");
+                        sb.Append(m_MetaMemberParamCollection.maxParamCount.ToString());
+                        sb.Append("_");
+                        sb.Append(m_MetaMemberParamCollection.ToParamTypeName());
+                        sb.Append("_");
+                        sb.Append(GetHashCode().ToString());
+                    }
+                    m_FunctionAllName = sb.ToString();
+                }
+                return m_FunctionAllName;
             }
         }
         public MetaVariable thisMetaVariable => m_ThisMetaVariable;
@@ -49,6 +83,7 @@ namespace SimpleLanguage.Core
         protected EMethodCallType m_MethodCallType = EMethodCallType.Local;
         protected bool m_IsMustNeedReturnStatements = false;
         private List<LabelData> m_LabelDataList = new List<LabelData>();
+        protected string m_FunctionAllName = null;
         public MetaFunction(MetaClass mc)
         {
             m_MetaMemberParamCollection = new MetaDefineParamCollection(false, true);

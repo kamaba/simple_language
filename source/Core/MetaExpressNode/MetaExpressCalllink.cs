@@ -21,7 +21,7 @@ namespace SimpleLanguage.Core
             m_EqualMetaVariable = mv;
             if (fmcl != null )
             {
-                m_MetaCallLink = new MetaCallLink( fmcl, mc, mbs, mv?.metaDefineType );
+                m_MetaCallLink = new MetaCallLink( fmcl, mc, mbs, mv?.metaDefineType, mv );
             }
         }
         public MetaCallLinkExpressNode( MetaCallLink mcl )

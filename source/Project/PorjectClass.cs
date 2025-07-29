@@ -69,7 +69,7 @@ namespace SimpleLanguage.Project
         }
         public static void RunMain()
         {
-            MetaClass projectEntoer = ClassManager.instance.GetClassByName("Project");
+            MetaClass projectEntoer = ClassManager.instance.GetClassByName("S.Project", 0);
             if (projectEntoer == null)
             {
                 Debug.Write("Error 没有找到Project!!");

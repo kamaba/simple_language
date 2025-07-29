@@ -13,6 +13,7 @@ using SimpleLanguage.Core.Statements;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static SimpleLanguage.Core.MetaVariable;
 
 namespace SimpleLanguage.IR
 {
@@ -37,7 +38,13 @@ namespace SimpleLanguage.IR
             m_IRStatements.AddRange(irmc.irList);
 
             var mv = ms.leftMetaExpress.GetMetaVariable();
-            var vfrom = mv.variableFrom == MetaVariable.EVariableFrom.Argument ? IRMetaVariableFrom.Argument : IRMetaVariableFrom.LocalStatement;
+            var vfrom = mv.variableFrom switch
+            {
+                EVariableFrom.Member => IRMetaVariableFrom.Member,
+                EVariableFrom.Argument => IRMetaVariableFrom.Argument,
+                EVariableFrom.LocalStatement => IRMetaVariableFrom.LocalStatement,
+                _ => IRMetaVariableFrom.None,
+            };
             IRStoreVariable irsv = new IRStoreVariable(irMethod, mv.GetHashCode(), vfrom);
             m_IRStatements.Add(irsv);
         }

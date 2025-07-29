@@ -470,7 +470,7 @@ namespace SimpleLanguage.Core
         {
             m_TempInnerFunctionList.Add(mmf);
         }
-        public void AddMetaMemberFunction( MetaMemberFunction mmf )
+        public bool AddMetaMemberFunction( MetaMemberFunction mmf )
         {
             MetaMemberFunctionTemplateNode find = null;
             if(this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(mmf.name ) )
@@ -486,7 +486,9 @@ namespace SimpleLanguage.Core
             {
                 m_ThisMetaMemberFunctionList.Add(mmf);
                 m_AllMetaMemberFunctionList.Add(mmf);
+                return true;
             }
+            return false;
         }
         public void AddDefineConstructFunction()
         {
@@ -496,6 +498,7 @@ namespace SimpleLanguage.Core
                 mmf = new MetaMemberFunction(this, "_init_");
                 mmf.SetDefineMetaClass(this);
                 AddMetaMemberFunction(mmf);
+                MethodManager.instance.AddOriginalMemeberFunction(mmf);
             }
         }
         public void AddDefineInstanceValue()
