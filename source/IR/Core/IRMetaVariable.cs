@@ -44,7 +44,14 @@ namespace SimpleLanguage.IR
             m_IRMetaVariableFrom = mv.variableFrom == MetaVariable.EVariableFrom.Argument 
                 ?  IRMetaVariableFrom.Argument : IRMetaVariableFrom.LocalStatement;
             //m_IRMetaClass = IRManager.instance.GetIRMetaClassById(mv.meta)
-            m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mv.metaDefineType.name );
+            if( mv.metaDefineType.templateMetaClass != null )
+            {
+                m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mv.metaDefineType.templateMetaClass.allClassName);
+            }
+            else
+            {
+                m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mv.metaDefineType.metaClass.allClassName);
+            }
             isTemplate = mv.isTemplate;
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme)
@@ -72,7 +79,7 @@ namespace SimpleLanguage.IR
             name = mmv.ownerMetaClass.allClassName + "." + mmv.name;
             m_ExpressNode = mmv.express;
             m_IRMetaVariableFrom = IRMetaVariableFrom.Member;
-            m_IRMetaClass = irmc;
+            m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mmv.metaDefineType.metaClass.allClassName);
         }
 
         public override string ToString()

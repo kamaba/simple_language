@@ -185,6 +185,7 @@ namespace SimpleLanguage.Core
                                 return men;
                             }
                         }
+                        break;
                     case FileMetaCallTerm fmct:     //className.functionname().varname;
                         {
                             MetaCallLinkExpressNode men2 = new MetaCallLinkExpressNode(fmct.callLink, cep.ownerMetaClass, cep.ownerMBS, cep.equalMetaVariable );
@@ -333,7 +334,7 @@ namespace SimpleLanguage.Core
 
             AllowUseSettings aus = new AllowUseSettings() { parseFrom = cep.parsefrom };
 
-            MetaCallLink mcl = new MetaCallLink(fmct.callLink, cep.ownerMetaClass, cep.ownerMBS );
+            MetaCallLink mcl = new MetaCallLink(fmct.callLink, cep.ownerMetaClass, cep.ownerMBS, cep.metaType, cep.equalMetaVariable );
             if (!mcl.Parse(aus)) return;
             mcl.CalcReturnType();
 
