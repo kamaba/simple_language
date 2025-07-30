@@ -276,7 +276,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             Debug.WriteLine(pushChar  + "[VMRuntime] [Pop] Method: [" + funName + "]");
         }
-        public unsafe void RunInstruction( IRData iri )
+        public void RunInstruction( IRData iri )
         {
             //栈位的移动的规则，使用当前位为空的概念，只要栈被使用掉，索引则加1，所以索引最少为0
             m_ExecuteIndex++;
