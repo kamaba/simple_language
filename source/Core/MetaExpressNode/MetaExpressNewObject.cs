@@ -998,27 +998,27 @@ namespace SimpleLanguage.Core
                     sb.Append(m_MetaDefineType.name + "()");
                     sb.Append(".");
                 }
-                if(m_MetaConstructFunctionCall.callerMetaVariable != null )
-                {
-                    sb.Append(m_MetaConstructFunctionCall.callerMetaVariable.name);
-                    sb.Append(".");
-                    sb.Append(m_MetaConstructFunctionCall.function.name);
-                    sb.Append("(");
-                    if( m_MetaConstructFunctionCall.metaInputParamCollection != null )
-                    {
-                        int count = m_MetaConstructFunctionCall.metaInputParamCollection.metaInputParamList.Count;
-                        for ( int i = 0; i < count; i++ )
-                        {
-                            var mp = m_MetaConstructFunctionCall.metaInputParamCollection.metaInputParamList[i];
-                            sb.Append(mp.ToFormatString());
-                            if( i < count - 1 )
-                            {
-                                sb.Append(",");
-                            }
-                        }
-                    }
-                    sb.Append(")");
-                }
+                //if(m_MetaConstructFunctionCall.m_CallerMetaVariable != null )
+                //{
+                //    sb.Append(m_MetaConstructFunctionCall.m_CallerMetaVariable.name);
+                //    sb.Append(".");
+                //    sb.Append(m_MetaConstructFunctionCall.function.name);
+                //    sb.Append("(");
+                //    if( m_MetaConstructFunctionCall.metaInputParamCollection != null )
+                //    {
+                //        int count = m_MetaConstructFunctionCall.metaInputParamCollection.metaInputParamList.Count;
+                //        for ( int i = 0; i < count; i++ )
+                //        {
+                //            var mp = m_MetaConstructFunctionCall.metaInputParamCollection.metaInputParamList[i];
+                //            sb.Append(mp.ToFormatString());
+                //            if( i < count - 1 )
+                //            {
+                //                sb.Append(",");
+                //            }
+                //        }
+                //    }
+                //    sb.Append(")");
+                //}
                 sb.Append(m_MetaBraceOrBracketStatementsContent?.ToFormatString());
             }
 

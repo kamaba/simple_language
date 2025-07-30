@@ -133,7 +133,7 @@ namespace SimpleLanguage.IR
                 {
                     if (i < ifstatements.metaElseIfStatements.Count - 1)
                     {
-                        //mire.ifFalseBreach.data.opValue = ifstatements.metaElseIfStatements[i + 1].startNop.data;
+                       mire.ifFalseBreach.data.opValue = mire.startNop.data;
                     }
                     else if (i == ifstatements.metaElseIfStatements.Count - 1)
                     {

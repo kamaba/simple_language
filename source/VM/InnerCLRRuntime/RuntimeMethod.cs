@@ -9,6 +9,8 @@ using SimpleLanguage.IR;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Security.Cryptography;
 namespace SimpleLanguage.VM.Runtime
 {
     public class RuntimeMethod
@@ -23,17 +25,22 @@ namespace SimpleLanguage.VM.Runtime
         //private SValue[] m_ArgumentVariableValueArray = null;
         //private SValue[] m_LocalVariableValueArray = null;
 
+        private Dictionary<string, IRMetaClass>  m_InputTemplateClassDict = new Dictionary<string, IRMetaClass>();
         private SObject[] m_LocalVariableObjectArray = null;
         private SObject[] m_ArgumentObjectArray = null;
         private SObject[] m_ReturnObjectArray = null;
 
 
+        private IRMetaClass m_IRMetaClass = null;
+        //调用函数的实体类，如果是普通的类，则可以不管这个参数
+        private IRMetaClass m_MethodRuntimeIRMetaClass = null;
         private IRMethod m_IRMethod = null;
         private IRData[] m_IRDataList = null;
         private ushort m_ExecuteIndex = 0;
         private ushort m_ExecuteCount = 0;
-        public RuntimeMethod(IRMethod mmf)
+        public RuntimeMethod( IRMetaClass irmc, IRMethod mmf)
         {
+            m_IRMetaClass = irmc;
             m_IRMethod = mmf;
             m_IRDataList = mmf.IRDataList.ToArray();
             m_ExecuteCount = (ushort)m_IRDataList.Length;
@@ -50,6 +57,17 @@ namespace SimpleLanguage.VM.Runtime
         }
         void Init()
         {
+            if(m_IRMetaClass != null )
+            {
+                if( m_IRMetaClass.genClass )
+                {
+                    foreach( var v in m_IRMetaClass.genTemplateIRMetaClassDict )
+                    {
+                        AddTemplateIRMetaClass(v.Key, v.Value);
+                    }
+                }
+            }
+
             //参数列表 argument variable table
             if(m_IRMethod != null )
             {
@@ -60,6 +78,7 @@ namespace SimpleLanguage.VM.Runtime
                     //sobj.SetVoid();
                     m_ReturnObjectArray[i] = sobj;
                 }
+
                 m_ArgumentObjectArray = new SObject[m_IRMethod.methodArgumentList.Count];
                 for (int i = 0; i < m_IRMethod.methodArgumentList.Count; i++)
                 {
@@ -189,6 +208,38 @@ namespace SimpleLanguage.VM.Runtime
             {
                 return m_ValueStack[m_ValueIndex];
             }
+        }
+        public IRMetaClass GetTemplateIRMetaClass( string name )
+        {
+            if(m_InputTemplateClassDict.ContainsKey(name ) )
+            {
+                return m_InputTemplateClassDict[name];
+            }
+            Debug.WriteLine("Erorr------没有找到模板内容!!!");
+            return null;
+        }
+        public SObject CreateObjectByIRMetaClass( IRMetaClass mdt )
+        {
+            SObject sobj = null;
+            if (mdt.isTemplate)
+            {
+                var newmdt = GetTemplateIRMetaClass(mdt.allName);
+                sobj = ObjectManager.CreateObjectByDefineType(newmdt, false);
+            }
+            else
+            {
+                sobj = ObjectManager.CreateObjectByDefineType(mdt, false);
+            }
+            return sobj;
+        }
+        public void AddTemplateIRMetaClass( string name, IRMetaClass templateInstanceObject )
+        {
+            if( !m_InputTemplateClassDict.ContainsKey(name ) )
+            {
+                m_InputTemplateClassDict.Add(name, templateInstanceObject);
+                return;
+            }
+            Debug.WriteLine("Erorr------添加模板内容重复!!!");
         }
         public void Run()
         {
@@ -432,7 +483,7 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.Call:
                     {
                         var mfc = iri.opValue as IRMethod;
-                        InnerCLRRuntimeVM.RunIRMethod(mfc);
+                        InnerCLRRuntimeVM.RunIRMethod(m_MethodRuntimeIRMetaClass, mfc);
                     }
                     break;
                 case EIROpCode.CallCSharpMethod:
@@ -473,17 +524,19 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.NewObject:
                     {
                         IRMetaClass mdt = iri.opValue as IRMetaClass;
-                        SObject sob = ObjectManager.CreateObjectByDefineType(mdt, false);
-                        if( sob is ClassObject co )
+                        SObject sob = CreateObjectByIRMetaClass(mdt);
+                        if ( sob is ClassObject co )
                         {
                             ObjectManager.AddClassObject(co);
                         }
                         m_ValueStack[m_ValueIndex++].SetSObject(sob);
+                        m_MethodRuntimeIRMetaClass = mdt;
                     }
                     break;
-                case EIROpCode.NewTemplateObject:
+                case EIROpCode.Dup:
                     {
-
+                        var sval = m_ValueStack[m_ValueIndex - 1];
+                        m_ValueStack[m_ValueIndex++] = sval;
                     }
                     break;
                 case EIROpCode.Label:

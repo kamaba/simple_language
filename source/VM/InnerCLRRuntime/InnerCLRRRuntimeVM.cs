@@ -30,7 +30,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             return null;
         }
-        public static RuntimeMethod CreateCLRRuntime( IRMethod _irMethod )
+        public static RuntimeMethod CreateCLRRuntime( IRMetaClass irmc, IRMethod _irMethod )
         {
             var getrt = GetCLRRuntimeById(_irMethod.id);
             if( getrt != null )
@@ -39,7 +39,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             else
             {
-                RuntimeMethod clrRuntime = new RuntimeMethod(_irMethod);
+                RuntimeMethod clrRuntime = new RuntimeMethod(irmc, _irMethod);
                 clrRuntime.id = _irMethod.id;
                 m_ClrRuntimeStack.Push(clrRuntime);
                 return clrRuntime;
@@ -86,10 +86,10 @@ namespace SimpleLanguage.VM.Runtime
             InnerCLRRuntimeVM.PushCLRRuntime(clrRuntime);
             clrRuntime.Run();
         }
-        public static void RunIRMethod( IRMethod _irMethod )
+        public static void RunIRMethod( IRMetaClass irmc, IRMethod _irMethod )
         {
             topCLRRuntime = m_ClrRuntimeStack.Peek();
-            RuntimeMethod clrRuntime = InnerCLRRuntimeVM.CreateCLRRuntime(_irMethod);
+            RuntimeMethod clrRuntime = InnerCLRRuntimeVM.CreateCLRRuntime(irmc, _irMethod);
             clrRuntime.Run();
             topCLRRuntime.AddReturnObjectArray(clrRuntime.returnObjectArray);
             if (!clrRuntime.isPersistent)

@@ -34,21 +34,21 @@ namespace SimpleLanguage.IR
             }
             if( mfc.methodCallStackType == EMethodCallStackType.DynamicStack)
             {
-                if(mfc.callerMetaVariable!=null )
-                {
-                    IRMetaVariableFrom irmvf = IRMetaVariableFrom.LocalStatement;
-                    if( mfc.callerMetaVariable.isArgument )
-                    {
-                        irmvf = IRMetaVariableFrom.Argument;
-                    }
-                    IRLoadVariable irload = new IRLoadVariable(m_IRMethod, mfc.callerMetaVariable.GetHashCode(), irmvf);
-                    AddIRRangeData(irload.IRDataList);
-                }
-                else
-                {
-                    Debug.Write("Error 没有加载到调用者信息!");
-                    return;
-                }
+                //if(mfc.callerMetaVariable!=null )
+                //{
+                //    IRMetaVariableFrom irmvf = IRMetaVariableFrom.LocalStatement;
+                //    if( mfc.callerMetaVariable.isArgument )
+                //    {
+                //        irmvf = IRMetaVariableFrom.Argument;
+                //    }
+                //    IRLoadVariable irload = new IRLoadVariable(m_IRMethod, mfc.callerMetaVariable.GetHashCode(), irmvf);
+                //    AddIRRangeData(irload.IRDataList);
+                //}
+                //else
+                //{
+                //    Debug.Write("Error 没有加载到调用者信息!");
+                //    return;
+                //}
             }
             paramCount = mfc.metaInputParamCollection.count;
             for (int j = 0; j < paramCount; j++)
