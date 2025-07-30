@@ -1,18 +1,18 @@
 
 C1
 {
-    C2 c3 = ();
+    C2 c3 = new();
     X = 1;
     Y = 2;
 
     static public int a1 = 100;
     private a2 = 20;
     private long a3;    #不允许使用没有等号的情况 除了class之外 ，其它的类型都需要有=号
-    C2 a4;
-    static C2 a5;
-    a6 = C2();
+    C2 a4;              #报错，需要有=号，要不为null，要不new()
+    static C2 a5;       #报错，同上
+    a6 = C2();      
     a7 = 10 / 5 + 2 * 10 - C2.x2;
-    C2 a8 = ();
+    C2 a8 = new();
     
     a = 10;
     b = 20;
@@ -48,7 +48,7 @@ C4 extends C3
     int a = 10 + (1 - ( 3 * ( 3 / ( -Class2.m2 - 100 ) )  * 30 ) ) / 10 * (15 - (22/2 + 1 ) ) - 20 / -10;
     int x1 = 10 + (1-20) * 33/20 + 10/20 - 22 * 2/1;
     C2 c2 = C2( 20 );
-    C2 c3 = ();
+    C2 c3 = new();
 }
 
 

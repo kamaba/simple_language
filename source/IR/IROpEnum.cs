@@ -111,7 +111,6 @@ namespace SimpleLanguage.IR
         CallVirt,
         Calli,
         CallCSharpMethod,
-        CallCSharpStatements,
         CastClass,
 
         Convert_I8,

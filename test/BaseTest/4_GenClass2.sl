@@ -25,7 +25,7 @@ Level1<T>
         ret this._Level1_t
     }
     #!
-    static Open( bool flag )
+    static T Open( bool flag )
     {
         if flag
         {

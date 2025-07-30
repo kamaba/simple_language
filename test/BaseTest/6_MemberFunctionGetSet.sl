@@ -2,9 +2,9 @@
 
 C
 {
-    int a = 10;
-    get a(){ ret this.a } 
-    set a( _a ){ this.a = _a }   #可以与变量重名
+    int _a = 10;
+    get a(){ ret this._a } 
+    set a( _a ){ this._a = _a }   #可以与变量重名
 
     int b = 20
 

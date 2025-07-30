@@ -4,7 +4,7 @@ public class Class1
 {
     public int a = 20
 
-    public static Class1 _reload_( Class1 left, Class1 right, string sign )
+    public static Class1 _reloadsign_( Class1 left, Class1 right, string sign )
     {
         Class1 c = Class1(){a = 0}
         if( sign == "+" )

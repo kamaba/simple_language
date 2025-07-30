@@ -506,21 +506,6 @@ namespace SimpleLanguage.VM.Runtime
                         }
                     }
                     break;
-                case EIROpCode.CallCSharpStatements:
-                    {
-                        var mfc = iri.opValue as IRCallFunction;
-                        //Object[] paramsObj = new Object[mfc.paramCount];
-                        //for (int i = 0; i < paramsObj.Length; i++)
-                        //{
-                        //    paramsObj[i] = m_ValueStack[--m_ValueIndex].CreateCSharpObject();
-                        //}
-                        //Object obj = mfc.InvokeCSharp(paramsObj);
-                        //if (obj != null)
-                        //{
-                        //    m_ValueStack[m_ValueIndex++].CreateSObjectByCSharpObject(obj);
-                        //}
-                    }
-                    break;
                 case EIROpCode.NewObject:
                     {
                         IRMetaClass mdt = iri.opValue as IRMetaClass;
