@@ -123,6 +123,11 @@ namespace SimpleLanguage.VM
                 sobj = new StringObject("");
                 sobj.typeId = 10;
             }
+            else if( mdt.allName == "Void" )
+            {
+                sobj = new VoidObject();
+                sobj.typeId = 0;
+            }
             else
             {
                 sobj = new ClassObject(mdt);
@@ -416,6 +421,12 @@ namespace SimpleLanguage.VM
                         if (int32Obj != null)
                         {
                             int32Obj.SetValue(svalue.int32Value);
+                            return;
+                        }
+                        BoolObject boolObject = obj as BoolObject;
+                        if( boolObject != null )
+                        {
+                            boolObject.SetValue(svalue.int8Value==1 ? true : false);
                             return;
                         }
                         ClassObject classObj = obj as ClassObject;

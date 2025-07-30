@@ -21,7 +21,7 @@ namespace SimpleLanguage.Core
     }
     public class MetaMethodCall
     {
-        public MetaVariable callerMetaVariable => m_CallerMetaVariable;
+        //public MetaVariable callerMetaVariable => m_CallerMetaVariable;
         public MetaClass callerMetaClass => m_CallerMetaClass;
         public MetaFunction function => m_MetaFunction;
         public MetaInputParamCollection metaInputParamCollection => m_MetaInputParamCollection;
@@ -29,6 +29,7 @@ namespace SimpleLanguage.Core
 
         protected MetaVariable m_CallerMetaVariable = null;
         protected MetaClass m_CallerMetaClass = null;
+        protected MetaGenTemplateClass m_CallerInstanceClass = null;
         protected MetaFunction m_MetaFunction = null;
         protected MetaInputParamCollection m_MetaInputParamCollection = null;
         protected EMethodCallStackType m_MethodCallStackType = EMethodCallStackType.DynamicStack;
@@ -37,6 +38,10 @@ namespace SimpleLanguage.Core
         public MetaMethodCall(MetaVariable mv, MetaFunction _fun, MetaInputParamCollection _metaInputParamCollection = null)
         {
             m_CallerMetaVariable = mv;
+            if( mv.metaDefineType.metaClass is MetaGenTemplateClass mgtc )
+            {
+                m_CallerInstanceClass = mgtc;
+            }
             m_MetaFunction = _fun;
             m_MetaInputParamCollection = _metaInputParamCollection;
             m_MethodCallStackType = EMethodCallStackType.DynamicStack;
@@ -47,7 +52,7 @@ namespace SimpleLanguage.Core
             m_MetaFunction = _fun;
             m_MetaInputParamCollection = _param;
             var tmmf = _fun as MetaMemberFunction;
-            if (tmmf != null )
+            if (tmmf != null)
             {
                 isConstruction = tmmf.isConstructInitFunction;
                 m_MethodCallStackType = tmmf.isStatic ? EMethodCallStackType.StaticStack : EMethodCallStackType.DynamicStack;
@@ -57,9 +62,22 @@ namespace SimpleLanguage.Core
                 m_MethodCallStackType = EMethodCallStackType.DynamicStack;
             }
         }
+        public MetaMethodCall(MetaGenTemplateClass mc, MetaMemberFunction _fun, MetaInputParamCollection _param = null)
+        {
+            m_CallerInstanceClass = mc;
+            m_CallerMetaClass = mc.metaTemplateClass;
+            m_MetaFunction = _fun;
+            m_MetaInputParamCollection = _param;
+            isConstruction = _fun.isConstructInitFunction;
+            m_MethodCallStackType = _fun.isStatic ? EMethodCallStackType.StaticStack : EMethodCallStackType.DynamicStack;
+        }
         public void SetCallerMetaVariable( MetaVariable metaVariable)
         {
             m_CallerMetaVariable = metaVariable;
+            if (metaVariable?.metaDefineType.metaClass is MetaGenTemplateClass mgtc)
+            {
+                m_CallerInstanceClass = mgtc;
+            }
         }
         public void SetMethodCallStackType(EMethodCallStackType tmmf )
         {
@@ -173,8 +191,8 @@ namespace SimpleLanguage.Core
             IteratorVariable,
             MethodCall,
             NewClass,
-            NewData,
             NewTemplate,
+            NewData,
             Enum,
         }
         public MetaConstExpressNode constValueExpress { get; private set; } = null;
@@ -190,14 +208,16 @@ namespace SimpleLanguage.Core
         private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent = null;
         protected MetaType m_ReturnMetaType = null;
 
-        public static MetaVisitNode CreateByNewTemplate( MetaTemplate mt )
+        public static MetaVisitNode CreateByNewTemplate( MetaTemplate template, MetaVariable mv)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.callerMetaTemplate = mt;
+            vn.callerMetaTemplate = template;
             vn.visitType = EVisitType.NewTemplate;
+            vn.variable = mv;
 
             return vn;
+
         }
         public static MetaVisitNode CraeteByNewClass(MetaClass mc, MetaBraceOrBracketStatementsContent mb, MetaVariable mv = null )
         {
@@ -268,6 +288,10 @@ namespace SimpleLanguage.Core
             vn.variable = _variale;
 
             return vn;
+        }
+        public void SetMethodCall( MetaMethodCall _methodCall)
+        {
+            this.methodCall = _methodCall;
         }
         public MetaType GetMetaDefineType()
         {

@@ -314,7 +314,14 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Class:
                     {
-
+                        switch (sval.eType)
+                        {
+                            case EType.Null:
+                                {
+                                    SetBoolValue(this.sobject == null);
+                                }
+                                break;
+                        }
                     }
                     break;
             }

@@ -24,18 +24,32 @@ Level1<T>
     {
         ret this._Level1_t
     }
+    #!
+    static Open( bool flag )
+    {
+        if flag
+        {
+            ret this._Level1_t
+        }
+        else
+        {
+            ret null
+        }
+    }
+    !#
 }
 
 GenClass2{
     static fun()
     {
         Level1<int>  GenClass2_fun_l1 = Level1<int>()
+        #penret = Level1<string>.Open(true)
         GenClass2_fun_l1.setLevel1( 200 )
-        #System.Console.Write("Flaoat" + GenClass2_fun_l1.Level1_t )
+        #System.Console.Write("_this_" + GenClass2_fun_l1.Level1_t )
 
         #Level1<Level1<int> > GenClass2_fun_l2 = Level1<Level1<int> >()
         #GenClass2_fun_l2.setLevel1( Level1<int>(20) )
-        #System.Console.Write("Flaoat2" + GenClass2_fun_l2.Level1_t.Level1_t )
+        #System.Console.Write("_this2_" + GenClass2_fun_l2.Level1_t.Level1_t )
     }
 }
 

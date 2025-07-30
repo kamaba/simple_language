@@ -186,6 +186,11 @@ namespace SimpleLanguage.Core.Statements
 
             MetaIfStatements.MetaElseIfStatements msis = new MetaIfStatements.MetaElseIfStatements(m_OwnerMetaBlockStatements, m_FileMetaKeyIfSyntax.ifExpressSyntax, express);
             AddIfEslseStateStatements(msis, IfElseState.If );
+            if( m_MetaVariable == null )
+            {
+                m_MetaVariable = msis.metaAssignManager.judgmentValueMetaVariable;
+            }
+
             if( msis.thenMetaStatements != null )
             {
                 msis.thenMetaStatements.SetTRMetaVariable( m_MetaVariable );

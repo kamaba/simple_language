@@ -6,18 +6,8 @@
 //  Description: Meta class's ir attribute
 //****************************************************************************
 
-using SimpleLanguage.IR;
-using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Parse;
-using System;
+
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
-using SimpleLanguage.Compile;
-using SimpleLanguage.Compile.CoreFileMeta;
-using System.Linq;
-using System.Runtime.Intrinsics.X86;
-using System.Reflection;
 using SimpleLanguage.Core;
 
 namespace SimpleLanguage.IR
@@ -42,14 +32,25 @@ namespace SimpleLanguage.IR
             irManager = manager;
             id = s_TypeLength++;
         }
+        public IRMetaClass( IRManager manager, MetaTemplate mt )
+        {
+            irManager = manager;
+            id = s_TypeLength++;
+            allName = mt.name;
+            isTemplate = true;
+        }
         public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
         public List<IRMetaVariable> staticIRMetaVariableList => staticIRMetaVariableList;
+        public Dictionary<string, IRMetaClass> genTemplateIRMetaClassDict => m_GenTemplateIRMetaClassDict;
 
         public int allocSize = 0;
         public List<EType> m_MetaTypeList = new List<EType>();
         public int byteCount = 0;
         public string allName { get; set; } = null;
         public bool isTemplate { get; set; } = false;
+        public bool genClass { get; set; } = false;
+
+        private Dictionary<string, IRMetaClass> m_GenTemplateIRMetaClassDict = new Dictionary<string, IRMetaClass>();
 
         List<MetaMemberVariable> m_LocalMetaMemberVariables = new List<MetaMemberVariable>();
         List<MetaMemberData> m_LocalMetaMemberDatas = new List<MetaMemberData>();
@@ -93,6 +94,19 @@ namespace SimpleLanguage.IR
             else
             {
                 m_LocalMetaMemberVariables = mc.GetMetaMemberVariableListByFlag(false, false);
+            }
+            if( mc is MetaGenTemplateClass mgtc )
+            {
+                genClass = true;
+                foreach( var v in mgtc.metaGenTemplateList )
+                {
+                    var irmc = IRManager.instance.GetIRMetaClassByName(v.metaType.metaClass.allClassName);
+                    m_GenTemplateIRMetaClassDict.Add( v.name, irmc );
+                }
+            }
+            else
+            {
+                genClass = false;
             }
             CalcAllocSize();
         }

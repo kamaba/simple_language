@@ -38,8 +38,8 @@ namespace SimpleLanguage.IR
         LoadStaticField,
 
         NewObject,
-        NewTemplateObject,
         NewArray,
+        Dup,
         Pop,
 
         StoreLocal,            
@@ -108,10 +108,10 @@ namespace SimpleLanguage.IR
         Switch,
             
         Call,                   
-        CallVirt,                 
+        CallVirt,
+        Calli,
         CallCSharpMethod,
         CallCSharpStatements,
-        Calli,
         CastClass,
 
         Convert_I8,

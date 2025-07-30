@@ -556,7 +556,7 @@ namespace SimpleLanguage.Core
             }
             return mmvList;
         }
-        public virtual MetaMemberFunction GetMetaDefineGetSetMemberFunctionByName(string name, bool isGet, bool isSet)
+        public virtual MetaMemberFunction GetMetaDefineGetSetMemberFunctionByName(string name, MetaInputParamCollection inputParam, bool isGet, bool isSet)
         {
             if (!m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name))
             {
@@ -570,9 +570,23 @@ namespace SimpleLanguage.Core
                 return null;
             }
             var tfunctionNode = tnode.metaTemplateFunctionNodeDict[0];
-            //var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputParam.count);
-            //if (list == null) return null;
 
+            var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputParam != null ? inputParam.count : 0);
+            if (list == null) return null;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var fun = list[i];
+                if (fun.isTemplateFunction)
+                {
+                    return fun;
+                }
+                else
+                {
+                    if (fun.IsEqualMetaInputParamCollection(inputParam))
+                        return fun;
+                }
+            }
             return null;
         }
         public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParam(string name, MetaInputTemplateCollection inputTemplate, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true )

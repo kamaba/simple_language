@@ -19,9 +19,11 @@ namespace SimpleLanguage.IR
 
         protected List<IRData> m_IRDataList = new List<IRData>();
 
-        protected IRBase()
-        {
+        protected IRBase() { }
 
+        public IRBase(IRData irdata)
+        {
+            m_IRDataList.Add(irdata);
         }
         protected IRBase( IRMethod irMethod )
         {

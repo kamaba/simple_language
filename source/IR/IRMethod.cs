@@ -19,11 +19,13 @@ namespace SimpleLanguage.IR
     {
         public string id { get; set; } = "";
         public IRManager irManager { get; private set; } = null;
+        private List<IRMetaVariable> methodInputTemplateObject => m_MethodInputTemplateObject;
         public List<IRMetaVariable> methodArgumentList => m_MethodArgumentList;
         public List<IRMetaVariable> methodLocalVariableList => m_MethodLocalVariableList;
         public List<IRMetaVariable> methodReturnVariableList => m_MethodReturnList;
         public List<IRData> IRDataList => m_IRDataList;
 
+        private List<IRMetaVariable> m_MethodInputTemplateObject = new List<IRMetaVariable>();
         private List<IRMetaVariable> m_MethodArgumentList = new List<IRMetaVariable>();
         private List<IRMetaVariable> m_MethodLocalVariableList = new List<IRMetaVariable>();
         private List<IRMetaVariable> m_MethodReturnList = new List<IRMetaVariable>();
