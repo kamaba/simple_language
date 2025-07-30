@@ -14,30 +14,13 @@ namespace SimpleLanguage.IR
 {
     public class IRMetaClass
     {
-        static short s_TypeLength = 1000;
-        public short id { get; set; } = 0;
+        static int s_TypeLength = 1000;
+        public int id { get; set; } = 0;
 
-        public bool IsCoreMetaClass()
-        {
-            if( this.allName == "Int32"
-                || this.allName == "String"
-                || this.allName == "Float")
-            {
-                return true;
-            }
-            return false;
-        }
         public IRMetaClass( IRManager manager )
         {
-            irManager = manager;
+            m_IRManager = manager;
             id = s_TypeLength++;
-        }
-        public IRMetaClass( IRManager manager, MetaTemplate mt )
-        {
-            irManager = manager;
-            id = s_TypeLength++;
-            allName = mt.name;
-            isTemplate = true;
         }
         public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
         public List<IRMetaVariable> staticIRMetaVariableList => staticIRMetaVariableList;
@@ -46,17 +29,17 @@ namespace SimpleLanguage.IR
         public int allocSize = 0;
         public List<EType> m_MetaTypeList = new List<EType>();
         public int byteCount = 0;
-        public string allName { get; set; } = null;
-        public bool isTemplate { get; set; } = false;
-        public bool genClass { get; set; } = false;
+        public string allName { get; private set; } = "";
+        public bool isTemplate { get; private set; } = false;
+        public bool genClass { get; private set; } = false;
 
-        private Dictionary<string, IRMetaClass> m_GenTemplateIRMetaClassDict = new Dictionary<string, IRMetaClass>();
 
         List<MetaMemberVariable> m_LocalMetaMemberVariables = new List<MetaMemberVariable>();
         List<MetaMemberData> m_LocalMetaMemberDatas = new List<MetaMemberData>();
 
         private List<IRMetaVariable> m_LocalIRMetaVariableList = new List<IRMetaVariable>();
-        private IRManager irManager = null;
+        private Dictionary<string, IRMetaClass> m_GenTemplateIRMetaClassDict = new Dictionary<string, IRMetaClass>();
+        private IRManager m_IRManager = null;
         public void CalcAllocSize()
         {
             m_MetaTypeList.Clear();
@@ -118,9 +101,15 @@ namespace SimpleLanguage.IR
                 m_LocalIRMetaVariableList.Add(irmv);
             }
         }
-        public override string ToString()
+        public bool IsCoreMetaClass()
         {
-            return allName;
+            if (this.allName == "Int32"
+                || this.allName == "String"
+                || this.allName == "Float")
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

@@ -36,7 +36,7 @@ namespace SimpleLanguage.VM
 
             int byteCount = irmc.byteCount;
             m_Data = new byte[byteCount];
-            typeId = irmc.id;
+            typeId = (short)irmc.id;
 
             var mvdict = irmc.localIRMetaVariableList;
             m_MemberVariableObjectArray = new SObject[mvdict.Count];
