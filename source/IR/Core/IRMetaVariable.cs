@@ -44,15 +44,23 @@ namespace SimpleLanguage.IR
             m_IRMetaVariableFrom = mv.variableFrom == MetaVariable.EVariableFrom.Argument 
                 ?  IRMetaVariableFrom.Argument : IRMetaVariableFrom.LocalStatement;
             //m_IRMetaClass = IRManager.instance.GetIRMetaClassById(mv.meta)
-            if( mv.metaDefineType.templateMetaClass != null )
+            if( mv.metaDefineType.isTemplate )
             {
-                m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mv.metaDefineType.templateMetaClass.allClassName);
+                isTemplate = true;
+                m_IRMetaClass = new IRMetaClass(IRManager.instance, mv.metaDefineType.metaTemplate.name);
             }
             else
             {
-                m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mv.metaDefineType.metaClass.allClassName);
+                if (mv.metaDefineType.templateMetaClass != null)
+                {
+                    m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mv.metaDefineType.templateMetaClass.allClassName);
+                }
+                else
+                {
+                    m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mv.metaDefineType.metaClass.allClassName);
+                }
+                isTemplate = false;
             }
-            isTemplate = mv.isTemplate;
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme)
         {

@@ -255,6 +255,7 @@ namespace SimpleLanguage.VM
                         if (to != null)
                         {
                             to.SetValue(EType.Int32, svalue.int32Value);
+                            return;
                         }
                         AnyObject anyObject = obj as AnyObject;
                         if (anyObject != null)
