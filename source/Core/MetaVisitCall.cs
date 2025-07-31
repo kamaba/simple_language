@@ -13,83 +13,72 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public enum EMethodCallStackType
-    {
-        StaticStack,
-        DynamicStack,
-        CurrentStack,
-    }
+    //public enum EMethodCallStackType
+    //{
+    //    StaticStack,
+    //    DynamicStack,
+    //    CurrentStack,
+    //}
     public class MetaMethodCall
     {
         //public MetaVariable callerMetaVariable => m_CallerMetaVariable;
-        public MetaClass callerMetaClass => m_CallerMetaClass;
+        public MetaGenTemplateClass callerInstanceClass => m_CallerInstanceClass;
         public MetaFunction function => m_MetaFunction;
         public MetaInputParamCollection metaInputParamCollection => m_MetaInputParamCollection;
-        public EMethodCallStackType methodCallStackType => m_MethodCallStackType;
+        //public EMethodCallStackType methodCallStackType => m_MethodCallStackType;
 
-        protected MetaVariable m_CallerMetaVariable = null;
-        protected MetaClass m_CallerMetaClass = null;
+        //protected MetaVariable m_CallerMetaVariable = null;
         protected MetaGenTemplateClass m_CallerInstanceClass = null;
         protected MetaFunction m_MetaFunction = null;
         protected MetaInputParamCollection m_MetaInputParamCollection = null;
-        protected EMethodCallStackType m_MethodCallStackType = EMethodCallStackType.DynamicStack;
-        public bool isConstruction { get; set; } = false;
+        //protected EMethodCallStackType m_MethodCallStackType = EMethodCallStackType.DynamicStack;
+        //private bool m_IsConstruction = false;
 
-        public MetaMethodCall(MetaVariable mv, MetaFunction _fun, MetaInputParamCollection _metaInputParamCollection = null)
+        //public MetaMethodCall(MetaVariable mv, MetaFunction _fun, MetaInputParamCollection _metaInputParamCollection = null)
+        //{
+        //    m_CallerMetaVariable = mv;
+        //    if( mv.metaDefineType.metaClass is MetaGenTemplateClass mgtc )
+        //    {
+        //        m_CallerInstanceClass = mgtc;
+        //    }
+        //    m_MetaFunction = _fun;
+        //    m_MetaInputParamCollection = _metaInputParamCollection;
+        //    //m_MethodCallStackType = EMethodCallStackType.DynamicStack;
+        //}
+        public MetaMethodCall( MetaGenTemplateClass genGlass, MetaFunction _fun, MetaInputParamCollection _param, MetaVariable mv = null )
         {
-            m_CallerMetaVariable = mv;
-            if( mv.metaDefineType.metaClass is MetaGenTemplateClass mgtc )
-            {
-                m_CallerInstanceClass = mgtc;
-            }
-            m_MetaFunction = _fun;
-            m_MetaInputParamCollection = _metaInputParamCollection;
-            m_MethodCallStackType = EMethodCallStackType.DynamicStack;
-        }
-        public MetaMethodCall(MetaClass mc, MetaFunction _fun, MetaInputParamCollection _param = null)
-        {
-            m_CallerMetaClass = mc;
-            m_MetaFunction = _fun;
-            m_MetaInputParamCollection = _param;
-            var tmmf = _fun as MetaMemberFunction;
-            if (tmmf != null)
-            {
-                isConstruction = tmmf.isConstructInitFunction;
-                m_MethodCallStackType = tmmf.isStatic ? EMethodCallStackType.StaticStack : EMethodCallStackType.DynamicStack;
-            }
-            else
-            {
-                m_MethodCallStackType = EMethodCallStackType.DynamicStack;
-            }
-        }
-        public MetaMethodCall(MetaGenTemplateClass mc, MetaMemberFunction _fun, MetaInputParamCollection _param = null)
-        {
-            m_CallerInstanceClass = mc;
-            m_CallerMetaClass = mc.metaTemplateClass;
+            m_CallerInstanceClass = genGlass;
             m_MetaFunction = _fun;
             m_MetaInputParamCollection = _param;
-            isConstruction = _fun.isConstructInitFunction;
-            m_MethodCallStackType = _fun.isStatic ? EMethodCallStackType.StaticStack : EMethodCallStackType.DynamicStack;
-        }
-        public void SetCallerMetaVariable( MetaVariable metaVariable)
-        {
-            m_CallerMetaVariable = metaVariable;
-            if (metaVariable?.metaDefineType.metaClass is MetaGenTemplateClass mgtc)
-            {
-                m_CallerInstanceClass = mgtc;
-            }
-        }
-        public void SetMethodCallStackType(EMethodCallStackType tmmf )
-        {
-            m_MethodCallStackType = tmmf;
-        }
-        public void Parse()
-        {
-            //if( param != null )
+            //m_CallerMetaVariable = mv;
+            //var tmmf = _fun as MetaMemberFunction;
+            //if (tmmf != null)
             //{
-            //    param.ParseExpress();
+            //    m_IsConstruction = tmmf.isConstructInitFunction;
+            //    //m_MethodCallStackType = tmmf.isStatic ? EMethodCallStackType.StaticStack : EMethodCallStackType.DynamicStack;
+            //}
+            //else
+            //{
+            //    //m_MethodCallStackType = EMethodCallStackType.DynamicStack;
             //}
         }
+        //public MetaMethodCall(MetaGenTemplateClass mc, MetaMemberFunction _fun, MetaInputParamCollection _param = null)
+        //{
+        //    m_CallerInstanceClass = mc;
+        //    m_CallerMetaClass = mc.metaTemplateClass;
+        //    m_MetaFunction = _fun;
+        //    m_MetaInputParamCollection = _param;
+        //    //m_IsConstruction = _fun.isConstructInitFunction;
+        //    //m_MethodCallStackType = _fun.isStatic ? EMethodCallStackType.StaticStack : EMethodCallStackType.DynamicStack;
+        //}
+        //public void SetCallerMetaVariable( MetaVariable metaVariable)
+        //{
+        //    m_CallerMetaVariable = metaVariable;
+        //    if (metaVariable?.metaDefineType.metaClass is MetaGenTemplateClass mgtc)
+        //    {
+        //        m_CallerInstanceClass = mgtc;
+        //    }
+        //}
         public bool CheckMetaFunctionMatchInputParamCollection()
         {
             if (!m_MetaFunction.IsEqualMetaInputParamCollection(m_MetaInputParamCollection))
@@ -102,19 +91,6 @@ namespace SimpleLanguage.Core
         public MetaType GeMetaDefineType()
         {
             return m_MetaFunction.metaDefineType;
-        }
-        public MetaClass GetMetaClass()
-        {
-            if (m_CallerMetaClass != null) { return m_CallerMetaClass; }
-            return null;
-        }
-        public MetaType GetRetMetaType()
-        {
-            if (m_MetaFunction != null)
-            {
-                return m_MetaFunction.metaDefineType;
-            }
-            return null;
         }
         public string ToCommonString()
         {
@@ -156,7 +132,7 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            if( this.methodCallStackType == EMethodCallStackType.StaticStack )
+            if( true )//this.methodCallStackType == EMethodCallStackType.StaticStack )
             {
                 sb.Append(this.m_MetaFunction.name);
                 sb.Append("( ");
@@ -165,15 +141,15 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                if (this.m_CallerMetaVariable != null)
-                {
-                    sb.Append(m_CallerMetaVariable.name);
-                }
+                //if (this.m_CallerMetaVariable != null)
+                //{
+                //    sb.Append(m_CallerMetaVariable.name);
+                //}
 
-                if (m_CallerMetaClass != null)
-                {
-                    sb.Append("[" + m_CallerMetaClass.ToDefineTypeString() + "]");
-                }
+                //if (m_CallerMetaClass != null)
+                //{
+                //    sb.Append("[" + m_CallerMetaClass.ToDefineTypeString() + "]");
+                //}
                 sb.Append(".");
                 sb.Append(ToCommonString());
             }

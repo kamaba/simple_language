@@ -109,6 +109,7 @@ namespace SimpleLanguage.Core
         public MetaNode m_MetaNode { get; private set; } = null;
         public MetaClass m_MetaClass { get; private set; } = null;
         public MetaGenTemplateClass m_GenMetaClass { get; private set; } = null;
+        public MetaGenTemplateClass m_CallFunctionGenMetaClass { get; private set; } = null;
         public MetaData m_MetaData { get; private set; } = null;
         public MetaEnum m_MetaEnum { get; private set; } = null;
         public MetaTemplate m_MetaTemplate { get; private set; } = null;
@@ -550,6 +551,7 @@ namespace SimpleLanguage.Core
                                         return false;
                                     }
                                     m_MetaFunction = mmf;
+                                    this.m_CallFunctionGenMetaClass = m_FrontCallNode.m_GenMetaClass;
                                     //tmb = mmf;
                                     m_CallNodeType = ECallNodeType.MemberFunctionName;
                                 }
@@ -730,6 +732,8 @@ namespace SimpleLanguage.Core
                                         m_MetaInputParamCollection = new MetaInputParamCollection(m_OwnerMetaClass, m_OwnerMetaFunctionBlock);
                                     }
                                     m_MetaGenClassFunction = mmf;
+                                    this.m_CallFunctionGenMetaClass = m_FrontCallNode.m_GenMetaClass;
+                                    this.m_MetaClass = mv.metaDefineType.metaClass;
                                     m_CallNodeType = ECallNodeType.MemberFunctionName;
                                 }
 
@@ -1032,6 +1036,7 @@ namespace SimpleLanguage.Core
                             m_MetaVariable = m_DefineMetaVariable;
                         }
                         this.m_MetaClass = curmc;
+                        this.m_CallFunctionGenMetaClass = m_GenMetaClass;
                         m_MetaFunction = mmf;
                         m_CallNodeType = ECallNodeType.NewClass;
                         
@@ -1129,6 +1134,10 @@ namespace SimpleLanguage.Core
                             }
                             m_CallNodeType = ECallNodeType.VisitVariable;
                         }
+                    }
+                    if(tmv?.metaDefineType?.metaClass is MetaGenTemplateClass mgtc )
+                    {
+                        this.m_GenMetaClass = mgtc;
                     }
                 }
                 else if ( m_MetaClass is MetaClass)

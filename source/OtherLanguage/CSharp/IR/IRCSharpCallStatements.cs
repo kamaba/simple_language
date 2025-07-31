@@ -19,7 +19,7 @@ namespace SimpleLanguage.IR
             MetaFunction mf = new MetaMemberFunctionCSharp( mbs.ownerMetaClass, _name, m_MethodInfo);
 
             var mipc = new MetaInputParamCollection(mbs.ownerMetaClass, mbs);
-            metaFunctionCall = new MetaMethodCall(mbs.ownerMetaClass, mf, mipc );
+            metaFunctionCall = new MetaMethodCall( null, mf, mipc );
         }
         //public override void ParseIRStatements()
         //{

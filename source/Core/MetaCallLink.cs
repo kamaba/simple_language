@@ -157,23 +157,18 @@ namespace SimpleLanguage.Core
                             m_VisitNodeList.Add(mvn1);
 
 
-                            mmc = new MetaMethodCall(mcn.m_MetaClass, mcn.m_MetaFunction, mcn.metaInputParamCollection);
-                            mmc.SetCallerMetaVariable(newmv);
+                            mmc = new MetaMethodCall( mcn.m_CallFunctionGenMetaClass, mcn.m_MetaFunction, mcn.metaInputParamCollection, newmv);
                             //mmc.SetMethodCallStackType(EMethodCallStackType.CurrentStack);
                         }
                         else
                         {
-                            if( mcn.m_MetaGenClassFunction != null )
+                            var mf = mcn.m_MetaFunction;
+                            if ( mcn.m_MetaGenClassFunction != null )
                             {
-                                var mf = mcn.m_MetaGenClassFunction.sourceMetaMemberFunction;
-                                mmc = new MetaMethodCall(mcn.m_MetaClass, mf,  mcn.metaInputParamCollection);
-                                mmc.SetCallerMetaVariable(mcn.frontCallNode?.m_MetaVariable);
+                                mf = mcn.m_MetaGenClassFunction.sourceMetaMemberFunction;
                             }
-                            else
-                            {
-                                mmc = new MetaMethodCall(mcn.m_MetaClass, mcn.m_MetaFunction, mcn.metaInputParamCollection);                               
-                                mmc.SetCallerMetaVariable(mcn.frontCallNode?.m_MetaVariable);
-                            }
+
+                            mmc = new MetaMethodCall(mcn.m_CallFunctionGenMetaClass, mf, mcn.metaInputParamCollection, mcn.frontCallNode?.m_MetaVariable);
                         }
 
                         MetaVisitNode mvn2 = MetaVisitNode.CreateByMethodCall(mmc);
@@ -198,8 +193,7 @@ namespace SimpleLanguage.Core
 
                             if( mcn.m_MetaFunction != null )
                             {
-                                MetaMethodCall mmc = new MetaMethodCall(mcn.m_MetaClass, mcn.m_MetaFunction, mcn.metaInputParamCollection);
-                                mmc.SetCallerMetaVariable(null);
+                                MetaMethodCall mmc = new MetaMethodCall(mcn.m_CallFunctionGenMetaClass, mcn.m_MetaFunction, mcn.metaInputParamCollection, null );
                                 mvn.SetMethodCall(mmc);
                             }
                         }
@@ -305,7 +299,7 @@ namespace SimpleLanguage.Core
             {
                 if(m_VisitNodeList[i].visitType == MetaVisitNode.EVisitType.MethodCall )
                 {
-                    if(m_VisitNodeList[i].methodCall?.callerMetaClass?.isTemplateClass == true )
+                    if(m_VisitNodeList[i].methodCall?.function?.ownerMetaClass?.isTemplateClass == true )
                     {
                         continue;
                     }

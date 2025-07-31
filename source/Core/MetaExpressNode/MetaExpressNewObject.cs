@@ -687,8 +687,7 @@ namespace SimpleLanguage.Core
 
             if(tfunction != null )
             {
-                m_MetaConstructFunctionCall = new MetaMethodCall(ownerMC, tfunction, mdpc);
-                m_MetaConstructFunctionCall.Parse();
+                m_MetaConstructFunctionCall = new MetaMethodCall(null, tfunction, mdpc);
             }
 
             Init();
@@ -700,13 +699,13 @@ namespace SimpleLanguage.Core
         //    m_MetaDefineType = new MetaType(mt);
         //    eType = EType.Array;
         //}
-        public MetaNewObjectExpressNode( MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs, MetaMethodCall mmf )
+        public MetaNewObjectExpressNode( MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs )
         {
-            m_MetaConstructFunctionCall = mmf;
             m_OwnerMetaClass = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
             m_MetaDefineType = new MetaType(mt);
             Init();
+            m_MetaConstructFunctionCall = new MetaMethodCall( null, null, null );
         }
         // Class1<Int32> a = Class1<Int32>( 10 ){ a = 20; } 
         // Enum1 e1 = Enum1.Val1( 20 );
@@ -857,11 +856,12 @@ namespace SimpleLanguage.Core
             Init();
         }
         // Class1 c = ( 1, 2 );  => Class1 c = Class1( 1, 2 );
-        public MetaNewObjectExpressNode( FileMetaParTerm fmpt, MetaType mt, MetaClass mc, MetaBlockStatements mbs, MetaMethodCall mmf)
+        public MetaNewObjectExpressNode( FileMetaParTerm fmpt, MetaType mt, MetaClass mc, MetaBlockStatements mbs )
         {
             m_FileMetaParTerm = fmpt;
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
+            var mmf = new MetaMethodCall(null, mbs.ownerMetaFunction, null);
             m_MetaConstructFunctionCall = mmf;
             m_MetaDefineType = new MetaType(mt);
 
@@ -885,7 +885,7 @@ namespace SimpleLanguage.Core
             mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaBraceOrBracketStatementsContent.count) ) );
             MetaMemberFunction mmf = m_MetaDefineType.metaClass.GetMetaMemberConstructFunction(mipc);
 
-            m_MetaConstructFunctionCall = new MetaMethodCall(m_MetaDefineType.metaClass, mmf, mipc );
+            m_MetaConstructFunctionCall = new MetaMethodCall( null, mmf, mipc );
 
             //eType = EType.Array;
         }
@@ -1046,109 +1046,18 @@ namespace SimpleLanguage.Core
 
                 if (mmf == null) return null;
 
-                MetaMethodCall mfc = new MetaMethodCall(mmf.ownerMetaClass, mmf, mpc );
-
-                MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(root, mt, omc, mbs, mfc);
+              
+                MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(root, mt, omc, mbs );
 
                 return mnoen;
 
             }
             else
             {
-                MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(root, mt, omc, mbs, null );
+                MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode( root, mt, omc, mbs );
 
                 return mnoen;
             }
-        }
-    }
-    public class MetaExecuteStatementsNode : MetaExpressNode
-    {
-        private MetaIfStatements m_MetaIfStatements = null;
-        private MetaSwitchStatements m_MetaSwitchStatements = null;
-        public MetaExecuteStatementsNode( MetaType mdt, MetaClass ownerMC, MetaBlockStatements mbs, MetaIfStatements ifstate)
-        {
-            m_MetaDefineType = mdt;
-            m_OwnerMetaClass = ownerMC;
-            m_OwnerMetaBlockStatements = mbs;
-            m_MetaIfStatements = ifstate;
-        }
-        public MetaExecuteStatementsNode(MetaType mdt, MetaClass ownerMC, MetaBlockStatements mbs, MetaSwitchStatements switchstate)
-        {
-            m_MetaDefineType = mdt;
-            m_OwnerMetaClass = ownerMC;
-            m_OwnerMetaBlockStatements = mbs;
-            m_MetaSwitchStatements = switchstate;
-        }
-        public void UpdateTrMetaVariable(MetaVariable trmv)
-        {
-            if (m_MetaIfStatements != null)
-            {
-                m_MetaIfStatements.SetTRMetaVariable(trmv);
-            }
-            else if (m_MetaSwitchStatements != null)
-            {
-                m_MetaSwitchStatements.SetTRMetaVariable(trmv);
-            }
-        }
-        public void SetDeep(int dp)
-        {
-            if (m_MetaIfStatements != null)
-            {
-                m_MetaIfStatements.SetDeep(dp);
-            }
-            else if (m_MetaSwitchStatements != null)
-            {
-                m_MetaSwitchStatements.SetDeep(dp);
-            }
-        }
-        public override MetaType GetReturnMetaDefineType()
-        {
-            if(m_MetaDefineType != null)
-            {
-                return m_MetaDefineType;
-            }
-            if (m_MetaIfStatements != null || m_MetaSwitchStatements != null)
-            {
-                m_MetaDefineType = new MetaType(CoreMetaClassManager.objectMetaClass);
-            }
-
-            return m_MetaDefineType;
-        }
-        public override string ToFormatString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            if( m_MetaIfStatements != null )
-            {
-                sb.Append(m_MetaIfStatements.ToFormatString());
-            }
-            else if( m_MetaSwitchStatements != null )
-            {
-                sb.Append(m_MetaSwitchStatements.ToFormatString());
-            }
-            else
-            {
-                sb.Append(base.ToFormatString());
-            }
-            return sb.ToString();
-        }
-        public static MetaExecuteStatementsNode CreateMetaExecuteStatementsNodeByIfExpress( MetaType mdt, MetaClass ownerMC, MetaBlockStatements mbs, FileMetaKeyIfSyntax ifStatements)
-        {
-            if (ifStatements == null) return null;
-
-            MetaIfStatements newIfStatements = new MetaIfStatements(mbs, ifStatements );
-            MetaExecuteStatementsNode mesn = new MetaExecuteStatementsNode(mdt, ownerMC, mbs, newIfStatements);
-
-            return mesn;
-        }
-        public static MetaExecuteStatementsNode CreateMetaExecuteStatementsNodeBySwitchExpress(MetaType mdt, MetaClass ownerMC, MetaBlockStatements mbs, FileMetaKeySwitchSyntax switchStatements)
-        {
-            if (switchStatements == null) return null;
-
-            MetaSwitchStatements newSwtichStatements = new MetaSwitchStatements(mbs, switchStatements);
-            MetaExecuteStatementsNode mesn = new MetaExecuteStatementsNode(mdt, ownerMC, mbs, newSwtichStatements);
-
-            return mesn;
         }
     }
 }

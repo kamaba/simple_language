@@ -48,6 +48,9 @@ namespace SimpleLanguage.IR
         StoreNotStaticField_R1,
         StoreReturn,
         
+        SetCallClass,
+        UnSetCallClass,
+
         //运算指令
         Add,                   // +
         Add_Un,

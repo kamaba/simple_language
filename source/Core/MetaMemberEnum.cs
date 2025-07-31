@@ -210,9 +210,7 @@ namespace SimpleLanguage.Core
 
                             if (mmf == null) return null;
 
-                            MetaMethodCall mfc = new MetaMethodCall(ownerMetaClass, mmf, mpc );
-
-                            MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(fmpt, m_DefineMetaType, ownerMetaClass, null, mfc);
+                            MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(fmpt, m_DefineMetaType, ownerMetaClass, mmf.metaBlockStatements );
                             if (mnoen != null)
                             {
                                 return mnoen;

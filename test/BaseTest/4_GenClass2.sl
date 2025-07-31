@@ -17,7 +17,9 @@ Level1<T>
         }
         else
         {
-            this._Level1_t = t
+            this._Level1_t = Open(true)
+
+            t1 = this.Level1_t()
         }
     }
     get T Level1_t()
