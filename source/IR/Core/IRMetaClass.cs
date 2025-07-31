@@ -17,9 +17,16 @@ namespace SimpleLanguage.IR
         static int s_TypeLength = 1000;
         public int id { get; set; } = 0;
 
-        public IRMetaClass( IRManager manager )
+        public IRMetaClass(IRManager manager)
         {
             m_IRManager = manager;
+            id = s_TypeLength++;
+        }
+        public IRMetaClass(IRManager manager, string templateName )
+        {
+            m_IRManager = manager;
+            allName = templateName;
+            this.isTemplate = true;
             id = s_TypeLength++;
         }
         public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
