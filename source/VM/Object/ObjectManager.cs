@@ -51,10 +51,10 @@ namespace SimpleLanguage.VM
             //}
             return svalue;
         }
-        public static SObject CreateObjectByDefineType(IRMetaClass mdt, bool isTemplate)
+        public static SObject CreateObjectByDefineType(IRMetaClass mdt)
         {
             SObject sobj = null;
-            if (isTemplate)
+            if (mdt.isTemplate)
             {
                 sobj = new TemplateObject();
                 return sobj;

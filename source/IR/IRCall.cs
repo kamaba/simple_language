@@ -16,7 +16,6 @@ namespace SimpleLanguage.IR
 {
     public class IRCallFunction : IRBase
     {
-        public IRMethod irRuntimeMethod => m_IRRuntimeMethod;
         public int paramCount { get; set; } = 0;
         public bool target { get; set; } = false;
 
@@ -32,24 +31,24 @@ namespace SimpleLanguage.IR
             {
                 return;
             }
-            if( mfc.methodCallStackType == EMethodCallStackType.DynamicStack)
-            {
-                //if(mfc.callerMetaVariable!=null )
-                //{
-                //    IRMetaVariableFrom irmvf = IRMetaVariableFrom.LocalStatement;
-                //    if( mfc.callerMetaVariable.isArgument )
-                //    {
-                //        irmvf = IRMetaVariableFrom.Argument;
-                //    }
-                //    IRLoadVariable irload = new IRLoadVariable(m_IRMethod, mfc.callerMetaVariable.GetHashCode(), irmvf);
-                //    AddIRRangeData(irload.IRDataList);
-                //}
-                //else
-                //{
-                //    Debug.Write("Error 没有加载到调用者信息!");
-                //    return;
-                //}
-            }
+            //if( mfc.methodCallStackType == EMethodCallStackType.DynamicStack)
+            //{
+            //    //if(mfc.callerMetaVariable!=null )
+            //    //{
+            //    //    IRMetaVariableFrom irmvf = IRMetaVariableFrom.LocalStatement;
+            //    //    if( mfc.callerMetaVariable.isArgument )
+            //    //    {
+            //    //        irmvf = IRMetaVariableFrom.Argument;
+            //    //    }
+            //    //    IRLoadVariable irload = new IRLoadVariable(m_IRMethod, mfc.callerMetaVariable.GetHashCode(), irmvf);
+            //    //    AddIRRangeData(irload.IRDataList);
+            //    //}
+            //    //else
+            //    //{
+            //    //    Debug.Write("Error 没有加载到调用者信息!");
+            //    //    return;
+            //    //}
+            //}
             paramCount = mfc.metaInputParamCollection.count;
             for (int j = 0; j < paramCount; j++)
             {
@@ -72,11 +71,31 @@ namespace SimpleLanguage.IR
 
             m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(mf.functionAllName);
 
+            var cc = m_IRMethod.irManager.GetIRMetaClassByName(mfc.callerInstanceClass?.allClassName);
+
+            if( cc != null )
+            {
+                IRData datacallsc = new IRData();
+                datacallsc.opCode = EIROpCode.SetCallClass;
+                datacallsc.opValue = cc;
+                datacallsc.SetDebugInfoByToken(mf.pingToken);
+                AddIRData(datacallsc);
+            }
+
             IRData datacall = new IRData();
             datacall.opCode = EIROpCode.Call;
             datacall.opValue = m_IRRuntimeMethod;
             datacall.SetDebugInfoByToken( mf.pingToken );
             AddIRData(datacall);
+
+            if (cc != null)
+            {
+                IRData datacallunsc = new IRData();
+                datacallunsc.opCode = EIROpCode.UnSetCallClass;
+                datacallunsc.opValue = null;
+                datacallunsc.SetDebugInfoByToken(mf.pingToken);
+                AddIRData(datacallunsc);
+            }
         }
         public System.Object InvokeCSharp( Object target, Object[] csParamObjs)
         {

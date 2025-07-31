@@ -23,7 +23,6 @@ namespace SimpleLanguage.IR
             id = s_TypeLength++;
         }
         public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
-        public List<IRMetaVariable> staticIRMetaVariableList => staticIRMetaVariableList;
         public Dictionary<string, IRMetaClass> genTemplateIRMetaClassDict => m_GenTemplateIRMetaClassDict;
 
         public int allocSize = 0;

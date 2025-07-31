@@ -38,7 +38,7 @@ namespace SimpleLanguage.VM.Runtime
         private IRData[] m_IRDataList = null;
         private ushort m_ExecuteIndex = 0;
         private ushort m_ExecuteCount = 0;
-        public RuntimeMethod( IRMetaClass irmc, IRMethod mmf)
+        public RuntimeMethod( IRMetaClass irmc, IRMethod mmf )
         {
             m_IRMetaClass = irmc;
             m_IRMethod = mmf;
@@ -74,7 +74,7 @@ namespace SimpleLanguage.VM.Runtime
                 m_ReturnObjectArray = new SObject[m_IRMethod.methodReturnVariableList.Count];
                 for (int i = 0; i < m_IRMethod.methodReturnVariableList.Count; i++)
                 {
-                    SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodReturnVariableList[i].irMetaClass, m_IRMethod.methodReturnVariableList[i].isTemplate );
+                    SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodReturnVariableList[i].irMetaClass );
                     //sobj.SetVoid();
                     m_ReturnObjectArray[i] = sobj;
                 }
@@ -82,7 +82,7 @@ namespace SimpleLanguage.VM.Runtime
                 m_ArgumentObjectArray = new SObject[m_IRMethod.methodArgumentList.Count];
                 for (int i = 0; i < m_IRMethod.methodArgumentList.Count; i++)
                 {
-                    SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodArgumentList[i].irMetaClass, m_IRMethod.methodArgumentList[i].isTemplate);
+                    SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodArgumentList[i].irMetaClass);
                     m_ArgumentObjectArray[i] = sobj;
                 }
                 for( int i = 0; i < m_ArgumentObjectArray.Length; i++ )
@@ -95,7 +95,7 @@ namespace SimpleLanguage.VM.Runtime
                 for (int i = 0; i < m_IRMethod.methodLocalVariableList.Count; i++)
                 {
                     var mev = m_IRMethod.methodLocalVariableList[i];
-                    SObject sobj = ObjectManager.CreateObjectByDefineType(mev.irMetaClass, mev.isTemplate);
+                    SObject sobj = ObjectManager.CreateObjectByDefineType(mev.irMetaClass);
                     m_LocalVariableObjectArray[i] = sobj;
                 }
                 for (int i = 0; i < m_LocalVariableObjectArray.Length; i++)
@@ -224,11 +224,11 @@ namespace SimpleLanguage.VM.Runtime
             if (mdt.isTemplate)
             {
                 var newmdt = GetTemplateIRMetaClass(mdt.allName);
-                sobj = ObjectManager.CreateObjectByDefineType(newmdt, false);
+                sobj = ObjectManager.CreateObjectByDefineType(newmdt);
             }
             else
             {
-                sobj = ObjectManager.CreateObjectByDefineType(mdt, false);
+                sobj = ObjectManager.CreateObjectByDefineType(mdt);
             }
             return sobj;
         }
@@ -429,9 +429,11 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.LoadNotStaticField:
                     {
                         var v = m_ValueStack[m_ValueIndex - 1];
+
                         if (v.eType == EType.Class)
                         {
-                            (v.sobject as ClassObject).GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex-1]);
+                            var co = (v.sobject as ClassObject);
+                            co.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
                         }
                         //栈位不变，因为当前对象位的被通过索引取出来的成员变量值，覆盖掉， 所以栈位不会发生变化
                     }
@@ -480,6 +482,17 @@ namespace SimpleLanguage.VM.Runtime
                         InnerCLRRuntimeVM.SetStaticVariable(iri.index, m_ValueStack[--m_ValueIndex]);
                     }
                     break;
+                case EIROpCode.SetCallClass:
+                    {
+                        var mrirmc = iri.opValue as IRMetaClass;
+                        m_MethodRuntimeIRMetaClass = mrirmc;
+                    }
+                    break;
+                case EIROpCode.UnSetCallClass:
+                    {
+                        m_MethodRuntimeIRMetaClass = null;
+                    }
+                    break;
                 case EIROpCode.Call:
                     {
                         var mfc = iri.opValue as IRMethod;
@@ -515,7 +528,6 @@ namespace SimpleLanguage.VM.Runtime
                             ObjectManager.AddClassObject(co);
                         }
                         m_ValueStack[m_ValueIndex++].SetSObject(sob);
-                        m_MethodRuntimeIRMetaClass = mdt;
                     }
                     break;
                 case EIROpCode.Dup:

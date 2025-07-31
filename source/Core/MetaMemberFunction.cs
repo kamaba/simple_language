@@ -307,17 +307,18 @@ namespace SimpleLanguage.Core
             {
                 m_IsMustNeedReturnStatements = true;
             }
-            if ( !isStatic )
+            if (!isStatic)
             {
-                m_ThisMetaVariable = new MetaVariable( "this_" + GetHashCode().ToString(), EVariableFrom.Argument, null, m_OwnerMetaClass, new MetaType( m_OwnerMetaClass ) );
+                m_ThisMetaVariable = new MetaVariable("this_" + GetHashCode().ToString(), EVariableFrom.Argument, null, m_OwnerMetaClass, new MetaType(m_OwnerMetaClass));
             }
-            m_ReturnMetaVariable = new MetaVariable("return_" + GetHashCode().ToString(), EVariableFrom.Argument, null, m_OwnerMetaClass, m_DefineMetaType);
-
-            if(m_RefFromType == RefFromType.Local && m_FileMetaMemberFunction != null )
+            if( m_ConstructInitFunction )
             {
-                MethodManager.instance.AddOriginalMemeberFunction(this);
+                m_ReturnMetaVariable = null;
             }
-
+            else
+            {
+                m_ReturnMetaVariable = new MetaVariable("return_" + GetHashCode().ToString(), EVariableFrom.Argument, null, m_OwnerMetaClass, m_DefineMetaType);
+            }
         }
         public override void SetDeep(int deep)
         {

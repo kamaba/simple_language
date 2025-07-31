@@ -8,6 +8,11 @@ using SimpleLanguage.VM;
 
 namespace SimpleLanguage.Core
 {
+    public class ConvertType
+    {
+        public EType oriType;
+        public EType targetType;
+    }
     public sealed class MetaUnaryOpExpressNode : MetaExpressNode
     {
         private Token tokeType => tokeType;
@@ -202,12 +207,6 @@ namespace SimpleLanguage.Core
             }
             return sb.ToString();
         }
-    }
-
-    public class ConvertType
-    {
-        public EType oriType;
-        public EType targetType;
     }
     public sealed class MetaOpExpressNode : MetaExpressNode
     {

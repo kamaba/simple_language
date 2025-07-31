@@ -358,6 +358,8 @@ namespace SimpleLanguage.Core
 
                 MetaMemberFunction mmf = new MetaMemberFunction( this, v2 );
                 AddMetaMemberFunction(mmf);
+
+                MethodManager.instance.AddOriginalMemeberFunction(mmf);
             }            
         }
         //解析 自动构建函数  
@@ -375,12 +377,7 @@ namespace SimpleLanguage.Core
             {
                 MetaType mdt = new MetaType(this);
                 var defaultFunction = GetMetaMemberConstructDefaultFunction();
-                MetaMethodCall mfc = null;
-                if (defaultFunction != null)
-                {
-                    mfc = new MetaMethodCall(this, defaultFunction );
-                }
-                m_DefaultExpressNode = new MetaNewObjectExpressNode(mdt, this, null, mfc);
+                m_DefaultExpressNode = new MetaNewObjectExpressNode(mdt, this, defaultFunction.metaBlockStatements);
             }
 
             List<MetaMemberFunction> addList = new List<MetaMemberFunction>();

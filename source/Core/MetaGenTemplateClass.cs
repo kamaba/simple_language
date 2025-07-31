@@ -220,7 +220,10 @@ namespace SimpleLanguage.Core
             mgmf.SetOwnerMetaClass(this);
             mgmf.SetSourceMetaMemberFunction(mmv);
 
-            TypeManager.instance.UpdateMetaTypeByGenClassAndFunction( mgmf.returnMetaVariable.metaDefineType, this, null);
+            if(mgmf.returnMetaVariable?.metaDefineType != null )
+            {
+                TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mgmf.returnMetaVariable.metaDefineType, this, null);
+            }
             for ( int i = 0; i < mgmf.metaMemberParamCollection.metaDefineParamList.Count; i++ )
             {
                 var mdp = mgmf.metaMemberParamCollection.metaDefineParamList[i];

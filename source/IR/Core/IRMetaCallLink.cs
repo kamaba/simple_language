@@ -151,12 +151,23 @@ namespace SimpleLanguage.Core.IR
 
                         IRDup irdup = new IRDup(m_IRMethod);
                         irList.Add(irdup);
+                        IRBase irbase = new IRBase();
+                        IRData sc1 = new IRData();
+                        sc1.opCode = EIROpCode.SetCallClass;
+                        sc1.opValue = irmc;
+                        irbase.AddIRData(sc1);  
 
                         IRData datacall = new IRData();
                         datacall.opCode = EIROpCode.Call;
                         datacall.opValue = rmr;
                         datacall.SetDebugInfoByToken(mf.pingToken);
-                        IRBase irbase = new IRBase(datacall);
+                        irbase.AddIRData(datacall);
+
+
+                        IRData sc2 = new IRData();
+                        sc2.opCode = EIROpCode.UnSetCallClass;
+                        irbase.AddIRData(sc2);
+
                         irList.Add(irbase);
                     }
                 }

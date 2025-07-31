@@ -7,7 +7,7 @@ using SimpleLanguage.Core.Statements;
 
 namespace SimpleLanguage.Core
 {
-    public class MetaCallLinkExpressNode : MetaExpressNode
+    public sealed class MetaCallLinkExpressNode : MetaExpressNode
     {
         public MetaCallLink metaCallLink => m_MetaCallLink;
 
