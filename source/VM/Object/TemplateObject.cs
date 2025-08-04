@@ -11,14 +11,13 @@ namespace SimpleLanguage.VM
     {
         private ClassObject m_ExtendObject = null;
 
-        private ClassObject m_Object = null;
         public object value;
         public TemplateObject() :base(  )
         {
         }
         public void SetClassObject(ClassObject val)
         {
-            m_Object = val;
+            value = val;
             val.refCount++;
         }
         public void SetValue(EType _eType, System.Object val)

@@ -948,6 +948,10 @@ namespace SimpleLanguage.Core
                     Log.AddInStructMeta(EError.None, "Error 函数调用与命名空间冲突!!");
                     return false;
                 }
+                else if( m_CallNodeType == ECallNodeType.MemberFunctionName )
+                {
+                    return true;
+                }
                 else if( m_MetaTemplate != null )
                 {
                     m_CallNodeType = ECallNodeType.NewTemplate;

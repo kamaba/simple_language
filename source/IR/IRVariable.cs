@@ -74,11 +74,6 @@ namespace SimpleLanguage.IR
                 data.index = id;
                 data.opCode = EIROpCode.StoreNotStaticField;
             }
-            else if (irmvf == IRMetaVariableFrom.Member2)
-            {
-                data.index = id;
-                data.opCode = EIROpCode.StoreNotStaticField_R1;
-            }
             else if( irmvf == IRMetaVariableFrom.Argument )
             {
                 irmv = _irMethod.GetIRArgumentById(id);

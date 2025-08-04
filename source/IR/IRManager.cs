@@ -221,6 +221,8 @@ namespace SimpleLanguage.IR
             foreach( var v in IRMethodDict )
             {
                 v.Value.Parse();
+                Console.WriteLine("Method: " + v.Value.id);
+                Console.WriteLine(v.Value.ToIRString());
             }
         }
         public int AddStringIRStack( string strMsg )
