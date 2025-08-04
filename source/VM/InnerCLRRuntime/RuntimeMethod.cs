@@ -6,11 +6,10 @@
 //  Description: master use .net clr system. new create method instance than running code virtual machine 
 //****************************************************************************
 using SimpleLanguage.IR;
+using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Security.Cryptography;
 namespace SimpleLanguage.VM.Runtime
 {
     public class RuntimeMethod
@@ -87,7 +86,7 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 for( int i = 0; i < m_ArgumentObjectArray.Length; i++ )
                 {
-                    Debug.Write( "Argu_" + i.ToString() + "_Value: [" + m_ArgumentObjectArray[i].ToString() + "]" );
+                    Log.AddVM(EError.None, "Argu_" + i.ToString() + "_Value: [" + m_ArgumentObjectArray[i].ToString() + "]" );
                 }                
 
                 //局部变量列表 local variable table
@@ -100,7 +99,7 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 for (int i = 0; i < m_LocalVariableObjectArray.Length; i++)
                 {
-                    Debug.Write("Variable_" + i.ToString() + m_LocalVariableObjectArray[i].ToString());
+                    Log.AddVM(EError.None, "Variable_" + i.ToString() + m_LocalVariableObjectArray[i].ToString());
                 }
 
                 var count = m_IRMethod.IRDataList.Count;
@@ -150,12 +149,12 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_LocalVariableObjectArray.Length)
             {
-                Debug.Write("执行的栈超出范围!!");
+                Log.AddVM(EError.None, "执行的栈超出范围!!");
                 return null;
             }
             if(index < 0 )
             {
-                Debug.Write("执行的栈超出范围!!-");
+                Log.AddVM(EError.None, "执行的栈超出范围!!-");
                 return null;
             }
 
@@ -165,7 +164,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_ArgumentObjectArray.Length)
             {
-                Debug.Write($"SVM Error FunctionName:{this.id} 执行的参数超出范围!!");
+                Log.AddVM(EError.None, $"SVM Error FunctionName:{this.id} 执行的参数超出范围!!");
                 return null;
             }
             return m_ArgumentObjectArray[index];
@@ -174,7 +173,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_ArgumentObjectArray.Length)
             {
-                Debug.WriteLine("执行的参数超出范围!!");
+                Log.AddVM(EError.None, "执行的参数超出范围!!");
                 return;
             }
             ObjectManager.SetObjectByValue(m_ArgumentObjectArray[index], ref svalue);
@@ -183,7 +182,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_LocalVariableObjectArray.Length)
             {
-                Debug.WriteLine("执行的栈超出范围!!");
+                Log.AddVM(EError.None, "执行的栈超出范围!!");
                 return;
             }
             ObjectManager.SetObjectByValue(m_LocalVariableObjectArray[index], ref svalue);
@@ -192,7 +191,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_ReturnObjectArray.Length)
             {
-                Debug.Write("执行的栈超出范围!!");
+                Log.AddVM(EError.None, "执行的栈超出范围!!");
                 return;
             }
             ObjectManager.SetObjectByValue(m_ReturnObjectArray[index], ref svalue);
@@ -215,7 +214,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 return m_InputTemplateClassDict[name];
             }
-            Debug.WriteLine("Erorr------没有找到模板内容!!!");
+            Log.AddVM(EError.None, "Erorr------没有找到模板内容!!!");
             return null;
         }
         public SObject CreateObjectByIRMetaClass( IRMetaClass mdt )
@@ -239,7 +238,7 @@ namespace SimpleLanguage.VM.Runtime
                 m_InputTemplateClassDict.Add(name, templateInstanceObject);
                 return;
             }
-            Debug.WriteLine("Erorr------添加模板内容重复!!!");
+            Log.AddVM(EError.None, "Erorr------添加模板内容重复!!!");
         }
         public void Run()
         {
@@ -250,7 +249,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 pushChar = '\t' + pushChar;
             }
-            Debug.WriteLine(pushChar + "[VMRuntime] [Push] Method: [" + funName +"]" );
+            Log.AddVM(EError.None, pushChar + "[VMRuntime] [Push] Method: [" + funName +"]" );
             level++;
 
             var topClrRuntime = InnerCLRRuntimeVM.topCLRRuntime;
@@ -274,7 +273,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 pushChar = '\t' + pushChar;
             }
-            Debug.WriteLine(pushChar  + "[VMRuntime] [Pop] Method: [" + funName + "]");
+            Log.AddVM( EError.None, pushChar  + "[VMRuntime] [Pop] Method: [" + funName + "]");
         }
         public void RunInstruction( IRData iri )
         {
@@ -438,10 +437,9 @@ namespace SimpleLanguage.VM.Runtime
                         //栈位不变，因为当前对象位的被通过索引取出来的成员变量值，覆盖掉， 所以栈位不会发生变化
                     }
                     break;
-                case EIROpCode.StoreNotStaticField:
-                case EIROpCode.StoreNotStaticField_R1:                    
+                case EIROpCode.StoreNotStaticField:                   
                     {
-                        // -2在存储的值 -1表示要存储的对象 0位表示要存储的位置
+                        // -2在存储的值 -1表示要存储的对象 存储完成，直接变成位置0
                         var v = m_ValueStack[m_ValueIndex - 1];
                         SValue sv = m_ValueStack[m_ValueIndex - 2];
                         switch ( v.eType )
@@ -460,16 +458,17 @@ namespace SimpleLanguage.VM.Runtime
                             case EType.String: v.stringValue = sv.stringValue; break;
                             case EType.Class:
                                 {
-                                    (v.sobject as ClassObject).SetMemberVariableSValue(iri.index, m_ValueStack[m_ValueIndex - 2]);
+                                    (v.sobject as ClassObject).SetMemberVariableSValue(iri.index, sv );
                                 }
                                 break;
                             default:
                                 {
-                                    Debug.Write("Error StoreNotStaticField Path:" + iri.debugInfo.path + " Line: " + iri.debugInfo.beginLine);
+                                    Log.AddVM(EError.None, "Error StoreNotStaticField Path:" + iri.debugInfo.path + " Line: " + iri.debugInfo.beginLine);
                                 }
                                 break;
                         }
-                        m_ValueIndex = (ushort)(m_ValueIndex - ( (iri.opCode == EIROpCode.StoreNotStaticField_R1) ? (short)-1 : (short)-2));
+                        m_ValueStack[m_ValueIndex - 2] = v;
+                        m_ValueIndex -= 2;
                     }
                     break;
                 case EIROpCode.LoadStaticField:
@@ -574,7 +573,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if( m_ValueIndex - 2 < 0 )
                         {
-                            Debug.Write("Error 加法运算!!超出的栈范围");
+                            Log.AddVM(EError.None, "Error 加法运算!!超出的栈范围");
                             break;
                         }
                         m_ValueStack[m_ValueIndex-2].AddSValue(ref m_ValueStack[m_ValueIndex-1], false );
@@ -585,7 +584,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 2 < 0)
                         {
-                            Debug.Write("Error 减法运算!!超出的栈范围");
+                            Log.AddVM(EError.None, "Error 减法运算!!超出的栈范围");
                             break;
                         }
                         m_ValueStack[m_ValueIndex-2].ComputeSVAlue(1, ref m_ValueStack[m_ValueIndex - 1], false );
@@ -596,7 +595,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 2 < 0)
                         {
-                            Debug.Write("Error 乘法运算!!超出的栈范围");
+                            Log.AddVM(EError.None, "Error 乘法运算!!超出的栈范围");
                             break;
                         }
                         m_ValueStack[m_ValueIndex - 2].ComputeSVAlue(2, ref m_ValueStack[m_ValueIndex - 1], false);
@@ -607,7 +606,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 2 < 0)
                         {
-                            Debug.Write("Error 除法运算!!超出的栈范围");
+                            Log.AddVM(EError.None, "Error 除法运算!!超出的栈范围");
                             break;
                         }
                         //m_ValueStack[m_ValueIndex-2].DivSValue(m_ValueStack[m_ValueIndex-1], false);
@@ -619,7 +618,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 2 < 0)
                         {
-                            Debug.Write("Error 余法运算!!超出的栈范围");
+                            Log.AddVM(EError.None, "Error 余法运算!!超出的栈范围");
                             break;
                         }
                         //m_ValueStack[m_ValueIndex-2].ModuloSValue(m_ValueStack[m_ValueIndex-1], false);
@@ -631,7 +630,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 2 < 0)
                         {
-                            Debug.Write("Error 合并运算!!超出的栈范围");
+                            Log.AddVM(EError.None, "Error 合并运算!!超出的栈范围");
                             break;
                         }
                         //m_ValueStack[m_ValueIndex-2].CombineSValue(m_ValueStack[m_ValueIndex-1], false);
@@ -643,7 +642,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 2 < 0)
                         {
-                            Debug.Write("Error 包括运算!!超出的栈范围");
+                            Log.AddVM(EError.None, "Error 包括运算!!超出的栈范围");
                             break;
                         }
                         //m_ValueStack[m_ValueIndex-2].InclusiveOrSValue(m_ValueStack[m_ValueIndex-1], false);
@@ -655,7 +654,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 2 < 0)
                         {
-                            Debug.Write("Error 或运算!!超出的栈范围");
+                            Log.AddVM(EError.None, "Error 或运算!!超出的栈范围");
                             break;
                         }
                         //m_ValueStack[m_ValueIndex--].XORSValue(m_ValueStack[m_ValueIndex], false);
@@ -667,7 +666,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 2 < 0)
                         {
-                            Debug.Write("Error 右移运算!!超出的栈范围");
+                            Log.AddVM(EError.None, "Error 右移运算!!超出的栈范围");
                             break;
                         }
                         //m_ValueStack[m_ValueIndex--].ShrSValue(m_ValueStack[m_ValueIndex], false);
@@ -679,7 +678,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 2 < 0)
                         {
-                            Debug.Write("Error 左移运算!!超出的栈范围");
+                            Log.AddVM(EError.None, "Error 左移运算!!超出的栈范围");
                             break;
                         }
                         //m_ValueStack[m_ValueIndex--].ShiSValue(m_ValueStack[m_ValueIndex], false);
@@ -691,7 +690,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 1 < 0)
                         {
-                            Debug.Write("Error Not运算!!超出的栈范围");
+                            Log.AddVM(EError.None, "Error Not运算!!超出的栈范围");
                             break;
                         }
                         m_ValueStack[m_ValueIndex].NotSValue();
@@ -701,7 +700,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 1 < 0)
                         {
-                            Debug.Write("Error Neg运算!!超出的栈范围");
+                            Log.AddVM(EError.None, "Error Neg运算!!超出的栈范围");
                             break;
                         }
                         m_ValueStack[m_ValueIndex].NegSValue(false);
@@ -711,7 +710,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 2 < 0)
                         {
-                            Debug.Write("Error 比较符超出一当前的数据栈!!");
+                            Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
                         m_ValueStack[m_ValueIndex - 2].CompareSValue(m_ValueStack[m_ValueIndex - 1], 4, false);
@@ -722,7 +721,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 2 < 0)
                         {
-                            Debug.Write("Error 比较符超出一当前的数据栈!!");
+                            Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
                         m_ValueStack[m_ValueIndex - 2].CompareSValue(m_ValueStack[m_ValueIndex - 1], 5, false);
@@ -733,7 +732,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 2 < 0)
                         {
-                            Debug.Write("Error 比较符超出一当前的数据栈!!");
+                            Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
                         m_ValueStack[m_ValueIndex - 2].CompareSValue(m_ValueStack[m_ValueIndex - 1], 0, false);
@@ -744,7 +743,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 2 < 0)
                         {
-                            Debug.Write("Error 比较符超出一当前的数据栈!!");
+                            Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
                         m_ValueStack[m_ValueIndex - 2].CompareSValue(m_ValueStack[m_ValueIndex - 1], 1, false);
@@ -755,7 +754,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 2 < 0)
                         {
-                            Debug.Write("Error 比较符超出一当前的数据栈!!");
+                            Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
                         m_ValueStack[m_ValueIndex - 2].CompareSValue(m_ValueStack[m_ValueIndex - 1], 2, false );
@@ -766,7 +765,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 2 < 0)
                         {
-                            Debug.Write("Error 比较符超出一当前的数据栈!!");
+                            Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
                         m_ValueStack[m_ValueIndex - 2].CompareSValue(m_ValueStack[m_ValueIndex - 1], 2, true);
@@ -777,7 +776,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 2 < 0)
                         {
-                            Debug.Write("Error 比较符超出一当前的数据栈!!");
+                            Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
                         m_ValueStack[m_ValueIndex - 2].CompareSValue(m_ValueStack[m_ValueIndex - 1], 3, false );
@@ -788,7 +787,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 2 < 0)
                         {
-                            Debug.Write("Error 比较符超出一当前的数据栈!!");
+                            Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
                         m_ValueStack[m_ValueIndex - 2].CompareSValue(m_ValueStack[m_ValueIndex - 1], 3, true);
@@ -797,7 +796,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 default:
                     {
-                        Debug.Write("Error 暂不支持" + iri.opCode.ToString() + "的处理!!");
+                        Log.AddVM(EError.None, "Error 暂不支持" + iri.opCode.ToString() + "的处理!!");
                     }
                     break;
             }

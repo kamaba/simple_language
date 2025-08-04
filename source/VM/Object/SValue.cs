@@ -386,6 +386,80 @@ namespace SimpleLanguage.VM
                         }                        
                     }
                     break;
+                case TemplateObject templateobj:
+                    {
+                        eType = templateobj.eType;
+                        object tobj = templateobj.value;
+                        switch (eType)
+                        {
+                            case EType.Byte:
+                                {
+                                    int8Value = (byte)(tobj);
+                                }
+                                break;
+                            case EType.SByte:
+                                {
+                                    sint8Value = (sbyte)(tobj);
+                                }
+                                break;
+                            //case EType.Char:
+                            //    {
+                            //        charValue = (char)(tobj);
+                            //    }
+                            //    break;
+                            case EType.Int16:
+                                {
+                                    int16Value = (short)(tobj);
+                                }
+                                break;
+                            case EType.UInt16:
+                                {
+                                    uint16Value = (ushort)(tobj);
+                                }
+                                break;
+                            case EType.Int32:
+                                {
+                                    int32Value = (int)(tobj);
+                                }
+                                break;
+                            case EType.UInt32:
+                                {
+                                    uint32Value = (uint)(tobj);
+                                }
+                                break;
+                            case EType.Int64:
+                                {
+                                    int64Value = (long)(tobj);
+                                }
+                                break;
+                            case EType.UInt64:
+                                {
+                                    uint64Value = (ulong)(tobj);
+                                }
+                                break;
+                            case EType.Float:
+                                {
+                                    floatValue = (float)(tobj);
+                                }
+                                break;
+                            case EType.Double:
+                                {
+                                    doubleValue = (double)(tobj);
+                                }
+                                break;
+                            case EType.String:
+                                {
+                                    stringValue = tobj as String;
+                                }
+                                break;
+                            case EType.Class:
+                                {
+                                    sobject = tobj as ClassObject;
+                                }
+                                break;
+                        }
+                    }
+                    break;
                 default:
                     {
                         eType = EType.Class;

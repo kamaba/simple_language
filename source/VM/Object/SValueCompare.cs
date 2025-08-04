@@ -290,6 +290,11 @@ namespace SimpleLanguage.VM
                                     SetInt64Compare( (long)int32Value, (long)sval.uint64Value, compareSign, isOrEqual);
                                 }
                                 break;
+                            case EType.Null:
+                                {
+                                    SetBoolValue(false);
+                                }
+                                break;
                         }
                     }
                     break;

@@ -309,7 +309,12 @@ namespace SimpleLanguage.Core
             }
             if (!isStatic)
             {
-                m_ThisMetaVariable = new MetaVariable("this_" + GetHashCode().ToString(), EVariableFrom.Argument, null, m_OwnerMetaClass, new MetaType(m_OwnerMetaClass));
+                var mt = new MetaType(m_OwnerMetaClass);
+                if(m_OwnerMetaClass.metaTemplateList.Count > 0 )
+                {
+                    mt.SetMetaTemplate(new MetaTemplate(m_OwnerMetaClass, "this"));
+                }
+                m_ThisMetaVariable = new MetaVariable("this_" + GetHashCode().ToString(), EVariableFrom.Argument, null, m_OwnerMetaClass, mt );
             }
             if( m_ConstructInitFunction )
             {

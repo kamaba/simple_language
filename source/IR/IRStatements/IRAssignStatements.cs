@@ -33,20 +33,36 @@ namespace SimpleLanguage.IR
                 m_IRStatements.Add(m_IRExpress);
             }
 
-            IRMetaCallLink irmc = new IRMetaCallLink();
-            irmc.ParseToIRDataList(irMethod, ms.leftMetaExpress.metaCallLink.callNodeList);
-            m_IRStatements.AddRange(irmc.irList);
-
-            var mv = ms.leftMetaExpress.GetMetaVariable();
-            var vfrom = mv.variableFrom switch
+            var clist = ms.leftMetaExpress.metaCallLink.callNodeList;
+            for ( int i = 0; i < clist.Count; i++ )
             {
-                EVariableFrom.Member => IRMetaVariableFrom.Member,
-                EVariableFrom.Argument => IRMetaVariableFrom.Argument,
-                EVariableFrom.LocalStatement => IRMetaVariableFrom.LocalStatement,
-                _ => IRMetaVariableFrom.None,
-            };
-            IRStoreVariable irsv = new IRStoreVariable(irMethod, mv.GetHashCode(), vfrom);
-            m_IRStatements.Add(irsv);
+                if( i < clist.Count - 1 )
+                {
+                    var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, clist[i]);
+                    m_IRStatements.AddRange(list);
+                }
+                else
+                {
+                    var mv = clist[i].GetRetMetaVariable();
+                    var vfrom = mv.variableFrom switch
+                    {
+                        EVariableFrom.Member => IRMetaVariableFrom.Member,
+                        EVariableFrom.Argument => IRMetaVariableFrom.Argument,
+                        EVariableFrom.LocalStatement => IRMetaVariableFrom.LocalStatement,
+                        _ => IRMetaVariableFrom.None,
+                    };
+                    if (mv.variableFrom == EVariableFrom.Argument || mv.variableFrom == EVariableFrom.LocalStatement)
+                    {
+                        IRStoreVariable irsv = new IRStoreVariable(irMethod, mv.GetHashCode(), vfrom);
+                        m_IRStatements.Add(irsv);
+                    }
+                    else if (mv.variableFrom == EVariableFrom.Member)
+                    {
+                        IRStoreVariable irsv = new IRStoreVariable(irMethod, (mv as MetaMemberVariable).index, vfrom);
+                        m_IRStatements.Add(irsv);
+                    }
+                }
+            }            
         }
     }
 }

@@ -100,42 +100,46 @@ namespace SimpleLanguage.IR
         }
         public void ParseIRStatements( MetaIfStatements ifstatements )
         {
-            for (int i = 0; i < ifstatements.metaElseIfStatements.Count; i++)
-            {
-                var meis = ifstatements.metaElseIfStatements[i];
-
-                MetaIRElseIfStatements mire = new MetaIRElseIfStatements();
-
-                mire.ParseIRStatements(irMethod, meis);
-                m_IRStatements.AddRange(mire.conditionStatList);
-                m_IRStatements.AddRange(mire.thenStatList);
-            }
-
             IRNop ifEndIRNop = new IRNop(irMethod);
-            m_IRStatements.Add(ifEndIRNop);
-
-
             //if (m_FileMetaKeyIfSyntax != null)
             //{
             //    ifEndIRNop.data.SetDebugInfoByToken(m_FileMetaKeyIfSyntax.ifExpressSyntax.executeBlockSyntax?.endBlock);
             //}
-
+            List<MetaIRElseIfStatements> mirList = new List<MetaIRElseIfStatements>();
             for (int i = 0; i < ifstatements.metaElseIfStatements.Count; i++)
             {
                 var meis = ifstatements.metaElseIfStatements[i];
 
                 MetaIRElseIfStatements mire = new MetaIRElseIfStatements();
+                mirList.Add(mire);
+
                 mire.ParseIRStatements(irMethod, meis);
-
+                m_IRStatements.AddRange(mire.conditionStatList);
+                m_IRStatements.AddRange(mire.thenStatList);
                 mire.ifEndBrach.data.opValue = ifEndIRNop.data;
+            }
+            m_IRStatements.Add(ifEndIRNop);
 
+            List<IRData> irdataList = new List<IRData>();
+            for (int i = 0; i < m_IRStatements.Count; i++)
+            {
+                for (int j = 0; j < m_IRStatements[i].IRDataList.Count; j++)
+                {
+                    var addIR = m_IRStatements[i].IRDataList[j];
+                    irdataList.Add(addIR);
+                }
+            }
+
+            for ( int i = 0; i < mirList.Count; i++ )
+            {
+                var mire = mirList[i];
                 if (mire.ifFalseBreach != null)
                 {
-                    if (i < ifstatements.metaElseIfStatements.Count - 1)
+                    if (i < mirList.Count - 1)
                     {
-                       mire.ifFalseBreach.data.opValue = mire.startNop.data;
+                        mire.ifFalseBreach.data.opValue = mirList[i + 1].startNop.data;
                     }
-                    else if (i == ifstatements.metaElseIfStatements.Count - 1)
+                    else if (i == mirList.Count - 1)
                     {
                         mire.ifFalseBreach.data.opValue = ifEndIRNop.data;
                     }

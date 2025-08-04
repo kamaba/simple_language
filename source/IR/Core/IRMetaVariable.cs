@@ -18,7 +18,6 @@ namespace SimpleLanguage.IR
         Member,
         Static,
         Return,
-        Member2,
     }
     public class IRMetaVariable
     {
@@ -30,11 +29,12 @@ namespace SimpleLanguage.IR
         public int id { get; set; } = 0;
         public string name { get; set; }
         public int index { get; set; } = 0;
-        public bool isTemplate { get; set; } = false;
+        public bool isTemplate => m_IsTemplate;
 
         private MetaExpressNode m_ExpressNode = null;
         private IRMetaClass m_IRMetaClass = null;
         private IRMetaVariableFrom m_IRMetaVariableFrom = IRMetaVariableFrom.None;
+        private bool m_IsTemplate = false;
 
         public IRMetaVariable( MetaVariable mv )
         {
@@ -43,10 +43,9 @@ namespace SimpleLanguage.IR
             name = mv.ownerMetaBlockStatements?.ownerMetaFunction.name + "_local[" + mv.name + "]";
             m_IRMetaVariableFrom = mv.variableFrom == MetaVariable.EVariableFrom.Argument 
                 ?  IRMetaVariableFrom.Argument : IRMetaVariableFrom.LocalStatement;
-            //m_IRMetaClass = IRManager.instance.GetIRMetaClassById(mv.meta)
             if( mv.metaDefineType.isTemplate )
             {
-                isTemplate = true;
+                m_IsTemplate = true;
                 m_IRMetaClass = new IRMetaClass(IRManager.instance, mv.metaDefineType.metaTemplate.name);
             }
             else
@@ -59,7 +58,7 @@ namespace SimpleLanguage.IR
                 {
                     m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mv.metaDefineType.metaClass.allClassName);
                 }
-                isTemplate = false;
+                m_IsTemplate = false;
             }
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme)
