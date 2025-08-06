@@ -705,7 +705,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             m_MetaDefineType = new MetaType(mt);
             Init();
-            m_MetaConstructFunctionCall = new MetaMethodCall( null, null, null );
+            m_MetaConstructFunctionCall = new MetaMethodCall( null, null, null, null );
         }
         // Class1<Int32> a = Class1<Int32>( 10 ){ a = 20; } 
         // Enum1 e1 = Enum1.Val1( 20 );
@@ -861,7 +861,7 @@ namespace SimpleLanguage.Core
             m_FileMetaParTerm = fmpt;
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
-            var mmf = new MetaMethodCall(null, mbs.ownerMetaFunction, null);
+            var mmf = new MetaMethodCall(null, mbs.ownerMetaFunction, null, null );
             m_MetaConstructFunctionCall = mmf;
             m_MetaDefineType = new MetaType(mt);
 

@@ -30,7 +30,7 @@ namespace SimpleLanguage.Core.SelfMeta
         {
             MetaMemberFunction values = new MetaMemberFunction(this, "_values_");
             values.SetIsGet( true );
-            values.SetMetaDefineType(new MetaType( CoreMetaClassManager.arrayMetaClass ) );
+            values.SetReturnMetaClass(CoreMetaClassManager.arrayMetaClass);
             AddMetaMemberFunction(values);
         }
         public static MetaClass CreateMetaClass()

@@ -11,14 +11,14 @@ namespace SimpleLanguage.Core
         public MethodInfo methodInfo;
         public System.Object instance;
         public MetaMethodCallCSharp(MetaVariable mv, MetaFunction _fun, MetaInputParamCollection _metaInputParamCollection = null) 
-            : base( null, _fun, _metaInputParamCollection)
+            : base( null, _fun, _metaInputParamCollection, null)
         {
             ParseCSharp();
         }
 
         public void ParseCSharp()
         {
-            var mmf = m_MetaFunction as MetaMemberFunctionCSharp;
+            var mmf = m_VMCallMetaFunction as MetaMemberFunctionCSharp;
             if ( mmf != null )
             {
                 if(mmf.isStatic == false)

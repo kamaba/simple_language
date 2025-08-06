@@ -228,7 +228,8 @@ namespace SimpleLanguage.Core
             {
                 var mdp = mgmf.metaMemberParamCollection.metaDefineParamList[i];
                 TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mdp.metaVariable.metaDefineType, this, null );
-            }            
+            }
+            mgmf.UpdateFunctionName();
             AddMetaMemberFunction(mgmf);
         }
         public override List<MetaMemberVariable> GetMetaMemberVariableListByFlag(bool isStatic, bool isConst)

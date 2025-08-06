@@ -87,8 +87,8 @@ namespace SimpleLanguage.Core.Statements
         }
         public override void SetDeep(int dp)
         {
-            //m_Deep = dp;
-            //nextMetaStatements?.SetDeep(deep + 1);
+            m_Deep = dp;
+            nextMetaStatements?.SetDeep(deep + 1);
         }
         public MetaVariable GetMetaVariable( string name )
         {

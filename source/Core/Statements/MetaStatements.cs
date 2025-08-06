@@ -42,10 +42,6 @@ namespace SimpleLanguage.Core.Statements
         {
             m_OwnerMetaBlockStatements = mf;
         }
-        public void SetOwnerMetaFunctionBlock(MetaBlockStatements mbs)
-        {
-            m_OwnerMetaBlockStatements = mbs;
-        }
         public virtual void SetTRMetaVariable( MetaVariable mv )
         {
             m_TrMetaVariable = mv;
@@ -56,20 +52,16 @@ namespace SimpleLanguage.Core.Statements
         }
         public override void SetDeep( int dp )
         {
-            //m_Deep = dp;
-            //if(m_NextMetaStatements != null )
-            //{
-            //    m_NextMetaStatements.SetDeep(deep);
-            //}
+            m_Deep = dp;
+            if (m_NextMetaStatements != null)
+            {
+                m_NextMetaStatements.SetDeep(deep);
+            }
         }
         public virtual void SetNextStatements( MetaStatements ms )
         {
             m_NextMetaStatements = ms;
         }
-        //public virtual MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
-        //{
-        //    return null;
-        //}
         public virtual void UpdateOwnerMetaClass( MetaClass ownerclass )
         {
             if(m_TrMetaVariable != null )
@@ -80,10 +72,6 @@ namespace SimpleLanguage.Core.Statements
             {
                 m_NextMetaStatements.UpdateOwnerMetaClass(ownerclass);
             }
-        }
-        public virtual void UpdateTemplateMetaTypeByMetaFunction( MetaFunction mf )
-        {
-
         }
     }
 }

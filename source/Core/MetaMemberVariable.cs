@@ -423,41 +423,6 @@ namespace SimpleLanguage.Core
             }
             return newnode;
         }
-        public override string ToFormatString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            for (int i = 0; i < realDeep; i++)
-                sb.Append(Global.tabChar);
-
-            sb.Append(permission.ToFormatString() + " ");
-            if( isConst )
-            {
-                sb.Append("const ");
-            }
-            if( isStatic )
-            {
-                sb.Append("static ");
-            }
-            sb.Append(base.ToFormatString());
-            if(m_Express != null )
-            {
-                sb.Append(" = ");
-                sb.Append(m_Express.ToFormatString());
-            }
-            sb.Append(";");
-
-            return sb.ToString();
-        }
-        public string ToTokenString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append(m_FileMetaMemeberVariable.nameToken.sourceBeginLine + " 与父类的Token位置: "
-                    + m_FileMetaMemeberVariable.nameToken.sourceBeginLine.ToString());
-
-            return sb.ToString();
-        }
         MetaExpressNode CreateExpressNodeInClassMetaVariable()
         {
             var express = this.m_FileMetaMemeberVariable?.express;
@@ -616,80 +581,117 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        //public override string ToFormatString()
-        //{
-        //    StringBuilder sb = new StringBuilder();
-        //    switch (m_FileMetaMemeberData.DataType)
-        //    {
-        //        case FileMetaMemberData.EMemberDataType.NameClass:
-        //            {
-        //                for (int i = 0; i < realDeep; i++)
-        //                    sb.Append(Global.tabChar);
-        //                sb.AppendLine(m_Name);
-        //                for (int i = 0; i < realDeep; i++)
-        //                    sb.Append(Global.tabChar);
-        //                sb.AppendLine("{");
-        //                foreach (var v in m_MetaMemberDataDict)
-        //                {
-        //                    sb.AppendLine(v.Value.ToFormatString());
-        //                }
-        //                for (int i = 0; i < realDeep; i++)
-        //                    sb.Append(Global.tabChar);
-        //                sb.Append("}");
 
-        //            }
-        //            break;
-        //        case FileMetaMemberData.EMemberDataType.Array:
-        //            {
-        //                int i = 0;
-        //                for (i = 0; i < realDeep; i++)
-        //                    sb.Append(Global.tabChar);
-        //                sb.Append(m_Name + " = [");
-        //                i = 0;
-        //                foreach (var v in m_MetaMemberDataDict)
-        //                {
-        //                    sb.Append(v.Value.ToFormatString());
-        //                    if (i < m_MetaMemberDataDict.Count - 1)
-        //                        sb.Append(",");
-        //                    i++;
-        //                }
-        //                sb.Append("]");
-        //            }
-        //            break;
-        //        case FileMetaMemberData.EMemberDataType.NoNameClass:
-        //            {
-        //                sb.AppendLine();
-        //                for (int i = 0; i < realDeep; i++)
-        //                    sb.Append(Global.tabChar);
-        //                sb.AppendLine("{");
-        //                foreach (var v in m_MetaMemberDataDict)
-        //                {
-        //                    sb.AppendLine(v.Value.ToFormatString());
-        //                }
-        //                for (int i = 0; i < realDeep; i++)
-        //                    sb.Append(Global.tabChar);
-        //                sb.Append("}");
-        //                //if( m_End )
-        //                //{
-        //                //    sb.AppendLine();
-        //                //}
-        //            }
-        //            break;
-        //        case FileMetaMemberData.EMemberDataType.KeyValue:
-        //            {
-        //                for (int i = 0; i < realDeep; i++)
-        //                    sb.Append(Global.tabChar);
-        //                sb.Append(m_Name + " = " + m_Express.ToFormatString() + ";");
-        //            }
-        //            break;
-        //        case FileMetaMemberData.EMemberDataType.Value:
-        //            {
-        //                sb.Append(m_Express.ToFormatString());
-        //            }
-        //            break;
-        //    }
-        //    return sb.ToString();
-        //}
-        //------------------------------------end-----------------------------------------------//
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < realDeep; i++)
+                sb.Append(Global.tabChar);
+
+            sb.Append(permission.ToFormatString() + " ");
+            if (isConst)
+            {
+                sb.Append("const ");
+            }
+            if (isStatic)
+            {
+                sb.Append("static ");
+            }
+            sb.Append(base.ToFormatString());
+            if (m_Express != null)
+            {
+                sb.Append(" = ");
+                sb.Append(m_Express.ToFormatString());
+            }
+            sb.Append(";");
+
+            return sb.ToString();
+        }
+        public string ToTokenString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(m_FileMetaMemeberVariable.nameToken.sourceBeginLine + " 与父类的Token位置: "
+                    + m_FileMetaMemeberVariable.nameToken.sourceBeginLine.ToString());
+
+            return sb.ToString();
+        }
+        /*
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+            switch (m_FileMetaMemeberData.DataType)
+            {
+                case FileMetaMemberData.EMemberDataType.NameClass:
+                    {
+                        for (int i = 0; i < realDeep; i++)
+                            sb.Append(Global.tabChar);
+                        sb.AppendLine(m_Name);
+                        for (int i = 0; i < realDeep; i++)
+                            sb.Append(Global.tabChar);
+                        sb.AppendLine("{");
+                        foreach (var v in m_MetaMemberDataDict)
+                        {
+                            sb.AppendLine(v.Value.ToFormatString());
+                        }
+                        for (int i = 0; i < realDeep; i++)
+                            sb.Append(Global.tabChar);
+                        sb.Append("}");
+
+                    }
+                    break;
+                case FileMetaMemberData.EMemberDataType.Array:
+                    {
+                        int i = 0;
+                        for (i = 0; i < realDeep; i++)
+                            sb.Append(Global.tabChar);
+                        sb.Append(m_Name + " = [");
+                        i = 0;
+                        foreach (var v in m_MetaMemberDataDict)
+                        {
+                            sb.Append(v.Value.ToFormatString());
+                            if (i < m_MetaMemberDataDict.Count - 1)
+                                sb.Append(",");
+                            i++;
+                        }
+                        sb.Append("]");
+                    }
+                    break;
+                case FileMetaMemberData.EMemberDataType.NoNameClass:
+                    {
+                        sb.AppendLine();
+                        for (int i = 0; i < realDeep; i++)
+                            sb.Append(Global.tabChar);
+                        sb.AppendLine("{");
+                        foreach (var v in m_MetaMemberDataDict)
+                        {
+                            sb.AppendLine(v.Value.ToFormatString());
+                        }
+                        for (int i = 0; i < realDeep; i++)
+                            sb.Append(Global.tabChar);
+                        sb.Append("}");
+                        //if( m_End )
+                        //{
+                        //    sb.AppendLine();
+                        //}
+                    }
+                    break;
+                case FileMetaMemberData.EMemberDataType.KeyValue:
+                    {
+                        for (int i = 0; i < realDeep; i++)
+                            sb.Append(Global.tabChar);
+                        sb.Append(m_Name + " = " + m_Express.ToFormatString() + ";");
+                    }
+                    break;
+                case FileMetaMemberData.EMemberDataType.Value:
+                    {
+                        sb.Append(m_Express.ToFormatString());
+                    }
+                    break;
+            }
+            return sb.ToString();
+        }
+        */
     }
 }

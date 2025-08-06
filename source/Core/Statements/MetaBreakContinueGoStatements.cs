@@ -39,10 +39,10 @@ namespace SimpleLanguage.Core.Statements
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            //for (int i = 0; i < deep; i++)
-            //{
-            //    sb.Append(Global.tabChar);
-            //}
+            for (int i = 0; i < deep; i++)
+            {
+                sb.Append(Global.tabChar);
+            }
             sb.Append("break;");
             return sb.ToString();
         }
@@ -70,10 +70,10 @@ namespace SimpleLanguage.Core.Statements
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            //for (int i = 0; i < deep; i++)
-            //{
-            //    sb.Append(Global.tabChar);
-            //}
+            for (int i = 0; i < deep; i++)
+            {
+                sb.Append(Global.tabChar);
+            }
             sb.Append("continue;");
             return sb.ToString();
         }
@@ -116,18 +116,18 @@ namespace SimpleLanguage.Core.Statements
                 }
             }
         }
-        public void SetDeep(int dp)
+        public override void SetDeep(int dp)
         {
-            //m_Deep = dp;
+            m_Deep = dp;
             nextMetaStatements?.SetDeep(dp);
         }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            //for (int i = 0; i < deep; i++)
-            //{
-            //    sb.Append(Global.tabChar);
-            //}
+            for (int i = 0; i < deep; i++)
+            {
+                sb.Append(Global.tabChar);
+            }
             sb.Append( isLabel ? "label " :  "goto " );
             if(labelData != null )
             {

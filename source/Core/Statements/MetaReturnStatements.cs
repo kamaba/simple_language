@@ -50,16 +50,7 @@ namespace SimpleLanguage.Core.Statements
                 m_ReturnMetaDefineType = new MetaType( CoreMetaClassManager.voidMetaClass );
             }
 
-        }
-        //public override MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
-        //{
-        //    //m_ReturnMetaDefineType?.SetMetaClass(mgt.metaType.metaClass);
-        //    //if (m_NextMetaStatements != null)
-        //    //{
-        //    //    m_NextMetaStatements.GenTemplateClassStatement(mgt);
-        //    //}
-        //    return null;
-        //}
+        }        
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
@@ -71,8 +62,6 @@ namespace SimpleLanguage.Core.Statements
             return sb.ToString();
         }
     }
-
-
     public sealed class MetaTRStatements : MetaStatements
     {
         public MetaClass returnMetaClass;

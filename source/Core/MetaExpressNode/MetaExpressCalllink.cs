@@ -1,6 +1,13 @@
-﻿using System;
+﻿//****************************************************************************
+//  File:      MetaExpressCalllink.cs
+// ------------------------------------------------
+//  Copyright (c) author: Like Cheng kamaba233@gmail.com
+//  DateTime: 2025/8/5 12:00:00
+//  Description:  
+//****************************************************************************
+
+using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Text;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.Statements;

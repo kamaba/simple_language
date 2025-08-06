@@ -279,7 +279,6 @@ namespace SimpleLanguage.Core
         public MetaMemberFunction( MetaMemberFunction mmf ) : base( mmf )
         {
             m_IsTemplateFunction = mmf.m_IsTemplateFunction;
-            m_FunctionAllName = mmf.m_FunctionAllName;
             m_ConstructInitFunction = mmf.m_ConstructInitFunction;
             m_IsWithInterface = mmf.m_IsWithInterface;
             m_FileMetaMemberFunction = mmf.m_FileMetaMemberFunction;
@@ -288,24 +287,19 @@ namespace SimpleLanguage.Core
         protected void Init()
         {
             m_ConstructInitFunction = name == "_init_";
-            if(m_DefineMetaType == null )
+
+            MetaType defineMetaType = null;
+            if (m_ConstructInitFunction)
             {
-                if (m_ConstructInitFunction)
-                {
-                    m_DefineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
-                }
-                else
-                {
-                    m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-                }
+                defineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
+            }
+            else
+            {
+                defineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
             if( isSet && !isGet )
             {
-                m_DefineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
-            }
-            if ( isGet )
-            {
-                m_IsMustNeedReturnStatements = true;
+                defineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
             }
             if (!isStatic)
             {
@@ -314,20 +308,13 @@ namespace SimpleLanguage.Core
                 {
                     mt.SetMetaTemplate(new MetaTemplate(m_OwnerMetaClass, "this"));
                 }
-                m_ThisMetaVariable = new MetaVariable("this_" + GetHashCode().ToString(), EVariableFrom.Argument, null, m_OwnerMetaClass, mt );
+                m_ThisMetaVariable = new MetaVariable("this_" + GetHashCode().ToString(), MetaVariable.EVariableFrom.Argument, null, m_OwnerMetaClass, mt );
             }
-            if( m_ConstructInitFunction )
-            {
-                m_ReturnMetaVariable = null;
-            }
-            else
-            {
-                m_ReturnMetaVariable = new MetaVariable("return_" + GetHashCode().ToString(), EVariableFrom.Argument, null, m_OwnerMetaClass, m_DefineMetaType);
-            }
+            m_ReturnMetaVariable = new MetaVariable("return_" + GetHashCode().ToString(), MetaVariable.EVariableFrom.Argument, null, m_OwnerMetaClass, defineMetaType );
         }
         public override void SetDeep(int deep)
         {
-            //m_Deep = deep;
+            m_Deep = deep;
             m_MetaBlockStatements?.SetDeep(deep);
         }
         public void SetSourceMetaMemberFunction( MetaMemberFunction mmf )
@@ -420,7 +407,7 @@ namespace SimpleLanguage.Core
         {
             return base.Parse();
         }
-        public override void ParseDefineMetaType()
+        public virtual void ParseDefineMetaType()
         {
             if (this.m_FileMetaMemberFunction != null)
             {
@@ -433,8 +420,8 @@ namespace SimpleLanguage.Core
                     else
                     {
                         FileMetaClassDefine cmr = m_FileMetaMemberFunction.defineMetaClass;
-                        m_DefineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction( m_OwnerMetaClass, this, cmr );
-                        m_ReturnMetaVariable.SetMetaDefineType(m_DefineMetaType);
+                        var defineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction( m_OwnerMetaClass, this, cmr );
+                        m_ReturnMetaVariable.SetMetaDefineType(defineMetaType);
                     }
                 }
             }
@@ -444,7 +431,7 @@ namespace SimpleLanguage.Core
                 mpl.ParseMetaDefineType();
             }
         }
-        public override void CreateMetaExpress()
+        public virtual void CreateMetaExpress()
         {
             for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
             {
@@ -452,7 +439,7 @@ namespace SimpleLanguage.Core
                 mpl.CreateExpress();
             }
         }
-        public override bool ParseMetaExpress()
+        public virtual bool ParseMetaExpress()
         {
             for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
             {
@@ -632,14 +619,23 @@ namespace SimpleLanguage.Core
                         if (currentBlockStatements.GetIsMetaVariable(name1))
                         {
                             isDefineVarStatements = true;
-                            Log.AddInStructMeta(EError.None, "Error 定义变量名称与类函数临时名称一样!!" + fmvs.token?.ToLexemeAllString());                            
+                            Log.AddInStructMeta(EError.None, "Error 定义变量名称与类函数临时名称一样!!" + fmvs.token?.ToLexemeAllString());
+                            return null;
                         }
                         else
                         {
-                            isDefineVarStatements = currentBlockStatements.ownerMetaClass.GetMetaMemberVariableByName(name1) == null;
-                            if (!isDefineVarStatements)
+                            var mv = currentBlockStatements.ownerMetaClass.GetMetaMemberVariableByName(name1);
+                            if( mv == null )
                             {
-                                Log.AddInStructMeta(EError.None, "Error 定义变量名称与类定义名称一样!!" + fmvs.token?.ToLexemeAllString());
+                                isDefineVarStatements = true;
+                            }
+                            else
+                            {
+                                if (!mv.isStatic)
+                                {
+                                    Log.AddInStructMeta(EError.None, "Error 定义变量名称与类定义名称一样 如果调用成员变量，需要在前边使用this.!!" + fmvs.token?.ToLexemeAllString());
+                                    return null;
+                                }
                             }
                         }
                         if ( isDefineVarStatements )
@@ -647,6 +643,12 @@ namespace SimpleLanguage.Core
                             MetaDefineVarStatements mnvs11 = new MetaDefineVarStatements(currentBlockStatements, fmvs);                           
                             beforeStatements.SetNextStatements(mnvs11);
                             beforeStatements = mnvs11;
+                        }
+                        else
+                        {
+                            MetaAssignStatements mas = new MetaAssignStatements(currentBlockStatements, fmvs );
+                            beforeStatements.SetNextStatements(mas);
+                            beforeStatements = mas;
                         }
                     }
                     break;
@@ -713,7 +715,10 @@ namespace SimpleLanguage.Core
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(m_DefineMetaType.ToFormatString());
+            if( m_ReturnMetaVariable != null )
+            {
+                sb.Append(m_ReturnMetaVariable.metaDefineType.ToFormatString());
+            }
             sb.Append(" ");
             sb.Append(functionAllName);
             sb.Append("(");
@@ -760,7 +765,7 @@ namespace SimpleLanguage.Core
                 sb.Append(" interface");
             }
             sb.Append(" ");
-            sb.Append( m_DefineMetaType.ToFormatString() );
+            sb.Append( m_ReturnMetaVariable?.metaDefineType.ToFormatString() );
             sb.Append(" " + name );
             sb.Append(m_MetaMemberParamCollection.ToFormatString());
             sb.Append(Environment.NewLine);

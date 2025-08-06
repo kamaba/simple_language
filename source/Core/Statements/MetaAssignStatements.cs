@@ -12,6 +12,7 @@ using SimpleLanguage.Core.SelfMeta;
 using System;
 using System.Diagnostics;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.Core.Statements
 {
@@ -92,6 +93,7 @@ namespace SimpleLanguage.Core.Statements
         public MetaCallLinkExpressNode leftMetaExpress => m_LeftMetaExpress;
 
         private FileMetaOpAssignSyntax m_FileMetaOpAssignSyntax = null;
+        private FileMetaDefineVariableSyntax m_FileMetaDefineVariableSyntax = null;
 
         private MetaVariable m_MetaVariable = null;
 #pragma warning disable CS0414 // 字段“MetaAssignStatements.m_OpSign”已被赋值，但从未使用过它的值
@@ -109,24 +111,48 @@ namespace SimpleLanguage.Core.Statements
         private bool m_IsNeedCastStatements = false;
 #pragma warning restore CS0414 // 字段“MetaAssignStatements.m_IsNeedCastStatements”已被赋值，但从未使用过它的值
 
-        public MetaAssignStatements( MetaBlockStatements mbs, FileMetaOpAssignSyntax fmos) : base(mbs)
+        public MetaAssignStatements( MetaBlockStatements mbs ):base( mbs )
+        {
+
+        }
+        public MetaAssignStatements(MetaBlockStatements mbs, FileMetaOpAssignSyntax fmos) : base(mbs)
         {
             m_FileMetaOpAssignSyntax = fmos;
 
             Parse();
         }
+        public MetaAssignStatements(MetaBlockStatements mbs, FileMetaDefineVariableSyntax fmos) : base(mbs)
+        {
+            m_FileMetaDefineVariableSyntax = fmos;
+
+            this.m_MetaVariable = mbs.ownerMetaClass.GetMetaMemberVariableByName(m_FileMetaDefineVariableSyntax.name);
+
+            Parse();
+        }
         private void Parse()
         {
-            var metaCallLink = new MetaCallLink(m_FileMetaOpAssignSyntax.variableRef, 
-                m_OwnerMetaBlockStatements?.ownerMetaClass, m_OwnerMetaBlockStatements, null, null );
+            MetaCallLink metaCallLink = null;
+
+            if (m_FileMetaOpAssignSyntax != null)
+            {
+                metaCallLink = new MetaCallLink(m_FileMetaOpAssignSyntax.variableRef,
+                m_OwnerMetaBlockStatements?.ownerMetaClass, m_OwnerMetaBlockStatements, null, null);
+                m_SignToken = m_FileMetaOpAssignSyntax?.assignToken;
+            }
+            else if( m_FileMetaDefineVariableSyntax != null)
+            {
+                //metaCallLink = new MetaCallLink(m_FileMetaDefineVariableSyntax.fileMetaClassDefine,
+                //m_OwnerMetaBlockStatements?.ownerMetaClass, m_OwnerMetaBlockStatements, null, null);
+                m_SignToken = m_FileMetaDefineVariableSyntax?.assignToken;
+
+            }
 
             if (metaCallLink == null)
             {
-                Debug.Write("Error MetaAssignStatements ParseDefine!!!" + m_FileMetaOpAssignSyntax.variableRef?.ToTokenString());
+                Debug.Write("Error MetaAssignStatements ParseDefine!!!" + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
                 return;
             }
 
-            m_SignToken = m_FileMetaOpAssignSyntax.assignToken;
             m_LeftMetaExpress = new MetaCallLinkExpressNode(metaCallLink);
 
             ETokenType ett = m_SignToken.type;

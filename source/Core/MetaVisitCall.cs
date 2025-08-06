@@ -23,13 +23,17 @@ namespace SimpleLanguage.Core
     {
         //public MetaVariable callerMetaVariable => m_CallerMetaVariable;
         public MetaGenTemplateClass callerInstanceClass => m_CallerInstanceClass;
-        public MetaFunction function => m_MetaFunction;
+        public MetaFunction function => m_VMCallMetaFunction;
+        public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
         public MetaInputParamCollection metaInputParamCollection => m_MetaInputParamCollection;
         //public EMethodCallStackType methodCallStackType => m_MethodCallStackType;
 
         //protected MetaVariable m_CallerMetaVariable = null;
         protected MetaGenTemplateClass m_CallerInstanceClass = null;
-        protected MetaFunction m_MetaFunction = null;
+        //模板或者是调用时的函数
+        protected MetaFunction m_VMCallMetaFunction = null;
+        //真实的成员函数
+        protected MetaMemberFunction m_MetaMemberFunction = null;
         protected MetaInputParamCollection m_MetaInputParamCollection = null;
         //protected EMethodCallStackType m_MethodCallStackType = EMethodCallStackType.DynamicStack;
         //private bool m_IsConstruction = false;
@@ -45,10 +49,29 @@ namespace SimpleLanguage.Core
         //    m_MetaInputParamCollection = _metaInputParamCollection;
         //    //m_MethodCallStackType = EMethodCallStackType.DynamicStack;
         //}
-        public MetaMethodCall( MetaGenTemplateClass genGlass, MetaFunction _fun, MetaInputParamCollection _param, MetaVariable mv = null )
+
+        public MetaMethodCall(MetaGenTemplateClass genGlass, MetaMemberFunction _fun, MetaInputParamCollection _param )
         {
             m_CallerInstanceClass = genGlass;
-            m_MetaFunction = _fun;
+            m_MetaMemberFunction = _fun;
+            m_VMCallMetaFunction = _fun.sourceMetaMemberFunction;
+            m_MetaInputParamCollection = _param;
+            //m_CallerMetaVariable = mv;
+            //var tmmf = _fun as MetaMemberFunction;
+            //if (tmmf != null)
+            //{
+            //    m_IsConstruction = tmmf.isConstructInitFunction;
+            //    //m_MethodCallStackType = tmmf.isStatic ? EMethodCallStackType.StaticStack : EMethodCallStackType.DynamicStack;
+            //}
+            //else
+            //{
+            //    //m_MethodCallStackType = EMethodCallStackType.DynamicStack;
+            //}
+        }
+        public MetaMethodCall( MetaGenTemplateClass genGlass, MetaFunction _fun, MetaInputParamCollection _param, MetaVariable mv )
+        {
+            m_CallerInstanceClass = genGlass;
+            m_VMCallMetaFunction = _fun;
             m_MetaInputParamCollection = _param;
             //m_CallerMetaVariable = mv;
             //var tmmf = _fun as MetaMemberFunction;
@@ -79,9 +102,17 @@ namespace SimpleLanguage.Core
         //        m_CallerInstanceClass = mgtc;
         //    }
         //}
+        public MetaFunction GetRealMetaFunction()
+        {
+            if( m_MetaMemberFunction != null )
+            {
+                return m_MetaMemberFunction;
+            }
+            return m_VMCallMetaFunction;
+        }
         public bool CheckMetaFunctionMatchInputParamCollection()
         {
-            if (!m_MetaFunction.IsEqualMetaInputParamCollection(m_MetaInputParamCollection))
+            if (!m_VMCallMetaFunction.IsEqualMetaInputParamCollection(m_MetaInputParamCollection))
             {
                 Log.AddInStructMeta(EError.None, "Error 验证失败,函数与输入参数不匹配!!");
                 return false;
@@ -90,18 +121,18 @@ namespace SimpleLanguage.Core
         }
         public MetaType GeMetaDefineType()
         {
-            return m_MetaFunction.metaDefineType;
+            return m_VMCallMetaFunction.metaDefineType;
         }
         public string ToCommonString()
         {
             StringBuilder sb = new StringBuilder();
 
-            if (m_MetaFunction != null)
+            if (m_VMCallMetaFunction != null)
             {
-                sb.Append(m_MetaFunction.name + "(");
+                sb.Append(m_VMCallMetaFunction.name + "(");
                 int inputCount = m_MetaInputParamCollection?.metaInputParamList.Count ?? 0;
-                List<MetaDefineParam> mpList = m_MetaFunction.metaMemberParamCollection.metaDefineParamList;
-                int defineCount = m_MetaFunction.metaMemberParamCollection.maxParamCount;
+                List<MetaDefineParam> mpList = m_VMCallMetaFunction.metaMemberParamCollection.metaDefineParamList;
+                int defineCount = m_VMCallMetaFunction.metaMemberParamCollection.maxParamCount;
                 for (int i = 0; i < defineCount; i++)
                 {
                     if (i < inputCount)
@@ -132,27 +163,11 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            if( true )//this.methodCallStackType == EMethodCallStackType.StaticStack )
-            {
-                sb.Append(this.m_MetaFunction.name);
-                sb.Append("( ");
-                sb.Append(this.metaInputParamCollection.ToFormatString() );
-                sb.Append(" )");
-            }
-            else
-            {
-                //if (this.m_CallerMetaVariable != null)
-                //{
-                //    sb.Append(m_CallerMetaVariable.name);
-                //}
+            sb.Append(this.m_VMCallMetaFunction.name);
+            sb.Append("( ");
+            sb.Append(this.metaInputParamCollection.ToFormatString() );
+            sb.Append(" )");
 
-                //if (m_CallerMetaClass != null)
-                //{
-                //    sb.Append("[" + m_CallerMetaClass.ToDefineTypeString() + "]");
-                //}
-                sb.Append(".");
-                sb.Append(ToCommonString());
-            }
             return sb.ToString();
         }
     }
@@ -279,6 +294,10 @@ namespace SimpleLanguage.Core
             {
                 case EVisitType.MethodCall:
                     {
+                        if( methodCall.metaMemberFunction != null )
+                        {
+                            return methodCall.metaMemberFunction.returnMetaVariable.metaDefineType;
+                        }
                         return methodCall.function.returnMetaVariable.metaDefineType;
                     }
                     case EVisitType.VisitVariable:
@@ -287,7 +306,7 @@ namespace SimpleLanguage.Core
                     }
                     case EVisitType.Variable:
                     {
-                        return variable.metaDefineType;
+                        return this.variable.metaDefineType;
                     }
                 case EVisitType.NewClass:
                     {

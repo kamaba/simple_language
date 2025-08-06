@@ -72,8 +72,7 @@ namespace SimpleLanguage.Core
             m_IsFinal = mmf.isFinal;
             m_MetaBlockStatements = mmf.metaBlockStatements;
             m_ConstructInitFunction = mmf.isConstructInitFunction;
-            m_ReturnMetaVariable = mmf.returnMetaVariable;
-            m_DefineMetaType = mmf.metaDefineType;
+            m_ReturnMetaVariable = new MetaVariable(mmf.returnMetaVariable);
 
             //    m_OriginalMetaMemberFunction = mmf;
             //    m_Name = mmf.m_Name;
@@ -102,7 +101,7 @@ namespace SimpleLanguage.Core
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(m_DefineMetaType.ToFormatString());
+            sb.Append(returnMetaVariable?.metaDefineType?.ToFormatString());
             sb.Append(" ");
             sb.Append(name);
             sb.Append("<");
