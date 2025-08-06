@@ -367,47 +367,19 @@ namespace SimpleLanguage.Core
 
             if( m_MetaModule != null )
             {
-                sb.Append(m_MetaModule.ToFormatString());
-                sb.AppendLine("{");
-                foreach (var v in m_ChildrenMetaNodeDict)
-                {
-                    sb.Append(v.Value.ToFormatString());
-                }
-                sb.AppendLine("");
-                sb.Append("}"); 
+                sb.Append(m_MetaModule.ToFormatString());               
             }
             else if( m_MetaNamespace != null )
             {
                 sb.Append(m_MetaNamespace.ToFormatString());
-                sb.AppendLine("{");
-                foreach (var v in m_ChildrenMetaNodeDict)
-                {
-                    sb.Append(v.Value.ToFormatString());
-                }
-                sb.AppendLine("");
-                sb.Append("}");
             }
             else if (m_MetaData != null)
             {
                 sb.Append(m_MetaData.ToFormatString());
-                sb.AppendLine("{");
-                foreach (var v in m_ChildrenMetaNodeDict)
-                {
-                    sb.Append(v.Value.ToFormatString());
-                }
-                sb.AppendLine("");
-                sb.Append("}");
             }
             else if (m_MetaEnum != null)
             {
                 sb.Append(m_MetaEnum.ToFormatString());
-                sb.AppendLine("{");
-                foreach (var v in m_ChildrenMetaNodeDict)
-                {
-                    sb.Append(v.Value.ToFormatString());
-                }
-                sb.AppendLine("");
-                sb.Append("}");
             }
             else if( m_MetaTemplateClassDict.Count > 0 )
             {
@@ -415,7 +387,10 @@ namespace SimpleLanguage.Core
                 {
                     sb.Append(v.Value.ToFormatString());
                     sb.AppendLine("{");
-                    sb.Append(v.Value);
+                    foreach (var v2 in m_ChildrenMetaNodeDict)
+                    {
+                        sb.Append(v2.Value.ToFormatString());
+                    }
                     sb.AppendLine("");
                     sb.Append("}");
                 }

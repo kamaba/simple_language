@@ -95,12 +95,8 @@ namespace SimpleLanguage.Core.Statements
                     }
                     else
                     {
-#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
-                        EType etype = EType.None;
-#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
-#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
-                        string tname = "";
-#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
+                        //EType etype = EType.None;
+                        //string tname = "";
                         //if (MetaTypeFactory.MatchSystemType(m_FileMetaKeyCaseSyntax.defineClassToken.lexeme.ToString(), ref etype, ref tname))
                         //{
                         //    matchTypeClass = ClassManager.instance.GetClassByMetaType(new MetaType(etype, tname));
@@ -167,10 +163,10 @@ namespace SimpleLanguage.Core.Statements
                 }
                 return;
             }
-            public void SetDeep(int dp)
+            public override void SetDeep(int dp)
             {
-                //m_Deep = dp;
-                //thenMetaStatements?.SetDeep(dp);
+                m_Deep = dp;
+                thenMetaStatements?.SetDeep(dp);
             }
             public void SetMatchMetaVariable(MetaVariable matchMV )
             {
@@ -180,10 +176,10 @@ namespace SimpleLanguage.Core.Statements
             {
                 StringBuilder sb = new StringBuilder();
 
-                //for (int i = 0; i < deep; i++)
-                //{
-                //    sb.Append(Global.tabChar);
-                //}
+                for (int i = 0; i < deep; i++)
+                {
+                    sb.Append(Global.tabChar);
+                }
                 sb.Append("case ");
                 if(switchCaseType == SwitchCaseType.Const )
                 {
@@ -282,9 +278,9 @@ namespace SimpleLanguage.Core.Statements
                 metaCaseStatements[i].SetMatchMetaVariable(matchMV);
             }
         }
-        public void SetDeep(int dp)
+        public override void SetDeep(int dp)
         {
-            //m_Deep = dp;
+            m_Deep = dp;
             for (int i = 0; i < metaCaseStatements.Count; i++)
             {
                 metaCaseStatements[i].SetDeep(dp+1);
@@ -306,62 +302,62 @@ namespace SimpleLanguage.Core.Statements
         {
             StringBuilder sb = new StringBuilder();
 
-            //for (int i = 0; i < deep; i++)
-            //{
-            //    sb.Append(Global.tabChar);
-            //}
-            //sb.Append("switch ");
-            //if(m_MatchType == SwitchMatchType.None )
-            //{
-            //}
-            //else if( m_MatchType == SwitchMatchType.ConstValue )
-            //{
-            //    sb.Append(matchMV?.name);
-            //}
-            //else if (m_MatchType == SwitchMatchType.ClassType)
-            //{
-            //    sb.Append(matchMV?.name);
-            //    sb.Append(" ");
-            //    sb.Append(m_MetaCallLink?.ToFormatString());
-            //}
-            //else if (m_MatchType == SwitchMatchType.ClassType)
-            //{
-            //    sb.Append(matchMV?.name);
-            //    sb.Append(" ");
-            //    sb.Append(m_MetaCallLink?.ToFormatString());
-            //}
-            //sb.Append(Environment.NewLine);
-            //for (int i = 0; i < deep; i++)
-            //{
-            //    sb.Append(Global.tabChar);
-            //}
-            //sb.Append("{");
-            //for( int i = 0; i < metaCaseStatements.Count; i++ )
-            //{
-            //    sb.Append(Environment.NewLine);
-            //    sb.Append(metaCaseStatements[i].ToFormatString());
-            //}
-            //if(defaultMetaStatements != null )
-            //{
-            //    sb.Append(Environment.NewLine);
-            //    for (int i = 0; i < deep+1; i++)
-            //    {
-            //        sb.Append(Global.tabChar);
-            //    }
-            //    sb.Append("default");
-            //    sb.Append(Environment.NewLine);
-            //    sb.Append(defaultMetaStatements?.ToFormatString());
-            //}
-            //sb.Append(Environment.NewLine);
-            //sb.Append(Environment.NewLine);
-            //for (int i = 0; i < deep; i++)
-            //{
-            //    sb.Append(Global.tabChar);
-            //}
-            //sb.Append("}");
-            //sb.Append(Environment.NewLine);
+            for (int i = 0; i < deep; i++)
+            {
+                sb.Append(Global.tabChar);
+            }
+            sb.Append("switch ");
+            if (m_MatchType == SwitchMatchType.None)
+            {
+            }
+            else if (m_MatchType == SwitchMatchType.ConstValue)
+            {
+                sb.Append(matchMV?.name);
+            }
+            else if (m_MatchType == SwitchMatchType.ClassType)
+            {
+                sb.Append(matchMV?.name);
+                sb.Append(" ");
+                sb.Append(m_MetaCallLink?.ToFormatString());
+            }
+            else if (m_MatchType == SwitchMatchType.ClassType)
+            {
+                sb.Append(matchMV?.name);
+                sb.Append(" ");
+                sb.Append(m_MetaCallLink?.ToFormatString());
+            }
+            sb.Append(Environment.NewLine);
+            for (int i = 0; i < deep; i++)
+            {
+                sb.Append(Global.tabChar);
+            }
+            sb.Append("{");
+            for (int i = 0; i < metaCaseStatements.Count; i++)
+            {
+                sb.Append(Environment.NewLine);
+                sb.Append(metaCaseStatements[i].ToFormatString());
+            }
+            if (defaultMetaStatements != null)
+            {
+                sb.Append(Environment.NewLine);
+                for (int i = 0; i < deep + 1; i++)
+                {
+                    sb.Append(Global.tabChar);
+                }
+                sb.Append("default");
+                sb.Append(Environment.NewLine);
+                sb.Append(defaultMetaStatements?.ToFormatString());
+            }
+            sb.Append(Environment.NewLine);
+            sb.Append(Environment.NewLine);
+            for (int i = 0; i < deep; i++)
+            {
+                sb.Append(Global.tabChar);
+            }
+            sb.Append("}");
+            sb.Append(Environment.NewLine);
 
-            //sb.Append(nextMetaStatements?.ToFormatString());
+            sb.Append(nextMetaStatements?.ToFormatString());
 
             return sb.ToString();
         }

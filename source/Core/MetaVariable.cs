@@ -70,7 +70,10 @@ namespace SimpleLanguage.Core
             m_IsConst = mv.m_IsConst;
             m_IsParsed = mv.m_IsParsed;
 
-            m_MetaVariableDict = mv.m_MetaVariableDict;
+            foreach( var v in mv.m_MetaVariableDict)
+            {
+                m_MetaVariableDict.Add(v.Key, new MetaVariable( v.Value ) );
+            }
             m_OwnerMetaBlockStatements = mv.m_OwnerMetaBlockStatements;
         }
         public MetaVariable(string _name, EVariableFrom from, MetaBlockStatements mbs, MetaClass ownerClass, MetaType mdt )

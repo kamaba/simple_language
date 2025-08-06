@@ -7,13 +7,13 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile.CoreFileMeta;
+using SimpleLanguage.Parse;
 using System;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core.Statements
 {
-    public partial class MetaForStatements : MetaStatements
+    public sealed class MetaForStatements : MetaStatements
     {
         private bool m_IsForIn = false;
         private MetaVariable m_ForMetaVariable;
@@ -41,7 +41,7 @@ namespace SimpleLanguage.Core.Statements
             {
                 if (m_FileMetaKeyForSyntax.conditionExpress == null)
                 {
-                    Debug.Write("Error for in express后边没有表达式!!");
+                    Log.AddInStructMeta( EError.None, "Error for in express后边没有表达式!!");
                 }
 
 
@@ -65,7 +65,7 @@ namespace SimpleLanguage.Core.Statements
                 var mnoen = m_ConditionExpress as MetaNewObjectExpressNode;
                 if (mcallEn == null && mnoen == null)
                 {
-                    Debug.Write("Error For in 表达式，应该是个数组形式");
+                    Log.AddInStructMeta(EError.None, "Error For in 表达式，应该是个数组形式");
                     return;
                 }
                 if( mcallEn != null )
@@ -80,7 +80,7 @@ namespace SimpleLanguage.Core.Statements
                 MetaType mdt = m_ForInContent.metaDefineType;
                 if ( !mdt.IsCanForIn() )
                 {
-                    Debug.Write("Error For in 表达式，应该是个数组形式!");
+                    Log.AddInStructMeta(EError.None, "Error For in 表达式，应该是个数组形式!");
                     return;
                 }
                 var forMVMC = mdt.GetMetaInputTemplateByIndex();
@@ -92,14 +92,14 @@ namespace SimpleLanguage.Core.Statements
                 var fmcd = m_FileMetaKeyForSyntax.fileMetaClassDefine as FileMetaCallSyntax;
                 if( fmcd == null )
                 {
-                    Debug.Write("Error For x in X必须有!!");
+                    Log.AddInStructMeta(EError.None, "Error For x in X必须有!!");
                     return;
                 }
                 string dname = fmcd.variableRef.name;
                 var dmv = m_ThenMetaStatements.GetMetaVariableByName(dname);
                 if (dmv != null )
                 {
-                    Debug.Write("Error 在 for .. in 中，不允许从for 外边定义遍历变量!!");
+                    Log.AddInStructMeta(EError.None, "Error 在 for .. in 中，不允许从for 外边定义遍历变量!!");
                     return;
                 }
                 else
@@ -140,7 +140,7 @@ namespace SimpleLanguage.Core.Statements
 
                             if (m_ThenMetaStatements.GetIsMetaVariable(sname))
                             {
-                                m_AssignStatements = new MetaAssignStatements(m_ThenMetaStatements, null);
+                                m_AssignStatements = new MetaAssignStatements(m_ThenMetaStatements);
                             }
                             else
                             {
@@ -165,7 +165,7 @@ namespace SimpleLanguage.Core.Statements
                 }
                 if (m_ForMetaVariable == null)
                 {
-                    Debug.Write("Error 没有找到相应的变量!!");
+                    Log.AddInStructMeta(EError.None, "Error 没有找到相应的变量!!");
                 }
                 m_ThenMetaStatements.UpdateMetaVariableDict(m_ForMetaVariable);
 
@@ -187,7 +187,7 @@ namespace SimpleLanguage.Core.Statements
             //必须放到最后，因为 前边有变量需要建立
             MetaMemberFunction.CreateMetaSyntax(m_FileMetaKeyForSyntax.executeBlockSyntax, m_ThenMetaStatements);
         }
-        public void SetDeep(int dp)
+        public override void SetDeep(int dp)
         {
             //m_Deep = dp;
             m_ThenMetaStatements?.SetDeep(dp);
@@ -197,10 +197,10 @@ namespace SimpleLanguage.Core.Statements
         {
             StringBuilder sb = new StringBuilder();
 
-            //for (int i = 0; i < deep; i++)
-            //{
-            //    sb.Append(Global.tabChar);
-            //}
+            for (int i = 0; i < deep; i++)
+            {
+                sb.Append(Global.tabChar);
+            }
             sb.Append("for ");
             if (m_IsForIn)
             {
@@ -209,48 +209,48 @@ namespace SimpleLanguage.Core.Statements
                 sb.Append(m_ForInContent.name);
             }
             sb.Append(Environment.NewLine);
-            //for (int i = 0; i < deep; i++)
-            //{
-            //    sb.Append(Global.tabChar);
-            //}
+            for (int i = 0; i < deep; i++)
+            {
+                sb.Append(Global.tabChar);
+            }
             sb.Append("{");
             sb.Append(Environment.NewLine);
 
             if (!m_IsForIn)
             {
-                //for (int i = 0; i < deep + 1; i++)
-                //{
-                //    sb.Append(Global.tabChar);
-                //}
-                //if (m_DefineVarStatements != null)
-                //{
-                //    sb.Append(m_DefineVarStatements.ToFormatString());
-                //}
-                //if ( m_AssignStatements != null)
-                //{
-                //    sb.Append(m_AssignStatements.ToFormatString());
-                //}
-                //if (m_StepStatements != null)
-                //{
-                //    for (int i = 0; i < deep + 1; i++)
-                //    {
-                //        sb.Append(Global.tabChar);
-                //    }
-                //    sb.Append(m_StepStatements.ToFormatString());
-                //}
+                for (int i = 0; i < deep + 1; i++)
+                {
+                    sb.Append(Global.tabChar);
+                }
+                if (m_DefineVarStatements != null)
+                {
+                    sb.Append(m_DefineVarStatements.ToFormatString());
+                }
+                if (m_AssignStatements != null)
+                {
+                    sb.Append(m_AssignStatements.ToFormatString());
+                }
+                if (m_StepStatements != null)
+                {
+                    for (int i = 0; i < deep + 1; i++)
+                    {
+                        sb.Append(Global.tabChar);
+                    }
+                    sb.Append(m_StepStatements.ToFormatString());
+                }
 
-                //if (m_ConditionExpress != null)
-                //{
-                //    sb.Append(Environment.NewLine);
-                //    for (int i = 0; i < deep + 1; i++)
-                //    {
-                //        sb.Append(Global.tabChar);
-                //    }
-                //    sb.Append("if ");
-                //    sb.Append(m_ConditionExpress.ToFormatString());
-                //    sb.Append("{break;}");
-                //    sb.Append(Environment.NewLine);
-                //}
+                if (m_ConditionExpress != null)
+                {
+                    sb.Append(Environment.NewLine);
+                    for (int i = 0; i < deep + 1; i++)
+                    {
+                        sb.Append(Global.tabChar);
+                    }
+                    sb.Append("if ");
+                    sb.Append(m_ConditionExpress.ToFormatString());
+                    sb.Append("{break;}");
+                    sb.Append(Environment.NewLine);
+                }
                 sb.Append(m_ThenMetaStatements?.nextMetaStatements?.ToFormatString());
 
             }
@@ -260,10 +260,10 @@ namespace SimpleLanguage.Core.Statements
             }
 
             sb.Append(Environment.NewLine);
-            //for (int i = 0; i < deep; i++)
-            //{
-            //    sb.Append(Global.tabChar);
-            //}
+            for (int i = 0; i < deep; i++)
+            {
+                sb.Append(Global.tabChar);
+            }
             sb.Append("}");
             sb.Append(Environment.NewLine);
 
@@ -273,7 +273,7 @@ namespace SimpleLanguage.Core.Statements
             return sb.ToString();
         }
     }
-    public partial class MetaWhileDoWhileStatements : MetaStatements
+    public sealed class MetaWhileDoWhileStatements : MetaStatements
     {
         private FileMetaConditionExpressSyntax m_FileMetaKeyWhileSyntax = null;
         private MetaExpressNode m_ConditionExpress = null;

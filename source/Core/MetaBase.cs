@@ -57,6 +57,10 @@ namespace SimpleLanguage.Core
         {
             m_Name = name;
         }
+        public virtual void SetAnchorDeep(int addep)
+        {
+            m_AnchorDeep = addep;
+        }
         public virtual void SetDeep( int deep )
         {
             m_Deep = deep;

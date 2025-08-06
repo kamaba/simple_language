@@ -6,10 +6,12 @@
 //  Description: Meta enum's attribute
 //****************************************************************************
 
+using SimpleLanguage.Compile;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using System.Collections.Generic;
 using System.Text;
+using static SimpleLanguage.Core.MetaVariable;
 
 namespace SimpleLanguage.Core
 {
@@ -26,8 +28,23 @@ namespace SimpleLanguage.Core
         public MetaStatements frontStatements;
         public MetaStatements nextStatements;
     }
-    public class MetaFunction : MetaVariable
+    public class MetaFunction : MetaBase
     {
+        public MetaType metaDefineType
+        {
+            get
+            {
+                if( m_ReturnMetaVariable != null )
+                {
+                    return m_ReturnMetaVariable.metaDefineType;
+                }
+                return null;
+            }
+        }
+        public Token pingToken => m_PintTokenList.Count > 0 ? m_PintTokenList[0] : null;
+        public virtual bool isStatic => m_IsStatic;
+        public virtual bool isParsed => m_IsParsed;
+        public virtual bool isTemplateFunction => m_IsTemplateFunction;
         public virtual string functionAllName {
             get
             {
@@ -71,40 +88,62 @@ namespace SimpleLanguage.Core
         public MetaVariable thisMetaVariable => m_ThisMetaVariable;
         public MetaVariable returnMetaVariable => m_ReturnMetaVariable;
         public EMethodCallType methodCallType => m_MethodCallType;
+        public MetaClass ownerMetaClass => m_OwnerMetaClass;
         public MetaDefineParamCollection metaMemberParamCollection => m_MetaMemberParamCollection;
         public MetaBlockStatements metaBlockStatements => m_MetaBlockStatements;
         public MetaDefineTemplateCollection metaMemberTemplateCollection => m_MetaMemberTemplateCollection;
 
+
+        #region 属性
+        protected MetaClass m_OwnerMetaClass = null;
         protected MetaBlockStatements m_MetaBlockStatements = null;
         protected MetaVariable m_ThisMetaVariable = null;
         protected MetaVariable m_ReturnMetaVariable = null;
-        protected MetaDefineParamCollection m_MetaMemberParamCollection = null;
+        protected MetaDefineParamCollection m_MetaMemberParamCollection = new MetaDefineParamCollection();
         protected MetaDefineTemplateCollection m_MetaMemberTemplateCollection = new MetaDefineTemplateCollection();
         protected EMethodCallType m_MethodCallType = EMethodCallType.Local;
-        protected bool m_IsMustNeedReturnStatements = false;
         private List<LabelData> m_LabelDataList = new List<LabelData>();
+        protected bool m_IsStatic = false;
+        protected bool m_IsTemplateFunction = false;
+        #endregion
+
+        #region Compile or Debug
+        protected bool m_IsParsed = false;
         protected string m_FunctionAllName = null;
+        protected List<Token> m_PintTokenList = new List<Token>();
+        #endregion
         public MetaFunction(MetaClass mc)
         {
             m_MetaMemberParamCollection = new MetaDefineParamCollection(false, true);
-            m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             SetOwnerMetaClass(mc);
         }
-        public MetaFunction( MetaFunction mf ):base(mf) 
+        public MetaFunction( MetaFunction mf ):base(mf)
         {
+            m_IsParsed = mf.m_IsParsed;
+            m_FunctionAllName = null;
+            m_PintTokenList = mf.m_PintTokenList;
+
+            m_OwnerMetaClass = mf.m_OwnerMetaClass; 
             m_MetaBlockStatements = mf.m_MetaBlockStatements;
-            m_ThisMetaVariable = mf.m_ThisMetaVariable;
-            m_ReturnMetaVariable = mf.m_ReturnMetaVariable;
+            if( mf.m_ThisMetaVariable != null )
+            {
+                m_ThisMetaVariable = new MetaVariable(mf.m_ThisMetaVariable);
+            }
+            if (mf.m_ReturnMetaVariable != null)
+            {
+                m_ReturnMetaVariable = new MetaVariable(mf.m_ReturnMetaVariable);
+            }
             m_MetaMemberParamCollection = new MetaDefineParamCollection( mf.m_MetaMemberParamCollection );
             m_MetaMemberTemplateCollection = new MetaDefineTemplateCollection(mf.m_MetaMemberTemplateCollection);
             m_MethodCallType = mf.m_MethodCallType;
-            m_IsMustNeedReturnStatements = mf.m_IsMustNeedReturnStatements;
             m_LabelDataList = mf.m_LabelDataList;
+            m_IsStatic = mf.m_IsStatic;
+            m_IsTemplateFunction = mf.m_IsTemplateFunction;
         }
-        public override void SetOwnerMetaClass(MetaClass ownerclass)
+        public virtual void SetOwnerMetaClass(MetaClass ownerclass)
         {
-            base.SetOwnerMetaClass(ownerclass);
-            if(m_MetaBlockStatements != null )
+            m_OwnerMetaClass = ownerclass;
+            if (m_MetaBlockStatements != null )
             {
                 m_MetaBlockStatements.UpdateOwnerMetaClass(ownerclass);
             }
@@ -161,11 +200,26 @@ namespace SimpleLanguage.Core
                 ld.nextStatements = newld.nextStatements;
             }
         }
+        public void UpdateFunctionName()
+        {
+            m_FunctionAllName = "";
+            m_FunctionAllName = functionAllName;
+        }
+        public virtual bool Parse()
+        {
+            return true;
+        }
+        public void SetReturnMetaClass( MetaClass metaClass )
+        {
+            if( m_ReturnMetaVariable != null )
+            {
+                m_ReturnMetaVariable.metaDefineType.SetMetaClass(metaClass);
+            }
+        }
         public MetaDefineParam GetMetaDefineParamByName( string name )
         {
             return m_MetaMemberParamCollection.GetMetaDefineParamByName(name);
         }
-
         public virtual bool IsEqualMetaInputParamCollection(MetaInputParamCollection mpc)
         {
             if (m_MetaMemberParamCollection.IsEqualMetaInputParamCollection(mpc))
@@ -194,7 +248,7 @@ namespace SimpleLanguage.Core
             //}
             return false;
         }
-        public override string ToStatementString()
+        public virtual string ToStatementString()
         {
             StringBuilder sb = new StringBuilder();
 

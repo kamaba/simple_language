@@ -64,7 +64,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public override void ParseInnerFunction()
         {
             MetaMemberFunction _init_ = new MetaMemberFunction(this, "_init_");
-            _init_.SetMetaDefineType(new MetaType(CoreMetaClassManager.rangeMetaClass));
+            _init_.SetReturnMetaClass(CoreMetaClassManager.rangeMetaClass);
 
             //MetaTemplate mt = m_MetaTemplateList[0];
 

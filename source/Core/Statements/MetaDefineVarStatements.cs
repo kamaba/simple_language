@@ -125,7 +125,7 @@ namespace SimpleLanguage.Core.Statements
                 expressRetMetaDefineType = m_ExpressNode.GetReturnMetaDefineType();               
                 if (expressRetMetaDefineType == null)
                 {
-                    Debug.WriteLine("Error 解析新建变量语句时，表达式返回类型为空!!__2");
+                    Debug.WriteLine("Error 解析新建变量语句时，表达式返回类型为空!!__2", defineName);
                     return;
                 }
             }
@@ -270,7 +270,7 @@ namespace SimpleLanguage.Core.Statements
         //    }
         //    return mns;
         //}
-        public void SetDeep(int dp)
+        public override void SetDeep(int dp)
         {
             base.SetDeep(dp);
             if (m_ExpressNode is MetaExecuteStatementsNode)
@@ -282,36 +282,36 @@ namespace SimpleLanguage.Core.Statements
         {
             StringBuilder sb = new StringBuilder();
 
-            //for (int i = 0; i < realDeep; i++)
-            //    sb.Append(Global.tabChar);
-            //sb.Append(m_DefineVarMetaVariable.ToFormatString());
-            //sb.Append(" = ");
-            //if(m_DefineVarMetaVariable.metaDefineType.isData )
-            //{
-            //    sb.Append(m_ExpressNode.ToFormatString());
-            //}
-            //else if(m_DefineVarMetaVariable.metaDefineType.isEnum )
-            //{
-            //}
-            //else
-            //{
-            //    if (m_IsNeedCastState)
-            //    {
-            //        sb.Append("(");
-            //    }
-            //    sb.Append(m_ExpressNode.ToFormatString());
-            //    if (m_IsNeedCastState)
-            //    {
-            //        sb.Append(").cast<" + m_DefineVarMetaVariable.metaDefineType.metaClass.allName + ">()");
-            //    }
-            //    sb.Append(";");
-            //}
+            for (int i = 0; i < realDeep; i++)
+                sb.Append(Global.tabChar);
+            sb.Append(m_DefineVarMetaVariable.ToFormatString());
+            sb.Append(" = ");
+            if (m_DefineVarMetaVariable.metaDefineType.isData)
+            {
+                sb.Append(m_ExpressNode.ToFormatString());
+            }
+            else if (m_DefineVarMetaVariable.metaDefineType.isEnum)
+            {
+            }
+            else
+            {
+                if (m_IsNeedCastState)
+                {
+                    sb.Append("(");
+                }
+                sb.Append(m_ExpressNode.ToFormatString());
+                if (m_IsNeedCastState)
+                {
+                    sb.Append(").cast<" + m_DefineVarMetaVariable.metaDefineType.metaClass.allClassName + ">()");
+                }
+                sb.Append(";");
+            }
 
-            //if ( nextMetaStatements != null )
-            //{
-            //    sb.Append(Environment.NewLine);
-            //    sb.Append(nextMetaStatements.ToFormatString());
-            //}
+            if (nextMetaStatements != null)
+            {
+                sb.Append(Environment.NewLine);
+                sb.Append(nextMetaStatements.ToFormatString());
+            }
 
             return sb.ToString();
 

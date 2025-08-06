@@ -52,7 +52,7 @@ namespace SimpleLanguage.Core
             else
             {
                 var defineMetaClass = ClassManager.instance.GetMetaClassByCSharpType(pi.GetType());
-                m_DefineMetaType = new MetaType(defineMetaClass);
+                m_ReturnMetaVariable?.metaDefineType.SetMetaClass(defineMetaClass);
 
                 m_MetaBlockStatements = new MetaBlockStatements(this, null);
                 m_MetaBlockStatements.isOnFunction = true;
@@ -88,9 +88,8 @@ namespace SimpleLanguage.Core
             if( methodInfo.DeclaringType != null )
             {
                 var defineMetaClass = ClassManager.instance.GetMetaClassByCSharpType(methodInfo.ReturnType);
-                m_DefineMetaType = new MetaType(defineMetaClass);
 
-                m_ReturnMetaVariable.SetMetaDefineType(m_DefineMetaType);
+                m_ReturnMetaVariable.metaDefineType?.SetMetaClass(defineMetaClass);
             }
 
 

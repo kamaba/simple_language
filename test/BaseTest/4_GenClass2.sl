@@ -26,16 +26,11 @@ Level1<T>
     {
         ret this._Level1_t
     }
-    static T Open( bool flag )
+    static T static_t = null;
+    static T Open( T t )
     {
-        if flag
-        {
-            ret this._Level1_t
-        }
-        else
-        {
-            ret null
-        }
+        Level1<T>.static_t = t
+        ret static_t
     }
 }
 
@@ -43,7 +38,7 @@ GenClass2{
     static fun()
     {
         Level1<int>  GenClass2_fun_l1 = Level1<int>()
-        penret = Level1<string>.Open(true)
+        penret = Level1<string>.Open("tttstring")
         GenClass2_fun_l1.setLevel1( 200 )
         System.Console.WriteLine("_this_——————————————————————————————" + GenClass2_fun_l1.Level1_t + penret )
 

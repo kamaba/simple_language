@@ -493,7 +493,7 @@ namespace SimpleLanguage.Core
             if (mmf == null)
             {
                 mmf = new MetaMemberFunction(this, "_init_");
-                mmf.SetDefineMetaClass(this);
+                mmf.SetReturnMetaClass(this);
                 AddMetaMemberFunction(mmf);
                 MethodManager.instance.AddOriginalMemeberFunction(mmf);
             }
@@ -689,20 +689,6 @@ namespace SimpleLanguage.Core
 
             stringBuilder.Append(allClassName);
 
-            if( this.isTemplateClass )
-            {
-                stringBuilder.Append("<");
-                for( int i = 0; i < this.metaTemplateList.Count; i++ )
-                {
-                    stringBuilder.Append(this.metaTemplateList[i].name);
-                    if(i < this.metaTemplateList.Count - 1 )
-                    {
-                        stringBuilder.Append(",");
-                    }
-                }
-                stringBuilder.Append(">");
-            }
-
             return stringBuilder.ToString();
         }
         public override string ToFormatString()
@@ -722,126 +708,99 @@ namespace SimpleLanguage.Core
         {
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.Clear();
-            //for (int i = 0; i < realDeep; i++)
-            //    stringBuilder.Append(Global.tabChar);
-            //stringBuilder.Append(permission.ToFormatString());
-            //stringBuilder.Append(" ");
-            //if(isShowNamespace)
-            //{
-            //    stringBuilder.Append("class ");
-            //    if (topLevelMetaNamespace != null)
-            //    {
-            //        stringBuilder.Append(topLevelMetaNamespace.allName + ".");
-            //    }
-            //    stringBuilder.Append( name);
-            //}
-            //else
-            //{
-            //    stringBuilder.Append("class " + name);
-            //}
-            ////if (m_MetaTemplateList.Count > 0)
-            ////{
-            ////    stringBuilder.Append("<");
-            ////    for (int i = 0; i < m_MetaTemplateList.Count; i++)
-            ////    {
-            ////        stringBuilder.Append(m_MetaTemplateList[i].ToFormatString());
-            ////        if (i < m_MetaTemplateList.Count - 1)
-            ////        {
-            ////            stringBuilder.Append(",");
-            ////        }
-            ////    }
-            ////    stringBuilder.Append(">");
-            ////}
-            //if ( m_ExtendClass != null )
-            //{
-            //    stringBuilder.Append(" extends ");
-            //    stringBuilder.Append(m_ExtendClass.allName);
-            //    //var mtl = m_ExtendClass.metaTemplateList;
-            //    //if( mtl.Count > 0 )
-            //    //{
-            //    //    stringBuilder.Append("<");
-            //    //    for (int i = 0; i < mtl.Count; i++)
-            //    //    {
-            //    //        stringBuilder.Append(mtl[i].ToFormatString());
-            //    //        if (i < mtl.Count - 1)
-            //    //        {
-            //    //            stringBuilder.Append(",");
-            //    //        }
-            //    //    }
-            //    //    stringBuilder.Append(">");
-            //    //}
-            //}
-            //if( m_InterfaceClass.Count > 0 )
-            //{
-            //    stringBuilder.Append(" interface ");
-            //}
-            //for( int i = 0; i < m_InterfaceClass.Count; i++ )
-            //{
-            //    stringBuilder.Append(m_InterfaceClass[i].allName);
-            //    if( i != m_InterfaceClass.Count - 1 )
-            //        stringBuilder.Append(",");
-            //}
-            //stringBuilder.Append(Environment.NewLine);
+            for (int i = 0; i < realDeep; i++)
+                stringBuilder.Append(Global.tabChar);
+            stringBuilder.Append(permission.ToFormatString());
+            stringBuilder.Append(" ");
+            if (isShowNamespace)
+            {
+                stringBuilder.Append("class ");
+                //if (topLevelMetaNamespace != null)
+                //{
+                //    stringBuilder.Append(topLevelMetaNamespace.allName + ".");
+                //}
+                stringBuilder.Append(name);
+            }
+            else
+            {
+                stringBuilder.Append("class " + name);
+            }
+            if (m_MetaTemplateList.Count > 0)
+            {
+                stringBuilder.Append("<");
+                for (int i = 0; i < m_MetaTemplateList.Count; i++)
+                {
+                    stringBuilder.Append(m_MetaTemplateList[i].ToFormatString());
+                    if (i < m_MetaTemplateList.Count - 1)
+                    {
+                        stringBuilder.Append(",");
+                    }
+                }
+                stringBuilder.Append(">");
+            }
+            if (m_ExtendClass != null)
+            {
+                stringBuilder.Append(" extends ");
+                stringBuilder.Append(m_ExtendClass.allClassName);
+                var mtl = m_ExtendClass.metaTemplateList;
+                if (mtl.Count > 0)
+                {
+                    stringBuilder.Append("<");
+                    for (int i = 0; i < mtl.Count; i++)
+                    {
+                        stringBuilder.Append(mtl[i].ToFormatString());
+                        if (i < mtl.Count - 1)
+                        {
+                            stringBuilder.Append(",");
+                        }
+                    }
+                    stringBuilder.Append(">");
+                }
+            }
+            if (m_InterfaceClass.Count > 0)
+            {
+                stringBuilder.Append(" interface ");
+            }
+            for (int i = 0; i < m_InterfaceClass.Count; i++)
+            {
+                stringBuilder.Append(m_InterfaceClass[i].allClassName );
+                if (i != m_InterfaceClass.Count - 1)
+                    stringBuilder.Append(",");
+            }
+            stringBuilder.Append(Environment.NewLine);
 
-            //for (int i = 0; i < realDeep; i++)
-            //    stringBuilder.Append(Global.tabChar);
-            //stringBuilder.Append("{" + Environment.NewLine);
+            for (int i = 0; i < realDeep; i++)
+                stringBuilder.Append(Global.tabChar);
+            stringBuilder.Append("{" + Environment.NewLine);
 
-            //foreach (var v in m_ChildrenNameNodeDict)
+            foreach (var v in m_MetaMemberVariableDict )
+            {
+                stringBuilder.AppendLine(v.Value.ToFormatString());
+            }
+
+            foreach (var v in m_AllMetaMemberFunctionList)
+            {
+                MetaMemberFunction mmfc = v as MetaMemberFunction;
+                if (mmfc.methodCallType == EMethodCallType.Local)
+                {
+                    stringBuilder.Append(mmfc.ToFormatString());
+                    stringBuilder.Append(Environment.NewLine);
+                }
+            }
+            //if( m_MetaGenTemplateClassList.Count > 0 )
             //{
-            //    MetaBase mb = v.Value;
-            //    if (mb is MetaClass)
+            //    for (int i = 0; i <= realDeep; i++)
+            //        stringBuilder.Append(Global.tabChar);
+            //    stringBuilder.AppendLine("------------Generator Template List-------------");
+            //    for (int i = 0; i < m_MetaGenTemplateClassList.Count; i++)
             //    {
-            //        if (mb is MetaEnum)
-            //        {
-            //            stringBuilder.Append((mb as MetaEnum).ToFormatString());
-            //            stringBuilder.Append(Environment.NewLine);
-            //        }
-            //        else
-            //        {
-            //            stringBuilder.Append((mb as MetaClass).ToFormatString());
-            //            stringBuilder.Append(Environment.NewLine);
-            //        }
-            //    }
-            //    else if (mb is MetaMemberVariable)
-            //    {
-            //        MetaMemberVariable mmv = mb as MetaMemberVariable;
-            //        if( mmv.fromType == EFromType.Code )
-            //        {
-            //            stringBuilder.Append(mmv.ToFormatString());
-            //            stringBuilder.Append(Environment.NewLine);
-            //        }
-            //    }
-            //    else if (mb is MetaMemberFunction)
-            //    {
-            //        MetaMemberFunction mmfc = mb as MetaMemberFunction;
-            //        if( mmfc.methodCallType == EMethodCallType.Local )
-            //        {
-            //            stringBuilder.Append(mmfc.ToFormatString());
-            //            stringBuilder.Append(Environment.NewLine);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        stringBuilder.Append("Errrrrroooorrr ---" + mb.ToFormatString());
+            //        stringBuilder.Append(m_MetaGenTemplateClassList[i].ToFormatString());
             //        stringBuilder.Append(Environment.NewLine);
             //    }
             //}
-            //stringBuilder.Append(Environment.NewLine);
-            ////if( m_MetaGenTemplateClassList.Count > 0 )
-            ////{
-            ////    for (int i = 0; i <= realDeep; i++)
-            ////        stringBuilder.Append(Global.tabChar);
-            ////    stringBuilder.AppendLine("------------Generator Template List-------------");
-            ////    for (int i = 0; i < m_MetaGenTemplateClassList.Count; i++)
-            ////    {
-            ////        stringBuilder.Append(m_MetaGenTemplateClassList[i].ToFormatString());
-            ////        stringBuilder.Append(Environment.NewLine);
-            ////    }
-            ////}
 
-            //for (int i = 0; i < realDeep; i++)
-            //    stringBuilder.Append(Global.tabChar);
+            for (int i = 0; i < realDeep; i++)
+                stringBuilder.Append(Global.tabChar);
             stringBuilder.Append("}" + Environment.NewLine);
 
             return stringBuilder.ToString();
