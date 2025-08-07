@@ -225,7 +225,7 @@ namespace SimpleLanguage.Core
         private Token m_SignToken = null;
 
         private FileMetaSymbolTerm m_FileMetaBaseTerm = null;
-        public MetaOpExpressNode(FileMetaSymbolTerm fme, MetaType mt, MetaExpressNode _left, MetaExpressNode _right)
+        public MetaOpExpressNode(FileMetaSymbolTerm fme, MetaType mt, MetaExpressNode _left, MetaExpressNode _right )
         {
             m_Left = _left;
             m_Right = _right;

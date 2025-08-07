@@ -45,6 +45,7 @@ namespace SimpleLanguage.IR
 
         private List<IRMetaVariable> m_LocalIRMetaVariableList = new List<IRMetaVariable>();
         private Dictionary<string, IRMetaClass> m_GenTemplateIRMetaClassDict = new Dictionary<string, IRMetaClass>();
+        private Dictionary<int, IRCallFunction> m_LocalIRInitDict = new Dictionary<int, IRCallFunction>();
         private IRManager m_IRManager = null;
         public void CalcAllocSize()
         {

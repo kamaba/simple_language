@@ -88,7 +88,10 @@ namespace SimpleLanguage.IR
             m_IRMetaVariableFrom = IRMetaVariableFrom.Member;
             m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mmv.metaDefineType.metaClass.allClassName);
         }
-
+        public void SetExpress( MetaExpressNode men )
+        {
+            this.m_ExpressNode = men;
+        }
         public override string ToString()
         {
             return name;

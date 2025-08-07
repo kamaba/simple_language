@@ -213,7 +213,7 @@ namespace SimpleLanguage.Core
                     {
                         MetaType mitp = new MetaType(CoreMetaClassManager.int32MetaClass);
                         mitc.AddMetaTemplateParamsList(mitp);
-                        m_MetaDefineType = new MetaType(mc, mitc);
+                        m_MetaDefineType = new MetaType(mc, null, mitc);
                     }
                     else
                     {

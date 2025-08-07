@@ -18,13 +18,14 @@ namespace SimpleLanguage.IR.Statements
     {
         private List<IRBase> m_IRList = new List<IRBase>();
 
+        IRMetaCallLink irmc = null;
         public IRCallStatements( IRMethod _iRMethod)
         {
             irMethod = _iRMethod;
         }
         public void ParseIRStatements(MetaCallStatements ms)
         {
-            IRMetaCallLink irmc = new IRMetaCallLink();
+            irmc = new IRMetaCallLink();
             irmc.ParseToIRDataList(irMethod, ms.metaCallLink.callNodeList);
             m_IRStatements.AddRange(irmc.irList);
         }
@@ -33,12 +34,8 @@ namespace SimpleLanguage.IR.Statements
             StringBuilder sb = new StringBuilder();
 
             sb.Append("call");
-            //sb.Append(base.ToIRString());
+            sb.Append(irmc?.ToIRString());
             return sb.ToString();
         }
-        //public override string ToIRString()
-        //{
-        //    return m_MetaCallLink.ToIRString();
-        //}
     }
 }

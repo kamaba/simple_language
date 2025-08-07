@@ -105,7 +105,7 @@ namespace SimpleLanguage.Core
 
                 MetaOtherPlatformStatements mcallState = new MetaOtherPlatformStatements( m_MetaBlockStatements );
 
-                AddMetaStatements(mcallState);
+                AddFrontMetaStatements(mcallState);
             }
         }
         //#endif

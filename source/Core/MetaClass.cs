@@ -493,7 +493,7 @@ namespace SimpleLanguage.Core
             if (mmf == null)
             {
                 mmf = new MetaMemberFunction(this, "_init_");
-                mmf.SetReturnMetaClass(this);
+                mmf.SetReturnMetaClass(CoreMetaClassManager.voidMetaClass);
                 AddMetaMemberFunction(mmf);
                 MethodManager.instance.AddOriginalMemeberFunction(mmf);
             }

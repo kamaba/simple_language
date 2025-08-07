@@ -44,7 +44,6 @@ namespace SimpleLanguage.Core
         public Token pingToken => m_PintTokenList.Count > 0 ? m_PintTokenList[0] : null;
         public virtual bool isStatic => m_IsStatic;
         public virtual bool isParsed => m_IsParsed;
-        public virtual bool isTemplateFunction => m_IsTemplateFunction;
         public virtual string functionAllName {
             get
             {
@@ -77,8 +76,6 @@ namespace SimpleLanguage.Core
                         sb.Append(m_MetaMemberParamCollection.maxParamCount.ToString());
                         sb.Append("_");
                         sb.Append(m_MetaMemberParamCollection.ToParamTypeName());
-                        sb.Append("_");
-                        sb.Append(GetHashCode().ToString());
                     }
                     m_FunctionAllName = sb.ToString();
                 }
@@ -104,7 +101,6 @@ namespace SimpleLanguage.Core
         protected EMethodCallType m_MethodCallType = EMethodCallType.Local;
         private List<LabelData> m_LabelDataList = new List<LabelData>();
         protected bool m_IsStatic = false;
-        protected bool m_IsTemplateFunction = false;
         #endregion
 
         #region Compile or Debug
@@ -138,7 +134,11 @@ namespace SimpleLanguage.Core
             m_MethodCallType = mf.m_MethodCallType;
             m_LabelDataList = mf.m_LabelDataList;
             m_IsStatic = mf.m_IsStatic;
-            m_IsTemplateFunction = mf.m_IsTemplateFunction;
+        }
+        public override void SetDeep(int deep)
+        {
+            base.SetDeep(deep);
+            m_MetaBlockStatements?.SetDeep(deep);
         }
         public virtual void SetOwnerMetaClass(MetaClass ownerclass)
         {
@@ -160,7 +160,7 @@ namespace SimpleLanguage.Core
                 m_MetaMemberParamCollection.SetOwnerMetaClass(ownerclass);
             }
         }
-        public void AddMetaStatements(MetaStatements state)
+        public void AddFrontMetaStatements(MetaStatements state)
         {
             m_MetaBlockStatements.AddFrontStatements(state);
         }

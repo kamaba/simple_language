@@ -630,7 +630,7 @@ namespace SimpleLanguage.Core
             var metaInputTemplateCollection = new MetaInputTemplateCollection();
             //MetaType mitp = new MetaType(MetaDynamicClass);
             //metaInputTemplateCollection.AddMetaTemplateParamsList(mitp);
-            m_MetaDefineType = new MetaType(CoreMetaClassManager.arrayMetaClass, metaInputTemplateCollection);
+            m_MetaDefineType = new MetaType(CoreMetaClassManager.arrayMetaClass, null, metaInputTemplateCollection);
 
             //MetaInputParamCollection mipc = new MetaInputParamCollection(mc, mbs);
             //mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaBraceOrBracketStatementsContent.count)));
@@ -650,7 +650,7 @@ namespace SimpleLanguage.Core
             MetaType mitp = new MetaType(CoreMetaClassManager.int32MetaClass);
             metaInputTemplateCollection.AddMetaTemplateParamsList(mitp);
 
-            m_MetaDefineType = new MetaType(CoreMetaClassManager.rangeMetaClass, metaInputTemplateCollection);
+            m_MetaDefineType = new MetaType(CoreMetaClassManager.rangeMetaClass, null, metaInputTemplateCollection);
 
             MetaInputParamCollection mdpc = new MetaInputParamCollection( ownerMC, mbs );
             String[] arr = m_FileMetaConstValueTerm.name.Split("..");
@@ -705,7 +705,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             m_MetaDefineType = new MetaType(mt);
             Init();
-            m_MetaConstructFunctionCall = new MetaMethodCall( null, null, null, null );
+            m_MetaConstructFunctionCall = new MetaMethodCall( null, null, null, null, null );
         }
         // Class1<Int32> a = Class1<Int32>( 10 ){ a = 20; } 
         // Enum1 e1 = Enum1.Val1( 20 );
@@ -851,7 +851,7 @@ namespace SimpleLanguage.Core
                 var metaInputTemplateCollection = new MetaInputTemplateCollection();
                 MetaClass mc = m_MetaBraceOrBracketStatementsContent.GetMaxLevelMetaClassType();
                 metaInputTemplateCollection.AddMetaTemplateParamsList(new MetaType(mc));
-                m_MetaDefineType = new MetaType(CoreMetaClassManager.arrayMetaClass, metaInputTemplateCollection);
+                m_MetaDefineType = new MetaType(CoreMetaClassManager.arrayMetaClass, null, metaInputTemplateCollection);
             }
             Init();
         }
@@ -861,7 +861,7 @@ namespace SimpleLanguage.Core
             m_FileMetaParTerm = fmpt;
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
-            var mmf = new MetaMethodCall(null, mbs.ownerMetaFunction, null, null );
+            var mmf = new MetaMethodCall(null, mbs.ownerMetaFunction, null, null, null );
             m_MetaConstructFunctionCall = mmf;
             m_MetaDefineType = new MetaType(mt);
 
@@ -879,7 +879,7 @@ namespace SimpleLanguage.Core
             var metaInputTemplateCollection = new MetaInputTemplateCollection();
             MetaType mitp = new MetaType(inputType);
             metaInputTemplateCollection.AddMetaTemplateParamsList(mitp);
-            m_MetaDefineType = new MetaType(CoreMetaClassManager.arrayMetaClass, metaInputTemplateCollection);
+            m_MetaDefineType = new MetaType(CoreMetaClassManager.arrayMetaClass, null, metaInputTemplateCollection);
 
             MetaInputParamCollection mipc = new MetaInputParamCollection( mc, mbs );
             mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaBraceOrBracketStatementsContent.count) ) );

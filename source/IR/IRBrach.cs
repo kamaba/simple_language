@@ -1,5 +1,5 @@
 ﻿//****************************************************************************
-//  File:      IRWhileStatements.cs
+//  File:      IRBrach.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/11/2 12:00:00
@@ -21,7 +21,7 @@ namespace SimpleLanguage.IR
     public class IRBranch : IRBase
     {
         public IRData data = new IRData();
-        public IRBranch( IRMethod _irMethod, EIROpCode type, IRData brIRData )
+        public IRBranch( IRMethod _irMethod, EIROpCode type, IRData brIRData ) :base(_irMethod)
         {
             data.opCode = type;
             data.opValue = brIRData;
@@ -47,7 +47,7 @@ namespace SimpleLanguage.IR
     public class IRLabel : IRBase
     {
         IRData data = new IRData();
-        public IRLabel(IRMethod _irMethod, string _label, bool isGogo )
+        public IRLabel(IRMethod _irMethod, string _label, bool isGogo ):base( _irMethod ) 
         {
             data = new IRData();
             data.opCode = isGogo ? EIROpCode.Label : EIROpCode.BrLabel;

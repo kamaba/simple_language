@@ -1,5 +1,5 @@
 ﻿//****************************************************************************
-//  File:      IRWhileStatements.cs
+//  File:      IRManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/11/2 12:00:00
@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.IR
 {
@@ -137,6 +138,11 @@ namespace SimpleLanguage.IR
             }
             foreach ( var v in classDict )
             {
+                if( v.Value.isTemplateClass )
+                {
+                    continue;
+                }
+
                 if( v.Value is MetaEnum me )
                 {
                     var mmvd = me.metaMemberEnumDict;
@@ -146,6 +152,7 @@ namespace SimpleLanguage.IR
                         {
                             IRMetaVariable irMV = new IRMetaVariable(v2.Value);
                             irMV.index = m_StaticVariableList.Count;
+                            irMV.SetExpress(v2.Value.express);
                             m_StaticVariableList.Add(irMV);
                         }
                     }
@@ -153,6 +160,7 @@ namespace SimpleLanguage.IR
                     {
                         IRMetaVariable irMV = new IRMetaVariable(me.metaVariable);
                         irMV.index = m_StaticVariableList.Count;
+                        //irMV.SetExpress(v2.Value.express);
                         m_StaticVariableList.Add(irMV);
                     }
                 }
@@ -163,9 +171,10 @@ namespace SimpleLanguage.IR
                     {
                         if (v2.Value.isStatic)
                         {
-                            IRMetaVariable irData = new IRMetaVariable(v2.Value);
-                            irData.index = m_StaticVariableList.Count;
-                            m_StaticVariableList.Add(irData);
+                            IRMetaVariable irMV = new IRMetaVariable(v2.Value);
+                            irMV.index = m_StaticVariableList.Count;
+                            //irMV.SetExpress(v2.Value.express);
+                            m_StaticVariableList.Add(irMV);
                         }
                     }
                 }
@@ -176,9 +185,10 @@ namespace SimpleLanguage.IR
                     {
                         if (v2.Value.isStatic)
                         {
-                            IRMetaVariable irData = new IRMetaVariable(v2.Value);
-                            irData.index = m_StaticVariableList.Count;
-                            m_StaticVariableList.Add(irData);
+                            IRMetaVariable irMV = new IRMetaVariable(v2.Value);
+                            irMV.index = m_StaticVariableList.Count;
+                            irMV.SetExpress(v2.Value.express);
+                            m_StaticVariableList.Add(irMV);
                         }
                     }
                 }

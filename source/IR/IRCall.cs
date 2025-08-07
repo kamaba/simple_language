@@ -1,5 +1,5 @@
 ﻿//****************************************************************************
-//  File:      IRWhileStatements.cs
+//  File:      IRCall.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/11/2 12:00:00
@@ -31,24 +31,11 @@ namespace SimpleLanguage.IR
             {
                 return;
             }
-            //if( mfc.methodCallStackType == EMethodCallStackType.DynamicStack)
-            //{
-            //    //if(mfc.callerMetaVariable!=null )
-            //    //{
-            //    //    IRMetaVariableFrom irmvf = IRMetaVariableFrom.LocalStatement;
-            //    //    if( mfc.callerMetaVariable.isArgument )
-            //    //    {
-            //    //        irmvf = IRMetaVariableFrom.Argument;
-            //    //    }
-            //    //    IRLoadVariable irload = new IRLoadVariable(m_IRMethod, mfc.callerMetaVariable.GetHashCode(), irmvf);
-            //    //    AddIRRangeData(irload.IRDataList);
-            //    //}
-            //    //else
-            //    //{
-            //    //    Debug.Write("Error 没有加载到调用者信息!");
-            //    //    return;
-            //    //}
-            //}
+            if (mfc.loadMetaVariable != null)
+            {
+                IRLoadVariable irload = IRLoadVariable.NewLoadVariable(m_IRMethod, mfc.loadMetaVariable );
+                AddIRRangeData(irload.IRDataList);
+            }
             paramCount = mfc.metaInputParamCollection.count;
             for (int j = 0; j < paramCount; j++)
             {
@@ -87,6 +74,12 @@ namespace SimpleLanguage.IR
             datacall.opValue = m_IRRuntimeMethod;
             datacall.SetDebugInfoByToken( mf.pingToken );
             AddIRData(datacall);
+
+            if( mfc.storeMetaVariable != null )
+            {
+                IRPop irpop = new IRPop(m_IRMethod);
+                AddIRData(irpop.data);
+            }
 
             if (cc != null)
             {
