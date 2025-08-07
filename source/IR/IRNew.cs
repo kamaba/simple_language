@@ -1,5 +1,5 @@
 ﻿//****************************************************************************
-//  File:      IRWhileStatements.cs
+//  File:      IRNew.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/11/2 12:00:00
@@ -25,6 +25,14 @@ namespace SimpleLanguage.IR
             data.opCode = EIROpCode.NewObject;
             data.opValue = irmc;
             data.debugInfo = new DebugInfo() { name = irmc.allName, info = "IRNew" };
+            m_IRDataList.Add(data);
+        }
+
+        public IRNew(IRMethod irMethod) : base(irMethod )
+        {
+            IRData data = new IRData();
+            data.opCode = EIROpCode.NewCallClass;
+            data.debugInfo = new DebugInfo() { name =  "", info = "NewCallClass" };
             m_IRDataList.Add(data);
         }
     }

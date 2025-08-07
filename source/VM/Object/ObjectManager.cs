@@ -446,6 +446,11 @@ namespace SimpleLanguage.VM
 
             switch (svalue.eType)
             {
+                case EType.Null:
+                    {
+                        target.SetNullValue();
+                    }
+                    break;
                 case EType.Byte:
                     {
                         target.SetInt8Value(svalue.int8Value);

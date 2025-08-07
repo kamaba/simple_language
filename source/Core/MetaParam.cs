@@ -204,7 +204,7 @@ namespace SimpleLanguage.Core
         {
             m_MetaVariable.SetMetaDefineType(mt);
         }       
-        public virtual void CaleReturnType()
+        public void CaleReturnType()
         {
             if(m_MetaExpressNode != null )
             {
@@ -224,6 +224,24 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
             sb.Append(m_MetaVariable?.ToFormatString());
+            return sb.ToString();
+        }
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (m_MetaVariable != null)
+            {
+                sb.Append(m_MetaVariable.metaDefineType.ToFormatString() );
+                sb.Append(" ");
+                sb.Append(m_Name);
+            }
+            if( m_MetaExpressNode != null )
+            {
+                sb.Append(" = ");
+                sb.Append(m_MetaExpressNode.ToFormatString() );
+            }
+
             return sb.ToString();
         }
     }

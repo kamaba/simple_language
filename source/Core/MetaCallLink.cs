@@ -157,8 +157,7 @@ namespace SimpleLanguage.Core
                             m_VisitNodeList.Add(mvn1);
 
 
-                            mmc = new MetaMethodCall( mcn.m_CallFunctionGenMetaClass, mcn.m_MetaFunction, mcn.metaInputParamCollection, newmv);
-                            //mmc.SetMethodCallStackType(EMethodCallStackType.CurrentStack);
+                            mmc = new MetaMethodCall( mcn.m_CallFunctionGenMetaClass, mcn.m_MetaFunction, mcn.metaInputParamCollection, newmv, mcn.storeMetaVariable);
                         }
                         else
                         {
@@ -168,7 +167,7 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                mmc = new MetaMethodCall(mcn.m_CallFunctionGenMetaClass, mcn.m_MetaFunction, mcn.metaInputParamCollection, mcn.frontCallNode?.m_MetaVariable);
+                                mmc = new MetaMethodCall(mcn.m_CallFunctionGenMetaClass, mcn.m_MetaFunction, mcn.metaInputParamCollection, mcn.frontCallNode?.m_MetaVariable, mcn.storeMetaVariable);
                             }
 
                         }
@@ -195,7 +194,7 @@ namespace SimpleLanguage.Core
 
                             if( mcn.m_MetaFunction != null )
                             {
-                                MetaMethodCall mmc = new MetaMethodCall(mcn.m_CallFunctionGenMetaClass, mcn.m_MetaFunction, mcn.metaInputParamCollection, null );
+                                MetaMethodCall mmc = new MetaMethodCall(mcn.m_CallFunctionGenMetaClass, mcn.m_MetaFunction, mcn.metaInputParamCollection, mcn.m_MetaVariable, mcn.storeMetaVariable );
                                 mvn.SetMethodCall(mmc);
                             }
                         }
@@ -206,7 +205,7 @@ namespace SimpleLanguage.Core
                     }
                     else if( mcn.callNodeType == ECallNodeType.NewTemplate )
                     {
-                        MetaVisitNode mvn = MetaVisitNode.CreateByNewTemplate(mcn.m_MetaTemplate, mcn.m_MetaVariable);
+                        MetaVisitNode mvn = MetaVisitNode.CreateByNewTemplate(mcn.m_MetaTemplate, mcn.storeMetaVariable);
                         m_VisitNodeList.Add(mvn);
                     }
                     else if( mcn.callNodeType == ECallNodeType.NewData )

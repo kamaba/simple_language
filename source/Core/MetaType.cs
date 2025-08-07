@@ -75,7 +75,7 @@ namespace SimpleLanguage.Core
             m_TemplateMetaClass = templatemc;
             m_MetaClass = mc;
         }
-        public MetaType( MetaClass mc, MetaInputTemplateCollection mitc )
+        public MetaType( MetaClass mc, MetaClass templatemc, MetaInputTemplateCollection mitc )
         {
             if (mc == null)
             {
@@ -84,7 +84,7 @@ namespace SimpleLanguage.Core
             m_IsDefineMetaClass = false;
             if ( mitc == null)
             {
-                m_TemplateMetaClass = mc;
+                m_TemplateMetaClass = templatemc;
                 m_MetaClass = mc;
             }
             else
@@ -270,7 +270,14 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(m_MetaClass?.allClassName);
+            if( m_TemplateMetaClass != null )
+            {
+                sb.Append(m_TemplateMetaClass.allClassName);
+            }
+            else if( m_MetaClass != null )
+            {
+                sb.Append(m_MetaClass.allClassName);
+            }
 
             return sb.ToString();
         }

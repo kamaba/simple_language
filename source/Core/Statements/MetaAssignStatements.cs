@@ -322,7 +322,7 @@ namespace SimpleLanguage.Core.Statements
 
             if (m_IsAssign)
             {
-                m_FinalMetaExpress = new MetaOpExpressNode(m_LeftMetaExpress, m_ExpressNode, m_AutoAddExpressOpSign);
+                m_FinalMetaExpress = new MetaOpExpressNode(m_LeftMetaExpress, m_ExpressNode, m_AutoAddExpressOpSign );
             }
             else
             {

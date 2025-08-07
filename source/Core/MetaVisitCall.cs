@@ -13,43 +13,23 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    //public enum EMethodCallStackType
-    //{
-    //    StaticStack,
-    //    DynamicStack,
-    //    CurrentStack,
-    //}
     public class MetaMethodCall
     {
-        //public MetaVariable callerMetaVariable => m_CallerMetaVariable;
+        public MetaVariable loadMetaVariable => m_LoadMetaVariable;
+        public MetaVariable storeMetaVariable => m_StoreMetaVariable;
         public MetaGenTemplateClass callerInstanceClass => m_CallerInstanceClass;
         public MetaFunction function => m_VMCallMetaFunction;
         public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
         public MetaInputParamCollection metaInputParamCollection => m_MetaInputParamCollection;
-        //public EMethodCallStackType methodCallStackType => m_MethodCallStackType;
 
-        //protected MetaVariable m_CallerMetaVariable = null;
+        protected MetaVariable m_LoadMetaVariable = null;
+        protected MetaVariable m_StoreMetaVariable = null;
         protected MetaGenTemplateClass m_CallerInstanceClass = null;
         //模板或者是调用时的函数
         protected MetaFunction m_VMCallMetaFunction = null;
         //真实的成员函数
         protected MetaMemberFunction m_MetaMemberFunction = null;
         protected MetaInputParamCollection m_MetaInputParamCollection = null;
-        //protected EMethodCallStackType m_MethodCallStackType = EMethodCallStackType.DynamicStack;
-        //private bool m_IsConstruction = false;
-
-        //public MetaMethodCall(MetaVariable mv, MetaFunction _fun, MetaInputParamCollection _metaInputParamCollection = null)
-        //{
-        //    m_CallerMetaVariable = mv;
-        //    if( mv.metaDefineType.metaClass is MetaGenTemplateClass mgtc )
-        //    {
-        //        m_CallerInstanceClass = mgtc;
-        //    }
-        //    m_MetaFunction = _fun;
-        //    m_MetaInputParamCollection = _metaInputParamCollection;
-        //    //m_MethodCallStackType = EMethodCallStackType.DynamicStack;
-        //}
-
         public MetaMethodCall(MetaGenTemplateClass genGlass, MetaMemberFunction _fun, MetaInputParamCollection _param )
         {
             m_CallerInstanceClass = genGlass;
@@ -68,12 +48,13 @@ namespace SimpleLanguage.Core
             //    //m_MethodCallStackType = EMethodCallStackType.DynamicStack;
             //}
         }
-        public MetaMethodCall( MetaGenTemplateClass genGlass, MetaFunction _fun, MetaInputParamCollection _param, MetaVariable mv )
+        public MetaMethodCall( MetaGenTemplateClass genGlass, MetaFunction _fun, MetaInputParamCollection _param, MetaVariable loadMv, MetaVariable storeMv )
         {
             m_CallerInstanceClass = genGlass;
             m_VMCallMetaFunction = _fun;
             m_MetaInputParamCollection = _param;
-            //m_CallerMetaVariable = mv;
+            m_LoadMetaVariable = loadMv;
+            m_StoreMetaVariable = storeMv;
             //var tmmf = _fun as MetaMemberFunction;
             //if (tmmf != null)
             //{
@@ -93,14 +74,6 @@ namespace SimpleLanguage.Core
         //    m_MetaInputParamCollection = _param;
         //    //m_IsConstruction = _fun.isConstructInitFunction;
         //    //m_MethodCallStackType = _fun.isStatic ? EMethodCallStackType.StaticStack : EMethodCallStackType.DynamicStack;
-        //}
-        //public void SetCallerMetaVariable( MetaVariable metaVariable)
-        //{
-        //    m_CallerMetaVariable = metaVariable;
-        //    if (metaVariable?.metaDefineType.metaClass is MetaGenTemplateClass mgtc)
-        //    {
-        //        m_CallerInstanceClass = mgtc;
-        //    }
         //}
         public MetaFunction GetRealMetaFunction()
         {
@@ -316,6 +289,10 @@ namespace SimpleLanguage.Core
                     {
                         return new MetaType(this.callerMetaClass);
                     }
+                case EVisitType.NewTemplate:
+                    {
+                        return new MetaType(this.callerMetaClass);
+                    }
                 default:
                     {
                         Log.AddInStructMeta(EError.None, "Error ---------" + visitType.ToString() );
@@ -347,6 +324,10 @@ namespace SimpleLanguage.Core
                         return methodCall.function.returnMetaVariable;
                     }
                 case EVisitType.NewClass:
+                    {
+                        return variable;
+                    }
+                case EVisitType.NewTemplate:
                     {
                         return variable;
                     }

@@ -38,6 +38,7 @@ namespace SimpleLanguage.IR
         LoadStaticField,
 
         NewObject,
+        NewCallClass,
         NewArray,
         Dup,
         Pop,
@@ -47,6 +48,7 @@ namespace SimpleLanguage.IR
         StoreNotStaticField,
         StoreReturn,
         
+        LoadStackClass,
         SetCallClass,
         UnSetCallClass,
 

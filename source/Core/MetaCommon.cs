@@ -106,6 +106,7 @@ namespace SimpleLanguage.Core
         private FileMetaCallNode m_FileMetaCallNode = null;
         private Token m_Token = null;
 
+        public MetaVariable storeMetaVariable => m_StoreMetaVariable;
         public MetaNode m_MetaNode { get; private set; } = null;
         public MetaClass m_MetaClass { get; private set; } = null;
         public MetaGenTemplateClass m_GenMetaClass { get; private set; } = null;
@@ -126,6 +127,7 @@ namespace SimpleLanguage.Core
         private MetaExpressNode m_ExpressNode = null;    // a+b+([expressNode[3+20+10.0f]).ToString() 中的3+20+10.f就是表示式 , fun(expressNode)
         private List<MetaCallLink> m_MetaArrayCallNodeList = new List<MetaCallLink>();
         private MetaVariable m_DefineMetaVariable = null;
+        private MetaVariable m_StoreMetaVariable = null;
         protected MetaCallNode()
         { }
         public MetaCallNode(FileMetaCallNode fmcn1, FileMetaCallNode fmcn2, MetaClass mc, MetaBlockStatements mbs, MetaType fdmt )

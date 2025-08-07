@@ -7,6 +7,7 @@
 //****************************************************************************
 
 
+using SimpleLanguage.Core;
 using SimpleLanguage.Parse;
 using System.Text;
 
@@ -15,6 +16,31 @@ namespace SimpleLanguage.IR
     public class IRLoadVariable : IRBase
     {
         public IRData data = new IRData();
+
+        public static IRLoadVariable NewLoadVariable( IRMethod _irMethod, MetaVariable mv )
+        {
+            if (mv.variableFrom == MetaVariable.EVariableFrom.Static
+                    || mv.variableFrom == MetaVariable.EVariableFrom.Global)
+            {
+                IRLoadVariable irVar = new IRLoadVariable(_irMethod.irManager, mv.GetHashCode());
+                return irVar;
+            }
+            else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
+            {
+                IRLoadVariable irVar = new IRLoadVariable(_irMethod, (mv as MetaMemberVariable).index, IRMetaVariableFrom.Member);
+                return irVar;
+            }
+            else if (mv.variableFrom == MetaVariable.EVariableFrom.Argument)
+            {
+                IRLoadVariable irVar = new IRLoadVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.Argument);
+                return irVar;
+            }
+            else
+            {
+                IRLoadVariable irVar = new IRLoadVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.LocalStatement);
+                return irVar;
+            }
+        }
         public IRLoadVariable(IRManager _irManager, int id)
         {
             var irmv = _irManager.staticVariableList.Find(a => a.id == id);

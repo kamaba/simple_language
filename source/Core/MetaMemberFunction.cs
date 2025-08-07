@@ -201,8 +201,6 @@ namespace SimpleLanguage.Core
 
         //模板生成函数，如果匹配了，模板函数后，再进行看是否生成过该函数
         protected List<MetaGenTempalteFunction> m_GenTempalteFunctionList = new List<MetaGenTempalteFunction>();
-
-
         #endregion
 
         public MetaMemberFunction( MetaClass mc ):base(mc)
@@ -286,7 +284,7 @@ namespace SimpleLanguage.Core
         }
         protected void Init()
         {
-            m_ConstructInitFunction = name == "_init_";
+            m_ConstructInitFunction = this.name == "_init_";
 
             MetaType defineMetaType = null;
             if (m_ConstructInitFunction)
@@ -314,8 +312,11 @@ namespace SimpleLanguage.Core
         }
         public override void SetDeep(int deep)
         {
-            m_Deep = deep;
-            m_MetaBlockStatements?.SetDeep(deep);
+            base.SetDeep(deep);
+        }
+        public override void SetAnchorDeep(int addep)
+        {
+            base.SetAnchorDeep(addep);
         }
         public void SetSourceMetaMemberFunction( MetaMemberFunction mmf )
         {
@@ -333,15 +334,6 @@ namespace SimpleLanguage.Core
         {
             m_IsOverrideFunction = flag;
         }
-        //public override void SetOwnerMetaClass(MetaClass ownerclass)
-        //{
-        //    for(int i = 0; i < m_GenTempalteFunctionList.Count; i++ )
-        //    {
-        //        m_GenTempalteFunctionList[i].SetOwnerMetaClass(ownerclass);
-        //    }
-
-        //    base.SetOwnerMetaClass(ownerclass);
-        //}
         public Token GetToken()
         {
             if( m_FileMetaMemberFunction?.finalToken != null )
@@ -719,8 +711,28 @@ namespace SimpleLanguage.Core
             {
                 sb.Append(m_ReturnMetaVariable.metaDefineType.ToFormatString());
             }
-            sb.Append(" ");
-            sb.Append(functionAllName);
+            sb.Append(" "); 
+            
+            if (m_OwnerMetaClass != null)
+            {
+                sb.Append(m_OwnerMetaClass.allClassName);
+                sb.Append(".");
+            }
+            sb.Append(m_Name);
+            if (m_MetaMemberTemplateCollection.metaTemplateList.Count > 0)
+            {
+                sb.Append("<");
+                for (int i = 0; i < m_MetaMemberTemplateCollection.metaTemplateList.Count; i++)
+                {
+                    var mtl = m_MetaMemberTemplateCollection.metaTemplateList[i];
+                    sb.Append(mtl.name);
+                    if (i < m_MetaMemberTemplateCollection.metaTemplateList.Count - 1)
+                    {
+                        sb.Append(",");
+                    }
+                }
+                sb.Append(">");
+            }
             sb.Append("(");
 
             for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)

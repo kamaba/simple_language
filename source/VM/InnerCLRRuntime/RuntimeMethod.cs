@@ -253,13 +253,13 @@ namespace SimpleLanguage.VM.Runtime
             level++;
 
             var topClrRuntime = InnerCLRRuntimeVM.topCLRRuntime;
-            for( int i = 0; i < m_ArgumentObjectArray.Length; i++ )
+            for ( int i = 0; i < m_ArgumentObjectArray.Length; i++ )
             {
                 SValue sval = topClrRuntime.GetCurrentIndexValue(true);
                 SetArgumentValue(m_ArgumentObjectArray.Length - i - 1, sval);
             }
 
-            while(true)
+            while (true)
             {
                 if (m_ExecuteIndex >= m_ExecuteCount)
                 {                    
@@ -481,6 +481,17 @@ namespace SimpleLanguage.VM.Runtime
                         InnerCLRRuntimeVM.SetStaticVariable(iri.index, m_ValueStack[--m_ValueIndex]);
                     }
                     break;
+                case EIROpCode.LoadStackClass:
+                    {
+                        var v = m_ValueStack[m_ValueIndex - 1];
+
+                        if (v.eType == EType.Class)
+                        {
+                            var co = (v.sobject as ClassObject);
+                            m_MethodRuntimeIRMetaClass = co.irMetaClass;
+                        }
+                    }
+                break;
                 case EIROpCode.SetCallClass:
                     {
                         var mrirmc = iri.opValue as IRMetaClass;
@@ -533,6 +544,11 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         var sval = m_ValueStack[m_ValueIndex - 1];
                         m_ValueStack[m_ValueIndex++] = sval;
+                    }
+                    break;
+                case EIROpCode.Pop:
+                    {
+                        m_ValueIndex--;
                     }
                     break;
                 case EIROpCode.Label:

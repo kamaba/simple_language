@@ -7,8 +7,8 @@
 //****************************************************************************
 
 using SimpleLanguage.IR;
+using SimpleLanguage.Parse;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 
@@ -40,27 +40,8 @@ namespace SimpleLanguage.Core.IR
             else if (cnode.visitType == MetaVisitNode.EVisitType.Variable)
             {
                 MetaVariable mv = cnode.variable;
-                if (mv.variableFrom == MetaVariable.EVariableFrom.Static
-                    || mv.variableFrom == MetaVariable.EVariableFrom.Global)
-                {
-                    IRLoadVariable irVar = new IRLoadVariable(_irMethod.irManager, mv.GetHashCode());
-                    irList.Add(irVar);
-                }
-                else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
-                {
-                    IRLoadVariable irVar = new IRLoadVariable(_irMethod, (mv as MetaMemberVariable).index, IRMetaVariableFrom.Member);
-                    irList.Add(irVar);
-                }
-                else if (mv.variableFrom == MetaVariable.EVariableFrom.Argument)
-                {
-                    IRLoadVariable irVar = new IRLoadVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.Argument);
-                    irList.Add(irVar);
-                }
-                else
-                {
-                    IRLoadVariable irVar = new IRLoadVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.LocalStatement);
-                    irList.Add(irVar);
-                }
+                IRLoadVariable irVar = IRLoadVariable.NewLoadVariable(_irMethod, mv);
+                irList.Add(irVar);
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MethodCall)
             {
@@ -71,9 +52,63 @@ namespace SimpleLanguage.Core.IR
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.NewTemplate)
             {
-                //var irmc = _irMethod.irManager.GetIRMetaClassByName(cnode.callerMetaClass.allClassName);
-                //IRNew irnew = new IRNew(m_IRMethod, irmc);
-                //irList.Add(irnew);
+                var mv = cnode.GetRetMetaVariable();
+                IRLoadVariable irVar = IRLoadVariable.NewLoadVariable(_irMethod, mv);
+                irList.Add(irVar);
+
+                IRBase irbase = new IRBase();
+
+                IRData sc1 = new IRData();
+                sc1.opCode = EIROpCode.LoadStackClass;
+                irbase.AddIRData(sc1);
+
+                IRData pop1 = new IRData();
+                pop1.opCode = EIROpCode.Pop;
+                irbase.AddIRData(pop1);
+
+                irList.Add(irbase);
+
+                IRNew irnew = new IRNew(_irMethod);
+                irList.Add(irnew);
+
+
+                if (cnode.methodCall != null)
+                {
+                    System.Type t = typeof(IRDup);
+
+                    IRDup irdup = new IRDup(_irMethod);
+                    irList.Add(irdup);
+                    IRBase irbase2 = new IRBase();
+                    IRData sc2 = new IRData();
+                    sc2.opCode = EIROpCode.SetCallClass;
+                    //sc2.opValue = irmc;
+                    irbase2.AddIRData(sc2);
+
+                    var mfc = cnode.methodCall;
+                    var paramCount = mfc.metaInputParamCollection.count;
+                    for (int j = 0; j < paramCount; j++)
+                    {
+                        MetaInputParam mip = mfc.metaInputParamCollection.metaInputParamList[j];
+                        IRExpress irexpress = new IRExpress(_irMethod, mip.express);
+                        irList.Add(irexpress);
+                    }
+                    MetaFunction mf = mfc.function;
+
+                    var rmr = _irMethod.irManager.GetIRMethod(mf.functionAllName);
+
+                    IRData datacall = new IRData();
+                    datacall.opCode = EIROpCode.Call;
+                    datacall.opValue = rmr;
+                    datacall.SetDebugInfoByToken(mf.pingToken);
+                    irbase.AddIRData(datacall);
+
+
+                    IRData sc3 = new IRData();
+                    sc3.opCode = EIROpCode.UnSetCallClass;
+                    irbase2.AddIRData(sc3);
+
+                    irList.Add(irbase2);
+                }
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.NewClass)
             {
@@ -202,7 +237,7 @@ namespace SimpleLanguage.Core.IR
                     }
                     else
                     {
-                        Debug.Write("Error VM IRMetaCall 该位置不应该有非静态变量");
+                        Log.AddGenIR( EError.None, "Error VM IRMetaCall 该位置不应该有非静态变量");
                     }
                 }
                 else if (cnode.visitType == MetaVisitNode.EVisitType.MethodCall)

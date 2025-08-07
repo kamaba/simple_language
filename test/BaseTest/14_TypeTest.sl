@@ -17,13 +17,13 @@ TestyTest
     }
     bool IsNType( Type t )
     {
-        return t == int.runtimeType;
+        return t == int.type;
     }
     static fun()
     {  
-        bool a = IsNType( ArrClass.runtimeType )
+        bool a = IsNType( ArrClass.type )
 
-        var t = List<int>.runtimeType
+        var t = List<int>.type
 
         MemberMethodInfo mmi = t.memberFunctionList.Find( "oj8k", 0 )
 
