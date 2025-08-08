@@ -17,6 +17,7 @@ namespace SimpleLanguage.VM
     {
         public VoidObject()
         {
+            m_IsVoid = true;
         }
         public void SetValue(String _val)
         {

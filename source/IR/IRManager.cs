@@ -41,7 +41,9 @@ namespace SimpleLanguage.IR
         public List<IRMetaVariable> staticVariableList => m_StaticVariableList;
 
         private List<IRMetaVariable> m_StaticVariableList = new List<IRMetaVariable>();
+        #region debug用
         private Dictionary<int,IRMetaVariable> m_AllVariableDict = new Dictionary<int,IRMetaVariable>();
+        #endregion
         private List<IRData> m_IRDataList = new List<IRData>();
 
         private List<IRMetaClass> m_IRMetaClassList = new List<IRMetaClass>();
@@ -234,6 +236,14 @@ namespace SimpleLanguage.IR
                 Console.WriteLine("Method: " + v.Value.id);
                 Console.WriteLine(v.Value.ToIRString());
             }
+        }
+        public IRMetaVariable GetStaticMetaVariableById( int id )
+        {
+            if(m_AllVariableDict.ContainsKey(id ) )
+            {
+                return m_AllVariableDict[id];
+            }
+            return null;
         }
         public int AddStringIRStack( string strMsg )
         {

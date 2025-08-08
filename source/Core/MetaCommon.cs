@@ -160,6 +160,10 @@ namespace SimpleLanguage.Core
         {
             this.m_DefineMetaVariable = mv;
         }
+        public void SetStoreMetaVariable( MetaVariable mv )
+        {
+            this.m_StoreMetaVariable = mv;
+        }
         public bool ParseNode(AllowUseSettings _auc)
         {
             m_AllowUseSettings = _auc;
@@ -358,6 +362,7 @@ namespace SimpleLanguage.Core
                         {
                             m_MetaTemplate = m_FrontDefineMetaType.metaTemplate;
                             m_CallNodeType = ECallNodeType.NewTemplate;
+                            m_StoreMetaVariable = m_DefineMetaVariable;
                         }
                         else
                         {
@@ -770,6 +775,7 @@ namespace SimpleLanguage.Core
                                 MetaEnum me = mc as MetaEnum;
                                 m_MetaVariable = me.GetMemberVariableByName(name);
                                 m_CallNodeType = ECallNodeType.MemberVariableName;
+                                m_FrontCallNode.SetStoreMetaVariable(m_MetaVariable);
                             }
                             else
                             {
