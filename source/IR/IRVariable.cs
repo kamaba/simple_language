@@ -112,6 +112,12 @@ namespace SimpleLanguage.IR
                 data.opCode = EIROpCode.StoreLocal;
                 data.index = irmv.index;
             }
+            else if( irmvf == IRMetaVariableFrom.Static )
+            {
+                irmv = _irMethod.irManager.GetStaticMetaVariableById(id);
+                data.opCode = EIROpCode.StoreStaticField;
+                data.index = irmv.index;
+            }
             else
             {
                 Log.AddVM(EError.None, $"SVM Error 没有找到加载变量的来源类型！");

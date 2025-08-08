@@ -51,6 +51,10 @@ namespace SimpleLanguage.IR
                         EVariableFrom.LocalStatement => IRMetaVariableFrom.LocalStatement,
                         _ => IRMetaVariableFrom.None,
                     };
+                    if( mv.isStatic )
+                    {
+                        vfrom = IRMetaVariableFrom.Static;
+                    }
                     if (mv.variableFrom == EVariableFrom.Argument || mv.variableFrom == EVariableFrom.LocalStatement)
                     {
                         IRStoreVariable irsv = new IRStoreVariable(irMethod, mv.GetHashCode(), vfrom);
@@ -58,8 +62,16 @@ namespace SimpleLanguage.IR
                     }
                     else if (mv.variableFrom == EVariableFrom.Member)
                     {
-                        IRStoreVariable irsv = new IRStoreVariable(irMethod, (mv as MetaMemberVariable).index, vfrom);
-                        m_IRStatements.Add(irsv);
+                        if( vfrom == IRMetaVariableFrom.Static )
+                        {
+                            IRStoreVariable irsv = new IRStoreVariable(irMethod, mv.GetHashCode(), vfrom);
+                            m_IRStatements.Add(irsv);
+                        }
+                        else
+                        {
+                            IRStoreVariable irsv = new IRStoreVariable(irMethod, (mv as MetaMemberVariable).index, vfrom);
+                            m_IRStatements.Add(irsv);
+                        }
                     }
                 }
             }            
