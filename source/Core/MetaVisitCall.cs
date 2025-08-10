@@ -244,12 +244,13 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CreateByVariable(MetaVariable _variale)
+        public static MetaVisitNode CreateByVariable(MetaVariable _variale, MetaClass callerMc = null )
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.visitType = EVisitType.Variable;
             vn.variable = _variale;
+            vn.callerMetaClass = callerMc;
 
             return vn;
         }

@@ -17,7 +17,7 @@ Level1<T>
             #这种情况，需要先获取类型
             # Type t = this._Level1_t.type;
             # MetaClass tc = t.metaClass;
-            # MetaMemberFunction tcmc = tc.GetConstruction( int.metaClass, int.metaClass )
+            # MetaMemberFunction tcmc = tc.GetConstruction( int.metaClass, int.metaClass ).make(10).hello()
             # var newmc = MetaClass.CreateInstance( tc )
             #  tcmc.Invoke( newmc, 10, 20 )
         }

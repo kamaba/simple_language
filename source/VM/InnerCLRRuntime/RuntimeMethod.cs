@@ -32,7 +32,7 @@ namespace SimpleLanguage.VM.Runtime
 
         private IRMetaClass m_IRMetaClass = null;
         //调用函数的实体类，如果是普通的类，则可以不管这个参数
-        private IRMetaClass m_MethodRuntimeIRMetaClass = null;
+        private IRMetaClass m_CallIRMetaClass = null;
         private IRMethod m_IRMethod = null;
         private IRData[] m_IRDataList = null;
         private ushort m_ExecuteIndex = 0;
@@ -473,12 +473,12 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadStaticField:
                     {
-                        InnerCLRRuntimeVM.GetStaticVariable(iri.index, ref m_ValueStack[m_ValueIndex++]);
+                        InnerCLRRuntimeVM.GetStaticVariable(m_CallIRMetaClass, iri.index, ref m_ValueStack[m_ValueIndex++]);
                     }
                     break;
                 case EIROpCode.StoreStaticField:
                     {                        
-                        InnerCLRRuntimeVM.SetStaticVariable(iri.index, m_ValueStack[--m_ValueIndex]);
+                        InnerCLRRuntimeVM.SetStaticVariable(m_CallIRMetaClass, iri.index, ref m_ValueStack[--m_ValueIndex]);
                     }
                     break;
                 case EIROpCode.LoadStackClass:
@@ -488,25 +488,25 @@ namespace SimpleLanguage.VM.Runtime
                         if (v.eType == EType.Class)
                         {
                             var co = (v.sobject as ClassObject);
-                            m_MethodRuntimeIRMetaClass = co.irMetaClass;
+                            m_CallIRMetaClass = co.irMetaClass;
                         }
                     }
                 break;
                 case EIROpCode.SetCallClass:
                     {
                         var mrirmc = iri.opValue as IRMetaClass;
-                        m_MethodRuntimeIRMetaClass = mrirmc;
+                        m_CallIRMetaClass = mrirmc;
                     }
                     break;
                 case EIROpCode.UnSetCallClass:
                     {
-                        m_MethodRuntimeIRMetaClass = null;
+                        m_CallIRMetaClass = null;
                     }
                     break;
                 case EIROpCode.Call:
                     {
                         var mfc = iri.opValue as IRMethod;
-                        InnerCLRRuntimeVM.RunIRMethod(m_MethodRuntimeIRMetaClass, mfc);
+                        InnerCLRRuntimeVM.RunIRMethod(m_CallIRMetaClass, mfc);
                     }
                     break;
                 case EIROpCode.CallCSharpMethod:

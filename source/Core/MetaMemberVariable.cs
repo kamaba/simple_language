@@ -26,6 +26,7 @@ namespace SimpleLanguage.Core
     }
     public class MetaMemberVariable : MetaVariable, IComparable<MetaMemberVariable>
     {
+        public MetaMemberVariable sourceMetaMemberVariable => m_SourceMetaMemberVariable;
         public EFromType fromType => m_FromType;
         public int index => m_Index;
         public MetaExpressNode express => m_Express;
@@ -38,6 +39,7 @@ namespace SimpleLanguage.Core
         private FileMetaMemberVariable m_FileMetaMemeberVariable;
         private MetaExpressNode m_Express = null;
         private bool m_IsInnerDefine = false;
+        private MetaMemberVariable m_SourceMetaMemberVariable = null;
         //private Dictionary< string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
 
         private bool m_IsSupportConstructionFunctionOnlyBraceType = true;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
@@ -78,6 +80,7 @@ namespace SimpleLanguage.Core
             m_FromType = mmv.m_FromType;  
             m_IsStatic = mmv.m_IsStatic;
             m_Permission = mmv.m_Permission;
+            m_SourceMetaMemberVariable = mmv;
         }
         public MetaMemberVariable(MetaClass mc, string _name)
         {

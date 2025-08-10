@@ -35,12 +35,13 @@ namespace SimpleLanguage.IR
         }
         public List<IRData> irDataList => m_IRDataList;
 
+        public List<IRMetaClass> irMetaClassList => m_IRMetaClassList;
         public Dictionary<string, IRMethod> IRMethodDict = new Dictionary<string, IRMethod>();
         public Dictionary<int, string> IRStringDict = new Dictionary<int,string>();
         public Dictionary<int, SValue> IRConstDict = new Dictionary<int, SValue>();
-        public List<IRMetaVariable> staticVariableList => m_StaticVariableList;
+        //public List<IRMetaVariable> staticVariableList => m_StaticVariableList;
 
-        private List<IRMetaVariable> m_StaticVariableList = new List<IRMetaVariable>();
+        //private List<IRMetaVariable> m_StaticVariableList = new List<IRMetaVariable>();
         #region debug用
         private Dictionary<int,IRMetaVariable> m_AllVariableDict = new Dictionary<int,IRMetaVariable>();
         #endregion
@@ -144,27 +145,30 @@ namespace SimpleLanguage.IR
                 {
                     continue;
                 }
+                var irmc = m_IRMetaClassList.Find(a => a.allName == v.Key);
+                if (irmc == null)
+                    continue;
 
-                if( v.Value is MetaEnum me )
+                if ( v.Value is MetaEnum me )
                 {
                     var mmvd = me.metaMemberEnumDict;
-                    foreach (var v2 in mmvd)
-                    {
-                        if (v2.Value.isStatic)
-                        {
-                            IRMetaVariable irMV = new IRMetaVariable(v2.Value);
-                            irMV.index = m_StaticVariableList.Count;
-                            irMV.SetExpress(v2.Value.express);
-                            m_StaticVariableList.Add(irMV);
-                        }
-                    }
-                    if( me.metaVariable != null )
-                    {
-                        IRMetaVariable irMV = new IRMetaVariable(me.metaVariable);
-                        irMV.index = m_StaticVariableList.Count;
-                        //irMV.SetExpress(v2.Value.express);
-                        m_StaticVariableList.Add(irMV);
-                    }
+                    //foreach (var v2 in mmvd)
+                    //{
+                    //    if (v2.Value.isStatic)
+                    //    {
+                    //        IRMetaVariable irMV = new IRMetaVariable(v2.Value);
+                    //        irMV.index = m_StaticVariableList.Count;
+                    //        irMV.SetExpress(v2.Value.express);
+                    //        m_StaticVariableList.Add(irMV);
+                    //    }
+                    //}
+                    //if( me.metaVariable != null )
+                    //{
+                    //    IRMetaVariable irMV = new IRMetaVariable(me.metaVariable);
+                    //    irMV.index = m_StaticVariableList.Count;
+                    //    //irMV.SetExpress(v2.Value.express);
+                    //    m_StaticVariableList.Add(irMV);
+                    //}
                 }
                 else if( v.Value is MetaData md )
                 {
@@ -174,9 +178,9 @@ namespace SimpleLanguage.IR
                         if (v2.Value.isStatic)
                         {
                             IRMetaVariable irMV = new IRMetaVariable(v2.Value);
-                            irMV.index = m_StaticVariableList.Count;
-                            //irMV.SetExpress(v2.Value.express);
-                            m_StaticVariableList.Add(irMV);
+                            //irMV.index = m_StaticVariableList.Count;
+                            ////irMV.SetExpress(v2.Value.express);
+                            //m_StaticVariableList.Add(irMV);
                         }
                     }
                 }
@@ -188,24 +192,30 @@ namespace SimpleLanguage.IR
                         if (v2.Value.isStatic)
                         {
                             IRMetaVariable irMV = new IRMetaVariable(v2.Value);
-                            irMV.index = m_StaticVariableList.Count;
-                            irMV.SetExpress(v2.Value.express);
-                            m_StaticVariableList.Add(irMV);
+                            if( v2.Value.sourceMetaMemberVariable != null )
+                            {
+                                irmc.AddStaticMetaMemberVariableHashCode(v2.Value.sourceMetaMemberVariable.GetHashCode(), v2.Value.GetHashCode());
+                            }
+                            //irMV.index = m_StaticVariableList.Count;
+                            //irMV.SetExpress(v2.Value.express);
+                            //m_StaticVariableList.Add(irMV);
                         }
                     }
                 }
             }
-            foreach ( var v in m_StaticVariableList )
+            foreach (var v in m_IRMetaClassList)
             {
-                m_AllVariableDict.Add(v.GetHashCode(), v);
+                var irlist = v.CreateStaticMetaMetaVariableIRList();
+                //m_AllVariableDict.Add(v.GetHashCode(), v);
 
-                IRExpress irexp = new IRExpress(IRManager.instance, v.express );
-                m_IRDataList.AddRange(irexp.IRDataList);
+                //IRExpress irexp = new IRExpress(IRManager.instance, v.express);
+                //m_IRDataList.AddRange(irexp.IRDataList);
 
-                IRData insNode = new IRData();
-                insNode.opCode = EIROpCode.StoreStaticField;
-                insNode.index = v.index;
-                m_IRDataList.Add(insNode);
+                //IRData insNode = new IRData();
+                //insNode.opCode = EIROpCode.StoreStaticField;
+                //insNode.index = v.index;
+                //m_IRDataList.Add(insNode);
+                m_IRDataList.AddRange(irlist);
             }
         }
         public void TranslateIRAutoAdd( MetaFunction mf )
@@ -237,14 +247,30 @@ namespace SimpleLanguage.IR
                 Console.WriteLine(v.Value.ToIRString());
             }
         }
-        public IRMetaVariable GetStaticMetaVariableById( int id )
-        {
-            if(m_AllVariableDict.ContainsKey(id ) )
-            {
-                return m_AllVariableDict[id];
-            }
-            return null;
-        }
+        //public IRMetaVariable GetStaticMetaVariableById( IRMetaClass irmc, int id )
+        //{
+        //    if( irmc != null )
+        //    {
+        //        var genstaticid = irmc.GetStaticMetaMemberVariableHashCode(id);
+        //        if( genstaticid == -1 )
+        //        {
+        //            return null;
+        //        }
+        //        if (m_AllVariableDict.ContainsKey(genstaticid))
+        //        {
+        //            return m_AllVariableDict[genstaticid];
+        //        }
+
+        //    }
+        //    else
+        //    {
+        //        if (m_AllVariableDict.ContainsKey(id))
+        //        {
+        //            return m_AllVariableDict[id];
+        //        }
+        //    }
+        //    return null;
+        //}
         public int AddStringIRStack( string strMsg )
         {
             foreach( var v in IRStringDict )
