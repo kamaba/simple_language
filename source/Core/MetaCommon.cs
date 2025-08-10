@@ -530,6 +530,7 @@ namespace SimpleLanguage.Core
                                         return false;
                                     }
                                     m_MetaVariable = mmv;
+                                    m_GenMetaClass = m_FrontCallNode.m_GenMetaClass;
                                     //tmb = mmv;
                                     m_CallNodeType = ECallNodeType.MemberVariableName;
                                 }
@@ -579,6 +580,7 @@ namespace SimpleLanguage.Core
                                         return false;
                                     }
                                     m_MetaVariable = mmv;
+                                    m_MetaClass = m_FrontCallNode.m_MetaClass;
                                     //tmb = mmv;
                                     m_CallNodeType = ECallNodeType.MemberVariableName;
                                 }
@@ -1432,6 +1434,7 @@ namespace SimpleLanguage.Core
                     if( mmv.isStatic )
                     {
                         m_MetaVariable = mmv;
+                        m_MetaClass = mc;
                         m_CallNodeType = ECallNodeType.MemberVariableName;
                         return true;
                     }
@@ -1447,6 +1450,7 @@ namespace SimpleLanguage.Core
                     if ( mmf.isStatic )
                     {
                         m_MetaFunction = mmf;
+                        m_MetaClass = mc;
                         m_CallNodeType = ECallNodeType.MemberFunctionName;
                         return true;
                     }

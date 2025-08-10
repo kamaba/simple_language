@@ -1,7 +1,10 @@
 ﻿using SimpleLanguage.IR;
+using SimpleLanguage.Parse;
+using SimpleLanguage.VM.InnerCLRRuntime;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace SimpleLanguage.VM.Runtime
@@ -11,9 +14,10 @@ namespace SimpleLanguage.VM.Runtime
         public static bool isPrint { get; set; } = false;
         public static RuntimeMethod currentCLRRuntime = null;
         public static RuntimeMethod topCLRRuntime = null;
+
+        public static Dictionary<int, ClassObject> staticClassObjectDict = new Dictionary<int, ClassObject>();
         public static Stack<RuntimeMethod> clrRuntimeStack => m_ClrRuntimeStack;
 
-        private static SValue[] m_StaticVariableValueArray = null;
         private static Stack<RuntimeMethod> m_ClrRuntimeStack = new Stack<RuntimeMethod>();
         public InnerCLRRuntimeVM()
         {
@@ -53,33 +57,45 @@ namespace SimpleLanguage.VM.Runtime
         {
             return m_ClrRuntimeStack.Pop();
         }
-        public static void GetStaticVariable(int index, ref SValue val)
+        public static void GetStaticVariable(IRMetaClass irmc, int index, ref SValue val)
         {
-            if (index > m_StaticVariableValueArray.Length)
+            if(staticClassObjectDict.ContainsKey(irmc.id) == false )
             {
-                Debug.Write("执行的参数超出范围!!");
+                Log.AddVM(EError.None, "GetStaticVariable 没有找到相当的静态类");
                 return;
             }
-            ObjectManager.SetValueByValue(ref val, ref m_StaticVariableValueArray[index] );
+            ClassObject sobj = staticClassObjectDict[irmc.id];
+
+            sobj.GetMemberVariableSValue(index, ref val); 
         }
-        public static void SetStaticVariable(int index, SValue svalue)
+        public static void SetStaticVariable( IRMetaClass irmc, int index, ref SValue svalue)
         {
-            if (index > m_StaticVariableValueArray.Length)
+            if (staticClassObjectDict.ContainsKey(irmc.id) == false)
             {
-                Debug.Write("执行的栈超出范围!!");
+                Log.AddVM(EError.None, "SetStaticVariable 没有找到相当的静态类");
                 return;
             }
-            ObjectManager.SetValueByValue( ref m_StaticVariableValueArray[index], ref svalue );
+            ClassObject sobj = staticClassObjectDict[irmc.id];
+
+            ObjectManager.SetObjectByValue(sobj, ref svalue );
         }
         public static void Init()
-        {            
-            var staticArray = IRManager.instance.staticVariableList;
-            m_StaticVariableValueArray = new SValue[staticArray.Count];
-            for (int i = 0; i < staticArray.Count; i++)
-            {
-                m_StaticVariableValueArray[i] = ObjectManager.CreateValueByDefineType( staticArray[i].irMetaClass );
-            }
+        {
+            //var staticArray = IRManager.instance.staticVariableList;
+            //m_StaticVariableValueArray = new SValue[staticArray.Count];
+            //for (int i = 0; i < staticArray.Count; i++)
+            //{
+            //    m_StaticVariableValueArray[i] = ObjectManager.CreateValueByDefineType( staticArray[i].irMetaClass );
+            //}
             //InnverCLRRuntimeVM.RootInnerCLRRuntime 
+
+            for( int i = 0; i < IRManager.instance.irMetaClassList.Count; i++ )
+            {
+                var irmc = IRManager.instance.irMetaClassList[i];
+                ClassObject co = new ClassObject(irmc, true);
+                staticClassObjectDict.Add(irmc.id, co);
+            }
+
             RuntimeMethod clrRuntime = new RuntimeMethod(IRManager.instance.irDataList);
             clrRuntime.isPersistent = true;
             clrRuntime.id = "InnverCLRRuntimeVM.CLRRuntime.EntryMethod()";

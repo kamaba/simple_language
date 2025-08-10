@@ -9,6 +9,7 @@
 
 using System.Collections.Generic;
 using SimpleLanguage.Core;
+using SimpleLanguage.VM;
 
 namespace SimpleLanguage.IR
 {
@@ -30,7 +31,9 @@ namespace SimpleLanguage.IR
             id = s_TypeLength++;
         }
         public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
+        public List<IRMetaVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;
         public Dictionary<string, IRMetaClass> genTemplateIRMetaClassDict => m_GenTemplateIRMetaClassDict;
+        private Dictionary<int, int> m_StaticMetaMemberVariableHashCodeDict = new Dictionary<int, int>();
 
         public int allocSize = 0;
         public List<EType> m_MetaTypeList = new List<EType>();
@@ -44,6 +47,7 @@ namespace SimpleLanguage.IR
         List<MetaMemberData> m_LocalMetaMemberDatas = new List<MetaMemberData>();
 
         private List<IRMetaVariable> m_LocalIRMetaVariableList = new List<IRMetaVariable>();
+        private List<IRMetaVariable> m_StaticIRMetaVariableList = new List<IRMetaVariable>();
         private Dictionary<string, IRMetaClass> m_GenTemplateIRMetaClassDict = new Dictionary<string, IRMetaClass>();
         private Dictionary<int, IRCallFunction> m_LocalIRInitDict = new Dictionary<int, IRCallFunction>();
         private IRManager m_IRManager = null;
@@ -71,6 +75,32 @@ namespace SimpleLanguage.IR
         {
             return m_LocalIRMetaVariableList.Find( a=> a.id == id );
         }
+        //public class Level<T>
+        //{
+        //    public static T static_t1 = default(T);
+
+        //    public static T create( T t )
+        //    {
+        //        Level<int>.static_t1 = 20;
+        //        Level<T>.static_t1 = t;
+        //        return static_t1;
+        //    }
+        //}
+        public int GetStaticMetaMemberVariableHashCode( int id )
+        {
+            if(m_StaticMetaMemberVariableHashCodeDict.ContainsKey(id ) )
+            {
+                return m_StaticMetaMemberVariableHashCodeDict[id];
+            }
+            return -1;
+        }
+        public void AddStaticMetaMemberVariableHashCode( int id, int newid)
+        {
+            if( !m_StaticMetaMemberVariableHashCodeDict.ContainsKey( id ) )
+            {
+                m_StaticMetaMemberVariableHashCodeDict.Add(id, newid);
+            }
+        }
         public void CreateMetaClassData( MetaClass mc )
         {
             allName = mc.allClassName;
@@ -84,6 +114,13 @@ namespace SimpleLanguage.IR
             else
             {
                 m_LocalMetaMemberVariables = mc.GetMetaMemberVariableListByFlag(false, false);
+            }
+            var staticMMVList = mc.GetMetaMemberVariableListByFlag(true, true);            
+            for ( int i = 0; i < staticMMVList.Count; i++ )
+            {
+                var v = staticMMVList[i];
+                IRMetaVariable irmv = new IRMetaVariable(this, v);
+                m_StaticIRMetaVariableList.Add(irmv);
             }
             if( mc is MetaGenTemplateClass mgtc )
             {
@@ -99,6 +136,12 @@ namespace SimpleLanguage.IR
                 genClass = false;
             }
             CalcAllocSize();
+        }
+        public List<IRData> CreateStaticMetaMetaVariableIRList()
+        {
+            List<IRData> list = new List<IRData>();
+
+            return list;
         }
         public void CreateIRMetaMemberVariable()
         {

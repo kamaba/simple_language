@@ -239,7 +239,7 @@ namespace SimpleLanguage.Core
             foreach (var v in m_MetaMemberVariableDict)
             {
                 tempMmv = v.Value;
-                if ((tempMmv.isStatic == isStatic) && (tempMmv.isConst == isConst))
+                if ((tempMmv.isStatic == isStatic) || (tempMmv.isConst == isConst))
                 {
                     mmvList.Add(tempMmv);
                 }
@@ -247,7 +247,7 @@ namespace SimpleLanguage.Core
             foreach (var v in m_MetaExtendMemeberVariableDict)
             {
                 tempMmv = v.Value;
-                if ((tempMmv.isStatic == isStatic) && (tempMmv.isConst == isConst))
+                if ((tempMmv.isStatic == isStatic) || (tempMmv.isConst == isConst))
                 {
                     mmvList.Add(tempMmv);
                 }

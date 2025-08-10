@@ -108,22 +108,22 @@ namespace SimpleLanguage.Core
                     }
                     if (mcn.callNodeType == ECallNodeType.This)
                     {
-                        MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.m_MetaVariable);
+                        MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.m_MetaVariable, mcn.m_MetaClass );
                         m_VisitNodeList.Add(mvn);
                     }
                     else if (mcn.callNodeType == ECallNodeType.Base)
                     {
-                        MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.m_MetaVariable);
+                        MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.m_MetaVariable, mcn.m_MetaClass);
                         m_VisitNodeList.Add(mvn);
                     }
                     else if (mcn.callNodeType == ECallNodeType.FunctionInnerVariableName)
                     {
-                        MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.m_MetaVariable);
+                        MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.m_MetaVariable, mcn.m_MetaClass);
                         m_VisitNodeList.Add(mvn);
                     }
                     else if (mcn.callNodeType == ECallNodeType.MemberVariableName)
                     {
-                        MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.m_MetaVariable);
+                        MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.m_MetaVariable, mcn.m_MetaClass);
                         m_VisitNodeList.Add(mvn);
                     }
                     else if (mcn.callNodeType == ECallNodeType.MemberFunctionName )

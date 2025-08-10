@@ -114,9 +114,8 @@ namespace SimpleLanguage.IR
             }
             else if( irmvf == IRMetaVariableFrom.Static )
             {
-                irmv = _irMethod.irManager.GetStaticMetaVariableById(id);
                 data.opCode = EIROpCode.StoreStaticField;
-                data.index = irmv.index;
+                data.index = id;
             }
             else
             {
