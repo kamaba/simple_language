@@ -40,8 +40,17 @@ namespace SimpleLanguage.Core.IR
             else if (cnode.visitType == MetaVisitNode.EVisitType.Variable)
             {
                 MetaVariable mv = cnode.variable;
+                
                 IRLoadVariable irVar = IRLoadVariable.NewLoadVariable(_irMethod, mv);
                 irList.Add(irVar);
+                if (mv.isTemplate && mv.isStatic)
+                {
+                    IRBase irbase3 = new IRBase();
+                    IRData sc3 = new IRData();
+                    sc3.opCode = EIROpCode.UnSetCallClass;
+                    irbase3.AddIRData(sc3);
+                    irList.Add(irbase3);
+                }
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MethodCall)
             {
@@ -126,7 +135,7 @@ namespace SimpleLanguage.Core.IR
                             var lirmv = irmc.localIRMetaVariableList[x];
                             if (cnode.metaBraceStatementsContent?.assignStatementsList?.Count > 0)
                             {
-                                IRLoadVariable irlv = new IRLoadVariable(_irMethod, cnode.variable.GetHashCode(), IRMetaVariableFrom.LocalStatement);
+                                IRLoadVariable irlv = IRLoadVariable.NewLoadVariable(_irMethod, cnode.variable );
                                 irList.Add(irlv);
                                 for (int y = 0; y < cnode.metaBraceStatementsContent.assignStatementsList.Count; y++)
                                 {
@@ -161,7 +170,7 @@ namespace SimpleLanguage.Core.IR
                 {
                     if (cnode.metaBraceStatementsContent != null && cnode.metaBraceStatementsContent.assignStatementsList.Count > 0)
                     {
-                        IRLoadVariable irlv = new IRLoadVariable(_irMethod, cnode.variable.GetHashCode(), IRMetaVariableFrom.LocalStatement);
+                        IRLoadVariable irlv = IRLoadVariable.NewLoadVariable(_irMethod, cnode.variable );
                         irList.Add(irlv);
                         for (int y = 0; y < cnode.metaBraceStatementsContent.assignStatementsList.Count; y++)
                         {
@@ -232,7 +241,7 @@ namespace SimpleLanguage.Core.IR
                     if (mv.variableFrom == MetaVariable.EVariableFrom.Static
                         || mv.variableFrom == MetaVariable.EVariableFrom.Global)
                     {
-                        IRLoadVariable irVar = new IRLoadVariable(m_IRMethod.irManager, mv.GetHashCode());
+                        IRLoadVariable irVar = IRLoadVariable.NewLoadVariable(m_IRMethod, mv);
                         irList.Add(irVar);
                     }
                     else

@@ -531,24 +531,44 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public virtual List<MetaMemberVariable>  GetMetaMemberVariableListByFlag( bool isStatic, bool isConst )
+        public virtual List<MetaMemberVariable>  GetMetaMemberVariableListByFlag( bool isStatic )
         {
             List<MetaMemberVariable> mmvList = new List<MetaMemberVariable>();
             MetaMemberVariable tempMmv = null;
             foreach (var v in m_MetaMemberVariableDict)
             {
                 tempMmv = v.Value;
-                if( (tempMmv.isStatic == isStatic) || (tempMmv.isConst==isConst) )
+                if( isStatic )
                 {
-                    mmvList.Add(tempMmv);
+                    if ( tempMmv.isStatic == isStatic || tempMmv.isConst == isStatic)
+                    {
+                        mmvList.Add(tempMmv);
+                    }
+                }
+                else
+                {
+                    if( tempMmv.isStatic == false && tempMmv.isConst == false )
+                    {
+                        mmvList.Add(tempMmv);
+                    }
                 }
             }
             foreach (var v in m_MetaExtendMemeberVariableDict)
             {
                 tempMmv = v.Value;
-                if ((tempMmv.isStatic == isStatic) || (tempMmv.isConst == isConst))
+                if (isStatic)
                 {
-                    mmvList.Add(tempMmv);
+                    if (tempMmv.isStatic == isStatic || tempMmv.isConst == isStatic)
+                    {
+                        mmvList.Add(tempMmv);
+                    }
+                }
+                else
+                {
+                    if (tempMmv.isStatic == false && tempMmv.isConst == false)
+                    {
+                        mmvList.Add(tempMmv);
+                    }
                 }
             }
             return mmvList;
