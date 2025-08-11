@@ -492,6 +492,11 @@ namespace SimpleLanguage.VM.Runtime
                         }
                     }
                 break;
+                case EIROpCode.SetCurrentClassCallClass:
+                    {
+                        m_CallIRMetaClass = m_IRMetaClass;
+                    }
+                    break;
                 case EIROpCode.SetCallClass:
                     {
                         var mrirmc = iri.opValue as IRMetaClass;

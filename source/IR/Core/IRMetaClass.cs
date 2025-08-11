@@ -8,6 +8,7 @@
 
 
 using System.Collections.Generic;
+using System.Text;
 using SimpleLanguage.Core;
 using SimpleLanguage.VM;
 
@@ -113,9 +114,9 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                m_LocalMetaMemberVariables = mc.GetMetaMemberVariableListByFlag(false, false);
+                m_LocalMetaMemberVariables = mc.GetMetaMemberVariableListByFlag(false);
             }
-            var staticMMVList = mc.GetMetaMemberVariableListByFlag(true, true);            
+            var staticMMVList = mc.GetMetaMemberVariableListByFlag(true);            
             for ( int i = 0; i < staticMMVList.Count; i++ )
             {
                 var v = staticMMVList[i];
@@ -160,6 +161,14 @@ namespace SimpleLanguage.IR
                 return true;
             }
             return false;
+        }
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(this.allName);
+
+            return sb.ToString();
         }
     }
 }

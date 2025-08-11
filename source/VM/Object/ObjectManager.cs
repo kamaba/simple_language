@@ -351,6 +351,10 @@ namespace SimpleLanguage.VM
                             anyObject.SetValue(EType.String, svalue.stringValue);
                             return;
                         }
+                        ClassObject classobj = obj as ClassObject;
+                        if ( classobj != null )
+                        {
+                        }
                         StringObject stringObj = obj as StringObject;
                         if (stringObj == null)
                         {

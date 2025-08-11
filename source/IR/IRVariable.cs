@@ -15,19 +15,12 @@ namespace SimpleLanguage.IR
 {
     public class IRLoadVariable : IRBase
     {
-        public IRData data = new IRData();
-
+        private IRData m_Data = new IRData();
         public static IRLoadVariable NewLoadVariable( IRMethod _irMethod, MetaVariable mv )
         {
-            if (mv.variableFrom == MetaVariable.EVariableFrom.Static
-                    || mv.variableFrom == MetaVariable.EVariableFrom.Global)
+            if (mv.variableFrom == MetaVariable.EVariableFrom.Global)
             {
-                IRLoadVariable irVar = new IRLoadVariable(_irMethod.irManager, mv.GetHashCode());
-                return irVar;
-            }
-            else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
-            {
-                IRLoadVariable irVar = new IRLoadVariable(_irMethod, (mv as MetaMemberVariable).index, IRMetaVariableFrom.Member);
+                IRLoadVariable irVar = new IRLoadVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global );
                 return irVar;
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.Argument)
@@ -35,48 +28,83 @@ namespace SimpleLanguage.IR
                 IRLoadVariable irVar = new IRLoadVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.Argument);
                 return irVar;
             }
+            else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
+            {
+                if( mv.isStatic )
+                {
+                    IRLoadVariable irVar = new IRLoadVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.Static, mv.isTemplate);
+                    return irVar;                   
+                }
+                else
+                {
+                    IRLoadVariable irVar = new IRLoadVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.Member);
+                    return irVar;
+                }
+            }
             else
             {
                 IRLoadVariable irVar = new IRLoadVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.LocalStatement);
                 return irVar;
             }
         }
-        public IRLoadVariable(IRManager _irManager, int id)
-        {
-            var irmv = _irManager.staticVariableList.Find(a => a.id == id);
-            data.opCode = EIROpCode.LoadStaticField;
-            data.index = irmv.index;
-            m_IRDataList.Add(data);
-        }
-        public IRLoadVariable(IRMethod _irMethod, int id, IRMetaVariableFrom irmvf ) : base(_irMethod)
+        protected IRLoadVariable(IRMethod _irMethod, int id, IRMetaVariableFrom irmvf, bool isTemplate = false ) : base(_irMethod)
         {
             IRMetaVariable irmv = null;
-            if (irmvf == IRMetaVariableFrom.Argument )
+            if( irmvf == IRMetaVariableFrom.Global )
+            {
+                //irmv = _irMethod.irManager.G.GetIRArgumentById(id);
+                m_Data.opCode = EIROpCode.LoadArgument;
+                m_Data.index = id;
+                m_IRDataList.Add(m_Data);
+            }
+            else if (irmvf == IRMetaVariableFrom.Argument )
             {
                 irmv = _irMethod.GetIRArgumentById(id);
-                data.opCode = EIROpCode.LoadArgument;
-                data.index = irmv.index;
+                m_Data.opCode = EIROpCode.LoadArgument;
+                m_Data.index = irmv.index;
                 //data.SetDebugInfoByToken( mv.pingToken );
+                m_IRDataList.Add(m_Data);
             }
             else if (irmvf == IRMetaVariableFrom.Member)
             {
                 //irmv = _irMethod.GetIRLocalVariableById(id);
                 //data.SetDebugInfoByToken(mv.pingToken);
-                data.index = id;
-                data.opCode = EIROpCode.LoadNotStaticField;
+                m_Data.index = id;
+                m_Data.opCode = EIROpCode.LoadNotStaticField;
+                m_IRDataList.Add(m_Data);
             }
             else if (irmvf == IRMetaVariableFrom.LocalStatement)
             {
                 irmv = _irMethod.GetIRLocalVariableById(id);
-                data.opCode = EIROpCode.LoadLocal;
-                data.index = irmv.index;
+                m_Data.opCode = EIROpCode.LoadLocal;
+                m_Data.index = irmv.index;
                 //data.SetDebugInfoByToken(mv.pingToken);
+                m_IRDataList.Add(m_Data);
+            }
+            else if( irmvf == IRMetaVariableFrom.Static )
+            {
+                if (isTemplate)
+                {
+                    IRData sc2 = new IRData();
+                    sc2.opCode = EIROpCode.SetCurrentClassCallClass;
+                    m_IRDataList.Add(sc2);
+                }
+
+                m_Data.opCode = EIROpCode.LoadStaticField;
+                m_Data.index = id;
+                m_IRDataList.Add(m_Data);
+
+                if( isTemplate )
+                {
+                    IRData sc2 = new IRData();
+                    sc2.opCode = EIROpCode.UnSetCallClass;
+                    m_IRDataList.Add(sc2);
+                }
             }
             else
             {
                 Log.AddVM( EError.None, $"SVM Error 没有找到加载变量的来源类型！");
             }
-            m_IRDataList.Add(data);
         }
         public override string ToIRString()
         {
@@ -91,40 +119,93 @@ namespace SimpleLanguage.IR
     }
     public class IRStoreVariable : IRBase
     {
-        public IRData data = new IRData();
-        public IRStoreVariable(IRMethod _irMethod, int id, IRMetaVariableFrom irmvf) : base(_irMethod)
+        private IRData m_Data = new IRData();
+
+        public static IRStoreVariable CreateIRStoreVariable( IRMethod _irMethod, MetaVariable mv )
+        {
+            if (mv.variableFrom == MetaVariable.EVariableFrom.Argument )
+            {
+                IRStoreVariable irsv = new IRStoreVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.Argument);
+                return irsv;
+            }
+            else if( mv.variableFrom == MetaVariable.EVariableFrom.LocalStatement)
+            {
+                IRStoreVariable irsv = new IRStoreVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.LocalStatement);
+                return irsv;
+            }
+            else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
+            {
+                if (mv.isStatic)
+                {
+                    IRStoreVariable irsv = new IRStoreVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.Static, mv.isTemplate );
+                    return irsv;
+                }
+                else
+                {
+                    IRStoreVariable irsv = new IRStoreVariable(_irMethod, (mv as MetaMemberVariable).index, IRMetaVariableFrom.Member);
+                    return irsv;
+                }
+            }
+            else
+            {
+
+            }
+            return null;
+        }
+        public IRStoreVariable(IRMethod _irMethod, int id, IRMetaVariableFrom irmvf, bool isTemplate = false) : base(_irMethod)
         {
             IRMetaVariable irmv = null;
-            if (irmvf == IRMetaVariableFrom.Member)
+            if( irmvf == IRMetaVariableFrom.Global )
             {
-                data.index = id;
-                data.opCode = EIROpCode.StoreNotStaticField;
+                m_Data.index = id;
+                m_Data.opCode = EIROpCode.StoreStaticField;
+                m_IRDataList.Add(m_Data);
+            }
+            else if (irmvf == IRMetaVariableFrom.Static)
+            {
+                if(isTemplate )
+                {
+                    IRData sc2 = new IRData();
+                    sc2.opCode = EIROpCode.SetCurrentClassCallClass;
+                    AddIRData(sc2);
+                }
+                m_Data.opCode = EIROpCode.StoreStaticField;
+                m_Data.index = id;
+                AddIRData(m_Data);
+                if (isTemplate)
+                {
+                    IRData sc2 = new IRData();
+                    sc2.opCode = EIROpCode.UnSetCallClass;
+                    AddIRData(sc2);
+                }
+            }
+            else if (irmvf == IRMetaVariableFrom.Member)
+            {
+                m_Data.index = id;
+                m_Data.opCode = EIROpCode.StoreNotStaticField;
+                m_IRDataList.Add(m_Data);
             }
             else if( irmvf == IRMetaVariableFrom.Argument )
             {
                 irmv = _irMethod.GetIRArgumentById(id);
-                data.opCode = EIROpCode.StoreLocal;
-                data.index = irmv.index;
+                m_Data.opCode = EIROpCode.StoreLocal;
+                m_Data.index = irmv.index;
+                m_IRDataList.Add(m_Data);
             }
             else if (irmvf == IRMetaVariableFrom.LocalStatement)
             {
                 irmv = _irMethod.GetIRLocalVariableById(id);
-                data.opCode = EIROpCode.StoreLocal;
-                data.index = irmv.index;
-            }
-            else if( irmvf == IRMetaVariableFrom.Static )
-            {
-                data.opCode = EIROpCode.StoreStaticField;
-                data.index = id;
+                m_Data.opCode = EIROpCode.StoreLocal;
+                m_Data.index = irmv.index;
+                m_IRDataList.Add(m_Data);
             }
             else
             {
                 Log.AddVM(EError.None, $"SVM Error 没有找到加载变量的来源类型！");
             }
-            m_IRDataList.Add(data);
         }
 
-        public IRStoreVariable()
+        protected IRStoreVariable()
         {
 
         }

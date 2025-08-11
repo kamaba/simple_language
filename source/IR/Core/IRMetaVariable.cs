@@ -17,6 +17,7 @@ namespace SimpleLanguage.IR
         LocalStatement,
         Member,
         Static,
+        Global,
         Return,
     }
     public class IRMetaVariable
@@ -102,7 +103,7 @@ namespace SimpleLanguage.IR
             id = mmv.GetHashCode();
             name = mmv.ownerMetaClass.allClassName + "." + mmv.name;
             m_ExpressNode = mmv.express;
-            if (mmv.isStatic)
+            if (mmv.isStatic || mmv.isConst )
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
             else
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Member;

@@ -37,7 +37,7 @@ namespace SimpleLanguage.IR
                     m_IRStatements.Add(m_IRExpress);
                 }
             }
-            IRStoreVariable irStoreVar = new IRStoreVariable(irMethod, ms.defineVarMetaVariable.GetHashCode(), IRMetaVariableFrom.LocalStatement );
+            IRStoreVariable irStoreVar = IRStoreVariable.CreateIRStoreVariable(irMethod, ms.defineVarMetaVariable );
             //if(m_FileMetaOpAssignSyntax != null )
             //{
             //    irStoreVar.data.SetDebugInfoByToken(m_FileMetaOpAssignSyntax.assignToken);

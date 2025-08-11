@@ -49,6 +49,7 @@ namespace SimpleLanguage.IR
         StoreReturn,
         
         LoadStackClass,
+        SetCurrentClassCallClass,
         SetCallClass,
         UnSetCallClass,
 

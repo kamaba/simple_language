@@ -77,7 +77,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             ClassObject sobj = staticClassObjectDict[irmc.id];
 
-            ObjectManager.SetObjectByValue(sobj, ref svalue );
+            sobj.SetMemberVariableSValue(index, svalue );
         }
         public static void Init()
         {
