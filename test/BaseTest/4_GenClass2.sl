@@ -43,14 +43,14 @@ Level1<T>
 GenClass2{
     static fun()
     {
-        Level1<int>  GenClass2_fun_l1 = Level1<int>()
-        penret = Level1<string>.Open("tttstring")
-        GenClass2_fun_l1.setLevel1( 200 )
-        System.Console.WriteLine("_this_——————————————————————————————" + GenClass2_fun_l1.Level1_t + penret )
+        #Level1<int>  GenClass2_fun_l1 = Level1<int>()
+        #penret = Level1<string>.Open("tttstring")
+        #GenClass2_fun_l1.setLevel1( 200 )
+        #System.Console.WriteLine("_this_——————————————————————————————" + GenClass2_fun_l1.Level1_t + penret )
 
-        #Level1<Level1<int> > GenClass2_fun_l2 = Level1<Level1<int> >()
-        #GenClass2_fun_l2.setLevel1( Level1<int>(20) )
-        #System.Console.Write("_this2_" + GenClass2_fun_l2.Level1_t.Level1_t )
+        Level1<Level1<int> > GenClass2_fun_l2 = Level1<Level1<int> >()
+        GenClass2_fun_l2.setLevel1( Level1<int>(20) )
+        System.Console.Write("_this2_-----------------------" + GenClass2_fun_l2.Level1_t.Level1_t )
     }
 }
 
