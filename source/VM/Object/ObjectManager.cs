@@ -344,6 +344,7 @@ namespace SimpleLanguage.VM
                         if (to != null)
                         {
                             to.SetValue(EType.String, svalue.stringValue);
+                            return;
                         }
                         AnyObject anyObject = obj as AnyObject;
                         if (anyObject != null)

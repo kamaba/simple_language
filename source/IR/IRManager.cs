@@ -15,7 +15,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Text;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.IR
 {
@@ -131,8 +130,6 @@ namespace SimpleLanguage.IR
             }
             foreach( var v in m_IRMetaClassList)
             {
-                v.CreateIRMetaMemberVariable();
-
                 foreach( var v2 in v.localIRMetaVariableList )
                 {
                     m_AllVariableDict.Add(v2.GetHashCode(), v2);
@@ -194,7 +191,7 @@ namespace SimpleLanguage.IR
                             IRMetaVariable irMV = new IRMetaVariable(v2.Value);
                             if( v2.Value.sourceMetaMemberVariable != null )
                             {
-                                irmc.AddStaticMetaMemberVariableHashCode(v2.Value.sourceMetaMemberVariable.GetHashCode(), v2.Value.GetHashCode());
+                                //irmc.AddMetaMemberVariableHashCode(v2.Value.sourceMetaMemberVariable.GetHashCode(), v2.Value.GetHashCode());
                             }
                             //irMV.index = m_StaticVariableList.Count;
                             //irMV.SetExpress(v2.Value.express);
