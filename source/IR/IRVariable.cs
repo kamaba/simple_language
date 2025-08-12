@@ -18,6 +18,7 @@ namespace SimpleLanguage.IR
         private IRData m_Data = new IRData();
         public static IRLoadVariable NewLoadVariable( IRMethod _irMethod, MetaVariable mv )
         {
+            IRMetaVariable irmv = null;
             if (mv.variableFrom == MetaVariable.EVariableFrom.Global)
             {
                 IRLoadVariable irVar = new IRLoadVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global );
@@ -25,43 +26,44 @@ namespace SimpleLanguage.IR
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.Argument)
             {
-                IRLoadVariable irVar = new IRLoadVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.Argument);
+                irmv = _irMethod.GetIRArgumentById(mv.GetHashCode());
+                IRLoadVariable irVar = new IRLoadVariable(_irMethod, irmv.index, IRMetaVariableFrom.Argument);
                 return irVar;
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
             {
-                if( mv.isStatic )
+                var irmc = _irMethod.irManager.GetIRMetaClassByName(mv.ownerMetaClass.allClassName);
+                var index = irmc.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                if ( mv.isStatic )
                 {
-                    IRLoadVariable irVar = new IRLoadVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.Static, mv.isTemplate);
+                    IRLoadVariable irVar = new IRLoadVariable(_irMethod, index, IRMetaVariableFrom.Static, mv.isTemplate);
                     return irVar;                   
                 }
                 else
                 {
-                    IRLoadVariable irVar = new IRLoadVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.Member);
+                    IRLoadVariable irVar = new IRLoadVariable(_irMethod, index, IRMetaVariableFrom.Member);
                     return irVar;
                 }
             }
             else
             {
-                IRLoadVariable irVar = new IRLoadVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.LocalStatement);
+                irmv = _irMethod.GetIRLocalVariableById(mv.GetHashCode());
+                IRLoadVariable irVar = new IRLoadVariable(_irMethod, irmv.index, IRMetaVariableFrom.LocalStatement);
                 return irVar;
             }
         }
         protected IRLoadVariable(IRMethod _irMethod, int id, IRMetaVariableFrom irmvf, bool isTemplate = false ) : base(_irMethod)
         {
-            IRMetaVariable irmv = null;
             if( irmvf == IRMetaVariableFrom.Global )
             {
-                //irmv = _irMethod.irManager.G.GetIRArgumentById(id);
                 m_Data.opCode = EIROpCode.LoadArgument;
                 m_Data.index = id;
                 m_IRDataList.Add(m_Data);
             }
             else if (irmvf == IRMetaVariableFrom.Argument )
             {
-                irmv = _irMethod.GetIRArgumentById(id);
                 m_Data.opCode = EIROpCode.LoadArgument;
-                m_Data.index = irmv.index;
+                m_Data.index = id;
                 //data.SetDebugInfoByToken( mv.pingToken );
                 m_IRDataList.Add(m_Data);
             }
@@ -75,9 +77,8 @@ namespace SimpleLanguage.IR
             }
             else if (irmvf == IRMetaVariableFrom.LocalStatement)
             {
-                irmv = _irMethod.GetIRLocalVariableById(id);
                 m_Data.opCode = EIROpCode.LoadLocal;
-                m_Data.index = irmv.index;
+                m_Data.index = id;
                 //data.SetDebugInfoByToken(mv.pingToken);
                 m_IRDataList.Add(m_Data);
             }
@@ -123,26 +124,31 @@ namespace SimpleLanguage.IR
 
         public static IRStoreVariable CreateIRStoreVariable( IRMethod _irMethod, MetaVariable mv )
         {
+            IRMetaVariable irmv = null;
             if (mv.variableFrom == MetaVariable.EVariableFrom.Argument )
             {
-                IRStoreVariable irsv = new IRStoreVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.Argument);
+                irmv = _irMethod.GetIRArgumentById(mv.GetHashCode());
+                IRStoreVariable irsv = new IRStoreVariable(_irMethod, irmv.index, IRMetaVariableFrom.Argument);
                 return irsv;
             }
             else if( mv.variableFrom == MetaVariable.EVariableFrom.LocalStatement)
             {
-                IRStoreVariable irsv = new IRStoreVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.LocalStatement);
+                irmv = _irMethod.GetIRLocalVariableById(mv.GetHashCode());
+                IRStoreVariable irsv = new IRStoreVariable(_irMethod, irmv.index, IRMetaVariableFrom.LocalStatement);
                 return irsv;
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
             {
+                var irmc = _irMethod.irManager.GetIRMetaClassByName(mv.ownerMetaClass.allClassName);
+                var index = irmc.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
                 if (mv.isStatic)
                 {
-                    IRStoreVariable irsv = new IRStoreVariable(_irMethod, mv.GetHashCode(), IRMetaVariableFrom.Static, mv.isTemplate );
+                    IRStoreVariable irsv = new IRStoreVariable(_irMethod, index, IRMetaVariableFrom.Static, mv.isTemplate );
                     return irsv;
                 }
                 else
                 {
-                    IRStoreVariable irsv = new IRStoreVariable(_irMethod, (mv as MetaMemberVariable).index, IRMetaVariableFrom.Member);
+                    IRStoreVariable irsv = new IRStoreVariable(_irMethod, index, IRMetaVariableFrom.Member);
                     return irsv;
                 }
             }
@@ -154,7 +160,6 @@ namespace SimpleLanguage.IR
         }
         public IRStoreVariable(IRMethod _irMethod, int id, IRMetaVariableFrom irmvf, bool isTemplate = false) : base(_irMethod)
         {
-            IRMetaVariable irmv = null;
             if( irmvf == IRMetaVariableFrom.Global )
             {
                 m_Data.index = id;
@@ -187,16 +192,14 @@ namespace SimpleLanguage.IR
             }
             else if( irmvf == IRMetaVariableFrom.Argument )
             {
-                irmv = _irMethod.GetIRArgumentById(id);
                 m_Data.opCode = EIROpCode.StoreLocal;
-                m_Data.index = irmv.index;
+                m_Data.index = id;
                 m_IRDataList.Add(m_Data);
             }
             else if (irmvf == IRMetaVariableFrom.LocalStatement)
             {
-                irmv = _irMethod.GetIRLocalVariableById(id);
                 m_Data.opCode = EIROpCode.StoreLocal;
-                m_Data.index = irmv.index;
+                m_Data.index = id;
                 m_IRDataList.Add(m_Data);
             }
             else
