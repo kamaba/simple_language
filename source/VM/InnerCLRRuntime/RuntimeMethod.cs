@@ -468,7 +468,7 @@ namespace SimpleLanguage.VM.Runtime
                                 break;
                         }
                         m_ValueStack[m_ValueIndex - 2] = v;
-                        m_ValueIndex -= 2;
+                        m_ValueIndex -= 1;
                     }
                     break;
                 case EIROpCode.LoadStaticField:
@@ -499,7 +499,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.SetCallClass:
                     {
-                        var mrirmc = iri.opValue as IRMetaClass;
+                         var mrirmc = iri.opValue as IRMetaClass;
                         m_CallIRMetaClass = mrirmc;
                     }
                     break;

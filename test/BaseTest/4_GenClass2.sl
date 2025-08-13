@@ -33,9 +33,17 @@ Level1<T>
         ret this._Level1_t
     }
     static T static_t = null;
+
+    Level2<T>
+    {
+        static T Level2_t = null
+    }
     static T Open( T t )
     {
+        #Level2<T>.Level2_t = t   #这里要报错，因为如果是静态变量的T必须先要实例化才可以， 要不就只能调类内部静态变量
+        static_t = t
         Level1<T>.static_t = t
+        Level1<short>.static_t = 20s;
         ret static_t
     }
 }

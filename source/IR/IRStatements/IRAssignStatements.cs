@@ -10,6 +10,7 @@ using SimpleLanguage.Core;
 using SimpleLanguage.Core.IR;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
+using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -36,16 +37,22 @@ namespace SimpleLanguage.IR
             var clist = ms.leftMetaExpress.metaCallLink.callNodeList;
             for (int i = 0; i < clist.Count; i++)
             {
-                if (i < clist.Count - 1)
+                if( i < clist.Count - 1 )
                 {
                     var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, clist[i]);
                     m_IRStatements.AddRange(list);
                 }
                 else
                 {
-                    var mv = clist[i].GetRetMetaVariable();
-                    var irsmv = IRStoreVariable.CreateIRStoreVariable(this.irMethod, mv);
-                    m_IRStatements.Add(irsmv);
+                    if(clist[i].visitType == MetaVisitNode.EVisitType.Variable )
+                    {
+                        IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irMethod, clist[i].variable);
+                        m_IRStatements.Add(irsv);
+                    }
+                    else
+                    {
+                        Log.AddGenIR(EError.None, "------------------------------------------");
+                    }
                 }
             }
         }
