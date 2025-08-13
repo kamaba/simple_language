@@ -30,58 +30,32 @@ namespace SimpleLanguage.Core
         //真实的成员函数
         protected MetaMemberFunction m_MetaMemberFunction = null;
         protected MetaInputParamCollection m_MetaInputParamCollection = null;
-        public MetaMethodCall(MetaGenTemplateClass genGlass, MetaMemberFunction _fun, MetaInputParamCollection _param )
+        
+        public MetaMethodCall( MetaClass mc, MetaFunction _fun, MetaInputParamCollection _param, MetaVariable loadMv, MetaVariable storeMv )
         {
-            m_CallerInstanceClass = genGlass;
-            m_MetaMemberFunction = _fun;
-            m_VMCallMetaFunction = _fun.sourceMetaMemberFunction;
+            if( mc is MetaGenTemplateClass mgtc )
+            {
+                m_CallerInstanceClass = mgtc;
+            }
+            if( _fun is MetaMemberFunction mmf )
+            {
+                m_VMCallMetaFunction = mmf.sourceMetaMemberFunction != null ? mmf.sourceMetaMemberFunction : mmf;
+            }
+            else
+            {
+                m_VMCallMetaFunction = _fun;
+            }
             m_MetaInputParamCollection = _param;
-            //m_CallerMetaVariable = mv;
-            //var tmmf = _fun as MetaMemberFunction;
-            //if (tmmf != null)
-            //{
-            //    m_IsConstruction = tmmf.isConstructInitFunction;
-            //    //m_MethodCallStackType = tmmf.isStatic ? EMethodCallStackType.StaticStack : EMethodCallStackType.DynamicStack;
-            //}
-            //else
-            //{
-            //    //m_MethodCallStackType = EMethodCallStackType.DynamicStack;
-            //}
-        }
-        public MetaMethodCall( MetaGenTemplateClass genGlass, MetaFunction _fun, MetaInputParamCollection _param, MetaVariable loadMv, MetaVariable storeMv )
-        {
-            m_CallerInstanceClass = genGlass;
-            m_VMCallMetaFunction = _fun;
-            m_MetaInputParamCollection = _param;
+            if(m_MetaInputParamCollection == null && _fun != null )
+            {
+                m_MetaInputParamCollection = new MetaInputParamCollection(m_VMCallMetaFunction.ownerMetaClass, null);
+            }
             m_LoadMetaVariable = loadMv;
             m_StoreMetaVariable = storeMv;
-            //var tmmf = _fun as MetaMemberFunction;
-            //if (tmmf != null)
-            //{
-            //    m_IsConstruction = tmmf.isConstructInitFunction;
-            //    //m_MethodCallStackType = tmmf.isStatic ? EMethodCallStackType.StaticStack : EMethodCallStackType.DynamicStack;
-            //}
-            //else
-            //{
-            //    //m_MethodCallStackType = EMethodCallStackType.DynamicStack;
-            //}
         }
-        //public MetaMethodCall(MetaGenTemplateClass mc, MetaMemberFunction _fun, MetaInputParamCollection _param = null)
-        //{
-        //    m_CallerInstanceClass = mc;
-        //    m_CallerMetaClass = mc.metaTemplateClass;
-        //    m_MetaFunction = _fun;
-        //    m_MetaInputParamCollection = _param;
-        //    //m_IsConstruction = _fun.isConstructInitFunction;
-        //    //m_MethodCallStackType = _fun.isStatic ? EMethodCallStackType.StaticStack : EMethodCallStackType.DynamicStack;
-        //}
-        public MetaFunction GetRealMetaFunction()
+        public void SetStoreMetaVariable( MetaVariable mv )
         {
-            if( m_MetaMemberFunction != null )
-            {
-                return m_MetaMemberFunction;
-            }
-            return m_VMCallMetaFunction;
+            this.m_StoreMetaVariable = mv;
         }
         public bool CheckMetaFunctionMatchInputParamCollection()
         {
@@ -115,7 +89,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        MetaDefineParam mdp = mpList[i] as MetaDefineParam;
+                        MetaDefineParam mdp = mpList[i];
                         if (mdp != null)
                         {
                             sb.Append(mdp.expressNode?.ToFormatString());
@@ -165,6 +139,7 @@ namespace SimpleLanguage.Core
         public MetaVisitVariable visitVariable { get; private set; } = null;
         public MetaMethodCall methodCall { get; private set; } = null;
         public MetaClass callerMetaClass { get; private set; }= null;
+        public bool callerMetaClassUseSetCurrentClass { get; set; } = false;
 
         public MetaTemplate callerMetaTemplate { get; private set; } = null;
         public MetaBraceOrBracketStatementsContent metaBraceStatementsContent => m_MetaBraceStatementsContent;

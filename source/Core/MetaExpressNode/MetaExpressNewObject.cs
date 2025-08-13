@@ -687,7 +687,7 @@ namespace SimpleLanguage.Core
 
             if(tfunction != null )
             {
-                m_MetaConstructFunctionCall = new MetaMethodCall(null, tfunction, mdpc);
+                m_MetaConstructFunctionCall = new MetaMethodCall(null, tfunction, mdpc, null, null);
             }
 
             Init();
@@ -885,7 +885,7 @@ namespace SimpleLanguage.Core
             mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaBraceOrBracketStatementsContent.count) ) );
             MetaMemberFunction mmf = m_MetaDefineType.metaClass.GetMetaMemberConstructFunction(mipc);
 
-            m_MetaConstructFunctionCall = new MetaMethodCall( null, mmf, mipc );
+            m_MetaConstructFunctionCall = new MetaMethodCall(null, mmf, mipc, null, null);
 
             //eType = EType.Array;
         }

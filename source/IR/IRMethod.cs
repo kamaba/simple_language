@@ -169,5 +169,10 @@ namespace SimpleLanguage.IR
 
             return sb.ToString();
         }
+
+        public override string ToString()
+        {
+            return this.id;
+        }
     }
 }

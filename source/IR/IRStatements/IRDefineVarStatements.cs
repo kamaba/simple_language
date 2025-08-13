@@ -9,6 +9,7 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.Statements;
 using System.Diagnostics;
+using System.Text;
 
 namespace SimpleLanguage.IR
 {
@@ -19,7 +20,7 @@ namespace SimpleLanguage.IR
         {
             this.irMethod = _method;
         }
-        public void ParseIRStatements( MetaDefineVarStatements ms )
+        public void ParseIRStatements(MetaDefineVarStatements ms)
         {
             MetaNewObjectExpressNode mnoen = null;
             if (ms.expressNode != null)
@@ -27,9 +28,9 @@ namespace SimpleLanguage.IR
                 mnoen = ms.expressNode as MetaNewObjectExpressNode;
                 if (mnoen != null)
                 {
-                    IRMetaClass irmc = IRManager.instance.GetIRMetaClassByName(ms.expressNode.GetReturnMetaClass().allClassName );
-                    IRNew irNew = new IRNew( irMethod, irmc );
-                    m_IRStatements.Add( irNew );
+                    IRMetaClass irmc = IRManager.instance.GetIRMetaClassByName(ms.expressNode.GetReturnMetaClass().allClassName);
+                    IRNew irNew = new IRNew(irMethod, irmc);
+                    m_IRStatements.Add(irNew);
                 }
                 else
                 {
@@ -37,37 +38,38 @@ namespace SimpleLanguage.IR
                     m_IRStatements.Add(m_IRExpress);
                 }
             }
-            IRStoreVariable irStoreVar = IRStoreVariable.CreateIRStoreVariable(irMethod, ms.defineVarMetaVariable );
+            IRStoreVariable irStoreVar = IRStoreVariable.CreateIRStoreVariable(irMethod, ms.defineVarMetaVariable);
             //if(m_FileMetaOpAssignSyntax != null )
             //{
             //    irStoreVar.data.SetDebugInfoByToken(m_FileMetaOpAssignSyntax.assignToken);
             //}
             m_IRStatements.Add(irStoreVar);
 
-            if ( mnoen!= null )
+            if (mnoen != null)
             {
                 var mt = mnoen.GetReturnMetaDefineType();
-                
+
             }
-        //public override string ToIRString()
-        //{
-        //    StringBuilder sb = new StringBuilder();
+        }
+        public string ToIRString()
+        {
+            StringBuilder sb = new StringBuilder();
 
-        //    sb.Append(" #new var ");
-        //    sb.Append(m_MetaVariable.ToFormatString() );
-        //    if(m_ExpressNode != null )
-        //    {
-        //        sb.Append( " = " + m_ExpressNode.ToFormatString());
-        //    }
-        //    sb.AppendLine(" #");
+            sb.Append(" #new var ");
+            //sb.Append(m_MetaVariable.ToFormatString());
+            //if (m_IRExpress != null)
+            //{
+            //    sb.Append(" = " + m_IRExpress.ToIRString() );
+            //}
+            sb.AppendLine(" #");
 
-        //    sb.AppendLine("{");
-        //    for (int i = 0; i < m_IRStatements.Count; i++)
-        //    {
-        //        sb.AppendLine(m_IRStatements[i].ToIRString());
-        //    }
-        //    sb.AppendLine("}");
-        //    return sb.ToString();
+            sb.AppendLine("{");
+            for (int i = 0; i < m_IRStatements.Count; i++)
+            {
+                sb.AppendLine(m_IRStatements[i].ToIRString());
+            }
+            sb.AppendLine("}");
+            return sb.ToString();
         }
     }
 }

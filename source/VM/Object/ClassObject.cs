@@ -60,7 +60,7 @@ namespace SimpleLanguage.VM
         }
         public void SetValue(ClassObject val )
         {
-            m_Object = val;
+            m_Object = val.m_Object;
             val.refCount++;
         }
         public void GetMemberVariableSValue( int index, ref SValue svalue )
@@ -387,10 +387,11 @@ namespace SimpleLanguage.VM
                             ClassObject classObj = m_MemberObjectArray[index] as ClassObject;
                             if (classObj == null)
                             {
-                                Debug.Write("该类型不是Int32类型!!");
+                                Debug.Write("该类型不是classObj类型!!");
                                 return;
                             }
-                            classObj.SetValue(svalue.sobject as ClassObject);
+                            //classObj.SetValue(svalue.sobject as ClassObject);
+                            m_MemberObjectArray[index] = svalue.sobject as ClassObject;
                         }
                     }
                     break;

@@ -36,7 +36,7 @@ namespace SimpleLanguage.IR
                 var index = irmc.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
                 if ( mv.isStatic )
                 {
-                    IRLoadVariable irVar = new IRLoadVariable(_irMethod, index, IRMetaVariableFrom.Static, mv.isTemplate);
+                    IRLoadVariable irVar = new IRLoadVariable(_irMethod, index, IRMetaVariableFrom.Static );
                     return irVar;                   
                 }
                 else
@@ -52,7 +52,7 @@ namespace SimpleLanguage.IR
                 return irVar;
             }
         }
-        protected IRLoadVariable(IRMethod _irMethod, int id, IRMetaVariableFrom irmvf, bool isTemplate = false ) : base(_irMethod)
+        protected IRLoadVariable(IRMethod _irMethod, int id, IRMetaVariableFrom irmvf ) : base(_irMethod)
         {
             if( irmvf == IRMetaVariableFrom.Global )
             {
@@ -84,23 +84,9 @@ namespace SimpleLanguage.IR
             }
             else if( irmvf == IRMetaVariableFrom.Static )
             {
-                if (isTemplate)
-                {
-                    IRData sc2 = new IRData();
-                    sc2.opCode = EIROpCode.SetCurrentClassCallClass;
-                    m_IRDataList.Add(sc2);
-                }
-
                 m_Data.opCode = EIROpCode.LoadStaticField;
                 m_Data.index = id;
                 m_IRDataList.Add(m_Data);
-
-                if( isTemplate )
-                {
-                    IRData sc2 = new IRData();
-                    sc2.opCode = EIROpCode.UnSetCallClass;
-                    m_IRDataList.Add(sc2);
-                }
             }
             else
             {

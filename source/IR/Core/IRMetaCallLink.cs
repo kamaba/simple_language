@@ -40,16 +40,59 @@ namespace SimpleLanguage.Core.IR
             else if (cnode.visitType == MetaVisitNode.EVisitType.Variable)
             {
                 MetaVariable mv = cnode.variable;
-                
+
+
+                bool isAddTemplate = false;
+                if (cnode.callerMetaClass != null)
+                {
+                    if( cnode.callerMetaClassUseSetCurrentClass )
+                    {
+                        IRData sc2 = new IRData();
+                        sc2.opCode = EIROpCode.SetCurrentClassCallClass;
+                        IRBase irbase = new IRBase(sc2);
+                        irList.Add(irbase);
+
+                    }
+                    else
+                    {
+                        if (cnode.callerMetaClass == mv.ownerMetaClass)
+                        {
+                            IRData sc2 = new IRData();
+                            sc2.opCode = EIROpCode.SetCurrentClassCallClass;
+                            IRBase irbase = new IRBase(sc2);
+                            irList.Add(irbase);
+                        }
+                        else
+                        {
+                            if (mv.ownerMetaClass is MetaGenTemplateClass mgtc)
+                            {
+                                IRData sc2 = new IRData();
+                                sc2.opCode = EIROpCode.SetCallClass;
+                                sc2.opValue = _irMethod.irManager.GetIRMetaClassByName(cnode.callerMetaClass.allClassName);
+                                IRBase irbase = new IRBase(sc2);
+                                irList.Add(irbase);
+                            }
+                            else
+                            {
+                                IRData sc2 = new IRData();
+                                sc2.opCode = EIROpCode.SetCurrentClassCallClass;
+                                IRBase irbase = new IRBase(sc2);
+                                irList.Add(irbase);
+                            }
+                        }
+                    }
+                    isAddTemplate = true;
+                }
+
                 IRLoadVariable irVar = IRLoadVariable.NewLoadVariable(_irMethod, mv);
                 irList.Add(irVar);
-                if (mv.isTemplate && mv.isStatic)
+
+                if(isAddTemplate)
                 {
-                    IRBase irbase3 = new IRBase();
-                    IRData sc3 = new IRData();
-                    sc3.opCode = EIROpCode.UnSetCallClass;
-                    irbase3.AddIRData(sc3);
-                    irList.Add(irbase3);
+                    IRData sc2 = new IRData();
+                    sc2.opCode = EIROpCode.UnSetCallClass;
+                    IRBase irbase = new IRBase(sc2);
+                    irList.Add(irbase);
                 }
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MethodCall)
