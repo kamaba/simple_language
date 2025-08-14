@@ -45,6 +45,7 @@ namespace SimpleLanguage
         Array,
         Range,
         String,
+        Object,
         Float2,
     }
     //token类型

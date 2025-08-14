@@ -1,72 +1,71 @@
 
-Object
+class Object
 {
-    public Int32 GetHashCode()
+    public Int32 getHashCode()
     {
         return 0;
     }
-    public Object Clone()
+    public Object clone()
     {
         return Object();
     }
-    public Type GetType()
+    public Type type()
     {
         
     }
-
     public Object Cast<T>()
     {
         return this;
     }
-    public string ToString()
+    public string toString()
     {
         return "";
     }
-    public UInt16 ToUShort()
+    public UInt16 toUShort()
     {
         return 0us;
     }
-    public Int16 ToShort()
+    public Int16 toShort()
     {
         return 0s;
     }
-    public Int32 ToInt()
+    public Int32 toInt()
     {
         return 0i;
     }
-    public UInt32 ToUInt()
+    public UInt32 toUInt()
     {
         return 0ui;
     }
-    public Int64 ToLong()
+    public Int64 toLong()
     {
         return 0L;
     }
-    public Int64 ToULong()
+    public Int64 toULong()
     {
         return 0uL;
     }
-    public Float ToFloat()
+    public Float toFloat()
     {
         return 0.0f;
     }
-    public Double ToDouble()
+    public Double toDouble()
     {
         return 0.0d;
     }
-    public Array ToArray()
+    public Array toArray()
     {
         return null;
     }
-    public List ToList()
+    public List toList()
     {
         return null;
     }
-    public Map ToMap()
+    public Map toMap()
     {
         return null;
     }
-    public Tuple ToTuple()
+    public Tuple toTuple()
     {
         return null;
     }

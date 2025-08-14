@@ -422,6 +422,8 @@ namespace SimpleLanguage.Core
                 return;
             }
             m_AllClassDict.Add(acn, mc);
+
+            ModuleManager.instance.coreModule.metaNode.AddMetaClass(mc);
         }
         public void HandleExtendData()
         {
@@ -646,53 +648,6 @@ namespace SimpleLanguage.Core
         public void HandleInterface( FileMetaClass mc )
         {
         }
-        //public MetaClass GetMetaClassByName(string inputname, MetaClass ownerClass = null, FileMeta fm = null )
-        //{
-        //    MetaClass fmc = CoreMetaClassManager.GetCoreMetaClass(inputname);
-        //    if( fmc != null )
-        //    {
-        //        return fmc;
-        //    }
-        //    fmc = ClassManager.instance.GetClassByName(inputname);
-        //    if (fmc != null)
-        //    {
-        //        return fmc;
-        //    }
-
-        //    if( ownerClass != null )
-        //    {
-        //        //子类
-        //        MetaBase tmb = ownerClass.GetChildrenMetaBaseByName(inputname);
-        //        if (tmb != null && tmb is MetaClass)
-        //        {
-        //            return tmb as MetaClass;
-        //        }
-        //    }
-        //    //引入文件的类或者是命名空间
-        //    if (fm == null)
-        //    {
-        //        fmc = fm.GetMetaBaseByName(inputname) as MetaClass;
-        //    }
-
-        //    return fmc;
-        //}
-        //public MetaBase GetMetaBaseByName(MetaClass ownerClass, string name)
-        //{
-        //    MetaBase mb = ownerClass;
-        //    while ( mb != null )
-        //    {
-        //        MetaBase mb2 = mb.GetMetaBaseByName(name);
-
-        //        if (mb2 != null)
-        //        {
-        //            return mb2;
-        //        }
-        //        mb = mb.parentNode;
-        //        if (mb == null)
-        //            break;
-        //    }
-        //    return null;
-        //}
         public MetaNode GetMetaClassByRef( MetaClass mc, FileMetaClassDefine fmcv )
         {
             if (fmcv == null) return null;

@@ -58,6 +58,17 @@ const data ProjectConfig
                 }
             }
         } 
+        Core = 
+        {
+            type = "namespace"
+            child = 
+            {                
+                Object =
+                {
+                    type = "class"
+                }
+            }
+        }
     }
 }
 

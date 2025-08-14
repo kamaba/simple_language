@@ -14,7 +14,6 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Linq;
 using SimpleLanguage.Parse;
-using SimpleLanguage.IR;
 using System.Collections;
 
 namespace SimpleLanguage.Core
@@ -95,14 +94,12 @@ namespace SimpleLanguage.Core
             m_ClassDefineType = ecdt;
             this.m_AllName = _name;
         }
-
         public MetaClass(string _name, EType _type  = EType.Class )
         {
             m_Name = _name;
             m_Type = _type;
             this.m_AllName = _name;
-        }
-        public MetaClass( MetaClass mc )
+        }        public MetaClass( MetaClass mc )
         {
             m_Name = mc.m_Name;
             this.m_AllName = m_Name;
@@ -381,7 +378,7 @@ namespace SimpleLanguage.Core
             }
 
             List<MetaMemberFunction> addList = new List<MetaMemberFunction>();
-            for( int i = 0; i < m_TempInnerFunctionList.Count; i++ ) 
+            for( int i = 0; i < this.m_TempInnerFunctionList.Count; i++ ) 
             {
                 MetaMemberFunction mmf = m_TempInnerFunctionList[i];
 

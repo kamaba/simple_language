@@ -629,7 +629,7 @@ namespace SimpleLanguage.Project
             }
             m_ProjectData.BindFileMetaClass(fmc);
             m_ProjectData.ParseFileMetaDataMemeberData(fmc);
-            BuildDefineNameStruct();
+            //BuildDefineNameStruct();
             m_ProjectData.ParseMemberVariableDefineMetaType();
             m_ProjectData.ParseMemberFunctionDefineMetaType();
         }

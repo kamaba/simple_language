@@ -32,7 +32,7 @@ namespace SimpleLanguage.Core.SelfMeta
         }
         public void AddCoreFunction()
         {
-            MetaMemberFunction Cast = new MetaMemberFunction(this, "Cast");
+            MetaMemberFunction Cast = new MetaMemberFunction(this, "cast");
             //Cast.AddMetaDefineParam(new MetaDefineParam("t", this, null, CoreMetaClassManager.templateMetaClass, null));
             //Cast.SetDefineMetaClass(CoreMetaClassManager.int32MetaClass);
             //AddMetaMemberFunction(Cast);
@@ -55,7 +55,7 @@ namespace SimpleLanguage.Core.SelfMeta
             MetaMemberFunction Clone = new MetaMemberFunction(this, "clone");
             Clone.SetReturnMetaClass( this );
             AddInnerMetaMemberFunction(Clone);
-            MetaMemberFunction ToString = new MetaMemberFunction(this, "ToString");
+            MetaMemberFunction ToString = new MetaMemberFunction(this, "toString");
             ToString.SetReturnMetaClass(CoreMetaClassManager.stringMetaClass);
             AddInnerMetaMemberFunction(ToString);
             MetaMemberFunction ToShort = new MetaMemberFunction(this, "toShort");
