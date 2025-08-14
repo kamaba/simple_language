@@ -1239,6 +1239,11 @@ namespace SimpleLanguage.Compile.Parse
                 case "void":
                     tokenType = ETokenType.Void;
                     break;
+                case "object":
+                case "Object":
+                    tokenType = ETokenType.Type;
+                    extend = EType.Object;
+                    break;
                 case "byte":
                     {
                         tokenType = ETokenType.Type;
@@ -1435,10 +1440,6 @@ namespace SimpleLanguage.Compile.Parse
                     break;
                 case "null":
                     tokenType = ETokenType.Null;
-                    break;
-                case "object":
-                case "Object":
-                    tokenType = ETokenType.Object;
                     break;
                 case "var":
                     tokenType = ETokenType.Var;

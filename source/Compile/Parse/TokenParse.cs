@@ -226,10 +226,7 @@ namespace SimpleLanguage.Compile.Parse
                     break;
                 case ETokenType.Type:
                     {
-                        Node node = new Node(token);
-                        node.nodeType = ENodeType.IdentifierLink;
-                        currentNode.AddChild(node); 
-                        m_TokenIndex++;
+                        AddIdentifier(token);
                     }
                     break;
                 case ETokenType.LeftBrace: //{

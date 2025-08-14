@@ -13,12 +13,8 @@ using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile.Grammer;
 using SimpleLanguage.Compile.CoreFileMeta;
-using System.Runtime.Intrinsics.X86;
 using System.Reflection;
-using System.Xml.Linq;
-using System.Diagnostics;
 using static SimpleLanguage.Compile.CoreFileMeta.FileMetaClass;
-using System.Xml;
 
 namespace SimpleLanguage.Compile.Parse
 {
@@ -130,7 +126,7 @@ namespace SimpleLanguage.Compile.Parse
             }
             else
             {
-                Debug.WriteLine("错误 !!1 AddParseClassNodeInfo");
+                Log.AddInStructFileMeta(EError.None, "错误 !!1 AddParseClassNodeInfo");
                 return;
             }
             m_FileMeta.AddFileMetaAllClass(fmc);
@@ -146,7 +142,7 @@ namespace SimpleLanguage.Compile.Parse
             }
             else
             {
-                Debug.WriteLine("错误 !!1 AddParseVariableInfo");
+                Log.AddInStructFileMeta(EError.None, "错误 !!1 AddParseVariableInfo");
                 return;
             }
         }
@@ -162,7 +158,7 @@ namespace SimpleLanguage.Compile.Parse
             }
             else
             {
-                Debug.WriteLine("错误 !!1 AddParseFunctionNodeInfo");
+                Log.AddInStructFileMeta(EError.None, "错误 !!1 AddParseFunctionNodeInfo");
                 return;
             }
 
@@ -178,7 +174,7 @@ namespace SimpleLanguage.Compile.Parse
             }
             else
             {
-                Debug.WriteLine("错误 !!1 AddParseFunctionNodeInfo");
+                Log.AddInStructFileMeta(EError.None, "错误 !!1 AddParseFunctionNodeInfo");
                 return;
             }
 
@@ -201,7 +197,7 @@ namespace SimpleLanguage.Compile.Parse
             }
             else
             {
-                Debug.WriteLine("错误 !!1 AddParseFunctionNodeInfo");
+                Log.AddInStructFileMeta(EError.None, "错误 !!1 AddParseFunctionNodeInfo");
                 return;
             }
 
@@ -258,7 +254,7 @@ namespace SimpleLanguage.Compile.Parse
                             break;
                         default:
                             {
-                                Debug.WriteLine("Error 不允许 在File头级目录中出现 : " + node.token.lexeme.ToString());
+                                Log.AddInStructFileMeta( EError.None, "Error 不允许 在File头级目录中出现 : " + node.token.lexeme.ToString());
                             }
                             break;
                     }
@@ -269,7 +265,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Debug.WriteLine("Error 不允许 在File头级目录中出现2 : " + node.token?.lexeme.ToString());
+                    Log.AddInStructFileMeta(EError.None, "Error 不允许 在File头级目录中出现2 : " + node.token?.lexeme.ToString());
                 }
             }
 
@@ -372,7 +368,7 @@ namespace SimpleLanguage.Compile.Parse
                 {
                     if (namespaceNode != null)
                     {
-                        Debug.WriteLine("Error 在解析namespace 中，后边跟着参数多于正常语法!!");
+                        Log.AddInStructFileMeta(EError.None, "Error 在解析namespace 中，后边跟着参数多于正常语法!!");
                     }
                     namespaceNode = nextNode;
 
@@ -406,7 +402,7 @@ namespace SimpleLanguage.Compile.Parse
                 {
                     if (ProjectManager.isUseForceSemiColonInLineEnd)
                     {
-                        Debug.WriteLine("Error 在解析namespace 中，需要强制;号结束");
+                        Log.AddInStructFileMeta(EError.None, "Error 在解析namespace 中，需要强制;号结束");
                         break;
                     }
                     else
@@ -513,7 +509,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Debug.WriteLine("Error 不允许在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
+                    Log.AddInStructFileMeta(EError.None, "Error 不允许在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
                 }
             }
             pnode.parseIndex = index;
@@ -545,12 +541,12 @@ namespace SimpleLanguage.Compile.Parse
                     }
                     else
                     {
-                        Debug.WriteLine("Error 对于 namespace A.B{}的格式 多了一个参数!1");
+                        Log.AddInStructFileMeta(EError.None, "Error 对于 namespace A.B{}的格式 多了一个参数!1");
                     }
                 }
                 else
                 {
-                    Debug.WriteLine("Error 没有发现是Class还是Namespace的关键字!");
+                    Log.AddInStructFileMeta(EError.None, "Error 没有发现是Class还是Namespace的关键字!");
                 }
             }
         }
@@ -623,8 +619,8 @@ namespace SimpleLanguage.Compile.Parse
                     }
                     else
                     {
-                        Debug.WriteLine("Error StructParseFrame.ParseClassNode 解析的类后边不用使用;号结尾!! ");
-                        Debug.WriteLine("一般是只定义了类变量，没有赋值，正常后边应该可以使用=null赋值");
+                        Log.AddInStructFileMeta(EError.None, "Error StructParseFrame.ParseClassNode 解析的类后边不用使用;号结尾!! ");
+                        Log.AddInStructFileMeta(EError.None, "一般是只定义了类变量，没有赋值，正常后边应该可以使用=null赋值");
                         break;
                     }
                 }
@@ -660,7 +656,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Debug.WriteLine("Error ParseClassNode 不允许在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
+                    Log.AddInStructFileMeta(EError.None, "Error ParseClassNode 不允许在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
                 }
             }
             pnode.parseIndex = index;
@@ -690,7 +686,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Debug.WriteLine("Error 未111111111111123123123");
+                    Log.AddInStructFileMeta(EError.None, "Error 未111111111111123123123");
                 }
             }
             ParseClassNode(pnode);
@@ -729,7 +725,7 @@ namespace SimpleLanguage.Compile.Parse
                         }
                         else
                         {
-                            Debug.WriteLine("Error 在+-符前边不允许有其它非const类型存在!");
+                            Log.AddInStructFileMeta(EError.None, "Error 在+-符前边不允许有其它非const类型存在!");
                             continue;
                         }
                     }
@@ -766,7 +762,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Debug.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                    Log.AddInStructFileMeta(EError.None, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                     continue;
                 }
             }
@@ -878,7 +874,7 @@ namespace SimpleLanguage.Compile.Parse
                                 }
                                 else
                                 {
-                                    Debug.WriteLine("Error Data数据中，不允许使用除自定义以后的字段!!" + curNode?.token?.ToLexemeAllString());
+                                    Log.AddInStructFileMeta(EError.None, "Error Data数据中，不允许使用除自定义以后的字段!!" + curNode?.token?.ToLexemeAllString());
                                 }
                             }
                         }
@@ -914,7 +910,7 @@ namespace SimpleLanguage.Compile.Parse
 
                     if( nextNode == null )
                     {
-                        Debug.WriteLine("Error 后边必须有延伸位...");
+                        Log.AddInStructFileMeta(EError.None, "Error 后边必须有延伸位...");
                         continue;
                     }
 
@@ -943,12 +939,12 @@ namespace SimpleLanguage.Compile.Parse
                             }
                             else
                             {
-                                Debug.WriteLine("Error 如果是 x=-??的形式，在符号后边");
+                                Log.AddInStructFileMeta(EError.None, "Error 如果是 x=-??的形式，在符号后边");
                             }
                         }
                         else
                         {
-                            Debug.WriteLine("Error 如果是 x=-??的形式，在符号后边");
+                            Log.AddInStructFileMeta(EError.None, "Error 如果是 x=-??的形式，在符号后边");
                         }
                     }
                     else if(nextNode.nodeType == ENodeType.Brace )
@@ -982,12 +978,12 @@ namespace SimpleLanguage.Compile.Parse
                         }
                         else
                         {
-                            Debug.WriteLine("Error 在定义Data数据的时候，如果有折行，只允许 =\n{} =\n[] 两种形式! ");
+                            Log.AddInStructFileMeta(EError.None, "Error 在定义Data数据的时候，如果有折行，只允许 =\n{} =\n[] 两种形式! ");
                         }
                     }
                     else
                     {
-                        Debug.WriteLine("Error 在定义Data数据的时候，不允许=号后边有其它形式的存在");
+                        Log.AddInStructFileMeta(EError.None, "Error 在定义Data数据的时候，不允许=号后边有其它形式的存在");
                     }
 
                     if( parseType > 0 )
@@ -1020,7 +1016,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Debug.WriteLine("Error 报错，不允许 解析Data有其它的类型出现!" + curNode.token.ToLexemeAllString() );
+                    Log.AddInStructFileMeta(EError.None, "Error 报错，不允许 解析Data有其它的类型出现!" + curNode.token.ToLexemeAllString() );
                 }
 
                 if (isParseEnd)
@@ -1052,7 +1048,7 @@ namespace SimpleLanguage.Compile.Parse
                     if (curNodexxx.nodeType == ENodeType.Key
                         && curNodexxx.token.type == ETokenType.Enum)
                     {
-                        Debug.WriteLine("error 不允许在enum 内容里边再嵌套enum");
+                        Log.AddInStructFileMeta(EError.None, "error 不允许在enum 内容里边再嵌套enum");
                         return;
                     }
                 }
@@ -1136,7 +1132,7 @@ namespace SimpleLanguage.Compile.Parse
                         }
                         else
                         {
-                            Debug.WriteLine("在解析enum member 中 成员变量 如果是identifier格式，则后边不允许跟当前格式");
+                            Log.AddInStructFileMeta(EError.None, "在解析enum member 中 成员变量 如果是identifier格式，则后边不允许跟当前格式");
                         }
                     }
                     else
@@ -1175,7 +1171,7 @@ namespace SimpleLanguage.Compile.Parse
                 }
                 else
                 {
-                    Debug.WriteLine("Error 解析Enum memeber 时，不允许有其它形式的存在!");
+                    Log.AddInStructFileMeta(EError.None, "Error 解析Enum memeber 时，不允许有其它形式的存在!");
                 }
 
                 if(isParse )

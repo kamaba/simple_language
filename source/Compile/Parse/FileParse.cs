@@ -11,7 +11,6 @@ using SimpleLanguage.Core;
 using SimpleLanguage.Parse;
 using SimpleLanguage.source.Compile.Process;
 using System;
-using System.Diagnostics;
 using System.IO;
 
 namespace SimpleLanguage.Compile.Parse
@@ -107,7 +106,7 @@ namespace SimpleLanguage.Compile.Parse
             }
             else
             {
-                Debug.Write("读取文件出错 FileParse Parse LoadFile !!!");
+                Log.AddInStructFileMeta( EError.None, "读取文件出错 FileParse Parse LoadFile !!!");
             }
         }
         public void CreateNamespace()
@@ -124,7 +123,7 @@ namespace SimpleLanguage.Compile.Parse
         }
         public void PrintFormatString()
         {
-            Debug.Write(m_File.ToFormatString());
+            Log.AddInStructFileMeta(EError.None, m_File.ToFormatString());
         }
     }
 }

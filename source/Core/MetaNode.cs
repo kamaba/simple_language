@@ -205,7 +205,7 @@ namespace SimpleLanguage.Core
                 {
                     if( node.m_MetaTemplateClassDict.ContainsKey( mc.metaTemplateList.Count ) )
                     {
-                        Log.AddInStructMeta(EError.None, "添加metanode节点有问题! 有重复:" + mc.allClassName );
+                        Log.AddInStructMeta(EError.None, "添加add metaclass metanode节点有问题! 有重复:" + mc.allClassName );
                         return null;
                     }
                     else
@@ -228,7 +228,7 @@ namespace SimpleLanguage.Core
         {
             if( m_ChildrenMetaNodeDict.ContainsKey( mn.name ) )
             {
-                Log.AddInStructMeta(EError.None, "添加metanode节点有问题! 有重复");
+                Log.AddInStructMeta(EError.None, "添加 add metanode metanode节点有问题! 有重复");
                 return false;
             }
             mn.m_ParentNode = this;

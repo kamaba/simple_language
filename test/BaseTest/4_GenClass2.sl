@@ -1,6 +1,13 @@
 import Std
 import CSharp.System
 
+class Core.Object
+{
+    public string toString()
+    {
+        ret ""
+    }
+}
 
 Level1<T>
 {
@@ -9,6 +16,7 @@ Level1<T>
     {
         this._Level1_t = t
     }
+    
     void setLevel1( T t )
     {
         if t == null
@@ -23,7 +31,10 @@ Level1<T>
         }
         else
         {
+            setlevel1_t2 = this.Level1_t()
+            var str = setlevel1_t2.toString()
             this._Level1_t = t 
+            Level1<string>.static_t = str
             #Open(true)
             #t1 = this.Level1_t()
         }

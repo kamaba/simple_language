@@ -26,7 +26,7 @@ namespace SimpleLanguage.Core
         }
 
         public string moduleName = "S";
-        public const string slCoreModuleName = "SLCore";
+        public const string slCoreModuleName = "Core";
         public const string csharpModuleName = "CSharp";
 
         public MetaModule selfModule = null;
