@@ -1404,10 +1404,10 @@ namespace SimpleLanguage.Compile.Parse
                 case "interface":
                     tokenType = ETokenType.Interface;
                     break;
-                case "virtual":
-                    Debug.Write("Error virtual 但不能在代码中使用!!");
-                    tokenType = ETokenType.Virtual;
-                    return;
+                //case "virtual":
+                //    Debug.Write("Error virtual 但不能在代码中使用!!");
+                //    tokenType = ETokenType.Virtual;
+                //    return;
                 case "override":
                     tokenType = ETokenType.Override;
                     break;

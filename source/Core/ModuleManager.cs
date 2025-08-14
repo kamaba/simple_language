@@ -26,13 +26,13 @@ namespace SimpleLanguage.Core
         }
 
         public string moduleName = "S";
-        public const string slCoreModuleName = "Core";
+        public const string slCoreModuleName = "SLCore";
         public const string csharpModuleName = "CSharp";
 
         public MetaModule selfModule = null;
         public MetaModule coreModule = null;
         public MetaModule csharpModule = null;
-        public Dictionary<string, MetaModule> outerMetaModuleDict = new Dictionary<string, MetaModule>();
+        private Dictionary<string, MetaModule> m_ImportMetaModuleDict = new Dictionary<string, MetaModule>();
 
         public Dictionary<string, MetaModule> m_AllMetaModuleDict = new Dictionary<string, MetaModule>();
         public ModuleManager()
@@ -72,15 +72,28 @@ namespace SimpleLanguage.Core
             {
                 return m2;
             }
-            return coreModule.metaNode.GetChildrenMetaNodeByName(name);
+            m2 = coreModule.metaNode.GetChildrenMetaNodeByName(name);
+            if( m2 != null )
+            {
+                return m2;
+            }
+            foreach( var v in m_ImportMetaModuleDict )
+            {
+                m2 = v.Value.metaNode.GetChildrenMetaNodeByName(name);
+                if( m2 != null )
+                {
+                    return m2;
+                }
+            }
+            return null;
         }
         public void AddMetaMdoule( MetaModule mm )
         {
-            if( outerMetaModuleDict.ContainsKey( mm.name ) )
+            if(m_ImportMetaModuleDict.ContainsKey( mm.name ) )
             {
                 return;
             }
-            outerMetaModuleDict.Add(mm.name, mm);
+            m_ImportMetaModuleDict.Add(mm.name, mm);
             if( m_AllMetaModuleDict.ContainsKey( mm.name ) )
             {
                 Log.AddInStructMeta(EError.None, "Error 严重错误，模块有重名!!!");

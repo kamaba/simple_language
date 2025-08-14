@@ -276,6 +276,11 @@ namespace SimpleLanguage.Core
                 }
                 this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
             }
+
+            foreach( var v in m_ExtendClass.m_MetaMemberFunctionTemplateNodeDict )
+            {
+
+            }
         }
         public virtual void ParseMemberVariableDefineMetaType()
         {

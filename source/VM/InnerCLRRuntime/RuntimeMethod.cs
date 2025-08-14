@@ -514,6 +514,10 @@ namespace SimpleLanguage.VM.Runtime
                         InnerCLRRuntimeVM.RunIRMethod(m_CallIRMetaClass, mfc);
                     }
                     break;
+                case EIROpCode.CallVirt:
+                    { 
+                    }
+                    break;
                 case EIROpCode.CallCSharpMethod:
                     {
                         var mfc = iri.opValue as IRCallFunction;

@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "4_GenClass2.sl";
+            path = "22_override_function.sl";
             group = "temp";
             tag = "all";
             a = 200
