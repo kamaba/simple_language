@@ -1,11 +1,14 @@
 import Std
 import CSharp.System
 
-class Core.Object
+namespace Core
 {
-    public string toString()
+    class Object
     {
-        ret ""
+        public string toString()
+        {
+            ret ""
+        }
     }
 }
 

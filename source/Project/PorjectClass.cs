@@ -12,6 +12,9 @@ using SimpleLanguage.Parse;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.IR;
 using System.Diagnostics;
+using SimpleLanguage.IR.Statements;
+using SimpleLanguage.Core.SelfMeta;
+using SimpleLanguage.Compile.Parse;
 
 namespace SimpleLanguage.Project
 {
@@ -98,7 +101,24 @@ namespace SimpleLanguage.Project
                     var cfindNode = parentRoot.GetChildrenMetaNodeByName(dns.name);
                     if (cfindNode == null)
                     {
-                        nodeNS = new MetaNamespace(dns.name);
+                        if( dns.type == DefineStruct.EDefineStructType.Class )
+                        {
+                            var gcmc = CoreMetaClassManager.GetCoreMetaClass(dns.name);
+                            if( gcmc != null )
+                            {
+                                parMS = parentRoot.AddMetaClass(gcmc.GetMetaClassByTemplateCount(0));
+                            }
+                            else
+                            {
+                                var nodens = new MetaClass(dns.name, EClassDefineType.StructDefine);
+                                parMS = parentRoot.AddMetaClass(nodens);
+                            }                         
+                        }
+                        else
+                        {
+                            nodeNS = new MetaNamespace(dns.name);
+                            parMS = parentRoot.AddMetaNamespace(nodeNS);
+                        }
                     }
                     else
                     {
@@ -108,8 +128,8 @@ namespace SimpleLanguage.Project
                             return;
                         }
                         nodeNS = cfindNode.metaNamespace;
+                        parMS = parentRoot.AddMetaNamespace(nodeNS);
                     }
-                    parMS = parentRoot.AddMetaNamespace(nodeNS);
                 }
                 else
                 {

@@ -204,7 +204,7 @@ namespace SimpleLanguage
         /// <summary> extends </summary>
         Extends,
         /// <summary> virtual </summary>
-        Virtual,
+        //Virtual,
         /// <summary> override </summary>
         Override,
         /// <summary> const </summary>

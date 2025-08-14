@@ -157,7 +157,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
     {
         public Token interfaceToken => m_InterfaceToken;
         public Token staticToken => m_StaticToken;
-        public Token virtualOverrideToken => m_VirtualOverrideToken;
+        public Token overrideToken => m_OverrideToken;
         public Token permissionToken => m_PermissionToken;
         public Token getToken => m_GetToken;
         public Token setToken => m_SetToken;
@@ -168,7 +168,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
         private Token m_FinalToken = null;
         private Token m_GetToken = null;
         private Token m_SetToken = null;
-        private Token m_VirtualOverrideToken = null;
+        private Token m_OverrideToken = null;
         private Token m_PermissionToken = null;
         private Token m_LeftBraceToken = null;
         private Token m_RightBraceToken = null;
@@ -317,7 +317,7 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             {
                 Log.AddInStructFileMeta(EError.None, "ParseFunction 解析函数");
             }
-            m_VirtualOverrideToken = virtualToken;            
+            m_OverrideToken = virtualToken;            
             m_PermissionToken = permissionToken;
             m_StaticToken = staticToken;
             m_GetToken = getToken;

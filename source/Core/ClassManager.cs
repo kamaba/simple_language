@@ -295,11 +295,16 @@ namespace SimpleLanguage.Core
             {
                 if(fmc.topLevelFileMetaNamespace != null )
                 {
-                    finalTopMetaNode = NamespaceManager.instance.SearchFinalNamespace(fmc.topLevelFileMetaNamespace);
+                    finalTopMetaNode = ModuleManager.instance.GetChildrenMetaNodeByName(fmc.topLevelFileMetaNamespace.name);
 
-                    if( fmc.namespaceBlock?.namespaceList.Count > 0 )
+                    if(finalTopMetaNode == null )
                     {
-                        finalTopMetaNode = NamespaceManager.instance.FindFinalMetaNamespaceByNSBlock(fmc.namespaceBlock, finalTopMetaNode);
+                        finalTopMetaNode = NamespaceManager.instance.SearchFinalNamespace(fmc.topLevelFileMetaNamespace);
+
+                        if (fmc.namespaceBlock?.namespaceList.Count > 0)
+                        {
+                            finalTopMetaNode = NamespaceManager.instance.FindFinalMetaNamespaceByNSBlock(fmc.namespaceBlock, finalTopMetaNode);
+                        }
                     }
                 }
 
@@ -313,7 +318,52 @@ namespace SimpleLanguage.Core
                         return null;
                     }
                 }
-                if ( finalTopMetaNode.IsMetaClass() )
+                if( finalTopMetaNode.isMetaNamespace )
+                {
+                    var findamc = finalTopMetaNode.GetChildrenMetaNodeByName(fmc.name);
+                    if (findamc != null && findamc.IsMetaClass() )
+                    {
+                        MetaClass ffmc = findamc.GetMetaClassByTemplateCount(fmc.templateDefineList.Count);
+                        if (ProjectManager.useDefineNamespaceType == EUseDefineType.LimitUseProjectConfigNamespaceAndClass)
+                        {
+                            
+                        }
+                        fmc.SetMetaClass(ffmc);
+                        ffmc.BindFileMetaClass(fmc);
+                        ffmc.SetClassDefineType(EClassDefineType.CodeDefine);
+                        ffmc.ParseFileMetaClassTemplate(fmc);
+                        ffmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
+                        ffmc.UpdateClassAllName();
+                        AddInitHandleMetaClassList(ffmc);
+                        return ffmc;
+                        if (!fmc.isPartial)
+                        {
+                            Log.AddInStructMeta(EError.None, "类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持文件并行 定义类");
+                            return null;
+                        }
+                        bool isPartial = true;
+                        foreach (var v in ffmc.fileMetaClassDict)
+                        {
+                            if (v.Value.isPartial == false)
+                            {
+                                isPartial = false;
+                                Log.AddInStructMeta(EError.None, "类:" + findamc.name + "在: " + v.Value.token.ToAllString() + "不支持文件并行 定义类");
+                                break;
+                            }
+                        }
+                        if (isPartial == false)
+                        {
+                            return null;
+                        }
+                        ffmc.BindFileMetaClass(fmc);
+                        return ffmc;
+                    }
+                    else
+                    {
+                        isCanAddBind = true;
+                    }
+                }
+                else if ( finalTopMetaNode.IsMetaClass() )
                 {
                     var findamc = finalTopMetaNode.GetMetaClassByTemplateCount(fmc.templateDefineList.Count);
                     if ( findamc == null )
@@ -423,6 +473,7 @@ namespace SimpleLanguage.Core
             }
             m_AllClassDict.Add(acn, mc);
 
+            ModuleManager.instance.selfModule.metaNode.AddMetaClass(mc);
             ModuleManager.instance.coreModule.metaNode.AddMetaClass(mc);
         }
         public void HandleExtendData()

@@ -217,9 +217,9 @@ namespace SimpleLanguage.Core
             m_IsGet = fmmf.getToken != null;
             m_IsSet = fmmf.setToken != null;
             m_IsFinal = fmmf.finalToken != null;
-            if ( fmmf.virtualOverrideToken != null )
+            if ( fmmf.overrideToken != null )
             {
-                if (fmmf.virtualOverrideToken.type == ETokenType.Override)
+                if (fmmf.overrideToken.type == ETokenType.Override)
                     m_IsOverrideFunction = true;
             }
             if( fmmf.interfaceToken != null )
