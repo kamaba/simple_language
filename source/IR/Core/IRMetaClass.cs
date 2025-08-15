@@ -10,6 +10,7 @@
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Core;
+using SimpleLanguage.Parse;
 using SimpleLanguage.VM;
 
 namespace SimpleLanguage.IR
@@ -51,6 +52,7 @@ namespace SimpleLanguage.IR
         private List<IRMetaVariable> m_StaticIRMetaVariableList = new List<IRMetaVariable>();
         private Dictionary<string, IRMetaClass> m_GenTemplateIRMetaClassDict = new Dictionary<string, IRMetaClass>();
         private Dictionary<int, IRCallFunction> m_LocalIRInitDict = new Dictionary<int, IRCallFunction>();
+        private List<IRMethod> m_IRMethodList = new List<IRMethod>();
         private IRManager m_IRManager = null;
         public void CalcAllocSize()
         {
@@ -71,6 +73,15 @@ namespace SimpleLanguage.IR
                 count += ssize;
                 byteCount += ssize;
             }
+        }
+        public IRMethod GetIRMethodByIndex( int index )
+        {
+            if( index >= m_IRMethodList.Count || index < 0 )
+            {
+                Log.AddVM(EError.None, "GetIRMethodByIndex is null");
+                return null;
+            }
+            return m_IRMethodList[index];
         }
         public IRMetaVariable GetIRMetaVariable( int id )
         {
@@ -141,6 +152,16 @@ namespace SimpleLanguage.IR
                     AddMetaMemberVariableIndexBindHashCode(v.sourceMetaMemberVariable.GetHashCode(), i);
                 }
             }
+
+            var mflist = mc.GetVirtualMemberFunctionList();
+            //int index = 0;
+            for( int i = 0; i < mflist.Count; i++ )
+            {
+                var mf = mflist[i];
+                var gmf = IRManager.instance.GetIRMethod(mf.functionAllName);
+                m_IRMethodList.Add(gmf);
+            }
+
             if( mc is MetaGenTemplateClass mgtc )
             {
                 genClass = true;

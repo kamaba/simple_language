@@ -43,7 +43,7 @@ namespace SimpleLanguage.Project
 
             //compile.Parse();
             compile.ParseDefineComplete();
-            var flist = compile.thisMetaMemberFunctionList;
+            var flist = compile.currentClassMetaMemberFunctionList;
             for( int i = 0; i < flist.Count; i++ )
             {
                 flist[i].ParseStatements();

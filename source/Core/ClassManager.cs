@@ -318,6 +318,14 @@ namespace SimpleLanguage.Core
                         return null;
                     }
                 }
+                if( finalTopMetaNode.isMetaModule && fmc.namespaceBlock?.namespaceList?.Count > 0)
+                {
+                    finalTopMetaNode = NamespaceManager.instance.FindFinalMetaNamespaceByNSBlock(fmc.namespaceBlock, finalTopMetaNode );
+                }
+                if( finalTopMetaNode == null )
+                {
+                    return null;
+                }
                 if( finalTopMetaNode.isMetaNamespace )
                 {
                     var findamc = finalTopMetaNode.GetChildrenMetaNodeByName(fmc.name);

@@ -137,6 +137,14 @@ namespace SimpleLanguage.Core.SelfMeta
                 ClassManager.instance.AddDictMetaClass(v);
             }
         }
+        public static bool IsIncludeMetaClass( MetaClass metaclass )
+        {
+            if( s_InnerDefineMetaClassList.Contains(metaclass) )
+            {
+                return true;
+            }
+            return false;
+        }
         public static MetaClass GetMetaClassByEType(EType etype)
         {
             switch (etype)

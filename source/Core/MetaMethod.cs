@@ -220,6 +220,27 @@ namespace SimpleLanguage.Core
         {
             return m_MetaMemberParamCollection.GetMetaDefineParamByName(name);
         }
+        public bool IsEqualMetaFunction( MetaFunction mf )
+        {
+            if( mf == null )
+            {
+                return false;
+            }
+            if( this.m_Name != mf.m_Name )
+            {
+                return false;
+            }
+            if( !this.m_MetaMemberTemplateCollection.IsEqualMetaDefineTemplateCollection( mf.metaMemberTemplateCollection) )
+            {
+                return false;
+            }
+            if( !this.m_MetaMemberParamCollection.IsEqualMetaDefineParamCollection( mf.metaMemberParamCollection ) )
+            {
+                return false;
+            }
+
+            return true;
+        }
         public virtual bool IsEqualMetaInputParamCollection(MetaInputParamCollection mpc)
         {
             if (m_MetaMemberParamCollection.IsEqualMetaInputParamCollection(mpc))

@@ -140,6 +140,30 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
+        public bool IsEqualMetaDefineTemplateCollection(MetaDefineTemplateCollection mpc )
+        {
+            if(mpc == null )
+            {
+                return m_MetaTemplateList.Count == 0;
+            }
+            if (m_MetaTemplateList.Count == mpc.m_MetaTemplateList.Count)
+            {
+                if( m_MetaTemplateList.Count == 0 )
+                {
+                    return true;
+                }
+
+                for (int i = 0; i < m_MetaTemplateList.Count; i++)
+                {
+                    MetaTemplate a = m_MetaTemplateList[i];
+                    MetaTemplate b = mpc.m_MetaTemplateList[i];
+                    if (MatchMetaDefineTemplate(a, b))
+                        return true;
+                }
+            }
+
+            return false;
+        }
         public bool IsEqualMetaInputTemplateCollection(MetaInputTemplateCollection mpc)
         {
             if (mpc == null)
@@ -162,6 +186,12 @@ namespace SimpleLanguage.Core
         public virtual bool MatchMetaInputTemplate(MetaTemplate a, MetaType b)
         {
             if (a.IsInConstraintMetaClass(b.metaClass))
+                return true;
+            return false;
+        }
+        public virtual bool MatchMetaDefineTemplate(MetaTemplate a, MetaTemplate b)
+        {
+            if (a.name == b.name)
                 return true;
             return false;
         }
