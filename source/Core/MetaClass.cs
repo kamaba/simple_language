@@ -99,7 +99,8 @@ namespace SimpleLanguage.Core
             m_Name = _name;
             m_Type = _type;
             this.m_AllName = _name;
-        }        public MetaClass( MetaClass mc )
+        }       
+        public MetaClass( MetaClass mc )
         {
             m_Name = mc.m_Name;
             this.m_AllName = m_Name;
@@ -120,7 +121,7 @@ namespace SimpleLanguage.Core
         }
         public override void SetDeep( int deep )
         {
-            m_Deep = deep;
+            this.m_Deep = deep;
             foreach( var v in m_MetaMemberVariableDict )
             {
                 v.Value.SetDeep(deep + 1);
@@ -277,7 +278,7 @@ namespace SimpleLanguage.Core
                 this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
             }
 
-            foreach( var v in m_ExtendClass.m_MetaMemberFunctionTemplateNodeDict )
+            foreach( var v in m_ExtendClass.m_AllMetaMemberFunctionList )
             {
 
             }
@@ -795,6 +796,11 @@ namespace SimpleLanguage.Core
                 stringBuilder.Append(Global.tabChar);
             stringBuilder.Append("{" + Environment.NewLine);
 
+            foreach (var v2 in m_MetaNode.childrenMetaNodeDict )
+            {
+                stringBuilder.Append(v2.Value.ToFormatString());
+            }
+
             foreach (var v in m_MetaMemberVariableDict )
             {
                 stringBuilder.AppendLine(v.Value.ToFormatString());
@@ -802,7 +808,7 @@ namespace SimpleLanguage.Core
 
             foreach (var v in m_AllMetaMemberFunctionList)
             {
-                MetaMemberFunction mmfc = v as MetaMemberFunction;
+                MetaMemberFunction mmfc = v;
                 if (mmfc.methodCallType == EMethodCallType.Local)
                 {
                     stringBuilder.Append(mmfc.ToFormatString());

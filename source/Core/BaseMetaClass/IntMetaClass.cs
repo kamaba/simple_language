@@ -25,7 +25,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new Int16MetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
+            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.selfModule);
             return mc;
         }
     }
@@ -40,7 +40,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new UInt16MetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
+            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.selfModule);
             return mc;
         }
     }
@@ -66,7 +66,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new Int32MetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
+            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.selfModule);
             return mc;
         }
         public static string MetaToString( Int32 v )
@@ -85,7 +85,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new UInt32MetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
+            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.selfModule);
             return mc;
         }
     }
@@ -100,7 +100,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new Int64MetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
+            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.selfModule);
             return mc;
         }
     }
@@ -115,7 +115,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new UInt64MetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
+            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.selfModule);
             return mc;
         }
     }

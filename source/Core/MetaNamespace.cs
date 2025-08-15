@@ -8,17 +8,29 @@
 
 
 using System.Collections.Generic;
+using System.Text;
 
 namespace SimpleLanguage.Core
 {
     public class MetaNamespace : MetaBase
     {
         public bool isNotAllowCreateName { get; set; } = false;
-
-        private string m_NamespaceName = null;
         public MetaNamespace(string _name)
         {
             m_Name = _name;
+        }
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("namespace ");
+            sb.AppendLine(m_Name);
+            sb.AppendLine("{");
+            foreach (var v in m_MetaNode.childrenMetaNodeDict)
+            {
+                sb.Append(v.Value.ToFormatString());
+            }
+            sb.AppendLine("}");
+            return sb.ToString();
         }
         //public override int GetHashCode()
         //{

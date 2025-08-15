@@ -473,8 +473,6 @@ namespace SimpleLanguage.Core
             }
             m_AllClassDict.Add(acn, mc);
 
-            ModuleManager.instance.selfModule.metaNode.AddMetaClass(mc);
-            ModuleManager.instance.coreModule.metaNode.AddMetaClass(mc);
         }
         public void HandleExtendData()
         {

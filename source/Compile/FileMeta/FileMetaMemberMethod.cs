@@ -419,9 +419,9 @@ namespace SimpleLanguage.Compile.CoreFileMeta
             {
                 sb.Append(" " + m_InterfaceToken.lexeme.ToString());
             }
-            if ( m_VirtualOverrideToken != null)
+            if ( m_OverrideToken != null)
             {
-                sb.Append(" " + m_VirtualOverrideToken.lexeme.ToString());
+                sb.Append(" " + m_OverrideToken.lexeme.ToString());
             }
             if (m_DefineMetaClass != null)
             {

@@ -752,8 +752,8 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            //for (int i = 0; i < realDeep; i++)
-            //    sb.Append(Global.tabChar);
+            for (int i = 0; i < realDeep; i++)
+                sb.Append(Global.tabChar);
 
             sb.Append(permission.ToFormatString() + " ");
             if (isStatic)
@@ -782,8 +782,17 @@ namespace SimpleLanguage.Core
             sb.Append(m_MetaMemberParamCollection.ToFormatString());
             sb.Append(Environment.NewLine);
 
+            //for (int i = 0; i < realDeep; i++)
+            //    sb.Append(Global.tabChar);
+            //sb.Append("{");
+
             if(m_MetaBlockStatements != null )
                 sb.Append(m_MetaBlockStatements.ToFormatString());
+
+            sb.Append(Environment.NewLine);
+            //for (int i = 0; i < realDeep; i++)
+            //    sb.Append(Global.tabChar);
+            //sb.Append("}");
 
             return sb.ToString();
         }
