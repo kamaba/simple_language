@@ -143,7 +143,7 @@ namespace SimpleLanguage.Core.Statements
                 }
                 if (isCheckReturnType)
                 {
-                    m_DefineVarMetaVariable.SetMetaDefineType(expressRetMetaDefineType);
+                //    m_DefineVarMetaVariable.SetMetaDefineType(expressRetMetaDefineType);
                 }
             }
             else

@@ -58,7 +58,7 @@ namespace SimpleLanguage.Core
             }
         }
         public List<MetaMemberFunction> allMetaMemberFunctionList => m_AllMetaMemberFunctionList;
-        public List<MetaMemberFunction> thisMetaMemberFunctionList => m_ThisMetaMemberFunctionList;
+        public List<MetaMemberFunction> currentClassMetaMemberFunctionList => m_CurrentClassMetaMemberFunctionList;
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
         public Dictionary<string, MetaMemberFunctionTemplateNode> metaMemberFunctionTemplateNodeDict => m_MetaMemberFunctionTemplateNodeDict;
         public Dictionary<string, MetaMemberVariable> metaExtendMemeberVariableDict => m_MetaExtendMemeberVariableDict;
@@ -76,7 +76,9 @@ namespace SimpleLanguage.Core
         protected Dictionary<string, MetaMemberVariable> m_MetaMemberVariableDict = new Dictionary<string, MetaMemberVariable>();
         protected Dictionary<string, MetaMemberVariable> m_MetaExtendMemeberVariableDict = new Dictionary<string, MetaMemberVariable>();
         protected Dictionary<string, MetaMemberFunctionTemplateNode> m_MetaMemberFunctionTemplateNodeDict = new Dictionary<string, MetaMemberFunctionTemplateNode>();
-        protected List<MetaMemberFunction> m_ThisMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
+        protected List<MetaMemberFunction> m_CurrentClassMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
+        protected List<MetaMemberFunction> m_NonStaticVirtualMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
+        protected List<MetaMemberFunction> m_StaticMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected List<MetaMemberFunction> m_AllMetaMemberFunctionList = new List<MetaMemberFunction>();
         protected List<MetaMemberFunction> m_TempInnerFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected MetaExpressNode m_DefaultExpressNode = null;
@@ -116,7 +118,7 @@ namespace SimpleLanguage.Core
             m_MetaMemberVariableDict = mc.m_MetaMemberVariableDict;
             m_MetaExtendMemeberVariableDict = mc.m_MetaExtendMemeberVariableDict;
             m_MetaMemberFunctionTemplateNodeDict = mc.m_MetaMemberFunctionTemplateNodeDict;
-            m_ThisMetaMemberFunctionList = mc.m_ThisMetaMemberFunctionList;
+            m_CurrentClassMetaMemberFunctionList = mc.m_CurrentClassMetaMemberFunctionList;
             m_DefaultExpressNode = mc.m_DefaultExpressNode;
         }
         public override void SetDeep( int deep )
@@ -126,7 +128,7 @@ namespace SimpleLanguage.Core
             {
                 v.Value.SetDeep(deep + 1);
             }
-            foreach( var v in m_ThisMetaMemberFunctionList )
+            foreach( var v in m_CurrentClassMetaMemberFunctionList)
             {
                 v.SetDeep(deep + 1);
             }
@@ -191,6 +193,11 @@ namespace SimpleLanguage.Core
             {
                 return;
             }
+            if( CoreMetaClassManager.IsIncludeMetaClass( this ) )
+            {
+                return;
+            }
+
             if (this.extendClass != null)
             {
                 Log.AddInStructMeta(EError.None, "已绑定过了继承类 : " + extendClass.name );
@@ -219,6 +226,11 @@ namespace SimpleLanguage.Core
                 {
                     Log.AddInStructMeta(EError.None, "没有发现继承类的类型!!! " + mc.metaClass.extendClass.name );
                 }
+            }
+
+            if( m_ExtendClass == null )
+            {
+                m_ExtendClass = CoreMetaClassManager.objectMetaClass;
             }
         }
         public virtual void UpdateInterfaceMetaClass()
@@ -252,6 +264,17 @@ namespace SimpleLanguage.Core
         {
             if( this.m_ExtendClass == null )
             {
+                foreach( var v in m_AllMetaMemberFunctionList )
+                {
+                    if( v.isStatic )
+                    {
+                        m_StaticMetaMemberFunctionList.Add(v);
+                    }
+                    else
+                    {
+                        m_NonStaticVirtualMetaMemberFunctionList.Add(v);
+                    }
+                }
                 return;
             }
             foreach (var v in m_ExtendClass.m_MetaMemberVariableDict)
@@ -277,10 +300,86 @@ namespace SimpleLanguage.Core
                 }
                 this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
             }
-
-            foreach( var v in m_ExtendClass.m_AllMetaMemberFunctionList )
+            bool canAdd = false;
+            foreach( var v in m_ExtendClass.m_NonStaticVirtualMetaMemberFunctionList )
             {
+                canAdd = true;
+                var efun = v;
+                if (efun.isConstructInitFunction) { continue; }
 
+                if( efun.isStatic )
+                {
+                    m_StaticMetaMemberFunctionList.Add(efun);
+                    continue;
+                }
+               
+                foreach( var v2 in m_CurrentClassMetaMemberFunctionList)
+                {
+                    if (v2.isConstructInitFunction) continue;
+
+                    if( v2.isStatic )
+                    {
+                        if (efun.IsEqualMetaFunction(v2))
+                        {
+                            canAdd = false;
+                            m_StaticMetaMemberFunctionList.Add(v2);
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        if (efun.IsEqualMetaFunction(v2))
+                        {
+                            canAdd = false;
+                            m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
+                            continue;
+                        }
+                    }
+                }
+                if( canAdd )
+                {
+                    if(efun.isStatic )
+                    {
+                        m_StaticMetaMemberFunctionList.Add(efun);
+                    }
+                    else
+                    {
+                        m_NonStaticVirtualMetaMemberFunctionList.Add(efun);
+                    }
+                }
+            }
+
+            foreach (var v2 in this.m_CurrentClassMetaMemberFunctionList)
+            {
+                if (v2.isStatic)
+                {
+                    var find = m_StaticMetaMemberFunctionList.Find(a => a == v2);
+                    if (find != null) continue;
+
+                    m_StaticMetaMemberFunctionList.Add(v2);
+                }
+                else
+                {
+                    var find = m_NonStaticVirtualMetaMemberFunctionList.Find(a => a == v2);
+                    if (find != null) continue;
+
+                    m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
+                }
+            }
+
+            foreach (var v2 in m_NonStaticVirtualMetaMemberFunctionList)
+            {
+                var find = m_AllMetaMemberFunctionList.Find(a => a == v2);
+                if (find != null) continue;
+
+                m_AllMetaMemberFunctionList.Add(v2);
+            }
+            foreach (var v2 in m_StaticMetaMemberFunctionList)
+            {
+                var find = m_StaticMetaMemberFunctionList.Find(a => a == v2);
+                if (find != null) continue;
+
+                m_AllMetaMemberFunctionList.Add(v2);
             }
         }
         public virtual void ParseMemberVariableDefineMetaType()
@@ -292,7 +391,7 @@ namespace SimpleLanguage.Core
         }
         public virtual void ParseMemberFunctionDefineMetaType()
         {
-            foreach (var it in m_ThisMetaMemberFunctionList)
+            foreach (var it in m_CurrentClassMetaMemberFunctionList )
             {
                 it.ParseDefineMetaType();
             }
@@ -484,7 +583,7 @@ namespace SimpleLanguage.Core
             }
             if( find.AddMetaMemberFunction(mmf) )
             {
-                m_ThisMetaMemberFunctionList.Add(mmf);
+                m_CurrentClassMetaMemberFunctionList.Add(mmf);
                 m_AllMetaMemberFunctionList.Add(mmf);
                 return true;
             }
@@ -658,15 +757,9 @@ namespace SimpleLanguage.Core
         {
             return GetMetaMemberFunctionByNameAndInputTemplateInputParam( name, null, null );
         }
-        public List<MetaMemberFunction> GetMemberFunctionList()
-        {
-            List<MetaMemberFunction> mmf = new List<MetaMemberFunction>();
-
-            //foreach( var v in m_MetaMemberFunctionDict )
-            //{
-            //    mmf.Add(v.Value);
-            //}
-            return mmf;
+        public List<MetaMemberFunction> GetVirtualMemberFunctionList()
+        {            
+            return m_NonStaticVirtualMetaMemberFunctionList;
         }
         public List<MetaMemberFunction> GetMemberInterfaceFunction()
         {
@@ -722,7 +815,7 @@ namespace SimpleLanguage.Core
         {
             StringBuilder stringBuilder = new StringBuilder();
 
-            stringBuilder.Append(name);
+            stringBuilder.Append(allClassName);
 
             return stringBuilder.ToString();
 

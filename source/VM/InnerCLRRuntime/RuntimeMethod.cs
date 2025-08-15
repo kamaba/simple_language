@@ -515,7 +515,9 @@ namespace SimpleLanguage.VM.Runtime
                     }
                     break;
                 case EIROpCode.CallVirt:
-                    { 
+                    {                        
+                        IRMethod cfc = m_CallIRMetaClass.GetIRMethodByIndex(iri.index);
+                        InnerCLRRuntimeVM.RunIRMethod(m_CallIRMetaClass, cfc);
                     }
                     break;
                 case EIROpCode.CallCSharpMethod:

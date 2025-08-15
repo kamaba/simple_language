@@ -110,6 +110,20 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
+            if( this.loadMetaVariable != null )
+            {
+                sb.Append("[");
+                sb.Append(this.m_VMCallMetaFunction.ownerMetaClass.allClassName);
+                sb.Append("]");
+
+                sb.Append(this.loadMetaVariable.name);
+                sb.Append(".");
+            }
+            else
+            {
+                sb.Append(this.m_VMCallMetaFunction.ownerMetaClass.allClassName);
+                sb.Append(".");
+            }
             sb.Append(this.m_VMCallMetaFunction.name);
             sb.Append("( ");
             sb.Append(this.metaInputParamCollection.ToFormatString() );
@@ -362,7 +376,7 @@ namespace SimpleLanguage.Core
                     break;
                 case EVisitType.NewClass:
                     {
-                        sb.Append(this.callerMetaClass.ToFormatString());
+                        sb.Append(this.callerMetaClass.ToDefineTypeString());
                     }
                     break;
                 default:

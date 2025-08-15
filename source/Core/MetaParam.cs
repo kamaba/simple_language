@@ -408,6 +408,11 @@ namespace SimpleLanguage.Core
 
             if (m_MetaDefineParamList.Count == mdpc.m_MetaDefineParamList.Count)
             {
+                if(m_MetaDefineParamList.Count == 0 )
+                {
+                    return true;
+                }
+
                 for (int i = 0; i < m_MetaDefineParamList.Count; i++)
                 {
                     var a = m_MetaDefineParamList[i];
