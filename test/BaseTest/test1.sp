@@ -89,8 +89,9 @@ Project
        #CommitTest.fun();
        #NumberTest.fun()
        #StringTest.fun()
-       GenClass2.fun()
+       #GenClass2.fun()
        #ArrayTest.fun()
+       OverrideFunction.fun()
     }
     static Test()
     {

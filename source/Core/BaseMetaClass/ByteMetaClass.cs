@@ -22,7 +22,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new ByteMetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
+            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.selfModule);
             return mc;
         }
     }
@@ -37,7 +37,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new SByteMetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
+            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.selfModule);
             return mc;
         }
     }

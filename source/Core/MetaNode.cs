@@ -75,6 +75,7 @@ namespace SimpleLanguage.Core
         }
         
         public Dictionary<int, MetaClass> metaTemplateClassDict => m_MetaTemplateClassDict;
+        public Dictionary<string, MetaNode> childrenMetaNodeDict => m_ChildrenMetaNodeDict;
 
 
         #region 属性
@@ -313,7 +314,7 @@ namespace SimpleLanguage.Core
             }
             foreach (var v in m_ChildrenMetaNodeDict)
             {
-                v.Value.SetDeep(deep);
+                v.Value.SetDeep( deep + 1 );
             }
         }
         public virtual void SetAnchorDeep(int addep)
@@ -367,7 +368,7 @@ namespace SimpleLanguage.Core
 
             if( m_MetaModule != null )
             {
-                sb.Append(m_MetaModule.ToFormatString());               
+                sb.Append(m_MetaModule.ToFormatString());
             }
             else if( m_MetaNamespace != null )
             {
@@ -385,14 +386,7 @@ namespace SimpleLanguage.Core
             {
                 foreach( var v in m_MetaTemplateClassDict )
                 {
-                    sb.Append(v.Value.ToFormatString());
-                    sb.AppendLine("{");
-                    foreach (var v2 in m_ChildrenMetaNodeDict)
-                    {
-                        sb.Append(v2.Value.ToFormatString());
-                    }
-                    sb.AppendLine("");
-                    sb.Append("}");
+                    sb.Append(v.Value.ToFormatString());                    
                 }
             }
             return sb.ToString();

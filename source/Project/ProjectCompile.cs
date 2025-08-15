@@ -116,6 +116,8 @@ namespace SimpleLanguage.Project
 
             ProjectClass.ProjectCompileAfter();
 
+            Console.WriteLine(ModuleManager.instance.selfModule.metaNode.ToFormatString());
+
             IRManager.instance.TranslateIR();
         }
 

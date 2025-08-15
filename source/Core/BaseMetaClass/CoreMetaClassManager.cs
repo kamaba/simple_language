@@ -242,7 +242,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaNode GetCoreMetaClass( string name )
         {
             string name1 = GetSelfMetaName(name);
-            return ModuleManager.instance.coreModule.metaNode.GetChildrenMetaNodeByName(name1);
+            return ModuleManager.instance.selfModule.metaNode.GetChildrenMetaNodeByName(name1);
         }
     }
 }

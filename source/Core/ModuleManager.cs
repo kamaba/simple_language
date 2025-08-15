@@ -26,11 +26,9 @@ namespace SimpleLanguage.Core
         }
 
         public string moduleName = "S";
-        public const string slCoreModuleName = "SLCore";
         public const string csharpModuleName = "CSharp";
 
-        public MetaModule selfModule = null;
-        public MetaModule coreModule = null;
+        public MetaModule selfModule { get; private set; } = null;
         public MetaModule csharpModule = null;
         private Dictionary<string, MetaModule> m_ImportMetaModuleDict = new Dictionary<string, MetaModule>();
 
@@ -38,11 +36,9 @@ namespace SimpleLanguage.Core
         public ModuleManager()
         {
             selfModule = new MetaModule(moduleName);
-            coreModule = new MetaModule(slCoreModuleName);
             csharpModule = new MetaModule(csharpModuleName);
             csharpModule.SetRefFromType(RefFromType.CSharp);
             m_AllMetaModuleDict.Add(moduleName, selfModule);
-            m_AllMetaModuleDict.Add(slCoreModuleName, coreModule);
             m_AllMetaModuleDict.Add(csharpModuleName, csharpModule);
             selfModule.SetDeep(0);
         }
@@ -69,11 +65,6 @@ namespace SimpleLanguage.Core
         {
             MetaNode m2 = selfModule.metaNode.GetChildrenMetaNodeByName(name);
             if (m2 != null)
-            {
-                return m2;
-            }
-            m2 = coreModule.metaNode.GetChildrenMetaNodeByName(name);
-            if( m2 != null )
             {
                 return m2;
             }

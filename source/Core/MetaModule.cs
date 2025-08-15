@@ -14,6 +14,12 @@ namespace SimpleLanguage.Core
             StringBuilder sb = new StringBuilder();
             sb.Append("Module ");
             sb.AppendLine( m_Name );
+            sb.AppendLine("{");
+            foreach( var v in m_MetaNode.childrenMetaNodeDict)
+            {
+                sb.Append(v.Value.ToFormatString());
+            }
+            sb.AppendLine("}");
             return sb.ToString();
         }
     }

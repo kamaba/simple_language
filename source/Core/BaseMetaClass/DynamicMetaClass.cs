@@ -79,7 +79,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new DynamicMetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
+            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.selfModule);
             return mc;
         }
     }
