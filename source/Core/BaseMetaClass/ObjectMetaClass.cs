@@ -68,10 +68,10 @@ namespace SimpleLanguage.Core.SelfMeta
             ToLong.SetReturnMetaClass(CoreMetaClassManager.int64MetaClass);
             AddInnerMetaMemberFunction(ToLong);
             MetaMemberFunction ToFloat = new MetaMemberFunction(this, "toFloat");
-            ToFloat.SetReturnMetaClass(CoreMetaClassManager.floatMetaClass);
+            ToFloat.SetReturnMetaClass(CoreMetaClassManager.float32MetaClass);
             AddInnerMetaMemberFunction(ToFloat);
             MetaMemberFunction ToDouble = new MetaMemberFunction(this, "toDouble");
-            ToDouble.SetReturnMetaClass(CoreMetaClassManager.doubleMetaClass);
+            ToDouble.SetReturnMetaClass(CoreMetaClassManager.float64MetaClass);
             AddInnerMetaMemberFunction(ToLong);
         }
 

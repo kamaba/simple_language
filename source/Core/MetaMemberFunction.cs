@@ -422,6 +422,7 @@ namespace SimpleLanguage.Core
                 MetaDefineParam mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
                 mpl.ParseMetaDefineType();
             }
+            UpdateVritualFunctionName();
         }
         public virtual void CreateMetaExpress()
         {
@@ -473,6 +474,29 @@ namespace SimpleLanguage.Core
                     Log.AddInStructMeta(EError.None, $"Error 类[{this.m_OwnerMetaClass.allClassName}] 该函数[{this.functionAllName}] 没有定义函数内容！！");
                 }
             }
+        }
+        public void UpdateVritualFunctionName()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(m_Name);
+            sb.Append("_");
+            sb.Append(m_ReturnMetaVariable.metaDefineType.metaClass.allClassName);
+            sb.Append("_");
+            sb.Append(m_MetaMemberParamCollection.maxParamCount);
+            if(m_MetaMemberParamCollection.maxParamCount > 0 )
+            {
+                sb.Append("_");
+                for (int i = 0; i < m_MetaMemberParamCollection.maxParamCount; i++)
+                {
+                    var mdp = m_MetaMemberParamCollection.metaDefineParamList[i];
+                    sb.Append(mdp.metaVariable.metaDefineType.metaClass.ToString());
+                    if (i < m_MetaMemberParamCollection.maxParamCount - 1)
+                    {
+                        sb.Append("_");
+                    }
+                }
+            }
+            m_VirtualFunctionName = sb.ToString();
         }
         public static MetaStatements CreateMetaSyntax( FileMetaSyntax rootMs, MetaBlockStatements currentBlockStatements)
         {    

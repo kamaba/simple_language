@@ -57,6 +57,8 @@ namespace SimpleLanguage.Core
                 return allMetaMemberVariableList;
             }
         }
+        public List<MetaMemberFunction> nonStaticVirtualMetaMemberFunctionList => m_NonStaticVirtualMetaMemberFunctionList;
+        public List<MetaMemberFunction> staticMetaMemberFunctionList => m_StaticMetaMemberFunctionList;
         public List<MetaMemberFunction> allMetaMemberFunctionList => m_AllMetaMemberFunctionList;
         public List<MetaMemberFunction> currentClassMetaMemberFunctionList => m_CurrentClassMetaMemberFunctionList;
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
@@ -272,6 +274,8 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
+                        if (v.isConstructInitFunction) continue;
+                        if (v.isWithInterface) continue;
                         m_NonStaticVirtualMetaMemberFunctionList.Add(v);
                     }
                 }
@@ -756,10 +760,6 @@ namespace SimpleLanguage.Core
         public MetaMemberFunction GetFirstMetaMemberFunctionByName( string name )
         {
             return GetMetaMemberFunctionByNameAndInputTemplateInputParam( name, null, null );
-        }
-        public List<MetaMemberFunction> GetVirtualMemberFunctionList()
-        {            
-            return m_NonStaticVirtualMetaMemberFunctionList;
         }
         public List<MetaMemberFunction> GetMemberInterfaceFunction()
         {

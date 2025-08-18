@@ -41,11 +41,11 @@ namespace SimpleLanguage.IR
                 case EType.UInt32:
                 case EType.Class:
                 case EType.String:
-                case EType.Float:
+                case EType.Float32:
                     return 4;
                 case EType.Int64:
                 case EType.UInt64:
-                case EType.Double:
+                case EType.Float64:
                     return 8;
                 case EType.Int128:
                 case EType.UInt128:

@@ -52,7 +52,7 @@ namespace SimpleLanguage.IR
         private List<IRMetaVariable> m_StaticIRMetaVariableList = new List<IRMetaVariable>();
         private Dictionary<string, IRMetaClass> m_GenTemplateIRMetaClassDict = new Dictionary<string, IRMetaClass>();
         private Dictionary<int, IRCallFunction> m_LocalIRInitDict = new Dictionary<int, IRCallFunction>();
-        private List<IRMethod> m_IRMethodList = new List<IRMethod>();
+        private List<IRMethod> m_IRNotStaticMethodList = new List<IRMethod>();
         private IRManager m_IRManager = null;
         public void CalcAllocSize()
         {
@@ -74,14 +74,25 @@ namespace SimpleLanguage.IR
                 byteCount += ssize;
             }
         }
-        public IRMethod GetIRMethodByIndex( int index )
+        public IRMethod GetIRNonStaticMethodByIndex( int index )
         {
-            if( index >= m_IRMethodList.Count || index < 0 )
+            if( index >= m_IRNotStaticMethodList.Count || index < 0 )
             {
                 Log.AddVM(EError.None, "GetIRMethodByIndex is null");
                 return null;
             }
-            return m_IRMethodList[index];
+            return m_IRNotStaticMethodList[index];
+        }
+        public int GetIRNonStaticMethodIndexByMethod( string name )
+        {
+            for( int i = 0; i < m_IRNotStaticMethodList.Count; i++ )
+            {
+                if(m_IRNotStaticMethodList[i].defineName == name)
+                {
+                    return i;
+                }
+            }
+            return -1;
         }
         public IRMetaVariable GetIRMetaVariable( int id )
         {
@@ -153,15 +164,6 @@ namespace SimpleLanguage.IR
                 }
             }
 
-            var mflist = mc.GetVirtualMemberFunctionList();
-            //int index = 0;
-            for( int i = 0; i < mflist.Count; i++ )
-            {
-                var mf = mflist[i];
-                var gmf = IRManager.instance.GetIRMethod(mf.functionAllName);
-                m_IRMethodList.Add(gmf);
-            }
-
             if( mc is MetaGenTemplateClass mgtc )
             {
                 genClass = true;
@@ -176,6 +178,29 @@ namespace SimpleLanguage.IR
                 genClass = false;
             }
             CalcAllocSize();
+
+            HandleMemberFunction(mc);
+        }
+        public void HandleMemberFunction( MetaClass mc )
+        {
+            var smflist = mc.staticMetaMemberFunctionList;
+            //int index = 0;
+            for (int i = 0; i < smflist.Count; i++)
+            {
+                var mf = smflist[i];
+                var gmf = IRManager.instance.TranslateIRByFunction(mf);
+                IRManager.instance.AddIRMethod(gmf);
+                //m_IRNotStaticMethodList.Add(gmf);
+            }
+
+            var nonsmflist = mc.nonStaticVirtualMetaMemberFunctionList;
+            //int index = 0;
+            for (int i = 0; i < nonsmflist.Count; i++)
+            {
+                var mf = nonsmflist[i];
+                var gmf = IRManager.instance.TranslateIRByFunction(mf);
+                m_IRNotStaticMethodList.Add(gmf);
+            }
         }
         public List<IRData> CreateStaticMetaMetaVariableIRList()
         {

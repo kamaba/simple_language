@@ -172,14 +172,14 @@ namespace SimpleLanguage.Core
                     eType = EType.UInt64;
                     value = Convert.ToUInt64(value);
                 }
-                else if (m_MetaDefineType.metaClass == CoreMetaClassManager.floatMetaClass)
+                else if (m_MetaDefineType.metaClass == CoreMetaClassManager.float32MetaClass)
                 {
-                    eType = EType.Float;
+                    eType = EType.Float32;
                     value = Convert.ToSingle(value);
                 }
-                else if (m_MetaDefineType.metaClass == CoreMetaClassManager.doubleMetaClass)
+                else if (m_MetaDefineType.metaClass == CoreMetaClassManager.float64MetaClass)
                 {
-                    eType = EType.Double;
+                    eType = EType.Float64;
                     value = Convert.ToDouble(value);
                 }
                 else if (m_MetaDefineType.metaClass == CoreMetaClassManager.stringMetaClass)
@@ -645,12 +645,12 @@ namespace SimpleLanguage.Core
                         signEn = "uL";
                     }
                     break;
-                case EType.Float:
+                case EType.Float32:
                     {
                         signEn = "f";
                     }
                     break;
-                case EType.Double:
+                case EType.Float64:
                     {
                         signEn = "d";
                     }

@@ -419,14 +419,14 @@ namespace SimpleLanguage.Compile.Parse
                         var ld = Log.AddInHandleToken( m_Path, m_SourceLine, m_SourceChar, EError.None, "读取浮点形必须有小数点!!!" );
                         ld.demo = "2f";
                         ld.advan = "2.0f";
-                        AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float);
+                        AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
                         break;
                     }
                     else if( endPoint == 1  )
                     {
                         if(Char.IsNumber(tfrontChar) )  //2.0f.
                         {
-                            AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float);
+                            AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32 );
                             break;
                         }
                         else                            //2.f
@@ -445,7 +445,7 @@ namespace SimpleLanguage.Compile.Parse
                     {
                         if(Char.IsNumber(tfrontChar) )
                         {
-                            AddToken(ETokenType.Number, double.Parse(m_Builder.ToString()), EType.Double);
+                            AddToken(ETokenType.Number, double.Parse(m_Builder.ToString()), EType.Float64 );
                             break;
                         }
                         else
@@ -562,13 +562,13 @@ namespace SimpleLanguage.Compile.Parse
                             }
                             else
                             {
-                                AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float);
+                                AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
                                 UndoChar();
                             }
                         }
                         else
                         {
-                            AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float);
+                            AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32 );
                             UndoChar();
                         }
                     }
@@ -1304,16 +1304,16 @@ namespace SimpleLanguage.Compile.Parse
                         extend = EType.UInt64;
                     }
                     break;
-                case "float":
+                case "float32":
                     {
                         tokenType = ETokenType.Type;
-                        extend = EType.Float;
+                        extend = EType.Float32;
                     }
                     break;
-                case "double":
+                case "float64":
                     {
                         tokenType = ETokenType.Type;
-                        extend = EType.Double;
+                        extend = EType.Float64;
                     }
                     break;
                 case "string":

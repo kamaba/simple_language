@@ -365,17 +365,17 @@ namespace SimpleLanguage.VM
                         stringObj.SetValue(svalue.stringValue);
                     }
                     break;
-                case EType.Float:
+                case EType.Float32:
                     {
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
-                            to.SetValue(EType.Float, svalue.floatValue);
+                            to.SetValue(EType.Float32, svalue.floatValue);
                         }
                         AnyObject anyObject = obj as AnyObject;
                         if (anyObject != null)
                         {
-                            anyObject.SetValue(EType.Float, svalue.floatValue);
+                            anyObject.SetValue(EType.Float32, svalue.floatValue);
                             return;
                         }
                         FloatObject floatObj = obj as FloatObject;
@@ -387,17 +387,17 @@ namespace SimpleLanguage.VM
                         floatObj.SetValue(svalue.floatValue);
                     }
                     break;
-                case EType.Double:
+                case EType.Float64:
                     {
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
-                            to.SetValue(EType.Double, svalue.doubleValue);
+                            to.SetValue(EType.Float64, svalue.doubleValue);
                         }
                         AnyObject anyObject = obj as AnyObject;
                         if (anyObject != null)
                         {
-                            anyObject.SetValue(EType.Double, svalue.doubleValue);
+                            anyObject.SetValue(EType.Float64, svalue.doubleValue);
                             return;
                         }
                         DoubleObject doubleObj = obj as DoubleObject;

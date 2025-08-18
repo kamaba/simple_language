@@ -60,6 +60,8 @@ namespace SimpleLanguage.IR
 
             var cc = m_IRMethod.irManager.GetIRMetaClassByName(mfc.callerInstanceClass?.allClassName);
 
+            int callMethodIndex = -1;
+
             if( cc != null )
             {
                 IRData datacallsc = new IRData();
@@ -67,13 +69,25 @@ namespace SimpleLanguage.IR
                 datacallsc.opValue = cc;
                 datacallsc.SetDebugInfoByToken(mf.pingToken);
                 AddIRData(datacallsc);
+                callMethodIndex = cc.GetIRNonStaticMethodIndexByMethod( mf.virtualFunctionName );
             }
 
-            IRData datacall = new IRData();
-            datacall.opCode = EIROpCode.Call;
-            datacall.opValue = m_IRRuntimeMethod;
-            datacall.SetDebugInfoByToken( mf.pingToken );
-            AddIRData(datacall);
+            if( callMethodIndex == -1 )
+            {
+                IRData datacall = new IRData();
+                datacall.opCode = EIROpCode.Call;
+                datacall.opValue = m_IRRuntimeMethod;
+                datacall.SetDebugInfoByToken(mf.pingToken);
+                AddIRData(datacall);
+            }
+            else
+            {
+                IRData datacall = new IRData();
+                datacall.opCode = EIROpCode.CallVirt;
+                datacall.index = callMethodIndex;
+                datacall.SetDebugInfoByToken(mf.pingToken);
+                AddIRData(datacall);
+            }
 
             if( mfc.storeMetaVariable != null )
             {

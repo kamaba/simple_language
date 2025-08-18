@@ -179,14 +179,14 @@ namespace SimpleLanguage.Compile
                             types = "L";
                         }
                         break;
-                    case EType.Float:
+                    case EType.Float32:
                         {
                             float f = (float)lexeme;
                             val = f.ToString("0.0");
                             types = "f";
                         }
                         break;
-                    case EType.Double:
+                    case EType.Float64:
                         {
                             double d = (double)lexeme;
                             val = d.ToString("0.00");

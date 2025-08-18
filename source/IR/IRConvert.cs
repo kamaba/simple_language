@@ -43,10 +43,10 @@ namespace SimpleLanguage.IR
                 case EType.UInt64:
                     irop = EIROpCode.Convert_UI64;
                     break;
-                case EType.Float:
+                case EType.Float32:
                     irop = EIROpCode.Convert_R4;
                     break;
-                case EType.Double:
+                case EType.Float64:
                     irop = EIROpCode.Convert_R8;
                     break;
             }

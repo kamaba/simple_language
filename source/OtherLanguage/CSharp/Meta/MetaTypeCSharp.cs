@@ -72,11 +72,11 @@ namespace SimpleLanguage.Core
             {
                 type = typeof(System.UInt64);
             }
-            else if (mc == CoreMetaClassManager.floatMetaClass)
+            else if (mc == CoreMetaClassManager.float32MetaClass)
             {
                 type = typeof(System.Single);
             }
-            else if (mc == CoreMetaClassManager.doubleMetaClass)
+            else if (mc == CoreMetaClassManager.float64MetaClass)
             {
                 type = typeof(System.Double);
             }

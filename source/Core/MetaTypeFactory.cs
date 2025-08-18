@@ -57,11 +57,11 @@ namespace SimpleLanguage.Core
             {
                 return 4;
             }
-            else if (mt.metaClass == CoreMetaClassManager.floatMetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.float32MetaClass)
             {
                 return 5;
             }
-            else if (mt.metaClass == CoreMetaClassManager.doubleMetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.float64MetaClass)
             {
                 return 6;
             }
@@ -87,9 +87,9 @@ namespace SimpleLanguage.Core
                 return 3;
             else if (defineType == EType.Int64 || defineType == EType.UInt64)
                 return 4;
-            else if (defineType == EType.Float)
+            else if (defineType == EType.Float32)
                 return 5;
-            else if (defineType == EType.Double)
+            else if (defineType == EType.Float64)
                 return 6;
             else if (defineType == EType.Array)
                 return 8;

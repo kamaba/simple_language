@@ -248,7 +248,7 @@ namespace SimpleLanguage.VM
                         uint64Obj.SetValue(svalue.uint64Value);
                     }
                     break;
-                case EType.Float:
+                case EType.Float32:
                     {
                         FloatObject floatObj = m_MemberObjectArray[index] as FloatObject;
                         if (floatObj == null)
@@ -259,7 +259,7 @@ namespace SimpleLanguage.VM
                         floatObj.SetValue(svalue.floatValue);
                     }
                     break;
-                case EType.Double:
+                case EType.Float64:
                     {
                         DoubleObject doubleObj = m_MemberObjectArray[index] as DoubleObject;
                         if (doubleObj == null)

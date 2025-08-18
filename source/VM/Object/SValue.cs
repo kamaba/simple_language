@@ -83,12 +83,12 @@ namespace SimpleLanguage.VM
         }
         public void SetFloatValue(Single val)
         {
-            eType = EType.Float;
+            eType = EType.Float32;
             floatValue = val;
         }
         public void SetDoubleValue(Double val)
         {
-            eType = EType.Double;
+            eType = EType.Float64;
             doubleValue = val;
         }
         public void SetStringValue(string val)
@@ -122,7 +122,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.UInt16:
                     {
-                        eType = EType.Double;
+                        eType = EType.Float64;
                         doubleValue = Convert.ToUInt16(cur);
                     }
                     break;
@@ -150,15 +150,15 @@ namespace SimpleLanguage.VM
                         uint64Value = Convert.ToUInt64(cur);
                     }
                     break;
-                case EType.Float:
+                case EType.Float32:
                     {
-                        eType = EType.Float;
+                        eType = EType.Float32;
                         floatValue = Convert.ToSingle(cur);
                     }
                     break;
-                case EType.Double:
+                case EType.Float64:
                     {
-                        eType = EType.Double;
+                        eType = EType.Float64;
                         doubleValue = Convert.ToDouble(cur);
                     }
                     break;
@@ -215,11 +215,11 @@ namespace SimpleLanguage.VM
                     {
                         return uint64Value;
                     }
-                case EType.Float:
+                case EType.Float32:
                     {
                         return floatValue;
                     }
-                case EType.Double:
+                case EType.Float64:
                     {
                         return doubleValue;
                     }
@@ -296,13 +296,13 @@ namespace SimpleLanguage.VM
                     break;
                 case FloatObject floatobj:
                     {
-                        eType = EType.Float;
+                        eType = EType.Float32;
                         floatValue = floatobj.value;
                     }
                     break;
                 case DoubleObject doubleobj:
                     {
-                        eType = EType.Double;
+                        eType = EType.Float64;
                         doubleValue = doubleobj.value;
                     }
                     break;
@@ -363,12 +363,12 @@ namespace SimpleLanguage.VM
                                     uint64Value = (ulong)(tobj);
                                 }
                                 break;
-                            case EType.Float:
+                            case EType.Float32:
                                 {
                                     floatValue = (float)(tobj);
                                 }
                                 break;
-                            case EType.Double:
+                            case EType.Float64:
                                 {
                                     doubleValue = (double)(tobj);
                                 }
@@ -437,12 +437,12 @@ namespace SimpleLanguage.VM
                                     uint64Value = (ulong)(tobj);
                                 }
                                 break;
-                            case EType.Float:
+                            case EType.Float32:
                                 {
                                     floatValue = (float)(tobj);
                                 }
                                 break;
-                            case EType.Double:
+                            case EType.Float64:
                                 {
                                     doubleValue = (double)(tobj);
                                 }
@@ -508,11 +508,11 @@ namespace SimpleLanguage.VM
                     {
                         return uint64Value;
                     }
-                case EType.Float:
+                case EType.Float32:
                     {
                         return floatValue;
                     }
-                case EType.Double:
+                case EType.Float64:
                     {
                         return doubleValue;
                     }
@@ -584,13 +584,13 @@ namespace SimpleLanguage.VM
                     break;
                 case Single f:
                     {
-                        eType = EType.Float;
+                        eType = EType.Float32;
                         floatValue = (float)obj;
                     }
                     break;
                 case Double d:
                     {
-                        eType = EType.Double;
+                        eType = EType.Float64;
                         doubleValue = (double)obj;
                     }
                     break;

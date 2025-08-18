@@ -79,8 +79,8 @@ namespace SimpleLanguage.Core
             if (mc == CoreMetaClassManager.int16MetaClass
                 || mc == CoreMetaClassManager.int32MetaClass
                 || mc == CoreMetaClassManager.int64MetaClass
-                || mc == CoreMetaClassManager.floatMetaClass
-                || mc == CoreMetaClassManager.doubleMetaClass)
+                || mc == CoreMetaClassManager.float32MetaClass
+                || mc == CoreMetaClassManager.float64MetaClass)
                 return true;
             return false;
         }

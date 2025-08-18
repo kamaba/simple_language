@@ -82,6 +82,7 @@ namespace SimpleLanguage.Core
                 return m_FunctionAllName;
             }
         }
+        public virtual string virtualFunctionName => m_VirtualFunctionName;
         public MetaVariable thisMetaVariable => m_ThisMetaVariable;
         public MetaVariable returnMetaVariable => m_ReturnMetaVariable;
         public EMethodCallType methodCallType => m_MethodCallType;
@@ -106,6 +107,7 @@ namespace SimpleLanguage.Core
         #region Compile or Debug
         protected bool m_IsParsed = false;
         protected string m_FunctionAllName = null;
+        protected string m_VirtualFunctionName = null;
         protected List<Token> m_PintTokenList = new List<Token>();
         #endregion
         public MetaFunction(MetaClass mc)
@@ -118,6 +120,7 @@ namespace SimpleLanguage.Core
             m_IsParsed = mf.m_IsParsed;
             m_FunctionAllName = null;
             m_PintTokenList = mf.m_PintTokenList;
+            m_VirtualFunctionName = mf.m_VirtualFunctionName;
 
             m_OwnerMetaClass = mf.m_OwnerMetaClass; 
             m_MetaBlockStatements = mf.m_MetaBlockStatements;

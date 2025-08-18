@@ -83,10 +83,10 @@ namespace SimpleLanguage.Core.AOT
                     return CoreMetaClassManager.int64MetaClass;
                 case "UInt64":
                     return CoreMetaClassManager.uint64MetaClass;
-                case "Single":
-                    return CoreMetaClassManager.floatMetaClass;
-                case "Double":
-                    return CoreMetaClassManager.doubleMetaClass;
+                case "Float32":
+                    return CoreMetaClassManager.float32MetaClass;
+                case "Float64":
+                    return CoreMetaClassManager.float64MetaClass;
                 case "String":
                     return CoreMetaClassManager.stringMetaClass;
                 case "Object":
