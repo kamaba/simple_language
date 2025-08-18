@@ -48,6 +48,7 @@ namespace SimpleLanguage.VM
                 m_Type[i] = obj.typeId;
                 m_MemberObjectArray[i] = obj;
             }
+            m_Object = this;
         }
         public SObject GetMemberVariable(int index)
         {

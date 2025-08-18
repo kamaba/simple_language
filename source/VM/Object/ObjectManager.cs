@@ -108,12 +108,12 @@ namespace SimpleLanguage.VM
                 sobj = new UInt64Object(0);
                 sobj.typeId = 3;
             }
-            else if (mdt.allName == "Float")
+            else if (mdt.allName == "Float32")
             {
                 sobj = new FloatObject();
                 sobj.typeId = 4;
             }
-            else if (mdt.allName == "Double")
+            else if (mdt.allName == "Float64")
             {
                 sobj = new DoubleObject();
                 sobj.typeId = 5;
