@@ -50,11 +50,11 @@ OClass extends VClass
     {
         ret 1001
     }
-    !#
     override string toString()
     {
         ret "OClass.toString()"
     }
+    !#
     fun2(){
 
     }

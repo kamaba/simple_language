@@ -488,7 +488,7 @@ namespace SimpleLanguage.VM.Runtime
                         if (v.eType == EType.Class)
                         {
                             var co = (v.sobject as ClassObject);
-                            m_CallIRMetaClass = co.irMetaClass;
+                            m_CallIRMetaClass = co.value.irMetaClass;
                         }
                     }
                 break;

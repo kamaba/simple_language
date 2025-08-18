@@ -87,7 +87,7 @@ namespace SimpleLanguage.IR
         {
             for( int i = 0; i < m_IRNotStaticMethodList.Count; i++ )
             {
-                if(m_IRNotStaticMethodList[i].defineName == name)
+                if(m_IRNotStaticMethodList[i].virtualFunctionName == name)
                 {
                     return i;
                 }
@@ -199,6 +199,7 @@ namespace SimpleLanguage.IR
             {
                 var mf = nonsmflist[i];
                 var gmf = IRManager.instance.TranslateIRByFunction(mf);
+                IRManager.instance.AddIRMethod(gmf);
                 m_IRNotStaticMethodList.Add(gmf);
             }
         }

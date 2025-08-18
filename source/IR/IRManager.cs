@@ -38,9 +38,9 @@ namespace SimpleLanguage.IR
         public Dictionary<string, IRMethod> IRMethodDict = new Dictionary<string, IRMethod>();
         public Dictionary<int, string> IRStringDict = new Dictionary<int,string>();
         public Dictionary<int, SValue> IRConstDict = new Dictionary<int, SValue>();
-        //public List<IRMetaVariable> staticVariableList => m_StaticVariableList;
+        public List<IRMetaVariable> staticVariableList => m_StaticVariableList;
 
-        //private List<IRMetaVariable> m_StaticVariableList = new List<IRMetaVariable>();
+        private List<IRMetaVariable> m_StaticVariableList = new List<IRMetaVariable>();
         #region debug用
         private Dictionary<int,IRMetaVariable> m_AllVariableDict = new Dictionary<int,IRMetaVariable>();
         #endregion
@@ -81,7 +81,7 @@ namespace SimpleLanguage.IR
             var mmfDict = MethodManager.instance.metaOriginalFunctionList;
             foreach (var v in mmfDict)
             {
-                IRMethod irm = TranslateIRByFunction(v);
+                IRMethod irm = this.TranslateIRByFunction(v);
                 AddIRMethod(irm);
             }
             //动态解析出来的函数

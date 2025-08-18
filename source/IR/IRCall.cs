@@ -11,6 +11,7 @@ using SimpleLanguage.Core;
 using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.Intrinsics.Arm;
 
 namespace SimpleLanguage.IR
 {
@@ -31,10 +32,18 @@ namespace SimpleLanguage.IR
             {
                 return;
             }
+
+            IRMetaClass curMc = null;
             if (mfc.loadMetaVariable != null)
             {
                 IRLoadVariable irload = IRLoadVariable.NewLoadVariable(m_IRMethod, mfc.loadMetaVariable );
                 AddIRRangeData(irload.IRDataList);
+
+                IRData sc1 = new IRData();
+                sc1.opCode = EIROpCode.LoadStackClass;
+                AddIRData(sc1);
+
+                curMc = m_IRMethod.irManager.GetIRMetaClassByName(mfc.loadMetaVariable.metaDefineType.metaClass.allClassName);
             }
             paramCount = mfc.metaInputParamCollection.count;
             for (int j = 0; j < paramCount; j++)
@@ -58,18 +67,19 @@ namespace SimpleLanguage.IR
 
             m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(mf.functionAllName);
 
-            var cc = m_IRMethod.irManager.GetIRMetaClassByName(mfc.callerInstanceClass?.allClassName);
-
             int callMethodIndex = -1;
-
-            if( cc != null )
+            if ( mfc.callerInstanceClass != null )
             {
+                curMc = m_IRMethod.irManager.GetIRMetaClassByName(mfc.callerInstanceClass?.allClassName);
                 IRData datacallsc = new IRData();
                 datacallsc.opCode = EIROpCode.SetCallClass;
-                datacallsc.opValue = cc;
+                datacallsc.opValue = curMc;
                 datacallsc.SetDebugInfoByToken(mf.pingToken);
                 AddIRData(datacallsc);
-                callMethodIndex = cc.GetIRNonStaticMethodIndexByMethod( mf.virtualFunctionName );
+            }
+            if( curMc != null )
+            {
+                callMethodIndex = curMc.GetIRNonStaticMethodIndexByMethod( mf.virtualFunctionName );
             }
 
             if( callMethodIndex == -1 )
@@ -95,7 +105,7 @@ namespace SimpleLanguage.IR
                 AddIRData(irpop.data);
             }
 
-            if (cc != null)
+            if (curMc != null)
             {
                 IRData datacallunsc = new IRData();
                 datacallunsc.opCode = EIROpCode.UnSetCallClass;
