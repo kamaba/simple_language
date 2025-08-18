@@ -61,8 +61,8 @@ namespace SimpleLanguage.IR
                 case EType.UInt32: return EIROpCode.LoadConstUInt32;
                 case EType.Int64: return EIROpCode.LoadConstInt64;
                 case EType.UInt64: return EIROpCode.LoadConstUInt64;
-                case EType.Float: return EIROpCode.LoadConstFloat;
-                case EType.Double: return EIROpCode.LoadConstDouble;
+                case EType.Float32: return EIROpCode.LoadConstFloat;
+                case EType.Float64: return EIROpCode.LoadConstDouble;
                 case EType.String: return EIROpCode.LoadConstString;
                 case EType.Null:return EIROpCode.LoadConstNull;
                 default:
@@ -84,21 +84,6 @@ namespace SimpleLanguage.IR
                 IRMethod irm = TranslateIRByFunction(v);
                 AddIRMethod(irm);
             }
-            ////代码定义的成员函数
-            //var mmfDict2 = MethodManager.instance.metaOriginalFunctionList;
-            //foreach (var v in mmfDict2)
-            //{
-            //    IRMethod irm = TranslateIRByFunction(v);
-            //    AddIRMethod(irm);
-            //}
-            ////代码定义的成员函数
-            //var mmfDict3 = MethodManager.instance.metaOriginalFunctionList;
-            //foreach (var v in mmfDict3)
-            //{
-            //    IRMethod irm = TranslateIRByFunction(v);
-            //    AddIRMethod(irm);
-            //}
-
             //动态解析出来的函数
             var dynamicMmfDict4 = MethodManager.instance.metaDynamicFunctionList;
             foreach (var v in dynamicMmfDict4)

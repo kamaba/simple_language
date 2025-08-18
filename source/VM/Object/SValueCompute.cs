@@ -272,7 +272,7 @@ namespace SimpleLanguage.VM
                             sint8Value = (sbyte)(sint8Value >> svalSbyte);
                     }
                     break;
-                case EType.Float:
+                case EType.Float32:
                     {
                         float svalFloat = (float)svalue.GetValueObject();
                         if (sign == 0)
@@ -291,7 +291,7 @@ namespace SimpleLanguage.VM
                         }
                     }
                     break;
-                case EType.Double:
+                case EType.Float64:
                     {
                         double svalDouble = (double)svalue.GetValueObject();
                         if (sign == 0)

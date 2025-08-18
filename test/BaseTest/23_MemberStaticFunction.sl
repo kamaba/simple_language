@@ -17,14 +17,12 @@ VClass
 {
     fun()
     {
-        System.Console.WriteLine("vclass fun" );
+        System.Console.Write("vclass fun" );
     }
-    #!
     override get int hashCode()
     {
         ret 100
     }
-    !#
     override string toString()
     {
         ret "VClass.toString()"
@@ -43,20 +41,15 @@ OClass extends VClass
 {
     override fun()
     {
-        System.Console.WriteLine("oclass fun" )
+        System.Console.Write("oclass fun" )
     }
-    #!
     override get int hashCode()
     {
         ret 1001
     }
-    !#
     override string toString()
     {
         ret "OClass.toString()"
-    }
-    fun2(){
-
     }
 }
 
@@ -67,6 +60,6 @@ OverrideFunction
         VClass oclass = OClass()
         oclass.fun()
         oc2 = OClass()
-        System.Console.WriteLine(oc2.toString())
+        oc2.toString()
     }
 }

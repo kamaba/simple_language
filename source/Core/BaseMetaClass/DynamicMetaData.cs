@@ -51,23 +51,23 @@ namespace SimpleLanguage.Core.SelfMeta
             MetaMemberFunction Clone = new MetaMemberFunction(this, "Clone");
             Clone.SetReturnMetaClass( this );
             AddInnerMetaMemberFunction(Clone);
-            MetaMemberFunction ToString = new MetaMemberFunction(this, "ToString");
+            MetaMemberFunction ToString = new MetaMemberFunction(this, "toString");
             ToString.SetReturnMetaClass(CoreMetaClassManager.stringMetaClass);
             AddInnerMetaMemberFunction(ToString);
-            MetaMemberFunction ToShort = new MetaMemberFunction(this, "ToShort");
+            MetaMemberFunction ToShort = new MetaMemberFunction(this, "toShort");
             ToShort.SetReturnMetaClass(CoreMetaClassManager.int16MetaClass);
             AddInnerMetaMemberFunction(ToShort);
-            MetaMemberFunction ToInt = new MetaMemberFunction(this, "ToInt");
+            MetaMemberFunction ToInt = new MetaMemberFunction(this, "toInt");
             ToInt.SetReturnMetaClass(CoreMetaClassManager.int32MetaClass);
             AddInnerMetaMemberFunction(ToShort);
-            MetaMemberFunction ToLong = new MetaMemberFunction(this, "ToLong");
+            MetaMemberFunction ToLong = new MetaMemberFunction(this, "toLong");
             ToLong.SetReturnMetaClass(CoreMetaClassManager.int64MetaClass);
             AddInnerMetaMemberFunction(ToLong);
-            MetaMemberFunction ToFloat = new MetaMemberFunction(this, "ToFloat");
-            ToFloat.SetReturnMetaClass(CoreMetaClassManager.floatMetaClass);
+            MetaMemberFunction ToFloat = new MetaMemberFunction(this, "toFloat32");
+            ToFloat.SetReturnMetaClass(CoreMetaClassManager.float32MetaClass);
             AddInnerMetaMemberFunction(ToFloat);
-            MetaMemberFunction ToDouble = new MetaMemberFunction(this, "ToDouble");
-            ToDouble.SetReturnMetaClass(CoreMetaClassManager.doubleMetaClass);
+            MetaMemberFunction ToDouble = new MetaMemberFunction(this, "toFloat64");
+            ToDouble.SetReturnMetaClass(CoreMetaClassManager.float64MetaClass);
             AddInnerMetaMemberFunction(ToLong);
         }
 

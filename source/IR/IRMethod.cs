@@ -18,6 +18,7 @@ namespace SimpleLanguage.IR
     public class IRMethod
     {
         public string id { get; set; } = "";
+        public string defineName { get; set; } = "";
         public IRManager irManager { get; private set; } = null;
         //private List<IRMetaVariable> methodInputTemplateObject => m_MethodInputTemplateObject;
         public List<IRMetaVariable> methodArgumentList => m_MethodArgumentList;

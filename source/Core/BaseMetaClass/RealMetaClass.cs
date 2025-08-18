@@ -13,13 +13,13 @@ using SimpleLanguage.Core;
 
 namespace SimpleLanguage.Core.SelfMeta
 {
-    public class FloatMetaClass : MetaClass
+    public class Float32MetaClass : MetaClass
     {
-        public FloatMetaClass() : base(DefaultObject.Float.ToString())
+        public Float32MetaClass() : base(DefaultObject.Float32.ToString())
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_ClassDefineType = EClassDefineType.InnerDefine;
-            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float, 0.0f);
+            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float32, 0.0f);
             SetDefaultExpressNode(mcen);
 
 
@@ -33,7 +33,7 @@ namespace SimpleLanguage.Core.SelfMeta
             //MetaMemberFunction Cast = new MetaMemberFunction(this, "Cast");
             //Cast.AddMetaDefineParam(new MetaDefineParam("Template", this, null, CoreMetaClassManager.templateMetaClass, null));
             //AddMetaMemberFunction(Cast);
-            m_Type = EType.Float;
+            m_Type = EType.Float32;
 
             //MetaMemberFunction ToInt32 = new MetaMemberFunction(this, "toInt32");
             //ToInt32.isOverrideFunction = true;
@@ -60,20 +60,20 @@ namespace SimpleLanguage.Core.SelfMeta
 
         public static MetaClass CreateMetaClass()
         {
-            MetaClass mc = new FloatMetaClass();
+            MetaClass mc = new Float32MetaClass();
             ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.selfModule);
             return mc;
         }
     }
-    public class DoubleMetaClass : MetaClass
+    public class Float64MetaClass : MetaClass
     {
-        public DoubleMetaClass() : base(DefaultObject.Double.ToString())
+        public Float64MetaClass() : base(DefaultObject.Float64.ToString())
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_ClassDefineType = EClassDefineType.InnerDefine;
-            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Double, 0.0f);
+            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float64, 0.0f);
             SetDefaultExpressNode(mcen);
-            m_Type = EType.Double;
+            m_Type = EType.Float64;
         }
         public MetaClass Cast(MetaTemplate mc)
         {
@@ -105,7 +105,7 @@ namespace SimpleLanguage.Core.SelfMeta
         }
         public static MetaClass CreateMetaClass()
         {
-            MetaClass mc = new DoubleMetaClass();
+            MetaClass mc = new Float64MetaClass();
             ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.selfModule);
             return mc;
         }

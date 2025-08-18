@@ -395,12 +395,12 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Convert_R4:
                     {
-                        m_ValueStack[m_ValueIndex-1].ConvertByEType(EType.Float);
+                        m_ValueStack[m_ValueIndex-1].ConvertByEType(EType.Float32);
                     }
                     break;
                 case EIROpCode.Convert_R8:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.Double);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.Float64);
                     }
                     break;
                 case EIROpCode.LoadArgument:
@@ -453,8 +453,8 @@ namespace SimpleLanguage.VM.Runtime
                             case EType.UInt32: v.uint32Value = sv.uint32Value; break;
                             case EType.Int64: v.int64Value = sv.int64Value; break;
                             case EType.UInt64: v.uint64Value = sv.uint64Value; break;
-                            case EType.Float: v.floatValue = sv.floatValue; break;
-                            case EType.Double: v.doubleValue = sv.doubleValue; break;
+                            case EType.Float32: v.floatValue = sv.floatValue; break;
+                            case EType.Float64: v.doubleValue = sv.doubleValue; break;
                             case EType.String: v.stringValue = sv.stringValue; break;
                             case EType.Class:
                                 {
@@ -516,7 +516,12 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.CallVirt:
                     {                        
-                        IRMethod cfc = m_CallIRMetaClass.GetIRMethodByIndex(iri.index);
+                        if(m_CallIRMetaClass == null )
+                        {
+                            Log.AddVM(EError.None, "没有当前类定义在VM运行时!!");
+                            return;
+                        }
+                        IRMethod cfc = m_CallIRMetaClass.GetIRNonStaticMethodByIndex(iri.index);
                         InnerCLRRuntimeVM.RunIRMethod(m_CallIRMetaClass, cfc);
                     }
                     break;
