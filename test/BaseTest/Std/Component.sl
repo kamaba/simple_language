@@ -5,6 +5,6 @@ public class Component extends Object
 
     public Component GetComponent<T>()
     {
-        return T.default;
+        ret T.default;
     }
 }

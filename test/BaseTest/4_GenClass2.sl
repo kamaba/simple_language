@@ -12,6 +12,18 @@ namespace Core
     }
 }
 
+LT
+{
+    private _init_()
+    {
+
+    }
+    _init_( string1 )
+    {
+        
+    }
+}
+
 Level1<T>
 {
     T _Level1_t = null
@@ -45,7 +57,7 @@ Level1<T>
     get T Level1_t()
     {
         ret this._Level1_t
-    }
+    }   
     static T static_t = null;
 
     Level2<T>
@@ -60,19 +72,34 @@ Level1<T>
         Level1<short>.static_t = 20s;
         ret static_t
     }
+    override string toString()
+    {
+        #!
+        if this._Level1_t.type == int.type
+        {
+            ret "int32"
+        }
+        else
+        {
+            ret this._Level1_t.toString()
+        }
+        !#
+        ret "Level1 String----"
+    }
 }
 
 GenClass2{
     static fun()
     {
         #Level1<int>  GenClass2_fun_l1 = Level1<int>()
-        #penret = Level1<string>.Open("tttstring")
+        penret = Level1<string>.Open("  !!!!!tttstring!!!!!!!    ")
         #GenClass2_fun_l1.setLevel1( 200 )
-        #System.Console.WriteLine("_this_——————————————————————————————" + GenClass2_fun_l1.Level1_t + penret )
+        #+ Level1<string>.static_t + "   short:  " + Level1<short>.static_t + "  openReturn: " 
+        #System.Console.WriteLine("_this_——————————————————————————————  " + penret )
 
         Level1<Level1<int> > GenClass2_fun_l2 = Level1<Level1<int> >()
         GenClass2_fun_l2.setLevel1( Level1<int>(20) )
-        System.Console.Write("_this2_-----------------------" + GenClass2_fun_l2.Level1_t.Level1_t )
+        System.Console.Write("_this2_-----------------------" + GenClass2_fun_l2.Level1_t.Level1_t + "string:" + Level1<string>.static_t + "short:" + Level1<short>.static_t )
     }
 }
 

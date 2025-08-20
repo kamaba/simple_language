@@ -23,12 +23,13 @@ namespace SimpleLanguage.IR
         public void ParseIRStatements(MetaDefineVarStatements ms)
         {
             MetaNewObjectExpressNode mnoen = null;
+            IRMetaClass irmc = null;
             if (ms.expressNode != null)
             {
                 mnoen = ms.expressNode as MetaNewObjectExpressNode;
                 if (mnoen != null)
                 {
-                    IRMetaClass irmc = IRManager.instance.GetIRMetaClassByName(ms.expressNode.GetReturnMetaClass().allClassName);
+                    irmc = IRManager.instance.GetIRMetaClassByName(ms.expressNode.GetReturnMetaClass().allClassName);
                     IRNew irNew = new IRNew(irMethod, irmc);
                     m_IRStatements.Add(irNew);
                 }
@@ -38,7 +39,7 @@ namespace SimpleLanguage.IR
                     m_IRStatements.Add(m_IRExpress);
                 }
             }
-            IRStoreVariable irStoreVar = IRStoreVariable.CreateIRStoreVariable(irMethod, ms.defineVarMetaVariable);
+            IRStoreVariable irStoreVar = IRStoreVariable.CreateIRStoreVariable(irMethod, irmc, ms.defineVarMetaVariable);
             //if(m_FileMetaOpAssignSyntax != null )
             //{
             //    irStoreVar.data.SetDebugInfoByToken(m_FileMetaOpAssignSyntax.assignToken);

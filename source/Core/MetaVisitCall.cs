@@ -153,21 +153,21 @@ namespace SimpleLanguage.Core
         public MetaVisitVariable visitVariable { get; private set; } = null;
         public MetaMethodCall methodCall { get; private set; } = null;
         public MetaClass callerMetaClass { get; private set; }= null;
-        public bool callerMetaClassUseSetCurrentClass { get; set; } = false;
-
+        public MetaClass genTemplateMetaClass { get; set; } = null;
         public MetaTemplate callerMetaTemplate { get; private set; } = null;
         public MetaBraceOrBracketStatementsContent metaBraceStatementsContent => m_MetaBraceStatementsContent;
 
         private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent = null;
         protected MetaType m_ReturnMetaType = null;
 
-        public static MetaVisitNode CreateByNewTemplate( MetaTemplate template, MetaVariable mv)
+        public static MetaVisitNode CreateByNewTemplate( MetaTemplate template, MetaFunction mf, MetaVariable mv)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.callerMetaTemplate = template;
             vn.visitType = EVisitType.NewTemplate;
             vn.variable = mv;
+            vn.methodCall = new MetaMethodCall(mf.ownerMetaClass, mf, null, null, mv);
 
             return vn;
 

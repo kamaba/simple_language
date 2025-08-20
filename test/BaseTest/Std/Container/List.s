@@ -2,7 +2,7 @@
 
 public class List<T>
 {
-    Array<T> arraycontent = Array<T>(4);
+    Array arraycontent = null
 
     public int hasCount;
 

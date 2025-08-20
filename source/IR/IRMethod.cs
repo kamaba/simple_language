@@ -44,28 +44,42 @@ namespace SimpleLanguage.IR
         public void Parse()
         {
             var mf = m_BindMetaFunction;
-
-            //id = mf.functionAllName;
-            //virtualFunctionName = mf.virtualFunctionName;
+            var id2 = this.id;
+            var vfn = mf.virtualFunctionName;
 
             if (mf.thisMetaVariable != null)
             {
-                IRMetaVariable imp = new IRMetaVariable(mf.thisMetaVariable);
+                var tmv = mf.thisMetaVariable.sourceMetaVariable;
+                if( tmv == null )
+                {
+                    tmv = mf.thisMetaVariable;
+                }
+                IRMetaVariable imp = new IRMetaVariable(tmv);
                 imp.index = 0;
                 m_MethodArgumentList.Add(imp);
             }
             if (mf.returnMetaVariable!=null)
             {
-                IRMetaVariable imp = new IRMetaVariable(mf.returnMetaVariable);
+                var tmv = mf.returnMetaVariable.sourceMetaVariable;
+                if (tmv == null)
+                {
+                    tmv = mf.returnMetaVariable;
+                }
+                IRMetaVariable imp = new IRMetaVariable(tmv);
                 imp.index = 0;
                 m_MethodReturnList.Add(imp);
             }
             var list2 = mf.metaMemberParamCollection.metaDefineParamList;
             for( int i = 0; i < list2.Count; i++ )
             {
-                MetaDefineParam mdp = list2[i] as MetaDefineParam;
+                MetaDefineParam mdp = list2[i];
                 if (mdp == null) continue;
-                IRMetaVariable imp = new IRMetaVariable(mdp.metaVariable);
+                var tmv = mdp.metaVariable.sourceMetaVariable;
+                if (tmv == null)
+                {
+                    tmv = mdp.metaVariable;
+                }
+                IRMetaVariable imp = new IRMetaVariable(tmv);
                 imp.index = m_MethodArgumentList.Count;
                 m_MethodArgumentList.Add(imp);
             }
@@ -73,7 +87,12 @@ namespace SimpleLanguage.IR
             var list = mf.GetCalcMetaVariableList();
             for( int i = 0; i < list.Count; i++ )
             {
-                var irsd = new IRMetaVariable(list[i]);
+                var tmv = list[i].sourceMetaVariable;
+                if (tmv == null)
+                {
+                    tmv = list[i];
+                }
+                var irsd = new IRMetaVariable(tmv);
                 irsd.index = m_MethodLocalVariableList.Count;
                 m_MethodLocalVariableList.Add(irsd);
             }

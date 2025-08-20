@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "22_override_function.sl";
+            path = "4_GenClass2.sl";
             group = "temp";
             tag = "all";
             a = 200
@@ -89,9 +89,9 @@ Project
        #CommitTest.fun();
        #NumberTest.fun()
        #StringTest.fun()
-       #GenClass2.fun()
+       GenClass2.fun()
        #ArrayTest.fun()
-       OverrideFunction.fun()
+       #OverrideFunction.fun()
     }
     static Test()
     {

@@ -274,8 +274,8 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        if (v.isConstructInitFunction) continue;
                         if (v.isWithInterface) continue;
+                        //if (v.isConstructInitFunction) continue;
                         m_NonStaticVirtualMetaMemberFunctionList.Add(v);
                     }
                 }
@@ -309,7 +309,7 @@ namespace SimpleLanguage.Core
             {
                 canAdd = true;
                 var efun = v;
-                if (efun.isConstructInitFunction) { continue; }
+                //if (efun.isConstructInitFunction) { continue; }
 
                 if( efun.isStatic )
                 {
@@ -319,7 +319,7 @@ namespace SimpleLanguage.Core
                
                 foreach( var v2 in m_CurrentClassMetaMemberFunctionList)
                 {
-                    if (v2.isConstructInitFunction) continue;
+                    //if (v2.isConstructInitFunction) continue;
 
                     if( v2.isStatic )
                     {

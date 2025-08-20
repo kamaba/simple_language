@@ -515,11 +515,13 @@ namespace SimpleLanguage.VM.Runtime
                     }
                     break;
                 case EIROpCode.CallVirt:
-                    {                        
-                        if(m_CallIRMetaClass == null )
+                    {
+                        var v = m_ValueStack[m_ValueIndex - 1];
+
+                        if (v.eType == EType.Class)
                         {
-                            Log.AddVM(EError.None, "没有当前类定义在VM运行时!!");
-                            return;
+                            var co = (v.sobject as ClassObject);
+                            m_CallIRMetaClass = co.value.irMetaClass;
                         }
                         IRMethod cfc = m_CallIRMetaClass.GetIRNonStaticMethodByIndex(iri.index);
                         InnerCLRRuntimeVM.RunIRMethod(m_CallIRMetaClass, cfc);
@@ -550,6 +552,21 @@ namespace SimpleLanguage.VM.Runtime
                         IRMetaClass mdt = iri.opValue as IRMetaClass;
                         SObject sob = CreateObjectByIRMetaClass(mdt);
                         if ( sob is ClassObject co )
+                        {
+                            ObjectManager.AddClassObject(co);
+                        }
+                        m_ValueStack[m_ValueIndex++].SetSObject(sob);
+                    }
+                    break;
+                case EIROpCode.NewTemplateClass:
+                    {
+                        if( m_CallIRMetaClass ==  null )
+                        {
+                            Log.AddVM(EError.None, "创建模板对象失败，CallIRMetaCall is Null!");
+                            return;
+                        }
+                        SObject sob = CreateObjectByIRMetaClass(m_CallIRMetaClass);
+                        if (sob is ClassObject co)
                         {
                             ObjectManager.AddClassObject(co);
                         }

@@ -9,6 +9,14 @@ public class Type
     public bool isEnum = false
     public bool isArray = false;
 }
+
+public class Int32 extends Object
+{
+    public override Type type()
+    {
+        
+    }
+}
 TestyTest
 {
     ArrClass

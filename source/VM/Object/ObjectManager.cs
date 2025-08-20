@@ -59,71 +59,72 @@ namespace SimpleLanguage.VM
                 sobj = new TemplateObject();
                 return sobj;
             }
-            if (mdt.allName == "Boolean")
+            string name = mdt.allName;
+            if (name == "S.Core.Boolean" || name == "Boolean")
             {
                 sobj = new BoolObject(false);
                 sobj.typeId = 1;
             }
-            else if (mdt.allName == "Object")
+            else if (name == "S.Core.Object" || name == "Object")
             {
-                sobj = new ClassObject(mdt);
+                sobj = new AnyObject();
             }
-            else if (mdt.allName == "Byte")
+            else if (name == "S.Core.Byte" || name == "Byte")
             {
                 sobj = new ByteObject(0);
                 sobj.typeId = 3;
             }
-            else if (mdt.allName == "SByte")
+            else if (name == "S.Core.SByte" || name == "SByte")
             {
                 sobj = new SByteObject(0);
                 sobj.typeId = 3;
             }
-            else if (mdt.allName == "Int16")
+            else if (name == "S.Core.Int16" || name == "Int16")
             {
                 sobj = new Int16Object(0);
                 sobj.typeId = 3;
             }
-            else if (mdt.allName == "UInt16")
+            else if (name == "S.Core.UInt16" || name == "UInt16")
             {
                 sobj = new UInt16Object(0);
                 sobj.typeId = 3;
             }
-            else if (mdt.allName == "Int32")
+            else if (name == "S.Core.Int32" || name == "Int32")
             {
                 sobj = new Int32Object(0);
                 sobj.typeId = 3;
             }
-            else if (mdt.allName == "UInt32")
+            else if (name == "S.Core.UInt32" || name == "UInt32")
             {
                 sobj = new UInt32Object(0);
                 sobj.typeId = 3;
             }
-            else if (mdt.allName == "Int64")
+            else if (name == "S.Core.Int64" || name == "Int64")
             {
                 sobj = new Int64Object(0);
                 sobj.typeId = 3;
             }
-            else if (mdt.allName == "UInt64")
+            else if (name == "S.Core.UInt64" || name == "UInt64")
             {
                 sobj = new UInt64Object(0);
                 sobj.typeId = 3;
             }
-            else if (mdt.allName == "Float32")
+            else if (name == "S.Core.Float32" || name == "Float32")
             {
                 sobj = new FloatObject();
                 sobj.typeId = 4;
             }
-            else if (mdt.allName == "Float64")
+            else if (name == "S.Core.Float64" || name == "Float64")
             {
                 sobj = new DoubleObject();
                 sobj.typeId = 5;
             }
-            else if (mdt.allName == "String")
+            else if (name == "S.Core.String" || name == "String")
             {
                 sobj = new StringObject("");
                 sobj.typeId = 10;
             }
-            else if( mdt.allName == "Void" )
+            else if(name == "S.Core.Void" || name == "Void" )
             {
                 sobj = new VoidObject();
                 sobj.typeId = 0;

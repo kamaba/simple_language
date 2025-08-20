@@ -1,5 +1,5 @@
 
-class Object
+public class Object
 {
     public Int32 getHashCode()
     {
@@ -7,66 +7,69 @@ class Object
     }
     public Object clone()
     {
-        return Object();
+        ret Object();
     }
-    public Type type()
+    public get Type type()
     {
         
     }
-    public Object Cast<T>()
+    public Object cast<T>()
     {
-        return this;
+        ret this;
     }
     public string toString()
     {
-        return "";
+        ret "";
     }
     public UInt16 toUShort()
     {
-        return 0us;
+        ret 0us;
     }
     public Int16 toShort()
     {
-        return 0s;
+        ret 0s;
     }
     public Int32 toInt()
     {
-        return 0i;
+        ret 0i;
     }
     public UInt32 toUInt()
     {
-        return 0ui;
+        ret 0ui;
     }
     public Int64 toLong()
     {
-        return 0L;
+        ret 0L;
     }
     public Int64 toULong()
     {
-        return 0uL;
+        ret 0uL;
     }
-    public Float toFloat()
+    public Float32 toFloat32()
     {
-        return 0.0f;
+        ret 0.0f;
     }
-    public Double toDouble()
+    public Float64 toFloat64()
     {
-        return 0.0d;
+        ret 0.0d;
     }
+    #!
+    以下的，在有扩展容器后，动态添加到Object类中，通过宏判断，如果已加载模块后，进行添加
     public Array toArray()
     {
-        return null;
+        ret null;
     }
     public List toList()
     {
-        return null;
+        ret null;
     }
     public Map toMap()
     {
-        return null;
+        ret null;
     }
     public Tuple toTuple()
     {
-        return null;
+        ret null;
     }
+    !#
 }

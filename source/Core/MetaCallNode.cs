@@ -370,6 +370,13 @@ namespace SimpleLanguage.Core
                             m_MetaTemplate = m_FrontDefineMetaType.metaTemplate;
                             m_CallNodeType = ECallNodeType.NewTemplate;
                             m_StoreMetaVariable = m_DefineMetaVariable;
+                            MetaMemberFunction mmf = m_FrontDefineMetaType.metaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", null, m_MetaInputParamCollection);
+                            if (mmf == null)
+                            {
+                                Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + m_FrontDefineMetaType.metaClass.allClassName + "的_init_方法!)", m_Token);
+                                return false;
+                            }
+                            this.m_MetaFunction = mmf;
                         }
                         else
                         {

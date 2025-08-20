@@ -31,7 +31,7 @@ namespace SimpleLanguage.IR
         public IRNew(IRMethod irMethod) : base(irMethod )
         {
             IRData data = new IRData();
-            data.opCode = EIROpCode.NewCallClass;
+            data.opCode = EIROpCode.NewTemplateClass;
             data.debugInfo = new DebugInfo() { name =  "", info = "NewCallClass" };
             m_IRDataList.Add(data);
         }
