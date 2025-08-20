@@ -23,6 +23,7 @@ namespace SimpleLanguage.Core
             }
         }
         public MetaClass metaClass => m_MetaClass;
+        public MetaClass typeInferenceClass => m_TypeInferenceClass;
         public MetaClass templateMetaClass => m_TemplateMetaClass;
         public bool isEnum => m_MetaClass is MetaEnum;
         public bool isData => m_MetaClass is MetaData;
@@ -39,6 +40,7 @@ namespace SimpleLanguage.Core
         //private MetaInputTemplateCollection m_InputTemplateCollection = null;
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
         private MetaClass m_TemplateMetaClass = null;                    // List<int> => list
+        private MetaClass m_TypeInferenceClass = null;                  //推理类
         private MetaType m_ParentMetaType = null;
         private MetaTemplate m_MetaTemplate = null;
         private MetaExpressNode m_DefaultExpressNode = null;        // int a => a = 0;
@@ -226,6 +228,10 @@ namespace SimpleLanguage.Core
         public void SetMetaTemplate(MetaTemplate mt)
         {
             m_MetaTemplate = mt;
+        }
+        public void SetTypeInferenceClass(MetaClass mc )
+        {
+            this.m_TypeInferenceClass = mc;
         }
         public void SetTemplateMetaClass( MetaClass mc )
         {

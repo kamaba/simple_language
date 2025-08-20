@@ -42,6 +42,7 @@ namespace SimpleLanguage.Core
         public EVariableFrom variableFrom => m_VariableFrom;
         public  MetaType metaDefineType => m_DefineMetaType;
         public MetaClass ownerMetaClass => m_OwnerMetaClass;
+        public MetaVariable sourceMetaVariable => m_SourceMetaVariable;
         public Token pingToken => m_PintTokenList.Count > 0 ? m_PintTokenList[0] : null;
 
         #region 属性
@@ -57,6 +58,7 @@ namespace SimpleLanguage.Core
         //用来存放扩展包含变量
         protected Dictionary<string, MetaVariable> m_MetaVariableDict = new Dictionary<string, MetaVariable>();
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
+        protected MetaVariable m_SourceMetaVariable = null;
         #endregion
 
         protected MetaVariable() { }
@@ -69,8 +71,9 @@ namespace SimpleLanguage.Core
             m_IsStatic = mv.m_IsStatic;
             m_IsConst = mv.m_IsConst;
             m_IsParsed = mv.m_IsParsed;
+            m_SourceMetaVariable = mv;
 
-            foreach( var v in mv.m_MetaVariableDict)
+            foreach ( var v in mv.m_MetaVariableDict)
             {
                 m_MetaVariableDict.Add(v.Key, new MetaVariable( v.Value ) );
             }

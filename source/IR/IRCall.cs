@@ -36,14 +36,14 @@ namespace SimpleLanguage.IR
             IRMetaClass curMc = null;
             if (mfc.loadMetaVariable != null)
             {
-                IRLoadVariable irload = IRLoadVariable.NewLoadVariable(m_IRMethod, mfc.loadMetaVariable );
+                curMc = m_IRMethod.irManager.GetIRMetaClassByName(mfc.loadMetaVariable.metaDefineType.metaClass.allClassName);
+                IRLoadVariable irload = IRLoadVariable.NewLoadVariable(m_IRMethod, curMc, mfc.loadMetaVariable );
                 AddIRRangeData(irload.IRDataList);
 
                 IRData sc1 = new IRData();
                 sc1.opCode = EIROpCode.LoadStackClass;
                 AddIRData(sc1);
 
-                curMc = m_IRMethod.irManager.GetIRMetaClassByName(mfc.loadMetaVariable.metaDefineType.metaClass.allClassName);
             }
             paramCount = mfc.metaInputParamCollection.count;
             for (int j = 0; j < paramCount; j++)

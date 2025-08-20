@@ -12,6 +12,7 @@ using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using SimpleLanguage.Parse;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using static SimpleLanguage.Core.MetaVariable;
@@ -37,17 +38,52 @@ namespace SimpleLanguage.IR
             var clist = ms.leftMetaExpress.metaCallLink.callNodeList;
             for (int i = 0; i < clist.Count; i++)
             {
+                var cl = clist[i];
                 if( i < clist.Count - 1 )
                 {
-                    var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, clist[i]);
+                    var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, cl );
                     m_IRStatements.AddRange(list);
                 }
                 else
                 {
-                    if(clist[i].visitType == MetaVisitNode.EVisitType.Variable )
+                    if(cl.visitType == MetaVisitNode.EVisitType.Variable )
                     {
-                        IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irMethod, clist[i].variable);
+                        var mv = cl.GetRetMetaVariable();
+                        List<IRBase> irList = new List<IRBase>();
+                        IRMetaClass irmc = irMethod.irManager.GetIRMetaClassByName(mv.ownerMetaClass.allClassName);
+                        if (cl.genTemplateMetaClass != null)
+                        {
+                            IRData sc2 = new IRData();
+                            sc2.opCode = EIROpCode.SetCallClass;
+                            irmc = irMethod.irManager.GetIRMetaClassByName(cl.genTemplateMetaClass.allClassName);
+                            sc2.opValue = irmc;
+                            IRBase irbase22 = new IRBase(sc2);
+                            irList.Add(irbase22);
+                        }
+                        else if( cl.callerMetaClass?.isTemplateClass == true )
+                        {
+                            IRData sc2 = new IRData();
+                            sc2.opCode = EIROpCode.SetCurrentClassCallClass;
+                            IRBase irbase22 = new IRBase(sc2);
+                            irList.Add(irbase22);
+                        }
+
+
+                        m_IRStatements.AddRange(irList);
+
+                        IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irMethod, irmc, clist[i].variable);
                         m_IRStatements.Add(irsv);
+
+                        if(irList.Count > 0 )
+                        {
+                            List<IRBase> irList22 = new List<IRBase>();
+                            IRData sc2end = new IRData();
+                            sc2end.opCode = EIROpCode.UnSetCallClass;
+                            IRBase irbase = new IRBase(sc2end);
+                            irList22.Add(irbase);
+                            m_IRStatements.AddRange(irList22);
+                        }
+
                     }
                     else
                     {

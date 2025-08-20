@@ -111,8 +111,7 @@ namespace SimpleLanguage.Core
             m_FileMetaParamter = mdp.m_FileMetaParamter;
             m_MetaExpressNode = mdp.m_MetaExpressNode;
             m_OwnerMetaFunction = mdp.m_OwnerMetaFunction;
-            m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.Argument,
-                null, m_OwnerMetaFunction.ownerMetaClass, new MetaType(mdp.metaVariable.metaDefineType) );
+            m_MetaVariable = new MetaVariable( mdp.m_MetaVariable );
         }
         public MetaDefineParam(MetaFunction mf, FileMetaParamterDefine fmp)
         {

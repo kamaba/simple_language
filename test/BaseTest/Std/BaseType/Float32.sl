@@ -1,8 +1,24 @@
 
-Float
+public class Core.Float32 extends Object
 {
-    Float value;
-    String ToString()
+    public const Epsilen = 4.9123123213d;
+    public const MaxValue = 20d;
+    public const MinValue = -1d;
+
+    Float32 value;
+
+
+    public static bool IsFinite( Float32 f )
+    {
+        return false;
+    }
+    public override get Type type()
+    {
+        ret null
+    }
+
+
+    public override String toString()
     {
         return this;
     }
@@ -22,7 +38,7 @@ Float
         }
         return 0.0f;
     }
-    static Int32 ToInt32( Float _value )
+    public static Int32 toInt32( Float _value )
     {
         return Int32.Parse( _value );
     }
