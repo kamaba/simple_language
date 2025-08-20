@@ -48,7 +48,6 @@ namespace SimpleLanguage.IR
         StoreNotStaticField,
         StoreReturn,
         
-        LoadStackClass,
         SetCurrentClassCallClass,
         SetCallClass,
         UnSetCallClass,

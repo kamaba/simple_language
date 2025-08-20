@@ -432,7 +432,7 @@ namespace SimpleLanguage.VM.Runtime
                         if (v.eType == EType.Class)
                         {
                             var co = (v.sobject as ClassObject);
-                            co.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
+                            co.value.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
                         }
                         //栈位不变，因为当前对象位的被通过索引取出来的成员变量值，覆盖掉， 所以栈位不会发生变化
                     }
@@ -481,17 +481,6 @@ namespace SimpleLanguage.VM.Runtime
                         InnerCLRRuntimeVM.SetStaticVariable(m_CallIRMetaClass, iri.index, ref m_ValueStack[--m_ValueIndex]);
                     }
                     break;
-                case EIROpCode.LoadStackClass:
-                    {
-                        var v = m_ValueStack[m_ValueIndex - 1];
-
-                        if (v.eType == EType.Class)
-                        {
-                            var co = (v.sobject as ClassObject);
-                            m_CallIRMetaClass = co.value.irMetaClass;
-                        }
-                    }
-                break;
                 case EIROpCode.SetCurrentClassCallClass:
                     {
                         m_CallIRMetaClass = m_IRMetaClass;
@@ -516,15 +505,29 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.CallVirt:
                     {
-                        var v = m_ValueStack[m_ValueIndex - 1];
+                        int stackFrontIndex = (int)iri.opValue;
+                        int stackIndex = m_ValueIndex - stackFrontIndex;
+                        if( stackIndex < 0 )
+                        {
+                            Log.AddVM(EError.None, "StackIndex 是负数!");
+                            return;
+                        }
 
+                        var v = m_ValueStack[stackIndex];
+
+                        IRMetaClass irc = null;
                         if (v.eType == EType.Class)
                         {
                             var co = (v.sobject as ClassObject);
-                            m_CallIRMetaClass = co.value.irMetaClass;
+                            irc = co.value.irMetaClass;
                         }
-                        IRMethod cfc = m_CallIRMetaClass.GetIRNonStaticMethodByIndex(iri.index);
-                        InnerCLRRuntimeVM.RunIRMethod(m_CallIRMetaClass, cfc);
+                        if( irc == null )
+                        {
+                            Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
+                            return;
+                        }
+                        IRMethod cfc = irc.GetIRNonStaticMethodByIndex(iri.index);
+                        InnerCLRRuntimeVM.RunIRMethod(irc, cfc);
                     }
                     break;
                 case EIROpCode.CallCSharpMethod:
@@ -560,17 +563,31 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.NewTemplateClass:
                     {
-                        if( m_CallIRMetaClass ==  null )
+                        int stackIndex = m_ValueIndex - 1;
+                        if (stackIndex < 0)
                         {
-                            Log.AddVM(EError.None, "创建模板对象失败，CallIRMetaCall is Null!");
+                            Log.AddVM(EError.None, "NewTemplateClass StackIndex 是负数!");
                             return;
                         }
-                        SObject sob = CreateObjectByIRMetaClass(m_CallIRMetaClass);
+                        var v = m_ValueStack[stackIndex];
+
+                        IRMetaClass irc = null;
+                        if (v.eType == EType.Class)
+                        {
+                            var co2 = (v.sobject as ClassObject);
+                            irc = co2.value.irMetaClass;
+                        }
+                        if (irc == null)
+                        {
+                            Log.AddVM(EError.None, "NewTemplateClass IRC是调用虚函数为空!!");
+                            return;
+                        }
+                        SObject sob = CreateObjectByIRMetaClass(irc);
                         if (sob is ClassObject co)
                         {
                             ObjectManager.AddClassObject(co);
                         }
-                        m_ValueStack[m_ValueIndex++].SetSObject(sob);
+                        m_ValueStack[m_ValueIndex].SetSObject(sob);
                     }
                     break;
                 case EIROpCode.Dup:

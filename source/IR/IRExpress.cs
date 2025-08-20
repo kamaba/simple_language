@@ -97,7 +97,7 @@ namespace SimpleLanguage.IR
                         {
                             irmc = m_IRMethod.irManager.GetIRMetaClassByName(mnoe.GetReturnMetaDefineType().name);
                         }
-                        IRNew irnew = new IRNew(m_IRMethod, irmc);
+                        IRNew irnew = IRNew.CreateNew(m_IRMethod, irmc, false);
                         m_IRDataList.AddRange(irnew.IRDataList);
                     }
                     break;

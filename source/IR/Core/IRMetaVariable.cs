@@ -7,6 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
+using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.IR
 {
@@ -77,6 +78,10 @@ namespace SimpleLanguage.IR
                     m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mv.metaDefineType.metaClass.allClassName);
                 }
                 m_IsTemplate = false;
+            }
+            if( m_IRMetaClass == null )
+            {
+                Log.AddVM(EError.None, "没有找到相对应的类元素!!");
             }
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme)

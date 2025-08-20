@@ -121,6 +121,8 @@ namespace SimpleLanguage.Core
             m_MetaExtendMemeberVariableDict = mc.m_MetaExtendMemeberVariableDict;
             m_MetaMemberFunctionTemplateNodeDict = mc.m_MetaMemberFunctionTemplateNodeDict;
             m_CurrentClassMetaMemberFunctionList = mc.m_CurrentClassMetaMemberFunctionList;
+            m_NonStaticVirtualMetaMemberFunctionList = mc.m_NonStaticVirtualMetaMemberFunctionList;
+            m_StaticMetaMemberFunctionList = mc.m_StaticMetaMemberFunctionList;
             m_DefaultExpressNode = mc.m_DefaultExpressNode;
         }
         public override void SetDeep( int deep )
@@ -261,7 +263,6 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-
         public virtual void HandleExtendData()
         {
             if( this.m_ExtendClass == null )
@@ -305,7 +306,7 @@ namespace SimpleLanguage.Core
                 this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
             }
             bool canAdd = false;
-            foreach( var v in m_ExtendClass.m_NonStaticVirtualMetaMemberFunctionList )
+            foreach( var v in this.m_ExtendClass.m_NonStaticVirtualMetaMemberFunctionList )
             {
                 canAdd = true;
                 var efun = v;

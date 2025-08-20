@@ -421,7 +421,10 @@ namespace SimpleLanguage.VM
                         AnyObject anyObject = obj as AnyObject;
                         if (anyObject != null)
                         {
-                            anyObject.SetValue(EType.Class, svalue.int32Value);
+                            if( svalue.sobject is ClassObject co )
+                            {
+                                anyObject.SetValue(EType.Class, co.value );
+                            }
                             return;
                         }
                         Int32Object int32Obj = obj as Int32Object;

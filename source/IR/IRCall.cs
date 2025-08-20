@@ -40,10 +40,6 @@ namespace SimpleLanguage.IR
                 IRLoadVariable irload = IRLoadVariable.NewLoadVariable(m_IRMethod, curMc, mfc.loadMetaVariable );
                 AddIRRangeData(irload.IRDataList);
 
-                IRData sc1 = new IRData();
-                sc1.opCode = EIROpCode.LoadStackClass;
-                AddIRData(sc1);
-
             }
             paramCount = mfc.metaInputParamCollection.count;
             for (int j = 0; j < paramCount; j++)
@@ -95,6 +91,7 @@ namespace SimpleLanguage.IR
                 IRData datacall = new IRData();
                 datacall.opCode = EIROpCode.CallVirt;
                 datacall.index = callMethodIndex;
+                datacall.opValue = paramCount + 1;
                 datacall.SetDebugInfoByToken(mf.pingToken);
                 AddIRData(datacall);
             }

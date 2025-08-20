@@ -95,6 +95,10 @@ namespace SimpleLanguage.VM.Runtime
                 ClassObject co = new ClassObject(irmc, true);
                 staticClassObjectDict.Add(irmc.id, co);
             }
+            foreach( var v in staticClassObjectDict )
+            {
+                v.Value.Create();
+            }
 
             RuntimeMethod clrRuntime = new RuntimeMethod(IRManager.instance.irDataList);
             clrRuntime.isPersistent = true;

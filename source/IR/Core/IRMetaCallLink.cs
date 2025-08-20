@@ -72,7 +72,6 @@ namespace SimpleLanguage.Core.IR
                     }
                     isAddTemplate = true;
                 }
-
                 IRLoadVariable irVar = IRLoadVariable.NewLoadVariable(_irMethod, irmc, mv);
                 irList.Add(irVar);
 
@@ -95,27 +94,26 @@ namespace SimpleLanguage.Core.IR
             {
                 IRBase irbase = new IRBase();
                 var mv = cnode.GetRetMetaVariable();
-                if( mv != null )
+                IRMetaClass irmc = null;
+                if ( mv != null )
                 {
-                    IRMetaClass irmc = null;
-                    if (cnode.genTemplateMetaClass != null)
+                    if( cnode.callerMetaTemplate != null )
+                    {
+                        irmc = _irMethod.irManager.GetIRMetaClassByName(cnode.callerMetaTemplate.ownerClass.allClassName);
+                    }
+                    else if (cnode.genTemplateMetaClass != null)
                     {
                         irmc = _irMethod.irManager.GetIRMetaClassByName(cnode.genTemplateMetaClass.allClassName);
                     }
                     IRLoadVariable irVar = IRLoadVariable.NewLoadVariable(_irMethod, irmc, mv);
                     irList.Add(irVar);
 
-                    IRData sc1 = new IRData();
-                    sc1.opCode = EIROpCode.LoadStackClass;
-                    irbase.AddIRData(sc1);
-
-                    IRData pop1 = new IRData();
-                    pop1.opCode = EIROpCode.Pop;
-                    irbase.AddIRData(pop1);
-
-                    irList.Add(irbase);
+                    //IRData pop1 = new IRData();
+                    //pop1.opCode = EIROpCode.Pop;
+                    //irbase.AddIRData(pop1);
+                    //irList.Add(irbase);
                 }
-                IRNew irnew = new IRNew(_irMethod);
+                IRNew irnew = IRNew.CreateNew(_irMethod, irmc, true );
                 irList.Add(irnew);
 
                 if (cnode.methodCall != null)
@@ -159,7 +157,7 @@ namespace SimpleLanguage.Core.IR
             else if (cnode.visitType == MetaVisitNode.EVisitType.NewClass)
             {
                 var irmc = _irMethod.irManager.GetIRMetaClassByName(cnode.callerMetaClass.allClassName);
-                IRNew irnew = new IRNew(_irMethod, irmc);
+                IRNew irnew = IRNew.CreateNew(_irMethod, irmc, false);
                 irList.Add(irnew);
 
                 if (irmc.IsCoreMetaClass() == false)
@@ -298,7 +296,7 @@ namespace SimpleLanguage.Core.IR
                 else if (cnode.visitType == MetaVisitNode.EVisitType.NewClass )
                 {
                     var irmc = _irManager.GetIRMetaClassByName(cnode.callerMetaClass.allClassName);
-                    IRNew irnew = new IRNew( m_IRMethod, irmc);
+                    IRNew irnew = IRNew.CreateNew(m_IRMethod, irmc, false);
                     irList.Add(irnew);
 
                     var mfc = cnode.methodCall;

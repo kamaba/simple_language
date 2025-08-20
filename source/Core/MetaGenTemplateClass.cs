@@ -6,6 +6,7 @@
 //  Description: Generator Template Class's entity by Template Class
 //****************************************************************************
 
+using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -167,7 +168,6 @@ namespace SimpleLanguage.Core
             ParseMemberFunctionDefineMetaType();
 
             HandleExtendData();
-            ParseDefineComplete();
 
             //foreach (var it in this.m_MetaTemplateClass.metaMemberFunctionDict )
             //{
@@ -184,6 +184,12 @@ namespace SimpleLanguage.Core
             //        }
             //    }
             //}
+        }
+
+        public override void HandleExtendData()
+        {
+            m_StaticMetaMemberFunctionList = m_MetaTemplateClass.staticMetaMemberFunctionList;
+            m_NonStaticVirtualMetaMemberFunctionList = m_MetaTemplateClass.nonStaticVirtualMetaMemberFunctionList;
         }
         public override void ParseMemberVariableDefineMetaType()
         {
