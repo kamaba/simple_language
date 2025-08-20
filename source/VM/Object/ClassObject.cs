@@ -50,6 +50,10 @@ namespace SimpleLanguage.VM
             for (int i = 0; i < m_IRMetaVariableList.Count; i++)
             {
                 var obj = ObjectManager.CreateObjectByDefineType(m_IRMetaVariableList[i].irMetaClass);
+                if( obj == null )
+                {
+                    continue;
+                }
                 m_Type[i] = obj.typeId;
                 m_MemberObjectArray[i] = obj;
             }

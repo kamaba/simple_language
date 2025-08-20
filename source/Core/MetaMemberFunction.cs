@@ -103,7 +103,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddInStructMeta(EError.None, "发现已经定义过某某类" + mmf.functionAllName);
+                //Log.AddInStructMeta(EError.None, "发现已经定义过某某类1" + mmf.functionAllName);
                 return find2;
             }
         }
@@ -137,7 +137,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddInStructMeta(EError.None, "发现已经定义过某某类" + mmf.functionAllName);
+                Log.AddInStructMeta(EError.None, "发现已经定义过某某类2" + mmf.functionAllName);
             }
             return false;
         }
@@ -599,11 +599,7 @@ namespace SimpleLanguage.Core
                                 {
                                     var ownerclass = currentBlockStatements.ownerMetaClass;
                                     MetaBase mb = ownerclass.GetMetaMemberVariableByName(name1);
-                                    if (mb != null)
-                                    {
-                                        Log.AddInStructMeta(EError.None, "Error 如果是使用类成员，必须使用this.变量的方式" + fmos.variableRef.ToTokenString());
-                                    }
-                                    else
+                                    if (mb == null)
                                     {
                                         isDefineVarStatements = true;
                                     }

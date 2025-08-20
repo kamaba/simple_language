@@ -454,7 +454,7 @@ namespace SimpleLanguage.VM
                                 break;
                             case EType.Class:
                                 {
-                                    sobject = tobj as ClassObject;
+                                    sobject = (tobj as ClassObject).value;
                                 }
                                 break;
                         }
@@ -463,7 +463,7 @@ namespace SimpleLanguage.VM
                 default:
                     {
                         eType = EType.Class;
-                        sobject = val as ClassObject;
+                        sobject = (val as ClassObject).value;
                     }
                     break;
             }

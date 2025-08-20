@@ -91,7 +91,7 @@ namespace SimpleLanguage.Core.Statements
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaExpressNode expressNode => m_ExpressNode;
         public MetaCallLinkExpressNode leftMetaExpress => m_LeftMetaExpress;
-        public bool isNewStatements => true;
+        public bool isNewStatements => false;
 
         private FileMetaOpAssignSyntax m_FileMetaOpAssignSyntax = null;
         private FileMetaDefineVariableSyntax m_FileMetaDefineVariableSyntax = null;
@@ -363,6 +363,12 @@ namespace SimpleLanguage.Core.Statements
                 //}
                 //else
                 //{
+                if(expressRetMetaDefineType.metaClass == CoreMetaClassManager.nullMetaClass )
+                {
+
+                }
+                else
+                {
                     ClassManager.EClassRelation relation = ClassManager.EClassRelation.No;
                     MetaClass curClass = mdt.metaClass;
 
@@ -387,14 +393,14 @@ namespace SimpleLanguage.Core.Statements
                     sb.Append(" 名称为: " + m_Name?.ToString());
                     sb.Append("与后边赋值语句中 ");
                     if (compareClass != null)
-                        sb.Append("表达式类为: " + compareClass.allClassName );
+                        sb.Append("表达式类为: " + compareClass.allClassName);
                     if (relation == ClassManager.EClassRelation.No)
                     {
                         sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
                         Debug.Write(sb.ToString());
                         m_IsNeedCastState = true;
                     }
-                    else if( relation == ClassManager.EClassRelation.Similar )
+                    else if (relation == ClassManager.EClassRelation.Similar)
                     {
                         sb.Append("数字类型相似，可能会有强转会有精度的丢失!");
                         Debug.Write(sb.ToString());
@@ -422,6 +428,7 @@ namespace SimpleLanguage.Core.Statements
                         sb.Append("表达式错误，或者是定义类型错误");
                         Debug.Write(sb.ToString());
                     }
+                }
                 //}
             }
             else

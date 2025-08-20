@@ -131,7 +131,9 @@ namespace SimpleLanguage.VM
             }
             else
             {
-                sobj = new ClassObject(mdt);
+                var co = new ClassObject(mdt);
+                co.Create();
+                sobj = co;
             }
             return sobj;
         }
