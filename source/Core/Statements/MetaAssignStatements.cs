@@ -91,6 +91,7 @@ namespace SimpleLanguage.Core.Statements
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaExpressNode expressNode => m_ExpressNode;
         public MetaCallLinkExpressNode leftMetaExpress => m_LeftMetaExpress;
+        public bool isNewStatements => true;
 
         private FileMetaOpAssignSyntax m_FileMetaOpAssignSyntax = null;
         private FileMetaDefineVariableSyntax m_FileMetaDefineVariableSyntax = null;

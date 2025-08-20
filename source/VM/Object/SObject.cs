@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Core;
+using SimpleLanguage.IR;
 
 namespace SimpleLanguage.VM
 {
@@ -22,6 +23,7 @@ namespace SimpleLanguage.VM
         public bool m_IsVoid = false;
         public short typeId { get; set; } = 0;
         public int refCount { get; set; } = 0;
+        protected IRMetaClass m_IRMetaClass;
         protected SObject()
         {
         }
@@ -32,6 +34,10 @@ namespace SimpleLanguage.VM
         public void SetVoid()
         {
             m_IsVoid = true;
+        }
+        public virtual IRMetaClass GetIRMetaClass()
+        {
+            return m_IRMetaClass;
         }
         public virtual string ToFormatString()
         {

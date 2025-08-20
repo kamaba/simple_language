@@ -36,7 +36,7 @@ Level1<T>
     {
         if t == null
         {
-            this._Level1_t = new()
+            this._Level1_t = null
             #这种情况，需要先获取类型
             # Type t = this._Level1_t.type;
             # MetaClass tc = t.metaClass;

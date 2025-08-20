@@ -6,6 +6,7 @@
 //  Description: 
 //****************************************************************************
 
+using SimpleLanguage.IR;
 using System;
 using System.Diagnostics;
 namespace SimpleLanguage.VM
@@ -26,7 +27,6 @@ namespace SimpleLanguage.VM
         public double doubleValue;
         public string stringValue;
         public ClassObject sobject;
-
         public void SetNullValue()
         {
             eType = EType.Null;

@@ -30,7 +30,7 @@ namespace SimpleLanguage.IR
                 if (mnoen != null)
                 {
                     irmc = IRManager.instance.GetIRMetaClassByName(ms.expressNode.GetReturnMetaClass().allClassName);
-                    IRNew irNew = new IRNew(irMethod, irmc);
+                    IRNew irNew = IRNew.CreateNew(irMethod, irmc, false);
                     m_IRStatements.Add(irNew);
                 }
                 else
