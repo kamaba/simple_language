@@ -99,7 +99,7 @@ GenClass2{
 
         Level1<Level1<int> > GenClass2_fun_l2 = Level1<Level1<int> >()
         GenClass2_fun_l2.setLevel1( Level1<int>(20) )
-        System.Console.Write("_this2_-----------------------" + GenClass2_fun_l2.Level1_t.Level1_t + "string:" + Level1<string>.static_t + "short:" + Level1<short>.static_t )
+        System.Console.Write("_this2_-----------------------" + GenClass2_fun_l2.Level1_t.Level1_t + "    string:" + Level1<string>.static_t + "   short:" + Level1<short>.static_t )
     }
 }
 
