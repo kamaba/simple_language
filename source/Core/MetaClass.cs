@@ -64,6 +64,7 @@ namespace SimpleLanguage.Core
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
         public Dictionary<string, MetaMemberFunctionTemplateNode> metaMemberFunctionTemplateNodeDict => m_MetaMemberFunctionTemplateNodeDict;
         public Dictionary<string, MetaMemberVariable> metaExtendMemeberVariableDict => m_MetaExtendMemeberVariableDict;
+        public List<MetaPreTemplateClass> bindStructTemplateMetaClassList => m_BindStructTemplateMetaClassList;
         public Dictionary<Token, FileMetaClass> fileMetaClassDict => m_FileMetaClassDict;
         public bool isHandleExtendVariableDirty { get; set; } = false;
 
@@ -73,6 +74,7 @@ namespace SimpleLanguage.Core
         protected Dictionary<Token, FileMetaClass> m_FileMetaClassDict = new Dictionary<Token, FileMetaClass>();
         protected MetaClass m_ExtendClass = null;
         protected MetaType m_ExtendClassMetaType = null;
+        protected List<MetaPreTemplateClass> m_BindStructTemplateMetaClassList = new List<MetaPreTemplateClass>();
         protected List<MetaClass> m_InterfaceClass = new List<MetaClass>();
         protected List<MetaType> m_InterfaceMetaType = new List<MetaType>();
         protected Dictionary<string, MetaMemberVariable> m_MetaMemberVariableDict = new Dictionary<string, MetaMemberVariable>();
@@ -404,6 +406,14 @@ namespace SimpleLanguage.Core
         public bool CheckInterface()
         {
             return true;
+        }
+        public void AddMetaPreTemplateClass(MetaPreTemplateClass mptc)
+        {
+            var find = m_BindStructTemplateMetaClassList.Find(a => a == mptc);
+            if( find == null )
+            {
+                this.m_BindStructTemplateMetaClassList.Add(mptc);
+            }
         }
 #if EditorMode
         public void BindFileMetaClass(FileMetaClass fmc)

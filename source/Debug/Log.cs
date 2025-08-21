@@ -234,6 +234,10 @@ namespace SimpleLanguage.Parse
         }
         public static LogData AddInStructMeta(EError err, string msg, Token token )
         {
+            if( token == null )
+            {
+                token = new Token();
+            }
             LogData ld = new LogData()
             {
                 errorType = LogData.EErrorType.StructMeta,

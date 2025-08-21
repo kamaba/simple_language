@@ -131,7 +131,7 @@ namespace SimpleLanguage.Core
                         MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable, mcn.metaClass);
                         if( frontNode?.callNodeType == ECallNodeType.GenClassName )
                         {
-                            mvn.genTemplateMetaClass = frontNode.genMetaClass;
+                            //mvn.genTemplateMetaClass = frontNode.genMetaClass;
                         }
                         else if (frontNode?.callNodeType == ECallNodeType.ClassName)
                         {

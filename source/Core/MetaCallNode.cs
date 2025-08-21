@@ -83,6 +83,16 @@ namespace SimpleLanguage.Core
             getterFunction = clone.getterFunction;
         }
     }
+    //public class Level1<T1,T2>
+    //{
+    //    static T1 t1 = default(T1);
+    //    static T1 Open( T1 t )
+    //    {
+    //        Level1<T1, short>.t1 = t1;
+
+    //        return t1
+    //    }
+    //}
 
     public sealed class MetaCallNode
     {
@@ -467,7 +477,10 @@ namespace SimpleLanguage.Core
                 if (isFirst)
                 {
                     // Class1. ns. Int32[]
-                    GetFirstNode( m_Name, m_OwnerMetaClass, this.m_FileMetaCallNode.inputTemplateNodeList.Count);
+                    if( GetFirstNode( m_Name, m_OwnerMetaClass, this.m_FileMetaCallNode.inputTemplateNodeList.Count) == false )
+                    {
+                        return false;
+                    }
                 }
                 else
                 {
@@ -1305,6 +1318,11 @@ namespace SimpleLanguage.Core
                 {
                     m_MetaClass = retMC.GetMetaClassByTemplateCount(count);
                     m_CallNodeType = ECallNodeType.ClassName;
+                    if( m_MetaClass == null )
+                    {
+                        Log.AddInStructMeta(EError.None, $"找到{retMC.allName} 里边模板数据为{count} 没有找到相关的类!");
+                        return false;
+                    }
                 }
                 else
                 {
