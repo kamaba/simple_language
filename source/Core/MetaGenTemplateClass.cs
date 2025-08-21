@@ -13,6 +13,43 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
+    public sealed class MetaPreTemplateClass
+    {
+        private MetaClass m_MetaClass = null;
+        private List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
+
+        public MetaPreTemplateClass( MetaClass mc, List<MetaGenTemplate> mgtList )
+        {
+            m_MetaClass = mc;
+            m_MetaGenTemplateList = mgtList;
+        }
+        public void UpdateMetaGenTemplate( List<MetaGenTemplate> list )
+        {
+            List<MetaClass> mcList = new List<MetaClass>();
+            for( int i = 0; i < m_MetaGenTemplateList.Count; i++ )
+            {
+                var mgt = m_MetaGenTemplateList[i];
+                if( mgt.metaType != null )
+                {
+                    if( mgt.metaType.isTemplate == false )
+                    {
+                        mcList.Add(mgt.metaType.metaClass);
+                    }
+                    continue;
+                }
+
+                var find = list.Find(a => a.name == mgt.name );
+                if( find != null )
+                {
+                    mcList.Add(find.metaType.metaClass);
+                }
+            }
+            if( mcList.Count == m_MetaGenTemplateList.Count )
+            {
+                m_MetaClass.AddInstanceMetaClass(mcList);
+            }
+        }
+    }
     public sealed class MetaGenTemplateClass : MetaClass
     {
         public MetaClass metaTemplateClass => m_MetaTemplateClass;
@@ -43,6 +80,15 @@ namespace SimpleLanguage.Core
             }
             sb.Append(">");
             this.m_AllName = sb.ToString(); ;
+        }
+        public void UpdateRegster()
+        {
+
+            //这个过程是 绑定 原来注册过来的T的已有的类
+            for (int i = 0; i < m_MetaTemplateClass.bindStructTemplateMetaClassList.Count; i++)
+            {
+                m_MetaTemplateClass.bindStructTemplateMetaClassList[i].UpdateMetaGenTemplate(m_MetaGenTemplateList);
+            }
         }
         //public static MetaGenTemplateClass GenerateTemplateClass( MetaClass mc, MetaInputTemplateCollection mic)
         //{

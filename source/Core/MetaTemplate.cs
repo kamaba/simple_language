@@ -23,6 +23,10 @@ namespace SimpleLanguage.Core
         protected MetaClass m_OwnerClass = null;
         protected MetaClass m_ExtendsMetaClass = null;
         protected bool m_IsInFunction = false;
+        //该属性为了绑定new的 _init_ 的方法 然后在实例化模板类的时候，去检查该类，的相关方法，是否有 private _init_的方法，然后就可以确定
+        // T t = new() 这时候， 是否有出错 的现象 例 Level<T>{ test(){ T t = new() } } TC{ private _init_(){} } main(){ Level<TC> tc = new()
+        // 这时候要进行报错处理，因为在Level.test()里边，有对T进行new的注册，是_init_方法，但Level<TC> 
+        protected List<MetaMethodCall> m_BindConstructFunction = new List<MetaMethodCall>();
         public MetaTemplate( MetaClass mc, FileMetaTemplateDefine fmtd)
         {
             m_Name = fmtd.name;
@@ -46,6 +50,13 @@ namespace SimpleLanguage.Core
                 {
                     m_ExtendsMetaClass = CoreMetaClassManager.objectMetaClass;
                 }
+            }
+        }
+        public void AddBindConstructFunction(MetaMethodCall mmc)
+        {
+            if (!m_BindConstructFunction.Contains(mmc))
+            {
+                m_BindConstructFunction.Add(mmc);
             }
         }
         public void SetInConstraintMetaClass(MetaClass mc)
@@ -81,7 +92,10 @@ namespace SimpleLanguage.Core
         public MetaType metaType => m_MetaType;
 
         private MetaType m_MetaType = null;
-        public MetaGenTemplate(MetaTemplate mt, MetaType mtype ) : base( mt.ownerClass, mt.name )
+        public MetaGenTemplate(MetaTemplate mt) : base(mt.ownerClass, mt.name)
+        {
+        }
+        public MetaGenTemplate(MetaTemplate mt, MetaType mtype) : base(mt.ownerClass, mt.name)
         {
             m_MetaType = mtype;
         }
@@ -89,6 +103,10 @@ namespace SimpleLanguage.Core
         public bool EqualWithMetaType( MetaType mt )
         {
             return m_MetaType.metaClass.allClassName == mt.metaClass.allClassName;
+        }
+        public void SetMetaType( MetaType mt ) 
+        {
+            m_MetaType = mt;
         }
         public string ToDefineTypeString()
         {

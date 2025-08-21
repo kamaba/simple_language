@@ -54,16 +54,16 @@ namespace SimpleLanguage.Core.IR
                 }
                 if (cnode.callerMetaClass != null)
                 {
-                    if (cnode.genTemplateMetaClass != null)
+                    if (cnode.callerMetaClass is MetaGenTemplateClass mgtc)
                     {
                         IRData sc2 = new IRData();
                         sc2.opCode = EIROpCode.SetCallClass;
-                        irmc = _irMethod.irManager.GetIRMetaClassByName(cnode.genTemplateMetaClass.allClassName);
+                        irmc = _irMethod.irManager.GetIRMetaClassByName(mgtc.allClassName);
                         sc2.opValue = irmc;
                         IRBase irbase22 = new IRBase(sc2);
                         irList.Add(irbase22);
                     }
-                    else if (cnode.callerMetaClass?.isTemplateClass == true)
+                    else if (cnode.callerMetaClass?.isTemplateClass == true )
                     {
                         IRData sc2 = new IRData();
                         sc2.opCode = EIROpCode.SetCurrentClassCallClass;
@@ -97,13 +97,23 @@ namespace SimpleLanguage.Core.IR
                 IRMetaClass irmc = null;
                 if ( mv != null )
                 {
-                    if( cnode.callerMetaTemplate != null )
+                    if( cnode.callerMetaClass != null )
                     {
-                        irmc = _irMethod.irManager.GetIRMetaClassByName(cnode.callerMetaTemplate.ownerClass.allClassName);
-                    }
-                    else if (cnode.genTemplateMetaClass != null)
-                    {
-                        irmc = _irMethod.irManager.GetIRMetaClassByName(cnode.genTemplateMetaClass.allClassName);
+                        if (cnode.callerMetaClass is MetaGenTemplateClass mgtc)
+                        {
+                            irmc = _irMethod.irManager.GetIRMetaClassByName(mgtc.allClassName);
+                        }
+                        else
+                        {
+                            if (cnode.callerMetaClass.isTemplateClass)
+                            {
+                                irmc = _irMethod.irManager.GetIRMetaClassByName(cnode.callerMetaClass.allClassName);
+                            }
+                            else
+                            {
+                                irmc = _irMethod.irManager.GetIRMetaClassByName(cnode.callerMetaClass.allClassName);
+                            }
+                        }
                     }
                     IRLoadVariable irVar = IRLoadVariable.NewLoadVariable(_irMethod, irmc, mv);
                     irList.Add(irVar);

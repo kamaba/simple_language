@@ -220,6 +220,8 @@ namespace SimpleLanguage.Project
 
             MethodManager.instance.ParseStatements();
 
+            ClassManager.instance.UpdateMetaGenTemplateClassHandle();
+
             ModuleManager.instance.selfModule.metaNode.SetDeep(0);
 
 

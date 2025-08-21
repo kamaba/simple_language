@@ -152,19 +152,22 @@ namespace SimpleLanguage.Core
         public MetaVariable variable { get; private set; } = null;
         public MetaVisitVariable visitVariable { get; private set; } = null;
         public MetaMethodCall methodCall { get; private set; } = null;
-        public MetaClass callerMetaClass { get; private set; }= null;
-        public MetaClass genTemplateMetaClass { get; set; } = null;
-        public MetaTemplate callerMetaTemplate { get; private set; } = null;
+        public MetaClass callerMetaClass => m_CallerMetaClass;
+        //public MetaGenTemplateClass genTemplateMetaClass => m_GenTemplateMetaClass;
+        public MetaTemplate callerMetaTemplate => m_CallerMetaTemplate;
         public MetaBraceOrBracketStatementsContent metaBraceStatementsContent => m_MetaBraceStatementsContent;
 
         private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent = null;
         protected MetaType m_ReturnMetaType = null;
+        protected MetaClass m_CallerMetaClass = null;
+        //protected MetaGenTemplateClass m_GenTemplateMetaClass = null;
+        protected MetaTemplate m_CallerMetaTemplate  = null; //该变量，一般是为 T t = new() 这种情况准备的
 
         public static MetaVisitNode CreateByNewTemplate( MetaTemplate template, MetaFunction mf, MetaVariable mv)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.callerMetaTemplate = template;
+            vn.m_CallerMetaTemplate = template;
             vn.visitType = EVisitType.NewTemplate;
             vn.variable = mv;
             vn.methodCall = new MetaMethodCall(mf.ownerMetaClass, mf, null, null, mv);
@@ -176,7 +179,7 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.callerMetaClass = mc;
+            vn.m_CallerMetaClass = mc;
             vn.m_MetaBraceStatementsContent = mb;
             vn.visitType = EVisitType.NewClass;
             vn.variable = mv;
@@ -191,7 +194,7 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.callerMetaClass = mc;
+            vn.m_CallerMetaClass = mc;
             vn.m_MetaBraceStatementsContent = mb;
             vn.visitType = EVisitType.NewData;
 
@@ -239,7 +242,7 @@ namespace SimpleLanguage.Core
 
             vn.visitType = EVisitType.Variable;
             vn.variable = _variale;
-            vn.callerMetaClass = callerMc;
+            vn.m_CallerMetaClass = callerMc;
 
             return vn;
         }

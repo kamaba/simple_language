@@ -43,7 +43,7 @@ namespace SimpleLanguage.Core
         public Dictionary<string, MetaClass> allClassDict => m_AllClassDict;
         public Dictionary<string, MetaData> allDataDict => m_AllDataDict;
         public List<MetaDynamicClass> dynamicClassList => m_DynamicClassList;
-        //public List<MetaGenTemplateClass> needHandleTemplateMetaClassList => m_NeedHandleTemplateMetaClassList;
+        public List<MetaGenTemplateClass> genTemplateMetaClassList => m_GenTemplateMetaClassList;
         //public List<MetaClass> preInitHandleMetaClassList => m_InitHandleMetaClassList;
 
 
@@ -51,7 +51,7 @@ namespace SimpleLanguage.Core
         private List<MetaDynamicClass> m_DynamicClassList = new List<MetaDynamicClass>();         
         private Dictionary<string, MetaData> m_AllDataDict = new Dictionary<string, MetaData>();
 
-        //private List<MetaGenTemplateClass> m_GenTemplateMetaClassList = new List<MetaGenTemplateClass>();
+        private List<MetaGenTemplateClass> m_GenTemplateMetaClassList = new List<MetaGenTemplateClass>();
         //private List<MetaGenTemplateClass> m_NeedHandleTemplateMetaClassList = new List<MetaGenTemplateClass>();
         private List<MetaClass> m_InitHandleMetaClassList = new List<MetaClass>();
 
@@ -108,6 +108,10 @@ namespace SimpleLanguage.Core
         }
         public void AddGenTemplateClass(MetaGenTemplateClass mc)
         {
+            if( !m_GenTemplateMetaClassList.Contains(mc ) )
+            {
+                m_GenTemplateMetaClassList.Add(mc);
+            }
             if( !m_AllClassDict.ContainsKey(mc.allClassName ) )
             {
                 m_AllClassDict.Add(mc.allClassName, mc);
@@ -501,6 +505,14 @@ namespace SimpleLanguage.Core
                 it.ParseMemberVariableDefineMetaType();
                 it.ParseMemberFunctionDefineMetaType();
                 AddDictMetaClass(it);
+            }
+        }
+        public void UpdateMetaGenTemplateClassHandle()
+        {
+            var list = new List<MetaGenTemplateClass>(m_GenTemplateMetaClassList);
+            foreach( var v in list)
+            {
+                v.UpdateRegster();
             }
         }
         //public void ParseDefineMetaTypeGenTemplateMetaClassList()

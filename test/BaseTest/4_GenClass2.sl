@@ -24,9 +24,11 @@ LT
     }
 }
 
-Level1<T>
+Level1<T,T2>
 {
     T _Level1_t = null
+    T2 _Level1_t2 = null
+    static T static_t = null;
     _init_( T t )
     {
         this._Level1_t = t
@@ -36,20 +38,22 @@ Level1<T>
     {
         if t == null
         {
-            this._Level1_t = null
+            this._Level1_t = new()   # 如果T是一个private _init_() 的形式，会引用不调用该T的_init_的问题，因为定义private 意味着，不能直接调用_init_ 所以这个时候需要检查非反射情况，传入T的时候是否有new的情况，然后报错， 需要得到new后，在初始化生成类的时候
+            #检查是否有new的调用,然后反向的提醒
+
             #这种情况，需要先获取类型
             # Type t = this._Level1_t.type;
             # MetaClass tc = t.metaClass;
-            # MetaMemberFunction tcmc = tc.GetConstruction( int.metaClass, int.metaClass ).make(10).hello()
+            # MetaMemberFunction tcmc = tc.GetConstruction( int.metaClass, int.metaClass )
             # var newmc = MetaClass.CreateInstance( tc )
-            #  tcmc.Invoke( newmc, 10, 20 )
+            # tcmc.Invoke( newmc, 10, 20 )
         }
         else
         {
             setlevel1_t2 = this.Level1_t()
             var str = setlevel1_t2.toString()
             this._Level1_t = t 
-            Level1<string>.static_t = str
+            Level1<string, string>.static_t = str
             #Open(true)
             #t1 = this.Level1_t()
         }
@@ -58,18 +62,29 @@ Level1<T>
     {
         ret this._Level1_t
     }   
-    static T static_t = null;
 
     Level2<T>
     {
         static T Level2_t = null
+
+        _init_( obj )
+        {
+
+        }
+        _init_( int i )
+        {
+
+        }
     }
     static T Open( T t )
     {
+        T t1111 = new()
+        T2 t2222 = new()
         #Level2<T>.Level2_t = t   #这里要报错，因为如果是静态变量的T必须先要实例化才可以， 要不就只能调类内部静态变量
         static_t = t
-        Level1<T>.static_t = t
-        Level1<short>.static_t = 20s;
+        Level1<T,T2>.static_t = t
+        Level1<T2,T>.static_t = t
+        Level1<T,short>.static_t = 20s;
         ret static_t
     }
     override string toString()
@@ -91,15 +106,16 @@ Level1<T>
 GenClass2{
     static fun()
     {
+        Level1<int,string> testintstring = new()
         #Level1<int>  GenClass2_fun_l1 = Level1<int>()
-        penret = Level1<string>.Open("  !!!!!tttstring!!!!!!!    ")
+        #penret = Level1<string>.Open("  !!!!!tttstring!!!!!!!    ")
         #GenClass2_fun_l1.setLevel1( 200 )
         #+ Level1<string>.static_t + "   short:  " + Level1<short>.static_t + "  openReturn: " 
         #System.Console.WriteLine("_this_——————————————————————————————  " + penret )
 
-        Level1<Level1<int> > GenClass2_fun_l2 = Level1<Level1<int> >()
-        GenClass2_fun_l2.setLevel1( Level1<int>(20) )
-        System.Console.Write("_this2_-----------------------" + GenClass2_fun_l2.Level1_t.Level1_t + "    string:" + Level1<string>.static_t + "   short:" + Level1<short>.static_t )
+        #Level1<Level1<int> > GenClass2_fun_l2 = Level1<Level1<int> >()
+        #GenClass2_fun_l2.setLevel1( Level1<int>(20) )
+        #System.Console.Write("_this2_-----------------------" + GenClass2_fun_l2.Level1_t.Level1_t + "    string:" + Level1<string>.static_t + "   short:" + Level1<short>.static_t )
     }
 }
 

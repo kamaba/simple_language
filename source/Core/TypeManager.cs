@@ -166,6 +166,8 @@ namespace SimpleLanguage.Core
             //这里，要注册实体模板类
             bool isNeedReg = true;
             List<MetaClass> regMCList = new List<MetaClass>();
+            List<MetaGenTemplate> mgtList = new List<MetaGenTemplate>();
+            
             for (int i = 0; i < inputTemplateNodeList.Count; i++)
             {
                 MetaType mt2 = GetAndRegisterTemplateDefineMetaTemplateClass(curMc, findfn, inputTemplateNodeList[i]);
@@ -174,24 +176,39 @@ namespace SimpleLanguage.Core
 
                 list?.Add(mt2);
 
-                if( mt2.isTemplate )
+                if ( mt2.isTemplate )
                 {
+                    MetaGenTemplate mgt = new MetaGenTemplate(mt2.metaTemplate);
+                    mgtList.Add(mgt);
                     isNeedReg = false;
                 }
                 else
                 {
+                    var tp = findfn.GetMetaTemplateByIndex(i);
+                    MetaGenTemplate mgt = new MetaGenTemplate(tp);
+                    mgtList.Add(mgt);
+
                     regMCList.Add(mt2.metaClass);
+                    mgt.SetMetaType(mt2);
                 }
 
             }
 
-            if (findfn != null && isNeedReg)
+            if (findfn != null)
             {
-                var newmc = findfn.AddInstanceMetaClass(regMCList);
-                if (newmc != null)
+                if( isNeedReg )
                 {
-                    var newmt = new MetaType(newmc, findfn);
-                    return newmt;
+                    var newmc = findfn.AddInstanceMetaClass(regMCList);
+                    if (newmc != null)
+                    {
+                        var newmt = new MetaType(newmc, findfn);
+                        return newmt;
+                    }
+                }
+                else
+                {
+                    MetaPreTemplateClass mptc = new MetaPreTemplateClass(findfn, mgtList);
+                    curMc.AddMetaPreTemplateClass(mptc);
                 }
             }
 
