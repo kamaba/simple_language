@@ -28,7 +28,7 @@ namespace SimpleLanguage.IR
         public IRMetaClass(IRManager manager, string templateName )
         {
             m_IRManager = manager;
-            allName = templateName;
+            m_IRName = templateName;
             this.isTemplate = true;
             id = s_TypeLength++;
         }
@@ -40,7 +40,7 @@ namespace SimpleLanguage.IR
         public int allocSize = 0;
         public List<EType> m_MetaTypeList = new List<EType>();
         public int byteCount = 0;
-        public string allName { get; private set; } = "";
+        public string irName => m_IRName;
         public bool isTemplate { get; private set; } = false;
         public bool genClass { get; private set; } = false;
 
@@ -53,6 +53,7 @@ namespace SimpleLanguage.IR
         private Dictionary<string, IRMetaClass> m_GenTemplateIRMetaClassDict = new Dictionary<string, IRMetaClass>();
         private Dictionary<int, IRCallFunction> m_LocalIRInitDict = new Dictionary<int, IRCallFunction>();
         private List<IRMethod> m_IRNotStaticMethodList = new List<IRMethod>();
+        private string m_IRName = "";
         private IRManager m_IRManager = null;
         public void CalcAllocSize()
         {
@@ -126,7 +127,7 @@ namespace SimpleLanguage.IR
         }
         public void CreateMetaClassData( MetaClass mc )
         {
-            allName = mc.allClassName;
+            m_IRName = IRManager.GetIRNameByMetaClass(mc);
             if (mc is MetaEnum me)
             {
             }
@@ -211,9 +212,9 @@ namespace SimpleLanguage.IR
         }
         public bool IsCoreMetaClass()
         {
-            if (this.allName == "Int32"
-                || this.allName == "String"
-                || this.allName == "Float")
+            if (this.m_IRName == "Int32"
+                || this.m_IRName == "String"
+                || this.m_IRName == "Float")
             {
                 return true;
             }
@@ -223,7 +224,7 @@ namespace SimpleLanguage.IR
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(this.allName);
+            sb.Append(this.m_IRName);
 
             return sb.ToString();
         }

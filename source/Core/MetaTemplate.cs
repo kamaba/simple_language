@@ -87,16 +87,21 @@ namespace SimpleLanguage.Core
         public List<MetaType> bindMetaType;
     }
 
-    public class MetaGenTemplate : MetaTemplate
+    public sealed class MetaGenTemplate
     {
+        public string name => m_MetaTemplate != null ? m_MetaTemplate.name : "";
         public MetaType metaType => m_MetaType;
+        public MetaTemplate metaTemplate => m_MetaTemplate;
 
         private MetaType m_MetaType = null;
-        public MetaGenTemplate(MetaTemplate mt) : base(mt.ownerClass, mt.name)
+        private MetaTemplate m_MetaTemplate = null;
+        public MetaGenTemplate(MetaTemplate mt)
         {
+            m_MetaTemplate = mt;
         }
-        public MetaGenTemplate(MetaTemplate mt, MetaType mtype) : base(mt.ownerClass, mt.name)
+        public MetaGenTemplate(MetaTemplate mt, MetaType mtype)
         {
+            m_MetaTemplate = mt;
             m_MetaType = mtype;
         }
 
@@ -117,12 +122,12 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                sb.Append(m_MetaType.metaClass.ToDefineTypeString());
+                sb.Append(m_MetaType.metaClass.ToFormatString() );
             }           
 
             return sb.ToString();
         }
-        public override string ToFormatString()
+        public string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
             sb.Append(m_MetaType.metaClass.name);

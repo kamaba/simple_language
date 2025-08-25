@@ -24,8 +24,14 @@ LT
     }
 }
 
+List<T>
+{
+
+}
+
 Level1<T,T2>
 {
+    List<T2> listt = null
     T _Level1_t = null
     T2 _Level1_t2 = null
     static T static_t = null;
@@ -54,6 +60,7 @@ Level1<T,T2>
             var str = setlevel1_t2.toString()
             this._Level1_t = t 
             Level1<string, string>.static_t = str
+            Level1<string,object> aaa = new()
             #Open(true)
             #t1 = this.Level1_t()
         }
@@ -78,13 +85,16 @@ Level1<T,T2>
     }
     static T Open( T t )
     {
-        T t1111 = new()
-        T2 t2222 = new()
-        #Level2<T>.Level2_t = t   #这里要报错，因为如果是静态变量的T必须先要实例化才可以， 要不就只能调类内部静态变量
+        Level1<T,Level1<Level2<int>,Level2<T> > >.static_t = Level1<T2,Level2<T> >()
+        #T t1111 = new()
+        #T2 t2222 = new()
+        #!
+        Level2<T>.Level2_t = t
         static_t = t
         Level1<T,T2>.static_t = t
         Level1<T2,T>.static_t = t
         Level1<T,short>.static_t = 20s;
+        !#
         ret static_t
     }
     override string toString()
@@ -108,10 +118,10 @@ GenClass2{
     {
         Level1<int,string> testintstring = new()
         #Level1<int>  GenClass2_fun_l1 = Level1<int>()
-        #penret = Level1<string>.Open("  !!!!!tttstring!!!!!!!    ")
+        penret = Level1<string,byte>.Open("  !!!!!tttstring!!!!!!!    ")
         #GenClass2_fun_l1.setLevel1( 200 )
         #+ Level1<string>.static_t + "   short:  " + Level1<short>.static_t + "  openReturn: " 
-        #System.Console.WriteLine("_this_——————————————————————————————  " + penret )
+        System.Console.WriteLine("_this_——————————————————————————————  " + penret )
 
         #Level1<Level1<int> > GenClass2_fun_l2 = Level1<Level1<int> >()
         #GenClass2_fun_l2.setLevel1( Level1<int>(20) )

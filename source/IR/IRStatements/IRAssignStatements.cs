@@ -56,29 +56,17 @@ namespace SimpleLanguage.IR
                         //这种是  Obja.Objb = new()的方式
                         var mv = finalMVN.GetRetMetaVariable();
                         List<IRBase> irList = new List<IRBase>();
-                        IRMetaClass irmc = irMethod.irManager.GetIRMetaClassByName(mv.ownerMetaClass.allClassName);
-                        if (finalMVN.callerMetaClass != null)
+                        IRMetaClass irmc = null;
+
+                        if (finalMVN.callerMetaType != null)
                         {
-                            if( finalMVN.callerMetaClass is MetaGenTemplateClass mgtc )
-                            {
-                                IRData sc23 = new IRData();
-                                sc23.opCode = EIROpCode.SetCallClass;
-                                irmc = irMethod.irManager.GetIRMetaClassByName(mgtc.allClassName);
-                                sc23.opValue = irmc;
-                                IRBase irbase23 = new IRBase(sc23);
-                                irList.Add(irbase23);
-                            }
-                            else
-                            {
-                                if( finalMVN.callerMetaClass?.isTemplateClass == true )
-                                {
-                                    IRData sc2 = new IRData();
-                                    sc2.opCode = EIROpCode.SetCurrentClassCallClass;
-                                    irmc = irMethod.irManager.GetIRMetaClassByName(finalMVN.callerMetaClass.allClassName);
-                                    IRBase irbase22 = new IRBase(sc2);
-                                    irList.Add(irbase22);
-                                }
-                            }
+                            string tname = IRManager.GetIRNameByMetaType(finalMVN.callerMetaType);
+                            IRData sc23 = new IRData();
+                            sc23.opCode = EIROpCode.SetCallClass;
+                            sc23.opValue = tname;
+                            IRBase irbase23 = new IRBase(sc23);
+                            irList.Add(irbase23);
+                            irmc = IRManager.instance.GetIRMetaClassByName(tname);
                         }
 
                         m_IRStatements.AddRange(irList);
@@ -132,28 +120,28 @@ namespace SimpleLanguage.IR
                         {
                             var mv = cl.GetRetMetaVariable();
                             List<IRBase> irList = new List<IRBase>();
-                            IRMetaClass irmc = irMethod.irManager.GetIRMetaClassByName(mv.ownerMetaClass.allClassName);
-                            if (cl.callerMetaClass != null)
+                            string tname = IRManager.GetIRNameByMetaType(mv.metaDefineType);
+                            IRMetaClass irmc = null;
+                            if (cl.callerMetaType != null)
                             {
-                                if (cl.callerMetaClass is MetaGenTemplateClass mgtc)
+                                IRData sc23 = new IRData();
+                                sc23.opCode = EIROpCode.SetCallClass;
+                                sc23.opValue = tname;
+                                IRBase irbase23 = new IRBase(sc23);
+                                irList.Add(irbase23);
+                                if (cl.callerMetaType.eType == EMetaTypeType.MetaClass )
                                 {
-                                    IRData sc23 = new IRData();
-                                    sc23.opCode = EIROpCode.SetCallClass;
-                                    irmc = irMethod.irManager.GetIRMetaClassByName(mgtc.allClassName);
-                                    sc23.opValue = irmc;
-                                    IRBase irbase23 = new IRBase(sc23);
-                                    irList.Add(irbase23);
+                                    irmc = irMethod.irManager.GetIRMetaClassByName(tname);
+                                }
+                                else if ( cl.callerMetaType.eType == EMetaTypeType.Template )
+                                {
+                                    string irnewclass = IRManager.GetIRNameByMetaClass(cl.callerMetaType.metaClass);
+                                    irmc = irMethod.irManager.GetIRMetaClassByName(irnewclass);
                                 }
                                 else
                                 {
-                                    if (cl.callerMetaClass?.isTemplateClass == true)
-                                    {
-                                        IRData sc2 = new IRData();
-                                        sc2.opCode = EIROpCode.SetCurrentClassCallClass;
-                                        irmc = irMethod.irManager.GetIRMetaClassByName(cl.callerMetaClass.allClassName);
-                                        IRBase irbase22 = new IRBase(sc2);
-                                        irList.Add(irbase22);
-                                    }
+                                    string irnewclass = IRManager.GetIRNameByMetaClass(cl.callerMetaType.templateMetaClass);
+                                    irmc = irMethod.irManager.GetIRMetaClassByName(irnewclass);
                                 }
                             }
 

@@ -62,21 +62,18 @@ namespace SimpleLanguage.IR
             {
                 m_IRMetaVariableFrom = IRMetaVariableFrom.LocalStatement;
             }
-            if( mv.metaDefineType.isTemplate )
+            if( mv.metaDefineType.eType == EMetaTypeType.Template )
             {
                 m_IsTemplate = true;
                 m_IRMetaClass = new IRMetaClass(IRManager.instance, mv.metaDefineType.metaTemplate.name);
             }
+            else if( mv.metaDefineType.eType == EMetaTypeType.MetaClass )
+            {
+                m_IRMetaClass = IRManager.instance.GetIRMetaClassByName( IRManager.GetIRNameByMetaType(mv.metaDefineType ) );
+            }
             else
             {
-                if (mv.metaDefineType.templateMetaClass != null)
-                {
-                    m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mv.metaDefineType.templateMetaClass.allClassName);
-                }
-                else
-                {
-                    m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mv.metaDefineType.metaClass.allClassName);
-                }
+                m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(IRManager.GetIRNameByMetaType(mv.metaDefineType));
                 m_IsTemplate = false;
             }
             if( m_IRMetaClass == null )
@@ -112,7 +109,14 @@ namespace SimpleLanguage.IR
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
             else
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Member;
-            m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(mmv.metaDefineType.metaClass.allClassName);
+            if(mmv.metaDefineType.eType == EMetaTypeType.Template )
+            {
+                m_IRMetaClass = new IRMetaClass( IRManager.instance, mmv.metaDefineType.metaTemplate.name );
+            }
+            else
+            {
+                m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(IRManager.GetIRNameByMetaType(mmv.metaDefineType));
+            }
         }
         public void SetExpress( MetaExpressNode men )
         {

@@ -48,6 +48,7 @@ namespace SimpleLanguage.Core
             m_AllName = mb.m_AllName;
             m_RefFromType = mb.m_RefFromType;
             m_Permission = mb.m_Permission;
+            m_MetaNode = mb.m_MetaNode;
         }
         public void SetRefFromType(  RefFromType type )
         {
