@@ -31,7 +31,7 @@ List<T>
 
 Level1<T,T2>
 {
-    List<T2> listt = null
+    List<List<T2> > listt = null
     T _Level1_t = null
     T2 _Level1_t2 = null
     static T static_t = null;

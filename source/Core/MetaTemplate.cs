@@ -122,7 +122,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                sb.Append(m_MetaType.metaClass.ToFormatString() );
+                sb.Append(m_MetaType.metaClass.ToString() );
             }           
 
             return sb.ToString();

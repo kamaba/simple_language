@@ -50,6 +50,15 @@ namespace SimpleLanguage.Core.IR
                 }
                 else
                 {
+                    if( mv.metaDefineType.eType == EMetaTypeType.Template )
+                    {
+                        tname = IRManager.GetIRNameByMetaClass(mv.ownerMetaClass);
+                        irmc = _irMethod.irManager.GetIRMetaClassByName(tname);
+                    }
+                    else
+                    {
+                        irmc = _irMethod.irManager.GetIRMetaClassByName(IRManager.GetIRNameByMetaClass(mv.metaDefineType.templateMetaClass));
+                    }
                     IRData sc2 = new IRData();
                     sc2.opCode = EIROpCode.SetCallClass;
                     sc2.opValue = tname;
