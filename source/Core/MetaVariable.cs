@@ -30,7 +30,7 @@ namespace SimpleLanguage.Core
         public virtual bool isStatic => m_IsStatic;
         public virtual bool isConst => m_IsConst;
         public virtual bool isParsed => m_IsParsed;
-        public virtual bool isTemplate => m_IsTemplate;
+        //public virtual bool isTemplate => m_IsTemplate;
         public bool isArgument => m_VariableFrom == EVariableFrom.Argument;
         public bool isGlobal => m_VariableFrom == EVariableFrom.Global;
         public bool isArray

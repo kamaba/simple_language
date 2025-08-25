@@ -22,7 +22,7 @@ namespace SimpleLanguage.Core
 
         protected List<MetaTemplate> m_MetaTemplateList = new List<MetaTemplate>();
         protected List<MetaGenTemplateClass> m_MetaGenTemplateClassList = new List<MetaGenTemplateClass>();
-        protected Dictionary<MetaTemplate, List<MetaType>> m_TemplateBindMetaTypeDict = new Dictionary<MetaTemplate, List<MetaType>>();
+        //protected Dictionary<MetaTemplate, List<MetaType>> m_TemplateBindMetaTypeDict = new Dictionary<MetaTemplate, List<MetaType>>();
 
         public bool isDefineTemplate(string name)
         {
@@ -76,24 +76,24 @@ namespace SimpleLanguage.Core
             }
             return false;
         }
-        public void AddBindMetaType(MetaTemplate metaTemp, MetaType mt )
-        {
-            List<MetaType> mtList = new List<MetaType>();
-            if(m_TemplateBindMetaTypeDict.ContainsKey(metaTemp) )
-            {
-                mtList = m_TemplateBindMetaTypeDict[metaTemp];
-            }
-            else
-            {
-                m_TemplateBindMetaTypeDict.Add(metaTemp, mtList);
-            }
+        //public void AddBindMetaType(MetaTemplate metaTemp, MetaType mt )
+        //{
+        //    List<MetaType> mtList = new List<MetaType>();
+        //    if(m_TemplateBindMetaTypeDict.ContainsKey(metaTemp) )
+        //    {
+        //        mtList = m_TemplateBindMetaTypeDict[metaTemp];
+        //    }
+        //    else
+        //    {
+        //        m_TemplateBindMetaTypeDict.Add(metaTemp, mtList);
+        //    }
 
-            var find1 = mtList.Find(a => a == mt);
-            if( find1 == null )
-            {
-                mtList.Add(mt);
-            }
-        }
+        //    var find1 = mtList.Find(a => a == mt);
+        //    if( find1 == null )
+        //    {
+        //        mtList.Add(mt);
+        //    }
+        //}
         public MetaTemplate GetMetaTemplateByName(string _name)
         {
             return m_MetaTemplateList.Find(a => a.name == _name);

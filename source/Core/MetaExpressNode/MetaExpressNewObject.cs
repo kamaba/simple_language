@@ -724,7 +724,7 @@ namespace SimpleLanguage.Core
             MetaClass createMC = null;
             if (!m_MetaDefineType.isDefineMetaClass)
             {
-                if (fmcn.visitType == MetaVisitNode.EVisitType.NewClass)
+                if (fmcn.visitType == MetaVisitNode.EVisitType.New)
                 {
                     m_MetaDefineType.SetMetaClass(fmcn.methodCall.function.ownerMetaClass);
                 }

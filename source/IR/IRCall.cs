@@ -66,10 +66,9 @@ namespace SimpleLanguage.IR
             int callMethodIndex = -1;
             if ( mfc.callerInstanceClass != null )
             {
-                curMc = m_IRMethod.irManager.GetIRMetaClassByName(mfc.callerInstanceClass?.allClassName);
                 IRData datacallsc = new IRData();
                 datacallsc.opCode = EIROpCode.SetCallClass;
-                datacallsc.opValue = curMc;
+                datacallsc.opValue = IRManager.GetIRNameByMetaClass(mfc.callerInstanceClass);
                 datacallsc.SetDebugInfoByToken(mf.pingToken);
                 AddIRData(datacallsc);
             }

@@ -366,11 +366,11 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            if( m_MetaModule != null )
+            if (m_MetaModule != null)
             {
                 sb.Append(m_MetaModule.ToFormatString());
             }
-            else if( m_MetaNamespace != null )
+            else if (m_MetaNamespace != null)
             {
                 sb.Append(m_MetaNamespace.ToFormatString());
             }
@@ -382,11 +382,40 @@ namespace SimpleLanguage.Core
             {
                 sb.Append(m_MetaEnum.ToFormatString());
             }
-            else if( m_MetaTemplateClassDict.Count > 0 )
+            else if (m_MetaTemplateClassDict.Count > 0)
             {
-                foreach( var v in m_MetaTemplateClassDict )
+                foreach (var v in m_MetaTemplateClassDict)
                 {
-                    sb.Append(v.Value.ToFormatString());                    
+                    sb.Append(v.Value.ToFormatString());
+                }
+            }
+            return sb.ToString();
+        }
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (m_MetaModule != null)
+            {
+                sb.Append(m_MetaModule.ToString());
+            }
+            else if (m_MetaNamespace != null)
+            {
+                sb.Append(m_MetaNamespace.ToString());
+            }
+            else if (m_MetaData != null)
+            {
+                sb.Append(m_MetaData.ToString());
+            }
+            else if (m_MetaEnum != null)
+            {
+                sb.Append(m_MetaEnum.ToString());
+            }
+            else
+            {
+                for( int i = 0; i < m_MetaTemplateClassDict.Count; i++ )
+                {
+                    sb.Append(m_MetaTemplateClassDict[i].ToString());
                 }
             }
             return sb.ToString();

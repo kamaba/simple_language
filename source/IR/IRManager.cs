@@ -100,7 +100,7 @@ namespace SimpleLanguage.IR
         }
         public IRMetaClass GetIRMetaClassByName( string allname )
         {
-            return m_IRMetaClassList.Find(a => a.allName == allname);
+            return m_IRMetaClassList.Find(a => a.irName == allname);
         }
         void ParseClass()
         {
@@ -127,7 +127,7 @@ namespace SimpleLanguage.IR
                 {
                     continue;
                 }
-                var irmc = m_IRMetaClassList.Find(a => a.allName == v.Key);
+                var irmc = m_IRMetaClassList.Find(a => a.irName == v.Key);
                 if (irmc == null)
                     continue;
 
@@ -219,6 +219,93 @@ namespace SimpleLanguage.IR
             }
             IRMethod irmethod = new IRMethod(this, mf );
             return irmethod;
+        }
+        public static string GetIRNameByMetaClass(MetaClass mc)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(mc.metaNode.allName);
+            if (mc is MetaGenTemplateClass mgtc)
+            {
+                sb.Append("<");
+                for (int i = 0; i < mgtc.metaGenTemplateList.Count; i++)
+                {
+                    sb.Append(IRManager.GetIRNameByMetaClass(mgtc.metaGenTemplateList[i].metaType.metaClass));
+                    if (i < mgtc.metaGenTemplateList.Count - 1)
+                    { sb.Append(","); }
+                }
+                sb.Append(">");
+            }
+            else
+            {
+                if (mc.metaTemplateList.Count > 0)
+                {
+                    sb.Append("<");
+                    for (int i = 0; i < mc.metaTemplateList.Count; i++)
+                    {
+                        sb.Append(mc.metaTemplateList[i].name);
+                        if (i < mc.metaTemplateList.Count - 1)
+                        { sb.Append(","); }
+                    }
+                    sb.Append(">");
+                }
+            }
+
+            return sb.ToString();
+        }
+        public static string GetIRNameByMetaType(MetaType mt)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (mt.eType == EMetaTypeType.Template )
+            {
+                sb.Append("$");
+                sb.Append(mt.metaTemplate.name);
+                sb.Append("$");
+            }
+            else if (mt.eType == EMetaTypeType.MetaClass)
+            {
+                sb.Append(mt.metaClass.metaNode.allName);
+                if ( mt.metaClass is MetaGenTemplateClass mgtc )
+                {
+                    sb.Append("<");
+                    for (int i = 0; i < mgtc.metaGenTemplateList.Count; i++)
+                    {
+                        sb.Append(GetIRNameByMetaType(mgtc.metaGenTemplateList[i].metaType ));
+                        if (i < mgtc.metaGenTemplateList.Count - 1)
+                        { sb.Append(","); }
+                    }
+                    sb.Append('>');
+                }
+                else
+                {
+                    if(mt.templateMetaTypeList.Count > 0 )
+                    {
+                        sb.Append("<");
+                        for (int i = 0; i < mt.templateMetaTypeList.Count; i++)
+                        {
+                            sb.Append(GetIRNameByMetaType(mt.templateMetaTypeList[i]));
+                            if (i < mt.templateMetaTypeList.Count - 1)
+                            { sb.Append(","); }
+                        }
+                        sb.Append('>');
+                    }
+                }
+            }
+            else
+            {
+                sb.Append(mt.templateMetaClass.metaNode.allName);
+                sb.Append("<");
+                for (int i = 0; i < mt.templateMetaTypeList.Count; i++)
+                {
+                    sb.Append(GetIRNameByMetaType(mt.templateMetaTypeList[i]));
+                    if (i < mt.templateMetaTypeList.Count - 1)
+                    { sb.Append(","); }
+                }
+                sb.Append('>');
+            }
+
+            return sb.ToString();
         }
         public void ParseIRMethod()
         {

@@ -10,6 +10,7 @@ using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 namespace SimpleLanguage.VM.Runtime
 {
     public class RuntimeMethod
@@ -222,7 +223,7 @@ namespace SimpleLanguage.VM.Runtime
             SObject sobj = null;
             if (mdt.isTemplate)
             {
-                var newmdt = GetTemplateIRMetaClass(mdt.allName);
+                var newmdt = GetTemplateIRMetaClass(mdt.irName);
                 sobj = ObjectManager.CreateObjectByDefineType(newmdt);
             }
             else
@@ -274,6 +275,54 @@ namespace SimpleLanguage.VM.Runtime
                 pushChar = '\t' + pushChar;
             }
             Log.AddVM( EError.None, pushChar  + "[VMRuntime] [Pop] Method: [" + funName + "]");
+        }
+        public IRMetaClass GetIRMetaClassByName( string tname )
+        {
+            if (string.IsNullOrEmpty(tname))
+            {
+                Log.AddVM(EError.None, "SetCallClass 没有找到相关的模板名称1 ");
+                return null;
+            }
+            StringBuilder sb = new StringBuilder();
+            string findname = "";
+            bool isFind = false;
+            foreach (var v in tname)
+            {
+                if (v == '$')
+                {
+                    if (isFind)
+                    {
+                        var fsb = sb.ToString();
+                        var gmc = GetTemplateIRMetaClass(fsb);
+                        if (gmc == null)
+                        {
+                            Log.AddVM(EError.None, $"没有找到该模板的对应类!{fsb}");
+                            return null;
+                        }
+                        findname = findname + gmc.irName;
+                        isFind = false;
+                    }
+                    else
+                    {
+                        findname = findname + sb.ToString();
+                        isFind = true;
+                    }
+                    sb.Clear();
+                }
+                else
+                {
+                    sb.Append(v);
+                }
+            }
+            findname = findname + sb.ToString();
+
+            IRMetaClass irc = IRManager.instance.GetIRMetaClassByName(findname);
+            if (irc == null)
+            {
+                Log.AddVM(EError.None, "NewTemplateClass IRC是调用虚函数为空!!");
+                return null;
+            }
+            return irc;
         }
         public void RunInstruction( IRData iri )
         {
@@ -481,15 +530,32 @@ namespace SimpleLanguage.VM.Runtime
                         InnerCLRRuntimeVM.SetStaticVariable(m_CallIRMetaClass, iri.index, ref m_ValueStack[--m_ValueIndex]);
                     }
                     break;
-                case EIROpCode.SetCurrentClassCallClass:
+                case EIROpCode.TemplateReplace:
                     {
-                        m_CallIRMetaClass = m_IRMetaClass;
+                        string tname = iri.opValue as String;
+                        if( string.IsNullOrEmpty( tname ) )
+                        {
+                            Log.AddVM(EError.None, "没有找到相关的模板名称");
+                            return;
+                        }
+                        m_CallIRMetaClass = GetTemplateIRMetaClass(tname);
+                        if (string.IsNullOrEmpty(tname))
+                        {
+                            Log.AddVM(EError.None, "没有找到相关的模板名称的类!!");
+                            return;
+                        }
                     }
                     break;
+                //case EIROpCode.SetCurrentClassCallClass:
+                //    {
+                //        m_CallIRMetaClass = m_IRMetaClass;
+                //    }
+                //    break;
                 case EIROpCode.SetCallClass:
                     {
-                         var mrirmc = iri.opValue as IRMetaClass;
-                        m_CallIRMetaClass = mrirmc;
+                        string tname = iri.opValue as String;
+
+                        m_CallIRMetaClass = GetIRMetaClassByName(tname);
                     }
                     break;
                 case EIROpCode.UnSetCallClass:
@@ -563,20 +629,27 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.NewTemplateClass:
                     {
-                        int stackIndex = m_ValueIndex - 1;
-                        if (stackIndex < 0)
+                        //int stackIndex = m_ValueIndex - 1;
+                        //if (stackIndex < 0)
+                        //{
+                        //    Log.AddVM(EError.None, "NewTemplateClass StackIndex 是负数!");
+                        //    return;
+                        //}
+                        //var v = m_ValueStack[stackIndex];
+
+                        //IRMetaClass irc = null;
+                        //if (v.eType == EType.Class)
+                        //{
+                        //    var co2 = (v.sobject as ClassObject);
+                        //    irc = co2.value.irMetaClass;
+                        //}
+                        string tname = iri.opValue as String;
+                        if (string.IsNullOrEmpty(tname))
                         {
-                            Log.AddVM(EError.None, "NewTemplateClass StackIndex 是负数!");
+                            Log.AddVM(EError.None, "没有找到相关的模板名称");
                             return;
                         }
-                        var v = m_ValueStack[stackIndex];
-
-                        IRMetaClass irc = null;
-                        if (v.eType == EType.Class)
-                        {
-                            var co2 = (v.sobject as ClassObject);
-                            irc = co2.value.irMetaClass;
-                        }
+                        IRMetaClass irc = GetIRMetaClassByName(tname);
                         if (irc == null)
                         {
                             Log.AddVM(EError.None, "NewTemplateClass IRC是调用虚函数为空!!");

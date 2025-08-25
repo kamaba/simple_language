@@ -64,6 +64,7 @@ namespace SimpleLanguage.Core
         {
             m_MetaTemplateClass = mtc;
             m_MetaGenTemplateList = list;
+            m_MetaNode = mtc.metaNode;
 
 
             StringBuilder sb = new StringBuilder();
@@ -83,7 +84,6 @@ namespace SimpleLanguage.Core
         }
         public void UpdateRegster()
         {
-
             //这个过程是 绑定 原来注册过来的T的已有的类
             for (int i = 0; i < m_MetaTemplateClass.bindStructTemplateMetaClassList.Count; i++)
             {
@@ -210,6 +210,10 @@ namespace SimpleLanguage.Core
         }
         public override void Parse()
         {
+            m_MetaMemberVariableDict.Clear();
+            m_MetaMemberFunctionTemplateNodeDict.Clear();
+            m_MetaExtendMemeberVariableDict.Clear();
+
             ParseMemberVariableDefineMetaType();
             ParseMemberFunctionDefineMetaType();
 

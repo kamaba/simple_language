@@ -341,13 +341,16 @@ namespace SimpleLanguage.Core
             bool isNewClass = false;
             bool isNewData = false;
             bool isNewEnum = false;
-            if (mcl.finalCallNode?.visitType == MetaVisitNode.EVisitType.NewClass)
+            if (mcl.finalCallNode?.visitType == MetaVisitNode.EVisitType.New)
             {
-                isNewClass = true;
-            }
-            else if (mcl.finalCallNode?.visitType == MetaVisitNode.EVisitType.NewData)
-            {
-                isNewData = true;
+                if( mcl.finalCallNode.callerMetaType.isData )
+                {
+                    isNewData = true;
+                }
+                else
+                {
+                    isNewClass = true;
+                }
             }
             //else if (mcl.finalMetaCallNode.callNodeType == ECallNodeType.EnumNewValue)
             //{

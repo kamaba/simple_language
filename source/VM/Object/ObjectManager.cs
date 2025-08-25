@@ -59,7 +59,7 @@ namespace SimpleLanguage.VM
                 sobj = new TemplateObject();
                 return sobj;
             }
-            string name = mdt.allName;
+            string name = mdt.irName;
             if (name == "S.Core.Boolean" || name == "Boolean")
             {
                 sobj = new BoolObject(false);

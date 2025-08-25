@@ -426,7 +426,7 @@ namespace SimpleLanguage.VM
         }
         public override string ToString()
         {
-            return m_IRMetaClass.allName + "  " ;
+            return m_IRMetaClass.irName + "  " ;
          }
     }
 }

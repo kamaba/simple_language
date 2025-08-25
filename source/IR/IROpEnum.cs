@@ -47,8 +47,10 @@ namespace SimpleLanguage.IR
         StoreStaticField,
         StoreNotStaticField,
         StoreReturn,
+
+        TemplateReplace,
         
-        SetCurrentClassCallClass,
+        //SetCurrentClassCallClass,
         SetCallClass,
         UnSetCallClass,
 

@@ -15,30 +15,21 @@ namespace SimpleLanguage.IR
 {
     public class IRNew : IRBase
     {
-        public static IRNew CreateNew(IRMethod irMethod, IRMetaClass irmc, bool isTemplate)
+        public IRNew(IRMethod irMethod, IRMetaClass irmc) : base(irMethod)
         {
-            IRNew irnew = new IRNew(irMethod);
-
-            if( isTemplate )
-            {
-                IRData data = new IRData();
-                data.opCode = EIROpCode.NewTemplateClass;
-                data.opValue = irmc;
-                data.debugInfo = new DebugInfo() { name = "", info = "NewCallClass" };
-                irnew.AddIRData(data);
-            }
-            else
-            {
-                IRData data = new IRData();
-                data.opCode = EIROpCode.NewObject;
-                data.opValue = irmc;
-                data.debugInfo = new DebugInfo() { name = irmc.allName, info = "IRNew" };
-                irnew.AddIRData(data);
-            }
-            return irnew;
+            IRData data = new IRData();
+            data.opCode = EIROpCode.NewObject;
+            data.opValue = irmc;
+            data.debugInfo = new DebugInfo() { name = irmc.irName, info = "IRNew" };
+            AddIRData(data);
         }
-        public IRNew(IRMethod irMethod) :base( irMethod )
+        public IRNew(IRMethod irMethod, string opvalue ) : base(irMethod)
         {
+            IRData data = new IRData();
+            data.opCode = EIROpCode.NewTemplateClass;
+            data.opValue = opvalue;
+            data.debugInfo = new DebugInfo() { name = "", info = "NewCallClass" };
+            AddIRData(data);
         }
     }
 }

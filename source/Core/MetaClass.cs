@@ -64,7 +64,7 @@ namespace SimpleLanguage.Core
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
         public Dictionary<string, MetaMemberFunctionTemplateNode> metaMemberFunctionTemplateNodeDict => m_MetaMemberFunctionTemplateNodeDict;
         public Dictionary<string, MetaMemberVariable> metaExtendMemeberVariableDict => m_MetaExtendMemeberVariableDict;
-        public List<MetaPreTemplateClass> bindStructTemplateMetaClassList => m_BindStructTemplateMetaClassList;
+        public List<MetaType> bindStructTemplateMetaClassList => m_BindStructTemplateMetaClassList;
         public Dictionary<Token, FileMetaClass> fileMetaClassDict => m_FileMetaClassDict;
         public bool isHandleExtendVariableDirty { get; set; } = false;
 
@@ -74,7 +74,7 @@ namespace SimpleLanguage.Core
         protected Dictionary<Token, FileMetaClass> m_FileMetaClassDict = new Dictionary<Token, FileMetaClass>();
         protected MetaClass m_ExtendClass = null;
         protected MetaType m_ExtendClassMetaType = null;
-        protected List<MetaPreTemplateClass> m_BindStructTemplateMetaClassList = new List<MetaPreTemplateClass>();
+        protected List<MetaType> m_BindStructTemplateMetaClassList = new List<MetaType>();
         protected List<MetaClass> m_InterfaceClass = new List<MetaClass>();
         protected List<MetaType> m_InterfaceMetaType = new List<MetaType>();
         protected Dictionary<string, MetaMemberVariable> m_MetaMemberVariableDict = new Dictionary<string, MetaMemberVariable>();
@@ -106,10 +106,10 @@ namespace SimpleLanguage.Core
             m_Type = _type;
             this.m_AllName = _name;
         }       
-        public MetaClass( MetaClass mc )
+        public MetaClass( MetaClass mc ) : base(mc)
         {
             m_Name = mc.m_Name;
-            this.m_AllName = m_Name;
+            this.m_AllName = mc.m_AllName;
             m_Type = mc.m_Type;
             m_FileMetaClassDict = mc.m_FileMetaClassDict;
             m_ExtendClass = mc.m_ExtendClass;
@@ -407,13 +407,46 @@ namespace SimpleLanguage.Core
         {
             return true;
         }
-        public void AddMetaPreTemplateClass(MetaPreTemplateClass mptc)
+        public MetaType AddMetaPreTemplateClass( MetaType mt, out bool isGenMetaClass )
         {
-            var find = m_BindStructTemplateMetaClassList.Find(a => a == mptc);
+            isGenMetaClass = false;
+            if ( mt.templateMetaClass == null )
+            {
+                return null;
+            }
+            List<MetaClass> mcList = new List<MetaClass>();
+            for( int i = 0; i < mt.templateMetaTypeList.Count; i++ )
+            {
+                var mtc = mt.templateMetaTypeList[i];
+                if( mtc.eType == EMetaTypeType.MetaClass )
+                {
+                    mcList.Add(mtc.metaClass);
+                }
+            }
+            if( mcList.Count == mt.templateMetaTypeList.Count )
+            {
+                MetaGenTemplateClass mgtc = mt.templateMetaClass.AddInstanceMetaClass(mcList);
+                isGenMetaClass = true;
+                return new MetaType( mgtc );
+            }
+
+            var find = BindStructTemplateMetaClassList( mt );
             if( find == null )
             {
-                this.m_BindStructTemplateMetaClassList.Add(mptc);
+                this.m_BindStructTemplateMetaClassList.Add(new MetaType(mt) );
             }
+            return mt;
+        }
+        public MetaType BindStructTemplateMetaClassList( MetaType mt )
+        {
+            foreach( var v in m_BindStructTemplateMetaClassList )
+            {
+                if(MetaType.EqualMetaDefineType(v,mt ) )
+                {
+                    return v;
+                }
+            }
+            return null;
         }
 #if EditorMode
         public void BindFileMetaClass(FileMetaClass fmc)
