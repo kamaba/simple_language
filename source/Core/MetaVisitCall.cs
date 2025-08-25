@@ -17,27 +17,24 @@ namespace SimpleLanguage.Core
     {
         public MetaVariable loadMetaVariable => m_LoadMetaVariable;
         public MetaVariable storeMetaVariable => m_StoreMetaVariable;
-        public MetaGenTemplateClass callerInstanceClass => m_CallerInstanceClass;
+        public MetaType callerMetaType => m_CallerMetaType;
         public MetaFunction function => m_VMCallMetaFunction;
         public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
         public MetaInputParamCollection metaInputParamCollection => m_MetaInputParamCollection;
 
         protected MetaVariable m_LoadMetaVariable = null;
         protected MetaVariable m_StoreMetaVariable = null;
-        protected MetaGenTemplateClass m_CallerInstanceClass = null;
+        protected MetaType m_CallerMetaType = null;
         //模板或者是调用时的函数
         protected MetaFunction m_VMCallMetaFunction = null;
         //真实的成员函数
         protected MetaMemberFunction m_MetaMemberFunction = null;
         protected MetaInputParamCollection m_MetaInputParamCollection = null;
         
-        public MetaMethodCall( MetaClass mc, MetaFunction _fun, MetaInputParamCollection _param, MetaVariable loadMv, MetaVariable storeMv )
+        public MetaMethodCall( MetaType mt, MetaFunction _fun, MetaInputParamCollection _param, MetaVariable loadMv, MetaVariable storeMv )
         {
-            if( mc is MetaGenTemplateClass mgtc )
-            {
-                m_CallerInstanceClass = mgtc;
-            }
-            if( _fun is MetaMemberFunction mmf )
+            m_CallerMetaType = mt;
+            if ( _fun is MetaMemberFunction mmf )
             {
                 m_VMCallMetaFunction = mmf.sourceMetaMemberFunction != null ? mmf.sourceMetaMemberFunction : mmf;
             }
@@ -166,7 +163,7 @@ namespace SimpleLanguage.Core
             vn.m_CallerMetaType = mt;
             vn.visitType = EVisitType.New;
             vn.variable = mv;
-            vn.methodCall = new MetaMethodCall(mf.ownerMetaClass, mf, null, null, mv);
+            vn.methodCall = new MetaMethodCall(mt, mf, null, null, mv);
             return vn;
         }
         public static MetaVisitNode CraeteByNewClass(MetaType mt, MetaBraceOrBracketStatementsContent mb, MetaVariable mv = null )

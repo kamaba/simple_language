@@ -63,7 +63,7 @@ namespace SimpleLanguage.IR
         {
             if( irmvf == IRMetaVariableFrom.Global )
             {
-                m_Data.opCode = EIROpCode.LoadArgument;
+                m_Data.opCode = EIROpCode.LocalGlobal;
                 m_Data.index = id;
                 m_IRDataList.Add(m_Data);
             }
@@ -160,7 +160,7 @@ namespace SimpleLanguage.IR
             if( irmvf == IRMetaVariableFrom.Global )
             {
                 m_Data.index = id;
-                m_Data.opCode = EIROpCode.StoreStaticField;
+                m_Data.opCode = EIROpCode.StoreGlobal;
                 m_IRDataList.Add(m_Data);
             }
             else if (irmvf == IRMetaVariableFrom.Static)

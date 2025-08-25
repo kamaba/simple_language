@@ -36,6 +36,7 @@ namespace SimpleLanguage.IR
         LoadLocal,  
         LoadNotStaticField,
         LoadStaticField,
+        LocalGlobal,
 
         NewObject,
         NewTemplateClass,
@@ -43,14 +44,12 @@ namespace SimpleLanguage.IR
         Dup,
         Pop,
 
-        StoreLocal,            
-        StoreStaticField,
+        StoreLocal,
         StoreNotStaticField,
+        StoreStaticField,
+        StoreGlobal,
         StoreReturn,
-
-        TemplateReplace,
         
-        //SetCurrentClassCallClass,
         SetCallClass,
         UnSetCallClass,
 

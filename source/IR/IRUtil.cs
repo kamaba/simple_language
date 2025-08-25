@@ -11,12 +11,10 @@ using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Linq;
-using System.Runtime.Intrinsics.X86;
 using System.Reflection;
 
 namespace SimpleLanguage.IR
@@ -57,4 +55,5 @@ namespace SimpleLanguage.IR
             return 1;
         }
     }
+
 }

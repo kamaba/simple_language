@@ -215,7 +215,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 return m_InputTemplateClassDict[name];
             }
-            Log.AddVM(EError.None, "Erorr------没有找到模板内容!!!");
+            //Log.AddVM(EError.None, "Erorr------没有找到模板内容!!!");
             return null;
         }
         public SObject CreateObjectByIRMetaClass( IRMetaClass mdt )
@@ -528,22 +528,6 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.StoreStaticField:
                     {                        
                         InnerCLRRuntimeVM.SetStaticVariable(m_CallIRMetaClass, iri.index, ref m_ValueStack[--m_ValueIndex]);
-                    }
-                    break;
-                case EIROpCode.TemplateReplace:
-                    {
-                        string tname = iri.opValue as String;
-                        if( string.IsNullOrEmpty( tname ) )
-                        {
-                            Log.AddVM(EError.None, "没有找到相关的模板名称");
-                            return;
-                        }
-                        m_CallIRMetaClass = GetTemplateIRMetaClass(tname);
-                        if (string.IsNullOrEmpty(tname))
-                        {
-                            Log.AddVM(EError.None, "没有找到相关的模板名称的类!!");
-                            return;
-                        }
                     }
                     break;
                 //case EIROpCode.SetCurrentClassCallClass:
