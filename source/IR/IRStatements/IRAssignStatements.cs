@@ -124,11 +124,7 @@ namespace SimpleLanguage.IR
                             IRMetaClass irmc = null;
                             if (cl.callerMetaType != null)
                             {
-                                IRData sc23 = new IRData();
-                                sc23.opCode = EIROpCode.SetCallClass;
-                                sc23.opValue = tname;
-                                IRBase irbase23 = new IRBase(sc23);
-                                irList.Add(irbase23);
+                                tname = IRManager.GetIRNameByMetaType(cl.callerMetaType);
                                 if (cl.callerMetaType.eType == EMetaTypeType.MetaClass )
                                 {
                                     irmc = irMethod.irManager.GetIRMetaClassByName(tname);
@@ -140,9 +136,14 @@ namespace SimpleLanguage.IR
                                 }
                                 else
                                 {
-                                    string irnewclass = IRManager.GetIRNameByMetaClass(cl.callerMetaType.templateMetaClass);
-                                    irmc = irMethod.irManager.GetIRMetaClassByName(irnewclass);
+                                    string tt = IRManager.GetIRNameByMetaClass(cl.callerMetaType.templateMetaClass);
+                                    irmc = irMethod.irManager.GetIRMetaClassByName(tt);
                                 }
+                                IRData sc23 = new IRData();
+                                sc23.opCode = EIROpCode.SetCallClass;
+                                sc23.opValue = tname;
+                                IRBase irbase23 = new IRBase(sc23);
+                                irList.Add(irbase23);
                             }
 
 
