@@ -165,7 +165,7 @@ namespace SimpleLanguage.Core
                             m_VisitNodeList.Add(mvn1);
 
 
-                            mmc = new MetaMethodCall( mcn.metaClass, mcn.metaFunction, mcn.metaInputParamCollection, newmv, mcn.storeMetaVariable);
+                            mmc = new MetaMethodCall( mcn.metaType, mcn.metaFunction, mcn.metaInputParamCollection, newmv, mcn.storeMetaVariable);
                         }
                         else
                         {
@@ -174,7 +174,7 @@ namespace SimpleLanguage.Core
                             {
                                 m_VisitNodeList.RemoveAt(m_VisitNodeList.Count - 1);
                             }
-                            mmc = new MetaMethodCall(mcn.metaClass, mcn.metaFunction, mcn.metaInputParamCollection, retmv, mcn.storeMetaVariable);                           
+                            mmc = new MetaMethodCall(mcn.metaType, mcn.metaFunction, mcn.metaInputParamCollection, retmv, mcn.storeMetaVariable);                           
                         }
 
                         MetaVisitNode mvn2 = MetaVisitNode.CreateByMethodCall(mmc);
@@ -194,7 +194,7 @@ namespace SimpleLanguage.Core
 
                             if( mcn.metaFunction != null )
                             {
-                                MetaMethodCall mmc = new MetaMethodCall(mcn.genMetaClass, mcn.metaFunction, mcn.metaInputParamCollection, mcn.metaVariable, mcn.storeMetaVariable );
+                                MetaMethodCall mmc = new MetaMethodCall(mcn.metaType, mcn.metaFunction, mcn.metaInputParamCollection, mcn.metaVariable, mcn.storeMetaVariable );
                                 mvn.SetMethodCall(mmc);
                             }
                         }
@@ -207,7 +207,7 @@ namespace SimpleLanguage.Core
                     {
                         MetaVisitNode mvn = MetaVisitNode.CreateByNewTemplate(mcn.metaType, mcn.metaFunction, mcn.storeMetaVariable);
                         MetaClass cmc = mcn.metaType.metaClass;
-                        MetaMethodCall mmc = new MetaMethodCall(cmc, mcn.metaFunction, mcn.metaInputParamCollection, mcn.metaVariable, mcn.storeMetaVariable);
+                        MetaMethodCall mmc = new MetaMethodCall(mcn.metaType, mcn.metaFunction, mcn.metaInputParamCollection, mcn.metaVariable, mcn.storeMetaVariable);
                         mvn.SetMethodCall(mmc);
                         m_VisitNodeList.Add(mvn);
                     }

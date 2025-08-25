@@ -64,11 +64,12 @@ namespace SimpleLanguage.IR
             m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(mf.functionAllName);
 
             int callMethodIndex = -1;
-            if ( mfc.callerInstanceClass != null )
+            if ( mfc.callerMetaType != null )
             {
+                string tname = IRManager.GetIRNameByMetaType(mfc.callerMetaType);
                 IRData datacallsc = new IRData();
                 datacallsc.opCode = EIROpCode.SetCallClass;
-                datacallsc.opValue = IRManager.GetIRNameByMetaClass(mfc.callerInstanceClass);
+                datacallsc.opValue = tname;
                 datacallsc.SetDebugInfoByToken(mf.pingToken);
                 AddIRData(datacallsc);
             }

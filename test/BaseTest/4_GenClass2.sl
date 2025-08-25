@@ -63,6 +63,7 @@ Level1<T,T2>
             Level1<string,object> aaa = new()
             #Open(true)
             #t1 = this.Level1_t()
+            Level1<List<T2> >.Open(  t )
         }
     }
     get T Level1_t()
