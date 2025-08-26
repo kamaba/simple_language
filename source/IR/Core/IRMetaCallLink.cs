@@ -41,40 +41,27 @@ namespace SimpleLanguage.Core.IR
             {
                 MetaVariable mv = cnode.variable;
 
-                bool isAddTemplate = false;
-                string tname = IRManager.GetIRNameByMetaType(mv.metaDefineType);
                 IRMetaClass irmc = null;
-                if (mv.metaDefineType.eType == EMetaTypeType.MetaClass)
+                IRBase irbase = null;
+                
+                if( mv.isStatic )
                 {
-                    irmc = _irMethod.irManager.GetIRMetaClassByName(tname);
-                }
-                else
-                {
-                    if( mv.metaDefineType.eType == EMetaTypeType.Template )
+                    irbase = IRUtil.GetSetCallClass(cnode.callerMetaType, mv.ownerMetaClass, out irmc);
+                    if (irbase != null)
                     {
-                        tname = IRManager.GetIRNameByMetaClass(mv.ownerMetaClass);
-                        irmc = _irMethod.irManager.GetIRMetaClassByName(tname);
+                        irList.Add(irbase);
                     }
-                    else
-                    {
-                        irmc = _irMethod.irManager.GetIRMetaClassByName(IRManager.GetIRNameByMetaClass(mv.metaDefineType.templateMetaClass));
-                    }
-                    IRData sc2 = new IRData();
-                    sc2.opCode = EIROpCode.SetCallClass;
-                    sc2.opValue = tname;
-                    IRBase irbase22 = new IRBase(sc2);
-                    irList.Add(irbase22);
-                    isAddTemplate = true;
                 }
+
                 IRLoadVariable irVar = IRLoadVariable.NewLoadVariable(_irMethod, irmc, mv);
                 irList.Add(irVar);
 
-                if (isAddTemplate)
+                if (irbase != null )
                 {
                     IRData sc2 = new IRData();
                     sc2.opCode = EIROpCode.UnSetCallClass;
-                    IRBase irbase = new IRBase(sc2);
-                    irList.Add(irbase);
+                    IRBase irbase2 = new IRBase(sc2);
+                    irList.Add(irbase2);
                 }
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MethodCall)

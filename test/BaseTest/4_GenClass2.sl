@@ -63,7 +63,7 @@ Level1<T,T2>
             Level1<string,object> aaa = new()
             #Open(true)
             #t1 = this.Level1_t()
-            Level1<List<T2> >.Open(  t )
+            Level1<List<T2>, List<string> >.Open(  List<T2>() )
         }
     }
     get T Level1_t()
@@ -86,12 +86,12 @@ Level1<T,T2>
     }
     static T Open( T t )
     {
-        Level1<T,Level1<Level2<int>,Level2<T> > >.static_t = Level1<T2,Level2<T> >()
-        #T t1111 = new()
-        #T2 t2222 = new()
-        #!
+        Level1<Level1<Level2<int>,Level2<T2> >, T >.static_t = Level1<Level2<int>,Level2<T2> >()
+        T t1111 = new()
+        T2 t2222 = new()        
         Level2<T>.Level2_t = t
         static_t = t
+        #!
         Level1<T,T2>.static_t = t
         Level1<T2,T>.static_t = t
         Level1<T,short>.static_t = 20s;

@@ -124,11 +124,12 @@ namespace SimpleLanguage.Core
                     else if (mcn.callNodeType == ECallNodeType.MemberVariableName)
                     {
                         MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable, mcn.metaType);
-                        if( frontNode?.callNodeType == ECallNodeType.GenClassName )
-                        {
-                            //mvn.genTemplateMetaClass = frontNode.genMetaClass;
-                        }
-                        else if (frontNode?.callNodeType == ECallNodeType.ClassName)
+                        //if( frontNode?.callNodeType == ECallNodeType.GenClassName )
+                        //{
+                        //    //mvn.genTemplateMetaClass = frontNode.genMetaClass;
+                        //}
+                        //else 
+                        if (frontNode?.callNodeType == ECallNodeType.ClassName)
                         {
                             //mvn.callerMetaClassUseSetCurrentClass = mcn.genMetaClass == null;
                         }
@@ -156,7 +157,7 @@ namespace SimpleLanguage.Core
                             {
                                 var mccm = CoreMetaClassManager.GetMetaClassByEType(fvn.constValueExpress.eType);
                                 newmv = new MetaVariable(name, MetaVariable.EVariableFrom.LocalStatement,
-                                frontNode.ownerMetaFunctionBlock, frontNode.metaClass, new MetaType(mccm));
+                                frontNode.ownerMetaFunctionBlock, frontNode.metaType.metaClass, new MetaType(mccm));
 
                                 frontNode.ownerMetaFunctionBlock.AddMetaVariable(newmv);
                             }
@@ -222,7 +223,7 @@ namespace SimpleLanguage.Core
                     }
                     else if (mcn.callNodeType == ECallNodeType.EnumValueArray)
                     {
-                        MetaVisitNode mvn = MetaVisitNode.CreateByEnumDefaultValue(mcn.metaEnum, mcn.metaVariable);
+                        MetaVisitNode mvn = MetaVisitNode.CreateByEnumDefaultValue(mcn.metaType, mcn.metaVariable);
                         m_VisitNodeList.Add(mvn);
                     }
                     else if (mcn.callNodeType == ECallNodeType.VisitVariable)
@@ -241,7 +242,7 @@ namespace SimpleLanguage.Core
                     }
                     else if( mcn.callNodeType == ECallNodeType.EnumDefaultValue )
                     {
-                        MetaVisitNode mvn = MetaVisitNode.CreateByEnumDefaultValue(mcn.metaEnum, mcn.metaVariable);
+                        MetaVisitNode mvn = MetaVisitNode.CreateByEnumDefaultValue(mcn.metaType, mcn.metaVariable);
                         m_VisitNodeList.Add(mvn);
                     }
                     else if (mcn.callNodeType == ECallNodeType.MemberDataName)

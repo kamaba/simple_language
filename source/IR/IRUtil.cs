@@ -6,16 +6,7 @@
 //  Description: IR common function
 //****************************************************************************
 
-using SimpleLanguage.IR;
-using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Parse;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using SimpleLanguage.Compile;
-using SimpleLanguage.Compile.CoreFileMeta;
-using System.Linq;
-using System.Reflection;
+using SimpleLanguage.Core;
 
 namespace SimpleLanguage.IR
 {
@@ -53,6 +44,41 @@ namespace SimpleLanguage.IR
 
             }
             return 1;
+        }
+
+
+        public static IRBase GetSetCallClass(MetaType mt, MetaClass mc, out IRMetaClass irmc)
+        {
+            irmc = null;
+            if (mt != null)
+            {
+                string tname = IRManager.GetIRNameByMetaType(mt);
+                if (mt.eType == EMetaTypeType.MetaClass)
+                {
+                    string tn1 = IRManager.GetIRNameByMetaClass(mt.metaClass);
+                    irmc = IRManager.instance.GetIRMetaClassByName(tn1);
+                }
+                else if (mt.eType == EMetaTypeType.Template)
+                {
+                    string irnewclass = IRManager.GetIRNameByMetaClass(mc != null ? mc : mt.metaClass);
+                    //if( mc != null )
+                    //{
+                    //    tname = IRManager.GetIRNameByMetaClass(mc);
+                    //}
+                    irmc = IRManager.instance.GetIRMetaClassByName(irnewclass);
+                }
+                else
+                {
+                    string tt = IRManager.GetIRNameByMetaClass(mt.templateMetaClass);
+                    irmc = IRManager.instance.GetIRMetaClassByName(tt);
+                }
+                IRData sc23 = new IRData();
+                sc23.opCode = EIROpCode.SetCallClass;
+                sc23.opValue = tname;
+                IRBase irbase23 = new IRBase(sc23);
+                return irbase23;
+            }
+            return null;
         }
     }
 
