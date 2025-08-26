@@ -34,7 +34,6 @@ namespace SimpleLanguage.IR
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
             {
-                //var irmc = _irMethod.irManager.GetIRMetaClassByName(mv.ownerMetaClass.allClassName);
                 int index = -1;
                 if( irmc != null )
                 {
@@ -149,9 +148,13 @@ namespace SimpleLanguage.IR
                     return irsv;
                 }
             }
+            else if( mv.variableFrom == MetaVariable.EVariableFrom.Global )
+            {
+                System.Diagnostics.Debug.Assert(true);
+            }
             else
             {
-
+                System.Diagnostics.Debug.Assert(true);
             }
             return null;
         }

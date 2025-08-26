@@ -28,7 +28,7 @@ namespace SimpleLanguage.Core
         MetaNode,
         MetaType,
         ClassName,
-        GenClassName,
+        //GenClassName,
         TypeName,
         TemplateName,
         EnumName,
@@ -106,10 +106,10 @@ namespace SimpleLanguage.Core
         public MetaInputParamCollection metaInputParamCollection => m_MetaInputParamCollection;
         public MetaBlockStatements ownerMetaFunctionBlock => m_OwnerMetaFunctionBlock;
         public MetaVariable storeMetaVariable => m_StoreMetaVariable;        
-        public MetaClass metaClass => m_MetaClass;
-        public MetaGenTemplateClass genMetaClass => m_GenMetaClass;
-        public MetaData metaData => m_MetaData;
-        public MetaEnum metaEnum => m_MetaEnum;
+        //public MetaClass metaClass => m_MetaClass;
+        //public MetaGenTemplateClass genMetaClass => m_GenMetaClass;
+        //public MetaData metaData => m_MetaData;
+        //public MetaEnum metaEnum => m_MetaEnum;
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaFunction metaFunction => m_MetaFunction;
         public MetaType metaType => m_MetaType;
@@ -141,7 +141,7 @@ namespace SimpleLanguage.Core
         private MetaNode m_MetaNode = null;
         private MetaType m_MetaType = null;
         private MetaClass m_MetaClass = null;
-        private MetaGenTemplateClass m_GenMetaClass = null;
+        //private MetaGenTemplateClass m_GenMetaClass = null;
         private MetaData m_MetaData = null;
         private MetaEnum m_MetaEnum = null;
         private MetaTemplate m_MetaTemplate = null;
@@ -548,7 +548,7 @@ namespace SimpleLanguage.Core
                         }
                     }
                     else if (frontCNT == ECallNodeType.ClassName
-                        || frontCNT == ECallNodeType.GenClassName
+                        //|| frontCNT == ECallNodeType.GenClassName
                         || frontCNT == ECallNodeType.MetaType )
                     {
                         // ClassName 一般使用在 Class1.静态变量，或者是静态方法的调用
@@ -560,10 +560,10 @@ namespace SimpleLanguage.Core
                                 m_FrontCallNode.m_MetaType.templateMetaClass.metaNode :
                                 m_FrontCallNode.m_MetaType.metaClass.metaNode;
                         }
-                        else if( frontCNT == ECallNodeType.GenClassName )
-                        {
-                            curMetaNode = m_FrontCallNode.m_GenMetaClass.metaNode;
-                        }
+                        //else if( frontCNT == ECallNodeType.GenClassName )
+                        //{
+                        //    curMetaNode = m_FrontCallNode.m_GenMetaClass.metaNode;
+                        //}
                         else 
                         {
                             curMetaNode = m_FrontCallNode.m_MetaClass.metaNode;
@@ -581,19 +581,7 @@ namespace SimpleLanguage.Core
                                 m_MetaVariable = mmv;
                                 m_MetaClass = m_FrontCallNode.m_MetaClass;
                                 m_MetaType = m_FrontCallNode.m_MetaType;
-                                if( m_MetaClass != null )
-                                {
-                                    if( m_MetaClass.isTemplateClass )
-                                    {
-                                        if( m_OwnerMetaFunctionBlock.ownerMetaClass != m_MetaClass )
-                                        {
-                                            Log.AddInStructMeta(EError.None, "Error 使用Level<T>.staticMV模板类中的静态变量需要使用 "
-                                                + "实例化后的类，或者是只能使用本类的调用");
-                                            return false;
-                                        }
-                                    }
-                                }
-                                m_GenMetaClass = m_FrontCallNode.m_GenMetaClass;
+                                //m_GenMetaClass = m_FrontCallNode.m_GenMetaClass;
                                 m_CallNodeType = ECallNodeType.MemberVariableName;
                             }
                             else
@@ -625,7 +613,8 @@ namespace SimpleLanguage.Core
                                     }
                                     m_MetaFunction = mmf;
                                     this.m_MetaClass = m_FrontCallNode.m_MetaClass;
-                                    this.m_GenMetaClass = m_FrontCallNode.m_GenMetaClass;
+                                    //this.m_GenMetaClass = m_FrontCallNode.m_GenMetaClass;
+                                    this.m_MetaType = m_FrontCallNode.metaType;
                                     //tmb = mmf;
                                     m_CallNodeType = ECallNodeType.MemberFunctionName;
                                 }
@@ -918,20 +907,20 @@ namespace SimpleLanguage.Core
                     {
                         m_MetaTemplateParamsCollection.AddMetaTemplateParamsList(mtList[i]);
                     }
-                    if(m_MetaType.metaClass is MetaGenTemplateClass mgtc )
-                    {
-                        m_GenMetaClass = mgtc;
-                        m_MetaClass = mgtc;
-                        m_CallNodeType = ECallNodeType.GenClassName;
-                    }
-                    else
-                    {
+                    //if(m_MetaType.metaClass is MetaGenTemplateClass mgtc )
+                    //{
+                    //    m_GenMetaClass = mgtc;
+                    //    m_MetaClass = mgtc;
+                    //    m_CallNodeType = ECallNodeType.GenClassName;
+                    //}
+                    //else
+                    //{
                         if(m_MetaType.metaClass != null )
                         {
                             m_MetaClass = m_MetaType.metaClass;
                             m_CallNodeType = ECallNodeType.ClassName;
                         }
-                    }
+                    //}
                 }
             }             
             else if( m_CallNodeType == ECallNodeType.MemberFunctionName )
@@ -1048,14 +1037,10 @@ namespace SimpleLanguage.Core
                             Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + curmc.allClassName + "的_init_方法!)", m_Token);
                             return false;
                         }
-                        MetaType retMt = null;
-                        if( m_GenMetaClass != null )
+                        MetaType retMt = m_MetaType;
+                        if( retMt == null )
                         {
-                            retMt = new MetaType(m_GenMetaClass);
-                        }
-                        else
-                        {
-                            retMt = new MetaType(m_MetaClass);
+                            retMt.SetTemplateMetaClass(m_MetaClass);
                         }
                         if (m_DefineMetaVariable == null)
                         {
@@ -1359,8 +1344,8 @@ namespace SimpleLanguage.Core
                     if( mmv.isStatic )
                     {
                         m_MetaVariable = mmv;
-                        m_MetaClass = mc;
-                        m_MetaType = mmv.metaDefineType;
+                        m_MetaClass = mc;                        
+                        m_MetaType = new MetaType(m_MetaClass);
                         m_CallNodeType = ECallNodeType.MemberVariableName;
                         return true;
                     }
@@ -1487,6 +1472,7 @@ namespace SimpleLanguage.Core
             if( mmv != null )
             {
                 m_MetaVariable = mmv;
+                m_MetaType = mmv.metaDefineType;
                 m_CallNodeType = ECallNodeType.MemberVariableName;
                 //var gmmv3 = (mv as MetaIteratorVariable);
                 //if (gmmv3 != null)
@@ -1502,8 +1488,9 @@ namespace SimpleLanguage.Core
             else if( mmf != null )
             {
                 m_MetaFunction = mmf;
+                m_MetaType = mmf.returnMetaVariable.metaDefineType;
                 m_CallNodeType = ECallNodeType.MemberFunctionName;
-                this.m_GenMetaClass = m_FrontCallNode.m_GenMetaClass;
+                //this.m_GenMetaClass = m_FrontCallNode.m_GenMetaClass;
             }
             return true;
         }
@@ -1549,7 +1536,9 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                if (m_CallNodeType == ECallNodeType.ClassName || m_CallNodeType == ECallNodeType.GenClassName )
+                if (m_CallNodeType == ECallNodeType.ClassName
+                     //|| m_CallNodeType == ECallNodeType.GenClassName
+                     )
                 {
                     if (m_CallNodeSign == ECallNodeSign.Null)
                         sb.Append(m_MetaClass?.allClassName);

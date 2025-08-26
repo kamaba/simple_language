@@ -8,6 +8,7 @@
 
 
 using SimpleLanguage.Core;
+using SimpleLanguage.Parse;
 using System;
 using System.Diagnostics;
 using System.Reflection;
@@ -61,25 +62,29 @@ namespace SimpleLanguage.IR
                 return;
             }
 
-            m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(mf.functionAllName);
 
             int callMethodIndex = -1;
-            if ( mfc.callerMetaType != null )
+
+            IRBase irbase = IRUtil.GetSetCallClass(mfc.callerMetaType, mf.ownerMetaClass, out curMc );
+            if( irbase != null )
             {
-                string tname = IRManager.GetIRNameByMetaType(mfc.callerMetaType);
-                IRData datacallsc = new IRData();
-                datacallsc.opCode = EIROpCode.SetCallClass;
-                datacallsc.opValue = tname;
-                datacallsc.SetDebugInfoByToken(mf.pingToken);
-                AddIRData(datacallsc);
+                AddIRRangeData(irbase.IRDataList);
             }
-            if( curMc != null )
+
+            m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(mf.functionAllName);
+            if ( curMc != null )
             {
                 callMethodIndex = curMc.GetIRNonStaticMethodIndexByMethod( mf.virtualFunctionName );
             }
 
             if( callMethodIndex == -1 )
             {
+                if( m_IRRuntimeMethod == null )
+                {
+                    Log.AddVM(EError.None, "------------没有找到调用的方法体!!");
+                    return;
+                }
+
                 IRData datacall = new IRData();
                 datacall.opCode = EIROpCode.Call;
                 datacall.opValue = m_IRRuntimeMethod;
@@ -102,7 +107,7 @@ namespace SimpleLanguage.IR
                 AddIRData(irpop.data);
             }
 
-            if (curMc != null)
+            if (irbase != null)
             {
                 IRData datacallunsc = new IRData();
                 datacallunsc.opCode = EIROpCode.UnSetCallClass;

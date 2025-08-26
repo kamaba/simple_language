@@ -279,13 +279,15 @@ namespace SimpleLanguage.IR
                 }
                 else
                 {
-                    if(mt.templateMetaTypeList.Count > 0 )
+                    if(mt.metaClass.metaTemplateList.Count > 0 )
                     {
                         sb.Append("<");
-                        for (int i = 0; i < mt.templateMetaTypeList.Count; i++)
+                        for (int i = 0; i < mt.metaClass.metaTemplateList.Count; i++)
                         {
-                            sb.Append(GetIRNameByMetaType(mt.templateMetaTypeList[i]));
-                            if (i < mt.templateMetaTypeList.Count - 1)
+                            sb.Append("$");
+                            sb.Append(mt.metaClass.metaTemplateList[i].name);
+                            sb.Append("$");
+                            if (i < mt.metaClass.metaTemplateList.Count - 1)
                             { sb.Append(","); }
                         }
                         sb.Append('>');

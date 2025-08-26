@@ -530,11 +530,11 @@ namespace SimpleLanguage.VM.Runtime
                         InnerCLRRuntimeVM.SetStaticVariable(m_CallIRMetaClass, iri.index, ref m_ValueStack[--m_ValueIndex]);
                     }
                     break;
-                //case EIROpCode.SetCurrentClassCallClass:
-                //    {
-                //        m_CallIRMetaClass = m_IRMetaClass;
-                //    }
-                //    break;
+                case EIROpCode.SetCurrentClassCallClass:
+                    {
+                        m_CallIRMetaClass = m_IRMetaClass;
+                    }
+                    break;
                 case EIROpCode.SetCallClass:
                     {
                         string tname = iri.opValue as String;
@@ -644,7 +644,7 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ObjectManager.AddClassObject(co);
                         }
-                        m_ValueStack[m_ValueIndex].SetSObject(sob);
+                        m_ValueStack[m_ValueIndex++].SetSObject(sob);
                     }
                     break;
                 case EIROpCode.Dup:

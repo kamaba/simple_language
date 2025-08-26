@@ -73,7 +73,9 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(IRManager.GetIRNameByMetaType(mv.metaDefineType));
+                //m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(IRManager.GetIRNameByMetaType(mv.metaDefineType));
+                string tname = IRManager.GetIRNameByMetaClass(mv.metaDefineType.templateMetaClass);
+                m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(tname);
                 m_IsTemplate = false;
             }
             if( m_IRMetaClass == null )

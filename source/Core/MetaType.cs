@@ -345,7 +345,7 @@ namespace SimpleLanguage.Core
                 {
                     if (m_TemplateMetaClass != null)
                     {
-                        sb.Append(m_TemplateMetaClass.allClassName);
+                        sb.Append(m_TemplateMetaClass.metaNode.allName);
                         sb.Append("<");
 
                         for (int i = 0; i < m_TemplateMetaTypeList.Count; i++)
