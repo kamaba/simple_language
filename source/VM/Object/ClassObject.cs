@@ -174,6 +174,11 @@ namespace SimpleLanguage.VM
                         classObj.SetNull();
                     }
                     break;
+                case EType.Boolean:
+                    {
+
+                    }
+                    break;
                 case EType.Byte:
                     {
                         ByteObject byteObj = m_MemberObjectArray[index] as ByteObject;

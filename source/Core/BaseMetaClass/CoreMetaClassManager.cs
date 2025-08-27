@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
+
 namespace SimpleLanguage.Core.SelfMeta
 {
     public enum DefaultObject
@@ -250,7 +251,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaNode GetCoreMetaClass( string name )
         {
             string name1 = GetSelfMetaName(name);
-            return ModuleManager.instance.selfModule.metaNode.GetChildrenMetaNodeByName(name1);
+            return ModuleManager.instance.coreModule.metaNode.GetChildrenMetaNodeByName(name1);
         }
     }
 }

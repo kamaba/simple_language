@@ -11,7 +11,6 @@ namespace Core
         }
     }
 }
-
 LT
 {
     private _init_()
@@ -91,11 +90,9 @@ Level1<T,T2>
         T2 t2222 = new()        
         Level2<T>.Level2_t = t
         static_t = t
-        #!
         Level1<T,T2>.static_t = t
-        Level1<T2,T>.static_t = t
-        Level1<T,short>.static_t = 20s;
-        !#
+        Level1<T2,T>.static_t = t2222
+        Level1<T,short>.static_t = t1111;
         ret static_t
     }
     override string toString()
@@ -124,9 +121,9 @@ GenClass2{
         #+ Level1<string>.static_t + "   short:  " + Level1<short>.static_t + "  openReturn: " 
         System.Console.WriteLine("_this_——————————————————————————————  " + penret )
 
-        #Level1<Level1<int> > GenClass2_fun_l2 = Level1<Level1<int> >()
-        #GenClass2_fun_l2.setLevel1( Level1<int>(20) )
-        #System.Console.Write("_this2_-----------------------" + GenClass2_fun_l2.Level1_t.Level1_t + "    string:" + Level1<string>.static_t + "   short:" + Level1<short>.static_t )
+        Level1<Level1<int,int>, string > GenClass2_fun_l2 = Level1<Level1<int, int>, string >()
+        GenClass2_fun_l2.setLevel1( Level1<int, int>(20) )
+        System.Console.Write("_this2_-----------------------" + GenClass2_fun_l2.Level1_t.Level1_t + "    string:" + Level1<string,byte>.static_t + "   short:" + Level1<string, short>.static_t )
     }
 }
 

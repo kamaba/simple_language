@@ -397,6 +397,11 @@ namespace SimpleLanguage.VM
                                     int8Value = (byte)(tobj);
                                 }
                                 break;
+                            case EType.Boolean:
+                                {
+                                    int8Value = int.Parse(tobj.ToString()) == 1 ? (byte)1 : (byte)0;
+                                }
+                                break;
                             case EType.SByte:
                                 {
                                     sint8Value = (sbyte)(tobj);

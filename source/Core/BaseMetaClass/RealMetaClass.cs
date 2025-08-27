@@ -61,7 +61,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new Float32MetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.selfModule);
+            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
             return mc;
         }
     }
@@ -106,7 +106,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new Float64MetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.selfModule);
+            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule );
             return mc;
         }
     }

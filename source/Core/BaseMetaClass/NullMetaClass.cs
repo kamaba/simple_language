@@ -21,7 +21,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new NullMetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.selfModule);
+            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule );
             return mc;
         }
     }

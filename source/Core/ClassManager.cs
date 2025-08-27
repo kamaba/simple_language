@@ -330,7 +330,7 @@ namespace SimpleLanguage.Core
                 {
                     return null;
                 }
-                if( finalTopMetaNode.isMetaNamespace )
+                if(finalTopMetaNode.isMetaModule ||finalTopMetaNode.isMetaNamespace )
                 {
                     var findamc = finalTopMetaNode.GetChildrenMetaNodeByName(fmc.name);
                     if (findamc != null && findamc.IsMetaClass() )
