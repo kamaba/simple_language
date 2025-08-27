@@ -35,7 +35,7 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass CreateMetaClass()
         {
             EnumMetaClass mc = new EnumMetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.selfModule);
+            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
             return mc;
         }
     }

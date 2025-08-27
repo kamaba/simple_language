@@ -27,20 +27,30 @@ namespace SimpleLanguage.Core
 
         public string moduleName = "S";
         public const string csharpModuleName = "CSharp";
+        public const string coreModuleName = "Core";
 
-        public MetaModule selfModule { get; private set; } = null;
-        public MetaModule csharpModule = null;
+        public MetaModule selfModule => m_SelfModule;
+        public MetaModule coreModule => m_CoreModule;
+        public MetaModule csharpModule => m_CSharpModule;
         private Dictionary<string, MetaModule> m_ImportMetaModuleDict = new Dictionary<string, MetaModule>();
 
         public Dictionary<string, MetaModule> m_AllMetaModuleDict = new Dictionary<string, MetaModule>();
+
+
+        private MetaModule m_SelfModule = null;
+        private MetaModule m_CoreModule = null;
+        private MetaModule m_CSharpModule = null;
         public ModuleManager()
         {
-            selfModule = new MetaModule(moduleName);
-            csharpModule = new MetaModule(csharpModuleName);
-            csharpModule.SetRefFromType(RefFromType.CSharp);
-            m_AllMetaModuleDict.Add(moduleName, selfModule);
-            m_AllMetaModuleDict.Add(csharpModuleName, csharpModule);
+            m_SelfModule = new MetaModule(moduleName);
+            m_CoreModule = new MetaModule(coreModuleName);
+            m_CSharpModule = new MetaModule(csharpModuleName);
+            m_CSharpModule.SetRefFromType(RefFromType.CSharp);
+            m_AllMetaModuleDict.Add(moduleName, m_SelfModule);
+            m_AllMetaModuleDict.Add(coreModuleName, m_CoreModule);
+            m_AllMetaModuleDict.Add(csharpModuleName, m_CSharpModule);
             selfModule.SetDeep(0);
+            m_CoreModule.SetDeep(0);
         }
         public MetaModule GetMetaModuleOrRetSelfModuleByName( string name )
         {
@@ -63,6 +73,10 @@ namespace SimpleLanguage.Core
         }
         public MetaNode GetChildrenMetaNodeByName( string name )
         {
+            if( name == "Core" )
+            {
+                return coreModule.metaNode;
+            }
             MetaNode m2 = selfModule.metaNode.GetChildrenMetaNodeByName(name);
             if (m2 != null)
             {
