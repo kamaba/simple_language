@@ -12,6 +12,7 @@ using SimpleLanguage.Core.Statements;
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.Core
 {
@@ -30,7 +31,6 @@ namespace SimpleLanguage.Core
         public virtual bool isStatic => m_IsStatic;
         public virtual bool isConst => m_IsConst;
         public virtual bool isParsed => m_IsParsed;
-        //public virtual bool isTemplate => m_IsTemplate;
         public bool isArgument => m_VariableFrom == EVariableFrom.Argument;
         public bool isGlobal => m_VariableFrom == EVariableFrom.Global;
         public bool isArray
@@ -132,8 +132,6 @@ namespace SimpleLanguage.Core
         {
             m_DefineMetaType = mdt;
         }
-        // 这里注释掉是因为，使用token进行定位，而不再使用解析完成后的语句
-
         public virtual void SetOwnerBlockstatements(MetaBlockStatements mbs)
         {
             m_OwnerMetaBlockStatements = mbs;
@@ -182,6 +180,10 @@ namespace SimpleLanguage.Core
             sb.Append("[" + m_DefineMetaType.ToFormatString() + "]");
             sb.Append(m_Name);
             return sb.ToString();
+        }
+        public override string ToString()
+        {
+            return m_Name;
         }
     }
 
@@ -360,6 +362,10 @@ namespace SimpleLanguage.Core
             }
 
             return sb.ToString();
+        }
+        public override string ToString()
+        {
+            return m_Name;
         }
     }
 }

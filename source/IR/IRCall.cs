@@ -85,11 +85,24 @@ namespace SimpleLanguage.IR
                     return;
                 }
 
-                IRData datacall = new IRData();
-                datacall.opCode = EIROpCode.Call;
-                datacall.opValue = m_IRRuntimeMethod;
-                datacall.SetDebugInfoByToken(mf.pingToken);
-                AddIRData(datacall);
+                if( mf.isStatic )
+                {
+                    IRData datacall = new IRData();
+                    datacall.opCode = EIROpCode.CallStatic;
+                    datacall.opValue = m_IRRuntimeMethod;
+                    datacall.index = 0;
+                    datacall.SetDebugInfoByToken(mf.pingToken);
+                    AddIRData(datacall);
+                }
+                else
+                {
+                    IRData datacall = new IRData();
+                    datacall.opCode = EIROpCode.CallDynamic;
+                    datacall.opValue = m_IRRuntimeMethod;
+                    datacall.index = paramCount + 1;
+                    datacall.SetDebugInfoByToken(mf.pingToken);
+                    AddIRData(datacall);
+                }
             }
             else
             {

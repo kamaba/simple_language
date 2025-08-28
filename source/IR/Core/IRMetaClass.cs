@@ -17,9 +17,32 @@ namespace SimpleLanguage.IR
 {
     public class IRMetaClass
     {
-        static int s_TypeLength = 1000;
         public int id { get; set; } = 0;
+        public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
+        public List<IRMetaVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;
+        public Dictionary<string, IRMetaClass> genTemplateIRMetaClassDict => m_GenTemplateIRMetaClassDict;
+        public string irName => m_IRName;
+        public bool isTemplate { get; private set; } = false;
+        public bool genClass { get; private set; } = false;
 
+
+
+        public int allocSize = 0;
+        public List<EType> m_MetaTypeList = new List<EType>();
+        public int byteCount = 0;
+
+        private Dictionary<int, int> m_MetaMemberVariableHashCodeDict = new Dictionary<int, int>();
+        private List<MetaMemberVariable> m_LocalMetaMemberVariables = new List<MetaMemberVariable>();
+        private List<MetaMemberData> m_LocalMetaMemberDatas = new List<MetaMemberData>();
+        private List<IRMetaVariable> m_LocalIRMetaVariableList = new List<IRMetaVariable>();
+        private List<IRMetaVariable> m_StaticIRMetaVariableList = new List<IRMetaVariable>();
+        private Dictionary<string, IRMetaClass> m_GenTemplateIRMetaClassDict = new Dictionary<string, IRMetaClass>();
+        private Dictionary<int, IRCallFunction> m_LocalIRInitDict = new Dictionary<int, IRCallFunction>();
+        private List<IRMethod> m_IRNotStaticMethodList = new List<IRMethod>();
+        private string m_IRName = "";
+        private IRManager m_IRManager = null;
+
+        static int s_TypeLength = 1000;
         public IRMetaClass(IRManager manager)
         {
             m_IRManager = manager;
@@ -32,29 +55,6 @@ namespace SimpleLanguage.IR
             this.isTemplate = true;
             id = s_TypeLength++;
         }
-        public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
-        public List<IRMetaVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;
-        public Dictionary<string, IRMetaClass> genTemplateIRMetaClassDict => m_GenTemplateIRMetaClassDict;
-        private Dictionary<int, int> m_MetaMemberVariableHashCodeDict = new Dictionary<int, int>();
-
-        public int allocSize = 0;
-        public List<EType> m_MetaTypeList = new List<EType>();
-        public int byteCount = 0;
-        public string irName => m_IRName;
-        public bool isTemplate { get; private set; } = false;
-        public bool genClass { get; private set; } = false;
-
-
-        List<MetaMemberVariable> m_LocalMetaMemberVariables = new List<MetaMemberVariable>();
-        List<MetaMemberData> m_LocalMetaMemberDatas = new List<MetaMemberData>();
-
-        private List<IRMetaVariable> m_LocalIRMetaVariableList = new List<IRMetaVariable>();
-        private List<IRMetaVariable> m_StaticIRMetaVariableList = new List<IRMetaVariable>();
-        private Dictionary<string, IRMetaClass> m_GenTemplateIRMetaClassDict = new Dictionary<string, IRMetaClass>();
-        private Dictionary<int, IRCallFunction> m_LocalIRInitDict = new Dictionary<int, IRCallFunction>();
-        private List<IRMethod> m_IRNotStaticMethodList = new List<IRMethod>();
-        private string m_IRName = "";
-        private IRManager m_IRManager = null;
         public void CalcAllocSize()
         {
             m_MetaTypeList.Clear();
@@ -141,8 +141,7 @@ namespace SimpleLanguage.IR
                 for (int i = 0; i < m_LocalMetaMemberVariables.Count; i++)
                 {
                     var v = m_LocalMetaMemberVariables[i];
-                    IRMetaVariable irmv = new IRMetaVariable(this, v);
-                    irmv.index = i;
+                    IRMetaVariable irmv = new IRMetaVariable(this, v, i);
                     m_LocalIRMetaVariableList.Add(irmv);
                     AddMetaMemberVariableIndexBindHashCode(irmv.id, i);
                     if (v.sourceMetaMemberVariable != null)
@@ -155,8 +154,7 @@ namespace SimpleLanguage.IR
             for ( int i = 0; i < staticMMVList.Count; i++ )
             {
                 var v = staticMMVList[i];
-                IRMetaVariable irmv = new IRMetaVariable(this, v);
-                irmv.index = i;
+                IRMetaVariable irmv = new IRMetaVariable(this, v, i);
                 m_StaticIRMetaVariableList.Add(irmv);
                 AddMetaMemberVariableIndexBindHashCode(v.GetHashCode(), i);
                 if( v.sourceMetaMemberVariable != null )
@@ -170,7 +168,7 @@ namespace SimpleLanguage.IR
                 genClass = true;
                 foreach( var v in mgtc.metaGenTemplateList )
                 {
-                    var irmc = IRManager.instance.GetIRMetaClassByName(v.metaType.metaClass.allClassName);
+                    var irmc = IRManager.instance.GetIRMetaClassByName( IRManager.GetIRNameByMetaType(v.metaType) );
                     m_GenTemplateIRMetaClassDict.Add( v.name, irmc );
                 }
             }

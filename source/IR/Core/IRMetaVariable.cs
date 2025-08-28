@@ -26,25 +26,29 @@ namespace SimpleLanguage.IR
         public MetaExpressNode express => m_ExpressNode;
         public IRMetaClass irMetaClass => m_IRMetaClass;
         public IRMetaVariableFrom irMetaVariableFrom => m_IRMetaVariableFrom;
-
-        MetaVariable m_MetaVariable = null;
-        public int id { get; set; } = 0;
-        public string name { get; set; }
+        public int id => m_Id;
+        public string name => m_Name;
+        public int index => m_Index;
         public string templateName => m_TemplateName;
-        public int index { get; set; } = 0;
         public bool isTemplate => m_IsTemplate;
+
 
         private MetaExpressNode m_ExpressNode = null;
         private IRMetaClass m_IRMetaClass = null;
         private IRMetaVariableFrom m_IRMetaVariableFrom = IRMetaVariableFrom.None;
         private bool m_IsTemplate = false;
+        private int m_Id = -1;
+        private int m_Index = -1;
+        private string m_Name = "";
         private string m_TemplateName = "";
+        private MetaVariable m_MetaVariable = null;
 
-        public IRMetaVariable( MetaVariable mv )
+        public IRMetaVariable( MetaVariable mv, int index = -1 )
         {
             m_MetaVariable = mv;
-            id = mv.GetHashCode();
-            name = mv.ownerMetaBlockStatements?.ownerMetaFunction.name + (mv.isStatic?"_static":"_local") + "[" + mv.name + "]";
+            m_Id = mv.GetHashCode();
+            m_Index = index;
+            m_Name = mv.ownerMetaBlockStatements?.ownerMetaFunction.name + (mv.isStatic?"_static":"_local") + "[" + mv.name + "]";
             if( mv.variableFrom == MetaVariable.EVariableFrom.Member )
             {
                 if( mv.isStatic )
@@ -64,6 +68,14 @@ namespace SimpleLanguage.IR
             {
                 m_IRMetaVariableFrom = IRMetaVariableFrom.LocalStatement;
             }
+            else if( mv.variableFrom == MetaVariable.EVariableFrom.Global )
+            {
+                m_IRMetaVariableFrom = IRMetaVariableFrom.Global;
+            }
+            else
+            {
+                Log.AddGenIR(EError.None, "IRMetaVariable 没有找到对应的from ");
+            }
 
             m_TemplateName = IRManager.GetIRNameByMetaType(mv.metaDefineType);
             //if( mv.metaDefineType.eType == EMetaTypeType.Template )
@@ -77,7 +89,6 @@ namespace SimpleLanguage.IR
             //    }
             //}
             //else 
-
             if( mv.metaDefineType.eType == EMetaTypeType.MetaClass )
             {
                 if( !mv.metaDefineType.metaClass.isTemplateClass )
@@ -107,8 +118,8 @@ namespace SimpleLanguage.IR
         public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme)
         {
             m_MetaVariable = mme;
-            id = mme.GetHashCode();
-            name = mme.ownerMetaClass.allClassName + "." + mme.name;
+            m_Id = mme.GetHashCode();
+            m_Name = mme.ownerMetaClass.allClassName + "." + mme.name;
             m_ExpressNode = mme.express;
             m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
             m_IRMetaClass = irmc;
@@ -116,17 +127,18 @@ namespace SimpleLanguage.IR
         public IRMetaVariable(IRMetaClass irmc, MetaMemberData mmd)
         {
             m_MetaVariable = mmd;
-            id = mmd.GetHashCode();
-            name = mmd.ownerMetaClass.allClassName + "." + mmd.name;
+            m_Id = mmd.GetHashCode();
+            m_Name = mmd.ownerMetaClass.allClassName + "." + mmd.name;
             m_ExpressNode = mmd.expressNode;
             m_IRMetaVariableFrom = mmd.isStatic ? IRMetaVariableFrom.Static : IRMetaVariableFrom.Member;
             m_IRMetaClass = irmc;
         }
-        public IRMetaVariable( IRMetaClass irmc, MetaMemberVariable mmv )
+        public IRMetaVariable( IRMetaClass irmc, MetaMemberVariable mmv, int index = -1 )
         {
             m_MetaVariable = mmv;
-            id = mmv.GetHashCode();
-            name = mmv.ownerMetaClass.allClassName + "." + mmv.name;
+            m_Id = mmv.GetHashCode();
+            m_Index = index;
+            m_Name = mmv.ownerMetaClass.allClassName + "." + mmv.name;
             m_ExpressNode = mmv.express;
             if (mmv.isStatic || mmv.isConst )
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Static;

@@ -32,7 +32,6 @@ namespace SimpleLanguage.IR
         private List<IRMetaVariable> m_MethodReturnList = new List<IRMetaVariable>();
         private List<IRData> m_LabelList = new List<IRData>();
         private List<IRData> m_IRDataList = new List<IRData>();
-
         private MetaFunction m_BindMetaFunction = null;
         public IRMethod(IRManager irma, MetaFunction func )
         {
@@ -54,8 +53,7 @@ namespace SimpleLanguage.IR
                 {
                     tmv = mf.thisMetaVariable;
                 }
-                IRMetaVariable imp = new IRMetaVariable(tmv);
-                imp.index = 0;
+                IRMetaVariable imp = new IRMetaVariable(tmv, 0);
                 m_MethodArgumentList.Add(imp);
             }
             if (mf.returnMetaVariable!=null)
@@ -65,8 +63,7 @@ namespace SimpleLanguage.IR
                 {
                     tmv = mf.returnMetaVariable;
                 }
-                IRMetaVariable imp = new IRMetaVariable(tmv);
-                imp.index = 0;
+                IRMetaVariable imp = new IRMetaVariable(tmv, 0);
                 m_MethodReturnList.Add(imp);
             }
             var list2 = mf.metaMemberParamCollection.metaDefineParamList;
@@ -79,8 +76,7 @@ namespace SimpleLanguage.IR
                 {
                     tmv = mdp.metaVariable;
                 }
-                IRMetaVariable imp = new IRMetaVariable(tmv);
-                imp.index = m_MethodArgumentList.Count;
+                IRMetaVariable imp = new IRMetaVariable(tmv, m_MethodArgumentList.Count);
                 m_MethodArgumentList.Add(imp);
             }
 
@@ -92,8 +88,7 @@ namespace SimpleLanguage.IR
                 {
                     tmv = list[i];
                 }
-                var irsd = new IRMetaVariable(tmv);
-                irsd.index = m_MethodLocalVariableList.Count;
+                var irsd = new IRMetaVariable(tmv, m_MethodLocalVariableList.Count);
                 m_MethodLocalVariableList.Add(irsd);
             }
 
