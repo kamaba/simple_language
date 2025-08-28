@@ -106,7 +106,7 @@ namespace SimpleLanguage.Core
                 AddMetaMemberEnum(mmv);
             }
         }
-        public override void HandleExtendData()
+        public override void HandleExtendMemberVariable()
         {
             if (m_ExtendClass == null)
             {

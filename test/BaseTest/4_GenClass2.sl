@@ -28,7 +28,7 @@ List<T>
 
 }
 
-Level1<T,T2>
+Level1<T,T2> extends List<T2>
 {
     List<List<T2> > listt = null
     T _Level1_t = null
@@ -55,14 +55,15 @@ Level1<T,T2>
         }
         else
         {
+            this._Level1_t = new()
             setlevel1_t2 = this.Level1_t()
             var str = setlevel1_t2.toString()
             this._Level1_t = t 
-            Level1<string, string>.static_t = str
-            Level1<string,object> aaa = new()
+            #Level1<string, string>.static_t = str
+            #Level1<string,object> aaa = new()
             #Open(true)
             #t1 = this.Level1_t()
-            Level1<List<T2>, List<string> >.Open(  List<T2>() )
+            #Level1<List<T2>, List<string> >.Open(  List<T2>() )
         }
     }
     get T Level1_t()

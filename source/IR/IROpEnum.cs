@@ -50,7 +50,7 @@ namespace SimpleLanguage.IR
         StoreGlobal,
         StoreReturn,
 
-        SetCurrentClassCallClass,
+        //SetCurrentClassCallClass,
         SetCallClass,
         UnSetCallClass,
 

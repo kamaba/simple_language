@@ -46,7 +46,7 @@ namespace SimpleLanguage.Core.IR
                 
                 if( mv.isStatic )
                 {
-                    irbase = IRUtil.GetSetCallClass(cnode.callerMetaType, mv.ownerMetaClass, out irmc);
+                    irbase = IRUtil.GetSetCallClass(cnode.staticMetaType, mv.ownerMetaClass, out irmc);
                     if (irbase != null)
                     {
                         irList.Add(irbase);
@@ -73,15 +73,15 @@ namespace SimpleLanguage.Core.IR
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.New)
             {
-                string cmn = IRManager.GetIRNameByMetaType(cnode.callerMetaType);
+                string cmn = IRManager.GetIRNameByMetaType(cnode.staticMetaType);
                 var irmc = _irMethod.irManager.GetIRMetaClassByName(cmn);
-                if (cnode.callerMetaType.eType == EMetaTypeType.TemplateClassWithTemplate
-                    || cnode.callerMetaType.eType == EMetaTypeType.Template )
+                if (cnode.staticMetaType.eType == EMetaTypeType.TemplateClassWithTemplate
+                    || cnode.staticMetaType.eType == EMetaTypeType.Template )
                 {
                     var irnew = new IRNew(_irMethod, cmn );
                     irList.Add(irnew);
                 }
-                else if( cnode.callerMetaType.eType == EMetaTypeType.MetaClass )
+                else if( cnode.staticMetaType.eType == EMetaTypeType.MetaClass )
                 {
                     IRNew irnew = new IRNew(_irMethod, irmc );
                     irList.Add(irnew);
@@ -222,7 +222,7 @@ namespace SimpleLanguage.Core.IR
                 }
                 else if (cnode.visitType == MetaVisitNode.EVisitType.New )
                 {
-                    var irmc = _irManager.GetIRMetaClassByName(cnode.callerMetaType.metaClass.allClassName);
+                    var irmc = _irManager.GetIRMetaClassByName(cnode.staticMetaType.metaClass.allClassName);
                     IRNew irnew = new IRNew(m_IRMethod, irmc );
                     irList.Add(irnew);
 

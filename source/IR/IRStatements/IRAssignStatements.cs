@@ -111,7 +111,7 @@ namespace SimpleLanguage.IR
                         {
                             var mv = cl.GetRetMetaVariable();
                             IRMetaClass irmc = null;
-                            IRBase irbase = IRUtil.GetSetCallClass(cl.callerMetaType, mv.ownerMetaClass, out irmc);
+                            IRBase irbase = IRUtil.GetSetCallClass(cl.staticMetaType, mv.ownerMetaClass, out irmc);
                             if (irbase != null)
                             {
                                 m_IRStatements.Add(irbase);

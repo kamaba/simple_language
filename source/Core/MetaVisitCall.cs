@@ -148,19 +148,19 @@ namespace SimpleLanguage.Core
         public MetaVisitVariable visitVariable { get; private set; } = null;
         public MetaMethodCall methodCall { get; private set; } = null;
         //public MetaClass callerMetaClass => m_CallerMetaClass;
-        public MetaType callerMetaType => m_CallerMetaType;
+        public MetaType staticMetaType => m_StaticMetaType;
         public MetaBraceOrBracketStatementsContent metaBraceStatementsContent => m_MetaBraceStatementsContent;
 
         private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent = null;
         protected MetaType m_ReturnMetaType = null;
         //protected MetaClass m_CallerMetaClass = null;
-        protected MetaType m_CallerMetaType  = null; //该变量，一般是为 T t = new() 这种情况准备的
+        protected MetaType m_StaticMetaType  = null; //该变量，一般是为 T t = new() 这种情况准备的
 
         public static MetaVisitNode CreateByNewTemplate(MetaType mt, MetaFunction mf, MetaVariable mv)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.m_CallerMetaType = mt;
+            vn.m_StaticMetaType = mt;
             vn.visitType = EVisitType.New;
             vn.variable = mv;
             vn.methodCall = new MetaMethodCall(mt, mf, null, null, mv);
@@ -170,7 +170,7 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.m_CallerMetaType = mt;
+            vn.m_StaticMetaType = mt;
             vn.m_MetaBraceStatementsContent = mb;
             vn.visitType = EVisitType.New;
             vn.variable = mv;
@@ -185,7 +185,7 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.m_CallerMetaType = mt;
+            vn.m_StaticMetaType = mt;
             vn.m_MetaBraceStatementsContent = mb;
             vn.visitType = EVisitType.New;
 
@@ -233,7 +233,7 @@ namespace SimpleLanguage.Core
 
             vn.visitType = EVisitType.Variable;
             vn.variable = _variale;
-            vn.m_CallerMetaType = callerMt;
+            vn.m_StaticMetaType = callerMt;
 
             return vn;
         }
@@ -267,7 +267,7 @@ namespace SimpleLanguage.Core
                     }
                 case EVisitType.New:
                     {
-                        return m_CallerMetaType;
+                        return m_StaticMetaType;
                     }
                 default:
                     {
@@ -358,7 +358,7 @@ namespace SimpleLanguage.Core
                     break;
                 case EVisitType.New:
                     {
-                        sb.Append(this.callerMetaType.ToString());
+                        sb.Append(this.staticMetaType.ToString());
                     }
                     break;
                 default:

@@ -65,6 +65,7 @@ namespace SimpleLanguage.Core
             m_MetaTemplateClass = mtc;
             m_MetaGenTemplateList = list;
             m_MetaNode = mtc.metaNode;
+            m_ExtendClassMetaType = mtc.extendClassMetaType;
 
 
             StringBuilder sb = new StringBuilder();
@@ -217,7 +218,12 @@ namespace SimpleLanguage.Core
             ParseMemberVariableDefineMetaType();
             ParseMemberFunctionDefineMetaType();
 
-            HandleExtendData();
+
+            TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(m_ExtendClassMetaType, this, null);
+            m_ExtendClass = m_ExtendClassMetaType.metaClass;
+
+            HandleExtendMemberVariable();
+            HandleExtendMemberFunction();
 
             //foreach (var it in this.m_MetaTemplateClass.metaMemberFunctionDict )
             //{
@@ -236,10 +242,14 @@ namespace SimpleLanguage.Core
             //}
         }
 
-        public override void HandleExtendData()
+        public override void HandleExtendMemberVariable()
         {
-            m_StaticMetaMemberFunctionList = m_MetaTemplateClass.staticMetaMemberFunctionList;
-            m_NonStaticVirtualMetaMemberFunctionList = m_MetaTemplateClass.nonStaticVirtualMetaMemberFunctionList;
+            base.HandleExtendMemberVariable();
+        }
+        public override void HandleExtendMemberFunction()
+        {
+            this.m_NonStaticVirtualMetaMemberFunctionList = m_ExtendClass.nonStaticVirtualMetaMemberFunctionList;
+            this.m_StaticMetaMemberFunctionList = m_ExtendClass.staticMetaMemberFunctionList;
         }
         public override void ParseMemberVariableDefineMetaType()
         {

@@ -184,6 +184,11 @@ namespace SimpleLanguage.IR
         }
         public void HandleMemberFunction( MetaClass mc )
         {
+            if( mc is MetaGenTemplateClass mgtc )
+            {
+                return;
+            }
+
             var smflist = mc.staticMetaMemberFunctionList;
             //int index = 0;
             for (int i = 0; i < smflist.Count; i++)
@@ -214,7 +219,8 @@ namespace SimpleLanguage.IR
         {
             if (this.m_IRName == "Int32"
                 || this.m_IRName == "String"
-                || this.m_IRName == "Float")
+                || this.m_IRName == "Float32"
+                || this.m_IRName == "Float64")
             {
                 return true;
             }

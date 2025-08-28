@@ -424,13 +424,14 @@ namespace SimpleLanguage.Core.AOT
             }
             m_AllClassDict.Add(acn, mc);
         }
-        public void HandleExtendData()
+        public void HandleExtendMember()
         {
             m_InitHandleMetaClassList.Sort((x, y) => x.extendLevel - y.extendLevel);
             
             foreach (var it in m_InitHandleMetaClassList )
             {
-                it.HandleExtendData();
+                it.HandleExtendMemberVariable();
+                it.HandleExtendMemberFunction();
             }
         }
         public void ParseInitMetaClassList()

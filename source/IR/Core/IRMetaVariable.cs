@@ -30,6 +30,7 @@ namespace SimpleLanguage.IR
         MetaVariable m_MetaVariable = null;
         public int id { get; set; } = 0;
         public string name { get; set; }
+        public string templateName => m_TemplateName;
         public int index { get; set; } = 0;
         public bool isTemplate => m_IsTemplate;
 
@@ -37,6 +38,7 @@ namespace SimpleLanguage.IR
         private IRMetaClass m_IRMetaClass = null;
         private IRMetaVariableFrom m_IRMetaVariableFrom = IRMetaVariableFrom.None;
         private bool m_IsTemplate = false;
+        private string m_TemplateName = "";
 
         public IRMetaVariable( MetaVariable mv )
         {
@@ -62,25 +64,44 @@ namespace SimpleLanguage.IR
             {
                 m_IRMetaVariableFrom = IRMetaVariableFrom.LocalStatement;
             }
-            if( mv.metaDefineType.eType == EMetaTypeType.Template )
+
+            m_TemplateName = IRManager.GetIRNameByMetaType(mv.metaDefineType);
+            //if( mv.metaDefineType.eType == EMetaTypeType.Template )
+            //{
+            //    m_IsTemplate = true;
+            //    m_TemplateName = IRManager.GetIRNameByMetaType(mv.metaDefineType);
+            //    m_IRMetaClass = new IRMetaClass(IRManager.instance, mv.metaDefineType.metaTemplate.name);
+            //    if( m_IRMetaClass == null )
+            //    {
+
+            //    }
+            //}
+            //else 
+
+            if( mv.metaDefineType.eType == EMetaTypeType.MetaClass )
             {
-                m_IsTemplate = true;
-                m_IRMetaClass = new IRMetaClass(IRManager.instance, mv.metaDefineType.metaTemplate.name);
-            }
-            else if( mv.metaDefineType.eType == EMetaTypeType.MetaClass )
-            {
-                m_IRMetaClass = IRManager.instance.GetIRMetaClassByName( IRManager.GetIRNameByMetaType(mv.metaDefineType ) );
+                if( !mv.metaDefineType.metaClass.isTemplateClass )
+                {
+                    m_IsTemplate = false;
+                    m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(IRManager.GetIRNameByMetaClass(mv.metaDefineType.metaClass));
+
+
+                    if (m_IRMetaClass == null)
+                    {
+                        Log.AddVM(EError.None, "没有找到相对应的类元素!!");
+                    }
+                }
+                else
+                {
+
+                }
             }
             else
             {
-                //m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(IRManager.GetIRNameByMetaType(mv.metaDefineType));
-                string tname = IRManager.GetIRNameByMetaClass(mv.metaDefineType.templateMetaClass);
-                m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(tname);
-                m_IsTemplate = false;
-            }
-            if( m_IRMetaClass == null )
-            {
-                Log.AddVM(EError.None, "没有找到相对应的类元素!!");
+                ////m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(IRManager.GetIRNameByMetaType(mv.metaDefineType));
+                //string tname = IRManager.GetIRNameByMetaClass(mv.metaDefineType.templateMetaClass);
+                //m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(tname);
+                m_IsTemplate = true;
             }
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme)
