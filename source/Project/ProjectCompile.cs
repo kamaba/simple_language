@@ -209,7 +209,7 @@ namespace SimpleLanguage.Project
             ClassManager.instance.ParseInitMetaClassList();
             m_ProjectParse.ParseGlobalVariable();
 
-            ClassManager.instance.HandleExtendData();
+            ClassManager.instance.HandleExtendMember();
             ClassManager.instance.CheckInterfaces();
             ClassManager.instance.ParseDefineComplete();
             //ClassManager.instance.PrintAlllClassContent();

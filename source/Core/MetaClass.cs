@@ -31,6 +31,7 @@ namespace SimpleLanguage.Core
         public EType eType => m_Type;
         public EClassDefineType classDefineType => m_ClassDefineType;
         public MetaClass extendClass => m_ExtendClass;
+        public MetaType extendClassMetaType => m_ExtendClassMetaType;
         public int extendLevel => m_ExtendLevel;
         public bool isInterfaceClass => m_IsInterfaceClass;
         public List<MetaClass> interfaceClass => m_InterfaceClass;
@@ -204,7 +205,7 @@ namespace SimpleLanguage.Core
                 return;
             }
 
-            if (this.extendClass != null)
+            if (this.m_ExtendClassMetaType != null)
             {
                 Log.AddInStructMeta(EError.None, "已绑定过了继承类 : " + extendClass.name );
                 return;
@@ -226,7 +227,6 @@ namespace SimpleLanguage.Core
                 if (getmt != null)
                 {
                     this.m_ExtendClassMetaType = getmt;
-                    this.m_ExtendClass = this.m_ExtendClassMetaType.metaClass;
                 }
                 else
                 {
@@ -234,9 +234,18 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            if( m_ExtendClass == null )
+            if(m_ExtendClassMetaType == null && this != CoreMetaClassManager.objectMetaClass )
             {
-                m_ExtendClass = CoreMetaClassManager.objectMetaClass;
+                m_ExtendClassMetaType = new MetaType( CoreMetaClassManager.objectMetaClass );
+            }
+
+            if (!m_ExtendClassMetaType.IsIncludeTemplate())
+            {
+                this.m_ExtendClass = this.m_ExtendClassMetaType.metaClass;
+            }
+            else
+            {
+                this.m_ExtendClass = m_ExtendClassMetaType.templateMetaClass;
             }
         }
         public virtual void UpdateInterfaceMetaClass()
@@ -265,25 +274,17 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        public virtual void HandleExtendData()
+        public virtual void HandleExtendMemberVariable()
         {
-            if( this.m_ExtendClass == null )
+            if( isTemplateClass )
             {
-                foreach( var v in m_AllMetaMemberFunctionList )
-                {
-                    if( v.isStatic )
-                    {
-                        m_StaticMetaMemberFunctionList.Add(v);
-                    }
-                    else
-                    {
-                        if (v.isWithInterface) continue;
-                        //if (v.isConstructInitFunction) continue;
-                        m_NonStaticVirtualMetaMemberFunctionList.Add(v);
-                    }
-                }
                 return;
             }
+            if(m_ExtendClass == null )
+            {
+                return;
+            }
+
             foreach (var v in m_ExtendClass.m_MetaMemberVariableDict)
             {
                 var c = v.Value;
@@ -297,7 +298,7 @@ namespace SimpleLanguage.Core
                 }
                 this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
             }
-            foreach (var v in m_ExtendClass.m_MetaExtendMemeberVariableDict )
+            foreach (var v in m_ExtendClass.m_MetaExtendMemeberVariableDict)
             {
                 var c = v.Value;
                 if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
@@ -307,24 +308,44 @@ namespace SimpleLanguage.Core
                 }
                 this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
             }
+        }
+        public virtual void HandleExtendMemberFunction()
+        {
+            if (this.m_ExtendClass == null)
+            {
+                foreach (var v in m_AllMetaMemberFunctionList)
+                {
+                    if (v.isStatic)
+                    {
+                        m_StaticMetaMemberFunctionList.Add(v);
+                    }
+                    else
+                    {
+                        if (v.isWithInterface) continue;
+                        //if (v.isConstructInitFunction) continue;
+                        m_NonStaticVirtualMetaMemberFunctionList.Add(v);
+                    }
+                }
+                return;
+            }
             bool canAdd = false;
-            foreach( var v in this.m_ExtendClass.m_NonStaticVirtualMetaMemberFunctionList )
+            foreach (var v in this.m_ExtendClass.m_NonStaticVirtualMetaMemberFunctionList)
             {
                 canAdd = true;
                 var efun = v;
                 //if (efun.isConstructInitFunction) { continue; }
 
-                if( efun.isStatic )
+                if (efun.isStatic)
                 {
                     m_StaticMetaMemberFunctionList.Add(efun);
                     continue;
                 }
-               
-                foreach( var v2 in m_CurrentClassMetaMemberFunctionList)
+
+                foreach (var v2 in m_CurrentClassMetaMemberFunctionList)
                 {
                     //if (v2.isConstructInitFunction) continue;
 
-                    if( v2.isStatic )
+                    if (v2.isStatic)
                     {
                         if (efun.IsEqualMetaFunction(v2))
                         {
@@ -343,9 +364,9 @@ namespace SimpleLanguage.Core
                         }
                     }
                 }
-                if( canAdd )
+                if (canAdd)
                 {
-                    if(efun.isStatic )
+                    if (efun.isStatic)
                     {
                         m_StaticMetaMemberFunctionList.Add(efun);
                     }

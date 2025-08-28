@@ -74,28 +74,42 @@ namespace SimpleLanguage.VM.Runtime
                 m_ReturnObjectArray = new SObject[m_IRMethod.methodReturnVariableList.Count];
                 for (int i = 0; i < m_IRMethod.methodReturnVariableList.Count; i++)
                 {
-                    SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodReturnVariableList[i].irMetaClass );
-                    //sobj.SetVoid();
+                    IRMetaClass imc = m_IRMethod.methodReturnVariableList[i].irMetaClass;
+                    if( imc == null )
+                    {
+                        imc = GetTemplateIRMetaClass( m_IRMethod.methodReturnVariableList[i].templateName );
+                    }
+                    SObject sobj = ObjectManager.CreateObjectByDefineType( imc );
                     m_ReturnObjectArray[i] = sobj;
                 }
 
                 m_ArgumentObjectArray = new SObject[m_IRMethod.methodArgumentList.Count];
                 for (int i = 0; i < m_IRMethod.methodArgumentList.Count; i++)
                 {
-                    SObject sobj = ObjectManager.CreateObjectByDefineType(m_IRMethod.methodArgumentList[i].irMetaClass);
+                    IRMetaClass imc = m_IRMethod.methodArgumentList[i].irMetaClass;
+                    if (imc == null)
+                    {
+                        imc = GetTemplateIRMetaClass(m_IRMethod.methodArgumentList[i].templateName);
+                    }
+                    SObject sobj = ObjectManager.CreateObjectByDefineType(imc);
                     m_ArgumentObjectArray[i] = sobj;
                 }
                 for( int i = 0; i < m_ArgumentObjectArray.Length; i++ )
                 {
                     Log.AddVM(EError.None, "Argu_" + i.ToString() + "_Value: [" + m_ArgumentObjectArray[i].ToString() + "]" );
-                }                
+                }
 
                 //局部变量列表 local variable table
                 m_LocalVariableObjectArray = new SObject[m_IRMethod.methodLocalVariableList.Count];
                 for (int i = 0; i < m_IRMethod.methodLocalVariableList.Count; i++)
                 {
                     var mev = m_IRMethod.methodLocalVariableList[i];
-                    SObject sobj = ObjectManager.CreateObjectByDefineType(mev.irMetaClass);
+                    IRMetaClass imc = mev.irMetaClass;
+                    if (imc == null)
+                    {
+                        imc = GetTemplateIRMetaClass(mev.templateName);
+                    }
+                    SObject sobj = ObjectManager.CreateObjectByDefineType(imc);
                     m_LocalVariableObjectArray[i] = sobj;
                 }
                 for (int i = 0; i < m_LocalVariableObjectArray.Length; i++)
@@ -530,16 +544,22 @@ namespace SimpleLanguage.VM.Runtime
                         InnerCLRRuntimeVM.SetStaticVariable(m_CallIRMetaClass, iri.index, ref m_ValueStack[--m_ValueIndex]);
                     }
                     break;
-                case EIROpCode.SetCurrentClassCallClass:
-                    {
-                        m_CallIRMetaClass = m_IRMetaClass;
-                    }
-                    break;
+                //case EIROpCode.SetCurrentClassCallClass:
+                //    {
+                //        m_CallIRMetaClass = m_IRMetaClass;
+                //    }
+                //    break;
                 case EIROpCode.SetCallClass:
                     {
                         string tname = iri.opValue as String;
 
                         m_CallIRMetaClass = GetIRMetaClassByName(tname);
+
+                        if(m_CallIRMetaClass == null )
+                        {
+                            Log.AddVM(EError.None, $"not find callmetaClass {tname}");
+                            return;
+                        }
                     }
                     break;
                 case EIROpCode.UnSetCallClass:
@@ -550,7 +570,34 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.Call:
                     {
                         var mfc = iri.opValue as IRMethod;
-                        InnerCLRRuntimeVM.RunIRMethod(m_CallIRMetaClass, mfc);
+
+                        IRMetaClass irc = null;
+                        if (iri.index > -1 )
+                        {
+                            int stackIndex = m_ValueIndex - iri.index;
+                            if (stackIndex < 0)
+                            {
+                                Log.AddVM(EError.None, "StackIndex 是负数!");
+                                return;
+                            }
+                            var v = m_ValueStack[stackIndex];
+
+                            if (v.eType == EType.Class)
+                            {
+                                var co = (v.sobject as ClassObject);
+                                irc = co.value.irMetaClass;
+                            }
+                            if (irc == null)
+                            {
+                                Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            irc = m_CallIRMetaClass;
+                        }
+                        InnerCLRRuntimeVM.RunIRMethod(irc, mfc);
                     }
                     break;
                 case EIROpCode.CallVirt:
@@ -613,20 +660,6 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.NewTemplateClass:
                     {
-                        //int stackIndex = m_ValueIndex - 1;
-                        //if (stackIndex < 0)
-                        //{
-                        //    Log.AddVM(EError.None, "NewTemplateClass StackIndex 是负数!");
-                        //    return;
-                        //}
-                        //var v = m_ValueStack[stackIndex];
-
-                        //IRMetaClass irc = null;
-                        //if (v.eType == EType.Class)
-                        //{
-                        //    var co2 = (v.sobject as ClassObject);
-                        //    irc = co2.value.irMetaClass;
-                        //}
                         string tname = iri.opValue as String;
                         if (string.IsNullOrEmpty(tname))
                         {

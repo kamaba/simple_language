@@ -152,7 +152,8 @@ namespace SimpleLanguage.Core.AOT
             ParseMemberVariableDefineMetaType();
             ParseMemberFunctionDefineMetaType();
 
-            HandleExtendData();
+            HandleExtendMemberVariable();
+            HandleExtendMemberFunction();
             ParseDefineComplete();
 
             foreach (var it in m_MetaTemplateClass.metaMemberVariableDict)

@@ -302,10 +302,6 @@ namespace SimpleLanguage.Core
             if (!isStatic)
             {
                 var mt = new MetaType(m_OwnerMetaClass);
-                if(m_OwnerMetaClass.metaTemplateList.Count > 0 )
-                {
-                    mt.SetMetaTemplate(new MetaTemplate(m_OwnerMetaClass, "this"));
-                }
                 m_ThisMetaVariable = new MetaVariable("this_" + GetHashCode().ToString(), MetaVariable.EVariableFrom.Argument, null, m_OwnerMetaClass, mt );
             }
             m_ReturnMetaVariable = new MetaVariable("return_" + GetHashCode().ToString(), MetaVariable.EVariableFrom.Argument, null, m_OwnerMetaClass, defineMetaType );

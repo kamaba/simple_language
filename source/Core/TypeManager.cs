@@ -378,7 +378,6 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-
         #endregion
     }
 }
