@@ -227,7 +227,27 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CreateByVariable(MetaVariable _variale, MetaType callerMt = null )
+        public static MetaVisitNode CreateByVariable(MetaVariable _variale, MetaType callerMt = null)
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.visitType = EVisitType.Variable;
+            vn.variable = _variale;
+            vn.m_StaticMetaType = callerMt;
+
+            return vn;
+        }
+        public static MetaVisitNode CreateByThis(MetaVariable _variale, MetaType callerMt = null)
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.visitType = EVisitType.Variable;
+            vn.variable = _variale;
+            vn.m_StaticMetaType = callerMt;
+
+            return vn;
+        }
+        public static MetaVisitNode CreateByBase(MetaVariable _variale, MetaType callerMt = null)
         {
             MetaVisitNode vn = new MetaVisitNode();
 

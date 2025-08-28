@@ -1,4 +1,5 @@
 ﻿using SimpleLanguage.IR;
+using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -53,6 +54,11 @@ namespace SimpleLanguage.VM
         }
         public static SObject CreateObjectByDefineType(IRMetaClass mdt)
         {
+            if( mdt == null )
+            {
+                Log.AddVM(EError.None, "创建对象失败，通过irmetaclass!!");
+                return null;
+            }
             SObject sobj = null;
             if (mdt.isTemplate)
             {

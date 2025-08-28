@@ -157,31 +157,31 @@ namespace SimpleLanguage.Core.IR
                         sc1.opValue = cmn;
                         //irbase.AddIRData(sc1);
 
-                        var mfc = cnode.methodCall;
-                        var paramCount = mfc.metaInputParamCollection.count;
-                        for (int j = 0; j < paramCount; j++)
-                        {
-                            MetaInputParam mip = mfc.metaInputParamCollection.metaInputParamList[j];
-                            IRExpress irexpress = new IRExpress(_irMethod, mip.express);
-                            irList.Add(irexpress);
-                        }
-                        MetaFunction mf = mfc.function;
+                        //var mfc = cnode.methodCall;
+                        //var paramCount = mfc.metaInputParamCollection.count;
+                        //for (int j = 0; j < paramCount; j++)
+                        //{
+                        //    MetaInputParam mip = mfc.metaInputParamCollection.metaInputParamList[j];
+                        //    IRExpress irexpress = new IRExpress(_irMethod, mip.express);
+                        //    irList.Add(irexpress);
+                        //}
+                        //MetaFunction mf = mfc.function;
 
-                        var rmr = _irMethod.irManager.GetIRMethod(mf.functionAllName);
-
-
-                        IRData datacall = new IRData();
-                        datacall.opCode = EIROpCode.Call;
-                        datacall.opValue = rmr;
-                        datacall.SetDebugInfoByToken(mf.pingToken);
-                        irbase.AddIRData(datacall);
+                        //var rmr = _irMethod.irManager.GetIRMethod(mf.functionAllName);
 
 
-                        IRData sc2 = new IRData();
-                        sc2.opCode = EIROpCode.UnSetCallClass;
-                        irbase.AddIRData(sc2);
+                        //IRData datacall = new IRData();
+                        //datacall.opCode = EIROpCode.CallVirt;
+                        //datacall.opValue = rmr;
+                        //datacall.SetDebugInfoByToken(mf.pingToken);
+                        //irbase.AddIRData(datacall);
 
-                        irList.Add(irbase);
+
+                        //IRData sc2 = new IRData();
+                        //sc2.opCode = EIROpCode.UnSetCallClass;
+                        //irbase.AddIRData(sc2);
+
+                        //irList.Add(irbase);
                     }
                 }
             }

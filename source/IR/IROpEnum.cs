@@ -113,7 +113,8 @@ namespace SimpleLanguage.IR
         BrTrue,
         Switch,
             
-        Call,                   
+        CallStatic,
+        CallDynamic,
         CallVirt,
         Calli,
         CallCSharpMethod,

@@ -14,6 +14,7 @@ using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Parse;
+using SimpleLanguage.IR;
 
 namespace SimpleLanguage.Core
 {
@@ -302,9 +303,15 @@ namespace SimpleLanguage.Core
             if (!isStatic)
             {
                 var mt = new MetaType(m_OwnerMetaClass);
-                m_ThisMetaVariable = new MetaVariable("this_" + GetHashCode().ToString(), MetaVariable.EVariableFrom.Argument, null, m_OwnerMetaClass, mt );
+                if( m_OwnerMetaClass.isTemplateClass )
+                {
+                    var tt = new MetaTemplate(m_OwnerMetaClass, "this");
+                    tt.SetInConstraintMetaClass(m_OwnerMetaClass);
+                    mt = new MetaType(tt);
+                }
+                m_ThisMetaVariable = new MetaVariable(m_OwnerMetaClass.allClassName + "." + m_Name + ".this", MetaVariable.EVariableFrom.Argument, null, m_OwnerMetaClass, mt );
             }
-            m_ReturnMetaVariable = new MetaVariable("return_" + GetHashCode().ToString(), MetaVariable.EVariableFrom.Argument, null, m_OwnerMetaClass, defineMetaType );
+            m_ReturnMetaVariable = new MetaVariable(m_OwnerMetaClass.allClassName + "." + m_Name + ".define", MetaVariable.EVariableFrom.Argument, null, m_OwnerMetaClass, defineMetaType );
         }
         public override void SetDeep(int deep)
         {

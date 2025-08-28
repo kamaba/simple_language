@@ -77,7 +77,14 @@ namespace SimpleLanguage.VM.Runtime
                     IRMetaClass imc = m_IRMethod.methodReturnVariableList[i].irMetaClass;
                     if( imc == null )
                     {
-                        imc = GetTemplateIRMetaClass( m_IRMethod.methodReturnVariableList[i].templateName );
+                        if(m_IRMethod.methodReturnVariableList[i].templateName == "$this$")
+                        {
+                            imc = m_IRMetaClass;
+                        }
+                        else
+                        {
+                            imc = GetIRMetaClassByName(m_IRMethod.methodReturnVariableList[i].templateName);
+                        }
                     }
                     SObject sobj = ObjectManager.CreateObjectByDefineType( imc );
                     m_ReturnObjectArray[i] = sobj;
@@ -89,7 +96,14 @@ namespace SimpleLanguage.VM.Runtime
                     IRMetaClass imc = m_IRMethod.methodArgumentList[i].irMetaClass;
                     if (imc == null)
                     {
-                        imc = GetTemplateIRMetaClass(m_IRMethod.methodArgumentList[i].templateName);
+                        if (m_IRMethod.methodArgumentList[i].templateName == "$this$")
+                        {
+                            imc = m_IRMetaClass;
+                        }
+                        else
+                        {
+                            imc = GetIRMetaClassByName(m_IRMethod.methodArgumentList[i].templateName);
+                        }
                     }
                     SObject sobj = ObjectManager.CreateObjectByDefineType(imc);
                     m_ArgumentObjectArray[i] = sobj;
@@ -107,7 +121,7 @@ namespace SimpleLanguage.VM.Runtime
                     IRMetaClass imc = mev.irMetaClass;
                     if (imc == null)
                     {
-                        imc = GetTemplateIRMetaClass(mev.templateName);
+                        imc = GetIRMetaClassByName(mev.templateName);
                     }
                     SObject sobj = ObjectManager.CreateObjectByDefineType(imc);
                     m_LocalVariableObjectArray[i] = sobj;
@@ -567,12 +581,18 @@ namespace SimpleLanguage.VM.Runtime
                         m_CallIRMetaClass = null;
                     }
                     break;
-                case EIROpCode.Call:
+                case EIROpCode.CallStatic:
+                    {
+                        var mfc = iri.opValue as IRMethod;
+                        InnerCLRRuntimeVM.RunIRMethod(m_CallIRMetaClass, mfc);
+                    }
+                    break;
+                case EIROpCode.CallDynamic:
                     {
                         var mfc = iri.opValue as IRMethod;
 
                         IRMetaClass irc = null;
-                        if (iri.index > -1 )
+                        if (iri.index > -1)
                         {
                             int stackIndex = m_ValueIndex - iri.index;
                             if (stackIndex < 0)
@@ -595,7 +615,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            irc = m_CallIRMetaClass;
+                                Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
                         }
                         InnerCLRRuntimeVM.RunIRMethod(irc, mfc);
                     }
