@@ -6,7 +6,6 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Core.IR;
 using SimpleLanguage.Core.Statements;
 using SimpleLanguage.IR.Statements;
 using System.Diagnostics;
@@ -15,17 +14,17 @@ namespace SimpleLanguage.IR
 {
     public class IRBlockStatements : IRStatements
     {
+        public IRNop blockStart => m_BlockStart;
+
+        private IRNop m_BlockStart = null;
         public IRBlockStatements( IRMethod irmthod )
         {
             irMethod = irmthod;
-        }
-
-        public IRNop blockStart = null;        
+            m_BlockStart = new IRNop(this.irMethod);
+            m_IRStatements.Add(blockStart);
+        }       
         public void ParseAllIRStatements(MetaBlockStatements ms)
         {
-            blockStart = new IRNop(this.irMethod);
-            m_IRStatements.Add(blockStart);
-
             MetaStatements nextmbs = ms.nextMetaStatements;
             while (nextmbs != null)
             {
@@ -33,15 +32,15 @@ namespace SimpleLanguage.IR
                 {
                     case MetaBlockStatements mbs:
                         {
-                            blockStart = new IRNop(irMethod);
-                            m_IRStatements.Add(blockStart);
+                            IRBlockStatements ibs = new IRBlockStatements(irMethod);
+                            ibs.ParseAllIRStatements(mbs);
+                            m_IRStatements.AddRange(ibs.m_IRStatements);
                         }
                         break;
                     case MetaDefineVarStatements mns:
                         {
                             IRDefineVarStatements mirns = new IRDefineVarStatements(irMethod);
                             mirns.ParseIRStatements(mns);
-
                             m_IRStatements.AddRange(mirns.irStatements);
                         }
                         break;

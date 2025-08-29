@@ -6,13 +6,6 @@
 //  Description: IR Debug data or information and logic
 //****************************************************************************
 
-using SimpleLanguage.VM;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Numerics;
-using System.Text;
-
 namespace SimpleLanguage.IR
 {
     public struct DebugInfo

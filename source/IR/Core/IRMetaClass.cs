@@ -7,12 +7,10 @@
 //****************************************************************************
 
 
-using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Core;
 using SimpleLanguage.Parse;
-using SimpleLanguage.VM;
 
 namespace SimpleLanguage.IR
 {

@@ -136,7 +136,6 @@ namespace SimpleLanguage.IR
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
             {
-                //var irmc = _irMethod.irManager.GetIRMetaClassByName(mv.ownerMetaClass.allClassName);
                 int index = -1;
                 if (irmc != null )
                 {

@@ -6,12 +6,7 @@
 //  Description:  handle for loop statements or while/dowhile statements create instruction 
 //****************************************************************************
 
-using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.Statements;
-using SimpleLanguage.IR;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SimpleLanguage.IR
 {

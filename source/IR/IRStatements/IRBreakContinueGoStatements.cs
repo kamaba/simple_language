@@ -6,13 +6,7 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.Statements;
-using SimpleLanguage.IR;
-using System;
-using System.Collections.Generic;
-using System.Reflection.Emit;
-using System.Text;
 
 namespace SimpleLanguage.IR.Statements
 {

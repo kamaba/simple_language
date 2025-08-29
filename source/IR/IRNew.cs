@@ -6,11 +6,6 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Core;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace SimpleLanguage.IR
 {
     public class IRNew : IRBase

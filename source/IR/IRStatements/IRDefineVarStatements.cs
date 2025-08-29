@@ -8,7 +8,6 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.Statements;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.IR
@@ -19,7 +18,7 @@ namespace SimpleLanguage.IR
         public IRDefineVarStatements( IRMethod _method ) 
         {
             this.irMethod = _method;
-        }
+        }     
         public void ParseIRStatements(MetaDefineVarStatements ms)
         {
             MetaNewObjectExpressNode mnoen = null;

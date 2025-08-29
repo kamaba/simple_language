@@ -6,10 +6,6 @@
 //  Description: IRNop, IRDup, IRPop
 //****************************************************************************
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace SimpleLanguage.IR
 {
     public class IRNop : IRBase
