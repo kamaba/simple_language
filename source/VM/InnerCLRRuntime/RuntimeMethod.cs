@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Xml.Linq;
 namespace SimpleLanguage.VM.Runtime
 {
     public class RuntimeMethod
@@ -22,8 +23,6 @@ namespace SimpleLanguage.VM.Runtime
 
         private SValue[] m_ValueStack = null;
         private ushort m_ValueIndex = 0;
-        //private SValue[] m_ArgumentVariableValueArray = null;
-        //private SValue[] m_LocalVariableValueArray = null;
 
         private Dictionary<string, IRMetaClass>  m_InputTemplateClassDict = new Dictionary<string, IRMetaClass>();
         private SObject[] m_LocalVariableObjectArray = null;
@@ -63,7 +62,14 @@ namespace SimpleLanguage.VM.Runtime
                 {
                     foreach( var v in m_IRMetaClass.genTemplateIRMetaClassDict )
                     {
-                        AddTemplateIRMetaClass(v.Key, v.Value);
+                        //AddTemplateIRMetaClass(v.Key, v.Value);
+
+                        if (!m_InputTemplateClassDict.ContainsKey(v.Key))
+                        {
+                            m_InputTemplateClassDict.Add(v.Key, v.Value);
+                            continue;
+                        }
+                        Log.AddVM(EError.None, "Erorr------添加模板内容重复!!!");
                     }
                 }
             }
@@ -260,15 +266,15 @@ namespace SimpleLanguage.VM.Runtime
             }
             return sobj;
         }
-        public void AddTemplateIRMetaClass( string name, IRMetaClass templateInstanceObject )
-        {
-            if( !m_InputTemplateClassDict.ContainsKey(name ) )
-            {
-                m_InputTemplateClassDict.Add(name, templateInstanceObject);
-                return;
-            }
-            Log.AddVM(EError.None, "Erorr------添加模板内容重复!!!");
-        }
+        //public void AddTemplateIRMetaClass( string name, IRMetaClass templateInstanceObject )
+        //{
+        //    if (!m_InputTemplateClassDict.ContainsKey(name))
+        //    {
+        //        m_InputTemplateClassDict.Add(name, templateInstanceObject);
+        //        return;
+        //    }
+        //    Log.AddVM(EError.None, "Erorr------添加模板内容重复!!!");
+        //}
         public void Run()
         {
             string funName = id;
@@ -545,7 +551,7 @@ namespace SimpleLanguage.VM.Runtime
                                 break;
                         }
                         m_ValueStack[m_ValueIndex - 2] = v;
-                        m_ValueIndex -= 1;
+                        m_ValueIndex -= 2;
                     }
                     break;
                 case EIROpCode.LoadStaticField:

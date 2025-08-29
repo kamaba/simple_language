@@ -75,7 +75,8 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                IRUtil.GetSetCallClass(mfc.callerMetaType, mf.ownerMetaClass, out curMc);
+                var irname = IRManager.GetIRNameByMetaClass(mf.ownerMetaClass);
+                curMc = IRManager.instance.GetIRMetaClassByName(irname);
             }
 
             m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(mf.functionAllName);
