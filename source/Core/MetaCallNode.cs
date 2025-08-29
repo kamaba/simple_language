@@ -967,6 +967,11 @@ namespace SimpleLanguage.Core
                 }
                 else if( m_CallNodeType == ECallNodeType.MemberFunctionName )
                 {
+                    if( this.m_DefineMetaVariable != null 
+                        && m_MetaFunction.returnMetaVariable.metaDefineType.metaClass != CoreMetaClassManager.voidMetaClass )
+                    {
+                        this.m_StoreMetaVariable = this.m_DefineMetaVariable;
+                    }
                     return true;
                 }
                 else if( m_MetaTemplate != null )
