@@ -39,6 +39,11 @@ namespace SimpleLanguage.IR
                 {
                     index = irmc.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
                 }
+                if( index == -1 )
+                {
+                    Log.AddGenIR(EError.None, "没有找到对应成员变量的Index");
+                    return null;
+                }
                 if ( mv.isStatic )
                 {
                     IRLoadVariable irVar = new IRLoadVariable(_irMethod, index, IRMetaVariableFrom.Static );

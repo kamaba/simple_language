@@ -665,6 +665,7 @@ namespace SimpleLanguage.Core
             {
                 mmf = new MetaMemberFunction(this, "_init_");
                 mmf.SetReturnMetaClass(CoreMetaClassManager.voidMetaClass);
+                mmf.Parse();
                 AddMetaMemberFunction(mmf);
                 MethodManager.instance.AddOriginalMemeberFunction(mmf);
             }

@@ -400,7 +400,10 @@ namespace SimpleLanguage.Core
         }
         public override bool Parse()
         {
-            return base.Parse();
+            bool flag = base.Parse();
+
+            UpdateVritualFunctionName();
+            return flag;
         }
         public virtual void ParseDefineMetaType()
         {

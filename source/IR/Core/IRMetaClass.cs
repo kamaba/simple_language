@@ -7,6 +7,7 @@
 //****************************************************************************
 
 
+using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Core;
@@ -39,6 +40,7 @@ namespace SimpleLanguage.IR
         private Dictionary<string, IRMetaClass> m_GenTemplateIRMetaClassDict = new Dictionary<string, IRMetaClass>();
         private Dictionary<int, IRCallFunction> m_LocalIRInitDict = new Dictionary<int, IRCallFunction>();
         private List<IRMethod> m_IRNotStaticMethodList = new List<IRMethod>();
+        private IRMetaClass m_TemplateIRMetaClass;
         private string m_IRName = "";
         private IRManager m_IRManager = null;
 
@@ -75,8 +77,16 @@ namespace SimpleLanguage.IR
                 byteCount += ssize;
             }
         }
+        public void SetTemplateIRMetaClass( IRMetaClass IRMetaClass)
+        {
+            m_TemplateIRMetaClass = IRMetaClass;
+        }
         public IRMethod GetIRNonStaticMethodByIndex( int index )
         {
+            if(m_TemplateIRMetaClass != null )
+            {
+                return m_TemplateIRMetaClass.GetIRNonStaticMethodByIndex(index);
+            }
             if( index >= m_IRNotStaticMethodList.Count || index < 0 )
             {
                 Log.AddVM(EError.None, "GetIRMethodByIndex is null");
@@ -86,7 +96,11 @@ namespace SimpleLanguage.IR
         }
         public int GetIRNonStaticMethodIndexByMethod( string name )
         {
-            for( int i = 0; i < m_IRNotStaticMethodList.Count; i++ )
+            if (m_TemplateIRMetaClass != null)
+            {
+                return m_TemplateIRMetaClass.GetIRNonStaticMethodIndexByMethod(name);
+            }
+            for ( int i = 0; i < m_IRNotStaticMethodList.Count; i++ )
             {
                 if(m_IRNotStaticMethodList[i].virtualFunctionName == name)
                 {
@@ -166,7 +180,7 @@ namespace SimpleLanguage.IR
             if( mc is MetaGenTemplateClass mgtc )
             {
                 genClass = true;
-                foreach( var v in mgtc.metaGenTemplateList )
+                foreach ( var v in mgtc.metaGenTemplateList )
                 {
                     var irmc = IRManager.instance.GetIRMetaClassByName( IRManager.GetIRNameByMetaType(v.metaType) );
                     m_GenTemplateIRMetaClassDict.Add( v.name, irmc );

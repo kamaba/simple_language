@@ -478,10 +478,13 @@ namespace SimpleLanguage.Core
         public void AddDictMetaClass( MetaClass mc )
         {
             string acn = mc.allClassName + "_" + mc.metaTemplateList.Count;
-            if (m_AllClassDict.ContainsKey(acn) )
+            foreach( var v in m_AllClassDict )
             {
-                Log.AddInStructMeta(EError.AddClassNameSame, $"已包含类:{mc.allClassName} 又进行了重进添加!");
-                return;
+                if( v.Value == mc )
+                {
+                    Log.AddInStructMeta(EError.AddClassNameSame, $"已包含类:{mc.allClassName} 又进行了重进添加!");
+                    return;
+                }
             }
             m_AllClassDict.Add(acn, mc);
 
