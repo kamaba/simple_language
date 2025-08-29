@@ -7,13 +7,6 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.Compile.CoreFileMeta;
-using SimpleLanguage.Core;
-using SimpleLanguage.IR;
-using SimpleLanguage.VM;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
 
 namespace SimpleLanguage.IR

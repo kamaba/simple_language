@@ -12,7 +12,6 @@ using SimpleLanguage.Parse;
 using System;
 using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.Intrinsics.Arm;
 
 namespace SimpleLanguage.IR
 {

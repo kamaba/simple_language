@@ -7,9 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Core.Statements;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace SimpleLanguage.IR
 {

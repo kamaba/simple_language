@@ -7,11 +7,8 @@
 //****************************************************************************
 
 using SimpleLanguage.Core.Statements;
-using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Text;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.IR
 {

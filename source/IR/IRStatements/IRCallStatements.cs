@@ -8,33 +8,29 @@
 
 using SimpleLanguage.Core.IR;
 using SimpleLanguage.Core.Statements;
-using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace SimpleLanguage.IR.Statements
 {
     public class IRCallStatements : IRStatements
     {
-        private List<IRBase> m_IRList = new List<IRBase>();
-
-        IRMetaCallLink irmc = null;
+        IRMetaCallLink m_IRMc = null;
         public IRCallStatements( IRMethod _iRMethod)
         {
             irMethod = _iRMethod;
         }
         public void ParseIRStatements(MetaCallStatements ms)
         {
-            irmc = new IRMetaCallLink();
-            irmc.ParseToIRDataList(irMethod, ms.metaCallLink.callNodeList);
-            m_IRStatements.AddRange(irmc.irList);
+            m_IRMc = new IRMetaCallLink();
+            m_IRMc.ParseToIRDataList(irMethod, ms.metaCallLink.callNodeList);
+            m_IRStatements.AddRange(m_IRMc.irList);
         }
         public string ToIRString()
         {
             StringBuilder sb = new StringBuilder();
 
             sb.Append("call");
-            sb.Append(irmc?.ToIRString());
+            sb.Append(m_IRMc?.ToIRString());
             return sb.ToString();
         }
     }
