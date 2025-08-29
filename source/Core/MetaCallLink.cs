@@ -43,7 +43,6 @@ namespace SimpleLanguage.Core
                 FileMetaCallNode fmcn = m_FileMetaCallLink.callNodeList[0];
                 var firstNode = new MetaCallNode(null, fmcn, m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt);
                 frontMetaNode = firstNode;
-                firstNode.SetDefineMetaVariable(mv);
                 m_CallNodeList.Add(firstNode);
             }
             for (int i = 1; i < m_FileMetaCallLink.callNodeList.Count; i = i + 2)
@@ -52,7 +51,6 @@ namespace SimpleLanguage.Core
                 var cn2 = m_FileMetaCallLink.callNodeList[i + 1];
                 var fmn = new MetaCallNode(cn1, cn2, m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt);
                 fmn.SetFrontCallNode(frontMetaNode);
-                fmn.SetDefineMetaVariable(mv);
                 m_CallNodeList.Add(fmn);
                 frontMetaNode = fmn;
             }
@@ -61,6 +59,7 @@ namespace SimpleLanguage.Core
             {
                 Log.AddInStructMeta(EError.None, "Error 连接串没有找到合适的节点  360!!!");
             }
+            m_FinalMetaCallNode.SetDefineMetaVariable(mv);
         }
         public Token GetToken() { return null; }
         public bool Parse( AllowUseSettings _useConst )

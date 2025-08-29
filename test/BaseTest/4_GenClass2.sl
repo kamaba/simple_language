@@ -113,7 +113,7 @@ Level1<T,T2> extends List<T2>
             this._Level1_t = new()
             setlevel1_t2 = this.Level1_t()
             var str = setlevel1_t2.toString()
-            #this._Level1_t = t 
+            this._Level1_t = t 
             #Level1<string, string>.static_t = str
             #Level1<string,object> aaa = new()
             #Open(true)
@@ -179,7 +179,7 @@ GenClass2{
 
         Level1<Level1<int,int>, string > GenClass2_fun_l2 = Level1<Level1<int, int>, string >()
         GenClass2_fun_l2.setLevel1( Level1<int, int>(20) )
-        System.Console.Write("_this2_-----------------------" + GenClass2_fun_l2.Level1_t.Level1_t + "    string:" + Level1<string,byte>.static_t + "   short:" + Level1<string, short>.static_t )
+        System.Console.Write("_this2_-----------------------" + GenClass2_fun_l2.Level1_t.Level1_t + "    string:" + Level1<string,byte>.static_t + "   short:" + Level1<short, string>.static_t )
     }
 }
 
