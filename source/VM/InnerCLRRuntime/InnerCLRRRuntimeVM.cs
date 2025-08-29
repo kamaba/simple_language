@@ -37,11 +37,11 @@ namespace SimpleLanguage.VM.Runtime
         public static RuntimeMethod CreateCLRRuntime( IRMetaClass irmc, IRMethod _irMethod )
         {
             var getrt = GetCLRRuntimeById(_irMethod.id);
-            if( getrt != null )
-            {
-                return getrt;
-            }
-            else
+            //if( getrt != null )
+            //{
+            //    return getrt;
+            //}
+            //else
             {
                 RuntimeMethod clrRuntime = new RuntimeMethod(irmc, _irMethod);
                 clrRuntime.id = _irMethod.id;
@@ -111,10 +111,11 @@ namespace SimpleLanguage.VM.Runtime
             topCLRRuntime = m_ClrRuntimeStack.Peek();
             RuntimeMethod clrRuntime = InnerCLRRuntimeVM.CreateCLRRuntime(irmc, _irMethod);
             clrRuntime.Run();
-            topCLRRuntime.AddReturnObjectArray(clrRuntime.returnObjectArray);
-            if (!clrRuntime.isPersistent)
+            InnerCLRRuntimeVM.PopCLRRuntime();
+            var topt2 = m_ClrRuntimeStack.Peek();
+            topt2.AddReturnObjectArray(clrRuntime.returnObjectArray);
+            //if (!clrRuntime.isPersistent)
             {
-                currentCLRRuntime = InnerCLRRuntimeVM.PopCLRRuntime();
             }
         }
     }

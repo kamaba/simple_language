@@ -195,7 +195,7 @@ namespace SimpleLanguage.Core
 
                             if( mcn.metaFunction != null )
                             {
-                                MetaMethodCall mmc = new MetaMethodCall(mcn.metaType, mcn.metaFunction, mcn.metaInputParamCollection, mcn.metaVariable, mcn.storeMetaVariable );
+                                MetaMethodCall mmc = new MetaMethodCall(mcn.metaType, mcn.metaFunction, mcn.metaInputParamCollection, null, mcn.storeMetaVariable );
                                 mvn.SetMethodCall(mmc);
                             }
                         }

@@ -40,7 +40,6 @@ namespace SimpleLanguage.IR
                 curMc = m_IRMethod.irManager.GetIRMetaClassByName(mfc.loadMetaVariable.metaDefineType.metaClass.allClassName);
                 IRLoadVariable irload = IRLoadVariable.NewLoadVariable(m_IRMethod, curMc, mfc.loadMetaVariable );
                 AddIRRangeData(irload.IRDataList);
-
             }
             paramCount = mfc.metaInputParamCollection.count;
             for (int j = 0; j < paramCount; j++)
@@ -65,10 +64,18 @@ namespace SimpleLanguage.IR
 
             int callMethodIndex = -1;
 
-            IRBase irbase = IRUtil.GetSetCallClass(mfc.callerMetaType, mf.ownerMetaClass, out curMc );
-            if( irbase != null )
+            IRBase irbase = null;
+            if ( mf.isStatic )
             {
-                AddIRRangeData(irbase.IRDataList);
+                irbase = IRUtil.GetSetCallClass(mfc.callerMetaType, mf.ownerMetaClass, out curMc);
+                if (irbase != null)
+                {
+                    AddIRRangeData(irbase.IRDataList);
+                }
+            }
+            else
+            {
+                IRUtil.GetSetCallClass(mfc.callerMetaType, mf.ownerMetaClass, out curMc);
             }
 
             m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(mf.functionAllName);
@@ -114,10 +121,21 @@ namespace SimpleLanguage.IR
                 AddIRData(datacall);
             }
 
-            if( mfc.storeMetaVariable != null )
+            if( mfc.storeMetaVariable == null )
             {
-                IRPop irpop = new IRPop(m_IRMethod);
-                AddIRData(irpop.data);
+                string voidn = IRManager.GetIRNameByMetaClass(Core.SelfMeta.CoreMetaClassManager.voidMetaClass);
+                for (int i = 0; i < m_IRRuntimeMethod.methodReturnVariableList.Count; i++ )
+                {
+                    var mrv = m_IRRuntimeMethod.methodReturnVariableList[i];
+                    if( mrv.irMetaClass != null )
+                    {
+                        if( mrv.irMetaClass.irName != voidn )
+                        {
+                            IRPop irpop = new IRPop(m_IRMethod);
+                            AddIRData(irpop.data);
+                        }
+                    }
+                }
             }
 
             if (irbase != null)

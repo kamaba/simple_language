@@ -113,7 +113,20 @@ namespace SimpleLanguage.IR
                 irmc.CreateMetaClassData(v.Value);
                 m_IRMetaClassList.Add(irmc);
             }
-            foreach( var v in m_IRMetaClassList)
+            foreach (var v in classDict)
+            {
+                if( v.Value is MetaGenTemplateClass mgtc )
+                {
+                    IRMetaClass irmc = GetIRMetaClassByName(GetIRNameByMetaClass(v.Value));
+                    IRMetaClass irmcc = GetIRMetaClassByName(GetIRNameByMetaClass(mgtc.metaTemplateClass));
+                    if( irmcc != null && irmc != null )
+                    {
+                        irmc.SetTemplateIRMetaClass(irmcc);
+                    }
+                }
+
+            }
+            foreach ( var v in m_IRMetaClassList)
             {
                 foreach( var v2 in v.localIRMetaVariableList )
                 {

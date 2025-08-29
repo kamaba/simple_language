@@ -52,6 +52,12 @@ namespace SimpleLanguage.Core.IR
                         irList.Add(irbase);
                     }
                 }
+                else
+                {
+                    var irname = IRManager.GetIRNameByMetaClass(mv.ownerMetaClass);
+                    irmc = IRManager.instance.GetIRMetaClassByName(irname);
+                    //irmc = IRManager.GetIRNameByMetaClass();
+                }
 
                 IRLoadVariable irVar = IRLoadVariable.NewLoadVariable(_irMethod, irmc, mv);
                 irList.Add(irVar);
@@ -146,43 +152,16 @@ namespace SimpleLanguage.Core.IR
                             }
                         }
                     }
+                }
 
-                    if (cnode.methodCall != null)
-                    {
-                        IRDup irdup = new IRDup(_irMethod);
-                        irList.Add(irdup);
-                        IRBase irbase = new IRBase();
-                        IRData sc1 = new IRData();
-                        sc1.opCode = EIROpCode.SetCallClass;
-                        sc1.opValue = cmn;
-                        //irbase.AddIRData(sc1);
+                if (cnode.methodCall != null)
+                {
+                    IRDup irdup = new IRDup(_irMethod);
+                    irList.Add(irdup);
 
-                        //var mfc = cnode.methodCall;
-                        //var paramCount = mfc.metaInputParamCollection.count;
-                        //for (int j = 0; j < paramCount; j++)
-                        //{
-                        //    MetaInputParam mip = mfc.metaInputParamCollection.metaInputParamList[j];
-                        //    IRExpress irexpress = new IRExpress(_irMethod, mip.express);
-                        //    irList.Add(irexpress);
-                        //}
-                        //MetaFunction mf = mfc.function;
-
-                        //var rmr = _irMethod.irManager.GetIRMethod(mf.functionAllName);
-
-
-                        //IRData datacall = new IRData();
-                        //datacall.opCode = EIROpCode.CallVirt;
-                        //datacall.opValue = rmr;
-                        //datacall.SetDebugInfoByToken(mf.pingToken);
-                        //irbase.AddIRData(datacall);
-
-
-                        //IRData sc2 = new IRData();
-                        //sc2.opCode = EIROpCode.UnSetCallClass;
-                        //irbase.AddIRData(sc2);
-
-                        //irList.Add(irbase);
-                    }
+                    IRCallFunction ircf = new IRCallFunction(_irMethod);
+                    ircf.Parse(cnode.methodCall);
+                    irList.Add(ircf);
                 }
             }
 
@@ -204,7 +183,7 @@ namespace SimpleLanguage.Core.IR
                     if (mv.variableFrom == MetaVariable.EVariableFrom.Static
                         || mv.variableFrom == MetaVariable.EVariableFrom.Global)
                     {
-                        var irmc = _irManager.GetIRMetaClassByName(mv.metaDefineType.metaClass.allClassName);
+                        var irmc = _irManager.GetIRMetaClassByName(IRManager.GetIRNameByMetaType(mv.metaDefineType) );
                         IRLoadVariable irVar = IRLoadVariable.NewLoadVariable(m_IRMethod, irmc, mv);
                         irList.Add(irVar);
                     }
@@ -222,7 +201,7 @@ namespace SimpleLanguage.Core.IR
                 }
                 else if (cnode.visitType == MetaVisitNode.EVisitType.New )
                 {
-                    var irmc = _irManager.GetIRMetaClassByName(cnode.staticMetaType.metaClass.allClassName);
+                    var irmc = _irManager.GetIRMetaClassByName( IRManager.GetIRNameByMetaType(cnode.staticMetaType) );
                     IRNew irnew = new IRNew(m_IRMethod, irmc );
                     irList.Add(irnew);
 

@@ -558,11 +558,6 @@ namespace SimpleLanguage.VM.Runtime
                         InnerCLRRuntimeVM.SetStaticVariable(m_CallIRMetaClass, iri.index, ref m_ValueStack[--m_ValueIndex]);
                     }
                     break;
-                //case EIROpCode.SetCurrentClassCallClass:
-                //    {
-                //        m_CallIRMetaClass = m_IRMetaClass;
-                //    }
-                //    break;
                 case EIROpCode.SetCallClass:
                     {
                         string tname = iri.opValue as String;
@@ -607,6 +602,10 @@ namespace SimpleLanguage.VM.Runtime
                                 var co = (v.sobject as ClassObject);
                                 irc = co.value.irMetaClass;
                             }
+                            else
+                            {
+                                irc = IRManager.instance.GetIRMetaClassByName(v.eType.ToString());
+                            }
                             if (irc == null)
                             {
                                 Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
@@ -637,6 +636,10 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             var co = (v.sobject as ClassObject);
                             irc = co.value.irMetaClass;
+                        }
+                        else
+                        {
+                            irc = IRManager.instance.GetIRMetaClassByName(v.eType.ToString());
                         }
                         if( irc == null )
                         {
