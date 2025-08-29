@@ -128,6 +128,10 @@ namespace SimpleLanguage.Core
 
             return sb.ToString();
         }
+        public override string ToString()
+        {
+            return ToFormatString();
+        }
     }
 
     public class MetaVisitNode

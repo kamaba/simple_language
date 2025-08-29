@@ -491,6 +491,11 @@ namespace SimpleLanguage.Core
         }
         public void HandleExtendMember()
         {
+            foreach (var it in m_InitHandleMetaClassList)
+            {
+                it.CalcExtendLevel();
+            }
+
             m_InitHandleMetaClassList.Sort((x, y) => x.extendLevel - y.extendLevel);
             
             foreach (var it in m_InitHandleMetaClassList )

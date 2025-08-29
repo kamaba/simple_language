@@ -116,7 +116,7 @@ namespace SimpleLanguage.Core
             m_ExtendClass = mc.m_ExtendClass;
             if(m_ExtendClass != null )
             {
-                m_ExtendLevel = m_ExtendClass.m_ExtendLevel + 1;
+                m_ExtendLevel = m_ExtendClass.m_ExtendLevel;
             }
             m_InterfaceClass = mc.m_InterfaceClass;
 
@@ -592,7 +592,17 @@ namespace SimpleLanguage.Core
         public void SetExtendClass(MetaClass sec)
         {
             m_ExtendClass = sec;
-            m_ExtendLevel = m_ExtendClass.m_ExtendLevel + 1;
+        }
+        public void CalcExtendLevel()
+        {
+            MetaClass mc = m_ExtendClass;
+            int level = 0;
+            while (mc != null)
+            {
+                level++;
+                mc = mc.extendClass;
+            }
+            m_ExtendLevel = level;
         }
         public bool IsParseMetaClass(MetaClass parentClass, bool isIncludeSelf = true )
         {
