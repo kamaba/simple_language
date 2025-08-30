@@ -8,11 +8,11 @@ PTS
     x = 0
     y = 0
 
-    List<PTS> points;
+    List<PTS> points = new();
 
     static Fun()
     {        
-        canvas = Canvas( width=800, height=600, bg="white" )
+        canvas = Canvas( width=800, height=600, bg="white" )   #参数，输入参数名称
         canvas.pack( )
         
         k = 1

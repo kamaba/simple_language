@@ -1,10 +1,17 @@
 
 public class Component extends Object
 {
-    public List<Component> m_ChildrensComponents = ();
+    List<Component> _childrensComponents = new()
 
-    public Component GetComponent<T>()
+    public T GetComponent<T:Component>()
     {
-        ret T.default;
+        for v in this._childrensComponents
+        {
+            if v.type == T.type
+            {
+                ret v as T
+            }
+        }
+        ret null
     }
 }

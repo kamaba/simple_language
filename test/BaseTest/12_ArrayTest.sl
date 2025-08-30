@@ -51,7 +51,7 @@ ArrayTest
         a2 = Array(5, int.type ){1,2,3,4,5.0f};   #默认int List 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  先申请 int 长度为5的数组，然后把后边的数据进行填存，但这时
         #发现5.0f写入时，会提示  存在 float-> int 
         a3 = Array( 20 );               # 长度为20的List
-        a4 = Array( 3 ){ Array(), Array(), Array() }   # 请申一个3x1的数组 内容为null
+        a4 = Array.dim( 3 ){ Array(), Array(), Array() }   # 请申一个3x1的数组 内容为null
              
         
         var a4 = [1.2,1.3,1.5];    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于 List<float>{ 1.2, 1.3, 1.5};
@@ -61,7 +61,7 @@ ArrayTest
         # c# 的方法  List<ArrClass2> arr2 = new ArrClass2[100]; 这里边使用的是 arr2 = ArrClass2[100];
         int[] a6 = Array(4, ArrClass2.type );  # 数组表示使用 List<T>() new List对象 长度为4的int
         
-        float[] a7 = ArrayOf<float>(){ 1.2, 2.2, 3.4 };  #  需要{}的内容特殊处理   
+        float[] a7 = Array(){ 1.2, 2.2, 3.4 };  #  需要{}的内容特殊处理   
         
         float[] a8 = Array( 20 ){1,2,3,5,3.3};   #申请一个长度为20的数组  通过后边数据决定 其实使用的是ArrayInt
        
@@ -87,7 +87,7 @@ ArrayTest
         
         arr1.add( ArrClass() );  #增加数据+1 
         
-        arr1.removeIndex( 2 );       #删除数据-1        
+        arr1.removeAt( 2 );       #删除数据-1        
         
         arr1.remove( arr1[20] );     #删除数据-1 
         arr1.@0.i = 10;

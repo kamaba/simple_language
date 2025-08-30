@@ -3,7 +3,7 @@ namespace Std.Data
 {
     public class Node
     {
-
+        
     }
     public class Json extends Tree
     {

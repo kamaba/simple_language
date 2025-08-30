@@ -1,13 +1,12 @@
 import CSharp.System;
 import Tkinter;
-import Core;
 
 PTS
 {
     x = 0
     y = 0
 
-    Core.List<PTS> points;
+    List<PTS> points = null;
 
     static Fun()
     {        
@@ -28,9 +27,9 @@ PTS
         for i in range(MAXPTS)
         {
             rads = angle * pi1
-            p = PTS()
-            p.x = xcenter + (Math.cos(rads) * radius).ToInt();
-            p.y = ycenter - (Math.sin(rads) * raidus * aspectRatio).ToInt()
+            p = new()
+            p.x = xcenter + (Math.cos(rads) * radius).toInt();
+            p.y = ycenter - (Math.sin(rads) * raidus * aspectRatio).toInt()
             angle += step
             points.append(p)
         }

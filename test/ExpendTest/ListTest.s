@@ -14,26 +14,30 @@ IEnumerable<T>
     interface T NextIterator(){ ret T; }
 }
 
-List<T> :: Object interface ICollection<T>, IIterator<T>
+List<T> extends Object interface ICollection<T>, IIterator<T>
 {
-    T[] m_Value;
+    Array _value = null;
     List()
     {
-
+        this._Value = new( T.type, 4 )
     }
-    T Get(int index)
+    get T _value_(int index)
     {
         return m_Value[index];
     }
-    void Set( int index, T value )
+    set _value_( int index, T value )
     {
-        m_Value[index] = value;
+        this._Value[index] = value;
     }
-    int get Count()
+    get T value()
+    {
+        this._value.value();
+    }
+    int get count()
     {
         return m_Value.Count;
     }
-    set Count( int count )
+    set count( int count )
     {
         m_Value.SetCount( count );
     }
@@ -46,7 +50,7 @@ ListTest
         List<int> a = List<int>();
         List<List<int>> b = List<List<int>>();
 
-        for i = 0, i < a.Count
+        for i = 0, i < a.count
         {
             i++;
         }
@@ -57,8 +61,8 @@ ListTest
         a.Add( 10 );
         a.Remove( 20 );
         b.Add( List<int>() );
-        av = a.@10; #相当于 a.Get( 10 );
-        a.@20 = va;  #相当于 a.Set( va );
+        av = a.@10; #相当于 a._value_( 10 );
+        a.@20 = va;  #相当于 a._value_( 20, va );
 
         for it in a
         {
