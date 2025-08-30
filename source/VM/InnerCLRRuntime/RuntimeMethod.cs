@@ -566,6 +566,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.SetCallClass:
                     {
+                        int[] a = new int[10];
                         string tname = iri.opValue as String;
 
                         m_CallIRMetaClass = GetIRMetaClassByName(tname);
