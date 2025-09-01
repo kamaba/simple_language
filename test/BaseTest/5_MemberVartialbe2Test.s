@@ -3,7 +3,7 @@ partial C2
 {
     x1 = 10;
 
-    C2( int a )
+    _init_( int a )
     {
         this.x = 10;
     }
