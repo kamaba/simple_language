@@ -1,5 +1,76 @@
 import Std
 
+namespace Core
+{
+    class Object
+    {
+        public void _init_()
+        {
+
+        }
+
+        public string toString()
+        {
+            ret ""
+        }
+    }
+    class Byte
+    {
+        
+    }
+    class Boolean
+    {
+
+    }
+    class SByte
+    {
+        
+    }
+    class Int16
+    {
+        
+    }
+    class UInt16
+    {
+        
+    }
+    class Int32
+    {
+        
+    }
+    class UInt32
+    {
+        
+    }
+    class Int64
+    {
+        
+    }
+    class UInt64
+    {
+        
+    }
+    class Float32
+    {
+        
+    }
+    class Float64
+    {
+        _init_(Float64 f)
+        {
+
+        }
+    }
+    class String
+    {
+        _init_( String str )
+        {
+
+        }
+    }
+
+}
+
 public class Class1
 {
     public int a = 20
