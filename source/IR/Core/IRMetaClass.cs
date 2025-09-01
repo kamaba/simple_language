@@ -21,9 +21,8 @@ namespace SimpleLanguage.IR
         public List<IRMetaVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;
         public Dictionary<string, IRMetaClass> genTemplateIRMetaClassDict => m_GenTemplateIRMetaClassDict;
         public string irName => m_IRName;
-        public bool isTemplate { get; private set; } = false;
-        public bool genClass { get; private set; } = false;
-
+        public bool isTemplate => m_IsTemplate;
+        public bool genClass => m_IsGenClass;
 
 
         public int allocSize = 0;
@@ -41,6 +40,9 @@ namespace SimpleLanguage.IR
         private IRMetaClass m_TemplateIRMetaClass;
         private string m_IRName = "";
         private IRManager m_IRManager = null;
+        private bool m_IsTemplate = false;
+        private bool m_IsGenClass = false;
+
 
         static int s_TypeLength = 1000;
         public IRMetaClass(IRManager manager)
@@ -52,7 +54,7 @@ namespace SimpleLanguage.IR
         {
             m_IRManager = manager;
             m_IRName = templateName;
-            this.isTemplate = true;
+            this.m_IsTemplate = true;
             id = s_TypeLength++;
         }
         public void CalcAllocSize()
@@ -177,7 +179,7 @@ namespace SimpleLanguage.IR
 
             if( mc is MetaGenTemplateClass mgtc )
             {
-                genClass = true;
+                m_IsGenClass = true;
                 foreach ( var v in mgtc.metaGenTemplateList )
                 {
                     var irmc = IRManager.instance.GetIRMetaClassByName( IRManager.GetIRNameByMetaType(v.metaType) );
@@ -186,7 +188,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                genClass = false;
+                m_IsGenClass = false;
             }
             CalcAllocSize();
 
