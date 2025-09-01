@@ -60,8 +60,8 @@ namespace SimpleLanguage.Core
         }
         public List<MetaMemberFunction> nonStaticVirtualMetaMemberFunctionList => m_NonStaticVirtualMetaMemberFunctionList;
         public List<MetaMemberFunction> staticMetaMemberFunctionList => m_StaticMetaMemberFunctionList;
-        public List<MetaMemberFunction> allMetaMemberFunctionList => m_AllMetaMemberFunctionList;
-        public List<MetaMemberFunction> currentClassMetaMemberFunctionList => m_CurrentClassMetaMemberFunctionList;
+        //public List<MetaMemberFunction> allMetaMemberFunctionList => m_AllMetaMemberFunctionList;
+        //public List<MetaMemberFunction> currentClassMetaMemberFunctionList => m_CurrentClassMetaMemberFunctionList;
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
         public Dictionary<string, MetaMemberFunctionTemplateNode> metaMemberFunctionTemplateNodeDict => m_MetaMemberFunctionTemplateNodeDict;
         public Dictionary<string, MetaMemberVariable> metaExtendMemeberVariableDict => m_MetaExtendMemeberVariableDict;
@@ -79,12 +79,14 @@ namespace SimpleLanguage.Core
         protected List<MetaClass> m_InterfaceClass = new List<MetaClass>();
         protected List<MetaType> m_InterfaceMetaType = new List<MetaType>();
         protected Dictionary<string, MetaMemberVariable> m_MetaMemberVariableDict = new Dictionary<string, MetaMemberVariable>();
+        protected List<MetaMemberVariable> m_FileCollectMetaMemberVariable = new List<MetaMemberVariable>();
         protected Dictionary<string, MetaMemberVariable> m_MetaExtendMemeberVariableDict = new Dictionary<string, MetaMemberVariable>();
         protected Dictionary<string, MetaMemberFunctionTemplateNode> m_MetaMemberFunctionTemplateNodeDict = new Dictionary<string, MetaMemberFunctionTemplateNode>();
-        protected List<MetaMemberFunction> m_CurrentClassMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
+        //protected List<MetaMemberFunction> m_CurrentClassMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
+        protected List<MetaMemberFunction> m_FileCollectMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected List<MetaMemberFunction> m_NonStaticVirtualMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected List<MetaMemberFunction> m_StaticMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
-        protected List<MetaMemberFunction> m_AllMetaMemberFunctionList = new List<MetaMemberFunction>();
+        //protected List<MetaMemberFunction> m_AllMetaMemberFunctionList = new List<MetaMemberFunction>();
         protected List<MetaMemberFunction> m_TempInnerFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected MetaExpressNode m_DefaultExpressNode = null;
         protected EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
@@ -121,21 +123,32 @@ namespace SimpleLanguage.Core
             m_InterfaceClass = mc.m_InterfaceClass;
 
             m_MetaMemberVariableDict = mc.m_MetaMemberVariableDict;
+            m_FileCollectMetaMemberVariable = mc.m_FileCollectMetaMemberVariable;
             m_MetaExtendMemeberVariableDict = mc.m_MetaExtendMemeberVariableDict;
+
             m_MetaMemberFunctionTemplateNodeDict = mc.m_MetaMemberFunctionTemplateNodeDict;
-            m_CurrentClassMetaMemberFunctionList = mc.m_CurrentClassMetaMemberFunctionList;
+            //m_CurrentClassMetaMemberFunctionList = mc.m_CurrentClassMetaMemberFunctionList;
+            m_FileCollectMetaMemberFunctionList = mc.m_FileCollectMetaMemberFunctionList;
             m_NonStaticVirtualMetaMemberFunctionList = mc.m_NonStaticVirtualMetaMemberFunctionList;
             m_StaticMetaMemberFunctionList = mc.m_StaticMetaMemberFunctionList;
             m_DefaultExpressNode = mc.m_DefaultExpressNode;
         }
         public override void SetDeep( int deep )
         {
-            this.m_Deep = deep;
-            foreach( var v in m_MetaMemberVariableDict )
+            this.m_Deep = deep;                        
+            foreach (var v in m_MetaExtendMemeberVariableDict)
             {
                 v.Value.SetDeep(deep + 1);
             }
-            foreach( var v in m_CurrentClassMetaMemberFunctionList)
+            foreach (var v in m_MetaMemberVariableDict)
+            {
+                v.Value.SetDeep(deep + 1);
+            }
+            foreach (var v in m_NonStaticVirtualMetaMemberFunctionList)
+            {
+                v.SetDeep(deep + 1);
+            }
+            foreach (var v in m_StaticMetaMemberFunctionList)
             {
                 v.SetDeep(deep + 1);
             }
@@ -276,44 +289,58 @@ namespace SimpleLanguage.Core
         }
         public virtual void HandleExtendMemberVariable()
         {
-            if( isTemplateClass )
-            {
-                return;
-            }
             if(m_ExtendClass == null )
             {
+                foreach( var v in this.m_FileCollectMetaMemberVariable )
+                {
+                    m_MetaMemberVariableDict.Add(v.name, v);
+                }
                 return;
             }
-
-            foreach (var v in m_ExtendClass.m_MetaMemberVariableDict)
+            else
             {
-                var c = v.Value;
-                if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
+                foreach (var v in m_ExtendClass.m_MetaExtendMemeberVariableDict)
                 {
-                    var ld = Log.AddInStructMeta( EError.None, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.m_AllName} 中已包含:{c.name} " );
-                    ld.valDict.Add(EMetaType.MetaClass, this );
-                    ld.valDict.Add(EMetaType.MetaExtendsClass, m_ExtendClass);
-                    ld.valDict.Add(EMetaType.MetaMemberVariable, c);
-                    continue;
+                    var c = v.Value;
+                    if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
+                    {
+                        var ld = Log.AddInStructMeta(EError.None, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.m_AllName} 中已包含:{c.name} ");
+                        ld.valDict.Add(EMetaType.MetaClass, this);
+                        ld.valDict.Add(EMetaType.MetaExtendsClass, m_ExtendClass);
+                        ld.valDict.Add(EMetaType.MetaMemberVariable, c);
+                        continue;
+                    }
+                    this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
                 }
-                this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
-            }
-            foreach (var v in m_ExtendClass.m_MetaExtendMemeberVariableDict)
-            {
-                var c = v.Value;
-                if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
+                foreach (var v in m_ExtendClass.m_MetaMemberVariableDict)
                 {
-                    Log.AddInStructMeta(EError.None, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
-                    continue;
+                    var c = v.Value;
+                    if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
+                    {
+                        var ld = Log.AddInStructMeta(EError.None, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.m_AllName} 中已包含:{c.name} ");
+                        ld.valDict.Add(EMetaType.MetaClass, this);
+                        ld.valDict.Add(EMetaType.MetaExtendsClass, m_ExtendClass);
+                        ld.valDict.Add(EMetaType.MetaMemberVariable, c);
+                        continue;
+                    }
+                    this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
                 }
-                this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
+                foreach (var c in this.m_FileCollectMetaMemberVariable)
+                {
+                    if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
+                    {
+                        Log.AddInStructMeta(EError.None, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
+                        continue;
+                    }
+                    this.m_MetaMemberVariableDict.Add(c.name, c);
+                }
             }
         }
         public virtual void HandleExtendMemberFunction()
         {
             if (this.m_ExtendClass == null)
             {
-                foreach (var v in m_AllMetaMemberFunctionList)
+                foreach (var v in m_FileCollectMetaMemberFunctionList )
                 {
                     if (v.isStatic)
                     {
@@ -326,100 +353,79 @@ namespace SimpleLanguage.Core
                         m_NonStaticVirtualMetaMemberFunctionList.Add(v);
                     }
                 }
-                return;
             }
-            bool canAdd = false;
-            foreach (var v in this.m_ExtendClass.m_NonStaticVirtualMetaMemberFunctionList)
+            else
             {
-                canAdd = true;
-                var efun = v;
-                //if (efun.isConstructInitFunction) { continue; }
 
-                if (efun.isStatic)
+                bool canAdd = false;
+                foreach (var v in this.m_ExtendClass.m_NonStaticVirtualMetaMemberFunctionList)
                 {
-                    m_StaticMetaMemberFunctionList.Add(efun);
-                    continue;
-                }
+                    canAdd = true;
+                    var efun = v;
+                    //if (efun.isConstructInitFunction) { continue; }
 
-                foreach (var v2 in m_CurrentClassMetaMemberFunctionList)
-                {
-                    //if (v2.isConstructInitFunction) continue;
-
-                    if (v2.isStatic)
+                    foreach (var v2 in m_FileCollectMetaMemberFunctionList)
                     {
-                        if (efun.IsEqualMetaFunction(v2))
-                        {
-                            canAdd = false;
-                            m_StaticMetaMemberFunctionList.Add(v2);
-                            continue;
-                        }
-                    }
-                    else
-                    {
+                        //if (v2.isConstructInitFunction) continue;
                         if (efun.IsEqualMetaFunction(v2))
                         {
                             canAdd = false;
                             m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
                             continue;
-                        }
+                        }                        
                     }
-                }
-                if (canAdd)
-                {
-                    if (efun.isStatic)
-                    {
-                        m_StaticMetaMemberFunctionList.Add(efun);
-                    }
-                    else
+                    if (canAdd)
                     {
                         m_NonStaticVirtualMetaMemberFunctionList.Add(efun);
                     }
                 }
-            }
 
-            foreach (var v2 in this.m_CurrentClassMetaMemberFunctionList)
-            {
-                if (v2.isStatic)
+                foreach (var v2 in this.m_FileCollectMetaMemberFunctionList)
                 {
-                    var find = m_StaticMetaMemberFunctionList.Find(a => a == v2);
-                    if (find != null) continue;
+                    if (v2.isStatic)
+                    {
+                        var find = m_StaticMetaMemberFunctionList.Find(a => a == v2);
+                        if (find != null) continue;
 
-                    m_StaticMetaMemberFunctionList.Add(v2);
+                        m_StaticMetaMemberFunctionList.Add(v2);
+                    }
+                    else
+                    {
+                        var find = m_NonStaticVirtualMetaMemberFunctionList.Find(a => a == v2);
+                        if (find != null) continue;
+
+                        m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
+                    }
                 }
-                else
+
+                foreach (var v2 in m_NonStaticVirtualMetaMemberFunctionList)
                 {
-                    var find = m_NonStaticVirtualMetaMemberFunctionList.Find(a => a == v2);
-                    if (find != null) continue;
+                    //var find = m_AllMetaMemberFunctionList.Find(a => a == v2);
+                    //if (find != null) continue;
 
-                    m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
+                    AddMetaMemberFunction(v2);
+                    //m_AllMetaMemberFunctionList.Add(v2);
                 }
-            }
+                foreach (var v2 in m_StaticMetaMemberFunctionList)
+                {
+                    //var find = m_AllMetaMemberFunctionList.Find(a => a == v2);
+                    //if (find != null) continue;
 
-            foreach (var v2 in m_NonStaticVirtualMetaMemberFunctionList)
-            {
-                var find = m_AllMetaMemberFunctionList.Find(a => a == v2);
-                if (find != null) continue;
-
-                m_AllMetaMemberFunctionList.Add(v2);
-            }
-            foreach (var v2 in m_StaticMetaMemberFunctionList)
-            {
-                var find = m_StaticMetaMemberFunctionList.Find(a => a == v2);
-                if (find != null) continue;
-
-                m_AllMetaMemberFunctionList.Add(v2);
+                    AddMetaMemberFunction(v2);
+                    //m_AllMetaMemberFunctionList.Add(v2);
+                }
             }
         }
         public virtual void ParseMemberVariableDefineMetaType()
         {
-            foreach (var it in this.m_MetaMemberVariableDict)
+            foreach (var it in this.m_FileCollectMetaMemberVariable )
             {
-                it.Value.ParseDefineMetaType();
+                it.ParseDefineMetaType();
             }
         }
         public virtual void ParseMemberFunctionDefineMetaType()
         {
-            foreach (var it in m_CurrentClassMetaMemberFunctionList )
+            foreach (var it in m_FileCollectMetaMemberFunctionList )
             {
                 it.ParseDefineMetaType();
             }
@@ -516,11 +522,11 @@ namespace SimpleLanguage.Core
                 {
                     mmv.SetName(mmv.name + "__repeat__");
                 }
-                AddMetaMemberVariable(mmv);
+                m_FileCollectMetaMemberVariable.Add(mmv);
             }
             foreach (var v2 in fmc.memberFunctionList)
             {
-                var mn = m_MetaNode.GetChildrenMetaNodeByName(v2.name);
+                var mn = this.m_MetaNode.GetChildrenMetaNodeByName(v2.name);
                 if (mn != null)
                 {
                     Log.AddInStructMeta(EError.None, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
@@ -528,8 +534,7 @@ namespace SimpleLanguage.Core
                 }
 
                 MetaMemberFunction mmf = new MetaMemberFunction( this, v2 );
-                AddMetaMemberFunction(mmf);
-
+                m_FileCollectMetaMemberFunctionList.Add(mmf);
                 MethodManager.instance.AddOriginalMemeberFunction(mmf);
             }            
         }
@@ -662,8 +667,8 @@ namespace SimpleLanguage.Core
             }
             if( find.AddMetaMemberFunction(mmf) )
             {
-                m_CurrentClassMetaMemberFunctionList.Add(mmf);
-                m_AllMetaMemberFunctionList.Add(mmf);
+                //m_CurrentClassMetaMemberFunctionList.Add(mmf);
+                //m_AllMetaMemberFunctionList.Add(mmf);
                 return true;
             }
             return false;
@@ -975,14 +980,18 @@ namespace SimpleLanguage.Core
                 stringBuilder.AppendLine(v.Value.ToFormatString());
             }
 
-            foreach (var v in m_AllMetaMemberFunctionList)
+            foreach (var v in m_StaticMetaMemberFunctionList )
             {
                 MetaMemberFunction mmfc = v;
-                if (mmfc.methodCallType == EMethodCallType.Local)
-                {
-                    stringBuilder.Append(mmfc.ToFormatString());
-                    stringBuilder.Append(Environment.NewLine);
-                }
+                stringBuilder.Append(mmfc.ToFormatString());
+                stringBuilder.Append(Environment.NewLine);
+            }
+
+            foreach (var v in m_NonStaticVirtualMetaMemberFunctionList)
+            {
+                MetaMemberFunction mmfc = v;
+                stringBuilder.Append(mmfc.ToFormatString());
+                stringBuilder.Append(Environment.NewLine);
             }
             //if( m_MetaGenTemplateClassList.Count > 0 )
             //{

@@ -1,11 +1,6 @@
-﻿using SimpleLanguage.Compile.CoreFileMeta;
-using SimpleLanguage.Core.Statements;
-using SimpleLanguage.CSharp;
-using System;
-using System.Collections.Generic;
+﻿
 using System.Diagnostics;
 using System.Reflection;
-using System.Text;
 using static SimpleLanguage.Core.MetaVariable;
 
 namespace SimpleLanguage.Core

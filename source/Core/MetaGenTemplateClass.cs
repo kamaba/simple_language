@@ -275,7 +275,11 @@ namespace SimpleLanguage.Core
         }
         public override void ParseMemberFunctionDefineMetaType()
         {
-            foreach (var it in m_MetaTemplateClass.allMetaMemberFunctionList )
+            foreach (var it in m_MetaTemplateClass.nonStaticVirtualMetaMemberFunctionList )
+            {
+                ParseMetaMemberFunctionDefineMetaType(it);
+            }
+            foreach (var it in m_MetaTemplateClass.staticMetaMemberFunctionList)
             {
                 ParseMetaMemberFunctionDefineMetaType(it);
             }
@@ -283,17 +287,24 @@ namespace SimpleLanguage.Core
         void ParseMetaMemberFunctionDefineMetaType(MetaMemberFunction mmv)
         {
             MetaMemberFunction mgmf = new MetaMemberFunction(mmv);
-            mgmf.SetOwnerMetaClass(this);
             mgmf.SetSourceMetaMemberFunction(mmv);
 
-            if(mgmf.returnMetaVariable?.metaDefineType != null )
+            if (mgmf.returnMetaVariable?.metaDefineType != null)
             {
-                TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mgmf.returnMetaVariable.metaDefineType, this, null);
+                if (!(mgmf.returnMetaVariable.metaDefineType.eType == EMetaTypeType.MetaClass
+                    && mgmf.returnMetaVariable.metaDefineType.metaClass.isTemplateClass == false))
+                {
+                    TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mgmf.returnMetaVariable.metaDefineType, this, null);
+                }
             }
             for ( int i = 0; i < mgmf.metaMemberParamCollection.metaDefineParamList.Count; i++ )
             {
                 var mdp = mgmf.metaMemberParamCollection.metaDefineParamList[i];
-                TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mdp.metaVariable.metaDefineType, this, null );
+                if (!(mgmf.returnMetaVariable.metaDefineType.eType == EMetaTypeType.MetaClass
+                    && mgmf.returnMetaVariable.metaDefineType.metaClass.isTemplateClass == false))
+                {
+                    TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mdp.metaVariable.metaDefineType, this, null);
+                }
             }
             mgmf.UpdateFunctionName();
             AddMetaMemberFunction(mgmf);

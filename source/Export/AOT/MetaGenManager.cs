@@ -561,90 +561,90 @@ namespace SimpleLanguage.Core.AOT
                 }
             }
         }
-        public void HandleExtendContent( FileMetaClass mc )
-        {
-            if (mc.metaClass == null) return;
+        //public void HandleExtendContent( FileMetaClass mc )
+        //{
+        //    if (mc.metaClass == null) return;
 
-            bool isSuccess = true;
-            for (int i = 0; i < mc.metaClass.interfaceClass.Count; i++ )
-            {
-                var interfaceClass = mc.metaClass.interfaceClass[i];
+        //    bool isSuccess = true;
+        //    for (int i = 0; i < mc.metaClass.interfaceClass.Count; i++ )
+        //    {
+        //        var interfaceClass = mc.metaClass.interfaceClass[i];
 
-                List<MetaMemberFunction> interfaceFunctionList = interfaceClass.GetMemberInterfaceFunction();
+        //        List<MetaMemberFunction> interfaceFunctionList = interfaceClass.GetMemberInterfaceFunction();
 
-                for( int j = 0; j < interfaceFunctionList.Count; j++ )
-                {
-                    var func = interfaceFunctionList[j];
+        //        for( int j = 0; j < interfaceFunctionList.Count; j++ )
+        //        {
+        //            var func = interfaceFunctionList[j];
 
-                    if( !mc.metaClass.GetMemberInterfaceFunctionByFunc(func) )
-                    {
-                        Log.AddInStructMeta(EError.None, "查找接口类中的要实现的函数，实现失败函数名称" + func.name + " Token位置: " );
-                        //func.fileMetaMemberFunction.token.sourceBeginLine.ToString()
-                        isSuccess = false;
-                        break;
-                    }
-                }
-            }
-            var list = mc.metaClass.allMetaMemberFunctionList;
-            for ( int i = 0; i < list.Count; i++ )
-            {
-                var func = list[i];
-                if( func.isOverrideFunction )
-                {
+        //            if( !mc.metaClass.GetMemberInterfaceFunctionByFunc(func) )
+        //            {
+        //                Log.AddInStructMeta(EError.None, "查找接口类中的要实现的函数，实现失败函数名称" + func.name + " Token位置: " );
+        //                //func.fileMetaMemberFunction.token.sourceBeginLine.ToString()
+        //                isSuccess = false;
+        //                break;
+        //            }
+        //        }
+        //    }
+        //    var list = mc.metaClass.allMetaMemberFunctionList;
+        //    for ( int i = 0; i < list.Count; i++ )
+        //    {
+        //        var func = list[i];
+        //        if( func.isOverrideFunction )
+        //        {
 
-                }
-            }
-            if( !isSuccess )
-            {
-                return;
-            }
+        //        }
+        //    }
+        //    if( !isSuccess )
+        //    {
+        //        return;
+        //    }
 
-            Stack<MetaClass> metaClassStack = new Stack<MetaClass>();
+        //    Stack<MetaClass> metaClassStack = new Stack<MetaClass>();
 
-            var textendClass = mc.metaClass;
-            while( true )
-            {
-                if (textendClass != null)
-                {
-                    metaClassStack.Push(mc.metaClass);
-                    textendClass = textendClass.extendClass;
-                }
-                else
-                    break;
-            }
-            bool isFailed = false;
-            while ( true )
-            {
-                textendClass = metaClassStack.Pop();
-                if (metaClassStack.Count <= 0)
-                    break;
-                if( !textendClass.isHandleExtendVariableDirty )
-                {
-                    textendClass.HandleExtendClassVariable();
-                }
+        //    var textendClass = mc.metaClass;
+        //    while( true )
+        //    {
+        //        if (textendClass != null)
+        //        {
+        //            metaClassStack.Push(mc.metaClass);
+        //            textendClass = textendClass.extendClass;
+        //        }
+        //        else
+        //            break;
+        //    }
+        //    bool isFailed = false;
+        //    while ( true )
+        //    {
+        //        textendClass = metaClassStack.Pop();
+        //        if (metaClassStack.Count <= 0)
+        //            break;
+        //        if( !textendClass.isHandleExtendVariableDirty )
+        //        {
+        //            textendClass.HandleExtendClassVariable();
+        //        }
 
-                isFailed = false;
-                if( textendClass != null && textendClass.extendClass != null )
-                {
-                    foreach( var v in textendClass.metaExtendMemeberVariableDict )
-                    {
-                        if( textendClass.metaMemberVariableDict.ContainsKey( v.Key ) )
-                        {
-                            Log.AddInStructMeta(EError.None, "Error 在类的值: " + v.Key + "  有重复定义: " + textendClass.allClassName + "中，值: [" + v.Key + "] Token1位置: "
-                                + textendClass.metaMemberVariableDict[v.Key].ToTokenString());
-                            isFailed = true;
-                            break;
-                        }
-                    }
-                }
-                if (isFailed) break;
+        //        isFailed = false;
+        //        if( textendClass != null && textendClass.extendClass != null )
+        //        {
+        //            foreach( var v in textendClass.metaExtendMemeberVariableDict )
+        //            {
+        //                if( textendClass.metaMemberVariableDict.ContainsKey( v.Key ) )
+        //                {
+        //                    Log.AddInStructMeta(EError.None, "Error 在类的值: " + v.Key + "  有重复定义: " + textendClass.allClassName + "中，值: [" + v.Key + "] Token1位置: "
+        //                        + textendClass.metaMemberVariableDict[v.Key].ToTokenString());
+        //                    isFailed = true;
+        //                    break;
+        //                }
+        //            }
+        //        }
+        //        if (isFailed) break;
                
-            }
-            if( !isFailed )
-            {
-                //Debug.Write("");
-            }
-        }
+        //    }
+        //    if( !isFailed )
+        //    {
+        //        //Debug.Write("");
+        //    }
+        //}
         public void HandleInterface( FileMetaClass mc )
         {
         }
