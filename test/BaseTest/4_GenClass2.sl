@@ -5,6 +5,11 @@ namespace Core
 {
     class Object
     {
+        public void _init_()
+        {
+
+        }
+
         public string toString()
         {
             ret ""
@@ -80,7 +85,7 @@ LT
 
 List<T>
 {
-
+    
 }
 
 Level1<T,T2> extends List<T2>
@@ -149,6 +154,7 @@ Level1<T,T2> extends List<T2>
         Level1<T,T2>.static_t = t
         Level1<T2,T>.static_t = t2222
         Level1<T,short>.static_t = t1111;
+        Level1<short,string>.static_t = 20s
         ret static_t
     }
     override string toString()
@@ -179,7 +185,7 @@ GenClass2{
 
         Level1<Level1<int,int>, string > GenClass2_fun_l2 = Level1<Level1<int, int>, string >()
         GenClass2_fun_l2.setLevel1( Level1<int, int>(20) )
-        System.Console.Write("_this2_-----------------------" + GenClass2_fun_l2.Level1_t.Level1_t + "    string:" + Level1<string,byte>.static_t + "   short:" + Level1<short, string>.static_t )
+        System.Console.WriteLine("_this2_-----------------------" + GenClass2_fun_l2.Level1_t.Level1_t + "    string:" + Level1<string,byte>.static_t + "   short:" + Level1<short, string>.static_t )
     }
 }
 

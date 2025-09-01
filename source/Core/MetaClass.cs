@@ -14,7 +14,6 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using System.Linq;
 using SimpleLanguage.Parse;
-using System.Collections;
 
 namespace SimpleLanguage.Core
 {
@@ -397,24 +396,72 @@ namespace SimpleLanguage.Core
                         m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
                     }
                 }
+            }
 
-                foreach (var v2 in m_NonStaticVirtualMetaMemberFunctionList)
+
+
+
+            foreach (var v2 in m_NonStaticVirtualMetaMemberFunctionList)
+            {
+                //var find = m_AllMetaMemberFunctionList.Find(a => a == v2);
+                //if (find != null) continue;
+
+                AddMetaMemberFunction(v2);
+                //m_AllMetaMemberFunctionList.Add(v2);
+            }
+            foreach (var v2 in m_StaticMetaMemberFunctionList)
+            {
+                //var find = m_AllMetaMemberFunctionList.Find(a => a == v2);
+                //if (find != null) continue;
+
+                AddMetaMemberFunction(v2);
+                //m_AllMetaMemberFunctionList.Add(v2);
+            }
+
+
+            List<MetaMemberFunction> addList = new List<MetaMemberFunction>();
+            for (int i = 0; i < this.m_TempInnerFunctionList.Count; i++)
+            {
+                MetaMemberFunction mmf = m_TempInnerFunctionList[i];
+
+                bool isAdd = true;
+                if (m_MetaMemberFunctionTemplateNodeDict.ContainsKey(mmf.name))
                 {
-                    //var find = m_AllMetaMemberFunctionList.Find(a => a == v2);
-                    //if (find != null) continue;
-
-                    AddMetaMemberFunction(v2);
-                    //m_AllMetaMemberFunctionList.Add(v2);
+                    var list = m_MetaMemberFunctionTemplateNodeDict[mmf.name];
+                    MetaMemberFunction curFun = list.IsSameMetaMemeberFunction(mmf);
+                    if (curFun != null)
+                    {
+                        isAdd = false;
+                        if (mmf.isCanRewrite)
+                        {
+                            //int index = list.IndexOf(curFun);
+                            //list[index] = mmf;
+                        }
+                        else
+                        {
+                            isAdd = true;
+                            break;
+                        }
+                    }
                 }
-                foreach (var v2 in m_StaticMetaMemberFunctionList)
+                if (isAdd)
                 {
-                    //var find = m_AllMetaMemberFunctionList.Find(a => a == v2);
-                    //if (find != null) continue;
-
-                    AddMetaMemberFunction(v2);
-                    //m_AllMetaMemberFunctionList.Add(v2);
+                    addList.Add(mmf);
                 }
             }
+            for (int i = 0; i < addList.Count; i++)
+            {
+                var v = addList[i];
+                if (v.isStatic)
+                {
+                    m_StaticMetaMemberFunctionList.Add(v);
+                }
+                else
+                {
+                    m_NonStaticVirtualMetaMemberFunctionList.Add(v);
+                }
+            }
+            m_TempInnerFunctionList.Clear();
         }
         public virtual void ParseMemberVariableDefineMetaType()
         {
@@ -545,55 +592,24 @@ namespace SimpleLanguage.Core
             {
                 return;
             }
-
             AddDefineConstructFunction();
-            //AddDefineInstanceValue();
-
             if (m_DefaultExpressNode == null )
             {
                 MetaType mdt = new MetaType(this);
+                if( eType == EType.Data )
+                {
+                    return;
+                }
                 var defaultFunction = GetMetaMemberConstructDefaultFunction();
+                if (defaultFunction == null)
+                {
+                    Log.AddInStructMeta(EError.None, "没有找发现默认构造函数");
+                    return;
+                }
                 m_DefaultExpressNode = new MetaNewObjectExpressNode(mdt, this, defaultFunction.metaBlockStatements);
             }
-
-            List<MetaMemberFunction> addList = new List<MetaMemberFunction>();
-            for( int i = 0; i < this.m_TempInnerFunctionList.Count; i++ ) 
-            {
-                MetaMemberFunction mmf = m_TempInnerFunctionList[i];
-
-                bool isAdd = true;
-                if (m_MetaMemberFunctionTemplateNodeDict.ContainsKey(mmf.name))
-                {
-                    var list = m_MetaMemberFunctionTemplateNodeDict[mmf.name];
-                    MetaMemberFunction curFun = list.IsSameMetaMemeberFunction(mmf);
-                    if (curFun != null)
-                    {
-                        isAdd = false;
-                        if (mmf.isCanRewrite)
-                        {
-                            //int index = list.IndexOf(curFun);
-                            //list[index] = mmf;
-                        }
-                        else
-                        {
-                            isAdd = true;
-                            break;
-                        }
-                    }
-                }
-                if (isAdd)
-                {
-                    addList.Add(mmf);
-                }
-            }
-            for( int i = 0; i < addList.Count; i++ )
-            {
-                AddMetaMemberFunction(addList[i]);
-            }
-            m_TempInnerFunctionList.Clear();
         }
-#endif
-        
+#endif        
         public void SetExtendClass(MetaClass sec)
         {
             m_ExtendClass = sec;
@@ -795,7 +811,7 @@ namespace SimpleLanguage.Core
         }
         public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParam(string name, MetaInputTemplateCollection inputTemplate, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true )
         {
-            if (!m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name) )
+            if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name) )
             {
                 return null;
             }
