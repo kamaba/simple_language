@@ -192,10 +192,10 @@ namespace SimpleLanguage.Core.AOT
         }
         public override void ParseMemberFunctionDefineMetaType()
         {
-            foreach (var it in m_MetaTemplateClass.allMetaMemberFunctionList )
-            {
-                ParseMetaMemberFunctionDefineMetaType(it);
-            }
+            //foreach (var it in m_MetaTemplateClass.allMetaMemberFunctionList )
+            //{
+            //    ParseMetaMemberFunctionDefineMetaType(it);
+            //}
         }
         void ParseMetaMemberFunctionDefineMetaType(MetaMemberFunction mmv)
         {

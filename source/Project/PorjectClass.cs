@@ -12,9 +12,7 @@ using SimpleLanguage.Parse;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.IR;
 using System.Diagnostics;
-using SimpleLanguage.IR.Statements;
 using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Compile.Parse;
 
 namespace SimpleLanguage.Project
 {
@@ -43,7 +41,7 @@ namespace SimpleLanguage.Project
 
             //compile.Parse();
             compile.ParseDefineComplete();
-            var flist = compile.currentClassMetaMemberFunctionList;
+            var flist = compile.staticMetaMemberFunctionList;
             for( int i = 0; i < flist.Count; i++ )
             {
                 flist[i].ParseStatements();

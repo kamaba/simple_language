@@ -259,15 +259,15 @@ namespace SimpleLanguage.Compile.CoreFileMeta
                 ClassManager.instance.AddClass(fns);
             }
         }
-        public void HandleExtendData()
-        {
-            for (int i = 0; i < m_FileMetaAllClassList.Count; i++)
-            {
-                var fns = m_FileMetaAllClassList[i];
+        //public void HandleExtendData()
+        //{
+        //    for (int i = 0; i < m_FileMetaAllClassList.Count; i++)
+        //    {
+        //        var fns = m_FileMetaAllClassList[i];
 
-                ClassManager.instance.HandleExtendContent(fns);
-            }
-        }
+        //        ClassManager.instance.HandleExtendContent(fns);
+        //    }
+        //}
         public void ParseInface()
         {
 

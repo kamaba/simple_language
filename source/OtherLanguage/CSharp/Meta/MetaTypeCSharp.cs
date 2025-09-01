@@ -1,11 +1,5 @@
 ﻿using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.CSharp;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.Core
 {
