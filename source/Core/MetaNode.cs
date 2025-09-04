@@ -395,29 +395,8 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            if (m_MetaModule != null)
-            {
-                sb.Append(m_MetaModule.ToString());
-            }
-            else if (m_MetaNamespace != null)
-            {
-                sb.Append(m_MetaNamespace.ToString());
-            }
-            else if (m_MetaData != null)
-            {
-                sb.Append(m_MetaData.ToString());
-            }
-            else if (m_MetaEnum != null)
-            {
-                sb.Append(m_MetaEnum.ToString());
-            }
-            else
-            {
-                for( int i = 0; i < m_MetaTemplateClassDict.Count; i++ )
-                {
-                    sb.Append(m_MetaTemplateClassDict[i].ToString());
-                }
-            }
+            sb.Append(this.allName);
+            
             return sb.ToString();
         }
         //------------------------------------------------

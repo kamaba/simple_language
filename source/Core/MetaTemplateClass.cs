@@ -166,12 +166,19 @@ namespace SimpleLanguage.Core
                 if (tmc == null)
                 {
                     tmc = new MetaGenTemplateClass(this, list2);
-                    tmc.Parse();
                     this.AddGenTemplateMetaClass(tmc);
                 }
                 return tmc;
             }
             return null;
+        }
+        public virtual void ParseGenTemplateClassMetaType()
+        {
+            var list = new List<MetaGenTemplateClass>(m_MetaGenTemplateClassList);
+            foreach ( var v in list )
+            {
+                v.Parse();
+            }
         }
         public MetaGenTemplateClass GetGenTemplateMetaClassByTemplateList(List<MetaGenTemplate> list)
         {

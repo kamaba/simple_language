@@ -327,6 +327,17 @@ public class Level1<T222>
         #ret t1 ? t1 > t2 : t2
         ret t2
     }
+    public TTT GetComponent<TTT>()
+    {
+        TTT t = new()
+        ret t;
+    }
+
+    TTT TestCFT<TTT>( T222 t222 )
+    {
+        TTT t = new()
+        ret t
+    }
 }
 ClassRoom
 {
@@ -339,7 +350,7 @@ GenClass
     {
 
     }
-    Level1<Level2<int,int> > GenClass_ls = {}
+    Level1<Level2<int,int> > GenClass_ls = new()
     GenClass_ls_21 = Level1<string>("aaa")   #正常
     GenClass_ls_22 = Level1<Level2<int,int> >("aaa")    #应该报错，因为"aaa" 不是Level2<int,int> 正确的应该传 Level2<int,int>() 这样的格式
     GenClass_ls2 = ( GenClass.GenClass_x < 3) == 4 > 3
@@ -347,7 +358,7 @@ GenClass
     #a = Level1b < Level2b || Level3b > Level4b
     static GenClass_x = 100;
     #Level1<string> ls2 = null
-    #Level1<string> ls3 = ()     #报错，提示，不允许这种形式
+    #Level1<string> ls3 = new()     #报错，提示，不允许这种形式
     #Level1<string> ls4 = {}
     static GenClass_fun()
     {
@@ -355,7 +366,10 @@ GenClass
         GenClass_fun_l2 = GenClass_fun_l1.add()
         #Debug.Write( "Addresult: " + GenClass_fun_l2 )
 
-        float GenClass_fun_a = Level1<float>.min<float>( 1.3, 2.5 )
+        retstr = GenClass_fun_l1.GetComponent<string>()
+
+
+        float32 GenClass_fun_a = Level1<float32>.min<float32>( 1.3, 2.5 )
 
         #Debug.Write("Flaoat" + a )
     }

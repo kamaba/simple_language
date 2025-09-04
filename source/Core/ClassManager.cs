@@ -336,39 +336,46 @@ namespace SimpleLanguage.Core
                     if (findamc != null && findamc.IsMetaClass() )
                     {
                         MetaClass ffmc = findamc.GetMetaClassByTemplateCount(fmc.templateDefineList.Count);
-                        if (ProjectManager.useDefineNamespaceType == EUseDefineType.LimitUseProjectConfigNamespaceAndClass)
+                        if( ffmc != null )
                         {
-                            
-                        }
-                        fmc.SetMetaClass(ffmc);
-                        ffmc.BindFileMetaClass(fmc);
-                        ffmc.SetClassDefineType(EClassDefineType.CodeDefine);
-                        ffmc.ParseFileMetaClassTemplate(fmc);
-                        ffmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
-                        ffmc.UpdateClassAllName();
-                        AddInitHandleMetaClassList(ffmc);
-                        return ffmc;
-                        if (!fmc.isPartial)
-                        {
-                            Log.AddInStructMeta(EError.None, "类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持文件并行 定义类");
-                            return null;
-                        }
-                        bool isPartial = true;
-                        foreach (var v in ffmc.fileMetaClassDict)
-                        {
-                            if (v.Value.isPartial == false)
+                            if (ProjectManager.useDefineNamespaceType == EUseDefineType.LimitUseProjectConfigNamespaceAndClass)
                             {
-                                isPartial = false;
-                                Log.AddInStructMeta(EError.None, "类:" + findamc.name + "在: " + v.Value.token.ToAllString() + "不支持文件并行 定义类");
-                                break;
+
                             }
+                            fmc.SetMetaClass(ffmc);
+                            ffmc.BindFileMetaClass(fmc);
+                            ffmc.SetClassDefineType(EClassDefineType.CodeDefine);
+                            ffmc.ParseFileMetaClassTemplate(fmc);
+                            ffmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
+                            ffmc.UpdateClassAllName();
+                            AddInitHandleMetaClassList(ffmc);
+                            return ffmc;
                         }
-                        if (isPartial == false)
+                        else
                         {
-                            return null;
+                            isCanAddBind = true;
                         }
-                        ffmc.BindFileMetaClass(fmc);
-                        return ffmc;
+                        //if (!fmc.isPartial)
+                        //{
+                        //    Log.AddInStructMeta(EError.None, "类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持文件并行 定义类");
+                        //    return null;
+                        //}
+                        //bool isPartial = true;
+                        //foreach (var v in ffmc.fileMetaClassDict)
+                        //{
+                        //    if (v.Value.isPartial == false)
+                        //    {
+                        //        isPartial = false;
+                        //        Log.AddInStructMeta(EError.None, "类:" + findamc.name + "在: " + v.Value.token.ToAllString() + "不支持文件并行 定义类");
+                        //        break;
+                        //    }
+                        //}
+                        //if (isPartial == false)
+                        //{
+                        //    return null;
+                        //}
+                        //ffmc.BindFileMetaClass(fmc);
+                        //return ffmc;
                     }
                     else
                     {
@@ -503,6 +510,10 @@ namespace SimpleLanguage.Core
                 it.HandleExtendMemberVariable();
                 it.HandleExtendMemberFunction();
             }
+            foreach( var it in m_InitHandleMetaClassList )
+            {
+                it.ParseGenTemplateClassMetaType();
+            }
         }
         public void ParseInitMetaClassList()
         {
@@ -510,10 +521,13 @@ namespace SimpleLanguage.Core
             {
                 it.ParseMetaInConstraint();
                 it.ParseExtendsRelation();
-                it.UpdateInterfaceMetaClass();
+                it.ParseInterfaceRelation();
+                AddDictMetaClass(it);
+            }
+            foreach( var it in m_InitHandleMetaClassList )
+            {
                 it.ParseMemberVariableDefineMetaType();
                 it.ParseMemberFunctionDefineMetaType();
-                AddDictMetaClass(it);
             }
         }
         public void UpdateMetaGenTemplateClassHandle()
@@ -521,7 +535,7 @@ namespace SimpleLanguage.Core
             var list = new List<MetaGenTemplateClass>(m_GenTemplateMetaClassList);
             foreach( var v in list)
             {
-                v.UpdateRegster();
+                v.UpdateRegsterGenMetaClass();
             }
         }
         //public void ParseDefineMetaTypeGenTemplateMetaClassList()
