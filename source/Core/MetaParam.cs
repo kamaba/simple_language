@@ -640,6 +640,20 @@ namespace SimpleLanguage.Core
         public MetaInputTemplateCollection()
         {
         }
+        public List<MetaClass> GetMetaClassList( out bool isAllMetaClass )
+        {
+            isAllMetaClass = false;
+            List<MetaClass> mcList = new List<MetaClass>();
+            for( int i = 0; i < m_MetaTemplateParamsList.Count; i++ )
+            {
+                mcList.Add(m_MetaTemplateParamsList[i].metaClass);
+            }
+            if( mcList.Count > 0 && mcList.Count == m_MetaTemplateParamsList.Count )
+            {
+                isAllMetaClass = true;
+            }
+            return mcList;
+        }
         //public MetaInputTemplateCollection(List<FileInputTemplateNode> callNodeList, MetaBlockStatements bms, MetaClass mc )
         //{
         //    for (int i = 0; i < callNodeList.Count; i++)

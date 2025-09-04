@@ -439,7 +439,7 @@ namespace SimpleLanguage.Core.AOT
             foreach (var it in m_InitHandleMetaClassList )
             {
                 it.ParseExtendsRelation();
-                it.UpdateInterfaceMetaClass();
+                it.ParseInterfaceRelation();
                 it.ParseMemberVariableDefineMetaType();
                 it.ParseMemberFunctionDefineMetaType();
                 it.ParseMetaInConstraint();

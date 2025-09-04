@@ -170,6 +170,7 @@ namespace SimpleLanguage.Core
                 MetaType mt2 = GetAndRegisterTemplateDefineMetaTemplateClass(ownerMc, findfn, inputTemplateNodeList[i]);
                 mt.AddTemplateMetaType(mt2);
             }
+
             return ownerMc.AddMetaPreTemplateClass(mt, out bool igmc);
         }
         MetaType GetAndRegisterTemplateDefineMetaTemplateClass(MetaClass ownerMc, MetaClass findMc, FileInputTemplateNode fmtd)
@@ -317,9 +318,15 @@ namespace SimpleLanguage.Core
             {
                 var t = RegisterTemplateDefineMetaTemplateFunction(curMc, mmf, inputTemplateNodeList[i]);
                 mt.AddTemplateMetaType(t);
-
             }
-            return curMc.AddMetaPreTemplateClass(mt, out bool igmc);
+            if( mmf?.isTemplateFunction == true )
+            {
+                return mmf.AddMetaPreTemplateFunction(mt, out bool igmc);
+            }
+            else
+            {
+                return curMc.AddMetaPreTemplateClass(mt, out bool igmc);
+            }
         }
         public MetaType RegisterTemplateDefineMetaTemplateFunction(MetaClass ownerMc, MetaMemberFunction mmf, FileInputTemplateNode fmtd)
         {

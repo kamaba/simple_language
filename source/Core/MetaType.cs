@@ -293,7 +293,7 @@ namespace SimpleLanguage.Core
                     mcList.Add(mc);
                 }
             }
-            return m_TemplateMetaClass.AddInstanceMetaClass(mcList);
+            return this.m_TemplateMetaClass.AddInstanceMetaClass(mcList);
         }
         public MetaType GetMetaInputTemplateByIndex( int index = 0 )
         {

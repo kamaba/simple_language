@@ -59,8 +59,6 @@ namespace SimpleLanguage.Core
         }
         public List<MetaMemberFunction> nonStaticVirtualMetaMemberFunctionList => m_NonStaticVirtualMetaMemberFunctionList;
         public List<MetaMemberFunction> staticMetaMemberFunctionList => m_StaticMetaMemberFunctionList;
-        //public List<MetaMemberFunction> allMetaMemberFunctionList => m_AllMetaMemberFunctionList;
-        //public List<MetaMemberFunction> currentClassMetaMemberFunctionList => m_CurrentClassMetaMemberFunctionList;
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
         public Dictionary<string, MetaMemberFunctionTemplateNode> metaMemberFunctionTemplateNodeDict => m_MetaMemberFunctionTemplateNodeDict;
         public Dictionary<string, MetaMemberVariable> metaExtendMemeberVariableDict => m_MetaExtendMemeberVariableDict;
@@ -260,7 +258,7 @@ namespace SimpleLanguage.Core
                 this.m_ExtendClass = m_ExtendClassMetaType.templateMetaClass;
             }
         }
-        public virtual void UpdateInterfaceMetaClass()
+        public virtual void ParseInterfaceRelation()
         {
             m_InterfaceMetaType.Clear();
             foreach ( var v in this.fileMetaClassDict )
@@ -616,14 +614,21 @@ namespace SimpleLanguage.Core
         }
         public void CalcExtendLevel()
         {
-            MetaClass mc = m_ExtendClass;
-            int level = 0;
-            while (mc != null)
+            if( m_InterfaceClass != null )
             {
-                level++;
-                mc = mc.extendClass;
+                m_ExtendLevel = 0;
             }
-            m_ExtendLevel = level;
+            else
+            {
+                MetaClass mc = m_ExtendClass;
+                int level = 0;
+                while (mc != null)
+                {
+                    level++;
+                    mc = mc.extendClass;
+                }
+                m_ExtendLevel = level;
+            }
         }
         public bool IsParseMetaClass(MetaClass parentClass, bool isIncludeSelf = true )
         {
@@ -970,13 +975,13 @@ namespace SimpleLanguage.Core
                     stringBuilder.Append(">");
                 }
             }
-            if (m_InterfaceClass.Count > 0)
+            if (m_InterfaceMetaType.Count > 0)
             {
                 stringBuilder.Append(" interface ");
             }
-            for (int i = 0; i < m_InterfaceClass.Count; i++)
+            for (int i = 0; i < m_InterfaceMetaType.Count; i++)
             {
-                stringBuilder.Append(m_InterfaceClass[i].allClassName );
+                stringBuilder.Append(m_InterfaceMetaType[i].ToFormatString() );
                 if (i != m_InterfaceClass.Count - 1)
                     stringBuilder.Append(",");
             }
