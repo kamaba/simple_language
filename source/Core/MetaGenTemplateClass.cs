@@ -6,50 +6,12 @@
 //  Description: Generator Template Class's entity by Template Class
 //****************************************************************************
 
-using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public sealed class MetaPreTemplateClass
-    {
-        private MetaClass m_MetaClass = null;
-        private List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
-
-        public MetaPreTemplateClass( MetaClass mc, List<MetaGenTemplate> mgtList )
-        {
-            m_MetaClass = mc;
-            m_MetaGenTemplateList = mgtList;
-        }
-        public void UpdateMetaGenTemplate( List<MetaGenTemplate> list )
-        {
-            List<MetaClass> mcList = new List<MetaClass>();
-            for( int i = 0; i < m_MetaGenTemplateList.Count; i++ )
-            {
-                var mgt = m_MetaGenTemplateList[i];
-                if( mgt.metaType != null )
-                {
-                    if( mgt.metaType.isTemplate == false )
-                    {
-                        mcList.Add(mgt.metaType.metaClass);
-                    }
-                    continue;
-                }
-
-                var find = list.Find(a => a.name == mgt.name );
-                if( find != null )
-                {
-                    mcList.Add(find.metaType.metaClass);
-                }
-            }
-            if( mcList.Count == m_MetaGenTemplateList.Count )
-            {
-                m_MetaClass.AddInstanceMetaClass(mcList);
-            }
-        }
-    }
     public sealed class MetaGenTemplateClass : MetaClass
     {
         public MetaClass metaTemplateClass => m_MetaTemplateClass;
@@ -91,51 +53,6 @@ namespace SimpleLanguage.Core
                 m_MetaTemplateClass.bindStructTemplateMetaClassList[i].UpdateMetaGenTemplate(m_MetaGenTemplateList);
             }
         }
-        //public static MetaGenTemplateClass GenerateTemplateClass( MetaClass mc, MetaInputTemplateCollection mic)
-        //{
-        //    if (mc.isTemplateClass == false)
-        //    {
-        //        Log.AddInStructMeta(EError.None, "Error 该类不是模版类,不能生成模版生成类!!");
-        //        return null;
-        //    }
-        //    if (mic == null)
-        //    {
-        //        return null;
-        //    }
-        //    if (mc.metaTemplateList.Count == mic.metaTemplateParamsList.Count)
-        //    {
-        //        MetaGenTemplateClass tmc = new MetaGenTemplateClass(mc, null);
-        //        //mc.AddGenTemplateMetaClass(tmc);
-
-        //        string extenName = "";
-        //        for (int i = 0; i < mc.metaTemplateList.Count; i++)
-        //        {
-        //            var classTemplate = mc.metaTemplateList[i];
-        //            var inputTemplate = mic.metaTemplateParamsList[i];
-
-        //            MetaGenTemplate mgt = new MetaGenTemplate(classTemplate, inputTemplate);
-        //            tmc.AddMetaGenTemplate(mgt);
-
-        //            if (string.IsNullOrEmpty(extenName))
-        //            {
-        //                extenName = inputTemplate.metaClass.name;
-        //            }
-        //            else
-        //            {
-        //                extenName = extenName + "," + inputTemplate.metaClass.name;
-        //            }
-        //        }
-        //        //tmc.SetName(mc.name + "<" + extenName + ">");
-        //        //tmc.SetDeep(mc.deep + 1);
-
-        //        return tmc;
-        //    }
-        //    else
-        //    {
-        //        Log.AddInStructMeta(EError.None, "Error 传进来的模版参数与类定义的参数长度对不上!!");
-        //        return null;
-        //    }            
-        //}
         public override void SetDeep(int deep)
         {
             m_Deep = deep;
