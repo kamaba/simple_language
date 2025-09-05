@@ -159,26 +159,51 @@ namespace SimpleLanguage.Core
                 var tmt = m_TemplateMetaTypeList[i];
                 if (tmt.IsIncludeClassTemplate(ownerClass))
                 {
-                    return false;
+                    return true;
                 }
             }
-            return true;
+            return false;
         }
         public bool IsIncludeFunctionTemplate( MetaMemberFunction mmf )
         {
-            if (m_MetaTemplate != null && mmf.isTemplateFunction )
+            if( eType == EMetaTypeType.Template )
             {
-                return mmf.metaMemberTemplateCollection.metaTemplateList.IndexOf(m_MetaTemplate) != -1;
-            }
-            for (int i = 0; i < m_TemplateMetaTypeList.Count; i++)
-            {
-                var tmt = m_TemplateMetaTypeList[i];
-                if (tmt.IsIncludeFunctionTemplate(mmf))
+                if (m_MetaTemplate != null && mmf.isTemplateFunction)
                 {
-                    return false;
+                    return mmf.metaMemberTemplateCollection.metaTemplateList.IndexOf(m_MetaTemplate) != -1;
                 }
             }
-            return true;
+            else if( eType == EMetaTypeType .TemplateClassWithTemplate )
+            {
+                for (int i = 0; i < m_TemplateMetaTypeList.Count; i++)
+                {
+                    var tmt = m_TemplateMetaTypeList[i];
+                    if (tmt.IsIncludeFunctionTemplate(mmf))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return false;
+        }
+        //是否包含 模板函数模板  意思就是是否在 templateMetaTypeList 中，有模板函数定义的T
+        public bool isIncludeTemplateFunctionTemplate( MetaMemberFunction mmf )
+        {
+            if( eType == EMetaTypeType.TemplateClassWithTemplate )
+            {
+                if (m_TemplateMetaTypeList.Count == 0) return false;
+                for (int i = 0; i < m_TemplateMetaTypeList.Count; i++)
+                {
+                    var tmt = m_TemplateMetaTypeList[i];
+                    if ( tmt.IsIncludeFunctionTemplate(mmf))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return false;
         }
         public void AddTemplateMetaType( MetaType mt )
         {
@@ -265,35 +290,46 @@ namespace SimpleLanguage.Core
             //m_MetaClass = m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
         }
         //生成注册后的 模板类的实例类
-        public MetaClass UpdateMetaGenTemplate(List<MetaGenTemplate> metaGenTemplateList)
+        public MetaClass UpdateMetaGenTemplate( List<MetaGenTemplate> metaGenTemplateList)
         {
-            if( m_MetaTemplate != null )
+            if( eType == EMetaTypeType.Template )
             {
-                for( int i = 0; i < metaGenTemplateList.Count; i++ )
+                if (m_MetaTemplate != null)
                 {
-                    var cmgt = metaGenTemplateList[i];
-                    if( cmgt.metaTemplate == m_MetaTemplate )
+                    for (int i = 0; i < metaGenTemplateList.Count; i++)
                     {
-                        return cmgt.metaType.metaClass;
+                        var cmgt = metaGenTemplateList[i];
+                        if (cmgt.metaTemplate == m_MetaTemplate)
+                        {
+                            return cmgt.metaType.metaClass;
+                        }
                     }
                 }
             }
-
-            List<MetaClass> mcList = new List<MetaClass>();
-            for (int i = 0; i < templateMetaTypeList.Count; i++)
+            else if( eType == EMetaTypeType.TemplateClassWithTemplate )
             {
-                var mgt = templateMetaTypeList[i];
-                if( mgt.eType == EMetaTypeType.MetaClass )
+                List<MetaClass> mcList = new List<MetaClass>();
+                for (int i = 0; i < templateMetaTypeList.Count; i++)
                 {
-                    mcList.Add(mgt.metaClass);
+                    var mgt = templateMetaTypeList[i];
+                    if (mgt.eType == EMetaTypeType.MetaClass)
+                    {
+                        mcList.Add(mgt.metaClass);
+                    }
+                    else
+                    {
+                        var mc = mgt.UpdateMetaGenTemplate(metaGenTemplateList);
+                        if( mc == null )
+                        {
+                            Log.AddInStructMeta(EError.None, "注册生成类是空!");
+                            return null;
+                        }
+                        mcList.Add(mc);
+                    }
                 }
-                else
-                {
-                    var mc = mgt.UpdateMetaGenTemplate(metaGenTemplateList);
-                    mcList.Add(mc);
-                }
+                return this.m_TemplateMetaClass.AddInstanceMetaClass(mcList);
             }
-            return this.m_TemplateMetaClass.AddInstanceMetaClass(mcList);
+            return null;
         }
         public MetaType GetMetaInputTemplateByIndex( int index = 0 )
         {

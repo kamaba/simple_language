@@ -175,6 +175,23 @@ namespace SimpleLanguage.Core
                 return m_FunctionAllName;
             }
         }
+        public int parseLevel
+        {
+            get
+            {
+                if( m_IsTemplateFunction )
+                {
+                    return 0;
+                }
+                else if( m_OwnerMetaClass.isTemplateClass ){
+                    return 1;
+                }
+                else
+                {
+                    return 2;
+                }
+            }
+        }
         public bool isTemplateFunction => m_IsTemplateFunction;
         public bool isWithInterface => m_IsWithInterface;
         public bool isOverrideFunction => m_IsOverrideFunction;
@@ -186,7 +203,9 @@ namespace SimpleLanguage.Core
         public bool isTemplateInParam => m_IsTemplateInParam;
         public FileMetaMemberFunction fileMetaMemberFunction => m_FileMetaMemberFunction;
         public MetaMemberFunction sourceMetaMemberFunction => m_SourceMetaMemberFunction;
-        public List<MetaType> bindStructTemplateList => m_BindStructTemplateList;
+        public List<MetaType> bindStructTemplateFunctionMtList => m_BindStructTemplateFunctionMtList;
+        public List<MetaType> bindStructTemplateFunctionAndClassMtList => m_BindStructTemplateFunctionAndClassMtList;
+        public List<MetaGenTempalteFunction> genTempalteFunctionList => m_GenTempalteFunctionList;
 
 
         #region 属性
@@ -201,7 +220,9 @@ namespace SimpleLanguage.Core
         protected bool m_IsWithInterface = false;
         protected MetaMemberFunction m_SourceMetaMemberFunction = null;
         protected FileMetaMemberFunction m_FileMetaMemberFunction = null;
-        protected List<MetaType> m_BindStructTemplateList = new List<MetaType>();
+        //绑定构建 元类型  
+        protected List<MetaType> m_BindStructTemplateFunctionMtList = new List<MetaType>();
+        protected List<MetaType> m_BindStructTemplateFunctionAndClassMtList = new List<MetaType>();
 
         //模板生成函数，如果匹配了，模板函数后，再进行看是否生成过该函数
         protected List<MetaGenTempalteFunction> m_GenTempalteFunctionList = new List<MetaGenTempalteFunction>();
@@ -293,7 +314,7 @@ namespace SimpleLanguage.Core
             m_ConstructInitFunction = mmf.m_ConstructInitFunction;
             m_IsWithInterface = mmf.m_IsWithInterface;
             m_FileMetaMemberFunction = mmf.m_FileMetaMemberFunction;
-            //m_GenTempalteFunctionList = mmf.m_GenTempalteFunctionList;
+            m_GenTempalteFunctionList = mmf.m_GenTempalteFunctionList;
         }
         protected void Init()
         {
@@ -379,7 +400,6 @@ namespace SimpleLanguage.Core
         //如果是模板函数，需要在实例化类后，进行新的实体函数的解析
         public MetaGenTempalteFunction AddGenTemplateMemberFunctionBySelf(List<MetaClass> list)
         {
-
             MetaGenTempalteFunction mgtf = GetGenTemplateFunction(list);
             if (mgtf == null)
             {
@@ -409,14 +429,6 @@ namespace SimpleLanguage.Core
                 }
             }
             return null;
-        }
-        public void ParseGenTemplateFunctionMetaType()
-        {
-            var list = new List<MetaGenTempalteFunction>(m_GenTempalteFunctionList);
-            foreach (var v in list)
-            {
-                v.Parse();
-            }
         }
         public override bool Parse()
         {
@@ -533,6 +545,7 @@ namespace SimpleLanguage.Core
             {
                 return null;
             }
+            bool isIncludeTemplateClass = mt.IsIncludeClassTemplate(m_OwnerMetaClass);
             List<MetaClass> mcList = new List<MetaClass>();
             for (int i = 0; i < mt.templateMetaTypeList.Count; i++)
             {
@@ -548,17 +561,38 @@ namespace SimpleLanguage.Core
                 isGenMetaClass = true;
                 return new MetaType(mgtc);
             }
-
-            var find = BindStructTemplateList(mt);
-            if (find == null)
+            if(isIncludeTemplateClass )
             {
-                this.m_BindStructTemplateList.Add(new MetaType(mt));
+                var find = FindBindStructTemplateFunctionAndClassMtList(mt);
+                if (find == null)
+                {
+                    this.m_BindStructTemplateFunctionAndClassMtList.Add(new MetaType(mt));
+                }
+            }
+            else
+            {
+                var find = FindBindStructTemplateFunctionMtList(mt);
+                if (find == null)
+                {
+                    this.m_BindStructTemplateFunctionMtList.Add(new MetaType(mt));
+                }
             }
             return mt;
         }
-        public MetaType BindStructTemplateList(MetaType mt)
+        public MetaType FindBindStructTemplateFunctionMtList(MetaType mt)
         {
-            foreach (var v in m_BindStructTemplateList )
+            foreach (var v in m_BindStructTemplateFunctionMtList)
+            {
+                if (MetaType.EqualMetaDefineType(v, mt))
+                {
+                    return v;
+                }
+            }
+            return null;
+        }
+        public MetaType FindBindStructTemplateFunctionAndClassMtList(MetaType mt)
+        {
+            foreach (var v in m_BindStructTemplateFunctionAndClassMtList)
             {
                 if (MetaType.EqualMetaDefineType(v, mt))
                 {

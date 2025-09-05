@@ -264,6 +264,10 @@ namespace SimpleLanguage.Core
                 else if (mmf != null)
                 {
                     var mt = mmf.GetMetaDefineTemplateByName(fmcd.stringList[0]);
+                    if( mt == null )
+                    {
+                        return null;
+                    }
                     return new MetaType(mt);
                 }
                 else
@@ -319,7 +323,7 @@ namespace SimpleLanguage.Core
                 var t = RegisterTemplateDefineMetaTemplateFunction(curMc, mmf, inputTemplateNodeList[i]);
                 mt.AddTemplateMetaType(t);
             }
-            if( mmf?.isTemplateFunction == true )
+            if( mmf?.isTemplateFunction == true && mt.isIncludeTemplateFunctionTemplate( mmf ) )
             {
                 return mmf.AddMetaPreTemplateFunction(mt, out bool igmc);
             }

@@ -304,38 +304,46 @@ public class Level1<T222>
         List0<int> Level1t_lint11 = List0<int>()
 
         Level1t_t250 = Level1<int>.Level1t_test<List0<List1<long> > >( Level1t_t, List0<List1<long> >() )
+        
+        Level1t_t251 = Level1<int>.Level1t_test<List0<List1<T222> > >( Level1t_t, List0<List1<T222> >() )
 
         ret Level1t_t
     }
 
-    static T2 Level1t_test<T2>( T222 it1, T2 it2 )
+    static TF2 Level1t_test<TF2>( T222 it1, TF2 it2 )
     {
-        List0<Map< T2, List2<T2> > > Level1t_test_t2n = new()
+        List0<Map< TF2, List2<TF2> > > Level1t_test_t2n = new()
 
         ret Level1t_test_t2n
     }
     static T222 Level1t_test<T2,T3>( T2 it2, T3 it3 )
     {
+        Map<T222,Map<T3, T2> > map = new()
+
         ret null
     }
 
-    public static T2 min<T2>( T2 t1, T2 t2 )
+    public static TF2 min<TF2>( TF2 t1, TF2 t2 )
     {
+        List0<Map< TF2, List2<TF2> > > Level1t_test_t2n = new()
+        
         #r1 = t1 ? t1 < t2 && t1 > t2 : t2        
         #rx1 = if t1 < t2 { tr t1 } else{ tr t2 }
         #ret r1 
         #ret t1 ? t1 > t2 : t2
         ret t2
     }
-    public TTT GetComponent<TTT>()
+    public TCom GetComponent<TCom>()
     {
-        TTT t = new()
+        TCom t = new()
+
         ret t;
     }
 
-    TTT TestCFT<TTT>( T222 t222 )
+    TF2 TestCFT<TF2>( T222 t222 )
     {
-        TTT t = new()
+        Level2<TF2,T222 > level2_test = new()
+        TF2 t = new()
         ret t
     }
 }
@@ -369,7 +377,7 @@ GenClass
         retstr = GenClass_fun_l1.GetComponent<string>()
 
 
-        float32 GenClass_fun_a = Level1<float32>.min<float32>( 1.3, 2.5 )
+        float GenClass_fun_a = Level1<int>.min<float>( 1.3, 2.5 )
 
         #Debug.Write("Flaoat" + a )
     }

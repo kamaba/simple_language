@@ -135,7 +135,7 @@ namespace SimpleLanguage.Core.SelfMeta
             foreach( var v in s_InnerDefineMetaClassList )
             {
                 v.ParseInner();
-                ClassManager.instance.AddDictMetaClass(v);
+                ClassManager.instance.AddRuntimeMetaClass(v);
             }
         }
         public static bool IsIncludeMetaClass( MetaClass metaclass )
@@ -232,10 +232,12 @@ namespace SimpleLanguage.Core.SelfMeta
                 case "string":
                 case "String":
                     return DefaultObject.String.ToString();
-                case "float32":
+                case "half":
+                    return null;
+                case "float":
                 case "Float32":
                     return DefaultObject.Float32.ToString();
-                case "float64":
+                case "double":
                 case "Float64":
                     return DefaultObject.Float64.ToString();
                 case "range":

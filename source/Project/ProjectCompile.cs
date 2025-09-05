@@ -212,7 +212,6 @@ namespace SimpleLanguage.Project
             ClassManager.instance.HandleExtendMember();
             ClassManager.instance.CheckInterfaces();
             ClassManager.instance.ParseDefineComplete();
-            //ClassManager.instance.PrintAlllClassContent();
 
             ClassManager.instance.ParseMemberEnumExpress();
             MetaVariableManager.instance.ParseMetaDataMemberExpress();
@@ -223,6 +222,9 @@ namespace SimpleLanguage.Project
             ClassManager.instance.UpdateMetaGenTemplateClassHandle();
 
             ModuleManager.instance.selfModule.metaNode.SetDeep(0);
+
+
+            ClassManager.instance.PrintAlllClassContent();
 
 
             Log.PrintLog();

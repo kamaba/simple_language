@@ -814,24 +814,18 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParam(string name, MetaInputTemplateCollection inputTemplate, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true )
+        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParam(string name, int templateParamCount, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true )
         {
             if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name) )
             {
                 return null;
             }
             var tnode = this.m_MetaMemberFunctionTemplateNodeDict[name];
-            int count = 0;
-            if( inputTemplate != null )
-            {
-                count = inputTemplate.metaTemplateParamsList.Count;
-            }
-
-            if( !tnode.metaTemplateFunctionNodeDict.ContainsKey(count) )
+            if( !tnode.metaTemplateFunctionNodeDict.ContainsKey(templateParamCount) )
             {
                 return null;
             }
-            var tfunctionNode = tnode.metaTemplateFunctionNodeDict[count];
+            var tfunctionNode = tnode.metaTemplateFunctionNodeDict[templateParamCount];
 
             var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputParam != null ? inputParam.count : 0 );
             if (list == null) return null;
@@ -857,11 +851,11 @@ namespace SimpleLanguage.Core
         }
         public virtual MetaMemberFunction GetMetaMemberConstructFunction( MetaInputParamCollection mmpc )
         {
-            return GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", null, mmpc, false );
+            return GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", 0, mmpc, false );
         }
         public MetaMemberFunction GetFirstMetaMemberFunctionByName( string name )
         {
-            return GetMetaMemberFunctionByNameAndInputTemplateInputParam( name, null, null );
+            return GetMetaMemberFunctionByNameAndInputTemplateInputParam( name, 0, null );
         }
         public List<MetaMemberFunction> GetMemberInterfaceFunction()
         {

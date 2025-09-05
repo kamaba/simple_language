@@ -44,9 +44,10 @@ namespace SimpleLanguage.Core
         public Dictionary<string, MetaData> allDataDict => m_AllDataDict;
         public List<MetaDynamicClass> dynamicClassList => m_DynamicClassList;
         public List<MetaGenTemplateClass> genTemplateMetaClassList => m_GenTemplateMetaClassList;
-        //public List<MetaClass> preInitHandleMetaClassList => m_InitHandleMetaClassList;
+        public List<MetaClass> runtimeClassList => m_RuntimeClassList;
 
 
+        private List<MetaClass> m_RuntimeClassList = new List<MetaClass>();
         private Dictionary<string, MetaClass> m_AllClassDict = new Dictionary<string, MetaClass>();
         private List<MetaDynamicClass> m_DynamicClassList = new List<MetaDynamicClass>();         
         private Dictionary<string, MetaData> m_AllDataDict = new Dictionary<string, MetaData>();
@@ -481,8 +482,14 @@ namespace SimpleLanguage.Core
             {
                 return null;
             }
-        }       
-        public void AddDictMetaClass( MetaClass mc )
+        }
+        public void AddRuntimeMetaClass( MetaClass mc )
+        {
+            m_RuntimeClassList.Add( mc );
+
+            AddDictMetaClass(mc);
+        }
+        void AddDictMetaClass( MetaClass mc )
         {
             string acn = mc.allClassName + "_" + mc.metaTemplateList.Count;
             foreach( var v in m_AllClassDict )
@@ -522,7 +529,7 @@ namespace SimpleLanguage.Core
                 it.ParseMetaInConstraint();
                 it.ParseExtendsRelation();
                 it.ParseInterfaceRelation();
-                AddDictMetaClass(it);
+                AddRuntimeMetaClass(it);
             }
             foreach( var it in m_InitHandleMetaClassList )
             {
@@ -888,6 +895,17 @@ namespace SimpleLanguage.Core
         }
         #endregion
         
-        
+        public void PrintAlllClassContent()
+        {
+            foreach( var v in m_AllClassDict )
+            {
+
+            }
+
+            foreach( var v in m_RuntimeClassList )
+            {
+
+            }
+        }
     }
 }
