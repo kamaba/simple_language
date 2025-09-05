@@ -106,18 +106,18 @@ namespace SimpleLanguage.IR
         {
             //解析成员中的string类型
             //解析成员中的const类型
-            var classDict = ClassManager.instance.allClassDict;
-            foreach (var v in classDict)
+            var classList = ClassManager.instance.runtimeClassList;
+            foreach (var v in classList)
             {
                 IRMetaClass irmc = new IRMetaClass(this);
-                irmc.CreateMetaClassData(v.Value);
+                irmc.CreateMetaClassData(v);
                 m_IRMetaClassList.Add(irmc);
             }
-            foreach (var v in classDict)
+            foreach (var v in classList)
             {
-                if( v.Value is MetaGenTemplateClass mgtc )
+                if( v is MetaGenTemplateClass mgtc )
                 {
-                    IRMetaClass irmc = GetIRMetaClassByName(GetIRNameByMetaClass(v.Value));
+                    IRMetaClass irmc = GetIRMetaClassByName(GetIRNameByMetaClass(v));
                     IRMetaClass irmcc = GetIRMetaClassByName(GetIRNameByMetaClass(mgtc.metaTemplateClass));
                     if( irmcc != null && irmc != null )
                     {
@@ -134,17 +134,17 @@ namespace SimpleLanguage.IR
                 }
 
             }
-            foreach ( var v in classDict )
+            foreach ( var v in classList )
             {
-                if( v.Value.isTemplateClass )
+                if( v.isTemplateClass )
                 {
                     continue;
                 }
-                var irmc = m_IRMetaClassList.Find(a => a.irName == v.Key);
+                var irmc = m_IRMetaClassList.Find(a => a.irName == v.allClassName );
                 if (irmc == null)
                     continue;
 
-                if ( v.Value is MetaEnum me )
+                if ( v is MetaEnum me )
                 {
                     var mmvd = me.metaMemberEnumDict;
                     //foreach (var v2 in mmvd)
@@ -165,7 +165,7 @@ namespace SimpleLanguage.IR
                     //    m_StaticVariableList.Add(irMV);
                     //}
                 }
-                else if( v.Value is MetaData md )
+                else if( v is MetaData md )
                 {
                     var mmvd = md.metaMemberDataDict;
                     foreach (var v2 in mmvd)
@@ -181,7 +181,7 @@ namespace SimpleLanguage.IR
                 }
                 else
                 {
-                    var mmvd = v.Value.metaMemberVariableDict;
+                    var mmvd = v.metaMemberVariableDict;
                     foreach (var v2 in mmvd)
                     {
                         if (v2.Value.isStatic)

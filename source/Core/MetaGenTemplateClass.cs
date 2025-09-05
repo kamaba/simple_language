@@ -285,12 +285,12 @@ namespace SimpleLanguage.Core
                 ParseMetaMemberFunctionDefineMetaType(it);
             }
         }
-        void ParseMetaMemberFunctionDefineMetaType(MetaMemberFunction mmv)
+        void ParseMetaMemberFunctionDefineMetaType(MetaMemberFunction mmf)
         {
-            MetaMemberFunction mgmf = new MetaMemberFunction(mmv);
-            mgmf.SetSourceMetaMemberFunction(mmv);
+            MetaMemberFunction mgmf = new MetaMemberFunction(mmf);
+            mgmf.SetSourceMetaMemberFunction(mmf);
 
-            if( mgmf.isTemplateFunction == false )
+            if (mmf.isTemplateFunction == false)
             {
                 if (mgmf.returnMetaVariable?.metaDefineType != null)
                 {
@@ -309,13 +309,42 @@ namespace SimpleLanguage.Core
                         TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mdp.metaVariable.metaDefineType, this, null);
                     }
                 }
-                mgmf.UpdateFunctionName();
             }
             else
             {
-                int a = 20;
+                for( int i = 0; i < mmf.genTempalteFunctionList.Count; i++ )
+                {
+                    var v = mmf.genTempalteFunctionList[i];
+                    v.UpdateRegsterGenMetaFunctionAndClass(m_MetaGenTemplateList);
+                }
             }
+            mgmf.UpdateFunctionName();
             AddMetaMemberFunction(mgmf);
+        }
+        public void UpdateRegisterTemplateFunction()
+        {
+            foreach (var it in this.m_MetaTemplateClass.nonStaticVirtualMetaMemberFunctionList)
+            {
+                if( it.isTemplateFunction )
+                {
+                    UpdateRegisterTemplateFunctionSingle( it );
+                }
+            }
+            foreach (var it in this.m_MetaTemplateClass.staticMetaMemberFunctionList)
+            {
+                if( it.isTemplateFunction )
+                {
+                    UpdateRegisterTemplateFunctionSingle(it);
+                }
+            }
+        }
+        void UpdateRegisterTemplateFunctionSingle( MetaMemberFunction mmf )
+        {
+            for (int i = 0; i < mmf.genTempalteFunctionList.Count; i++)
+            {
+                var v = mmf.genTempalteFunctionList[i];
+                v.UpdateRegsterGenMetaFunctionAndClass(m_MetaGenTemplateList);
+            }
         }
         public override List<MetaMemberVariable> GetMetaMemberVariableListByFlag(bool isStatic )
         {

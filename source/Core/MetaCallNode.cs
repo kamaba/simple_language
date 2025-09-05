@@ -385,7 +385,7 @@ namespace SimpleLanguage.Core
                             m_MetaTemplate = m_FrontDefineMetaType.metaTemplate;
                             m_MetaType = new MetaType(m_MetaTemplate);
                             m_CallNodeType = ECallNodeType.NewTemplate;
-                            MetaMemberFunction mmf = m_FrontDefineMetaType.metaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", null, m_MetaInputParamCollection);
+                            MetaMemberFunction mmf = m_FrontDefineMetaType.metaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", 0, m_MetaInputParamCollection);
                             if (mmf == null)
                             {
                                 Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + m_FrontDefineMetaType.metaClass.allClassName + "的_init_方法!)", m_Token);
@@ -1006,7 +1006,7 @@ namespace SimpleLanguage.Core
                     //else
                     {
                         //ArrClass()
-                        MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", null, m_MetaInputParamCollection);
+                        MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", 0, m_MetaInputParamCollection);
                         if (mmf == null)
                         {
                             Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + curmc.allClassName + "的_init_方法!)", m_Token);
@@ -1425,17 +1425,7 @@ namespace SimpleLanguage.Core
                 {
                     HandleCastFunction(mc);
                 }
-
-                m_MetaTemplateParamsCollection = new MetaInputTemplateCollection();
-                if (this.m_FileMetaCallNode.inputTemplateNodeList.Count > 0)
-                {
-                    List<MetaType> mtList = new List<MetaType>();
-                    var mt = TypeManager.instance.GetMetaTypeByInputTemplateList(m_OwnerMetaClass,
-                        mc.metaNode, m_FileMetaCallNode.inputTemplateNodeList, mtList);
-                    m_MetaTemplateParamsCollection.AddMetaTemplateParamsList(mt);
-                }
-
-                mmf = mc.GetMetaMemberFunctionByNameAndInputTemplateInputParam(inputname, m_MetaTemplateParamsCollection, m_MetaInputParamCollection, true);
+                mmf = mc.GetMetaMemberFunctionByNameAndInputTemplateInputParam(inputname, this.m_FileMetaCallNode.inputTemplateNodeList.Count, m_MetaInputParamCollection, true);
             }
             else
             {
@@ -1475,6 +1465,15 @@ namespace SimpleLanguage.Core
                 m_MetaFunction = mmf;
                 m_MetaType = mmf.returnMetaVariable.metaDefineType;
                 m_CallNodeType = ECallNodeType.MemberFunctionName;
+
+                m_MetaTemplateParamsCollection = new MetaInputTemplateCollection();
+                if (this.m_FileMetaCallNode.inputTemplateNodeList.Count > 0)
+                {
+                    var mt = TypeManager.instance.GetMetaTypeByTemplateList(m_OwnerMetaClass,
+                       mc.metaNode, mmf, m_FileMetaCallNode.inputTemplateNodeList );
+                    m_MetaTemplateParamsCollection.AddMetaTemplateParamsList(mt);
+                }
+
                 //this.m_GenMetaClass = m_FrontCallNode.m_GenMetaClass;
             }
             return true;

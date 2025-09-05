@@ -36,6 +36,7 @@ namespace SimpleLanguage
         UInt16,
         Int32,
         UInt32,
+        Float16,
         Float32,
         Int64,
         UInt64,

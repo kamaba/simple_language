@@ -644,9 +644,12 @@ namespace SimpleLanguage.Core
         {
             isAllMetaClass = false;
             List<MetaClass> mcList = new List<MetaClass>();
-            for( int i = 0; i < m_MetaTemplateParamsList.Count; i++ )
+            for (int i = 0; i < m_MetaTemplateParamsList.Count; i++)
             {
-                mcList.Add(m_MetaTemplateParamsList[i].metaClass);
+                if (m_MetaTemplateParamsList[i].metaClass != null)
+                {
+                    mcList.Add(m_MetaTemplateParamsList[i].metaClass);
+                }
             }
             if( mcList.Count > 0 && mcList.Count == m_MetaTemplateParamsList.Count )
             {

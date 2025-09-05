@@ -24,6 +24,11 @@ namespace SimpleLanguage.Core
             UpdateGenMemberFunctionByTemplateClass(mmc);
             m_MetaGenTemplateList = list;
         }
+        public MetaGenTempalteFunction( MetaGenTempalteFunction mgtf ) : base(mgtf)
+        {
+            m_SourceMetaMemberFunction = mgtf.m_SourceMetaMemberFunction;
+            m_MetaGenTemplateList = mgtf.m_MetaGenTemplateList;
+        }
         public MetaGenTempalteFunction(MetaClass mc, string _name) : base(mc)
         {
             m_Name = _name;
@@ -35,7 +40,6 @@ namespace SimpleLanguage.Core
 
             Init();
         }
-
         public bool MatchInputTemplateInsance(List<MetaClass> instMcList)
         {
             if (m_MetaGenTemplateList.Count != instMcList.Count)
@@ -96,13 +100,57 @@ namespace SimpleLanguage.Core
         public void UpdateRegsterGenMetaFunction()
         {
             //这个过程是 绑定 原来注册过来的T的已有的类
-            for (int i = 0; i < this.m_SourceMetaMemberFunction.bindStructTemplateList.Count; i++)
+
+            List<MetaGenTemplate> mgtList = m_MetaGenTemplateList;
+            var curfun = this.m_SourceMetaMemberFunction;
+            while (true)
             {
-                this.m_SourceMetaMemberFunction.bindStructTemplateList[i].UpdateMetaGenTemplate(m_MetaGenTemplateList);
+                if (curfun.sourceMetaMemberFunction == null)
+                    break;
+                curfun = curfun.sourceMetaMemberFunction;
+            }
+
+            for (int i = 0; i < curfun.bindStructTemplateFunctionMtList.Count; i++)
+            {
+                curfun.bindStructTemplateFunctionMtList[i].UpdateMetaGenTemplate(mgtList);
+            }
+        }
+        public void UpdateRegsterGenMetaFunctionAndClass(List<MetaGenTemplate> classGtList)
+        {
+            //这个过程是 绑定 原来注册过来的T的已有的类
+
+            List<MetaGenTemplate> mgtList = m_MetaGenTemplateList;
+            var curfun = this.m_SourceMetaMemberFunction;
+            while (true)
+            {
+                if (curfun.sourceMetaMemberFunction == null)
+                    break;
+                curfun = curfun.sourceMetaMemberFunction;
+            }
+            if(curfun.bindStructTemplateFunctionAndClassMtList.Count == 0 )
+            {
+                return;
+            }
+
+            mgtList.AddRange(classGtList);
+
+            for (int i = 0; i < curfun.bindStructTemplateFunctionAndClassMtList.Count; i++)
+            {
+                curfun.bindStructTemplateFunctionAndClassMtList[i].UpdateMetaGenTemplate(mgtList);
             }
         }
         public override bool Parse()
         {
+            UpdateRegsterGenMetaFunction();
+
+            if( this.m_OwnerMetaClass.isTemplateClass )
+            {
+                for( int i = 0; i < this.m_OwnerMetaClass.metaGenTemplateClassList.Count; i++ )
+                {
+                    var mgtc = this.m_OwnerMetaClass.metaGenTemplateClassList[i];
+                    mgtc.UpdateRegisterTemplateFunction();
+                }
+            }
             return true;
         }
         public override string ToString()
