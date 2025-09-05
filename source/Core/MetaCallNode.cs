@@ -908,7 +908,8 @@ namespace SimpleLanguage.Core
             {
                 if( m_MetaFunction is MetaMemberFunction mmf )
                 {
-                    if( mmf.isTemplateFunction )
+                    #region 该段代码暂不删除，是为了，编译器模式下，的类注册使用
+                    if ( mmf.isTemplateFunction )
                     {
                         if( m_MetaTemplateParamsCollection != null )
                         {
@@ -924,6 +925,7 @@ namespace SimpleLanguage.Core
                             }
                         }
                     }
+                    #endregion
                 }
             }
 

@@ -266,6 +266,10 @@ namespace SimpleLanguage.VM.Runtime
             }
             return sobj;
         }
+        public SObject CreateObjectByIRMetaType( IRMetaType mt )
+        {
+            return null;
+        }
         //public void AddTemplateIRMetaClass( string name, IRMetaClass templateInstanceObject )
         //{
         //    if (!m_InputTemplateClassDict.ContainsKey(name))
@@ -690,19 +694,9 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.NewTemplateClass:
                     {
-                        string tname = iri.opValue as String;
-                        if (string.IsNullOrEmpty(tname))
-                        {
-                            Log.AddVM(EError.None, "没有找到相关的模板名称");
-                            return;
-                        }
-                        IRMetaClass irc = GetIRMetaClassByName(tname);
-                        if (irc == null)
-                        {
-                            Log.AddVM(EError.None, "NewTemplateClass IRC是调用虚函数为空!!");
-                            return;
-                        }
-                        SObject sob = CreateObjectByIRMetaClass(irc);
+                        IRMetaType mt = iri.opValue as IRMetaType;
+                        
+                        SObject sob = CreateObjectByIRMetaType(mt);
                         if (sob is ClassObject co)
                         {
                             ObjectManager.AddClassObject(co);

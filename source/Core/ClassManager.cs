@@ -485,9 +485,13 @@ namespace SimpleLanguage.Core
         }
         public void AddRuntimeMetaClass( MetaClass mc )
         {
-            m_RuntimeClassList.Add( mc );
+            var find1 = m_RuntimeClassList.Find(a => a == mc);
+            if( find1  == null )
+            {
+                m_RuntimeClassList.Add(mc);
 
-            AddDictMetaClass(mc);
+                AddDictMetaClass(mc);
+            }
         }
         void AddDictMetaClass( MetaClass mc )
         {
