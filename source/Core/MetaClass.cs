@@ -255,7 +255,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                this.m_ExtendClass = m_ExtendClassMetaType.templateMetaClass;
+                this.m_ExtendClass = m_ExtendClassMetaType.metaClass;
             }
         }
         public virtual void ParseInterfaceRelation()
@@ -482,7 +482,7 @@ namespace SimpleLanguage.Core
         public MetaType AddMetaPreTemplateClass( MetaType mt, out bool isGenMetaClass )
         {
             isGenMetaClass = false;
-            if ( mt.templateMetaClass == null )
+            if ( mt.metaClass == null )
             {
                 return null;
             }
@@ -497,7 +497,7 @@ namespace SimpleLanguage.Core
             }
             if( mcList.Count == mt.templateMetaTypeList.Count )
             {
-                MetaGenTemplateClass mgtc = mt.templateMetaClass.AddInstanceMetaClass(mcList);
+                MetaGenTemplateClass mgtc = mt.metaClass.AddInstanceMetaClass(mcList);
                 isGenMetaClass = true;
                 return new MetaType( mgtc );
             }

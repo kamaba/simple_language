@@ -8,6 +8,7 @@
 
 using System.Collections.Generic;
 using System.Text;
+using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 
@@ -29,33 +30,40 @@ namespace SimpleLanguage.VM
         private short[] m_Type = null;
         private SObject[] m_MemberObjectArray = null;
         protected List<IRMetaVariable> m_IRMetaVariableList = null;
+        protected List<RuntimeType> m_IRTemplateList = new List<RuntimeType>();
+        protected RuntimeType m_RuntimeType = null;
 
 
-
-        public ClassObject( IRMetaClass irmc, bool isStatic = false )
+        public ClassObject( RuntimeType irmt, bool isStatic = false )
         {
-            m_IRMetaClass = irmc;
+            m_IRMetaClass = irmt.irClass;
 
-            int byteCount = irmc.byteCount;
+            m_RuntimeType = irmt;
+
+            int byteCount = m_IRMetaClass.byteCount;
             m_Data = new byte[byteCount];
-            typeId = (short)irmc.id;
+            typeId = (short)m_IRMetaClass.id;
+            m_IRTemplateList = irmt.runtimeTemplateList;
 
-            m_IRMetaVariableList = isStatic ? irmc.staticIRMetaVariableList : irmc.localIRMetaVariableList;
+            m_IRMetaVariableList = isStatic ? m_IRMetaClass.staticIRMetaVariableList : m_IRMetaClass.localIRMetaVariableList;
             m_MemberObjectArray = new SObject[m_IRMetaVariableList.Count];
             m_Type = new short[m_IRMetaVariableList.Count];
             m_Object = this;
+
+            Create();
         }
-        public void Create()
+        void Create()
         {
-            for (int i = 0; i < m_IRMetaVariableList.Count; i++)
+            for (int i = 0; i < m_RuntimeType.memberVariableRuntimeTypeList.Count; i++)
             {
-                var obj = ObjectManager.CreateObjectByDefineType(m_IRMetaVariableList[i].irMetaClass);
-                if( obj == null )
+                var irmv = m_RuntimeType.memberVariableRuntimeTypeList[i];
+                SObject sobj = ObjectManager.CreateObjectByRuntimeType(irmv);
+                if(sobj == null )
                 {
                     continue;
                 }
-                m_Type[i] = obj.typeId;
-                m_MemberObjectArray[i] = obj;
+                m_Type[i] = sobj.typeId;
+                m_MemberObjectArray[i] = sobj;
             }
         }
         public SObject GetMemberVariable(int index)

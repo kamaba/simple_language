@@ -24,7 +24,7 @@ namespace SimpleLanguage.IR
     public class IRMetaVariable
     {
         public MetaExpressNode express => m_ExpressNode;
-        public IRMetaClass irMetaClass => m_IRMetaClass;
+        public IRMetaType irMetaType => m_IRMetaType;
         public IRMetaVariableFrom irMetaVariableFrom => m_IRMetaVariableFrom;
         public int id => m_Id;
         public string name => m_Name;
@@ -34,7 +34,7 @@ namespace SimpleLanguage.IR
 
 
         private MetaExpressNode m_ExpressNode = null;
-        private IRMetaClass m_IRMetaClass = null;
+        private IRMetaType m_IRMetaType = null;
         private IRMetaVariableFrom m_IRMetaVariableFrom = IRMetaVariableFrom.None;
         private bool m_IsTemplate = false;
         private int m_Id = -1;
@@ -89,31 +89,7 @@ namespace SimpleLanguage.IR
             //    }
             //}
             //else 
-            if( mv.metaDefineType.eType == EMetaTypeType.MetaClass )
-            {
-                if( !mv.metaDefineType.metaClass.isTemplateClass )
-                {
-                    m_IsTemplate = false;
-                    m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(IRManager.GetIRNameByMetaClass(mv.metaDefineType.metaClass));
-
-
-                    if (m_IRMetaClass == null)
-                    {
-                        Log.AddVM(EError.None, "没有找到相对应的类元素!!");
-                    }
-                }
-                else
-                {
-
-                }
-            }
-            else
-            {
-                ////m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(IRManager.GetIRNameByMetaType(mv.metaDefineType));
-                //string tname = IRManager.GetIRNameByMetaClass(mv.metaDefineType.templateMetaClass);
-                //m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(tname);
-                m_IsTemplate = true;
-            }
+            m_IRMetaType = new IRMetaType(mv.metaDefineType);
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme)
         {
@@ -122,7 +98,7 @@ namespace SimpleLanguage.IR
             m_Name = mme.ownerMetaClass.allClassName + "." + mme.name;
             m_ExpressNode = mme.express;
             m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
-            m_IRMetaClass = irmc;
+            //m_IRMetaClass = irmc;
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberData mmd)
         {
@@ -131,7 +107,7 @@ namespace SimpleLanguage.IR
             m_Name = mmd.ownerMetaClass.allClassName + "." + mmd.name;
             m_ExpressNode = mmd.expressNode;
             m_IRMetaVariableFrom = mmd.isStatic ? IRMetaVariableFrom.Static : IRMetaVariableFrom.Member;
-            m_IRMetaClass = irmc;
+            //m_IRMetaClass = irmc;
         }
         public IRMetaVariable( IRMetaClass irmc, MetaMemberVariable mmv, int index = -1 )
         {
@@ -144,14 +120,8 @@ namespace SimpleLanguage.IR
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
             else
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Member;
-            if(mmv.metaDefineType.eType == EMetaTypeType.Template )
-            {
-                m_IRMetaClass = new IRMetaClass( IRManager.instance, mmv.metaDefineType.metaTemplate.name );
-            }
-            else
-            {
-                m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(IRManager.GetIRNameByMetaType(mmv.metaDefineType));
-            }
+
+            m_IRMetaType = new IRMetaType(mmv.metaDefineType);
         }
         public void SetExpress( MetaExpressNode men )
         {

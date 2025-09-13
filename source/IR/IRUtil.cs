@@ -7,6 +7,8 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
+using System.Collections.Generic;
+using System.Text;
 
 namespace SimpleLanguage.IR
 {
@@ -46,6 +48,36 @@ namespace SimpleLanguage.IR
             return 1;
         }
 
+        public static IRBase GetSetCallClassByMetaClass(MetaClass inputmc, List<MetaType> inputList, out IRMetaClass irmc)
+        {
+            irmc = null;
+            StringBuilder sb = new StringBuilder();
+            if (inputmc != null)
+            {
+                sb.Append(inputmc.metaNode.allName);
+                sb.Append("<");
+                for (int i = 0; i < inputList.Count; i++)
+                {
+                    string tname2 = IRManager.GetIRNameByMetaType(inputList[i]);
+                    sb.Append("$");
+                    sb.Append(tname2);
+                    sb.Append("$");
+                    if (i < inputList.Count - 1)
+                    {
+                        sb.Append(",");
+                    }
+                }
+                sb.Append('>');
+                irmc = IRManager.instance.GetIRMetaClassByName(inputmc.metaNode.allName);
+
+                IRData sc23 = new IRData();
+                sc23.opCode = EIROpCode.SetCallClass;
+                sc23.opValue = sb.ToString();
+                IRBase irbase23 = new IRBase(sc23);
+                return irbase23;
+            }
+            return null;
+        }
 
         public static IRBase GetSetCallClass(MetaType mt, MetaClass mc, out IRMetaClass irmc)
         {
@@ -69,7 +101,7 @@ namespace SimpleLanguage.IR
                 }
                 else
                 {
-                    string tt = IRManager.GetIRNameByMetaClass(mt.templateMetaClass);
+                    string tt = IRManager.GetIRNameByMetaClass(mt.metaClass);
                     irmc = IRManager.instance.GetIRMetaClassByName(tt);
                 }
                 IRData sc23 = new IRData();

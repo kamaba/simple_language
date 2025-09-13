@@ -34,6 +34,7 @@ namespace SimpleLanguage.Parse
         public static ProjectData data => m_Data;
         public static EUseDefineType useDefineNamespaceType { get; set; } = EUseDefineType.NoUseProjectConfigNamespace;
 
+        public static bool useGenMetaClass { get; set; } = false;
         public static bool compileUseTemplateClassGenClassFunction { get; set; } = false;
         public static bool isUseNamespaceSearch { get; set; } = true;
         public static bool isUseForceSemiColonInLineEnd { get; set; } = false;

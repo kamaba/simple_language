@@ -84,7 +84,8 @@ namespace SimpleLanguage.Core.IR
                 if (cnode.staticMetaType.eType == EMetaTypeType.TemplateClassWithTemplate
                     || cnode.staticMetaType.eType == EMetaTypeType.Template )
                 {
-                    var irnew = new IRNew(_irMethod, cmn );
+
+                    var irnew = new IRNew(_irMethod, new IRMetaType(cnode.staticMetaType) );
                     irList.Add(irnew);
                 }
                 else if( cnode.staticMetaType.eType == EMetaTypeType.MetaClass )
