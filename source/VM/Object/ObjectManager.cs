@@ -51,21 +51,11 @@ namespace SimpleLanguage.VM
             //    //svalue.SetSObject(sobj);
             //}
             return svalue;
-        }
-        public static SObject CreateObjectByDefineType(IRMetaClass mdt)
+        }        
+        public static SObject CreateObjectByRuntimeType( RuntimeType rt )
         {
-            if( mdt == null )
-            {
-                Log.AddVM(EError.None, "创建对象失败，通过irmetaclass!!");
-                return null;
-            }
             SObject sobj = null;
-            if (mdt.isTemplate)
-            {
-                sobj = new TemplateObject();
-                return sobj;
-            }
-            string name = mdt.irName;
+            string name = rt.irClass.irName;
             if (name == "Core.Boolean" || name == "Boolean")
             {
                 sobj = new BoolObject(false);
@@ -130,15 +120,14 @@ namespace SimpleLanguage.VM
                 sobj = new StringObject("");
                 sobj.typeId = 10;
             }
-            else if(name == "Core.Void" || name == "Void" )
+            else if (name == "Core.Void" || name == "Void")
             {
                 sobj = new VoidObject();
                 sobj.typeId = 0;
             }
             else
             {
-                var co = new ClassObject(mdt);
-                co.Create();
+                var co = new ClassObject(rt);
                 sobj = co;
             }
             return sobj;

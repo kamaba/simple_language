@@ -28,11 +28,6 @@ namespace SimpleLanguage.IR
         }
         public void Parse(MetaMethodCall mfc)
         {
-            if (mfc?.metaInputParamCollection == null)
-            {
-                return;
-            }
-
             IRMetaClass curMc = null;
             if (mfc.loadMetaVariable != null)
             {
@@ -40,11 +35,10 @@ namespace SimpleLanguage.IR
                 IRLoadVariable irload = IRLoadVariable.NewLoadVariable(m_IRMethod, curMc, mfc.loadMetaVariable );
                 AddIRRangeData(irload.IRDataList);
             }
-            paramCount = mfc.metaInputParamCollection.count;
+            paramCount = mfc.metaInputParamList.Count;
             for (int j = 0; j < paramCount; j++)
             {
-                MetaInputParam mip = mfc.metaInputParamCollection.metaInputParamList[j];
-                IRExpress irexpress = new IRExpress(m_IRMethod, mip.express);
+                IRExpress irexpress = new IRExpress(m_IRMethod, mfc.metaInputParamList[j] );
                 AddIRRangeData(irexpress.IRDataList);
             }
             MetaFunction mf = mfc.function;
@@ -66,7 +60,7 @@ namespace SimpleLanguage.IR
             IRBase irbase = null;
             if ( mf.isStatic )
             {
-                irbase = IRUtil.GetSetCallClass(mfc.callerMetaType, mf.ownerMetaClass, out curMc);
+                irbase = IRUtil.GetSetCallClassByMetaClass(mfc.staticCallerMetaClass, mfc.staticMetaClassInputTemplateList, out curMc);
                 if (irbase != null)
                 {
                     AddIRRangeData(irbase.IRDataList);
@@ -127,9 +121,9 @@ namespace SimpleLanguage.IR
                 for (int i = 0; i < m_IRRuntimeMethod.methodReturnVariableList.Count; i++ )
                 {
                     var mrv = m_IRRuntimeMethod.methodReturnVariableList[i];
-                    if( mrv.irMetaClass != null )
+                    if( mrv.irMetaType != null )
                     {
-                        if( mrv.irMetaClass.irName != voidn )
+                        if( mrv.irMetaType.irMetaClass.id != 0 )
                         {
                             IRPop irpop = new IRPop(m_IRMethod);
                             AddIRData(irpop.data);

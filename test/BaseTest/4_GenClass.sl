@@ -70,10 +70,42 @@ namespace Core
     }
 
 }
-Level1<LevelT>
+Map<MapT1,MapT2>
 {
-    static LevelStaticValue = 20
-    LevelMemValue = 20
+    MapT1 m1 = null
+    MapT2 m2 = null
+}
+Level1<LevelT1>
+{
+    static LevelT1 LevelStaticValue = null
+    LevelT1 LevelMemValue = new()
+    Map<LevelT1, Level1<LevelT1> > mappp22 = new()
+
+    Level1Com()
+    {
+        this.LevelMemValue = new()
+
+        LevelT1 lt2 = new()
+    }
+
+    Level1Fun<LevelT3>( )
+    {
+        LevelStaticValue = new()
+
+        Map< Level1<LevelT3>, LevelT1> map2 = new()
+
+        this.LevelMemValue = new()
+
+        Map<LevelT1,Level1<LevelT3> > map = new()
+
+        LevelT3 lt2 = new()
+    }
+    static Level1SF<LevelT4>()
+    {
+        Level1<LevelT4>.LevelStaticValue = new()
+
+        Level1SF<LevelT4>()
+    }
 }
 GenClass
 {
@@ -89,7 +121,14 @@ GenClass
     #Level1<string> ls4 = {}
     static GenClass_fun()
     {
-        Level1<int> GenClass_fun_l1 = Level1<int>()
+        Level1<Level1<int> > GenClass_fun_l1 = Level1< Level1<int> >()
+        GenClass_fun_l1.Level1Fun<byte>()
+
+        Level1<string>.Level1SF<int>()
+
+        int aa = Level1<int>.LevelStaticValue  #aa = null
+        Level1<string>.LevelStaticValue = "2000"
+
         #GenClass_fun_l2 = GenClass_fun_l1.add()
         #Debug.Write( "Addresult: " + GenClass_fun_l2 )
         #retstr = GenClass_fun_l1.GetComponent<string>()

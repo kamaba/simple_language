@@ -89,7 +89,7 @@ Project
        #CommitTest.fun();
        #NumberTest.fun()
        #StringTest.fun()
-       GenClass2.fun()
+       GenClass.GenClass_fun()
        #ArrayTest.fun()
        #OverrideFunction.fun()
     }

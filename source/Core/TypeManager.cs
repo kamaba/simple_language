@@ -70,7 +70,7 @@ namespace SimpleLanguage.Core
             }
             if (isNeedReg)
             {
-                var newmc = mt.templateMetaClass.AddInstanceMetaClass(regMCList);
+                var newmc = mt.metaClass.AddInstanceMetaClass(regMCList);
                 if (newmc == null)
                 {
                     Log.AddInStructMeta(EError.None, "MetaClass is Null");
@@ -171,7 +171,10 @@ namespace SimpleLanguage.Core
                 mt.AddTemplateMetaType(mt2);
             }
 
-            return ownerMc.AddMetaPreTemplateClass(mt, out bool igmc);
+            if (ProjectManager.useGenMetaClass)
+                return ownerMc.AddMetaPreTemplateClass(mt, out bool igmc);
+            else
+                return mt;
         }
         MetaType GetAndRegisterTemplateDefineMetaTemplateClass(MetaClass ownerMc, MetaClass findMc, FileInputTemplateNode fmtd)
         {
@@ -221,7 +224,12 @@ namespace SimpleLanguage.Core
                             //}
                         }
                     }
-                    return ownerMc.AddMetaPreTemplateClass(mt, out bool igmc);
+                    if (ProjectManager.useGenMetaClass)
+                        return ownerMc.AddMetaPreTemplateClass(mt, out bool igmc);
+                    else
+                    {
+                        return mt;
+                    }
                 }
             }
             else
@@ -323,13 +331,20 @@ namespace SimpleLanguage.Core
                 var t = RegisterTemplateDefineMetaTemplateFunction(curMc, mmf, inputTemplateNodeList[i]);
                 mt.AddTemplateMetaType(t);
             }
-            if( mmf?.isTemplateFunction == true && mt.isIncludeTemplateFunctionTemplate( mmf ) )
+            if( ProjectManager.useGenMetaClass )
             {
-                return mmf.AddMetaPreTemplateFunction(mt, out bool igmc);
+                if (mmf?.isTemplateFunction == true && mt.isIncludeTemplateFunctionTemplate(mmf))
+                {
+                    return mmf.AddMetaPreTemplateFunction(mt, out bool igmc);
+                }
+                else
+                {
+                    return curMc.AddMetaPreTemplateClass(mt, out bool igmc);
+                }
             }
             else
             {
-                return curMc.AddMetaPreTemplateClass(mt, out bool igmc);
+                return mt;
             }
         }
         public MetaType RegisterTemplateDefineMetaTemplateFunction(MetaClass ownerMc, MetaMemberFunction mmf, FileInputTemplateNode fmtd)

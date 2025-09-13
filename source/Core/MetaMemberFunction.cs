@@ -267,7 +267,7 @@ namespace SimpleLanguage.Core
 
                 var template = fmmf.metaTemplatesList[i];
 
-                MetaTemplate mdt = new MetaTemplate( ownerMetaClass, template );
+                MetaTemplate mdt = new MetaTemplate( ownerMetaClass, template, i );
                 AddMetaDefineTemplate(mdt);
 
                 //下边的代码未来要转移支解析Meta过程中
@@ -541,7 +541,7 @@ namespace SimpleLanguage.Core
         public MetaType AddMetaPreTemplateFunction(MetaType mt, out bool isGenMetaClass)
         {
             isGenMetaClass = false;
-            if (mt.templateMetaClass == null)
+            if (mt.metaClass == null)
             {
                 return null;
             }
@@ -557,7 +557,7 @@ namespace SimpleLanguage.Core
             }
             if (mcList.Count == mt.templateMetaTypeList.Count)
             {
-                MetaGenTemplateClass mgtc = mt.templateMetaClass.AddInstanceMetaClass(mcList);
+                MetaGenTemplateClass mgtc = mt.metaClass.AddInstanceMetaClass(mcList);
                 isGenMetaClass = true;
                 return new MetaType(mgtc);
             }

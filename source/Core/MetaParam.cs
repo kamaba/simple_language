@@ -455,12 +455,6 @@ namespace SimpleLanguage.Core
     {
         public List<MetaInputParam> metaInputParamList => m_MetaInputParamList;
         public int count { get { return m_MetaInputParamList.Count; } }
-        public bool fixedParam { get { return minParamCount == maxParamCount; } }
-        public int minParamCount => m_MinParamCount;
-        public int maxParamCount { get { return m_MetaInputParamList.Count; } }
-        public bool isCanCallFunction { get; set; } = true;
-
-        private int m_MinParamCount = 0;
         private MetaClass m_OwnerMetaClass = null;
         private MetaBlockStatements m_MetaBlockStatements = null;
         private List<MetaInputParam> m_MetaInputParamList = new List<MetaInputParam>();

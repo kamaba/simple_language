@@ -48,7 +48,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        var mt = new MetaTemplate(this, fmc.templateDefineList[i]);
+                        var mt = new MetaTemplate(this, fmc.templateDefineList[i], i );
                         m_MetaTemplateList.Add(mt);
                     }
                 }

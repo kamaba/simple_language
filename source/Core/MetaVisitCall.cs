@@ -17,35 +17,58 @@ namespace SimpleLanguage.Core
     {
         public MetaVariable loadMetaVariable => m_LoadMetaVariable;
         public MetaVariable storeMetaVariable => m_StoreMetaVariable;
-        public MetaType callerMetaType => m_CallerMetaType;
+        public MetaClass staticCallerMetaClass => m_StaticCallerMetaClass;
+        public List<MetaType> staticMetaClassInputTemplateList => m_StaticMetaClassInputTemplateList;
         public MetaFunction function => m_VMCallMetaFunction;
         public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
-        public MetaInputParamCollection metaInputParamCollection => m_MetaInputParamCollection;
+        public List<MetaExpressNode> metaInputParamList => m_MetaInputParamList;
+        public List<MetaType> metaParamInputTemplateList => m_MetaParamInputTemplateList;
+
 
         protected MetaVariable m_LoadMetaVariable = null;
         protected MetaVariable m_StoreMetaVariable = null;
-        protected MetaType m_CallerMetaType = null;
+        protected MetaClass m_StaticCallerMetaClass = null;
+        protected List<MetaType> m_StaticMetaClassInputTemplateList = new List<MetaType>();
         //模板或者是调用时的函数
         protected MetaFunction m_VMCallMetaFunction = null;
         //真实的成员函数
         protected MetaMemberFunction m_MetaMemberFunction = null;
-        protected MetaInputParamCollection m_MetaInputParamCollection = null;
+        protected List<MetaExpressNode> m_MetaInputParamList = new List<MetaExpressNode>();
+        protected List<MetaType> m_MetaParamInputTemplateList = new List<MetaType>();
         
-        public MetaMethodCall( MetaType mt, MetaFunction _fun, MetaInputParamCollection _param, MetaVariable loadMv, MetaVariable storeMv )
+        public MetaMethodCall( MetaClass staticMc, List<MetaType> staticMmitList,  MetaFunction _fun, List<MetaType> mpipList, MetaInputParamCollection _paramCollection, MetaVariable loadMv, MetaVariable storeMv )
         {
-            m_CallerMetaType = mt;
-            if ( _fun is MetaMemberFunction mmf )
+            m_StaticCallerMetaClass = staticMc;
+            if( staticMmitList != null )
             {
-                m_VMCallMetaFunction = mmf.sourceMetaMemberFunction != null ? mmf.sourceMetaMemberFunction : mmf;
+                this.m_StaticMetaClassInputTemplateList = staticMmitList;
             }
-            else
+            m_VMCallMetaFunction = _fun;
+            //m_MetaInputParamList = _param;
+            this.m_MetaParamInputTemplateList = mpipList;
+
+            List<MetaDefineParam> mpList = new();
+            if( m_VMCallMetaFunction?.metaMemberParamCollection != null )
             {
-                m_VMCallMetaFunction = _fun;
+                mpList = m_VMCallMetaFunction.metaMemberParamCollection.metaDefineParamList;
             }
-            m_MetaInputParamCollection = _param;
-            if(m_MetaInputParamCollection == null && _fun != null )
+            int defineCount = m_VMCallMetaFunction.metaMemberParamCollection.maxParamCount;
+            int inputCount = _paramCollection != null ?_paramCollection.metaInputParamList.Count : 0;
+            for (int i = 0; i < defineCount; i++)
             {
-                m_MetaInputParamCollection = new MetaInputParamCollection(m_VMCallMetaFunction.ownerMetaClass, null);
+                if (i < inputCount)
+                {
+                    MetaInputParam mip = _paramCollection.metaInputParamList[i];
+                    m_MetaInputParamList.Add(mip.express);
+                }
+                else
+                {
+                    MetaDefineParam mdp = mpList[i];
+                    if (mdp != null)
+                    {
+                        m_MetaInputParamList.Add(mdp.expressNode);
+                    }
+                }
             }
             m_LoadMetaVariable = loadMv;
             m_StoreMetaVariable = storeMv;
@@ -54,15 +77,6 @@ namespace SimpleLanguage.Core
         {
             this.m_StoreMetaVariable = mv;
         }
-        public bool CheckMetaFunctionMatchInputParamCollection()
-        {
-            if (!m_VMCallMetaFunction.IsEqualMetaInputParamCollection(m_MetaInputParamCollection))
-            {
-                Log.AddInStructMeta(EError.None, "Error 验证失败,函数与输入参数不匹配!!");
-                return false;
-            }
-            return true;
-        }
         public MetaType GeMetaDefineType()
         {
             return m_VMCallMetaFunction.metaDefineType;
@@ -70,36 +84,20 @@ namespace SimpleLanguage.Core
         public string ToCommonString()
         {
             StringBuilder sb = new StringBuilder();
-
             if (m_VMCallMetaFunction != null)
             {
                 sb.Append(m_VMCallMetaFunction.name + "(");
-                int inputCount = m_MetaInputParamCollection?.metaInputParamList.Count ?? 0;
-                List<MetaDefineParam> mpList = m_VMCallMetaFunction.metaMemberParamCollection.metaDefineParamList;
-                int defineCount = m_VMCallMetaFunction.metaMemberParamCollection.maxParamCount;
-                for (int i = 0; i < defineCount; i++)
+                int inputCount = m_MetaInputParamList.Count;
+                for (int i = 0; i < inputCount; i++)
                 {
-                    if (i < inputCount)
-                    {
-                        MetaInputParam mip = m_MetaInputParamCollection.metaInputParamList[i];
-                        sb.Append(mip.ToStatementString());
-                    }
-                    else
-                    {
-                        MetaDefineParam mdp = mpList[i];
-                        if (mdp != null)
-                        {
-                            sb.Append(mdp.expressNode?.ToFormatString());
-                        }
-                    }
-                    if (i < defineCount - 1)
+                    sb.Append(m_MetaInputParamList[i].ToFormatString());
+                    if (i < inputCount - 1)
                     {
                         sb.Append(",");
                     }
                 }
                 sb.Append(")");
             }
-
             return sb.ToString();
 
         }
@@ -121,10 +119,20 @@ namespace SimpleLanguage.Core
                 sb.Append(this.m_VMCallMetaFunction.ownerMetaClass.allClassName);
                 sb.Append(".");
             }
-            sb.Append(this.m_VMCallMetaFunction.name);
-            sb.Append("( ");
-            sb.Append(this.metaInputParamCollection.ToFormatString() );
-            sb.Append(" )");
+            if (m_VMCallMetaFunction != null)
+            {
+                sb.Append(m_VMCallMetaFunction.name + "(");
+                int inputCount = m_MetaInputParamList.Count;
+                for (int i = 0; i < inputCount; i++)
+                {
+                    sb.Append(m_MetaInputParamList[i].ToFormatString());
+                    if (i < inputCount - 1)
+                    {
+                        sb.Append(",");
+                    }
+                }
+                sb.Append(")");
+            }
 
             return sb.ToString();
         }
@@ -167,7 +175,7 @@ namespace SimpleLanguage.Core
             vn.m_StaticMetaType = mt;
             vn.visitType = EVisitType.New;
             vn.variable = mv;
-            vn.methodCall = new MetaMethodCall(mt, mf, null, null, mv);
+            vn.methodCall = new MetaMethodCall(mt.metaClass, null, mf, null, null, null, mv);
             return vn;
         }
         public static MetaVisitNode CraeteByNewClass(MetaType mt, MetaBraceOrBracketStatementsContent mb, MetaVariable mv = null )
