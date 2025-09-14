@@ -49,15 +49,13 @@ namespace SimpleLanguage.VM
             m_MemberObjectArray = new SObject[m_IRMetaVariableList.Count];
             m_Type = new short[m_IRMetaVariableList.Count];
             m_Object = this;
-
-            Create();
         }
-        void Create()
+        public void CreateObject()
         {
-            for (int i = 0; i < m_RuntimeType.memberVariableRuntimeTypeList.Count; i++)
+            for (int i = 0; i < m_RuntimeType.runtimeTemplateList.Count; i++)
             {
-                var irmv = m_RuntimeType.memberVariableRuntimeTypeList[i];
-                SObject sobj = ObjectManager.CreateObjectByRuntimeType(irmv);
+                var irmv = m_RuntimeType.runtimeTemplateList[i];
+                SObject sobj = ObjectManager.CreateObjectByRuntimeType(irmv, true );
                 if(sobj == null )
                 {
                     continue;

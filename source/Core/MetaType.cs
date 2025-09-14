@@ -104,6 +104,7 @@ namespace SimpleLanguage.Core
                 //m_TemplateMetaClass = mc;
                 //m_InputTemplateCollection = mitc;
                 //m_MetaClass = m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
+                m_TemplateMetaTypeList = mitc.metaTemplateParamsList;
             }
         }
         public MetaType(MetaType mt) : base(mt)

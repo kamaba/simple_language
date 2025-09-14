@@ -10,6 +10,7 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.Parse;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -56,15 +57,18 @@ namespace SimpleLanguage.IR
 
 
             int callMethodIndex = -1;
+            IRMetaType irmc = null;
 
-            IRBase irbase = null;
+            //IRBase irbase = null;
             if ( mf.isStatic )
             {
-                irbase = IRUtil.GetSetCallClassByMetaClass(mfc.staticCallerMetaClass, mfc.staticMetaClassInputTemplateList, out curMc);
-                if (irbase != null)
-                {
-                    AddIRRangeData(irbase.IRDataList);
-                }
+                var irname = IRManager.GetIRNameByMetaClass(mfc.staticCallerMetaClass);
+                curMc = IRManager.instance.GetIRMetaClassByName(irname);
+                //irbase = IRUtil.GetSetCallClassByMetaClass(mfc.staticCallerMetaClass, mfc.staticMetaClassInputTemplateList, out curMc);
+                //if (irbase != null)
+                //{
+                //    AddIRRangeData(irbase.IRDataList);
+                //}
             }
             else
             {
@@ -76,9 +80,21 @@ namespace SimpleLanguage.IR
             if ( curMc != null )
             {
                 callMethodIndex = curMc.GetIRNonStaticMethodIndexByMethod( mf.virtualFunctionName );
-            }
 
-            if( callMethodIndex == -1 )
+                List<IRMetaType> types = new List<IRMetaType>();
+                for( int i = 0; i < mfc.staticMetaClassInputTemplateList.Count; i++ )
+                {
+                    types.Add(new IRMetaType(mfc.staticMetaClassInputTemplateList[i]));
+                }
+                irmc = new IRMetaType(curMc, types );
+            }
+            List<IRMetaType> functionMtList = new List<IRMetaType>();
+            for( int i = 0; i < mfc.metaParamInputTemplateList.Count; i++ )
+            {
+                functionMtList.Add(new IRMetaType(mfc.metaParamInputTemplateList[i]));
+            }
+           var irmethodcall = new IRMethodCall(irmc, functionMtList, m_IRRuntimeMethod );
+            if ( callMethodIndex == -1 )
             {
                 if( m_IRRuntimeMethod == null )
                 {
@@ -90,7 +106,7 @@ namespace SimpleLanguage.IR
                 {
                     IRData datacall = new IRData();
                     datacall.opCode = EIROpCode.CallStatic;
-                    datacall.opValue = m_IRRuntimeMethod;
+                    datacall.opValue = irmethodcall;
                     datacall.index = 0;
                     datacall.SetDebugInfoByToken(mf.pingToken);
                     AddIRData(datacall);
@@ -99,7 +115,7 @@ namespace SimpleLanguage.IR
                 {
                     IRData datacall = new IRData();
                     datacall.opCode = EIROpCode.CallDynamic;
-                    datacall.opValue = m_IRRuntimeMethod;
+                    datacall.opValue = irmethodcall;
                     datacall.index = paramCount + 1;
                     datacall.SetDebugInfoByToken(mf.pingToken);
                     AddIRData(datacall);
@@ -132,14 +148,14 @@ namespace SimpleLanguage.IR
                 }
             }
 
-            if (irbase != null)
-            {
-                IRData datacallunsc = new IRData();
-                datacallunsc.opCode = EIROpCode.UnSetCallClass;
-                datacallunsc.opValue = null;
-                datacallunsc.SetDebugInfoByToken(mf.pingToken);
-                AddIRData(datacallunsc);
-            }
+            //if (irbase != null)
+            //{
+            //    IRData datacallunsc = new IRData();
+            //    datacallunsc.opCode = EIROpCode.UnSetCallClass;
+            //    datacallunsc.opValue = null;
+            //    datacallunsc.SetDebugInfoByToken(mf.pingToken);
+            //    AddIRData(datacallunsc);
+            //}
         }
         public System.Object InvokeCSharp( Object target, Object[] csParamObjs)
         {

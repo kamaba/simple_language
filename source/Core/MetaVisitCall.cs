@@ -45,7 +45,10 @@ namespace SimpleLanguage.Core
             }
             m_VMCallMetaFunction = _fun;
             //m_MetaInputParamList = _param;
-            this.m_MetaParamInputTemplateList = mpipList;
+            if( mpipList != null )
+            {
+                this.m_MetaParamInputTemplateList = mpipList;
+            }
 
             List<MetaDefineParam> mpList = new();
             if( m_VMCallMetaFunction?.metaMemberParamCollection != null )

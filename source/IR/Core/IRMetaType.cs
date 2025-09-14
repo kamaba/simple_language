@@ -33,18 +33,27 @@ namespace SimpleLanguage.IR
             else if (type.eType == EMetaTypeType.Template)
             {
                 m_TemplateIndex = type.metaTemplate.index;
-                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.metaClass.GetHashCode());
+                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.metaClass.GetHashCode());                
             }
             else
             {
                 m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.metaClass.GetHashCode());
             }
+            for (int i = 0; i < type.templateMetaTypeList.Count; i++)
+            {
+                m_IRMetaTypeList.Add(new IRMetaType(type.templateMetaTypeList[i]));
+            }
+        }
+        public IRMetaType( IRMetaClass irmc, List<IRMetaType> irlist )
+        {
+            m_IRMetaClass = irmc;
+            m_IRMetaTypeList = irlist;
         }
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
 
-            //sb.Append(this.m_IRName);
+            sb.Append(this.m_IRMetaClass.irName);           
 
             return sb.ToString();
         }

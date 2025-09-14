@@ -65,7 +65,7 @@ namespace SimpleLanguage.Core.IR
                 if (irbase != null )
                 {
                     IRData sc2 = new IRData();
-                    sc2.opCode = EIROpCode.UnSetCallClass;
+                    //sc2.opCode = EIROpCode.UnSetCallClass;
                     IRBase irbase2 = new IRBase(sc2);
                     irList.Add(irbase2);
                 }

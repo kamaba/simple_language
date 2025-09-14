@@ -71,8 +71,8 @@ namespace SimpleLanguage.IR
                 irmc = IRManager.instance.GetIRMetaClassByName(inputmc.metaNode.allName);
 
                 IRData sc23 = new IRData();
-                sc23.opCode = EIROpCode.SetCallClass;
-                sc23.opValue = sb.ToString();
+                //sc23.opCode = EIROpCode.SetCallClass;
+                //sc23.opValue = sb.ToString();
                 IRBase irbase23 = new IRBase(sc23);
                 return irbase23;
             }
@@ -105,8 +105,8 @@ namespace SimpleLanguage.IR
                     irmc = IRManager.instance.GetIRMetaClassByName(tt);
                 }
                 IRData sc23 = new IRData();
-                sc23.opCode = EIROpCode.SetCallClass;
-                sc23.opValue = tname;
+                //sc23.opCode = EIROpCode.SetCallClass;
+                //sc23.opValue = tname;
                 IRBase irbase23 = new IRBase(sc23);
                 return irbase23;
             }

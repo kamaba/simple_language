@@ -52,7 +52,7 @@ namespace SimpleLanguage.VM
             //}
             return svalue;
         }        
-        public static SObject CreateObjectByRuntimeType( RuntimeType rt )
+        public static SObject CreateObjectByRuntimeType( RuntimeType rt, bool isCreateMemObject = false )
         {
             SObject sobj = null;
             string name = rt.irClass.irName;
@@ -128,6 +128,10 @@ namespace SimpleLanguage.VM
             else
             {
                 var co = new ClassObject(rt);
+                if(isCreateMemObject )
+                {
+                    co.CreateObject();
+                }
                 sobj = co;
             }
             return sobj;
