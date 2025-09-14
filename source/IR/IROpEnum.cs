@@ -51,8 +51,8 @@ namespace SimpleLanguage.IR
         StoreReturn,
 
         //SetCurrentClassCallClass,
-        SetCallClass,
-        UnSetCallClass,
+        //SetCallClass,
+        //UnSetCallClass,
 
         //运算指令
         Add,                   // +

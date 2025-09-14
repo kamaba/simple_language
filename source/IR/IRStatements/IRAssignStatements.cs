@@ -70,7 +70,7 @@ namespace SimpleLanguage.IR
                         {
                             List<IRBase> irList22 = new List<IRBase>();
                             IRData sc2end = new IRData();
-                            sc2end.opCode = EIROpCode.UnSetCallClass;
+                            //sc2end.opCode = EIROpCode.UnSetCallClass;
                             IRBase irbase2 = new IRBase(sc2end);
                             irList22.Add(irbase2);
                             m_IRStatements.AddRange(irList22);
@@ -138,15 +138,15 @@ namespace SimpleLanguage.IR
                             IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irMethod, irmc, clist[i].variable);
                             m_IRStatements.Add(irsv);
 
-                            if (irbase != null )
-                            {
-                                List<IRBase> irList22 = new List<IRBase>();
-                                IRData sc2end = new IRData();
-                                sc2end.opCode = EIROpCode.UnSetCallClass;
-                                IRBase irbase2 = new IRBase(sc2end);
-                                irList22.Add(irbase2);
-                                m_IRStatements.AddRange(irList22);
-                            }
+                            //if (irbase != null )
+                            //{
+                            //    List<IRBase> irList22 = new List<IRBase>();
+                            //    IRData sc2end = new IRData();
+                            //    sc2end.opCode = EIROpCode.UnSetCallClass;
+                            //    IRBase irbase2 = new IRBase(sc2end);
+                            //    irList22.Add(irbase2);
+                            //    m_IRStatements.AddRange(irList22);
+                            //}
 
                         }
                         else if( cl.visitType == MetaVisitNode.EVisitType.MethodCall )
