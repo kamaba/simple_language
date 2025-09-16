@@ -33,7 +33,8 @@ namespace SimpleLanguage.IR
             if (mfc.loadMetaVariable != null)
             {
                 curMc = m_IRMethod.irManager.GetIRMetaClassByName(mfc.loadMetaVariable.metaDefineType.metaClass.allClassName);
-                IRLoadVariable irload = IRLoadVariable.NewLoadVariable(m_IRMethod, curMc, mfc.loadMetaVariable );
+                var irmt = new IRMetaType(mfc.loadMetaVariable.metaDefineType);
+                IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, m_IRMethod, mfc.loadMetaVariable );
                 AddIRRangeData(irload.IRDataList);
             }
             paramCount = mfc.metaInputParamList.Count;
@@ -93,7 +94,7 @@ namespace SimpleLanguage.IR
             {
                 functionMtList.Add(new IRMetaType(mfc.metaParamInputTemplateList[i]));
             }
-           var irmethodcall = new IRMethodCall(irmc, functionMtList, m_IRRuntimeMethod );
+           var irmethodcall = new IRMethodCall(irmc, functionMtList, m_IRRuntimeMethod, paramCount );
             if ( callMethodIndex == -1 )
             {
                 if( m_IRRuntimeMethod == null )
@@ -126,7 +127,7 @@ namespace SimpleLanguage.IR
                 IRData datacall = new IRData();
                 datacall.opCode = EIROpCode.CallVirt;
                 datacall.index = callMethodIndex;
-                datacall.opValue = paramCount + 1;
+                datacall.opValue = irmethodcall;
                 datacall.SetDebugInfoByToken(mf.pingToken);
                 AddIRData(datacall);
             }
@@ -139,7 +140,7 @@ namespace SimpleLanguage.IR
                     var mrv = m_IRRuntimeMethod.methodReturnVariableList[i];
                     if( mrv.irMetaType != null )
                     {
-                        if( mrv.irMetaType.irMetaClass.id != 0 )
+                        if( mrv.irMetaType.irMetaClass.irName != "Void" )
                         {
                             IRPop irpop = new IRPop(m_IRMethod);
                             AddIRData(irpop.data);

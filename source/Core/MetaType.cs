@@ -75,7 +75,7 @@ namespace SimpleLanguage.Core
             m_MetaClass = mc;
             m_EType = EMetaTypeType.MetaClass;
         }
-        public MetaType( MetaClass mc, MetaClass templatemc )
+        public MetaType( MetaClass mc, List<MetaType> mtList )
         {
             if (mc == null)
             {
@@ -84,6 +84,7 @@ namespace SimpleLanguage.Core
             m_IsDefineMetaClass = false;
             //m_TemplateMetaClass = templatemc;
             m_MetaClass = mc;
+            m_TemplateMetaTypeList = mtList;
             m_EType = EMetaTypeType.TemplateClassWithTemplate;
         }
         public MetaType( MetaClass mc, MetaClass templatemc, MetaInputTemplateCollection mitc )

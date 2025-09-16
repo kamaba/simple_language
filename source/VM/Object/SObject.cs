@@ -21,9 +21,10 @@ namespace SimpleLanguage.VM
         protected EType m_Etype = EType.Class;
         public bool m_IsNull = false;
         public bool m_IsVoid = false;
+        public RuntimeType runtimeType => m_RuntimeType;
         public short typeId { get; set; } = 0;
         public int refCount { get; set; } = 0;
-        protected IRMetaClass m_IRMetaClass;
+        protected RuntimeType m_RuntimeType = null;
         protected SObject()
         {
         }
@@ -34,10 +35,6 @@ namespace SimpleLanguage.VM
         public void SetVoid()
         {
             m_IsVoid = true;
-        }
-        public virtual IRMetaClass GetIRMetaClass()
-        {
-            return m_IRMetaClass;
         }
         public virtual string ToFormatString()
         {

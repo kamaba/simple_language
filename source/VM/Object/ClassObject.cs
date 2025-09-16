@@ -23,7 +23,7 @@ namespace SimpleLanguage.VM
     public class ClassObject : SObject
     {
         public ClassObject value => m_Object;
-        public IRMetaClass irMetaClass=> m_IRMetaClass;
+        public IRMetaClass irMetaClass=> m_RuntimeType?.irClass;
 
         private ClassObject m_Object = null;
         private byte[] m_Data = null;   /*  m_Data  结构  bit形，只有运算时要用 1-> byte 2->sbyte   3-> int16  4-> uint16    */
@@ -31,21 +31,18 @@ namespace SimpleLanguage.VM
         private SObject[] m_MemberObjectArray = null;
         protected List<IRMetaVariable> m_IRMetaVariableList = null;
         protected List<RuntimeType> m_IRTemplateList = new List<RuntimeType>();
-        protected RuntimeType m_RuntimeType = null;
 
 
         public ClassObject( RuntimeType irmt, bool isStatic = false )
         {
-            m_IRMetaClass = irmt.irClass;
-
             m_RuntimeType = irmt;
 
-            int byteCount = m_IRMetaClass.byteCount;
+            int byteCount = m_RuntimeType.irClass.byteCount;
             m_Data = new byte[byteCount];
-            typeId = (short)m_IRMetaClass.id;
+            typeId = (short)m_RuntimeType.irClass.id;
             m_IRTemplateList = irmt.runtimeTemplateList;
 
-            m_IRMetaVariableList = isStatic ? m_IRMetaClass.staticIRMetaVariableList : m_IRMetaClass.localIRMetaVariableList;
+            m_IRMetaVariableList = isStatic ? m_RuntimeType.irClass.staticIRMetaVariableList : m_RuntimeType.irClass.localIRMetaVariableList;
             m_MemberObjectArray = new SObject[m_IRMetaVariableList.Count];
             m_Type = new short[m_IRMetaVariableList.Count];
             m_Object = this;
@@ -430,14 +427,18 @@ namespace SimpleLanguage.VM
             {
                 sb.Append(m_Object.ToFormatString());
             }
-            sb.Append(m_IRMetaClass.ToString());
+            sb.Append(m_RuntimeType.irClass.ToString());
             //for( int i = 0; i < m_MemberVariableArray)
 
             return sb.ToString();
         }
         public override string ToString()
         {
-            return m_IRMetaClass.irName + "  " ;
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(m_RuntimeType.ToString());
+
+            return sb.ToString();
          }
     }
 }
