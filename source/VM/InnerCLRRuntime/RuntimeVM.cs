@@ -560,14 +560,14 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.LoadStaticField:
                     {
                         var irmt = iri.opValue as IRMetaType;
-                        RuntimeType rt = GetClassRuntimeType(irmt);
+                        RuntimeType rt = GetClassRuntimeType(irmt, true);
                         rt.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex--]);
                     }
                     break;
                 case EIROpCode.StoreStaticField:
                     {
                         var irmt = iri.opValue as IRMetaType;
-                        RuntimeType rt = GetClassRuntimeType(irmt);
+                        RuntimeType rt = GetClassRuntimeType(irmt, true);
                         rt.SetMemberVariableSValue(iri.index, m_ValueStack[--m_ValueIndex] );
                     }
                     break;
@@ -597,11 +597,9 @@ namespace SimpleLanguage.VM.Runtime
                         List<RuntimeType> classRTList = new List<RuntimeType>();
                         for (int i = 0; i < mfc.metaType.irMetaTypeList.Count; i++)
                         {
-                            var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i]);
+                            var crt = GetClassRuntimeType(mfc.metaType.irMetaTypeList[i]);
                             classRTList.Add(crt);
                         }
-
-                        //List<RuntimeType> methodRTList = new List<RuntimeType>();
                         for( int i = 0; i < mfc.irTemplateMetaType.Count; i++ )
                         {
                             var crt = GetMethodRuntimeType(mfc.irTemplateMetaType[i]);
@@ -649,7 +647,9 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.CallVirt:
                     {
-                        int stackFrontIndex = (int)iri.opValue;
+                        var mfc = iri.opValue as IRMethodCall;
+
+                        int stackFrontIndex = (int)mfc.paramCount + 1;
                         int stackIndex = m_ValueIndex - stackFrontIndex;
                         if( stackIndex < 0 )
                         {
@@ -659,15 +659,18 @@ namespace SimpleLanguage.VM.Runtime
 
                         var v = m_ValueStack[stackIndex];
 
+                        RuntimeType rt = null;
                         IRMetaClass irc = null;
                         if (v.eType == EType.Class)
                         {
                             var co = (v.sobject as ClassObject);
                             irc = co.value.irMetaClass;
+                            rt = co.value.runtimeType;
                         }
                         else
                         {
                             irc = IRManager.instance.GetIRMetaClassByName(v.eType.ToString());
+                            rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irc);
                         }
                         if( irc == null )
                         {
@@ -675,7 +678,13 @@ namespace SimpleLanguage.VM.Runtime
                             return;
                         }
                         IRMethod cfc = irc.GetIRNonStaticMethodByIndex(iri.index);
-                        //InnerCLRRuntimeVM.RunIRMethod(irc, cfc);
+                        List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
+                        for ( int i = 0; i < mfc.irTemplateMetaType.Count; i++ )
+                        {
+                            var crt = GetMethodRuntimeType(mfc.irTemplateMetaType[i]);
+                            rtList.Add(crt);
+                        }
+                        InnerCLRRuntimeVM.RunIRMethod( irc, rtList, cfc);
                     }
                     break;
                 case EIROpCode.CallCSharpMethod:
@@ -700,8 +709,10 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.NewObject:
                     {
-                        IRMetaType mdt = iri.opValue as IRMetaType;
-                        var rt = GetClassRuntimeType(mdt, true );
+                        //前期先和newtemplateclass一样处理，等以后确定后，要精简单这个，使用无模板方法，省去查找的过程，直接
+                        //创建已注册的runtimeType 当前runtimeType在生成类的时候，就已经注册过来了,加快了查找方法
+                        IRMetaClass mdt = iri.opValue as IRMetaClass;
+                        var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(mdt);
                         SObject sob = ObjectManager.CreateObjectByRuntimeType(rt);
                         if ( sob is ClassObject co )
                         {

@@ -343,7 +343,7 @@ namespace SimpleLanguage.Core
             bool isNewEnum = false;
             if (mcl.finalCallNode?.visitType == MetaVisitNode.EVisitType.New)
             {
-                if( mcl.finalCallNode.staticMetaType.isData )
+                if( mcl.finalCallNode.callMetaType.isData )
                 {
                     isNewData = true;
                 }

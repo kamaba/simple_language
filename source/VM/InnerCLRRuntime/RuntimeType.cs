@@ -9,6 +9,7 @@
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
+using System.Text;
 
 namespace SimpleLanguage.VM
 {
@@ -20,7 +21,10 @@ namespace SimpleLanguage.VM
         public RuntimeType(IRMetaClass rc, List<RuntimeType > rtList )
         {
             irClass = rc;
-            runtimeTemplateList = rtList;
+            if( rtList != null )
+            {
+                runtimeTemplateList = rtList;
+            }
         }
         private List<SObject> m_StaticMemVariableList = new List<SObject>();
         public void GetMemberVariableSValue(int index, ref SValue svalue)
@@ -387,26 +391,51 @@ namespace SimpleLanguage.VM
             }
             return true;
         }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(irClass.irName);
+
+            if(runtimeTemplateList.Count > 0 )
+            {
+                sb.Append('<');
+                for( int i = 0; i < runtimeTemplateList.Count; i++ )
+                {
+                    sb.Append(runtimeTemplateList[i].ToString());
+                }
+                sb.Append(">");
+            }
+
+            return sb.ToString();
+        }
     }
 
     public class RuntimeTypeManager
     {
-        public static List<RuntimeType> staticRuntimeList = new List<RuntimeType>();
+        public static List<RuntimeType> runtimeList => s_RuntimeList;
 
-        public static RuntimeType GetRuntimeTypeByMTAndTemplateMT( IRMetaClass rmc, List<RuntimeType> inputTemplateTypeList )
+        private static List<RuntimeType> s_RuntimeList = new List<RuntimeType>();
+
+        public static RuntimeType GetRuntimeTypeByMTAndTemplateMT(IRMetaClass rmc, List<RuntimeType> inputTemplateTypeList)
         {
-            foreach( var v in staticRuntimeList )
+            foreach (var v in s_RuntimeList)
             {
-                if( v.irClass != rmc)
+                if (v.irClass != rmc)
                 {
                     continue;
                 }
 
-                if( v.runtimeTemplateList.Count == inputTemplateTypeList.Count )
+                if (v.runtimeTemplateList.Count == inputTemplateTypeList.Count)
                 {
+                    if( v.runtimeTemplateList.Count == 0 )
+                    {
+                        return v;
+                    }
                     for (int i = 0; i < inputTemplateTypeList.Count; i++)
                     {
-                        if( RuntimeType.SameRuntimeType(inputTemplateTypeList[i], v.runtimeTemplateList[i] ) )
+                        if (RuntimeType.SameRuntimeType(inputTemplateTypeList[i], v.runtimeTemplateList[i]))
                         {
                             return v;
                         }
@@ -416,13 +445,37 @@ namespace SimpleLanguage.VM
             }
             return null;
         }
+        public static RuntimeType GetRuntimeTypeByMTAndIRMetaClass(IRMetaClass rmc )
+        {
+            foreach (var v in s_RuntimeList)
+            {
+                if (v.runtimeTemplateList.Count != 0)
+                {
+                    continue;
+                }
+                if (v.irClass == rmc)
+                {
+                    return v;
+                }
+            }
+            return null;
+        }
         public static RuntimeType AddRuntimeTypeByClassAndTemplate(IRMetaClass rmc, List<RuntimeType> inputTemplateTypeList)
         {
             RuntimeType rt = new RuntimeType(rmc, inputTemplateTypeList);
 
-            staticRuntimeList.Add(rt);
+            s_RuntimeList.Add(rt);
 
             return rt;
+        }
+        public static RuntimeType AddRuntimeTypeByClass( IRMetaClass rmc )
+        {
+            RuntimeType rt = new RuntimeType(rmc, null );
+
+            s_RuntimeList.Add(rt);
+
+            return rt;
+
         }
     }
 }

@@ -28,16 +28,15 @@ namespace SimpleLanguage.IR
     public class IRMetaClass
     {
         public int id { get; set; } = 0;
+        public string irName => m_IRName;
+        public bool isTemplateClass => m_IsTemplateClass;
+        public int byteCount => m_ByteCount;
+        public bool needCallInitMethod => m_NeedCallInitMethod;
+
+
         public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
         public List<IRMetaVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;
-        public Dictionary<string, IRMetaClass> genTemplateIRMetaClassDict => m_GenTemplateIRMetaClassDict;
-        public string irName => m_IRName;
-        public bool genClass => m_IsGenClass;
 
-
-        public int allocSize = 0;
-        public List<EType> m_MetaTypeList = new List<EType>();
-        public int byteCount = 0;
 
         private Dictionary<int, int> m_MetaMemberVariableHashCodeDict = new Dictionary<int, int>();
         //private List<MetaMemberVariable> m_LocalMetaMemberVariables = new List<MetaMemberVariable>();
@@ -45,48 +44,27 @@ namespace SimpleLanguage.IR
         //private List<MetaMemberData> m_LocalMetaMemberDatas = new List<MetaMemberData>();
         private List<IRMetaVariable> m_LocalIRMetaVariableList = new List<IRMetaVariable>();
         private List<IRMetaVariable> m_StaticIRMetaVariableList = new List<IRMetaVariable>();
-        private Dictionary<string, IRMetaClass> m_GenTemplateIRMetaClassDict = new Dictionary<string, IRMetaClass>();
-        private Dictionary<int, IRCallFunction> m_LocalIRInitDict = new Dictionary<int, IRCallFunction>();
+        //private Dictionary<int, IRCallFunction> m_LocalIRInitDict = new Dictionary<int, IRCallFunction>();
         private List<IRMethod> m_IRNotStaticMethodList = new List<IRMethod>();
-        private IRMetaClass m_TemplateIRMetaClass;
         private string m_IRName = "";
-        private IRManager m_IRManager = null;
-        private bool m_IsGenClass = false;
+        private bool m_IsTemplateClass = false;
         private MetaClass m_MetaClass = null;
 
+        private int allocSize = 0;
+        private List<EType> m_MetaTypeList = new List<EType>();
+        private int m_ByteCount = 0;
+        private bool m_NeedCallInitMethod = false;
 
         static int s_TypeLength = 1000;
-        public IRMetaClass(IRManager manager, MetaClass mc )
+        public IRMetaClass( MetaClass mc )
         {
             m_MetaClass = mc;
-            m_IRManager = manager;
             id = mc.GetHashCode();
             m_IRName = IRManager.GetIRNameByMetaClass(mc);
-            
-            if (mc is MetaGenTemplateClass mgtc)
-            {
-                m_IsGenClass = true;
-                foreach (var v in mgtc.metaGenTemplateList)
-                {
-                    var irmc = IRManager.instance.GetIRMetaClassByName(IRManager.GetIRNameByMetaType(v.metaType));
-                    m_GenTemplateIRMetaClassDict.Add(v.name, irmc);
-                }
-            }
-            else
-            {
-                m_IsGenClass = false;
-            }
-        }
-        public void SetTemplateIRMetaClass( IRMetaClass IRMetaClass)
-        {
-            m_TemplateIRMetaClass = IRMetaClass;
+            m_IsTemplateClass = mc.isTemplateClass;
         }
         public IRMethod GetIRNonStaticMethodByIndex( int index )
         {
-            if(m_TemplateIRMetaClass != null )
-            {
-                return m_TemplateIRMetaClass.GetIRNonStaticMethodByIndex(index);
-            }
             if( index >= m_IRNotStaticMethodList.Count || index < 0 )
             {
                 Log.AddVM(EError.None, "GetIRMethodByIndex is null");
@@ -96,10 +74,6 @@ namespace SimpleLanguage.IR
         }
         public int GetIRNonStaticMethodIndexByMethod( string name )
         {
-            if (m_TemplateIRMetaClass != null)
-            {
-                return m_TemplateIRMetaClass.GetIRNonStaticMethodIndexByMethod(name);
-            }
             for ( int i = 0; i < m_IRNotStaticMethodList.Count; i++ )
             {
                 if(m_IRNotStaticMethodList[i].virtualFunctionName == name)
@@ -108,10 +82,6 @@ namespace SimpleLanguage.IR
                 }
             }
             return -1;
-        }
-        public IRMetaVariable GetIRMetaVariable( int id )
-        {
-            return m_LocalIRMetaVariableList.Find( a=> a.id == id );
         }
         public int GetMetaMemberVariableIndexByHashCode( int id )
         {
@@ -161,7 +131,7 @@ namespace SimpleLanguage.IR
             {
                 ssize = IR.IRUtil.GetTypeSize(m_MetaTypeList[i]);
                 count += ssize;
-                byteCount += ssize;
+                m_ByteCount += ssize;
             }
 
            var staticMetaMemberVariables = m_MetaClass.GetMetaMemberVariableListByFlag(true);
@@ -175,11 +145,6 @@ namespace SimpleLanguage.IR
         }
         public void CreateMemberMethod()
         {
-            if( m_MetaClass is MetaGenTemplateClass mgtc )
-            {
-                return;
-            }
-
             var smflist = m_MetaClass.staticMetaMemberFunctionList;
             //int index = 0;
             for (int i = 0; i < smflist.Count; i++)
@@ -205,17 +170,6 @@ namespace SimpleLanguage.IR
             List<IRData> list = new List<IRData>();
 
             return list;
-        }
-        public bool IsCoreMetaClass()
-        {
-            if (this.m_IRName == "Int32"
-                || this.m_IRName == "String"
-                || this.m_IRName == "Float32"
-                || this.m_IRName == "Float64")
-            {
-                return true;
-            }
-            return false;
         }
         public override string ToString()
         {

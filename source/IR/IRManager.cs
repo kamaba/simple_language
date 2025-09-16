@@ -106,26 +106,18 @@ namespace SimpleLanguage.IR
             var classList = ClassManager.instance.runtimeClassList;
             foreach (var v in classList)
             {
-                IRMetaClass irmc = new IRMetaClass(this, v);
+                IRMetaClass irmc = new IRMetaClass(v);
                 m_IRMetaClassList.Add(irmc);
+                if(!irmc.isTemplateClass)
+                    RuntimeTypeManager.AddRuntimeTypeByClass(irmc);
             }
-            foreach( var v in m_IRMetaClassList )
+            var list = RuntimeTypeManager.runtimeList;
+            foreach ( var v in m_IRMetaClassList )
             {
                 v.CreateMemberData();
                 v.CreateMemberMethod();
             }
-            //foreach (var v in classList)
-            //{
-            //    if( v is MetaGenTemplateClass mgtc )
-            //    {
-            //        IRMetaClass irmc = GetIRMetaClassByName(GetIRNameByMetaClass(v));
-            //        IRMetaClass irmcc = GetIRMetaClassByName(GetIRNameByMetaClass(mgtc.metaTemplateClass));
-            //        if( irmcc != null && irmc != null )
-            //        {
-            //            irmc.SetTemplateIRMetaClass(irmcc);
-            //        }
-            //    }
-            //}
+            
             foreach ( var v in m_IRMetaClassList)
             {
                 foreach( var v2 in v.localIRMetaVariableList )
