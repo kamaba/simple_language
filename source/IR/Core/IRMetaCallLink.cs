@@ -45,7 +45,7 @@ namespace SimpleLanguage.Core.IR
                
                 if( mv.isStatic )
                 {
-                    irmt = new IRMetaType(mv.metaDefineType);
+                    irmt = new IRMetaType(cnode.callMetaType);
                 }
                 IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, _irMethod, mv);
                 irList.Add(irVar);

@@ -315,7 +315,7 @@ namespace SimpleLanguage.Core
 
             return null;
         }
-        MetaType HandleInputTemplateNodeList( MetaClass curMc, MetaClass findfn, MetaMemberFunction mmf, List<FileInputTemplateNode> inputTemplateNodeList)
+        public MetaType HandleInputTemplateNodeList( MetaClass curMc, MetaClass findfn, MetaMemberFunction mmf, List<FileInputTemplateNode> inputTemplateNodeList)
         {
             var getmc = findfn;
             MetaType mt = new MetaType();
