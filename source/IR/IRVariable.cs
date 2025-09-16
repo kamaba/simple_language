@@ -95,6 +95,7 @@ namespace SimpleLanguage.IR
             }
             else if( irmvf == IRMetaVariableFrom.Static )
             {
+                m_Data.opValue = irmt;
                 m_Data.opCode = EIROpCode.LoadStaticField;
                 m_Data.index = id;
                 m_IRDataList.Add(m_Data);

@@ -88,9 +88,7 @@ namespace SimpleLanguage.IR
                         if (cl.visitType == MetaVisitNode.EVisitType.Variable)
                         {
                             var mv = cl.GetRetMetaVariable();
-                            IRMetaType irmt = null;
-                            if (mv.isStatic)
-                                irmt = new IRMetaType(cl.callMetaType);
+                            IRMetaType irmt = new IRMetaType(cl.callMetaType);
                             //else
                             //    irmt = new IRMetaType(mv.ownerMetaClass, null);
                             IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irmt, irMethod, clist[i].variable);
