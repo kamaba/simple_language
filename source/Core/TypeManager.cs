@@ -331,7 +331,7 @@ namespace SimpleLanguage.Core
                 var t = RegisterTemplateDefineMetaTemplateFunction(curMc, mmf, inputTemplateNodeList[i]);
                 mt.AddTemplateMetaType(t);
             }
-            if( ProjectManager.useGenMetaClass )
+            if( true )// ProjectManager.useGenMetaClass )
             {
                 if (mmf?.isTemplateFunction == true && mt.isIncludeTemplateFunctionTemplate(mmf))
                 {

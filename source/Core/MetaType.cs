@@ -47,7 +47,7 @@ namespace SimpleLanguage.Core
         //private MetaInputTemplateCollection m_InputTemplateCollection = null;
         private EMetaTypeType m_EType = EMetaTypeType.None;
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
-        //private MetaClass m_TemplateMetaClass = null;                    // List<int> => list
+        private MetaType m_InstanceMetaType = null;                    // 实体类，一般可以使用生成类
         private MetaClass m_TypeInferenceClass = null;                  //推理类
         private MetaType m_ParentMetaType = null;
         private MetaTemplate m_MetaTemplate = null;

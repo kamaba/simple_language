@@ -64,12 +64,10 @@ namespace SimpleLanguage.Core.IR
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.New)
             {
-                string cmn = IRManager.GetIRNameByMetaType(cnode.callMetaType);
-                var irmc = _irMethod.irManager.GetIRMetaClassByName(cmn);
+                IRMetaClass irmc = IRManager.instance.GetIRMetaClassById(cnode.callMetaType.metaClass.GetHashCode());
                 if (cnode.callMetaType.eType == EMetaTypeType.TemplateClassWithTemplate
                     || cnode.callMetaType.eType == EMetaTypeType.Template )
                 {
-
                     var irnew = new IRNew(_irMethod, new IRMetaType(cnode.callMetaType) );
                     irList.Add(irnew);
                 }

@@ -21,6 +21,7 @@ namespace SimpleLanguage.VM
         private SObject[] m_StaticMemObjectList = null;
         public RuntimeType(IRMetaClass rc, List<RuntimeType > rtList )
         {
+
             irClass = rc;
             if( rtList != null )
             {
