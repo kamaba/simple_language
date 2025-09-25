@@ -380,53 +380,61 @@ namespace SimpleLanguage.Core.Statements
                     else
                     {
                         compareClass = expressRetMetaDefineType.metaClass;
-                        relation = ClassManager.ValidateClassRelationByMetaClass(curClass, compareClass);
-                    }
-
-                    StringBuilder sb = new StringBuilder();
-                    sb.Append("Warning 在类: " + m_OwnerMetaBlockStatements?.ownerMetaClass.allClassName + " 函数: " + m_OwnerMetaBlockStatements.ownerMetaFunction?.name + "中  ");
-                    if (curClass != null)
-                    {
-                        sb.Append(" 定义类 : " + curClass.allClassName);
-                    }
-                    sb.Append(" 名称为: " + m_Name?.ToString());
-                    sb.Append("与后边赋值语句中 ");
-                    if (compareClass != null)
-                        sb.Append("表达式类为: " + compareClass.allClassName);
-                    if (relation == ClassManager.EClassRelation.No)
-                    {
-                        sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
-                        Log.AddInStructMeta( EError.None, sb.ToString());
-                        m_IsNeedCastState = true;
-                    }
-                    else if (relation == ClassManager.EClassRelation.Similar)
-                    {
-                        sb.Append("数字类型相似，可能会有强转会有精度的丢失!");
-                        Log.AddInStructMeta( EError.None, sb.ToString());
-                        m_IsNeedCastState = true;
-                    }
-                    else if (relation == ClassManager.EClassRelation.Same)
-                    {
-                        m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
-                    }
-                    else if (relation == ClassManager.EClassRelation.Parent)
-                    {
-                        sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
-                        Log.AddInStructMeta( EError.None, sb.ToString());
-                        m_IsNeedCastState = true;
-                    }
-                    else if (relation == ClassManager.EClassRelation.Child)
-                    {
-                        if (compareClass != null)
+                        if (mdt.isTemplate)
                         {
-                            m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
+                            if (curClass == compareClass )
+                            {
+                                relation = ClassManager.EClassRelation.Same;
+                            }
+                        }
+                        else
+                        {
+                            relation = ClassManager.ValidateClassRelationByMetaClass(curClass, compareClass);
                         }
                     }
-                    else
-                    {
-                        sb.Append("表达式错误，或者是定义类型错误");
-                        Log.AddInStructMeta( EError.None, sb.ToString());
-                    }
+                    StringBuilder sb = new StringBuilder();
+                        sb.Append("Warning 在类: " + m_OwnerMetaBlockStatements?.ownerMetaClass.allClassName + " 函数: " + m_OwnerMetaBlockStatements.ownerMetaFunction?.name + "中  ");
+                        if (curClass != null)
+                        {
+                            sb.Append(" 定义类 : " + curClass.allClassName);
+                        }
+                        sb.Append(" 名称为: " + m_Name?.ToString());
+                        sb.Append("与后边赋值语句中 ");
+                        if (compareClass != null)
+                            sb.Append("表达式类为: " + compareClass.allClassName);
+                        if (relation == ClassManager.EClassRelation.No)
+                        {
+                            sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
+                            Log.AddInStructMeta(EError.None, sb.ToString());
+                            m_IsNeedCastState = true;
+                        }
+                        else if (relation == ClassManager.EClassRelation.Similar)
+                        {
+                            sb.Append("数字类型相似，可能会有强转会有精度的丢失!");
+                            Log.AddInStructMeta(EError.None, sb.ToString());
+                            m_IsNeedCastState = true;
+                        }
+                        else if (relation == ClassManager.EClassRelation.Same)
+                        {
+                        }
+                        else if (relation == ClassManager.EClassRelation.Parent)
+                        {
+                            sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
+                            Log.AddInStructMeta(EError.None, sb.ToString());
+                            m_IsNeedCastState = true;
+                        }
+                        else if (relation == ClassManager.EClassRelation.Child)
+                        {
+                            if (compareClass != null)
+                            {
+                                m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
+                            }
+                        }
+                        else
+                        {
+                            sb.Append("表达式错误，或者是定义类型错误");
+                            Log.AddInStructMeta(EError.None, sb.ToString());
+                        }
                 }
                 //}
             }

@@ -50,7 +50,9 @@ namespace SimpleLanguage.IR
                         //这种是  Obja.Objb = new()的方式
                         var mv = finalMVN.GetRetMetaVariable();
 
-                        IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable( new IRMetaType(mv.metaDefineType), irMethod, finalMVN.variable);
+                        var irmc = IRManager.instance.GetIRMetaClassById(mv.metaDefineType.metaClass.GetHashCode());
+
+                        IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable( new IRMetaType(mv.metaDefineType), irmc, irMethod, finalMVN.variable);
                         m_IRStatements.Add(irsv);
 
                     }
@@ -88,10 +90,22 @@ namespace SimpleLanguage.IR
                         if (cl.visitType == MetaVisitNode.EVisitType.Variable)
                         {
                             var mv = cl.GetRetMetaVariable();
-                            IRMetaType irmt = new IRMetaType(cl.callMetaType);
+
+                            var irmc = IRManager.instance.GetIRMetaClassById(mv.metaDefineType.metaClass.GetHashCode());
+                            IRMetaType irmt = null;
+                            if (cl.callMetaType == null)
+                            {
+                                irmc = IRManager.instance.GetIRMetaClassById(mv.ownerMetaClass.GetHashCode());
+                                irmt = new IRMetaType(mv.metaDefineType);
+                            }
+                            else
+                            {
+                                irmc = IRManager.instance.GetIRMetaClassById(mv.ownerMetaClass.GetHashCode());
+                                irmt = new IRMetaType(cl.callMetaType);
+                            }
                             //else
                             //    irmt = new IRMetaType(mv.ownerMetaClass, null);
-                            IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irmt, irMethod, clist[i].variable);
+                            IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irmt, irmc, irMethod, clist[i].variable);
                             m_IRStatements.Add(irsv);
                         }
                         else if( cl.visitType == MetaVisitNode.EVisitType.MethodCall )

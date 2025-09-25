@@ -339,6 +339,7 @@ namespace SimpleLanguage.Core
                 if( m_OwnerMetaClass.isTemplateClass )
                 {
                     var tt = new MetaTemplate(m_OwnerMetaClass, "this");
+                    tt.SetIndex(0);
                     tt.SetInConstraintMetaClass(m_OwnerMetaClass);
                     mt = new MetaType(tt);
                 }

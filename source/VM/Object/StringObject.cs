@@ -16,7 +16,7 @@ namespace SimpleLanguage.VM
     class StringObject : SObject
     {
         public string value;
-        public StringObject(string str)
+        public StringObject(string str) : base( EType.String )
         {
             value = str;
         }
