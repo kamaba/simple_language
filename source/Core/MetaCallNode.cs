@@ -741,51 +741,58 @@ namespace SimpleLanguage.Core
 
                         if(tempMetaBase2 == null )
                         {
-                            MetaClass mc = mv.metaDefineType.metaClass;
-                            if (mc is MetaData)
+                            if( mv.metaDefineType.isTemplate )
                             {
-                                MetaData md = mc as MetaData;
-                                var retmmd = GetDataValueByMetaData(md, m_Name );
-                                m_MetaVariable = retmmd;
-                                if( retmmd == null )
+                                //mv.metaDefineType
+                            }
+                            else
+                            {
+                                MetaClass mc = mv.metaDefineType.metaClass;
+                                if (mc is MetaData)
                                 {
-                                    Log.AddInStructMeta(EError.None, $"Error 没有找到{m_Name} 的MetaData数据!");
-                                    return false;
-                                }
-                                if( retmmd.memberDataType == EMemberDataType.MemberClass )
-                                {
-                                    m_MetaClass = m_MetaVariable.metaDefineType.metaClass;
+                                    MetaData md = mc as MetaData;
+                                    var retmmd = GetDataValueByMetaData(md, m_Name);
                                     m_MetaVariable = retmmd;
+                                    if (retmmd == null)
+                                    {
+                                        Log.AddInStructMeta(EError.None, $"Error 没有找到{m_Name} 的MetaData数据!");
+                                        return false;
+                                    }
+                                    if (retmmd.memberDataType == EMemberDataType.MemberClass)
+                                    {
+                                        m_MetaClass = m_MetaVariable.metaDefineType.metaClass;
+                                        m_MetaVariable = retmmd;
+                                        m_CallNodeType = ECallNodeType.MemberVariableName;
+                                    }
+                                    else if (retmmd.memberDataType == EMemberDataType.ConstValue)
+                                    {
+                                        m_CallNodeType = ECallNodeType.ConstValue;
+                                    }
+                                    else if (retmmd.memberDataType == EMemberDataType.MemberArray)
+                                    {
+                                        m_CallNodeType = ECallNodeType.MemberDataName;
+                                    }
+                                    else
+                                    {
+                                        m_CallNodeType = ECallNodeType.MemberDataName;
+                                    }
+                                }
+                                else
+                                if (mc is MetaEnum)
+                                {
+                                    MetaEnum me = mc as MetaEnum;
+                                    m_MetaVariable = me.GetMemberVariableByName(m_Name);
                                     m_CallNodeType = ECallNodeType.MemberVariableName;
-                                }
-                                else if (retmmd.memberDataType == EMemberDataType.ConstValue)
-                                {
-                                    m_CallNodeType = ECallNodeType.ConstValue;
-                                }
-                                else if (retmmd.memberDataType == EMemberDataType.MemberArray )
-                                {
-                                    m_CallNodeType = ECallNodeType.MemberDataName;
+                                    m_FrontCallNode.SetStoreMetaVariable(m_MetaVariable);
                                 }
                                 else
                                 {
-                                    m_CallNodeType = ECallNodeType.MemberDataName;
+                                    MetaClass tmc = mv.metaDefineType.eType == EMetaTypeType.TemplateClassWithTemplate ? mv.metaDefineType.metaClass : mv.metaDefineType.metaClass;
+                                    if (GetFunctionOrVariableByOwnerClass(tmc, m_Name) == false)
+                                    {
+                                        return false;
+                                    }
                                 }
-                            }
-                            else
-                            if (mc is MetaEnum)
-                            {
-                                MetaEnum me = mc as MetaEnum;
-                                m_MetaVariable = me.GetMemberVariableByName(m_Name);
-                                m_CallNodeType = ECallNodeType.MemberVariableName;
-                                m_FrontCallNode.SetStoreMetaVariable(m_MetaVariable);
-                            }
-                            else
-                            {
-                                MetaClass tmc = mv.metaDefineType.eType == EMetaTypeType.TemplateClassWithTemplate ? mv.metaDefineType.metaClass : mv.metaDefineType.metaClass;
-                                if ( GetFunctionOrVariableByOwnerClass(tmc, m_Name ) ==  false)
-                                {
-                                    return false;
-                                }                                
                             }
                         }
                     }

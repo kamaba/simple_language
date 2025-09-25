@@ -123,7 +123,8 @@ GenClass
     static GenClass_fun()
     {
         Level1<Level1<int> > GenClass_fun_l1 = Level1< Level1<int> >()
-        GenClass_fun_l1.Level1Fun<byte>()
+        #GenClass_fun_l1.Level1Fun<byte>()
+        GenClass_fun_l1.LevelMemValue.LevelMemValue = 300
 
         #var t4 = Level1<string>.Level1SF<int>(100)
         #int aa = Level1<int>.LevelStaticValue  #aa = null
@@ -133,7 +134,7 @@ GenClass
         #Debug.Write( "Addresult: " + GenClass_fun_l2 )
         #retstr = GenClass_fun_l1.GetComponent<string>()
         #float GenClass_fun_a = Level1<int>.min<float>( 1.3, 2.5 )
-        #System.Console.Write("-----------------------------------" + t4  )
+        System.Console.Write("-----------------------------------" + GenClass_fun_l1.LevelMemValue.LevelMemValue  )
         #System.Console.Write("-----------------------------------" + Level1<string>.LevelStaticValue  )
     }
 }
