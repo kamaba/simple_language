@@ -15,7 +15,7 @@ namespace SimpleLanguage.VM
     class Int16Object : SObject
     {
         public Int16 value;
-        public Int16Object(Int16 val)
+        public Int16Object(Int16 val) : base(EType.Int16)
         {
             value = val;
         }
@@ -31,7 +31,7 @@ namespace SimpleLanguage.VM
     public class UInt16Object : SObject 
     {
         public UInt16 value;
-        public UInt16Object(UInt16 val)
+        public UInt16Object(UInt16 val) : base(EType.UInt16)
         {
             value = val;
         }

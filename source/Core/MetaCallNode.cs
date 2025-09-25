@@ -388,6 +388,7 @@ namespace SimpleLanguage.Core
                             m_MetaTemplate = m_FrontDefineMetaType.metaTemplate;
                             m_MetaType = new MetaType(m_MetaTemplate);
                             m_CallNodeType = ECallNodeType.NewTemplate;
+                            m_CallMetaType = new MetaType(m_MetaTemplate);
                             MetaMemberFunction mmf = m_FrontDefineMetaType.metaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", 0, m_MetaInputParamCollection);
                             if (mmf == null)
                             {
@@ -404,6 +405,7 @@ namespace SimpleLanguage.Core
                         else
                         {
                             m_CallNodeType = ECallNodeType.NewTemplate;
+                            m_MetaClass = m_FrontDefineMetaType.metaClass;
                         }
                     }
                 }
@@ -1043,7 +1045,11 @@ namespace SimpleLanguage.Core
                         }
                         this.m_MetaClass = curmc;
                         m_MetaFunction = mmf;
-                        m_CallNodeType = ECallNodeType.NewClass;
+                        if( (m_CallNodeType != ECallNodeType.NewTemplate)
+                            &&(m_CallNodeType != ECallNodeType.NewClass) )
+                        {
+                            m_CallNodeType = ECallNodeType.NewClass;
+                        }
                         
 
                         if (m_FileMetaCallNode.fileMetaBraceTerm != null)  //可以使用  ArrClass(){ x = ??} 的方式
@@ -1335,7 +1341,7 @@ namespace SimpleLanguage.Core
                         m_MetaVariable = mmv;
                         m_MetaClass = mc;
                         m_MetaType = mmv.metaDefineType;
-                        m_CallMetaType = m_MetaType;
+                        m_CallMetaType = null;
                         m_CallNodeType = ECallNodeType.MemberVariableName;
                         return true;
                     }
@@ -1352,6 +1358,7 @@ namespace SimpleLanguage.Core
                     {
                         m_MetaFunction = mmf;
                         m_MetaClass = mc;
+                        m_CallMetaType = new MetaType(mmv.ownerMetaClass);
                         m_CallNodeType = ECallNodeType.MemberFunctionName;
                         return true;
                     }

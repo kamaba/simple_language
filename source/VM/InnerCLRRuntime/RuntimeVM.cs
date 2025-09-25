@@ -25,7 +25,7 @@ namespace SimpleLanguage.VM.Runtime
         private ushort m_ValueIndex = 0;
 
         private IRMetaClass m_IRClass = null;
-        private List<RuntimeType> m_InputTemplateRuntimeTypeList = null;
+        private List<RuntimeType> m_InputTemplateRuntimeTypeList = new List<RuntimeType>();
         //private List<RuntimeType> m_methodInputTemplateRuntimeTypeList = null;
         private SObject[] m_LocalVariableObjectArray = null;
         private SObject[] m_ArgumentObjectArray = null;
@@ -42,7 +42,10 @@ namespace SimpleLanguage.VM.Runtime
         public RuntimeVM( IRMetaClass irmc, List<RuntimeType> inputTemplateTypeList, IRMethod mmf )
         {
             m_IRClass = irmc;
-            m_InputTemplateRuntimeTypeList = inputTemplateTypeList;
+            if(inputTemplateTypeList != null )
+            {
+                m_InputTemplateRuntimeTypeList = inputTemplateTypeList;
+            }
             //m_methodInputTemplateRuntimeTypeList = methodInputTemplateTypeList;
             m_IRMethod = mmf;
             m_IRDataList = mmf.IRDataList.ToArray();
@@ -561,7 +564,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         var irmt = iri.opValue as IRMetaType;
                         RuntimeType rt = GetClassRuntimeType(irmt, true);
-                        rt.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex--]);
+                        rt.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex++]);
                     }
                     break;
                 case EIROpCode.StoreStaticField:
@@ -713,7 +716,7 @@ namespace SimpleLanguage.VM.Runtime
                         //创建已注册的runtimeType 当前runtimeType在生成类的时候，就已经注册过来了,加快了查找方法
                         IRMetaClass mdt = iri.opValue as IRMetaClass;
                         var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(mdt);
-                        SObject sob = ObjectManager.CreateObjectByRuntimeType(rt);
+                        SObject sob = ObjectManager.CreateObjectByRuntimeType(rt, true);
                         if ( sob is ClassObject co )
                         {
                             ObjectManager.AddClassObject(co);
@@ -725,7 +728,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         IRMetaType mdt = iri.opValue as IRMetaType;
                         var rt = GetClassRuntimeType(mdt, true);
-                        SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt );
+                        SObject sobj = ObjectManager.CreateObjectByRuntimeType( rt, true );
                         if (sobj is ClassObject co)
                         {
                             ObjectManager.AddClassObject(co);

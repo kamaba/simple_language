@@ -15,7 +15,7 @@ namespace SimpleLanguage.VM
     public class Int64Object : SObject
     {
         public Int64 value;
-        public Int64Object( Int64 val )
+        public Int64Object( Int64 val) : base(EType.Int64)
         {
             value = val;
         }
@@ -31,7 +31,7 @@ namespace SimpleLanguage.VM
     public class UInt64Object : SObject
     {
         public UInt64 value;
-        public UInt64Object(UInt64 val)
+        public UInt64Object(UInt64 val) : base(EType.UInt64)
         {
             value = val;
         }

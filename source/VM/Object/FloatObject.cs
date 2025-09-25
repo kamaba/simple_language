@@ -16,7 +16,7 @@ namespace SimpleLanguage.VM
     public class FloatObject : SObject
     {
         public Single value;
-        public FloatObject() 
+        public FloatObject() : base(EType.Float32)
         { }
         public void SetValue(Single _val)
         {

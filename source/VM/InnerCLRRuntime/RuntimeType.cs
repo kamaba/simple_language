@@ -17,7 +17,8 @@ namespace SimpleLanguage.VM
     {
         public IRMetaClass irClass;
         public List<RuntimeType> runtimeTemplateList = new List<RuntimeType>();
-        public List<RuntimeType> memberVariableRuntimeTypeList = new List<RuntimeType>();
+
+        private SObject[] m_StaticMemObjectList = null;
         public RuntimeType(IRMetaClass rc, List<RuntimeType > rtList )
         {
             irClass = rc;
@@ -25,8 +26,39 @@ namespace SimpleLanguage.VM
             {
                 runtimeTemplateList = rtList;
             }
+
+            m_StaticMemObjectList = new SObject[irClass.staticIRMetaVariableList.Count];
+            for ( int i = 0; i < irClass.staticIRMetaVariableList.Count; i++ )
+            {
+                RuntimeType rt = GetClassRuntimeType(irClass.staticIRMetaVariableList[i].irMetaType, true );
+                m_StaticMemObjectList[i] = ObjectManager.CreateObjectByRuntimeType(rt, true );
+            }
         }
-        private List<SObject> m_StaticMemVariableList = new List<SObject>();
+        public RuntimeType GetClassRuntimeType(IRMetaType irmt, bool isAdd = false)
+        {
+            if (irmt.templateIndex != -1)
+            {
+                return runtimeTemplateList[irmt.templateIndex];
+            }
+            else
+            {
+                List<RuntimeType> rtList = new List<RuntimeType>();
+                if (irmt.irMetaTypeList.Count > 0)
+                {
+                    for (int i = 0; i < irmt.irMetaTypeList.Count; i++)
+                    {
+                        var crt = GetClassRuntimeType(irmt.irMetaTypeList[i], isAdd);
+                        rtList.Add(crt);
+                    }
+                }
+                var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.irMetaClass, rtList);
+                if (rt == null && isAdd)
+                {
+                    rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(irmt.irMetaClass, rtList);
+                }
+                return rt;
+            }
+        }
         public void GetMemberVariableSValue(int index, ref SValue svalue)
         {
             if (index < 0)
@@ -34,12 +66,12 @@ namespace SimpleLanguage.VM
                 Log.AddVM(EError.None, "执行的参数超出范围!! < 0 ");
                 return;
             }
-            if (index > m_StaticMemVariableList.Count)
+            if (index > m_StaticMemObjectList.Length)
             {
                 Log.AddVM(EError.None, "执行的参数超出范围!!");
                 return;
             }
-            var mmv = m_StaticMemVariableList[index];
+            var mmv = m_StaticMemObjectList[index];
             switch (mmv)
             {
                 case ByteObject byteob:
@@ -109,10 +141,9 @@ namespace SimpleLanguage.VM
                     break;
             }
         }
-
         public void SetMemberVariableSValue(int index, SValue svalue)
         {
-            if (index > m_StaticMemVariableList.Count)
+            if (index > m_StaticMemObjectList.Length)
             {
                 Log.AddVM(EError.None, "执行的参数超出范围!!");
                 return;
@@ -121,7 +152,7 @@ namespace SimpleLanguage.VM
             {
                 case EType.Null:
                     {
-                        ClassObject classObj = m_StaticMemVariableList[index] as ClassObject;
+                        ClassObject classObj = m_StaticMemObjectList[index] as ClassObject;
                         if (classObj == null)
                         {
                             Log.AddVM(EError.None, "Null 该类型不是Int32类型!!");
@@ -137,7 +168,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Byte:
                     {
-                        ByteObject byteObj = m_StaticMemVariableList[index] as ByteObject;
+                        ByteObject byteObj = m_StaticMemObjectList[index] as ByteObject;
                         if (byteObj == null)
                         {
                             Log.AddVM(EError.None, "Byte 该类型不是Int32类型!!");
@@ -148,7 +179,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.SByte:
                     {
-                        SByteObject sbyteObj = m_StaticMemVariableList[index] as SByteObject;
+                        SByteObject sbyteObj = m_StaticMemObjectList[index] as SByteObject;
                         if (sbyteObj == null)
                         {
                             Log.AddVM(EError.None, "Sbyte 该类型不是Int32类型!!");
@@ -159,7 +190,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Int16:
                     {
-                        Int16Object int32Obj = m_StaticMemVariableList[index] as Int16Object;
+                        Int16Object int32Obj = m_StaticMemObjectList[index] as Int16Object;
                         if (int32Obj == null)
                         {
                             Log.AddVM(EError.None, "Int16 该类型不是Int32类型!!");
@@ -170,7 +201,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.UInt16:
                     {
-                        UInt16Object uint16Obj = m_StaticMemVariableList[index] as UInt16Object;
+                        UInt16Object uint16Obj = m_StaticMemObjectList[index] as UInt16Object;
                         if (uint16Obj == null)
                         {
                             Log.AddVM(EError.None, "UInt16 该类型不是Int16类型!!");
@@ -181,7 +212,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Int32:
                     {
-                        Int32Object int32Obj = m_StaticMemVariableList[index] as Int32Object;
+                        Int32Object int32Obj = m_StaticMemObjectList[index] as Int32Object;
                         if (int32Obj == null)
                         {
                             Log.AddVM(EError.None, "Int32 该类型不是Int32类型!!");
@@ -192,7 +223,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.UInt32:
                     {
-                        UInt32Object uint32Obj = m_StaticMemVariableList[index] as UInt32Object;
+                        UInt32Object uint32Obj = m_StaticMemObjectList[index] as UInt32Object;
                         if (uint32Obj == null)
                         {
                             Log.AddVM(EError.None, "UInt32 该类型不是UInt32类型!!");
@@ -203,7 +234,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Int64:
                     {
-                        Int64Object int64Obj = m_StaticMemVariableList[index] as Int64Object;
+                        Int64Object int64Obj = m_StaticMemObjectList[index] as Int64Object;
                         if (int64Obj == null)
                         {
                             Log.AddVM(EError.None, "Int64 该类型不是Int32类型!!");
@@ -214,7 +245,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.UInt64:
                     {
-                        UInt64Object uint64Obj = m_StaticMemVariableList[index] as UInt64Object;
+                        UInt64Object uint64Obj = m_StaticMemObjectList[index] as UInt64Object;
                         if (uint64Obj == null)
                         {
                             Log.AddVM(EError.None, "UInt64 该类型不是Int64类型!!");
@@ -225,7 +256,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Float32:
                     {
-                        FloatObject floatObj = m_StaticMemVariableList[index] as FloatObject;
+                        FloatObject floatObj = m_StaticMemObjectList[index] as FloatObject;
                         if (floatObj == null)
                         {
                             Log.AddVM(EError.None, "Float 该类型不是float类型!!");
@@ -236,7 +267,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Float64:
                     {
-                        DoubleObject doubleObj = m_StaticMemVariableList[index] as DoubleObject;
+                        DoubleObject doubleObj = m_StaticMemObjectList[index] as DoubleObject;
                         if (doubleObj == null)
                         {
                             Log.AddVM(EError.None, "Double 该类型不是Double类型!!");
@@ -247,7 +278,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.String:
                     {
-                        StringObject stringObj = m_StaticMemVariableList[index] as StringObject;
+                        StringObject stringObj = m_StaticMemObjectList[index] as StringObject;
                         if (stringObj == null)
                         {
                             Log.AddVM(EError.None, "String 该类型不是Int32类型!!");
@@ -258,7 +289,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Class:
                     {
-                        var mva = m_StaticMemVariableList[index];
+                        var mva = m_StaticMemObjectList[index];
                         if (mva.eType == EType.Byte)
                         {
 
@@ -359,14 +390,14 @@ namespace SimpleLanguage.VM
                         }
                         else
                         {
-                            ClassObject classObj = m_StaticMemVariableList[index] as ClassObject;
+                            ClassObject classObj = m_StaticMemObjectList[index] as ClassObject;
                             if (classObj == null)
                             {
                                 Log.AddVM(EError.None, "该类型不是classObj类型!!");
                                 return;
                             }
                             //classObj.SetValue(svalue.sobject as ClassObject);
-                            m_StaticMemVariableList[index] = svalue.sobject as ClassObject;
+                            m_StaticMemObjectList[index] = svalue.sobject as ClassObject;
                         }
                     }
                     break;

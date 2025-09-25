@@ -14,17 +14,6 @@ using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.IR
 {
-    //public class Level<T>
-    //{
-    //    public static T static_t1 = default(T);
-
-    //    public static T create( T t )
-    //    {
-    //        Level<int>.static_t1 = 20;
-    //        Level<T>.static_t1 = t;
-    //        return static_t1;
-    //    }
-    //}
     public class IRMetaClass
     {
         public int id { get; set; } = 0;
@@ -32,7 +21,6 @@ namespace SimpleLanguage.IR
         public bool isTemplateClass => m_IsTemplateClass;
         public int byteCount => m_ByteCount;
         public bool needCallInitMethod => m_NeedCallInitMethod;
-
 
         public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
         public List<IRMetaVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;

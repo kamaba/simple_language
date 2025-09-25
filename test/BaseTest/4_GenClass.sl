@@ -1,4 +1,5 @@
 import Std
+import CSharp.System
 
 namespace Core
 {
@@ -90,21 +91,21 @@ Level1<LevelT1>
 
     Level1Fun<LevelT3>( )
     {
-        LevelStaticValue = new()
+        #LevelStaticValue = new()
 
-        Map< Level1<LevelT3>, LevelT1> map2 = new()
+        #Map< Level1<LevelT3>, LevelT1> map2 = new()
 
         this.LevelMemValue = new()
 
-        Map<LevelT1,Level1<LevelT3> > map = new()
+        #Map<LevelT1,Level1<LevelT3> > map = new()
 
-        LevelT3 lt2 = new()
+        #LevelT3 lt2 = new()
     }
-    static Level1SF<LevelT4>()
+    static Level1SF<LevelT4>( LevelT4 t4 )
     {
         Level1<LevelT4>.LevelStaticValue = new()
 
-        Level1SF<LevelT4>()
+        ret t4
     }
 }
 GenClass
@@ -124,16 +125,16 @@ GenClass
         Level1<Level1<int> > GenClass_fun_l1 = Level1< Level1<int> >()
         GenClass_fun_l1.Level1Fun<byte>()
 
-        Level1<string>.Level1SF<int>()
-
-        int aa = Level1<int>.LevelStaticValue  #aa = null
-        Level1<string>.LevelStaticValue = "2000"
+        #var t4 = Level1<string>.Level1SF<int>(100)
+        #int aa = Level1<int>.LevelStaticValue  #aa = null
+        #Level1<string>.LevelStaticValue = "2000"
 
         #GenClass_fun_l2 = GenClass_fun_l1.add()
         #Debug.Write( "Addresult: " + GenClass_fun_l2 )
         #retstr = GenClass_fun_l1.GetComponent<string>()
         #float GenClass_fun_a = Level1<int>.min<float>( 1.3, 2.5 )
-        #Debug.Write("Flaoat" + a )
+        #System.Console.Write("-----------------------------------" + t4  )
+        #System.Console.Write("-----------------------------------" + Level1<string>.LevelStaticValue  )
     }
 }
 
