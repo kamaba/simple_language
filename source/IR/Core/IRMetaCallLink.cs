@@ -42,13 +42,16 @@ namespace SimpleLanguage.Core.IR
                 MetaVariable mv = cnode.variable;
 
                 IRMetaType irmt = null;
-
                 IRMetaClass irmc = null;
                 if( mv.isStatic )
                 {
                     if( cnode.callMetaType != null )
                     {
                         irmt = new IRMetaType(cnode.callMetaType);
+                    }
+                    else
+                    {
+                        irmt = new IRMetaType(mv.metaDefineType);
                     }
                     irmc = IRManager.instance.GetIRMetaClassById(mv.ownerMetaClass.GetHashCode());
                 }
