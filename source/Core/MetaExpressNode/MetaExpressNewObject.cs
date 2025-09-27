@@ -687,7 +687,7 @@ namespace SimpleLanguage.Core
 
             if(tfunction != null )
             {
-                m_MetaConstructFunctionCall = new MetaMethodCall(null, tfunction, mdpc, null, null);
+                m_MetaConstructFunctionCall = new MetaMethodCall(null, null, tfunction, null, mdpc, null, null);
             }
 
             Init();
@@ -705,7 +705,8 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             m_MetaDefineType = new MetaType(mt);
             Init();
-            m_MetaConstructFunctionCall = new MetaMethodCall( null, null, null, null, null );
+            m_MetaConstructFunctionCall = new MetaMethodCall(mt.metaClass, mt.templateMetaTypeList, m_OwnerMetaBlockStatements.ownerMetaFunction,
+                null, null, null, null );
         }
         // Class1<Int32> a = Class1<Int32>( 10 ){ a = 20; } 
         // Enum1 e1 = Enum1.Val1( 20 );
@@ -861,7 +862,7 @@ namespace SimpleLanguage.Core
             m_FileMetaParTerm = fmpt;
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
-            var mmf = new MetaMethodCall(null, mbs.ownerMetaFunction, null, null, null );
+            var mmf = new MetaMethodCall(null, null, mbs.ownerMetaFunction, null, null, null, null );
             m_MetaConstructFunctionCall = mmf;
             m_MetaDefineType = new MetaType(mt);
 
@@ -885,7 +886,7 @@ namespace SimpleLanguage.Core
             mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaBraceOrBracketStatementsContent.count) ) );
             MetaMemberFunction mmf = m_MetaDefineType.metaClass.GetMetaMemberConstructFunction(mipc);
 
-            m_MetaConstructFunctionCall = new MetaMethodCall(null, mmf, mipc, null, null);
+            m_MetaConstructFunctionCall = new MetaMethodCall(null, null, mmf, null, mipc, null, null);
 
             //eType = EType.Array;
         }

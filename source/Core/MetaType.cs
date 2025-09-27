@@ -32,7 +32,7 @@ namespace SimpleLanguage.Core
         public EMetaTypeType eType => m_EType;
         public MetaClass metaClass => m_MetaClass;
         public MetaClass typeInferenceClass => m_TypeInferenceClass;
-        public MetaClass templateMetaClass => m_TemplateMetaClass;
+        //public MetaClass templateMetaClass => m_TemplateMetaClass;
         public bool isEnum => m_MetaClass is MetaEnum;
         public bool isData => m_MetaClass is MetaData;
         public bool isTemplate => m_EType == EMetaTypeType.Template;
@@ -47,7 +47,7 @@ namespace SimpleLanguage.Core
         //private MetaInputTemplateCollection m_InputTemplateCollection = null;
         private EMetaTypeType m_EType = EMetaTypeType.None;
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
-        private MetaClass m_TemplateMetaClass = null;                    // List<int> => list
+        //private MetaClass m_TemplateMetaClass = null;                    // List<int> => list
         private MetaClass m_TypeInferenceClass = null;                  //推理类
         private MetaType m_ParentMetaType = null;
         private MetaTemplate m_MetaTemplate = null;
@@ -75,15 +75,16 @@ namespace SimpleLanguage.Core
             m_MetaClass = mc;
             m_EType = EMetaTypeType.MetaClass;
         }
-        public MetaType( MetaClass mc, MetaClass templatemc )
+        public MetaType( MetaClass mc, List<MetaType> mtList )
         {
             if (mc == null)
             {
                 Log.AddInStructMeta(EError.None, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
             m_IsDefineMetaClass = false;
-            m_TemplateMetaClass = templatemc;
+            //m_TemplateMetaClass = templatemc;
             m_MetaClass = mc;
+            m_TemplateMetaTypeList = mtList;
             m_EType = EMetaTypeType.TemplateClassWithTemplate;
         }
         public MetaType( MetaClass mc, MetaClass templatemc, MetaInputTemplateCollection mitc )
@@ -95,20 +96,22 @@ namespace SimpleLanguage.Core
             m_IsDefineMetaClass = false;
             if ( mitc == null)
             {
-                m_TemplateMetaClass = templatemc;
+                //m_TemplateMetaClass = templatemc;
                 m_MetaClass = mc;
             }
             else
             {
-                m_TemplateMetaClass = mc;
+                m_MetaClass = templatemc;
+                //m_TemplateMetaClass = mc;
                 //m_InputTemplateCollection = mitc;
                 //m_MetaClass = m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
+                m_TemplateMetaTypeList = mitc.metaTemplateParamsList;
             }
         }
         public MetaType(MetaType mt) : base(mt)
         {
             this.m_MetaClass = mt.m_MetaClass;
-            this.m_TemplateMetaClass = mt.m_TemplateMetaClass;
+            //this.m_TemplateMetaClass = mt.m_TemplateMetaClass;
             this.m_ParentMetaType = mt.m_ParentMetaType;
             this.m_MetaTemplate = mt.m_MetaTemplate;
             this.m_DefaultExpressNode = mt.m_DefaultExpressNode;
@@ -159,26 +162,51 @@ namespace SimpleLanguage.Core
                 var tmt = m_TemplateMetaTypeList[i];
                 if (tmt.IsIncludeClassTemplate(ownerClass))
                 {
-                    return false;
+                    return true;
                 }
             }
-            return true;
+            return false;
         }
         public bool IsIncludeFunctionTemplate( MetaMemberFunction mmf )
         {
-            if (m_MetaTemplate != null && mmf.isTemplateFunction )
+            if( eType == EMetaTypeType.Template )
             {
-                return mmf.metaMemberTemplateCollection.metaTemplateList.IndexOf(m_MetaTemplate) != -1;
-            }
-            for (int i = 0; i < m_TemplateMetaTypeList.Count; i++)
-            {
-                var tmt = m_TemplateMetaTypeList[i];
-                if (tmt.IsIncludeFunctionTemplate(mmf))
+                if (m_MetaTemplate != null && mmf.isTemplateFunction)
                 {
-                    return false;
+                    return mmf.metaMemberTemplateCollection.metaTemplateList.IndexOf(m_MetaTemplate) != -1;
                 }
             }
-            return true;
+            else if( eType == EMetaTypeType .TemplateClassWithTemplate )
+            {
+                for (int i = 0; i < m_TemplateMetaTypeList.Count; i++)
+                {
+                    var tmt = m_TemplateMetaTypeList[i];
+                    if (tmt.IsIncludeFunctionTemplate(mmf))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return false;
+        }
+        //是否包含 模板函数模板  意思就是是否在 templateMetaTypeList 中，有模板函数定义的T
+        public bool isIncludeTemplateFunctionTemplate( MetaMemberFunction mmf )
+        {
+            if( eType == EMetaTypeType.TemplateClassWithTemplate )
+            {
+                if (m_TemplateMetaTypeList.Count == 0) return false;
+                for (int i = 0; i < m_TemplateMetaTypeList.Count; i++)
+                {
+                    var tmt = m_TemplateMetaTypeList[i];
+                    if ( tmt.IsIncludeFunctionTemplate(mmf))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return false;
         }
         public void AddTemplateMetaType( MetaType mt )
         {
@@ -215,7 +243,8 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                if( mdtL.templateMetaClass != mdtR.templateMetaClass )
+                //if( mdtL.templateMetaClass != mdtR.templateMetaClass )
+                if (mdtL.m_MetaClass != mdtR.m_MetaClass)
                 {
                     return false;
                 }
@@ -257,7 +286,8 @@ namespace SimpleLanguage.Core
         }
         public void SetTemplateMetaClass( MetaClass mc )
         {
-            m_TemplateMetaClass = mc;
+            //m_TemplateMetaClass = mc;
+            m_MetaClass = mc;
             m_EType = EMetaTypeType.TemplateClassWithTemplate;
         }
         public void UpdateMetaClassByRawMetaClassAndInputTemplateCollection()
@@ -265,35 +295,46 @@ namespace SimpleLanguage.Core
             //m_MetaClass = m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
         }
         //生成注册后的 模板类的实例类
-        public MetaClass UpdateMetaGenTemplate(List<MetaGenTemplate> metaGenTemplateList)
+        public MetaClass UpdateMetaGenTemplate( List<MetaGenTemplate> metaGenTemplateList)
         {
-            if( m_MetaTemplate != null )
+            if( eType == EMetaTypeType.Template )
             {
-                for( int i = 0; i < metaGenTemplateList.Count; i++ )
+                if (m_MetaTemplate != null)
                 {
-                    var cmgt = metaGenTemplateList[i];
-                    if( cmgt.metaTemplate == m_MetaTemplate )
+                    for (int i = 0; i < metaGenTemplateList.Count; i++)
                     {
-                        return cmgt.metaType.metaClass;
+                        var cmgt = metaGenTemplateList[i];
+                        if (cmgt.metaTemplate == m_MetaTemplate)
+                        {
+                            return cmgt.metaType.metaClass;
+                        }
                     }
                 }
             }
-
-            List<MetaClass> mcList = new List<MetaClass>();
-            for (int i = 0; i < templateMetaTypeList.Count; i++)
+            else if( eType == EMetaTypeType.TemplateClassWithTemplate )
             {
-                var mgt = templateMetaTypeList[i];
-                if( mgt.eType == EMetaTypeType.MetaClass )
+                List<MetaClass> mcList = new List<MetaClass>();
+                for (int i = 0; i < templateMetaTypeList.Count; i++)
                 {
-                    mcList.Add(mgt.metaClass);
+                    var mgt = templateMetaTypeList[i];
+                    if (mgt.eType == EMetaTypeType.MetaClass)
+                    {
+                        mcList.Add(mgt.metaClass);
+                    }
+                    else
+                    {
+                        var mc = mgt.UpdateMetaGenTemplate(metaGenTemplateList);
+                        if( mc == null )
+                        {
+                            Log.AddInStructMeta(EError.None, "注册生成类是空!");
+                            return null;
+                        }
+                        mcList.Add(mc);
+                    }
                 }
-                else
-                {
-                    var mc = mgt.UpdateMetaGenTemplate(metaGenTemplateList);
-                    mcList.Add(mc);
-                }
+                return this.m_MetaClass.AddInstanceMetaClass(mcList);
             }
-            return m_TemplateMetaClass.AddInstanceMetaClass(mcList);
+            return null;
         }
         public MetaType GetMetaInputTemplateByIndex( int index = 0 )
         {
@@ -316,11 +357,12 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            if (m_TemplateMetaClass != null)
-            {
-                sb.Append(m_TemplateMetaClass.allClassName);
-            }
-            else if (m_MetaClass != null)
+            //if (m_TemplateMetaClass != null)
+            //{
+            //    sb.Append(m_TemplateMetaClass.allClassName);
+            //}
+            //else 
+            if (m_MetaClass != null)
             {
                 sb.Append(m_MetaClass.allClassName);
             }
@@ -343,9 +385,18 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    if (m_TemplateMetaClass != null)
+                    //if (m_TemplateMetaClass != null)
+                    //{
+                    //    sb.Append(m_TemplateMetaClass.metaNode.allName);                        
+                    //}
+                    //else 
+                    if (m_MetaClass != null)
                     {
-                        sb.Append(m_TemplateMetaClass.metaNode.allName);
+                        sb.Append(m_MetaClass.allClassName);
+                    }
+
+                    if( m_TemplateMetaTypeList.Count > 0 )
+                    {
                         sb.Append("<");
 
                         for (int i = 0; i < m_TemplateMetaTypeList.Count; i++)
@@ -357,10 +408,6 @@ namespace SimpleLanguage.Core
                             }
                         }
                         sb.Append(">");
-                    }
-                    else if (m_MetaClass != null)
-                    {
-                        sb.Append(m_MetaClass.allClassName);
                     }
                 }
             }

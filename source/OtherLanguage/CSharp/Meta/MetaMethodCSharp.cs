@@ -1,6 +1,7 @@
 ﻿using SimpleLanguage.CSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
@@ -11,7 +12,7 @@ namespace SimpleLanguage.Core
         public MethodInfo methodInfo;
         public System.Object instance;
         public MetaMethodCallCSharp(MetaVariable mv, MetaFunction _fun, MetaInputParamCollection _metaInputParamCollection = null) 
-            : base( null, _fun, _metaInputParamCollection, null, null)
+            : base( null, null, _fun, null,  _metaInputParamCollection, null, null)
         {
             ParseCSharp();
         }
@@ -30,8 +31,28 @@ namespace SimpleLanguage.Core
         }
         public object Execute()
         {
-            var paramsTypes = MetaInputParamCollectionCSharp.GetCSharpParamTypes(m_MetaInputParamCollection);
-            Object[] paramsObjs = new Object[paramsTypes.Length];
+            List<System.Type> typeList = new List<System.Type>();
+            for( int i = 0; i < m_MetaInputParamList.Count; i++ )
+            {
+                var express = m_MetaInputParamList[i];
+
+                MetaClass orgmc = express.GetReturnMetaClass();
+
+                if (orgmc is MetaClassCSharp mcc)
+                {
+                    return mcc.csharpType;
+                }
+
+                if (orgmc == null)
+                {
+                    Debug.Write("Error 没有发现表达式类型MetaClass!");
+                    return typeof(object);
+                }
+
+                System.Type type = MetaTypeCSharp.FindCSharpType(orgmc);
+                typeList.Add(type);
+            }
+            Object[] paramsObjs = new Object[typeList.Count];
 
             return methodInfo.Invoke(instance, paramsObjs);
         }

@@ -18,7 +18,7 @@ namespace SimpleLanguage.IR
             data.debugInfo = new DebugInfo() { name = irmc.irName, info = "IRNew" };
             AddIRData(data);
         }
-        public IRNew(IRMethod irMethod, string opvalue ) : base(irMethod)
+        public IRNew(IRMethod irMethod, IRMetaType opvalue ) : base(irMethod)
         {
             IRData data = new IRData();
             data.opCode = EIROpCode.NewTemplateClass;

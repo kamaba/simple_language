@@ -175,6 +175,23 @@ namespace SimpleLanguage.Core
                 return m_FunctionAllName;
             }
         }
+        public int parseLevel
+        {
+            get
+            {
+                if( m_IsTemplateFunction )
+                {
+                    return 0;
+                }
+                else if( m_OwnerMetaClass.isTemplateClass ){
+                    return 1;
+                }
+                else
+                {
+                    return 2;
+                }
+            }
+        }
         public bool isTemplateFunction => m_IsTemplateFunction;
         public bool isWithInterface => m_IsWithInterface;
         public bool isOverrideFunction => m_IsOverrideFunction;
@@ -186,6 +203,10 @@ namespace SimpleLanguage.Core
         public bool isTemplateInParam => m_IsTemplateInParam;
         public FileMetaMemberFunction fileMetaMemberFunction => m_FileMetaMemberFunction;
         public MetaMemberFunction sourceMetaMemberFunction => m_SourceMetaMemberFunction;
+        public List<MetaType> bindStructTemplateFunctionMtList => m_BindStructTemplateFunctionMtList;
+        public List<MetaType> bindStructTemplateFunctionAndClassMtList => m_BindStructTemplateFunctionAndClassMtList;
+        public List<MetaGenTempalteFunction> genTempalteFunctionList => m_GenTempalteFunctionList;
+
 
         #region 属性
         protected bool m_IsTemplateFunction = false;
@@ -199,6 +220,9 @@ namespace SimpleLanguage.Core
         protected bool m_IsWithInterface = false;
         protected MetaMemberFunction m_SourceMetaMemberFunction = null;
         protected FileMetaMemberFunction m_FileMetaMemberFunction = null;
+        //绑定构建 元类型  
+        protected List<MetaType> m_BindStructTemplateFunctionMtList = new List<MetaType>();
+        protected List<MetaType> m_BindStructTemplateFunctionAndClassMtList = new List<MetaType>();
 
         //模板生成函数，如果匹配了，模板函数后，再进行看是否生成过该函数
         protected List<MetaGenTempalteFunction> m_GenTempalteFunctionList = new List<MetaGenTempalteFunction>();
@@ -243,20 +267,29 @@ namespace SimpleLanguage.Core
 
                 var template = fmmf.metaTemplatesList[i];
 
-                MetaTemplate mdt = new MetaTemplate( ownerMetaClass, template );
+                MetaTemplate mdt = new MetaTemplate( ownerMetaClass, template, i );
                 AddMetaDefineTemplate(mdt);
 
                 //下边的代码未来要转移支解析Meta过程中
                 if( template.inClassNameTemplateNode != null )       //判断是否使用例似于where(csharp) where T : object
                 {
                     var inClassToken = template.inClassNameTemplateNode;
-                    MetaClass gmc = null;// ClassManager.instance.GetMetaClassByNameAndFileMeta( ownerMetaClass, inClassToken.fileMeta, inClassToken.nameList );
+                    MetaNode mn = ClassManager.instance.GetMetaClassByNameAndFileMeta(ownerMetaClass, inClassToken.fileMeta, inClassToken.nameList);
+                    if( mn == null )
+                    {
+                        continue;
+                    }
+                    MetaClass gmc = mn.GetMetaClassByTemplateCount(0);
                     if( gmc == null )
                     {
                         Log.AddInStructMeta( EError.None, "Error 没有查找到inClass的类名, " + inClassToken.ToFormatString());
                         continue;
                     }
                     mdt.SetInConstraintMetaClass(gmc);
+                }
+                else
+                {
+                    mdt.SetInConstraintMetaClass(CoreMetaClassManager.objectMetaClass);
                 }
             }
             m_MetaBlockStatements = new MetaBlockStatements(this, null);
@@ -281,7 +314,7 @@ namespace SimpleLanguage.Core
             m_ConstructInitFunction = mmf.m_ConstructInitFunction;
             m_IsWithInterface = mmf.m_IsWithInterface;
             m_FileMetaMemberFunction = mmf.m_FileMetaMemberFunction;
-            //m_GenTempalteFunctionList = mmf.m_GenTempalteFunctionList;
+            m_GenTempalteFunctionList = mmf.m_GenTempalteFunctionList;
         }
         protected void Init()
         {
@@ -367,7 +400,6 @@ namespace SimpleLanguage.Core
         //如果是模板函数，需要在实例化类后，进行新的实体函数的解析
         public MetaGenTempalteFunction AddGenTemplateMemberFunctionBySelf(List<MetaClass> list)
         {
-
             MetaGenTempalteFunction mgtf = GetGenTemplateFunction(list);
             if (mgtf == null)
             {
@@ -403,6 +435,7 @@ namespace SimpleLanguage.Core
             bool flag = base.Parse();
 
             UpdateVritualFunctionName();
+
             return flag;
         }
         public virtual void ParseDefineMetaType()
@@ -411,14 +444,15 @@ namespace SimpleLanguage.Core
             {
                 if (m_FileMetaMemberFunction.defineMetaClass != null)
                 {
-                    if (m_ConstructInitFunction)
+                    FileMetaClassDefine cmr = m_FileMetaMemberFunction.defineMetaClass;
+                    var defineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(m_OwnerMetaClass, this, cmr);
+
+                    if (m_ConstructInitFunction && defineMetaType.metaClass != CoreMetaClassManager.voidMetaClass )
                     {
                         Log.AddInStructMeta(EError.None, "Error 当前类:" + m_AllName + " 是构建Init类，不允许有返回类型 ");
                     }
                     else
                     {
-                        FileMetaClassDefine cmr = m_FileMetaMemberFunction.defineMetaClass;
-                        var defineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction( m_OwnerMetaClass, this, cmr );
                         m_ReturnMetaVariable.SetMetaDefineType(defineMetaType);
                     }
                 }
@@ -486,7 +520,7 @@ namespace SimpleLanguage.Core
             StringBuilder sb = new StringBuilder();
             sb.Append(m_Name);
             sb.Append("_");
-            sb.Append(m_ReturnMetaVariable.metaDefineType.metaClass.allClassName);
+            sb.Append(m_ReturnMetaVariable.metaDefineType.ToString() );
             sb.Append("_");
             sb.Append(m_MetaMemberParamCollection.maxParamCount);
             if(m_MetaMemberParamCollection.maxParamCount > 0 )
@@ -495,7 +529,7 @@ namespace SimpleLanguage.Core
                 for (int i = 0; i < m_MetaMemberParamCollection.maxParamCount; i++)
                 {
                     var mdp = m_MetaMemberParamCollection.metaDefineParamList[i];
-                    sb.Append(mdp.metaVariable.metaDefineType.metaClass.ToString());
+                    sb.Append(mdp.metaVariable.metaDefineType.ToString());
                     if (i < m_MetaMemberParamCollection.maxParamCount - 1)
                     {
                         sb.Append("_");
@@ -504,6 +538,70 @@ namespace SimpleLanguage.Core
             }
             m_VirtualFunctionName = sb.ToString();
         }
+        public MetaType AddMetaPreTemplateFunction(MetaType mt, out bool isGenMetaClass)
+        {
+            isGenMetaClass = false;
+            if (mt.metaClass == null)
+            {
+                return null;
+            }
+            bool isIncludeTemplateClass = mt.IsIncludeClassTemplate(m_OwnerMetaClass);
+            List<MetaClass> mcList = new List<MetaClass>();
+            for (int i = 0; i < mt.templateMetaTypeList.Count; i++)
+            {
+                var mtc = mt.templateMetaTypeList[i];
+                if (mtc.eType == EMetaTypeType.MetaClass)
+                {
+                    mcList.Add(mtc.metaClass);
+                }
+            }
+            if (mcList.Count == mt.templateMetaTypeList.Count)
+            {
+                MetaGenTemplateClass mgtc = mt.metaClass.AddInstanceMetaClass(mcList);
+                isGenMetaClass = true;
+                return new MetaType(mgtc);
+            }
+            if(isIncludeTemplateClass )
+            {
+                var find = FindBindStructTemplateFunctionAndClassMtList(mt);
+                if (find == null)
+                {
+                    this.m_BindStructTemplateFunctionAndClassMtList.Add(new MetaType(mt));
+                }
+            }
+            else
+            {
+                var find = FindBindStructTemplateFunctionMtList(mt);
+                if (find == null)
+                {
+                    this.m_BindStructTemplateFunctionMtList.Add(new MetaType(mt));
+                }
+            }
+            return mt;
+        }
+        public MetaType FindBindStructTemplateFunctionMtList(MetaType mt)
+        {
+            foreach (var v in m_BindStructTemplateFunctionMtList)
+            {
+                if (MetaType.EqualMetaDefineType(v, mt))
+                {
+                    return v;
+                }
+            }
+            return null;
+        }
+        public MetaType FindBindStructTemplateFunctionAndClassMtList(MetaType mt)
+        {
+            foreach (var v in m_BindStructTemplateFunctionAndClassMtList)
+            {
+                if (MetaType.EqualMetaDefineType(v, mt))
+                {
+                    return v;
+                }
+            }
+            return null;
+        }
+
         public static MetaStatements CreateMetaSyntax( FileMetaSyntax rootMs, MetaBlockStatements currentBlockStatements)
         {    
             MetaStatements beforeStatements = currentBlockStatements;            
