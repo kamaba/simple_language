@@ -16,13 +16,18 @@ namespace SimpleLanguage.Core
     {
         public List<MetaGenTemplate> metaGenTemplateList => m_MetaGenTemplateList;
 
-        protected MetaMemberFunction m_OriginalMetaMemberFunction = null;
+        protected MetaMemberFunction m_SourceMetaMemberFunction = null;
         protected List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
         public MetaGenTempalteFunction(MetaMemberFunction mmc, List<MetaGenTemplate> list ) : base(mmc.ownerMetaClass)
         {
-            m_OriginalMetaMemberFunction = mmc;
+            m_SourceMetaMemberFunction = mmc;
             UpdateGenMemberFunctionByTemplateClass(mmc);
             m_MetaGenTemplateList = list;
+        }
+        public MetaGenTempalteFunction( MetaGenTempalteFunction mgtf ) : base(mgtf)
+        {
+            m_SourceMetaMemberFunction = mgtf.m_SourceMetaMemberFunction;
+            m_MetaGenTemplateList = mgtf.m_MetaGenTemplateList;
         }
         public MetaGenTempalteFunction(MetaClass mc, string _name) : base(mc)
         {
@@ -35,7 +40,6 @@ namespace SimpleLanguage.Core
 
             Init();
         }
-
         public bool MatchInputTemplateInsance(List<MetaClass> instMcList)
         {
             if (m_MetaGenTemplateList.Count != instMcList.Count)
@@ -61,7 +65,6 @@ namespace SimpleLanguage.Core
             m_MetaMemberParamCollection = mmf.metaMemberParamCollection;
             for( int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++ )
             {
-                //MetaMemberParamCollection.metaDefineParamList[i].
             }
             m_FileMetaMemberFunction = mmf.fileMetaMemberFunction;
             m_Name = mmf.name;
@@ -94,8 +97,60 @@ namespace SimpleLanguage.Core
         {
             return m_MetaGenTemplateList.Find(a => a.name == name);
         }
+        public void UpdateRegsterGenMetaFunction()
+        {
+            //这个过程是 绑定 原来注册过来的T的已有的类
+
+            List<MetaGenTemplate> mgtList = m_MetaGenTemplateList;
+            var curfun = this.m_SourceMetaMemberFunction;
+            while (true)
+            {
+                if (curfun.sourceMetaMemberFunction == null)
+                    break;
+                curfun = curfun.sourceMetaMemberFunction;
+            }
+
+            for (int i = 0; i < curfun.bindStructTemplateFunctionMtList.Count; i++)
+            {
+                curfun.bindStructTemplateFunctionMtList[i].UpdateMetaGenTemplate(mgtList);
+            }
+        }
+        public void UpdateRegsterGenMetaFunctionAndClass(List<MetaGenTemplate> classGtList)
+        {
+            //这个过程是 绑定 原来注册过来的T的已有的类
+
+            List<MetaGenTemplate> mgtList = m_MetaGenTemplateList;
+            var curfun = this.m_SourceMetaMemberFunction;
+            while (true)
+            {
+                if (curfun.sourceMetaMemberFunction == null)
+                    break;
+                curfun = curfun.sourceMetaMemberFunction;
+            }
+            if(curfun.bindStructTemplateFunctionAndClassMtList.Count == 0 )
+            {
+                return;
+            }
+
+            mgtList.AddRange(classGtList);
+
+            for (int i = 0; i < curfun.bindStructTemplateFunctionAndClassMtList.Count; i++)
+            {
+                curfun.bindStructTemplateFunctionAndClassMtList[i].UpdateMetaGenTemplate(mgtList);
+            }
+        }
         public override bool Parse()
         {
+            UpdateRegsterGenMetaFunction();
+
+            if( this.m_OwnerMetaClass.isTemplateClass )
+            {
+                for( int i = 0; i < this.m_OwnerMetaClass.metaGenTemplateClassList.Count; i++ )
+                {
+                    var mgtc = this.m_OwnerMetaClass.metaGenTemplateClassList[i];
+                    mgtc.UpdateRegisterTemplateFunction();
+                }
+            }
             return true;
         }
         public override string ToString()

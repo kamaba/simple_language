@@ -41,11 +41,23 @@ namespace SimpleLanguage.VM.InnerCLRRuntime
         }
         Dictionary<int, RuntimeClass> m_RuntimeClassDict = new Dictionary<int, RuntimeClass>();
 
+        public List<IRMetaClass> m_IRMetaClassList = new List<IRMetaClass>();
+
 
         public void RegisterDymnicClass()
         {
 
         }
+
+        //public IRMetaType GetIRMetaClass( IRMetaClass metaclass, List<IRMetaClass> templateList, bool isNonIncludeAndRegister = false )
+        //{
+        //    IRMetaClass irmc = null;
+
+        //    foreach( var v in m_IRMetaClassList )
+        //    {
+        //        if( v.irmeta)
+        //    }
+        //}
 
         public ClassObject GetStaticMetaMemberVariable( int classid, int index )
         {

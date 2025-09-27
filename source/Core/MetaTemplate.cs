@@ -15,6 +15,7 @@ namespace SimpleLanguage.Core
 {
     public class MetaTemplate : MetaBase
     {
+        public int index => m_Index;
         public bool isInFunction => m_IsInFunction;
         public MetaClass extendsMetaClass => m_ExtendsMetaClass;
         public MetaClass ownerClass => m_OwnerClass;
@@ -23,20 +24,26 @@ namespace SimpleLanguage.Core
         protected MetaClass m_OwnerClass = null;
         protected MetaClass m_ExtendsMetaClass = null;
         protected bool m_IsInFunction = false;
+        protected int m_Index = -1;
         //该属性为了绑定new的 _init_ 的方法 然后在实例化模板类的时候，去检查该类，的相关方法，是否有 private _init_的方法，然后就可以确定
         // T t = new() 这时候， 是否有出错 的现象 例 Level<T>{ test(){ T t = new() } } TC{ private _init_(){} } main(){ Level<TC> tc = new()
         // 这时候要进行报错处理，因为在Level.test()里边，有对T进行new的注册，是_init_方法，但Level<TC> 
         protected List<MetaMethodCall> m_BindConstructFunction = new List<MetaMethodCall>();
-        public MetaTemplate( MetaClass mc, FileMetaTemplateDefine fmtd)
+        public MetaTemplate( MetaClass mc, FileMetaTemplateDefine fmtd, int index )
         {
             m_Name = fmtd.name;
             m_FileMetaTemplateDefine = fmtd;
             m_OwnerClass = mc;
+            this.m_Index = index;
         }
         public MetaTemplate( MetaClass mc, string name )
         {
             m_Name = name;
             m_OwnerClass = mc;
+        }
+        public void SetIndex( int index )
+        {
+            this.m_Index = index;
         }
         public void ParseInConstraint()
         {

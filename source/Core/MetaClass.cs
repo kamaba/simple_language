@@ -59,8 +59,6 @@ namespace SimpleLanguage.Core
         }
         public List<MetaMemberFunction> nonStaticVirtualMetaMemberFunctionList => m_NonStaticVirtualMetaMemberFunctionList;
         public List<MetaMemberFunction> staticMetaMemberFunctionList => m_StaticMetaMemberFunctionList;
-        //public List<MetaMemberFunction> allMetaMemberFunctionList => m_AllMetaMemberFunctionList;
-        //public List<MetaMemberFunction> currentClassMetaMemberFunctionList => m_CurrentClassMetaMemberFunctionList;
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
         public Dictionary<string, MetaMemberFunctionTemplateNode> metaMemberFunctionTemplateNodeDict => m_MetaMemberFunctionTemplateNodeDict;
         public Dictionary<string, MetaMemberVariable> metaExtendMemeberVariableDict => m_MetaExtendMemeberVariableDict;
@@ -257,10 +255,10 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                this.m_ExtendClass = m_ExtendClassMetaType.templateMetaClass;
+                this.m_ExtendClass = m_ExtendClassMetaType.metaClass;
             }
         }
-        public virtual void UpdateInterfaceMetaClass()
+        public virtual void ParseInterfaceRelation()
         {
             m_InterfaceMetaType.Clear();
             foreach ( var v in this.fileMetaClassDict )
@@ -484,7 +482,7 @@ namespace SimpleLanguage.Core
         public MetaType AddMetaPreTemplateClass( MetaType mt, out bool isGenMetaClass )
         {
             isGenMetaClass = false;
-            if ( mt.templateMetaClass == null )
+            if ( mt.metaClass == null )
             {
                 return null;
             }
@@ -499,7 +497,7 @@ namespace SimpleLanguage.Core
             }
             if( mcList.Count == mt.templateMetaTypeList.Count )
             {
-                MetaGenTemplateClass mgtc = mt.templateMetaClass.AddInstanceMetaClass(mcList);
+                MetaGenTemplateClass mgtc = mt.metaClass.AddInstanceMetaClass(mcList);
                 isGenMetaClass = true;
                 return new MetaType( mgtc );
             }
@@ -616,14 +614,21 @@ namespace SimpleLanguage.Core
         }
         public void CalcExtendLevel()
         {
-            MetaClass mc = m_ExtendClass;
-            int level = 0;
-            while (mc != null)
+            if( m_InterfaceClass != null )
             {
-                level++;
-                mc = mc.extendClass;
+                m_ExtendLevel = 0;
             }
-            m_ExtendLevel = level;
+            else
+            {
+                MetaClass mc = m_ExtendClass;
+                int level = 0;
+                while (mc != null)
+                {
+                    level++;
+                    mc = mc.extendClass;
+                }
+                m_ExtendLevel = level;
+            }
         }
         public bool IsParseMetaClass(MetaClass parentClass, bool isIncludeSelf = true )
         {
@@ -809,24 +814,18 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParam(string name, MetaInputTemplateCollection inputTemplate, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true )
+        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParam(string name, int templateParamCount, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true )
         {
             if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name) )
             {
                 return null;
             }
             var tnode = this.m_MetaMemberFunctionTemplateNodeDict[name];
-            int count = 0;
-            if( inputTemplate != null )
-            {
-                count = inputTemplate.metaTemplateParamsList.Count;
-            }
-
-            if( !tnode.metaTemplateFunctionNodeDict.ContainsKey(count) )
+            if( !tnode.metaTemplateFunctionNodeDict.ContainsKey(templateParamCount) )
             {
                 return null;
             }
-            var tfunctionNode = tnode.metaTemplateFunctionNodeDict[count];
+            var tfunctionNode = tnode.metaTemplateFunctionNodeDict[templateParamCount];
 
             var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputParam != null ? inputParam.count : 0 );
             if (list == null) return null;
@@ -852,11 +851,11 @@ namespace SimpleLanguage.Core
         }
         public virtual MetaMemberFunction GetMetaMemberConstructFunction( MetaInputParamCollection mmpc )
         {
-            return GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", null, mmpc, false );
+            return GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", 0, mmpc, false );
         }
         public MetaMemberFunction GetFirstMetaMemberFunctionByName( string name )
         {
-            return GetMetaMemberFunctionByNameAndInputTemplateInputParam( name, null, null );
+            return GetMetaMemberFunctionByNameAndInputTemplateInputParam( name, 0, null );
         }
         public List<MetaMemberFunction> GetMemberInterfaceFunction()
         {
@@ -970,13 +969,13 @@ namespace SimpleLanguage.Core
                     stringBuilder.Append(">");
                 }
             }
-            if (m_InterfaceClass.Count > 0)
+            if (m_InterfaceMetaType.Count > 0)
             {
                 stringBuilder.Append(" interface ");
             }
-            for (int i = 0; i < m_InterfaceClass.Count; i++)
+            for (int i = 0; i < m_InterfaceMetaType.Count; i++)
             {
-                stringBuilder.Append(m_InterfaceClass[i].allClassName );
+                stringBuilder.Append(m_InterfaceMetaType[i].ToFormatString() );
                 if (i != m_InterfaceClass.Count - 1)
                     stringBuilder.Append(",");
             }

@@ -70,7 +70,7 @@ namespace SimpleLanguage.Core
             }
             if (isNeedReg)
             {
-                var newmc = mt.templateMetaClass.AddInstanceMetaClass(regMCList);
+                var newmc = mt.metaClass.AddInstanceMetaClass(regMCList);
                 if (newmc == null)
                 {
                     Log.AddInStructMeta(EError.None, "MetaClass is Null");
@@ -170,7 +170,11 @@ namespace SimpleLanguage.Core
                 MetaType mt2 = GetAndRegisterTemplateDefineMetaTemplateClass(ownerMc, findfn, inputTemplateNodeList[i]);
                 mt.AddTemplateMetaType(mt2);
             }
-            return ownerMc.AddMetaPreTemplateClass(mt, out bool igmc);
+
+            if (ProjectManager.useGenMetaClass)
+                return ownerMc.AddMetaPreTemplateClass(mt, out bool igmc);
+            else
+                return mt;
         }
         MetaType GetAndRegisterTemplateDefineMetaTemplateClass(MetaClass ownerMc, MetaClass findMc, FileInputTemplateNode fmtd)
         {
@@ -220,7 +224,12 @@ namespace SimpleLanguage.Core
                             //}
                         }
                     }
-                    return ownerMc.AddMetaPreTemplateClass(mt, out bool igmc);
+                    if (ProjectManager.useGenMetaClass)
+                        return ownerMc.AddMetaPreTemplateClass(mt, out bool igmc);
+                    else
+                    {
+                        return mt;
+                    }
                 }
             }
             else
@@ -263,6 +272,10 @@ namespace SimpleLanguage.Core
                 else if (mmf != null)
                 {
                     var mt = mmf.GetMetaDefineTemplateByName(fmcd.stringList[0]);
+                    if( mt == null )
+                    {
+                        return null;
+                    }
                     return new MetaType(mt);
                 }
                 else
@@ -302,7 +315,7 @@ namespace SimpleLanguage.Core
 
             return null;
         }
-        MetaType HandleInputTemplateNodeList( MetaClass curMc, MetaClass findfn, MetaMemberFunction mmf, List<FileInputTemplateNode> inputTemplateNodeList)
+        public MetaType HandleInputTemplateNodeList( MetaClass curMc, MetaClass findfn, MetaMemberFunction mmf, List<FileInputTemplateNode> inputTemplateNodeList)
         {
             var getmc = findfn;
             MetaType mt = new MetaType();
@@ -317,9 +330,22 @@ namespace SimpleLanguage.Core
             {
                 var t = RegisterTemplateDefineMetaTemplateFunction(curMc, mmf, inputTemplateNodeList[i]);
                 mt.AddTemplateMetaType(t);
-
             }
-            return curMc.AddMetaPreTemplateClass(mt, out bool igmc);
+            if( ProjectManager.useGenMetaClass )
+            {
+                if (mmf?.isTemplateFunction == true && mt.isIncludeTemplateFunctionTemplate(mmf))
+                {
+                    return mmf.AddMetaPreTemplateFunction(mt, out bool igmc);
+                }
+                else
+                {
+                    return curMc.AddMetaPreTemplateClass(mt, out bool igmc);
+                }
+            }
+            else
+            {
+                return mt;
+            }
         }
         public MetaType RegisterTemplateDefineMetaTemplateFunction(MetaClass ownerMc, MetaMemberFunction mmf, FileInputTemplateNode fmtd)
         {

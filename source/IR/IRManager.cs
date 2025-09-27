@@ -6,14 +6,11 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
 using SimpleLanguage.VM;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Numerics;
 using System.Text;
 
 namespace SimpleLanguage.IR
@@ -94,7 +91,7 @@ namespace SimpleLanguage.IR
 
             ParseIRMethod();
         }
-        public IRMetaClass GetIRMetaClassById( short id )
+        public IRMetaClass GetIRMetaClassById( int id )
         {
             return m_IRMetaClassList.Find(a => a.id == id );
         }
@@ -106,26 +103,21 @@ namespace SimpleLanguage.IR
         {
             //解析成员中的string类型
             //解析成员中的const类型
-            var classDict = ClassManager.instance.allClassDict;
-            foreach (var v in classDict)
+            var classList = ClassManager.instance.runtimeClassList;
+            foreach (var v in classList)
             {
-                IRMetaClass irmc = new IRMetaClass(this);
-                irmc.CreateMetaClassData(v.Value);
+                IRMetaClass irmc = new IRMetaClass(v);
                 m_IRMetaClassList.Add(irmc);
+                if(!irmc.isTemplateClass)
+                    RuntimeTypeManager.AddRuntimeTypeByClass(irmc);
             }
-            foreach (var v in classDict)
+            var list = RuntimeTypeManager.runtimeList;
+            foreach ( var v in m_IRMetaClassList )
             {
-                if( v.Value is MetaGenTemplateClass mgtc )
-                {
-                    IRMetaClass irmc = GetIRMetaClassByName(GetIRNameByMetaClass(v.Value));
-                    IRMetaClass irmcc = GetIRMetaClassByName(GetIRNameByMetaClass(mgtc.metaTemplateClass));
-                    if( irmcc != null && irmc != null )
-                    {
-                        irmc.SetTemplateIRMetaClass(irmcc);
-                    }
-                }
-
+                v.CreateMemberData();
+                v.CreateMemberMethod();
             }
+            
             foreach ( var v in m_IRMetaClassList)
             {
                 foreach( var v2 in v.localIRMetaVariableList )
@@ -134,17 +126,17 @@ namespace SimpleLanguage.IR
                 }
 
             }
-            foreach ( var v in classDict )
+            foreach ( var v in classList )
             {
-                if( v.Value.isTemplateClass )
+                if( v.isTemplateClass )
                 {
                     continue;
                 }
-                var irmc = m_IRMetaClassList.Find(a => a.irName == v.Key);
+                var irmc = m_IRMetaClassList.Find(a => a.irName == v.allClassName );
                 if (irmc == null)
                     continue;
 
-                if ( v.Value is MetaEnum me )
+                if ( v is MetaEnum me )
                 {
                     var mmvd = me.metaMemberEnumDict;
                     //foreach (var v2 in mmvd)
@@ -165,7 +157,7 @@ namespace SimpleLanguage.IR
                     //    m_StaticVariableList.Add(irMV);
                     //}
                 }
-                else if( v.Value is MetaData md )
+                else if( v is MetaData md )
                 {
                     var mmvd = md.metaMemberDataDict;
                     foreach (var v2 in mmvd)
@@ -181,7 +173,7 @@ namespace SimpleLanguage.IR
                 }
                 else
                 {
-                    var mmvd = v.Value.metaMemberVariableDict;
+                    var mmvd = v.metaMemberVariableDict;
                     foreach (var v2 in mmvd)
                     {
                         if (v2.Value.isStatic)
@@ -309,7 +301,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                sb.Append(mt.templateMetaClass.metaNode.allName);
+                sb.Append(mt.metaClass.metaNode.allName);
                 sb.Append("<");
                 for (int i = 0; i < mt.templateMetaTypeList.Count; i++)
                 {

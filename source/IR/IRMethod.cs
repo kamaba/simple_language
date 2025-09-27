@@ -48,22 +48,12 @@ namespace SimpleLanguage.IR
 
             if (mf.thisMetaVariable != null)
             {
-                var tmv = mf.thisMetaVariable.sourceMetaVariable;
-                if( tmv == null )
-                {
-                    tmv = mf.thisMetaVariable;
-                }
-                IRMetaVariable imp = new IRMetaVariable(tmv, 0);
+                IRMetaVariable imp = new IRMetaVariable(mf.thisMetaVariable, 0);
                 m_MethodArgumentList.Add(imp);
             }
             if (mf.returnMetaVariable!=null)
             {
-                var tmv = mf.returnMetaVariable.sourceMetaVariable;
-                if (tmv == null)
-                {
-                    tmv = mf.returnMetaVariable;
-                }
-                IRMetaVariable imp = new IRMetaVariable(tmv, 0);
+                IRMetaVariable imp = new IRMetaVariable(mf.returnMetaVariable, 0);
                 m_MethodReturnList.Add(imp);
             }
             var list2 = mf.metaMemberParamCollection.metaDefineParamList;
@@ -71,11 +61,7 @@ namespace SimpleLanguage.IR
             {
                 MetaDefineParam mdp = list2[i];
                 if (mdp == null) continue;
-                var tmv = mdp.metaVariable.sourceMetaVariable;
-                if (tmv == null)
-                {
-                    tmv = mdp.metaVariable;
-                }
+                var tmv = mdp.metaVariable;
                 IRMetaVariable imp = new IRMetaVariable(tmv, m_MethodArgumentList.Count);
                 m_MethodArgumentList.Add(imp);
             }
@@ -83,12 +69,7 @@ namespace SimpleLanguage.IR
             var list = mf.GetCalcMetaVariableList();
             for( int i = 0; i < list.Count; i++ )
             {
-                var tmv = list[i].sourceMetaVariable;
-                if (tmv == null)
-                {
-                    tmv = list[i];
-                }
-                var irsd = new IRMetaVariable(tmv, m_MethodLocalVariableList.Count);
+                var irsd = new IRMetaVariable(list[i], m_MethodLocalVariableList.Count);
                 m_MethodLocalVariableList.Add(irsd);
             }
 

@@ -10,9 +10,6 @@ using SimpleLanguage.Core;
 using SimpleLanguage.Core.IR;
 using SimpleLanguage.Core.Statements;
 using SimpleLanguage.Parse;
-using System.Collections;
-using System.Collections.Generic;
-using static SimpleLanguage.Core.MetaVariable;
 
 namespace SimpleLanguage.IR
 {
@@ -52,29 +49,9 @@ namespace SimpleLanguage.IR
                     {
                         //这种是  Obja.Objb = new()的方式
                         var mv = finalMVN.GetRetMetaVariable();
-                        List<IRBase> irList = new List<IRBase>();
-                        IRMetaClass irmc = null;
 
-                        IRBase irbase = IRUtil.GetSetCallClass(mv.metaDefineType, mv.ownerMetaClass, out irmc);
-                        if (irbase != null)
-                        {
-                            m_IRStatements.Add(irbase);
-                        }
-
-                        m_IRStatements.AddRange(irList);
-
-                        IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irMethod, irmc, finalMVN.variable);
+                        IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable( new IRMetaType(mv.metaDefineType), irMethod, finalMVN.variable);
                         m_IRStatements.Add(irsv);
-
-                        if (irbase != null )
-                        {
-                            List<IRBase> irList22 = new List<IRBase>();
-                            IRData sc2end = new IRData();
-                            sc2end.opCode = EIROpCode.UnSetCallClass;
-                            IRBase irbase2 = new IRBase(sc2end);
-                            irList22.Add(irbase2);
-                            m_IRStatements.AddRange(irList22);
-                        }
 
                     }
                     else if (finalMVN.visitType == MetaVisitNode.EVisitType.MethodCall)
@@ -111,43 +88,11 @@ namespace SimpleLanguage.IR
                         if (cl.visitType == MetaVisitNode.EVisitType.Variable)
                         {
                             var mv = cl.GetRetMetaVariable();
-                            IRMetaClass irmc = null;
-                            IRBase irbase = null;
-                            if (mv.isStatic)
-                            {
-                                irbase = IRUtil.GetSetCallClass(cl.staticMetaType, mv.ownerMetaClass, out irmc);
-                                if (irbase != null)
-                                {
-                                    m_IRStatements.Add(irbase);
-                                }
-                            }
-                            else
-                            {
-                                MetaClass mc = null;
-                                if( mv.ownerMetaClass is MetaGenTemplateClass mgtc )
-                                {
-                                    mc = mgtc.metaTemplateClass;
-                                }
-                                else
-                                {
-                                    mc = mv.ownerMetaClass;
-                                }
-                                var irname = IRManager.GetIRNameByMetaClass(mc);
-                                irmc = IRManager.instance.GetIRMetaClassByName(irname);
-                            }
-                            IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irMethod, irmc, clist[i].variable);
+                            IRMetaType irmt = new IRMetaType(cl.callMetaType);
+                            //else
+                            //    irmt = new IRMetaType(mv.ownerMetaClass, null);
+                            IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irmt, irMethod, clist[i].variable);
                             m_IRStatements.Add(irsv);
-
-                            if (irbase != null )
-                            {
-                                List<IRBase> irList22 = new List<IRBase>();
-                                IRData sc2end = new IRData();
-                                sc2end.opCode = EIROpCode.UnSetCallClass;
-                                IRBase irbase2 = new IRBase(sc2end);
-                                irList22.Add(irbase2);
-                                m_IRStatements.AddRange(irList22);
-                            }
-
                         }
                         else if( cl.visitType == MetaVisitNode.EVisitType.MethodCall )
                         {

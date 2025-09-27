@@ -43,11 +43,12 @@ namespace SimpleLanguage.IR
                     if (mires.metaAssignManager?.isNeedSetMetaVariable == true)
                     {
                         IRMetaClass irmc = _irMethod.irManager.GetIRMetaClassByName("S.Core.Bool");
-                        IRStoreVariable storeLocal = IRStoreVariable.CreateIRStoreVariable(_irMethod, irmc, mires.boolConditionVariable );
+                        IRStoreVariable storeLocal = IRStoreVariable.CreateIRStoreVariable( new IRMetaType(irmc, null ), _irMethod, mires.boolConditionVariable );
                         //storeLocal.data.SetDebugInfoByToken(mires.boolConditionVariable.pingToken);
                         conditionStatList.Add(storeLocal);
 
-                        IRLoadVariable loadLocal = IRLoadVariable.NewLoadVariable(_irMethod, irmc, mires.boolConditionVariable );
+                        IRMetaType irmt = new IRMetaType(irmc, null);
+                        IRLoadVariable loadLocal = IRLoadVariable.CreateLoadVariable(irmt, _irMethod, mires.boolConditionVariable );
                         //loadLocal.data.SetDebugInfoByToken(mires.boolConditionVariable.pingToken);
                         conditionStatList.Add(loadLocal);
                     }

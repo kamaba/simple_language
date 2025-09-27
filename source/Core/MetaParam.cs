@@ -455,12 +455,6 @@ namespace SimpleLanguage.Core
     {
         public List<MetaInputParam> metaInputParamList => m_MetaInputParamList;
         public int count { get { return m_MetaInputParamList.Count; } }
-        public bool fixedParam { get { return minParamCount == maxParamCount; } }
-        public int minParamCount => m_MinParamCount;
-        public int maxParamCount { get { return m_MetaInputParamList.Count; } }
-        public bool isCanCallFunction { get; set; } = true;
-
-        private int m_MinParamCount = 0;
         private MetaClass m_OwnerMetaClass = null;
         private MetaBlockStatements m_MetaBlockStatements = null;
         private List<MetaInputParam> m_MetaInputParamList = new List<MetaInputParam>();
@@ -639,6 +633,23 @@ namespace SimpleLanguage.Core
         private bool m_IsTemplateName = false;
         public MetaInputTemplateCollection()
         {
+        }
+        public List<MetaClass> GetMetaClassList( out bool isAllMetaClass )
+        {
+            isAllMetaClass = false;
+            List<MetaClass> mcList = new List<MetaClass>();
+            for (int i = 0; i < m_MetaTemplateParamsList.Count; i++)
+            {
+                if (m_MetaTemplateParamsList[i].metaClass != null)
+                {
+                    mcList.Add(m_MetaTemplateParamsList[i].metaClass);
+                }
+            }
+            if( mcList.Count > 0 && mcList.Count == m_MetaTemplateParamsList.Count )
+            {
+                isAllMetaClass = true;
+            }
+            return mcList;
         }
         //public MetaInputTemplateCollection(List<FileInputTemplateNode> callNodeList, MetaBlockStatements bms, MetaClass mc )
         //{

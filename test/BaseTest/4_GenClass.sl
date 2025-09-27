@@ -70,293 +70,69 @@ namespace Core
     }
 
 }
-
-public class Class1
+Map<MapT1,MapT2>
 {
-    public int a = 20
-
-    public static Class1 instance = Class1(){a = 0}
+    MapT1 m1 = null
+    MapT2 m2 = null
 }
-List0<T>
+Level1<LevelT1>
 {
-    List1<List2<T> > List0_list0t = null
-    T List0_list0t1 = null
-    List1<T> List0_list0t2 = null
-    List0<int> List0_list0t3 = null
-    T getA(){ ret null}
+    static LevelT1 LevelStaticValue = null
+    LevelT1 LevelMemValue = new()
+    Map<LevelT1, Level1<LevelT1> > mappp22 = new()
 
-    _init_()
+    Level1Com()
     {
+        this.LevelMemValue = new()
 
+        LevelT1 lt2 = new()
     }
 
-    _init_( int c )
+    Level1Fun<LevelT3>( )
     {
+        LevelStaticValue = new()
 
-    }
-}
-List1<T> extends List0<T>
-{
-    T List1_list1t = null
-    T List1_getB(){ ret null}
-}
-List2<T> extends List1<List0<object> >
-{
-    T list2t = null
-    T getC(){ ret null} 
-}
-Map<T1,T2>
-{
-}
+        Map< Level1<LevelT3>, LevelT1> map2 = new()
 
-public interface IList
-{
-    int add(object value)
-    void clear( IList<int> a )
-    #interface bool contains( object value )
-    #interface int indexOf( object value )
-    #interface void insert( int index, object val )
-    #interface void remove( object value )
-    #interface void removeAt( int index )
-}
-public interface IList<T>
-{
-    #interface T getValue( int index )
-    void insert( int index, T t )
-}
-public interface ILInstList<T> extends IList<object>
-{
-    void insert2( int index, T t )
-}
-public interface IList2<T>
-{
-    void T getABC()
-}
+        this.LevelMemValue = new()
 
-public class List extends List<object> interface IList2<List<int> >    #如果出现T会报错
-{
-    override List<int> getABC(){ ret null }
-}
+        Map<LevelT1,Level1<LevelT3> > map = new()
 
-public class List<T> interface IList<T>, IList
-{
-    List0<List1<T> > _listObj1 = null
-    List<string> _listObj2 = null
-    private Int32 _count = 0;
-    #UInt16 m_Bound1 = 0;
-    #UInt16 m_Bound2 = 0;
+        LevelT3 lt2 = new()
+    }
+    static Level1SF<LevelT4>()
+    {
+        Level1<LevelT4>.LevelStaticValue = new()
 
-    int _index = -1;
-    T _value = null
-
-    int _listPtr = 0;
-
-    _init_( int _count = 0 )
-    {
-        #this.m_Count = _count
-        #this.m_Bound1 = _b1
-        #this._listPtr = ListMetaClass.SetListCount( _count )
-    }
-    #!
-    _init_( short _count = 0s, short _b1 = 0s )
-    {
-        #this.m_Count = _count;
-        #this.m_Bound1 = _b1;
-    } 
-    !#   
-    
-    override add( T t )
-    {
-        var Listt_r1 = null;  #CSharp.SL.Core.MetaArrayClass.Add( this, t );
-        if Listt_r1 != null
-        {
-        #    this.m_Count++
-        }
-    }
-    #!
-    bool removeAt( int index )
-    {
-        byte ret1 = 1;  #CSharp.SL.Core.MetaArrayClass.RemoveIndex( this, index )
-        if( ret1 == 1 )
-        {
-            this.m_Count--;
-        }
-        ret true ? ret1 == 1 : false
-    }
-    bool remove( T t )
-    {
-        CSharp.SL.Core.MetaArrayClass.Remove( this, t );
-        ret false
-    }
-    int get index()
-    {
-        ret this.m_Index;
-    }
-    #[index]
-    public T _index_( int _index )
-    {
-        Ptr obj = CSharp.SL.Core.MetaArrayClass.GetValue( this, _index )
-        return obj.cast<T>()
-    }
-    #["index"]
-    public T _index_( string _index )
-    {
-        int index = _index.tryCast<int>(-1);
-        if( index != -1 )
-        {
-            ret this._index_( index );
-        }
-        ret T.default;
-    }
-    set index( int a )
-    {
-        this.m_Index = a;
-    }
-    get T value()
-    {
-        ret this.m_Value;
-    }
-    public void set value( T t )
-    {
-        this.m_Value = t;
-    }
-    bool contraint( T t )
-    {
-        ret CSharp.SL.Core.MetaArrayClass.In( this, t )
-    }
-    int get count()
-    {
-        ret CSharp.SL.Core.MetaArrayClass.Count( this )
-    }
-    void set count( int _c )
-    {
-        int arr = CSharp.SL.Core.MetaArrayClass.SetArrayCount( this, _c )
-        this.m_Count = arr
-    }
-    !#
-}
-
-public class Level2<T1 ,T2> extends Level1<List0<T2> > interface List1<List2<Map<T2,string> > >, Map<T2,string>
-{
-    T1 Level2_t1_t2_t21 = null
-    T2 Level2_t1_t2_t22 = null
-
-    int x = 30
-    #!
-    {
-        get(){ ret value }
-        set( int v ){ value = v }
-    }
-    !#
-}
-public class Gift
-{
-    _init_( int a )
-    {
-
+        Level1SF<LevelT4>()
     }
 }
-public class Level1<T222> 
-{
-    qqq<T222>
-    {
-    }
-    q2
-    {        
-    }
-    enum q3
-    {
-        v = 0
-    }
-    data q4
-    {
-
-    }
-
-    fn1()
-    {
-
-    }
-    fn2(){
-
-    }
-
-    T222 Level1_t1 = null
-    T222 Level1_t2 = null
-
-    _init_(){
-
-    }
-
-    _init_( T222 it1 )
-    {
-        this.Level1_t1 = it1
-    }
-
-    public T222 add()
-    {
-        T222 Level1t_t = new()
-
-        List0<Map<T222, T222> > Level1t_list = new(1)
-
-        Level2<int,string> Level1t_level222 = {}
-
-        List0<int> Level1t_lint11 = List0<int>()
-
-        Level1t_t250 = Level1<int>.Level1t_test<List0<List1<long> > >( Level1t_t, List0<List1<long> >() )
-
-        ret Level1t_t
-    }
-
-    static T2 Level1t_test<T2>( T222 it1, T2 it2 )
-    {
-        List0<Map< T2, List2<T2> > > Level1t_test_t2n = new()
-
-        ret Level1t_test_t2n
-    }
-    static T222 Level1t_test<T2,T3>( T2 it2, T3 it3 )
-    {
-        ret null
-    }
-
-    public static T2 min<T2>( T2 t1, T2 t2 )
-    {
-        #r1 = t1 ? t1 < t2 && t1 > t2 : t2        
-        #rx1 = if t1 < t2 { tr t1 } else{ tr t2 }
-        #ret r1 
-        #ret t1 ? t1 > t2 : t2
-        ret t2
-    }
-}
-ClassRoom
-{
-
-}
-
 GenClass
 {
-    cl2<T,T2,T3> extends Level1<int>
-    {
-
-    }
-    Level1<Level2<int,int> > GenClass_ls = {}
-    GenClass_ls_21 = Level1<string>("aaa")   #正常
-    GenClass_ls_22 = Level1<Level2<int,int> >("aaa")    #应该报错，因为"aaa" 不是Level2<int,int> 正确的应该传 Level2<int,int>() 这样的格式
-    GenClass_ls2 = ( GenClass.GenClass_x < 3) == 4 > 3
+    #Level1<Level2<int,int> > GenClass_ls = new()
+    #GenClass_ls_21 = Level1<string>("aaa")   #正常    
+    #GenClass_ls_22 = Level1<Level2<int,int> >("aaa")    #应该报错，因为"aaa" 不是Level2<int,int> 正确的应该传 Level2<int,int>() 这样的格式
+    #GenClass_ls2 = ( GenClass.GenClass_x < 3) == 4 > 3
     #ls3 = 10 ? x < 11 && x < 3 || 13 > x && 12 > x : 4
     #a = Level1b < Level2b || Level3b > Level4b
-    static GenClass_x = 100;
+    #static GenClass_x = 100;
     #Level1<string> ls2 = null
-    #Level1<string> ls3 = ()     #报错，提示，不允许这种形式
+    #Level1<string> ls3 = new()     #报错，提示，不允许这种形式
     #Level1<string> ls4 = {}
     static GenClass_fun()
     {
-        Level1<int> GenClass_fun_l1 = Level1<int>()
-        GenClass_fun_l2 = GenClass_fun_l1.add()
+        Level1<Level1<int> > GenClass_fun_l1 = Level1< Level1<int> >()
+        GenClass_fun_l1.Level1Fun<byte>()
+
+        Level1<string>.Level1SF<int>()
+
+        int aa = Level1<int>.LevelStaticValue  #aa = null
+        Level1<string>.LevelStaticValue = "2000"
+
+        #GenClass_fun_l2 = GenClass_fun_l1.add()
         #Debug.Write( "Addresult: " + GenClass_fun_l2 )
-
-        float GenClass_fun_a = Level1<float>.min<float>( 1.3, 2.5 )
-
+        #retstr = GenClass_fun_l1.GetComponent<string>()
+        #float GenClass_fun_a = Level1<int>.min<float>( 1.3, 2.5 )
         #Debug.Write("Flaoat" + a )
     }
 }

@@ -1304,13 +1304,19 @@ namespace SimpleLanguage.Compile.Parse
                         extend = EType.UInt64;
                     }
                     break;
-                case "float32":
+                case "half":
+                    {
+                        tokenType = ETokenType.Type;
+                        extend = EType.Float16;
+                    }
+                    break;
+                case "float":
                     {
                         tokenType = ETokenType.Type;
                         extend = EType.Float32;
                     }
                     break;
-                case "float64":
+                case "double":
                     {
                         tokenType = ETokenType.Type;
                         extend = EType.Float64;

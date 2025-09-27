@@ -44,9 +44,10 @@ namespace SimpleLanguage.Core
         public Dictionary<string, MetaData> allDataDict => m_AllDataDict;
         public List<MetaDynamicClass> dynamicClassList => m_DynamicClassList;
         public List<MetaGenTemplateClass> genTemplateMetaClassList => m_GenTemplateMetaClassList;
-        //public List<MetaClass> preInitHandleMetaClassList => m_InitHandleMetaClassList;
+        public List<MetaClass> runtimeClassList => m_RuntimeClassList;
 
 
+        private List<MetaClass> m_RuntimeClassList = new List<MetaClass>();
         private Dictionary<string, MetaClass> m_AllClassDict = new Dictionary<string, MetaClass>();
         private List<MetaDynamicClass> m_DynamicClassList = new List<MetaDynamicClass>();         
         private Dictionary<string, MetaData> m_AllDataDict = new Dictionary<string, MetaData>();
@@ -336,39 +337,46 @@ namespace SimpleLanguage.Core
                     if (findamc != null && findamc.IsMetaClass() )
                     {
                         MetaClass ffmc = findamc.GetMetaClassByTemplateCount(fmc.templateDefineList.Count);
-                        if (ProjectManager.useDefineNamespaceType == EUseDefineType.LimitUseProjectConfigNamespaceAndClass)
+                        if( ffmc != null )
                         {
-                            
-                        }
-                        fmc.SetMetaClass(ffmc);
-                        ffmc.BindFileMetaClass(fmc);
-                        ffmc.SetClassDefineType(EClassDefineType.CodeDefine);
-                        ffmc.ParseFileMetaClassTemplate(fmc);
-                        ffmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
-                        ffmc.UpdateClassAllName();
-                        AddInitHandleMetaClassList(ffmc);
-                        return ffmc;
-                        if (!fmc.isPartial)
-                        {
-                            Log.AddInStructMeta(EError.None, "类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持文件并行 定义类");
-                            return null;
-                        }
-                        bool isPartial = true;
-                        foreach (var v in ffmc.fileMetaClassDict)
-                        {
-                            if (v.Value.isPartial == false)
+                            if (ProjectManager.useDefineNamespaceType == EUseDefineType.LimitUseProjectConfigNamespaceAndClass)
                             {
-                                isPartial = false;
-                                Log.AddInStructMeta(EError.None, "类:" + findamc.name + "在: " + v.Value.token.ToAllString() + "不支持文件并行 定义类");
-                                break;
+
                             }
+                            fmc.SetMetaClass(ffmc);
+                            ffmc.BindFileMetaClass(fmc);
+                            ffmc.SetClassDefineType(EClassDefineType.CodeDefine);
+                            ffmc.ParseFileMetaClassTemplate(fmc);
+                            ffmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
+                            ffmc.UpdateClassAllName();
+                            AddInitHandleMetaClassList(ffmc);
+                            return ffmc;
                         }
-                        if (isPartial == false)
+                        else
                         {
-                            return null;
+                            isCanAddBind = true;
                         }
-                        ffmc.BindFileMetaClass(fmc);
-                        return ffmc;
+                        //if (!fmc.isPartial)
+                        //{
+                        //    Log.AddInStructMeta(EError.None, "类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持文件并行 定义类");
+                        //    return null;
+                        //}
+                        //bool isPartial = true;
+                        //foreach (var v in ffmc.fileMetaClassDict)
+                        //{
+                        //    if (v.Value.isPartial == false)
+                        //    {
+                        //        isPartial = false;
+                        //        Log.AddInStructMeta(EError.None, "类:" + findamc.name + "在: " + v.Value.token.ToAllString() + "不支持文件并行 定义类");
+                        //        break;
+                        //    }
+                        //}
+                        //if (isPartial == false)
+                        //{
+                        //    return null;
+                        //}
+                        //ffmc.BindFileMetaClass(fmc);
+                        //return ffmc;
                     }
                     else
                     {
@@ -474,8 +482,18 @@ namespace SimpleLanguage.Core
             {
                 return null;
             }
-        }       
-        public void AddDictMetaClass( MetaClass mc )
+        }
+        public void AddRuntimeMetaClass( MetaClass mc )
+        {
+            var find1 = m_RuntimeClassList.Find(a => a == mc);
+            if( find1  == null )
+            {
+                m_RuntimeClassList.Add(mc);
+
+                AddDictMetaClass(mc);
+            }
+        }
+        void AddDictMetaClass( MetaClass mc )
         {
             string acn = mc.allClassName + "_" + mc.metaTemplateList.Count;
             foreach( var v in m_AllClassDict )
@@ -503,6 +521,10 @@ namespace SimpleLanguage.Core
                 it.HandleExtendMemberVariable();
                 it.HandleExtendMemberFunction();
             }
+            foreach( var it in m_InitHandleMetaClassList )
+            {
+                it.ParseGenTemplateClassMetaType();
+            }
         }
         public void ParseInitMetaClassList()
         {
@@ -510,10 +532,13 @@ namespace SimpleLanguage.Core
             {
                 it.ParseMetaInConstraint();
                 it.ParseExtendsRelation();
-                it.UpdateInterfaceMetaClass();
+                it.ParseInterfaceRelation();
+                AddRuntimeMetaClass(it);
+            }
+            foreach( var it in m_InitHandleMetaClassList )
+            {
                 it.ParseMemberVariableDefineMetaType();
                 it.ParseMemberFunctionDefineMetaType();
-                AddDictMetaClass(it);
             }
         }
         public void UpdateMetaGenTemplateClassHandle()
@@ -521,7 +546,7 @@ namespace SimpleLanguage.Core
             var list = new List<MetaGenTemplateClass>(m_GenTemplateMetaClassList);
             foreach( var v in list)
             {
-                v.UpdateRegster();
+                v.UpdateRegsterGenMetaClass();
             }
         }
         //public void ParseDefineMetaTypeGenTemplateMetaClassList()
@@ -874,6 +899,17 @@ namespace SimpleLanguage.Core
         }
         #endregion
         
-        
+        public void PrintAlllClassContent()
+        {
+            foreach( var v in m_AllClassDict )
+            {
+
+            }
+
+            foreach( var v in m_RuntimeClassList )
+            {
+
+            }
+        }
     }
 }

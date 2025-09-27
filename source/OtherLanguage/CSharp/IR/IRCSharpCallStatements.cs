@@ -1,10 +1,7 @@
 ﻿
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.Statements;
-using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 
 namespace SimpleLanguage.IR
 {
@@ -19,7 +16,7 @@ namespace SimpleLanguage.IR
             MetaFunction mf = new MetaMemberFunctionCSharp( mbs.ownerMetaClass, _name, m_MethodInfo);
 
             var mipc = new MetaInputParamCollection(mbs.ownerMetaClass, mbs);
-            metaFunctionCall = new MetaMethodCall( null, mf, mipc, null, null );
+            metaFunctionCall = new MetaMethodCall( null, null, mf, null, mipc, null, null );
         }
         //public override void ParseIRStatements()
         //{

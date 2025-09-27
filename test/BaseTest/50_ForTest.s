@@ -1,15 +1,5 @@
-ForWhileTest
+ForTest
 {   
-    static Fun()
-    {
-        #forfun()
-        whilefun()
-    }
-    enum EItType
-    {
-        It1 = 1
-        It2 = 2
-    }
     static forfun()
     {
         #!
@@ -88,38 +78,39 @@ ForWhileTest
         }        
         !#
     }    
-    static whilefun()
+
+    enum EItType
     {
-        int i = 0;
-        #!
-        while i < 14
+        It1 = 1
+        It2 = 2
+    }
+    static forenum()
+    {
+        for v in EItType
         {
-            i++
-            if( i == 5 ){
-            continue;}
-            if i > 10{ break;}
-            CSharp.System.Debug.Write(" ioooo = $i ");
+            !print( v )
         }
-        !#
-        i = 10
-        while
+    }
+    interface IPay
+    {
+        pay( int a )
+        check()
+    }
+    public class Pay interface IPay
+    {
+        _paycash = 0
+        pay( int a ){
+            this._paycash = a
+        }
+        check()
         {
-            i++;
-            CSharp.System.Debug.Write(" ioooo = $i ");
-            if( i > 13 ){break;}
+
         }
-        while true{ m = 20;}
-        i = 30;
-        dowhile i < 20
-        {
-            #CSharp.System.Debug.Write("dowhile execute" );
-            x = 30;
-        }
-        dowhile false
-        {
-            m =  20;
-        }
-        while true { i+= 20; if i == 20{ break; } }
-        !#
+    }
+    static forinterface()
+    {
+        IPay pay1 = Pay()
+        pay1.check()
+        pay1.pay(20)
     }
 }
