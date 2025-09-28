@@ -150,6 +150,7 @@ namespace SimpleLanguage.Core
         private MetaTemplate m_MetaTemplate = null;
         private MetaVariable m_MetaVariable = null;
         private MetaFunction m_MetaFunction = null;
+        private MetaGenTempalteFunction m_MetaGenTemplateFunction = null;
         private string m_Name;
         public MetaCallNode()
         { }
@@ -814,7 +815,8 @@ namespace SimpleLanguage.Core
                     }
                     else if (frontCNT == ECallNodeType.MemberFunctionName )
                     {
-                        MetaFunction mf = m_FrontCallNode.m_MetaFunction;
+                        MetaFunction mf = m_FrontCallNode.m_MetaGenTemplateFunction != null ? 
+                            m_FrontCallNode.m_MetaGenTemplateFunction : m_FrontCallNode.m_MetaFunction;
 
                         MetaType retMT = mf.returnMetaVariable.metaDefineType;
                         if( retMT != null && retMT.metaClass != null )
@@ -887,13 +889,13 @@ namespace SimpleLanguage.Core
                 //}
             }
 
-            var cmmf = m_OwnerMetaFunctionBlock.ownerMetaFunction as MetaMemberFunction;
-            if ( m_MetaClass != null || cmmf != null )
+            MetaMemberFunction tmf = m_MetaGenTemplateFunction != null ? m_MetaGenTemplateFunction : m_MetaFunction as MetaMemberFunction;
+            if ( m_MetaClass != null || tmf != null )
             {
                 for (int i = 0; i < this.m_FileMetaCallNode.inputTemplateNodeList.Count; i++)
                 {
                     var itnlc = this.m_FileMetaCallNode.inputTemplateNodeList[i];
-                    var ct = TypeManager.instance.RegisterTemplateDefineMetaTemplateFunction(m_MetaClass, cmmf, itnlc);
+                    var ct = TypeManager.instance.RegisterTemplateDefineMetaTemplateFunction( m_OwnerMetaClass, m_MetaClass, m_OwnerMetaFunctionBlock.ownerMetaFunction as MetaMemberFunction, tmf, itnlc);
                     if (ct != null)
                     {
                         m_MetaTemplateParamsList.Add(ct);
@@ -923,7 +925,7 @@ namespace SimpleLanguage.Core
                         MetaGenTempalteFunction mgtfind = mmf.AddGenTemplateMemberFunctionBySelf(m_MetaTemplateParamsList);
                         if (mgtfind != null)
                         {
-                            m_MetaFunction = mgtfind;
+                            m_MetaGenTemplateFunction = mgtfind;
                         }
                     }
                     #endregion
@@ -1475,17 +1477,6 @@ namespace SimpleLanguage.Core
                 m_MetaType = mmf.returnMetaVariable.metaDefineType;
                 m_CallMetaType = new MetaType(mmf.ownerMetaClass);
                 m_CallNodeType = ECallNodeType.MemberFunctionName;
-
-                if (this.m_FileMetaCallNode.inputTemplateNodeList.Count > 0)
-                {
-                    for( int i = 0; i < this.m_FileMetaCallNode.inputTemplateNodeList.Count; i++ )
-                    {
-                        var mt = TypeManager.instance.RegisterTemplateDefineMetaTemplateFunction(m_OwnerMetaClass,
-                           mmf, m_FileMetaCallNode.inputTemplateNodeList[i] );
-                        m_MetaTemplateParamsList.Add(mt);
-                    }
-                }
-
                 //this.m_GenMetaClass = m_FrontCallNode.m_GenMetaClass;
             }
             return true;

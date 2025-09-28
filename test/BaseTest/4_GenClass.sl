@@ -75,6 +75,11 @@ Map<MapT1,MapT2>
 {
     MapT1 m1 = null
     MapT2 m2 = null
+
+    static MapT3 MapFunc<MapT3>()
+    {
+        ret null
+    }
 }
 Level1<LevelT1>
 {
@@ -89,7 +94,7 @@ Level1<LevelT1>
         LevelT1 lt2 = new()
     }
 
-    Level1Fun<LevelT3>( )
+    LevelT3 Level1Fun<LevelT3>( )
     {
         #LevelStaticValue = new()
 
@@ -99,13 +104,15 @@ Level1<LevelT1>
 
         #Map<LevelT1,Level1<LevelT3> > map = new()
 
-        #LevelT3 lt2 = new()
-    }
-    static Level1SF<LevelT4>( LevelT4 t4 )
-    {
-        Level1<LevelT4>.LevelStaticValue = new()
+        LevelT3 lt2 = new()
 
-        ret t4
+        ret lt2
+    }
+    static Map<LevelT4, LevelT1> Level1SF<LevelT4>( LevelT4 t4 )
+    {
+        Map<LevelT4, LevelT1>.MapFunc<LevelT4>()
+        
+        ret null
     }
 }
 GenClass
@@ -123,7 +130,8 @@ GenClass
     static GenClass_fun()
     {
         Level1<Level1<int> > GenClass_fun_l1 = Level1< Level1<int> >()
-        GenClass_fun_l1.Level1Fun<byte>()
+        var t3 = GenClass_fun_l1.Level1Fun<Level1<int> >()
+        t3.LevelMemValue = 20
         #GenClass_fun_l1.LevelMemValue.LevelMemValue = 300
 
         #var t4 = Level1<string>.Level1SF<int>(100)
