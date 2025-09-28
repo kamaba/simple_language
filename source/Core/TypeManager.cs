@@ -331,20 +331,13 @@ namespace SimpleLanguage.Core
                 var t = RegisterTemplateDefineMetaTemplateFunction(curMc, mmf, inputTemplateNodeList[i]);
                 mt.AddTemplateMetaType(t);
             }
-            if( true )// ProjectManager.useGenMetaClass )
+            if (mmf?.isTemplateFunction == true && mt.isIncludeTemplateFunctionTemplate(mmf))
             {
-                if (mmf?.isTemplateFunction == true && mt.isIncludeTemplateFunctionTemplate(mmf))
-                {
-                    return mmf.AddMetaPreTemplateFunction(mt, out bool igmc);
-                }
-                else
-                {
-                    return curMc.AddMetaPreTemplateClass(mt, out bool igmc);
-                }
+                return mmf.AddMetaPreTemplateFunction(mt, out bool igmc);
             }
             else
             {
-                return mt;
+                return curMc.AddMetaPreTemplateClass(mt, out bool igmc);
             }
         }
         public MetaType RegisterTemplateDefineMetaTemplateFunction(MetaClass ownerMc, MetaMemberFunction mmf, FileInputTemplateNode fmtd)

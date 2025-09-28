@@ -17,6 +17,7 @@ namespace SimpleLanguage.Core
     {
         None,
         MetaClass,
+        MetaGenClass,
         Template,
         TemplateClassWithTemplate
     }
@@ -31,6 +32,7 @@ namespace SimpleLanguage.Core
         }
         public EMetaTypeType eType => m_EType;
         public MetaClass metaClass => m_MetaClass;
+        public MetaGenTemplateClass metaGenTemplateClass => m_MetaGenTemplateClass;
         public MetaClass typeInferenceClass => m_TypeInferenceClass;
         //public MetaClass templateMetaClass => m_TemplateMetaClass;
         public bool isEnum => m_MetaClass is MetaEnum;
@@ -47,7 +49,8 @@ namespace SimpleLanguage.Core
         //private MetaInputTemplateCollection m_InputTemplateCollection = null;
         private EMetaTypeType m_EType = EMetaTypeType.None;
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
-        private MetaType m_InstanceMetaType = null;                    // 实体类，一般可以使用生成类
+        private MetaGenTemplateClass m_MetaGenTemplateClass = null;
+        //private MetaType m_InstanceMetaType = null;                    // 实体类，一般可以使用生成类
         private MetaClass m_TypeInferenceClass = null;                  //推理类
         private MetaType m_ParentMetaType = null;
         private MetaTemplate m_MetaTemplate = null;
@@ -64,6 +67,13 @@ namespace SimpleLanguage.Core
             m_EType = EMetaTypeType.Template;
             m_MetaTemplate = mt;
             m_MetaClass = mt.extendsMetaClass;
+        }
+        public MetaType( MetaGenTemplateClass mgtc, List<MetaType> mtList )
+        {
+            m_EType = EMetaTypeType.MetaGenClass;
+            m_MetaClass = mgtc.metaTemplateClass;
+            m_TemplateMetaTypeList = mtList;
+            m_MetaGenTemplateClass = mgtc;
         }
         public MetaType( MetaClass mc )
         {

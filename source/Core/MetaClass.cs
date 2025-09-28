@@ -494,12 +494,16 @@ namespace SimpleLanguage.Core
                 {
                     mcList.Add(mtc.metaClass);
                 }
+                else if( mtc.eType == EMetaTypeType.MetaGenClass )
+                {
+                    mcList.Add(mtc.metaGenTemplateClass);
+                }
             }
             if( mcList.Count == mt.templateMetaTypeList.Count )
             {
                 MetaGenTemplateClass mgtc = mt.metaClass.AddInstanceMetaClass(mcList);
                 isGenMetaClass = true;
-                return new MetaType( mgtc );
+                return new MetaType( mgtc, mt.templateMetaTypeList );
             }
 
             var find = BindStructTemplateMetaClassList( mt );
