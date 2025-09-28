@@ -66,7 +66,7 @@ namespace SimpleLanguage.Core.Statements
             if ( m_FileMetaDefineVariableSyntax != null )
             {
                 var fmcd = m_FileMetaDefineVariableSyntax.fileMetaClassDefine;
-                mdt = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, m_OwnerMetaBlockStatements.ownerMetaFunction as MetaMemberFunction, fmcd);
+                mdt = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, m_OwnerMetaBlockStatements.ownerMetaFunction as MetaMemberFunction, null, fmcd);
 
 
                 m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );

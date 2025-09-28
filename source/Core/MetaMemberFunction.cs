@@ -451,7 +451,7 @@ namespace SimpleLanguage.Core
                 if (m_FileMetaMemberFunction.defineMetaClass != null)
                 {
                     FileMetaClassDefine cmr = m_FileMetaMemberFunction.defineMetaClass;
-                    var defineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(m_OwnerMetaClass, this, cmr);
+                    var defineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(m_OwnerMetaClass, this, null, cmr);
 
                     if (m_ConstructInitFunction && defineMetaType.metaClass != CoreMetaClassManager.voidMetaClass )
                     {

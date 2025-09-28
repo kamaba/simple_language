@@ -201,22 +201,22 @@ namespace SimpleLanguage.Core
             return false;
         }
         //是否包含 模板函数模板  意思就是是否在 templateMetaTypeList 中，有模板函数定义的T
-        public bool isIncludeTemplateFunctionTemplate( MetaMemberFunction mmf )
+        public MetaMemberFunction FindTemplateFunctionTemplate( MetaMemberFunction mmf )
         {
             if( eType == EMetaTypeType.TemplateClassWithTemplate )
             {
-                if (m_TemplateMetaTypeList.Count == 0) return false;
+                if (m_TemplateMetaTypeList.Count == 0) return null;
                 for (int i = 0; i < m_TemplateMetaTypeList.Count; i++)
                 {
                     var tmt = m_TemplateMetaTypeList[i];
                     if ( tmt.IsIncludeFunctionTemplate(mmf))
                     {
-                        return true;
+                        return mmf;
                     }
                 }
-                return false;
+                return null;
             }
-            return false;
+            return null;
         }
         public void AddTemplateMetaType( MetaType mt )
         {
