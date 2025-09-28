@@ -399,7 +399,7 @@ namespace SimpleLanguage.Core
             m_MetaMemberTemplateCollection.AddMetaDefineTemplate(mt);
         }
         //如果是模板函数，需要在实例化类后，进行新的实体函数的解析
-        public MetaGenTempalteFunction AddGenTemplateMemberFunctionBySelf(List<MetaClass> list)
+        public MetaGenTempalteFunction AddGenTemplateMemberFunctionBySelf(List<MetaType> list)
         {
             MetaGenTempalteFunction mgtf = GetGenTemplateFunction(list);
             if (mgtf == null)
@@ -419,15 +419,20 @@ namespace SimpleLanguage.Core
             }
             return mgtf;
         }
-        public MetaGenTempalteFunction GetGenTemplateFunction(List<MetaClass> mcList)
+        public MetaGenTempalteFunction GetGenTemplateFunction(List<MetaType> mcList)
         {
-            for (int i = 0; i < m_GenTempalteFunctionList.Count; i++)
+            if( mcList.Count == m_GenTempalteFunctionList.Count )
             {
-                var c = m_GenTempalteFunctionList[i];
-                if (c.MatchInputTemplateInsance(mcList))
+                for (int i = 0; i < m_GenTempalteFunctionList.Count; i++)
                 {
-                    return c;
+                    var c = m_GenTempalteFunctionList[i];
+
+                    if (c.MatchInputTemplateInsance(mcList))
+                    {
+                        return c;
+                    }
                 }
+
             }
             return null;
         }

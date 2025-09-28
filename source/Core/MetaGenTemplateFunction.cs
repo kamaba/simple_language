@@ -40,7 +40,7 @@ namespace SimpleLanguage.Core
 
             Init();
         }
-        public bool MatchInputTemplateInsance(List<MetaClass> instMcList)
+        public bool MatchInputTemplateInsance(List<MetaType> instMcList)
         {
             if (m_MetaGenTemplateList.Count != instMcList.Count)
             {
@@ -51,8 +51,10 @@ namespace SimpleLanguage.Core
             {
                 var c1 = m_MetaGenTemplateList[i];
                 var c2 = instMcList[i];
+                if (c2.eType == EMetaTypeType.Template) return false;
+                if( c2.eType == EMetaTypeType.TemplateClassWithTemplate ) return false;
 
-                if (c1.metaType.metaClass != c2)
+                if (c1.metaType.metaClass != c2.metaClass )
                 {
                     return false;
                 }

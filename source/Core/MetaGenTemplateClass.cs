@@ -16,7 +16,6 @@ namespace SimpleLanguage.Core
     {
         public MetaClass metaTemplateClass => m_MetaTemplateClass;
         public List<MetaGenTemplate> metaGenTemplateList => m_MetaGenTemplateList;
-
         public override bool isGenTemplate => true;
 
         private List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
