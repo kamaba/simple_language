@@ -22,7 +22,7 @@ namespace SimpleLanguage.Core
         public MetaFunction function => m_VMCallMetaFunction;
         public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
         public List<MetaExpressNode> metaInputParamList => m_MetaInputParamList;
-        public List<MetaType> metaParamInputTemplateList => m_MetaParamInputTemplateList;
+        public List<MetaType> metaFunctionInputTemplateList => m_MetaFunctionInputTemplateList;
 
 
         protected MetaVariable m_LoadMetaVariable = null;
@@ -34,7 +34,7 @@ namespace SimpleLanguage.Core
         //真实的成员函数
         protected MetaMemberFunction m_MetaMemberFunction = null;
         protected List<MetaExpressNode> m_MetaInputParamList = new List<MetaExpressNode>();
-        protected List<MetaType> m_MetaParamInputTemplateList = new List<MetaType>();
+        protected List<MetaType> m_MetaFunctionInputTemplateList = new List<MetaType>();
         
         public MetaMethodCall( MetaClass staticMc, List<MetaType> staticMmitList,  MetaFunction _fun, List<MetaType> mpipList, MetaInputParamCollection _paramCollection, MetaVariable loadMv, MetaVariable storeMv )
         {
@@ -47,7 +47,7 @@ namespace SimpleLanguage.Core
             //m_MetaInputParamList = _param;
             if( mpipList != null )
             {
-                this.m_MetaParamInputTemplateList = mpipList;
+                this.m_MetaFunctionInputTemplateList = mpipList;
             }
 
             List<MetaDefineParam> mpList = new();

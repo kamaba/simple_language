@@ -256,7 +256,7 @@ namespace SimpleLanguage.Core
         #endregion
 
         #region 模板函数处理区
-        public MetaType GetMetaTypeByTemplateFunction(MetaClass curMc, MetaMemberFunction findFun, MetaMemberFunction regFun, FileMetaClassDefine fmcd)
+        public MetaType GetMetaTypeByTemplateFunction(MetaClass curMc, MetaMemberFunction findFun, FileMetaClassDefine fmcd)
         {
             if (fmcd == null) return null;
 
@@ -286,11 +286,11 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                return GetMetaTypeByTemplateList(curMc, getmc, findFun, regFun, fmcd.inputTemplateNodeList);
+                return GetMetaTypeByTemplateList(curMc, getmc, findFun, fmcd.inputTemplateNodeList);
             }
             return null;
         }
-        public MetaType GetMetaTypeByTemplateList(MetaClass curMc, MetaNode getmc, MetaMemberFunction findFun, MetaMemberFunction regFun, List<FileInputTemplateNode> inputTemplateNodeList)
+        public MetaType GetMetaTypeByTemplateList(MetaClass curMc, MetaNode getmc, MetaMemberFunction findFun, List<FileInputTemplateNode> inputTemplateNodeList)
         {            
             var findfn = getmc.GetMetaClassByTemplateCount(inputTemplateNodeList.Count);
             if (findfn != null)
@@ -300,7 +300,7 @@ namespace SimpleLanguage.Core
                     return new MetaType(findfn);
                 }
 
-                var newmc = HandleInputTemplateNodeList(curMc, findfn, findFun, regFun, inputTemplateNodeList);
+                var newmc = HandleInputTemplateNodeList(curMc, findfn, findFun, inputTemplateNodeList);
                 if( newmc != null)
                 {
                     return newmc;
@@ -315,37 +315,25 @@ namespace SimpleLanguage.Core
 
             return null;
         }
-        public MetaType HandleInputTemplateNodeList(MetaClass findfn, MetaClass regMc,  MetaMemberFunction findFun, MetaMemberFunction regFun, List<FileInputTemplateNode> inputTemplateNodeList)
+        public MetaType HandleInputTemplateNodeList(MetaClass findfn, MetaClass regMc,  MetaMemberFunction findFun, List<FileInputTemplateNode> inputTemplateNodeList)
         {
             var getmc = findfn;
             MetaType mt = new MetaType();
             if( inputTemplateNodeList.Count == 0 )
             {
-                mt.SetMetaClass(findfn);
+                mt.SetMetaClass(regMc);
                 return mt;
             }
-            mt.SetTemplateMetaClass(findfn);
+            mt.SetTemplateMetaClass(regMc);
             //这里，要注册实体模板类
             for (int i = 0; i < inputTemplateNodeList.Count; i++)
             {
-                var t = RegisterTemplateDefineMetaTemplateFunction(findfn, regMc, findFun, regFun, inputTemplateNodeList[i]);
+                var t = RegisterTemplateDefineMetaTemplateFunction(findfn, regMc, findFun, inputTemplateNodeList[i]);
                 mt.AddTemplateMetaType(t);
             }
-            if (regFun?.isTemplateFunction == true )
-            {
-                //mt.FindTemplateFunctionTemplate(regFun)
-                //if (  )
-                //{
-                //    return regFun.AddMetaPreTemplateFunction(mt, out bool igmc);
-                //}
-            }
-            else
-            {
-                return regMc.AddMetaPreTemplateClass(mt, out bool igmc);
-            }
-            return null;
+            return regMc.AddMetaPreTemplateClass(mt, out bool igmc);
         }
-        public MetaType RegisterTemplateDefineMetaTemplateFunction(MetaClass findMc, MetaClass regMc, MetaMemberFunction findFun, MetaMemberFunction regFun, FileInputTemplateNode fmtd)
+        public MetaType RegisterTemplateDefineMetaTemplateFunction(MetaClass findMc, MetaClass regMc, MetaMemberFunction findFun, FileInputTemplateNode fmtd)
         {
             var newmc = ClassManager.instance.GetMetaClassByNameAndFileMeta(findMc, fmtd.fileMeta, fmtd.nameList);
             if (newmc != null)
@@ -361,7 +349,7 @@ namespace SimpleLanguage.Core
                 {
                     var dcc = fmtd.defineClassCallLink.callNodeList[fmtd.defineClassCallLink.callNodeList.Count - 1];
 
-                    var retmc = HandleInputTemplateNodeList(findMc, findfn, findFun, regFun, dcc.inputTemplateNodeList);
+                    var retmc = HandleInputTemplateNodeList(findMc, findfn, findFun, dcc.inputTemplateNodeList);
 
                     if( retmc != null )
                     {
