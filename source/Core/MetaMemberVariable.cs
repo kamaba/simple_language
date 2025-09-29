@@ -75,7 +75,7 @@ namespace SimpleLanguage.Core
 
             m_FileMetaMemeberVariable = mmv.m_FileMetaMemeberVariable;
             m_Name = mmv.m_Name;
-            m_PintTokenList = mmv.m_PintTokenList;
+            this.m_PintTokenList = mmv.m_PintTokenList;
             m_Index = mmv.m_Index;
             m_FromType = mmv.m_FromType;  
             m_IsStatic = mmv.m_IsStatic;
@@ -169,8 +169,11 @@ namespace SimpleLanguage.Core
             if (m_FileMetaMemeberVariable?.classDefineRef != null)
             {
                 m_DefineMetaType = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(m_OwnerMetaClass, m_FileMetaMemeberVariable.classDefineRef);
-
-                //m_IsTemplate = m_DefineMetaType.IsIncludeTemplate();
+                if( m_DefineMetaType.isTemplate || m_DefineMetaType.eType == EMetaTypeType.TemplateClassWithTemplate )
+                {
+                    //如果是模板类，中的带模板元素
+                    m_RealMetaType = new MetaType(m_DefineMetaType);
+                }
             }
         }
         public virtual int CalcParseLevelBeCall(int level)
@@ -278,7 +281,7 @@ namespace SimpleLanguage.Core
         {
             //var metaFunction = m_OwnerMetaBlockStatements?.ownerMetaFunction;
             string defineName = this.m_Name;
-            if (m_DefineMetaType?.isDefineMetaClass == true )
+            if (m_RealMetaType == null)
             {
                 if (m_Express != null)
                 {
@@ -301,7 +304,7 @@ namespace SimpleLanguage.Core
                                 Log.AddInStructMeta(EError.None, "Error 自己类内部不允许包含 自己的实体，必须赋值为null");
                                 return;
                             }
-                            m_DefineMetaType = dmct;
+                            m_RealMetaType = dmct;
                         }
                     }
                 }
@@ -360,7 +363,7 @@ namespace SimpleLanguage.Core
                                 Log.AddInStructMeta(EError.None, "Error 自己类内部不允许包含 自己的实体，必须赋值为null");
                                 return;
                             }
-                            SetMetaDefineType(expressRetMetaDefineType);
+                            SetRealMetaType(expressRetMetaDefineType);
                         }
                     }
                     else if (relation == ClassManager.EClassRelation.Parent)
@@ -377,7 +380,7 @@ namespace SimpleLanguage.Core
                                 Log.AddInStructMeta(EError.None, "Error 自己类内部不允许包含 自己的实体，必须赋值为null");
                                 return;
                             }
-                            SetMetaDefineType(expressRetMetaDefineType);
+                            SetRealMetaType(expressRetMetaDefineType);
                         }
                     }
                     else

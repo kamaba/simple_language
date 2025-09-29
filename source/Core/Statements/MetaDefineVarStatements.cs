@@ -143,7 +143,7 @@ namespace SimpleLanguage.Core.Statements
                 }
                 if (isCheckReturnType)
                 {
-                //    m_DefineVarMetaVariable.SetMetaDefineType(expressRetMetaDefineType);
+                    m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                 }
             }
             else
@@ -214,7 +214,7 @@ namespace SimpleLanguage.Core.Statements
                         }
                         else if (relation == ClassManager.EClassRelation.Same)
                         {
-                            m_DefineVarMetaVariable.SetMetaDefineType(expressRetMetaDefineType);
+                            m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                         }
                         else if (relation == ClassManager.EClassRelation.Parent)
                         {
@@ -226,7 +226,7 @@ namespace SimpleLanguage.Core.Statements
                         {
                             if (compareClass != null)
                             {
-                                m_DefineVarMetaVariable.SetMetaDefineType(expressRetMetaDefineType);
+                                m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                             }
                         }
                         else
