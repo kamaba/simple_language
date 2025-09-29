@@ -145,6 +145,14 @@ namespace SimpleLanguage.Core
         }
         public virtual void SetOwnerMetaClass(MetaClass ownerclass)
         {
+            if( ownerclass == null )
+            {
+                return;
+            }
+            if ( ownerclass == m_OwnerMetaClass )
+            {
+                return;
+            }
             m_OwnerMetaClass = ownerclass;
             if (m_MetaBlockStatements != null )
             {

@@ -187,7 +187,7 @@ namespace SimpleLanguage.Core
         {
             MetaMemberVariable mgmv = new MetaMemberVariable(mmv);
             mgmv.SetOwnerMetaClass(this);
-            TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mgmv.metaDefineType, this, null );
+            TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mgmv.realMetaType, this, null );
             return mgmv;
         }
         public override void ParseMemberFunctionDefineMetaType()

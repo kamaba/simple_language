@@ -40,7 +40,7 @@ namespace SimpleLanguage.Core
 
             Init();
         }
-        public bool MatchInputTemplateInsance(List<MetaType> instMcList)
+        public bool MatchInputTemplateInsance(List<MetaClass> instMcList)
         {
             if (m_MetaGenTemplateList.Count != instMcList.Count)
             {
@@ -51,10 +51,8 @@ namespace SimpleLanguage.Core
             {
                 var c1 = m_MetaGenTemplateList[i];
                 var c2 = instMcList[i];
-                if (c2.eType == EMetaTypeType.Template) return false;
-                if( c2.eType == EMetaTypeType.TemplateClassWithTemplate ) return false;
 
-                if (c1.metaType.metaClass != c2.metaClass )
+                if (c1.metaType.metaClass != c2 )
                 {
                     return false;
                 }
@@ -98,6 +96,26 @@ namespace SimpleLanguage.Core
         public MetaGenTemplate GetMetaGenTemplate( string name )
         {
             return m_MetaGenTemplateList.Find(a => a.name == name);
+        }
+        void ParseMetaMemberFunctionDefineMetaType()
+        {
+            if ( m_ReturnMetaVariable?.metaDefineType != null)
+            {
+                if (!(m_ReturnMetaVariable.metaDefineType.eType == EMetaTypeType.MetaClass
+                    && m_ReturnMetaVariable.metaDefineType.metaClass.isTemplateClass == false))
+                {
+                    TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(m_ReturnMetaVariable.metaDefineType, m_OwnerMetaClass as MetaGenTemplateClass, this );
+                }
+            }
+            for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
+            {
+                var mdp = m_MetaMemberParamCollection.metaDefineParamList[i];
+                if (!(mdp.metaVariable.metaDefineType.eType == EMetaTypeType.MetaClass
+                    && mdp.metaVariable.metaDefineType.metaClass.isTemplateClass == false))
+                {
+                    TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mdp.metaVariable.metaDefineType, m_OwnerMetaClass as MetaGenTemplateClass, this );
+                }
+            }
         }
         public void UpdateRegsterGenMetaFunction()
         {
@@ -153,6 +171,9 @@ namespace SimpleLanguage.Core
                     mgtc.UpdateRegisterTemplateFunction();
                 }
             }
+            ParseMetaMemberFunctionDefineMetaType();
+            UpdateFunctionName();
+
             return true;
         }
         public override string ToString()

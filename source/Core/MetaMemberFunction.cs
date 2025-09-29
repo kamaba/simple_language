@@ -399,7 +399,33 @@ namespace SimpleLanguage.Core
             m_MetaMemberTemplateCollection.AddMetaDefineTemplate(mt);
         }
         //如果是模板函数，需要在实例化类后，进行新的实体函数的解析
-        public MetaGenTempalteFunction AddGenTemplateMemberFunctionBySelf(List<MetaType> list)
+        public MetaGenTempalteFunction AddGenTemplateMemberFunctionByMetaTypeList(MetaClass mc, List<MetaType> list)
+        {
+            if(mc.isTemplateClass)
+            {
+                return null;
+            }
+
+            List<MetaClass> mcList = new List<MetaClass>();
+
+            foreach( var v in list )
+            {
+                if (v.eType == EMetaTypeType.MetaClass)
+                {
+                    mcList.Add(v.metaClass);
+                }
+                if (v.eType == EMetaTypeType.MetaGenClass)
+                {
+                    mcList.Add(v.metaGenTemplateClass);
+                }
+            }
+            if( mcList.Count == list.Count )
+            {
+                return AddGenTemplateMemberFunctionBySelf(mc, mcList);
+            }
+            return null;
+        }
+        public MetaGenTempalteFunction AddGenTemplateMemberFunctionBySelf( MetaClass mc, List<MetaClass> list)
         {
             MetaGenTempalteFunction mgtf = GetGenTemplateFunction(list);
             if (mgtf == null)
@@ -412,6 +438,7 @@ namespace SimpleLanguage.Core
                     mgtList.Add(mgt);
                 }
                 mgtf = new MetaGenTempalteFunction(this, mgtList);
+                mgtf.SetOwnerMetaClass(mc);
 
                 this.m_GenTempalteFunctionList.Add(mgtf);
 
@@ -419,7 +446,7 @@ namespace SimpleLanguage.Core
             }
             return mgtf;
         }
-        public MetaGenTempalteFunction GetGenTemplateFunction(List<MetaType> mcList)
+        public MetaGenTempalteFunction GetGenTemplateFunction(List<MetaClass> mcList)
         {
             if( mcList.Count == m_GenTempalteFunctionList.Count )
             {
