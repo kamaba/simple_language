@@ -486,24 +486,12 @@ namespace SimpleLanguage.Core
             {
                 return null;
             }
-            List<MetaClass> mcList = new List<MetaClass>();
-            for( int i = 0; i < mt.templateMetaTypeList.Count; i++ )
+            MetaGenTemplateClass mgtc = mt.metaClass.AddMetaTemplateClassByMetaClassAndMetaTemplateMetaTypeList( mt.templateMetaTypeList);
+
+            if ( mgtc  != null )
             {
-                var mtc = mt.templateMetaTypeList[i];
-                if( mtc.eType == EMetaTypeType.MetaClass )
-                {
-                    mcList.Add(mtc.metaClass);
-                }
-                else if( mtc.eType == EMetaTypeType.MetaGenClass )
-                {
-                    mcList.Add(mtc.metaGenTemplateClass);
-                }
-            }
-            if( mcList.Count == mt.templateMetaTypeList.Count )
-            {
-                MetaGenTemplateClass mgtc = mt.metaClass.AddInstanceMetaClass(mcList);
                 isGenMetaClass = true;
-                return new MetaType( mgtc, mt.templateMetaTypeList );
+                return new MetaType(mgtc, mt.templateMetaTypeList);
             }
 
             var find = BindStructTemplateMetaClassList( mt );
@@ -512,6 +500,28 @@ namespace SimpleLanguage.Core
                 this.m_BindStructTemplateMetaClassList.Add(new MetaType(mt) );
             }
             return mt;
+        }
+        public MetaGenTemplateClass AddMetaTemplateClassByMetaClassAndMetaTemplateMetaTypeList( List<MetaType> templateMetaTypeList )
+        {
+            List<MetaClass> mcList = new List<MetaClass>();
+            for (int i = 0; i < templateMetaTypeList.Count; i++)
+            {
+                var mtc = templateMetaTypeList[i];
+                if (mtc.eType == EMetaTypeType.MetaClass)
+                {
+                    mcList.Add(mtc.metaClass);
+                }
+                else if (mtc.eType == EMetaTypeType.MetaGenClass)
+                {
+                    mcList.Add(mtc.metaGenTemplateClass);
+                }
+            }
+            if (mcList.Count == templateMetaTypeList.Count)
+            {
+                MetaGenTemplateClass mgtc = AddInstanceMetaClass(mcList);
+                return mgtc;
+            }
+            return null;
         }
         public MetaType BindStructTemplateMetaClassList( MetaType mt )
         {
