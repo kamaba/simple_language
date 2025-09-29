@@ -451,7 +451,7 @@ namespace SimpleLanguage.Core
                 if (m_FileMetaMemberFunction.defineMetaClass != null)
                 {
                     FileMetaClassDefine cmr = m_FileMetaMemberFunction.defineMetaClass;
-                    var defineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(m_OwnerMetaClass, this, null, cmr);
+                    var defineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(m_OwnerMetaClass, this, cmr);
 
                     if (m_ConstructInitFunction && defineMetaType.metaClass != CoreMetaClassManager.voidMetaClass )
                     {
@@ -546,6 +546,40 @@ namespace SimpleLanguage.Core
         }
         public MetaType AddMetaPreTemplateFunction(MetaType mt, out bool isGenMetaClass)
         {
+            /*----------------------
+            isGenMetaClass = false;
+            if (mt.metaClass == null)
+            {
+                return null;
+            }
+            List<MetaClass> mcList = new List<MetaClass>();
+            for (int i = 0; i < mt.templateMetaTypeList.Count; i++)
+            {
+                var mtc = mt.templateMetaTypeList[i];
+                if (mtc.eType == EMetaTypeType.MetaClass)
+                {
+                    mcList.Add(mtc.metaClass);
+                }
+                else if (mtc.eType == EMetaTypeType.MetaGenClass)
+                {
+                    mcList.Add(mtc.metaGenTemplateClass);
+                }
+            }
+            if (mcList.Count == mt.templateMetaTypeList.Count)
+            {
+                MetaGenTemplateClass mgtc = mt.metaClass.AddInstanceMetaClass(mcList);
+                isGenMetaClass = true;
+                return new MetaType(mgtc, mt.templateMetaTypeList);
+            }
+
+            var find = BindStructTemplateMetaClassList(mt);
+            if (find == null)
+            {
+                this.m_BindStructTemplateMetaClassList.Add(new MetaType(mt));
+            }
+            //--------------------------------------
+            */
+                
             isGenMetaClass = false;
             if (mt.metaClass == null)
             {

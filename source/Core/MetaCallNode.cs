@@ -895,7 +895,7 @@ namespace SimpleLanguage.Core
                 for (int i = 0; i < this.m_FileMetaCallNode.inputTemplateNodeList.Count; i++)
                 {
                     var itnlc = this.m_FileMetaCallNode.inputTemplateNodeList[i];
-                    var ct = TypeManager.instance.RegisterTemplateDefineMetaTemplateFunction( m_OwnerMetaClass, m_MetaClass, m_OwnerMetaFunctionBlock.ownerMetaFunction as MetaMemberFunction, tmf, itnlc);
+                    var ct = TypeManager.instance.RegisterTemplateDefineMetaTemplateFunction( m_OwnerMetaClass, m_MetaClass, m_OwnerMetaFunctionBlock.ownerMetaFunction as MetaMemberFunction, itnlc);
                     if (ct != null)
                     {
                         m_MetaTemplateParamsList.Add(ct);

@@ -127,7 +127,7 @@ namespace SimpleLanguage.Core
             MetaType mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
             if ( this.m_FileMetaParamter?.classDefineRef != null)
             {
-                mdt = TypeManager.instance.GetMetaTypeByTemplateFunction(m_OwnerMetaFunction.ownerMetaClass, m_OwnerMetaFunction as MetaMemberFunction, null, m_FileMetaParamter.classDefineRef);                
+                mdt = TypeManager.instance.GetMetaTypeByTemplateFunction(m_OwnerMetaFunction.ownerMetaClass, m_OwnerMetaFunction as MetaMemberFunction, m_FileMetaParamter.classDefineRef);                
             }
             m_MetaVariable.SetMetaDefineType(mdt);
             if(m_FileMetaParamter != null )
