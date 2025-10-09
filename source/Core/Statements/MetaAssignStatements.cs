@@ -351,7 +351,7 @@ namespace SimpleLanguage.Core.Statements
                 // c1.name = "aa"  =>   c1.name("aa")
                 // 相当于 给 set 函数传参数
 
-                MetaType mdt = m_MetaVariable.metaDefineType;
+                MetaType mdt = m_MetaVariable.realMetaType;
 
                 //if( mdt.metaTemplate != null )
                 //{
