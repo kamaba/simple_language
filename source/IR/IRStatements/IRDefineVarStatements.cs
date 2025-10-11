@@ -30,7 +30,7 @@ namespace SimpleLanguage.IR
                 if (mnoen != null)
                 {
                     irmt = new IRMetaType(ms.expressNode.metaDefineType);
-                    irmc = IRManager.instance.GetIRMetaClassById(ms.expressNode.metaDefineType.metaClass.GetHashCode());
+                    irmc = IRManager.instance.GetIRMetaClassById(ms.expressNode.metaDefineType.GetTemplateMetaClass().GetHashCode());
                     IRNew irNew = new IRNew(irMethod, irmt.irMetaClass);
                     m_IRStatements.Add(irNew);
                 }
@@ -51,7 +51,6 @@ namespace SimpleLanguage.IR
             if (mnoen != null)
             {
                 var mt = mnoen.GetReturnMetaDefineType();
-
             }
         }
         public string ToIRString()

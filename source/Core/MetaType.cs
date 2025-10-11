@@ -32,7 +32,6 @@ namespace SimpleLanguage.Core
         }
         public EMetaTypeType eType => m_EType;
         public MetaClass metaClass => m_MetaClass;
-        public MetaGenTemplateClass metaGenTemplateClass => m_MetaGenTemplateClass;
         public MetaClass typeInferenceClass => m_TypeInferenceClass;
         //public MetaClass templateMetaClass => m_TemplateMetaClass;
         public bool isEnum => m_MetaClass is MetaEnum;
@@ -49,8 +48,6 @@ namespace SimpleLanguage.Core
         //private MetaInputTemplateCollection m_InputTemplateCollection = null;
         private EMetaTypeType m_EType = EMetaTypeType.None;
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
-        private MetaGenTemplateClass m_MetaGenTemplateClass = null;
-        //private MetaType m_InstanceMetaType = null;                    // 实体类，一般可以使用生成类
         private MetaClass m_TypeInferenceClass = null;                  //推理类
         private MetaType m_ParentMetaType = null;
         private MetaTemplate m_MetaTemplate = null;
@@ -71,9 +68,8 @@ namespace SimpleLanguage.Core
         public MetaType( MetaGenTemplateClass mgtc, List<MetaType> mtList )
         {
             m_EType = EMetaTypeType.MetaGenClass;
-            m_MetaClass = mgtc.metaTemplateClass;
+            m_MetaClass = mgtc;
             m_TemplateMetaTypeList = mtList;
-            m_MetaGenTemplateClass = mgtc;
         }
         public MetaType( MetaClass mc )
         {
@@ -143,6 +139,24 @@ namespace SimpleLanguage.Core
             { return true; }
 
             return false;
+        }
+        public MetaClass GetTemplateMetaClass(out bool isGTC)
+        {
+            isGTC = false;
+            if (m_MetaClass is MetaGenTemplateClass mgtc)
+            {
+                isGTC = true;
+                return mgtc.metaTemplateClass;
+            }
+            return m_MetaClass;
+        }
+        public MetaClass GetTemplateMetaClass()
+        {
+            if (m_MetaClass is MetaGenTemplateClass mgtc)
+            {
+                return mgtc.metaTemplateClass;
+            }
+            return m_MetaClass;
         }
         //public void SetEnumValue( MetaMemberVariable mmv )
         //{

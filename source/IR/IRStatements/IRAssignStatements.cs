@@ -50,9 +50,9 @@ namespace SimpleLanguage.IR
                         //这种是  Obja.Objb = new()的方式
                         var mv = finalMVN.GetRetMetaVariable();
 
-                        var irmc = IRManager.instance.GetIRMetaClassById(mv.metaDefineType.metaClass.GetHashCode());
+                        var irmc = IRManager.instance.GetIRMetaClassById(mv.metaDefineType.GetTemplateMetaClass().GetHashCode());
 
-                        IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable( new IRMetaType(mv.metaDefineType), irmc, irMethod, finalMVN.variable);
+                        IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable( new IRMetaType(mv.metaDefineType), irmc, irMethod, finalMVN.GetOrgTemplateMetaVariable() );
                         m_IRStatements.Add(irsv);
 
                     }
@@ -91,7 +91,7 @@ namespace SimpleLanguage.IR
                         {
                             var mv = cl.GetRetMetaVariable();
 
-                            var irmc = IRManager.instance.GetIRMetaClassById(mv.metaDefineType.metaClass.GetHashCode());
+                            var irmc = IRManager.instance.GetIRMetaClassById(mv.metaDefineType.GetTemplateMetaClass().GetHashCode());
                             IRMetaType irmt = null;
                             if (cl.callMetaType == null)
                             {
@@ -105,7 +105,7 @@ namespace SimpleLanguage.IR
                             }
                             //else
                             //    irmt = new IRMetaType(mv.ownerMetaClass, null);
-                            IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irmt, irmc, irMethod, clist[i].variable);
+                            IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irmt, irmc, irMethod, clist[i].GetOrgTemplateMetaVariable() );
                             m_IRStatements.Add(irsv);
                         }
                         else if( cl.visitType == MetaVisitNode.EVisitType.MethodCall )

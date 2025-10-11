@@ -107,6 +107,14 @@ namespace SimpleLanguage.Core
         {
             this.m_RealMetaType = realMt;
         }
+        public MetaClass GetOwnerClassTemplateClass()
+        {
+            if( m_OwnerMetaClass is MetaGenTemplateClass mgtc )
+            {
+                return mgtc.metaTemplateClass;
+            }
+            return m_OwnerMetaClass;
+        }
         public void AddPingToken( string path, int beginline, int beginpos, int endline, int endpos )
         {
             var pingToken = new Token(path, ETokenType.None, "", beginline, beginpos);

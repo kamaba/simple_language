@@ -511,13 +511,10 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < templateMetaTypeList.Count; i++)
             {
                 var mtc = templateMetaTypeList[i];
-                if (mtc.eType == EMetaTypeType.MetaClass)
+                if (mtc.eType == EMetaTypeType.MetaClass
+                    || mtc.eType == EMetaTypeType.MetaGenClass )
                 {
                     mcList.Add(mtc.metaClass);
-                }
-                else if (mtc.eType == EMetaTypeType.MetaGenClass)
-                {
-                    mcList.Add(mtc.metaGenTemplateClass);
                 }
             }
             if (mcList.Count == templateMetaTypeList.Count)
