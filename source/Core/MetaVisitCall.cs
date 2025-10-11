@@ -84,6 +84,14 @@ namespace SimpleLanguage.Core
         {
             return m_VMCallMetaFunction.metaDefineType;
         }
+        public MetaFunction GetTemplateMemberFunction()
+        {
+            if( m_VMCallMetaFunction is MetaGenTempalteFunction mgtf )
+            {
+                return mgtf.sourceTemplateFunctionMetaMemberFunction;
+            }
+            return m_VMCallMetaFunction;
+        }
         public string ToCommonString()
         {
             StringBuilder sb = new StringBuilder();
@@ -189,7 +197,7 @@ namespace SimpleLanguage.Core
             vn.m_MetaBraceStatementsContent = mb;
             vn.visitType = EVisitType.New;
             vn.variable = mv;
-            if(mt.metaClass is MetaGenTemplateClass mgtc )
+            if (mt.metaClass is MetaGenTemplateClass mgtc)
             {
                 vn.m_ReturnMetaType = new MetaType(mgtc);
             }
@@ -252,29 +260,44 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CreateByThis(MetaVariable _variale, MetaType callerMt = null)
+        public static MetaVisitNode CreateByThis(MetaVariable _variale)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.visitType = EVisitType.Variable;
             vn.variable = _variale;
-            vn.m_CallMetaType = callerMt;
+            vn.m_CallMetaType = null;
 
             return vn;
         }
-        public static MetaVisitNode CreateByBase(MetaVariable _variale, MetaType callerMt = null)
+        public static MetaVisitNode CreateByBase(MetaVariable _variale)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.visitType = EVisitType.Variable;
             vn.variable = _variale;
-            vn.m_CallMetaType = callerMt;
+            vn.m_CallMetaType = null;
 
             return vn;
         }
         public void SetMethodCall( MetaMethodCall _methodCall)
         {
             this.methodCall = _methodCall;
+        }
+        public MetaVariable GetOrgTemplateMetaVariable()
+        {
+            if (variable == null) { return null; }
+
+            var t = variable;
+            while(t != null )
+            {
+                if( t.sourceMetaVariable == null  )
+                {
+                    break;
+                }
+                t = t.sourceMetaVariable;
+            }
+            return t;
         }
         public MetaType GetMetaDefineType()
         {

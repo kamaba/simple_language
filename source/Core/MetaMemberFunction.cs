@@ -266,7 +266,7 @@ namespace SimpleLanguage.Core
 
                 var template = fmmf.metaTemplatesList[i];
 
-                MetaTemplate mdt = new MetaTemplate( ownerMetaClass, template, i );
+                MetaTemplate mdt = new MetaTemplate( ownerMetaClass, template, mc.metaTemplateList.Count + i );
                 AddMetaDefineTemplate(mdt);
 
                 //下边的代码未来要转移支解析Meta过程中
@@ -314,6 +314,7 @@ namespace SimpleLanguage.Core
             m_IsWithInterface = mmf.m_IsWithInterface;
             m_FileMetaMemberFunction = mmf.m_FileMetaMemberFunction;
             m_GenTempalteFunctionList = mmf.m_GenTempalteFunctionList;
+            m_SourceMetaMemberFunction = mmf.sourceMetaMemberFunction;
         }
         protected void Init()
         {
@@ -400,22 +401,19 @@ namespace SimpleLanguage.Core
         //如果是模板函数，需要在实例化类后，进行新的实体函数的解析
         public MetaGenTempalteFunction AddGenTemplateMemberFunctionByMetaTypeList(MetaClass mc, List<MetaType> list)
         {
-            if(mc.isTemplateClass)
+            if (mc.isTemplateClass)
             {
                 return null;
             }
 
             List<MetaClass> mcList = new List<MetaClass>();
 
-            foreach( var v in list )
+            foreach (var v in list)
             {
-                if (v.eType == EMetaTypeType.MetaClass)
+                if (v.eType == EMetaTypeType.MetaClass
+                    || v.eType == EMetaTypeType.MetaGenClass )
                 {
                     mcList.Add(v.metaClass);
-                }
-                if (v.eType == EMetaTypeType.MetaGenClass)
-                {
-                    mcList.Add(v.metaGenTemplateClass);
                 }
             }
             if( mcList.Count == list.Count )

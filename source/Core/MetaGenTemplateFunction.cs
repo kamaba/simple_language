@@ -14,19 +14,21 @@ namespace SimpleLanguage.Core
 {
     public class MetaGenTempalteFunction : MetaMemberFunction
     {
+        public MetaMemberFunction sourceTemplateFunctionMetaMemberFunction => m_SourceTemplateFunctionMetaMemberFunction;
         public List<MetaGenTemplate> metaGenTemplateList => m_MetaGenTemplateList;
 
-        protected MetaMemberFunction m_SourceMetaMemberFunction = null;
+        protected MetaMemberFunction m_SourceTemplateFunctionMetaMemberFunction = null;
         protected List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
         public MetaGenTempalteFunction(MetaMemberFunction mmc, List<MetaGenTemplate> list ) : base(mmc.ownerMetaClass)
         {
-            m_SourceMetaMemberFunction = mmc;
+            m_SourceTemplateFunctionMetaMemberFunction = mmc;
             UpdateGenMemberFunctionByTemplateClass(mmc);
             m_MetaGenTemplateList = list;
         }
         public MetaGenTempalteFunction( MetaGenTempalteFunction mgtf ) : base(mgtf)
         {
             m_SourceMetaMemberFunction = mgtf.m_SourceMetaMemberFunction;
+            m_SourceTemplateFunctionMetaMemberFunction = mgtf.m_SourceTemplateFunctionMetaMemberFunction;
             m_MetaGenTemplateList = mgtf.m_MetaGenTemplateList;
         }
         public MetaGenTempalteFunction(MetaClass mc, string _name) : base(mc)
@@ -75,6 +77,7 @@ namespace SimpleLanguage.Core
             m_IsFinal = mmf.isFinal;
             m_MetaBlockStatements = mmf.metaBlockStatements;
             m_ConstructInitFunction = mmf.isConstructInitFunction;
+            m_SourceMetaMemberFunction = mmf.sourceMetaMemberFunction;
             m_ReturnMetaVariable = new MetaVariable(mmf.returnMetaVariable);
 
             //    m_OriginalMetaMemberFunction = mmf;

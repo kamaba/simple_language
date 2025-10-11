@@ -882,7 +882,7 @@ namespace SimpleLanguage.Core
 
             if(this.m_FileMetaCallNode.inputTemplateNodeList.Count > 0 )
             {
-                MetaMemberFunction tmf = m_MetaFunction as MetaMemberFunction;
+                MetaMemberFunction tmf = m_OwnerMetaFunctionBlock.ownerMetaFunction as MetaMemberFunction;
                 if (m_MetaClass != null || tmf != null)
                 {
                     CreateMetaTemplateParams(m_MetaClass, tmf);
@@ -919,11 +919,7 @@ namespace SimpleLanguage.Core
                             }
                             else if ( m_FrontCallNode.m_MetaVariable != null )
                             {
-                                mcagm = m_FrontCallNode.m_MetaVariable.realMetaType.metaGenTemplateClass;
-                                if( mcagm == null )
-                                {
-                                    mcagm = m_FrontCallNode.m_MetaVariable.realMetaType.metaClass;
-                                }
+                                mcagm = m_FrontCallNode.m_MetaVariable.realMetaType.metaClass;
                             }
                         }
                         MetaGenTempalteFunction mgtfind = mmf.AddGenTemplateMemberFunctionByMetaTypeList(mcagm, m_MetaTemplateParamsList);

@@ -600,7 +600,7 @@ namespace SimpleLanguage.VM.Runtime
                         List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
                         for ( int i = 0; i < mfc.irTemplateMetaType.Count; i++ )
                         {
-                            var crt = GetMethodRuntimeType(mfc.irTemplateMetaType[i]);
+                            var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], true );
                             rtList.Add(crt);
                         }
                         InnerCLRRuntimeVM.RunIRMethod( rtList, cfc);

@@ -321,7 +321,7 @@ namespace SimpleLanguage.Core
             //这里，要注册实体模板类
             for (int i = 0; i < inputTemplateNodeList.Count; i++)
             {
-                var t = RegisterTemplateDefineMetaTemplateFunction(findfn, regMc, findFun, inputTemplateNodeList[i]);
+                var t = RegisterTemplateDefineMetaTemplateFunction(findfn, regMc, findFun, inputTemplateNodeList[i], isParse );
                 mt.AddTemplateMetaType(t);
             }
             mt = regMc.AddMetaPreTemplateClass(mt, isParse, out bool igmc);

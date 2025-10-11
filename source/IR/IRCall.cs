@@ -44,7 +44,7 @@ namespace SimpleLanguage.IR
                 IRExpress irexpress = new IRExpress(m_IRMethod, mfc.metaInputParamList[j] );
                 AddIRRangeData(irexpress.IRDataList);
             }
-            MetaFunction mf = mfc.function;
+            MetaFunction mf = mfc.GetTemplateMemberFunction();
             MetaMemberFunctionCSharp mmf = mf as MetaMemberFunctionCSharp;
             if (mmf != null)
             {
@@ -77,18 +77,20 @@ namespace SimpleLanguage.IR
                 irmc = IRManager.instance.GetIRMetaClassByName(irname);
             }
 
-            m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(mf.functionAllName);
-            if (irmc != null )
+            if ( !mf.isStatic )
             {
-                callMethodIndex = irmc.GetIRNonStaticMethodIndexByMethod( mf.virtualFunctionName );
-
-                List<IRMetaType> types = new List<IRMetaType>();
-                for( int i = 0; i < mfc.staticMetaClassInputTemplateList.Count; i++ )
-                {
-                    types.Add(new IRMetaType(mfc.staticMetaClassInputTemplateList[i]));
-                }
-                irmt = new IRMetaType(irmc, types );
+                m_IRRuntimeMethod = irmc.GetIRNonStaticMethodIndexByMethod(mf.virtualFunctionName, out callMethodIndex);
             }
+            else
+            {
+                m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(mf.functionAllName);
+            }
+            List<IRMetaType> types = new List<IRMetaType>();
+            for (int i = 0; i < mfc.staticMetaClassInputTemplateList.Count; i++)
+            {
+                types.Add(new IRMetaType(mfc.staticMetaClassInputTemplateList[i]));
+            }
+            irmt = new IRMetaType(irmc, types);
             List<IRMetaType> functionMtList = new List<IRMetaType>();
             for( int i = 0; i < mfc.metaFunctionInputTemplateList.Count; i++ )
             {
