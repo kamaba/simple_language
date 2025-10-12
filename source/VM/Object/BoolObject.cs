@@ -17,7 +17,7 @@ namespace SimpleLanguage.VM
     {
         public bool value { get; set; } = false;
 
-        public BoolObject( bool flag ) :base(  )
+        public BoolObject( bool flag ) : base(EType.Boolean )
         {
             value = flag;
         }

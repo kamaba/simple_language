@@ -14,7 +14,6 @@ using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Parse;
-using SimpleLanguage.IR;
 
 namespace SimpleLanguage.Core
 {
@@ -267,7 +266,7 @@ namespace SimpleLanguage.Core
 
                 var template = fmmf.metaTemplatesList[i];
 
-                MetaTemplate mdt = new MetaTemplate( ownerMetaClass, template, i );
+                MetaTemplate mdt = new MetaTemplate( ownerMetaClass, template, mc.metaTemplateList.Count + i );
                 AddMetaDefineTemplate(mdt);
 
                 //下边的代码未来要转移支解析Meta过程中
@@ -315,6 +314,7 @@ namespace SimpleLanguage.Core
             m_IsWithInterface = mmf.m_IsWithInterface;
             m_FileMetaMemberFunction = mmf.m_FileMetaMemberFunction;
             m_GenTempalteFunctionList = mmf.m_GenTempalteFunctionList;
+            m_SourceMetaMemberFunction = mmf.sourceMetaMemberFunction;
         }
         protected void Init()
         {
@@ -339,6 +339,7 @@ namespace SimpleLanguage.Core
                 if( m_OwnerMetaClass.isTemplateClass )
                 {
                     var tt = new MetaTemplate(m_OwnerMetaClass, "this");
+                    tt.SetIndex(0);
                     tt.SetInConstraintMetaClass(m_OwnerMetaClass);
                     mt = new MetaType(tt);
                 }
@@ -398,7 +399,30 @@ namespace SimpleLanguage.Core
             m_MetaMemberTemplateCollection.AddMetaDefineTemplate(mt);
         }
         //如果是模板函数，需要在实例化类后，进行新的实体函数的解析
-        public MetaGenTempalteFunction AddGenTemplateMemberFunctionBySelf(List<MetaClass> list)
+        public MetaGenTempalteFunction AddGenTemplateMemberFunctionByMetaTypeList(MetaClass mc, List<MetaType> list)
+        {
+            if (mc.isTemplateClass)
+            {
+                return null;
+            }
+
+            List<MetaClass> mcList = new List<MetaClass>();
+
+            foreach (var v in list)
+            {
+                if (v.eType == EMetaTypeType.MetaClass
+                    || v.eType == EMetaTypeType.MetaGenClass )
+                {
+                    mcList.Add(v.metaClass);
+                }
+            }
+            if( mcList.Count == list.Count )
+            {
+                return AddGenTemplateMemberFunctionBySelf(mc, mcList);
+            }
+            return null;
+        }
+        public MetaGenTempalteFunction AddGenTemplateMemberFunctionBySelf( MetaClass mc, List<MetaClass> list)
         {
             MetaGenTempalteFunction mgtf = GetGenTemplateFunction(list);
             if (mgtf == null)
@@ -411,6 +435,7 @@ namespace SimpleLanguage.Core
                     mgtList.Add(mgt);
                 }
                 mgtf = new MetaGenTempalteFunction(this, mgtList);
+                mgtf.SetOwnerMetaClass(mc);
 
                 this.m_GenTempalteFunctionList.Add(mgtf);
 
@@ -420,13 +445,18 @@ namespace SimpleLanguage.Core
         }
         public MetaGenTempalteFunction GetGenTemplateFunction(List<MetaClass> mcList)
         {
-            for (int i = 0; i < m_GenTempalteFunctionList.Count; i++)
+            if( mcList.Count == m_GenTempalteFunctionList.Count )
             {
-                var c = m_GenTempalteFunctionList[i];
-                if (c.MatchInputTemplateInsance(mcList))
+                for (int i = 0; i < m_GenTempalteFunctionList.Count; i++)
                 {
-                    return c;
+                    var c = m_GenTempalteFunctionList[i];
+
+                    if (c.MatchInputTemplateInsance(mcList))
+                    {
+                        return c;
+                    }
                 }
+
             }
             return null;
         }
@@ -540,6 +570,40 @@ namespace SimpleLanguage.Core
         }
         public MetaType AddMetaPreTemplateFunction(MetaType mt, out bool isGenMetaClass)
         {
+            /*----------------------
+            isGenMetaClass = false;
+            if (mt.metaClass == null)
+            {
+                return null;
+            }
+            List<MetaClass> mcList = new List<MetaClass>();
+            for (int i = 0; i < mt.templateMetaTypeList.Count; i++)
+            {
+                var mtc = mt.templateMetaTypeList[i];
+                if (mtc.eType == EMetaTypeType.MetaClass)
+                {
+                    mcList.Add(mtc.metaClass);
+                }
+                else if (mtc.eType == EMetaTypeType.MetaGenClass)
+                {
+                    mcList.Add(mtc.metaGenTemplateClass);
+                }
+            }
+            if (mcList.Count == mt.templateMetaTypeList.Count)
+            {
+                MetaGenTemplateClass mgtc = mt.metaClass.AddInstanceMetaClass(mcList);
+                isGenMetaClass = true;
+                return new MetaType(mgtc, mt.templateMetaTypeList);
+            }
+
+            var find = BindStructTemplateMetaClassList(mt);
+            if (find == null)
+            {
+                this.m_BindStructTemplateMetaClassList.Add(new MetaType(mt));
+            }
+            //--------------------------------------
+            */
+                
             isGenMetaClass = false;
             if (mt.metaClass == null)
             {

@@ -479,27 +479,23 @@ namespace SimpleLanguage.Core
         {
             return true;
         }
-        public MetaType AddMetaPreTemplateClass( MetaType mt, out bool isGenMetaClass )
+        public MetaType AddMetaPreTemplateClass( MetaType mt, bool isParse, out bool isGenMetaClass )
         {
             isGenMetaClass = false;
             if ( mt.metaClass == null )
             {
                 return null;
             }
-            List<MetaClass> mcList = new List<MetaClass>();
-            for( int i = 0; i < mt.templateMetaTypeList.Count; i++ )
+            MetaGenTemplateClass mgtc = mt.metaClass.AddMetaTemplateClassByMetaClassAndMetaTemplateMetaTypeList( mt.templateMetaTypeList);
+
+            if ( mgtc  != null )
             {
-                var mtc = mt.templateMetaTypeList[i];
-                if( mtc.eType == EMetaTypeType.MetaClass )
-                {
-                    mcList.Add(mtc.metaClass);
-                }
-            }
-            if( mcList.Count == mt.templateMetaTypeList.Count )
-            {
-                MetaGenTemplateClass mgtc = mt.metaClass.AddInstanceMetaClass(mcList);
                 isGenMetaClass = true;
-                return new MetaType( mgtc );
+                if(isParse )
+                {
+                    mgtc.Parse();
+                }
+                return new MetaType(mgtc, mt.templateMetaTypeList);
             }
 
             var find = BindStructTemplateMetaClassList( mt );
@@ -508,6 +504,25 @@ namespace SimpleLanguage.Core
                 this.m_BindStructTemplateMetaClassList.Add(new MetaType(mt) );
             }
             return mt;
+        }
+        public MetaGenTemplateClass AddMetaTemplateClassByMetaClassAndMetaTemplateMetaTypeList( List<MetaType> templateMetaTypeList )
+        {
+            List<MetaClass> mcList = new List<MetaClass>();
+            for (int i = 0; i < templateMetaTypeList.Count; i++)
+            {
+                var mtc = templateMetaTypeList[i];
+                if (mtc.eType == EMetaTypeType.MetaClass
+                    || mtc.eType == EMetaTypeType.MetaGenClass )
+                {
+                    mcList.Add(mtc.metaClass);
+                }
+            }
+            if (mcList.Count == templateMetaTypeList.Count)
+            {
+                MetaGenTemplateClass mgtc = AddInstanceMetaClass(mcList);
+                return mgtc;
+            }
+            return null;
         }
         public MetaType BindStructTemplateMetaClassList( MetaType mt )
         {
@@ -814,7 +829,7 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParam(string name, int templateParamCount, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true )
+        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParamCount(string name, int templateParamCount, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true )
         {
             if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name) )
             {
@@ -845,17 +860,59 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
+        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParam(string name, List<MetaClass> mtList, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true)
+        {
+            if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name))
+            {
+                return null;
+            }
+            int templateParamCount = 0;
+            if( mtList != null )
+            {
+                templateParamCount = mtList.Count;
+            }
+            var tnode = this.m_MetaMemberFunctionTemplateNodeDict[name];
+            if (!tnode.metaTemplateFunctionNodeDict.ContainsKey(templateParamCount))
+            {
+                return null;
+            }
+            var tfunctionNode = tnode.metaTemplateFunctionNodeDict[templateParamCount];
+
+            var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputParam != null ? inputParam.count : 0);
+            if (list == null) return null;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var fun = list[i];
+                if (fun.isTemplateFunction)
+                {
+                    var gfun = fun.GetGenTemplateFunction(mtList);
+
+                    if( gfun != null )
+                    {
+                        return gfun;
+                    }
+                    return fun;
+                }
+                else
+                {
+                    if (fun.IsEqualMetaInputParamCollection(inputParam))
+                        return fun;
+                }
+            }
+            return null;
+        }
         public MetaMemberFunction GetMetaMemberConstructDefaultFunction()
         {
             return GetMetaMemberConstructFunction(null);
         }
         public virtual MetaMemberFunction GetMetaMemberConstructFunction( MetaInputParamCollection mmpc )
         {
-            return GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", 0, mmpc, false );
+            return GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, mmpc, false );
         }
         public MetaMemberFunction GetFirstMetaMemberFunctionByName( string name )
         {
-            return GetMetaMemberFunctionByNameAndInputTemplateInputParam( name, 0, null );
+            return GetMetaMemberFunctionByNameAndInputTemplateInputParamCount( name, 0, null );
         }
         public List<MetaMemberFunction> GetMemberInterfaceFunction()
         {

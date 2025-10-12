@@ -84,7 +84,7 @@ namespace SimpleLanguage.Project
             }
             var irmethod = IRManager.instance.GetIRMethod(mmf.functionAllName);
             InnerCLRRuntimeVM.Init();
-            InnerCLRRuntimeVM.RunIRMethod( null, null, irmethod);
+            InnerCLRRuntimeVM.RunIRMethod( null, irmethod);
         }
         public static void AddDefineNamespace( MetaNode parentRoot, DefineStruct dns, bool isAddCurrent = true )
         {

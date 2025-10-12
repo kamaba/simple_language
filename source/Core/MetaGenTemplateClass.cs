@@ -16,7 +16,6 @@ namespace SimpleLanguage.Core
     {
         public MetaClass metaTemplateClass => m_MetaTemplateClass;
         public List<MetaGenTemplate> metaGenTemplateList => m_MetaGenTemplateList;
-
         public override bool isGenTemplate => true;
 
         private List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
@@ -188,7 +187,7 @@ namespace SimpleLanguage.Core
         {
             MetaMemberVariable mgmv = new MetaMemberVariable(mmv);
             mgmv.SetOwnerMetaClass(this);
-            TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mgmv.metaDefineType, this, null );
+            TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mgmv.realMetaType, this, null );
             return mgmv;
         }
         public override void ParseMemberFunctionDefineMetaType()

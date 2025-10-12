@@ -47,12 +47,38 @@ namespace SimpleLanguage.VM
             m_Type = new short[m_IRMetaVariableList.Count];
             m_Object = this;
         }
+        public RuntimeType GetClassRuntimeType(IRMetaType irmt, bool isAdd = false)
+        {
+            if (irmt.templateIndex != -1)
+            {
+                return m_IRTemplateList[irmt.templateIndex];
+            }
+            else
+            {
+                List<RuntimeType> rtList = new List<RuntimeType>();
+                if (irmt.irMetaTypeList.Count > 0)
+                {
+                    for (int i = 0; i < irmt.irMetaTypeList.Count; i++)
+                    {
+                        var crt = GetClassRuntimeType(irmt.irMetaTypeList[i], isAdd);
+                        rtList.Add(crt);
+                    }
+                }
+                var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.irMetaClass, rtList);
+                if (rt == null && isAdd)
+                {
+                    rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(irmt.irMetaClass, rtList);
+                }
+                return rt;
+            }
+        }
         public void CreateObject()
         {
-            for (int i = 0; i < m_RuntimeType.runtimeTemplateList.Count; i++)
+            for (int i = 0; i < m_IRMetaVariableList.Count; i++)
             {
-                var irmv = m_RuntimeType.runtimeTemplateList[i];
-                SObject sobj = ObjectManager.CreateObjectByRuntimeType(irmv, true );
+                var irmv = m_IRMetaVariableList[i].irMetaType;
+                var rt = GetClassRuntimeType(irmv, true );
+                SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, false );
                 if(sobj == null )
                 {
                     continue;

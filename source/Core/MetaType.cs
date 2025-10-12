@@ -17,6 +17,7 @@ namespace SimpleLanguage.Core
     {
         None,
         MetaClass,
+        MetaGenClass,
         Template,
         TemplateClassWithTemplate
     }
@@ -47,7 +48,6 @@ namespace SimpleLanguage.Core
         //private MetaInputTemplateCollection m_InputTemplateCollection = null;
         private EMetaTypeType m_EType = EMetaTypeType.None;
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
-        //private MetaClass m_TemplateMetaClass = null;                    // List<int> => list
         private MetaClass m_TypeInferenceClass = null;                  //推理类
         private MetaType m_ParentMetaType = null;
         private MetaTemplate m_MetaTemplate = null;
@@ -64,6 +64,12 @@ namespace SimpleLanguage.Core
             m_EType = EMetaTypeType.Template;
             m_MetaTemplate = mt;
             m_MetaClass = mt.extendsMetaClass;
+        }
+        public MetaType( MetaGenTemplateClass mgtc, List<MetaType> mtList )
+        {
+            m_EType = EMetaTypeType.MetaGenClass;
+            m_MetaClass = mgtc;
+            m_TemplateMetaTypeList = mtList;
         }
         public MetaType( MetaClass mc )
         {
@@ -134,6 +140,24 @@ namespace SimpleLanguage.Core
 
             return false;
         }
+        public MetaClass GetTemplateMetaClass(out bool isGTC)
+        {
+            isGTC = false;
+            if (m_MetaClass is MetaGenTemplateClass mgtc)
+            {
+                isGTC = true;
+                return mgtc.metaTemplateClass;
+            }
+            return m_MetaClass;
+        }
+        public MetaClass GetTemplateMetaClass()
+        {
+            if (m_MetaClass is MetaGenTemplateClass mgtc)
+            {
+                return mgtc.metaTemplateClass;
+            }
+            return m_MetaClass;
+        }
         //public void SetEnumValue( MetaMemberVariable mmv )
         //{
         //    m_EnumValue = mmv;
@@ -191,22 +215,22 @@ namespace SimpleLanguage.Core
             return false;
         }
         //是否包含 模板函数模板  意思就是是否在 templateMetaTypeList 中，有模板函数定义的T
-        public bool isIncludeTemplateFunctionTemplate( MetaMemberFunction mmf )
+        public MetaMemberFunction FindTemplateFunctionTemplate( MetaMemberFunction mmf )
         {
             if( eType == EMetaTypeType.TemplateClassWithTemplate )
             {
-                if (m_TemplateMetaTypeList.Count == 0) return false;
+                if (m_TemplateMetaTypeList.Count == 0) return null;
                 for (int i = 0; i < m_TemplateMetaTypeList.Count; i++)
                 {
                     var tmt = m_TemplateMetaTypeList[i];
                     if ( tmt.IsIncludeFunctionTemplate(mmf))
                     {
-                        return true;
+                        return mmf;
                     }
                 }
-                return false;
+                return null;
             }
-            return false;
+            return null;
         }
         public void AddTemplateMetaType( MetaType mt )
         {

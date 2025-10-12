@@ -37,7 +37,7 @@ namespace SimpleLanguage.IR
 
             if(m_MetaType != null )
             {
-                sb.Append(m_MetaType.irMetaClass?.irName);
+                sb.Append( "[" + m_MetaType.irMetaClass?.irName);
 
                 if(m_MetaType.irMetaTypeList.Count > 0)
                 {
@@ -52,28 +52,28 @@ namespace SimpleLanguage.IR
                     }
                     sb.Append(">");
                 }
-
-                if( m_IRMethod != null )
-                {
-                    sb.Append(m_IRMethod.id.ToString());
-                }
-
-                if (m_IrTemplateMetaType?.Count > 0)
-                {
-                    sb.Append("<");
-                    for (int i = 0; i < m_IrTemplateMetaType.Count; i++)
-                    {
-                        sb.Append(m_IrTemplateMetaType[i].ToString());
-                        if (i < m_IrTemplateMetaType.Count - 1)
-                        {
-                            sb.Append(",");
-                        }
-                    }
-                    sb.Append(">");
-                }
+                sb.Append("] ");
+            }
+            if (m_IRMethod != null)
+            {
+                sb.Append(m_IRMethod.id.ToString());
             }
 
-            return "";
+            if (m_IrTemplateMetaType?.Count > 0)
+            {
+                sb.Append("<");
+                for (int i = 0; i < m_IrTemplateMetaType.Count; i++)
+                {
+                    sb.Append(m_IrTemplateMetaType[i].ToString());
+                    if (i < m_IrTemplateMetaType.Count - 1)
+                    {
+                        sb.Append(",");
+                    }
+                }
+                sb.Append(">");
+            }
+
+            return sb.ToString();
         }
     }
 }

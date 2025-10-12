@@ -29,8 +29,6 @@ namespace SimpleLanguage.IR
         public int id => m_Id;
         public string name => m_Name;
         public int index => m_Index;
-        public string templateName => m_TemplateName;
-        public bool isTemplate => m_IsTemplate;
 
 
         private MetaExpressNode m_ExpressNode = null;
@@ -40,7 +38,6 @@ namespace SimpleLanguage.IR
         private int m_Id = -1;
         private int m_Index = -1;
         private string m_Name = "";
-        private string m_TemplateName = "";
         private MetaVariable m_MetaVariable = null;
 
         public IRMetaVariable( MetaVariable mv, int index = -1 )
@@ -76,8 +73,6 @@ namespace SimpleLanguage.IR
             {
                 Log.AddGenIR(EError.None, "IRMetaVariable 没有找到对应的from ");
             }
-
-            m_TemplateName = IRManager.GetIRNameByMetaType(mv.metaDefineType);
             //if( mv.metaDefineType.eType == EMetaTypeType.Template )
             //{
             //    m_IsTemplate = true;

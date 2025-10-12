@@ -127,10 +127,10 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public MetaGenTemplateClass AddInstanceMetaClass(MetaInputTemplateCollection mitc)
+        public MetaGenTemplateClass AddInstanceMetaClass( List<MetaType> inputlist )
         {
             List<MetaClass> list = new List<MetaClass>();
-            foreach (var item in mitc.metaTemplateParamsList)
+            foreach (var item in inputlist )
             {
                 if (item.isTemplate == false)
                 {
