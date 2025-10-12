@@ -41,6 +41,7 @@ namespace SimpleLanguage.Core
         public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
         public EVariableFrom variableFrom => m_VariableFrom;
         public  MetaType metaDefineType => m_DefineMetaType;
+        public MetaType realMetaType => m_RealMetaType;
         public MetaClass ownerMetaClass => m_OwnerMetaClass;
         public MetaVariable sourceMetaVariable => m_SourceMetaVariable;
         public Token pingToken => m_PintTokenList.Count > 0 ? m_PintTokenList[0] : null;
@@ -49,12 +50,12 @@ namespace SimpleLanguage.Core
 
         protected MetaClass m_OwnerMetaClass = null;
         protected MetaType m_DefineMetaType = null;
+        protected MetaType m_RealMetaType = null;
         protected EVariableFrom m_VariableFrom;
         protected List<Token> m_PintTokenList = new List<Token>();
         protected bool m_IsParsed = false;
         protected bool m_IsStatic = false;
         protected bool m_IsConst = false;
-        protected bool m_IsTemplate = false;
         //用来存放扩展包含变量
         protected Dictionary<string, MetaVariable> m_MetaVariableDict = new Dictionary<string, MetaVariable>();
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
@@ -66,6 +67,8 @@ namespace SimpleLanguage.Core
         {
             m_OwnerMetaClass = mv.m_OwnerMetaClass;
             m_DefineMetaType = new MetaType( mv.m_DefineMetaType );
+            if(mv.m_RealMetaType != null )
+                m_RealMetaType = new MetaType(mv.m_RealMetaType);
             m_VariableFrom = mv.m_VariableFrom;
             m_PintTokenList = mv.m_PintTokenList;
             m_IsStatic = mv.m_IsStatic;
@@ -90,7 +93,7 @@ namespace SimpleLanguage.Core
             {
                 m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
-            m_IsTemplate = m_DefineMetaType.IsIncludeTemplate();
+            m_RealMetaType = new MetaType(m_DefineMetaType);
         } 
         public virtual void SetOwnerMetaClass(MetaClass ownerclass)
         {
@@ -99,6 +102,18 @@ namespace SimpleLanguage.Core
         public void SetIsStatic( bool iss )
         {
             this.m_IsStatic = iss;
+        }
+        public void SetRealMetaType( MetaType realMt )
+        {
+            this.m_RealMetaType = realMt;
+        }
+        public MetaClass GetOwnerClassTemplateClass()
+        {
+            if( m_OwnerMetaClass is MetaGenTemplateClass mgtc )
+            {
+                return mgtc.metaTemplateClass;
+            }
+            return m_OwnerMetaClass;
         }
         public void AddPingToken( string path, int beginline, int beginpos, int endline, int endpos )
         {

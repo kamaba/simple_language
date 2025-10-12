@@ -14,19 +14,21 @@ namespace SimpleLanguage.Core
 {
     public class MetaGenTempalteFunction : MetaMemberFunction
     {
+        public MetaMemberFunction sourceTemplateFunctionMetaMemberFunction => m_SourceTemplateFunctionMetaMemberFunction;
         public List<MetaGenTemplate> metaGenTemplateList => m_MetaGenTemplateList;
 
-        protected MetaMemberFunction m_SourceMetaMemberFunction = null;
+        protected MetaMemberFunction m_SourceTemplateFunctionMetaMemberFunction = null;
         protected List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
         public MetaGenTempalteFunction(MetaMemberFunction mmc, List<MetaGenTemplate> list ) : base(mmc.ownerMetaClass)
         {
-            m_SourceMetaMemberFunction = mmc;
+            m_SourceTemplateFunctionMetaMemberFunction = mmc;
             UpdateGenMemberFunctionByTemplateClass(mmc);
             m_MetaGenTemplateList = list;
         }
         public MetaGenTempalteFunction( MetaGenTempalteFunction mgtf ) : base(mgtf)
         {
             m_SourceMetaMemberFunction = mgtf.m_SourceMetaMemberFunction;
+            m_SourceTemplateFunctionMetaMemberFunction = mgtf.m_SourceTemplateFunctionMetaMemberFunction;
             m_MetaGenTemplateList = mgtf.m_MetaGenTemplateList;
         }
         public MetaGenTempalteFunction(MetaClass mc, string _name) : base(mc)
@@ -52,7 +54,7 @@ namespace SimpleLanguage.Core
                 var c1 = m_MetaGenTemplateList[i];
                 var c2 = instMcList[i];
 
-                if (c1.metaType.metaClass != c2)
+                if (c1.metaType.metaClass != c2 )
                 {
                     return false;
                 }
@@ -75,6 +77,7 @@ namespace SimpleLanguage.Core
             m_IsFinal = mmf.isFinal;
             m_MetaBlockStatements = mmf.metaBlockStatements;
             m_ConstructInitFunction = mmf.isConstructInitFunction;
+            m_SourceMetaMemberFunction = mmf.sourceMetaMemberFunction;
             m_ReturnMetaVariable = new MetaVariable(mmf.returnMetaVariable);
 
             //    m_OriginalMetaMemberFunction = mmf;
@@ -96,6 +99,26 @@ namespace SimpleLanguage.Core
         public MetaGenTemplate GetMetaGenTemplate( string name )
         {
             return m_MetaGenTemplateList.Find(a => a.name == name);
+        }
+        void ParseMetaMemberFunctionDefineMetaType()
+        {
+            if ( m_ReturnMetaVariable?.metaDefineType != null)
+            {
+                if (!(m_ReturnMetaVariable.metaDefineType.eType == EMetaTypeType.MetaClass
+                    && m_ReturnMetaVariable.metaDefineType.metaClass.isTemplateClass == false))
+                {
+                    TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(m_ReturnMetaVariable.metaDefineType, m_OwnerMetaClass as MetaGenTemplateClass, this );
+                }
+            }
+            for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
+            {
+                var mdp = m_MetaMemberParamCollection.metaDefineParamList[i];
+                if (!(mdp.metaVariable.metaDefineType.eType == EMetaTypeType.MetaClass
+                    && mdp.metaVariable.metaDefineType.metaClass.isTemplateClass == false))
+                {
+                    TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mdp.metaVariable.metaDefineType, m_OwnerMetaClass as MetaGenTemplateClass, this );
+                }
+            }
         }
         public void UpdateRegsterGenMetaFunction()
         {
@@ -151,6 +174,9 @@ namespace SimpleLanguage.Core
                     mgtc.UpdateRegisterTemplateFunction();
                 }
             }
+            ParseMetaMemberFunctionDefineMetaType();
+            UpdateFunctionName();
+
             return true;
         }
         public override string ToString()

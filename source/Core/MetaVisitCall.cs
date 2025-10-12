@@ -22,7 +22,7 @@ namespace SimpleLanguage.Core
         public MetaFunction function => m_VMCallMetaFunction;
         public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
         public List<MetaExpressNode> metaInputParamList => m_MetaInputParamList;
-        public List<MetaType> metaParamInputTemplateList => m_MetaParamInputTemplateList;
+        public List<MetaType> metaFunctionInputTemplateList => m_MetaFunctionInputTemplateList;
 
 
         protected MetaVariable m_LoadMetaVariable = null;
@@ -34,7 +34,7 @@ namespace SimpleLanguage.Core
         //真实的成员函数
         protected MetaMemberFunction m_MetaMemberFunction = null;
         protected List<MetaExpressNode> m_MetaInputParamList = new List<MetaExpressNode>();
-        protected List<MetaType> m_MetaParamInputTemplateList = new List<MetaType>();
+        protected List<MetaType> m_MetaFunctionInputTemplateList = new List<MetaType>();
         
         public MetaMethodCall( MetaClass staticMc, List<MetaType> staticMmitList,  MetaFunction _fun, List<MetaType> mpipList, MetaInputParamCollection _paramCollection, MetaVariable loadMv, MetaVariable storeMv )
         {
@@ -47,7 +47,7 @@ namespace SimpleLanguage.Core
             //m_MetaInputParamList = _param;
             if( mpipList != null )
             {
-                this.m_MetaParamInputTemplateList = mpipList;
+                this.m_MetaFunctionInputTemplateList = mpipList;
             }
 
             List<MetaDefineParam> mpList = new();
@@ -83,6 +83,14 @@ namespace SimpleLanguage.Core
         public MetaType GeMetaDefineType()
         {
             return m_VMCallMetaFunction.metaDefineType;
+        }
+        public MetaFunction GetTemplateMemberFunction()
+        {
+            if( m_VMCallMetaFunction is MetaGenTempalteFunction mgtf )
+            {
+                return mgtf.sourceTemplateFunctionMetaMemberFunction;
+            }
+            return m_VMCallMetaFunction;
         }
         public string ToCommonString()
         {
@@ -189,7 +197,7 @@ namespace SimpleLanguage.Core
             vn.m_MetaBraceStatementsContent = mb;
             vn.visitType = EVisitType.New;
             vn.variable = mv;
-            if(mt.metaClass is MetaGenTemplateClass mgtc )
+            if (mt.metaClass is MetaGenTemplateClass mgtc)
             {
                 vn.m_ReturnMetaType = new MetaType(mgtc);
             }
@@ -252,29 +260,44 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CreateByThis(MetaVariable _variale, MetaType callerMt = null)
+        public static MetaVisitNode CreateByThis(MetaVariable _variale)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.visitType = EVisitType.Variable;
             vn.variable = _variale;
-            vn.m_CallMetaType = callerMt;
+            vn.m_CallMetaType = null;
 
             return vn;
         }
-        public static MetaVisitNode CreateByBase(MetaVariable _variale, MetaType callerMt = null)
+        public static MetaVisitNode CreateByBase(MetaVariable _variale)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.visitType = EVisitType.Variable;
             vn.variable = _variale;
-            vn.m_CallMetaType = callerMt;
+            vn.m_CallMetaType = null;
 
             return vn;
         }
         public void SetMethodCall( MetaMethodCall _methodCall)
         {
             this.methodCall = _methodCall;
+        }
+        public MetaVariable GetOrgTemplateMetaVariable()
+        {
+            if (variable == null) { return null; }
+
+            var t = variable;
+            while(t != null )
+            {
+                if( t.sourceMetaVariable == null  )
+                {
+                    break;
+                }
+                t = t.sourceMetaVariable;
+            }
+            return t;
         }
         public MetaType GetMetaDefineType()
         {

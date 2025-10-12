@@ -14,40 +14,22 @@ using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.IR
 {
-    //public class Level<T>
-    //{
-    //    public static T static_t1 = default(T);
-
-    //    public static T create( T t )
-    //    {
-    //        Level<int>.static_t1 = 20;
-    //        Level<T>.static_t1 = t;
-    //        return static_t1;
-    //    }
-    //}
     public class IRMetaClass
     {
         public int id { get; set; } = 0;
         public string irName => m_IRName;
-        public bool isTemplateClass => m_IsTemplateClass;
         public int byteCount => m_ByteCount;
         public bool needCallInitMethod => m_NeedCallInitMethod;
-
 
         public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
         public List<IRMetaVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;
 
 
         private Dictionary<int, int> m_MetaMemberVariableHashCodeDict = new Dictionary<int, int>();
-        //private List<MetaMemberVariable> m_LocalMetaMemberVariables = new List<MetaMemberVariable>();
-        //private List<MetaMemberVariable> m_StaticMetaMemberVariables = new List<MetaMemberVariable>();
-        //private List<MetaMemberData> m_LocalMetaMemberDatas = new List<MetaMemberData>();
         private List<IRMetaVariable> m_LocalIRMetaVariableList = new List<IRMetaVariable>();
         private List<IRMetaVariable> m_StaticIRMetaVariableList = new List<IRMetaVariable>();
-        //private Dictionary<int, IRCallFunction> m_LocalIRInitDict = new Dictionary<int, IRCallFunction>();
         private List<IRMethod> m_IRNotStaticMethodList = new List<IRMethod>();
         private string m_IRName = "";
-        private bool m_IsTemplateClass = false;
         private MetaClass m_MetaClass = null;
 
         private int allocSize = 0;
@@ -61,8 +43,7 @@ namespace SimpleLanguage.IR
             m_MetaClass = mc;
             id = mc.GetHashCode();
             m_IRName = IRManager.GetIRNameByMetaClass(mc);
-            m_IsTemplateClass = mc.isTemplateClass;
-        }
+        }        
         public IRMethod GetIRNonStaticMethodByIndex( int index )
         {
             if( index >= m_IRNotStaticMethodList.Count || index < 0 )
@@ -71,6 +52,19 @@ namespace SimpleLanguage.IR
                 return null;
             }
             return m_IRNotStaticMethodList[index];
+        }
+        public IRMethod GetIRNonStaticMethodIndexByMethod(string name, out int index )
+        {
+            index = -1;
+            for (int i = 0; i < m_IRNotStaticMethodList.Count; i++)
+            {
+                if (m_IRNotStaticMethodList[i].virtualFunctionName == name)
+                {
+                    index = i;
+                    return m_IRNotStaticMethodList[i];
+                }
+            }
+            return null;
         }
         public int GetIRNonStaticMethodIndexByMethod( string name )
         {
@@ -120,8 +114,8 @@ namespace SimpleLanguage.IR
                     AddMetaMemberVariableIndexBindHashCode(irmv.id, i);
                     if (v.isInnerDefine == false)
                     {
-                        if (v.metaDefineType.metaClass != null)
-                            m_MetaTypeList.Add(v.metaDefineType.metaClass.eType);
+                        //if (v.metaDefineType.metaClass != null)
+                        //    m_MetaTypeList.Add(v.metaDefineType.metaClass.eType);
                     }
                 }
             }
@@ -150,9 +144,10 @@ namespace SimpleLanguage.IR
             for (int i = 0; i < smflist.Count; i++)
             {
                 var mf = smflist[i];
+                mf.UpdateFunctionName();
                 var gmf = IRManager.instance.TranslateIRByFunction(mf);
+                
                 IRManager.instance.AddIRMethod(gmf);
-                //m_IRNotStaticMethodList.Add(gmf);
             }
 
             var nonsmflist = m_MetaClass.nonStaticVirtualMetaMemberFunctionList;
@@ -160,9 +155,10 @@ namespace SimpleLanguage.IR
             for (int i = 0; i < nonsmflist.Count; i++)
             {
                 var mf = nonsmflist[i];
+                mf.UpdateVritualFunctionName();
                 var gmf = IRManager.instance.TranslateIRByFunction(mf);
-                IRManager.instance.AddIRMethod(gmf);
                 m_IRNotStaticMethodList.Add(gmf);
+                IRManager.instance.AddIRMethod(gmf);
             }
         }
         public List<IRData> CreateStaticMetaMetaVariableIRList()

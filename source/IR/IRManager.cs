@@ -75,12 +75,13 @@ namespace SimpleLanguage.IR
             ParseClass();
 
             //代码定义的成员函数
-            var mmfDict = MethodManager.instance.metaOriginalFunctionList;
-            foreach (var v in mmfDict)
-            {
-                IRMethod irm = this.TranslateIRByFunction(v);
-                AddIRMethod(irm);
-            }
+            //var mmfDict = MethodManager.instance.metaOriginalFunctionList;
+            //foreach (var v in mmfDict)
+            //{
+            //    v.UpdateFunctionName();
+            //    IRMethod irm = this.TranslateIRByFunction(v);
+            //    AddIRMethod(irm);
+            //}
             //动态解析出来的函数
             var dynamicMmfDict4 = MethodManager.instance.metaDynamicFunctionList;
             foreach (var v in dynamicMmfDict4)
@@ -108,7 +109,7 @@ namespace SimpleLanguage.IR
             {
                 IRMetaClass irmc = new IRMetaClass(v);
                 m_IRMetaClassList.Add(irmc);
-                if(!irmc.isTemplateClass)
+                if(!v.isGenTemplate )
                     RuntimeTypeManager.AddRuntimeTypeByClass(irmc);
             }
             var list = RuntimeTypeManager.runtimeList;
@@ -270,7 +271,7 @@ namespace SimpleLanguage.IR
             }
             else if (mt.eType == EMetaTypeType.MetaClass)
             {
-                sb.Append(mt.metaClass.metaNode.allName);
+                sb.Append(mt.GetTemplateMetaClass().metaNode.allName);
                 if ( mt.metaClass is MetaGenTemplateClass mgtc )
                 {
                     sb.Append("<");
@@ -284,15 +285,15 @@ namespace SimpleLanguage.IR
                 }
                 else
                 {
-                    if(mt.metaClass.metaTemplateList.Count > 0 )
+                    if(mt.GetTemplateMetaClass().metaTemplateList.Count > 0 )
                     {
                         sb.Append("<");
-                        for (int i = 0; i < mt.metaClass.metaTemplateList.Count; i++)
+                        for (int i = 0; i < mt.GetTemplateMetaClass().metaTemplateList.Count; i++)
                         {
                             sb.Append("$");
-                            sb.Append(mt.metaClass.metaTemplateList[i].name);
+                            sb.Append(mt.GetTemplateMetaClass().metaTemplateList[i].name);
                             sb.Append("$");
-                            if (i < mt.metaClass.metaTemplateList.Count - 1)
+                            if (i < mt.GetTemplateMetaClass().metaTemplateList.Count - 1)
                             { sb.Append(","); }
                         }
                         sb.Append('>');
@@ -301,7 +302,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                sb.Append(mt.metaClass.metaNode.allName);
+                sb.Append(mt.GetTemplateMetaClass().metaNode.allName);
                 sb.Append("<");
                 for (int i = 0; i < mt.templateMetaTypeList.Count; i++)
                 {

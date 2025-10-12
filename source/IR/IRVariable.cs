@@ -16,7 +16,7 @@ namespace SimpleLanguage.IR
     public class IRLoadVariable : IRBase
     {
         private IRData m_Data = new IRData();
-        public static IRLoadVariable CreateLoadVariable(IRMetaType irmt, IRMethod _irMethod,  MetaVariable mv )
+        public static IRLoadVariable CreateLoadVariable(IRMetaType irmt, IRMetaClass irmc, IRMethod _irMethod,  MetaVariable mv )
         {
             IRMetaVariable irmv = null;
             if (mv.variableFrom == MetaVariable.EVariableFrom.Global)
@@ -35,9 +35,9 @@ namespace SimpleLanguage.IR
             else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
             {
                 int index = -1;
-                if(irmt.irMetaClass != null )
+                if (irmc != null )
                 {
-                    index = irmt.irMetaClass.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                    index = irmc.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
                 }
                 if( index == -1 )
                 {
@@ -120,7 +120,7 @@ namespace SimpleLanguage.IR
     {
         private IRData m_Data = new IRData();
 
-        public static IRStoreVariable CreateIRStoreVariable( IRMetaType irmt, IRMethod _irMethod, MetaVariable mv )
+        public static IRStoreVariable CreateIRStoreVariable( IRMetaType irmt, IRMetaClass irmc, IRMethod _irMethod, MetaVariable mv )
         {
             IRMetaVariable irmv = null;
             if (mv.variableFrom == MetaVariable.EVariableFrom.Argument )
@@ -138,10 +138,10 @@ namespace SimpleLanguage.IR
             else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
             {
                 int index = -1;
-                var irmc = irmt.irMetaClass;
-                if (irmc != null )
+                var cirmc = irmc == null ? irmt.irMetaClass : irmc;
+                if (cirmc != null )
                 {
-                    index = irmc.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                    index = cirmc.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
                 }
                 if (mv.isStatic)
                 {

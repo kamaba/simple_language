@@ -17,7 +17,7 @@ namespace SimpleLanguage.VM
     {
         public Byte value;
 
-        public ByteObject(Byte _val)
+        public ByteObject(Byte _val) : base(EType.Byte)
         {
             value = _val;
         }
@@ -34,7 +34,7 @@ namespace SimpleLanguage.VM
     {
         public SByte value;
 
-        public SByteObject(SByte _val)
+        public SByteObject(SByte _val) : base(EType.SByte)
         {
             value = _val;
         }

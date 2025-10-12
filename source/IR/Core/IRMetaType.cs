@@ -27,16 +27,16 @@ namespace SimpleLanguage.IR
         {
             if (type.eType == EMetaTypeType.MetaClass)
             {
-                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.metaClass.GetHashCode());
+                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
             }
             else if (type.eType == EMetaTypeType.Template)
             {
                 m_TemplateIndex = type.metaTemplate.index;
-                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.metaClass.GetHashCode());                
+                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());                
             }
             else
             {
-                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.metaClass.GetHashCode());
+                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
             }
             for (int i = 0; i < type.templateMetaTypeList.Count; i++)
             {

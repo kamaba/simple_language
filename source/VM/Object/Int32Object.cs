@@ -17,7 +17,7 @@ namespace SimpleLanguage.VM
         public int value = 0;
         Int32Object(MetaClass mc)
         { }
-        public Int32Object( int obj )
+        public Int32Object( int obj ) : base(EType.Int32)
         {
             value = obj;
             m_Etype = EType.Int32;
@@ -100,7 +100,7 @@ namespace SimpleLanguage.VM
         public UInt32 value;
         public UInt32Object()
         { }
-        public UInt32Object(UInt32 obj)
+        public UInt32Object(UInt32 obj) : base(EType.UInt32)
         {
             value = obj;
             m_Etype = EType.UInt32;

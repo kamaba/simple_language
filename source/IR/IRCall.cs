@@ -29,12 +29,13 @@ namespace SimpleLanguage.IR
         }
         public void Parse(MetaMethodCall mfc)
         {
-            IRMetaClass curMc = null;
+            IRMetaType irmt = null;
+            IRMetaClass irmc = null;
             if (mfc.loadMetaVariable != null)
             {
-                curMc = m_IRMethod.irManager.GetIRMetaClassByName(mfc.loadMetaVariable.metaDefineType.metaClass.allClassName);
-                var irmt = new IRMetaType(mfc.loadMetaVariable.metaDefineType);
-                IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, m_IRMethod, mfc.loadMetaVariable );
+                irmt = new IRMetaType(mfc.loadMetaVariable.metaDefineType);
+                irmc = IRManager.instance.GetIRMetaClassById(mfc.loadMetaVariable.ownerMetaClass.GetHashCode());
+                IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, irmc, m_IRMethod, mfc.loadMetaVariable );
                 AddIRRangeData(irload.IRDataList);
             }
             paramCount = mfc.metaInputParamList.Count;
@@ -43,7 +44,7 @@ namespace SimpleLanguage.IR
                 IRExpress irexpress = new IRExpress(m_IRMethod, mfc.metaInputParamList[j] );
                 AddIRRangeData(irexpress.IRDataList);
             }
-            MetaFunction mf = mfc.function;
+            MetaFunction mf = mfc.GetTemplateMemberFunction();
             MetaMemberFunctionCSharp mmf = mf as MetaMemberFunctionCSharp;
             if (mmf != null)
             {
@@ -58,13 +59,12 @@ namespace SimpleLanguage.IR
 
 
             int callMethodIndex = -1;
-            IRMetaType irmc = null;
 
             //IRBase irbase = null;
             if ( mf.isStatic )
             {
                 var irname = IRManager.GetIRNameByMetaClass(mfc.staticCallerMetaClass);
-                curMc = IRManager.instance.GetIRMetaClassByName(irname);
+                irmc = IRManager.instance.GetIRMetaClassByName(irname);
                 //irbase = IRUtil.GetSetCallClassByMetaClass(mfc.staticCallerMetaClass, mfc.staticMetaClassInputTemplateList, out curMc);
                 //if (irbase != null)
                 //{
@@ -74,27 +74,29 @@ namespace SimpleLanguage.IR
             else
             {
                 var irname = IRManager.GetIRNameByMetaClass(mf.ownerMetaClass);
-                curMc = IRManager.instance.GetIRMetaClassByName(irname);
+                irmc = IRManager.instance.GetIRMetaClassByName(irname);
             }
 
-            m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(mf.functionAllName);
-            if ( curMc != null )
+            if ( !mf.isStatic )
             {
-                callMethodIndex = curMc.GetIRNonStaticMethodIndexByMethod( mf.virtualFunctionName );
-
-                List<IRMetaType> types = new List<IRMetaType>();
-                for( int i = 0; i < mfc.staticMetaClassInputTemplateList.Count; i++ )
-                {
-                    types.Add(new IRMetaType(mfc.staticMetaClassInputTemplateList[i]));
-                }
-                irmc = new IRMetaType(curMc, types );
+                m_IRRuntimeMethod = irmc.GetIRNonStaticMethodIndexByMethod(mf.virtualFunctionName, out callMethodIndex);
             }
+            else
+            {
+                m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(mf.functionAllName);
+            }
+            List<IRMetaType> types = new List<IRMetaType>();
+            for (int i = 0; i < mfc.staticMetaClassInputTemplateList.Count; i++)
+            {
+                types.Add(new IRMetaType(mfc.staticMetaClassInputTemplateList[i]));
+            }
+            irmt = new IRMetaType(irmc, types);
             List<IRMetaType> functionMtList = new List<IRMetaType>();
-            for( int i = 0; i < mfc.metaParamInputTemplateList.Count; i++ )
+            for( int i = 0; i < mfc.metaFunctionInputTemplateList.Count; i++ )
             {
-                functionMtList.Add(new IRMetaType(mfc.metaParamInputTemplateList[i]));
+                functionMtList.Add(new IRMetaType(mfc.metaFunctionInputTemplateList[i]));
             }
-           var irmethodcall = new IRMethodCall(irmc, functionMtList, m_IRRuntimeMethod, paramCount );
+           var irmethodcall = new IRMethodCall(irmt, functionMtList, m_IRRuntimeMethod, paramCount );
             if ( callMethodIndex == -1 )
             {
                 if( m_IRRuntimeMethod == null )

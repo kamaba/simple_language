@@ -16,7 +16,7 @@ namespace SimpleLanguage.VM
     class DoubleObject : SObject
     {
         public Double value;
-        public DoubleObject() 
+        public DoubleObject() : base(EType.Float64)
         { }
         public void SetValue(Double _val)
         {

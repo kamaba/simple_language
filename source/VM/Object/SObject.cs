@@ -28,6 +28,10 @@ namespace SimpleLanguage.VM
         protected SObject()
         {
         }
+        public SObject( EType etype )
+        {
+            this.m_Etype = etype;
+        }
         public void SetNull()
         {
             m_IsNull = true;

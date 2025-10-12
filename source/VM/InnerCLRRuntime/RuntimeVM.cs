@@ -8,9 +8,7 @@
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -24,25 +22,31 @@ namespace SimpleLanguage.VM.Runtime
         private SValue[] m_ValueStack = null;
         private ushort m_ValueIndex = 0;
 
-        private IRMetaClass m_IRClass = null;
-        private List<RuntimeType> m_InputTemplateRuntimeTypeList = null;
-        //private List<RuntimeType> m_methodInputTemplateRuntimeTypeList = null;
+        private List<RuntimeType> m_InputTemplateRuntimeTypeList = new List<RuntimeType>();
         private SObject[] m_LocalVariableObjectArray = null;
         private SObject[] m_ArgumentObjectArray = null;
         private SObject[] m_ReturnObjectArray = null;
 
 
-        private IRMetaType m_IRMetaType = null;
-        //调用函数的实体类，如果是普通的类，则可以不管这个参数
-        private IRMetaClass m_CallIRMetaClass = null;
         private IRMethod m_IRMethod = null;
         private IRData[] m_IRDataList = null;
         private ushort m_ExecuteIndex = 0;
         private ushort m_ExecuteCount = 0;
-        public RuntimeVM( IRMetaClass irmc, List<RuntimeType> inputTemplateTypeList, IRMethod mmf )
+
+
+        //private IRMetaClass m_IRClass = null;
+        //private IRMetaType m_IRMetaType = null;
+        //调用函数的实体类，如果是普通的类，则可以不管这个参数
+        //private IRMetaClass m_CallIRMetaClass = null;
+        //private List<RuntimeType> m_methodInputTemplateRuntimeTypeList = null;
+
+        public RuntimeVM( List<RuntimeType> inputTemplateTypeList, IRMethod mmf )
         {
-            m_IRClass = irmc;
-            m_InputTemplateRuntimeTypeList = inputTemplateTypeList;
+            if(inputTemplateTypeList != null )
+            {
+                m_InputTemplateRuntimeTypeList = inputTemplateTypeList;
+            }
+            //m_IRClass = irmc;
             //m_methodInputTemplateRuntimeTypeList = methodInputTemplateTypeList;
             m_IRMethod = mmf;
             m_IRDataList = mmf.IRDataList.ToArray();
@@ -215,15 +219,6 @@ namespace SimpleLanguage.VM.Runtime
                 return m_ValueStack[m_ValueIndex];
             }
         }
-        public IRMetaType GetTemplateIRMetaClass( string name )
-        {
-            //if(m_InputTemplateTypeDict.ContainsKey(name ) )
-            //{
-            //    return m_InputTemplateTypeDict[name];
-            //}
-            //Log.AddVM(EError.None, "Erorr------没有找到模板内容!!!");
-            return null;
-        }
         public RuntimeType GetClassRuntimeType(IRMetaType irmt, bool isAdd = false )
         {
             if (irmt.templateIndex != -1)
@@ -269,15 +264,6 @@ namespace SimpleLanguage.VM.Runtime
                 return RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.irMetaClass, rtList);
             }
         }
-        //public void AddTemplateIRMetaClass( string name, IRMetaClass templateInstanceObject )
-        //{
-        //    if (!m_InputTemplateClassDict.ContainsKey(name))
-        //    {
-        //        m_InputTemplateClassDict.Add(name, templateInstanceObject);
-        //        return;
-        //    }
-        //    Log.AddVM(EError.None, "Erorr------添加模板内容重复!!!");
-        //}
         public void Run()
         {
             string funName = id;
@@ -312,54 +298,6 @@ namespace SimpleLanguage.VM.Runtime
                 pushChar = '\t' + pushChar;
             }
             Log.AddVM( EError.None, pushChar  + "[VMRuntime] [Pop] Method: [" + funName + "]");
-        }
-        public IRMetaClass GetIRMetaClassByName( string tname )
-        {
-            if (string.IsNullOrEmpty(tname))
-            {
-                Log.AddVM(EError.None, "SetCallClass 没有找到相关的模板名称1 ");
-                return null;
-            }
-            StringBuilder sb = new StringBuilder();
-            string findname = "";
-            bool isFind = false;
-            foreach (var v in tname)
-            {
-                if (v == '$')
-                {
-                    if (isFind)
-                    {
-                        var fsb = sb.ToString();
-                        var gmc = GetTemplateIRMetaClass(fsb);
-                        if (gmc == null)
-                        {
-                            Log.AddVM(EError.None, $"没有找到该模板的对应类!{fsb}");
-                            return null;
-                        }
-                        findname = findname;// + gmc.irName;
-                        isFind = false;
-                    }
-                    else
-                    {
-                        findname = findname + sb.ToString();
-                        isFind = true;
-                    }
-                    sb.Clear();
-                }
-                else
-                {
-                    sb.Append(v);
-                }
-            }
-            findname = findname + sb.ToString();
-
-            IRMetaClass irc = IRManager.instance.GetIRMetaClassByName(findname);
-            if (irc == null)
-            {
-                Log.AddVM(EError.None, "NewTemplateClass IRC是调用虚函数为空!!");
-                return null;
-            }
-            return irc;
         }
         public void RunInstruction( IRData iri )
         {
@@ -561,7 +499,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         var irmt = iri.opValue as IRMetaType;
                         RuntimeType rt = GetClassRuntimeType(irmt, true);
-                        rt.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex--]);
+                        rt.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex++]);
                     }
                     break;
                 case EIROpCode.StoreStaticField:
@@ -571,25 +509,6 @@ namespace SimpleLanguage.VM.Runtime
                         rt.SetMemberVariableSValue(iri.index, m_ValueStack[--m_ValueIndex] );
                     }
                     break;
-                //case EIROpCode.SetCallClass:
-                //    {
-                //        int[] a = new int[10];
-                //        string tname = iri.opValue as String;
-
-                //        m_CallIRMetaClass = GetIRMetaClassByName(tname);
-
-                //        if(m_CallIRMetaClass == null )
-                //        {
-                //            Log.AddVM(EError.None, $"not find callmetaClass {tname}");
-                //            return;
-                //        }
-                //    }
-                //    break;
-                //case EIROpCode.UnSetCallClass:
-                //    {
-                //        m_CallIRMetaClass = null;
-                //    }
-                //    break;
                 case EIROpCode.CallStatic:
                     {
                         var mfc = iri.opValue as IRMethodCall;
@@ -605,7 +524,7 @@ namespace SimpleLanguage.VM.Runtime
                             var crt = GetMethodRuntimeType(mfc.irTemplateMetaType[i]);
                             classRTList.Add(crt);
                         }
-                        InnerCLRRuntimeVM.RunIRMethod( mfc.metaType.irMetaClass, classRTList, mfc.irMethod );
+                        InnerCLRRuntimeVM.RunIRMethod( classRTList, mfc.irMethod );
                     }
                     break;
                 case EIROpCode.CallDynamic:
@@ -681,10 +600,10 @@ namespace SimpleLanguage.VM.Runtime
                         List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
                         for ( int i = 0; i < mfc.irTemplateMetaType.Count; i++ )
                         {
-                            var crt = GetMethodRuntimeType(mfc.irTemplateMetaType[i]);
+                            var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], true );
                             rtList.Add(crt);
                         }
-                        InnerCLRRuntimeVM.RunIRMethod( irc, rtList, cfc);
+                        InnerCLRRuntimeVM.RunIRMethod( rtList, cfc);
                     }
                     break;
                 case EIROpCode.CallCSharpMethod:
@@ -713,7 +632,7 @@ namespace SimpleLanguage.VM.Runtime
                         //创建已注册的runtimeType 当前runtimeType在生成类的时候，就已经注册过来了,加快了查找方法
                         IRMetaClass mdt = iri.opValue as IRMetaClass;
                         var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(mdt);
-                        SObject sob = ObjectManager.CreateObjectByRuntimeType(rt);
+                        SObject sob = ObjectManager.CreateObjectByRuntimeType(rt, true);
                         if ( sob is ClassObject co )
                         {
                             ObjectManager.AddClassObject(co);
@@ -725,7 +644,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         IRMetaType mdt = iri.opValue as IRMetaType;
                         var rt = GetClassRuntimeType(mdt, true);
-                        SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt );
+                        SObject sobj = ObjectManager.CreateObjectByRuntimeType( rt, true );
                         if (sobj is ClassObject co)
                         {
                             ObjectManager.AddClassObject(co);
