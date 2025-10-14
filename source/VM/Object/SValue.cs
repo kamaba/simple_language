@@ -395,6 +395,11 @@ namespace SimpleLanguage.VM
                     break;
                 case TemplateObject templateobj:
                     {
+                        if(templateobj.isNull )
+                        {
+                            this.SetNull();
+                            return;
+                        }
                         eType = templateobj.eType;
                         object tobj = templateobj.value;
                         switch (eType)
