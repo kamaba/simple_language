@@ -583,6 +583,7 @@ namespace SimpleLanguage.Core
                     mmv.SetName(mmv.name + "__repeat__");
                 }
                 m_FileCollectMetaMemberVariable.Add(mmv);
+                MetaVariableManager.instance.AddMetaMemberVariable(mmv);
             }
             foreach (var v2 in fmc.memberFunctionList)
             {

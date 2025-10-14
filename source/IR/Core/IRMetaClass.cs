@@ -9,6 +9,7 @@
 
 using System.Collections.Generic;
 using System.Text;
+using System.Xml.Linq;
 using SimpleLanguage.Core;
 using SimpleLanguage.Parse;
 
@@ -164,6 +165,24 @@ namespace SimpleLanguage.IR
         public List<IRData> CreateStaticMetaMetaVariableIRList()
         {
             List<IRData> list = new List<IRData>();
+
+            foreach( var v in m_LocalIRMetaVariableList )
+            {
+                var irexp = new IRExpress( IRManager.instance, v.express );
+
+                v.SetIRDataList(irexp.IRDataList);
+
+                IRData irdata = new IRData();
+                irdata.id = irexp.IRDataList.Count;
+                irdata.opValue = v.irMetaType;
+                irdata.opCode = EIROpCode.StoreNotStaticField1;
+                irdata.index = v.index;
+
+                List<IRData> list22 = new List<IRData>(irexp.IRDataList);
+                list22.Add(irdata);
+
+                list.AddRange(list22);
+            }
 
             return list;
         }

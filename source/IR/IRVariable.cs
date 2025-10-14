@@ -182,7 +182,7 @@ namespace SimpleLanguage.IR
             else if (irmvf == IRMetaVariableFrom.Member)
             {
                 m_Data.index = id;
-                m_Data.opCode = EIROpCode.StoreNotStaticField;
+                m_Data.opCode = EIROpCode.StoreNotStaticField2;
                 m_IRDataList.Add(m_Data);
             }
             else if( irmvf == IRMetaVariableFrom.Argument )

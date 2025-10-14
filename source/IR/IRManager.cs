@@ -41,9 +41,9 @@ namespace SimpleLanguage.IR
         #region debug用
         private Dictionary<int,IRMetaVariable> m_AllVariableDict = new Dictionary<int,IRMetaVariable>();
         #endregion
-        private List<IRData> m_IRDataList = new List<IRData>();
 
         private List<IRMetaClass> m_IRMetaClassList = new List<IRMetaClass>();
+        private List<IRData>  m_IRDataList = new List<IRData>();
         public static EIROpCode GetConstIROpCode( EType etype )
         {
             switch( etype )
@@ -193,17 +193,7 @@ namespace SimpleLanguage.IR
             }
             foreach (var v in m_IRMetaClassList)
             {
-                var irlist = v.CreateStaticMetaMetaVariableIRList();
-                //m_AllVariableDict.Add(v.GetHashCode(), v);
-
-                //IRExpress irexp = new IRExpress(IRManager.instance, v.express);
-                //m_IRDataList.AddRange(irexp.IRDataList);
-
-                //IRData insNode = new IRData();
-                //insNode.opCode = EIROpCode.StoreStaticField;
-                //insNode.index = v.index;
-                //m_IRDataList.Add(insNode);
-                m_IRDataList.AddRange(irlist);
+                v.CreateStaticMetaMetaVariableIRList();
             }
         }
         public void TranslateIRAutoAdd( MetaFunction mf )
