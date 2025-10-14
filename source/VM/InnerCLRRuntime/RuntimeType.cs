@@ -32,7 +32,8 @@ namespace SimpleLanguage.VM
             for ( int i = 0; i < irClass.staticIRMetaVariableList.Count; i++ )
             {
                 RuntimeType rt = GetClassRuntimeType(irClass.staticIRMetaVariableList[i].irMetaType, true );
-                m_StaticMemObjectList[i] = ObjectManager.CreateObjectByRuntimeType(rt, true );
+                
+                //m_StaticMemObjectList[i] = ObjectManager.CreateObjectByRuntimeType( rt );
             }
         }
         public RuntimeType GetClassRuntimeType(IRMetaType irmt, bool isAdd = false)
@@ -403,6 +404,22 @@ namespace SimpleLanguage.VM
                     }
                     break;
             }
+        }
+
+        public List<IRData> CreateStaticMetaMetaVariableIRList()
+        {
+            List<IRData> list = new List<IRData>();
+
+            foreach (var v in  this.irClass.localIRMetaVariableList )
+            {
+                var irexp = new IRExpress(IRManager.instance, v.express);
+
+                v.SetIRDataList(irexp.IRDataList);
+
+                list.AddRange(irexp.IRDataList);
+            }
+
+            return list;
         }
         public static bool SameRuntimeType( RuntimeType rt1, RuntimeType rt2 )
         {

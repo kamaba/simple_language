@@ -71,92 +71,96 @@ namespace SimpleLanguage.Core.IR
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.New)
             {
-                IRMetaClass irmc = IRManager.instance.GetIRMetaClassById(cnode.callMetaType.metaClass.GetHashCode());
-                if (cnode.callMetaType.eType == EMetaTypeType.TemplateClassWithTemplate
-                    || cnode.callMetaType.eType == EMetaTypeType.Template )
-                {
-                    var irnew = new IRNew(_irMethod, new IRMetaType(cnode.callMetaType) );
-                    irList.Add(irnew);
-                }
-                else if( cnode.callMetaType.eType == EMetaTypeType.MetaClass )
-                {
-                    IRNew irnew = new IRNew(_irMethod, irmc );
-                    irList.Add(irnew);
+                ParseNew(cnode, _irMethod, irList );
+            }
 
-                    if (irmc.needCallInitMethod == false)
+            return irList;
+        }
+        public static void ParseNew(MetaVisitNode cnode, IRMethod _irMethod, List<IRBase> irList )
+        {
+            IRMetaClass irmc = IRManager.instance.GetIRMetaClassById(cnode.callMetaType.GetTemplateMetaClass().GetHashCode());
+            if (cnode.callMetaType.eType == EMetaTypeType.TemplateClassWithTemplate
+                || cnode.callMetaType.eType == EMetaTypeType.Template)
+            {
+                var irnew = new IRNew(_irMethod, new IRMetaType(cnode.callMetaType));
+                irList.Add(irnew);
+            }
+            else if (cnode.callMetaType.eType == EMetaTypeType.MetaClass)
+            {
+                IRNew irnew = new IRNew(_irMethod, irmc);
+                irList.Add(irnew);
+
+                if (irmc.needCallInitMethod == false)
+                {
+                    if (irmc.localIRMetaVariableList.Count > 0)
                     {
-                        if (irmc.localIRMetaVariableList.Count > 0)
+                        bool isUseAssign = false;
+                        for (int x = 0; x < irmc.localIRMetaVariableList.Count; x++)
                         {
-                            bool isUseAssign = false;
-                            for (int x = 0; x < irmc.localIRMetaVariableList.Count; x++)
+                            var lirmv = irmc.localIRMetaVariableList[x];
+                            if (cnode.metaBraceStatementsContent?.assignStatementsList?.Count > 0)
                             {
-                                var lirmv = irmc.localIRMetaVariableList[x];
-                                if (cnode.metaBraceStatementsContent?.assignStatementsList?.Count > 0)
+                                //var irmc = _irMethod.irManager.GetIRMetaClassByName(cnode.variable.metaDefineType.metaClass.allClassName);
+                                IRLoadVariable irlv = IRLoadVariable.CreateLoadVariable(null, irmc, _irMethod, cnode.GetOrgTemplateMetaVariable());
+                                irList.Add(irlv);
+                                for (int y = 0; y < cnode.metaBraceStatementsContent.assignStatementsList.Count; y++)
                                 {
-                                    //var irmc = _irMethod.irManager.GetIRMetaClassByName(cnode.variable.metaDefineType.metaClass.allClassName);
-                                    IRLoadVariable irlv = IRLoadVariable.CreateLoadVariable( null, irmc, _irMethod, cnode.GetOrgTemplateMetaVariable());
-                                    irList.Add(irlv);
-                                    for (int y = 0; y < cnode.metaBraceStatementsContent.assignStatementsList.Count; y++)
+                                    var asl = cnode.metaBraceStatementsContent.assignStatementsList[y];
+
+                                    if (asl.metaMemberVariable.name == lirmv.name)
                                     {
-                                        var asl = cnode.metaBraceStatementsContent.assignStatementsList[y];
-
-                                        if (asl.metaMemberVariable.name == lirmv.name)
-                                        {
-                                            IRExpress irexp = new IRExpress(_irMethod, asl.expressNode);
-                                            irList.Add(irexp);
-
-                                            IRStoreVariable irStoreNodeVar3 = new IRStoreVariable( null, _irMethod, lirmv.index, IRMetaVariableFrom.Member);
-                                            irList.Add(irStoreNodeVar3);
-                                            isUseAssign = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (isUseAssign == false)
-                                    {
-                                        IRExpress irexp = new IRExpress(_irMethod, lirmv.express);
+                                        IRExpress irexp = new IRExpress(_irMethod, asl.expressNode);
                                         irList.Add(irexp);
 
-                                        IRStoreVariable irStoreVar2 = new IRStoreVariable(null,_irMethod, lirmv.index, IRMetaVariableFrom.Member);
-                                        irList.Add(irStoreVar2);
-
+                                        IRStoreVariable irStoreNodeVar3 = new IRStoreVariable(null, _irMethod, lirmv.index, IRMetaVariableFrom.Member);
+                                        irList.Add(irStoreNodeVar3);
+                                        isUseAssign = true;
+                                        break;
                                     }
+                                }
+
+                                if (isUseAssign == false)
+                                {
+                                    IRExpress irexp = new IRExpress(_irMethod, lirmv.express);
+                                    irList.Add(irexp);
+
+                                    IRStoreVariable irStoreVar2 = new IRStoreVariable(null, _irMethod, lirmv.index, IRMetaVariableFrom.Member);
+                                    irList.Add(irStoreVar2);
+
                                 }
                             }
                         }
                     }
-                    else
+                }
+                else
+                {
+                    if (cnode.metaBraceStatementsContent != null && cnode.metaBraceStatementsContent.assignStatementsList.Count > 0)
                     {
-                        if (cnode.metaBraceStatementsContent != null && cnode.metaBraceStatementsContent.assignStatementsList.Count > 0)
+                        IRLoadVariable irlv = IRLoadVariable.CreateLoadVariable(null, irmc, _irMethod, cnode.GetOrgTemplateMetaVariable());
+                        irList.Add(irlv);
+                        for (int y = 0; y < cnode.metaBraceStatementsContent.assignStatementsList.Count; y++)
                         {
-                            IRLoadVariable irlv = IRLoadVariable.CreateLoadVariable(null, irmc, _irMethod, cnode.GetOrgTemplateMetaVariable());
-                            irList.Add(irlv);
-                            for (int y = 0; y < cnode.metaBraceStatementsContent.assignStatementsList.Count; y++)
-                            {
-                                var asl = cnode.metaBraceStatementsContent.assignStatementsList[y];
+                            var asl = cnode.metaBraceStatementsContent.assignStatementsList[y];
 
-                                IRExpress irexp = new IRExpress(_irMethod, asl.expressNode);
-                                irList.Add(irexp);
+                            IRExpress irexp = new IRExpress(_irMethod, asl.expressNode);
+                            irList.Add(irexp);
 
-                                IRStoreVariable irStoreNodeVar3 = new IRStoreVariable( null, _irMethod, cnode.GetOrgTemplateMetaVariable().GetHashCode(), IRMetaVariableFrom.LocalStatement);
-                                irList.Add(irStoreNodeVar3);
-                            }
+                            IRStoreVariable irStoreNodeVar3 = new IRStoreVariable(null, _irMethod, cnode.GetOrgTemplateMetaVariable().GetHashCode(), IRMetaVariableFrom.LocalStatement);
+                            irList.Add(irStoreNodeVar3);
                         }
                     }
                 }
-
-                if (cnode.methodCall != null)
-                {
-                    IRDup irdup = new IRDup(_irMethod);
-                    irList.Add(irdup);
-
-                    IRCallFunction ircf = new IRCallFunction(_irMethod);
-                    ircf.Parse(cnode.methodCall);
-                    irList.Add(ircf);
-                }
             }
 
-            return irList;
+            if (cnode.methodCall != null)
+            {
+                IRDup irdup = new IRDup(_irMethod);
+                irList.Add(irdup);
+
+                IRCallFunction ircf = new IRCallFunction(_irMethod);
+                ircf.Parse(cnode.methodCall);
+                irList.Add(ircf);
+            }
         }
         public void ParseToIRDataListByIRManager( IRManager _irManager, List<MetaVisitNode> cnlist)
         {
@@ -193,14 +197,7 @@ namespace SimpleLanguage.Core.IR
                 }
                 else if (cnode.visitType == MetaVisitNode.EVisitType.New )
                 {
-                    var irmc = _irManager.GetIRMetaClassByName( IRManager.GetIRNameByMetaType(cnode.callMetaType) );
-                    IRNew irnew = new IRNew(m_IRMethod, irmc );
-                    irList.Add(irnew);
-
-                    var mfc = cnode.methodCall;
-                    IRCallFunction irCallFun = new IRCallFunction(m_IRMethod);
-                    irCallFun.Parse(cnode.methodCall);
-                    irList.Add(irCallFun);
+                    ParseNew(cnode, null, irList);
                 }
             }
         }

@@ -36,6 +36,13 @@ namespace SimpleLanguage.VM
             eType = EType.Boolean;
             int8Value = val ? (byte)1 : (byte)0;
         }
+        public void SetNull()
+        {
+            if(sobject != null )
+            {
+                sobject.SetNull();
+            }
+        }
         public void SetInt8Value(byte val)
         {
             eType = EType.Byte;

@@ -180,7 +180,7 @@ namespace SimpleLanguage.Core
                     {
                         if( i == m_CallNodeList.Count )
                         {
-                            MetaVisitNode mvn = MetaVisitNode.CraeteByNewClass(mcn.metaType, mcn.metaBraceStatementsContent, mcn.metaVariable );
+                            MetaVisitNode mvn = MetaVisitNode.CraeteByNewClass(mcn.metaType, mcn.metaBraceStatementsContent, null );
                             m_VisitNodeList.Add(mvn);
 
                             if( mcn.metaFunction != null )
@@ -198,7 +198,7 @@ namespace SimpleLanguage.Core
                     {
                         MetaVisitNode mvn = MetaVisitNode.CreateByNewTemplate(mcn.metaType, mcn.metaFunction, mcn.storeMetaVariable);
                         MetaClass cmc = mcn.metaType.metaClass;
-                        MetaMethodCall mmc = new MetaMethodCall(mcn.metaType.metaClass, null, mcn.metaFunction, null, mcn.metaInputParamCollection, mcn.metaVariable, mcn.storeMetaVariable);
+                        MetaMethodCall mmc = new MetaMethodCall(mcn.metaType.metaClass, null, mcn.metaFunction, null, mcn.metaInputParamCollection, null, mcn.storeMetaVariable);
                         mvn.SetMethodCall(mmc);
                         m_VisitNodeList.Add(mvn);
                     }

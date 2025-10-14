@@ -630,6 +630,11 @@ namespace SimpleLanguage.Core
         {
             if ( curClass == CoreMetaClassManager.objectMetaClass )
             {
+                if (curClass == compareClass)
+                {
+                    return EClassRelation.Same;
+                }
+                    
                 return EClassRelation.Child;
             }
             if (curClass.Equals(compareClass))
