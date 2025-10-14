@@ -33,7 +33,7 @@ namespace SimpleLanguage.VM
             {
                 RuntimeType rt = GetClassRuntimeType(irClass.staticIRMetaVariableList[i].irMetaType, true );
                 
-                //m_StaticMemObjectList[i] = ObjectManager.CreateObjectByRuntimeType( rt );
+                m_StaticMemObjectList[i] = ObjectManager.CreateObjectByRuntimeType( rt, true );
             }
         }
         public RuntimeType GetClassRuntimeType(IRMetaType irmt, bool isAdd = false)

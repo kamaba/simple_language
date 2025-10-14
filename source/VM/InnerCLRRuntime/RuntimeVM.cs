@@ -32,15 +32,8 @@ namespace SimpleLanguage.VM.Runtime
         private IRMethod m_IRMethod = null;
         private IRData[] m_IRDataList = null;
         private ushort m_ExecuteIndex = 0;
-        private ushort m_ExecuteIndex2 = 0;
         private ushort m_ExecuteCount = 0;
-
-
-        //private IRMetaClass m_IRClass = null;
-        //private IRMetaType m_IRMetaType = null;
-        //调用函数的实体类，如果是普通的类，则可以不管这个参数
-        //private IRMetaClass m_CallIRMetaClass = null;
-        //private List<RuntimeType> m_methodInputTemplateRuntimeTypeList = null;
+        private Stack<List<RuntimeType>> m_NewObjectRuntimeTypeStack = new Stack<List<RuntimeType>>();
 
         public RuntimeVM( List<RuntimeType> inputTemplateTypeList, IRMethod mmf )
         {
@@ -48,8 +41,6 @@ namespace SimpleLanguage.VM.Runtime
             {
                 m_InputTemplateRuntimeTypeList = inputTemplateTypeList;
             }
-            //m_IRClass = irmc;
-            //m_methodInputTemplateRuntimeTypeList = methodInputTemplateTypeList;
             m_IRMethod = mmf;
             m_IRDataList = mmf.IRDataList.ToArray();
             m_ExecuteCount = (ushort)m_IRDataList.Length;
@@ -335,7 +326,6 @@ namespace SimpleLanguage.VM.Runtime
                     break;
             }
         }
-        Stack<List<RuntimeType>> stack = new Stack<List<RuntimeType>>();
         public void RunInstruction( IRData iri )
         {
             //栈位的移动的规则，使用当前位为空的概念，只要栈被使用掉，索引则加1，所以索引最少为0
@@ -670,6 +660,25 @@ namespace SimpleLanguage.VM.Runtime
                             ObjectManager.AddClassObject(co);
                         }
                         m_ValueStack[m_ValueIndex++].SetSObject(sob);
+
+
+                        var irList = rt.irClass.CreateStaticMetaMetaVariableIRList();
+                        if (irList.Count > 0)
+                        {
+                            int ExecuteIndex2 = 0;
+                            int executeCount = irList.Count;
+                            m_NewObjectRuntimeTypeStack.Push(m_InputTemplateRuntimeTypeList);
+                            m_InputTemplateRuntimeTypeList = rt.runtimeTemplateList;
+                            while (true)
+                            {
+                                if (ExecuteIndex2 >= executeCount)
+                                {
+                                    break;
+                                }
+                                RunInstruction(irList[ExecuteIndex2++]);
+                            }
+                            m_InputTemplateRuntimeTypeList = m_NewObjectRuntimeTypeStack.Pop();
+                        }
                     }
                     break;
                 case EIROpCode.NewTemplateClass:
@@ -689,7 +698,7 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             int ExecuteIndex2 = 0;
                             int executeCount = irList.Count;
-                            stack.Push(m_InputTemplateRuntimeTypeList);
+                            m_NewObjectRuntimeTypeStack.Push(m_InputTemplateRuntimeTypeList);
                             m_InputTemplateRuntimeTypeList = rt.runtimeTemplateList;
                             while (true)
                             {
@@ -699,19 +708,8 @@ namespace SimpleLanguage.VM.Runtime
                                 }
                                 RunInstruction(irList[ExecuteIndex2++]);
                             }
-                            m_InputTemplateRuntimeTypeList = stack.Pop();
+                            m_InputTemplateRuntimeTypeList = m_NewObjectRuntimeTypeStack.Pop();
                         }
-                        //if (irc.irName == "Int8"
-                        //    || irc.irName == "SInt8"
-                        //    || irc.irName == "Int16"
-                        //    || irc.irName == "UInt16"
-                        //    || irc.irName == "Int32"
-                        //    || irc.irName == "UInt32"
-                        //    || irc.irName == "Int64"
-                        //    || irc.irName == "UInt64")
-                        //{
-                        //    m_ExecuteIndex2 += 1;
-                        //}
                     }
                     break;
                 case EIROpCode.Dup:
