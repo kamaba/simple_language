@@ -173,7 +173,7 @@ Level1<T,T2> extends List<T2>
     }
 }
 
-GenClass2{
+GenClass{
     static fun()
     {
         Level1<int,string> testintstring = new()
