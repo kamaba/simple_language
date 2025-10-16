@@ -54,6 +54,8 @@ namespace SimpleLanguage
     {
         /// <summary>  </summary>
         None = 0,
+        /// <summary> space  </summary>
+        Space,
         /// <summary> void </summary>
         Void,
         /// <summary>

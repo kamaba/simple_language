@@ -1509,7 +1509,29 @@ namespace SimpleLanguage.Compile.Parse
                     AddLine();
                     continue;
                 }
-                else if( m_CurChar == ' ' || m_CurChar == '\t' || m_CurChar == '\r' )
+                else if(m_CurChar == ' ' )
+                {
+                    int num = 1;
+                    int bline = m_SourceLine;
+                    int bchar = m_SourceChar++;
+                    m_Index++;
+                    while ( m_Index < m_Length )
+                    {
+                        if(m_Buffer[m_Index] != ' ')
+                        {
+                            break;
+                        }
+                        m_SourceChar++;
+                        m_Index++;
+                        num++;
+                    }
+
+                    var spacetoken = new Token(m_Path, ETokenType.Space, "", bline, bchar);
+                    spacetoken.SetSrouceEnd(m_SourceLine, m_SourceChar);
+                    spacetoken.SetExtend(num);
+                    m_ListTokens.Add(spacetoken);
+                }
+                else if( m_CurChar == '\t' || m_CurChar == '\r' )
                 {
                     m_Index++;
                     m_SourceChar++;
