@@ -10,6 +10,7 @@ using SimpleLanguage.Parse;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -526,10 +527,16 @@ namespace SimpleLanguage.VM.Runtime
                         List<RuntimeType> classRTList = new List<RuntimeType>();
                         for (int i = 0; i < mfc.metaType.irMetaTypeList.Count; i++)
                         {
-                            var crt = GetClassRuntimeType(mfc.metaType.irMetaTypeList[i]);
+                            var crt = GetClassRuntimeType(mfc.metaType.irMetaTypeList[i], true );
                             classRTList.Add(crt);
                         }
-                        for( int i = 0; i < mfc.irTemplateMetaType.Count; i++ )
+                        var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(mfc.metaType.irMetaClass, classRTList);
+                        if (rt == null )
+                        {
+                            rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(mfc.metaType.irMetaClass, classRTList);
+                        }
+
+                        for ( int i = 0; i < mfc.irTemplateMetaType.Count; i++ )
                         {
                             var crt = GetMethodRuntimeType(mfc.irTemplateMetaType[i]);
                             classRTList.Add(crt);

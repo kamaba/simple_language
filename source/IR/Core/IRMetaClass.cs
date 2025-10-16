@@ -134,8 +134,15 @@ namespace SimpleLanguage.IR
             {
                 var v = staticMetaMemberVariables[i];
                 IRMetaVariable irmv = new IRMetaVariable(this, v, i);
-                m_StaticIRMetaVariableList.Add(irmv);
-                AddMetaMemberVariableIndexBindHashCode(v.GetHashCode(), i);
+                if ( v.metaDefineType.IsIncludeTemplate() )
+                {
+                    m_StaticIRMetaVariableList.Add(irmv);
+                    AddMetaMemberVariableIndexBindHashCode(v.GetHashCode(), i);
+                }
+                else
+                {
+                    IRManager.instance.AddGlobalMetaMemberVariable(irmv);
+                }
             }
         }
         public void CreateMemberMethod()

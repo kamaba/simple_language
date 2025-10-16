@@ -60,16 +60,14 @@ namespace SimpleLanguage.IR
 
             int callMethodIndex = -1;
 
-            //IRBase irbase = null;
             if ( mf.isStatic )
             {
-                var irname = IRManager.GetIRNameByMetaClass(mfc.staticCallerMetaClass);
-                irmc = IRManager.instance.GetIRMetaClassByName(irname);
-                //irbase = IRUtil.GetSetCallClassByMetaClass(mfc.staticCallerMetaClass, mfc.staticMetaClassInputTemplateList, out curMc);
-                //if (irbase != null)
-                //{
-                //    AddIRRangeData(irbase.IRDataList);
-                //}
+                var scmc = mfc.staticCallerMetaClass;
+                if( scmc != null && scmc is MetaGenTemplateClass mgtc )
+                {
+                    scmc = mgtc.metaTemplateClass;
+                }
+                irmc = IRManager.instance.GetIRMetaClassById(scmc.GetHashCode());
             }
             else
             {
@@ -142,10 +140,17 @@ namespace SimpleLanguage.IR
                     var mrv = m_IRRuntimeMethod.methodReturnVariableList[i];
                     if( mrv.irMetaType != null )
                     {
-                        if( mrv.irMetaType.irMetaClass.irName != "Void" )
+                        if( mrv.irMetaType.templateIndex > -1 )
                         {
-                            IRPop irpop = new IRPop(m_IRMethod);
-                            AddIRData(irpop.data);
+
+                        }
+                        else
+                        {
+                            if (mrv.irMetaType.irMetaClass.irName != "Void")
+                            {
+                                IRPop irpop = new IRPop(m_IRMethod);
+                                AddIRData(irpop.data);
+                            }
                         }
                     }
                 }

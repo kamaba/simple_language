@@ -46,8 +46,16 @@ namespace SimpleLanguage.IR
                 }
                 if ( mv.isStatic )
                 {
-                    IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static );
-                    return irVar;                   
+                    if (mv.metaDefineType.IsIncludeTemplate())
+                    {
+                        IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
+                        return irVar;
+                    }
+                    else
+                    {
+                        IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global );
+                        return irVar;
+                    }               
                 }
                 else
                 {
@@ -145,8 +153,16 @@ namespace SimpleLanguage.IR
                 }
                 if (mv.isStatic)
                 {
-                    IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static );
-                    return irsv;
+                    if( mv.metaDefineType.IsIncludeTemplate() )
+                    {
+                        IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
+                        return irsv;
+                    }
+                    else
+                    {
+                        IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global);
+                        return irsv;
+                    }
                 }
                 else
                 {
@@ -156,11 +172,12 @@ namespace SimpleLanguage.IR
             }
             else if( mv.variableFrom == MetaVariable.EVariableFrom.Global )
             {
-                System.Diagnostics.Debug.Assert(true);
+                IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global );
+                return irsv;
             }
             else
             {
-                System.Diagnostics.Debug.Assert(true);
+                System.Diagnostics.Debug.Assert(false);
             }
             return null;
         }

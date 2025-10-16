@@ -35,9 +35,9 @@ namespace SimpleLanguage.IR
         public Dictionary<string, IRMethod> IRMethodDict = new Dictionary<string, IRMethod>();
         public Dictionary<int, string> IRStringDict = new Dictionary<int,string>();
         public Dictionary<int, SValue> IRConstDict = new Dictionary<int, SValue>();
-        public List<IRMetaVariable> staticVariableList => m_StaticVariableList;
+        public List<IRMetaVariable> globalStaticVariableList => m_GlobalStaticVariableList;
 
-        private List<IRMetaVariable> m_StaticVariableList = new List<IRMetaVariable>();
+        private List<IRMetaVariable> m_GlobalStaticVariableList = new List<IRMetaVariable>();
         #region debug用
         private Dictionary<int,IRMetaVariable> m_AllVariableDict = new Dictionary<int,IRMetaVariable>();
         #endregion
@@ -314,30 +314,21 @@ namespace SimpleLanguage.IR
                 Console.WriteLine(v.Value.ToIRString());
             }
         }
-        //public IRMetaVariable GetStaticMetaVariableById( IRMetaClass irmc, int id )
-        //{
-        //    if( irmc != null )
-        //    {
-        //        var genstaticid = irmc.GetStaticMetaMemberVariableHashCode(id);
-        //        if( genstaticid == -1 )
-        //        {
-        //            return null;
-        //        }
-        //        if (m_AllVariableDict.ContainsKey(genstaticid))
-        //        {
-        //            return m_AllVariableDict[genstaticid];
-        //        }
-
-        //    }
-        //    else
-        //    {
-        //        if (m_AllVariableDict.ContainsKey(id))
-        //        {
-        //            return m_AllVariableDict[id];
-        //        }
-        //    }
-        //    return null;
-        //}
+        public int GetGlobalStaticMetaVariableById(int id)
+        {
+            for( int i = 0; i < m_GlobalStaticVariableList.Count; i++ )
+            {
+                if(m_GlobalStaticVariableList[i].id == id )
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+        public void AddGlobalMetaMemberVariable( IRMetaVariable irmv )
+        {
+            m_GlobalStaticVariableList.Add(irmv);
+        }
         public int AddStringIRStack( string strMsg )
         {
             foreach( var v in IRStringDict )
