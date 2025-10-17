@@ -575,6 +575,11 @@ namespace SimpleLanguage.Compile.Parse
                         AddAtOpSign(token);
                     }
                     break;
+                case ETokenType.Space:
+                    {
+                        m_TokenIndex++;
+                    }
+                    break;
                 default:
                     {
                         Debug.Write( string.Format("Line:{0} Source: {1}", token.sourceBeginLine, 

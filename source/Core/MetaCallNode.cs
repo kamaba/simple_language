@@ -1329,7 +1329,12 @@ namespace SimpleLanguage.Core
                         m_MetaVariable = mmv;
                         m_MetaClass = mc;
                         m_MetaType = mmv.realMetaType;
-                        m_CallMetaType = null;
+                        List<MetaType> mtList = new List<MetaType>();
+                        for( int i = 0; i < mmv.ownerMetaClass.metaTemplateList.Count; i++ )
+                        {
+                            mtList.Add(new MetaType(mmv.ownerMetaClass.metaTemplateList[i]));
+                        }
+                        m_CallMetaType = new MetaType(mmv.ownerMetaClass, mtList);
                         m_CallNodeType = ECallNodeType.MemberVariableName;
                         return true;
                     }
@@ -1345,8 +1350,12 @@ namespace SimpleLanguage.Core
                     if ( mmf.isStatic )
                     {
                         m_MetaFunction = mmf;
-                        m_MetaClass = mc;
-                        m_CallMetaType = new MetaType(mmv.ownerMetaClass);
+                        m_MetaClass = mc; List<MetaType> mtList = new List<MetaType>();
+                        for (int i = 0; i < mmv.ownerMetaClass.metaTemplateList.Count; i++)
+                        {
+                            mtList.Add(new MetaType(mmv.ownerMetaClass.metaTemplateList[i]));
+                        }
+                        m_CallMetaType = new MetaType(mmv.ownerMetaClass, mtList);
                         m_CallNodeType = ECallNodeType.MemberFunctionName;
                         return true;
                     }

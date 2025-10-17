@@ -583,6 +583,7 @@ namespace SimpleLanguage.Core
                     mmv.SetName(mmv.name + "__repeat__");
                 }
                 m_FileCollectMetaMemberVariable.Add(mmv);
+                MetaVariableManager.instance.AddMetaMemberVariable(mmv);
             }
             foreach (var v2 in fmc.memberFunctionList)
             {
@@ -625,11 +626,11 @@ namespace SimpleLanguage.Core
 #endif        
         public void SetExtendClass(MetaClass sec)
         {
-            m_ExtendClass = sec;
+            this.m_ExtendClass = sec;
         }
         public void CalcExtendLevel()
         {
-            if( m_InterfaceClass != null )
+            if( this.m_ExtendClass == null )
             {
                 m_ExtendLevel = 0;
             }

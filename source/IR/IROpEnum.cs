@@ -45,7 +45,8 @@ namespace SimpleLanguage.IR
         Pop,
 
         StoreLocal,
-        StoreNotStaticField,
+        StoreNotStaticField1,
+        StoreNotStaticField2,
         StoreStaticField,
         StoreGlobal,
         StoreReturn,

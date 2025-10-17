@@ -484,6 +484,7 @@ namespace SimpleLanguage.Core
                     else
                     {
                         m_ReturnMetaVariable.SetMetaDefineType(defineMetaType);
+                        m_ReturnMetaVariable.SetRealMetaType(defineMetaType);
                     }
                 }
             }

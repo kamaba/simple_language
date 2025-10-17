@@ -108,11 +108,11 @@ Level1<LevelT1>
 
         ret lt2
     }
-    static Map<LevelT4, LevelT1> Level1SF<LevelT4>( LevelT4 t4 )
+    static LevelT4 Level1SF<LevelT4>( LevelT4 t4 )
     {
         Map<LevelT4, LevelT1>.MapFunc<LevelT4>()
         
-        ret null
+        ret t4
     }
 }
 GenClass
@@ -129,25 +129,22 @@ GenClass
     #Level1<string> ls4 = {}
     static GenClass_fun()
     {
-        #Level1<Level1<int> > GenClass_fun_l1 = Level1< Level1<int> >()
-        #var t3 = GenClass_fun_l1.Level1Fun<Level1<string> >()
-        #t3.LevelMemValue = "aaaaa"
-        Level1< int> GenClass_fun_l2 = Level1<int>()
-        GenClass_fun_l2.LevelMemValue = 300
+        #!
+        Level1<Level1<int> > GenClass_fun_l1 = Level1< Level1<int> >()
+        var t3 = GenClass_fun_l1.Level1Fun<Level1<string> >()
+        t3.LevelMemValue = "aaaaa"
+        Level1< Level1<int> > GenClass_fun_l2 = Level1<Level1<int> >()
+        GenClass_fun_l2.LevelMemValue.LevelMemValue = 300
 
-        #System.Console.WriteLine("-----------------------------------" + t3.LevelMemValue  )
-        System.Console.WriteLine("+++++++++++++++++++++" + GenClass_fun_l2.LevelMemValue  )
+        System.Console.WriteLine("-----------------------------------" + t3.LevelMemValue  )
+        System.Console.WriteLine("+++++++++++++++++++++" + GenClass_fun_l2.LevelMemValue.LevelMemValue  )
+        !#
 
-        #var t4 = Level1<string>.Level1SF<int>(100)
-        #int aa = Level1<int>.LevelStaticValue  #aa = null
         #Level1<string>.LevelStaticValue = "2000"
+        #System.Console.WriteLine("Level1<string>.LevelStaticValue = 2000->" + Level1<string>.LevelStaticValue  )
 
-        #GenClass_fun_l2 = GenClass_fun_l1.add()
-        #Debug.Write( "Addresult: " + GenClass_fun_l2 )
-        #retstr = GenClass_fun_l1.GetComponent<string>()
-        #float GenClass_fun_a = Level1<int>.min<float>( 1.3, 2.5 )
-        #System.Console.Write("-----------------------------------" + GenClass_fun_l1.LevelMemValue.LevelMemValue  )
-        #System.Console.Write("-----------------------------------" + Level1<string>.LevelStaticValue  )
+        var t4 = Level1<string>.Level1SF<int>(100)
+        System.Console.WriteLine("Level1<string>.Level1SF<int>(100)->" + t4  )
     }
 }
 
