@@ -141,6 +141,11 @@ namespace SimpleLanguage.VM
 
             switch (svalue.eType)
             {
+                case EType.Null:
+                    {
+                        obj.SetNull();
+                    }
+                    break;
                 case EType.Boolean:
                     {
                         TemplateObject to = obj as TemplateObject;

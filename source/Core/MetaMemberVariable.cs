@@ -250,6 +250,7 @@ namespace SimpleLanguage.Core
         }        
         public void CalcReturnType()
         {
+            string defineName = this.m_Name;
             if (m_Express != null)
             {
                 m_Express.CalcReturnType();
@@ -565,7 +566,7 @@ namespace SimpleLanguage.Core
             }
             else if( m_FileMetaMemeberVariable.DataType == FileMetaMemberVariable.EMemberDataType.ConstVariable )
             {
-                CreateExpress();
+                //CreateExpress();
             }
             else if( m_FileMetaMemeberVariable.DataType == FileMetaMemberVariable.EMemberDataType.KeyValue )
             {

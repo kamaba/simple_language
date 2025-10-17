@@ -8,6 +8,7 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.Parse;
+using System.Collections.Generic;
 
 namespace SimpleLanguage.IR
 {
@@ -29,9 +30,11 @@ namespace SimpleLanguage.IR
         public int id => m_Id;
         public string name => m_Name;
         public int index => m_Index;
+        public List<IRData> irDataList => m_IRDataList;
 
 
         private MetaExpressNode m_ExpressNode = null;
+        private List<IRData> m_IRDataList = new List<IRData>();
         private IRMetaType m_IRMetaType = null;
         private IRMetaVariableFrom m_IRMetaVariableFrom = IRMetaVariableFrom.None;
         private bool m_IsTemplate = false;
@@ -121,6 +124,10 @@ namespace SimpleLanguage.IR
         public void SetExpress( MetaExpressNode men )
         {
             this.m_ExpressNode = men;
+        }
+        public void SetIRDataList( List<IRData> list )
+        {
+            this.m_IRDataList = list;
         }
         public override string ToString()
         {

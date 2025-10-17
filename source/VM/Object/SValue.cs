@@ -36,6 +36,13 @@ namespace SimpleLanguage.VM
             eType = EType.Boolean;
             int8Value = val ? (byte)1 : (byte)0;
         }
+        public void SetNull()
+        {
+            if(sobject != null )
+            {
+                sobject.SetNull();
+            }
+        }
         public void SetInt8Value(byte val)
         {
             eType = EType.Byte;
@@ -388,6 +395,11 @@ namespace SimpleLanguage.VM
                     break;
                 case TemplateObject templateobj:
                     {
+                        if(templateobj.isNull )
+                        {
+                            this.SetNull();
+                            return;
+                        }
                         eType = templateobj.eType;
                         object tobj = templateobj.value;
                         switch (eType)

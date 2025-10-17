@@ -8,7 +8,9 @@
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -32,13 +34,7 @@ namespace SimpleLanguage.VM.Runtime
         private IRData[] m_IRDataList = null;
         private ushort m_ExecuteIndex = 0;
         private ushort m_ExecuteCount = 0;
-
-
-        //private IRMetaClass m_IRClass = null;
-        //private IRMetaType m_IRMetaType = null;
-        //调用函数的实体类，如果是普通的类，则可以不管这个参数
-        //private IRMetaClass m_CallIRMetaClass = null;
-        //private List<RuntimeType> m_methodInputTemplateRuntimeTypeList = null;
+        private Stack<List<RuntimeType>> m_NewObjectRuntimeTypeStack = new Stack<List<RuntimeType>>();
 
         public RuntimeVM( List<RuntimeType> inputTemplateTypeList, IRMethod mmf )
         {
@@ -46,8 +42,6 @@ namespace SimpleLanguage.VM.Runtime
             {
                 m_InputTemplateRuntimeTypeList = inputTemplateTypeList;
             }
-            //m_IRClass = irmc;
-            //m_methodInputTemplateRuntimeTypeList = methodInputTemplateTypeList;
             m_IRMethod = mmf;
             m_IRDataList = mmf.IRDataList.ToArray();
             m_ExecuteCount = (ushort)m_IRDataList.Length;
@@ -290,6 +284,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 }
                 RunInstruction(m_IRDataList[m_ExecuteIndex]);
+                m_ExecuteIndex++;
             }
             level--;
             pushChar = "";
@@ -299,10 +294,42 @@ namespace SimpleLanguage.VM.Runtime
             }
             Log.AddVM( EError.None, pushChar  + "[VMRuntime] [Pop] Method: [" + funName + "]");
         }
+        public void SetValue( ref SValue sValue, ref SValue sStore, IRData iri )
+        {
+            switch (sStore.eType)
+            {
+                case EType.Boolean:
+                case EType.Byte: sStore.SetInt8Value(sValue.int8Value); break;
+                case EType.SByte: sStore.SetSInt8Value(sValue.sint8Value); break;
+                case EType.Int16: sStore.SetInt16Value(sValue.int16Value); break;
+                case EType.UInt16: sStore.SetUInt16Value(sValue.uint16Value); break;
+                case EType.Int32: sStore.SetInt32Value(sValue.int32Value); break;
+                case EType.UInt32: sStore.SetUInt32Value(sValue.uint32Value); break;
+                case EType.Int64: sStore.SetInt64Value(sValue.int64Value); break;
+                case EType.UInt64: sStore.SetUInt64Value(sValue.uint64Value); break;
+                case EType.Float32: sStore.SetFloatValue(sValue.floatValue); break;
+                case EType.Float64: sStore.SetDoubleValue(sValue.doubleValue); break;
+                case EType.String: sStore.SetStringValue(sValue.stringValue); break;
+                case EType.Null:
+                    {
+                        sStore.SetNull();
+                    }
+                    break;
+                case EType.Class:
+                    {
+                        (sStore.sobject as ClassObject).SetMemberVariableSValue(iri.index, sValue);
+                    }
+                    break;
+                default:
+                    {
+                        Log.AddVM(EError.None, "Error StoreNotStaticField Path:" + iri.debugInfo.path + " Line: " + iri.debugInfo.beginLine);
+                    }
+                    break;
+            }
+        }
         public void RunInstruction( IRData iri )
         {
             //栈位的移动的规则，使用当前位为空的概念，只要栈被使用掉，索引则加1，所以索引最少为0
-            m_ExecuteIndex++;
             switch ( iri.opCode )
             {
                 case EIROpCode.Nop:
@@ -461,38 +488,22 @@ namespace SimpleLanguage.VM.Runtime
                         //栈位不变，因为当前对象位的被通过索引取出来的成员变量值，覆盖掉， 所以栈位不会发生变化
                     }
                     break;
-                case EIROpCode.StoreNotStaticField:                   
+                case EIROpCode.StoreNotStaticField2:
                     {
                         // -2在存储的值 -1表示要存储的对象 存储完成，直接变成位置0
-                        var v = m_ValueStack[m_ValueIndex - 1];
-                        SValue sv = m_ValueStack[m_ValueIndex - 2];
-                        switch ( v.eType )
-                        {
-                            case EType.Boolean:
-                            case EType.Byte: v.int8Value = sv.int8Value; break;
-                            case EType.SByte: v.sint8Value = sv.sint8Value; break;
-                            case EType.Int16: v.int16Value = sv.int16Value; break;
-                            case EType.UInt16: v.uint16Value = sv.uint16Value; break;
-                            case EType.Int32: v.int32Value = sv.int32Value; break;
-                            case EType.UInt32: v.uint32Value = sv.uint32Value; break;
-                            case EType.Int64: v.int64Value = sv.int64Value; break;
-                            case EType.UInt64: v.uint64Value = sv.uint64Value; break;
-                            case EType.Float32: v.floatValue = sv.floatValue; break;
-                            case EType.Float64: v.doubleValue = sv.doubleValue; break;
-                            case EType.String: v.stringValue = sv.stringValue; break;
-                            case EType.Class:
-                                {
-                                    (v.sobject as ClassObject).SetMemberVariableSValue(iri.index, sv );
-                                }
-                                break;
-                            default:
-                                {
-                                    Log.AddVM(EError.None, "Error StoreNotStaticField Path:" + iri.debugInfo.path + " Line: " + iri.debugInfo.beginLine);
-                                }
-                                break;
-                        }
-                        m_ValueStack[m_ValueIndex - 2] = v;
+                        SValue sValue = m_ValueStack[m_ValueIndex - 2];
+                        SValue sStore = m_ValueStack[m_ValueIndex - 1];
+                        SetValue(ref sValue, ref sStore, iri);
                         m_ValueIndex -= 2;
+                    }
+                    break;
+                case EIROpCode.StoreNotStaticField1:
+                    {
+                        // -2在存储的值 -1表示要存储的对象 存储完成，直接变成位置0
+                        SValue sValue = m_ValueStack[m_ValueIndex - 1];
+                        SValue sStore = m_ValueStack[m_ValueIndex - 2];
+                        SetValue(ref sValue, ref sStore, iri);
+                        m_ValueIndex -= 1;
                     }
                     break;
                 case EIROpCode.LoadStaticField:
@@ -516,10 +527,16 @@ namespace SimpleLanguage.VM.Runtime
                         List<RuntimeType> classRTList = new List<RuntimeType>();
                         for (int i = 0; i < mfc.metaType.irMetaTypeList.Count; i++)
                         {
-                            var crt = GetClassRuntimeType(mfc.metaType.irMetaTypeList[i]);
+                            var crt = GetClassRuntimeType(mfc.metaType.irMetaTypeList[i], true );
                             classRTList.Add(crt);
                         }
-                        for( int i = 0; i < mfc.irTemplateMetaType.Count; i++ )
+                        var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(mfc.metaType.irMetaClass, classRTList);
+                        if (rt == null )
+                        {
+                            rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(mfc.metaType.irMetaClass, classRTList);
+                        }
+
+                        for ( int i = 0; i < mfc.irTemplateMetaType.Count; i++ )
                         {
                             var crt = GetMethodRuntimeType(mfc.irTemplateMetaType[i]);
                             classRTList.Add(crt);
@@ -603,6 +620,18 @@ namespace SimpleLanguage.VM.Runtime
                             var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], true );
                             rtList.Add(crt);
                         }
+                        //if( irc.irName == "Int8"
+                        //    || irc.irName == "SInt8"
+                        //    || irc.irName == "Int16"
+                        //    || irc.irName == "UInt16"
+                        //    || irc.irName == "Int32"
+                        //    || irc.irName == "UInt32"
+                        //    || irc.irName == "Int64"
+                        //    || irc.irName == "UInt64" )
+                        //{
+                        //    return;
+                        //}
+
                         InnerCLRRuntimeVM.RunIRMethod( rtList, cfc);
                     }
                     break;
@@ -638,6 +667,25 @@ namespace SimpleLanguage.VM.Runtime
                             ObjectManager.AddClassObject(co);
                         }
                         m_ValueStack[m_ValueIndex++].SetSObject(sob);
+
+
+                        var irList = rt.irClass.CreateStaticMetaMetaVariableIRList();
+                        if (irList.Count > 0)
+                        {
+                            int ExecuteIndex2 = 0;
+                            int executeCount = irList.Count;
+                            m_NewObjectRuntimeTypeStack.Push(m_InputTemplateRuntimeTypeList);
+                            m_InputTemplateRuntimeTypeList = rt.runtimeTemplateList;
+                            while (true)
+                            {
+                                if (ExecuteIndex2 >= executeCount)
+                                {
+                                    break;
+                                }
+                                RunInstruction(irList[ExecuteIndex2++]);
+                            }
+                            m_InputTemplateRuntimeTypeList = m_NewObjectRuntimeTypeStack.Pop();
+                        }
                     }
                     break;
                 case EIROpCode.NewTemplateClass:
@@ -650,6 +698,25 @@ namespace SimpleLanguage.VM.Runtime
                             ObjectManager.AddClassObject(co);
                         }
                         m_ValueStack[m_ValueIndex++].SetSObject(sobj);
+                        var irc = rt.irClass;
+
+                        var irList = rt.irClass.CreateStaticMetaMetaVariableIRList();
+                        if( irList.Count > 0 )
+                        {
+                            int ExecuteIndex2 = 0;
+                            int executeCount = irList.Count;
+                            m_NewObjectRuntimeTypeStack.Push(m_InputTemplateRuntimeTypeList);
+                            m_InputTemplateRuntimeTypeList = rt.runtimeTemplateList;
+                            while (true)
+                            {
+                                if (ExecuteIndex2 >= executeCount)
+                                {
+                                    break;
+                                }
+                                RunInstruction(irList[ExecuteIndex2++]);
+                            }
+                            m_InputTemplateRuntimeTypeList = m_NewObjectRuntimeTypeStack.Pop();
+                        }
                     }
                     break;
                 case EIROpCode.Dup:

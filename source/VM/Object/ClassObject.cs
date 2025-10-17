@@ -78,7 +78,7 @@ namespace SimpleLanguage.VM
             {
                 var irmv = m_IRMetaVariableList[i].irMetaType;
                 var rt = GetClassRuntimeType(irmv, true );
-                SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, false );
+                SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt );
                 if(sobj == null )
                 {
                     continue;
@@ -194,6 +194,8 @@ namespace SimpleLanguage.VM
             {
                 case EType.Null:
                     {
+                        m_MemberObjectArray[index].SetNull();
+                        /*
                         ClassObject classObj = m_MemberObjectArray[index] as ClassObject;
                         if (classObj == null)
                         {
@@ -201,6 +203,7 @@ namespace SimpleLanguage.VM
                             return;
                         }
                         classObj.SetNull();
+                        */
                     }
                     break;
                 case EType.Boolean:
@@ -254,7 +257,13 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Int32:
                     {
-                        Int32Object int32Obj = m_MemberObjectArray[index] as Int32Object;
+                        Int32Object int32Obj = null;
+                        if (m_MemberObjectArray[index] == null )
+                        {
+                            int32Obj = new Int32Object(0);
+                            m_MemberObjectArray[index] = int32Obj;
+                        }
+                        int32Obj = m_MemberObjectArray[index] as Int32Object;
                         if (int32Obj == null)
                         {
                             Log.AddVM(EError.None, "Int32 该类型不是Int32类型!!");

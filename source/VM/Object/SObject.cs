@@ -32,7 +32,7 @@ namespace SimpleLanguage.VM
         {
             this.m_Etype = etype;
         }
-        public void SetNull()
+        public virtual void SetNull()
         {
             m_IsNull = true;
         }

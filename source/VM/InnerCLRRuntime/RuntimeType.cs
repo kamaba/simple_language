@@ -9,6 +9,7 @@
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 using System.Text;
 
 namespace SimpleLanguage.VM
@@ -32,7 +33,8 @@ namespace SimpleLanguage.VM
             for ( int i = 0; i < irClass.staticIRMetaVariableList.Count; i++ )
             {
                 RuntimeType rt = GetClassRuntimeType(irClass.staticIRMetaVariableList[i].irMetaType, true );
-                m_StaticMemObjectList[i] = ObjectManager.CreateObjectByRuntimeType(rt, true );
+                
+                m_StaticMemObjectList[i] = ObjectManager.CreateObjectByRuntimeType( rt, true );
             }
         }
         public RuntimeType GetClassRuntimeType(IRMetaType irmt, bool isAdd = false)
@@ -404,6 +406,22 @@ namespace SimpleLanguage.VM
                     break;
             }
         }
+
+        public List<IRData> CreateStaticMetaMetaVariableIRList()
+        {
+            List<IRData> list = new List<IRData>();
+
+            foreach (var v in  this.irClass.localIRMetaVariableList )
+            {
+                var irexp = new IRExpress(IRManager.instance, v.express);
+
+                v.SetIRDataList(irexp.IRDataList);
+
+                list.AddRange(irexp.IRDataList);
+            }
+
+            return list;
+        }
         public static bool SameRuntimeType( RuntimeType rt1, RuntimeType rt2 )
         {
             if( rt1.irClass != rt2.irClass )
@@ -436,6 +454,8 @@ namespace SimpleLanguage.VM
                 for( int i = 0; i < runtimeTemplateList.Count; i++ )
                 {
                     sb.Append(runtimeTemplateList[i].ToString());
+                    if( i < runtimeTemplateList.Count - 1 )
+                        sb.Append(",");
                 }
                 sb.Append(">");
             }
@@ -465,15 +485,18 @@ namespace SimpleLanguage.VM
                     {
                         return v;
                     }
+                    bool flag = true;
                     for (int i = 0; i < inputTemplateTypeList.Count; i++)
                     {
-                        if (RuntimeType.SameRuntimeType(inputTemplateTypeList[i], v.runtimeTemplateList[i]))
+                        if ( !RuntimeType.SameRuntimeType(inputTemplateTypeList[i], v.runtimeTemplateList[i]))
                         {
-                            return v;
+                            flag = false;
+                            break;
                         }
                     }
+                    if(flag)
+                        return v;
                 }
-
             }
             return null;
         }
