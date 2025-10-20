@@ -6,10 +6,8 @@
 //  Description:  
 //****************************************************************************
 
-using System;
-using System.Collections.Generic;
 using System.Text;
-using SimpleLanguage.Compile.CoreFileMeta;
+using SimpleLanguage.Compile;
 using SimpleLanguage.Core.Statements;
 
 namespace SimpleLanguage.Core

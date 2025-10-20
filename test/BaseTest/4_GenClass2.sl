@@ -176,7 +176,6 @@ Level1<T,T2> extends List<T2>
 GenClass{
     static fun()
     {
-        #!
         Level1<int,string> testintstring = new()
         penret = Level1<string,byte>.Open("  !!!!!tttstring!!!!!!!    ")
         System.Console.WriteLine("_this_——————————————————————————————  " + penret )
@@ -184,7 +183,6 @@ GenClass{
         Level1<int, int>  GenClass2_fun_l1 = Level1<int, int>(100)
         GenClass2_fun_l1.setLevel1( 200 )
         System.Console.WriteLine("_this_—————————————————————————————— 222 " + GenClass2_fun_l1.Level1_t )
-        !#
 
         Level1<Level1<int,int>, string > GenClass2_fun_l2 = Level1<Level1<int, int>, string >()
         GenClass2_fun_l2.setLevel1( Level1<int, int>(20) )

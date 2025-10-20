@@ -12,11 +12,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile.Grammer;
-using SimpleLanguage.Compile.CoreFileMeta;
+using SimpleLanguage.Compile;
 using System.Reflection;
-using static SimpleLanguage.Compile.CoreFileMeta.FileMetaClass;
+using static SimpleLanguage.Compile.FileMetaClass;
 
-namespace SimpleLanguage.Compile.Parse
+namespace SimpleLanguage.Compile
 {
     public partial class StructParse
     {

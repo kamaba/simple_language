@@ -5,7 +5,7 @@
 //  DateTime: 2025/5/30 12:00:00
 //  Description: Meta enum's attribute
 //****************************************************************************
-using SimpleLanguage.Compile.CoreFileMeta;
+using SimpleLanguage.Compile;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Parse;
 using System;

@@ -6,7 +6,7 @@
 //  Description: Meta params about info class!
 //****************************************************************************
 
-using SimpleLanguage.Compile.CoreFileMeta;
+using SimpleLanguage.Compile;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using SimpleLanguage.Parse;

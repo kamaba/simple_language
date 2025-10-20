@@ -12,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile;
-using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Core

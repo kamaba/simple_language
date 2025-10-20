@@ -7,7 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.Compile.CoreFileMeta;
+using SimpleLanguage.Compile;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Parse;
 using System;
@@ -342,6 +342,10 @@ namespace SimpleLanguage.Core.Statements
             {
                 Log.AddInStructMeta( EError.None, "Error 解析新建变量语句时，表达式返回类型为空!!__3");
                 return;
+            }
+            else
+            {
+                m_MetaVariable.SetRealMetaType(expressRetMetaDefineType);
             }
 
             if(m_IsSetStatements == false )

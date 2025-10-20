@@ -1,5 +1,4 @@
 ﻿using SimpleLanguage.Compile;
-using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;

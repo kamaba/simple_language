@@ -11,10 +11,10 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
-using SimpleLanguage.Compile.Parse;
+using SimpleLanguage.Compile;
 using SimpleLanguage.Parse;
 
-namespace SimpleLanguage.Compile.CoreFileMeta
+namespace SimpleLanguage.Compile
 {
     public sealed class NamespaceStatementBlock
     {
