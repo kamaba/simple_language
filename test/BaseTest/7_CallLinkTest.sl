@@ -1,45 +1,43 @@
-import Application.Core;
+#import Application.Core;
+import CSharp.System
 
 
 Class1
 {
     a = 10
 }
-QS.Class2
+Class2 extends Class1
 {
     a2 = 10
-
-    Class1 c1;
+    Class1 c1 = new()
 }
 Class3
 {
-    Class2 c1;
-
+    c1 = Class2()
     Class2 GetClass2()
     {
-        ret this.c1;
+        ret this.c1
     }    
 }
-Class4
+Class4 extends Class3
 {
     Class3 c3 = null;
     int c41 = 0;
-    Array<int> arr1 = {1,2,3,4,5};
 }
 
 CallLinkTest
 {
-    static Fun()
+    static fun()
     {
         Class4 c4 = Class4()
         c4.c3 = Class3()
         c4.GetClass2().a2 = c4.c3.GetClass2().c1.a;
         newc1 = c4.GetClass().a2;
-        c4.c41 = newc1.$2;
-        c4.c41 = newc1.index;
-        newcx1 = newc1.value;
-        result1 = newcx1;
-        CSharp.System.Debug.Write("Class1 Value: " + result1 );
+        #c4.c41 = newc1.$2;
+        #c4.c41 = newc1.index;
+        #newcx1 = newc1.value;
+        #result1 = newc1;
+        System.Console.Writeline("Class1 Value: " + c4.GetClass2().a2 );
     }
 }
 #!

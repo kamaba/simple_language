@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile.Grammer;
-using SimpleLanguage.Compile.CoreFileMeta;
+using SimpleLanguage.Compile;
 using System.Runtime.Intrinsics.X86;
 using System.Collections;
 using System.Xml.Linq;
@@ -20,7 +20,7 @@ using System.Reflection;
 using SimpleLanguage.Core.Statements;
 using System.Diagnostics;
 
-namespace SimpleLanguage.Compile.Parse
+namespace SimpleLanguage.Compile
 {
     public partial class StructParse
     {

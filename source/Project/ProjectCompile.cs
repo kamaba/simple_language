@@ -14,9 +14,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Timers;
-using SimpleLanguage.Compile.Parse;
-using SimpleLanguage.Compile.CoreFileMeta;
 using System.Diagnostics;
+using SimpleLanguage.Compile;
 
 namespace SimpleLanguage.Project
 {

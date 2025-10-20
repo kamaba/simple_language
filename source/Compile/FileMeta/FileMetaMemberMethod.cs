@@ -10,9 +10,8 @@ using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using SimpleLanguage.Compile.Parse;
 
-namespace SimpleLanguage.Compile.CoreFileMeta
+namespace SimpleLanguage.Compile
 {
     public class FileMetaParamterDefine : FileMetaBase
     {

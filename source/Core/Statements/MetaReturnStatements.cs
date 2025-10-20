@@ -6,9 +6,8 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Compile.CoreFileMeta;
+using SimpleLanguage.Compile;
 using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.IR;
 using System.Text;
 
 namespace SimpleLanguage.Core.Statements

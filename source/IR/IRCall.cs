@@ -155,15 +155,6 @@ namespace SimpleLanguage.IR
                     }
                 }
             }
-
-            //if (irbase != null)
-            //{
-            //    IRData datacallunsc = new IRData();
-            //    datacallunsc.opCode = EIROpCode.UnSetCallClass;
-            //    datacallunsc.opValue = null;
-            //    datacallunsc.SetDebugInfoByToken(mf.pingToken);
-            //    AddIRData(datacallunsc);
-            //}
         }
         public System.Object InvokeCSharp( Object target, Object[] csParamObjs)
         {

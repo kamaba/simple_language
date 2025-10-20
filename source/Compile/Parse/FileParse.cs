@@ -6,14 +6,14 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Compile.CoreFileMeta;
+using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
 using SimpleLanguage.Parse;
 using SimpleLanguage.source.Compile.Process;
 using System;
 using System.IO;
 
-namespace SimpleLanguage.Compile.Parse
+namespace SimpleLanguage.Compile
 {
     public enum ECodeFileParseState
     {

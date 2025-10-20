@@ -6,7 +6,6 @@
 //  Description:  this's a common node handles
 //****************************************************************************
 using SimpleLanguage.Compile;
-using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using SimpleLanguage.Parse;
@@ -180,7 +179,7 @@ namespace SimpleLanguage.Core
                     {
                         if( i == m_CallNodeList.Count )
                         {
-                            MetaVisitNode mvn = MetaVisitNode.CraeteByNewClass(mcn.metaType, mcn.metaBraceStatementsContent, null );
+                            MetaVisitNode mvn = MetaVisitNode.CraeteByNewClass(mcn.metaType, mcn.metaBraceStatementsContent, mcn.metaVariable );
                             m_VisitNodeList.Add(mvn);
 
                             if( mcn.metaFunction != null )

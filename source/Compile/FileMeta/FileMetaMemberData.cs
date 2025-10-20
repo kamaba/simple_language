@@ -9,10 +9,10 @@
 using SimpleLanguage.Core;
 using System.Collections.Generic;
 using System.Text;
-using SimpleLanguage.Compile.Parse;
+using SimpleLanguage.Compile;
 using SimpleLanguage.Parse;
 
-namespace SimpleLanguage.Compile.CoreFileMeta
+namespace SimpleLanguage.Compile
 {
     public class FileMetaMemberData : FileMetaBase
     {

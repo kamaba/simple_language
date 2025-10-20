@@ -6,7 +6,6 @@
 //  Description:  this's a calllink's node handle
 //****************************************************************************
 using SimpleLanguage.Compile;
-using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
 using SimpleLanguage.Core.Statements;
 using SimpleLanguage.Parse;
@@ -890,7 +889,7 @@ namespace SimpleLanguage.Core
             }
           
             if ( m_CallNodeType == ECallNodeType.ClassName )
-            {
+                {
                 if (m_MetaTemplateParamsList.Count > 0)
                 {
                     var ngmc = m_MetaClass.AddMetaTemplateClassByMetaClassAndMetaTemplateMetaTypeList(m_MetaTemplateParamsList);
@@ -1313,6 +1312,7 @@ namespace SimpleLanguage.Core
                         Log.AddInStructMeta(EError.None, $"找到{retMC.allName} 里边模板数据为{count} 没有找到相关的类!");
                         return false;
                     }
+                    m_MetaType = new MetaType(m_MetaClass);
                 }
                 else
                 {

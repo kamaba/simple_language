@@ -7,11 +7,7 @@
 //  'elif' syntax  statements and one 'else' syntax statements
 //****************************************************************************
 using SimpleLanguage.Compile;
-using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.IR;
-using SimpleLanguage.Parse;
-using SimpleLanguage.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
