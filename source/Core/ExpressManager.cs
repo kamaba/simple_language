@@ -7,8 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Core.Statements;
+
 using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Core

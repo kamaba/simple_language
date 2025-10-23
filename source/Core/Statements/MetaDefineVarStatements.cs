@@ -6,13 +6,13 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Core.SelfMeta;
+
 using System;
 using System.Text;
 using SimpleLanguage.Compile;
 using System.Diagnostics;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.Core
 {
     public class MetaDefineVarStatements : MetaStatements
     {

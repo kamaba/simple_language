@@ -9,7 +9,7 @@ using SimpleLanguage.Core.MetaObjects;
 using System.Runtime.InteropServices;
 using System;
 
-namespace SimpleLanguage.Core.SelfMeta
+namespace SimpleLanguage.Core
 {
     public class IEnumerableMetaClass : MetaClass
     {

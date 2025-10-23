@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Core;
 
-namespace SimpleLanguage.Core.SelfMeta
+namespace SimpleLanguage.Core
 {
     public class Float32MetaClass : MetaClass
     {

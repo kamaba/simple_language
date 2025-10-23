@@ -21,8 +21,8 @@ Class3
 }
 Class4 extends Class3
 {
-    Class3 c4_1 = null;
-    int c4_2 = 0;
+    Class3 c4_1 = null
+    int c4_2 = 0
     Class3 c4_3 = new()
 }
 

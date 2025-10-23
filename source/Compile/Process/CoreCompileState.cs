@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.source.Compile.Process
+namespace SimpleLanguage.Compile
 {
     public class CompileState : CompileStateBase
     {

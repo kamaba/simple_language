@@ -11,7 +11,7 @@ using SimpleLanguage.Parse;
 using System;
 using System.Text;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.Core
 {
     public sealed class MetaForStatements : MetaStatements
     {

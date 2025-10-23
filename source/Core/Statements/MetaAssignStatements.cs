@@ -8,12 +8,12 @@
 
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile;
-using SimpleLanguage.Core.SelfMeta;
+
 using SimpleLanguage.Parse;
 using System;
 using System.Text;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.Core
 {
     public class MetaAssignManager
     {

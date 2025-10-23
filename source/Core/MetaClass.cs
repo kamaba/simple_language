@@ -6,7 +6,6 @@
 //  Description: Meta class's attribute
 //****************************************************************************
 
-using SimpleLanguage.Core.SelfMeta;
 using System;
 using System.Collections.Generic;
 using System.Text;

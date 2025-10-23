@@ -7,9 +7,7 @@
 //****************************************************************************
 
 
-using SimpleLanguage.Compile;
-
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.Core
 {
     public class MetaStatements : MetaBase
     {

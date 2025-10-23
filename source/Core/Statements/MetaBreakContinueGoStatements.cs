@@ -6,13 +6,11 @@
 //  Description: 
 //****************************************************************************
 using SimpleLanguage.Compile;
-using SimpleLanguage.Parse;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.Core
 {
     public partial class MetaBreakStatements : MetaStatements
     {

@@ -7,14 +7,10 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.IR;
-using SimpleLanguage.Parse;
 using System;
-using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.Core
 {
     public partial class MetaCallStatements : MetaStatements
     {

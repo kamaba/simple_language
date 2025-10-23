@@ -8,13 +8,7 @@
 
 
 using SimpleLanguage.Parse;
-using System;
 using System.Collections.Generic;
-using System.Text;
-using SimpleLanguage.Compile.Grammer;
-using SimpleLanguage.Compile;
-using System.Reflection;
-using static SimpleLanguage.Compile.FileMetaClass;
 
 namespace SimpleLanguage.Compile
 {
