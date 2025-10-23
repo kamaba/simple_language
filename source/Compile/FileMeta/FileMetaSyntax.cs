@@ -12,7 +12,7 @@ using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Compile
 {    
-    public partial class FileMetaSyntax : FileMetaBase
+    public class FileMetaSyntax : FileMetaBase
     {
         public int parseIndex { get; private set; } = 0;
         public bool isAppendSemiColon { get; set; } = true;

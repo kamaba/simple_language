@@ -266,7 +266,13 @@ namespace SimpleLanguage.VM
                         int32Obj = m_MemberObjectArray[index] as Int32Object;
                         if (int32Obj == null)
                         {
-                            Log.AddVM(EError.None, "Int32 该类型不是Int32类型!!");
+                            AnyObject anyobj = m_MemberObjectArray[index] as AnyObject;
+                            if (anyobj == null)
+                            {
+                                Log.AddVM(EError.None, "Int32 该类型不是Int32类型!!");
+                                return;
+                            }
+                            anyobj.SetValue(EType.Int32, svalue.int32Value);
                             return;
                         }
                         int32Obj.SetValue(svalue.int32Value);
@@ -444,6 +450,12 @@ namespace SimpleLanguage.VM
                             ClassObject classObj = m_MemberObjectArray[index] as ClassObject;
                             if (classObj == null)
                             {
+                                AnyObject anyObj = m_MemberObjectArray[index] as AnyObject;
+                                if( anyObj != null )
+                                {
+                                    anyObj.SetValue(EType.Class, svalue.sobject);
+                                    return;
+                                }
                                 Log.AddVM(EError.None, "该类型不是classObj类型!!");
                                 return;
                             }
