@@ -7,13 +7,13 @@
 //  'elif' syntax  statements and one 'else' syntax statements
 //****************************************************************************
 using SimpleLanguage.Compile;
-using SimpleLanguage.Core.SelfMeta;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.Core
 {
     public partial class MetaIfStatements : MetaStatements
     {

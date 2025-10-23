@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Compile;
-using SimpleLanguage.Core.SelfMeta;
+
 using SimpleLanguage.VM;
 
 namespace SimpleLanguage.Core

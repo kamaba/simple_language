@@ -7,7 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.Core.SelfMeta;
+
 using System.Collections.Generic;
 using System.Text;
 

@@ -11,7 +11,7 @@ using SimpleLanguage.VM.Runtime;
 using SimpleLanguage.Parse;
 using SimpleLanguage.IR;
 using System.Diagnostics;
-using SimpleLanguage.Core.SelfMeta;
+
 using SimpleLanguage.Compile;
 
 namespace SimpleLanguage.Project

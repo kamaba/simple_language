@@ -12,7 +12,7 @@ using System.Diagnostics;
 using System.Text;
 
 
-namespace SimpleLanguage.Core.SelfMeta
+namespace SimpleLanguage.Core
 {
     public enum DefaultObject
     {
@@ -73,7 +73,6 @@ namespace SimpleLanguage.Core.SelfMeta
         public static MetaClass float64MetaClass { get; private set; } = null;
         public static MetaClass arrayMetaClass { get; private set; } = null;
         public static MetaClass rangeMetaClass { get; private set; } = null;
-        public static MetaClass typeMetaClass { get; private set; } = null;
         public static MetaClass dynamicMetaClass { get; private set; } = null;
         public static MetaClass dynamicMetaData { get; private set; } = null;
         public static MetaClass enumMetaData { get; private set; } = null;
@@ -102,7 +101,6 @@ namespace SimpleLanguage.Core.SelfMeta
             arrayIteratorMetaClass = ArrayIteratorMetaClass.CreateMetaClass();
             arrayMetaClass = ArrayMetaClass.CreateMetaClass();
             rangeMetaClass = RangeMetaClass.CreateMetaClass();
-            typeMetaClass = TypeMetaClass.CreateMetaClass();
             dynamicMetaClass = DynamicMetaClass.CreateMetaClass();
             dynamicMetaData = DynamicMetaData.CreateMetaClass();
             enumMetaData = EnumMetaClass.CreateMetaClass();
@@ -125,7 +123,6 @@ namespace SimpleLanguage.Core.SelfMeta
             s_InnerDefineMetaClassList.Add(arrayIteratorMetaClass);
             s_InnerDefineMetaClassList.Add(arrayMetaClass);
             s_InnerDefineMetaClassList.Add(rangeMetaClass);
-            s_InnerDefineMetaClassList.Add(typeMetaClass);
             s_InnerDefineMetaClassList.Add(dynamicMetaClass);
             s_InnerDefineMetaClassList.Add(dynamicMetaData);
             s_InnerDefineMetaClassList.Add(enumMetaData);

@@ -6,8 +6,8 @@
 //  Description: Meta enum's attribute
 //****************************************************************************
 
-using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Core.Statements;
+
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -834,7 +834,7 @@ namespace SimpleLanguage.Core
                     break;
                 case FileMetaCallSyntax fmcs:       //a.value.SetH(100);
                     {
-                        var mcs = new Statements.MetaCallStatements(currentBlockStatements, fmcs );
+                        var mcs = new MetaCallStatements(currentBlockStatements, fmcs );
                         beforeStatements.SetNextStatements(mcs);
                         beforeStatements = mcs;
                         return mcs;

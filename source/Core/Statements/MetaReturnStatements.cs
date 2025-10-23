@@ -7,10 +7,10 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.Core.SelfMeta;
+
 using System.Text;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.Core
 {
     public sealed  class MetaReturnStatements : MetaStatements
     {

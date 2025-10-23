@@ -8,7 +8,7 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.IR;
-using SimpleLanguage.Core.SelfMeta;
+
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
