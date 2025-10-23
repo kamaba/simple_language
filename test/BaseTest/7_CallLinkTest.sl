@@ -4,25 +4,26 @@ import CSharp.System
 
 Class1
 {
-    a = 10
+    c1_1 = 10
 }
 Class2 extends Class1
 {
-    a2 = 10
-    Class1 c1 = new()
+    c2_1 = 20
+    Class1 c2_2 = new()
 }
 Class3
 {
-    c1 = Class2()
+    c3_1 = Class2()
     Class2 GetClass2()
     {
-        ret this.c1
-    }    
+        ret this.c3_1
+    }
 }
 Class4 extends Class3
 {
-    Class3 c3 = null;
-    int c41 = 0;
+    Class3 c4_1 = null;
+    int c4_2 = 0;
+    Class3 c4_3 = new()
 }
 
 CallLinkTest
@@ -30,14 +31,15 @@ CallLinkTest
     static fun()
     {
         Class4 c4 = Class4()
-        c4.c3 = Class3()
-        c4.GetClass2().a2 = c4.c3.GetClass2().c1.a;
-        newc1 = c4.GetClass().a2;
+        c4.c4_1 = Class3()
+        c4.c4_3.GetClass2().c2_2.c1_1 = 40
+        c4.GetClass2().c2_1 = c4.c4_3.GetClass2().c2_2.c1_1;
+        newc1 = c4.GetClass().c2_1;
         #c4.c41 = newc1.$2;
         #c4.c41 = newc1.index;
         #newcx1 = newc1.value;
         #result1 = newc1;
-        System.Console.Writeline("Class1 Value: " + c4.GetClass2().a2 );
+        System.Console.Writeline("Class1 Value: " + newc1 );
     }
 }
 #!
