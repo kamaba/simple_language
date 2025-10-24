@@ -1,5 +1,5 @@
 ﻿//****************************************************************************
-//  File:      FileMetaMemberMethod.cs
+//  File:      FileMetaMemberFunction.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/5/12 12:00:00
