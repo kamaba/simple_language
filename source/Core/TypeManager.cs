@@ -52,7 +52,7 @@ namespace SimpleLanguage.Core
         //    }
 
         //}
-        public bool UpdateMetaTypeByGenClassAndFunction(MetaType mt, MetaGenTemplateClass mgtc, MetaGenTempalteFunction mgtf)
+        public bool UpdateMetaTypeByGenClassAndFunction(MetaType mt, MetaGenTemplateClass mgtc, MetaGenTemplateFunction mgtf)
         {
             bool isNeedReg = false;
             MetaClass findfn = null;

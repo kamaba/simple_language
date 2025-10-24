@@ -12,26 +12,26 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public class MetaGenTempalteFunction : MetaMemberFunction
+    public class MetaGenTemplateFunction : MetaMemberFunction
     {
         public MetaMemberFunction sourceTemplateFunctionMetaMemberFunction => m_SourceTemplateFunctionMetaMemberFunction;
         public List<MetaGenTemplate> metaGenTemplateList => m_MetaGenTemplateList;
 
         protected MetaMemberFunction m_SourceTemplateFunctionMetaMemberFunction = null;
         protected List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
-        public MetaGenTempalteFunction(MetaMemberFunction mmc, List<MetaGenTemplate> list ) : base(mmc.ownerMetaClass)
+        public MetaGenTemplateFunction(MetaMemberFunction mmc, List<MetaGenTemplate> list ) : base(mmc.ownerMetaClass)
         {
             m_SourceTemplateFunctionMetaMemberFunction = mmc;
             UpdateGenMemberFunctionByTemplateClass(mmc);
             m_MetaGenTemplateList = list;
         }
-        public MetaGenTempalteFunction( MetaGenTempalteFunction mgtf ) : base(mgtf)
+        public MetaGenTemplateFunction(MetaGenTemplateFunction mgtf ) : base(mgtf)
         {
             m_SourceMetaMemberFunction = mgtf.m_SourceMetaMemberFunction;
             m_SourceTemplateFunctionMetaMemberFunction = mgtf.m_SourceTemplateFunctionMetaMemberFunction;
             m_MetaGenTemplateList = mgtf.m_MetaGenTemplateList;
         }
-        public MetaGenTempalteFunction(MetaClass mc, string _name) : base(mc)
+        public MetaGenTemplateFunction(MetaClass mc, string _name) : base(mc)
         {
             m_Name = _name;
             m_IsCanRewrite = true;

@@ -88,7 +88,7 @@ namespace SimpleLanguage.Core
         }
         public MetaFunction GetTemplateMemberFunction()
         {
-            if( m_VMCallMetaFunction is MetaGenTempalteFunction mgtf )
+            if( m_VMCallMetaFunction is MetaGenTemplateFunction mgtf )
             {
                 return mgtf.sourceTemplateFunctionMetaMemberFunction;
             }
