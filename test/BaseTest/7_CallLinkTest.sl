@@ -2,6 +2,78 @@
 import CSharp.System
 
 
+
+namespace Core
+{
+    class Object
+    {
+        public void _init_()
+        {
+
+        }
+
+        public string toString()
+        {
+            ret ""
+        }
+    }
+    class Byte
+    {
+        
+    }
+    class Boolean
+    {
+
+    }
+    class SByte
+    {
+        
+    }
+    class Int16
+    {
+        
+    }
+    class UInt16
+    {
+        
+    }
+    class Int32
+    {
+        
+    }
+    class UInt32
+    {
+        
+    }
+    class Int64
+    {
+        
+    }
+    class UInt64
+    {
+        
+    }
+    class Float32
+    {
+        
+    }
+    class Float64
+    {
+        _init_(Float64 f)
+        {
+
+        }
+    }
+    class String
+    {
+        _init_( String str )
+        {
+
+        }
+    }
+
+}
+
 Class1
 {
     c1_1 = 10
@@ -34,12 +106,12 @@ CallLinkTest
         c4.c4_1 = Class3()
         c4.c4_3.GetClass2().c2_2.c1_1 = 40
         c4.GetClass2().c2_1 = c4.c4_3.GetClass2().c2_2.c1_1;
-        newc1 = c4.GetClass().c2_1;
+        newc1 = c4.GetClass2().c2_1;
         #c4.c41 = newc1.$2;
         #c4.c41 = newc1.index;
         #newcx1 = newc1.value;
         #result1 = newc1;
-        System.Console.Writeline("Class1 Value: " + newc1 );
+        System.Console.WriteLine("Class1 Value: " + newc1 )
     }
 }
 #!

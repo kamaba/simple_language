@@ -132,9 +132,8 @@ namespace SimpleLanguage.IR
                 AddIRData(datacall);
             }
 
-            if( mfc.storeMetaVariable == null )
+            if( mfc.isRecieveReturnValue == false )
             {
-                string voidn = IRManager.GetIRNameByMetaClass(Core.CoreMetaClassManager.voidMetaClass);
                 for (int i = 0; i < m_IRRuntimeMethod.methodReturnVariableList.Count; i++ )
                 {
                     var mrv = m_IRRuntimeMethod.methodReturnVariableList[i];

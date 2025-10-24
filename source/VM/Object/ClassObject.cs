@@ -190,6 +190,7 @@ namespace SimpleLanguage.VM
                 Log.AddVM(EError.None, "执行的参数超出范围!!");
                 return;
             }
+            AnyObject anyobj = m_MemberObjectArray[index] as AnyObject;
             switch (svalue.eType)
             {
                 case EType.Null:
@@ -213,6 +214,12 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Byte:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValue(EType.Byte, svalue.int8Value );
+                            return;
+                        }
+
                         ByteObject byteObj = m_MemberObjectArray[index] as ByteObject;
                         if (byteObj == null)
                         {
@@ -224,6 +231,12 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.SByte:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValue(EType.SByte, svalue.sint8Value);
+                            return;
+                        }
+
                         SByteObject sbyteObj = m_MemberObjectArray[index] as SByteObject;
                         if (sbyteObj == null)
                         {
@@ -235,17 +248,29 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Int16:
                     {
-                        Int16Object int32Obj = m_MemberObjectArray[index] as Int16Object;
-                        if (int32Obj == null)
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValue(EType.Int16, svalue.int16Value);
+                            return;
+                        }
+
+                        Int16Object int16Obj = m_MemberObjectArray[index] as Int16Object;
+                        if (int16Obj == null)
                         {
                             Log.AddVM(EError.None, "Int16 该类型不是Int32类型!!");
                             return;
                         }
-                        int32Obj.SetValue(svalue.int16Value);
+                        int16Obj.SetValue(svalue.int16Value);
                     }
                     break;
                 case EType.UInt16:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValue(EType.UInt16, svalue.uint16Value);
+                            return;
+                        }
+
                         UInt16Object uint16Obj = m_MemberObjectArray[index] as UInt16Object;
                         if (uint16Obj == null)
                         {
@@ -257,6 +282,12 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Int32:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValue(EType.Int32, svalue.int32Value);
+                            return;
+                        }
+
                         Int32Object int32Obj = null;
                         if (m_MemberObjectArray[index] == null )
                         {
@@ -266,13 +297,7 @@ namespace SimpleLanguage.VM
                         int32Obj = m_MemberObjectArray[index] as Int32Object;
                         if (int32Obj == null)
                         {
-                            AnyObject anyobj = m_MemberObjectArray[index] as AnyObject;
-                            if (anyobj == null)
-                            {
-                                Log.AddVM(EError.None, "Int32 该类型不是Int32类型!!");
-                                return;
-                            }
-                            anyobj.SetValue(EType.Int32, svalue.int32Value);
+                            Log.AddVM(EError.None, "Int32 该类型不是Int32类型!!");
                             return;
                         }
                         int32Obj.SetValue(svalue.int32Value);
@@ -280,6 +305,12 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.UInt32:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValue(EType.UInt32, svalue.uint32Value);
+                            return;
+                        }
+
                         UInt32Object uint32Obj = m_MemberObjectArray[index] as UInt32Object;
                         if (uint32Obj == null)
                         {
@@ -291,6 +322,12 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Int64:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValue(EType.Int64, svalue.int64Value);
+                            return;
+                        }
+
                         Int64Object int64Obj = m_MemberObjectArray[index] as Int64Object;
                         if (int64Obj == null)
                         {
@@ -302,6 +339,12 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.UInt64:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValue(EType.UInt64, svalue.uint64Value );
+                            return;
+                        }
+
                         UInt64Object uint64Obj = m_MemberObjectArray[index] as UInt64Object;
                         if (uint64Obj == null)
                         {
@@ -313,6 +356,12 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Float32:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValue(EType.Float32, svalue.floatValue);
+                            return;
+                        }
+
                         FloatObject floatObj = m_MemberObjectArray[index] as FloatObject;
                         if (floatObj == null)
                         {
@@ -324,6 +373,12 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Float64:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValue(EType.Float64, svalue.doubleValue);
+                            return;
+                        }
+
                         DoubleObject doubleObj = m_MemberObjectArray[index] as DoubleObject;
                         if (doubleObj == null)
                         {
@@ -335,6 +390,12 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.String:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValue(EType.String, svalue.stringValue);
+                            return;
+                        }
+
                         StringObject stringObj = m_MemberObjectArray[index] as StringObject;
                         if (stringObj == null)
                         {
