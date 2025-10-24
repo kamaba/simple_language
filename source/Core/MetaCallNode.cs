@@ -921,7 +921,7 @@ namespace SimpleLanguage.Core
                                 mcagm = m_FrontCallNode.m_MetaVariable.realMetaType.metaClass;
                             }
                         }
-                        MetaGenTempalteFunction mgtfind = mmf.AddGenTemplateMemberFunctionByMetaTypeList(mcagm, m_MetaTemplateParamsList);
+                        MetaGenTemplateFunction mgtfind = mmf.AddGenTemplateMemberFunctionByMetaTypeList(mcagm, m_MetaTemplateParamsList);
                         if (mgtfind != null)
                         {
                             m_MetaFunction = mgtfind;
