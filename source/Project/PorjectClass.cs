@@ -9,10 +9,10 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.VM.Runtime;
 using SimpleLanguage.Parse;
-using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.IR;
 using System.Diagnostics;
-using SimpleLanguage.Core.SelfMeta;
+
+using SimpleLanguage.Compile;
 
 namespace SimpleLanguage.Project
 {

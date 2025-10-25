@@ -6,7 +6,8 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Core.Statements;
+
+using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using System;
 using System.Collections.Generic;

@@ -7,16 +7,13 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.Compile.CoreFileMeta;
-using SimpleLanguage.Parse;
-using SimpleLanguage.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using static SimpleLanguage.Core.MetaVariable;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.Core
 {
     public partial class MetaSwitchStatements : MetaStatements
     {

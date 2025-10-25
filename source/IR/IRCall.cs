@@ -132,9 +132,8 @@ namespace SimpleLanguage.IR
                 AddIRData(datacall);
             }
 
-            if( mfc.storeMetaVariable == null )
+            if( mfc.isRecieveReturnValue == false )
             {
-                string voidn = IRManager.GetIRNameByMetaClass(Core.SelfMeta.CoreMetaClassManager.voidMetaClass);
                 for (int i = 0; i < m_IRRuntimeMethod.methodReturnVariableList.Count; i++ )
                 {
                     var mrv = m_IRRuntimeMethod.methodReturnVariableList[i];
@@ -155,15 +154,6 @@ namespace SimpleLanguage.IR
                     }
                 }
             }
-
-            //if (irbase != null)
-            //{
-            //    IRData datacallunsc = new IRData();
-            //    datacallunsc.opCode = EIROpCode.UnSetCallClass;
-            //    datacallunsc.opValue = null;
-            //    datacallunsc.SetDebugInfoByToken(mf.pingToken);
-            //    AddIRData(datacallunsc);
-            //}
         }
         public System.Object InvokeCSharp( Object target, Object[] csParamObjs)
         {

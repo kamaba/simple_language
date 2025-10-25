@@ -1,5 +1,5 @@
 ﻿//****************************************************************************
-//  File:      FileMetaMemberMethod.cs
+//  File:      FileMetaMemberFunction.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/5/12 12:00:00
@@ -10,9 +10,8 @@ using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using SimpleLanguage.Compile.Parse;
 
-namespace SimpleLanguage.Compile.CoreFileMeta
+namespace SimpleLanguage.Compile
 {
     public class FileMetaParamterDefine : FileMetaBase
     {

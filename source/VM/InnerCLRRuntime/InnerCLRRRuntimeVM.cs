@@ -1,7 +1,9 @@
 ﻿
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -43,6 +45,13 @@ namespace SimpleLanguage.VM.Runtime
                 return clrRuntime;
             }
         }
+        public static RuntimeVM CreateExeSplite(List<RuntimeType> irmtList, List<IRData> irlist )
+        {
+            RuntimeVM clrRuntime = new RuntimeVM( irmtList, irlist );
+            m_ClrRuntimeStack.Push(clrRuntime);
+            return clrRuntime;
+        }
+
         public static void PushCLRRuntime(RuntimeVM clrRuntime )
         {
             m_ClrRuntimeStack.Push(clrRuntime);
@@ -99,6 +108,15 @@ namespace SimpleLanguage.VM.Runtime
             //if (!clrRuntime.isPersistent)
             {
             }
+        }
+        public static void RunIRNewMethod( List<RuntimeType> irmtList, List<IRData> irlist )
+        {
+            topCLRRuntime = m_ClrRuntimeStack.Peek();
+            RuntimeVM clrRuntime = InnerCLRRuntimeVM.CreateExeSplite(irmtList, irlist );
+            clrRuntime.SetNewObject();
+            clrRuntime.Run();
+            InnerCLRRuntimeVM.PopCLRRuntime();
+            
         }
     }
 }

@@ -6,7 +6,9 @@
 //  Description:  handle for loop statements or while/dowhile statements create instruction 
 //****************************************************************************
 
-using SimpleLanguage.Core.Statements;
+
+
+using SimpleLanguage.Core;
 
 namespace SimpleLanguage.IR
 {

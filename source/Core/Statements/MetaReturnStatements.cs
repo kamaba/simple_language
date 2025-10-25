@@ -6,12 +6,11 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Compile.CoreFileMeta;
-using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.IR;
+using SimpleLanguage.Compile;
+
 using System.Text;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.Core
 {
     public sealed  class MetaReturnStatements : MetaStatements
     {

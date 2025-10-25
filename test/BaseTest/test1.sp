@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "4_GenClass2.sl";
+            path = "7_CallLinkTest.sl";
             group = "temp";
             tag = "all";
             a = 200
@@ -89,9 +89,10 @@ Project
        #CommitTest.fun();
        #NumberTest.fun()
        #StringTest.fun()
-       GenClass.fun()
+       #GenClass.fun()
        #ArrayTest.fun()
        #OverrideFunction.fun()
+       CallLinkTest.fun()
     }
     static Test()
     {

@@ -8,15 +8,9 @@
 
 
 using SimpleLanguage.Parse;
-using System;
 using System.Collections.Generic;
-using System.Text;
-using SimpleLanguage.Compile.Grammer;
-using SimpleLanguage.Compile.CoreFileMeta;
-using System.Reflection;
-using static SimpleLanguage.Compile.CoreFileMeta.FileMetaClass;
 
-namespace SimpleLanguage.Compile.Parse
+namespace SimpleLanguage.Compile
 {
     public partial class StructParse
     {

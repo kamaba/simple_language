@@ -6,11 +6,9 @@
 //  Description:  
 //****************************************************************************
 
-using System;
-using System.Collections.Generic;
 using System.Text;
-using SimpleLanguage.Compile.CoreFileMeta;
-using SimpleLanguage.Core.Statements;
+using SimpleLanguage.Compile;
+
 
 namespace SimpleLanguage.Core
 {

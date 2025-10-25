@@ -1,4 +1,4 @@
-﻿using SimpleLanguage.Core.SelfMeta;
+﻿
 using SimpleLanguage.CSharp;
 using System;
 using System.Collections.Generic;

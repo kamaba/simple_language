@@ -6,12 +6,11 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Compile.CoreFileMeta;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace SimpleLanguage.Compile.Parse
+namespace SimpleLanguage.Compile
 {
     /// <summary> 解析token </summary>
     public class TokenParse

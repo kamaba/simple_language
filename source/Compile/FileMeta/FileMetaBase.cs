@@ -6,7 +6,7 @@
 //  Description: 
 //****************************************************************************
 
-namespace SimpleLanguage.Compile.CoreFileMeta
+namespace SimpleLanguage.Compile
 {
     public class FileMetaBase
     {

@@ -6,9 +6,7 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Compile.Grammer;
-using SimpleLanguage.Compile.Parse;
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
 

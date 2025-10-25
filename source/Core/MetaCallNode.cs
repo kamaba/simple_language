@@ -6,9 +6,8 @@
 //  Description:  this's a calllink's node handle
 //****************************************************************************
 using SimpleLanguage.Compile;
-using SimpleLanguage.Compile.CoreFileMeta;
-using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Core.Statements;
+
+
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
@@ -289,7 +288,7 @@ namespace SimpleLanguage.Core
                         if (isAt)                  //Array.$
                         {
                             string inputMVName = m_Name;
-                            m_MetaVariable = mv.GetMetaVaraible(inputMVName);           //Array.@var
+                            m_MetaVariable = mv.GetMetaVariable(inputMVName);           //Array.@var
                             if (m_MetaVariable == null)
                             {
                                 m_MetaVariable = new MetaVisitVariable(inputMVName, m_OwnerMetaClass, m_OwnerMetaFunctionBlock,
@@ -723,7 +722,7 @@ namespace SimpleLanguage.Core
                                 if (getmv2 != null)    //查找是否已定义过变量
                                 {
                                     string inputMVName = "Visit_" + m_Name;
-                                    m_MetaVariable = mv.GetMetaVaraible(inputMVName);
+                                    m_MetaVariable = mv.GetMetaVariable(inputMVName);
                                     if (m_MetaVariable == null)
                                     {
                                         m_MetaVariable = new MetaVisitVariable(inputMVName, m_OwnerMetaClass, m_OwnerMetaFunctionBlock,
@@ -890,7 +889,7 @@ namespace SimpleLanguage.Core
             }
           
             if ( m_CallNodeType == ECallNodeType.ClassName )
-            {
+                {
                 if (m_MetaTemplateParamsList.Count > 0)
                 {
                     var ngmc = m_MetaClass.AddMetaTemplateClassByMetaClassAndMetaTemplateMetaTypeList(m_MetaTemplateParamsList);
@@ -922,7 +921,7 @@ namespace SimpleLanguage.Core
                                 mcagm = m_FrontCallNode.m_MetaVariable.realMetaType.metaClass;
                             }
                         }
-                        MetaGenTempalteFunction mgtfind = mmf.AddGenTemplateMemberFunctionByMetaTypeList(mcagm, m_MetaTemplateParamsList);
+                        MetaGenTemplateFunction mgtfind = mmf.AddGenTemplateMemberFunctionByMetaTypeList(mcagm, m_MetaTemplateParamsList);
                         if (mgtfind != null)
                         {
                             m_MetaFunction = mgtfind;
@@ -1113,7 +1112,7 @@ namespace SimpleLanguage.Core
                             if (fmcn1?.callNodeType == ECallNodeType.ConstValue)       //arr[0]
                             {
                                 string tname = (fmcn1.metaExpressValue as MetaConstExpressNode).value.ToString();
-                                m_MetaVariable = m_MetaVariable.GetMetaVaraible(tname);
+                                m_MetaVariable = m_MetaVariable.GetMetaVariable(tname);
                                 if (m_MetaVariable == null)
                                 {
                                     m_MetaVariable = new MetaVisitVariable(tname, m_OwnerMetaClass, m_OwnerMetaFunctionBlock, m_MetaVariable, null);
@@ -1124,7 +1123,7 @@ namespace SimpleLanguage.Core
                             {
                                 var gmv = (fmcn1).m_MetaVariable;
                                 string tname = "VarName_" + gmv.name + "_VarHashCode_" + gmv.GetHashCode().ToString();
-                                m_MetaVariable = tmv.GetMetaVaraible(tname);
+                                m_MetaVariable = tmv.GetMetaVariable(tname);
                                 if (m_MetaVariable == null)
                                 {
                                     m_MetaVariable = new MetaVisitVariable(tname, m_OwnerMetaClass, m_OwnerMetaFunctionBlock, tmv, gmv);
@@ -1313,6 +1312,7 @@ namespace SimpleLanguage.Core
                         Log.AddInStructMeta(EError.None, $"找到{retMC.allName} 里边模板数据为{count} 没有找到相关的类!");
                         return false;
                     }
+                    m_MetaType = new MetaType(m_MetaClass);
                 }
                 else
                 {

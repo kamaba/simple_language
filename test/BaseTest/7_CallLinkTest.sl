@@ -1,45 +1,117 @@
-import Application.Core;
+#import Application.Core;
+import CSharp.System
 
+
+
+namespace Core
+{
+    class Object
+    {
+        public void _init_()
+        {
+
+        }
+
+        public string toString()
+        {
+            ret ""
+        }
+    }
+    class Byte
+    {
+        
+    }
+    class Boolean
+    {
+
+    }
+    class SByte
+    {
+        
+    }
+    class Int16
+    {
+        
+    }
+    class UInt16
+    {
+        
+    }
+    class Int32
+    {
+        
+    }
+    class UInt32
+    {
+        
+    }
+    class Int64
+    {
+        
+    }
+    class UInt64
+    {
+        
+    }
+    class Float32
+    {
+        
+    }
+    class Float64
+    {
+        _init_(Float64 f)
+        {
+
+        }
+    }
+    class String
+    {
+        _init_( String str )
+        {
+
+        }
+    }
+
+}
 
 Class1
 {
-    a = 10
+    c1_1 = 10
 }
-QS.Class2
+Class2 extends Class1
 {
-    a2 = 10
-
-    Class1 c1;
+    c2_1 = 20
+    Class1 c2_2 = new()
 }
 Class3
 {
-    Class2 c1;
-
+    c3_1 = Class2()
     Class2 GetClass2()
     {
-        ret this.c1;
-    }    
+        ret this.c3_1
+    }
 }
-Class4
+Class4 extends Class3
 {
-    Class3 c3 = null;
-    int c41 = 0;
-    Array<int> arr1 = {1,2,3,4,5};
+    Class3 c4_1 = null
+    int c4_2 = 0
+    Class3 c4_3 = new()
 }
 
 CallLinkTest
 {
-    static Fun()
+    static fun()
     {
         Class4 c4 = Class4()
-        c4.c3 = Class3()
-        c4.GetClass2().a2 = c4.c3.GetClass2().c1.a;
-        newc1 = c4.GetClass().a2;
-        c4.c41 = newc1.$2;
-        c4.c41 = newc1.index;
-        newcx1 = newc1.value;
-        result1 = newcx1;
-        CSharp.System.Debug.Write("Class1 Value: " + result1 );
+        c4.c4_1 = Class3()
+        c4.c4_3.GetClass2().c2_2.c1_1 = 40
+        c4.GetClass2().c2_1 = c4.c4_3.GetClass2().c2_2.c1_1;
+        newc1 = c4.GetClass2().c2_1;
+        #c4.c41 = newc1.$2;
+        #c4.c41 = newc1.index;
+        #newcx1 = newc1.value;
+        #result1 = newc1;
+        System.Console.WriteLine("Class1 Value: " + newc1 )
     }
 }
 #!

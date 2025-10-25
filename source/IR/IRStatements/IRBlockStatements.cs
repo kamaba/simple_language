@@ -6,7 +6,8 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Core.Statements;
+
+using SimpleLanguage.Core;
 using SimpleLanguage.IR.Statements;
 using System.Diagnostics;
 

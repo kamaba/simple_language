@@ -6,8 +6,8 @@
 //  Description: Meta Class's manager center 
 //****************************************************************************
 
-using SimpleLanguage.Compile.CoreFileMeta;
-using SimpleLanguage.Core.SelfMeta;
+using SimpleLanguage.Compile;
+
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
 
