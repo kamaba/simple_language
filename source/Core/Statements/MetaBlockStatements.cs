@@ -6,13 +6,12 @@
 //  Description:  this's a statement in function! same link table model!
 //****************************************************************************
 using SimpleLanguage.Compile;
-using SimpleLanguage.Compile.CoreFileMeta;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.Core
 {
     public class MetaBlockStatements : MetaStatements
     {

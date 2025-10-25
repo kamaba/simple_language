@@ -9,9 +9,9 @@
 
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
-using SimpleLanguage.Compile.CoreFileMeta;
 using SimpleLanguage.Core;
 using System.Diagnostics;
+using SimpleLanguage.Compile;
 
 namespace SimpleLanguage.Project
 {

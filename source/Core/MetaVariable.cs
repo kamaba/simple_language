@@ -7,8 +7,8 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.Core.SelfMeta;
-using SimpleLanguage.Core.Statements;
+
+
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
 using System.Text;
@@ -176,7 +176,7 @@ namespace SimpleLanguage.Core
             m_MetaVariableDict.Add(mv.name, mv);
             return true;
         }
-        public virtual MetaVariable GetMetaVaraible( string name )
+        public virtual MetaVariable GetMetaVariable( string name )
         {
             if( m_MetaVariableDict.ContainsKey( name ))
             {
@@ -342,7 +342,7 @@ namespace SimpleLanguage.Core
         }
 
 
-        public override MetaVariable GetMetaVaraible(string name)
+        public override MetaVariable GetMetaVariable(string name)
         {
             if (name == "index")
             {

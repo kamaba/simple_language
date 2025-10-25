@@ -6,12 +6,10 @@
 //  Description: Meta class's attribute
 //****************************************************************************
 
-using SimpleLanguage.Core.SelfMeta;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile;
-using SimpleLanguage.Compile.CoreFileMeta;
 using System.Linq;
 using SimpleLanguage.Parse;
 
@@ -353,7 +351,6 @@ namespace SimpleLanguage.Core
             }
             else
             {
-
                 bool canAdd = false;
                 foreach (var v in this.m_ExtendClass.m_NonStaticVirtualMetaMemberFunctionList)
                 {
@@ -759,7 +756,7 @@ namespace SimpleLanguage.Core
         {
             List<MetaMemberVariable> mmvList = new List<MetaMemberVariable>();
             MetaMemberVariable tempMmv = null;
-            foreach (var v in m_MetaMemberVariableDict)
+            foreach (var v in this.m_MetaMemberVariableDict)
             {
                 tempMmv = v.Value;
                 if( isStatic )

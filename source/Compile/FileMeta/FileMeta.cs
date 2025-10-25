@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.Compile.CoreFileMeta
+namespace SimpleLanguage.Compile
 {
     public partial class FileMeta : FileMetaBase
     {

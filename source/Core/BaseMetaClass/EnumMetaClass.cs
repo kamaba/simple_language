@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace SimpleLanguage.Core.SelfMeta
+namespace SimpleLanguage.Core
 {
     public class EnumMetaClass : MetaClass
     {

@@ -6,8 +6,8 @@
 //  Description: Meta enum's attribute
 //****************************************************************************
 
-using SimpleLanguage.Compile.CoreFileMeta;
-using SimpleLanguage.Core.SelfMeta;
+using SimpleLanguage.Compile;
+
 using System.Collections.Generic;
 using System.Text;
 

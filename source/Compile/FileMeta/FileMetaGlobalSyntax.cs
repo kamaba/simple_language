@@ -6,14 +6,14 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Compile.Parse;
+using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
 using SimpleLanguage.CSharp;
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SimpleLanguage.Compile.CoreFileMeta
+namespace SimpleLanguage.Compile
 {
     public sealed class FileMetaImportSyntax : FileMetaBase
     {

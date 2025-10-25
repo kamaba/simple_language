@@ -6,12 +6,12 @@
 //  Description:  Handle for loop statements syntax and while/dowhile loop statements syntax !
 //****************************************************************************
 
-using SimpleLanguage.Compile.CoreFileMeta;
+using SimpleLanguage.Compile;
 using SimpleLanguage.Parse;
 using System;
 using System.Text;
 
-namespace SimpleLanguage.Core.Statements
+namespace SimpleLanguage.Core
 {
     public sealed class MetaForStatements : MetaStatements
     {

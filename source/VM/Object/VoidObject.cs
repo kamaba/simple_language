@@ -6,7 +6,7 @@
 //  Description: 
 //****************************************************************************
 using SimpleLanguage.Core;
-using SimpleLanguage.Core.SelfMeta;
+
 using System;
 using System.Collections.Generic;
 using System.Text;

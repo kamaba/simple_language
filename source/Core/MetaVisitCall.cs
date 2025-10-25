@@ -6,7 +6,7 @@
 //  Description:  create visit variable or method call!
 //****************************************************************************
 
-using SimpleLanguage.Core.SelfMeta;
+
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
 using System.Text;
@@ -15,6 +15,7 @@ namespace SimpleLanguage.Core
 {
     public class MetaMethodCall
     {
+        public bool isRecieveReturnValue => m_IsRecieveReturnValue;
         public MetaVariable loadMetaVariable => m_LoadMetaVariable;
         public MetaVariable storeMetaVariable => m_StoreMetaVariable;
         public MetaClass staticCallerMetaClass => m_StaticCallerMetaClass;
@@ -28,6 +29,7 @@ namespace SimpleLanguage.Core
         protected MetaVariable m_LoadMetaVariable = null;
         protected MetaVariable m_StoreMetaVariable = null;
         protected MetaClass m_StaticCallerMetaClass = null;
+        protected bool m_IsRecieveReturnValue = true;
         protected List<MetaType> m_StaticMetaClassInputTemplateList = new List<MetaType>();
         //模板或者是调用时的函数
         protected MetaFunction m_VMCallMetaFunction = null;
@@ -86,7 +88,7 @@ namespace SimpleLanguage.Core
         }
         public MetaFunction GetTemplateMemberFunction()
         {
-            if( m_VMCallMetaFunction is MetaGenTempalteFunction mgtf )
+            if( m_VMCallMetaFunction is MetaGenTemplateFunction mgtf )
             {
                 return mgtf.sourceTemplateFunctionMetaMemberFunction;
             }

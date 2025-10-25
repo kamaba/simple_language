@@ -1,5 +1,5 @@
 ﻿
-using SimpleLanguage.Core.SelfMeta;
+
 
 namespace SimpleLanguage.Core
 {
@@ -27,7 +27,7 @@ namespace SimpleLanguage.Core
         //        {
         //            MatchSystemType(typeToken.lexeme.ToString(), ref etype, ref typename);
         //        }
-        //        var type = new MetaType(etype, typename);
+        //        var type = new MetaType(etype,MetaExpressNode typename);
 
         //        return type;
         //    }
