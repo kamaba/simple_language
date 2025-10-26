@@ -3,7 +3,7 @@ import System;
 Class1
 {
     Class2 c3 = { m = 20 };
-    pinrt()
+    print()
     {
         int a = 10;
         {

@@ -64,6 +64,10 @@ Node
     Ptr<Node> prevNode
     Ptr<Node> nextNode
 }
+class A{
+    int a = 20
+    b = 30.0f
+}
 PtrTest
 {
     static Ptr<Node> createNode()
@@ -77,13 +81,19 @@ PtrTest
         for v in 1..100
         {
             Ptr<Node> p = Mem.malloc(Node())
-            p.prevNode = front
+            p.prevNode = front      #这里
             if front
             {
-                front.nextNode = p
+                front.nextNode = p      
             }
             front = p
         }
+        A a = new()
+        Ptr<A> ptra = a.ptr
+
+        A ap1 = ptra.value;
+
+        aa = ap1.a      # 相当于c/c++里边的 ptra->a的值
     }
 
     Ptr p = WindowApi.LoadLabirary("user.dll")   #相当于 void*
