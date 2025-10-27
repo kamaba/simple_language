@@ -77,6 +77,15 @@ namespace SimpleLanguage.Core
             }
             m_LoadMetaVariable = loadMv;
             m_StoreMetaVariable = storeMv;
+
+            if( m_VMCallMetaFunction.returnMetaVariable.metaDefineType.metaClass?.eType == EType.Void )
+            {
+                m_IsRecieveReturnValue = true;
+            }
+            else
+            {
+                m_IsRecieveReturnValue = m_StoreMetaVariable != null;
+            }
         }
         public void SetStoreMetaVariable( MetaVariable mv )
         {
