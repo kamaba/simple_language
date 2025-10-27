@@ -50,7 +50,7 @@ ForTest
         !#
         #! 暂不支持 List,Map,Set,Queue,Link
         int i2 = 0;
-        List list = List();        
+        List list = { 1, 2, 3};        
         for it in list
         {
 

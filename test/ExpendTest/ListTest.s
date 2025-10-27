@@ -31,7 +31,11 @@ List<T> extends Object interface ICollection<T>, IIterator<T>
     }
     get T value()
     {
-        this._value.value();
+        ret this._value.value();
+    }
+    set void value( T t )
+    {
+        
     }
     int get count()
     {

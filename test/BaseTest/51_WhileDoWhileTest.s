@@ -20,7 +20,7 @@ WhileTest
             CSharp.System.Debug.Write(" ioooo = $i ");
             if( i > 13 ){break;}
         }
-        while true{ m = 20;}
+        while true{ m = 20; break;}
         i = 30;
         dowhile i < 20
         {
