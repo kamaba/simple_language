@@ -145,11 +145,8 @@ namespace SimpleLanguage.IR
                         }
                         else
                         {
-                            if (mrv.irMetaType.irMetaClass.irName != "Void")
-                            {
-                                IRPop irpop = new IRPop(m_IRMethod);
-                                AddIRData(irpop.data);
-                            }
+                            IRPop irpop = new IRPop(m_IRMethod);
+                            AddIRData(irpop.data);
                         }
                     }
                 }

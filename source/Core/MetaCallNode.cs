@@ -815,6 +815,10 @@ namespace SimpleLanguage.Core
                             {
                                 return false;
                             }
+                            if(m_FrontCallNode.m_StoreMetaVariable == null )
+                            {
+                                m_FrontCallNode.m_StoreMetaVariable = m_FrontCallNode.m_MetaFunction.returnMetaVariable;
+                            }
                         }
                         else
                         {
