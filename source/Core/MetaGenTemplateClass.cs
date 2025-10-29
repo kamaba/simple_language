@@ -17,9 +17,11 @@ namespace SimpleLanguage.Core
         public MetaClass metaTemplateClass => m_MetaTemplateClass;
         public List<MetaGenTemplate> metaGenTemplateList => m_MetaGenTemplateList;
         public override bool isGenTemplate => true;
+        public bool genTemplateFlag => m_GenTemplateFlag;
 
         private List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
         private MetaClass m_MetaTemplateClass = null;
+        protected bool m_GenTemplateFlag = false;
 
         public MetaGenTemplateClass( MetaClass mtc, List<MetaGenTemplate> list ) : base(mtc.name)
         {
@@ -27,6 +29,8 @@ namespace SimpleLanguage.Core
             m_MetaGenTemplateList = list;
             m_MetaNode = mtc.metaNode;
             m_ExtendClassMetaType = mtc.extendClassMetaType;
+            m_FileCollectMetaMemberVariable = mtc.fileCollectMetaMemberVariable;
+            m_FileCollectMetaMemberFunctionList = mtc.fileCollectMetaMemberFunctionList;
 
 
             StringBuilder sb = new StringBuilder();
@@ -127,6 +131,11 @@ namespace SimpleLanguage.Core
         }
         public override void Parse()
         {
+            if(m_GenTemplateFlag )
+            {
+                return;
+            }
+
             m_MetaMemberVariableDict.Clear();
             m_MetaMemberFunctionTemplateNodeDict.Clear();
             m_MetaExtendMemeberVariableDict.Clear();
@@ -134,15 +143,21 @@ namespace SimpleLanguage.Core
             TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(m_ExtendClassMetaType, this, null);
             m_ExtendClass = m_ExtendClassMetaType.metaClass;
 
-            HandleExtendMemberVariable();
-            HandleExtendMemberFunction();
+            m_ExtendClass.Parse();
 
             ParseMemberVariableDefineMetaType();
             ParseMemberFunctionDefineMetaType();
 
+            foreach (var v in m_ExtendClass.metaMemberVariableDict)
+            {
+                m_MetaExtendMemeberVariableDict.Add(v.Key, v.Value);
+            }
+            foreach ( var v in m_ExtendClass.metaExtendMemeberVariableDict )
+            {
+                m_MetaExtendMemeberVariableDict.Add(v.Key, v.Value);
+            }
 
-
-
+            m_GenTemplateFlag = true;
             //foreach (var it in this.m_MetaTemplateClass.metaMemberFunctionDict )
             //{
             //    var it2 = it.Value;
@@ -171,11 +186,12 @@ namespace SimpleLanguage.Core
         }
         public override void ParseMemberVariableDefineMetaType()
         {
-            foreach (var it in this.m_MetaTemplateClass.metaExtendMemeberVariableDict )
+            foreach (var it in this.m_MetaExtendMemeberVariableDict )
             {
-                var mmv = ParseMetaMemberVariableDefineMetaType( it.Value );
+                MetaMemberVariable mgmv = new MetaMemberVariable(it.Value);
+                mgmv.SetOwnerMetaClass(this);
 
-                m_MetaExtendMemeberVariableDict.Add(mmv.name, mmv);
+                m_MetaExtendMemeberVariableDict.Add(mgmv.name, mgmv);
             }
             foreach (var it in this.m_MetaTemplateClass.metaMemberVariableDict)
             {
@@ -193,19 +209,76 @@ namespace SimpleLanguage.Core
         }
         public override void ParseMemberFunctionDefineMetaType()
         {
-            foreach (var it in this.m_MetaTemplateClass.nonStaticVirtualMetaMemberFunctionList )
+            List<MetaMemberFunction> mmfList = new();
+            foreach (var it in this.m_MetaTemplateClass.fileCollectMetaMemberFunctionList)
             {
-                ParseMetaMemberFunctionDefineMetaType(it);
+                mmfList.Add(ParseMetaMemberFunctionDefineMetaType(it));
             }
-            foreach (var it in this.m_MetaTemplateClass.staticMetaMemberFunctionList)
+
+            bool canAdd = false;
+            foreach (var v in this.m_ExtendClass.nonStaticVirtualMetaMemberFunctionList)
             {
-                ParseMetaMemberFunctionDefineMetaType(it);
+                canAdd = true;
+                var efun = v;
+                //if (efun.isConstructInitFunction) { continue; }
+
+                foreach (var v2 in mmfList )
+                {
+                    //if (v2.isConstructInitFunction) continue;
+                    if (efun.IsEqualMetaFunction(v2))
+                    {
+                        canAdd = false;
+                        m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
+                        continue;
+                    }
+                }
+                if (canAdd)
+                {
+                    m_NonStaticVirtualMetaMemberFunctionList.Add(efun);
+                }
+            }
+
+            foreach (var v2 in mmfList )
+            {
+                if (v2.isStatic)
+                {
+                    var find = m_StaticMetaMemberFunctionList.Find(a => a == v2);
+                    if (find != null) continue;
+
+                    m_StaticMetaMemberFunctionList.Add(v2);
+                }
+                else
+                {
+                    var find = m_NonStaticVirtualMetaMemberFunctionList.Find(a => a == v2);
+                    if (find != null) continue;
+
+                    m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
+                }
+            }
+
+
+            foreach (var v2 in m_NonStaticVirtualMetaMemberFunctionList)
+            {
+                //var find = m_AllMetaMemberFunctionList.Find(a => a == v2);
+                //if (find != null) continue;
+
+                AddMetaMemberFunction(v2);
+                //m_AllMetaMemberFunctionList.Add(v2);
+            }
+            foreach (var v2 in m_StaticMetaMemberFunctionList)
+            {
+                //var find = m_AllMetaMemberFunctionList.Find(a => a == v2);
+                //if (find != null) continue;
+
+                AddMetaMemberFunction(v2);
+                //m_AllMetaMemberFunctionList.Add(v2);
             }
         }
-        void ParseMetaMemberFunctionDefineMetaType(MetaMemberFunction mmf)
+        MetaMemberFunction ParseMetaMemberFunctionDefineMetaType(MetaMemberFunction mmf)
         {
             MetaMemberFunction mgmf = new MetaMemberFunction(mmf);
             mgmf.SetSourceMetaMemberFunction(mmf);
+            mgmf.SetOwnerMetaClass(this);
 
             if (mmf.isTemplateFunction == false)
             {
@@ -220,10 +293,12 @@ namespace SimpleLanguage.Core
                 for (int i = 0; i < mgmf.metaMemberParamCollection.metaDefineParamList.Count; i++)
                 {
                     var mdp = mgmf.metaMemberParamCollection.metaDefineParamList[i];
-                    if (!(mgmf.returnMetaVariable.metaDefineType.eType == EMetaTypeType.MetaClass
-                        && mgmf.returnMetaVariable.metaDefineType.metaClass.isTemplateClass == false))
+                    if (!(mdp.metaVariable.metaDefineType.eType == EMetaTypeType.MetaClass
+                        && mdp.metaVariable.metaDefineType.metaClass.isTemplateClass == false))
                     {
-                        TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mdp.metaVariable.realMetaType, this, null);
+                        var realMetaType = new MetaType(mdp.metaVariable.metaDefineType);
+                        TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(realMetaType, this, null);
+                        mdp.metaVariable.SetRealMetaType(realMetaType);
                     }
                 }
             }
@@ -236,7 +311,9 @@ namespace SimpleLanguage.Core
                 }
             }
             mgmf.UpdateFunctionName();
-            AddMetaMemberFunction(mgmf);
+            //AddMetaMemberFunction(mgmf);
+
+            return mgmf;
         }
         public void UpdateRegisterTemplateFunction()
         {
