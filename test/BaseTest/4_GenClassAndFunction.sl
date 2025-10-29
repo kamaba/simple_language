@@ -146,6 +146,7 @@ public class List<T> interface IList<T>, IList
     private Int32 _count = 0;
     #UInt16 m_Bound1 = 0;
     #UInt16 m_Bound2 = 0;
+    _count = 0
 
     int _index = -1;
     T _value = null
@@ -168,10 +169,10 @@ public class List<T> interface IList<T>, IList
     
     override add( T t )
     {
-        var Listt_r1 = null;  #CSharp.SL.Core.MetaArrayClass.Add( this, t );
+        T Listt_r1 = new();  #CSharp.SL.Core.MetaArrayClass.Add( this, t );
         if Listt_r1 != null
         {
-        #    this.m_Count++
+            this._count++
         }
     }
     #!
@@ -180,7 +181,7 @@ public class List<T> interface IList<T>, IList
         byte ret1 = 1;  #CSharp.SL.Core.MetaArrayClass.RemoveIndex( this, index )
         if( ret1 == 1 )
         {
-            this.m_Count--;
+            this._count--;
         }
         ret true ? ret1 == 1 : false
     }
