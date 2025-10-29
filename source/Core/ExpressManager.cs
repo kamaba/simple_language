@@ -362,7 +362,7 @@ namespace SimpleLanguage.Core
                     isNewClass = true;
                 }
             }
-            MetaType retmt = mcl.GetMetaDeineType();
+            MetaType retmt = mcl.GetMetaDefineType();
             if (isNewClass)
             {
                 mnoen = new MetaNewObjectExpressNode(fmct, mcl, retmt, omc, mbs, mcl.finalCallNode.methodCall);

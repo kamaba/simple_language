@@ -130,17 +130,18 @@ namespace SimpleLanguage.Core
             m_MetaMemberVariableDict.Clear();
             m_MetaMemberFunctionTemplateNodeDict.Clear();
             m_MetaExtendMemeberVariableDict.Clear();
-
-            ParseMemberVariableDefineMetaType();
-            ParseMemberFunctionDefineMetaType();
-
             m_ExtendClassMetaType = this.m_MetaTemplateClass.extendClassMetaType;
-
             TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(m_ExtendClassMetaType, this, null);
             m_ExtendClass = m_ExtendClassMetaType.metaClass;
 
             HandleExtendMemberVariable();
             HandleExtendMemberFunction();
+
+            ParseMemberVariableDefineMetaType();
+            ParseMemberFunctionDefineMetaType();
+
+
+
 
             //foreach (var it in this.m_MetaTemplateClass.metaMemberFunctionDict )
             //{

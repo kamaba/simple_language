@@ -168,7 +168,7 @@ namespace SimpleLanguage.Core
             if (m_FileMetaMemeberVariable?.classDefineRef != null)
             {
                 m_DefineMetaType = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(m_OwnerMetaClass, m_FileMetaMemeberVariable.classDefineRef);
-                if( m_DefineMetaType.isTemplate || m_DefineMetaType.eType == EMetaTypeType.TemplateClassWithTemplate )
+                //if( m_DefineMetaType.isTemplate || m_DefineMetaType.eType == EMetaTypeType.TemplateClassWithTemplate )
                 {
                     //如果是模板类，中的带模板元素
                     m_RealMetaType = new MetaType(m_DefineMetaType);

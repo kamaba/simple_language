@@ -1,4 +1,5 @@
 import Std
+import CSharp.System
 
 namespace Core
 {
@@ -354,7 +355,7 @@ GenClass
     #Level1<string> ls2 = null
     #Level1<string> ls3 = new()     #报错，提示，不允许这种形式
     #Level1<string> ls4 = {}
-    static GenClass_fun()
+    static fun()
     {
         Level1<int> GenClass_fun_l1 = Level1<int>()
         GenClass_fun_l2 = GenClass_fun_l1.add()
@@ -365,7 +366,7 @@ GenClass
 
         float32 GenClass_fun_a = Level1<float32>.min<float32>( 1.3, 2.5 )
 
-        #Debug.Write("Flaoat" + a )
+        System.Console.WriteLine("_this_——————————————————————————————  " + GenClass_fun_a )
     }
 }
 
