@@ -129,7 +129,7 @@ namespace SimpleLanguage.Core
         {
             return m_MetaGenTemplateList.Find( a=> a.name == name  );
         }
-        public override void Parse()
+        public override void ParseGenTemplateClass( MetaGenTemplateClass mgtc )
         {
             if(m_GenTemplateFlag )
             {
@@ -143,19 +143,48 @@ namespace SimpleLanguage.Core
             TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(m_ExtendClassMetaType, this, null);
             m_ExtendClass = m_ExtendClassMetaType.metaClass;
 
-            m_ExtendClass.Parse();
+            m_ExtendClass.ParseGenTemplateClass(mgtc);
+;
 
-            ParseMemberVariableDefineMetaType();
-            ParseMemberFunctionDefineMetaType();
-
+            List<MetaMemberVariable> mmvList = new List<MetaMemberVariable>();
+            foreach (var v in m_ExtendClass.metaExtendMemeberVariableDict)
+            {
+                mmvList.Add(v.Value);
+            }
             foreach (var v in m_ExtendClass.metaMemberVariableDict)
             {
-                m_MetaExtendMemeberVariableDict.Add(v.Key, v.Value);
+                mmvList.Add(v.Value);
             }
-            foreach ( var v in m_ExtendClass.metaExtendMemeberVariableDict )
+
+            foreach (var it in mmvList )
             {
-                m_MetaExtendMemeberVariableDict.Add(v.Key, v.Value);
+                MetaMemberVariable mgmv = new MetaMemberVariable(it);
+                if (m_ExtendClass is MetaGenTemplateClass mgtctt)
+                {
+                    var tmp = mgmv.metaDefineType?.metaTemplate;
+                    if (tmp != null )
+                    {
+                        MetaTemplate copytemp = new MetaTemplate(tmp);
+                        if (m_ExtendClassMetaType.templateMetaTypeList.Count > tmp.index 
+                            && m_ExtendClassMetaType.templateMetaTypeList.Count > 0 )
+                        {
+                            var templateMT = m_ExtendClassMetaType.templateMetaTypeList[tmp.index];
+                            var find1 = this.metaTemplateClass.metaTemplateList.Find(a => a.name == templateMT.fromName );
+                            if (find1 != null )
+                            {
+                                copytemp.SetName(find1.name);
+                                mgmv.metaDefineType.SetMetaTemplate(copytemp);
+                                mgmv.metaDefineType.SetTemplateIndex(find1.index);
+                            }
+
+                        }
+                    }
+                }
+                mgmv.SetOwnerMetaClass(this);
+                m_MetaExtendMemeberVariableDict.Add(mgmv.name, mgmv);
             }
+            ParseMemberVariableDefineMetaType();
+            ParseMemberFunctionDefineMetaType();
 
             m_GenTemplateFlag = true;
             //foreach (var it in this.m_MetaTemplateClass.metaMemberFunctionDict )
@@ -186,13 +215,6 @@ namespace SimpleLanguage.Core
         }
         public override void ParseMemberVariableDefineMetaType()
         {
-            foreach (var it in this.m_MetaExtendMemeberVariableDict )
-            {
-                MetaMemberVariable mgmv = new MetaMemberVariable(it.Value);
-                mgmv.SetOwnerMetaClass(this);
-
-                m_MetaExtendMemeberVariableDict.Add(mgmv.name, mgmv);
-            }
             foreach (var it in this.m_MetaTemplateClass.metaMemberVariableDict)
             {
                 var mmv = ParseMetaMemberVariableDefineMetaType(it.Value);

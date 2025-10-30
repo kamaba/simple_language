@@ -181,7 +181,7 @@ namespace SimpleLanguage.Core
         {
             m_DefaultExpressNode = defaultExpressNode;
         }
-        public virtual void Parse()
+        public virtual void ParseGenTemplateClass( MetaGenTemplateClass mgtc)
         {
         //    ParseExtendsRelation();
         //    ParseTemplateRelation();
@@ -485,14 +485,14 @@ namespace SimpleLanguage.Core
             {
                 return null;
             }
-            MetaGenTemplateClass mgtc = mt.metaClass.AddMetaTemplateClassByMetaClassAndMetaTemplateMetaTypeList( mt.templateMetaTypeList);
+            MetaGenTemplateClass mgtc = mt.metaClass.AddMetaTemplateClassByMetaClassAndMetaTemplateMetaTypeList( mt.templateMetaTypeList );
 
             if ( mgtc  != null )
             {
                 isGenMetaClass = true;
                 if(isParse )
                 {
-                    mgtc.Parse();
+                    mgtc.ParseGenTemplateClass(mgtc);
                 }
                 return new MetaType(mgtc, mt.templateMetaTypeList);
             }
@@ -758,24 +758,7 @@ namespace SimpleLanguage.Core
         {
             List<MetaMemberVariable> mmvList = new List<MetaMemberVariable>();
             MetaMemberVariable tempMmv = null;
-            foreach (var v in this.m_MetaMemberVariableDict)
-            {
-                tempMmv = v.Value;
-                if( isStatic )
-                {
-                    if ( tempMmv.isStatic == isStatic || tempMmv.isConst == isStatic)
-                    {
-                        mmvList.Add(tempMmv);
-                    }
-                }
-                else
-                {
-                    if( tempMmv.isStatic == false && tempMmv.isConst == false )
-                    {
-                        mmvList.Add(tempMmv);
-                    }
-                }
-            }
+
             foreach (var v in m_MetaExtendMemeberVariableDict)
             {
                 tempMmv = v.Value;
@@ -789,6 +772,25 @@ namespace SimpleLanguage.Core
                 else
                 {
                     if (tempMmv.isStatic == false && tempMmv.isConst == false)
+                    {
+                        mmvList.Add(tempMmv);
+                    }
+                }
+            }
+
+            foreach (var v in this.m_MetaMemberVariableDict)
+            {
+                tempMmv = v.Value;
+                if( isStatic )
+                {
+                    if ( tempMmv.isStatic == isStatic || tempMmv.isConst == isStatic)
+                    {
+                        mmvList.Add(tempMmv);
+                    }
+                }
+                else
+                {
+                    if( tempMmv.isStatic == false && tempMmv.isConst == false )
                     {
                         mmvList.Add(tempMmv);
                     }

@@ -30,8 +30,11 @@ namespace SimpleLanguage.Core
                 return m_MetaClass?.allClassName;
             }
         }
+        public string fromName => m_FromName;
+
         public EMetaTypeType eType => m_EType;
         public MetaClass metaClass => m_MetaClass;
+        public int templateIndex => m_TemplateIndex;
         public MetaClass typeInferenceClass => m_TypeInferenceClass;
         //public MetaClass templateMetaClass => m_TemplateMetaClass;
         public bool isEnum => m_MetaClass is MetaEnum;
@@ -44,6 +47,7 @@ namespace SimpleLanguage.Core
         public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData;
         public bool isDefineMetaClass => m_IsDefineMetaClass;
         public MetaTemplate metaTemplate => m_MetaTemplate;
+        public MetaGenTemplate metaGenTemplate => m_MetaGenTemplate;
 
         //private MetaInputTemplateCollection m_InputTemplateCollection = null;
         private EMetaTypeType m_EType = EMetaTypeType.None;
@@ -51,19 +55,23 @@ namespace SimpleLanguage.Core
         private MetaClass m_TypeInferenceClass = null;                  //推理类
         private MetaType m_ParentMetaType = null;
         private MetaTemplate m_MetaTemplate = null;
+        private MetaGenTemplate m_MetaGenTemplate = null;
+        private int m_TemplateIndex = -1;
         private MetaExpressNode m_DefaultExpressNode = null;        // int a => a = 0;
         private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
         private bool m_IsDefineMetaClass = false;
         private List<MetaType> m_TemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
+        private string m_FromName = "";
 
         public MetaType()
         {
         }
-        public MetaType(MetaTemplate mt)
+        public MetaType(MetaTemplate mt, string fromName )
         {
             m_EType = EMetaTypeType.Template;
             m_MetaTemplate = mt;
             m_MetaClass = mt.extendsMetaClass;
+            m_FromName = fromName;
         }
         public MetaType( MetaGenTemplateClass mgtc, List<MetaType> mtList )
         {
@@ -123,6 +131,7 @@ namespace SimpleLanguage.Core
             this.m_DefaultExpressNode = mt.m_DefaultExpressNode;
             this.m_EnumValue = mt.m_EnumValue;
             this.m_IsDefineMetaClass = mt.m_IsDefineMetaClass;
+            this.m_FromName = mt.m_FromName;
             this.m_EType = mt.m_EType;
             for (int i = 0; i < mt.m_TemplateMetaTypeList.Count; i++)
             {
@@ -157,6 +166,10 @@ namespace SimpleLanguage.Core
                 return mgtc.metaTemplateClass;
             }
             return m_MetaClass;
+        }
+        public void SetTemplateIndex( int index )
+        {
+            m_TemplateIndex = index;
         }
         //public void SetEnumValue( MetaMemberVariable mmv )
         //{
@@ -304,6 +317,11 @@ namespace SimpleLanguage.Core
                 m_EType = EMetaTypeType.Template;
             }
         }
+        public void SetGenMetaTemplate(MetaGenTemplate mt)
+        {
+            m_MetaGenTemplate = mt;
+        }
+        
         public void SetTypeInferenceClass(MetaClass mc )
         {
             this.m_TypeInferenceClass = mc;

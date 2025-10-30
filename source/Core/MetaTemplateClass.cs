@@ -176,7 +176,7 @@ namespace SimpleLanguage.Core
             var list = new List<MetaGenTemplateClass>(m_MetaGenTemplateClassList);
             foreach ( var v in list )
             {
-                v.Parse();
+                v.ParseGenTemplateClass(v);
             }
         }
         public MetaGenTemplateClass GetGenTemplateMetaClassByTemplateList(List<MetaGenTemplate> list)

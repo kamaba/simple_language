@@ -56,7 +56,7 @@ namespace SimpleLanguage.Core
         }
         public void SetName( string _name )
         {
-            m_Name = name;
+            m_Name = _name;
         }
         public virtual void SetAnchorDeep(int addep)
         {

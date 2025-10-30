@@ -31,7 +31,7 @@ namespace SimpleLanguage.IR
             }
             else if (type.eType == EMetaTypeType.Template)
             {
-                m_TemplateIndex = type.metaTemplate.index;
+                m_TemplateIndex = type.templateIndex;
                 m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());                
             }
             else
