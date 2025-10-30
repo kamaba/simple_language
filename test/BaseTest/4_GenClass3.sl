@@ -83,26 +83,27 @@ LT
     }
 }
 
-Level1<LT1>
+Level1<LT11,LT12>
 {
-    LT1 Level1_t = new()
+    LT11 Level1_t1 = new()
+    LT12 Level1_t2 = new()
 }
-interface Interface<IT1>
+interface Interface1<IT1>
 {
     IT1 add()
 }
-Level2<LT2> extends Level1<LT2> interface Interface<LT2>
+Level2<LT21, LT22, LT23> extends Level1<LT23,LT22> interface Interface1<LT23>
 {
-    LT2 Level2_t = new()
+    LT22 Level21_t = new()
 
-    override LT2 add()
+    override LT22 add()
     {
-        LT2 llevel11sx = new()
+        LT22 llevel11sx = new()
 
         ret llevel11sx
     }
 }
-Level3<LT31, LT32> extends Level2<LT32>
+Level3<LT31, LT32> extends Level2<LT32, LT32, LT32>
 {
     _init_( LT31 lt31 )
     {
@@ -117,13 +118,13 @@ GenClass{
     {
 
         Level3<string,int> llll3333 = new("300")
-        llll3333.add()
-        llll3333.Level1_t = 10
-        llll3333.Level2_t = 20
+        #llll3333.add()
+        llll3333.Level1_t2 = 10
+        llll3333.Level21_t = 20
 
         System.Console.WriteLine("_this_33333 " + llll3333.Level3_t )
-        System.Console.WriteLine("_this_22222 " + llll3333.Level2_t )
-        System.Console.WriteLine("_this_11111 " + llll3333.Level1_t )
+        System.Console.WriteLine("_this_22222 " + llll3333.Level21_t )
+        System.Console.WriteLine("_this_11111 " + llll3333.Level1_t2 )
     }
 }
 

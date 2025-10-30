@@ -68,7 +68,7 @@ namespace SimpleLanguage.Core
                 mdt = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, m_OwnerMetaBlockStatements.ownerMetaFunction as MetaMemberFunction, fmcd);
                 if( mdt.metaClass is MetaGenTemplateClass mgtc )
                 {
-                    mgtc.Parse();
+                    mgtc.ParseGenTemplateClass(mgtc);
                 }
 
                 m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
