@@ -96,10 +96,10 @@ namespace SimpleLanguage.Project
                 isLoaded = true;
                 LoadProject();
             }
+            CoreMetaClassManager.instance.Init();
 
             ProjectClass.ProjectCompileBefore();
 
-            CoreMetaClassManager.instance.Init();
 
             structParseCount = 0;
             buildParseCount = 0;
