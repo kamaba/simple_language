@@ -26,6 +26,7 @@ namespace SimpleLanguage.IR
         public List<IRMetaVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;
 
 
+        Dictionary<int, Dictionary<int, int>> m_IRMetaClassMapTemplateDict = new Dictionary<int, Dictionary<int, int>>();
         private Dictionary<int, int> m_MetaMemberVariableHashCodeDict = new Dictionary<int, int>();
         private List<IRMetaVariable> m_LocalIRMetaVariableList = new List<IRMetaVariable>();
         private List<IRMetaVariable> m_StaticIRMetaVariableList = new List<IRMetaVariable>();
@@ -64,6 +65,14 @@ namespace SimpleLanguage.IR
                     index = i;
                     return m_IRNotStaticMethodList[i];
                 }
+            }
+            return null;
+        }
+        public Dictionary<int,int> GetTemplateMap( IRMetaClass irmc )
+        {
+            if(m_IRMetaClassMapTemplateDict.ContainsKey(irmc.id ) )
+            {
+                return m_IRMetaClassMapTemplateDict[irmc.id];
             }
             return null;
         }
@@ -167,6 +176,21 @@ namespace SimpleLanguage.IR
                 var gmf = IRManager.instance.TranslateIRByFunction(mf);
                 m_IRNotStaticMethodList.Add(gmf);
                 IRManager.instance.AddIRMethod(gmf);
+            }
+        }
+        public void CreateTemplateRelation()
+        {
+            foreach( var v in this.m_MetaClass.metaTemplateMapDict )
+            {
+                IRMetaClass cv = IRManager.instance.GetIRMetaClassById(v.Key.GetHashCode() );
+                Dictionary<int, int> templateMap = new Dictionary<int, int>();
+
+                for( int i = 0; i < v.Value.metaTemplateBindDataList.Count; i++ )
+                {
+                    var mtbd = v.Value.metaTemplateBindDataList[i];
+                    templateMap.Add(mtbd.sourceTemplate.index, mtbd.targetTemplate.index);
+                }
+                m_IRMetaClassMapTemplateDict.Add(cv.id, templateMap);
             }
         }
         public List<IRData> CreateStaticMetaMetaVariableIRList()

@@ -11,6 +11,7 @@ using SimpleLanguage.Parse;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SimpleLanguage.VM
 {
@@ -32,16 +33,26 @@ namespace SimpleLanguage.VM
             m_StaticMemObjectList = new SObject[irClass.staticIRMetaVariableList.Count];
             for ( int i = 0; i < irClass.staticIRMetaVariableList.Count; i++ )
             {
-                RuntimeType rt = GetClassRuntimeType(irClass.staticIRMetaVariableList[i].irMetaType, true );
+                var map = irClass.GetTemplateMap(irClass.staticIRMetaVariableList[i].irMetaType.irOwnerMetaClass );
+
+                RuntimeType rt = GetClassRuntimeType(irClass.staticIRMetaVariableList[i].irMetaType, map, true);
                 
                 m_StaticMemObjectList[i] = ObjectManager.CreateObjectByRuntimeType( rt, true );
             }
         }
-        public RuntimeType GetClassRuntimeType(IRMetaType irmt, bool isAdd = false)
+        public RuntimeType GetClassRuntimeType(IRMetaType irmt, Dictionary<int,int> map,  bool isAdd = false)
         {
             if (irmt.templateIndex != -1)
             {
-                return runtimeTemplateList[irmt.templateIndex];
+                int index = irmt.templateIndex;
+                if ( map != null )
+                {
+                    if( map.ContainsKey( index ) )
+                    {
+                        index = map[index];
+                    }
+                }
+                return runtimeTemplateList[index];
             }
             else
             {
@@ -50,7 +61,8 @@ namespace SimpleLanguage.VM
                 {
                     for (int i = 0; i < irmt.irMetaTypeList.Count; i++)
                     {
-                        var crt = GetClassRuntimeType(irmt.irMetaTypeList[i], isAdd);
+                        var map2 = irClass.GetTemplateMap(irmt.irMetaTypeList[i].irOwnerMetaClass);
+                        var crt = GetClassRuntimeType(irmt.irMetaTypeList[i], map2, isAdd);
                         rtList.Add(crt);
                     }
                 }
