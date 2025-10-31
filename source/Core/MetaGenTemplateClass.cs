@@ -17,10 +17,9 @@ namespace SimpleLanguage.Core
         public MetaClass metaTemplateClass => m_MetaTemplateClass;
         public List<MetaGenTemplate> metaGenTemplateList => m_MetaGenTemplateList;
         public override bool isGenTemplate => true;
-        public bool genTemplateFlag => m_GenTemplateFlag;
 
         private List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
-        private MetaClass m_MetaTemplateClass = null;
+       private MetaClass m_MetaTemplateClass = null;
         protected bool m_GenTemplateFlag = false;
 
         public MetaGenTemplateClass( MetaClass mtc, List<MetaGenTemplate> list ) : base(mtc.name)
@@ -28,6 +27,7 @@ namespace SimpleLanguage.Core
             m_MetaTemplateClass = mtc;
             m_MetaGenTemplateList = list;
             m_MetaNode = mtc.metaNode;
+            m_MetaTemplateList = mtc.metaTemplateList;
             m_ExtendClassMetaType = mtc.extendClassMetaType;
             m_FileCollectMetaMemberVariable = mtc.fileCollectMetaMemberVariable;
             m_FileCollectMetaMemberFunctionList = mtc.fileCollectMetaMemberFunctionList;
@@ -144,7 +144,6 @@ namespace SimpleLanguage.Core
             m_ExtendClass = m_ExtendClassMetaType.metaClass;
 
             m_ExtendClass.ParseGenTemplateClass(mgtc);
-;
 
             List<MetaMemberVariable> mmvList = new List<MetaMemberVariable>();
             foreach (var v in m_ExtendClass.metaExtendMemeberVariableDict)
@@ -155,31 +154,9 @@ namespace SimpleLanguage.Core
             {
                 mmvList.Add(v.Value);
             }
-
             foreach (var it in mmvList )
             {
-                MetaMemberVariable mgmv = new MetaMemberVariable(it);
-                if (m_ExtendClass is MetaGenTemplateClass mgtctt)
-                {
-                    var tmp = mgmv.metaDefineType?.metaTemplate;
-                    if (tmp != null )
-                    {
-                        MetaTemplate copytemp = new MetaTemplate(tmp);
-                        if (m_ExtendClassMetaType.templateMetaTypeList.Count > tmp.index 
-                            && m_ExtendClassMetaType.templateMetaTypeList.Count > 0 )
-                        {
-                            var templateMT = m_ExtendClassMetaType.templateMetaTypeList[tmp.index];
-                            var find1 = this.metaTemplateClass.metaTemplateList.Find(a => a.name == templateMT.fromName );
-                            if (find1 != null )
-                            {
-                                copytemp.SetName(find1.name);
-                                mgmv.metaDefineType.SetMetaTemplate(copytemp);
-                                mgmv.metaDefineType.SetTemplateIndex(find1.index);
-                            }
-
-                        }
-                    }
-                }
+                MetaMemberVariable mgmv = new MetaMemberVariable(it);                
                 mgmv.SetOwnerMetaClass(this);
                 m_MetaExtendMemeberVariableDict.Add(mgmv.name, mgmv);
             }
@@ -187,21 +164,6 @@ namespace SimpleLanguage.Core
             ParseMemberFunctionDefineMetaType();
 
             m_GenTemplateFlag = true;
-            //foreach (var it in this.m_MetaTemplateClass.metaMemberFunctionDict )
-            //{
-            //    var it2 = it.Value;
-            //    //foreach (var it2 in it.Value)
-            //    {
-            //        if( !it2.isTemplateFunction )
-            //        {
-            //            UpdateTemplateInstanceStatement(it2);
-            //        }
-            //        else
-            //        {
-
-            //        }
-            //    }
-            //}
         }
 
         public override void HandleExtendMemberVariable()

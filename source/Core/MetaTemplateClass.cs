@@ -12,15 +12,45 @@ using System.Collections.Generic;
 
 namespace SimpleLanguage.Core
 {
+    public class ClassLevelRelationData
+    {
+        public class BindData
+        {
+            public MetaTemplate sourceTemplate;
+            public MetaTemplate targetTemplate;
+        }
+        public List<BindData> metaTemplateBindDataList = new List<BindData>();
+
+        public void AddBindData( MetaTemplate m1, MetaTemplate m2 )
+        {
+            var find1 = metaTemplateBindDataList.Find(a => a.sourceTemplate == m1);
+            if( find1 == null )
+            {
+                metaTemplateBindDataList.Add( new BindData() { sourceTemplate = m1, targetTemplate = m2 });
+            }
+        }
+        public MetaTemplate GetSrouceTemplateByTargetTemplate( MetaTemplate m2 )
+        {
+            var find1 = metaTemplateBindDataList.Find(a => a.targetTemplate == m2);
+            if( find1 != null )
+            {
+                return find1.sourceTemplate;
+            }
+            return null;
+        }
+    }
     public partial class MetaClass
     {
         public virtual bool isGenTemplate { get { return false; } }
         public List<MetaGenTemplateClass> metaGenTemplateClassList => m_MetaGenTemplateClassList;
+        public Dictionary<MetaClass, ClassLevelRelationData> metaTemplateMapDict => m_MetaTemplateMapDict;
         public bool isTemplateClass { get { return m_MetaTemplateList.Count > 0; } }        //是否是模版类
         public List<MetaTemplate> metaTemplateList => m_MetaTemplateList;
 
         protected List<MetaTemplate> m_MetaTemplateList = new List<MetaTemplate>();
         protected List<MetaGenTemplateClass> m_MetaGenTemplateClassList = new List<MetaGenTemplateClass>();
+        protected ClassLevelRelationData m_ClassLevelRelationData = null;
+        private Dictionary<MetaClass, ClassLevelRelationData> m_MetaTemplateMapDict = new Dictionary<MetaClass, ClassLevelRelationData>();
         //protected Dictionary<MetaTemplate, List<MetaType>> m_TemplateBindMetaTypeDict = new Dictionary<MetaTemplate, List<MetaType>>();
 
         public bool isDefineTemplate(string name)
@@ -53,6 +83,89 @@ namespace SimpleLanguage.Core
                 }
             }
             return this;
+        }
+        void HandleParentClassTemplateRelation()
+        {
+            m_ClassLevelRelationData = new ClassLevelRelationData();
+
+            if(m_ExtendClassMetaType.templateMetaTypeList.Count > 0 )
+            {
+                for (int i = 0; i < this.m_ExtendClassMetaType.templateMetaTypeList.Count; i++)
+                {
+                    var v = m_ExtendClassMetaType.templateMetaTypeList[i];
+                    var parentClassTemplate = m_ExtendClass.metaTemplateList[i];
+                    var find1 = this.metaTemplateList.Find(a => a.name == v.fromName);
+                    m_ClassLevelRelationData.AddBindData(parentClassTemplate, find1);
+                }
+                if (!m_MetaTemplateMapDict.ContainsKey(m_ExtendClass))
+                {
+                    this.m_MetaTemplateMapDict[m_ExtendClass] = m_ClassLevelRelationData;
+                }
+            }
+        }
+        public void HandleExtendClassTemplateRelation()
+        {
+            if (m_ExtendClassMetaType != null)
+            {
+                MetaClass whitemc = m_ExtendClass.extendClass;
+                while (whitemc!= null)
+                {
+                    if (whitemc == CoreMetaClassManager.objectMetaClass)
+                    {
+                        break;
+                    }
+                    if (!m_MetaTemplateMapDict.ContainsKey(whitemc))
+                    {
+                        ClassLevelRelationData clrd = new ClassLevelRelationData();
+
+                        for (int i = 0; i < m_ExtendClassMetaType.templateMetaTypeList.Count; i++)
+                        {
+                            var v = m_ExtendClassMetaType.templateMetaTypeList[i];
+                            var defineTemplate = m_ExtendClass.metaTemplateList[i];
+                            var parentClassTemplate = metaTemplateList.Find( a=> a.name == v.fromName);
+                            var find1 = FindExtendsMetaTemplate( whitemc, defineTemplate.name );
+                            if( find1 != null )
+                            {
+                                clrd.AddBindData(find1, parentClassTemplate);
+                            }
+                        }
+                        this.m_MetaTemplateMapDict[whitemc] = clrd;
+                    }
+
+                    whitemc = whitemc.extendClass;
+                }
+            }
+        }
+        public MetaTemplate FindExtendsMetaTemplate( MetaClass targetMc, string findname )
+        {
+            if(m_ClassLevelRelationData == null )
+            {
+                return null;
+            }
+            if (m_ExtendClass.m_MetaTemplateMapDict.ContainsKey(targetMc))
+            {
+                var find2 = m_ExtendClass.m_MetaTemplateMapDict[targetMc].metaTemplateBindDataList.Find(a => a.targetTemplate.name == findname);
+                if (find2 != null)
+                {
+                    return find2.sourceTemplate;
+                }
+            }
+
+            var find3 = m_ClassLevelRelationData.metaTemplateBindDataList.Find(a => a.targetTemplate.name == findname);
+            if( find3 != null )
+            {
+                if ((m_ExtendClass == null))
+                {
+                    return null;
+                }
+                if (m_ExtendClass == CoreMetaClassManager.objectMetaClass)
+                {
+                    return null;
+                }
+                return m_ExtendClass.FindExtendsMetaTemplate( targetMc, find3.sourceTemplate.name );
+            }
+
+            return null;
         }
         public bool CompareInputTemplateList(MetaInputTemplateCollection mitc)
         {

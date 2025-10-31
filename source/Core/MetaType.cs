@@ -34,7 +34,6 @@ namespace SimpleLanguage.Core
 
         public EMetaTypeType eType => m_EType;
         public MetaClass metaClass => m_MetaClass;
-        public int templateIndex => m_TemplateIndex;
         public MetaClass typeInferenceClass => m_TypeInferenceClass;
         //public MetaClass templateMetaClass => m_TemplateMetaClass;
         public bool isEnum => m_MetaClass is MetaEnum;
@@ -56,7 +55,6 @@ namespace SimpleLanguage.Core
         private MetaType m_ParentMetaType = null;
         private MetaTemplate m_MetaTemplate = null;
         private MetaGenTemplate m_MetaGenTemplate = null;
-        private int m_TemplateIndex = -1;
         private MetaExpressNode m_DefaultExpressNode = null;        // int a => a = 0;
         private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
         private bool m_IsDefineMetaClass = false;
@@ -166,10 +164,6 @@ namespace SimpleLanguage.Core
                 return mgtc.metaTemplateClass;
             }
             return m_MetaClass;
-        }
-        public void SetTemplateIndex( int index )
-        {
-            m_TemplateIndex = index;
         }
         //public void SetEnumValue( MetaMemberVariable mmv )
         //{

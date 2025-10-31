@@ -257,6 +257,9 @@ namespace SimpleLanguage.Core
             {
                 this.m_ExtendClass = m_ExtendClassMetaType.metaClass;
             }
+            HandleParentClassTemplateRelation();
+
+            HandleExtendClassTemplateRelation();
         }
         public virtual void ParseInterfaceRelation()
         {

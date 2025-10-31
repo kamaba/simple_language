@@ -10,6 +10,7 @@ using SimpleLanguage.Parse;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
 
@@ -147,7 +148,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             else
             {
-                var rt = GetClassRuntimeType(irmt, isAdd);
+                var rt = GetClassRuntimeType(irmt, null, isAdd);
                 return ObjectManager.CreateObjectByRuntimeType(rt);
             }
         }
@@ -224,11 +225,19 @@ namespace SimpleLanguage.VM.Runtime
                 return m_ValueStack[m_ValueIndex-1];
             }
         }
-        public RuntimeType GetClassRuntimeType(IRMetaType irmt, bool isAdd = false )
+        public RuntimeType GetClassRuntimeType(IRMetaType irmt, Dictionary<int,int> mapRT, bool isAdd = false )
         {
             if (irmt.templateIndex != -1)
             {
-                return m_InputTemplateRuntimeTypeList[irmt.templateIndex];
+                int index = irmt.templateIndex;
+                if( mapRT != null )
+                {
+                    if(mapRT.ContainsKey(index) )
+                    {
+                        index = mapRT[index];
+                    }
+                }
+                return m_InputTemplateRuntimeTypeList[index];
             }
             else
             {
@@ -237,7 +246,7 @@ namespace SimpleLanguage.VM.Runtime
                 {
                     for (int i = 0; i < irmt.irMetaTypeList.Count; i++)
                     {
-                        var crt = GetClassRuntimeType(irmt.irMetaTypeList[i], isAdd);
+                        var crt = GetClassRuntimeType(irmt.irMetaTypeList[i], null, isAdd);
                         rtList.Add(crt);
                     }
                 }
@@ -525,14 +534,14 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.LoadStaticField:
                     {
                         var irmt = iri.opValue as IRMetaType;
-                        RuntimeType rt = GetClassRuntimeType(irmt, true);
+                        RuntimeType rt = GetClassRuntimeType(irmt, null, true);
                         rt.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex++]);
                     }
                     break;
                 case EIROpCode.StoreStaticField:
                     {
                         var irmt = iri.opValue as IRMetaType;
-                        RuntimeType rt = GetClassRuntimeType(irmt, true);
+                        RuntimeType rt = GetClassRuntimeType(irmt, null,true);
                         rt.SetMemberVariableSValue(iri.index, m_ValueStack[--m_ValueIndex] );
                     }
                     break;
@@ -543,7 +552,7 @@ namespace SimpleLanguage.VM.Runtime
                         List<RuntimeType> classRTList = new List<RuntimeType>();
                         for (int i = 0; i < mfc.metaType.irMetaTypeList.Count; i++)
                         {
-                            var crt = GetClassRuntimeType(mfc.metaType.irMetaTypeList[i], true );
+                            var crt = GetClassRuntimeType(mfc.metaType.irMetaTypeList[i], null, true);
                             classRTList.Add(crt);
                         }
                         var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(mfc.metaType.irMetaClass, classRTList);
@@ -630,10 +639,14 @@ namespace SimpleLanguage.VM.Runtime
                             return;
                         }
                         IRMethod cfc = irc.GetIRNonStaticMethodByIndex(iri.index);
+
+                        Dictionary<int,int> mapTemplate = irc.GetTemplateMap(cfc.irOwnerMetaClass );
+
                         List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
                         for ( int i = 0; i < mfc.irTemplateMetaType.Count; i++ )
                         {
-                            var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], true );
+
+                            var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], mapTemplate, true );
                             rtList.Add(crt);
                         }
                         //if( irc.irName == "Int8"
@@ -707,7 +720,7 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.NewTemplateClass:
                     {
                         IRMetaType mdt = iri.opValue as IRMetaType;
-                        var rt = GetClassRuntimeType(mdt, true);
+                        var rt = GetClassRuntimeType(mdt, null, true);
                         SObject sobj = ObjectManager.CreateObjectByRuntimeType( rt, true );
                         if (sobj is ClassObject co)
                         {

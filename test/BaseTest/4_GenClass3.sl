@@ -96,14 +96,22 @@ Level2<LT21, LT22, LT23> extends Level1<LT23,LT22> interface Interface1<LT23>
 {
     LT22 Level21_t = new()
 
-    override LT22 add()
+    override LT22 add( LT22 tttt )
     {
         LT22 llevel11sx = new()
 
-        ret llevel11sx
+        ret tttt
+    }
+
+    static LT23 _test = new()
+    static LT23 getTest( LT23 lt23 )
+    {
+        _test = lt23
+
+        ret _test
     }
 }
-Level3<LT31, LT32> extends Level2<LT32, LT32, LT32>
+Level3<LT31, LT32> extends Level2<LT32, LT32, LT31>
 {
     _init_( LT31 lt31 )
     {
@@ -113,18 +121,26 @@ Level3<LT31, LT32> extends Level2<LT32, LT32, LT32>
     LT31 Level3_t = new()
 }
 
+Level4<LT41,LT42> extends Level3<LT42,LT41>
+{
+
+}
+
 GenClass{
     static fun()
     {
 
-        Level3<string,int> llll3333 = new("300")
-        #llll3333.add()
-        llll3333.Level1_t2 = 10
-        llll3333.Level21_t = 20
+        Level4<string,int> llll3333 = new("300")
+        addval = llll3333.add(1000)
+        #addval2 = Level2<string,int,int>.getTest( 1000 )
+        #llll3333.Level1_t2 = 10
+        #llll3333.Level21_t = 20
 
         System.Console.WriteLine("_this_33333 " + llll3333.Level3_t )
-        System.Console.WriteLine("_this_22222 " + llll3333.Level21_t )
-        System.Console.WriteLine("_this_11111 " + llll3333.Level1_t2 )
+        System.Console.WriteLine("_this_33333 " + addval )
+        #System.Console.WriteLine("_this_33333 " + addval2 )
+        #System.Console.WriteLine("_this_22222 " + llll3333.Level21_t )
+        #System.Console.WriteLine("_this_11111 " + llll3333.Level1_t2 )
     }
 }
 

@@ -20,6 +20,7 @@ namespace SimpleLanguage.IR
         public string id { get; set; } = "";
         public string virtualFunctionName { get; set; } = "";
         public IRManager irManager { get; private set; } = null;
+        public IRMetaClass irOwnerMetaClass => m_IROwnerMetaClass;
         //private List<IRMetaVariable> methodInputTemplateObject => m_MethodInputTemplateObject;
         public List<IRMetaVariable> methodArgumentList => m_MethodArgumentList;
         public List<IRMetaVariable> methodLocalVariableList => m_MethodLocalVariableList;
@@ -33,12 +34,14 @@ namespace SimpleLanguage.IR
         private List<IRData> m_LabelList = new List<IRData>();
         private List<IRData> m_IRDataList = new List<IRData>();
         private MetaFunction m_BindMetaFunction = null;
+        private IRMetaClass m_IROwnerMetaClass = null;
         public IRMethod(IRManager irma, MetaFunction func )
         {
             irManager = irma;
             m_BindMetaFunction = func;
             this.id = func.functionAllName;
             this.virtualFunctionName = func.virtualFunctionName;
+            m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(func.ownerMetaClass.GetHashCode());
         }
         public void Parse()
         {
