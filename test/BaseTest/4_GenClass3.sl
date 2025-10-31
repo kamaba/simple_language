@@ -3,7 +3,7 @@ import CSharp.System
 
 namespace Core
 {
-    class Object
+    export class Object
     {
         public void _init_()
         {
@@ -15,9 +15,8 @@ namespace Core
             ret ""
         }
     }
-    class Byte
+    class Byte extends Object
     {
-        
     }
     class Boolean
     {
@@ -37,7 +36,10 @@ namespace Core
     }
     class Int32
     {
-        
+        _init_(Int32 val )
+        {
+            
+        }        
     }
     class UInt32
     {
@@ -132,13 +134,13 @@ GenClass{
 
         Level4<string,int> llll3333 = new("300")
         addval = llll3333.add(1000)
-        #addval2 = Level2<string,int,int>.getTest( 1000 )
+        addval2 = Level2<string,int,int>.getTest( 2000 )
         #llll3333.Level1_t2 = 10
         #llll3333.Level21_t = 20
 
         System.Console.WriteLine("_this_33333 " + llll3333.Level3_t )
         System.Console.WriteLine("_this_33333 " + addval )
-        #System.Console.WriteLine("_this_33333 " + addval2 )
+        System.Console.WriteLine("_this_33333 " + addval2 )
         #System.Console.WriteLine("_this_22222 " + llll3333.Level21_t )
         #System.Console.WriteLine("_this_11111 " + llll3333.Level1_t2 )
     }

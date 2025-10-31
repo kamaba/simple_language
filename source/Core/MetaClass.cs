@@ -104,7 +104,6 @@ namespace SimpleLanguage.Core
         {
             m_Name = _name;
             m_Type = _type;
-            this.m_AllName = _name;
         }       
         public MetaClass( MetaClass mc ) : base(mc)
         {

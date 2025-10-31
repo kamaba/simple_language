@@ -101,6 +101,10 @@ namespace SimpleLanguage.Core
             {
                 return mgtf.sourceTemplateFunctionMetaMemberFunction;
             }
+            if( m_VMCallMetaFunction.ownerMetaClass is MetaGenTemplateClass mgtc )
+            {
+                return (m_VMCallMetaFunction as MetaMemberFunction).sourceMetaMemberFunction;
+            }
             return m_VMCallMetaFunction;
         }
         public string ToCommonString()

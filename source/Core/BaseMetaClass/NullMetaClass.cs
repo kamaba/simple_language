@@ -6,22 +6,17 @@
 //  Description: 
 //****************************************************************************
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace SimpleLanguage.Core
 {
     public class NullMetaClass : MetaClass
     {
-        public NullMetaClass():base(DefaultObject.Null.ToString())
+        public NullMetaClass():base( DefaultObject.Null.ToString())
         {
             m_ClassDefineType = EClassDefineType.InnerDefine;
         }        
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new NullMetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule );
             return mc;
         }
     }

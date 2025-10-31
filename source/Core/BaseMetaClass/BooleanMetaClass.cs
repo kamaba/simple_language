@@ -16,7 +16,6 @@ namespace SimpleLanguage.Core
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new BooleanMetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
             MetaConstExpressNode mcen = new MetaConstExpressNode( EType.Boolean, false);
             mc.SetDefaultExpressNode(mcen);
             return mc;
