@@ -3,20 +3,26 @@ import Application;
 public class Class1
 {
     public int a = 20
+    public int b = 10
 
     public static Class1 _reloadsign_( Class1 left, Class1 right, string sign )
     {
         Class1 c = Class1(){a = 0}
         if( sign == "+" )
         {
-            c.a = left.a + right.a
+            c.a = (left.a + right.a) + (left.b-right.b)
         }
         else if( sign == "-" )
         {
-            c.a = left.a - right.a
+            c.a = (left.a - right.a) + (left.b+right.b)
         }
 
         ret c
+    }
+
+    public string toString()
+    {
+        ret (c.a).toString()
     }
 }
 
@@ -27,6 +33,8 @@ ReloadClass
         Class1 c1 = ()
         Class1 c2 = ()
         var c3 = c1 + c2
+
+        System.Console.WriteLine("ccccc3" + c3 );           #相当于c3.toString()
     }
 }
 

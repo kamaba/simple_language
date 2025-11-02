@@ -41,7 +41,7 @@ List<T> extends Object interface ICollection<T>, IIterator<T>
     {
         return m_Value.Count;
     }
-    set count( int count )
+    set capity( int count )
     {
         m_Value.SetCount( count );
     }
@@ -61,10 +61,11 @@ ListTest
         for it in a
         {
             indexa = it.index + 1;
+            val v1 = it.value           #读取当前遍历的value
         }
-        a.Add( 10 );
-        a.Remove( 20 );
-        b.Add( List<int>() );
+        a.add( 10 );
+        a.remove( 20 );
+        b.add( List<int>() );
         av = a.@10; #相当于 a._value_( 10 );
         a.@20 = va;  #相当于 a._value_( 20, va );
 

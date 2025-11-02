@@ -2,53 +2,26 @@ import Std
 import CSharp.System
 
 
-Level1<T>
+Level1
 {
-    T _Level1_t = null
-    _init_( T t )
-    {
-        this._Level1_t = t
-    }
-    void setLevel1( T t )
-    {
-        if t == null
-        {
-            Type t = this._Level1_t.type;
-            MetaClass tc = t.metaClass;
-            MetaMemberFunction tcmc = tc.GetConstruction( int.metaClass, int.metaClass )
-            var newmc = MetaClass.CreateInstance( tc )
-            tcmc.Invoke( newmc, 10, 20 )
-        }
-        else
-        {
-            this._Level1_t = t 
-            #Open(true)
-            #t1 = this.Level1_t()
-        }
-    }
-    get T Level1_t()
-    {
-        ret this._Level1_t
-    }
-    static T static_t = null;
-    static T Open( T t )
-    {
-        Level1<T>.static_t = t
-        ret static_t
-    }
 }
 
 GenClass2{
     static fun()
     {
-        Level1<int>  GenClass2_fun_l1 = Level1<int>()
-        penret = Level1<string>.Open("tttstring")
-        GenClass2_fun_l1.setLevel1( 200 )
-        System.Console.WriteLine("_this_——————————————————————————————" + GenClass2_fun_l1.Level1_t + penret )
+        Level1 l1 = new()
+        l1.mm();                    #纯手动管理对象，不加入自动管理
 
-        #Level1<Level1<int> > GenClass2_fun_l2 = Level1<Level1<int> >()
-        #GenClass2_fun_l2.setLevel1( Level1<int>(20) )
-        #System.Console.Write("_this2_" + GenClass2_fun_l2.Level1_t.Level1_t )
+        var refl1 = l1
+        refl11 = l1.ref            # 自带get ref()方式 引用计数加1
+
+        l1.release()                #自带 release() 方法，引用计数-1
+
+        ref12 = l1.refWeak          # get refWeak 方式，引用计数不增加
+        l1.free()                   #自己释放内存 并且当前l1为空
+        l1.freeDefer()                # 在函数结束时再会调用
+
+        var cl1 = l1.clone()        #克隆当前的数据，生成一个新的数据结构
     }
 }
 
