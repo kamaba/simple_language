@@ -365,7 +365,7 @@ GenClass
         retstr = GenClass_fun_l1.GetComponent<string>()
 
 
-        float32 GenClass_fun_a = Level1<float32>.min<float32>( 1.3, 2.5 )
+        Float32 GenClass_fun_a = Level1<Float32>.min<Float32>( 1.3, 2.5 )
 
         System.Console.WriteLine("_this_——————————————————————————————  " + GenClass_fun_a )
     }

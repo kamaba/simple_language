@@ -14,7 +14,7 @@ namespace SimpleLanguage.Core
     }
     public sealed class MetaUnaryOpExpressNode : MetaExpressNode
     {
-        private Token tokeType => tokeType;
+        private Token tokeType => m_TokeType;
         public ESingleOpSign opSign => m_OpSign;
         public MetaExpressNode value => m_Value;
 
