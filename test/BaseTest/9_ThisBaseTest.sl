@@ -24,7 +24,7 @@ class Base2 extends Base1
     }
 }
 
-class Base3 extends
+class Base3 extends Base2
 {
     v3 = 1
 

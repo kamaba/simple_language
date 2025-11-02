@@ -65,5 +65,6 @@ BookC
     BookData _BookData = new()
     BP _BP = new()
 }
+1. 进行绑定，相当于，一个数据直接放入 _+数据名称 的一个数据 bind BookData 相当于 BookData _BookData = new() 并且自动加入了他里边的方法 set name( string aa ) get name() ...的方法
 !#
 

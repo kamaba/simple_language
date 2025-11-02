@@ -21,7 +21,7 @@ EList<T> extends List<T>
     {
         base.add(t)
     }
-    override get _index_( int index )
+    override get _getIndex_( int index )
     {
         ret base._index_(index)
     }

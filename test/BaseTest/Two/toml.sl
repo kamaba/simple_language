@@ -22,6 +22,6 @@ function_test_class
         }
 
 
-        var v = fn( 10 );
+        fn.fn2( 10, 20 );
     }
 }

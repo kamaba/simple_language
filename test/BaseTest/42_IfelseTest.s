@@ -24,6 +24,7 @@ IfelseTest
         if true 
         {
             int x1 = 200;
+            next
         }
         elif 2 == 120 && false 
         {
@@ -39,9 +40,13 @@ IfelseTest
             }
         } 
         elif a==30 && a < 35 
-        {  } 
+        {  
+            next
+        } 
         elif a==31
-        { m = 100 }
+        { 
+            m = 100
+        }
         
         if true
         {
