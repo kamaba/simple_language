@@ -885,7 +885,11 @@ namespace SimpleLanguage.Core
 
             if(this.m_FileMetaCallNode.inputTemplateNodeList.Count > 0 )
             {
-                MetaMemberFunction tmf = m_OwnerMetaFunctionBlock.ownerMetaFunction as MetaMemberFunction;
+                MetaMemberFunction tmf = null;
+                if (m_OwnerMetaFunctionBlock != null)
+                {
+                    tmf = m_OwnerMetaFunctionBlock.ownerMetaFunction as MetaMemberFunction;
+                }
                 if (m_MetaClass != null || tmf != null)
                 {
                     CreateMetaTemplateParams(m_MetaClass, tmf);

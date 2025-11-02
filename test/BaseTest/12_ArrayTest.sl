@@ -59,7 +59,7 @@ ArrayTest
         a5 = ["aa", 1, "232", 1.0f];  # 相当于List<Object>( "aa", 1, "232", 1.0f, XC() );
         
         # c# 的方法  List<ArrClass2> arr2 = new ArrClass2[100]; 这里边使用的是 arr2 = ArrClass2[100];
-        int[] a6 = Array(4, ArrClass2.type );  # 数组表示使用 List<T>() new List对象 长度为4的int
+        ArrClass2[] a6 = Array(4, ArrClass2.type );  # 数组表示使用 List<T>() new List对象 长度为4的int
         
         float[] a7 = Array(){ 1.2, 2.2, 3.4 };  #  需要{}的内容特殊处理   
         
