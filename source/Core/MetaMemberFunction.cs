@@ -340,7 +340,7 @@ namespace SimpleLanguage.Core
                     var tt = new MetaTemplate(m_OwnerMetaClass, "this");
                     tt.SetIndex(0);
                     tt.SetInConstraintMetaClass(m_OwnerMetaClass);
-                    mt = new MetaType(tt);
+                    mt = new MetaType(tt, "this" );
                 }
                 m_ThisMetaVariable = new MetaVariable(m_OwnerMetaClass.allClassName + "." + m_Name + ".this", MetaVariable.EVariableFrom.Argument, null, m_OwnerMetaClass, mt );
             }

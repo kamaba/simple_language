@@ -6,9 +6,6 @@
 //  Description: 
 //****************************************************************************
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SimpleLanguage.Core
 {
@@ -16,7 +13,6 @@ namespace SimpleLanguage.Core
     {
         public StringMetaClass():base( DefaultObject.String.ToString())
         {
-            System.Type type = typeof(System.String);
             m_ClassDefineType = EClassDefineType.InnerDefine;
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.String;
@@ -24,7 +20,6 @@ namespace SimpleLanguage.Core
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new StringMetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule );
             return mc;
         }
     }

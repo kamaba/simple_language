@@ -36,6 +36,15 @@ namespace SimpleLanguage.Core
             m_OwnerClass = mc;
             this.m_Index = index;
         }
+        public MetaTemplate(MetaTemplate mt) : base(mt)
+        {
+            m_FileMetaTemplateDefine = mt.m_FileMetaTemplateDefine;
+            m_OwnerClass = mt.m_OwnerClass;
+            m_ExtendsMetaClass = mt.m_ExtendsMetaClass;
+            m_IsInFunction = mt.m_IsInFunction;
+            m_Index = mt.m_Index;
+            
+        }
         public MetaTemplate( MetaClass mc, string name )
         {
             m_Name = name;

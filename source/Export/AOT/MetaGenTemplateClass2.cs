@@ -147,7 +147,7 @@ namespace SimpleLanguage.Core.AOT
         {
             return m_MetaGenTemplateList.Find( a=> a.name == name  );
         }
-        public override void Parse()
+        public override void ParseGenTemplateClass(MetaGenTemplateClass mgtc )
         {
             ParseMemberVariableDefineMetaType();
             ParseMemberFunctionDefineMetaType();

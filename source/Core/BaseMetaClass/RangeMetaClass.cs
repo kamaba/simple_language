@@ -5,7 +5,6 @@
 //  DateTime: 2022/6/12 12:00:00
 //  Description: 
 //****************************************************************************
-using SimpleLanguage.VM;
 
 namespace SimpleLanguage.Core
 {
@@ -27,7 +26,6 @@ namespace SimpleLanguage.Core
         public static MetaClass CreateMetaClass()
         {
             ArrayIteratorMetaClass mc = new ArrayIteratorMetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.selfModule);
             return mc;
         }
     }
@@ -74,14 +72,9 @@ namespace SimpleLanguage.Core
             //IsIn.SetMetaDefineType(new MetaType(CoreMetaClassManager.voidMetaClass));
             //AddInnerMetaMemberFunction(IsIn);
         }
-        public void Init_Call( ArrayObject<int> arrObj, int count )
-        {
-
-        }
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new RangeMetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule );
             return mc;
         }
     }

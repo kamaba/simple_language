@@ -176,6 +176,11 @@ namespace SimpleLanguage.VM
                         svalue.SetSObject(classObj);
                     }
                     break;
+                case AnyObject anyObj:
+                    {
+                        svalue.SetSObject(anyObj);
+                    }
+                    break;
                 case TemplateObject templateObj:
                     {
 

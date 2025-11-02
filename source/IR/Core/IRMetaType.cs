@@ -16,10 +16,12 @@ namespace SimpleLanguage.IR
     public class IRMetaType
     {
         public IRMetaClass irMetaClass => m_IRMetaClass;
+        public IRMetaClass irOwnerMetaClass => m_IROwnerMetaClass;
         public List<IRMetaType> irMetaTypeList => m_IRMetaTypeList;
         public int templateIndex => m_TemplateIndex;
 
         public IRMetaClass m_IRMetaClass = null;
+        private IRMetaClass m_IROwnerMetaClass = null;
         private List<IRMetaType> m_IRMetaTypeList = new List<IRMetaType>();
 
         private int m_TemplateIndex = -1;
@@ -32,6 +34,7 @@ namespace SimpleLanguage.IR
             else if (type.eType == EMetaTypeType.Template)
             {
                 m_TemplateIndex = type.metaTemplate.index;
+                m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(type.metaTemplate.ownerClass.GetHashCode());
                 m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());                
             }
             else

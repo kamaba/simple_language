@@ -6,17 +6,11 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.VM;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
-
 namespace SimpleLanguage.Core
 {
     public class Int16MetaClass : MetaClass
     {
-        public Int16MetaClass() : base(DefaultObject.Int16.ToString())
+        public Int16MetaClass() : base( DefaultObject.Int16.ToString())
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Int16;
@@ -25,7 +19,6 @@ namespace SimpleLanguage.Core
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new Int16MetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
             return mc;
         }
     }
@@ -40,43 +33,26 @@ namespace SimpleLanguage.Core
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new UInt16MetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
             return mc;
         }
     }
     public class Int32MetaClass : MetaClass
     {
-        public Int32MetaClass() : base(DefaultObject.Int32.ToString())
+        public Int32MetaClass() : base( DefaultObject.Int32.ToString())
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Int32;
             m_ClassDefineType = EClassDefineType.InnerDefine;
         }
-        public override void ParseInnerFunction()
-        {
-            AddCoreFunction();
-        }
-        public void AddCoreFunction()
-        {
-            //MetaMemberFunction ToString = new MetaMemberFunction( this, "toString" );              
-            //ToString.SetMetaDefineType(new MetaType(CoreMetaClassManager.stringMetaClass));
-            //AddMetaMemberFunction(ToString);
-            //ToString.AddCSharpMetaStatements("SimpleLanguage.VM.Int32Object", "Int32ToString" );
-        }
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new Int32MetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
             return mc;
-        }
-        public static string MetaToString( Int32 v )
-        {
-            return v.ToString();
         }
     }
     public class UInt32MetaClass : MetaClass
     {
-        public UInt32MetaClass() : base(DefaultObject.UInt32.ToString())
+        public UInt32MetaClass() : base( DefaultObject.UInt32.ToString())
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.UInt32;
@@ -85,13 +61,12 @@ namespace SimpleLanguage.Core
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new UInt32MetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
             return mc;
         }
     }
     public class Int64MetaClass : MetaClass
     {
-        public Int64MetaClass() : base(DefaultObject.Int64.ToString())
+        public Int64MetaClass() : base( DefaultObject.Int64.ToString())
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Int64;
@@ -100,13 +75,12 @@ namespace SimpleLanguage.Core
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new Int64MetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule);
             return mc;
         }
     }
     public class UInt64MetaClass : MetaClass
     {
-        public UInt64MetaClass() : base(DefaultObject.UInt64.ToString())
+        public UInt64MetaClass() : base( DefaultObject.UInt64.ToString())
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.UInt64;
@@ -115,7 +89,6 @@ namespace SimpleLanguage.Core
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new UInt64MetaClass();
-            ClassManager.instance.AddMetaClass(mc, ModuleManager.instance.coreModule );
             return mc;
         }
     }

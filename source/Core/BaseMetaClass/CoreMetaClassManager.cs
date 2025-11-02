@@ -120,7 +120,7 @@ namespace SimpleLanguage.Core
             s_InnerDefineMetaClassList.Add(float32MetaClass);
             s_InnerDefineMetaClassList.Add(float64MetaClass);
             s_InnerDefineMetaClassList.Add(stringMetaClass);
-            s_InnerDefineMetaClassList.Add(arrayIteratorMetaClass);
+            //s_InnerDefineMetaClassList.Add(arrayIteratorMetaClass);
             s_InnerDefineMetaClassList.Add(arrayMetaClass);
             s_InnerDefineMetaClassList.Add(rangeMetaClass);
             s_InnerDefineMetaClassList.Add(dynamicMetaClass);
@@ -132,6 +132,9 @@ namespace SimpleLanguage.Core
             foreach( var v in s_InnerDefineMetaClassList )
             {
                 v.ParseInner();
+                //ModuleManager.instance.coreModule.metaNode.AddMetaClass(v);
+                ClassManager.instance.AddMetaClass(v, ModuleManager.instance.coreModule);
+                v.UpdateClassAllName();
                 ClassManager.instance.AddRuntimeMetaClass(v);
             }
         }
@@ -198,6 +201,7 @@ namespace SimpleLanguage.Core
                 case "null":
                     return DefaultObject.Null.ToString();
                 case "object":
+                case "Object":
                     return DefaultObject.Object.ToString();
                 case "bool":
                     return DefaultObject.Boolean.ToString();

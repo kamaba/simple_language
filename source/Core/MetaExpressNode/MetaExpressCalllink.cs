@@ -72,7 +72,7 @@ namespace SimpleLanguage.Core
             if (m_MetaCallLink == null)
                 return null;
 
-            m_MetaDefineType = m_MetaCallLink.GetMetaDeineType();
+            m_MetaDefineType = m_MetaCallLink.GetMetaDefineType();
             return m_MetaDefineType;
         }
         public MetaExpressNode ConvertConstExpressNode()

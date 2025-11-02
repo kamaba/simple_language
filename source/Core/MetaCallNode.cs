@@ -386,9 +386,9 @@ namespace SimpleLanguage.Core
                         if (m_FrontDefineMetaType.eType == EMetaTypeType.Template )
                         {
                             m_MetaTemplate = m_FrontDefineMetaType.metaTemplate;
-                            m_MetaType = new MetaType(m_MetaTemplate);
+                            m_MetaType = new MetaType(m_MetaTemplate, "" );
                             m_CallNodeType = ECallNodeType.NewTemplate;
-                            m_CallMetaType = new MetaType(m_MetaTemplate);
+                            m_CallMetaType = new MetaType(m_MetaTemplate, "" );
                             MetaMemberFunction mmf = m_FrontDefineMetaType.metaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_MetaInputParamCollection);
                             if (mmf == null)
                             {
@@ -815,6 +815,10 @@ namespace SimpleLanguage.Core
                             {
                                 return false;
                             }
+                            if(m_FrontCallNode.m_StoreMetaVariable == null )
+                            {
+                                m_FrontCallNode.m_StoreMetaVariable = m_FrontCallNode.m_MetaFunction.returnMetaVariable;
+                            }
                         }
                         else
                         {
@@ -896,7 +900,7 @@ namespace SimpleLanguage.Core
 
                     if( ngmc is MetaGenTemplateClass mgtc )
                     {
-                        mgtc.Parse();
+                        mgtc.ParseGenTemplateClass(mgtc);
                         m_MetaClass = mgtc;
                     }
 
@@ -1332,7 +1336,7 @@ namespace SimpleLanguage.Core
                         List<MetaType> mtList = new List<MetaType>();
                         for( int i = 0; i < mmv.ownerMetaClass.metaTemplateList.Count; i++ )
                         {
-                            mtList.Add(new MetaType(mmv.ownerMetaClass.metaTemplateList[i]));
+                            mtList.Add(new MetaType(mmv.ownerMetaClass.metaTemplateList[i], mmv.ownerMetaClass.metaTemplateList[i].name ));
                         }
                         m_CallMetaType = new MetaType(mmv.ownerMetaClass, mtList);
                         m_CallNodeType = ECallNodeType.MemberVariableName;
@@ -1353,7 +1357,7 @@ namespace SimpleLanguage.Core
                         m_MetaClass = mc; List<MetaType> mtList = new List<MetaType>();
                         for (int i = 0; i < mmv.ownerMetaClass.metaTemplateList.Count; i++)
                         {
-                            mtList.Add(new MetaType(mmv.ownerMetaClass.metaTemplateList[i]));
+                            mtList.Add(new MetaType(mmv.ownerMetaClass.metaTemplateList[i], mmv.ownerMetaClass.metaTemplateList[i].name ));
                         }
                         m_CallMetaType = new MetaType(mmv.ownerMetaClass, mtList);
                         m_CallNodeType = ECallNodeType.MemberFunctionName;

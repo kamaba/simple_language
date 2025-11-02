@@ -226,7 +226,10 @@ namespace SimpleLanguage.Compile
             for (int i = 0; i < m_FileDefineNamespaceList.Count; i++)
             {
                 var fmn = m_FileDefineNamespaceList[i];
-                NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(fmn);
+                if( fmn.name != "Core" )
+                {
+                    NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(fmn);
+                }
             }
             for (int i = 0; i < m_FileSearchNamespaceList.Count; i++)
             {
