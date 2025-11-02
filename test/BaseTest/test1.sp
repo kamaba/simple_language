@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "7_CallLinkTest.sl";
+            path = "4_GenClass3.sl";
             group = "temp";
             tag = "all";
             a = 200
@@ -58,17 +58,6 @@ const data ProjectConfig
                 }
             }
         } 
-        Core = 
-        {
-            type = "namespace"
-            child = 
-            {                
-                Object =
-                {
-                    type = "class"
-                }
-            }
-        }
     }
 }
 
@@ -89,10 +78,10 @@ Project
        #CommitTest.fun();
        #NumberTest.fun()
        #StringTest.fun()
-       #GenClass.fun()
+       GenClass.fun()
        #ArrayTest.fun()
        #OverrideFunction.fun()
-       CallLinkTest.fun()
+       #CallLinkTest.fun()
     }
     static Test()
     {

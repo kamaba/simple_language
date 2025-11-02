@@ -93,6 +93,7 @@ namespace SimpleLanguage.Core
 
                     mt.SetMetaClass(gmgt.metaType.metaClass);
                     mt.SetMetaTemplate(null);
+                    mt.SetGenMetaTemplate(gmgt);
                     findfn = gmgt.metaType.metaClass;
                 }
                 else
@@ -107,6 +108,7 @@ namespace SimpleLanguage.Core
                         }
                         mt.SetMetaClass(gmgt.metaType.metaClass);
                         mt.SetMetaTemplate(null);
+                        mt.SetGenMetaTemplate(gmgt);
                         findfn = gmgt.metaType.metaClass;
                     }
                     else
@@ -137,7 +139,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    var retmt = new MetaType(mt);
+                    var retmt = new MetaType(mt, fmcd.stringList[0] );
                     return retmt;
                 }
             }
@@ -236,7 +238,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        return new MetaType(mt);
+                        return new MetaType(mt, fmtd.nameList[0] );
                     }
                 }
                 else
@@ -259,7 +261,7 @@ namespace SimpleLanguage.Core
                 var gmtbn = curMc.GetMetaTemplateByName(fmcd.stringList[0]);
                 if (gmtbn != null)
                 {
-                    var mt = new MetaType(gmtbn);
+                    var mt = new MetaType(gmtbn, fmcd.stringList[0] );
                     return mt;
                 }
                 else if (findFun != null)
@@ -269,7 +271,7 @@ namespace SimpleLanguage.Core
                     {
                         return null;
                     }
-                    return new MetaType(mt);
+                    return new MetaType(mt, fmcd.stringList[0]);
                 }
                 else
                 {
@@ -365,7 +367,7 @@ namespace SimpleLanguage.Core
                         var mgtc2 = findMc.GetMetaTemplateByName(fmtd.nameList[0]);
                         if (mgtc2 != null)
                         {
-                            return new MetaType(mgtc2);
+                            return new MetaType(mgtc2, fmtd.nameList[0] );
                         }
                     }
                     if (findFun != null)
@@ -373,7 +375,7 @@ namespace SimpleLanguage.Core
                         var mt = findFun.GetMetaDefineTemplateByName(fmtd.nameList[0]);
                         if (mt != null)
                         {
-                            return new MetaType(mt);
+                            return new MetaType(mt, fmtd.nameList[0]);
                         }
                     }
                 }

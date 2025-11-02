@@ -499,7 +499,7 @@ namespace SimpleLanguage.Core
             {
                 if( v.Value == mc )
                 {
-                    //Log.AddInStructMeta(EError.AddClassNameSame, $"已包含类:{mc.allClassName} 又进行了重进添加!");
+                    Log.AddInStructMeta(EError.AddClassNameSame, $"已包含类:{mc.allClassName} 又进行了重进添加!");
                     return;
                 }
             }

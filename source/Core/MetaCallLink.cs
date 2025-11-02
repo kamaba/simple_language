@@ -284,7 +284,7 @@ namespace SimpleLanguage.Core
             //}
             return null;
         }
-        public MetaType GetMetaDeineType()
+        public MetaType GetMetaDefineType()
         {
             MetaType mt = null;
             for (int i = 0; i < m_VisitNodeList.Count; i++)

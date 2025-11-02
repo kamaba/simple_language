@@ -71,8 +71,20 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                var irname = IRManager.GetIRNameByMetaClass(mf.ownerMetaClass);
-                irmc = IRManager.instance.GetIRMetaClassByName(irname);
+                MetaClass mc2 = null;
+                var mmf2 = (mf as MetaMemberFunction);
+                if ( mmf2 != null )
+                {
+                    if (mmf2.sourceMetaMemberFunction != null)
+                        mc2 = mmf2.sourceMetaMemberFunction.ownerMetaClass;
+                    else
+                        mc2 = mmf2.ownerMetaClass;
+                }
+                else
+                {
+                    mc2 = mf.ownerMetaClass;
+                }
+                irmc = IRManager.instance.GetIRMetaClassById(mc2.GetHashCode());
             }
 
             if ( !mf.isStatic )
@@ -145,11 +157,8 @@ namespace SimpleLanguage.IR
                         }
                         else
                         {
-                            if (mrv.irMetaType.irMetaClass.irName != "Void")
-                            {
-                                IRPop irpop = new IRPop(m_IRMethod);
-                                AddIRData(irpop.data);
-                            }
+                            IRPop irpop = new IRPop(m_IRMethod);
+                            AddIRData(irpop.data);
                         }
                     }
                 }

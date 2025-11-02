@@ -117,6 +117,7 @@ namespace SimpleLanguage.IR
             {
                 v.CreateMemberData();
                 v.CreateMemberMethod();
+                v.CreateTemplateRelation();
             }
             
             foreach ( var v in m_IRMetaClassList)

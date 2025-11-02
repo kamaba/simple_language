@@ -7,7 +7,7 @@ C1
 
     static public int a1 = 100;
     private a2 = 20;
-    private long a3;    #不允许使用没有等号的情况 除了class之外 ，其它的类型都需要有=号
+    private long a3 = 0L;    #不允许使用没有等号的情况 除了class之外 ，其它的类型都需要有=号
     C2 a4;              #报错，需要有=号，要不为null，要不new()
     static C2 a5;       #报错，同上
     a6 = C2();      
