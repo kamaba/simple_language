@@ -14,9 +14,9 @@ CallStatementTest
                 this.val2 = v2
             }
         }
-        Class3 class3;
+        Class3 class3 = null;
     }
-    Class2 class2;
+    Class2 class2 = null;
     Func2()
     {
         this.class2.class3.SetValue2( 30 );

@@ -52,6 +52,8 @@ ListTest
     static Fun()
     {
         List<int> a = List<int>();
+        var a2 = List<int>( range( 1, 100 ) )
+        var a3 = List<int>( [1,2,3,4,100,32] );
         List<List<int>> b = List<List<int>>();
 
         for i = 0, i < a.count
@@ -65,13 +67,31 @@ ListTest
         }
         a.add( 10 );
         a.remove( 20 );
-        b.add( List<int>() );
+        b.add( a2 )
+        b.add( a3 )
+        b.add( a );
         av = a.@10; #相当于 a._value_( 10 );
-        a.@20 = va;  #相当于 a._value_( 20, va );
+        a.@2 = va;  #相当于 a._value_( 20, va );
+        a[2] = 100
 
         for it in a
         {
             a.value = 20;    #相当于 it = 20;
         }
+        for it2 in b
+        {
+            for it3 in it2
+            {
+                var it3val = it3.value
+                Console.WriteLine("-----------" + it3val )
+            }
+        }
+
+        b.value.add( 1000 )
+        b.value.value = 20
+        b.index = 1
+        aavalue = b.value
+
+        b.value.@2
     }
 }

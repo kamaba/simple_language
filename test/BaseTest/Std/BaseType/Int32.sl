@@ -1,8 +1,13 @@
 
 Core.Int32
 {
-    private Int32 m_Value = 0i;
-    String ToString()
+    private Int32 _value = 0i;
+
+    _init_(Int32 _val )
+    {
+        this._value = _val        
+    }
+    String toString()
     {
         return String.ParseString( m_Value );
     }
@@ -10,7 +15,7 @@ Core.Int32
     {
         return String.ParseString( value );
     }
-    Cast( Type t )
+    cast( Type t )
     {
         if( t == Int16.type )
         {

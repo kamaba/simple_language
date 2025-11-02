@@ -80,7 +80,7 @@ PtrTest
         Ptr<Node> next = null
         for v in 1..100
         {
-            Ptr<Node> p = Mem.malloc(Node())
+            Ptr<Node> p = Mem.malloc( Node.type )
             p.prevNode = front      #这里
             if front
             {
