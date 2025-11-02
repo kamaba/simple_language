@@ -4,11 +4,11 @@ SwitchTest
     {
         
     }
-    Class3 :: Class2
+    Class3 extends Class2
     {
-
+        c3_val = 100;
     }
-    Class4 :: Class2
+    Class4 extends Class2
     {
 
     }
@@ -16,13 +16,18 @@ SwitchTest
     static Func()
     {
         #!  等丰富类型后，加入类型匹配
-        t = Class2();
+        t = Class3();
         switch t.type
         {
             case int a{ idok = 20; }
             case float{}
+            case Class3 c3
+            {
+                c3.c3_val = 200
+            }
             default{}
         }
+        Console.WriteLine("----------" + t.c3_val )
 
         int a = 10;
         x = 12;
@@ -52,7 +57,12 @@ SwitchTest
             case 1{ tr "ems"; }
             case 2{ tr "room1";}
             case 10{ tr "rmi1"; }
+            caes >=1 && <= 10
+            {
+                tr "mmmm"
+            }
         }
+        Console.WriteLine("----------2222" + type1 )
 
         # 可以对obj的类型进行强制转化，并且判断是否为空，如果不为空，则可以执行里边的内容
         !#
@@ -63,10 +73,11 @@ SwitchTest
             case 20 
             case 40{ mxx = 100; tr mxx;}
             case 30,31,32{ mxx= 300; tr mxx; }
-            #case 34..50{ mxx = 100; }   #等加入数据后，再使用这种匹配方式            
+            case >=30 && <=50 { mxx = 100; }   #等加入数据后，再使用这种匹配方式            
             case 100 {mxx = 200; tr mxx;}
             default{ tr 100;}
         }
+        Console.WriteLine("----------3333" + t.c3_val )
         # 可以对正常值进行匹配 
         
     }

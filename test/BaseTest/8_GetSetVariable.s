@@ -56,7 +56,7 @@ GetSetTest
         gsc.indexModel = 20.0f;
         gsc.bvalue = 888
         int i2 = gsc.bvalue     # 如果有get方法 要优化调用 get[值] 的函数
-        #gsc.@20 = 10.0f;    # 相当于 gsc.Set( 20, 10.0f );
+        #gsc.20 = 10.0f;    # 相当于 gsc.Set( 20, 10.0f );
     }
 }
 

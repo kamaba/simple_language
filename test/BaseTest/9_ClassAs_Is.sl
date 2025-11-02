@@ -85,6 +85,19 @@ Level3 extends Level2
     Level3_var3 = 40
 }
 
+LevelT<T1>
+{
+
+}
+LevelT2<T21,T22> extends LevelT<T22>
+{
+
+}
+LevelT3<T31,T32> extends LevelT<T32,T31>
+{
+
+}
+
 
 ClassAsIs{
     static fun()
@@ -93,7 +106,41 @@ ClassAsIs{
         Level1 level1 = level3
         Level2 = level1 as Level2
 
+        l1castl3 = level1.cast<Level3>()
         bool aaa = level1 is Level2 level2tt
+
+        if( level1 is Level3  ll3if )
+        {
+            Console.WriteLine("yes l3 ");
+        }
+
+        if l1castl3 
+        {
+            Console.WriteLine("yes l1cast l3" );
+        }
+
+        Type rl = level1.type
+        Console.WriteLine("Type r1: " + r1.name );
+
+        var defineType = level1.defineType;
+        Console.WriteLine("Type r1: " + defineType.name );
+
+        Type t3 = Level3.type
+
+        LevelT3<int,string> lt3 = new()
+
+        Type typet3 = lt3.type
+        Type typet33 = LevelT3<int,int>.type      #这里的type 是静态默认函数， 相当于  typeof()函数一类的调用
+
+        if( typet3 == typet33 )
+        {
+            Console.WriteLine("typet3 == typet33 is equal" );
+        }
+        else
+        {            
+            Console.WriteLine("typet3 == typet33 is not equal" );
+        }
+
     }
 }
 

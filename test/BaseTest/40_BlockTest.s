@@ -23,7 +23,7 @@ Class2
 {
     static int m2 = 10;
     m = 10;
-    Class2( int x )
+    _init_( int x )
     {
         m = 10;
     }

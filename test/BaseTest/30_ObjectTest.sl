@@ -11,7 +11,7 @@ ClassT
     {
         int t2 = 100;
     }
-    ClassT2 t3     ;
+    ClassT2 t3 = new(){}
     #array<int> arr3
     static t2 = 112;
     t = 0;
@@ -23,6 +23,10 @@ ClassT
     ClassT2 GetT()
     {
         ret this.t3
+    }
+    static int GetMaxInt()
+    {
+        ret (t2 / 3) as int
     }
 }
 QS.ClassT2
@@ -46,6 +50,8 @@ Class1
     {
         this.ct3 = _t;
         this.ct3 = _t2;
+
+        this.t = ClassT.GetMaxInt()
     }
     x1 = 117;
     y1 = 118;
@@ -154,12 +160,12 @@ ObjectTest
 
 #!
 对象的创建使用
-1. Class()的方式，就等于 new Class1()
+1. Class()的方式，就等于 new()
 2. Class(1,2) 使用函数的重载，传入参数的方式 其实调用的是已配置 __Init( int a, int b )的函数，
-3. 每个函数，如果不在函数上边设置 [@NoDefaultConstruction]的话，函数是都可以通过 Class()方式创建的
+3. 如果使用 private _init_() 的函数，则认为 不能直接默认调用  private _init_(int a ){}   不能使用 Class(20)
 4. 在构造体中，不允许有返回类型，所以构造函数不能return 变量 的使用，在new Class()的时候，首先生成一个对象后，然后再进行构造处理，相当于构造只是一个处理函数，和普通的函数没有什么区别
 相然，构造非静态的才能重构，静态的只能无参数类型
-5. 在函数构造体中，只使用 this.当前类与继承类中变量的赋值，不能 this.其它类对象 如this.ct.t = 20; 不允许这种方式，只允许 this.ct = ClassT(2);的方式
+5. 在函数构造体中 只能调用 普通的表达式，不可以使用 非静态函数  但可以使用静态函数
 所以，正常来说，类的构造，只允许当前变量的赋值，不允许操作其它类的值。
 6. 继承使用 base._init_( _x1, _y1 ); 可以调用父中的构造类的方式
 7. 对象可以使用 Class c = {}的方式，创建，但，与类构造一样，只允许this.当前变量法制，否则语法不通过。

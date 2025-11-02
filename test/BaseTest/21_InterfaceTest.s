@@ -27,27 +27,26 @@ Class1_1 interface Class1,Class2,Class3
         base._init_(_x1+1);
     }
 
-    _init_(int z1 )
+    _init_(int _z1 )
     {
-        _init_( 1, 2 );
-        base._init_(z1+10);
+        z1 = _z1
     }
 
     # 必须实现 Fun函数  自动变成public
     override string interfaceFun1()    
     {  
-        return "a";
+        ret (x1 + y1 + z1).toString()
     }
     override int interfaceFun2(){
-        return 2;
+        ret (x1*y1 + z1);
     }
 
     interface Fun2()
 }
 Class2_1 extends Class1_1
 {
-    Fun2(){
-        return "fun2";
+    override Fun2(){
+        ret "fun2";
     }
 }
 
@@ -56,13 +55,26 @@ InterfaceTest
 {
     static Fun()
     {
-        Class1 c1 = Class1_1();
+        Class1 c1 = Class1_1(1,2);
         v1 = c1.Fun()
         CSharp.Debug.Write("-------------" + v1 );
+
+        Class1 c2 = Class1_1(100);
+        v2 = c2.Fun()
+        CSharp.Debug.Write("-------------" + v2 );
 
         Class1 c2 = Class2_1();
         v2 = c2.Fun2();
         CSharp.Debug.Write("-------------" + v2 );
+
+        List<Class1> listc1 = new()
+        listc1.add(v1)
+        listc1.add(c2)
+
+        for cc in listc1
+        {
+            System.Console.WriteLine( "if1" + cc.interfaceFun1() )
+        }
 
     }
 }
