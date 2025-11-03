@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "4_GenClassAndFunction.sl";
+            path = "4_GenClass4.sl";
             group = "temp";
             tag = "all";
             a = 200

@@ -17,55 +17,20 @@ namespace SimpleLanguage.Core
     public class TypeManager
     {
         public static TypeManager instance = new TypeManager();
-        //public void UpdateMetaType( MetaType mt, MetaGenTemplateClass mgtc )
-        //{
-        //    bool isNeedReg = false;
-        //    MetaClass findfn = null;
-        //    if ( mt.isTemplate )
-        //    {
-        //        var gmgt = mgtc.GetMetaGenTemplate(mt.metaTemplate.name);
-        //        if( gmgt != null )
-        //        {
-        //            mt.SetMetaClass(gmgt.metaType.metaClass);
-        //            mt.SetMetaTemplate(null);
-        //            findfn = gmgt.metaType.metaClass;
-        //        }
-        //    }
-        //    List<MetaClass> regMCList = new List<MetaClass>();
-        //    if ( mt.templateMetaTypeList.Count > 0 )
-        //    {
-        //        isNeedReg = true;
-        //        for (int i = 0; i < mt.templateMetaTypeList.Count; i++)
-        //        {
-        //            UpdateMetaType(mt.templateMetaTypeList[i], mgtc);
-        //            regMCList.Add(mt.templateMetaTypeList[i].metaClass);
-        //            if (mt.templateMetaTypeList[i].isTemplate)
-        //            {
-        //                isNeedReg = false;
-        //            }
-        //        }
-        //    }
-        //    if (findfn != null && isNeedReg)
-        //    {
-        //        //var newmc = findfn.AddInstanceMetaClass(regMCList);
-        //        //mt.SetMetaClass(newmc);
-        //    }
-
-        //}
-        public bool UpdateMetaTypeByGenClassAndFunction(MetaType mt, MetaGenTemplateClass mgtc, MetaGenTemplateFunction mgtf)
+        public bool UpdateMetaTypeByGenClassAndFunction(MetaType mt, MetaGenTemplateClass mgtc, MetaGenTemplateFunction mgtf )
         {
             bool isNeedReg = false;
             MetaClass findfn = null;
             List<MetaClass> regMCList = new List<MetaClass>();
-            if (mt.templateMetaTypeList.Count > 0)
+            if (mt.genTemplateMetaTypeList.Count > 0)
             {
-                for (int i = 0; i < mt.templateMetaTypeList.Count; i++)
+                for (int i = 0; i < mt.genTemplateMetaTypeList.Count; i++)
                 {
-                    if (UpdateMetaTypeByGenClassAndFunction(mt.templateMetaTypeList[i], mgtc, mgtf))
+                    if (UpdateMetaTypeByGenClassAndFunction(mt.genTemplateMetaTypeList[i], mgtc, mgtf))
                     {
                         isNeedReg = true;
                     }
-                    regMCList.Add(mt.templateMetaTypeList[i].metaClass);
+                    regMCList.Add(mt.genTemplateMetaTypeList[i].metaClass);
                 }
             }
             if (isNeedReg)
@@ -76,6 +41,7 @@ namespace SimpleLanguage.Core
                     Log.AddInStructMeta(EError.None, "MetaClass is Null");
                     return false;
                 }
+                newmc.ParseGenTemplateClass(newmc);
                 mt.SetMetaClass(newmc);
                 return true;
             }
@@ -92,7 +58,6 @@ namespace SimpleLanguage.Core
                     }
 
                     mt.SetMetaClass(gmgt.metaType.metaClass);
-                    mt.SetMetaTemplate(null);
                     mt.SetGenMetaTemplate(gmgt);
                     findfn = gmgt.metaType.metaClass;
                 }
@@ -107,7 +72,6 @@ namespace SimpleLanguage.Core
                             return false;
                         }
                         mt.SetMetaClass(gmgt.metaType.metaClass);
-                        mt.SetMetaTemplate(null);
                         mt.SetGenMetaTemplate(gmgt);
                         findfn = gmgt.metaType.metaClass;
                     }
@@ -170,7 +134,8 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < inputTemplateNodeList.Count; i++)
             {
                 MetaType mt2 = GetAndRegisterTemplateDefineMetaTemplateClass(ownerMc, findfn, inputTemplateNodeList[i]);
-                mt.AddTemplateMetaType(mt2);
+                mt.AddDefineTemplateMetaType(mt2);
+                mt.AddGenTemplateMetaType(mt2);
             }
             
             return ownerMc.AddMetaPreTemplateClass(mt, false, out bool igmc);
@@ -203,7 +168,8 @@ namespace SimpleLanguage.Core
                         {
                             var itn = dcc.inputTemplateNodeList[j];
                             var mt2 = GetAndRegisterTemplateDefineMetaTemplateClass(ownerMc, findfn, itn);
-                            mt.AddTemplateMetaType(mt2);
+                            mt.AddDefineTemplateMetaType(mt2);
+                            mt.AddGenTemplateMetaType(mt2);
                             //if (mt2.isTemplate)
                             //{
                             //    isNeedReg = false;
@@ -324,7 +290,7 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < inputTemplateNodeList.Count; i++)
             {
                 var t = RegisterTemplateDefineMetaTemplateFunction(findfn, regMc, findFun, inputTemplateNodeList[i], isParse );
-                mt.AddTemplateMetaType(t);
+                mt.AddGenTemplateMetaType(t);
             }
             mt = regMc.AddMetaPreTemplateClass(mt, isParse, out bool igmc);
             return mt;

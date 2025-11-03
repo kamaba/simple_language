@@ -26,6 +26,7 @@ namespace SimpleLanguage.Core
     public class MetaMemberVariable : MetaVariable, IComparable<MetaMemberVariable>
     {
         public MetaMemberVariable sourceMetaMemberVariable => m_SourceMetaMemberVariable;
+        public MetaClass sourceMetaClass => m_SourceMetaClass;
         public EFromType fromType => m_FromType;
         public int index => m_Index;
         public MetaExpressNode express => m_Express;
@@ -39,6 +40,7 @@ namespace SimpleLanguage.Core
         private MetaExpressNode m_Express = null;
         private bool m_IsInnerDefine = false;
         private MetaMemberVariable m_SourceMetaMemberVariable = null;
+        protected MetaClass m_SourceMetaClass = null;
         //private Dictionary< string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
 
         private bool m_IsSupportConstructionFunctionOnlyBraceType = true;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
@@ -147,6 +149,7 @@ namespace SimpleLanguage.Core
             {
                 m_Permission = CompilerUtil.GetPerMissionByString(m_FileMetaMemeberVariable.permissionToken?.lexeme.ToString());
             }
+            m_SourceMetaClass = mc;
             SetOwnerMetaClass(mc);
         }
         //public MetaMemberVariable(MetaGenTemplateClass mtc, MetaMemberVariable mmv, Dictionary<string,MetaGenTemplate> mgt) : base(mmv)
@@ -526,6 +529,10 @@ namespace SimpleLanguage.Core
             MetaExpressNode mn = ExpressManager.CreateExpressNode(cep);
 
             return mn;
+        }
+        public void SetSourceMetaClass( MetaClass mc )
+        {
+            this.m_SourceMetaClass = mc;
         }
         public override bool ParseMetaExpress()
         {

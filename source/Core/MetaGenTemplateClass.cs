@@ -6,6 +6,7 @@
 //  Description: Generator Template Class's entity by Template Class
 //****************************************************************************
 
+using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -129,6 +130,10 @@ namespace SimpleLanguage.Core
         {
             return m_MetaGenTemplateList.Find( a=> a.name == name  );
         }
+        public MetaTemplate GetMapMetaTemplate( string  name )
+        {
+            return null;
+        }
         public override void ParseGenTemplateClass( MetaGenTemplateClass mgtc )
         {
             if(m_GenTemplateFlag )
@@ -145,21 +150,6 @@ namespace SimpleLanguage.Core
 
             m_ExtendClass.ParseGenTemplateClass(mgtc);
 
-            List<MetaMemberVariable> mmvList = new List<MetaMemberVariable>();
-            foreach (var v in m_ExtendClass.metaExtendMemeberVariableDict)
-            {
-                mmvList.Add(v.Value);
-            }
-            foreach (var v in m_ExtendClass.metaMemberVariableDict)
-            {
-                mmvList.Add(v.Value);
-            }
-            foreach (var it in mmvList )
-            {
-                MetaMemberVariable mgmv = new MetaMemberVariable(it);                
-                mgmv.SetOwnerMetaClass(this);
-                m_MetaExtendMemeberVariableDict.Add(mgmv.name, mgmv);
-            }
             ParseMemberVariableDefineMetaType();
             ParseMemberFunctionDefineMetaType();
 
@@ -177,12 +167,73 @@ namespace SimpleLanguage.Core
         }
         public override void ParseMemberVariableDefineMetaType()
         {
+            List<MetaMemberVariable> mmvList = new List<MetaMemberVariable>();
+            foreach (var v in m_ExtendClass.metaExtendMemeberVariableDict)
+            {
+                mmvList.Add(v.Value);
+            }
+            foreach (var v in m_ExtendClass.metaMemberVariableDict)
+            {
+                mmvList.Add(v.Value);
+            }
+            foreach (var it in mmvList)
+            {
+                MetaMemberVariable mgmv = new MetaMemberVariable(it);
+                mgmv.SetOwnerMetaClass(this);
+                if (m_ExtendClass is MetaGenTemplateClass mgtcEc)
+                {
+                    UpdateMetaTypeByGenClassAndFunction(mgmv.metaDefineType);
+                }
+                m_MetaExtendMemeberVariableDict.Add(mgmv.name, mgmv);
+            }
+
             foreach (var it in this.m_MetaTemplateClass.metaMemberVariableDict)
             {
                 var mmv = ParseMetaMemberVariableDefineMetaType(it.Value);
 
                 m_MetaMemberVariableDict.Add(mmv.name, mmv);
             }
+        }
+
+        public bool UpdateMetaTypeByGenClassAndFunction( MetaType mt )
+        {
+            List<MetaClass> regMCList = new List<MetaClass>();
+            if (mt.defineTemplateMetaTypeList.Count > 0)
+            {
+                for (int i = 0; i < mt.defineTemplateMetaTypeList.Count; i++)
+                {
+                    if (UpdateMetaTypeByGenClassAndFunction(mt.defineTemplateMetaTypeList[i]))
+                    {
+                    }
+                }
+            }
+            if (mt.isTemplate)
+            {
+                MetaType ggmt = m_ExtendClassMetaType.GetMetaInputTemplateByIndex(mt.metaTemplate.index);
+                if (ggmt != null)
+                {
+                    mt.SetMetaType(ggmt);
+                }
+                else
+                {
+                    //ggmt = mgtf?.GetMetaGenTemplate(mt.metaTemplate.name);
+                    //if (ggmt != null)
+                    //{
+                    //    MetaType mt11 = m_ExtendClassMetaType.GetMetaInputTemplateByIndex(ggmt.metaTemplate.index);
+                    //    mt.SetMetaType(mt11);
+                    //}
+                    //else
+                    //{
+                    //    Log.AddInStructMeta(EError.None, "没有找到模板中定义的模板内容!" + mt.metaTemplate.name);
+                    //}
+                }
+            }
+            else
+            {
+                return false;
+            }
+
+            return true;
         }
         MetaMemberVariable ParseMetaMemberVariableDefineMetaType( MetaMemberVariable mmv )
         {

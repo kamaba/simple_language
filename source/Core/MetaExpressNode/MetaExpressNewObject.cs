@@ -705,7 +705,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             m_MetaDefineType = new MetaType(mt);
             Init();
-            m_MetaConstructFunctionCall = new MetaMethodCall(mt.metaClass, mt.templateMetaTypeList, m_OwnerMetaBlockStatements.ownerMetaFunction,
+            m_MetaConstructFunctionCall = new MetaMethodCall(mt.metaClass, mt.defineTemplateMetaTypeList, m_OwnerMetaBlockStatements.ownerMetaFunction,
                 null, null, null, null );
         }
         // Class1<Int32> a = Class1<Int32>( 10 ){ a = 20; } 
@@ -816,7 +816,7 @@ namespace SimpleLanguage.Core
                             }
                             if (isSame)
                             {
-                                m_MetaDefineType.AddTemplateMetaType(new MetaType(mtList[0]));
+                                m_MetaDefineType.AddDefineTemplateMetaType(new MetaType(mtList[0]));
                             }
                         }
                     }

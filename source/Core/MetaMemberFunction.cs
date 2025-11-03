@@ -611,15 +611,15 @@ namespace SimpleLanguage.Core
             }
             bool isIncludeTemplateClass = mt.IsIncludeClassTemplate(m_OwnerMetaClass);
             List<MetaClass> mcList = new List<MetaClass>();
-            for (int i = 0; i < mt.templateMetaTypeList.Count; i++)
+            for (int i = 0; i < mt.defineTemplateMetaTypeList.Count; i++)
             {
-                var mtc = mt.templateMetaTypeList[i];
+                var mtc = mt.defineTemplateMetaTypeList[i];
                 if (mtc.eType == EMetaTypeType.MetaClass)
                 {
                     mcList.Add(mtc.metaClass);
                 }
             }
-            if (mcList.Count == mt.templateMetaTypeList.Count)
+            if (mcList.Count == mt.defineTemplateMetaTypeList.Count)
             {
                 MetaGenTemplateClass mgtc = mt.metaClass.AddInstanceMetaClass(mcList);
                 isGenMetaClass = true;
