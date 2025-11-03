@@ -256,9 +256,8 @@ namespace SimpleLanguage.Core
             {
                 this.m_ExtendClass = m_ExtendClassMetaType.metaClass;
             }
-            HandleParentClassTemplateRelation();
-
-            HandleExtendClassTemplateRelation();
+            //HandleParentClassTemplateRelation();
+            //HandleExtendClassTemplateRelation();
         }
         public virtual void ParseInterfaceRelation()
         {
@@ -487,7 +486,7 @@ namespace SimpleLanguage.Core
             {
                 return null;
             }
-            MetaGenTemplateClass mgtc = mt.metaClass.AddMetaTemplateClassByMetaClassAndMetaTemplateMetaTypeList( mt.templateMetaTypeList );
+            MetaGenTemplateClass mgtc = mt.metaClass.AddMetaTemplateClassByMetaClassAndMetaTemplateMetaTypeList( mt.defineTemplateMetaTypeList );
 
             if ( mgtc  != null )
             {
@@ -496,7 +495,7 @@ namespace SimpleLanguage.Core
                 {
                     mgtc.ParseGenTemplateClass(mgtc);
                 }
-                return new MetaType(mgtc, mt.templateMetaTypeList);
+                return new MetaType(mgtc, mt.defineTemplateMetaTypeList);
             }
 
             var find = BindStructTemplateMetaClassList( mt );

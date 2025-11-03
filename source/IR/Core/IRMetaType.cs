@@ -41,9 +41,9 @@ namespace SimpleLanguage.IR
             {
                 m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
             }
-            for (int i = 0; i < type.templateMetaTypeList.Count; i++)
+            for (int i = 0; i < type.defineTemplateMetaTypeList.Count; i++)
             {
-                m_IRMetaTypeList.Add(new IRMetaType(type.templateMetaTypeList[i]));
+                m_IRMetaTypeList.Add(new IRMetaType(type.defineTemplateMetaTypeList[i]));
             }
         }
         public IRMetaType( IRMetaClass irmc, List<IRMetaType> irlist )

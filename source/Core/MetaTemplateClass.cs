@@ -84,58 +84,61 @@ namespace SimpleLanguage.Core
             }
             return this;
         }
-        void HandleParentClassTemplateRelation()
-        {
-            m_ClassLevelRelationData = new ClassLevelRelationData();
+        //void HandleParentClassTemplateRelation()
+        //{
+        //    m_ClassLevelRelationData = new ClassLevelRelationData();
 
-            if(m_ExtendClassMetaType.templateMetaTypeList.Count > 0 )
-            {
-                for (int i = 0; i < this.m_ExtendClassMetaType.templateMetaTypeList.Count; i++)
-                {
-                    var v = m_ExtendClassMetaType.templateMetaTypeList[i];
-                    var parentClassTemplate = m_ExtendClass.metaTemplateList[i];
-                    var find1 = this.metaTemplateList.Find(a => a.name == v.fromName);
-                    m_ClassLevelRelationData.AddBindData(parentClassTemplate, find1);
-                }
-                if (!m_MetaTemplateMapDict.ContainsKey(m_ExtendClass))
-                {
-                    this.m_MetaTemplateMapDict[m_ExtendClass] = m_ClassLevelRelationData;
-                }
-            }
-        }
-        public void HandleExtendClassTemplateRelation()
-        {
-            if (m_ExtendClassMetaType != null)
-            {
-                MetaClass whitemc = m_ExtendClass.extendClass;
-                while (whitemc!= null)
-                {
-                    if (whitemc == CoreMetaClassManager.objectMetaClass)
-                    {
-                        break;
-                    }
-                    if (!m_MetaTemplateMapDict.ContainsKey(whitemc))
-                    {
-                        ClassLevelRelationData clrd = new ClassLevelRelationData();
+        //    if(m_ExtendClassMetaType.templateMetaTypeList.Count > 0 )
+        //    {
+        //        for (int i = 0; i < this.m_ExtendClassMetaType.templateMetaTypeList.Count; i++)
+        //        {
+        //            var v = m_ExtendClassMetaType.templateMetaTypeList[i];
+        //            var parentClassTemplate = m_ExtendClass.metaTemplateList[i];
+        //            var find1 = this.metaTemplateList.Find(a => a.name == v.fromName);
+        //            if( find1 != null )
+        //            {
+        //                m_ClassLevelRelationData.AddBindData(parentClassTemplate, find1);
+        //            }
+        //        }
+        //        if (!m_MetaTemplateMapDict.ContainsKey(m_ExtendClass))
+        //        {
+        //            this.m_MetaTemplateMapDict[m_ExtendClass] = m_ClassLevelRelationData;
+        //        }
+        //    }
+        //}
+        //public void HandleExtendClassTemplateRelation()
+        //{
+        //    if (m_ExtendClassMetaType != null)
+        //    {
+        //        MetaClass whitemc = m_ExtendClass.extendClass;
+        //        while (whitemc!= null)
+        //        {
+        //            if (whitemc == CoreMetaClassManager.objectMetaClass)
+        //            {
+        //                break;
+        //            }
+        //            if (!m_MetaTemplateMapDict.ContainsKey(whitemc))
+        //            {
+        //                ClassLevelRelationData clrd = new ClassLevelRelationData();
 
-                        for (int i = 0; i < m_ExtendClassMetaType.templateMetaTypeList.Count; i++)
-                        {
-                            var v = m_ExtendClassMetaType.templateMetaTypeList[i];
-                            var defineTemplate = m_ExtendClass.metaTemplateList[i];
-                            var parentClassTemplate = metaTemplateList.Find( a=> a.name == v.fromName);
-                            var find1 = FindExtendsMetaTemplate( whitemc, defineTemplate.name );
-                            if( find1 != null )
-                            {
-                                clrd.AddBindData(find1, parentClassTemplate);
-                            }
-                        }
-                        this.m_MetaTemplateMapDict[whitemc] = clrd;
-                    }
+        //                for (int i = 0; i < m_ExtendClassMetaType.templateMetaTypeList.Count; i++)
+        //                {
+        //                    var v = m_ExtendClassMetaType.templateMetaTypeList[i];
+        //                    var defineTemplate = m_ExtendClass.metaTemplateList[i];
+        //                    var parentClassTemplate = metaTemplateList.Find( a=> a.name == v.fromName);
+        //                    var find1 = FindExtendsMetaTemplate( whitemc, defineTemplate.name );
+        //                    if( find1 != null && parentClassTemplate != null )
+        //                    {
+        //                        clrd.AddBindData(find1, parentClassTemplate);
+        //                    }
+        //                }
+        //                this.m_MetaTemplateMapDict[whitemc] = clrd;
+        //            }
 
-                    whitemc = whitemc.extendClass;
-                }
-            }
-        }
+        //            whitemc = whitemc.extendClass;
+        //        }
+        //    }
+        //}
         public MetaTemplate FindExtendsMetaTemplate( MetaClass targetMc, string findname )
         {
             if(m_ClassLevelRelationData == null )
@@ -264,7 +267,10 @@ namespace SimpleLanguage.Core
                 {
                     if (list[i].isTemplateClass)
                     {
-                        return null;
+                        if (list[i] is not MetaGenTemplateClass )
+                        {
+                            return null;
+                        }
                     }
 
 

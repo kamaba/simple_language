@@ -238,7 +238,7 @@ public class List<T> interface IList<T>, IList
     !#
 }
 
-public class Level2<T1 ,T2> extends Level1<List0<T2> > interface List1<List2<Map<T2,string> > >, Map<T2,string>
+public class Level2<T1 ,T2> extends Level1<List0<T2> > interface List1<List2<Map<T2,string> > >, Map<List0<T2>,string>
 {
     T1 Level2_t1_t2_t21 = null
     T2 Level2_t1_t2_t22 = null

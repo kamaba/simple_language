@@ -295,10 +295,10 @@ namespace SimpleLanguage.IR
             {
                 sb.Append(mt.GetTemplateMetaClass().metaNode.allName);
                 sb.Append("<");
-                for (int i = 0; i < mt.templateMetaTypeList.Count; i++)
+                for (int i = 0; i < mt.defineTemplateMetaTypeList.Count; i++)
                 {
-                    sb.Append(GetIRNameByMetaType(mt.templateMetaTypeList[i]));
-                    if (i < mt.templateMetaTypeList.Count - 1)
+                    sb.Append(GetIRNameByMetaType(mt.defineTemplateMetaTypeList[i]));
+                    if (i < mt.defineTemplateMetaTypeList.Count - 1)
                     { sb.Append(","); }
                 }
                 sb.Append('>');

@@ -94,7 +94,7 @@ interface Interface1<IT1>
 {
     IT1 add()
 }
-Level2<LT21, LT22, LT23> extends Level1<LT23,LT22> interface Interface1<LT23>
+Level2<LT21, LT22, LT23> extends Level1<LT23,LT22 > interface Interface1<LT23>
 {
     LT22 Level21_t = new()
 
