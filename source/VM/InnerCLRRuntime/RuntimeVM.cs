@@ -148,7 +148,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             else
             {
-                var rt = GetClassRuntimeType(irmt, null, isAdd);
+                var rt = GetClassRuntimeType(irmt, m_InputTemplateRuntimeTypeList, isAdd);
                 return ObjectManager.CreateObjectByRuntimeType(rt);
             }
         }
@@ -225,19 +225,12 @@ namespace SimpleLanguage.VM.Runtime
                 return m_ValueStack[m_ValueIndex-1];
             }
         }
-        public RuntimeType GetClassRuntimeType(IRMetaType irmt, Dictionary<int,int> mapRT, bool isAdd = false )
+        public RuntimeType GetClassRuntimeType(IRMetaType irmt, List<RuntimeType> __rtList, bool isAdd = false )
         {
             if (irmt.templateIndex != -1)
             {
-                int index = irmt.templateIndex;
-                if( mapRT != null )
-                {
-                    if(mapRT.ContainsKey(index) )
-                    {
-                        index = mapRT[index];
-                    }
-                }
-                return m_InputTemplateRuntimeTypeList[index];
+                int index = irmt.templateIndex;               
+                return __rtList[index];
             }
             else
             {
@@ -640,13 +633,12 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         IRMethod cfc = irc.GetIRNonStaticMethodByIndex(iri.index);
 
-                        Dictionary<int,int> mapTemplate = irc.GetTemplateMap(cfc.irOwnerMetaClass );
+                        //Dictionary<int,int> mapTemplate = irc.GetIRMetaTypeByTemplateAndClassRelation(cfc.irOwnerMetaClass, 0 );
 
                         List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
                         for ( int i = 0; i < mfc.irTemplateMetaType.Count; i++ )
                         {
-
-                            var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], mapTemplate, true );
+                            var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], rt.runtimeTemplateList, true );
                             rtList.Add(crt);
                         }
                         //if( irc.irName == "Int8"

@@ -20,7 +20,7 @@ namespace SimpleLanguage.Core
         public override bool isGenTemplate => true;
 
         private List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
-       private MetaClass m_MetaTemplateClass = null;
+        private MetaClass m_MetaTemplateClass = null;
         protected bool m_GenTemplateFlag = false;
 
         public MetaGenTemplateClass( MetaClass mtc, List<MetaGenTemplate> list ) : base(mtc.name)
@@ -130,10 +130,6 @@ namespace SimpleLanguage.Core
         {
             return m_MetaGenTemplateList.Find( a=> a.name == name  );
         }
-        public MetaTemplate GetMapMetaTemplate( string  name )
-        {
-            return null;
-        }
         public override void ParseGenTemplateClass( MetaGenTemplateClass mgtc )
         {
             if(m_GenTemplateFlag )
@@ -180,10 +176,6 @@ namespace SimpleLanguage.Core
             {
                 MetaMemberVariable mgmv = new MetaMemberVariable(it);
                 mgmv.SetOwnerMetaClass(this);
-                if (m_ExtendClass is MetaGenTemplateClass mgtcEc)
-                {
-                    UpdateMetaTypeByGenClassAndFunction(mgmv.metaDefineType);
-                }
                 m_MetaExtendMemeberVariableDict.Add(mgmv.name, mgmv);
             }
 
@@ -194,47 +186,46 @@ namespace SimpleLanguage.Core
                 m_MetaMemberVariableDict.Add(mmv.name, mmv);
             }
         }
+        //public bool UpdateMetaTypeByGenClassAndFunction( MetaType mt )
+        //{
+        //    List<MetaClass> regMCList = new List<MetaClass>();
+        //    if (mt.defineTemplateMetaTypeList.Count > 0)
+        //    {
+        //        for (int i = 0; i < mt.defineTemplateMetaTypeList.Count; i++)
+        //        {
+        //            if (UpdateMetaTypeByGenClassAndFunction(mt.defineTemplateMetaTypeList[i]))
+        //            {
+        //            }
+        //        }
+        //    }
+        //    if (mt.isTemplate)
+        //    {
+        //        MetaType ggmt = m_ExtendClassMetaType.GetMetaInputTemplateByIndex(mt.metaTemplate.index);
+        //        if (ggmt != null)
+        //        {
+        //            mt.SetMetaType(ggmt);
+        //        }
+        //        else
+        //        {
+        //            //ggmt = mgtf?.GetMetaGenTemplate(mt.metaTemplate.name);
+        //            //if (ggmt != null)
+        //            //{
+        //            //    MetaType mt11 = m_ExtendClassMetaType.GetMetaInputTemplateByIndex(ggmt.metaTemplate.index);
+        //            //    mt.SetMetaType(mt11);
+        //            //}
+        //            //else
+        //            //{
+        //            //    Log.AddInStructMeta(EError.None, "没有找到模板中定义的模板内容!" + mt.metaTemplate.name);
+        //            //}
+        //        }
+        //    }
+        //    else
+        //    {
+        //        return false;
+        //    }
 
-        public bool UpdateMetaTypeByGenClassAndFunction( MetaType mt )
-        {
-            List<MetaClass> regMCList = new List<MetaClass>();
-            if (mt.defineTemplateMetaTypeList.Count > 0)
-            {
-                for (int i = 0; i < mt.defineTemplateMetaTypeList.Count; i++)
-                {
-                    if (UpdateMetaTypeByGenClassAndFunction(mt.defineTemplateMetaTypeList[i]))
-                    {
-                    }
-                }
-            }
-            if (mt.isTemplate)
-            {
-                MetaType ggmt = m_ExtendClassMetaType.GetMetaInputTemplateByIndex(mt.metaTemplate.index);
-                if (ggmt != null)
-                {
-                    mt.SetMetaType(ggmt);
-                }
-                else
-                {
-                    //ggmt = mgtf?.GetMetaGenTemplate(mt.metaTemplate.name);
-                    //if (ggmt != null)
-                    //{
-                    //    MetaType mt11 = m_ExtendClassMetaType.GetMetaInputTemplateByIndex(ggmt.metaTemplate.index);
-                    //    mt.SetMetaType(mt11);
-                    //}
-                    //else
-                    //{
-                    //    Log.AddInStructMeta(EError.None, "没有找到模板中定义的模板内容!" + mt.metaTemplate.name);
-                    //}
-                }
-            }
-            else
-            {
-                return false;
-            }
-
-            return true;
-        }
+        //    return true;
+        //}
         MetaMemberVariable ParseMetaMemberVariableDefineMetaType( MetaMemberVariable mmv )
         {
             MetaMemberVariable mgmv = new MetaMemberVariable(mmv);
