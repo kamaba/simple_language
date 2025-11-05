@@ -96,17 +96,17 @@ Level1<LT11,LT12>
         ret llll
     }
 }
-Test<T>
+Test1<T>
 {
-    T t = new()
+    T t1 = new()
 }
 Test2<T>
 {
-    T t = new()
+    T t2 = new()
 }
-Level2<LT21, LT22, LT23> extends Level1<Test2<LT23>,Test<LT22> >
+Level2<LT21, LT22, LT23> extends Level1<Test2<LT23>,Test1<LT22> >
 {
-    LT22 Level21_t = new()
+    LT22 Level21_t = new()  # Test1<AAAAA<string>> l2
 
     override LT22 add( LT22 tttt )
     {
@@ -123,32 +123,46 @@ Level2<LT21, LT22, LT23> extends Level1<Test2<LT23>,Test<LT22> >
         ret _test
     }
 }
-Level3<LT31,LT32> extends Level2<LT31,Test<LT32>, LT31>
+Level3<LT31,LT32> extends Level2<LT31,Test1<LT32>, LT31>
 {
-
+    LT32 Level31_t = new()
 }
-AAAAA<T>
+AAAAA<AA>
 {
-    T t = new()
+    AA aa = new()
 }
 Level4<LT41,LT42> extends Level3<LT41, AAAAA<LT42> >
 {
-
+    LT41 Level41_t = new()
 }
 
 GenClass{
     static fun()
     {
         Level4<int,string> ll41 = new()
-        ll41.Level21_t = 20
-        #Level2<string,string,int> lll31 = new()
-        #lll31.Level21_t = "30000"
-        #lll31.Level1_t1.t.t.t = 20000
-        #lll31.Level1_t2.t = 1000
+        ll41.Level41_t = 20
+        ll41.Level31_t.aa = "aaa"
+        ll41.Level21_t.t1.aa = "ttt11"
+        ll41.Level1_t1.t2.t2 = 300
+        ll41.Level1_t2.t1.t1.aa = "400"
+
         
-        #System.Console.WriteLine("_this_333331 " + lll31.Level21_t )
-        #System.Console.WriteLine("_this_333332 " + lll31.Level1_t1.t.t )
-        #System.Console.WriteLine("_this_333333 " + lll31.Level1_t2.t )
+        System.Console.WriteLine("_this_333331 " + ll41.Level41_t )
+        System.Console.WriteLine("_this_333331 " + ll41.Level31_t.aa )
+        System.Console.WriteLine("_this_333331 " + ll41.Level21_t.t1.aa  )
+        System.Console.WriteLine("_this_333331 " + ll41.Level1_t1.t2.t2  )
+        System.Console.WriteLine("_this_333331 " + ll41.Level1_t2.t1.t1.aa  )
+
+
+        Level2<string,string,int> lll31 = new()
+        lll31.Level21_t = "30000"
+        lll31.Level1_t1.t2.t2 = 20000
+        lll31.Level1_t2.t1 = "1000"
+        
+
+        System.Console.WriteLine("_this_333332 " + lll31.Level21_t  )
+        System.Console.WriteLine("_this_333333 " + lll31.Level1_t1.t2.t2 )
+        System.Console.WriteLine("_this_333333 " + lll31.Level1_t2.t1 )
     }
 }
 

@@ -79,7 +79,7 @@ namespace SimpleLanguage.Core
             m_EType = EMetaTypeType.MetaGenClass;
             m_MetaClass = mgtc;
             m_DefineTemplateMetaTypeList = defineMTList;
-            m_GenTemplateMetaTypeList = genTemplateMetaTypeList;
+            m_GenTemplateMetaTypeList = genMTList;
         }
         public MetaType( MetaClass mc )
         {

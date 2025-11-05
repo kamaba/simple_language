@@ -134,8 +134,8 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < inputTemplateNodeList.Count; i++)
             {
                 MetaType mt2 = GetAndRegisterTemplateDefineMetaTemplateClass(ownerMc, findfn, inputTemplateNodeList[i]);
-                mt.AddDefineTemplateMetaType(mt2);
-                mt.AddGenTemplateMetaType(mt2);
+                mt.AddDefineTemplateMetaType(new MetaType(mt2));
+                mt.AddGenTemplateMetaType(new MetaType(mt2));
             }
             
             return ownerMc.AddMetaPreTemplateClass(mt, false, out bool igmc);
@@ -168,8 +168,8 @@ namespace SimpleLanguage.Core
                         {
                             var itn = dcc.inputTemplateNodeList[j];
                             var mt2 = GetAndRegisterTemplateDefineMetaTemplateClass(ownerMc, findfn, itn);
-                            mt.AddDefineTemplateMetaType(mt2);
-                            mt.AddGenTemplateMetaType(mt2);
+                            mt.AddDefineTemplateMetaType(new MetaType(mt2));
+                            mt.AddGenTemplateMetaType(new MetaType(mt2) );
                             //if (mt2.isTemplate)
                             //{
                             //    isNeedReg = false;
