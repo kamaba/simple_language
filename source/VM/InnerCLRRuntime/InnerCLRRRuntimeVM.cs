@@ -115,6 +115,7 @@ namespace SimpleLanguage.VM.Runtime
             RuntimeVM clrRuntime = InnerCLRRuntimeVM.CreateExeSplite(irmtList, irlist );
             clrRuntime.SetNewObject();
             clrRuntime.Run();
+            clrRuntime.ClearNewObject();
             InnerCLRRuntimeVM.PopCLRRuntime();
             
         }

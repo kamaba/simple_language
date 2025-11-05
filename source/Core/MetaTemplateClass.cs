@@ -84,7 +84,7 @@ namespace SimpleLanguage.Core
             }
             return this;
         }
-        void HandleParentClassTemplateRelation()
+        void HandleParentClassTemplateMapRelation()
         {
             m_ClassLevelRelationData = new ClassLevelRelationData();
 
@@ -93,7 +93,7 @@ namespace SimpleLanguage.Core
             {
                 for (int i = 0; i < this.m_ExtendClassMetaType.defineTemplateMetaTypeList.Count; i++)
                 {
-                    var mapMetaType = m_ExtendClassMetaType.genTemplateMetaTypeList[i];
+                    var mapMetaType = m_ExtendClassMetaType.defineTemplateMetaTypeList[i];
                     var parentClassTemplate = m_ExtendClass.metaTemplateList[i];
                     if (mapMetaType != null)
                     {
@@ -106,7 +106,7 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        public void HandleExtendClassTemplateRelation()
+        public void HandleExtendClassTemplateMapRelation()
         {
             if (m_ExtendClassMetaType != null)
             {

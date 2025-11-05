@@ -46,9 +46,10 @@ namespace SimpleLanguage.VM
         }
         public RuntimeType GetClassRuntimeType(IRMetaType irmt, bool isAdd = false)
         {
-            if (irmt.templateIndex != -1)
+            var irmc = this.irClass;
+            if ( irmt.templateIndex != -1)
             {
-                if( irmt.irOwnerMetaClass == irClass )
+                if( irmt.irOwnerMetaClass == this.irClass )
                 {
                     return runtimeTemplateList[irmt.templateIndex];
                 }

@@ -33,6 +33,7 @@ namespace SimpleLanguage.VM.Runtime
 
 
         private IRMethod m_IRMethod = null;
+        private IRMetaClass m_IRMetaClass = null;
         private IRData[] m_IRDataList = null;
         private ushort m_ExecuteIndex = 0;
         private ushort m_ExecuteCount = 0;
@@ -78,7 +79,7 @@ namespace SimpleLanguage.VM.Runtime
                 for (int i = 0; i < m_IRMethod.methodReturnVariableList.Count; i++)
                 {
                     IRMetaType imt = m_IRMethod.methodReturnVariableList[i].irMetaType;
-                    SObject sobj = CreateObjectByIRMetaType(imt, true);
+                    SObject sobj = CreateObjectByIRMetaType(imt, imt.irOwnerMetaClass, true);
                     m_ReturnObjectArray[i] = sobj;
                 }
 
@@ -86,7 +87,7 @@ namespace SimpleLanguage.VM.Runtime
                 for (int i = 0; i < m_IRMethod.methodArgumentList.Count; i++)
                 {
                     IRMetaType imt = m_IRMethod.methodArgumentList[i].irMetaType;
-                    SObject sobj = CreateObjectByIRMetaType(imt, true);
+                    SObject sobj = CreateObjectByIRMetaType(imt, imt.irOwnerMetaClass, true);
                     m_ArgumentObjectArray[i] = sobj;
                 }
                 for( int i = 0; i < m_ArgumentObjectArray.Length; i++ )
@@ -100,7 +101,7 @@ namespace SimpleLanguage.VM.Runtime
                 {
                     var mev = m_IRMethod.methodLocalVariableList[i];
                     IRMetaType imt = mev.irMetaType;
-                    SObject sobj = CreateObjectByIRMetaType(imt, true);
+                    SObject sobj = CreateObjectByIRMetaType(imt, imt.irMetaClass, true);
                     m_LocalVariableObjectArray[i] = sobj;
                 }
                 for (int i = 0; i < m_LocalVariableObjectArray.Length; i++)
@@ -140,7 +141,7 @@ namespace SimpleLanguage.VM.Runtime
                 m_ValueStack = new SValue[500];
             }            
         }
-        SObject CreateObjectByIRMetaType(IRMetaType irmt, bool isAdd = false )
+        SObject CreateObjectByIRMetaType(IRMetaType irmt, IRMetaClass curIrMc, bool isAdd = false )
         {
             if( irmt.templateIndex != -1 )
             {
@@ -148,7 +149,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             else
             {
-                var rt = GetClassRuntimeType(irmt, m_InputTemplateRuntimeTypeList, isAdd);
+                var rt = GetClassRuntimeType(irmt, curIrMc, m_InputTemplateRuntimeTypeList, isAdd);
                 return ObjectManager.CreateObjectByRuntimeType(rt);
             }
         }
@@ -225,12 +226,20 @@ namespace SimpleLanguage.VM.Runtime
                 return m_ValueStack[m_ValueIndex-1];
             }
         }
-        public RuntimeType GetClassRuntimeType(IRMetaType irmt, List<RuntimeType> __rtList, bool isAdd = false )
+        public RuntimeType GetClassRuntimeType(IRMetaType irmt, IRMetaClass curIRMc, List<RuntimeType> __rtList, bool isAdd = false )
         {
             if (irmt.templateIndex != -1)
             {
-                int index = irmt.templateIndex;               
-                return __rtList[index];
+                if (irmt.irOwnerMetaClass == curIRMc )
+                {
+                    return __rtList[irmt.templateIndex];
+                }
+                else
+                {
+                    var mt = curIRMc.GetIRMetaTypeByTemplateAndClassRelation(irmt.irOwnerMetaClass, irmt.templateIndex);
+
+                    return GetClassRuntimeType(mt, curIRMc, __rtList, isAdd);
+                }
             }
             else
             {
@@ -239,7 +248,7 @@ namespace SimpleLanguage.VM.Runtime
                 {
                     for (int i = 0; i < irmt.irMetaTypeList.Count; i++)
                     {
-                        var crt = GetClassRuntimeType(irmt.irMetaTypeList[i], null, isAdd);
+                        var crt = GetClassRuntimeType(irmt.irMetaTypeList[i], curIRMc, __rtList, isAdd);
                         rtList.Add(crt);
                     }
                 }
@@ -275,6 +284,11 @@ namespace SimpleLanguage.VM.Runtime
         {
             SValue sval = InnerCLRRuntimeVM.topCLRRuntime.GetCurrentIndexValue(false);
             m_ValueStack[m_ValueIndex++] = sval;
+            m_IRMetaClass = sval.sobject?.irMetaClass;
+        }
+        public void ClearNewObject()
+        {
+            m_IRMetaClass = null;
         }
         public void Run()
         {
@@ -527,14 +541,14 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.LoadStaticField:
                     {
                         var irmt = iri.opValue as IRMetaType;
-                        RuntimeType rt = GetClassRuntimeType(irmt, null, true);
+                        RuntimeType rt = GetClassRuntimeType(irmt, irmt.irOwnerMetaClass, null, true);
                         rt.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex++]);
                     }
                     break;
                 case EIROpCode.StoreStaticField:
                     {
                         var irmt = iri.opValue as IRMetaType;
-                        RuntimeType rt = GetClassRuntimeType(irmt, null,true);
+                        RuntimeType rt = GetClassRuntimeType(irmt, irmt.irOwnerMetaClass, null, true);
                         rt.SetMemberVariableSValue(iri.index, m_ValueStack[--m_ValueIndex] );
                     }
                     break;
@@ -545,7 +559,7 @@ namespace SimpleLanguage.VM.Runtime
                         List<RuntimeType> classRTList = new List<RuntimeType>();
                         for (int i = 0; i < mfc.metaType.irMetaTypeList.Count; i++)
                         {
-                            var crt = GetClassRuntimeType(mfc.metaType.irMetaTypeList[i], null, true);
+                            var crt = GetClassRuntimeType(mfc.metaType.irMetaTypeList[i], mfc.metaType.irMetaTypeList[i].irOwnerMetaClass, null, true);
                             classRTList.Add(crt);
                         }
                         var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(mfc.metaType.irMetaClass, classRTList);
@@ -638,7 +652,7 @@ namespace SimpleLanguage.VM.Runtime
                         List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
                         for ( int i = 0; i < mfc.irTemplateMetaType.Count; i++ )
                         {
-                            var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], rt.runtimeTemplateList, true );
+                            var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], irc, rt.runtimeTemplateList, true );
                             rtList.Add(crt);
                         }
                         //if( irc.irName == "Int8"
@@ -712,7 +726,7 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.NewTemplateClass:
                     {
                         IRMetaType mdt = iri.opValue as IRMetaType;
-                        var rt = GetClassRuntimeType(mdt, null, true);
+                        var rt = GetClassRuntimeType(mdt, m_IRMetaClass != null ? m_IRMetaClass : mdt.irMetaClass, m_InputTemplateRuntimeTypeList, true);
                         SObject sobj = ObjectManager.CreateObjectByRuntimeType( rt, true );
                         if (sobj is ClassObject co)
                         {

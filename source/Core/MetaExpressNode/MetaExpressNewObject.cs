@@ -817,6 +817,7 @@ namespace SimpleLanguage.Core
                             if (isSame)
                             {
                                 m_MetaDefineType.AddDefineTemplateMetaType(new MetaType(mtList[0]));
+                                m_MetaDefineType.AddGenTemplateMetaType(new MetaType(mtList[0]));
                             }
                         }
                     }
