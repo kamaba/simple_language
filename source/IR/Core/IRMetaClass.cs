@@ -26,7 +26,7 @@ namespace SimpleLanguage.IR
         public List<IRMetaVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;
 
 
-        Dictionary<int, Dictionary<int, int>> m_IRMetaClassMapTemplateDict = new Dictionary<int, Dictionary<int, int>>();
+        Dictionary<int, Dictionary<int, IRMetaType>> m_IRMetaClassMapTemplateDict = new Dictionary<int, Dictionary<int, IRMetaType>>();
         private Dictionary<int, int> m_MetaMemberVariableHashCodeDict = new Dictionary<int, int>();
         private List<IRMetaVariable> m_LocalIRMetaVariableList = new List<IRMetaVariable>();
         private List<IRMetaVariable> m_StaticIRMetaVariableList = new List<IRMetaVariable>();
@@ -68,11 +68,18 @@ namespace SimpleLanguage.IR
             }
             return null;
         }
-        public Dictionary<int,int> GetTemplateMap( IRMetaClass irmc )
+        public IRMetaType GetIRMetaTypeByTemplateAndClassRelation( IRMetaClass irmc, int index )
         {
             if(m_IRMetaClassMapTemplateDict.ContainsKey(irmc.id ) )
             {
-                return m_IRMetaClassMapTemplateDict[irmc.id];
+                var irmcmap = m_IRMetaClassMapTemplateDict[irmc.id];
+                if( irmcmap != null )
+                {
+                    if( irmcmap.ContainsKey( index ) )
+                    {
+                        return irmcmap[index];
+                    }
+                }
             }
             return null;
         }
@@ -183,12 +190,12 @@ namespace SimpleLanguage.IR
             foreach( var v in this.m_MetaClass.metaTemplateMapDict )
             {
                 IRMetaClass cv = IRManager.instance.GetIRMetaClassById(v.Key.GetHashCode() );
-                Dictionary<int, int> templateMap = new Dictionary<int, int>();
+                Dictionary<int, IRMetaType> templateMap = new Dictionary<int, IRMetaType >();
 
                 for( int i = 0; i < v.Value.metaTemplateBindDataList.Count; i++ )
                 {
                     var mtbd = v.Value.metaTemplateBindDataList[i];
-                    templateMap.Add(mtbd.sourceTemplate.index, mtbd.targetTemplate.index);
+                    templateMap.Add(mtbd.sourceTemplate.index, new IRMetaType( mtbd.targetMetaType ) );
                 }
                 m_IRMetaClassMapTemplateDict.Add(cv.id, templateMap);
             }

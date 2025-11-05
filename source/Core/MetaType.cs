@@ -67,18 +67,19 @@ namespace SimpleLanguage.Core
         public MetaType()
         {
         }
-        public MetaType(MetaTemplate mt, string fromName )
+        public MetaType(MetaTemplate mt, string fromName = "" )
         {
             m_EType = EMetaTypeType.Template;
             m_MetaTemplate = mt;
             m_MetaClass = mt.extendsMetaClass;
             //m_FromName = fromName;
         }
-        public MetaType( MetaGenTemplateClass mgtc, List<MetaType> mtList )
+        public MetaType( MetaGenTemplateClass mgtc, List<MetaType> defineMTList, List<MetaType> genMTList )
         {
             m_EType = EMetaTypeType.MetaGenClass;
             m_MetaClass = mgtc;
-            m_DefineTemplateMetaTypeList = mtList;
+            m_DefineTemplateMetaTypeList = defineMTList;
+            m_GenTemplateMetaTypeList = genTemplateMetaTypeList;
         }
         public MetaType( MetaClass mc )
         {
@@ -268,7 +269,6 @@ namespace SimpleLanguage.Core
         }
         public void AddGenTemplateMetaType(MetaType mt)
         {
-            mt.m_ParentMetaType = this;
             m_GenTemplateMetaTypeList.Add(mt);
         }
         //public void SetSourceMetaType( MetaType sourceMt )
@@ -440,13 +440,30 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            if( m_MetaTemplate != null )
+            if( eType == EMetaTypeType.Template )
             {
-                sb.Append(m_MetaTemplate.name);
+                if (m_MetaTemplate != null)
+                {
+                    sb.Append(m_MetaTemplate.name);
+                }
+            }
+            else if( eType == EMetaTypeType.TemplateClassWithTemplate )
+            {
+                if (m_MetaTemplate != null)
+                {
+                    sb.Append(m_MetaTemplate.name);
+                }
+            }
+            else if( eType == EMetaTypeType.MetaClass )
+            {
+                if (m_MetaClass != null)
+                {
+                    sb.Append(m_MetaClass.allClassName);
+                }
             }
             else
             {
-                if( m_MetaClass is MetaGenTemplateClass mgtc )
+                if (m_MetaClass is MetaGenTemplateClass mgtc)
                 {
                     sb.Append(mgtc.allClassName);
                 }
@@ -457,26 +474,21 @@ namespace SimpleLanguage.Core
                     //    sb.Append(m_TemplateMetaClass.metaNode.allName);                        
                     //}
                     //else 
-                    if (m_MetaClass != null)
-                    {
-                        sb.Append(m_MetaClass.allClassName);
-                    }
+                }
+            }
+            if (m_DefineTemplateMetaTypeList.Count > 0)
+            {
+                sb.Append("<");
 
-                    if(m_DefineTemplateMetaTypeList.Count > 0 )
+                for (int i = 0; i < m_DefineTemplateMetaTypeList.Count; i++)
+                {
+                    sb.Append(m_DefineTemplateMetaTypeList[i].ToString());
+                    if (i < m_DefineTemplateMetaTypeList.Count - 1)
                     {
-                        sb.Append("<");
-
-                        for (int i = 0; i < m_DefineTemplateMetaTypeList.Count; i++)
-                        {
-                            sb.Append(m_DefineTemplateMetaTypeList[i].ToString());
-                            if (i < m_DefineTemplateMetaTypeList.Count - 1)
-                            {
-                                sb.Append(",");
-                            }
-                        }
-                        sb.Append(">");
+                        sb.Append(",");
                     }
                 }
+                sb.Append(">");
             }
 
             return sb.ToString();

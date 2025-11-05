@@ -289,13 +289,14 @@ namespace SimpleLanguage.Core
             //这里，要注册实体模板类
             for (int i = 0; i < inputTemplateNodeList.Count; i++)
             {
-                var t = RegisterTemplateDefineMetaTemplateFunction(findfn, regMc, findFun, inputTemplateNodeList[i], isParse );
+                var t = RegisterTemplateDefineMetaTemplateFunction(findfn, findFun, inputTemplateNodeList[i], isParse );
+                mt.AddDefineTemplateMetaType(new MetaType(regMc.metaTemplateList[i]) );
                 mt.AddGenTemplateMetaType(t);
             }
             mt = regMc.AddMetaPreTemplateClass(mt, isParse, out bool igmc);
             return mt;
         }
-        public MetaType RegisterTemplateDefineMetaTemplateFunction(MetaClass findMc, MetaClass regMc, MetaMemberFunction findFun, FileInputTemplateNode fmtd, bool isParse = false )
+        public MetaType RegisterTemplateDefineMetaTemplateFunction(MetaClass findMc, MetaMemberFunction findFun, FileInputTemplateNode fmtd, bool isParse = false )
         {
             var newmc = ClassManager.instance.GetMetaClassByNameAndFileMeta(findMc, fmtd.fileMeta, fmtd.nameList);
             if (newmc != null)

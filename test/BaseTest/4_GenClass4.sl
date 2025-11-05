@@ -3,7 +3,7 @@ import CSharp.System
 
 namespace Core
 {
-    export class Object
+    class Object
     {
         public void _init_()
         {
@@ -89,6 +89,12 @@ Level1<LT11,LT12>
 {
     Test2<LT11> Level1_t1 = new()
     LT12 Level1_t2 = new()
+
+    ok()
+    {
+        Test2<LT11> llll = new()
+        ret llll
+    }
 }
 Test<T>
 {
@@ -98,7 +104,7 @@ Test2<T>
 {
     T t = new()
 }
-Level2<LT21, LT22, LT23> extends Level1<Test<LT23>,Test<LT22> >
+Level2<LT21, LT22, LT23> extends Level1<Test2<LT23>,Test<LT22> >
 {
     LT22 Level21_t = new()
 
@@ -117,17 +123,31 @@ Level2<LT21, LT22, LT23> extends Level1<Test<LT23>,Test<LT22> >
         ret _test
     }
 }
+Level3<LT31,LT32> extends Level2<LT31,Test<LT32>, LT31>
+{
+
+}
+AAAAA<T>
+{
+    T t = new()
+}
+Level4<LT41,LT42> extends Level3<LT41, AAAAA<LT42> >
+{
+
+}
+
 GenClass{
     static fun()
     {
-
-        Level2<string,string,int> lll31 = new()
+        Level4<int,string> ll41 = new()
+        ll41.Level21_t = 20
+        #Level2<string,string,int> lll31 = new()
         #lll31.Level21_t = "30000"
-        lll31.Level1_t1.t.t = 20000
+        #lll31.Level1_t1.t.t.t = 20000
         #lll31.Level1_t2.t = 1000
         
         #System.Console.WriteLine("_this_333331 " + lll31.Level21_t )
-        System.Console.WriteLine("_this_333332 " + lll31.Level1_t1.t.t )
+        #System.Console.WriteLine("_this_333332 " + lll31.Level1_t1.t.t )
         #System.Console.WriteLine("_this_333333 " + lll31.Level1_t2.t )
     }
 }

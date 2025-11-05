@@ -87,7 +87,7 @@ namespace SimpleLanguage.IR
             //    }
             //}
             //else 
-            m_IRMetaType = new IRMetaType(mv.metaDefineType);
+            m_IRMetaType = new IRMetaType(mv.realMetaType);
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme)
         {
