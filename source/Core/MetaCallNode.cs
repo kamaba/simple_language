@@ -607,7 +607,7 @@ namespace SimpleLanguage.Core
                                     return false;
                                 }
                                 if( m_FrontCallNode != null )
-                                    this.m_CallMetaType = new MetaType(m_FrontCallNode.m_MetaClass, this.m_FrontCallNode.m_MetaTemplateParamsList );
+                                    this.m_CallMetaType = new MetaType(m_FrontCallNode.metaType );
                                 else
                                 {
                                     this.m_CallMetaType = new MetaType(mmv.ownerMetaClass);

@@ -129,6 +129,9 @@ GenClass
     #Level1<string> ls4 = {}
     static fun()
     {
+        Level1<string>.LevelStaticValue = "2000"
+        System.Console.WriteLine("Level1<string>.LevelStaticValue = 2000->" + Level1<string>.LevelStaticValue  )
+
         Level1<Level1<int> > GenClass_fun_l1 = Level1< Level1<int> >()
         var t3 = GenClass_fun_l1.Level1Fun<Level1<string> >()
         t3.LevelMemValue = "aaaaa"
@@ -139,8 +142,6 @@ GenClass
         System.Console.WriteLine("+++++++++++++++++++++" + GenClass_fun_l2.LevelMemValue.LevelMemValue  )
         
 
-        #Level1<string>.LevelStaticValue = "2000"
-        #System.Console.WriteLine("Level1<string>.LevelStaticValue = 2000->" + Level1<string>.LevelStaticValue  )
 
         var t4 = Level1<string>.Level1SF<int>(100)
         System.Console.WriteLine("Level1<string>.Level1SF<int>(100)->" + t4  )

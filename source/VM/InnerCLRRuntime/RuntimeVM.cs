@@ -541,14 +541,30 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.LoadStaticField:
                     {
                         var irmt = iri.opValue as IRMetaType;
-                        RuntimeType rt = GetClassRuntimeType(irmt, irmt.irOwnerMetaClass, null, true);
+
+                        List<RuntimeType> classRTList = new List<RuntimeType>();
+                        for (int i = 0; i < irmt.irMetaTypeList.Count; i++)
+                        {
+                            var crt = GetClassRuntimeType(irmt.irMetaTypeList[i], irmt.irMetaTypeList[i].irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
+                            classRTList.Add(crt);
+                        }
+                        RuntimeType rt = GetClassRuntimeType(irmt, irmt.irOwnerMetaClass, classRTList, true);
+
                         rt.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex++]);
                     }
                     break;
                 case EIROpCode.StoreStaticField:
                     {
                         var irmt = iri.opValue as IRMetaType;
-                        RuntimeType rt = GetClassRuntimeType(irmt, irmt.irOwnerMetaClass, null, true);
+
+                        List<RuntimeType> classRTList = new List<RuntimeType>();
+                        for (int i = 0; i < irmt.irMetaTypeList.Count; i++)
+                        {
+                            var crt = GetClassRuntimeType(irmt.irMetaTypeList[i], irmt.irMetaTypeList[i].irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
+                            classRTList.Add(crt);
+                        }
+
+                        RuntimeType rt = GetClassRuntimeType(irmt, irmt.irOwnerMetaClass, classRTList, true);
                         rt.SetMemberVariableSValue(iri.index, m_ValueStack[--m_ValueIndex] );
                     }
                     break;
