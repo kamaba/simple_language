@@ -35,13 +35,12 @@ namespace SimpleLanguage.Core
             }
             if (isNeedReg)
             {
-                var newmc = mt.metaClass.AddInstanceMetaClass(regMCList);
+                var newmc = mt.metaClass.AddInstanceMetaClass(regMCList, true );
                 if (newmc == null)
                 {
                     Log.AddInStructMeta(EError.None, "MetaClass is Null");
                     return false;
                 }
-                newmc.ParseGenTemplateClass(newmc);
                 mt.SetMetaClass(newmc);
                 return true;
             }

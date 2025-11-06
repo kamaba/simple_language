@@ -76,9 +76,9 @@ Map<MapT1,MapT2>
     MapT1 m1 = null
     MapT2 m2 = null
 
-    static MapT3 MapFunc<MapT3>()
+    static MapT3 MapFunc<MapT3>( MapT3 t3 )
     {
-        ret null
+        ret t3
     }
 }
 Level1<LevelT1>
@@ -110,9 +110,9 @@ Level1<LevelT1>
     }
     static LevelT4 Level1SF<LevelT4>( LevelT4 t4 )
     {
-        Map<LevelT4, LevelT1>.MapFunc<LevelT4>()
+        rt4 = Map<LevelT4, LevelT1>.MapFunc<LevelT4>( t4 )
         
-        ret t4
+        ret rt4
     }
 }
 GenClass
@@ -127,18 +127,17 @@ GenClass
     #Level1<string> ls2 = null
     #Level1<string> ls3 = new()     #报错，提示，不允许这种形式
     #Level1<string> ls4 = {}
-    static GenClass_fun()
+    static fun()
     {
-        #!
         Level1<Level1<int> > GenClass_fun_l1 = Level1< Level1<int> >()
         var t3 = GenClass_fun_l1.Level1Fun<Level1<string> >()
         t3.LevelMemValue = "aaaaa"
+        System.Console.WriteLine("-----------------------------------" + t3.LevelMemValue  )
+
         Level1< Level1<int> > GenClass_fun_l2 = Level1<Level1<int> >()
         GenClass_fun_l2.LevelMemValue.LevelMemValue = 300
-
-        System.Console.WriteLine("-----------------------------------" + t3.LevelMemValue  )
         System.Console.WriteLine("+++++++++++++++++++++" + GenClass_fun_l2.LevelMemValue.LevelMemValue  )
-        !#
+        
 
         #Level1<string>.LevelStaticValue = "2000"
         #System.Console.WriteLine("Level1<string>.LevelStaticValue = 2000->" + Level1<string>.LevelStaticValue  )

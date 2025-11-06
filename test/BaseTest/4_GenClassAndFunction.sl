@@ -80,7 +80,7 @@ public class Class1
 }
 List0<T>
 {
-    List1<List2<T> > List0_list0t = null
+    List1<List2<T> > List0_list0t0 = null
     T List0_list0t1 = null
     List1<T> List0_list0t2 = null
     List0<int> List0_list0t3 = null

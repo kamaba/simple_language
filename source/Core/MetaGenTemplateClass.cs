@@ -144,7 +144,7 @@ namespace SimpleLanguage.Core
             TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(m_ExtendClassMetaType, this, null);
             m_ExtendClass = m_ExtendClassMetaType.metaClass;
 
-            m_ExtendClass.ParseGenTemplateClass(mgtc);
+            m_ExtendClass.ParseGenTemplateClass(m_ExtendClass as MetaGenTemplateClass);
 
             ParseMemberVariableDefineMetaType();
             ParseMemberFunctionDefineMetaType();
@@ -176,7 +176,7 @@ namespace SimpleLanguage.Core
             {
                 MetaMemberVariable mgmv = new MetaMemberVariable(it);
                 mgmv.SetOwnerMetaClass(this);
-                m_MetaExtendMemeberVariableDict.Add(mgmv.name, mgmv);
+                this.m_MetaExtendMemeberVariableDict.Add(mgmv.name, mgmv);
             }
 
             foreach (var it in this.m_MetaTemplateClass.metaMemberVariableDict)

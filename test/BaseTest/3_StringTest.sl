@@ -36,6 +36,7 @@ StringTest
     {
         #a1 = "aabcc";
         #a2 = "aaacc" + "deee";
+        fstring = f"{}";
         a3 = '{"name":"okr", "age":13, "info":{ "map":[1,2,3], "seq":"\n\n"        
         } }' + 3;
         #a4 = "aa" + 20.0f.toString();

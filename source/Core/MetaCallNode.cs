@@ -906,9 +906,18 @@ namespace SimpleLanguage.Core
                     {
                         mgtc.ParseGenTemplateClass(mgtc);
                         m_MetaClass = mgtc;
+                        List<MetaType> listmt2 = new List<MetaType>();
+                        for( int i = 0; i < mgtc.metaTemplateClass.metaTemplateList.Count; i++ )
+                        {
+                            listmt2.Add(new MetaType(mgtc.metaTemplateClass.metaTemplateList[i]));
+                        }
+                        m_MetaType = new MetaType(mgtc, listmt2, m_MetaTemplateParamsList);
+                    }
+                    else
+                    {
+                        m_MetaType = new MetaType(m_MetaClass, m_MetaTemplateParamsList);
                     }
 
-                    m_MetaType = new MetaType(m_MetaClass, m_MetaTemplateParamsList);
                 }
             }             
             else if( this.m_CallNodeType == ECallNodeType.MemberFunctionName )
