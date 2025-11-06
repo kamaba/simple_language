@@ -101,6 +101,7 @@ namespace SimpleLanguage.Core
             //m_TemplateMetaClass = templatemc;
             m_MetaClass = mc;
             m_DefineTemplateMetaTypeList = mtList;
+            m_GenTemplateMetaTypeList = mtList;
             m_EType = EMetaTypeType.TemplateClassWithTemplate;
         }
         public MetaType( MetaClass mc, MetaClass templatemc, MetaInputTemplateCollection mitc )

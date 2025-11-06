@@ -8,6 +8,7 @@
 
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Core;
 
@@ -25,8 +26,36 @@ namespace SimpleLanguage.IR
         private List<IRMetaType> m_IRMetaTypeList = new List<IRMetaType>();
 
         private int m_TemplateIndex = -1;
-        public IRMetaType(MetaType type)
+        public IRMetaType(MetaType type )
         {
+            if (type.eType == EMetaTypeType.MetaClass)
+            {
+                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+                m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+            }
+            else if (type.eType == EMetaTypeType.Template)
+            {
+                m_TemplateIndex = type.metaTemplate.index;
+                m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(type.metaTemplate.ownerClass.GetHashCode());
+                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+            }
+            else
+            {
+                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+                m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+            }
+            if (m_IRMetaClass == null || m_IROwnerMetaClass == null )
+            {
+                Debug.Assert(false, "这个不可以为空!");
+            }
+            for (int i = 0; i < type.genTemplateMetaTypeList.Count; i++)
+            {
+                m_IRMetaTypeList.Add(new IRMetaType(type.genTemplateMetaTypeList[i]));
+            }
+        }
+        public IRMetaType(MetaType type, IRMetaClass ownerIRMc)
+        {
+            m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id );
             if (type.eType == EMetaTypeType.MetaClass)
             {
                 m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
@@ -34,8 +63,7 @@ namespace SimpleLanguage.IR
             else if (type.eType == EMetaTypeType.Template)
             {
                 m_TemplateIndex = type.metaTemplate.index;
-                m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(type.metaTemplate.ownerClass.GetHashCode());
-                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());                
+                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
             }
             else
             {
@@ -44,6 +72,11 @@ namespace SimpleLanguage.IR
             for (int i = 0; i < type.genTemplateMetaTypeList.Count; i++)
             {
                 m_IRMetaTypeList.Add(new IRMetaType(type.genTemplateMetaTypeList[i]));
+            }
+
+            if (m_IRMetaClass == null || m_IROwnerMetaClass == null)
+            {
+                Debug.Assert(false, "这个不可以为空!");
             }
         }
         public IRMetaType( IRMetaClass irmc, List<IRMetaType> irlist )
