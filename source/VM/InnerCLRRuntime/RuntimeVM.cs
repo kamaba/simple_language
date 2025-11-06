@@ -101,7 +101,7 @@ namespace SimpleLanguage.VM.Runtime
                 {
                     var mev = m_IRMethod.methodLocalVariableList[i];
                     IRMetaType imt = mev.irMetaType;
-                    SObject sobj = CreateObjectByIRMetaType(imt, imt.irMetaClass, true);
+                    SObject sobj = CreateObjectByIRMetaType(imt, m_IRMethod.irOwnerMetaClass, true);
                     m_LocalVariableObjectArray[i] = sobj;
                 }
                 for (int i = 0; i < m_LocalVariableObjectArray.Length; i++)
@@ -742,7 +742,7 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.NewTemplateClass:
                     {
                         IRMetaType mdt = iri.opValue as IRMetaType;
-                        var rt = GetClassRuntimeType(mdt, m_IRMetaClass != null ? m_IRMetaClass : mdt.irMetaClass, m_InputTemplateRuntimeTypeList, true);
+                        var rt = GetClassRuntimeType(mdt, m_IRMetaClass != null ? m_IRMetaClass : mdt.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
                         SObject sobj = ObjectManager.CreateObjectByRuntimeType( rt, true );
                         if (sobj is ClassObject co)
                         {

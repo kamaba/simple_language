@@ -43,15 +43,16 @@ namespace SimpleLanguage.Core.IR
 
                 IRMetaType irmt = null;
                 IRMetaClass irmc = null;
-                if( mv.isStatic )
+                IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
+                if ( mv.isStatic )
                 {
                     if( cnode.callMetaType != null )
                     {
-                        irmt = new IRMetaType(cnode.callMetaType);
+                        irmt = new IRMetaType(cnode.callMetaType, owirmc);
                     }
                     else
                     {
-                        irmt = new IRMetaType(mv.metaDefineType);
+                        irmt = new IRMetaType(mv.metaDefineType, owirmc);
                     }
                     irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
                 }
@@ -79,10 +80,11 @@ namespace SimpleLanguage.Core.IR
         public static void ParseNew(MetaVisitNode cnode, IRMethod _irMethod, List<IRBase> irList )
         {
             IRMetaClass irmc = IRManager.instance.GetIRMetaClassById(cnode.callMetaType.GetTemplateMetaClass().GetHashCode());
+            IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(cnode.variable.GetOwnerClassTemplateClass().GetHashCode());
             if (cnode.callMetaType.eType == EMetaTypeType.TemplateClassWithTemplate
                 || cnode.callMetaType.eType == EMetaTypeType.Template)
             {
-                var irnew = new IRNew(_irMethod, new IRMetaType(cnode.callMetaType));
+                var irnew = new IRNew(_irMethod, new IRMetaType(cnode.callMetaType, owirmc ));
                 irList.Add(irnew);
             }
             else if (cnode.callMetaType.eType == EMetaTypeType.MetaClass)
@@ -178,8 +180,8 @@ namespace SimpleLanguage.Core.IR
                     if (mv.variableFrom == MetaVariable.EVariableFrom.Static
                         || mv.variableFrom == MetaVariable.EVariableFrom.Global)
                     {
-                        var irmt = new IRMetaType(mv.metaDefineType);
                         IRMetaClass irmc = IRManager.instance.GetIRMetaClassById(mv.ownerMetaClass.GetHashCode());
+                        var irmt = new IRMetaType(mv.metaDefineType, irmc);
                         IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, m_IRMethod, mv);
                         irList.Add(irVar);
                     }

@@ -96,13 +96,13 @@ Level1<LevelT1>
 
     LevelT3 Level1Fun<LevelT3>( )
     {
-        #LevelStaticValue = new()
+        LevelStaticValue = new()
 
-        #Map< Level1<LevelT3>, LevelT1> map2 = new()
+        Map< Level1<LevelT3>, LevelT1> map22222 = new()
 
         this.LevelMemValue = new()
 
-        #Map<LevelT1,Level1<LevelT3> > map = new()
+        Map<LevelT1,Level1<LevelT3> > map = new()
 
         LevelT3 lt2 = new()
 
@@ -139,9 +139,7 @@ GenClass
 
         Level1< Level1<int> > GenClass_fun_l2 = Level1<Level1<int> >()
         GenClass_fun_l2.LevelMemValue.LevelMemValue = 300
-        System.Console.WriteLine("+++++++++++++++++++++" + GenClass_fun_l2.LevelMemValue.LevelMemValue  )
-        
-
+        System.Console.WriteLine("+++++++++++++++++++++" + GenClass_fun_l2.LevelMemValue.LevelMemValue  )      
 
         var t4 = Level1<string>.Level1SF<int>(100)
         System.Console.WriteLine("Level1<string>.Level1SF<int>(100)->" + t4  )
