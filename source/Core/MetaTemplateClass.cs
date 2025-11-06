@@ -261,7 +261,7 @@ namespace SimpleLanguage.Core
             }
             return AddInstanceMetaClass(list);
         }
-        public MetaGenTemplateClass AddInstanceMetaClass(List<MetaClass> list)
+        public MetaGenTemplateClass AddInstanceMetaClass(List<MetaClass> list, bool isParse = false )
         {
             if(list.Count == 0)
             {
@@ -290,8 +290,12 @@ namespace SimpleLanguage.Core
                 MetaGenTemplateClass tmc = GetGenTemplateMetaClassByTemplateList(list2);
                 if (tmc == null)
                 {
-                    tmc = new MetaGenTemplateClass(this, list2);
+                    tmc = new MetaGenTemplateClass(this, list2);                    
                     this.AddGenTemplateMetaClass(tmc);
+                    if (isParse)
+                    {
+                        tmc.ParseGenTemplateClass(tmc);
+                    }
                 }
                 return tmc;
             }

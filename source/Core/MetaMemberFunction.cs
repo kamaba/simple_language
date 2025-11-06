@@ -400,7 +400,7 @@ namespace SimpleLanguage.Core
         //如果是模板函数，需要在实例化类后，进行新的实体函数的解析
         public MetaGenTemplateFunction AddGenTemplateMemberFunctionByMetaTypeList(MetaClass mc, List<MetaType> list)
         {
-            if (mc.isTemplateClass)
+            if (mc.isTemplateClass && !mc.isGenTemplate )
             {
                 return null;
             }

@@ -230,7 +230,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (irmt.templateIndex != -1)
             {
-                if (irmt.irOwnerMetaClass == curIRMc )
+                if (irmt.irOwnerMetaClass == curIRMc || curIRMc.irName == "Object" )
                 {
                     return __rtList[irmt.templateIndex];
                 }
@@ -559,7 +559,7 @@ namespace SimpleLanguage.VM.Runtime
                         List<RuntimeType> classRTList = new List<RuntimeType>();
                         for (int i = 0; i < mfc.metaType.irMetaTypeList.Count; i++)
                         {
-                            var crt = GetClassRuntimeType(mfc.metaType.irMetaTypeList[i], mfc.metaType.irMetaTypeList[i].irOwnerMetaClass, null, true);
+                            var crt = GetClassRuntimeType(mfc.metaType.irMetaTypeList[i], mfc.metaType.irMetaTypeList[i].irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
                             classRTList.Add(crt);
                         }
                         var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(mfc.metaType.irMetaClass, classRTList);
