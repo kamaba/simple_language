@@ -100,7 +100,7 @@ namespace SimpleLanguage.IR
                             }
                             else
                             {
-                                irmc = IRManager.instance.GetIRMetaClassById(mv.ownerMetaClass.GetHashCode());
+                                irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
                                 irmt = new IRMetaType(cl.callMetaType);
                             }
                             //else
