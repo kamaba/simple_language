@@ -462,7 +462,7 @@ namespace SimpleLanguage.Core
         //}
         public override void UpdateOwnerMetaClass(MetaClass ownerclass)
         {
-            m_MetaVariable?.SetOwnerMetaClass(ownerclass);
+            //this.m_MetaVariable?.SetOwnerMetaClass(ownerclass);
             base.UpdateOwnerMetaClass(ownerclass);
         }
         public override string ToFormatString()

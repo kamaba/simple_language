@@ -74,7 +74,7 @@ namespace SimpleLanguage.Core
             m_Express = mmv.m_Express;
             m_VariableFrom = EVariableFrom.Member;
 
-            m_FileMetaMemeberVariable = mmv.m_FileMetaMemeberVariable;
+            this.m_FileMetaMemeberVariable = mmv.m_FileMetaMemeberVariable;
             m_Name = mmv.m_Name;
             this.m_PintTokenList = mmv.m_PintTokenList;
             m_Index = mmv.m_Index;
