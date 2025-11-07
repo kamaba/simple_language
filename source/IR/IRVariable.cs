@@ -39,15 +39,15 @@ namespace SimpleLanguage.IR
                 {
                     index = irmc.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
                 }
-                if( index == -1 )
-                {
-                    Log.AddGenIR(EError.None, "没有找到对应成员变量的Index");
-                    return null;
-                }
                 if ( mv.isStatic )
                 {
-                    if (mv.metaDefineType.IsIncludeTemplate())
+                    if (mv.realMetaType.GenTemplateIsIncludeTemplate())
                     {
+                        if (index == -1)
+                        {
+                            Log.AddGenIR(EError.None, "没有找到对应成员变量的Index");
+                            return null;
+                        }
                         IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
                         return irVar;
                     }
@@ -59,6 +59,11 @@ namespace SimpleLanguage.IR
                 }
                 else
                 {
+                    if (index == -1)
+                    {
+                        Log.AddGenIR(EError.None, "没有找到对应成员变量的Index");
+                        return null;
+                    }
                     IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Member);
                     return irVar;
                 }
@@ -153,7 +158,7 @@ namespace SimpleLanguage.IR
                 }
                 if (mv.isStatic)
                 {
-                    if( mv.metaDefineType.IsIncludeTemplate() )
+                    if( mv.realMetaType.GenTemplateIsIncludeTemplate() )
                     {
                         IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
                         return irsv;

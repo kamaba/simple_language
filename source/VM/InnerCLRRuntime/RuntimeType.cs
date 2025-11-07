@@ -8,6 +8,7 @@
 
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
+using SimpleLanguage.VM.Runtime;
 using System.Collections.Generic;
 using System.Text;
 
@@ -487,6 +488,41 @@ namespace SimpleLanguage.VM
 
         private static List<RuntimeType> s_RuntimeList = new List<RuntimeType>();
 
+        public static RuntimeType GetRuntimeTypeByMT(IRMetaClass rmc )
+        {
+            foreach (var v in s_RuntimeList)
+            {
+                if (v.irClass != rmc)
+                {
+                    continue;
+                }
+                return v;
+            }
+            return null;
+        }
+
+        public static RuntimeType GetRuntimeTypeByMIRMetaType( IRMetaType irmt )
+        {
+            IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(irmt.irOwnerMetaClass.id);
+
+            List<RuntimeType> rtList = new List<RuntimeType>();
+            if (irmt.irMetaTypeList.Count > 0)
+            {
+                for (int j = 0; j < irmt.irMetaTypeList.Count; j++)
+                {
+                    var crt = RuntimeVM.GetClassRuntimeType(irmt.irMetaTypeList[j], owirmc, null, true);
+                    rtList.Add(crt);
+                }
+            }
+
+            var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.irMetaClass, rtList);
+            if (rt == null)
+            {
+                rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(irmt.irMetaClass, rtList);
+            }
+
+            return rt;
+        }
         public static RuntimeType GetRuntimeTypeByMTAndTemplateMT(IRMetaClass rmc, List<RuntimeType> inputTemplateTypeList)
         {
             foreach (var v in s_RuntimeList)

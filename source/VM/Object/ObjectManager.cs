@@ -19,39 +19,6 @@ namespace SimpleLanguage.VM
                 classObjectDict.Add(cl.GetHashCode(), cl);
             }
         }
-        public static SValue CreateValueByDefineType(IRMetaClass mdt)
-        {
-            SValue svalue = new SValue();
-            //if (mdt.metaClass == CoreMetaClassManager.booleanMetaClass)
-            //{
-            //    svalue.SetBoolValue(false);
-            //}
-            //else if (mdt.metaClass == CoreMetaClassManager.int16MetaClass)
-            //{
-            //    svalue.SetInt16Value(0);
-            //}
-            //else if (mdt.metaClass == CoreMetaClassManager.int32MetaClass)
-            //{
-            //    svalue.SetInt32Value(0);
-            //}
-            //else if (mdt.metaClass == CoreMetaClassManager.int64MetaClass)
-            //{
-            //    svalue.SetInt64Value(0);
-            //}
-            //else if (mdt.metaClass == CoreMetaClassManager.stringMetaClass)
-            //{
-            //    svalue.SetStringValue("");
-            //}
-            //else if (mdt.metaClass == CoreMetaClassManager.arrayMetaClass)
-            //{
-            //}
-            //else
-            //{
-            //    //var sobj = new ClassObject(mdt);
-            //    //svalue.SetSObject(sobj);
-            //}
-            return svalue;
-        }        
         public static SObject CreateObjectByRuntimeType( RuntimeType rt, bool isCreateMemObject = false )
         {
             SObject sobj = null;

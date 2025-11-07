@@ -248,7 +248,7 @@ namespace SimpleLanguage.Core
                 m_ExtendClassMetaType = new MetaType( CoreMetaClassManager.objectMetaClass );
             }
 
-            if (!m_ExtendClassMetaType.IsIncludeTemplate())
+            if (!m_ExtendClassMetaType.DefineTemplateIsIncludeTemplate())
             {
                 this.m_ExtendClass = this.m_ExtendClassMetaType.metaClass;
             }

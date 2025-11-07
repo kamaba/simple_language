@@ -121,7 +121,7 @@ namespace SimpleLanguage.IR
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Member;
 
             IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mmv.GetOwnerClassTemplateClass().GetHashCode());
-            m_IRMetaType = new IRMetaType(mmv.metaDefineType, owirmc);
+            m_IRMetaType = new IRMetaType(mmv.realMetaType, owirmc);
         }
         public void SetExpress( MetaExpressNode men )
         {

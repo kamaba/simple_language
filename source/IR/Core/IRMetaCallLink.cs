@@ -154,12 +154,12 @@ namespace SimpleLanguage.Core.IR
                 }
             }
 
-            if (cnode.methodCall != null && _irMethod != null )
+            if (cnode.methodCall != null  )
             {
-                IRDup irdup = new IRDup(_irMethod);
+                IRDup irdup = new IRDup(null);
                 irList.Add(irdup);
 
-                IRCallFunction ircf = new IRCallFunction(_irMethod);
+                IRCallFunction ircf = new IRCallFunction(null);
                 ircf.Parse(cnode.methodCall);
                 irList.Add(ircf);
             }

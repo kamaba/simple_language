@@ -51,8 +51,9 @@ namespace SimpleLanguage.IR
                         var mv = finalMVN.GetRetMetaVariable();
 
                         var irmc = IRManager.instance.GetIRMetaClassById(mv.metaDefineType.GetTemplateMetaClass().GetHashCode());
+                        var owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
 
-                        IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable( new IRMetaType(mv.metaDefineType), irmc, irMethod, finalMVN.GetOrgTemplateMetaVariable() );
+                        IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable( new IRMetaType(mv.metaDefineType, owirmc), irmc, irMethod, finalMVN.GetOrgTemplateMetaVariable() );
                         m_IRStatements.Add(irsv);
 
                     }
@@ -92,16 +93,17 @@ namespace SimpleLanguage.IR
                             var mv = cl.GetRetMetaVariable();
 
                             var irmc = IRManager.instance.GetIRMetaClassById(mv.metaDefineType.GetTemplateMetaClass().GetHashCode());
+                            var owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
                             IRMetaType irmt = null;
                             if (cl.callMetaType == null)
                             {
                                 irmc = IRManager.instance.GetIRMetaClassById(mv.ownerMetaClass.GetHashCode());
-                                irmt = new IRMetaType(mv.metaDefineType);
+                                irmt = new IRMetaType(mv.metaDefineType, owirmc);
                             }
                             else
                             {
                                 irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
-                                irmt = new IRMetaType(cl.callMetaType);
+                                irmt = new IRMetaType(cl.callMetaType, owirmc);
                             }
                             //else
                             //    irmt = new IRMetaType(mv.ownerMetaClass, null);
