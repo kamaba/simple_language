@@ -149,8 +149,9 @@ namespace SimpleLanguage.IR
             for (int i = 0; i < staticMetaMemberVariables.Count; i++)
             {
                 var v = staticMetaMemberVariables[i];
+
                 IRMetaVariable irmv = new IRMetaVariable(this, v, i);
-                if ( v.metaDefineType.IsIncludeTemplate() )
+                if ( v.realMetaType.GenTemplateIsIncludeTemplate() )
                 {
                     m_StaticIRMetaVariableList.Add(irmv);
                     AddMetaMemberVariableIndexBindHashCode(v.GetHashCode(), i);
@@ -195,7 +196,7 @@ namespace SimpleLanguage.IR
                 for( int i = 0; i < v.Value.metaTemplateBindDataList.Count; i++ )
                 {
                     var mtbd = v.Value.metaTemplateBindDataList[i];
-                    templateMap.Add(mtbd.sourceTemplate.index, new IRMetaType( mtbd.targetMetaType ) );
+                    templateMap.Add(mtbd.sourceTemplate.index, new IRMetaType( mtbd.targetMetaType, this ) );
                 }
                 m_IRMetaClassMapTemplateDict.Add(cv.id, templateMap);
             }

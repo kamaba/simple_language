@@ -225,7 +225,7 @@ namespace SimpleLanguage.VM.Runtime
                 return m_ValueStack[m_ValueIndex-1];
             }
         }
-        public RuntimeType GetClassRuntimeType(IRMetaType irmt, IRMetaClass curIRMc, List<RuntimeType> __rtList, bool isAdd = false )
+        public static RuntimeType GetClassRuntimeType(IRMetaType irmt, IRMetaClass curIRMc, List<RuntimeType> __rtList, bool isAdd = false )
         {
             if (irmt.templateIndex != -1)
             {
@@ -325,7 +325,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             Log.AddVM( EError.None, pushChar  + "[VMRuntime] [Pop] Method: [" + funName + "]");
         }
-        public void SetValue( ref SValue sValue, ref SValue sStore, IRData iri )
+        public static void SetValue( ref SValue sValue, ref SValue sStore, IRData iri )
         {
             switch (sStore.eType)
             {
@@ -537,6 +537,11 @@ namespace SimpleLanguage.VM.Runtime
                         m_ValueIndex -= 1;
                     }
                     break;
+                case EIROpCode.LocalGlobal:
+                    {
+                        InnerCLRRuntimeVM.LoadGlobalVariable(iri.index, ref m_ValueStack[m_ValueIndex++]);
+                    }
+                    break;
                 case EIROpCode.LoadStaticField:
                     {
                         var irmt = iri.opValue as IRMetaType;
@@ -565,6 +570,12 @@ namespace SimpleLanguage.VM.Runtime
 
                         RuntimeType rt = GetClassRuntimeType(irmt, irmt.irOwnerMetaClass, classRTList, true);
                         rt.SetMemberVariableSValue(iri.index, m_ValueStack[--m_ValueIndex] );
+                    }
+                    break;
+                case EIROpCode.StoreGlobal:
+                    {
+                        var sval = m_ValueStack[--m_ValueIndex];
+                        InnerCLRRuntimeVM.StoreGlobalVariable( iri.index, ref sval );
                     }
                     break;
                 case EIROpCode.CallStatic:

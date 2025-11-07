@@ -194,12 +194,24 @@ namespace SimpleLanguage.Core
         //    m_EnumValue = mmv;
         //    m_MetaClass = mmv.ownerMetaClass;
         //}
-        public bool IsIncludeTemplate()
+        public bool DefineTemplateIsIncludeTemplate()
         {
-            for( int i = 0; i < m_DefineTemplateMetaTypeList.Count; i++ )
+            for (int i = 0; i < m_DefineTemplateMetaTypeList.Count; i++)
             {
                 var tmt = m_DefineTemplateMetaTypeList[i];
-                if( tmt.IsIncludeTemplate()  )
+                if (tmt.DefineTemplateIsIncludeTemplate())
+                {
+                    return true;
+                }
+            }
+            return m_MetaTemplate != null;
+        }
+        public bool GenTemplateIsIncludeTemplate()
+        {
+            for (int i = 0; i < m_GenTemplateMetaTypeList.Count; i++)
+            {
+                var tmt = m_GenTemplateMetaTypeList[i];
+                if (tmt.GenTemplateIsIncludeTemplate())
                 {
                     return true;
                 }

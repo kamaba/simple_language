@@ -129,7 +129,7 @@ namespace SimpleLanguage.IR
             List<IRMetaType> functionMtList = new List<IRMetaType>();
             for( int i = 0; i < mfc.metaFunctionInputTemplateList.Count; i++ )
             {
-                functionMtList.Add(new IRMetaType(mfc.metaFunctionInputTemplateList[i]));
+                functionMtList.Add(new IRMetaType(mfc.metaFunctionInputTemplateList[i], owirmc));
             }
            var irmethodcall = new IRMethodCall(irmt, functionMtList, m_IRRuntimeMethod, paramCount );
             if ( callMethodIndex == -1 )

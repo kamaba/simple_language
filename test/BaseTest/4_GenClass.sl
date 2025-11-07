@@ -87,6 +87,11 @@ Level1<LevelT1>
     LevelT1 LevelMemValue = new()
     Map<LevelT1, Level1<LevelT1> > mappp22 = new()
 
+    _init_( LevelT1 t1 )
+    {
+        this.LevelMemValue = t1
+    }
+
     Level1Com()
     {
         this.LevelMemValue = new()
@@ -117,18 +122,21 @@ Level1<LevelT1>
 }
 GenClass
 {
-    #Level1<Level2<int,int> > GenClass_ls = new()
-    #GenClass_ls_21 = Level1<string>("aaa")   #正常    
+    Level1<Map<int,int> > GenClass_ls = new()
+    static GenClass_ls_21 = Level1<string>("aaa")   #正常    
     #GenClass_ls_22 = Level1<Level2<int,int> >("aaa")    #应该报错，因为"aaa" 不是Level2<int,int> 正确的应该传 Level2<int,int>() 这样的格式
     #GenClass_ls2 = ( GenClass.GenClass_x < 3) == 4 > 3
     #ls3 = 10 ? x < 11 && x < 3 || 13 > x && 12 > x : 4
     #a = Level1b < Level2b || Level3b > Level4b
-    #static GenClass_x = 100;
+    static GenClass_x = 100;    
     #Level1<string> ls2 = null
     #Level1<string> ls3 = new()     #报错，提示，不允许这种形式
     #Level1<string> ls4 = {}
     static fun()
     {
+        System.Console.WriteLine("-----------------------------------" + GenClass.GenClass_ls_21.LevelMemValue  )     #静态模板成员还没有生成
+        System.Console.WriteLine("-----------------------------------" + GenClass.GenClass_x  )     #改造无模板静态变量还没有完成
+
         Level1<string>.LevelStaticValue = "2000"
         System.Console.WriteLine("Level1<string>.LevelStaticValue = 2000->" + Level1<string>.LevelStaticValue  )
 

@@ -50,7 +50,7 @@ namespace SimpleLanguage.IR
             }
             for (int i = 0; i < type.genTemplateMetaTypeList.Count; i++)
             {
-                m_IRMetaTypeList.Add(new IRMetaType(type.genTemplateMetaTypeList[i]));
+                m_IRMetaTypeList.Add(new IRMetaType(type.genTemplateMetaTypeList[i], m_IROwnerMetaClass));
             }
         }
         public IRMetaType(MetaType type, IRMetaClass ownerIRMc)
@@ -71,7 +71,7 @@ namespace SimpleLanguage.IR
             }
             for (int i = 0; i < type.genTemplateMetaTypeList.Count; i++)
             {
-                m_IRMetaTypeList.Add(new IRMetaType(type.genTemplateMetaTypeList[i]));
+                m_IRMetaTypeList.Add(new IRMetaType(type.genTemplateMetaTypeList[i], m_IROwnerMetaClass));
             }
 
             if (m_IRMetaClass == null || m_IROwnerMetaClass == null)

@@ -214,7 +214,7 @@ namespace SimpleLanguage.Core
             vn.variable = mv;
             if (mt.metaClass is MetaGenTemplateClass mgtc)
             {
-                vn.m_ReturnMetaType = new MetaType(mgtc);
+                vn.m_ReturnMetaType = new MetaType(mt);
             }
 
             return vn;
