@@ -1,13 +1,21 @@
 
-String
+public class Core.String extends Object
 {
-    private String m_Value = null;
-    String ToString()
+    private String _value = null
+
+    _init_( object aa )
     {
-        return this;
     }
-    static Int32 ToInt32( String value )
+    _init_( String aa )
     {
-        return Int32.Parse( value );
+
+    }
+    String toString()
+    {
+        ret this;
+    }
+    static Int32 toInt32( String value )
+    {
+        ret Int32.Parse( value );
     }
 }
