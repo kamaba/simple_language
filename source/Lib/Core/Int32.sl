@@ -1,9 +1,12 @@
 
-Core.Int32
+Core.Int32 extends Object
 {
+    public const int MaxValue = 0x7fffffff;
+    public const int MinValue = unchecked((int)0x80000000);
+
     private Int32 _value = 0i;
 
-    _init_(Int32 _val )
+    _init_( Int32 _val )
     {
         this._value = _val        
     }
@@ -17,9 +20,24 @@ Core.Int32
     }
     cast( Type t )
     {
-        if( t == Int16.type )
+        if t == Int16.type 
         {
             ret Convert.Int32ConvertToInt16( m_Value )
         }
+    }
+
+    public int compareTo(object value)
+    {
+        if (value == null)
+        {
+            ret 1;
+        }
+
+        ret 0
+    }
+
+    public static int parse( string s )
+    {
+        ret 0
     }
 }

@@ -1,15 +1,5 @@
 
-public class MetaClass
-{
-
-}
-
-public class Type
-{
-    public MetaClass _metaClass = null
-}
-
-public class Array
+public class Core.Array
 {
     int _index = -1;
 
