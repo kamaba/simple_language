@@ -70,7 +70,18 @@ Project
     !#
     static Main()
     {        
-        
+        #global.pi = 3.1415f;
+        #global.xc = { a = 20, b = 15 }
+       #Class1.Print();
+       #ObjectTest.Fun();    
+       #EnumTest.fun()   
+       #CommitTest.fun();
+       #NumberTest.fun()
+       #StringTest.fun()
+       GenClass.fun()
+       #ArrayTest.fun()
+       #OverrideFunction.fun()
+       #CallLinkTest.fun()
     }
     static Test()
     {
