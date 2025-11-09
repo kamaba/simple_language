@@ -14,7 +14,7 @@ public class Std.Tree
 
     public static Tree Create( ETreeEtype te )
     {
-        if( te == BinaryTree )
+        if( te == ETreeEtype.BinaryTree )
         {
             ret Tree()
         }

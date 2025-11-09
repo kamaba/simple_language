@@ -1,6 +1,6 @@
 import Std
 
-namespace Std.Debug
+namespace Std
 {
     enum ELevel
     {
