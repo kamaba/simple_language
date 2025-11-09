@@ -6,9 +6,5 @@ namespace Std
 {
     public class Studio
     {
-        public void Printf( string str )
-        {
-
-        }
     }
 }

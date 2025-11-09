@@ -1,6 +1,7 @@
 
 public class Core.Math
 {
+    public const float Pi = 3.1415926f;
     public static Float32 sin( Float32 f )
     {
         ret 0.0f
