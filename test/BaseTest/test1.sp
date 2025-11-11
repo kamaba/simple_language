@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "4_GenClass3.sl";
+            path = "4_GenClass4.sl";
             group = "temp";
             tag = "all";
             a = 200
@@ -70,7 +70,7 @@ Project
     !#
     static Main()
     {        
-        
+        GenClass.fun()
     }
     static Test()
     {
