@@ -48,12 +48,12 @@ namespace SimpleLanguage.IR
             {
                 Debug.Assert(false, "这个不可以为空!");
             }
-            for (int i = 0; i < type.genTemplateMetaTypeList.Count; i++)
+            for (int i = 0; i < type.defineTemplateMetaTypeList.Count; i++)
             {
-                m_IRMetaTypeList.Add(new IRMetaType(type.genTemplateMetaTypeList[i], m_IROwnerMetaClass));
+                m_IRMetaTypeList.Add(new IRMetaType(type.defineTemplateMetaTypeList[i], m_IROwnerMetaClass));
             }
         }
-        public IRMetaType(MetaType type, IRMetaClass ownerIRMc)
+        public IRMetaType(MetaType type, IRMetaClass ownerIRMc )
         {
             m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id );
             if (type.eType == EMetaTypeType.MetaClass)
@@ -69,11 +69,11 @@ namespace SimpleLanguage.IR
             {
                 m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
             }
+
             for (int i = 0; i < type.genTemplateMetaTypeList.Count; i++)
             {
                 m_IRMetaTypeList.Add(new IRMetaType(type.genTemplateMetaTypeList[i], m_IROwnerMetaClass));
             }
-
             if (m_IRMetaClass == null || m_IROwnerMetaClass == null)
             {
                 Debug.Assert(false, "这个不可以为空!");

@@ -161,11 +161,11 @@ namespace SimpleLanguage.Core
         }
         public void ReplaceMetaTypeTemplateMeta( MetaType mt, ClassLevelRelationData clrd )
         {
-            if (mt.defineTemplateMetaTypeList.Count > 0)
+            if (mt.genTemplateMetaTypeList.Count > 0)
             {
-                for (int i = 0; i < mt.defineTemplateMetaTypeList.Count; i++)
+                for (int i = 0; i < mt.genTemplateMetaTypeList.Count; i++)
                 {
-                    ReplaceMetaTypeTemplateMeta(mt.defineTemplateMetaTypeList[i], clrd);
+                    ReplaceMetaTypeTemplateMeta(mt.genTemplateMetaTypeList[i], clrd);
                 }
             }
             if (mt.isTemplate)

@@ -4,6 +4,6 @@ HelloWorld
 {
     static fun()
     {
-        Io.Print("Hello World" );      
+        Console.print("Hello World" );      
     }
 }

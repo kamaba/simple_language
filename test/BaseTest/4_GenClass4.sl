@@ -127,9 +127,9 @@ Level3<LT31,LT32> extends Level2<LT31,Test1<LT32>, LT31>
 {
     LT32 Level31_t = new()
 }
-AAAAA<AA>
+AAAAA<ATT>
 {
-    AA aa = new()
+    ATT aa = new()
 }
 Level4<LT41,LT42> extends Level3<LT41, AAAAA<LT42> >
 {
@@ -148,10 +148,10 @@ GenClass{
 
         
         System.Console.WriteLine("_this_333331 " + ll41.Level41_t )
-        System.Console.WriteLine("_this_333331 " + ll41.Level31_t.aa )
-        System.Console.WriteLine("_this_333331 " + ll41.Level21_t.t1.aa  )
-        System.Console.WriteLine("_this_333331 " + ll41.Level1_t1.t2.t2  )
-        System.Console.WriteLine("_this_333331 " + ll41.Level1_t2.t1.t1.aa  )
+        System.Console.WriteLine("_this_333332 " + ll41.Level31_t.aa )
+        System.Console.WriteLine("_this_333333 " + ll41.Level21_t.t1.aa  )
+        System.Console.WriteLine("_this_333334 " + ll41.Level1_t1.t2.t2  )
+        System.Console.WriteLine("_this_333335 " + ll41.Level1_t2.t1.t1.aa  )
 
 
         Level2<string,string,int> lll31 = new()
@@ -160,9 +160,9 @@ GenClass{
         lll31.Level1_t2.t1 = "1000"
         
 
-        System.Console.WriteLine("_this_333332 " + lll31.Level21_t  )
-        System.Console.WriteLine("_this_333333 " + lll31.Level1_t1.t2.t2 )
-        System.Console.WriteLine("_this_333333 " + lll31.Level1_t2.t1 )
+        System.Console.WriteLine("_this_333336 " + lll31.Level21_t  )
+        System.Console.WriteLine("_this_333337 " + lll31.Level1_t1.t2.t2 )
+        System.Console.WriteLine("_this_333338 " + lll31.Level1_t2.t1 )
     }
 }
 

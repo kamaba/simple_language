@@ -198,7 +198,7 @@ namespace SimpleLanguage.IR
                     var mtbd = v.Value.metaTemplateBindDataList[i];
                     templateMap.Add(mtbd.sourceTemplate.index, new IRMetaType( mtbd.targetMetaType, this ) );
                 }
-                m_IRMetaClassMapTemplateDict.Add(cv.id, templateMap);
+                this.m_IRMetaClassMapTemplateDict.Add(cv.id, templateMap);
             }
         }
         public List<IRData> CreateStaticMetaMetaVariableIRList()

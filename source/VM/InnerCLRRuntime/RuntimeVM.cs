@@ -36,6 +36,7 @@ namespace SimpleLanguage.VM.Runtime
         private IRData[] m_IRDataList = null;
         private ushort m_ExecuteIndex = 0;
         private ushort m_ExecuteCount = 0;
+        private IRMetaClass m_IRMetaClass = null;
         //private Stack<List<RuntimeType>> m_NewObjectRuntimeTypeStack = new Stack<List<RuntimeType>>();
         public RuntimeVM( List<RuntimeType> inputTemplateTypeList, List<IRData> irlist )
         {
@@ -283,11 +284,11 @@ namespace SimpleLanguage.VM.Runtime
         {
             SValue sval = InnerCLRRuntimeVM.topCLRRuntime.GetCurrentIndexValue(false);
             m_ValueStack[m_ValueIndex++] = sval;
-            //m_IRMetaClass = sval.sobject?.irMetaClass;
+            m_IRMetaClass = sval.sobject?.irMetaClass;
         }
         public void ClearNewObject()
         {
-            //m_IRMetaClass = null;
+            m_IRMetaClass = null;
         }
         public void Run()
         {
@@ -752,7 +753,7 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.NewTemplateClass:
                     {
                         IRMetaType mdt = iri.opValue as IRMetaType;
-                        var rt = GetClassRuntimeType(mdt, mdt.irOwnerMetaClass /*m_IRMetaClass != null ? m_IRMetaClass : mdt.irOwnerMetaClass*/, m_InputTemplateRuntimeTypeList, true);
+                        var rt = GetClassRuntimeType(mdt, m_IRMetaClass != null ? m_IRMetaClass : mdt.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
                         SObject sobj = ObjectManager.CreateObjectByRuntimeType( rt, true );
                         if (sobj is ClassObject co)
                         {
