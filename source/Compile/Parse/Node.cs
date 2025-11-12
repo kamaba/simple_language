@@ -25,6 +25,7 @@ namespace SimpleLanguage.Compile
         public const int Level8_BitOrOp = 83;               // |
         public const int Level9_And = 91;                   // &&
         public const int Level9_Or = 92;                    // ||
+        public const int Level9_AsOsIs = 95;                    // ||
         public const int Level10_ThirdOp = 100;             // ? : 
         public const int Level11_Assign = 120;              // = /= *= %= += -= <<= >>= &= ^= |= 
         public const int Level12_Split = 130;                //,

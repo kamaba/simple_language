@@ -45,7 +45,7 @@ namespace SimpleLanguage.Core
         public bool isArray => m_MetaClass?.eType == EType.Array;
         public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
         public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData;
-        public bool isDefineMetaClass => m_IsDefineMetaClass;
+        //public bool isDefineMetaClass => m_IsDefineMetaClass;
         public MetaTemplate metaTemplate => m_MetaTemplate;
         public MetaGenTemplate metaGenTemplate => m_MetaGenTemplate;
 
@@ -59,7 +59,7 @@ namespace SimpleLanguage.Core
         private MetaGenTemplate m_MetaGenTemplate = null;
         private MetaExpressNode m_DefaultExpressNode = null;        // int a => a = 0;
         private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
-        private bool m_IsDefineMetaClass = false;
+        //private bool m_IsDefineMetaClass = false;
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         private List<MetaType> m_GenTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         //private string m_FromName = "";
@@ -87,7 +87,7 @@ namespace SimpleLanguage.Core
             {
                 Log.AddInStructMeta(EError.None, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
-            m_IsDefineMetaClass = false;
+            //m_IsDefineMetaClass = false;
             m_MetaClass = mc;
             m_EType = EMetaTypeType.MetaClass;
         }
@@ -97,7 +97,7 @@ namespace SimpleLanguage.Core
             {
                 Log.AddInStructMeta(EError.None, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
-            m_IsDefineMetaClass = false;
+            //m_IsDefineMetaClass = false;
             //m_TemplateMetaClass = templatemc;
             m_MetaClass = mc;
             m_DefineTemplateMetaTypeList = mtList;
@@ -110,7 +110,7 @@ namespace SimpleLanguage.Core
             {
                 Log.AddInStructMeta(EError.None, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
-            m_IsDefineMetaClass = false;
+            //m_IsDefineMetaClass = false;
             if ( mitc == null)
             {
                 //m_TemplateMetaClass = templatemc;
@@ -133,7 +133,7 @@ namespace SimpleLanguage.Core
             this.m_MetaTemplate = mt.m_MetaTemplate;
             this.m_DefaultExpressNode = mt.m_DefaultExpressNode;
             this.m_EnumValue = mt.m_EnumValue;
-            this.m_IsDefineMetaClass = mt.m_IsDefineMetaClass;
+            //this.m_IsDefineMetaClass = mt.m_IsDefineMetaClass;
             //this.m_FromName = mt.m_FromName;
             this.m_EType = mt.m_EType;
             for (int i = 0; i < mt.m_DefineTemplateMetaTypeList.Count; i++)
@@ -165,7 +165,7 @@ namespace SimpleLanguage.Core
             this.m_MetaTemplate = mt.m_MetaTemplate;
             this.m_DefaultExpressNode = mt.m_DefaultExpressNode;
             this.m_EnumValue = mt.m_EnumValue;
-            this.m_IsDefineMetaClass = mt.m_IsDefineMetaClass;
+            //this.m_IsDefineMetaClass = mt.m_IsDefineMetaClass;
             //this.m_FromName = mt.m_FromName;
             this.m_EType = mt.m_EType;
             this.m_DefineTemplateMetaTypeList = mt.m_DefineTemplateMetaTypeList;
@@ -344,7 +344,7 @@ namespace SimpleLanguage.Core
         public void SetMetaClass(MetaClass mc)
         {
             m_MetaClass = mc;
-            m_IsDefineMetaClass = true;
+            //m_IsDefineMetaClass = true;
             m_EType = EMetaTypeType.MetaClass;
         }
         public void SetMetaTemplate(MetaTemplate mt)

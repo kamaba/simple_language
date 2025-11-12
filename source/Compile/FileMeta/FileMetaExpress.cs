@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml.Linq;
 using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Compile
@@ -294,6 +295,55 @@ namespace SimpleLanguage.Compile
             StringBuilder sb = new StringBuilder();
 
             sb.Append(token?.lexeme.ToString());
+
+            return sb.ToString();
+        }
+    }
+    public class FileMetaAsOrIsTerm : FileMetaBaseTerm
+    {
+        public bool isAsTerm => m_AsOrIsToken?.type == ETokenType.As;
+        public FileMetaCallLink variableCallLink => m_VariableCallLink;
+        public FileMetaCallLink defineTypeLink => m_DefineTypeLink;
+        public Token convertIsTypeNameToken => m_ConvertIsTypeNameToken;
+
+        private FileMetaCallLink m_VariableCallLink = null;
+        private Token m_AsOrIsToken = null;
+        private FileMetaCallLink m_DefineTypeLink = null;
+        private Token m_ConvertIsTypeNameToken = null;
+
+        // 1. var1 as Class1  2. var1 is Class1   3. var1 is Class1 var2
+        public FileMetaAsOrIsTerm(FileMeta fm, List<Node> nodeList )
+        {
+            m_FileMeta = fm;
+            m_Root = this;
+            if ( nodeList.Count == 3 || nodeList.Count == 4 )
+            {
+                m_VariableCallLink = new FileMetaCallLink(fm, nodeList[0]);
+                m_AsOrIsToken = nodeList[1].token;
+                m_DefineTypeLink = new FileMetaCallLink(fm, nodeList[2]);
+                if(nodeList.Count == 4 )
+                {
+                    m_ConvertIsTypeNameToken = nodeList[3].token;
+                    if(m_AsOrIsToken?.type == ETokenType.As )
+                    {
+                        Log.AddInStructFileMeta(EError.None, "Error nodeList.Count != 3/4 create AsOrIs Term Error ");
+                    }
+                }
+            }
+            else
+            {
+                Log.AddInStructFileMeta(EError.None, "Error nodeList.Count != 3/4 create AsOrIs Term Error ");
+            }
+        }
+        public override string ToFormatString()
+        {
+            return m_AsOrIsToken?.ToConstString();
+        }
+        public override string ToTokenString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(m_AsOrIsToken?.ToLexemeAllString());
 
             return sb.ToString();
         }
@@ -941,7 +991,7 @@ namespace SimpleLanguage.Compile
 
             CreateFileMetaExpressByChildList(childList);
         }
-        void CreateFileMetaExpressByChildList(List<Node> nodeList )
+        void CreateFileMetaExpressByChildList(List<Node> nodeList)
         {
             if (nodeList.Count == 0) return;
             FileMetaBaseTerm fmbt = null;
@@ -949,22 +999,22 @@ namespace SimpleLanguage.Compile
             for (int i = 0; i < nodeList.Count; i++)
             {
                 var node = nodeList[i];
-                if (node.nodeType == ENodeType.Symbol )
+                if (node.nodeType == ENodeType.Symbol)
                 {
                     FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(m_FileMeta, node.token);
                     fmn.priority = node.priority;
                     AddFileMetaTerm(fmn);
                     fmbt = null;
                 }
-                else if( node.nodeType == ENodeType.LeftAngle 
-                    || node.nodeType == ENodeType.RightAngle )
+                else if (node.nodeType == ENodeType.LeftAngle
+                    || node.nodeType == ENodeType.RightAngle)
                 {
                     FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(m_FileMeta, node.token);
                     fmn.priority = SignComputePriority.Level6_Compare;
                     AddFileMetaTerm(fmn);
                     fmbt = null;
                 }
-                else if( node.nodeType == ENodeType.Brace )
+                else if (node.nodeType == ENodeType.Brace)
                 {
                     if (fmbt != null)
                     {
@@ -974,9 +1024,9 @@ namespace SimpleLanguage.Compile
                     fmbt.priority = int.MaxValue;
                     AddFileMetaTerm(fmbt);
                 }
-                else if( node.nodeType == ENodeType.ConstValue )
+                else if (node.nodeType == ENodeType.ConstValue)
                 {
-                    if( node.extendLinkNodeList.Count > 0 )
+                    if (node.extendLinkNodeList.Count > 0)
                     {
                         fmbt = new FileMetaCallTerm(m_FileMeta, node);
                         fmbt.priority = int.MaxValue;
@@ -988,18 +1038,32 @@ namespace SimpleLanguage.Compile
                     }
                     AddFileMetaTerm(fmbt);
                 }
-                else if( node.nodeType == ENodeType.Key 
-                    && (node.token?.type == ETokenType.This
-                    || node.token?.type == ETokenType.Base
-                    || node.token?.type == ETokenType.New ) )
+                else if (node.nodeType == ENodeType.Key )
                 {
-                    if (fmbt != null)
+                    if(node.token?.type == ETokenType.As
+                    || node.token?.type == ETokenType.Is )
                     {
-                        Log.AddInStructFileMeta(EError.None, "Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString());
+                        FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(m_FileMeta, node.token);
+                        fmn.priority = node.priority;
+                        AddFileMetaTerm(fmn);
+                        fmbt = null;
                     }
-                    fmbt = new FileMetaCallTerm(m_FileMeta, node);
-                    fmbt.priority = int.MaxValue;
-                    AddFileMetaTerm(fmbt);
+                    else if(node.token?.type == ETokenType.This
+                    || node.token?.type == ETokenType.Base
+                    || node.token?.type == ETokenType.New)
+                    {
+                        if (fmbt != null)
+                        {
+                            Log.AddInStructFileMeta(EError.None, "Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString());
+                        }
+                        fmbt = new FileMetaCallTerm(m_FileMeta, node);
+                        fmbt.priority = int.MaxValue;
+                        AddFileMetaTerm(fmbt);
+                    }
+                    else
+                    {
+                        Log.AddInStructFileMeta(EError.None, "Error --------------------------------------!!" + fmbt.ToTokenString());
+                    }
                 }
                 else if( node.nodeType == ENodeType.IdentifierLink )
                 {

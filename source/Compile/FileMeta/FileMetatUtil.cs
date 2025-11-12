@@ -164,7 +164,24 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                fmbt = new FileMetaTermExpress(fm, nodeList, expressType );
+                bool isAsIsExpress = false;
+                for (int i = 0; i < nodeList.Count; i++)
+                {
+                    if (nodeList[i].token?.type == ETokenType.As
+                        || nodeList[i].token?.type == ETokenType.Is )
+                    {
+                        isAsIsExpress = true;
+                        break;
+                    }
+                }
+                if( isAsIsExpress )
+                {
+                    fmbt = new FileMetaAsOrIsTerm(fm, nodeList);
+                }
+                else
+                {
+                    fmbt = new FileMetaTermExpress(fm, nodeList, expressType);
+                }
             }
             if( fmbt == null )
             {

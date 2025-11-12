@@ -362,7 +362,7 @@ namespace SimpleLanguage.VM.Runtime
         public void RunInstruction( IRData iri )
         {
             //栈位的移动的规则，使用当前位为空的概念，只要栈被使用掉，索引则加1，所以索引最少为0
-            switch ( iri.opCode )
+             switch ( iri.opCode )
             {
                 case EIROpCode.Nop:
                     break;
@@ -1052,6 +1052,62 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         m_ValueStack[m_ValueIndex - 2].CompareSValue(m_ValueStack[m_ValueIndex - 1], 3, true);
                         m_ValueIndex--;
+                    }
+                    break;
+                case EIROpCode.CastClass:
+                    {
+                        if (m_ValueIndex - 1 < 0)
+                        {
+                            Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
+                            break;
+                        }
+                        IRMetaType mdt = iri.opValue as IRMetaType;
+                        var rt = GetClassRuntimeType(mdt, m_IRMetaClass != null ? m_IRMetaClass : mdt.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
+
+
+                        var v1 = m_ValueStack[m_ValueIndex-1];
+
+                        switch( v1.eType )
+                        {
+                            case EType.Boolean:
+                                {
+
+                                }
+                                break;
+                            case EType.Byte:
+                                {
+
+                                }
+                                break;
+                            case EType.SByte:
+                                {
+
+                                }
+                                break;
+                            case EType.Int32:
+                                {
+
+                                }
+                                break;
+                            case EType.UInt32:
+                                {
+
+                                }
+                                break;
+                            case EType.String:
+                                {
+
+                                }
+                                break;
+                            default:
+                                {
+                                    if ( !v1.sobject.irMetaClass.IsExtendsRelation( rt.irClass ) )
+                                    {
+                                        m_ValueStack[m_ValueIndex - 1].SetNull();
+                                    }
+                                }
+                                break;
+                        }
                     }
                     break;
                 default:

@@ -28,6 +28,7 @@ namespace SimpleLanguage.Core
             Member,
             ArrayInner,
         }
+        public bool isDefineMetaType => m_IsDefineMetaType;
         public virtual bool isStatic => m_IsStatic;
         public virtual bool isConst => m_IsConst;
         public virtual bool isParsed => m_IsParsed;
@@ -56,6 +57,7 @@ namespace SimpleLanguage.Core
         protected bool m_IsParsed = false;
         protected bool m_IsStatic = false;
         protected bool m_IsConst = false;
+        protected bool m_IsDefineMetaType = false;      //该字段是表明，该类型使用了定义类型， 如果是var 或者是没定义的，则可以使用真实的类型
         //用来存放扩展包含变量
         protected Dictionary<string, MetaVariable> m_MetaVariableDict = new Dictionary<string, MetaVariable>();
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
@@ -75,6 +77,7 @@ namespace SimpleLanguage.Core
             m_IsConst = mv.m_IsConst;
             m_IsParsed = mv.m_IsParsed;
             m_SourceMetaVariable = mv;
+            m_IsDefineMetaType = mv.m_IsDefineMetaType;
 
             foreach ( var v in mv.m_MetaVariableDict)
             {
@@ -102,6 +105,10 @@ namespace SimpleLanguage.Core
         public void SetIsStatic( bool iss )
         {
             this.m_IsStatic = iss;
+        }
+        public void SetIsDefineMetaType( bool flag )
+        {
+            this.m_IsDefineMetaType = flag;
         }
         public void SetRealMetaType( MetaType realMt )
         {

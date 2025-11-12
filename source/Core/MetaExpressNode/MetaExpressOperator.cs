@@ -274,6 +274,12 @@ namespace SimpleLanguage.Core
                 case ETokenType.Or:
                     m_OpLevelSign = ELeftRightOpSign.Or;
                     break;
+                case ETokenType.As:
+                    m_OpLevelSign = ELeftRightOpSign.Cast;
+                    break;
+                case ETokenType.Is:
+                    m_OpLevelSign = ELeftRightOpSign.IsType;
+                    break;
                 default:
                     {
                         Debug.Write("Error 没有适合的符号!!!" + ett.ToString());
@@ -299,6 +305,7 @@ namespace SimpleLanguage.Core
                 || m_OpLevelSign == ELeftRightOpSign.LessOrEqual
                 || m_OpLevelSign == ELeftRightOpSign.And
                 || m_OpLevelSign == ELeftRightOpSign.Or
+                || m_OpLevelSign == ELeftRightOpSign.IsType
                     )
                 isEqualType = true;
             else
@@ -365,6 +372,11 @@ namespace SimpleLanguage.Core
                             ParseMultiplyOrModulo();
                         }
                         break;
+                    case ELeftRightOpSign.Cast:
+                        {
+                            ParseCast();
+                        }
+                        break;
                     case ELeftRightOpSign.Equal:
                     case ELeftRightOpSign.NotEqual:
                     case ELeftRightOpSign.Greater:
@@ -373,6 +385,7 @@ namespace SimpleLanguage.Core
                     case ELeftRightOpSign.LessOrEqual:
                     case ELeftRightOpSign.Or:
                     case ELeftRightOpSign.And:
+                    case ELeftRightOpSign.IsType:
                         {
                             if(m_MetaDefineType != null )
                             {
@@ -444,6 +457,21 @@ namespace SimpleLanguage.Core
             }
         }
         public void ParseMultiplyOrModulo()
+        {
+            if (m_Left.opLevel < m_Right.opLevel)
+            {
+                m_MetaDefineType = m_Left.metaDefineType;
+            }
+            else if (m_Left.opLevel > m_Right.opLevel)
+            {
+                m_MetaDefineType = m_Left.metaDefineType;
+            }
+            else
+            {
+                m_MetaDefineType = m_Left.metaDefineType;
+            }
+        }
+        public void ParseCast()
         {
             if (m_Left.opLevel < m_Right.opLevel)
             {

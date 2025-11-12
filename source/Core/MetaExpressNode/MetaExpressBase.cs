@@ -23,6 +23,8 @@ namespace SimpleLanguage.Core
         LessOrEqual,
         And,
         Or,
+        Cast,
+        IsType,
     }
     public enum ESingleOpSign
     {

@@ -100,11 +100,11 @@ namespace SimpleLanguage.Core
                         m_ClassLevelRelationData.AddBindData(parentClassTemplate, mapMetaType);
                     }
                 }
-                var tec = GetSourceMetaClass(m_ExtendClass);
-                if (!m_MetaTemplateMapDict.ContainsKey(tec))
-                {
-                    this.m_MetaTemplateMapDict[tec] = m_ClassLevelRelationData;
-                }
+            }
+            var tec = GetSourceMetaClass(m_ExtendClass);
+            if (!m_MetaTemplateMapDict.ContainsKey(tec))
+            {
+                this.m_MetaTemplateMapDict[tec] = m_ClassLevelRelationData;
             }
         }
         public MetaClass GetSourceMetaClass( MetaClass mc )
@@ -141,30 +141,33 @@ namespace SimpleLanguage.Core
 
                     if (!m_MetaTemplateMapDict.ContainsKey(tparentMc))
                     {
-                        var list = tcurrentMC.m_MetaTemplateMapDict[tparentMc].metaTemplateBindDataList;
                         ClassLevelRelationData clrd = new ClassLevelRelationData();
-                        foreach (var v in list)
+                        if (parentMc is MetaGenTemplateClass mgtc)
                         {
-                            if (m_MetaTemplateMapDict.ContainsKey(tcurrentMC) && tcurrentMC.m_MetaTemplateMapDict.ContainsKey(tparentMc) )
+                            var list = tcurrentMC.m_MetaTemplateMapDict[tparentMc].metaTemplateBindDataList;
+                            foreach (var v in list)
                             {
-                                var t1 = m_MetaTemplateMapDict[tcurrentMC];
-                                var t2 = currentMC.m_MetaTemplateMapDict[tparentMc];
-
-                                MetaType mtfind2 = t2.GetSrouceTemplateByTargetTemplate(v.sourceTemplate);
-                                if (mtfind2 != null)
+                                if (m_MetaTemplateMapDict.ContainsKey(tcurrentMC) && tcurrentMC.m_MetaTemplateMapDict.ContainsKey(tparentMc))
                                 {
-                                    MetaType copymt = new MetaType(mtfind2);
-                                    ReplaceMetaTypeTemplateMeta(copymt, t1 );
-                                    clrd.AddBindData(v.sourceTemplate, copymt);
+                                    var t1 = m_MetaTemplateMapDict[tcurrentMC];
+                                    var t2 = currentMC.m_MetaTemplateMapDict[tparentMc];
+
+                                    MetaType mtfind2 = t2.GetSrouceTemplateByTargetTemplate(v.sourceTemplate);
+                                    if (mtfind2 != null)
+                                    {
+                                        MetaType copymt = new MetaType(mtfind2);
+                                        ReplaceMetaTypeTemplateMeta(copymt, t1);
+                                        clrd.AddBindData(v.sourceTemplate, copymt);
+                                    }
+                                    else
+                                    {
+                                        Log.AddInStructMeta(EError.None, "没有找到父级别自己模板生成时的数据!!");
+                                    }
                                 }
                                 else
                                 {
                                     Log.AddInStructMeta(EError.None, "没有找到父级别自己模板生成时的数据!!");
                                 }
-                            }
-                            else
-                            {
-                                Log.AddInStructMeta(EError.None, "没有找到父级别自己模板生成时的数据!!");
                             }
                         }
                         this.m_MetaTemplateMapDict[tparentMc] = clrd;

@@ -83,6 +83,14 @@ namespace SimpleLanguage.IR
             }
             return null;
         }
+        public bool IsExtendsRelation( IRMetaClass irmc )
+        {
+            if (m_IRMetaClassMapTemplateDict.ContainsKey(irmc.id))
+            {
+                return true;
+            }
+            return false;
+        }
         public int GetIRNonStaticMethodIndexByMethod( string name )
         {
             for ( int i = 0; i < m_IRNotStaticMethodList.Count; i++ )
