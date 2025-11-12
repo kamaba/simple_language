@@ -69,6 +69,7 @@ namespace SimpleLanguage.Core
                 if( mdt.metaClass is MetaGenTemplateClass mgtc )
                 {
                     mgtc.ParseGenTemplateClass(mgtc);
+                    mgtc.ParseGenMemberVarible();
                 }
 
                 m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );

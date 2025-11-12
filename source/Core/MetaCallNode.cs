@@ -905,6 +905,7 @@ namespace SimpleLanguage.Core
                     if( ngmc is MetaGenTemplateClass mgtc )
                     {
                         mgtc.ParseGenTemplateClass(mgtc);
+                        mgtc.ParseGenMemberVarible();
                         m_MetaClass = mgtc;
                         List<MetaType> listmt2 = new List<MetaType>();
                         for( int i = 0; i < mgtc.metaTemplateClass.metaTemplateList.Count; i++ )

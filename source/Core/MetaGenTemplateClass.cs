@@ -22,6 +22,7 @@ namespace SimpleLanguage.Core
         private List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
         private MetaClass m_MetaTemplateClass = null;
         protected bool m_GenTemplateFlag = false;
+        protected bool m_GenTemplateMemberFlag = false;
 
         public MetaGenTemplateClass( MetaClass mtc, List<MetaGenTemplate> list ) : base(mtc.name)
         {
@@ -146,12 +147,25 @@ namespace SimpleLanguage.Core
 
             m_ExtendClass.ParseGenTemplateClass(m_ExtendClass as MetaGenTemplateClass);
 
+            m_GenTemplateFlag = true;
+        }
+        public override void ParseGenMemberVarible()
+        {
+            if(m_GenTemplateMemberFlag )
+            {
+                return;
+            }
+            if(m_ExtendClass == null )
+            {
+                return;
+            }
+            m_ExtendClass.ParseGenMemberVarible();
+
             ParseMemberVariableDefineMetaType();
             ParseMemberFunctionDefineMetaType();
 
-            m_GenTemplateFlag = true;
+            m_GenTemplateMemberFlag = true;
         }
-
         public override void HandleExtendMemberVariable()
         {
             base.HandleExtendMemberVariable();

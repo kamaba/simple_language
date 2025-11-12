@@ -80,7 +80,7 @@ public class Class1
 }
 List0<T>
 {
-    List1<List2<T> > List0_list0t0 = null
+    T List0_list0t0 = null
     T List0_list0t1 = null
     List1<T> List0_list0t2 = null
     List0<int> List0_list0t3 = null
@@ -301,7 +301,7 @@ public class Level1<T222>
 
         List0<Map<T222, T222> > Level1t_list = new(1)
 
-        Level2<int,string> Level1t_level222 = {}
+        #Level2<int,string> Level1t_level222 = {}
 
         List0<int> Level1t_lint11 = List0<int>()
 
@@ -360,14 +360,14 @@ GenClass
     {
         Level1<int> GenClass_fun_l1 = Level1<int>()
         GenClass_fun_l2 = GenClass_fun_l1.add()
-        #Debug.Write( "Addresult: " + GenClass_fun_l2 )
+        System.Console.WriteLine("_this_—————————————————————————————— 1 " +GenClass_fun_l2  )
 
         retstr = GenClass_fun_l1.GetComponent<string>()
+        System.Console.WriteLine("_this_—————————————————————————————— 2 " +retstr  )
 
 
         Float32 GenClass_fun_a = Level1<Float32>.min<Float32>( 1.3, 2.5 )
-
-        System.Console.WriteLine("_this_——————————————————————————————  " + GenClass_fun_a )
+        System.Console.WriteLine("_this_—————————————————————————————— 3 " + GenClass_fun_a )
     }
 }
 
