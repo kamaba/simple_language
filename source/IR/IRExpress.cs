@@ -86,6 +86,28 @@ namespace SimpleLanguage.IR
                         }
                     }
                     break;
+                case MetaAsIsExpressNode maien:
+                    {
+                        //maien.GetReturnMetaClass();
+                        if( maien.isAs )
+                        {
+                            var owirmc = IRManager.instance.GetIRMetaClassById(maien.currentVariable.GetOwnerClassTemplateClass().GetHashCode());
+                            var irmt = new IRMetaType(maien.currentVariable.metaDefineType, owirmc);
+                            IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, maien.currentVariable );
+                            AddIRRangeData(irload.IRDataList);
+
+                            IRData irdata = new IRData();
+                            irdata.opCode = EIROpCode.CastClass;
+                            irdata.opValue = new IRMetaType( maien.convertTargetMetaType );
+
+                            m_IRDataList.Add(irdata);
+                        }
+                        else
+                        {
+
+                        }
+                    }
+                    break;
                 case MetaNewObjectExpressNode mnoe:
                     {
                         IRMetaClass irmc = null;

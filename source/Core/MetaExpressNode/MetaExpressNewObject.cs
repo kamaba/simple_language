@@ -723,7 +723,7 @@ namespace SimpleLanguage.Core
             bool needByFileMetaParTermSetTemplate = false;
             MetaInputTemplateCollection mitc = new MetaInputTemplateCollection();
             MetaClass createMC = null;
-            if (!m_MetaDefineType.isDefineMetaClass)
+            if ( false )//!m_MetaDefineType.isDefineMetaClass) 此处需要检查是否使用定义的类型
             {
                 if (fmcn.visitType == MetaVisitNode.EVisitType.New)
                 {

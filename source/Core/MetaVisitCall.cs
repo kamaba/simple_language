@@ -179,6 +179,7 @@ namespace SimpleLanguage.Core
             MethodCall,
             New,
             Enum,
+            MetaClass,
         }
         public MetaConstExpressNode constValueExpress { get; private set; } = null;
         public EVisitType visitType { get; private set; }
@@ -194,6 +195,15 @@ namespace SimpleLanguage.Core
         //protected MetaClass m_CallerMetaClass = null;
         protected MetaType m_CallMetaType = null; //该变量，一般是为 T t = new() 这种情况准备的
 
+        public static MetaVisitNode CreateByVisitMetaClass( MetaClass mc )
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.visitType = EVisitType.MetaClass;
+            vn.m_ReturnMetaType = new MetaType(mc);
+
+            return vn;
+        }
         public static MetaVisitNode CreateByNewTemplate(MetaType mt, MetaFunction mf, MetaVariable mv)
         {
             MetaVisitNode vn = new MetaVisitNode();

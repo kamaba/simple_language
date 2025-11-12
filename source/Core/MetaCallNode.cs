@@ -106,7 +106,7 @@ namespace SimpleLanguage.Core
         public MetaBlockStatements ownerMetaFunctionBlock => m_OwnerMetaFunctionBlock;
         public MetaVariable storeMetaVariable => m_StoreMetaVariable;
         public MetaType callMetaType => m_CallMetaType;
-        //public MetaClass metaClass => m_MetaClass;
+        public MetaClass metaClass => m_MetaClass;
         //public MetaGenTemplateClass genMetaClass => m_GenMetaClass;
         //public MetaData metaData => m_MetaData;
         //public MetaEnum metaEnum => m_MetaEnum;
@@ -741,7 +741,16 @@ namespace SimpleLanguage.Core
 
                         if (tempMetaBase2 == null )
                         {
-                            MetaClass mc = mv.realMetaType.metaClass;
+                            //如果已经定义过来型的，则优化使用定义类型，进行计算
+                            MetaClass mc = null;
+                            if ( mv.isDefineMetaType )
+                            {
+                                mc = mv.metaDefineType.metaClass;
+                            }
+                            else
+                            {
+                                mc = mv.realMetaType.metaClass;
+                            }
                             if (mc is MetaData)
                             {
                                 MetaData md = mc as MetaData;
@@ -781,7 +790,15 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                MetaClass tmc = mv.realMetaType.eType == EMetaTypeType.TemplateClassWithTemplate ? mv.realMetaType.metaClass : mv.realMetaType.metaClass;
+                                MetaClass tmc = null;
+                                if (mv.isDefineMetaType)
+                                {
+                                    tmc = mv.metaDefineType.metaClass;
+                                } 
+                                else
+                                {
+                                    tmc = mv.realMetaType.eType == EMetaTypeType.TemplateClassWithTemplate ? mv.realMetaType.metaClass : mv.realMetaType.metaClass;
+                                }
                                 if (GetFunctionOrVariableByOwnerClass(tmc, m_Name) == false)
                                 {
                                     return false;

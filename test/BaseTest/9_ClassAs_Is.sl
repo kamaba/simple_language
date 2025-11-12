@@ -93,63 +93,81 @@ LevelT2<T21,T22> extends LevelT<T22>
 {
 
 }
-LevelT3<T31,T32> extends LevelT<T32,T31>
+LevelT3<T31,T32> extends LevelT2<T32,T31>
 {
-
+    #!
+    _cast_<TargetT>()
+    {
+        ret this as TargetT
+    }
+    !#
 }
 
 
-ClassAsIs{
+ClassAs_Is{
     static fun()
     {
         Level3 level3 = new()
         Level1 level1 = level3
-        Level2 = level1 as Level2
+        level2 = level1 as Level2
+        
+        #var aaa = level1.Level3_var3        #该语句需要报错，因为已经有定义过的类型，所以即使可以计算出来真实的类型，也不能直接使用
 
-        l1castl3 = level1.cast<Level3>()
+        #System.Console.WriteLine("_this_——————————————————————————————  " +level2.Level2_var1 )
+        #System.Console.WriteLine("aanonnnhooooooooo  " + level1.Level1_var1 )
+        #if level2 != null
+        {
+            System.Console.WriteLine("_this_——————————————————————————————  " +level2.Level2_var1 )
+        }
+        #else
+        {
+            System.Console.WriteLine("aanonnnhooooooooo  " + level1.Level1_var1 )
+        }
+        
+
+        #!
+        bool flag = level2 is Level3
+        if flag
+        {
+            System.Console.WriteLine("is ok  " )
+        }
+        else
+        {
+            System.Console.WriteLine("is No  " )
+        }
+        !#
+
+        #!
         bool aaa = level1 is Level2 level2tt
-
         if( level1 is Level3  ll3if )
         {
             Console.WriteLine("yes l3 ");
         }
+        !#
 
+        #!
+        l1castl3 = level1.cast<Level3>()
         if l1castl3 
         {
             Console.WriteLine("yes l1cast l3" );
         }
-
-        Type rl = level1.type
-        Console.WriteLine("Type r1: " + r1.name );
-
-        var defineType = level1.defineType;
-        Console.WriteLine("Type r1: " + defineType.name );
-
-        Type t3 = Level3.type
-
-        LevelT3<int,string> lt3 = new()
-
-        Type typet3 = lt3.type
-        Type typet33 = LevelT3<int,int>.type      #这里的type 是静态默认函数， 相当于  typeof()函数一类的调用
-
-        if( typet3 == typet33 )
-        {
-            Console.WriteLine("typet3 == typet33 is equal" );
-        }
-        else
-        {            
-            Console.WriteLine("typet3 == typet33 is not equal" );
-        }
-
+        !#
     }
 }
 
 #!
-生成模板原则
-1. 通过模板类，生成实体类后，初始化变量与继承的变量，还有就是方法和继承的方法里边的 参数与返回值，几个，如果包含模板后，进行替换，用做代码类型检查
-2. 代码内部是不生成的，正常情况，只有运行时才会检查是否正常，比如 new() 如果 传进来的模板，没有不带参数的，会有报错，但只有运行时报错
-3. 如果在编辑器模试，在写完某一部分，或者改动某一些地方后， 编辑器模式下，会生成函数具体的代码，用做检查，在检查完后，隔一段时间会删除掉
-4. 如果使用dll，同样的，只生成外边接口的实例，生成后，内部export的元素进行生成 用做检查， 同样的，dll的代码直接运行时执行
-5. 如果aot方式，需要编译时，需要先编译引入的dll生成模板相关的内容，然后再编译本地的实例，最终在llvm里边直接使用编译完的代码，然后执行。
-6. 本地虚拟机中，增加模板概念，如果传入来的是模板，需要进行替换后，进行执行。
+关于 as is 的处理
+1. 如果使用as 则动态的，检查 是否是继承类的关系，如果是，则运行当前值，不进行为Null处理，否则相反处理 当前值为Null
+2. 使用Is 分两种情况，一种是 不带后边的变量，这种的，直接返回一个boolean形的类型
+3. 如果使用带后边变量的，逻辑，则是，先进行as 处理，变成当前变量，然后进行赋值，再去判断当前的赋值是否为Null，如果是，则返回boolean变量的true 相反为false
+4. 如果cast函数，要从系统函数中，进行 as操作 返回返回到当前的变量 如果已经定义过cast则要优先走cast函数，
+
+以后的是以后再去考滤的问题，现阶段先不动
+5. 该函数为_cast_，是个系统定义方法，返回值必须是当前的类类型，如果定义是不是当前，则为出错，该方法是无法final的方法
+，里边可以处理一些内容，也必须要有返回值 如果没有检测到系统的，则直接进行as处理
+6. 比如如果 我这个类是继承的A类，A类里边有个值是Uint16的，这时候，我转成B类，可以要对A类的
+
+发现的问题:
+1. 如果前置定义过类型，在编译阶段，需要先检查定义类型里边的方法，而不是实际的方法
+2. 在括号内的语句没有执行
 !#

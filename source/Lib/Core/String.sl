@@ -5,10 +5,11 @@ public class Core.String extends Object
 
     _init_( object aa )
     {
+        this._value = aa
     }
     _init_( String aa )
     {
-
+        this._value = aa
     }
     String toString()
     {

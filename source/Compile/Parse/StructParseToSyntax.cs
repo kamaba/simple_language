@@ -60,6 +60,11 @@ namespace SimpleLanguage.Compile
                 {
                     keyContent.Add(node);
                 }
+                else if (tokenType == ETokenType.As
+                    || tokenType == ETokenType.Is)
+                {
+                    commonContent.Add(node);
+                }
                 else if( tokenType == ETokenType.Else
                     || tokenType == ETokenType.Next
                     || tokenType == ETokenType.Break
@@ -260,7 +265,8 @@ namespace SimpleLanguage.Compile
                     }
                     else if (ttt == ETokenType.Data)
                     {
-                        keynodeStruct.AddContent(curNode);
+                        keynodeStruct.AddContent
+                            (curNode);
                     }
                     else if (ttt == ETokenType.Var)
                     {
@@ -272,6 +278,16 @@ namespace SimpleLanguage.Compile
                     }
                     else if (ttt == ETokenType.Dynamic)
                     {
+                        keynodeStruct.AddContent(curNode);
+                    }
+                    else if (ttt == ETokenType.As )
+                    {
+                        //keynodeStruct.SetMainKeyNode(curNode);
+                        keynodeStruct.AddContent(curNode);
+                    }
+                    else if (ttt == ETokenType.Is )
+                    {
+                        //keynodeStruct.SetMainKeyNode(curNode);
                         keynodeStruct.AddContent(curNode);
                     }
                     else if (ttt == ETokenType.This

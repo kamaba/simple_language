@@ -134,6 +134,13 @@ namespace SimpleLanguage.Compile
             var node = AddSymbol(code);
             node.priority = SignComputePriority.Level2_LinkOp;
         }
+        private void AddAsOrIs(Token code)
+        {
+            // as 有两个作用一个是import 里边 代名   一个是 as 类
+            var node = AddKeyNode(code);
+            //var node = AddSymbol(code);
+            node.priority = SignComputePriority.Level9_AsOsIs;
+        }
         private void AddDoublePlusMinus(Token code)
         {
             var node = AddSymbol(code);
@@ -378,6 +385,12 @@ namespace SimpleLanguage.Compile
                         AddPlusMinus(token);
                     }
                     break;
+                case ETokenType.As:
+                case ETokenType.Is:
+                    {   
+                        AddAsOrIs(token);
+                    }
+                    break;
                 case ETokenType.DoublePlus:     //++
                 case ETokenType.DoubleMinus:    //--
                     {
@@ -495,11 +508,6 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Import:
                     {
                         AddImportNode(token);
-                    }
-                    break;
-                case ETokenType.As:
-                    {
-                        AddKeyNode(token);
                     }
                     break;
                 case ETokenType.Namespace:

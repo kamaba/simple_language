@@ -73,6 +73,7 @@ namespace SimpleLanguage.Core
                 }
 
                 m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
+                m_DefineVarMetaVariable.SetIsDefineMetaType(true);
                 m_DefineVarMetaVariable.AddPingToken(m_FileMetaDefineVariableSyntax.token);
                 fileExpress = m_FileMetaDefineVariableSyntax.express;
             }
@@ -133,7 +134,7 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            if (!mdt.isDefineMetaClass)
+            if (!m_DefineVarMetaVariable.isDefineMetaType )
             {
                 MetaConstExpressNode constExpressNode = m_ExpressNode as MetaConstExpressNode;
                 bool isCheckReturnType = true;

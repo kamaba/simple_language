@@ -96,7 +96,18 @@ namespace SimpleLanguage.Core
                 Log.AddInStructMeta(EError.None, "CreateExpressNode FileMetaBaseTerm 为空 !!");
                 return null;
             }
-            
+
+
+            FileMetaAsOrIsTerm asOrIsTerm = fmte as FileMetaAsOrIsTerm;
+            if (asOrIsTerm != null)
+            {
+                MetaAsIsExpressNode mesn = MetaAsIsExpressNode.CreateMetaExecuteStatementsNode(mdt, mc, mbs, asOrIsTerm, equalMetaVariable );
+                if (mesn != null)
+                {
+                    return mesn;
+                }
+            }
+
             FileMetaIfSyntaxTerm ifExpressTerm = fmte as FileMetaIfSyntaxTerm;
             if ( cep.allowUseIfSyntax )
             {
