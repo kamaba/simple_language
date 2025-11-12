@@ -186,6 +186,10 @@ namespace SimpleLanguage.Core
         //    ParseTemplateRelation();
         //    HandleExtendData();
         }
+        public virtual void ParseGenMemberVarible()
+        {
+
+        }
         public virtual void ParseInnerVariable()
         {
         }
@@ -494,6 +498,7 @@ namespace SimpleLanguage.Core
                 if(isParse )
                 {
                     mgtc.ParseGenTemplateClass(mgtc);
+                    mgtc.ParseGenMemberVarible();
                 }
                 return new MetaType(mgtc, mt.defineTemplateMetaTypeList, mt.genTemplateMetaTypeList );
             }

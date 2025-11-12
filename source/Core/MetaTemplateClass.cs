@@ -100,11 +100,22 @@ namespace SimpleLanguage.Core
                         m_ClassLevelRelationData.AddBindData(parentClassTemplate, mapMetaType);
                     }
                 }
-                if (!m_MetaTemplateMapDict.ContainsKey(m_ExtendClass))
+                var tec = GetSourceMetaClass(m_ExtendClass);
+                if (!m_MetaTemplateMapDict.ContainsKey(tec))
                 {
-                    this.m_MetaTemplateMapDict[m_ExtendClass] = m_ClassLevelRelationData;
+                    this.m_MetaTemplateMapDict[tec] = m_ClassLevelRelationData;
                 }
             }
+        }
+        public MetaClass GetSourceMetaClass( MetaClass mc )
+        {
+
+            if (mc is MetaGenTemplateClass mgtc)
+            {
+                return mgtc.metaTemplateClass;
+            }
+            else
+                return mc;
         }
         public void HandleExtendClassTemplateMapRelation()
         {
@@ -123,17 +134,21 @@ namespace SimpleLanguage.Core
                     if (parentMc == CoreMetaClassManager.objectMetaClass)
                     {
                         break;
-                    }                   
-                    if (!m_MetaTemplateMapDict.ContainsKey(parentMc))
+                    }
+
+                    var tparentMc = GetSourceMetaClass(parentMc);
+                    var tcurrentMC = GetSourceMetaClass(currentMC);
+
+                    if (!m_MetaTemplateMapDict.ContainsKey(tparentMc))
                     {
-                        var list = currentMC.m_MetaTemplateMapDict[parentMc].metaTemplateBindDataList;
+                        var list = tcurrentMC.m_MetaTemplateMapDict[tparentMc].metaTemplateBindDataList;
                         ClassLevelRelationData clrd = new ClassLevelRelationData();
                         foreach (var v in list)
                         {
-                            if (m_MetaTemplateMapDict.ContainsKey(currentMC) && currentMC.m_MetaTemplateMapDict.ContainsKey(parentMc ) )
+                            if (m_MetaTemplateMapDict.ContainsKey(tcurrentMC) && tcurrentMC.m_MetaTemplateMapDict.ContainsKey(tparentMc) )
                             {
-                                var t1 = m_MetaTemplateMapDict[currentMC];
-                                var t2 = currentMC.m_MetaTemplateMapDict[parentMc];
+                                var t1 = m_MetaTemplateMapDict[tcurrentMC];
+                                var t2 = currentMC.m_MetaTemplateMapDict[tparentMc];
 
                                 MetaType mtfind2 = t2.GetSrouceTemplateByTargetTemplate(v.sourceTemplate);
                                 if (mtfind2 != null)
@@ -152,7 +167,7 @@ namespace SimpleLanguage.Core
                                 Log.AddInStructMeta(EError.None, "没有找到父级别自己模板生成时的数据!!");
                             }
                         }
-                        this.m_MetaTemplateMapDict[parentMc] = clrd;
+                        this.m_MetaTemplateMapDict[tparentMc] = clrd;
                     }
 
                     currentMC = currentMC.extendClass;
@@ -287,17 +302,18 @@ namespace SimpleLanguage.Core
                     list2.Add(mgt);
                 }
 
-                MetaGenTemplateClass tmc = GetGenTemplateMetaClassByTemplateList(list2);
-                if (tmc == null)
+                MetaGenTemplateClass mgtc = GetGenTemplateMetaClassByTemplateList(list2);
+                if (mgtc == null)
                 {
-                    tmc = new MetaGenTemplateClass(this, list2);                    
-                    this.AddGenTemplateMetaClass(tmc);
+                    mgtc = new MetaGenTemplateClass(this, list2);                    
+                    this.AddGenTemplateMetaClass(mgtc);
                     if (isParse)
                     {
-                        tmc.ParseGenTemplateClass(tmc);
+                        mgtc.ParseGenTemplateClass(mgtc);
+                        mgtc.ParseGenMemberVarible();
                     }
                 }
-                return tmc;
+                return mgtc;
             }
             return null;
         }
@@ -307,6 +323,7 @@ namespace SimpleLanguage.Core
             foreach ( var v in list )
             {
                 v.ParseGenTemplateClass(v);
+                v.ParseGenMemberVarible();
             }
         }
         public MetaGenTemplateClass GetGenTemplateMetaClassByTemplateList(List<MetaGenTemplate> list)
