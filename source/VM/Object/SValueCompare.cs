@@ -6,11 +6,7 @@
 //  Description: 
 //****************************************************************************
 
-using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
-using SimpleLanguage.Core;
+using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.VM
 {
@@ -241,6 +237,41 @@ namespace SimpleLanguage.VM
         {
             switch (this.eType)
             {
+                case EType.String:
+                    {
+                        switch (sval.eType)
+                        {
+                            case EType.String:
+                                {
+                                    if (compareSign == 0)
+                                        SetBoolValue(this.stringValue == sval.stringValue);
+                                    else if (compareSign == 1)
+                                        SetBoolValue(this.stringValue != sval.stringValue);
+                                }
+                                break;
+                            case EType.Null:
+                                {
+                                    if (compareSign == 0)
+                                    {
+                                        SetBoolValue(isNull);
+                                    }
+                                    else if (compareSign == 1)
+                                    {
+                                        SetBoolValue( !isNull );
+                                    }
+                                }
+                                break;
+                            default:
+                                {
+                                    if (compareSign == 0)
+                                        SetBoolValue(false);
+                                    else if (compareSign == 1)
+                                        SetBoolValue(true);
+                                }
+                                break;
+                        }
+                    }
+                    break;
                 case EType.Int32:
                     {
                         switch (sval.eType)
@@ -287,12 +318,15 @@ namespace SimpleLanguage.VM
                                 break;
                             case EType.UInt64:
                                 {
-                                    SetInt64Compare( (long)int32Value, (long)sval.uint64Value, compareSign, isOrEqual);
+                                    SetInt64Compare((long)int32Value, (long)sval.uint64Value, compareSign, isOrEqual);
                                 }
                                 break;
                             case EType.Null:
                                 {
-                                    SetBoolValue(false);
+                                    if (compareSign == 0)
+                                        SetBoolValue(false);
+                                    else if (compareSign == 1)
+                                        SetBoolValue(true);
                                 }
                                 break;
                         }
@@ -334,6 +368,11 @@ namespace SimpleLanguage.VM
                                 }
                                 break;
                         }
+                    }
+                    break;
+                default:
+                    {
+                        Log.AddVM(EError.None, " VM Compare SVAlue 比较的低码还没有完善!!");
                     }
                     break;
             }

@@ -54,9 +54,9 @@ namespace SimpleLanguage.Core
 
                 m_ThenMetaStatements = new MetaBlockStatements(mbs, ifexpress.executeBlockSyntax);
 
-                MetaMemberFunction.CreateMetaSyntax(ifexpress.executeBlockSyntax, m_ThenMetaStatements);
-
                 Parse();
+
+                MetaMemberFunction.CreateMetaSyntax(ifexpress.executeBlockSyntax, m_ThenMetaStatements);
             }
             public MetaElseIfStatements(MetaBlockStatements mbs, FileMetaKeyOnlySyntax elseKeySyntax )
             {
@@ -84,6 +84,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_FinalExpress != null)
                 {
+                    m_FinalExpress.Parse( new AllowUseSettings() );
                     m_FinalExpress.CalcReturnType();
                     m_MetaAssignManager = new MetaAssignManager(m_FinalExpress, m_ThenMetaStatements, new MetaType(CoreMetaClassManager.booleanMetaClass));
                     m_BoolConditionVariable = m_MetaAssignManager.judgmentValueMetaVariable;
@@ -198,6 +199,7 @@ namespace SimpleLanguage.Core
 
                 CreateExpressParam cep2 = new CreateExpressParam()
                 {
+                    ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass,
                     ownerMBS = m_OwnerMetaBlockStatements,
                     metaType = mdt,
                     fme = fmsthen.conditionExpress,
@@ -207,6 +209,11 @@ namespace SimpleLanguage.Core
                     equalMetaVariable = m_MetaVariable,
                 };
                 var express2 = ExpressManager.CreateExpressNode(cep2);
+
+                //if( express2 is MetaAsIsExpressNode maien )
+                //{
+                //    maien.Parse(new AllowUseSettings());
+                //}
 
                 MetaIfStatements.MetaElseIfStatements msis2 = new MetaIfStatements.MetaElseIfStatements(m_OwnerMetaBlockStatements, fmsthen, express2 );
                 AddIfEslseStateStatements(msis2, IfElseState.ElseIf );
