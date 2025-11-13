@@ -327,9 +327,9 @@ namespace SimpleLanguage.Compile
                 m_VariableCallLink = new FileMetaCallLink(fm, nodeList2[0]);
                 m_AsOrIsToken = nodeList2[1].token;
                 m_DefineTypeLink = new FileMetaCallLink(fm, nodeList2[2]);
-                if(nodeList.Count == 4 )
+                if(nodeList2.Count == 4 )
                 {
-                    m_ConvertIsTypeNameToken = nodeList[3].token;
+                    m_ConvertIsTypeNameToken = nodeList2[3].token;
                     if(m_AsOrIsToken?.type == ETokenType.As )
                     {
                         Log.AddInStructFileMeta(EError.None, "Error nodeList.Count != 3/4 create AsOrIs Term Error ");
