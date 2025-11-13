@@ -139,7 +139,6 @@ namespace SimpleLanguage.Core
         private MetaVariable m_DefineMetaVariable = null;
         private MetaVariable m_StoreMetaVariable = null;
 
-
         private MetaNode m_MetaNode = null;
         private MetaType m_MetaType = null;
         private MetaClass m_MetaClass = null;
@@ -151,6 +150,7 @@ namespace SimpleLanguage.Core
         //private MetaGenTemplateClass m_GenMetaClass = null;
         //private MetaGenTempalteFunction m_MetaGenTemplateFunction = null;
         private string m_Name;
+        private bool m_NextNotAllowParse = false;
         public MetaCallNode()
         { }
         public MetaCallNode(FileMetaCallNode fmcn1, FileMetaCallNode fmcn2, MetaClass mc, MetaBlockStatements mbs, MetaType fdmt )
@@ -1430,7 +1430,7 @@ namespace SimpleLanguage.Core
         }
         public MetaBase HandleCastFunction(MetaClass mc)
         {
-            //if (m_MetaTemplateParamsCollection == null)
+            //if ( this.m_MetaTemplateParamsList == null)
             //{
             //    Debug.WriteLine("Error 没有Cast<>的使用，请正确使用Cast!!");
             //    return null;

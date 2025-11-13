@@ -9,6 +9,7 @@
 using SimpleLanguage.Compile;
 
 using SimpleLanguage.Parse;
+using System.Security.Cryptography;
 
 namespace SimpleLanguage.Core
 {
@@ -181,6 +182,16 @@ namespace SimpleLanguage.Core
                             Log.AddInStructMeta(EError.None, "Error CreateExpressNode 创建表达项不能为符号");
                         }
                         break;
+                    case FileMetaAsOrIsTerm fmaoit:
+                        {
+                            MetaAsIsExpressNode mesn = MetaAsIsExpressNode.CreateMetaExecuteStatementsNode( null, ownerClass, cep.ownerMBS,
+                                fmaoit, cep.equalMetaVariable );
+                            if (mesn != null)
+                            {
+                                return mesn;
+                            }
+                        }
+                        break;
                     case FileMetaConstValueTerm fmcvt:
                         {
                             if (fmcvt.token.type == ETokenType.NumberArrayLink)
@@ -320,6 +331,11 @@ namespace SimpleLanguage.Core
                     break;
                 case MetaConstExpressNode mcen:
                     {
+                    }
+                    break;
+                case MetaAsIsExpressNode asisExpress:
+                    {
+
                     }
                     break;
                 default:

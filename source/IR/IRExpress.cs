@@ -104,7 +104,32 @@ namespace SimpleLanguage.IR
                         }
                         else
                         {
+                            var owirmc = IRManager.instance.GetIRMetaClassById(maien.currentVariable.GetOwnerClassTemplateClass().GetHashCode());
+                            var irmt = new IRMetaType(maien.currentVariable.metaDefineType, owirmc);
+                            IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, maien.currentVariable);
+                            AddIRRangeData(irload.IRDataList);
 
+                            IRData irdata = new IRData();
+                            irdata.opCode = EIROpCode.CastClass;
+                            irdata.opValue = new IRMetaType(maien.convertTargetMetaType);
+                            m_IRDataList.Add(irdata);
+
+                            var owirmc2 = IRManager.instance.GetIRMetaClassById(maien.convertTargetMetaVariable.GetOwnerClassTemplateClass().GetHashCode());
+                            var irmt2 = new IRMetaType(maien.convertTargetMetaVariable.metaDefineType, owirmc);
+                            IRStoreVariable irstore = IRStoreVariable.CreateIRStoreVariable(irmt2, owirmc2, m_IRMethod, maien.convertTargetMetaVariable);
+                            AddIRRangeData(irstore.IRDataList);
+
+                            IRLoadVariable irload3 = IRLoadVariable.CreateLoadVariable(irmt2, owirmc2, m_IRMethod, maien.convertTargetMetaVariable);
+                            AddIRRangeData(irload3.IRDataList);
+
+                            IRData irdata4 = new IRData();
+                            irdata4.opCode = IRManager.GetConstIROpCode( EType.Null );
+                            irdata4.opValue = "null";
+                            AddIRData(irdata4);
+
+                            IRData irdata5 = new IRData();
+                            irdata5.opCode = EIROpCode.Cne;
+                            AddIRData(irdata5);
                         }
                     }
                     break;

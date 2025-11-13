@@ -38,7 +38,8 @@ namespace SimpleLanguage.VM
         }
         public void SetNull()
         {
-            if(sobject != null )
+            eType = EType.Null;
+            if (sobject != null )
             {
                 sobject.SetNull();
             }

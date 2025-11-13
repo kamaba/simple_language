@@ -85,6 +85,10 @@ namespace SimpleLanguage.IR
         }
         public bool IsExtendsRelation( IRMetaClass irmc )
         {
+            if( this == irmc )
+            {
+                return true;
+            }
             if (m_IRMetaClassMapTemplateDict.ContainsKey(irmc.id))
             {
                 return true;
