@@ -23,7 +23,10 @@ namespace SimpleLanguage.IR
             irMethod = irmthod;
             m_BlockStart = new IRNop(this.irMethod);
             m_IRStatements.Add(blockStart);
-        }       
+        }
+        public void ParseIRStatements(MetaBlockStatements ms)
+        {
+        }
         public void ParseAllIRStatements(MetaBlockStatements ms)
         {
             MetaStatements nextmbs = ms.nextMetaStatements;
@@ -34,7 +37,7 @@ namespace SimpleLanguage.IR
                     case MetaBlockStatements mbs:
                         {
                             IRBlockStatements ibs = new IRBlockStatements(irMethod);
-                            ibs.ParseAllIRStatements(mbs);
+                            ibs.ParseIRStatements(mbs);
                             m_IRStatements.AddRange(ibs.m_IRStatements);
                         }
                         break;

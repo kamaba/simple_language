@@ -1348,6 +1348,8 @@ namespace SimpleLanguage.Compile
 
                 AddParseSyntaxNodeInfo(cps, true);
 
+                ParseSyntax(node);
+
                 m_CurrentNodeInfoStack.Pop();
 
                 pnode.parseIndex++;

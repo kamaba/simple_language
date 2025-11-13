@@ -45,7 +45,7 @@ namespace SimpleLanguage.Core
             sb.Append(Environment.NewLine);
             if (nextMetaStatements != null)
             {
-                sb.Append(nextMetaStatements.ToFormatString());
+                sb.AppendLine(nextMetaStatements.ToFormatString());
             }
 
             return sb.ToString();

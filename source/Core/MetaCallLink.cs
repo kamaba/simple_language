@@ -298,6 +298,17 @@ namespace SimpleLanguage.Core
             }
             return mt;
         }
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < this.m_VisitNodeList.Count; i++)
+            {
+                sb.Append(m_VisitNodeList[i].ToString());
+                if (i < this.m_VisitNodeList.Count - 1)
+                    sb.Append("  ->  ");
+            }
+            return sb.ToString();
+        }
         public string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();

@@ -142,8 +142,8 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                sb.Append(this.m_VMCallMetaFunction.ownerMetaClass.allClassName);
-                sb.Append(".");
+                //sb.Append(this.m_VMCallMetaFunction.ownerMetaClass.allClassName);
+                //sb.Append(".");
             }
             if (m_VMCallMetaFunction != null)
             {
@@ -415,13 +415,18 @@ namespace SimpleLanguage.Core
         }
         public string ToFormatString()
         {
-            StringBuilder sb = new StringBuilder(); 
+            StringBuilder sb = new StringBuilder();
 
-            switch( visitType )
+            switch (visitType)
             {
                 case EVisitType.MethodCall:
                     {
-                        sb.Append(this.methodCall.ToFormatString() );
+                        sb.Append(this.methodCall.ToFormatString());
+                    }
+                    break;
+                case EVisitType.MetaClass:
+                    {
+                        sb.Append(this.m_ReturnMetaType.metaClass.metaNode.ToString());
                     }
                     break;
                 case EVisitType.VisitVariable:
@@ -436,7 +441,52 @@ namespace SimpleLanguage.Core
                     break;
                 case EVisitType.Variable:
                     {
-                        sb.Append(this.variable.ToFormatString());
+                        sb.Append(this.variable.ToString());
+                    }
+                    break;
+                case EVisitType.New:
+                    {
+                        sb.Append(this.m_CallMetaType.ToString());
+                    }
+                    break;
+                default:
+                    {
+                        sb.Append("Error MetaVisitCall Default Parse!");
+                    }
+                    break;
+            }
+
+            return sb.ToString();
+        }
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            switch (visitType)
+            {
+                case EVisitType.MethodCall:
+                    {
+                        sb.Append(this.methodCall.ToFormatString());
+                    }
+                    break;
+                case EVisitType.MetaClass:
+                    {
+                        sb.Append(this.m_ReturnMetaType.metaClass.metaNode.ToString());
+                    }
+                    break;
+                case EVisitType.VisitVariable:
+                    {
+                        sb.Append(this.visitVariable.ToFormatString());
+                    }
+                    break;
+                case EVisitType.ConstValue:
+                    {
+                        sb.Append(this.constValueExpress.value.ToString());
+                    }
+                    break;
+                case EVisitType.Variable:
+                    {
+                        sb.Append(this.variable.ToString());
                     }
                     break;
                 case EVisitType.New:

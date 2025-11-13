@@ -26,7 +26,7 @@ namespace SimpleLanguage.Core
 
         protected Dictionary<string, MetaVariable> m_MetaVariableDict = new Dictionary<string, MetaVariable>();
         protected List<MetaBlockStatements> m_ChildrenMetaBlockStatementsList = new List<MetaBlockStatements>();
-        protected MetaStatements m_OwnerMetaStatements = null;
+        protected MetaStatements m_OwnerMetaStatements = null;        
         protected FileMetaBlockSyntax m_FileMetaBlockSyntax = null;
         public MetaBlockStatements( MetaBlockStatements mbs )
         {
@@ -225,17 +225,20 @@ namespace SimpleLanguage.Core
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < realDeep; i++)
                 sb.Append(Global.tabChar);
-            sb.Append("{" + Environment.NewLine);
 
-            if( nextMetaStatements != null )
+            sb.Append("{" + Environment.NewLine);
+            if (this.nextMetaStatements != null && this.nextMetaStatements.parentBlockStatements == this )
             {
-                sb.Append(nextMetaStatements.ToFormatString() + Environment.NewLine);
+                sb.AppendLine(nextMetaStatements.ToFormatString() );
             }
             for (int i = 0; i < realDeep; i++)
                 sb.Append(Global.tabChar);
             sb.Append("}");
 
-
+            if( this.nextMetaStatements != null && nextMetaStatements.parentBlockStatements != this )
+            {
+                sb.AppendLine(nextMetaStatements.ToFormatString());
+            }
             return sb.ToString();
         }
     }

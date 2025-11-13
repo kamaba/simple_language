@@ -86,7 +86,7 @@ namespace SimpleLanguage.Core
             if (m_MetaCallLink != null)
             {
                 StringBuilder sb = new StringBuilder();
-                sb.Append( m_MetaCallLink.ToFormatString() );
+                sb.Append(m_MetaCallLink.ToFormatString());
                 return sb.ToString();
             }
             return "ExpressCallLink Error!!";

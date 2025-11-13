@@ -113,13 +113,11 @@ ClassAs_Is{
         
         #var aaa = level1.Level3_var3        #该语句需要报错，因为已经有定义过的类型，所以即使可以计算出来真实的类型，也不能直接使用
 
-        #System.Console.WriteLine("_this_——————————————————————————————  " +level2.Level2_var1 )
-        #System.Console.WriteLine("aanonnnhooooooooo  " + level1.Level1_var1 )
-        #if level2 != null
+        if level2 != null
         {
             System.Console.WriteLine("_this_——————————————————————————————  " +level2.Level2_var1 )
         }
-        #else
+        else
         {
             System.Console.WriteLine("aanonnnhooooooooo  " + level1.Level1_var1 )
         }

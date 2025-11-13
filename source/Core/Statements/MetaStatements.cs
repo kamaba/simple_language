@@ -56,7 +56,7 @@ namespace SimpleLanguage.Core
                 m_NextMetaStatements.SetDeep(deep);
             }
         }
-        public virtual void SetNextStatements( MetaStatements ms )
+        public virtual void SetNextStatements(MetaStatements ms)
         {
             m_NextMetaStatements = ms;
         }
