@@ -1,40 +1,122 @@
+import Std
+import CSharp.System
+import CSharp.SimpleLanguage.Lib
 
-import CSharp.SimpleLanguage.Core.SelfMeta;
-
-
-public class Type
+namespace Core
 {
-    public int length = 4
+    class Object
+    {
+        public void _init_()
+        {
+
+        }
+
+        public string toString()
+        {
+            ret ""
+        }
+    }
+    class Byte extends Object
+    {
+    }
+    class Boolean
+    {
+
+    }
+    class SByte
+    {
+        
+    }
+    class Int16
+    {
+        
+    }
+    class UInt16
+    {
+        
+    }
+    class Int32
+    {
+        _init_(Int32 val )
+        {
+            
+        }        
+    }
+    class UInt32
+    {
+        
+    }
+    class Int64
+    {
+        
+    }
+    class UInt64
+    {
+        
+    }
+    class Float32
+    {
+        
+    }
+    class Float64
+    {
+        _init_(Float64 f)
+        {
+
+        }
+    }
+    class String
+    {
+        _init_( String str )
+        {
+
+        }
+    }
+    public class Type
+    {
+        public int length = 4
+    }    
+    public class Array
+    {
+        int _length = 0
+        int _rank = 1
+
+        int _listPtr = 0
+
+        _init_(){
+            this._listPtr = 0
+        }
+        _init_( int length )
+        {
+            uint allSize = length * 4
+
+            this._listPtr = Lib.Array.CreateArray( length, 4 )
+
+        }
+        #!
+        public static Array CreateInstance(Type elementType, int length);
+        public static Array CreateInstance(Type elementType, int length1, int length2 );
+        public static Array CreateInstance(Type elementType, int length1, int length2, int lenght3 );;
+        !#
+        #!
+        _init_( uint length, Type type )
+        {        
+            uint allSize = length * type.length
+            this._listPtr = ArrayMetaClass.SetArrayLength( allSize )
+        }
+        _init_( uint length, Type type, int rank )
+        {
+            uint unitLength = type.length
+            this.length = length
+            this.rank = rank
+            uint allSize = length * type.length
+
+            this._listPtr = ArrayMetaClass.SetArrayLength( allSize )
+        }
+        !#
+    }
 }
 
-public class Array
-{
-    public int length = 0
-    public int rank = 1
-
-    int _listPtr = 0
-    _init_( uint length )
-    {
-        uint allSize = length * 4
-
-        this._listPtr = ArrayMetaClass.SetArrayLength( allSize )
-
-    }
-    _init_( uint length, Type type )
-    {        
-        uint allSize = length * type.length
-        this._listPtr = ArrayMetaClass.SetArrayLength( allSize )
-    }
-    _init_( uint length, Type type, int rank )
-    {
-        uint unitLength = type.length
-        this.length = length
-        this.rank = rank
-        uint allSize = length * type.length
-
-        this._listPtr = ArrayMetaClass.SetArrayLength( allSize )
-    }
-}
 
 ArrayTest
 {
@@ -65,16 +147,14 @@ ArrayTest
         
         float[] a8 = Array( 20 ){1,2,3,5,3.3};   #申请一个长度为20的数组  通过后边数据决定 其实使用的是ArrayInt
        
-        a9 = List( 27 ).gen(3); #申请一个三维数组，边界分别为3,3,3     
+        #a9 = Array( 27 ).gen(3); #申请一个三维数组，边界分别为3,3,3     
         
-        bb2 = List<int>(100){ 1,2,3,4,5 };    # 等于 Array<int>( 100, 10 )  {1,2,3,4,5};        
+        bb2 = Array(100, int.type ){ 1,2,3,4,5 };    # 等于 Array<int>( 100, 10 )  {1,2,3,4,5};        
              
         int[] bb3 = [1,2,3,4,5 ];    #与上相同  Array<int>(5){ 1,2,3,4,5}
-        
-        arr1 = List<ArrClass>();     #申请一个该类型的数组对象，但长度为0
 
         #ArrClass[] arr2 = ArrClass[10]{};    #不允许 这种的写法
-        #arr2 = List<ArrClass>();           
+        #arr2 = Array();           
         #arr1.setLength( 100 );         #设置数组的长度
         #arr1[0].i = 20;
  
@@ -85,11 +165,6 @@ ArrayTest
         
         arr1[1000].i = 10000; # 在编译时，处理是否有超过长度现象，如果有的话，则编译不通过
         
-        arr1.add( ArrClass() );  #增加数据+1 
-        
-        arr1.removeAt( 2 );       #删除数据-1        
-        
-        arr1.remove( arr1[20] );     #删除数据-1 
         arr1.@0.i = 10;
         arr1.@"aa".i = 20;          #需要重写_index_( string s )才可以使用
         

@@ -1,4 +1,12 @@
-﻿using System.Text;
+﻿//****************************************************************************
+//  File:      MetaExecuteStatementsNode.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/6/12 12:00:00
+//  Description: 未来支持 a = switch( x ){ default{ tr 100} } 返回值时候用的
+//****************************************************************************
+
+using System.Text;
 using SimpleLanguage.Compile;
 
 
