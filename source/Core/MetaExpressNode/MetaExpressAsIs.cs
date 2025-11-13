@@ -94,6 +94,7 @@ namespace SimpleLanguage.Core
                         nametoken = m_FileMetaKeyAsIsSyntax.convertIsTypeNameToken.lexeme.ToString();
                     }
                     m_ConvertTargetMetaVariable = new MetaVariable(nametoken, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, m_ConvertTargetMetaType);
+                    m_ConvertTargetMetaVariable.SetIsDefineMetaType(true);
                     m_OwnerMetaBlockStatements.AddMetaVariable(m_ConvertTargetMetaVariable);
                 }
             }

@@ -109,8 +109,9 @@ ClassAs_Is{
     static fun()
     {
         LevelT3<int,string> levelt3 = new()
-        LevelT3<int,int> levelt3_2 = levelt3 as LevelT3<int,string>        
-        #levelt3_2 = levelt3 as LevelT3<int,int>
+        levelt3.levelT3_var1 = 100
+        #LevelT3<int,int> levelt3_2 = levelt3 as LevelT3<int,string>        
+        levelt3_2 = levelt3 as LevelT3<int,string>
         if levelt3_2 != null
         {
             System.Console.WriteLine("_this_——————————————————————————————  " +levelt3_2.levelT3_var1 )
@@ -120,8 +121,13 @@ ClassAs_Is{
             System.Console.WriteLine("aanonnnhooooooooo  "  )
         }
 
+        LevelT2<int,int> levelt2 = new()
+        levelt2.levelT2_var1 = 1112
+        if levelt2 is LevelT2<int,int> levelt3_22
+        {
+            System.Console.WriteLine("_this_——————————2222222222  " + levelt3_22.levelT2_var1 )
+        }
 
-        #!
         Level3 level3 = new()
         Level1 level1 = level3
         level2 = level1 as Level2
