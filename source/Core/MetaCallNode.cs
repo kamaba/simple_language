@@ -483,6 +483,7 @@ namespace SimpleLanguage.Core
                 if (selfClass != null)
                 {
                     m_MetaClass = selfClass.GetMetaClassByTemplateCount(0);
+                    m_MetaType = new MetaType(m_MetaClass);
                     m_CallNodeType = ECallNodeType.TypeName;
                 }
             }

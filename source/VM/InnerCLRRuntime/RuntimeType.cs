@@ -9,6 +9,7 @@
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using SimpleLanguage.VM.Runtime;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -16,6 +17,7 @@ namespace SimpleLanguage.VM
 {
     public class RuntimeType
     {
+        public EType eType { get; set; } = EType.None;
         public IRMetaClass irClass;
         public List<RuntimeType> runtimeTemplateList = new List<RuntimeType>();
 
@@ -32,8 +34,6 @@ namespace SimpleLanguage.VM
             for ( int i = 0; i < irClass.staticIRMetaVariableList.Count; i++ )
             {
                 RuntimeType rt = GetClassRuntimeType(irClass.staticIRMetaVariableList[i].irMetaType, true);
-
-
                 m_StaticMemObjectList[i] = ObjectManager.CreateObjectByRuntimeType( rt, true );
             }
         }
@@ -606,7 +606,10 @@ namespace SimpleLanguage.VM
         public static RuntimeType AddRuntimeTypeByClass( IRMetaClass rmc )
         {
             RuntimeType rt = new RuntimeType(rmc, null );
-
+            if( Enum.TryParse<EType>(rmc.irName, true, out  var eType) )
+            {
+                rt.eType = eType;
+            }
             s_RuntimeList.Add(rt);
 
             return rt;

@@ -105,7 +105,11 @@ namespace SimpleLanguage.VM
         }
         public static void SetObjectByValue(SObject obj, ref SValue svalue)
         {
-
+            if(svalue.isNull )
+            {
+                obj.SetNull();
+                return;
+            }
             switch (svalue.eType)
             {
                 case EType.Null:

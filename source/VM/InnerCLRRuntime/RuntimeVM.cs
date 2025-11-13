@@ -1032,46 +1032,19 @@ namespace SimpleLanguage.VM.Runtime
 
                         var v1 = m_ValueStack[m_ValueIndex-1];
 
-                        switch( v1.eType )
+                        if( v1.eType == EType.Class )
                         {
-                            case EType.Boolean:
-                                {
-
-                                }
-                                break;
-                            case EType.Byte:
-                                {
-
-                                }
-                                break;
-                            case EType.SByte:
-                                {
-
-                                }
-                                break;
-                            case EType.Int32:
-                                {
-
-                                }
-                                break;
-                            case EType.UInt32:
-                                {
-
-                                }
-                                break;
-                            case EType.String:
-                                {
-
-                                }
-                                break;
-                            default:
-                                {
-                                    if ( !v1.sobject.runtimeType.IsExtendsRelation( rt ) )
-                                    {
-                                        m_ValueStack[m_ValueIndex - 1].SetNull();
-                                    }
-                                }
-                                break;
+                            if (!v1.sobject.runtimeType.IsExtendsRelation(rt))
+                            {
+                                m_ValueStack[m_ValueIndex - 1].SetNull();
+                            }
+                        }
+                        else
+                        {                            
+                            if (v1.eType != rt.eType )
+                            {
+                                m_ValueStack[m_ValueIndex - 1].SetNull();
+                            }
                         }
                     }
                     break;

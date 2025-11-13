@@ -108,6 +108,24 @@ LevelT3<T31,T32> extends LevelT2<T32,T31>
 ClassAs_Is{
     static fun()
     {
+        int a = 100
+        b = "abc"
+        if a is string str 
+        {
+            System.Console.WriteLine("_int is  " + str )
+        }
+        elif b is string str2 
+        {
+            System.Console.WriteLine("_int is2  " + str2 )
+        }
+        #!
+        if a is string str || b is string str2  #这种语法错误 ，如果使用as/is 必须只有一句处理
+        {
+            System.Console.WriteLine("_int is  " + str )
+            System.Console.WriteLine("_int is2  " + str2 )
+        }
+        !#
+        #!
         LevelT3<int,string> levelt3 = new()
         levelt3.levelT3_var1 = 100
         #LevelT3<int,int> levelt3_2 = levelt3 as LevelT3<int,string>        

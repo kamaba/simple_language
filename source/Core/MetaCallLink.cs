@@ -173,10 +173,15 @@ namespace SimpleLanguage.Core
                         MetaVisitNode mvn = MetaVisitNode.CreateByConstExpress(mcn.metaExpressValue as MetaConstExpressNode, mcn.metaVariable );
                         m_VisitNodeList.Add(mvn);
                     }
-                    else if( mcn.callNodeType == ECallNodeType.ClassName )
+                    else if (mcn.callNodeType == ECallNodeType.ClassName)
                     {
-                        MetaVisitNode mvn = MetaVisitNode.CreateByVisitMetaClass(mcn.metaType );
-                        m_VisitNodeList.Add(mvn);                        
+                        MetaVisitNode mvn = MetaVisitNode.CreateByVisitMetaClass(mcn.metaType);
+                        m_VisitNodeList.Add(mvn);
+                    }
+                    else if (mcn.callNodeType == ECallNodeType.TypeName )
+                    {
+                        MetaVisitNode mvn = MetaVisitNode.CreateByVisitMetaClass(mcn.metaType);
+                        m_VisitNodeList.Add(mvn);
                     }
                     else if (mcn.callNodeType == ECallNodeType.NewClass )
                     {

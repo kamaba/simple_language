@@ -27,6 +27,7 @@ namespace SimpleLanguage.VM
         public double doubleValue;
         public string stringValue;
         public ClassObject sobject;
+        public bool isNull;
         public void SetNullValue()
         {
             eType = EType.Null;
@@ -38,7 +39,7 @@ namespace SimpleLanguage.VM
         }
         public void SetNull()
         {
-            eType = EType.Null;
+            isNull = true;
             if (sobject != null )
             {
                 sobject.SetNull();
@@ -240,6 +241,7 @@ namespace SimpleLanguage.VM
         }
         public void SetSObject(SObject val)
         {
+            isNull = val.isNull;
             switch( val )
             {
                 case BoolObject boolobj:
