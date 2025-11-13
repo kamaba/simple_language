@@ -305,6 +305,7 @@ namespace SimpleLanguage.Compile
         public FileMetaCallLink variableCallLink => m_VariableCallLink;
         public FileMetaCallLink defineTypeLink => m_DefineTypeLink;
         public Token convertIsTypeNameToken => m_ConvertIsTypeNameToken;
+        public Token asOrIsToken => m_AsOrIsToken;
 
         private FileMetaCallLink m_VariableCallLink = null;
         private Token m_AsOrIsToken = null;

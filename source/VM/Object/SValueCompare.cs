@@ -323,7 +323,14 @@ namespace SimpleLanguage.VM
                         {
                             case EType.Null:
                                 {
-                                    SetBoolValue(this.sobject == null);
+                                    if( compareSign == 0 )
+                                    {
+                                        SetBoolValue(this.sobject == null);
+                                    }
+                                    else if( compareSign == 1)
+                                    {
+                                        SetBoolValue(this.sobject != null);
+                                    }
                                 }
                                 break;
                         }

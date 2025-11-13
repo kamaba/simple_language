@@ -442,9 +442,14 @@ namespace SimpleLanguage.Core
             //    sb.Append(m_TemplateMetaClass.allClassName);
             //}
             //else 
+            
             if (m_MetaClass != null)
             {
-                sb.Append(m_MetaClass.allClassName);
+                sb.Append(this.m_MetaClass.allClassName);
+            }
+            for( int i = 0; i < this.genTemplateMetaTypeList.Count; i++ )
+            {
+                sb.AppendLine(this.genTemplateMetaTypeList[i].ToString());
             }
 
             return sb.ToString();

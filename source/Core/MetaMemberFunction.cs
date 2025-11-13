@@ -688,7 +688,8 @@ namespace SimpleLanguage.Core
                         createBlockStatements.parent = currentBlockStatements;
                         var cms = CreateMetaSyntax(fmbs1, createBlockStatements);
                         beforeStatements.SetNextStatements(createBlockStatements);
-                        beforeStatements = createBlockStatements;
+                        beforeStatements = cms;
+                        //createBlockStatements.SetEndJumMetaStatements(cms);
                     }
                     break;
                 case FileMetaKeyIfSyntax fmkis:
@@ -975,7 +976,7 @@ namespace SimpleLanguage.Core
             //sb.Append("{");
 
             if(m_MetaBlockStatements != null )
-                sb.Append(m_MetaBlockStatements.ToFormatString());
+                sb.Append(this.m_MetaBlockStatements.ToFormatString());
 
             sb.Append(Environment.NewLine);
             //for (int i = 0; i < realDeep; i++)

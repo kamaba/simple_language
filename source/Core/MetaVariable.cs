@@ -205,7 +205,11 @@ namespace SimpleLanguage.Core
         }
         public override string ToString()
         {
-            return m_Name;
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("[" + m_DefineMetaType.ToString() + "]");
+            sb.Append(m_Name);
+            return sb.ToString();
         }
     }
 

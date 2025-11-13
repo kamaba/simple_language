@@ -203,10 +203,15 @@ namespace SimpleLanguage.IR
                         data.opCode = EIROpCode.Shr;
                     }
                     break;
-                    
+
                 case ELeftRightOpSign.Equal:
                     {
                         data.opCode = EIROpCode.Ceq;
+                    }
+                    break;
+                case ELeftRightOpSign.NotEqual:
+                    {
+                        data.opCode = EIROpCode.Cne;
                     }
                     break;
                 case ELeftRightOpSign.Greater:

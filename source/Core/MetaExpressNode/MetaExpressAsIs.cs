@@ -87,7 +87,7 @@ namespace SimpleLanguage.Core
 
                 if (m_ConvertTargetMetaVariable == null && m_FileMetaKeyAsIsSyntax.convertIsTypeNameToken != null)
                 {
-                    m_ConvertTargetMetaVariable = new MetaVariable("Is_convert" + GetHashCode().ToString(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, m_ConvertTargetMetaType);
+                    m_ConvertTargetMetaVariable = new MetaVariable(m_FileMetaKeyAsIsSyntax.convertIsTypeNameToken.lexeme.ToString(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, m_ConvertTargetMetaType);
                     m_OwnerMetaBlockStatements.AddMetaVariable(m_ConvertTargetMetaVariable);
                 }
             }
@@ -103,9 +103,13 @@ namespace SimpleLanguage.Core
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            //sb.Append("(" + m_Left.ToFormatString());
-            //sb.Append(" " + GetSignString(m_OpLevelSign));
-            //sb.Append(" " + m_Right.ToFormatString() + ")");
+            sb.Append(m_CurrentVariable.name + " ");
+            sb.Append(m_FileMetaKeyAsIsSyntax.asOrIsToken.lexeme.ToString() + " ");
+            sb.Append(m_ConvertTargetMetaType.ToFormatString() + " ");
+            if(m_ConvertTargetMetaVariable != null )
+            {
+                sb.Append(m_ConvertTargetMetaVariable.name + " ");
+            };
 
             return sb.ToString();
         }
