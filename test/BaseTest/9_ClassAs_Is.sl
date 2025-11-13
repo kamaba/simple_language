@@ -112,7 +112,7 @@ ClassAs_Is{
         level2 = level1 as Level2
         
         #var aaa = level1.Level3_var3        #该语句需要报错，因为已经有定义过的类型，所以即使可以计算出来真实的类型，也不能直接使用
-
+        
         if level2 != null
         {
             System.Console.WriteLine("_this_——————————————————————————————  " +level2.Level2_var1 )
@@ -121,33 +121,27 @@ ClassAs_Is{
         {
             System.Console.WriteLine("aanonnnhooooooooo  " + level1.Level1_var1 )
         }
-        
 
-        #!
-        bool flag = level2 is Level3
+        bool flag = level2 is Level3 level3ttt
         if flag
         {
-            System.Console.WriteLine("is ok  " )
+            System.Console.WriteLine("is ok  " + level3ttt.Level3_var3 )
         }
         else
         {
             System.Console.WriteLine("is No  " )
         }
-        !#
 
-        #!
-        bool aaa = level1 is Level2 level2tt
-        if( level1 is Level3  ll3if )
+        if level1 is Level3 ll3if
         {
-            Console.WriteLine("yes l3 ");
+            System.Console.WriteLine("yes l3 ="  + ll3if.Level3_var3 );
         }
-        !#
 
         #!
         l1castl3 = level1.cast<Level3>()
-        if l1castl3 
+        if l1castl3 != null
         {
-            Console.WriteLine("yes l1cast l3" );
+            Console.WriteLine("yes l1cast l1castl3=" );
         }
         !#
     }

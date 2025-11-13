@@ -16,6 +16,7 @@ namespace SimpleLanguage.Core
     public sealed class MetaAsIsExpressNode : MetaExpressNode
     {
         public MetaVariable currentVariable => m_CurrentVariable;
+        public MetaVariable convertTargetMetaVariable => m_ConvertTargetMetaVariable;
         public MetaType convertTargetMetaType => m_ConvertTargetMetaType;
         public bool isAs => m_IsAs;
         public FileMetaAsOrIsTerm fileMetaKeyAsIsSyntax => m_FileMetaKeyAsIsSyntax;
@@ -85,9 +86,14 @@ namespace SimpleLanguage.Core
                 m_ConvertTargetMetaTypeLink.Parse(auc);
                 m_ConvertTargetMetaType = m_ConvertTargetMetaTypeLink.GetMetaDefineType();
 
-                if (m_ConvertTargetMetaVariable == null && m_FileMetaKeyAsIsSyntax.convertIsTypeNameToken != null)
+                if (m_ConvertTargetMetaVariable == null )                    
                 {
-                    m_ConvertTargetMetaVariable = new MetaVariable(m_FileMetaKeyAsIsSyntax.convertIsTypeNameToken.lexeme.ToString(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, m_ConvertTargetMetaType);
+                    string nametoken = this.GetHashCode() + "_auto_cast_target_mv";
+                    if(m_FileMetaKeyAsIsSyntax.convertIsTypeNameToken != null)
+                    {
+                        nametoken = m_FileMetaKeyAsIsSyntax.convertIsTypeNameToken.lexeme.ToString();
+                    }
+                    m_ConvertTargetMetaVariable = new MetaVariable(nametoken, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, m_ConvertTargetMetaType);
                     m_OwnerMetaBlockStatements.AddMetaVariable(m_ConvertTargetMetaVariable);
                 }
             }

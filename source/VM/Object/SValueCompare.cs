@@ -325,11 +325,11 @@ namespace SimpleLanguage.VM
                                 {
                                     if( compareSign == 0 )
                                     {
-                                        SetBoolValue(this.sobject == null);
+                                        SetBoolValue(this.sobject.isNull );
                                     }
                                     else if( compareSign == 1)
                                     {
-                                        SetBoolValue(this.sobject != null);
+                                        SetBoolValue( !this.sobject.isNull );
                                     }
                                 }
                                 break;
