@@ -173,10 +173,17 @@ ObjectTest
 式相当于 Class a = {var1=10;var2 = 20; } a = Class(); a.var1 = 10; a.var2 = 20; 
 9. 不允许 Class1().Fun() 这种的调用，必须 是1-7的情况，其它一律不行
     1. Class1 varname = Class1();   Class1 varname = Class2()
-    2. Class1 varname;
-    3. Class1 varname = (1,2)   在初始化后调用_init_(1,2)函数 
+    2. Class1 varname;               #不允许
+    3. Class1 varname = new(1,2)   在初始化后调用_init_(1,2)函数  如果没有new关键字也不允许 
     4. Class1 varname = {var1 = 20; var2 = 30; }  在初始化时直接给某个成员赋值
     5. varname = Class1(1,2){var1 = 20; var2 = 30; }   即调用_init_(1,2)  先给变量赋值，再进行初始化调用
+10. 数组相关的创建对象
+    1. var1 = [1,2,3]
+    2. var1 = Array( 5, int.type ){ 1,2,3,4,5 }
+    3. Set<int> set1 = new(4){ 1,2,3 }
+    4. Map<int,string> map1 = new(10){ {1,"10"}, {2,"20"}, {3,"30"} }
+    5. List<int> list1 = new(){ 1,2,3,4,5 }
+    6. List list1 = new(){ Class1(), Class2(), Class3() }
 !#
 
 #!

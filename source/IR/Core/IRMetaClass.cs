@@ -9,7 +9,6 @@
 
 using System.Collections.Generic;
 using System.Text;
-using System.Xml.Linq;
 using SimpleLanguage.Core;
 using SimpleLanguage.Parse;
 

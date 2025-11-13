@@ -1,9 +1,15 @@
-﻿using System;
+﻿//****************************************************************************
+//  File:      MetaExpressOperator.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/6/12 12:00:00
+//  Description: 
+//****************************************************************************
+
+using System;
 using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Compile;
-
-using SimpleLanguage.VM;
 
 namespace SimpleLanguage.Core
 {

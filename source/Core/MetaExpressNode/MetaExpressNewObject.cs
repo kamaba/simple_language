@@ -831,6 +831,8 @@ namespace SimpleLanguage.Core
         // Class1 c = { a = 20, b = 20 };  => Class1 c = Class1(); c.a = 20; c.b = 20;
         // dynamic c = {a = 20, b = 20} => 动态类 
         // data c = {a = 20, b = 20} | c = {a = 20, b = 20} => 动态数据  
+        // Map<int,string> map1 = new(10){ {1,"20"}, {2,"30}, {3,"50} }
+        // List<int> list1 = new(){ 1,2,3,4,5 }
         public MetaNewObjectExpressNode( FileMetaBraceTerm fmbt, MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs, MetaVariable equalMV )
         {
             m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fmbt, mbs, ownerMC, equalMV );
@@ -857,7 +859,7 @@ namespace SimpleLanguage.Core
             }
             Init();
         }
-        // Class1 c = ( 1, 2 );  => Class1 c = Class1( 1, 2 );
+        // Class1 c = new( 1, 2 );  => Class1 c = Class1( 1, 2 );
         public MetaNewObjectExpressNode( FileMetaParTerm fmpt, MetaType mt, MetaClass mc, MetaBlockStatements mbs )
         {
             m_FileMetaParTerm = fmpt;
@@ -869,7 +871,7 @@ namespace SimpleLanguage.Core
 
             Init();
         }
-        // List<int> arr = [1,2,3]
+        // Array arr = [1,2,3]
         public MetaNewObjectExpressNode( FileMetaBracketTerm fmbt, MetaClass mc, MetaBlockStatements mbs, MetaVariable equalMV )
         {
             m_OwnerMetaClass = mc;
@@ -881,7 +883,7 @@ namespace SimpleLanguage.Core
             var metaInputTemplateCollection = new MetaInputTemplateCollection();
             MetaType mitp = new MetaType(inputType);
             metaInputTemplateCollection.AddMetaTemplateParamsList(mitp);
-            m_MetaDefineType = new MetaType(CoreMetaClassManager.arrayMetaClass, null, metaInputTemplateCollection);
+            m_MetaDefineType = new MetaType( m_OwnerMetaClass, CoreMetaClassManager.arrayMetaClass, metaInputTemplateCollection);
 
             MetaInputParamCollection mipc = new MetaInputParamCollection( mc, mbs );
             mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaBraceOrBracketStatementsContent.count) ) );
@@ -1027,7 +1029,7 @@ namespace SimpleLanguage.Core
             return sb.ToString();
         }
         /// <summary>
-        ///  Class2 c = ( 1, 2 );
+        ///  Class2 c = new( 1, 2 );
         /// </summary>
         /// <param name="root"></param>
         /// <param name="mc"></param>

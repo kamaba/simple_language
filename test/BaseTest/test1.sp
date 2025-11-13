@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "9_ClassAs_Is.sl";
+            path = "12_ArrayTest.sl";
             group = "temp";
             tag = "all";
             a = 200
@@ -73,7 +73,8 @@ Project
         #GenClass.fun()
         #GenFunction.fun();
         #TypeTest.fun()
-        ClassAs_Is.fun()
+        #ClassAs_Is.fun()
+        ArrayTest.fun()
     }
     static Test()
     {
