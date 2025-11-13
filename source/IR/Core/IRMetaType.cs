@@ -26,6 +26,11 @@ namespace SimpleLanguage.IR
         private List<IRMetaType> m_IRMetaTypeList = new List<IRMetaType>();
 
         private int m_TemplateIndex = -1;
+
+        public IRMetaType()
+        {
+
+        }
         public IRMetaType(MetaType type )
         {
             if (type.eType == EMetaTypeType.MetaClass)
@@ -50,34 +55,64 @@ namespace SimpleLanguage.IR
             }
             for (int i = 0; i < type.defineTemplateMetaTypeList.Count; i++)
             {
-                m_IRMetaTypeList.Add(new IRMetaType(type.defineTemplateMetaTypeList[i], m_IROwnerMetaClass));
+                m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(type.defineTemplateMetaTypeList[i], m_IROwnerMetaClass));
             }
         }
-        public IRMetaType(MetaType type, IRMetaClass ownerIRMc )
+        public static IRMetaType CreateIRMetaTypeByGenTemplateMetaTypeList( MetaType type, IRMetaClass ownerIRMc)
         {
-            m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id );
+            IRMetaType irmt = new();
+            irmt.m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id);
             if (type.eType == EMetaTypeType.MetaClass)
             {
-                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
             }
             else if (type.eType == EMetaTypeType.Template)
             {
-                m_TemplateIndex = type.metaTemplate.index;
-                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+                irmt.m_TemplateIndex = type.metaTemplate.index;
+                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
             }
             else
             {
-                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
             }
 
             for (int i = 0; i < type.genTemplateMetaTypeList.Count; i++)
             {
-                m_IRMetaTypeList.Add(new IRMetaType(type.genTemplateMetaTypeList[i], m_IROwnerMetaClass));
+                irmt.m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(type.genTemplateMetaTypeList[i], irmt.m_IROwnerMetaClass));
             }
-            if (m_IRMetaClass == null || m_IROwnerMetaClass == null)
+            if (irmt.m_IRMetaClass == null || irmt.m_IROwnerMetaClass == null)
             {
                 Debug.Assert(false, "这个不可以为空!");
             }
+            return irmt;
+        }
+        public static IRMetaType CreateIRMetaTypeByDefineTemplateMetaTypeList(MetaType type, IRMetaClass ownerIRMc )
+        {
+            IRMetaType irmt = new();
+            irmt.m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id );
+            if (type.eType == EMetaTypeType.MetaClass)
+            {
+                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+            }
+            else if (type.eType == EMetaTypeType.Template)
+            {
+                irmt.m_TemplateIndex = type.metaTemplate.index;
+                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+            }
+            else
+            {
+                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+            }
+
+            for (int i = 0; i < type.defineTemplateMetaTypeList.Count; i++)
+            {
+                irmt.m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(type.defineTemplateMetaTypeList[i], irmt.m_IROwnerMetaClass));
+            }
+            if (irmt.m_IRMetaClass == null || irmt.m_IROwnerMetaClass == null)
+            {
+                Debug.Assert(false, "这个不可以为空!");
+            }
+            return irmt;
         }
         public IRMetaType( IRMetaClass irmc, List<IRMetaType> irlist )
         {

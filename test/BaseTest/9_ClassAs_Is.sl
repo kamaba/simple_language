@@ -87,14 +87,15 @@ Level3 extends Level2
 
 LevelT<T1>
 {
-
+    T1 levelT1_var1 = new()
 }
 LevelT2<T21,T22> extends LevelT<T22>
 {
-
+    T22 levelT2_var1 = new()
 }
 LevelT3<T31,T32> extends LevelT2<T32,T31>
 {
+    T31 levelT3_var1 = new()
     #!
     _cast_<TargetT>()
     {
@@ -107,6 +108,20 @@ LevelT3<T31,T32> extends LevelT2<T32,T31>
 ClassAs_Is{
     static fun()
     {
+        LevelT3<int,string> levelt3 = new()
+        LevelT3<int,int> levelt3_2 = levelt3 as LevelT3<int,string>        
+        #levelt3_2 = levelt3 as LevelT3<int,int>
+        if levelt3_2 != null
+        {
+            System.Console.WriteLine("_this_——————————————————————————————  " +levelt3_2.levelT3_var1 )
+        }
+        else
+        {
+            System.Console.WriteLine("aanonnnhooooooooo  "  )
+        }
+
+
+        #!
         Level3 level3 = new()
         Level1 level1 = level3
         level2 = level1 as Level2

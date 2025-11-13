@@ -106,7 +106,6 @@ namespace SimpleLanguage.Core
         public MetaBlockStatements ownerMetaFunctionBlock => m_OwnerMetaFunctionBlock;
         public MetaVariable storeMetaVariable => m_StoreMetaVariable;
         public MetaType callMetaType => m_CallMetaType;
-        public MetaClass metaClass => m_MetaClass;
         //public MetaGenTemplateClass genMetaClass => m_GenMetaClass;
         //public MetaData metaData => m_MetaData;
         //public MetaEnum metaEnum => m_MetaEnum;
@@ -511,6 +510,7 @@ namespace SimpleLanguage.Core
                                 {
                                     m_MetaClass = mn.GetMetaClassByTemplateCount(0);
                                     m_CallNodeType = ECallNodeType.ClassName;
+                                    m_MetaType = new MetaType(m_MetaClass);
                                 }
                                 else if (mn.isMetaNamespace)
                                 {

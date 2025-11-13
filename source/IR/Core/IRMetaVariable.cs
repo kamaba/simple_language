@@ -88,7 +88,7 @@ namespace SimpleLanguage.IR
             //}
             //else 
             IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mv.ownerMetaClass.GetHashCode());
-            m_IRMetaType = new IRMetaType(mv.realMetaType, owirmc);
+            m_IRMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mv.realMetaType, owirmc);
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme)
         {
@@ -121,7 +121,7 @@ namespace SimpleLanguage.IR
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Member;
 
             IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mmv.GetOwnerClassTemplateClass().GetHashCode());
-            m_IRMetaType = new IRMetaType(mmv.realMetaType, owirmc);
+            m_IRMetaType = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mmv.realMetaType, owirmc);
         }
         public void SetExpress( MetaExpressNode men )
         {

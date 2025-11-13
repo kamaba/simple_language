@@ -729,30 +729,12 @@ namespace SimpleLanguage.VM.Runtime
                             ObjectManager.AddClassObject(co);
                         }
                         m_ValueStack[m_ValueIndex++].SetSObject(sob);
-
-
-                        //var irList = rt.irClass.CreateStaticMetaMetaVariableIRList();
-                        //if (irList.Count > 0)
-                        //{
-                        //    int ExecuteIndex2 = 0;
-                        //    int executeCount = irList.Count;
-                        //    m_NewObjectRuntimeTypeStack.Push(m_InputTemplateRuntimeTypeList);
-                        //    m_InputTemplateRuntimeTypeList = rt.runtimeTemplateList;
-                        //    while (true)
-                        //    {
-                        //        if (ExecuteIndex2 >= executeCount)
-                        //        {
-                        //            break;
-                        //        }
-                        //        RunInstruction(irList[ExecuteIndex2++]);
-                        //    }
-                        //    m_InputTemplateRuntimeTypeList = m_NewObjectRuntimeTypeStack.Pop();
-                        //}
                     }
                     break;
                 case EIROpCode.NewTemplateClass:
                     {
                         IRMetaType mdt = iri.opValue as IRMetaType;
+
                         var rt = GetClassRuntimeType(mdt, m_IRMetaClass != null ? m_IRMetaClass : mdt.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
                         SObject sobj = ObjectManager.CreateObjectByRuntimeType( rt, true );
                         if (sobj is ClassObject co)
@@ -765,23 +747,6 @@ namespace SimpleLanguage.VM.Runtime
 
                         var irList = rt.irClass.CreateStaticMetaMetaVariableIRList();
                         InnerCLRRuntimeVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
-
-                        //if( irList.Count > 0 )
-                        //{
-                        //    int ExecuteIndex2 = 0;
-                        //    int executeCount = irList.Count;
-                        //    m_NewObjectRuntimeTypeStack.Push(m_InputTemplateRuntimeTypeList);
-                        //    m_InputTemplateRuntimeTypeList = rt.runtimeTemplateList;
-                        //    while (true)
-                        //    {
-                        //        if (ExecuteIndex2 >= executeCount)
-                        //        {
-                        //            break;
-                        //        }
-                        //        RunInstruction(irList[ExecuteIndex2++]);
-                        //    }
-                        //    m_InputTemplateRuntimeTypeList = m_NewObjectRuntimeTypeStack.Pop();
-                        //}
                     }
                     break;
                 case EIROpCode.Dup:
@@ -1101,7 +1066,7 @@ namespace SimpleLanguage.VM.Runtime
                                 break;
                             default:
                                 {
-                                    if ( !v1.sobject.irMetaClass.IsExtendsRelation( rt.irClass ) )
+                                    if ( !v1.sobject.runtimeType.IsExtendsRelation( rt ) )
                                     {
                                         m_ValueStack[m_ValueIndex - 1].SetNull();
                                     }

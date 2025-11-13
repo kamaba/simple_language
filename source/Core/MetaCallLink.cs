@@ -175,7 +175,7 @@ namespace SimpleLanguage.Core
                     }
                     else if( mcn.callNodeType == ECallNodeType.ClassName )
                     {
-                        MetaVisitNode mvn = MetaVisitNode.CreateByVisitMetaClass(mcn.metaClass );
+                        MetaVisitNode mvn = MetaVisitNode.CreateByVisitMetaClass(mcn.metaType );
                         m_VisitNodeList.Add(mvn);                        
                     }
                     else if (mcn.callNodeType == ECallNodeType.NewClass )

@@ -34,7 +34,7 @@ namespace SimpleLanguage.IR
             if (mfc.loadMetaVariable != null)
             {
                 owirmc = IRManager.instance.GetIRMetaClassById(mfc.loadMetaVariable.GetOwnerClassTemplateClass().GetHashCode());
-                irmt = new IRMetaType(mfc.loadMetaVariable.metaDefineType, owirmc);
+                irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mfc.loadMetaVariable.metaDefineType, owirmc);
                 IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, mfc.loadMetaVariable );
                 AddIRRangeData(irload.IRDataList);
             }
@@ -123,13 +123,13 @@ namespace SimpleLanguage.IR
             List<IRMetaType> types = new List<IRMetaType>();
             for (int i = 0; i < mfc.staticMetaClassInputTemplateList.Count; i++)
             {
-                types.Add(new IRMetaType(mfc.staticMetaClassInputTemplateList[i], owirmc));
+                types.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mfc.staticMetaClassInputTemplateList[i], owirmc));
             }
             irmt = new IRMetaType(irmc, types);
             List<IRMetaType> functionMtList = new List<IRMetaType>();
             for( int i = 0; i < mfc.metaFunctionInputTemplateList.Count; i++ )
             {
-                functionMtList.Add(new IRMetaType(mfc.metaFunctionInputTemplateList[i], owirmc));
+                functionMtList.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mfc.metaFunctionInputTemplateList[i], owirmc));
             }
            var irmethodcall = new IRMethodCall(irmt, functionMtList, m_IRRuntimeMethod, paramCount );
             if ( callMethodIndex == -1 )

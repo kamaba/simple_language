@@ -48,11 +48,11 @@ namespace SimpleLanguage.Core.IR
                 {
                     if( cnode.callMetaType != null )
                     {
-                        irmt = new IRMetaType(cnode.callMetaType, owirmc);
+                        irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
                     }
                     else
                     {
-                        irmt = new IRMetaType(mv.metaDefineType, owirmc);
+                        irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.metaDefineType, owirmc);
                     }
                     irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
                 }
@@ -84,7 +84,7 @@ namespace SimpleLanguage.Core.IR
             if (cnode.callMetaType.eType == EMetaTypeType.TemplateClassWithTemplate
                 || cnode.callMetaType.eType == EMetaTypeType.Template)
             {
-                var irnew = new IRNew(_irMethod, new IRMetaType(cnode.callMetaType, owirmc ));
+                var irnew = new IRNew(_irMethod, IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc ));
                 irList.Add(irnew);
             }
             else if (cnode.callMetaType.eType == EMetaTypeType.MetaClass)
@@ -181,7 +181,7 @@ namespace SimpleLanguage.Core.IR
                         || mv.variableFrom == MetaVariable.EVariableFrom.Global)
                     {
                         IRMetaClass irmc = IRManager.instance.GetIRMetaClassById(mv.ownerMetaClass.GetHashCode());
-                        var irmt = new IRMetaType(mv.metaDefineType, irmc);
+                        var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.metaDefineType, irmc);
                         IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, m_IRMethod, mv);
                         irList.Add(irVar);
                     }
