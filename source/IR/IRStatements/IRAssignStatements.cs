@@ -53,7 +53,7 @@ namespace SimpleLanguage.IR
                         var irmc = IRManager.instance.GetIRMetaClassById(mv.metaDefineType.GetTemplateMetaClass().GetHashCode());
                         var owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
 
-                        IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable( new IRMetaType(mv.metaDefineType, owirmc), irmc, irMethod, finalMVN.GetOrgTemplateMetaVariable() );
+                        IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable( IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.metaDefineType, owirmc), irmc, irMethod, finalMVN.GetOrgTemplateMetaVariable() );
                         m_IRStatements.Add(irsv);
 
                     }
@@ -98,12 +98,12 @@ namespace SimpleLanguage.IR
                             if (cl.callMetaType == null)
                             {
                                 irmc = IRManager.instance.GetIRMetaClassById(mv.ownerMetaClass.GetHashCode());
-                                irmt = new IRMetaType(mv.metaDefineType, owirmc);
+                                irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.metaDefineType, owirmc);
                             }
                             else
                             {
                                 irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
-                                irmt = new IRMetaType(cl.callMetaType, owirmc);
+                                irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(cl.callMetaType, owirmc);
                             }
                             //else
                             //    irmt = new IRMetaType(mv.ownerMetaClass, null);

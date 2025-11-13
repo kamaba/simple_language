@@ -195,12 +195,12 @@ namespace SimpleLanguage.Core
         //protected MetaClass m_CallerMetaClass = null;
         protected MetaType m_CallMetaType = null; //该变量，一般是为 T t = new() 这种情况准备的
 
-        public static MetaVisitNode CreateByVisitMetaClass( MetaClass mc )
+        public static MetaVisitNode CreateByVisitMetaClass( MetaType mt )
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.visitType = EVisitType.MetaClass;
-            vn.m_ReturnMetaType = new MetaType(mc);
+            vn.m_ReturnMetaType = mt;
 
             return vn;
         }
@@ -426,7 +426,7 @@ namespace SimpleLanguage.Core
                     break;
                 case EVisitType.MetaClass:
                     {
-                        sb.Append(this.m_ReturnMetaType.metaClass.metaNode.ToString());
+                        sb.Append(this.m_ReturnMetaType.ToString() );
                     }
                     break;
                 case EVisitType.VisitVariable:

@@ -460,6 +460,33 @@ namespace SimpleLanguage.VM
             return true;
         }
 
+        public bool IsExtendsRelation( RuntimeType rt )
+        {
+            if (irClass != rt.irClass)
+            {
+                return false;
+            }
+
+            if(runtimeTemplateList.Count != rt.runtimeTemplateList.Count )
+            {
+                return false;
+            }
+            bool flag = true;
+            for( int i = 0; i < runtimeTemplateList.Count; i++ )
+            {
+                var r1 = runtimeTemplateList[i];
+                var r2 = rt.runtimeTemplateList[i];
+
+                if( !r1.IsExtendsRelation(r2 ) )
+                {
+                    flag = false;
+                    break;
+                }
+            }
+
+            return flag;
+        }
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();

@@ -317,11 +317,16 @@ namespace SimpleLanguage.Compile
         {
             m_FileMeta = fm;
             m_Root = this;
-            if ( nodeList.Count == 3 || nodeList.Count == 4 )
+
+            Node node = new Node(null);
+            node.childList.AddRange(nodeList);
+            var nodeList2 = StructParse.HandleBeforeNode(node);
+
+            if (nodeList2.Count == 3 || nodeList2.Count == 4 )
             {
-                m_VariableCallLink = new FileMetaCallLink(fm, nodeList[0]);
-                m_AsOrIsToken = nodeList[1].token;
-                m_DefineTypeLink = new FileMetaCallLink(fm, nodeList[2]);
+                m_VariableCallLink = new FileMetaCallLink(fm, nodeList2[0]);
+                m_AsOrIsToken = nodeList2[1].token;
+                m_DefineTypeLink = new FileMetaCallLink(fm, nodeList2[2]);
                 if(nodeList.Count == 4 )
                 {
                     m_ConvertIsTypeNameToken = nodeList[3].token;

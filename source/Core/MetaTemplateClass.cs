@@ -142,7 +142,7 @@ namespace SimpleLanguage.Core
                     if (!m_MetaTemplateMapDict.ContainsKey(tparentMc))
                     {
                         ClassLevelRelationData clrd = new ClassLevelRelationData();
-                        if (parentMc is MetaGenTemplateClass mgtc)
+                        if (parentMc.isTemplateClass )
                         {
                             var list = tcurrentMC.m_MetaTemplateMapDict[tparentMc].metaTemplateBindDataList;
                             foreach (var v in list)

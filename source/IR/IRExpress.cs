@@ -92,30 +92,30 @@ namespace SimpleLanguage.IR
                         if( maien.isAs )
                         {
                             var owirmc = IRManager.instance.GetIRMetaClassById(maien.currentVariable.GetOwnerClassTemplateClass().GetHashCode());
-                            var irmt = new IRMetaType(maien.currentVariable.metaDefineType, owirmc);
+                            var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(maien.currentVariable.metaDefineType, owirmc);
                             IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, maien.currentVariable );
                             AddIRRangeData(irload.IRDataList);
 
                             IRData irdata = new IRData();
                             irdata.opCode = EIROpCode.CastClass;
-                            irdata.opValue = new IRMetaType( maien.convertTargetMetaType );
+                            irdata.opValue = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList( maien.convertTargetMetaType, owirmc);
 
                             m_IRDataList.Add(irdata);
                         }
                         else
                         {
                             var owirmc = IRManager.instance.GetIRMetaClassById(maien.currentVariable.GetOwnerClassTemplateClass().GetHashCode());
-                            var irmt = new IRMetaType(maien.currentVariable.metaDefineType, owirmc);
+                            var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(maien.currentVariable.metaDefineType, owirmc);
                             IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, maien.currentVariable);
                             AddIRRangeData(irload.IRDataList);
 
                             IRData irdata = new IRData();
                             irdata.opCode = EIROpCode.CastClass;
-                            irdata.opValue = new IRMetaType(maien.convertTargetMetaType);
+                            irdata.opValue = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(maien.convertTargetMetaType, owirmc);
                             m_IRDataList.Add(irdata);
 
                             var owirmc2 = IRManager.instance.GetIRMetaClassById(maien.convertTargetMetaVariable.GetOwnerClassTemplateClass().GetHashCode());
-                            var irmt2 = new IRMetaType(maien.convertTargetMetaVariable.metaDefineType, owirmc);
+                            var irmt2 = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(maien.convertTargetMetaVariable.metaDefineType, owirmc);
                             IRStoreVariable irstore = IRStoreVariable.CreateIRStoreVariable(irmt2, owirmc2, m_IRMethod, maien.convertTargetMetaVariable);
                             AddIRRangeData(irstore.IRDataList);
 
