@@ -31,7 +31,11 @@ namespace SimpleLanguage.IR
         {
 
         }
-        public IRMetaType(MetaType type )
+        public IRMetaType( IRMetaClass _irMetaClass)
+        {
+            m_IRMetaClass = _irMetaClass;
+        }
+        public IRMetaType( MetaType type )
         {
             if (type.eType == EMetaTypeType.MetaClass)
             {

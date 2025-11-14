@@ -8,7 +8,11 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.IR;
+using SimpleLanguage.Parse;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 
 namespace SimpleLanguage.IR
@@ -131,21 +135,6 @@ namespace SimpleLanguage.IR
                             irdata5.opCode = EIROpCode.Cne;
                             AddIRData(irdata5);
                         }
-                    }
-                    break;
-                case MetaNewObjectExpressNode mnoe:
-                    {
-                        IRMetaClass irmc = null;
-                        if (m_IRManager != null)
-                        {
-                            irmc = m_IRManager.GetIRMetaClassByName(mnoe.GetReturnMetaDefineType().name);
-                        }
-                        else
-                        {
-                            irmc = m_IRMethod.irManager.GetIRMetaClassByName(mnoe.GetReturnMetaDefineType().name);
-                        }
-                        IRNew irnew = new IRNew(m_IRMethod, irmc);
-                        m_IRDataList.AddRange(irnew.IRDataList);
                     }
                     break;
                 default:
@@ -283,6 +272,139 @@ namespace SimpleLanguage.IR
             sb.AppendLine("#LoadConst#" );
             sb.Append(base.ToIRString());
             return sb.ToString();
+        }
+    }
+
+    public class IRNewExpress : IRBase
+    {
+        public IRNewExpress(IRMethod irMethod, MetaNewObjectExpressNode mnoen ) : base(irMethod)
+        {
+            IRMetaClass owirmc = null;
+            IRMetaType newObjectIRMT = null;
+
+            if (mnoen.metaDefineType.eType == EMetaTypeType.MetaGenClass )
+            {
+                if( mnoen.ownerMetaClass is MetaGenTemplateClass mgtc )
+                {
+                    owirmc = IRManager.instance.GetIRMetaClassById(mgtc.metaTemplateClass.GetHashCode());
+                }
+                newObjectIRMT = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.metaDefineType, owirmc);
+                IRMetaClass irmc = IRManager.instance.GetIRMetaClassById(mnoen.metaDefineType.GetTemplateMetaClass().GetHashCode());
+               
+            }
+            if(  mnoen.metaDefineType.eType == EMetaTypeType.MetaClass )
+            {
+                owirmc = IRManager.instance.GetIRMetaClassById(mnoen.ownerMetaClass.GetHashCode());
+                IRMetaClass newObjIRMC = IRManager.instance.GetIRMetaClassById(mnoen.metaDefineType.GetTemplateMetaClass().GetHashCode());
+                newObjectIRMT = new IRMetaType(newObjIRMC);
+                IRNew irNew = new IRNew(irMethod, newObjIRMC);
+                AddIRRangeData(irNew.IRDataList);
+            }
+            else
+            {
+                int a = 10;
+            }
+            /*
+            if (irmc.needCallInitMethod == false)
+            {
+                if (irmc.localIRMetaVariableList.Count > 0)
+                {
+                    bool isUseAssign = false;
+                    for (int x = 0; x < irmc.localIRMetaVariableList.Count; x++)
+                    {
+                        var lirmv = irmc.localIRMetaVariableList[x];
+                        if (cnode.metaBraceStatementsContent?.assignStatementsList?.Count > 0)
+                        {
+                            //var irmc = _irMethod.irManager.GetIRMetaClassByName(cnode.variable.metaDefineType.metaClass.allClassName);
+                            IRLoadVariable irlv = IRLoadVariable.CreateLoadVariable(null, irmc, _irMethod, cnode.GetOrgTemplateMetaVariable());
+                            irList.Add(irlv);
+                            for (int y = 0; y < cnode.metaBraceStatementsContent.assignStatementsList.Count; y++)
+                            {
+                                var asl = cnode.metaBraceStatementsContent.assignStatementsList[y];
+
+                                if (asl.metaMemberVariable.name == lirmv.name)
+                                {
+                                    IRExpress irexp = new IRExpress(_irMethod, asl.expressNode);
+                                    irList.Add(irexp);
+
+                                    IRStoreVariable irStoreNodeVar3 = new IRStoreVariable(null, _irMethod, lirmv.index, IRMetaVariableFrom.Member);
+                                    irList.Add(irStoreNodeVar3);
+                                    isUseAssign = true;
+                                    break;
+                                }
+                            }
+
+                            if (isUseAssign == false)
+                            {
+                                IRExpress irexp = new IRExpress(_irMethod, lirmv.express);
+                                irList.Add(irexp);
+
+                                IRStoreVariable irStoreVar2 = new IRStoreVariable(null, _irMethod, lirmv.index, IRMetaVariableFrom.Member);
+                                irList.Add(irStoreVar2);
+
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (cnode.metaBraceStatementsContent != null && cnode.metaBraceStatementsContent.assignStatementsList.Count > 0)
+                {
+                    IRLoadVariable irlv = IRLoadVariable.CreateLoadVariable(null, irmc, _irMethod, cnode.GetOrgTemplateMetaVariable());
+                    irList.Add(irlv);
+                    for (int y = 0; y < cnode.metaBraceStatementsContent.assignStatementsList.Count; y++)
+                    {
+                        var asl = cnode.metaBraceStatementsContent.assignStatementsList[y];
+
+                        IRExpress irexp = new IRExpress(_irMethod, asl.expressNode);
+                        irList.Add(irexp);
+
+                        IRStoreVariable irStoreNodeVar3 = new IRStoreVariable(null, _irMethod, cnode.GetOrgTemplateMetaVariable().GetHashCode(), IRMetaVariableFrom.LocalStatement);
+                        irList.Add(irStoreNodeVar3);
+                    }
+                }
+            }
+            */
+
+            if ( mnoen.metaMemberFunction != null )
+            {
+                IRDup irdup = new IRDup(irMethod);
+                m_IRDataList.AddRange(irdup.IRDataList);
+
+                var paramCount = mnoen.metaInputParamList.Count;
+                for (int j = 0; j < paramCount; j++)
+                {
+                    IRExpress irexpress = new IRExpress(m_IRMethod, mnoen.metaInputParamList[j] );
+                    AddIRRangeData(irexpress.IRDataList);
+                }
+
+                int callMethodIndex = -1;
+                string fname = "";
+
+                MetaClass mc2 = null;
+                if (mnoen.metaMemberFunction.sourceMetaMemberFunction != null)
+                    mc2 = mnoen.metaMemberFunction.sourceMetaMemberFunction.ownerMetaClass;
+                else
+                    mc2 = mnoen.metaMemberFunction.ownerMetaClass;
+
+                fname = mnoen.metaMemberFunction.virtualFunctionName;
+                var irmc = IRManager.instance.GetIRMetaClassById(mc2.GetHashCode());
+
+                var runtimeMethod = irmc.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
+                if( callMethodIndex == -1 )
+                {
+                    Log.AddGenIR(EError.None, "没有找到构建对象函数!");
+                }
+                List<IRMetaType> functionMtList = new List<IRMetaType>();
+                var irmethodcall = new IRMethodCall( newObjectIRMT, functionMtList, runtimeMethod, paramCount);
+                IRData datacall = new IRData();
+                datacall.opCode = EIROpCode.CallVirt;
+                datacall.index = callMethodIndex;
+                datacall.opValue = irmethodcall;
+                //datacall.SetDebugInfoByToken(mf.pingToken);
+                AddIRData(datacall);                
+            }
         }
     }
 }

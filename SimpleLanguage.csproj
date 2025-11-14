@@ -23,8 +23,11 @@
     <DebugType>full</DebugType>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="source\IR\Lib\新文件夹\**" />
     <Compile Remove="source\MakeBin\**" />
+    <EmbeddedResource Remove="source\IR\Lib\新文件夹\**" />
     <EmbeddedResource Remove="source\MakeBin\**" />
+    <None Remove="source\IR\Lib\新文件夹\**" />
     <None Remove="source\MakeBin\**" />
   </ItemGroup>
   <ItemGroup>
@@ -39,7 +42,6 @@
     <Folder Include="source\Export\ExportCSharpCode\" />
     <Folder Include="source\Export\GenerateMonoIL\" />
     <Folder Include="source\Export\ExportCPlusCode\" />
-    <Folder Include="source\IR\Lib\" />
     <Folder Include="source\OtherLanguage\CSharp\Statements\" />
   </ItemGroup>
 </Project>

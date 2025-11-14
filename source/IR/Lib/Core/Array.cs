@@ -14,9 +14,9 @@ namespace SimpleLanguage.Lib
 {
     public static class Array
     {
-        public static Int32 CreateArray(int arrayLength, int elementSize )
+        public static Int64 CreateArray(int arrayLength, int elementSize )
         {
-            //System.Array
+            System.Array newa = new int[10];
             int totalBytes = arrayLength * elementSize;
 
             // 3. 分配非托管内存
@@ -31,7 +31,22 @@ namespace SimpleLanguage.Lib
             //    managedData[i] = (i + 1) * 2; // 生成偶数：2,4,6,...
             //}
             //Marshal.Copy(managedData, 0, unmanagedPtr, arrayLength);
-            return unmanagedPtr.ToInt32();
+            return unmanagedPtr.ToInt64();
+        }
+        public static void FreeArray( Int64 ptr )
+        {
+            IntPtr newptr = new IntPtr(ptr);
+            Marshal.FreeHGlobal(newptr);
+        }
+        public static void SetArrayValue( Int64 ptr, int type, int index, object value )
+        {
+            IntPtr newptr = new IntPtr(ptr);
+            Mem.WritePointer(newptr, type, value);
+        }
+        public static object GetArrayValue( Int64 ptr, int type, int index )
+        {
+            IntPtr newptr = new IntPtr(ptr);
+            return Mem.ReadPointer(newptr, type, index);
         }
     }
 }
