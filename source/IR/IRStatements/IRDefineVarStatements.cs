@@ -29,10 +29,8 @@ namespace SimpleLanguage.IR
                 mnoen = ms.expressNode as MetaNewObjectExpressNode;
                 if (mnoen != null)
                 {
-                    irmt = new IRMetaType(ms.expressNode.metaDefineType);
-                    irmc = IRManager.instance.GetIRMetaClassById(ms.expressNode.metaDefineType.GetTemplateMetaClass().GetHashCode());
-                    IRNew irNew = new IRNew(irMethod, irmt.irMetaClass);
-                    m_IRStatements.Add(irNew);
+                    var irexp = new IRNewExpress( irMethod, mnoen);                    
+                    m_IRStatements.Add(irexp);
                 }
                 else
                 {
@@ -40,7 +38,6 @@ namespace SimpleLanguage.IR
                     m_IRStatements.Add(m_IRExpress);
                 }
             }
-
             IRStoreVariable irStoreVar = IRStoreVariable.CreateIRStoreVariable(irmt, irmc, irMethod, ms.defineVarMetaVariable);
             //if(m_FileMetaOpAssignSyntax != null )
             //{
@@ -58,11 +55,11 @@ namespace SimpleLanguage.IR
             StringBuilder sb = new StringBuilder();
 
             sb.Append(" #new var ");
-            //sb.Append(m_MetaVariable.ToFormatString());
-            //if (m_IRExpress != null)
-            //{
-            //    sb.Append(" = " + m_IRExpress.ToIRString() );
-            //}
+            //sb.Append(m_MetaVariable);
+            if (m_IRExpress != null)
+            {
+                sb.Append(" = " + m_IRExpress.ToIRString());
+            }
             sb.AppendLine(" #");
 
             sb.AppendLine("{");

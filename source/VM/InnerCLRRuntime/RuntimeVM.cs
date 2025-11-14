@@ -708,8 +708,9 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         for (int i = 0; i < paramsObj.Length; i++)
                         {
-                            paramsObj[i] = m_ValueStack[--m_ValueIndex].CreateCSharpObject();
+                            paramsObj[i] = m_ValueStack[m_ValueIndex-paramsObj.Length+i].CreateCSharpObject();
                         }
+                        m_ValueIndex -= (ushort)(paramsObj.Length-1);
                         Object obj = mfc.InvokeCSharp(targetObject, paramsObj);
                         if (obj != null)
                         {

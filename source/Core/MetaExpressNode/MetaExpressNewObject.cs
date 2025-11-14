@@ -610,17 +610,31 @@ namespace SimpleLanguage.Core
     }
     public sealed class MetaNewObjectExpressNode : MetaExpressNode
     {
-        public MetaMethodCall constructFunctionCall => m_MetaConstructFunctionCall;
-        public MetaBraceOrBracketStatementsContent metaBraceOrBracketStatementsContent => m_MetaBraceOrBracketStatementsContent;
+        public enum ENewType
+        {
+            CommomClass,
+            ArrayClass,
+            ListClass,
+            MapClass,
+        }
 
-        private MetaMethodCall m_MetaConstructFunctionCall = null;
-        private MetaExpressNode m_MetaEnumValue = null;
-        private MetaBraceOrBracketStatementsContent m_MetaBraceOrBracketStatementsContent = null;
+        public List<MetaExpressNode> metaInputParamList => m_MetaInputParamList;
+        public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
+        public MetaVariable storeMetaVariable => m_StoreMetaVariable;
+        public MetaBraceOrBracketStatementsContent metaBraceOrBracketStatementsContent => m_MetaBraceOrBracketStatementsContent;
 
         private FileMetaParTerm m_FileMetaParTerm = null;
         private FileMetaCallTerm m_FileMetaCallTerm = null;
         private FileMetaConstValueTerm m_FileMetaConstValueTerm = null;
 
+        private MetaExpressNode m_MetaEnumValue = null;
+        private MetaBraceOrBracketStatementsContent m_MetaBraceOrBracketStatementsContent = null;
+        private ENewType m_NewType = ENewType.CommomClass;
+
+
+        protected MetaVariable m_StoreMetaVariable = null; //模板或者是调用时的函数        
+        protected MetaMemberFunction m_MetaMemberFunction = null;
+        protected List<MetaExpressNode> m_MetaInputParamList = new List<MetaExpressNode>();
         public MetaNewObjectExpressNode( MetaClass ownermc, List<MetaDynamicClass> list )
         {
             m_OwnerMetaClass = ownermc;
@@ -638,7 +652,6 @@ namespace SimpleLanguage.Core
 
             //m_MetaConstructFunctionCall = new MetaMethodCall(m_MetaDefineType.metaClass, mmf, mipc);
         }
-
         // 1..x
         public MetaNewObjectExpressNode(FileMetaConstValueTerm arrayLinkToken, MetaClass ownerMC, MetaBlockStatements mbs )
         {
@@ -687,7 +700,7 @@ namespace SimpleLanguage.Core
 
             if(tfunction != null )
             {
-                m_MetaConstructFunctionCall = new MetaMethodCall(null, null, tfunction, null, mdpc, null, null);
+                //m_MetaConstructFunctionCall = new MetaMethodCall(null, null, tfunction, null, mdpc, null, null);
             }
 
             Init();
@@ -705,8 +718,8 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             m_MetaDefineType = new MetaType(mt);
             Init();
-            m_MetaConstructFunctionCall = new MetaMethodCall(mt.metaClass, mt.defineTemplateMetaTypeList, m_OwnerMetaBlockStatements.ownerMetaFunction,
-                null, null, null, null );
+            //m_MetaConstructFunctionCall = new MetaMethodCall(mt.metaClass, mt.defineTemplateMetaTypeList, m_OwnerMetaBlockStatements.ownerMetaFunction,
+            //    null, null, null, null );
         }
         // Class1<Int32> a = Class1<Int32>( 10 ){ a = 20; } 
         // Enum1 e1 = Enum1.Val1( 20 );
@@ -716,7 +729,7 @@ namespace SimpleLanguage.Core
             m_FileMetaCallTerm = fmct;
             m_OwnerMetaClass = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
-            m_MetaConstructFunctionCall = mmf;
+            //m_MetaConstructFunctionCall = mmf;
             m_MetaDefineType = new MetaType( mt );
             var fmcn =  mcl.finalCallNode;
 
@@ -866,7 +879,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
             var mmf = new MetaMethodCall(null, null, mbs.ownerMetaFunction, null, null, null, null );
-            m_MetaConstructFunctionCall = mmf;
+            //m_MetaConstructFunctionCall = mmf;
             m_MetaDefineType = new MetaType(mt);
 
             Init();
@@ -877,21 +890,9 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fmbt, m_OwnerMetaBlockStatements, m_OwnerMetaClass, equalMV);
-            m_MetaBraceOrBracketStatementsContent.Parse();
-            MetaClass inputType = m_MetaBraceOrBracketStatementsContent.GetMaxLevelMetaClassType();
 
-            var metaInputTemplateCollection = new MetaInputTemplateCollection();
-            MetaType mitp = new MetaType(inputType);
-            metaInputTemplateCollection.AddMetaTemplateParamsList(mitp);
-            m_MetaDefineType = new MetaType( m_OwnerMetaClass, CoreMetaClassManager.arrayMetaClass, metaInputTemplateCollection);
-
-            MetaInputParamCollection mipc = new MetaInputParamCollection( mc, mbs );
-            mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaBraceOrBracketStatementsContent.count) ) );
-            MetaMemberFunction mmf = m_MetaDefineType.metaClass.GetMetaMemberConstructFunction(mipc);
-
-            m_MetaConstructFunctionCall = new MetaMethodCall(null, null, mmf, null, mipc, null, null);
-
-            //eType = EType.Array;
+            m_MetaDefineType = new MetaType(CoreMetaClassManager.arrayMetaClass);
+            m_NewType = ENewType.ArrayClass;
         }
         private void Init()
         {
@@ -917,10 +918,54 @@ namespace SimpleLanguage.Core
         }
         public override void Parse(AllowUseSettings auc)
         {
-            //for( int i = 0; i < assignStatementsList.Count; i++ )
-            //{
-            //    //assignStatementsList[i].Parse(isStatic, isConst, isCallFunction, isCallConstuctionFunction);
-            //}
+            //该函数，进行，计算出， 要创建的类，使用的初始化函数，以及，初始化成员的解析
+
+            if(m_NewType == ENewType.ArrayClass )
+            {
+                m_MetaBraceOrBracketStatementsContent.Parse();
+                MetaClass inputType = m_MetaBraceOrBracketStatementsContent.GetMaxLevelMetaClassType();
+
+                var metaInputTemplateCollection = new MetaInputTemplateCollection();
+                MetaType mitp = new MetaType(inputType);
+                metaInputTemplateCollection.AddMetaTemplateParamsList(mitp);
+
+                MetaInputParamCollection mipc = new MetaInputParamCollection(m_OwnerMetaClass, m_OwnerMetaBlockStatements);
+                mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaBraceOrBracketStatementsContent.count)));
+                mipc.CaleReturnType();
+                m_MetaMemberFunction = m_MetaDefineType.metaClass.GetMetaMemberConstructFunction(mipc);
+                SetInputParams(mipc);
+            }
+        }
+        void SetInputParams(MetaInputParamCollection _paramCollection)
+        {
+            if(m_MetaMemberFunction == null )
+            {
+                return;
+            }
+            int defineCount = m_MetaMemberFunction.metaMemberParamCollection.maxParamCount;
+            List<MetaDefineParam> mpList = new();
+            if (m_MetaMemberFunction.metaMemberParamCollection != null)
+            {
+                mpList = m_MetaMemberFunction.metaMemberParamCollection.metaDefineParamList;
+            }
+
+            int inputCount = _paramCollection != null ? _paramCollection.metaInputParamList.Count : 0;
+            for (int i = 0; i < defineCount; i++)
+            {
+                if (i < inputCount)
+                {
+                    MetaInputParam mip = _paramCollection.metaInputParamList[i];
+                    m_MetaInputParamList.Add(mip.express);
+                }
+                else
+                {
+                    MetaDefineParam mdp = mpList[i];
+                    if (mdp != null)
+                    {
+                        m_MetaInputParamList.Add(mdp.expressNode);
+                    }
+                }
+            }
         }
         public override int CalcParseLevel(int level)
         {
@@ -945,10 +990,10 @@ namespace SimpleLanguage.Core
             {
                 return m_MetaDefineType;
             }
-            if (m_MetaConstructFunctionCall != null)
-            {
-                m_MetaDefineType = m_MetaConstructFunctionCall.GeMetaDefineType();
-            }
+            //if (m_MetaConstructFunctionCall != null)
+            //{
+            //    m_MetaDefineType = m_MetaConstructFunctionCall.GeMetaDefineType();
+            //}
             return m_MetaDefineType;
         }
         public override string ToTokenString()

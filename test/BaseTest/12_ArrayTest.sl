@@ -80,8 +80,9 @@ namespace Core
     {
         int _length = 0
         int _rank = 1
+        int type = 0;
 
-        int _listPtr = 0
+        long _ptr = 0
 
         _init_(){
             this._listPtr = 0
@@ -89,10 +90,18 @@ namespace Core
         _init_( int length )
         {
             uint allSize = length * 4
-
-            this._listPtr = Lib.Array.CreateArray( length, 4 )
-
+            this._ptr = Lib.Array.CreateArray( length, 4 )
         }
+        set _setValue_( int index, object val )
+        {
+            Lib.Array.SetArrayValue( this._ptr, 5,  index, val )
+        }
+        object get _getValue_( int index )
+        {
+            ret Lib.Array.GetArrayValue( this._ptr, 5,  index )
+        }
+        
+
         #!
         public static Array CreateInstance(Type elementType, int length);
         public static Array CreateInstance(Type elementType, int length1, int length2 );
@@ -127,6 +136,10 @@ ArrayTest
     static fun()
     {  
         a1 = [1,2,3,4,5];    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
+        a1._setValue_( 1, 20 )
+        aa = a1._getValue_(1)
+        System.Console.WriteLine("1111111111= " + aa )
+
         #var a42 = [[1.2,1.3,1.4,1.5],[3,4,5]];    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于  
         #Array( 2, Array.type ){ Array(5, float.type ){ 1.2, 1.3, 1.4, 1.5 }, Array( 3, int.tye ){3,4,5}   } 
         #!

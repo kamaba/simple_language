@@ -8,7 +8,6 @@
 
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.Core.MetaObjects;
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
 

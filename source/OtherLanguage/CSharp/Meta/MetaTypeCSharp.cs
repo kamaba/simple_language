@@ -78,6 +78,10 @@ namespace SimpleLanguage.Core
             {
                 type = typeof(System.String);
             }
+            else if( mc == CoreMetaClassManager.objectMetaClass )
+            {
+                type = typeof(System.Object);
+            }
             else
             {
                 type = CSharpManager.FindCSharpType(mc.allClassName );

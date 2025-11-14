@@ -44,6 +44,7 @@ namespace SimpleLanguage.Core
         }
 
         public MetaType metaDefineType => m_MetaDefineType;
+        public MetaClass ownerMetaClass => m_OwnerMetaClass;
 
         protected MetaClass m_OwnerMetaClass = null;
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
