@@ -1,0 +1,4 @@
+
+public interface Core.IEnumableInterface
+{
+}
