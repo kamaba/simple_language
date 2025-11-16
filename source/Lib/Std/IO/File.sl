@@ -19,4 +19,9 @@ public class File
     {
         return 0
     }
+
+    public static bool exists( string path )
+    {
+        ret false
+    }
 }

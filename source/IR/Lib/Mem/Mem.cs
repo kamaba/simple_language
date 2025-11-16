@@ -13,7 +13,7 @@ namespace SimpleLanguage.Lib
 {
     public static class Mem
     {
-        public static void WritePointer(IntPtr newptr, int type, object value)
+        public static void WritePointer(IntPtr newptr, int type, int index, object value)
         {
             switch (type)
             {
@@ -41,7 +41,7 @@ namespace SimpleLanguage.Lib
                 case 5:/*int32*/
                 case 6:/*uint32*/
                     {
-                        IntPtr offsetPtr = newptr + sizeof(Int32);
+                        IntPtr offsetPtr = newptr + sizeof(Int32) * index;
                         Marshal.WriteInt32(offsetPtr, (Int32)value);
 
                     }

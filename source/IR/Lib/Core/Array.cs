@@ -41,7 +41,7 @@ namespace SimpleLanguage.Lib
         public static void SetArrayValue( Int64 ptr, int type, int index, object value )
         {
             IntPtr newptr = new IntPtr(ptr);
-            Mem.WritePointer(newptr, type, value);
+            Mem.WritePointer(newptr, type, index, value);
         }
         public static object GetArrayValue( Int64 ptr, int type, int index )
         {
