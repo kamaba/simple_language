@@ -23,7 +23,7 @@ namespace SimpleLanguage.Project
     {
         public bool isThreadCompile = false;
         public static bool isLoaded = false;
-        public static FileMeta projectFileMeta => m_ProjectFile;
+        public static get FileMeta projectFileMeta => m_ProjectFile
         
         public static int structParseCount = 0;
         public static int buildParseCount = 0;
@@ -62,8 +62,8 @@ namespace SimpleLanguage.Project
             }
             m_ProjectFile = new FileMeta(paths[0]);
 
-            byte[] buffer = File.ReadAllBytes(paths[0]);
-            m_FileContentString = System.Text.Encoding.UTF8.GetString(buffer);
+            byte[] buffer = File.readAllBytes(paths[0]);
+            m_FileContentString = buffer.decode("utf8");
 
             m_LexerParse = new LexerParse(paths[0], m_FileContentString);
             m_LexerParse.ParseToTokenList();

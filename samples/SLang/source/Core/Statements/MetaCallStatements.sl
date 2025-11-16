@@ -1,0 +1,61 @@
+﻿//****************************************************************************
+//  File:      MetaCallStatements.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/8/12 12:00:00
+//  Description: 
+//****************************************************************************
+
+using SimpleLanguage.Compile;
+using System;
+using System.Text;
+
+namespace SimpleLanguage.Core
+{
+    public partial class MetaCallStatements : MetaStatements
+    {
+        public MetaCallLink metaCallLink => m_MetaCallLink;
+
+        private MetaCallLink m_MetaCallLink = null;
+        private FileMetaCallSyntax m_FileMetaCallSyntax = null;
+        private AllowUseSettings m_AllowUseSettings = new AllowUseSettings();
+        public MetaCallStatements(MetaBlockStatements mbs, FileMetaCallSyntax fmcl) : base(mbs)
+        {
+            m_FileMetaCallSyntax = fmcl;
+
+            m_AllowUseSettings.useNotStatic = false;
+            m_AllowUseSettings.useNotConst = false;
+            m_AllowUseSettings.callConstructFunction = true;
+            m_AllowUseSettings.callFunction = true;
+
+            m_MetaCallLink = new MetaCallLink(fmcl.variableRef, mbs.ownerMetaClass, mbs, null, null );
+            m_MetaCallLink.Parse(m_AllowUseSettings);
+            m_MetaCallLink.CalcReturnType();
+        }
+        public override void UpdateOwnerMetaClass(MetaClass ownerclass)
+        {
+            base.UpdateOwnerMetaClass(ownerclass);
+        }
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < realDeep; i++)
+                sb.Append(Global.tabChar);
+            sb.Append(m_MetaCallLink?.ToFormatString());
+            sb.Append(Environment.NewLine);
+            if (nextMetaStatements != null)
+            {
+                sb.AppendLine(nextMetaStatements.ToFormatString());
+            }
+
+            return sb.ToString();
+        }
+        public string ToTokenString()
+        {
+            StringBuilder sb = new StringBuilder();
+            //sb.Append(m_FileMetaCallLink.ToTokenString());
+            return sb.ToString();
+
+        }
+    }
+}
