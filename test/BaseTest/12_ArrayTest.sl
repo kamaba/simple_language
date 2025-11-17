@@ -90,17 +90,23 @@ namespace Core
         _init_( int length )
         {
             uint allSize = length * 4
-            this._ptr = Lib.Array.CreateArray( length, 4 )
+            #this._ptr = Lib.Array.CreateArray( length, 4 )
         }
         set _setValue_( int index, object val )
         {
-            Lib.Array.SetArrayValue( this._ptr, 5,  index, val )
+            #Lib.Array.SetArrayValue( this._ptr, 5,  index, val )
+            Lib.Array.SetArrayValueThis( this, index, val )
         }
+
         object get _getValue_( int index )
         {
-            ret Lib.Array.GetArrayValue( this._ptr, 5,  index )
+            #ret Lib.Array.GetArrayValue( this._ptr, 5,  index )
+            ret Lib.Array.GetArrayValueThis( this, index )
         }
-        
+        setValues( Int64 valPtr, int len )
+        {
+            #Lib.Array.SetArrayValue( this._ptr, 1,  valPtr, len )
+        }
 
         #!
         public static Array CreateInstance(Type elementType, int length);
@@ -135,10 +141,26 @@ ArrayTest
     }
     static fun()
     {  
-        a1 = [1,2,3,4,5];    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
-        a1._setValue_( 1, 20 )
+        int intvalue = 20
+        #!
+        a1 = [intvalue,1];    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
+        a1._setValue_( 1, 123 )
         aa = a1._getValue_(1)
         System.Console.WriteLine("1111111111= " + aa )
+        !#
+
+        int[] a33 = [1,2,3,4];
+        a33[3] = 123
+        System.Console.WriteLine("1111111111= " + a33[2] )
+        
+        # a34 = [1,2,3,4]
+        #aa = 3
+        # a34.$aa. = 111
+        #var aaaa34v = a34.$2
+        #System.Console.WriteLine("1111111111= " + aaaa34v )
+
+        #array arr = []
+        #array arr = Array( 10, object.type )
 
         #var a42 = [[1.2,1.3,1.4,1.5],[3,4,5]];    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于  
         #Array( 2, Array.type ){ Array(5, float.type ){ 1.2, 1.3, 1.4, 1.5 }, Array( 3, int.tye ){3,4,5}   } 
@@ -147,11 +169,15 @@ ArrayTest
         #发现5.0f写入时，会提示  存在 float-> int 
         a3 = Array( 20 );               # 长度为20的List
         a4 = Array.dim( 3 ){ Array(), Array(), Array() }   # 请申一个3x1的数组 内容为null
+
+        int[][][] a = [[1,2,3,4],[5,6,7,8]]   # 为交错数组，本语言不支持多维数组，需要自己封装 
+        a[1][1][1] = 12    #这种情况，需要拿到 先拿第一维的数组，然后再拿第一维中第一组，
+        avalue222 = a[1,1,1]
              
         
-        var a4 = [1.2,1.3,1.5];    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于 List<float>{ 1.2, 1.3, 1.5};
+        var a4 = [1.2,1.3,1.5];    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于 Array( 3, float.type ){ 1.2, 1.3, 1.5};
         
-        a5 = ["aa", 1, "232", 1.0f];  # 相当于List<Object>( "aa", 1, "232", 1.0f, XC() );
+        a5 = ["aa", 1, "232", 1.0f];  # 相当于Array( 5, object.type)( "aa", 1, "232", 1.0f, XC() );
         
         # c# 的方法  List<ArrClass2> arr2 = new ArrClass2[100]; 这里边使用的是 arr2 = ArrClass2[100];
         ArrClass2[] a6 = Array(4, ArrClass2.type );  # 数组表示使用 List<T>() new List对象 长度为4的int
@@ -166,7 +192,7 @@ ArrayTest
              
         int[] bb3 = [1,2,3,4,5 ];    #与上相同  Array<int>(5){ 1,2,3,4,5}
 
-        #ArrClass[] arr2 = ArrClass[10]{};    #不允许 这种的写法
+        #ArrClass[] arr2 = ArrClass[10]{};    #不允许 这种的写法  只允许new(10)
         #arr2 = Array();           
         #arr1.setLength( 100 );         #设置数组的长度
         #arr1[0].i = 20;
@@ -178,8 +204,8 @@ ArrayTest
         
         arr1[1000].i = 10000; # 在编译时，处理是否有超过长度现象，如果有的话，则编译不通过
         
-        arr1.@0.i = 10;
-        arr1.@"aa".i = 20;          #需要重写_index_( string s )才可以使用
+        arr1.$0.i = 10;
+        arr1.$"aa".i = 20;          #需要重写_index_( string s )才可以使用
         
         arr1.index = 2;     #数组的当前游标
         arr1.value.i = 10;   #数组当前游标的植
@@ -193,10 +219,6 @@ ArrayTest
             a.i = 200
         }
         for( a in [1,2,3,4] )
-        {
-            i = a.index + 1
-        }
-        for a in [1..5]                 #自己的迭代器
         {
             i = a.index + 1
         }
@@ -224,3 +246,4 @@ ArrayTest
 # 3.1.3 创建Array() 时，默认为1
 # 3.1.4 Array 没有具体的Add方法，只有 Copy
 # 3.1.5 Array(){ Array(){ Array(){} } } 可申请多维数组，多维数组时，必须有数量    Array(5){ Array(2){   Array(10){}, Array(12){}  } }   即为一个 5x2x12的三维数据
+# 3.1.6 数组不支持多维数组，只支持交错数组，如果要实现多维数组，需要用户自己实现

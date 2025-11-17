@@ -593,7 +593,7 @@ namespace SimpleLanguage.Compile
                 if ( cl.Count == 0 )
                 {
                     var token = new Token(frontToken);
-                    token.SetLexeme(-1, ETokenType.Number );
+                    token.SetLexeme(0, ETokenType.Number );
                     token.SetExtend(EType.Int32);
                     m_ArrayTokenList.Add(token);
                 }

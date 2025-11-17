@@ -7,7 +7,9 @@
 //****************************************************************************
 
 
+using SimpleLanguage.VM;
 using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace SimpleLanguage.Lib
@@ -38,15 +40,31 @@ namespace SimpleLanguage.Lib
             IntPtr newptr = new IntPtr(ptr);
             Marshal.FreeHGlobal(newptr);
         }
+
+
+        public static void SetArrayValueThis( ArrayObject ao, int index, object value )
+        {
+            ao.StoreObject(index, value);
+        }
         public static void SetArrayValue( Int64 ptr, int type, int index, object value )
         {
             IntPtr newptr = new IntPtr(ptr);
             Mem.WritePointer(newptr, type, index, value);
         }
-        public static object GetArrayValue( Int64 ptr, int type, int index )
+        public static object GetArrayValue(Int64 ptr, int type, int index)
         {
             IntPtr newptr = new IntPtr(ptr);
             return Mem.ReadPointer(newptr, type, index);
+        }
+        public static object GetArrayValueThis(ArrayObject ao, int index)
+        {
+            return ao.GetValue(index);
+        }
+        public static void SetArrayValues( Int64 ptr, int type, int beginIndex, Int64 valPtr, int length )
+        {
+            IntPtr newptr = new IntPtr(ptr);
+            IntPtr valueptr = new IntPtr(valPtr);
+            Mem.WriteArraysByValuePointer(newptr, type, beginIndex, valueptr, length );
         }
     }
 }

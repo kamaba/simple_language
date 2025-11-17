@@ -35,6 +35,7 @@ namespace SimpleLanguage.IR
         LoadArgument,
         LoadLocal,  
         LoadNotStaticField,
+        LoadArrayIndex,          //数组类成员获取
         LoadStaticField,
         LocalGlobal,
 
@@ -47,6 +48,7 @@ namespace SimpleLanguage.IR
         StoreLocal,
         StoreNotStaticField1,
         StoreNotStaticField2,
+        StoreArrayIndex,             //数组类成员操作
         StoreStaticField,
         StoreGlobal,
         StoreReturn,

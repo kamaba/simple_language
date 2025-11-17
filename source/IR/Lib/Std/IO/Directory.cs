@@ -9,15 +9,7 @@
 
 namespace SimpleLanguage.Lib
 {
-    public static class Console
+    public static class Directory
     {
-        public static void print(string text, params object[] objs )
-        {
-            System.Console.Write(text, objs);
-        }
-        public static void println(string text, params object[] objs )
-        {
-            System.Console.WriteLine(text, objs);
-        }
     }
 }

@@ -18,12 +18,20 @@ namespace SimpleLanguage.IR
             data.debugInfo = new DebugInfo() { name = irmc.irName, info = "IRNew" };
             AddIRData(data);
         }
-        public IRNew(IRMethod irMethod, IRMetaType opvalue ) : base(irMethod)
+        public IRNew(IRMethod irMethod, IRMetaType opvalue) : base(irMethod)
         {
             IRData data = new IRData();
             data.opCode = EIROpCode.NewTemplateClass;
             data.opValue = opvalue;
             data.debugInfo = new DebugInfo() { name = "", info = "NewCallClass" };
+            AddIRData(data);
+        }
+        public IRNew(IRMethod irMethod, IRNewArray opvalue) : base(irMethod)
+        {
+            IRData data = new IRData();
+            data.opCode = EIROpCode.NewArray;
+            data.opValue = opvalue;
+            data.debugInfo = new DebugInfo() { name = "", info = "NewArray" };
             AddIRData(data);
         }
     }

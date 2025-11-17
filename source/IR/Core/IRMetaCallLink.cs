@@ -63,6 +63,20 @@ namespace SimpleLanguage.Core.IR
                 IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);
                 irList.Add(irVar);
             }
+            else if( cnode.visitType == MetaVisitNode.EVisitType.VisitVariable )
+            {
+                MetaVisitVariable mv = cnode.visitVariable;
+
+                IRMetaCallLink irmcl = new IRMetaCallLink();
+                irmcl.ParseToIRDataList(_irMethod, mv.targetMetaVisitNodeList);
+                irList.AddRange(irmcl.irList);
+
+                IRMetaClass irmc = IRManager.instance.GetIRMetaClassById(mv.sourceMetaVariable.GetOwnerClassTemplateClass().GetHashCode());
+                IRMetaType irmt = new IRMetaType(irmc);
+
+                IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv.sourceMetaVariable );
+                irList.Add(irVar);
+            }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MethodCall)
             {
                 var mfc = cnode.methodCall;
@@ -70,13 +84,17 @@ namespace SimpleLanguage.Core.IR
                 irCallFun.Parse(mfc);
                 irList.Add(irCallFun);
             }
+            //已经转移动了NewExpressNode里边
+            /*
             else if (cnode.visitType == MetaVisitNode.EVisitType.New)
             {
                 ParseNew(cnode, _irMethod, irList );
             }
+            */
 
             return irList;
         }
+        /*
         public static void ParseNew(MetaVisitNode cnode, IRMethod _irMethod, List<IRBase> irList )
         {
             IRMetaClass irmc = IRManager.instance.GetIRMetaClassById(cnode.callMetaType.GetTemplateMetaClass().GetHashCode());
@@ -92,7 +110,7 @@ namespace SimpleLanguage.Core.IR
                 IRNew irnew = new IRNew(_irMethod, irmc);
                 irList.Add(irnew);
 
-                if (irmc.needCallInitMethod == false)
+                if (irmc.needInitMemberVariable == false)
                 {
                     if (irmc.localIRMetaVariableList.Count > 0)
                     {
@@ -164,6 +182,7 @@ namespace SimpleLanguage.Core.IR
                 irList.Add(ircf);
             }
         }
+        */
         public void ParseToIRDataListByIRManager( IRManager _irManager, List<MetaVisitNode> cnlist)
         {
             for (int i = 0; i < cnlist.Count; i++)
@@ -197,10 +216,13 @@ namespace SimpleLanguage.Core.IR
                     irCallFun.Parse(cnode.methodCall);
                     irList.Add(irCallFun);
                 }
+                // 已经转移支了NewMetaExpressNode里边
+                /*
                 else if (cnode.visitType == MetaVisitNode.EVisitType.New )
                 {
                     ParseNew(cnode, null, irList);
                 }
+                */
             }
         }
 

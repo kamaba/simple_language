@@ -26,6 +26,7 @@ namespace SimpleLanguage.VM
         public float floatValue;
         public double doubleValue;
         public string stringValue;
+        public ArrayObject arrayValue;
         public ClassObject sobject;
         public bool isNull;
         public void SetNullValue()
@@ -236,6 +237,10 @@ namespace SimpleLanguage.VM
                     {
                         return stringValue;
                     }
+                case EType.Array:
+                    {
+                        return arrayValue;
+                    }   
                 default:return sobject;
             }
         }
@@ -320,6 +325,12 @@ namespace SimpleLanguage.VM
                     {
                         eType = EType.String;
                         stringValue = stringobj.value;
+                    }
+                    break;
+                case ArrayObject arrayobj:
+                    {
+                        eType = EType.Array;
+                        arrayValue = arrayobj;
                     }
                     break;
                 case AnyObject anyobj:
@@ -539,6 +550,10 @@ namespace SimpleLanguage.VM
                 case EType.String:
                     {
                         return stringValue;
+                    }
+                case EType.Array:
+                    {
+                        return arrayValue;
                     }
             }
             return sobject;

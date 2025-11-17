@@ -42,7 +42,7 @@ namespace SimpleLanguage.Core
         public MetaMemberEnum enumValue => m_EnumValue;
         public List<MetaType> defineTemplateMetaTypeList => m_DefineTemplateMetaTypeList;
         public List<MetaType> genTemplateMetaTypeList => m_GenTemplateMetaTypeList;
-        public bool isArray => m_MetaClass?.eType == EType.Array;
+        public bool isArray => m_IsArray;
         public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
         public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData;
         //public bool isDefineMetaClass => m_IsDefineMetaClass;
@@ -62,7 +62,7 @@ namespace SimpleLanguage.Core
         //private bool m_IsDefineMetaClass = false;
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         private List<MetaType> m_GenTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
-        //private string m_FromName = "";
+        private bool m_IsArray = false;
 
         public MetaType()
         {
@@ -156,6 +156,10 @@ namespace SimpleLanguage.Core
             { return true; }
 
             return false;
+        }
+        public void SetIsArray( bool flag )
+        {
+            m_IsArray = flag;
         }
         public void SetMetaType( MetaType mt )
         {

@@ -229,18 +229,18 @@ namespace SimpleLanguage.Core
             AT
         }
         public MetaVariable sourceMetaVariable => m_SourceMetaVariable;
-        public MetaVariable targetMetaVariable => m_TargetMetaVariable;
+        public List<MetaVisitNode> targetMetaVisitNodeList => m_TargetMetaVisitNodeList;
 
         MetaVariable m_SourceMetaVariable = null;
         EVisitType m_VisitType = EVisitType.AT;
-        MetaVariable m_TargetMetaVariable = null;
+        List<MetaVisitNode> m_TargetMetaVisitNodeList = null;
         string m_AtName = "";
 
         public MetaVisitVariable(MetaVariable source, MetaVariable target)
         {
             m_VisitType = EVisitType.Link;
             m_SourceMetaVariable = source;
-            m_TargetMetaVariable = target;
+           // m_TargetMetaVariable = target;
             m_DefineMetaType = target.metaDefineType;
         }
         public int GetIRMemberIndex()
@@ -252,7 +252,7 @@ namespace SimpleLanguage.Core
             }
             return -1;
         }
-        public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaVariable vmv)
+        public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, List<MetaVisitNode> vmv, MetaType retMt = null )
         {
             m_Name = _name;
             m_AtName = _name;
@@ -265,14 +265,9 @@ namespace SimpleLanguage.Core
                     Log.AddInStructMeta(EError.None, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
                     return;
                 }
-                m_TargetMetaVariable = vmv;
+                m_TargetMetaVisitNodeList = vmv;
 
-                var gmit = m_SourceMetaVariable.metaDefineType.GetMetaInputTemplateByIndex();
-                if (gmit == null)
-                {
-                    Log.AddInStructMeta(EError.None, "Error 访问的Array中，没有找到模版 名称!!");
-                    return;
-                }
+                var gmit = m_SourceMetaVariable.metaDefineType;
                 m_DefineMetaType = new MetaType(gmit);
             }
         }
@@ -288,8 +283,8 @@ namespace SimpleLanguage.Core
                     sb.Append(m_SourceMetaVariable.name);
                     sb.Append(".");
                 }
-                sb.Append("[" + m_TargetMetaVariable.metaDefineType.name + "]");
-                sb.Append(m_TargetMetaVariable.name);
+                //sb.Append("[" + m_TargetMetaVisitNode..name + "]");
+                //sb.Append(m_TargetMetaVariable.name);
             }
             else
             {
@@ -304,7 +299,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    sb.Append(m_TargetMetaVariable.name);
+                    //sb.Append(m_TargetMetaVariable.name);
                 }
             }
 

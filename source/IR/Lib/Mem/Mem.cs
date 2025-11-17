@@ -8,11 +8,52 @@
 
 using System.Runtime.InteropServices;
 using System;
+using System.Security.Cryptography;
 
 namespace SimpleLanguage.Lib
 {
     public static class Mem
     {
+        public unsafe static void WriteArraysByValuePointer(IntPtr newptr, int type, int index, IntPtr src, int length )
+        {
+            switch (type)
+            {
+                case 0:/*void*/
+                    {
+
+                    }
+                    break;
+                case 1:/*byte*/
+                case 2:/*sbyte*/
+                    {
+
+                    }
+                    break;
+                case 3:/*int16*/
+                    {
+
+                    }
+                    break;
+                case 4:/*uint16*/
+                    {
+
+                    }
+                    break;
+                case 5:/*int32*/
+                case 11:/*uint32*/
+                    {
+                        IntPtr offsetPtr = newptr + sizeof(Int32) * index;
+                        Buffer.MemoryCopy(offsetPtr.ToPointer(), src.ToPointer(), length, length);
+
+                    }
+                    break;
+                case 9:/*string*/
+                    {
+
+                    }
+                    break;
+            }
+        }
         public static void WritePointer(IntPtr newptr, int type, int index, object value)
         {
             switch (type)
