@@ -796,7 +796,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    var fileMetaCallTerm = new FileMetaCallTerm(m_FileMeta, node);
+                    var fileMetaCallTerm = new FileMetaCallTerm(m_FileMeta, cnode);
                     AddFileMetaTerm(fileMetaCallTerm);
                 }
             }

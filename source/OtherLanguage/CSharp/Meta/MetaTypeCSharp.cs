@@ -1,5 +1,6 @@
 ﻿
 using SimpleLanguage.CSharp;
+using SimpleLanguage.VM;
 
 namespace SimpleLanguage.Core
 {
@@ -81,6 +82,10 @@ namespace SimpleLanguage.Core
             else if( mc == CoreMetaClassManager.objectMetaClass )
             {
                 type = typeof(System.Object);
+            }
+            else if( mc == CoreMetaClassManager.arrayMetaClass )
+            {
+                type = typeof(ArrayObject);
             }
             else
             {

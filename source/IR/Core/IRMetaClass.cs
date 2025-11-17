@@ -19,7 +19,7 @@ namespace SimpleLanguage.IR
         public int id { get; set; } = 0;
         public string irName => m_IRName;
         public int byteCount => m_ByteCount;
-        public bool needCallInitMethod => m_NeedCallInitMethod;
+        public bool needInitMemberVariable => m_NeedInitMemberVariable;
 
         public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
         public List<IRMetaVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;
@@ -36,7 +36,7 @@ namespace SimpleLanguage.IR
         private int allocSize = 0;
         private List<EType> m_MetaTypeList = new List<EType>();
         private int m_ByteCount = 0;
-        private bool m_NeedCallInitMethod = false;
+        private bool m_NeedInitMemberVariable = false;
 
         static int s_TypeLength = 1000;
         public IRMetaClass( MetaClass mc )

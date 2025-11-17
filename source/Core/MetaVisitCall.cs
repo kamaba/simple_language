@@ -382,6 +382,10 @@ namespace SimpleLanguage.Core
                     {
                         return methodCall.function.returnMetaVariable;
                     }
+                case EVisitType.VisitVariable:
+                    {
+                        return visitVariable;
+                    }
                 case EVisitType.New:
                     {
                         return variable;

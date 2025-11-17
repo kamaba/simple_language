@@ -711,7 +711,7 @@ namespace SimpleLanguage.Core
                         var mv = m_FrontCallNode.m_MetaVariable;
                         if( frontCNT == ECallNodeType.VisitVariable )
                         {
-                            mv = (mv as MetaVisitVariable).targetMetaVariable;
+                            //mv = (mv as MetaVisitVariable).targetMetaVisitNode;
                         }
                         MetaVariable getmv2 = null;
                         if ( mv.isArray )
@@ -726,8 +726,8 @@ namespace SimpleLanguage.Core
                                     m_MetaVariable = mv.GetMetaVariable(inputMVName);
                                     if (m_MetaVariable == null)
                                     {
-                                        m_MetaVariable = new MetaVisitVariable(inputMVName, m_OwnerMetaClass, m_OwnerMetaFunctionBlock,
-                                            mv, getmv2);
+                                        //m_MetaVariable = new MetaVisitVariable(inputMVName, m_OwnerMetaClass, m_OwnerMetaFunctionBlock,
+                                        //    mv, getmv2);
                                         mv.AddMetaVariable(m_MetaVariable);
                                     }
                                     tempMetaBase2 = m_MetaVariable;
@@ -1140,33 +1140,44 @@ namespace SimpleLanguage.Core
                             return false;
                         }
                     }
-                    if (m_MetaVariable.isArray)             //Array<int> arr = {1,2,3}; 这个arr[0]就是mv
+                    if (m_MetaVariable.isArray)             //Array arr = {1,2,3}; 这个arr[0]就是mv
                     {
-                        if (m_MetaArrayCallNodeList.Count == 1 && this.m_IsArray )  //arr[?]
+                        if (m_MetaArrayCallNodeList.Count == 1 && this.m_IsArray )  //arr[?]  arr[var1.a.b.c[2]]
                         {
-                            MetaCallNode fmcn1 = null;// m_MetaArrayCallNodeList[0].finalMetaCallNode;
-                            if (fmcn1?.callNodeType == ECallNodeType.ConstValue)       //arr[0]
+                            MetaVisitNode fmcn1 = m_MetaArrayCallNodeList[0].finalCallNode;
+                            string tname = "";
+                            if (fmcn1?.constValueExpress != null)       //arr[0]
                             {
-                                string tname = (fmcn1.metaExpressValue as MetaConstExpressNode).value.ToString();
+                                tname = fmcn1.constValueExpress.value.ToString();
+                                /*
                                 m_MetaVariable = m_MetaVariable.GetMetaVariable(tname);
                                 if (m_MetaVariable == null)
                                 {
                                     m_MetaVariable = new MetaVisitVariable(tname, m_OwnerMetaClass, m_OwnerMetaFunctionBlock, m_MetaVariable, null);
                                     tmv.AddMetaVariable(m_MetaVariable);
                                 }
+                                */
                             }
-                            else if (fmcn1?.callNodeType == ECallNodeType.FunctionInnerVariableName)    //arr[var]
+                            else
                             {
-                                var gmv = (fmcn1).m_MetaVariable;
-                                string tname = "VarName_" + gmv.name + "_VarHashCode_" + gmv.GetHashCode().ToString();
+                                var gmv = fmcn1.GetRetMetaVariable();
+                                tname = "VarName_" + gmv.name;
+                                /*
                                 m_MetaVariable = tmv.GetMetaVariable(tname);
                                 if (m_MetaVariable == null)
                                 {
-                                    m_MetaVariable = new MetaVisitVariable(tname, m_OwnerMetaClass, m_OwnerMetaFunctionBlock, tmv, gmv);
+                                    m_MetaVariable = new MetaVisitVariable(tname, m_OwnerMetaClass, m_OwnerMetaFunctionBlock, tmv, fmcn1 );
                                     tmv.AddMetaVariable(m_MetaVariable);
                                 }
+                                */
                             }
+                            m_MetaVariable = new MetaVisitVariable( tname, m_OwnerMetaClass, m_OwnerMetaFunctionBlock, tmv, m_MetaArrayCallNodeList[0].callNodeList, null );
+                            tmv.AddMetaVariable(m_MetaVariable);
                             m_CallNodeType = ECallNodeType.VisitVariable;
+                        }
+                        else
+                        {
+                            Log.AddInStructMeta(EError.None, "Error 不支持多维数组!!");
                         }
                     }
                 }

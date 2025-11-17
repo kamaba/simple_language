@@ -14,11 +14,14 @@ namespace SimpleLanguage.Core
 {
     public sealed class MetaCallLinkExpressNode : MetaExpressNode
     {
+        public bool isNewExpressNode => m_IsNewExpressNode;
         public MetaCallLink metaCallLink => m_MetaCallLink;
 
         private MetaCallLink m_MetaCallLink = null;
 
         private MetaVariable m_EqualMetaVariable = null;
+
+        private bool m_IsNewExpressNode = false;
         public MetaCallLinkExpressNode( FileMetaCallLink fmcl, MetaClass mc, MetaBlockStatements mbs, MetaVariable mv )
         {
             m_OwnerMetaClass = mc;
@@ -38,6 +41,11 @@ namespace SimpleLanguage.Core
             if(m_MetaCallLink!= null )
             {
                 m_MetaCallLink.Parse( auc );
+
+                if( m_MetaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.New )
+                {
+                    m_IsNewExpressNode = true;
+                }
             }
         }
         public override int CalcParseLevel(int level)

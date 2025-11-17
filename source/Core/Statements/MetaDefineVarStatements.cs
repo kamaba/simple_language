@@ -71,6 +71,10 @@ namespace SimpleLanguage.Core
                     mgtc.ParseGenTemplateClass(mgtc);
                     mgtc.ParseGenMemberVarible();
                 }
+                if(mdt != null )
+                {
+                    mdt.SetIsArray(fmcd.isArray);
+                }
 
                 m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
                 m_DefineVarMetaVariable.SetIsDefineMetaType(true);
@@ -126,6 +130,13 @@ namespace SimpleLanguage.Core
                 }
                 m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
                 m_ExpressNode.CalcReturnType();
+
+                var mcen = m_ExpressNode as MetaCallLinkExpressNode;
+                if (mcen?.isNewExpressNode == true )
+                {
+                    m_ExpressNode = new MetaNewObjectExpressNode(mcen);
+                }
+
                 expressRetMetaDefineType = m_ExpressNode.GetReturnMetaDefineType();               
                 if (expressRetMetaDefineType == null)
                 {

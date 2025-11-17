@@ -11,12 +11,20 @@ namespace SimpleLanguage.VM
     {
         //public static Dictionary<int, DataObject> dataObjectDict = new Dictionarny<int, DataObject>();
         public static Dictionary<int, ClassObject> classObjectDict = new Dictionary<int, ClassObject>();
+        public static Dictionary<int, ArrayObject> arrayObjectDict = new Dictionary<int, ArrayObject>();
 
         public static void AddClassObject(ClassObject cl)
         {
             if (!classObjectDict.ContainsKey(cl.GetHashCode()))
             {
                 classObjectDict.Add(cl.GetHashCode(), cl);
+            }
+        }
+        public static void AddArrayObject(ArrayObject cl)
+        {
+            if (!arrayObjectDict.ContainsKey(cl.GetHashCode()))
+            {
+                arrayObjectDict.Add(cl.GetHashCode(), cl);
             }
         }
         public static SObject CreateObjectByRuntimeType( RuntimeType rt, bool isCreateMemObject = false )
@@ -90,6 +98,11 @@ namespace SimpleLanguage.VM
             else if (name == "Core.Void" || name == "Void")
             {
                 sobj = new VoidObject();
+                sobj.typeId = 0;
+            }
+            else if (name == "Core.Array" || name == "Array")
+            {
+                sobj = new ArrayObject( EArrayType.None, 0 );
                 sobj.typeId = 0;
             }
             else
@@ -342,6 +355,15 @@ namespace SimpleLanguage.VM
                             return;
                         }
                         stringObj.SetValue(svalue.stringValue);
+                    }
+                    break;
+                case EType.Array:
+                    {
+                        ArrayObject classobj = obj as ArrayObject;
+                        if (classobj != null)
+                        {
+                            classobj.SetArray( svalue.arrayValue );
+                        }
                     }
                     break;
                 case EType.Float32:

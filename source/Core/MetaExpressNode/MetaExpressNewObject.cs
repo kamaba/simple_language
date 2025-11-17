@@ -342,7 +342,8 @@ namespace SimpleLanguage.Core
                     cep.fme = fas;
                     cep.equalMetaVariable = m_EqualMetaVariable;
                     MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
-                    MetaBraceAssignStatements mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
+                    men.Parse(new AllowUseSettings());
+                    MetaBraceAssignStatements mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);                    
                     mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);
                 }
@@ -612,12 +613,16 @@ namespace SimpleLanguage.Core
     {
         public enum ENewType
         {
+            DefaultType, //int32,uint32/string/..
             CommomClass,
             ArrayClass,
             ListClass,
             MapClass,
         }
 
+        public ENewType newType => m_NewType;
+        public MetaType arrayType => m_ArrayType;
+        public int arrayLength => m_ArrayLength;
         public List<MetaExpressNode> metaInputParamList => m_MetaInputParamList;
         public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
         public MetaVariable storeMetaVariable => m_StoreMetaVariable;
@@ -630,11 +635,22 @@ namespace SimpleLanguage.Core
         private MetaExpressNode m_MetaEnumValue = null;
         private MetaBraceOrBracketStatementsContent m_MetaBraceOrBracketStatementsContent = null;
         private ENewType m_NewType = ENewType.CommomClass;
+        private MetaType m_ArrayType = null;
+        private int m_ArrayLength = 0;
 
 
         protected MetaVariable m_StoreMetaVariable = null; //模板或者是调用时的函数        
         protected MetaMemberFunction m_MetaMemberFunction = null;
         protected List<MetaExpressNode> m_MetaInputParamList = new List<MetaExpressNode>();
+
+        public MetaNewObjectExpressNode( MetaCallLinkExpressNode mcen )
+        {
+            m_OwnerMetaClass = mcen.ownerMetaClass;
+            m_OwnerMetaBlockStatements = mcen.ownerMetaBlockStatements;
+            m_StoreMetaVariable = mcen.GetMetaVariable();
+            m_MetaMemberFunction = mcen.metaCallLink.finalCallNode.methodCall.metaMemberFunction;
+            m_MetaDefineType = mcen.metaCallLink.finalCallNode.callMetaType;
+        }
         public MetaNewObjectExpressNode( MetaClass ownermc, List<MetaDynamicClass> list )
         {
             m_OwnerMetaClass = ownermc;
@@ -877,9 +893,7 @@ namespace SimpleLanguage.Core
         {
             m_FileMetaParTerm = fmpt;
             m_OwnerMetaClass = mc;
-            m_OwnerMetaBlockStatements = mbs;
-            var mmf = new MetaMethodCall(null, null, mbs.ownerMetaFunction, null, null, null, null );
-            //m_MetaConstructFunctionCall = mmf;
+            m_OwnerMetaBlockStatements = mbs; 
             m_MetaDefineType = new MetaType(mt);
 
             Init();
@@ -925,15 +939,14 @@ namespace SimpleLanguage.Core
                 m_MetaBraceOrBracketStatementsContent.Parse();
                 MetaClass inputType = m_MetaBraceOrBracketStatementsContent.GetMaxLevelMetaClassType();
 
-                var metaInputTemplateCollection = new MetaInputTemplateCollection();
-                MetaType mitp = new MetaType(inputType);
-                metaInputTemplateCollection.AddMetaTemplateParamsList(mitp);
+                m_ArrayType = new MetaType(inputType);
 
                 MetaInputParamCollection mipc = new MetaInputParamCollection(m_OwnerMetaClass, m_OwnerMetaBlockStatements);
                 mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaBraceOrBracketStatementsContent.count)));
                 mipc.CaleReturnType();
                 m_MetaMemberFunction = m_MetaDefineType.metaClass.GetMetaMemberConstructFunction(mipc);
                 SetInputParams(mipc);
+                m_ArrayLength = m_MetaBraceOrBracketStatementsContent.count ;
             }
         }
         void SetInputParams(MetaInputParamCollection _paramCollection)
