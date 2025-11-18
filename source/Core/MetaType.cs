@@ -16,6 +16,7 @@ namespace SimpleLanguage.Core
     public enum EMetaTypeType
     {
         None,
+        Array,
         MetaClass,
         MetaGenClass,
         Template,
@@ -30,39 +31,34 @@ namespace SimpleLanguage.Core
                 return m_MetaClass?.allClassName;
             }
         }
-        //public string fromName => m_FromName;
+        //public MetaClass typeInferenceClass => m_TypeInferenceClass;
+
+        public bool isEnum => m_MetaClass is MetaEnum;
+        public bool isData => m_MetaClass is MetaData;
+        public bool isArray => m_EType == EMetaTypeType.Array;
+        public bool isTemplate => m_EType == EMetaTypeType.Template;
+        public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
+        public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData;
 
         public EMetaTypeType eType => m_EType;
         public MetaClass metaClass => m_MetaClass;
-        public MetaClass typeInferenceClass => m_TypeInferenceClass;
-        //public MetaClass templateMetaClass => m_TemplateMetaClass;
-        public bool isEnum => m_MetaClass is MetaEnum;
-        public bool isData => m_MetaClass is MetaData;
-        public bool isTemplate => m_EType == EMetaTypeType.Template;
+        public MetaTemplate metaTemplate => m_MetaTemplate;
         public MetaMemberEnum enumValue => m_EnumValue;
         public List<MetaType> defineTemplateMetaTypeList => m_DefineTemplateMetaTypeList;
         public List<MetaType> genTemplateMetaTypeList => m_GenTemplateMetaTypeList;
-        public bool isArray => m_IsArray;
-        public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
-        public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData;
-        //public bool isDefineMetaClass => m_IsDefineMetaClass;
-        public MetaTemplate metaTemplate => m_MetaTemplate;
-        public MetaGenTemplate metaGenTemplate => m_MetaGenTemplate;
+        //public MetaGenTemplate metaGenTemplate => m_MetaGenTemplate;
 
-        //private MetaInputTemplateCollection m_InputTemplateCollection = null;
         private EMetaTypeType m_EType = EMetaTypeType.None;
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
-        private MetaClass m_TypeInferenceClass = null;                  //推理类
+        //private MetaClass m_TypeInferenceClass = null;                  //推理类
         private MetaType m_ParentMetaType = null;
         private MetaTemplate m_MetaTemplate = null;
         //private MetaType m_SourceMetaType = null;                         //生成类的 对应来源类
-        private MetaGenTemplate m_MetaGenTemplate = null;
+        //private MetaGenTemplate m_MetaGenTemplate = null;
         private MetaExpressNode m_DefaultExpressNode = null;        // int a => a = 0;
         private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
-        //private bool m_IsDefineMetaClass = false;
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         private List<MetaType> m_GenTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
-        private bool m_IsArray = false;
 
         public MetaType()
         {
@@ -110,7 +106,6 @@ namespace SimpleLanguage.Core
             {
                 Log.AddInStructMeta(EError.None, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
-            //m_IsDefineMetaClass = false;
             if ( mitc == null)
             {
                 //m_TemplateMetaClass = templatemc;
@@ -133,7 +128,6 @@ namespace SimpleLanguage.Core
             this.m_MetaTemplate = mt.m_MetaTemplate;
             this.m_DefaultExpressNode = mt.m_DefaultExpressNode;
             this.m_EnumValue = mt.m_EnumValue;
-            //this.m_IsDefineMetaClass = mt.m_IsDefineMetaClass;
             //this.m_FromName = mt.m_FromName;
             this.m_EType = mt.m_EType;
             for (int i = 0; i < mt.m_DefineTemplateMetaTypeList.Count; i++)
@@ -159,7 +153,10 @@ namespace SimpleLanguage.Core
         }
         public void SetIsArray( bool flag )
         {
-            m_IsArray = flag;
+            if( flag )
+            {
+                m_EType = EMetaTypeType.Array;
+            }
         }
         public void SetMetaType( MetaType mt )
         {
@@ -169,7 +166,6 @@ namespace SimpleLanguage.Core
             this.m_MetaTemplate = mt.m_MetaTemplate;
             this.m_DefaultExpressNode = mt.m_DefaultExpressNode;
             this.m_EnumValue = mt.m_EnumValue;
-            //this.m_IsDefineMetaClass = mt.m_IsDefineMetaClass;
             //this.m_FromName = mt.m_FromName;
             this.m_EType = mt.m_EType;
             this.m_DefineTemplateMetaTypeList = mt.m_DefineTemplateMetaTypeList;
@@ -348,7 +344,6 @@ namespace SimpleLanguage.Core
         public void SetMetaClass(MetaClass mc)
         {
             m_MetaClass = mc;
-            //m_IsDefineMetaClass = true;
             m_EType = EMetaTypeType.MetaClass;
         }
         public void SetMetaTemplate(MetaTemplate mt)
@@ -359,15 +354,15 @@ namespace SimpleLanguage.Core
                 m_EType = EMetaTypeType.Template;
             }
         }
-        public void SetGenMetaTemplate(MetaGenTemplate mt)
-        {
-            this.m_MetaGenTemplate = mt;
-        }
+        //public void SetGenMetaTemplate(MetaGenTemplate mt)
+        //{
+        //    //this.m_MetaGenTemplate = mt;
+        //}
         
-        public void SetTypeInferenceClass(MetaClass mc )
-        {
-            this.m_TypeInferenceClass = mc;
-        }
+        //public void SetTypeInferenceClass(MetaClass mc )
+        //{
+        //    this.m_TypeInferenceClass = mc;
+        //}
         public void SetTemplateMetaClass( MetaClass mc )
         {
             //m_TemplateMetaClass = mc;
@@ -482,6 +477,14 @@ namespace SimpleLanguage.Core
                 {
                     sb.Append(m_MetaClass.allClassName);
                 }
+            }
+            else if( eType == EMetaTypeType.Array )
+            {
+                if (m_MetaClass != null)
+                {
+                    sb.Append(m_MetaClass.allClassName);
+                }
+                sb.Append("[]");
             }
             else
             {

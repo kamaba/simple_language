@@ -514,6 +514,9 @@ namespace SimpleLanguage.VM
         public static List<RuntimeType> runtimeList => s_RuntimeList;
 
         private static List<RuntimeType> s_RuntimeList = new List<RuntimeType>();
+        public static RuntimeType arrayRuntimeType => m_ArrayRuntimeType;
+
+        private static RuntimeType m_ArrayRuntimeType = null;
 
         public static RuntimeType GetRuntimeTypeByMT(IRMetaClass rmc )
         {
@@ -599,6 +602,11 @@ namespace SimpleLanguage.VM
         {
             RuntimeType rt = new RuntimeType(rmc, inputTemplateTypeList);
 
+            if( rmc.irName == "Array" )
+            {
+                m_ArrayRuntimeType = rt;
+            }
+
             s_RuntimeList.Add(rt);
 
             return rt;
@@ -609,6 +617,10 @@ namespace SimpleLanguage.VM
             if( Enum.TryParse<EType>(rmc.irName, true, out  var eType) )
             {
                 rt.eType = eType;
+            }
+            if (rmc.irName == "Array")
+            {
+                m_ArrayRuntimeType = rt;
             }
             s_RuntimeList.Add(rt);
 

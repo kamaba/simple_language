@@ -252,7 +252,8 @@ namespace SimpleLanguage.VM.Runtime
                         rtList.Add(crt);
                     }
                 }
-                var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.irMetaClass, rtList);
+                RuntimeType rt = irmt.isArray ? RuntimeTypeManager.arrayRuntimeType :
+                    RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.irMetaClass, rtList);
                 if( rt == null && isAdd )
                 {
                     rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(irmt.irMetaClass, rtList);
@@ -594,18 +595,62 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.StoreArrayIndex:
                     {
-                        SValue sStore = m_ValueStack[m_ValueIndex - 2];
-                        SValue sValue = m_ValueStack[m_ValueIndex - 1];
+                        int int1 = 1, int2 = 2;
+                        if( iri.opValue is Boolean flag )
+                        {
+                            if( flag )
+                            {
+                                int1 = 2;
+                                int2 = 1;
+                            }
+                        }
+                        SValue sStore = m_ValueStack[m_ValueIndex - int1];
+                        SValue sValue = m_ValueStack[m_ValueIndex - int2];
 
                         if (sStore.eType == EType.Array)
                         {
-                            sStore.arrayValue.StoreValue(iri.index, sValue );
+                            sStore.arrayValue.StoreValue(iri.index, sValue);
                         }
                         else
                         {
                             Log.AddVM(EError.None, "不是数组类型!!");
                         }
                         m_ValueIndex -= 2;
+                    }
+                    break;
+                case EIROpCode.LoadArrayIndexField:
+                    {
+                        SValue arrayref = m_ValueStack[m_ValueIndex - 2];
+                        SValue loadindex = m_ValueStack[m_ValueIndex - 1];
+
+                        if (arrayref.eType == EType.Array)
+                        {
+                            int index = (int)loadindex.GetValueObject();
+                            arrayref.arrayValue.LoadValue(index, ref m_ValueStack[m_ValueIndex - 2]);
+                        }
+                        else
+                        {
+                            Log.AddVM(EError.None, "不是数组类型!!");
+                        }
+                        m_ValueIndex -= 1;
+                    }
+                    break;
+                case EIROpCode.StoreArrayIndexField:
+                    {
+                        SValue storevalue = m_ValueStack[m_ValueIndex - 3];
+                        SValue arrayref = m_ValueStack[m_ValueIndex - 2];
+                        SValue loadindex = m_ValueStack[m_ValueIndex - 1];
+
+                        if (arrayref.eType == EType.Array)
+                        {
+                            int index = (int)loadindex.GetValueObject();
+                            arrayref.arrayValue.StoreValue(index, storevalue );
+                        }
+                        else
+                        {
+                            Log.AddVM(EError.None, "不是数组类型!!");
+                        }
+                        m_ValueIndex -= 3;
                     }
                     break;
                 case EIROpCode.CallStatic:

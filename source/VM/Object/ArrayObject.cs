@@ -92,7 +92,7 @@ namespace SimpleLanguage.VM
                 Log.AddVM(EError.None, "执行的参数超出范围!! < 0 ");
                 return;
             }
-            if (index > m_Length )
+            if (index >= m_Length )
             {
                 Log.AddVM(EError.None, "执行的参数超出范围!!");
                 return;
