@@ -56,7 +56,7 @@ namespace SimpleLanguage.Core
                     }
 
                     mt.SetMetaClass(gmgt.metaType.metaClass);
-                    mt.SetGenMetaTemplate(gmgt);
+                    //mt.SetGenMetaTemplate(gmgt);
                     findfn = gmgt.metaType.metaClass;
                 }
                 else
@@ -70,7 +70,7 @@ namespace SimpleLanguage.Core
                             return false;
                         }
                         mt.SetMetaClass(gmgt.metaType.metaClass);
-                        mt.SetGenMetaTemplate(gmgt);
+                        //mt.SetGenMetaTemplate(gmgt);
                         findfn = gmgt.metaType.metaClass;
                     }
                     else

@@ -10,6 +10,7 @@ using SimpleLanguage.Core;
 using SimpleLanguage.Core.IR;
 
 using SimpleLanguage.Parse;
+using System.Runtime.Intrinsics;
 
 namespace SimpleLanguage.IR
 {
@@ -109,6 +110,42 @@ namespace SimpleLanguage.IR
                             //    irmt = new IRMetaType(mv.ownerMetaClass, null);
                             IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irmt, irmc, irMethod, clist[i].GetOrgTemplateMetaVariable() );
                             m_IRStatements.Add(irsv);
+                        }
+                        else if( cl.visitType == MetaVisitNode.EVisitType.VisitVariable )
+                        {
+                            MetaVisitVariable mv = cl.visitVariable;
+
+                            IRMetaClass irmc = IRManager.instance.GetIRMetaClassById(mv.sourceMetaVariable.GetOwnerClassTemplateClass().GetHashCode());
+                            IRMetaType irmt = new IRMetaType(irmc);
+                            /*
+                            IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, irMethod, mv.sourceMetaVariable);
+                            m_IRStatements.Add(irVar);
+                            */
+
+                            if( mv.fashVisit )
+                            {
+                                IRData irdata = new IRData();
+                                irdata.opValue = (int)mv.fashVisitConstExpressNode.value;
+                                irdata.index = (int)mv.fashVisitConstExpressNode.value;
+                                irdata.opCode = EIROpCode.StoreArrayIndex;
+                                IRBase irbase = new IRBase();
+                                irbase.AddIRData(irdata);
+                                m_IRStatements.Add(irbase);
+                            }
+                            else
+                            {
+                                IRMetaCallLink irmcl = new IRMetaCallLink();
+                                irmcl.ParseToIRDataList(irMethod, mv.targetMetaVisitCallLink.callNodeList);
+                                m_IRStatements.AddRange(irmcl.irList);
+
+                                IRData irdata = new IRData();
+                                irdata.opValue = 0;
+                                irdata.opCode = EIROpCode.StoreArrayIndexField;
+                                IRBase irbase = new IRBase();
+                                irbase.AddIRData(irdata);
+                                m_IRStatements.Add(irbase);
+                            }
+
                         }
                         else if( cl.visitType == MetaVisitNode.EVisitType.MethodCall )
                         {

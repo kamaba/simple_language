@@ -67,15 +67,36 @@ namespace SimpleLanguage.Core.IR
             {
                 MetaVisitVariable mv = cnode.visitVariable;
 
-                IRMetaCallLink irmcl = new IRMetaCallLink();
-                irmcl.ParseToIRDataList(_irMethod, mv.targetMetaVisitNodeList);
-                irList.AddRange(irmcl.irList);
-
                 IRMetaClass irmc = IRManager.instance.GetIRMetaClassById(mv.sourceMetaVariable.GetOwnerClassTemplateClass().GetHashCode());
                 IRMetaType irmt = new IRMetaType(irmc);
-
-                IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv.sourceMetaVariable );
+                /*
+                IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv.sourceMetaVariable);
                 irList.Add(irVar);
+                */
+
+                if ( mv.fashVisit )
+                {
+                    IRData irdata = new IRData();
+                    irdata.opValue = (int)mv.fashVisitConstExpressNode.value;
+                    irdata.index = (int)mv.fashVisitConstExpressNode.value;
+                    irdata.opCode = EIROpCode.LoadArrayIndex;
+                    IRBase irbase = new IRBase();
+                    irbase.AddIRData(irdata);
+                    irList.Add(irbase);
+                }
+                else
+                {
+                    IRMetaCallLink irmcl = new IRMetaCallLink();
+                    irmcl.ParseToIRDataList(_irMethod, mv.targetMetaVisitCallLink.callNodeList);
+                    irList.AddRange(irmcl.irList);
+
+                    IRData irdata = new IRData();
+                    irdata.opValue = 0;
+                    irdata.opCode = EIROpCode.LoadArrayIndexField;
+                    IRBase irbase = new IRBase();
+                    irbase.AddIRData(irdata);
+                    irList.Add(irbase);
+                }
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MethodCall)
             {

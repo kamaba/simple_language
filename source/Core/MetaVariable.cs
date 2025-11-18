@@ -36,7 +36,7 @@ namespace SimpleLanguage.Core
         public bool isGlobal => m_VariableFrom == EVariableFrom.Global;
         public bool isArray
         {
-            get { return m_DefineMetaType != null ? m_DefineMetaType.isArray : false ; }
+            get { return m_IsDefineMetaType ? (m_DefineMetaType != null ? m_DefineMetaType.isArray : false) : (m_RealMetaType != null ? m_RealMetaType.isArray : false); }
         }
 
         public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
@@ -116,6 +116,11 @@ namespace SimpleLanguage.Core
         }
         public MetaClass GetOwnerClassTemplateClass()
         {
+            if( isArray )
+            {
+                return CoreMetaClassManager.arrayMetaClass;
+            }
+
             if( m_OwnerMetaClass is MetaGenTemplateClass mgtc )
             {
                 return mgtc.metaTemplateClass;
@@ -228,13 +233,17 @@ namespace SimpleLanguage.Core
             Link,
             AT
         }
+        public bool fashVisit => m_FashVisit;
         public MetaVariable sourceMetaVariable => m_SourceMetaVariable;
-        public List<MetaVisitNode> targetMetaVisitNodeList => m_TargetMetaVisitNodeList;
+        public MetaCallLink targetMetaVisitCallLink => m_TargetMetaVisitCallLink;
+        public MetaConstExpressNode fashVisitConstExpressNode => m_FashVisitConstExpressNode;
 
         MetaVariable m_SourceMetaVariable = null;
         EVisitType m_VisitType = EVisitType.AT;
-        List<MetaVisitNode> m_TargetMetaVisitNodeList = null;
+        MetaCallLink m_TargetMetaVisitCallLink = null;
         string m_AtName = "";
+        private bool m_FashVisit = false;
+        private MetaConstExpressNode m_FashVisitConstExpressNode = null; 
 
         public MetaVisitVariable(MetaVariable source, MetaVariable target)
         {
@@ -252,20 +261,32 @@ namespace SimpleLanguage.Core
             }
             return -1;
         }
-        public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, List<MetaVisitNode> vmv, MetaType retMt = null )
+        public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaConstExpressNode mvv)
         {
             m_Name = _name;
             m_AtName = _name;
             m_OwnerMetaClass = mc;
+            m_OwnerMetaBlockStatements = mbs;
             m_SourceMetaVariable = lmv;
+            m_FashVisitConstExpressNode = mvv;
+            m_FashVisit = true;
+        }
+        public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaCallLink mvv )
+        {
+            m_Name = _name;
+            m_AtName = _name;
+            m_OwnerMetaClass = mc;
+            m_OwnerMetaBlockStatements = mbs;
+            m_SourceMetaVariable = lmv;
+            m_FashVisit = false;
             if (lmv.isArray)
             {
-                if (vmv == null && string.IsNullOrEmpty(m_AtName))
+                if (mvv == null && string.IsNullOrEmpty(m_AtName))
                 {
                     Log.AddInStructMeta(EError.None, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
                     return;
                 }
-                m_TargetMetaVisitNodeList = vmv;
+                m_TargetMetaVisitCallLink = mvv;
 
                 var gmit = m_SourceMetaVariable.metaDefineType;
                 m_DefineMetaType = new MetaType(gmit);

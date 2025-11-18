@@ -320,6 +320,7 @@ namespace SimpleLanguage.IR
 
                         IRData irdatastore = new IRData();
                         irdatastore.index = y;
+                        irdatastore.opValue = true;
                         irdatastore.opCode = EIROpCode.StoreArrayIndex;
                         m_IRDataList.Add(irdatastore);
                     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Compile;
+using SimpleLanguage.IR;
 
 
 
@@ -143,6 +144,14 @@ namespace SimpleLanguage.Core
             if (m_MetaExpress != null)
             {
                 return m_MetaExpress.GetReturnMetaClass();
+            }
+            return null;
+        }
+        public MetaType GetRetMetaType()
+        {
+            if (m_MetaExpress != null)
+            {
+                return m_MetaExpress.GetReturnMetaDefineType();
             }
             return null;
         }
@@ -546,6 +555,18 @@ namespace SimpleLanguage.Core
             {
                 MetaBraceAssignStatements cmc = m_AssignStatementsList[i];
                 MetaBraceAssignStatements nmc = m_AssignStatementsList[i + 1];
+
+                var cmcmt = cmc.GetRetMetaType();
+                var nmcmt = nmc.GetRetMetaType();
+                if( cmcmt.isArray )
+                {
+                    return CoreMetaClassManager.arrayMetaClass;
+                }
+                if( nmcmt.isArray )
+                {
+                    return CoreMetaClassManager.arrayMetaClass;
+                }
+
                 if (cmc.opLevel == nmc.opLevel)
                 {
                     if (cmc.opLevel == 10)
@@ -939,7 +960,15 @@ namespace SimpleLanguage.Core
                 m_MetaBraceOrBracketStatementsContent.Parse();
                 MetaClass inputType = m_MetaBraceOrBracketStatementsContent.GetMaxLevelMetaClassType();
 
-                m_ArrayType = new MetaType(inputType);
+                if( inputType == CoreMetaClassManager.arrayMetaClass )
+                {
+                    m_ArrayType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                }
+                else
+                {
+                    m_ArrayType = new MetaType(inputType);
+                }
+                m_ArrayType.SetIsArray(true);
 
                 MetaInputParamCollection mipc = new MetaInputParamCollection(m_OwnerMetaClass, m_OwnerMetaBlockStatements);
                 mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaBraceOrBracketStatementsContent.count)));
@@ -947,6 +976,8 @@ namespace SimpleLanguage.Core
                 m_MetaMemberFunction = m_MetaDefineType.metaClass.GetMetaMemberConstructFunction(mipc);
                 SetInputParams(mipc);
                 m_ArrayLength = m_MetaBraceOrBracketStatementsContent.count ;
+
+                m_MetaDefineType = m_ArrayType;
             }
         }
         void SetInputParams(MetaInputParamCollection _paramCollection)
