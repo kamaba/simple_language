@@ -149,20 +149,39 @@ ArrayTest
         System.Console.WriteLine("1111111111= " + aa )
         !#
 
+        #!
         int[] a33 = [1,2,3,4];
         a33[3] = 123
-        System.Console.WriteLine("1111111111= " + a33[2] )
-        
-        # a34 = [1,2,3,4]
-        #aa = 3
-        # a34.$aa. = 111
-        #var aaaa34v = a34.$2
-        #System.Console.WriteLine("1111111111= " + aaaa34v )
+        var aa333 =  a33[0];
+        System.Console.WriteLine("1111111111= " + a33[3] + "-----" + a33[0] + "xxxxx=" + aa333 )
+        !#
 
+        #!
+        a34 = [1,2,3,4]
+        aa = 3
+        a34.$aa = 111
+        var aaaa34v = a34.$3
+        System.Console.WriteLine("1111111111= " + aaaa34v )
+        !#
+
+
+        var ac = ArrClass(){ i = 30 }
+        a35 = [[0,1,2,ac,4],[[11,12],[13,14],[15,16],[17,18]]];
+        # a35[0] = [0,1,2,3,4] a35[1] = [[1,2,3],[2,3,4],[4,5,6],[7,8,9]]  a34[1][0][2] = 3  a35是个一维两值数组，访问a35[1] 是确定对象访问 再访问 是一个二维纯int数组，然后是a35[1][0][2] 后边两位是纯数组访问
+        aa = 0
+        var aaaa35111 = a35.$aa.$1
+        System.Console.WriteLine("1111111111= " + aaaa35111 )
+        # a35.$aa.$1.$1 = 3000;  相当于  a35[1][3] = 3000        
+        #System.Console.WriteLine("1111111111= " + a35.$aa.$1.$1 )
+
+        #!
+        #var aaa35val = a35.$aa.$3.i;
+        #a35.$aa.$3.i = 100
+        
         #array arr = []
         #array arr = Array( 10, object.type )
 
-        #var a42 = [[1.2,1.3,1.4,1.5],[3,4,5]];    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于  
+        object[][] a42 = [[1.2,1.3,1.4,1.5],[3,4,5]];    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于  
         #Array( 2, Array.type ){ Array(5, float.type ){ 1.2, 1.3, 1.4, 1.5 }, Array( 3, int.tye ){3,4,5}   } 
         #!
         a2 = Array(5, int.type ){1,2,3,4,5.0f};   #默认int List 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  先申请 int 长度为5的数组，然后把后边的数据进行填存，但这时
@@ -184,7 +203,7 @@ ArrayTest
         
         float[] a7 = Array(){ 1.2, 2.2, 3.4 };  #  需要{}的内容特殊处理   
         
-        float[] a8 = Array( 20 ){1,2,3,5,3.3};   #申请一个长度为20的数组  通过后边数据决定 其实使用的是ArrayInt
+        float[] a8 = Array( 20, float.type ){1,2,3,5,3.3};   #申请一个长度为20的数组  通过后边数据决定 其实使用的是ArrayInt
        
         #a9 = Array( 27 ).gen(3); #申请一个三维数组，边界分别为3,3,3     
         

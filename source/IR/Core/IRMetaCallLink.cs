@@ -77,8 +77,10 @@ namespace SimpleLanguage.Core.IR
                 if ( mv.fashVisit )
                 {
                     IRData irdata = new IRData();
-                    irdata.opValue = (int)mv.fashVisitConstExpressNode.value;
-                    irdata.index = (int)mv.fashVisitConstExpressNode.value;
+                    string val = mv.fashVisitConstExpressNode.value.ToString();
+                    int.TryParse(val, out int index);
+                    irdata.opValue = index;
+                    irdata.index = index;
                     irdata.opCode = EIROpCode.LoadArrayIndex;
                     IRBase irbase = new IRBase();
                     irbase.AddIRData(irdata);

@@ -96,7 +96,7 @@ namespace SimpleLanguage.VM
                             {
                                 rt = new RuntimeType(irlc.irMetaClass, new System.Collections.Generic.List<RuntimeType>());
                             }
-                            SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
+                            SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, false);
                             m_Array.SetValue(sobj, i);
                         }
                     }
@@ -178,6 +178,12 @@ namespace SimpleLanguage.VM
                         {
                             var str = obj as String;
                             sval.SetStringValue(str);
+                        }
+                        break;
+                    case EArrayType.Array:
+                        {
+                            var arr = obj as ArrayObject;
+                            sval.SetArrayValue(arr);
                         }
                         break;
                     case EArrayType.Pointer:
@@ -381,6 +387,22 @@ namespace SimpleLanguage.VM
                             return;
                         }
                         m_Array.SetValue(svalue.stringValue, index);
+                    }
+                    break;
+                case EType.Array:
+                    {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValue(EType.String, svalue.stringValue);
+                            return;
+                        }
+                        ArrayObject arrayobj = m_Array.GetValue(index) as ArrayObject;
+                        if (arrayobj != null)
+                        {
+                            arrayobj.SetArray(svalue.arrayValue);
+                            return;
+                        }
+                        m_Array.SetValue(svalue.arrayValue, index);
                     }
                     break;
                 case EType.Class:

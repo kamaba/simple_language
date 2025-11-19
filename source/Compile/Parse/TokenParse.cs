@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace SimpleLanguage.Compile
 {
@@ -110,7 +111,34 @@ namespace SimpleLanguage.Compile
         {
             if (currentNode.linkToken != null)
             {
-                currentNode.atToken = token;
+                var ntoken = new Token(token);
+                string nvar = token.extend.ToString();
+                
+                ntoken.SetLexeme(token.extend);
+
+                Node node = new Node( ntoken );
+                if (Regex.IsMatch(nvar, @"^\d+$"))
+                {
+                    ntoken.SetType(ETokenType.Number);
+                    node.nodeType = ENodeType.ConstValue;
+                }
+                else
+                {
+                    ntoken.SetType(ETokenType.Identifier);
+                    node.nodeType = ENodeType.IdentifierLink;
+                }
+
+                
+                Node node2 = new Node(currentNode.linkToken);
+                node2.nodeType = ENodeType.Period;
+
+                currentNode.AddLinkNode(node2);
+                currentNode.AddLinkNode(node);
+                node.atToken = token;
+
+                currentNode.linkToken = null;
+                //tempNode.lastNode = node;
+
             }
             else
             {

@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SimpleLanguage.Compile
 {
@@ -142,6 +143,13 @@ namespace SimpleLanguage.Compile
             if ('A' <= c && c <= 'F')
                 return true;
             return false;
+        }
+        bool IsIdentifier2(char c)
+        {
+            return (c >= '0' && c <= '9') ||
+                   (c >= 'a' && c <= 'z') ||
+                   (c >= 'A' && c <= 'Z') ||
+                   c == '_';
         }
         private bool IsIdentifier(char ch)
         {
@@ -1136,11 +1144,25 @@ namespace SimpleLanguage.Compile
             //}
             else if (Char.IsNumber(ch) || Char.IsLetter(ch))
             {
-                AddToken(ETokenType.Dollar, '$');
+                StringBuilder sb = new StringBuilder();
+                sb.Append(ch);
+                while (true)
+                {
+                    m_TempChar = ReadChar();
+                    if(IsIdentifier2(m_TempChar) )
+                    {
+                        sb.Append(m_TempChar);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                AddToken(ETokenType.Dollar, '$', sb.ToString() );
             }
             else
             {
-                Debug.Write("Error 不允许@后边加其它符号!!");
+                Debug.Write("Error 不允许$后边加其它符号!!");
             }
         }
         void ReadSharp()
