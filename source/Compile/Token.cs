@@ -58,8 +58,8 @@ namespace SimpleLanguage.Compile
             this.type = token.type;
             this.lexeme = token.lexeme;
             this.extend = token.extend;
-            this.sourceBeginLine = token.sourceBeginChar;
-            this.sourceBeginChar = token.sourceBeginLine;
+            this.sourceBeginChar = token.sourceBeginChar;
+            this.sourceBeginLine = token.sourceBeginLine;
             this.sourceEndChar = token.sourceEndChar;
             this.sourceEndLine = token.sourceEndLine;
         }    

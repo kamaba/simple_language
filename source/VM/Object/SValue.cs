@@ -106,6 +106,11 @@ namespace SimpleLanguage.VM
             eType = EType.String;
             stringValue = val;
         }
+        public void SetArrayValue( ArrayObject arrobj )
+        {
+            eType = EType.Array;
+            arrayValue = arrobj;
+        }
         public void ConvertByEType(EType neType )
         {
             object cur = GetValueObject();
