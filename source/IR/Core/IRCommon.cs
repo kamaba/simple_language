@@ -24,11 +24,13 @@ namespace SimpleLanguage.IR
         Single,
         Double,
         String,
+        Array,
         Pointer,
     }
     public class IRNewArray
     {
         public EArrayType eArrayType;
+        public IRMetaType irMetaType;
         public int length;
     }
 }

@@ -24,7 +24,7 @@ namespace SimpleLanguage.IR
         protected IRStoreVariable m_StoreVariable = null;
         public void ParseIRStatements( MetaAssignStatements ms )
         {
-            var clist = ms.leftMetaExpress.metaCallLink.callNodeList;
+            var clist = ms.leftMetaExpress.metaCallLink.visitNodeList;
             if ( ms.isNewStatements )
             {
                 MetaVisitNode finalMVN = null;
@@ -135,7 +135,7 @@ namespace SimpleLanguage.IR
                             else
                             {
                                 IRMetaCallLink irmcl = new IRMetaCallLink();
-                                irmcl.ParseToIRDataList(irMethod, mv.targetMetaVisitCallLink.callNodeList);
+                                irmcl.ParseToIRDataList(irMethod, mv.targetMetaVisitCallLink.visitNodeList);
                                 m_IRStatements.AddRange(irmcl.irList);
 
                                 IRData irdata = new IRData();

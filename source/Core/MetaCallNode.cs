@@ -101,10 +101,11 @@ namespace SimpleLanguage.Core
         public ECallNodeType callNodeType => m_CallNodeType;
         public MetaExpressNode metaExpressValue => m_ExpressNode;
         public List<MetaType> metaTemplateParamsList => m_MetaTemplateParamsList;
-        public MetaBraceOrBracketStatementsContent metaBraceStatementsContent => m_MetaBraceStatementsContent;
+        //public MetaBraceOrBracketStatementsContent metaBraceStatementsContent => m_MetaBraceStatementsContent;
         public MetaInputParamCollection metaInputParamCollection => m_MetaInputParamCollection;
         public MetaBlockStatements ownerMetaFunctionBlock => m_OwnerMetaFunctionBlock;
         public MetaVariable storeMetaVariable => m_StoreMetaVariable;
+        public FileMetaBraceTerm fileMetaBraceTerm =>m_FileMetaCallNode != null ? m_FileMetaCallNode.fileMetaBraceTerm : null;
         public MetaType callMetaType => m_CallMetaType;
         //public MetaGenTemplateClass genMetaClass => m_GenMetaClass;
         //public MetaData metaData => m_MetaData;
@@ -131,7 +132,7 @@ namespace SimpleLanguage.Core
         private MetaClass m_OwnerMetaClass = null;
         private MetaInputParamCollection m_MetaInputParamCollection = null;
         private List<MetaType> m_MetaTemplateParamsList = new List<MetaType>();
-        private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent  = null;
+        //private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent  = null;
         private MetaType m_FrontDefineMetaType = null;
         private MetaExpressNode m_ExpressNode = null;    // a+b+([expressNode[3+20+10.0f]).ToString() 中的3+20+10.f就是表示式 , fun(expressNode)
         private MetaVariable m_DefineMetaVariable = null;
@@ -148,7 +149,7 @@ namespace SimpleLanguage.Core
         //private MetaGenTemplateClass m_GenMetaClass = null;
         //private MetaGenTempalteFunction m_MetaGenTemplateFunction = null;
         private string m_Name;
-        private bool m_NextNotAllowParse = false;
+        //private bool m_NextNotAllowParse = false;
         private bool m_VisitFlag = false;
         public MetaCallNode()
         { }
@@ -1038,15 +1039,10 @@ namespace SimpleLanguage.Core
                             Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + curmc.allClassName + "的_init_方法!)", m_Token);
                             return false;
                         }
-                        MetaType retMt = m_MetaType;
-                        if( retMt != null )
-                        {
-                            retMt.SetTemplateMetaClass(m_MetaClass);
-                        }
                         if (m_DefineMetaVariable == null)
                         {
                             m_MetaVariable = new MetaVariable("new_" + curmc.allClassName + "_" + curmc.GetHashCode(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaFunctionBlock, 
-                                m_OwnerMetaClass, retMt);
+                                m_OwnerMetaClass, m_MetaType );
                             m_OwnerMetaFunctionBlock.AddMetaVariable(m_MetaVariable);
                         }
                         else
@@ -1061,7 +1057,7 @@ namespace SimpleLanguage.Core
                             m_CallNodeType = ECallNodeType.NewClass;
                         }
                         
-
+                        /* 该逻辑会放到NewExpressNode里这
                         if (m_FileMetaCallNode.fileMetaBraceTerm != null)  //可以使用  ArrClass(){ x = ??} 的方式
                         {
                             if( m_AllowUseSettings.parseFrom == EParseFrom.InputParamExpress  )
@@ -1074,6 +1070,7 @@ namespace SimpleLanguage.Core
                             m_MetaBraceStatementsContent.SetMetaType(new MetaType(curmc));
                             m_MetaBraceStatementsContent.Parse();
                         }
+                        */
                     }
 
                     if (!m_AllowUseSettings.callFunction && m_IsFunction)
@@ -1084,6 +1081,7 @@ namespace SimpleLanguage.Core
                 else if( m_MetaData != null )
                 {
                     m_CallNodeType = ECallNodeType.NewData;
+                    /*
                     if (m_FileMetaCallNode.fileMetaBraceTerm != null)  //可以使用  ArrClass(){ x = ??} 的方式
                     {
                         if (m_AllowUseSettings.parseFrom == EParseFrom.InputParamExpress)
@@ -1096,6 +1094,7 @@ namespace SimpleLanguage.Core
                         m_MetaBraceStatementsContent.SetMetaType(new MetaType(m_MetaData));
                         m_MetaBraceStatementsContent.Parse();
                     }
+                    */
                 }
                 else if( m_MetaEnum != null )
                 {
@@ -1291,35 +1290,9 @@ namespace SimpleLanguage.Core
                     {
                         Log.AddInStructMeta(EError.None, "没有找到适合的访问节点的变量一类的！");
                     }
-                    if( variable.isDefineMetaType )
-                    {
-                        if( variable.metaDefineType.isArray )
-                        {
-                            if( variable.metaDefineType.metaClass == CoreMetaClassManager.arrayMetaClass )
-                            {
-                                m_MetaType = new MetaType(variable.metaDefineType);
-                            }
-                        }
-                        else
-                        {
 
-                        }
-                    }
-                    else
-                    {
-                        if( variable.realMetaType.metaClass == CoreMetaClassManager.arrayMetaClass )
-                        {
-                            m_MetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-                            m_MetaType.SetIsArray(true);
-                        }
-                        else
-                        {
-                            m_MetaType = new MetaType(variable.realMetaType.metaClass);
-                        }
-
-                    }
-                    m_MetaVariable.SetMetaDefineType(m_MetaType);
-                    m_MetaVariable.SetRealMetaType(m_MetaType);
+                    m_MetaVariable.ParseDefineMetaType();
+                    m_MetaVariable.ParseRealMetaType();
 
                 }
             }

@@ -40,12 +40,14 @@ namespace SimpleLanguage.Core
         public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
         public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData;
 
+        public int arrayDimension => m_ArrayDimension;
         public EMetaTypeType eType => m_EType;
         public MetaClass metaClass => m_MetaClass;
         public MetaTemplate metaTemplate => m_MetaTemplate;
         public MetaMemberEnum enumValue => m_EnumValue;
         public List<MetaType> defineTemplateMetaTypeList => m_DefineTemplateMetaTypeList;
         public List<MetaType> genTemplateMetaTypeList => m_GenTemplateMetaTypeList;
+        public List<MetaType> arrayMetaTypeList => m_ArrayMetaTypeList;
         //public MetaGenTemplate metaGenTemplate => m_MetaGenTemplate;
 
         private EMetaTypeType m_EType = EMetaTypeType.None;
@@ -59,6 +61,8 @@ namespace SimpleLanguage.Core
         private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         private List<MetaType> m_GenTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
+        private List<MetaType> m_ArrayMetaTypeList = new List<MetaType>();
+        private int m_ArrayDimension = 0;
 
         public MetaType()
         {
@@ -151,12 +155,10 @@ namespace SimpleLanguage.Core
 
             return false;
         }
-        public void SetIsArray( bool flag )
+        public void SetArrayDimension( int disension  )
         {
-            if( flag )
-            {
-                m_EType = EMetaTypeType.Array;
-            }
+            m_EType = EMetaTypeType.Array;
+            m_ArrayDimension = disension;
         }
         public void SetMetaType( MetaType mt )
         {
@@ -283,6 +285,14 @@ namespace SimpleLanguage.Core
         public void AddGenTemplateMetaType(MetaType mt)
         {
             m_GenTemplateMetaTypeList.Add(mt);
+        }
+        public void AddArrayMetaType( MetaType mt )
+        {
+            m_ArrayMetaTypeList.Add(mt);
+        }
+        public void SetArrayMetaType( List<MetaType> list )
+        {
+            m_ArrayMetaTypeList = list;
         }
         //public void SetSourceMetaType( MetaType sourceMt )
         //{

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.IR;
+using SimpleLanguage.Parse;
 
 
 
@@ -11,6 +12,7 @@ namespace SimpleLanguage.Core
 {
     public class MetaBraceAssignStatements
     {
+        public string name { get { return m_DefineName; } }
         public MetaMemberVariable metaMemberVariable => m_MetaMemberVariable;
         public MetaMemberData metaMemberData => m_MetaMemberData;
         public MetaExpressNode expressNode => m_MetaExpress;
@@ -558,14 +560,14 @@ namespace SimpleLanguage.Core
 
                 var cmcmt = cmc.GetRetMetaType();
                 var nmcmt = nmc.GetRetMetaType();
-                if( cmcmt.isArray )
-                {
-                    return CoreMetaClassManager.arrayMetaClass;
-                }
-                if( nmcmt.isArray )
-                {
-                    return CoreMetaClassManager.arrayMetaClass;
-                }
+                //if( cmcmt.isArray )
+                //{
+                //    return CoreMetaClassManager.arrayMetaClass;
+                //}
+                //if( nmcmt.isArray )
+                //{
+                //    return CoreMetaClassManager.arrayMetaClass;
+                //}
 
                 if (cmc.opLevel == nmc.opLevel)
                 {
@@ -641,6 +643,7 @@ namespace SimpleLanguage.Core
             MapClass,
         }
 
+        public bool needInitMemberVariable => m_NeedInitMemberVariable;
         public ENewType newType => m_NewType;
         public MetaType arrayType => m_ArrayType;
         public int arrayLength => m_ArrayLength;
@@ -651,6 +654,7 @@ namespace SimpleLanguage.Core
 
         private FileMetaParTerm m_FileMetaParTerm = null;
         private FileMetaCallTerm m_FileMetaCallTerm = null;
+        private FileMetaBraceTerm m_FileMetaBraceTerm = null;
         private FileMetaConstValueTerm m_FileMetaConstValueTerm = null;
 
         private MetaExpressNode m_MetaEnumValue = null;
@@ -658,6 +662,7 @@ namespace SimpleLanguage.Core
         private ENewType m_NewType = ENewType.CommomClass;
         private MetaType m_ArrayType = null;
         private int m_ArrayLength = 0;
+        private bool m_NeedInitMemberVariable = true;
 
 
         protected MetaVariable m_StoreMetaVariable = null; //模板或者是调用时的函数        
@@ -669,8 +674,25 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = mcen.ownerMetaClass;
             m_OwnerMetaBlockStatements = mcen.ownerMetaBlockStatements;
             m_StoreMetaVariable = mcen.GetMetaVariable();
-            m_MetaMemberFunction = mcen.metaCallLink.finalCallNode.methodCall.metaMemberFunction;
+            m_MetaMemberFunction = mcen.metaCallLink.finalCallNode.methodCall.function as MetaMemberFunction;
             m_MetaDefineType = mcen.metaCallLink.finalCallNode.callMetaType;
+            
+            if(mcen.metaCallLink.callNodeList.Count > 0 )
+            {
+                m_FileMetaBraceTerm = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1].fileMetaBraceTerm;
+            }
+
+            if (m_FileMetaBraceTerm != null)  //可以使用  ArrClass(){ x = ??} 的方式
+            {
+                //if (EParseFrom.InputParamExpress)
+                //{
+                //    Log.AddInStructMeta(EError.None, "Error 在InputParam 里边，构建函数，只允许 使用ClassName() 的方式, " +
+                //        "不允许使用 ClassName(){}的方式" + m_FileMetaCallNode.fileMetaBraceTerm.ToTokenString());
+                //    return false;
+                //}
+                m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(m_FileMetaBraceTerm, m_OwnerMetaBlockStatements, m_OwnerMetaClass, m_StoreMetaVariable );
+            }
+            
         }
         public MetaNewObjectExpressNode( MetaClass ownermc, List<MetaDynamicClass> list )
         {
@@ -926,7 +948,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fmbt, m_OwnerMetaBlockStatements, m_OwnerMetaClass, equalMV);
 
-            m_MetaDefineType = new MetaType(CoreMetaClassManager.arrayMetaClass);
+            m_MetaDefineType = new MetaType(CoreMetaClassManager.objectMetaClass);
             m_NewType = ENewType.ArrayClass;
         }
         private void Init()
@@ -954,21 +976,32 @@ namespace SimpleLanguage.Core
         public override void Parse(AllowUseSettings auc)
         {
             //该函数，进行，计算出， 要创建的类，使用的初始化函数，以及，初始化成员的解析
-
+            
             if(m_NewType == ENewType.ArrayClass )
             {
                 m_MetaBraceOrBracketStatementsContent.Parse();
                 MetaClass inputType = m_MetaBraceOrBracketStatementsContent.GetMaxLevelMetaClassType();
 
-                if( inputType == CoreMetaClassManager.arrayMetaClass )
+                m_ArrayType = new MetaType(inputType);
+
+                int disension = 1;
+                List<MetaType> listMT = new List<MetaType>();
+                bool isPureArray = true;
+                for( int i = 0; i < m_MetaBraceOrBracketStatementsContent.assignStatementsList.Count; i++ )
                 {
-                    m_ArrayType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                    var mt = m_MetaBraceOrBracketStatementsContent.assignStatementsList[i].GetRetMetaType();
+                    listMT.Add(mt);
+                    if( !mt.isArray )
+                    {
+                        isPureArray = false;
+                    }
                 }
-                else
+                if( isPureArray )
                 {
-                    m_ArrayType = new MetaType(inputType);
+                    disension++;
                 }
-                m_ArrayType.SetIsArray(true);
+                m_ArrayType.SetArrayMetaType(listMT);
+                m_ArrayType.SetArrayDimension(disension);
 
                 MetaInputParamCollection mipc = new MetaInputParamCollection(m_OwnerMetaClass, m_OwnerMetaBlockStatements);
                 mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaBraceOrBracketStatementsContent.count)));
@@ -978,6 +1011,11 @@ namespace SimpleLanguage.Core
                 m_ArrayLength = m_MetaBraceOrBracketStatementsContent.count ;
 
                 m_MetaDefineType = m_ArrayType;
+            }
+            else if( m_NewType == ENewType.CommomClass )
+            {
+                m_MetaBraceOrBracketStatementsContent.SetMetaType(m_MetaDefineType);
+                m_MetaBraceOrBracketStatementsContent.Parse();
             }
         }
         void SetInputParams(MetaInputParamCollection _paramCollection)

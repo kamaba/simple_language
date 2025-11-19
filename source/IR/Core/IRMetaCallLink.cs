@@ -87,7 +87,7 @@ namespace SimpleLanguage.Core.IR
                 else
                 {
                     IRMetaCallLink irmcl = new IRMetaCallLink();
-                    irmcl.ParseToIRDataList(_irMethod, mv.targetMetaVisitCallLink.callNodeList);
+                    irmcl.ParseToIRDataList(_irMethod, mv.targetMetaVisitCallLink.visitNodeList);
                     irList.AddRange(irmcl.irList);
 
                     IRData irdata = new IRData();
