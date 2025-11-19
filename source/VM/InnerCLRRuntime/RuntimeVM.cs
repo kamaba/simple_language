@@ -832,8 +832,8 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.NewArray:
                     {
                         IRNewArray mdt = iri.opValue as IRNewArray;
-                        //var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(mdt);
-                        ArrayObject sob = new ArrayObject(mdt.eArrayType, mdt.length);
+                        var rt = GetClassRuntimeType(mdt.irMetaType, mdt.irMetaType.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
+                        ArrayObject sob = new ArrayObject(mdt.eArrayType, mdt.irMetaType, mdt.length);
                         ObjectManager.AddArrayObject(sob);
                         m_ValueStack[m_ValueIndex++].SetSObject(sob);
                     }

@@ -167,6 +167,10 @@ namespace SimpleLanguage.Core
         {
 
         }
+        public virtual void ParseRealMetaType()
+        {
+
+        }
         public virtual bool Parse()
         {
             return true;
@@ -243,7 +247,8 @@ namespace SimpleLanguage.Core
         MetaCallLink m_TargetMetaVisitCallLink = null;
         string m_AtName = "";
         private bool m_FashVisit = false;
-        private MetaConstExpressNode m_FashVisitConstExpressNode = null; 
+        private MetaConstExpressNode m_FashVisitConstExpressNode = null;
+        private int? m_Index = null;
 
         public MetaVisitVariable(MetaVariable source, MetaVariable target)
         {
@@ -288,10 +293,67 @@ namespace SimpleLanguage.Core
                 }
                 m_TargetMetaVisitCallLink = mvv;
 
-                var gmit = m_SourceMetaVariable.metaDefineType;
-                m_DefineMetaType = new MetaType(gmit);
+                if( mvv.visitNodeList.Count == 1 )
+                {
+                    if( mvv.visitNodeList[0].constValueExpress != null )
+                    {
+                        if(mvv.visitNodeList[0].constValueExpress.eType == EType.Int32 )
+                        {
+                            m_Index = (int)mvv.visitNodeList[0].constValueExpress.value;
+                        }
+                    }
+                }
             }
         }
+        public override void ParseDefineMetaType()
+        {
+            if (m_SourceMetaVariable.isDefineMetaType)
+            {
+                if (m_SourceMetaVariable.metaDefineType.isArray)
+                {
+                    if (m_SourceMetaVariable.metaDefineType.metaClass == CoreMetaClassManager.arrayMetaClass)
+                    {
+                        m_DefineMetaType = new MetaType(m_SourceMetaVariable.metaDefineType);
+                    }
+                }
+                else
+                {
+
+                }
+            }
+            else
+            {
+                m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+
+            }
+        }
+        public override void  ParseRealMetaType()
+        {
+            if (m_SourceMetaVariable.realMetaType.isArray)
+            {
+                if( m_SourceMetaVariable.realMetaType.arrayDimension > 1 )
+                {
+                    m_RealMetaType = new MetaType(m_SourceMetaVariable.realMetaType);
+                    m_RealMetaType.SetArrayDimension(m_SourceMetaVariable.realMetaType.arrayDimension - 1);
+                }
+                else
+                {
+                    if (m_Index != null && m_Index > 0 && m_Index < m_SourceMetaVariable.realMetaType.arrayMetaTypeList.Count)
+                    {
+                        m_RealMetaType = m_SourceMetaVariable.realMetaType.arrayMetaTypeList[(int)m_Index];
+                    }
+                    else
+                    {
+                        m_RealMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                    }
+                }
+            }
+            else
+            {
+                m_RealMetaType = new MetaType(m_SourceMetaVariable.realMetaType.metaClass);
+            }
+        }
+
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();

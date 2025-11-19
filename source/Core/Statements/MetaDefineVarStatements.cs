@@ -73,7 +73,7 @@ namespace SimpleLanguage.Core
                 }
                 if(mdt != null )
                 {
-                    mdt.SetIsArray(fmcd.isArray);
+                    mdt.SetArrayDimension(1);
                 }
 
                 m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
@@ -135,6 +135,8 @@ namespace SimpleLanguage.Core
                 if (mcen?.isNewExpressNode == true )
                 {
                     m_ExpressNode = new MetaNewObjectExpressNode(mcen);
+                    m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                    m_ExpressNode.CalcReturnType();
                 }
 
                 expressRetMetaDefineType = m_ExpressNode.GetReturnMetaDefineType();               

@@ -123,6 +123,35 @@ namespace SimpleLanguage.IR
             }
             return irmt;
         }
+        public static IRMetaType CreateIRMetaTypeByArrayMetaTypeList(MetaType type, IRMetaClass ownerIRMc)
+        {
+            IRMetaType irmt = new();
+            irmt.m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id);
+            irmt.m_IsArray = type.isArray;
+            if (type.eType == EMetaTypeType.MetaClass)
+            {
+                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+            }
+            else if (type.eType == EMetaTypeType.Template)
+            {
+                irmt.m_TemplateIndex = type.metaTemplate.index;
+                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+            }
+            else
+            {
+                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+            }
+
+            for (int i = 0; i < type.arrayMetaTypeList.Count; i++)
+            {
+                irmt.m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByArrayMetaTypeList(type.arrayMetaTypeList[i], irmt.m_IROwnerMetaClass));
+            }
+            if (irmt.m_IRMetaClass == null || irmt.m_IROwnerMetaClass == null)
+            {
+                Debug.Assert(false, "这个不可以为空!");
+            }
+            return irmt;
+        }
         public IRMetaType( IRMetaClass irmc, List<IRMetaType> irlist )
         {
             m_IRMetaClass = irmc;

@@ -188,9 +188,9 @@ namespace SimpleLanguage.Core
         public MetaMethodCall methodCall { get; private set; } = null;
         //public MetaClass callerMetaClass => m_CallerMetaClass;
         public MetaType callMetaType => m_CallMetaType;
-        public MetaBraceOrBracketStatementsContent metaBraceStatementsContent => m_MetaBraceStatementsContent;
+        //public MetaBraceOrBracketStatementsContent metaBraceStatementsContent => m_MetaBraceStatementsContent;
 
-        private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent = null;
+        //private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent = null;
         protected MetaType m_ReturnMetaType = null;
         //protected MetaClass m_CallerMetaClass = null;
         protected MetaType m_CallMetaType = null; //该变量，一般是为 T t = new() 这种情况准备的
@@ -214,12 +214,12 @@ namespace SimpleLanguage.Core
             vn.methodCall = new MetaMethodCall(mt.metaClass, null, mf, null, null, null, mv);
             return vn;
         }
-        public static MetaVisitNode CraeteByNewClass(MetaType mt, MetaBraceOrBracketStatementsContent mb, MetaVariable mv = null )
+        public static MetaVisitNode CraeteByNewClass(MetaType mt, MetaVariable mv = null )
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.m_CallMetaType = mt;
-            vn.m_MetaBraceStatementsContent = mb;
+            //vn.m_MetaBraceStatementsContent = mb;
             vn.visitType = EVisitType.New;
             vn.variable = mv;
             if (mt.metaClass is MetaGenTemplateClass mgtc)
@@ -229,12 +229,12 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CraeteByNewData(MetaType mt, MetaBraceOrBracketStatementsContent mb)
+        public static MetaVisitNode CraeteByNewData(MetaType mt )
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.m_CallMetaType = mt;
-            vn.m_MetaBraceStatementsContent = mb;
+            //vn.m_MetaBraceStatementsContent = mb;
             vn.visitType = EVisitType.New;
 
             return vn;

@@ -14,8 +14,9 @@ namespace SimpleLanguage.Core
 {
     public sealed class MetaCallLink
     {
+        public List<MetaCallNode> callNodeList => m_CallNodeList;
         public MetaVisitNode finalCallNode => m_FinalCallNode;
-        public List<MetaVisitNode> callNodeList => m_VisitNodeList;
+        public List<MetaVisitNode> visitNodeList => m_VisitNodeList;
         public AllowUseSettings allowUseSettings { get; private set; }
 
         private FileMetaCallLink m_FileMetaCallLink;
@@ -247,7 +248,7 @@ namespace SimpleLanguage.Core
                         frontNode.ownerMetaFunctionBlock.AddMetaVariable(newmv);
                     }
 
-                    MetaVisitNode mvn1 = MetaVisitNode.CraeteByNewClass(frontNode.metaType, null, newmv);
+                    MetaVisitNode mvn1 = MetaVisitNode.CraeteByNewClass(frontNode.metaType, newmv);
                     m_VisitNodeList.Add(mvn1);
 
                     mmc = new MetaMethodCall(mcn.callMetaType.metaClass, mcn.callMetaType.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, mcn.metaInputParamCollection, newmv, mcn.storeMetaVariable);
@@ -284,7 +285,7 @@ namespace SimpleLanguage.Core
             {
                 if (index == m_CallNodeList.Count)
                 {
-                    MetaVisitNode mvn = MetaVisitNode.CraeteByNewClass(mcn.metaType, mcn.metaBraceStatementsContent, mcn.metaVariable);
+                    MetaVisitNode mvn = MetaVisitNode.CraeteByNewClass(mcn.metaType, mcn.metaVariable);
                     m_VisitNodeList.Add(mvn);
 
                     if (mcn.metaFunction != null)
@@ -308,7 +309,7 @@ namespace SimpleLanguage.Core
             }
             else if (mcn.callNodeType == ECallNodeType.NewData)
             {
-                MetaVisitNode mvn = MetaVisitNode.CraeteByNewData(mcn.metaType, mcn.metaBraceStatementsContent);
+                MetaVisitNode mvn = MetaVisitNode.CraeteByNewData(mcn.metaType);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.EnumName)

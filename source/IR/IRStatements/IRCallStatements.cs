@@ -23,7 +23,7 @@ namespace SimpleLanguage.IR.Statements
         public void ParseIRStatements(MetaCallStatements ms)
         {
             m_IRMc = new IRMetaCallLink();
-            m_IRMc.ParseToIRDataList(irMethod, ms.metaCallLink.callNodeList);
+            m_IRMc.ParseToIRDataList(irMethod, ms.metaCallLink.visitNodeList);
             m_IRStatements.AddRange(m_IRMc.irList);
         }
         public string ToIRString()
