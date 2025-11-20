@@ -20,6 +20,7 @@ namespace SimpleLanguage.VM
         public EType eType { get; set; } = EType.None;
         public IRMetaClass irClass;
         public List<RuntimeType> runtimeTemplateList = new List<RuntimeType>();
+        private IRMetaVariable m_TypeMetaVariable = null;
 
         private SObject[] m_StaticMemObjectList = null;
         public RuntimeType(IRMetaClass rc, List<RuntimeType > rtList )
@@ -515,8 +516,10 @@ namespace SimpleLanguage.VM
 
         private static List<RuntimeType> s_RuntimeList = new List<RuntimeType>();
         public static RuntimeType arrayRuntimeType => m_ArrayRuntimeType;
+        public static RuntimeType typeRuntimeType => m_TypeRuntimeType;
 
         private static RuntimeType m_ArrayRuntimeType = null;
+        private static RuntimeType m_TypeRuntimeType = null;
 
         public static RuntimeType GetRuntimeTypeByMT(IRMetaClass rmc )
         {
@@ -605,6 +608,10 @@ namespace SimpleLanguage.VM
             if( rmc.irName == "Array" )
             {
                 m_ArrayRuntimeType = rt;
+            }
+            if( rmc.irName == "Type" )
+            {
+                m_TypeRuntimeType = rt;
             }
 
             s_RuntimeList.Add(rt);
