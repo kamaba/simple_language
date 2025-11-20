@@ -553,6 +553,8 @@ namespace SimpleLanguage.Core
 #pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
             bool isAllSame = true;
 #pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
+
+            int frontOpLevel = 0;
             for (int i = 0; i < m_AssignStatementsList.Count - 1; i++)
             {
                 MetaBraceAssignStatements cmc = m_AssignStatementsList[i];
@@ -560,53 +562,59 @@ namespace SimpleLanguage.Core
 
                 var cmcmt = cmc.GetRetMetaType();
                 var nmcmt = nmc.GetRetMetaType();
-                //if( cmcmt.isArray )
-                //{
-                //    return CoreMetaClassManager.arrayMetaClass;
-                //}
-                //if( nmcmt.isArray )
-                //{
-                //    return CoreMetaClassManager.arrayMetaClass;
-                //}
-
-                if (cmc.opLevel == nmc.opLevel)
+                if( cmcmt.isArray && nmcmt.isArray && frontOpLevel < nmc.opLevel )
                 {
-                    if (cmc.opLevel == 10)
-                    {
-                        var cur = cmc.GetRetMetaClass();
-                        var next = nmc.GetRetMetaClass();
-                        var relation = ClassManager.ValidateClassRelationByMetaClass(cur, next);
-                        if (relation == ClassManager.EClassRelation.Same
-                            || relation == ClassManager.EClassRelation.Child)
-                        {
-                            mc = next;
-                        }
-                        else if (relation == ClassManager.EClassRelation.Parent)
-                        {
-                            mc = cur;
-                        }
-                        else
-                        {
-                            isAllSame = false;
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        mc = cmc.GetRetMetaClass();
-                        isAllSame = true;
-                    }
-
+                    mc = CoreMetaClassManager.arrayMetaClass;
+                    frontOpLevel = nmc.opLevel;
                 }
                 else
                 {
-                    if (cmc.opLevel > nmc.opLevel)
+                    if (cmc.opLevel == nmc.opLevel && nmc.opLevel > frontOpLevel)
                     {
-                        mc = cmc.GetRetMetaClass();
+                        if (cmc.opLevel == 10)
+                        {
+                            var cur = cmc.GetRetMetaClass();
+                            var next = nmc.GetRetMetaClass();
+                            var relation = ClassManager.ValidateClassRelationByMetaClass(cur, next);
+                            if (relation == ClassManager.EClassRelation.Same
+                                || relation == ClassManager.EClassRelation.Child)
+                            {
+                                mc = next;
+                                frontOpLevel = cmc.opLevel;
+                            }
+                            else if (relation == ClassManager.EClassRelation.Parent)
+                            {
+                                mc = cur;
+                            }
+                            else
+                            {
+                                isAllSame = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            mc = cmc.GetRetMetaClass();
+                            frontOpLevel = cmc.opLevel;
+                            isAllSame = true;
+                        }
+
                     }
                     else
                     {
-                        mc = nmc.GetRetMetaClass();
+                        if (nmc.opLevel > frontOpLevel)
+                        {
+                            if (cmc.opLevel > nmc.opLevel)
+                            {
+                                frontOpLevel = cmc.opLevel;
+                                mc = cmc.GetRetMetaClass();
+                            }
+                            else
+                            {
+                                frontOpLevel = nmc.opLevel;
+                                mc = nmc.GetRetMetaClass();
+                            }
+                        }
                     }
                 }
             }

@@ -25,7 +25,8 @@ namespace SimpleLanguage.IR
         Double,
         String,
         Array,
-        Pointer,
+        Any,
+        Class,
     }
     public class IRNewArray
     {

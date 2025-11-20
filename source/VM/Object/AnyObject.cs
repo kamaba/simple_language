@@ -22,6 +22,7 @@ namespace SimpleLanguage.VM
         }
         public void SetValue( EType _eType, System.Object val )
         {
+            m_IsNull = false;
             m_Etype = _eType;
             value = val;
             m_IsVoid = false;

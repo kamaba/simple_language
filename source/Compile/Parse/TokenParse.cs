@@ -112,18 +112,21 @@ namespace SimpleLanguage.Compile
             if (currentNode.linkToken != null)
             {
                 var ntoken = new Token(token);
-                string nvar = token.extend.ToString();
-                
-                ntoken.SetLexeme(token.extend);
+                string nvar = token.extend.ToString();                
 
                 Node node = new Node( ntoken );
                 if (Regex.IsMatch(nvar, @"^\d+$"))
                 {
+                    int lex = 0;
+                    int.TryParse(nvar, out lex);
+                    ntoken.SetLexeme(lex);
                     ntoken.SetType(ETokenType.Number);
+                    ntoken.SetExtend(EType.Int32);
                     node.nodeType = ENodeType.ConstValue;
                 }
                 else
                 {
+                    ntoken.SetLexeme(token.extend);
                     ntoken.SetType(ETokenType.Identifier);
                     node.nodeType = ENodeType.IdentifierLink;
                 }
