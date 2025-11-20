@@ -74,7 +74,8 @@ namespace Core
     }
     public class Type
     {
-        public int length = 4
+        public MetaClass kc = null
+        #public List<Type> typelist = null
     }    
     public class Array
     {
@@ -139,6 +140,10 @@ ArrayTest
     {
         int i = 0;
     }
+    Level<T>
+    {
+
+    }
     static fun()
     {  
         #!
@@ -164,8 +169,8 @@ ArrayTest
         System.Console.WriteLine("1111111111= " + aaaa34v )
         !#
 
-
         var ac = ArrClass(){ i = 30 }
+        #!
         a35 = [[0,1,2,ac,4],[[11,12],[13,14]]];
         # a35[0] = [0,1,2,3,4] a35[1] = [[1,2,3],[2,3,4],[4,5,6],[7,8,9]]  a34[1][0][2] = 3  a35是个一维两值数组，访问a35[1] 是确定对象访问 再访问 是一个二维纯int数组，然后是a35[1][0][2] 后边两位是纯数组访问
         aa = 0
@@ -174,14 +179,31 @@ ArrayTest
         a35.$1.$aa.$1 = 3000;  相当于  a35[1][3] = 3000        
         System.Console.WriteLine("1111111111= " + a35.$1.$aa.$1 )
 
-        #!
-        aa = 0
-        #var aa1111 = a35.$aa.$3.i;
-        #a35.$aa.$3.i = 100
+        var tt1 = a35.$aa.$3
+        if tt1 is ArrClass tt2 
+        {
+            tt2.i = 200
+            var aa1111 = tt2.i;
+            System.Console.WriteLine("22222222= " +aa1111 )
+        }
+        !#
         
-        #array arr = []
-        #array arr = Array( 10, object.type )
+        #!
+        array arr = [1,2,3]
+        System.Console.WriteLine("22222222= " +arr[1] )
+        !#
 
+        Type t = int.type
+        #Type t2 = ArrClass.type
+        #Type t3 = ac.type
+
+        #Type t = Level<int>.type
+
+        #array arr = Array( 10, int.type )
+        #arr[2] = 100
+        #System.Console.WriteLine("22222222= " +arr[2] )
+
+        #!
         object[][] a42 = [[1.2,1.3,1.4,1.5],[3,4,5]];    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于  
         #Array( 2, Array.type ){ Array(5, float.type ){ 1.2, 1.3, 1.4, 1.5 }, Array( 3, int.tye ){3,4,5}   } 
         #!
@@ -192,6 +214,8 @@ ArrayTest
 
         int[][][] a = [[1,2,3,4],[5,6,7,8]]   # 为交错数组，本语言不支持多维数组，需要自己封装 
         a[1][1][1] = 12    #这种情况，需要拿到 先拿第一维的数组，然后再拿第一维中第一组，
+        ArrClass[][] arrclass1 = new(10,10);
+        arrClass2 = ArrClass[10][10][];
         avalue222 = a[1,1,1]
              
         

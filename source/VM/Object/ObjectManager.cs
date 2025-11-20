@@ -105,6 +105,11 @@ namespace SimpleLanguage.VM
                 sobj = new ArrayObject( EArrayType.Array, new IRMetaType(rt.irClass), 0 );
                 sobj.typeId = 0;
             }
+            else if( name == "Core.Type" || name == "Type" )
+            {
+                sobj = new ClassObject( rt );
+                sobj.typeId = 0;
+            }
             else
             {
                 var co = new ClassObject(rt);

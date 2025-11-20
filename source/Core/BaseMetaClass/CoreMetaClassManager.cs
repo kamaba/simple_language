@@ -59,6 +59,7 @@ namespace SimpleLanguage.Core
         public static MetaClass objectMetaClass { get; private set; } = null;
         public static MetaClass stringMetaClass { get; private set; } = null;
         public static MetaClass voidMetaClass { get; set; } = null;
+        public static MetaClass typeMetaClass { get; set; } = null;
         public static MetaClass booleanMetaClass { get; private set; } = null;
         //public static MetaClass charMetaClass { get; private set; } = null;
         public static MetaClass byteMetaClass { get; private set; } = null;
@@ -104,6 +105,7 @@ namespace SimpleLanguage.Core
             dynamicMetaClass = DynamicMetaClass.CreateMetaClass();
             dynamicMetaData = DynamicMetaData.CreateMetaClass();
             enumMetaData = EnumMetaClass.CreateMetaClass();
+            typeMetaClass = TypeMetaClass.CreateMetaClass();
 
             s_InnerDefineMetaClassList.Add(objectMetaClass);
             s_InnerDefineMetaClassList.Add(voidMetaClass);
@@ -126,6 +128,7 @@ namespace SimpleLanguage.Core
             s_InnerDefineMetaClassList.Add(dynamicMetaClass);
             s_InnerDefineMetaClassList.Add(dynamicMetaData);
             s_InnerDefineMetaClassList.Add(enumMetaData);
+            s_InnerDefineMetaClassList.Add(typeMetaClass); 
         }
         public void Init()
         {
@@ -248,6 +251,8 @@ namespace SimpleLanguage.Core
                     return DefaultObject.Dynamic.ToString();
                 case "data":
                     return DefaultObject.Data.ToString();
+                case "array":
+                    return DefaultObject.Array.ToString();
                 default:return name;
             }
         }

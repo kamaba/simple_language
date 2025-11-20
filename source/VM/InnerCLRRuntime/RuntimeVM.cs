@@ -668,13 +668,26 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(mfc.metaType.irMetaClass, classRTList);
                         }
-
-                        for ( int i = 0; i < mfc.irTemplateMetaType.Count; i++ )
+                        
+                        if( mfc.irMethod.virtualFunctionName == "type" )
                         {
-                            var crt = GetMethodRuntimeType(mfc.irTemplateMetaType[i]);
-                            classRTList.Add(crt);
+                            SObject sob = ObjectManager.CreateObjectByRuntimeType( RuntimeTypeManager.typeRuntimeType, true);
+                            if (sob is ClassObject co)
+                            {
+                                ObjectManager.AddClassObject(co);
+                            }
+                            m_ValueStack[m_ValueIndex++].SetSObject(sob);
                         }
-                        InnerCLRRuntimeVM.RunIRMethod( classRTList, mfc.irMethod );
+                        else
+                        {
+                            for (int i = 0; i < mfc.irTemplateMetaType.Count; i++)
+                            {
+                                var crt = GetMethodRuntimeType(mfc.irTemplateMetaType[i]);
+                                classRTList.Add(crt);
+                            }
+                            InnerCLRRuntimeVM.RunIRMethod(classRTList, mfc.irMethod);
+                        }
+
                     }
                     break;
                 case EIROpCode.CallDynamic:

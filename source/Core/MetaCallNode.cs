@@ -541,6 +541,10 @@ namespace SimpleLanguage.Core
                             }
                         }
                     }
+                    else if( frontCNT == ECallNodeType.TypeName )
+                    {
+                        HandleGetTypeByMetaType(m_FrontCallNode.metaType);
+                    }
                     else if (frontCNT == ECallNodeType.ClassName
                         || frontCNT == ECallNodeType.MetaType )
                     {
@@ -1287,6 +1291,17 @@ namespace SimpleLanguage.Core
 
                 }
             }
+        }
+        void HandleGetTypeByMetaType( MetaType mc )
+        {
+            m_MetaFunction = new MetaFunction( mc.metaClass );
+            m_MetaType = new MetaType(CoreMetaClassManager.typeMetaClass);
+            m_CallMetaType = new MetaType(mc);
+            m_CallNodeType = ECallNodeType.MemberFunctionName;
+        }
+        void HandleGetTypeByMetaVariable( MetaVariable mv )
+        {
+
         }
         public bool GetFirstNode(string inputname, MetaClass mc, int count )
         {
