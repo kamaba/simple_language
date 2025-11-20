@@ -141,8 +141,8 @@ ArrayTest
     }
     static fun()
     {  
-        int intvalue = 20
         #!
+        int intvalue = 20
         a1 = [intvalue,1];    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         a1._setValue_( 1, 123 )
         aa = a1._getValue_(1)
@@ -166,16 +166,17 @@ ArrayTest
 
 
         var ac = ArrClass(){ i = 30 }
-        a35 = [[0,1,2,ac,4],[[11,12],[13,14],[15,16],[17,18]]];
+        a35 = [[0,1,2,ac,4],[[11,12],[13,14]]];
         # a35[0] = [0,1,2,3,4] a35[1] = [[1,2,3],[2,3,4],[4,5,6],[7,8,9]]  a34[1][0][2] = 3  a35是个一维两值数组，访问a35[1] 是确定对象访问 再访问 是一个二维纯int数组，然后是a35[1][0][2] 后边两位是纯数组访问
         aa = 0
-        var aaaa35111 = a35.$aa.$1
-        System.Console.WriteLine("1111111111= " + aaaa35111 )
-        # a35.$aa.$1.$1 = 3000;  相当于  a35[1][3] = 3000        
-        #System.Console.WriteLine("1111111111= " + a35.$aa.$1.$1 )
+        #var aaaa35111 = a35.$aa.$1
+        #System.Console.WriteLine("1111111111= " + aaaa35111 )
+        a35.$1.$aa.$1 = 3000;  相当于  a35[1][3] = 3000        
+        System.Console.WriteLine("1111111111= " + a35.$1.$aa.$1 )
 
         #!
-        #var aaa35val = a35.$aa.$3.i;
+        aa = 0
+        #var aa1111 = a35.$aa.$3.i;
         #a35.$aa.$3.i = 100
         
         #array arr = []

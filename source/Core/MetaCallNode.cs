@@ -281,22 +281,13 @@ namespace SimpleLanguage.Core
                     || frontCNT == ECallNodeType.MemberVariableName
                     || frontCNT == ECallNodeType.VisitVariable)
                 {
-                    MetaVariable mv = m_FrontCallNode.m_MetaVariable;
-                    if (mv.isArray)   //Array.
+                    m_ExpressNode = new MetaConstExpressNode(m_Token.GetEType(), m_Token.lexeme);
+                    // Array1.$0.x   Array1.1.x;
+                    if ( isAt )                  //Array.$
                     {
-                        // Array1.$0.x   Array1.1.x;
-                        if ( isAt )                  //Array.$
-                        {
-                            isNotConstValue = true;
-                            m_ExpressNode = new MetaConstExpressNode(m_Token.GetEType(), m_Token.lexeme);
-                            HandleVisit();
-                        }
-                        else
-                        {
-                            //Array1.0.x 不允许
-                            Log.AddInStructMeta(EError.None, "Error 在Array.后边如果使用变量或者是数字常量，必须使用Array.$方式!!");
-                        }
-                    }
+                        isNotConstValue = true;
+                        HandleVisit();
+                    }             
                 }
                 else if (frontCNT == ECallNodeType.MemberDataName)
                 {
@@ -1282,7 +1273,7 @@ namespace SimpleLanguage.Core
                     }
                     else if( m_ExpressNode is MetaConstExpressNode mcen )
                     {
-                        m_MetaVariable = new MetaVisitVariable(mcen.value.ToString(), m_OwnerMetaClass, m_OwnerMetaFunctionBlock, variable, mcen );
+                        m_MetaVariable = new MetaVisitVariable("Visit_" + mcen.value.ToString(), m_OwnerMetaClass, m_OwnerMetaFunctionBlock, variable, mcen );
 
                         m_CallNodeType = ECallNodeType.VisitVariable;
                     }

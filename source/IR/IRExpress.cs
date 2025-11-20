@@ -288,23 +288,63 @@ namespace SimpleLanguage.IR
             {
                 IRNewArray irnewArray = new IRNewArray();
                 EArrayType arrayType = EArrayType.Int32;
-                if(mnoen.arrayType.isArray )
+                if(mnoen.arrayType.metaClass == CoreMetaClassManager.arrayMetaClass )
                 {
                     arrayType = EArrayType.Array;
                 }
                 else
                 {
-                    if (mnoen.arrayType.metaClass == CoreMetaClassManager.int32MetaClass)
+                    if (mnoen.arrayType.metaClass == CoreMetaClassManager.byteMetaClass)
+                    {
+                        arrayType = EArrayType.Byte;
+                    }
+                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.sbyteMetaClass)
+                    {
+                        arrayType = EArrayType.SByte;
+                    }
+                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.int16MetaClass)
+                    {
+                        arrayType = EArrayType.Int16;
+                    }
+                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.uint16MetaClass)
+                    {
+                        arrayType = EArrayType.UInt16;
+                    }
+                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.int32MetaClass)
                     {
                         arrayType = EArrayType.Int32;
+                    }
+                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.uint32MetaClass)
+                    {
+                        arrayType = EArrayType.UInt32;
+                    }
+                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.int64MetaClass)
+                    {
+                        arrayType = EArrayType.Int64;
+                    }
+                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.uint64MetaClass)
+                    {
+                        arrayType = EArrayType.UInt64;
+                    }
+                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.float32MetaClass)
+                    {
+                        arrayType = EArrayType.Single;
+                    }
+                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.float64MetaClass)
+                    {
+                        arrayType = EArrayType.Double;
                     }
                     else if (mnoen.arrayType.metaClass == CoreMetaClassManager.stringMetaClass)
                     {
                         arrayType = EArrayType.String;
                     }
+                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.objectMetaClass)
+                    {
+                        arrayType = EArrayType.Any;
+                    }
                     else
                     {
-                        arrayType = EArrayType.Pointer;
+                        arrayType = EArrayType.Class;
                     }
                 }
                 irnewArray.eArrayType = arrayType;
