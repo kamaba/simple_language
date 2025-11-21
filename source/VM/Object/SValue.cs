@@ -31,10 +31,12 @@ namespace SimpleLanguage.VM
         public bool isNull;
         public void SetNullValue()
         {
+            SetNull();
             eType = EType.Null;
         }
         public void SetBoolValue( bool val )
         {
+            isNull = false;
             eType = EType.Boolean;
             int8Value = val ? (byte)1 : (byte)0;
         }
@@ -50,11 +52,13 @@ namespace SimpleLanguage.VM
         {
             eType = EType.Byte;
             int8Value = val;
+            isNull = false;
         }
         public void SetSInt8Value(sbyte val)
         {
             eType = EType.SByte;
             sint8Value = val;
+            isNull = false;
         }
         //public void SetCharValue(char val)
         //{
@@ -65,26 +69,31 @@ namespace SimpleLanguage.VM
         {
             eType = EType.Int16;
             int16Value = val;
+            isNull = false;
         }
         public void SetUInt16Value(UInt16 val)
         {
             eType = EType.UInt16;
             uint16Value = val;
+            isNull = false;
         }
         public void SetInt32Value(Int32 val)
         {
             eType = EType.Int32;
             int32Value = val;
+            isNull = false;
         }
         public void SetUInt32Value(UInt32 val)
         {
             eType = EType.UInt32;
             uint32Value = val;
+            isNull = false;
         }
         public void SetInt64Value(Int64 val)
         {
             eType = EType.Int64;
             int64Value = val;
+            isNull = false;
         }
         public void SetUInt64Value(UInt64 val)
         {
@@ -95,21 +104,25 @@ namespace SimpleLanguage.VM
         {
             eType = EType.Float32;
             floatValue = val;
+            isNull = false;
         }
         public void SetDoubleValue(Double val)
         {
             eType = EType.Float64;
             doubleValue = val;
+            isNull = false;
         }
         public void SetStringValue(string val)
         {
             eType = EType.String;
             stringValue = val;
+            isNull = false;
         }
         public void SetArrayValue( ArrayObject arrobj )
         {
             eType = EType.Array;
             arrayValue = arrobj;
+            isNull = false;
         }
         public void ConvertByEType(EType neType )
         {
@@ -189,6 +202,7 @@ namespace SimpleLanguage.VM
                     }
                     break;
             }
+            isNull = false;
         }
         public Object GetValueObject()
         {
@@ -252,6 +266,10 @@ namespace SimpleLanguage.VM
         public void SetSObject(SObject val)
         {
             isNull = val.isNull;
+            if( isNull )
+            {
+                return;
+            }
             switch( val )
             {
                 case BoolObject boolobj:

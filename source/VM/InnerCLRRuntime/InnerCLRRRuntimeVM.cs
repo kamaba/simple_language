@@ -115,7 +115,7 @@ namespace SimpleLanguage.VM.Runtime
             clrRuntime.isPersistent = true;
             clrRuntime.id = "InnverCLRRuntimeVM.CLRRuntime.EntryMethod()";
             InnerCLRRuntimeVM.PushCLRRuntime(clrRuntime);
-            clrRuntime.Run();
+            clrRuntime.Run(true);
         }
         public static void StoreGlobalVariable( int id, ref SValue savl )
         {
@@ -173,11 +173,11 @@ namespace SimpleLanguage.VM.Runtime
                 Log.AddVM(EError.None, "没有找到全局变量的映射关系!");
             }
         }
-        public static void RunIRMethod( List<RuntimeType> irmtList, IRMethod _irMethod )
+        public static void RunIRMethod( List<RuntimeType> irmtList, IRMethod _irMethod, bool isDisCountStackCount = true )
         {
             topCLRRuntime = m_ClrRuntimeStack.Peek();
             RuntimeVM clrRuntime = InnerCLRRuntimeVM.CreateCLRRuntime( irmtList, _irMethod );
-            clrRuntime.Run();
+            clrRuntime.Run(isDisCountStackCount);
             InnerCLRRuntimeVM.PopCLRRuntime();
             var topt2 = m_ClrRuntimeStack.Peek();
             topt2.AddReturnObjectArray(clrRuntime.returnObjectArray);
@@ -190,7 +190,7 @@ namespace SimpleLanguage.VM.Runtime
             topCLRRuntime = m_ClrRuntimeStack.Peek();
             RuntimeVM clrRuntime = InnerCLRRuntimeVM.CreateExeSplite(irmtList, irlist );
             clrRuntime.SetNewObject();
-            clrRuntime.Run();
+            clrRuntime.Run(true);
             clrRuntime.ClearNewObject();
             InnerCLRRuntimeVM.PopCLRRuntime();
             

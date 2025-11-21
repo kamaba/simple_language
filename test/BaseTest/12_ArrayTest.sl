@@ -72,10 +72,56 @@ namespace Core
 
         }
     }
+    public enum EType
+    {
+        None,
+        Null,
+        Void,
+        Class,
+        Enum,
+        Data,
+        Boolean,
+        Bit,
+        Byte,
+        SByte,
+        Int16,
+        UInt16,
+        Int32,
+        UInt32,
+        Float16,
+        Float32,
+        Int64,
+        UInt64,
+        Float64,
+        Int128,
+        UInt128,
+        Array,
+        Range,
+        String,
+        Object,
+        Float2,
+    }
+    public class MetaClass
+    {
+        _namespaceName = "";
+        _className = "";
+
+        get string className(){ ret this._className; }
+    }
     public class Type
     {
-        public MetaClass kc = null
-        #public List<Type> typelist = null
+        int _hashCode = 0
+        EType _eType = EType.None
+        MetaClass _metaClass = null
+        public Type[] typelist = new()
+
+        override string toString()
+        {
+            if( this._metaClass == null )
+                ret "no_meta_class"
+
+            ret this._metaClass.className;
+        }
     }    
     public class Array
     {
@@ -194,8 +240,13 @@ ArrayTest
         !#
 
         Type t = int.type
-        #Type t2 = ArrClass.type
+        Type t2 = ArrClass.type
         #Type t3 = ac.type
+
+        if t == t2 
+        {
+            System.Console.WriteLine("22222222= " t2.toString() )
+        }
 
         #Type t = Level<int>.type
 

@@ -218,6 +218,7 @@ namespace SimpleLanguage.Core
         public bool isEqualType { get; set; } = false;
         public MetaExpressNode left => m_Left;
         public MetaExpressNode right => m_Right;
+        public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
         public ELeftRightOpSign opSign => m_OpLevelSign;
         public ConvertType leftConvert => m_LeftConvert;
         public ConvertType rightConvert => m_RightConvert;
@@ -228,6 +229,7 @@ namespace SimpleLanguage.Core
         private ConvertType m_RightConvert = null;
         private ELeftRightOpSign m_OpLevelSign;
         private Token m_SignToken = null;
+        private MetaMemberFunction m_MetaMemberFunction = null;
 
         private FileMetaSymbolTerm m_FileMetaBaseTerm = null;
         public MetaOpExpressNode(FileMetaSymbolTerm fme, MetaType mt, MetaExpressNode _left, MetaExpressNode _right )
@@ -418,7 +420,7 @@ namespace SimpleLanguage.Core
                 //m_Left.metaDefineType.SetMetaClass(m_MetaDefineType.metaClass);
                 //m_Left.CalcReturnType();
 
-                if( m_Right.opLevel < 10 )
+                if (m_Right.opLevel < 10)
                 {
                     m_LeftConvert = new ConvertType()
                     {
@@ -433,7 +435,7 @@ namespace SimpleLanguage.Core
                 //MetaType newmt = new MetaType(m_MetaDefineType.metaClass);
                 //m_Right.SetMetaType(newmt);
                 //m_Right.CalcReturnType();
-                if( m_Left.opLevel < 10 )
+                if (m_Left.opLevel < 10)
                 {
                     m_RightConvert = new ConvertType()
                     {
@@ -445,6 +447,13 @@ namespace SimpleLanguage.Core
             else
             {
                 m_MetaDefineType = m_Left.metaDefineType;
+                if (ClassManager.IsNumberClass(m_Left.metaDefineType.metaClass)
+                    && ClassManager.IsNumberClass(m_Right.metaDefineType.metaClass)
+                    || m_Left.metaDefineType.metaClass == CoreMetaClassManager.stringMetaClass
+                    || m_Right.metaDefineType.metaClass == CoreMetaClassManager.stringMetaClass ) 
+                {
+
+                }
             }
         }
         public void ParseDivide()

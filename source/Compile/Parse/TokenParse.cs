@@ -558,6 +558,7 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Public:
                 case ETokenType.Projected:
                 case ETokenType.Private:
+                case ETokenType.Operator:
                     {
                         AddKeyNode(token);
                     }

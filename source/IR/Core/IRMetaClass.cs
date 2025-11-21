@@ -30,6 +30,7 @@ namespace SimpleLanguage.IR
         private List<IRMetaVariable> m_LocalIRMetaVariableList = new List<IRMetaVariable>();
         private List<IRMetaVariable> m_StaticIRMetaVariableList = new List<IRMetaVariable>();
         private List<IRMethod> m_IRNotStaticMethodList = new List<IRMethod>();
+        private List<IRMethod> m_IROperatorMethodList = new List<IRMethod>();
         private string m_IRName = "";
         private MetaClass m_MetaClass = null;
 
@@ -54,7 +55,7 @@ namespace SimpleLanguage.IR
             }
             return m_IRNotStaticMethodList[index];
         }
-        public IRMethod GetIRNonStaticMethodIndexByMethod(string name, out int index )
+        public IRMethod GetIRNonStaticMethodIndexByMethod(string name, out int index)
         {
             index = -1;
             for (int i = 0; i < m_IRNotStaticMethodList.Count; i++)
@@ -63,6 +64,19 @@ namespace SimpleLanguage.IR
                 {
                     index = i;
                     return m_IRNotStaticMethodList[i];
+                }
+            }
+            return null;
+        }
+        public IRMethod GetIROperatorMethodIndexByMethod( string name, out int index )
+        {
+            index = -1;
+            for (int i = 0; i < m_IROperatorMethodList.Count; i++)
+            {
+                if (m_IROperatorMethodList[i].onlyFunctionName == name)
+                {
+                    index = i;
+                    return m_IROperatorMethodList[i];
                 }
             }
             return null;
@@ -193,7 +207,27 @@ namespace SimpleLanguage.IR
                 var mf = nonsmflist[i];
                 mf.UpdateVritualFunctionName();
                 var gmf = IRManager.instance.TranslateIRByFunction(mf);
-                m_IRNotStaticMethodList.Add(gmf);
+                if( mf.name == "_add_"
+                    || mf.name == "_sub_"
+                    || mf.name == "_mul_"
+                    || mf.name == "_truediv_"
+                    || mf.name == "_mod_"
+                    || mf.name == "_iadd_"
+                    || mf.name == "_imul_"
+                    || mf.name == "_itruediv_"
+                    || mf.name == "_lt_"
+                    || mf.name == "_le_"
+                    || mf.name == "_gt_"
+                    || mf.name == "_ge_"
+                    || mf.name == "_eq_"
+                    || mf.name == "_ne_" )
+                {
+                    m_IROperatorMethodList.Add(gmf);
+                }
+                else
+                {
+                    m_IRNotStaticMethodList.Add(gmf);
+                }
                 IRManager.instance.AddIRMethod(gmf);
             }
         }

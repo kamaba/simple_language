@@ -143,6 +143,10 @@ namespace SimpleLanguage.Core
             }
             this.m_MetaTemplateClassDict.Add(mc.metaTemplateList.Count, mc);
         }
+        public void UpdateAllName()
+        {
+            m_AllName = "";
+        }
         public string GetAllName()
         {
             StringBuilder sb = new StringBuilder();

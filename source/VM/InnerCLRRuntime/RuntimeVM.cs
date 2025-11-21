@@ -24,7 +24,7 @@ namespace SimpleLanguage.VM.Runtime
         public SObject[] returnObjectArray => m_ReturnObjectArray;
 
         private SValue[] m_ValueStack = null;
-        private ushort m_ValueIndex = 0;
+        public ushort m_ValueIndex = 0;
 
         private List<RuntimeType> m_InputTemplateRuntimeTypeList = new List<RuntimeType>();
         private SObject[] m_LocalVariableObjectArray = null;
@@ -157,7 +157,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             for( int i = 0; i < sobjs.Length; i++ )
             {
-                if( !sobjs[i].isVoid )
+                if( sobjs[i].runtimeType != RuntimeTypeManager.voidRuntimeType )
                 {
                     m_ValueStack[m_ValueIndex++].SetSObject(sobjs[i]);
                 }
@@ -214,17 +214,9 @@ namespace SimpleLanguage.VM.Runtime
             }
             ObjectManager.SetObjectByValue(m_ReturnObjectArray[index], ref svalue);
         }
-        public SValue GetCurrentIndexValue( bool isRecude )
+        public SValue GetCurrentIndexValue( int index  )
         {
-            if(isRecude)
-            {
-                m_ValueIndex--;
-                return m_ValueStack[m_ValueIndex];
-            }
-            else
-            {
-                return m_ValueStack[m_ValueIndex-1];
-            }
+            return m_ValueStack[index];
         }
         public static RuntimeType GetClassRuntimeType(IRMetaType irmt, IRMetaClass curIRMc, List<RuntimeType> __rtList, bool isAdd = false )
         {
@@ -283,7 +275,7 @@ namespace SimpleLanguage.VM.Runtime
         }
         public void SetNewObject()
         {
-            SValue sval = InnerCLRRuntimeVM.topCLRRuntime.GetCurrentIndexValue(false);
+            SValue sval = InnerCLRRuntimeVM.topCLRRuntime.GetCurrentIndexValue(m_ValueIndex-1);
             m_ValueStack[m_ValueIndex++] = sval;
             m_IRMetaClass = sval.sobject?.irMetaClass;
         }
@@ -291,7 +283,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             m_IRMetaClass = null;
         }
-        public void Run()
+        public void Run(bool disStackCount)
         {
             string funName = id;
 
@@ -306,7 +298,16 @@ namespace SimpleLanguage.VM.Runtime
             var topClrRuntime = InnerCLRRuntimeVM.topCLRRuntime;
             for ( int i = 0; i < m_ArgumentObjectArray.Length; i++ )
             {
-                SValue sval = topClrRuntime.GetCurrentIndexValue(true);
+                SValue sval;
+                if ( disStackCount )
+                {
+                    topClrRuntime.m_ValueIndex--;
+                    sval = topClrRuntime.GetCurrentIndexValue(topClrRuntime.m_ValueIndex);
+                }
+                else
+                {
+                    sval = topClrRuntime.GetCurrentIndexValue(topClrRuntime.m_ValueIndex - 1 - i);
+                }
                 SetArgumentValue(m_ArgumentObjectArray.Length - i - 1, sval);
             }
 
@@ -669,14 +670,10 @@ namespace SimpleLanguage.VM.Runtime
                             rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(mfc.metaType.irMetaClass, classRTList);
                         }
                         
-                        if( mfc.irMethod.virtualFunctionName == "type" )
+                        if( mfc.irMethod.id == "type" )
                         {
-                            SObject sob = ObjectManager.CreateObjectByRuntimeType( RuntimeTypeManager.typeRuntimeType, true);
-                            if (sob is ClassObject co)
-                            {
-                                ObjectManager.AddClassObject(co);
-                            }
-                            m_ValueStack[m_ValueIndex++].SetSObject(sob);
+                            var sobj = RuntimeTypeManager.CreateTypeObject(rt);
+                            m_ValueStack[m_ValueIndex++].SetSObject(sobj);
                         }
                         else
                         {
@@ -694,6 +691,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         var mfc = iri.opValue as IRMethodCall;
 
+                        RuntimeType rt = null;
                         IRMetaClass irc = null;
                         if (iri.index > -1)
                         {
@@ -704,7 +702,7 @@ namespace SimpleLanguage.VM.Runtime
                                 return;
                             }
                             var v = m_ValueStack[stackIndex];
-
+                            rt = v.sobject.runtimeType;
                             if (v.eType == EType.Class)
                             {
                                 var co = (v.sobject as ClassObject);
@@ -719,12 +717,26 @@ namespace SimpleLanguage.VM.Runtime
                                 Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
                                 return;
                             }
+                            if (mfc.irMethod.id == "type")
+                            {
+                                var sobj = RuntimeTypeManager.CreateTypeObject(rt);
+                                m_ValueStack[m_ValueIndex++].SetSObject(sobj);
+                            }
+                            else
+                            {
+                                List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
+                                for (int i = 0; i < mfc.irTemplateMetaType.Count; i++)
+                                {
+                                    var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], irc, rt.runtimeTemplateList, true);
+                                    rtList.Add(crt);
+                                }
+                                InnerCLRRuntimeVM.RunIRMethod(rtList, mfc.irMethod );
+                            }
                         }
                         else
                         {
-                                Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
+                            Log.AddVM(EError.None, "调用栈上动态函数");
                         }
-                        //InnerCLRRuntimeVM.RunIRMethod(mfc.metaType, mfc.metaTypeList, mfc.irMethod);
                     }
                     break;
                 case EIROpCode.CallVirt:
@@ -903,8 +915,16 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 加法运算!!超出的栈范围");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex-2].AddSValue(ref m_ValueStack[m_ValueIndex-1], false );
-                        m_ValueIndex--;
+                        m_ValueStack[m_ValueIndex-2].AddSValue(ref m_ValueStack[m_ValueIndex-1], false, out bool isMethod );
+                        if( isMethod )
+                        {
+                            m_ValueStack[m_ValueIndex - 3] = m_ValueStack[m_ValueIndex - 1];
+                            m_ValueIndex -= 2;
+                        }
+                        else
+                        {
+                            m_ValueIndex--;
+                        }
                     }
                     break;
                 case EIROpCode.Minus:
@@ -1040,7 +1060,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex - 2].CompareSValue(m_ValueStack[m_ValueIndex - 1], 4, false);
+                        SValue.CompareSValue1AndValue2( ref m_ValueStack[m_ValueIndex - 2],ref  m_ValueStack[m_ValueIndex - 1], 4 );
                         m_ValueIndex--;
                     }
                     break;
@@ -1051,7 +1071,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex - 2].CompareSValue(m_ValueStack[m_ValueIndex - 1], 5, false);
+                        SValue.CompareSValue1AndValue2(ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], 6 );
                         m_ValueIndex--;
                     }
                     break;
@@ -1062,7 +1082,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex - 2].CompareSValue(m_ValueStack[m_ValueIndex - 1], 0, false);
+                        SValue.CompareEuqalSValue1AndValue2( ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], true );
                         m_ValueIndex--;
                     }
                     break;
@@ -1073,7 +1093,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex - 2].CompareSValue(m_ValueStack[m_ValueIndex - 1], 1, false);
+                        SValue.CompareEuqalSValue1AndValue2(ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], false);
                         m_ValueIndex--;
                     }
                     break;
@@ -1084,7 +1104,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex - 2].CompareSValue(m_ValueStack[m_ValueIndex - 1], 2, false );
+                        SValue.CompareEuqalSValue1AndValue2( ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], false );
                         m_ValueIndex--;
                     }
                     break;
@@ -1095,7 +1115,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex - 2].CompareSValue(m_ValueStack[m_ValueIndex - 1], 2, true);
+                        SValue.CompareSValue1AndValue2(ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], 2);
                         m_ValueIndex--;
                     }
                     break;
@@ -1106,7 +1126,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex - 2].CompareSValue(m_ValueStack[m_ValueIndex - 1], 3, false );
+                        SValue.CompareSValue1AndValue2(ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], 1);
                         m_ValueIndex--;
                     }
                     break;
@@ -1117,7 +1137,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex - 2].CompareSValue(m_ValueStack[m_ValueIndex - 1], 3, true);
+                        SValue.CompareSValue1AndValue2(ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], 1);
                         m_ValueIndex--;
                     }
                     break;
@@ -1134,18 +1154,25 @@ namespace SimpleLanguage.VM.Runtime
 
                         var v1 = m_ValueStack[m_ValueIndex-1];
 
-                        if( v1.eType == EType.Class )
+                        if( v1.isNull )
                         {
-                            if (!v1.sobject.runtimeType.IsExtendsRelation(rt))
-                            {
-                                m_ValueStack[m_ValueIndex - 1].SetNull();
-                            }
+                            m_ValueStack[m_ValueIndex - 1].SetNull();
                         }
                         else
-                        {                            
-                            if (v1.eType != rt.eType )
+                        {
+                            if (v1.eType == EType.Class)
                             {
-                                m_ValueStack[m_ValueIndex - 1].SetNull();
+                                if (!v1.sobject.runtimeType.IsExtendsRelation(rt))
+                                {
+                                    m_ValueStack[m_ValueIndex - 1].SetNull();
+                                }
+                            }
+                            else
+                            {
+                                if (v1.eType != rt.eType)
+                                {
+                                    m_ValueStack[m_ValueIndex - 1].SetNull();
+                                }
                             }
                         }
                     }

@@ -6,6 +6,8 @@
 //  Description:  compute left and right value's method example: +-*/%&|^>><<
 //****************************************************************************
 
+using SimpleLanguage.VM.Runtime;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace SimpleLanguage.VM
@@ -317,8 +319,9 @@ namespace SimpleLanguage.VM
                     break;
             }
         }
-        public void AddSValue(ref SValue sval, bool isUnsign )
+        public void AddSValue(ref SValue sval, bool isUnsign, out bool isMethodCall )
         {
+            isMethodCall = false;
             if (sval.eType == EType.String)
             {
                 stringValue = this.GetValueObject().ToString() + sval.GetValueObject().ToString();
@@ -328,9 +331,29 @@ namespace SimpleLanguage.VM
                 eType = EType.String;
                 stringValue = GetValueObject().ToString() + sval.GetValueObject().ToString();
             }
+            else if( this.eType == EType.Array )
+            {
+                // 处理array1 + array2
+            }
             else
             {
-                ComputeSVAlue(0,ref sval, isUnsign);
+                if( this.eType == EType.Class )
+                {
+                    ClassObject co = sval.sobject as ClassObject;
+                    if (co != null)
+                    {
+                        var method = co.runtimeType.irClass.GetIROperatorMethodIndexByMethod("_add_", out int index);
+                        if (method != null)
+                        {
+                            InnerCLRRuntimeVM.RunIRMethod(null, method, false);
+                            isMethodCall = true;
+                        }
+                    }
+                }
+                else
+                {
+                    ComputeSVAlue(0, ref sval, isUnsign);
+                }
             }
         }
         public void MinusSValue(SValue sval, bool isUnsign)

@@ -25,7 +25,6 @@ namespace SimpleLanguage.VM
             m_IsNull = false;
             m_Etype = _eType;
             value = val;
-            m_IsVoid = false;
         }
         public override string ToFormatString()
         {

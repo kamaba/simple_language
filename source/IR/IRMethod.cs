@@ -19,6 +19,7 @@ namespace SimpleLanguage.IR
     {
         public string id { get; set; } = "";
         public string virtualFunctionName { get; set; } = "";
+        public string onlyFunctionName { get; set; } = "";
         public IRManager irManager { get; private set; } = null;
         public IRMetaClass irOwnerMetaClass => m_IROwnerMetaClass;
         //private List<IRMetaVariable> methodInputTemplateObject => m_MethodInputTemplateObject;
@@ -41,6 +42,7 @@ namespace SimpleLanguage.IR
             m_BindMetaFunction = func;
             this.id = func.functionAllName;
             this.virtualFunctionName = func.virtualFunctionName;
+            this.onlyFunctionName = func.name;
             m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(func.ownerMetaClass.GetHashCode());
         }
         public void Parse()
