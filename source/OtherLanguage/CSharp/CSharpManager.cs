@@ -122,14 +122,26 @@ namespace SimpleLanguage.CSharp
                 }
                 else
                 {
-                    frontName = mb.allName;
+                    frontName = mb.GetAllName();
+
+                    frontName = frontName.Remove(0, 7);
                 }
             }
             MetaNode getmb = FindCSharpClassOrNameSpace(frontName, name);
             if (getmb == null) return null;
 
-            getmb.AddMetaNode(mb);
-            
+            if(getmb.isMetaNamespace )
+            {
+                getmb = mb.AddMetaNamespace(getmb.metaNamespace);
+            }
+            else
+            {
+                getmb = mb.AddMetaClass(getmb.GetMetaClassByTemplateCount(0));
+            }
+
+            getmb.UpdateAllName();
+
+
             return getmb;
         }
         public static MetaNode FindCSharpClassOrNameSpace( string frontName, string name )

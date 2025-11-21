@@ -44,6 +44,7 @@ namespace SimpleLanguage.Core
         NewTemplate,
         NewData,
         MemberFunctionName,
+        FunctionCall,
         ConstValue,
         This,
         Base,
@@ -226,13 +227,15 @@ namespace SimpleLanguage.Core
                 {
                     CreateExpressParam cep = new CreateExpressParam()
                     {
+                        ownerMetaClass = m_OwnerMetaClass,
                         ownerMBS = m_OwnerMetaFunctionBlock,
                         metaType = null,
                         fme = firstNode,
                     };
                     m_ExpressNode = ExpressManager.CreateExpressNode(cep);
+                    m_ExpressNode.Parse(_auc);
                     m_ExpressNode.CalcReturnType();
-                    m_MetaClass = null;// CoreMetaClassManager.GetMetaClassByEType(m_ExpressNode.eType);
+                    m_MetaType = m_ExpressNode.GetReturnMetaDefineType();
                     m_CallNodeType = ECallNodeType.Express;
                     return true;
                 }
@@ -464,17 +467,8 @@ namespace SimpleLanguage.Core
                     Log.AddInStructMeta(EError.None, "Error 只有第一位置可以使用base关键字" + m_Token.ToLexemeAllString());
                 }
             }
-            else if (etype == ETokenType.Type)
-            {
-                var selfClass = CoreMetaClassManager.GetCoreMetaClass(m_Name);
-                if (selfClass != null)
-                {
-                    m_MetaClass = selfClass.GetMetaClassByTemplateCount(0);
-                    m_MetaType = new MetaType(m_MetaClass);
-                    m_CallNodeType = ECallNodeType.TypeName;
-                }
-            }
-            else if (etype == ETokenType.Identifier)
+            //else if (etype == ETokenType.Type)
+            else if (etype == ETokenType.Identifier || etype == ETokenType.Type )
             {
                 if (isFirst)
                 {
@@ -801,7 +795,12 @@ namespace SimpleLanguage.Core
                     }
                     else if (frontCNT == ECallNodeType.Express)
                     {
-                        if (GetFunctionOrVariableByOwnerClass(m_FrontCallNode.m_MetaClass, m_Name) == false)
+                        if( m_FrontCallNode.m_MetaType == null )
+                        {
+                            Log.AddInStructMeta(EError.None, "没有推算出相当的类型");
+                            return false;
+                        }
+                        if (GetFunctionOrVariableByOwnerClass(m_FrontCallNode.m_MetaType.GetTemplateMetaClass(), m_Name) == false)
                         {
                             return false;
                         }
@@ -1297,7 +1296,7 @@ namespace SimpleLanguage.Core
             m_MetaFunction = new MetaFunction( mc.metaClass );
             m_MetaType = new MetaType(CoreMetaClassManager.typeMetaClass);
             m_CallMetaType = new MetaType(mc);
-            m_CallNodeType = ECallNodeType.MemberFunctionName;
+            m_CallNodeType = ECallNodeType.FunctionCall;
         }
         void HandleGetTypeByMetaVariable( MetaVariable mv )
         {

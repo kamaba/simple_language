@@ -6,6 +6,7 @@
 //  Description: 
 //****************************************************************************
 
+using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using SimpleLanguage.VM.Runtime;
@@ -517,9 +518,35 @@ namespace SimpleLanguage.VM
         private static List<RuntimeType> s_RuntimeList = new List<RuntimeType>();
         public static RuntimeType arrayRuntimeType => m_ArrayRuntimeType;
         public static RuntimeType typeRuntimeType => m_TypeRuntimeType;
+        public static RuntimeType voidRuntimeType => m_VoidRuntimeType;
 
         private static RuntimeType m_ArrayRuntimeType = null;
         private static RuntimeType m_TypeRuntimeType = null;
+        private static RuntimeType m_VoidRuntimeType = null;
+
+
+        public static ClassObject CreateTypeObject( RuntimeType rt )
+        {
+            ClassObject sobj = new ClassObject(RuntimeTypeManager.typeRuntimeType);
+            if (sobj is ClassObject co)
+            {
+                ObjectManager.AddClassObject(co);
+
+                SValue sval1 = new();
+                sval1.SetInt32Value(rt.GetHashCode());
+                co.SetMemberVariableSValue(0, sval1);
+
+                SValue sva2 = new();
+                sva2.SetInt8Value((Byte)rt.eType);
+                co.SetMemberVariableSValue(1, sva2);
+
+                SValue sval3 = new();
+                ClassObject classobj = new ClassObject(rt);
+                sval3.SetSObject(classobj);
+                co.SetMemberVariableSValue(2, sval3);
+            }
+            return sobj;
+        }
 
         public static RuntimeType GetRuntimeTypeByMT(IRMetaClass rmc )
         {
@@ -613,6 +640,8 @@ namespace SimpleLanguage.VM
             {
                 m_TypeRuntimeType = rt;
             }
+            else if( rmc.irName == "Void" )
+            { m_VoidRuntimeType = rt; }
 
             s_RuntimeList.Add(rt);
 

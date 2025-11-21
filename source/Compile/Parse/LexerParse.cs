@@ -1429,6 +1429,9 @@ namespace SimpleLanguage.Compile
                 case "private":
                     tokenType = ETokenType.Private;
                     break;
+                case "operator":
+                    tokenType = ETokenType.Operator;
+                    break;
                 case "interface":
                     tokenType = ETokenType.Interface;
                     break;
@@ -1551,7 +1554,7 @@ namespace SimpleLanguage.Compile
                     var spacetoken = new Token(m_Path, ETokenType.Space, "", bline, bchar);
                     spacetoken.SetSrouceEnd(m_SourceLine, m_SourceChar);
                     spacetoken.SetExtend(num);
-                    m_ListTokens.Add(spacetoken);
+                    //m_ListTokens.Add(spacetoken);
                 }
                 else if( m_CurChar == '\t' || m_CurChar == '\r' )
                 {

@@ -250,6 +250,8 @@ namespace SimpleLanguage
         Transience,
         /// <summary> return </summary>
         Return,
+        /// <summary> operator </summary>
+        Operator,
         /// <summary> global </summary>
         Global,
         /// <summary> label </summary>

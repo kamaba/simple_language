@@ -167,6 +167,7 @@ namespace SimpleLanguage.Core
             }
             if( flag )
             {
+                m_VisitNodeList.Clear();
                 int i = 0;
                 MetaCallNode frontNode = null;
                 while (true)
