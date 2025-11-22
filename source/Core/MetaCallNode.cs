@@ -1484,6 +1484,39 @@ namespace SimpleLanguage.Core
             //}
             return null;
         }
+        public bool HandleTypeFunction(MetaClass mc)
+        {
+            //if ( this.m_MetaTemplateParamsList == null)
+            //{
+            //    Debug.WriteLine("Error 没有Cast<>的使用，请正确使用Cast!!");
+            //    return null;
+            //}
+            //else
+            //{
+            //    if (m_MetaTemplateParamsCollection.metaTemplateParamsList.Count != 1)
+            //    {
+            //        Debug.WriteLine("Error 没有Cast<ClassName>()的使用，请正确使用Cast!!");
+            //        return null;
+            //    }
+            //    MetaClass castClass = m_MetaTemplateParamsCollection.metaTemplateParamsList[0].metaClass;
+            //    if (castClass == null)
+            //    {
+            //        Debug.WriteLine("Error 没有Cast<ClassName>()的使用，没有找到Cast<ClassName> 中的ClassName");
+            //        return null;
+            //    }
+            //    //MetaFunction mf2 = mc.GetMetaMemberFunctionByNameAndTemplateCollectInputParamCollect("Cast", m_MetaTemplateParamsCollection, m_MetaInputParamCollection);
+            //    //if (mf2 != null)
+            //    //{
+            //    //    return mf2;
+            //    //}
+            //    //else
+            //    //{
+            //    //    Debug.Write("没有找到Cast的函数，或者是重定义错误!!");
+            //    //    return null;
+            //    //}
+            //}
+            return true;
+        }
         public MetaMemberData GetDataValueByMetaData(MetaData md, string inputName)
         {
             return md.GetMemberDataByName(inputName);
@@ -1512,6 +1545,10 @@ namespace SimpleLanguage.Core
         }
         public bool GetFunctionOrVariableByOwnerClass( MetaClass mc, string inputname )
         {
+            if (inputname == "type")
+            {
+                return HandleTypeFunction(mc);
+            }
             MetaMemberVariable mmv = null;
             MetaMemberFunction mmf = null;
             if (m_IsFunction)
@@ -1520,6 +1557,7 @@ namespace SimpleLanguage.Core
                 {
                     HandleCastFunction(mc);
                 }
+                else 
 
                 //this.CreateMetaTemplateParams(null, m_OwnerMetaFunctionBlock.ownerMetaFunction as MetaMemberFunction);
                 //List<MetaClass> mcList = new List<MetaClass>();

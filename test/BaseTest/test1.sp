@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "15_ReloadSignTest.sl";
+            path = "12_ArrayTest.sl";
             group = "temp";
             tag = "all";
             a = 200
@@ -74,8 +74,8 @@ Project
         #GenFunction.fun();
         #TypeTest.fun()
         #ClassAs_Is.fun()
-        #ArrayTest.fun()
-        ReloadSignTest.fun()
+        ArrayTest.fun()
+        #ReloadSignTest.fun()
     }
     static Test()
     {

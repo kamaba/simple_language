@@ -1,6 +1,6 @@
 import Std
+import CSharp.SimpleLanguage
 import CSharp.System
-import CSharp.SimpleLanguage.Lib
 
 namespace Core
 {
@@ -10,7 +10,6 @@ namespace Core
         {
 
         }
-
         public string toString()
         {
             ret ""
@@ -72,35 +71,6 @@ namespace Core
 
         }
     }
-    public enum EType
-    {
-        None,
-        Null,
-        Void,
-        Class,
-        Enum,
-        Data,
-        Boolean,
-        Bit,
-        Byte,
-        SByte,
-        Int16,
-        UInt16,
-        Int32,
-        UInt32,
-        Float16,
-        Float32,
-        Int64,
-        UInt64,
-        Float64,
-        Int128,
-        UInt128,
-        Array,
-        Range,
-        String,
-        Object,
-        Float2,
-    }
     public class MetaClass
     {
         _namespaceName = "";
@@ -111,7 +81,6 @@ namespace Core
     public class Type
     {
         int _hashCode = 0
-        EType _eType = EType.None
         MetaClass _metaClass = null
         public Type[] typelist = new()
 
@@ -238,18 +207,6 @@ ArrayTest
         array arr = [1,2,3]
         System.Console.WriteLine("22222222= " +arr[1] )
         !#
-
-        Type t = int.type
-        Type t2 = ArrClass.type
-        #Type t3 = ac.type
-
-        if t == t2 
-        {
-            System.Console.WriteLine("22222222= " t2.toString() )
-        }
-
-        #Type t = Level<int>.type
-
         #array arr = Array( 10, int.type )
         #arr[2] = 100
         #System.Console.WriteLine("22222222= " +arr[2] )
