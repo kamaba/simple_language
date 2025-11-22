@@ -17,6 +17,7 @@ namespace SimpleLanguage.VM
     {
         public VoidObject()
         {
+            m_RuntimeType = RuntimeTypeManager.voidRuntimeType;
         }
         public void SetValue(String _val)
         {

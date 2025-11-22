@@ -37,6 +37,11 @@ namespace SimpleLanguage.Core.IR
                 IRExpress ire = new IRExpress(_irMethod, cnode.constValueExpress);
                 irList.Add(ire);
             }
+            else if( cnode.visitType == MetaVisitNode.EVisitType.Express )
+            {
+                IRExpress ire = new IRExpress(_irMethod, cnode.express );
+                irList.Add(ire);
+            }
             else if (cnode.visitType == MetaVisitNode.EVisitType.Variable)
             {
                 MetaVariable mv = cnode.GetOrgTemplateMetaVariable();

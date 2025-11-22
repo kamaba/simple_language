@@ -180,8 +180,10 @@ namespace SimpleLanguage.Core
             New,
             Enum,
             MetaClass,
+            Express,
         }
         public MetaConstExpressNode constValueExpress { get; private set; } = null;
+        public MetaExpressNode express { get; set; } = null;
         public EVisitType visitType { get; private set; }
         public MetaVariable variable { get; private set; } = null;
         public MetaVisitVariable visitVariable { get; private set; } = null;
@@ -239,13 +241,22 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CreateByConstExpress(  MetaConstExpressNode constExpress, MetaVariable _variable)
+        public static MetaVisitNode CreateByConstExpress(MetaConstExpressNode constExpress, MetaVariable _variable)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.constValueExpress = constExpress;
             vn.variable = _variable;
             vn.visitType = EVisitType.ConstValue;
+
+            return vn;
+        }
+        public static MetaVisitNode CreateByEpxress( MetaExpressNode _express )
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.express = _express;
+            vn.visitType = EVisitType.Express;
 
             return vn;
         }

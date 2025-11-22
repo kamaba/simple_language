@@ -324,12 +324,60 @@ namespace SimpleLanguage.VM
             isMethodCall = false;
             if (sval.eType == EType.String)
             {
-                stringValue = this.GetValueObject().ToString() + sval.GetValueObject().ToString();
+                string str = "";
+                if( this.eType == EType.Class )
+                {
+                    ClassObject co = this.sobject as ClassObject;
+                    if (co != null)
+                    {
+                        var method = co.runtimeType.irClass.GetIRNonStaticMethodIndexByName("toString", out int index);
+                        if (method != null)
+                        {
+                            InnerCLRRuntimeVM.RunIRMethod(null, method, false);
+                            var clrvm = InnerCLRRuntimeVM.clrRuntimeStack.Peek();
+                            SValue curval = clrvm.GetCurrentIndexValue(clrvm.m_ValueIndex - 1);
+                            str = curval.stringValue;
+                        }
+                    }
+                    else
+                    {
+                        str = sval.sobject.ToString();
+                    }
+                }
+                else
+                {
+                    str = sval.GetValueObject().ToString();
+                }
+                stringValue = this.GetValueObject().ToString() + str;
             }
             else if (this.eType == EType.String)
             {
-                eType = EType.String;
-                stringValue = GetValueObject().ToString() + sval.GetValueObject().ToString();
+                string str = "";
+                if (sval.eType == EType.Class)
+                {
+                    ClassObject co = sval.sobject as ClassObject;
+                    if (co != null)
+                    {
+                        var method = co.runtimeType.irClass.GetIRNonStaticMethodIndexByName("toString", out int index);
+                        if (method != null)
+                        {
+                            InnerCLRRuntimeVM.RunIRMethod(null, method, false);
+                            var clrvm = InnerCLRRuntimeVM.clrRuntimeStack.Peek();
+                            SValue curval = clrvm.GetCurrentIndexValue(clrvm.m_ValueIndex - 1);
+                            str = curval.stringValue;
+                            clrvm.m_ValueIndex--;
+                        }
+                    }
+                    else
+                    {
+                        str = sval.sobject.ToString();
+                    }
+                }
+                else
+                {
+                    str = sval.GetValueObject().ToString();
+                }
+                stringValue = this.GetValueObject().ToString() + str;
             }
             else if( this.eType == EType.Array )
             {

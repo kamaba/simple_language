@@ -272,6 +272,11 @@ namespace SimpleLanguage.VM
             }
             switch( val )
             {
+                case VoidObject voidobj:
+                    {
+
+                    }
+                    break;
                 case BoolObject boolobj:
                     {
                         eType = EType.Boolean;

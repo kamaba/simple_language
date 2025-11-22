@@ -237,13 +237,15 @@ namespace SimpleLanguage.VM
             }
         }
         // compareSign 0:== 1:!= 
-        public static void CompareEuqalSValue1AndValue2( ref SValue sval1, ref SValue sval2, bool isEqual )
+        public static void CompareEuqalSValue1AndValue2( ref SValue sval1, ref SValue sval2, bool isEqual, out bool methodCall )
         {
+            methodCall = false;
+
             if (sval1.isNull)
             {
-                if(isEqual )
+                if (isEqual)
                 {
-                    sval1.SetBoolValue(sval2.isNull ? true : false );
+                    sval1.SetBoolValue(sval2.isNull ? true : false);
                 }
                 else
                 {
@@ -263,6 +265,7 @@ namespace SimpleLanguage.VM
                 }
                 return;
             }
+
             dynamic valnum1 = null;
             dynamic valnum2 = null;
             switch (sval1.eType)
@@ -356,7 +359,8 @@ namespace SimpleLanguage.VM
                         if (cfc != null)
                         {
                             List<RuntimeType> irmtList = new List<RuntimeType>();
-                            InnerCLRRuntimeVM.RunIRMethod(irmtList, cfc);
+                            InnerCLRRuntimeVM.RunIRMethod(irmtList, cfc, false );
+                            methodCall = true;
                         }
                         else
                         {
@@ -378,11 +382,6 @@ namespace SimpleLanguage.VM
                             }
 
                         }
-                    }
-                    break;
-                default:
-                    {
-                        Log.AddVM(EError.None, " VM Compare SVAlue 比较的低码还没有完善!!");
                         return;
                     }
             }
@@ -418,18 +417,46 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Class:
                     {
-                        Log.AddVM(EError.None, " VM Compare SVAlue 比较的低码还没有完善!!");
-                        //return;
+                        ClassObject co = (sval2.sobject as ClassObject);
+                        RuntimeType rt = co.value.runtimeType;
+                        IRMetaClass irc = co.value.irMetaClass;                        
+                        if (irc == null)
+                        {
+                            Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
+                            return;
+                        }
+                        IRMethod cfc = irc.GetIROperatorMethodIndexByMethod(isEqual ? "_eq_" : "_ne_", out int index);
+                        if (cfc != null)
+                        {
+                            List<RuntimeType> irmtList = new List<RuntimeType>();
+                            InnerCLRRuntimeVM.RunIRMethod(irmtList, cfc);
+                            methodCall = true;
+                        }
+                        else
+                        {
+                            if (sval1.eType == EType.Class)
+                            {
+                                if (sval1.sobject == sval2.sobject)
+                                {
+                                    sval1.SetBoolValue(true);
+                                }
+                                else
+                                {
+                                    sval1.SetBoolValue(false);
+                                }
+                            }
+                            else
+                            {
+                                sval1.SetBoolValue(!isEqual);
+                                //Log.AddVM(EError.None, " VM Compare SVAlue 比较的低码还没有完善!!");
+                            }
+
+                        }
+                        return;
                     }
-                    break;
-                default:
-                    {
-                        Log.AddVM(EError.None, " VM Compare SVAlue 比较的低码还没有完善!!");
-                    }
-                    break;
             }
 
-            if(valnum2 != null && valnum1 != null )
+            if (valnum2 != null && valnum1 != null )
             {
                 if( isEqual )
                 {

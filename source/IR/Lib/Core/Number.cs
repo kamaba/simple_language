@@ -24,8 +24,20 @@ namespace SimpleLanguage.Lib
     {
 
     }
-    public static class Int32Object
+    public static class Int32Class
     {
-
+        public static string GetValueToString(System.Object obj)
+        {
+            if( obj.GetType() == typeof(System.Int32) )
+            {
+                return obj.ToString();
+            }
+            Int32Object sobj = obj as Int32Object;
+            if(sobj != null )
+            {
+                return sobj.value.ToString();
+            }
+            return "object is not int32";
+        }
     }
 }

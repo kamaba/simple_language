@@ -359,6 +359,11 @@ namespace SimpleLanguage.Core
                 m_VisitNodeList.Add(mvn);
                 //Debug.Write("Meta Common Parse MemberDataName----------------------------------------------------");
             }
+            else if( mcn.callNodeType == ECallNodeType.Express )
+            {
+                MetaVisitNode mvn = MetaVisitNode.CreateByEpxress(mcn.metaExpressValue);
+                m_VisitNodeList.Add(mvn);
+            }
         }
         public int CalcParseLevel(int level)
         {
