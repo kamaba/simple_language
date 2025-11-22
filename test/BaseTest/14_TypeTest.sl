@@ -73,21 +73,43 @@ namespace Core
 
         }
     }
-    public class Type
-    {
-        MetaClass _metaClass;
-    }
-
+    
     public class MetaClass
     {
+        _namespaceName = "";
+        _className = "";
 
+        get string className(){ ret this._className; }
     }
+    public class Type
+    {
+        int _hashCode = 0
+        MetaClass _metaClass = null
+        public Type[] typelist = new()
+
+        override string toString()
+        {
+            if( this._metaClass == null )
+                ret "no_meta_class"
+
+            ret this._metaClass.className;
+        }
+    }    
 }
 TypeTest
 {
     ArrClass
     {
         int i = 0;
+    }
+    Level<T> 
+    {
+        static fun()
+        {
+            type1 = Level<T>.type
+            type2 = Level<int>.type
+            Console.WriteLine("levelT.type" + type1.toString() );
+        }
     }
     static bool IsNType( Type t )
     {
@@ -96,16 +118,21 @@ TypeTest
     static fun()
     {  
         t = int.type()
+        int i2 = 20
+        t2 = i2.type
+
+        if t == t2 
+        {
+            System.Console.WriteLine("22222222= " t2.toString() )
+        }
 
         #!
         bool a = IsNType( ArrClass.type )
         var t = List<int>.type
         ArrayClass.type()
-        MemberMethodInfo mmi = t.memberFunctionList.Find( "oj8k", 0 )
-        if mmi 
-        {
-            mmi.call()
-        }
+        var mcname mmi = t.metaClass.name
+
+        System.Console.WriteLine("22222222= " t2.toString() )
         !#
     }
 }

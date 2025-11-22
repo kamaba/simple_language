@@ -1,23 +1,29 @@
+import CSharp.SimpleLanguage
 
 Core.Int32 extends Object
 {
-    public const int MaxValue = 0x7fffffff;
-    public const int MinValue = unchecked((int)0x80000000);
+    const int MaxValue = 0x7fffffff;
+    const int MinValue = unchecked((int)0x80000000);
 
-    private Int32 _value = 0i;
+    #private Int32 _value = 0i;
 
+    _init_()
+    {
+    }
     _init_( Int32 _val )
     {
-        this._value = _val        
+        SimpleLanguage.Lib.Int32Class.SetInt32Value( this, _val )
+        #this._value = _val        
     }
-    String toString()
+    override String toString()
     {
-        return String.ParseString( m_Value );
+        ret SimpleLanguage.Lib.Int32Class.ConvertToString( this )
     }
     static String Int32ToString( Int32 value )
     {
-        return String.ParseString( value );
+        ret SimpleLanguage.Lib.Int32Class.Int32ToString( value )
     }
+    #!
     cast( Type t )
     {
         if t == Int16.type 
@@ -40,4 +46,5 @@ Core.Int32 extends Object
     {
         ret 0
     }
+    !#
 }

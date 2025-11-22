@@ -2,48 +2,43 @@
 public class Core.Array
 {
     int _index = -1;
-
+    int _length = 0;
+    Type _type = object.type();
     
-    static int maxLenght()
+    _init_()
     {
-        ret 0
+        this._length = 0
+    }
+    _init_( int len )
+    {
+        this._length = len;
+    }
+    _init_( int len, Type type = object.type )
+    {
+        this._length = len;
+        this._type = type;
+    }
+    #该方法是系统方法，可以直接 通过 [], $x 方法    
+    public object _indexValue_( int index )
+    {
+        obj = Lib.ArrayClass.GetArrayValueByIndex( this, index )
+        ret obj;
     }
 
-    _init_<T>( int count = 0 )
+    public T indexValue<T>( int index )
     {
+        obj = Lib.ArrayClass.GetArrayValueByIndex( this, index )
+        ret obj as T
+    }
 
-    }
-    _init_( Type type, int count )
+    #该方法是 当前游标的植，进行替换
+    public get object _value_()
     {
-        
-    }
-    public T _index_<T>( int index )
-    {
-
-    }
-    public Array<T> join( Array<T> con )
-    {
-        ret null
-    }
-    public void resize( int len )
-    {
-
-    }
-    public set void legnth( int val )
-    {
-        this.resize( val )
-    }
-    public get int length()
-    {
-        ret 0;
-    }
-    public set void index( int _ind )
-    {
-        this._index = _ind;
-    }
-    public get int index()
-    {
-        ret this._index
+        if( this._index < 0 || this._index > this._length )
+        {
+            ret null
+        }
+        ret ArrayMetaClass.Get( this._index )
     }
     public get T _value_<T>()
     {
@@ -58,8 +53,9 @@ public class Core.Array
 
         ret obj as T
     }
-    public set int _value_<T>( T t )
-    {        
+    #该方法是 当前游标的植，进行替换
+    public set void _value( object t )
+    {   
         if( this._index < 0 || this._index > this._length )
         {
             ret -1
@@ -67,24 +63,27 @@ public class Core.Array
 
         Type t = T.type
 
-        var obj = ArrayMetaClass.Get( t, this._index )
-
-        obj.SetValue<T>( t )
+        ArrayMetaClass.SetValue( t, this._index )
     }
-}
 
-#!
-ArrayTest
-{
-    static fun()
+    public void resize( int len, bool isSetZero = false )
     {
-        array a = new( int.type, 20);
-        a2 = array()
-        a3 = [1,2,3,4]
-        a4 = Array( float32.type, 20 ){ 1.2f, 2.2f }
-
-        
+        #ArrayMetaClass.SetValue( t, this._index )
+    }
+    public set void legnth( int val )
+    {
+        this.resize( val )
+    }
+    public get int length()
+    {
+        ret this._length
+    }
+    public set void index( int _ind )
+    {
+        this._index = _ind;
+    }
+    public get int index()
+    {
+        ret this._index
     }
 }
-
-!#

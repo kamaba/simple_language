@@ -3,25 +3,16 @@ public class Core.Object
 {
     void _init_()
     {
-
     }
     public Int32 get hashCode()
     {
-        return 0;
+        ret SimpleLanguage.Lib.ObjectClass.GetHashCodeBySObject( this )
     }
-    public Object clone()
-    {
-        ret Object();
-    }
-    public get Type type()
-    {
-        ret Object.type();
-    }
-
     public bool equals(object obj)
     {
         ret RuntimeHelpers.Equals(this, obj);
     }
+    #!
     public static bool equals(object objA, object objB)
     {
         if (objA == objB)
@@ -34,25 +25,27 @@ public class Core.Object
         }
         ret objA.equals(objB);
     }
-    public static bool ReferenceEquals(object? objA, object? objB)
+    public static bool referenceEquals(object? objA, object? objB)
     {
         ret objA == objB;
     }
-    #!
+    public Object clone()
+    {
+        ret Object();
+    }
     以下是系统方法
     public Object cast<T>()
     {
         ret this;
     }
-    public T get ref()
+    public object get ref()
     {
         ret null
     }
-    T get refWeak()
+    get object  refWeak()
     {
-
     } 
-    public int get refCount()
+    int get refCount()
     {
         ret 0;
     }
