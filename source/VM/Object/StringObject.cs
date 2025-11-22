@@ -16,9 +16,16 @@ namespace SimpleLanguage.VM
     class StringObject : SObject
     {
         public string value;
+
+        public StringObject() : base(EType.String)
+        {
+            m_RuntimeType = RuntimeTypeManager.stringRuntimeType;
+        }
+
         public StringObject(string str) : base( EType.String )
         {
             value = str;
+            m_RuntimeType = RuntimeTypeManager.stringRuntimeType;
         }
         public void SetValue(String _val)
         {

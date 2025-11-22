@@ -25,7 +25,7 @@ namespace SimpleLanguage.Lib
     {
         public BaseObjectData data;
     }
-    public static class Object
+    public static class ObjectClass
     {
         public static int GetHashCodeByObject(BaseObjectData obj)
         {

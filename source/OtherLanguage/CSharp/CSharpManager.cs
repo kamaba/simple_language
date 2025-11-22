@@ -132,11 +132,27 @@ namespace SimpleLanguage.CSharp
 
             if(getmb.isMetaNamespace )
             {
-                getmb = mb.AddMetaNamespace(getmb.metaNamespace);
+                var find1 = mb.GetChildrenMetaNodeByName(getmb.name);
+                if( find1 != null)
+                {
+                    getmb = find1;
+                }
+                else
+                {
+                    getmb = mb.AddMetaNamespace(getmb.metaNamespace);
+                }
             }
             else
             {
-                getmb = mb.AddMetaClass(getmb.GetMetaClassByTemplateCount(0));
+                var find1 = mb.GetChildrenMetaNodeByName(getmb.name);
+                if (find1 != null)
+                {
+                    getmb = find1;
+                }
+                else
+                {
+                    getmb = mb.AddMetaClass(getmb.GetMetaClassByTemplateCount(0));
+                }
             }
 
             getmb.UpdateAllName();

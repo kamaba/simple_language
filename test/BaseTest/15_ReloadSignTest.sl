@@ -1,5 +1,6 @@
 import Std
 import CSharp.SimpleLanguage
+import CSharp.System
 
 namespace Core
 {
@@ -11,12 +12,16 @@ namespace Core
         }
         get int hashCode()
         {
-            ret SimpleLanguage.Lib.Object.GetHashCodeBySObject( this )
+            ret SimpleLanguage.Lib.ObjectClass.GetHashCodeBySObject( this )
         }
         public string toString()
         {
             ret ""
         }
+    }
+    class Void
+    {
+        
     }
     class Int32
     {
@@ -24,6 +29,10 @@ namespace Core
         {
             
         }        
+        override string toString()
+        {
+            ret SimpleLanguage.Lib.Int32Class.GetValueToString( this )
+        }
     }
 }
 public class Class1
@@ -146,7 +155,7 @@ public class Class1
         }
     }
 
-    public string toString()
+    override string toString()
     {
         ret (this.a + this.b).toString()
     }

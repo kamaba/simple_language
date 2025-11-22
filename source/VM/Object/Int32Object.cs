@@ -21,6 +21,7 @@ namespace SimpleLanguage.VM
         {
             value = obj;
             m_Etype = EType.Int32;
+            m_RuntimeType = RuntimeTypeManager.int32RuntimeType;
         }
         public void SetValue(Int32 _val)
         {

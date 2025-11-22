@@ -68,6 +68,19 @@ namespace SimpleLanguage.IR
             }
             return null;
         }
+        public IRMethod GetIRNonStaticMethodIndexByName(string name, out int index)
+        {
+            index = -1;
+            for (int i = 0; i < m_IRNotStaticMethodList.Count; i++)
+            {
+                if (m_IRNotStaticMethodList[i].onlyFunctionName == name)
+                {
+                    index = i;
+                    return m_IRNotStaticMethodList[i];
+                }
+            }
+            return null;
+        }
         public IRMethod GetIROperatorMethodIndexByMethod( string name, out int index )
         {
             index = -1;

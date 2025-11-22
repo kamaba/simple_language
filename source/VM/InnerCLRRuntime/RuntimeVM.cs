@@ -1082,8 +1082,16 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
-                        SValue.CompareEuqalSValue1AndValue2( ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], true );
-                        m_ValueIndex--;
+                        SValue.CompareEuqalSValue1AndValue2( ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], true, out bool isMethod );
+                        if (isMethod)
+                        {
+                            m_ValueStack[m_ValueIndex - 3] = m_ValueStack[m_ValueIndex - 1];
+                            m_ValueIndex -= 2;
+                        }
+                        else
+                        {
+                            m_ValueIndex--;
+                        }
                     }
                     break;
                 case EIROpCode.Cne:
@@ -1093,8 +1101,16 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
-                        SValue.CompareEuqalSValue1AndValue2(ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], false);
-                        m_ValueIndex--;
+                        SValue.CompareEuqalSValue1AndValue2(ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], false, out bool isMethod);
+                        if (isMethod)
+                        {
+                            m_ValueStack[m_ValueIndex - 3] = m_ValueStack[m_ValueIndex - 1];
+                            m_ValueIndex -= 2;
+                        }
+                        else
+                        {
+                            m_ValueIndex--;
+                        }
                     }
                     break;
                 case EIROpCode.Cgt:
@@ -1104,8 +1120,16 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
-                        SValue.CompareEuqalSValue1AndValue2( ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], false );
-                        m_ValueIndex--;
+                        SValue.CompareEuqalSValue1AndValue2( ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], false, out bool isMethod);
+                        if (isMethod)
+                        {
+                            m_ValueStack[m_ValueIndex - 3] = m_ValueStack[m_ValueIndex - 1];
+                            m_ValueIndex -= 2;
+                        }
+                        else
+                        {
+                            m_ValueIndex--;
+                        }
                     }
                     break;
                 case EIROpCode.Cge:

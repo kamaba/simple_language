@@ -519,10 +519,33 @@ namespace SimpleLanguage.VM
         public static RuntimeType arrayRuntimeType => m_ArrayRuntimeType;
         public static RuntimeType typeRuntimeType => m_TypeRuntimeType;
         public static RuntimeType voidRuntimeType => m_VoidRuntimeType;
+        public static RuntimeType byteRuntimeType => m_ByteRuntimeType;
+        public static RuntimeType sbyteRuntimeType => m_SByteRuntimeType;
+        public static RuntimeType int16RuntimeType => m_Int16RuntimeType;
+        public static RuntimeType uint16RuntimeType => m_UInt16RuntimeType;
+        public static RuntimeType int32RuntimeType => m_Int32RuntimeType;
+        public static RuntimeType uint32RuntimeType => m_UInt32RuntimeType;
+        public static RuntimeType int64RuntimeType => m_Int64RuntimeType;
+        public static RuntimeType uint64RuntimeType => m_UInt64RuntimeType;
+        public static RuntimeType float32RuntimeType => m_Float32RuntimeType;
+        public static RuntimeType float64RuntimeType => m_Float64RuntimeType;
+        public static RuntimeType stringRuntimeType => m_StringRuntimeType;
 
         private static RuntimeType m_ArrayRuntimeType = null;
         private static RuntimeType m_TypeRuntimeType = null;
         private static RuntimeType m_VoidRuntimeType = null;
+        private static RuntimeType m_ByteRuntimeType = null;
+        private static RuntimeType m_SByteRuntimeType = null;
+        private static RuntimeType m_Int16RuntimeType = null;
+        private static RuntimeType m_UInt16RuntimeType = null;
+        private static RuntimeType m_Int32RuntimeType = null;
+        private static RuntimeType m_UInt32RuntimeType = null;
+        private static RuntimeType m_Int64RuntimeType = null;
+        private static RuntimeType m_UInt64RuntimeType = null;
+        private static RuntimeType m_Float32RuntimeType = null;
+        private static RuntimeType m_Float64RuntimeType = null;
+        private static RuntimeType m_StringRuntimeType = null;
+
 
 
         public static ClassObject CreateTypeObject( RuntimeType rt )
@@ -641,7 +664,53 @@ namespace SimpleLanguage.VM
                 m_TypeRuntimeType = rt;
             }
             else if( rmc.irName == "Void" )
-            { m_VoidRuntimeType = rt; }
+            { 
+                m_VoidRuntimeType = rt; 
+            }
+            else if (rmc.irName == "Byte")
+            {
+                m_ByteRuntimeType = rt;
+            }
+            else if (rmc.irName == "SByte")
+            {
+                m_SByteRuntimeType = rt;
+            }
+            else if (rmc.irName == "Int16")
+            {
+                m_Int16RuntimeType = rt;
+            }
+            else if (rmc.irName == "UInt16")
+            {
+                m_UInt16RuntimeType = rt;
+            }
+            else if (rmc.irName == "Int32")
+            {
+                m_Int32RuntimeType = rt;
+            }
+            else if (rmc.irName == "UInt32")
+            {
+                m_UInt32RuntimeType = rt;
+            }
+            else if (rmc.irName == "Int64")
+            {
+                m_Int64RuntimeType = rt;
+            }
+            else if (rmc.irName == "UInt64")
+            {
+                m_UInt64RuntimeType = rt;
+            }
+            else if (rmc.irName == "String")
+            {
+                m_StringRuntimeType = rt;
+            }
+            else if (rmc.irName == "Float32")
+            {
+                m_Float32RuntimeType = rt;
+            }
+            else if (rmc.irName == "Float64")
+            {
+                m_Float64RuntimeType = rt;
+            }
 
             s_RuntimeList.Add(rt);
 
@@ -657,6 +726,58 @@ namespace SimpleLanguage.VM
             if (rmc.irName == "Array")
             {
                 m_ArrayRuntimeType = rt;
+            }
+            if (rmc.irName == "Type")
+            {
+                m_TypeRuntimeType = rt;
+            }
+            else if (rmc.irName == "Void")
+            {
+                m_VoidRuntimeType = rt;
+            }
+            else if (rmc.irName == "Byte")
+            {
+                m_ByteRuntimeType = rt;
+            }
+            else if (rmc.irName == "SByte")
+            {
+                m_SByteRuntimeType = rt;
+            }
+            else if (rmc.irName == "Int16")
+            {
+                m_Int16RuntimeType = rt;
+            }
+            else if (rmc.irName == "UInt16")
+            {
+                m_UInt16RuntimeType = rt;
+            }
+            else if (rmc.irName == "Int32")
+            {
+                m_Int32RuntimeType = rt;
+            }
+            else if (rmc.irName == "UInt32")
+            {
+                m_UInt32RuntimeType = rt;
+            }
+            else if (rmc.irName == "Int64")
+            {
+                m_Int64RuntimeType = rt;
+            }
+            else if (rmc.irName == "UInt64")
+            {
+                m_UInt64RuntimeType = rt;
+            }
+            else if (rmc.irName == "String")
+            {
+                m_StringRuntimeType = rt;
+            }
+            else if (rmc.irName == "Float32")
+            {
+                m_Float32RuntimeType = rt;
+            }
+            else if (rmc.irName == "Float64")
+            {
+                m_Float64RuntimeType = rt;
             }
             s_RuntimeList.Add(rt);
 
