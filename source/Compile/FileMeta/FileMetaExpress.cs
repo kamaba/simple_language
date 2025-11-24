@@ -751,10 +751,10 @@ namespace SimpleLanguage.Compile
     public class FileMetaBracketTerm : FileMetaBaseTerm
     {
         public Token beginToken => m_BeginBracketToken;
-        public Token endToken => m_EndBracketeToken;
+        public Token endToken => m_EndBracketetToken;
 
         Token m_BeginBracketToken = null;
-        Token m_EndBracketeToken = null;
+        Token m_EndBracketetToken = null;
         //private List<FileMetaCallLink> m_ArrayNodeList = new List<FileMetaCallLink>();// [calllink1, calllink2 ]
         // = [1][2][var1.index]
         public FileMetaBracketTerm(FileMeta fm, Node node )
@@ -763,7 +763,7 @@ namespace SimpleLanguage.Compile
             m_Root = this;
             m_Token = node.token;
             m_BeginBracketToken = node.token;
-            m_EndBracketeToken = node.endToken;
+            m_EndBracketetToken = node.endToken;
 
             for ( int i = 0; i < node.childList.Count; i++ )
             {
@@ -893,8 +893,8 @@ namespace SimpleLanguage.Compile
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("BeginBraceToken:" + m_Token?.ToLexemeAllString());
-            sb.Append("EndBraceToken:" + m_BracketeEndToken?.ToLexemeAllString());
+            sb.Append("BeginBraceToken:" + m_BeginBracketToken?.ToLexemeAllString());
+            sb.Append("EndBraceToken:" + m_EndBracketetToken?.ToLexemeAllString());
 
             return sb.ToString();
         }

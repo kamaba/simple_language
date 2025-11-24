@@ -11,6 +11,7 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -101,6 +102,7 @@ namespace SimpleLanguage.Core
         public MetaCallNode frontCallNode => m_FrontCallNode;
         public ECallNodeType callNodeType => m_CallNodeType;
         public MetaExpressNode metaExpressValue => m_ExpressNode;
+        public List<MetaExpressNode> bracketExpressList => m_BracketExpressList;
         public List<MetaType> metaTemplateParamsList => m_MetaTemplateParamsList;
         //public MetaBraceOrBracketStatementsContent metaBraceStatementsContent => m_MetaBraceStatementsContent;
         public MetaInputParamCollection metaInputParamCollection => m_MetaInputParamCollection;
@@ -138,6 +140,7 @@ namespace SimpleLanguage.Core
         private MetaExpressNode m_ExpressNode = null;    // a+b+([expressNode[3+20+10.0f]).ToString() 中的3+20+10.f就是表示式 , fun(expressNode)
         private MetaVariable m_DefineMetaVariable = null;
         private MetaVariable m_StoreMetaVariable = null;
+        private List<MetaExpressNode> m_BracketExpressList = new List<MetaExpressNode>();   // a[1][1][1][]   解析的是这个里边的1,或者是在[]里边的变量
 
         private MetaNode m_MetaNode = null;
         private MetaType m_MetaType = null;
@@ -165,15 +168,12 @@ namespace SimpleLanguage.Core
             m_IsFunction = m_FileMetaCallNode.isCallFunction;
 
             m_IsArray = m_FileMetaCallNode.isArray;
-            //for (int i = 0; i < m_FileMetaCallNode.arrayNodeList.Count; i++)
-            //{
-            //    MetaCallLink cmcl = new MetaCallLink(m_FileMetaCallNode.arrayNodeList[i], mc, mbs, fdmt, m_DefineMetaVariable );
-            //    m_MetaArrayCallNodeList.Add(cmcl);
-            //}
-            //if (m_FileMetaCallNode.fileMetaBraceTerm != null)
-            //{
-            //    m_MetaBraceStatementsContent = new MetaBraceOrBracketStatementsContent( m_FileMetaCallNode.fileMetaBraceTerm, m_OwnerMetaFunctionBlock, m_OwnerMetaClass);
-            //}
+            /*
+            if (m_FileMetaCallNode.fileMetaBraceTerm != null)
+            {
+                m_MetaBraceStatementsContent = new MetaBraceOrBracketStatementsContent(m_FileMetaCallNode.fileMetaBraceTerm, m_OwnerMetaFunctionBlock, m_OwnerMetaClass);
+            }
+            */
         }
         public void SetFrontCallNode(MetaCallNode mcn)
         {
@@ -240,7 +240,24 @@ namespace SimpleLanguage.Core
                     return true;
                 }
             }
-            return CreateCallNode();
+            bool flag = CreateCallNode();
+            if (m_FileMetaCallNode.fileMetaBracketTermList.Count > 0)
+            {
+                for (int i = 0; i < m_FileMetaCallNode.fileMetaBracketTermList.Count; i++)
+                {
+                    CreateExpressParam cep = new CreateExpressParam();
+                    cep.fme = m_FileMetaCallNode.fileMetaBracketTermList[i];
+                    cep.equalMetaVariable = m_DefineMetaVariable;
+                    cep.metaType = m_MetaType;
+                    cep.ownerMBS = m_OwnerMetaFunctionBlock;
+                    cep.ownerMetaClass = m_OwnerMetaFunctionBlock.ownerMetaClass;
+
+                    m_ExpressNode = ExpressManager.CreateExpressNodeByCEP(cep); //有问题
+                    m_ExpressNode.Parse(_auc);
+                    m_BracketExpressList.Add(m_ExpressNode);
+                }
+            }
+            return flag;
         }
         bool CreateCallNode()
         {

@@ -297,8 +297,11 @@ namespace SimpleLanguage.Compile
             if ( m_Node.bracketNode != null )     //[1][1][2][]
             {
                 isArray = true;
-                var fileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, m_Node);
-                m_FileMetaBracketTermList.Add(fileMetaBracketTerm);                
+                for( int i = 0; i < m_Node.bracketNodeList.Count; i++ )
+                {
+                    var fileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, m_Node.bracketNodeList[i] );
+                    m_FileMetaBracketTermList.Add(fileMetaBracketTerm);
+                }           
                 
             }
             if (m_Node.blockNode != null)     // { 1,2,3,4 }
