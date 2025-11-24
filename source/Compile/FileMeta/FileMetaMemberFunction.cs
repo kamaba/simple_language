@@ -76,7 +76,7 @@ namespace SimpleLanguage.Compile
                 Node nextNode = listDefieNode[i + 1];
                 if ( nextNode.nodeType == ENodeType.Bracket)
                 {
-                    curNode.bracketNode = nextNode;
+                    curNode.AddBracketNode( nextNode );
                     removeNodeList.Add(nextNode);
                 }
                 else if(curNode.nodeType == ENodeType.Key && curNode.token.type == ETokenType.Params )

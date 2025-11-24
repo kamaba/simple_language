@@ -226,8 +226,7 @@ namespace SimpleLanguage.Compile
         public List<FileInputTemplateNode> inputTemplateNodeList => m_InputTemplateNodeList;
         public FileMetaParTerm fileMetaParTerm => m_FileMetaParTerm;
         public FileMetaBraceTerm fileMetaBraceTerm => m_FileMetaBraceTerm;
-        public FileMetaBracketTerm fileMetaBracketTerm => m_FileMetaBracketTerm;
-        public List<FileMetaCallLink> arrayNodeList => m_ArrayNodeList;
+        public List<FileMetaBracketTerm> fileMetaBracketTermList => m_FileMetaBracketTermList;
 
         public Token token => m_Token;
         public Token atToken => m_AtToken;
@@ -243,15 +242,12 @@ namespace SimpleLanguage.Compile
         private FileMeta m_FileMeta = null;
         private FileMetaParTerm m_FileMetaParTerm = null;
         private FileMetaBraceTerm m_FileMetaBraceTerm = null;
-        private FileMetaBracketTerm m_FileMetaBracketTerm = null;
         private Token m_BeginParToken = null;
         private Token m_EndParToken = null;
         private Token m_BeginAngleToken = null;
         private Token m_EndAngleToken = null;
-        private Token m_BeginBracketToken = null;
-        private Token m_EndBracketToken = null;
+        private List<FileMetaBracketTerm> m_FileMetaBracketTermList = new List<FileMetaBracketTerm>();
         private List<FileInputTemplateNode> m_InputTemplateNodeList = new List<FileInputTemplateNode>();//< template1,template2 >
-        private List<FileMetaCallLink> m_ArrayNodeList = new List<FileMetaCallLink>();// [calllink1, calllink2 ]
 
         public FileMetaCallNode( FileMeta fm, Node _node )
         {
@@ -298,27 +294,11 @@ namespace SimpleLanguage.Compile
                     m_InputTemplateNodeList.Add(aa);
                 }
             }
-            if ( m_Node.bracketNode != null )     //[1,2,3,4]
+            if ( m_Node.bracketNode != null )     //[1][1][2][]
             {
                 isArray = true;
-                m_FileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, m_Node);
-                m_BeginBracketToken = m_FileMetaBracketTerm.token;
-                m_EndBracketToken = m_FileMetaBracketTerm.endToken;
-                
-                List<Node> list = m_Node.bracketNode.childList;
-                for (int i = 0; i < list.Count; i++)
-                {
-                    if (list[i].nodeType == ENodeType.Comma)
-                    {
-                        if( i == list.Count -1 )
-                        {
-                            Log.AddInStructFileMeta(EError.None, "Warning [1,2,3,]有多余逗号出现??");
-                        }
-                        continue;
-                    }
-                    var aa = new FileMetaCallLink(m_FileMeta, list[i]);
-                    m_ArrayNodeList.Add(aa);
-                }
+                var fileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, m_Node);
+                m_FileMetaBracketTermList.Add(fileMetaBracketTerm);                
                 
             }
             if (m_Node.blockNode != null)     // { 1,2,3,4 }
@@ -339,10 +319,6 @@ namespace SimpleLanguage.Compile
                     sb.Append(m_FileMetaBraceTerm.ToFormatString());
                 }
             }
-            else if(m_FileMetaBracketTerm != null )
-            {
-                sb.Append(m_FileMetaBracketTerm.ToFormatString());
-            }
             else if( m_FileMetaBraceTerm != null )
             {
                 sb.Append(m_FileMetaBraceTerm.ToFormatString());
@@ -353,14 +329,18 @@ namespace SimpleLanguage.Compile
                 sb.Append(token?.ToConstString());
                 if(isArray )
                 {
-                    sb.Append(m_BeginBracketToken.lexeme?.ToString());
-                    for (int i = 0; i < m_ArrayNodeList.Count; i++)
+                    for( int i = 0; i < m_FileMetaBracketTermList.Count; i++ )
                     {
-                        sb.Append(m_ArrayNodeList[i].ToFormatString());
-                        if (i < m_ArrayNodeList.Count - 1)
-                            sb.Append(",");
-                    }                    
-                    sb.Append(m_EndBracketToken.lexeme?.ToString());
+                        var fmbt = m_FileMetaBracketTermList[i];
+                        sb.Append(fmbt.beginToken?.lexeme?.ToString());
+                        for (int j = 0; j < fmbt?.fileMetaExpressList?.Count; i++)
+                        {
+                            sb.Append(fmbt?.fileMetaExpressList[i].ToFormatString());
+                            if (i < fmbt?.fileMetaExpressList.Count - 1)
+                                sb.Append(",");
+                        }
+                        sb.Append(fmbt.endToken?.lexeme?.ToString());
+                    }
                 }
                 if (isTemplate)
                 {
