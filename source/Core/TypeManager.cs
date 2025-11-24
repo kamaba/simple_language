@@ -213,7 +213,6 @@ namespace SimpleLanguage.Core
             return null;
         }
         #endregion
-
         #region 模板函数处理区
         public MetaType GetMetaTypeByTemplateFunction(MetaClass curMc, MetaMemberFunction findFun, FileMetaClassDefine fmcd)
         {

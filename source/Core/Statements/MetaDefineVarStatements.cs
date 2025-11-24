@@ -71,7 +71,7 @@ namespace SimpleLanguage.Core
                     mgtc.ParseGenTemplateClass(mgtc);
                     mgtc.ParseGenMemberVarible();
                 }
-                if(mdt.metaClass == CoreMetaClassManager.arrayMetaClass )
+                if(mdt.isArray )
                 {
                     mdt.SetArrayDimension(1);
                 }

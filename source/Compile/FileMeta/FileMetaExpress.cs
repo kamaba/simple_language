@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml;
 using System.Xml.Linq;
 using SimpleLanguage.Parse;
 
@@ -749,18 +750,22 @@ namespace SimpleLanguage.Compile
     }
     public class FileMetaBracketTerm : FileMetaBaseTerm
     {
-        public Token endToken => m_BracketeEndToken;
+        public Token beginToken => m_BeginBracketToken;
+        public Token endToken => m_EndBracketeToken;
 
-        Token m_BracketeEndToken = null;
-        // = [1,2,3,4,A(),[1,2,3]]
+        Token m_BeginBracketToken = null;
+        Token m_EndBracketeToken = null;
+        //private List<FileMetaCallLink> m_ArrayNodeList = new List<FileMetaCallLink>();// [calllink1, calllink2 ]
+        // = [1][2][var1.index]
         public FileMetaBracketTerm(FileMeta fm, Node node )
         {
             m_FileMeta = fm;
             m_Root = this;
             m_Token = node.token;
-            m_BracketeEndToken = node.endToken;
+            m_BeginBracketToken = node.token;
+            m_EndBracketeToken = node.endToken;
 
-            for( int i = 0; i < node.childList.Count; i++ )
+            for ( int i = 0; i < node.childList.Count; i++ )
             {
                 var cnode = node.childList[i];
                 if( cnode.nodeType == ENodeType.ConstValue )
@@ -777,6 +782,11 @@ namespace SimpleLanguage.Compile
                 {
                     var fileMetaSymbolTerm = new FileMetaSymbolTerm(m_FileMeta, cnode.token);
                     AddFileMetaTerm(fileMetaSymbolTerm);
+                    //if (i == list.Count - 1)
+                    //{
+                    //    Log.AddInStructFileMeta(EError.None, "Warning [1,2,3,]有多余逗号出现??");
+                    //}
+                    //continue;
                 }
                 else if (cnode.nodeType == ENodeType.Par)
                 {
@@ -801,7 +811,7 @@ namespace SimpleLanguage.Compile
                 }
             }
         }
-        // = [{a=20;b="aaa";},{a=30;b="ccc";}] 
+        // = {{a=20;b="aaa";},{a=30;b="ccc";}}
         public FileMetaBracketTerm( FileMeta fm, Node node, int a )
         {
             int type = -1;
