@@ -662,7 +662,7 @@ namespace SimpleLanguage.Core
 
         private FileMetaParTerm m_FileMetaParTerm = null;
         private FileMetaCallTerm m_FileMetaCallTerm = null;
-        private FileMetaBraceTerm m_FileMetaBraceTerm = null;
+        private List<FileMetaBraceTerm> m_FileMetaBraceTermList = new List<FileMetaBraceTerm>();
         private FileMetaConstValueTerm m_FileMetaConstValueTerm = null;
 
         private MetaExpressNode m_MetaEnumValue = null;
@@ -685,21 +685,21 @@ namespace SimpleLanguage.Core
             m_MetaMemberFunction = mcen.metaCallLink.finalCallNode.methodCall.function as MetaMemberFunction;
             m_MetaDefineType = mcen.metaCallLink.finalCallNode.callMetaType;
             
-            if(mcen.metaCallLink.callNodeList.Count > 0 )
-            {
-                m_FileMetaBraceTerm = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1].fileMetaBraceTerm;
-            }
+            //if(mcen.metaCallLink.callNodeList.Count > 0 )
+            //{
+            //    m_FileMetaBraceTerm = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1].fileMetaBraceTerm;
+            //}
 
-            if (m_FileMetaBraceTerm != null)  //可以使用  ArrClass(){ x = ??} 的方式
-            {
-                //if (EParseFrom.InputParamExpress)
-                //{
-                //    Log.AddInStructMeta(EError.None, "Error 在InputParam 里边，构建函数，只允许 使用ClassName() 的方式, " +
-                //        "不允许使用 ClassName(){}的方式" + m_FileMetaCallNode.fileMetaBraceTerm.ToTokenString());
-                //    return false;
-                //}
-                m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(m_FileMetaBraceTerm, m_OwnerMetaBlockStatements, m_OwnerMetaClass, m_StoreMetaVariable );
-            }
+            //if (m_FileMetaBraceTerm != null)  //可以使用  ArrClass(){ x = ??} 的方式
+            //{
+            //    //if (EParseFrom.InputParamExpress)
+            //    //{
+            //    //    Log.AddInStructMeta(EError.None, "Error 在InputParam 里边，构建函数，只允许 使用ClassName() 的方式, " +
+            //    //        "不允许使用 ClassName(){}的方式" + m_FileMetaCallNode.fileMetaBraceTerm.ToTokenString());
+            //    //    return false;
+            //    //}
+            //    //m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(m_FileMetaBraceTerm, m_OwnerMetaBlockStatements, m_OwnerMetaClass, m_StoreMetaVariable );
+            //}
             
         }
         public MetaNewObjectExpressNode( MetaClass ownermc, List<MetaDynamicClass> list )

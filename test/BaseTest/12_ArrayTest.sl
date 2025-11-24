@@ -164,7 +164,8 @@ ArrayTest
     static fun()
     { 
         #int intvalue = 20
-        #a1 = object[2][2][]{intvalue,1};    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
+        #a1 = object[2]{intvalue,1};    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
+        #alist = List(2){ intvalue, 1 }
         a1 = object[2][2][]{ { {1,2,3}, {3,4,5} }, { {5,6,6}, {7,8,9} } };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         #object[][] a2 = int[2][3];
         #a1._setValue_( 1, 123 )
@@ -306,3 +307,4 @@ ArrayTest
 # 3.1.4 Array 没有具体的Add方法，只有 Copy
 # 3.1.5 Array(){ Array(){ Array(){} } } 可申请多维数组，多维数组时，必须有数量    Array(5){ Array(2){   Array(10){}, Array(12){}  } }   即为一个 5x2x12的三维数据
 # 3.1.6 数组不支持多维数组，只支持交错数组，如果要实现多维数组，需要用户自己实现
+# 3.1.7 给数据赋值，只能使用 {} 的方法，往里边填存数据  不能使用[]的方式，该符号，只在定义数组，或者是数组取值的时候使用
