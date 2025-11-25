@@ -105,7 +105,7 @@ namespace SimpleLanguage.Core
         }
         public override void CalcReturnType()
         {
-            m_MetaDefineType = m_ConvertTargetMetaType;
+            m_MetaType = m_ConvertTargetMetaType;
         }
         public override string ToFormatString()
         {

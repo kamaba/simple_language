@@ -755,8 +755,7 @@ namespace SimpleLanguage.Compile
 
         Token m_BeginBracketToken = null;
         Token m_EndBracketetToken = null;
-        //private List<FileMetaCallLink> m_ArrayNodeList = new List<FileMetaCallLink>();// [calllink1, calllink2 ]
-        // = [1][2][var1.index]
+        // = [1][2][var1.index]                               
         public FileMetaBracketTerm(FileMeta fm, Node node )
         {
             m_FileMeta = fm;
@@ -782,11 +781,11 @@ namespace SimpleLanguage.Compile
                 {
                     var fileMetaSymbolTerm = new FileMetaSymbolTerm(m_FileMeta, cnode.token);
                     AddFileMetaTerm(fileMetaSymbolTerm);
-                    //if (i == list.Count - 1)
-                    //{
-                    //    Log.AddInStructFileMeta(EError.None, "Warning [1,2,3,]有多余逗号出现??");
-                    //}
-                    //continue;
+                    if (i == node.childList.Count - 1)
+                    {
+                        Log.AddInStructFileMeta(EError.None, "Warning [1,2,3,]有多余逗号出现??");
+                    }
+                    continue;
                 }
                 else if (cnode.nodeType == ENodeType.Par)
                 {
@@ -811,7 +810,7 @@ namespace SimpleLanguage.Compile
                 }
             }
         }
-        // = {{a=20;b="aaa";},{a=30;b="ccc";}}
+        // = [{a=20;b="aaa";},{a=30;b="ccc";}]  在data里边，有这样使用的过程
         public FileMetaBracketTerm( FileMeta fm, Node node, int a )
         {
             int type = -1;
