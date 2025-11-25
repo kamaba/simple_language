@@ -236,13 +236,10 @@ namespace SimpleLanguage.Core
                         }
                     case FileMetaBracketTerm fmbt:
                         {
-                            //Debug.Write("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
+                            MetaArrayExpressNode maen = new MetaArrayExpressNode(fmbt.fileMetaExpressList, cep.ownerMetaClass, cep.ownerMBS, cep.equalMetaVariable);
 
-                            MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode((root as FileMetaBracketTerm), ownerClass, cep.ownerMBS, cep.equalMetaVariable);
-                            if (mnoen != null)
-                                return mnoen;
+                            return maen;
                         }
-                        break;
                     default:
                         Log.AddInStructMeta(EError.None, "Error CreateExpressNode 创建表达项不能为符号");
                         break;

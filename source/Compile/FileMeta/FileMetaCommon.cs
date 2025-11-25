@@ -444,11 +444,11 @@ namespace SimpleLanguage.Compile
         private FileMeta m_FileMeta = null;
         private Node m_Node = null;
         private List<FileMetaCallNode> m_CallNodeList = new List<FileMetaCallNode>();
-        public FileMetaCallLink( FileMeta fm, Node node )
+        public FileMetaCallLink( FileMeta fm, Node node, bool isIncludeSelf = true )
         {
             m_Node = node;
             m_FileMeta = fm;
-            AddChildExtendLinkList(m_Node, true);
+            AddChildExtendLinkList(m_Node, isIncludeSelf );
         }
         void AddChildExtendLinkList( Node cnode, bool isIncludeSelf )
         {

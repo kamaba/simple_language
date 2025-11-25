@@ -39,35 +39,35 @@ namespace SimpleLanguage.Core
         {
             get
             {
-                return MetaTypeFactory.GetOpLevelByMetaType(m_MetaDefineType);
+                return MetaTypeFactory.GetOpLevelByMetaType(m_MetaType);
             }
         }
 
-        public MetaType metaDefineType => m_MetaDefineType;
+        public MetaType metaType => m_MetaType;
         public MetaClass ownerMetaClass => m_OwnerMetaClass;
         public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
 
         protected MetaClass m_OwnerMetaClass = null;
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
-        protected MetaType m_MetaDefineType = null;
+        protected MetaType m_MetaType = null;
         public virtual int CalcParseLevel(int level) { return level; }
         public virtual void CalcReturnType() { }
         public virtual void Parse(AllowUseSettings auc) { }
         public MetaClass GetReturnMetaClass()
         {
-            if (m_MetaDefineType == null)
+            if (m_MetaType == null)
             {
                 GetReturnMetaDefineType();
             }
-            return m_MetaDefineType?.metaClass;
+            return m_MetaType?.metaClass;
         }
         public virtual void SetMetaType( MetaType mt )
         {
-            m_MetaDefineType = mt;
+            m_MetaType = mt;
         }
         public virtual MetaType GetReturnMetaDefineType()
         {
-            return m_MetaDefineType;
+            return m_MetaType;
         }
         public virtual string ToFormatString()
         {

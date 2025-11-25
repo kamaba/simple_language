@@ -166,7 +166,7 @@ ArrayTest
         #int intvalue = 20
         #a1 = object[2]{intvalue,1};    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         #alist = List(2){ intvalue, 1 }
-        a1 = object[2][2][]{ { {1,2,3}, {3,4,5} }, { {5,6,6}, {7,8,9} } };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
+        a1 = object[2][3][]{ { {1,2,3}, {3,4,5} }, { {5,6,6}, {7,8,9} } };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         #object[][] a2 = int[2][3];
         #a1._setValue_( 1, 123 )
         #aa = a1._getValue_(1)

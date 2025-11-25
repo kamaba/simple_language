@@ -57,12 +57,12 @@ namespace SimpleLanguage.Core
         {
             if ( m_OpSign == ESingleOpSign.Not)
             {
-                m_MetaDefineType.SetMetaClass( CoreMetaClassManager.booleanMetaClass );
+                m_MetaType.SetMetaClass( CoreMetaClassManager.booleanMetaClass );
             }
             else
             {
                 m_Value.CalcReturnType();
-                m_MetaDefineType = m_Value.metaDefineType;
+                m_MetaType = m_Value.metaType;
             }
         }
         public MetaExpressNode SimulateCompute()
@@ -237,7 +237,7 @@ namespace SimpleLanguage.Core
             m_Left = _left;
             m_Right = _right;
             m_FileMetaBaseTerm = fme;
-            m_MetaDefineType = mt;
+            m_MetaType = mt;
 
             ETokenType ett = fme.token.type;
             m_SignToken = fme.token;
@@ -395,13 +395,13 @@ namespace SimpleLanguage.Core
                     case ELeftRightOpSign.And:
                     case ELeftRightOpSign.IsType:
                         {
-                            if(m_MetaDefineType != null )
+                            if(m_MetaType != null )
                             {
-                                m_MetaDefineType.SetMetaClass(CoreMetaClassManager.booleanMetaClass);
+                                m_MetaType.SetMetaClass(CoreMetaClassManager.booleanMetaClass);
                             }
                             else
                             {
-                                m_MetaDefineType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                                m_MetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
                             }
                         }
                         break;
@@ -416,41 +416,41 @@ namespace SimpleLanguage.Core
         {
             if (m_Left.opLevel < m_Right.opLevel)
             {
-                m_MetaDefineType = m_Right.metaDefineType;
-                //m_Left.metaDefineType.SetMetaClass(m_MetaDefineType.metaClass);
+                m_MetaType = m_Right.metaType;
+                //m_Left.metaDefineType.SetMetaClass(m_MetaType.metaClass);
                 //m_Left.CalcReturnType();
 
                 if (m_Right.opLevel < 10)
                 {
                     m_LeftConvert = new ConvertType()
                     {
-                        oriType = m_Left.metaDefineType.metaClass.eType,
-                        targetType = m_MetaDefineType.metaClass.eType
+                        oriType = m_Left.metaType.metaClass.eType,
+                        targetType = m_MetaType.metaClass.eType
                     };
                 }
             }
             else if (m_Left.opLevel > m_Right.opLevel)
             {
-                m_MetaDefineType = m_Left.metaDefineType;
-                //MetaType newmt = new MetaType(m_MetaDefineType.metaClass);
+                m_MetaType = m_Left.metaType;
+                //MetaType newmt = new MetaType(m_MetaType.metaClass);
                 //m_Right.SetMetaType(newmt);
                 //m_Right.CalcReturnType();
                 if (m_Left.opLevel < 10)
                 {
                     m_RightConvert = new ConvertType()
                     {
-                        oriType = m_Right.metaDefineType.metaClass.eType,
-                        targetType = m_MetaDefineType.metaClass.eType
+                        oriType = m_Right.metaType.metaClass.eType,
+                        targetType = m_MetaType.metaClass.eType
                     };
                 }
             }
             else
             {
-                m_MetaDefineType = m_Left.metaDefineType;
-                if (ClassManager.IsNumberClass(m_Left.metaDefineType.metaClass)
-                    && ClassManager.IsNumberClass(m_Right.metaDefineType.metaClass)
-                    || m_Left.metaDefineType.metaClass == CoreMetaClassManager.stringMetaClass
-                    || m_Right.metaDefineType.metaClass == CoreMetaClassManager.stringMetaClass ) 
+                m_MetaType = m_Left.metaType;
+                if (ClassManager.IsNumberClass(m_Left.metaType.metaClass)
+                    && ClassManager.IsNumberClass(m_Right.metaType.metaClass)
+                    || m_Left.metaType.metaClass == CoreMetaClassManager.stringMetaClass
+                    || m_Right.metaType.metaClass == CoreMetaClassManager.stringMetaClass ) 
                 {
 
                 }
@@ -460,45 +460,45 @@ namespace SimpleLanguage.Core
         {
             if (m_Left.opLevel < m_Right.opLevel)
             {
-                m_MetaDefineType = m_Right.metaDefineType;
+                m_MetaType = m_Right.metaType;
             }
             else if (m_Left.opLevel > m_Right.opLevel)
             {
-                m_MetaDefineType = m_Left.metaDefineType;
+                m_MetaType = m_Left.metaType;
             }
             else
             {
-                m_MetaDefineType = m_Left.metaDefineType;
+                m_MetaType = m_Left.metaType;
             }
         }
         public void ParseMultiplyOrModulo()
         {
             if (m_Left.opLevel < m_Right.opLevel)
             {
-                m_MetaDefineType = m_Left.metaDefineType;
+                m_MetaType = m_Left.metaType;
             }
             else if (m_Left.opLevel > m_Right.opLevel)
             {
-                m_MetaDefineType = m_Left.metaDefineType;
+                m_MetaType = m_Left.metaType;
             }
             else
             {
-                m_MetaDefineType = m_Left.metaDefineType;
+                m_MetaType = m_Left.metaType;
             }
         }
         public void ParseCast()
         {
             if (m_Left.opLevel < m_Right.opLevel)
             {
-                m_MetaDefineType = m_Left.metaDefineType;
+                m_MetaType = m_Left.metaType;
             }
             else if (m_Left.opLevel > m_Right.opLevel)
             {
-                m_MetaDefineType = m_Left.metaDefineType;
+                m_MetaType = m_Left.metaType;
             }
             else
             {
-                m_MetaDefineType = m_Left.metaDefineType;
+                m_MetaType = m_Left.metaType;
             }
         }
         public MetaExpressNode SimulateCompute(ExpressOptimizeConfig config)

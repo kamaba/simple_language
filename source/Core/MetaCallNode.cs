@@ -155,8 +155,14 @@ namespace SimpleLanguage.Core
         private string m_Name;
         //private bool m_NextNotAllowParse = false;
         private bool m_VisitFlag = false;
+
         public MetaCallNode()
         { }
+        public MetaCallNode( MetaConstExpressNode mcen )
+        {
+            m_CallNodeType = ECallNodeType.ConstValue;
+            m_ExpressNode = mcen;
+        }
         public MetaCallNode(FileMetaCallNode fmcn1, FileMetaCallNode fmcn2, MetaClass mc, MetaBlockStatements mbs, MetaType fdmt )
         {
             m_FileMetaCallSign = fmcn1;
@@ -252,9 +258,9 @@ namespace SimpleLanguage.Core
                     cep.ownerMBS = m_OwnerMetaFunctionBlock;
                     cep.ownerMetaClass = m_OwnerMetaFunctionBlock.ownerMetaClass;
 
-                    m_ExpressNode = ExpressManager.CreateExpressNodeByCEP(cep); //有问题
-                    m_ExpressNode.Parse(_auc);
-                    m_BracketExpressList.Add(m_ExpressNode);
+                    var en = ExpressManager.CreateExpressNodeByCEP(cep);
+                    en.Parse(_auc);
+                    m_BracketExpressList.Add(en);
                 }
             }
             return flag;
@@ -1328,15 +1334,11 @@ namespace SimpleLanguage.Core
             MetaNode retMC = null;
             // 查找定义关键字的class => range   array
             if (m_Token.extend != null)
-            {                
-                EType etype = EType.None;
-                if (Enum.TryParse<EType>(m_Token.extend.ToString(), out etype))
+            {
+                MetaNode findMB = CoreMetaClassManager.GetCoreMetaClass(m_Token.extend.ToString());
+                if (findMB?.IsMetaClass() == true)
                 {
-                    var retMC2 = CoreMetaClassManager.GetMetaClassByEType(etype);
-                    if ( retMC2 != null )
-                    {
-                        retMC = retMC2.metaNode;
-                    }
+                    retMC = findMB;
                 }
             }
             //查找类模型
