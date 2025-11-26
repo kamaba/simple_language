@@ -386,15 +386,15 @@ namespace SimpleLanguage.Core
 
             if (m_FileMetaBraceTerm != null )
             {
-                if( m_FileMetaBraceTerm.fileMetaCallLinkList?.Count > 0 )
+                if( m_FileMetaBraceTerm.fileMetaTermList.Count > 0 )
                 {
                     Log.AddInStructMeta( EError.None, "解析大括号里边的内容" );
-                    for (int i = 0; i < m_FileMetaBraceTerm.fileMetaCallLinkList.Count; i++)
+                    for (int i = 0; i < m_FileMetaBraceTerm.fileMetaTermList.Count; i++)
                     {
-                        var fas = m_FileMetaBraceTerm.fileMetaCallLinkList[i];
-                        MetaBraceAssignStatements mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), fas);
-                        m_AssignStatementsList.Add(mas);
-                        m_ContentType = EStatementsContentType.ClassValueAssign;
+                        var fas = m_FileMetaBraceTerm.fileMetaTermList[i];
+                        //MetaBraceAssignStatements mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), fas);
+                        //m_AssignStatementsList.Add(mas);
+                        //m_ContentType = EStatementsContentType.ClassValueAssign;
                     }
                 }
                 if( m_FileMetaBraceTerm.fileMetaAssignSyntaxList != null && m_FileMetaBraceTerm.fileMetaAssignSyntaxList.Count > 0 )
