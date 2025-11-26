@@ -578,9 +578,12 @@ namespace SimpleLanguage.Compile
 
         private List<FileMetaSyntax> m_FileMetaAssignSyntaxList = new List<FileMetaSyntax>();
         private List<FileMetaCallLink> m_FileMetaCallLinkList = new List<FileMetaCallLink>();
+
+        private List<FileMetaBaseTerm> m_FileMetaTermList = new List<FileMetaBaseTerm>();
         private Token m_BraceEndToken = null;
         private Node m_Node = null;
-        // { a = 10, b = 20, c = Class1() }
+        // { a = 10, b = 20, c = Class1(), 10, [1,2,3], [[1,2],[3,4],100], Class1():100, (1,2,3) }
+        // 支持大括号的内容 有 赋值语句 一般在动态类赋值里边使用 有直接的常量值, 有内嵌数组, 还有可能支持 Map的kv形式  (1,2,3) 这个不确定支不支持
         public FileMetaBraceTerm( FileMeta fm, Node node )
         {
             m_FileMeta = fm;
@@ -612,6 +615,10 @@ namespace SimpleLanguage.Compile
                 {
                     continue;
                 }
+                else if( c2node.nodeType == ENodeType.Bracket )
+                {
+                    nodeListList.Add(c2node.childList);
+                }
                 else
                 {
                     tempNodeList.Add(c2node);
@@ -632,7 +639,7 @@ namespace SimpleLanguage.Compile
                 for (int j = 0; j < nodeList.Count; j++)
                 {
                     var nl2 = nodeList[j];
-                    if (nl2.nodeType == ENodeType.Assign)
+                    if (nl2.nodeType == ENodeType.Assign) // a= 100
                     {
                         if (assignToken == null)
                         {
@@ -642,6 +649,18 @@ namespace SimpleLanguage.Compile
                         else
                         {
                             Log.AddInStructFileMeta(EError.None, " Errorr FileMetaBraceTerm.HandleBraceTerm 解析{ a = ?} 时，多个=号 Token: " + assignToken.ToLexemeAllString() );
+                        }
+                    }
+                    else if( nl2.nodeType == ENodeType.Key && nl2.token.type == ETokenType.Colon ) // Map<int,string>(){ 100:"aaa", 200:"bbb" }
+                    {
+                        if (assignToken == null)
+                        {
+                            assignToken = nl2.token;
+                            continue;
+                        }
+                        else
+                        {
+                            Log.AddInStructFileMeta(EError.None, " Errorr FileMetaBraceTerm.HandleBraceTerm 解析{ a:'aaa'} 时，多个:号 Token: " + assignToken.ToLexemeAllString());
                         }
                     }
                     else

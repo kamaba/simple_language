@@ -138,6 +138,12 @@ namespace SimpleLanguage.Core
                     m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
                     m_ExpressNode.CalcReturnType();
                 }
+                else if( m_ExpressNode is MetaArrayExpressNode maen )
+                {
+                    m_ExpressNode = new MetaNewObjectExpressNode(maen, ownerMetaClass, m_OwnerMetaBlockStatements, m_DefineVarMetaVariable );
+                    m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                    m_ExpressNode.CalcReturnType();
+                }
 
                 expressRetMetaDefineType = m_ExpressNode.GetReturnMetaDefineType();               
                 if (expressRetMetaDefineType == null)

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.IR;
+using SimpleLanguage.Lib;
 using SimpleLanguage.Parse;
 
 
@@ -50,6 +51,11 @@ namespace SimpleLanguage.Core
         {
             m_OwnerMetaBlockStatements = mbs;
             m_MetaExpress = men;
+
+            if( m_MetaExpress is MetaArrayExpressNode maen )
+            {
+                m_MetaExpress = new MetaNewObjectExpressNode(maen, mc.metaClass, mbs, null);
+            }
         }
         public MetaBraceAssignStatements(MetaBlockStatements mbs, MetaExpressNode men, MetaMemberVariable mmv )
         {
@@ -295,6 +301,7 @@ namespace SimpleLanguage.Core
         private List<MetaBraceAssignStatements> m_AssignStatementsList = new List<MetaBraceAssignStatements>();
         private FileMetaBraceTerm m_FileMetaBraceTerm = null;
         private FileMetaBracketTerm m_FileMetaBracketTerm = null;
+        private MetaArrayExpressNode m_MetaArrayExpressNode = null;
         private MetaClass m_OwnerMetaClass = null;
         private MetaBlockStatements m_OwnerMetaBlockStatements = null;
         private MetaType m_DefineMetaType = null;
@@ -303,6 +310,22 @@ namespace SimpleLanguage.Core
         private MetaData m_NewTempMetaData = null;
         private EStatementsContentType m_ContentType = EStatementsContentType.None;
 
+        public MetaBraceOrBracketStatementsContent( MetaArrayExpressNode maen, MetaClass mc, MetaBlockStatements mbs, MetaVariable parentMt)
+        {
+            m_OwnerMetaBlockStatements = mbs;
+            m_OwnerMetaClass = mc;
+            m_EqualMetaVariable = parentMt;
+            m_MetaArrayExpressNode = maen;
+
+            for( int i = 0; i < m_MetaArrayExpressNode.metaCallArray.Count; i++ )
+            {
+                var men = m_MetaArrayExpressNode.metaCallArray[i];
+                MetaBraceAssignStatements mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
+                mas.CalcReturnType();
+                m_AssignStatementsList.Add(mas);
+            }
+            m_ContentType = EStatementsContentType.ArrayValue;
+        }
         public MetaBraceOrBracketStatementsContent( MetaBlockStatements mbs, MetaClass mc )
         {
             m_OwnerMetaBlockStatements = mbs;
@@ -365,7 +388,7 @@ namespace SimpleLanguage.Core
             {
                 if( m_FileMetaBraceTerm.fileMetaCallLinkList?.Count > 0 )
                 {
-                    Debug.Write("-------------------------------------------------------------------");
+                    Log.AddInStructMeta( EError.None, "解析大括号里边的内容" );
                     for (int i = 0; i < m_FileMetaBraceTerm.fileMetaCallLinkList.Count; i++)
                     {
                         var fas = m_FileMetaBraceTerm.fileMetaCallLinkList[i];
@@ -668,6 +691,7 @@ namespace SimpleLanguage.Core
         private MetaBraceOrBracketStatementsContent m_MetaBraceOrBracketStatementsContent = null;
         private ENewType m_NewType = ENewType.CommomClass;
         private int m_ArrayLength = 0;
+        private int m_ArrayDimension = 0;
         private bool m_NeedInitMemberVariable = true;
 
 
@@ -686,14 +710,17 @@ namespace SimpleLanguage.Core
             if( mcen.metaCallLink.finalCallNode.callMetaType.isArray )
             {
                 m_NewType = ENewType.ArrayClass;
-                m_ArrayLength = mcen.metaCallLink.finalCallNode.callMetaType.arrayDimension;
-                m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1].fileMetaBraceTerm,
+                m_ArrayDimension = mcen.metaCallLink.finalCallNode.callMetaType.arrayDimension;
+                var fma = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1].fileMetaBraceTerm;
+                m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fma,
                     m_OwnerMetaBlockStatements, m_OwnerMetaClass);
 
             }
             else
             {
                 m_NewType = ENewType.CommomClass;
+                var fma = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1].fileMetaBraceTerm;
+                m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fma,  m_OwnerMetaBlockStatements, m_OwnerMetaClass);
             }
             //if(mcen.metaCallLink.callNodeList.Count > 0 )
             //{
@@ -710,7 +737,7 @@ namespace SimpleLanguage.Core
             //    //}
             //    //m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(m_FileMetaBraceTerm, m_OwnerMetaBlockStatements, m_OwnerMetaClass, m_StoreMetaVariable );
             //}
-            
+
         }
         public MetaNewObjectExpressNode( MetaClass ownermc, List<MetaDynamicClass> list )
         {
@@ -958,6 +985,17 @@ namespace SimpleLanguage.Core
             m_MetaType = new MetaType(mt);
 
             Init();
+        }
+        public MetaNewObjectExpressNode(MetaArrayExpressNode maen, MetaClass mc, MetaBlockStatements mbs, MetaVariable equalMV )
+        {
+            m_OwnerMetaClass = mc;
+            m_OwnerMetaBlockStatements = mbs;
+
+            m_MetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+            m_NewType = ENewType.ArrayClass;
+
+            m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(maen, mc, mbs, equalMV );
+            m_ArrayLength = m_MetaBraceOrBracketStatementsContent.assignStatementsList.Count;
         }
         // Array arr = [1,2,3]
         public MetaNewObjectExpressNode( FileMetaBracketTerm fmbt, MetaClass mc, MetaBlockStatements mbs, MetaVariable equalMV )
