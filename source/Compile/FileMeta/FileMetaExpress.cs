@@ -573,7 +573,8 @@ namespace SimpleLanguage.Compile
     public class FileMetaBraceTerm : FileMetaBaseTerm
     {
         public List<FileMetaSyntax> fileMetaAssignSyntaxList => m_FileMetaAssignSyntaxList;
-        public List<FileMetaCallLink> fileMetaCallLinkList => m_FileMetaCallLinkList;
+        //public List<FileMetaCallLink> fileMetaCallLinkList => m_FileMetaCallLinkList;
+        public List<FileMetaBaseTerm> fileMetaTermList => m_FileMetaTermList;
         public bool isArray { get; set; } = false;
 
         private List<FileMetaSyntax> m_FileMetaAssignSyntaxList = new List<FileMetaSyntax>();
@@ -615,10 +616,10 @@ namespace SimpleLanguage.Compile
                 {
                     continue;
                 }
-                else if( c2node.nodeType == ENodeType.Bracket )
-                {
-                    nodeListList.Add(c2node.childList);
-                }
+                //else if( c2node.nodeType == ENodeType.Bracket )
+                //{
+                //    nodeListList.Add(c2node);
+                //}
                 else
                 {
                     tempNodeList.Add(c2node);
@@ -691,8 +692,21 @@ namespace SimpleLanguage.Compile
                 {
                     if (defineNodeList.Count >= 1 && valueNodeList.Count == 0)
                     {
-                        FileMetaCallLink fmcl = new FileMetaCallLink(m_FileMeta, defineNodeList[0]);
-                        fileMetaCallLinkList.Add(fmcl);
+                        if(defineNodeList[0].nodeType == ENodeType.Bracket )
+                        {
+                            FileMetaBracketTerm tmbt = new FileMetaBracketTerm(m_FileMeta, defineNodeList[0]);
+                            m_FileMetaTermList.Add(tmbt);
+                        }
+                        else if(defineNodeList[0].nodeType == ENodeType.Brace )
+                        {
+                            FileMetaBraceTerm tmbt = new FileMetaBraceTerm(m_FileMeta, defineNodeList[0]);
+                            m_FileMetaTermList.Add(tmbt);
+                        }
+                        else
+                        {
+                            Log.AddInStructFileMeta(EError.None, "Error 在解析为{}中，数组形式 解析有问题!!");
+                            continue;
+                        }
                     }
                     else
                     {
