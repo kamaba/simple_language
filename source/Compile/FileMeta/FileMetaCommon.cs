@@ -304,7 +304,7 @@ namespace SimpleLanguage.Compile
                 }           
                 
             }
-            if (m_Node.blockNode != null)     // { 1,2,3,4 }
+            if (m_Node.blockNode != null)     // { 1,2,3,4 }  { [1,2,3], [2,3,4] }
             {
                 m_FileMetaBraceTerm = new FileMetaBraceTerm(m_FileMeta, m_Node.blockNode );
             }
