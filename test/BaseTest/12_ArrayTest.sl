@@ -172,8 +172,10 @@ ArrayTest
         # alist = List(2){ intvalue, 1 }
         # map = Map<int,string>(){ a1.$0:"al", 33:"wang" }
         # a111 = [[[1,2,3],[3,4,5],[6,7,8]],[ [10,11,12],[14,15,15],[16,17,18] ]];  # int[2][3][3] 
-        object[][][] a1 = int[3][2][]{ [ [1,2,3], [3,4,5] ], [ [5,6,6], [7,8,9] ] };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
+        object[1][2][3] a1 = int[3][2][]{ [ [1,2,3], [3,4,5] ], [ [5,6,6], [7,8,9] ] };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         #object[][] a2 = int[2][3];
+        #a2[0] = int[3]
+        #a2[1] = [[1,2,3],[2],[3,4]]
         #a1._setValue_( 1, 123 )
         #aa = a1._getValue_(1)
         #System.Console.WriteLine("1111111111= " + aa )
@@ -181,6 +183,13 @@ ArrayTest
 
         #!
         int[] a33 = {1,2,3,4};
+        a33[3] = 123
+        var aa333 =  a33[0];
+        System.Console.WriteLine("1111111111= " + a33[3] + "-----" + a33[0] + "xxxxx=" + aa333 )
+        !#
+
+         #!
+        int[2][] a335 = {[], int[3]{ 1,2,3 } };
         a33[3] = 123
         var aa333 =  a33[0];
         System.Console.WriteLine("1111111111= " + a33[3] + "-----" + a33[0] + "xxxxx=" + aa333 )

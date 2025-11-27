@@ -1214,7 +1214,8 @@ namespace SimpleLanguage.Core
             for (int f = 0; f < (int)length; f++)
             {
                 MetaType mtnew = new MetaType(m_MetaType.metaClass);
-                mtnew.SetArrayDimension(depthLength.Count-1);
+                if(depthLength.Count > 0 )
+                    mtnew.SetArrayDimension(depthLength.Count); 
                 mt.AddArrayMetaType(mtnew);
 
                 if(depthLength.Count == 0 )
