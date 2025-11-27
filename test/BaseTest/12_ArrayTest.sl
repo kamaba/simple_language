@@ -155,7 +155,8 @@ ArrayTest
 {
     ArrClass
     {
-        int i = 0;
+        int i1 = 0;
+        i2 = "aaa"
     }
     Level<T>
     {
@@ -164,8 +165,12 @@ ArrayTest
     static fun()
     { 
         int intvalue = 20
+        var ac = ArrClass(){ i1 = intvalue, i2 = "okok" }
+        #System.Console.WriteLine("1111111111= " + ac.i1 + "    " + ac.i2 )
+
         # a1 = object[2]{intvalue,1};    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         # alist = List(2){ intvalue, 1 }
+        # map = Map<int,string>(){ a1.$0:"al", 33:"wang" }
         # a111 = [[[1,2,3],[3,4,5],[6,7,8]],[ [10,11,12],[14,15,15],[16,17,18] ]];  # int[2][3][3] 
         object[][][] a1 = int[3][2][]{ [ [1,2,3], [3,4,5] ], [ [5,6,6], [7,8,9] ] };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         #object[][] a2 = int[2][3];
@@ -189,7 +194,7 @@ ArrayTest
         System.Console.WriteLine("1111111111= " + aaaa34v )
         !#
 
-        var ac = ArrClass(){ i = 30 }
+        
         #!
         a35 = [[0,1,2,ac,4],[[11,12],[13,14]]];
         # a35[0] = [0,1,2,3,4] a35[1] = [[1,2,3],[2,3,4],[4,5,6],[7,8,9]]  a34[1][0][2] = 3  a35是个一维两值数组，访问a35[1] 是确定对象访问 再访问 是一个二维纯int数组，然后是a35[1][0][2] 后边两位是纯数组访问
