@@ -41,7 +41,7 @@ namespace SimpleLanguage.Core
         public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
         public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData;
 
-        public int arrayDimension => m_ArrayDimension;
+        public int arrayDimension => m_ArrayDimensionLengthList.Count;
         public EMetaTypeType eType => m_EType;
         public MetaClass metaClass => m_MetaClass;
         public MetaTemplate metaTemplate => m_MetaTemplate;
@@ -63,8 +63,7 @@ namespace SimpleLanguage.Core
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         private List<MetaType> m_GenTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         private List<MetaType> m_ArrayMetaTypeList = new List<MetaType>();
-        private int m_ArrayDimension = 0;
-
+        private List<int> m_ArrayDimensionLengthList = new List<int>();
         public MetaType()
         {
         }
@@ -159,7 +158,27 @@ namespace SimpleLanguage.Core
         public void SetArrayDimension( int disension  )
         {
             m_EType = EMetaTypeType.Array;
-            m_ArrayDimension = disension;
+            m_ArrayDimensionLengthList.Clear();
+            for( int i = 0; i < disension; i++ )
+                m_ArrayDimensionLengthList.Add(-1);
+        }
+        public void SetArrayDimensionLengthByIndex(int index, int length)
+        {
+            if (index < 0 || index >= m_ArrayDimensionLengthList.Count)
+            {
+                Log.AddInStructMeta(EError.None, "设置数组维度通过索引号失败，超出了范围!");
+                return;
+            }
+            m_ArrayDimensionLengthList[index] = length;
+        }
+        public int GetArrayDimensionLengthByIndex(int index )
+        {
+            if (index < 0 || index >= m_ArrayDimensionLengthList.Count)
+            {
+                Log.AddInStructMeta(EError.None, "设置数组维度通过索引号失败，超出了范围!");
+                return -1;
+            }
+            return m_ArrayDimensionLengthList[index];
         }
         public void SetMetaType( MetaType mt )
         {
@@ -495,9 +514,9 @@ namespace SimpleLanguage.Core
                 {
                     sb.Append(m_MetaClass.allClassName);
                 }
-                for( int i = 0; i < this.m_ArrayDimension; i++ )
+                for( int i = 0; i < this.m_ArrayDimensionLengthList.Count; i++ )
                 {
-                    sb.Append("[]");
+                    sb.Append("[" + this.m_ArrayDimensionLengthList[i] + "]");
                 }
             }
             else

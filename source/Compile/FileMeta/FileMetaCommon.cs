@@ -524,17 +524,17 @@ namespace SimpleLanguage.Compile
         public bool isInputTemplateData => m_IsInputTemplateData;
         public bool isArray { get; set; } = false;
         public List<FileInputTemplateNode> inputTemplateNodeList => m_InputTemplateNodeList;
-        public List<Token> arrayTokenList => m_ArrayTokenList;
+        public List<FileMetaBracketTerm> fileMetaBracketTermList => m_FileMetaBracketTermList;
+        public List<int> arrayDimsionLengthList => m_ArrayDimsionLengthList;
 
         private FileMeta m_FileMeta = null;
         private Token m_ClassNameToken = null;
         private Token m_AngleTokenBegin = null;
         private Token m_AngleTokenEnd = null;
-        private Token m_BracketTokenBegin = null;
-        private Token m_BracketTokenEnd = null;
         private Token m_MutToken = null;
-        private List<Token> m_ArrayTokenList = new List<Token>();
         private List<FileInputTemplateNode> m_InputTemplateNodeList = new List<FileInputTemplateNode>();
+        private List<FileMetaBracketTerm> m_FileMetaBracketTermList = new List<FileMetaBracketTerm>();
+        private List<int> m_ArrayDimsionLengthList = new List<int>();
 
         private List<Token> m_TokenList = new List<Token>();
         private bool m_IsInputTemplateData = false;
@@ -568,43 +568,13 @@ namespace SimpleLanguage.Compile
             if( node.bracketNode != null )
             {
                 isArray = true;
-                m_BracketTokenBegin = node.bracketNode.token;
-                m_BracketTokenEnd = node.bracketNode.endToken;
 
-                Token frontToken = m_BracketTokenBegin;
-                var cl = node.bracketNode.childList;
-                if ( cl.Count == 0 )
+                for( int i = 0; i < node.bracketNodeList.Count; i++ )
                 {
-                    var token = new Token(frontToken);
-                    token.SetLexeme(0, ETokenType.Number );
-                    token.SetExtend(EType.Int32);
-                    m_ArrayTokenList.Add(token);
+                    FileMetaBracketTerm fmbt = new FileMetaBracketTerm( m_FileMeta, node.bracketNodeList[i] );
+                    m_FileMetaBracketTermList.Add(fmbt);
                 }
-                else
-                {
-                    List<Token> tlist = new List<Token>();
-                    bool isOnlyComma = true;
-                    for (int i = 0; i < cl.Count; i++)
-                    {
-                        var cnode = cl[i];
-                        if (cnode.nodeType == ENodeType.Comma)
-                        {
-                            if( isOnlyComma )
-                            {
-                                Token t = new Token(cnode.token);
-                                t.SetLexeme(-1, ETokenType.Number);
-                                t.SetExtend(EType.Int32);
-                                m_ArrayTokenList.Add(t);
-                            }
-                        }
-                        else
-                        {
-                            isOnlyComma = false;
-                            m_ArrayTokenList.Add(cnode.token);
-                        }
-                    }
-                }
-
+                GetBracketListInt32Value();
             }
         }
         public MetaNode GetChildrenMetaNode(MetaNode mb)
@@ -620,6 +590,30 @@ namespace SimpleLanguage.Compile
             }
             return mb2;
         }       
+        public void GetBracketListInt32Value()
+        {
+            m_ArrayDimsionLengthList.Clear();
+            for ( int i = 0; i < m_FileMetaBracketTermList.Count; i++ )
+            {
+                var fmbtc = m_FileMetaBracketTermList[i];
+                if( fmbtc.fileMetaExpressList.Count == 1 )
+                {
+                    if( fmbtc.fileMetaExpressList[0] is FileMetaConstValueTerm fmcvt )
+                    {
+                        if (fmcvt.token?.type == ETokenType.Number)
+                            m_ArrayDimsionLengthList.Add((int)fmcvt.token.lexeme);
+                    }
+                }
+                else
+                {
+                    m_ArrayDimsionLengthList.Add(-1);
+                }
+            }
+            if(m_ArrayDimsionLengthList.Count != m_FileMetaBracketTermList.Count )
+            {
+                Log.AddInStructFileMeta(EError.None, "数组获取长度文件的时候，有异常!");
+            }
+        }
         public override string ToString()
         {
             return allName;
@@ -649,14 +643,10 @@ namespace SimpleLanguage.Compile
             }
             if( isArray )
             {
-                sb.Append(m_BracketTokenBegin?.lexeme.ToString());
-                for( int i = 0; i < m_ArrayTokenList.Count; i++ )
+                for( int i = 0; i < m_FileMetaBracketTermList.Count; i++ )
                 {
-                    sb.Append(m_ArrayTokenList[i].lexeme.ToString());
-                    if (i < m_ArrayTokenList.Count - 1)
-                        sb.Append(",");
+                    sb.Append(m_FileMetaBracketTermList[i].ToFormatString());
                 }
-                sb.Append(m_BracketTokenEnd?.lexeme.ToString());
             }
             return sb.ToString();
         }
