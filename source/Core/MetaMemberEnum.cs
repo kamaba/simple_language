@@ -30,7 +30,7 @@ namespace SimpleLanguage.Core
 
         private bool m_IsSupportConstructionFunctionOnlyBraceType = false;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
         private bool m_IsSupportConstructionFunctionConnectBraceType = true;  //是否支持构造函数名称后边加{}形式    Class1{ a = Class2(){} } 不支持
-        private bool m_IsSupportConstructionFunctionOnlyParType = true; //是否支持构造函数使用 仅()形式    Class1{ a = () } 不支持
+        private bool m_IsSupportConstructionFunctionOnlyParType = false; //是否支持构造函数使用 仅()形式    Class1{ a = () } 不支持
 #pragma warning disable CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseStaticMetaMemeberFunction”已被赋值，但从未使用过它的值
         private bool m_IsSupportInExpressUseStaticMetaMemeberFunction = true;   //是否在成员支持静态函数的
 #pragma warning restore CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseStaticMetaMemeberFunction”已被赋值，但从未使用过它的值
@@ -201,24 +201,24 @@ namespace SimpleLanguage.Core
                 {
                     if (fmpt != null)            // for example: Class1 obj = (1,2,3,4);
                     {
-                        if( m_IsSupportConstructionFunctionOnlyParType )
-                        {
-                            MetaInputParamCollection mpc = new MetaInputParamCollection(fmpt, ownerMetaClass, null);
+                        //if( m_IsSupportConstructionFunctionOnlyParType )
+                        //{
+                        //    MetaInputParamCollection mpc = new MetaInputParamCollection(fmpt, ownerMetaClass, null);
 
-                            MetaMemberFunction mmf = m_DefineMetaType.GetMetaMemberConstructFunction(mpc);
+                        //    MetaMemberFunction mmf = m_DefineMetaType.GetMetaMemberConstructFunction(mpc);
 
-                            if (mmf == null) return null;
+                        //    if (mmf == null) return null;
 
-                            MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(fmpt, m_DefineMetaType, ownerMetaClass, mmf.metaBlockStatements );
-                            if (mnoen != null)
-                            {
-                                return mnoen;
-                            }
-                        }
-                        else
-                        {
+                        //    MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(fmpt, m_DefineMetaType, ownerMetaClass, mmf.metaBlockStatements );
+                        //    if (mnoen != null)
+                        //    {
+                        //        return mnoen;
+                        //    }
+                        //}
+                        //else
+                        //{
                             Log.AddInStructMeta(EError.None, "Error 现在配置中，不支持成员变量中使用类的()构造方式!!");
-                        }
+                        //}
                     }
                     else if (fmbt != null)
                     {
