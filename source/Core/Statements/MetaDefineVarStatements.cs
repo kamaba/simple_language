@@ -139,7 +139,7 @@ namespace SimpleLanguage.Core
                 var mcen = m_ExpressNode as MetaCallLinkExpressNode;
                 if (mcen?.isNewExpressNode == true )
                 {
-                    m_ExpressNode = new MetaNewObjectExpressNode(mcen);
+                    m_ExpressNode = new MetaNewObjectExpressNode(mdt, mcen);
                     m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
                     m_ExpressNode.CalcReturnType();
                 }

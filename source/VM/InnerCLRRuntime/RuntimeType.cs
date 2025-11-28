@@ -6,7 +6,6 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using SimpleLanguage.VM.Runtime;
@@ -21,7 +20,7 @@ namespace SimpleLanguage.VM
         public EType eType { get; set; } = EType.None;
         public IRMetaClass irClass;
         public List<RuntimeType> runtimeTemplateList = new List<RuntimeType>();
-        private IRMetaVariable m_TypeMetaVariable = null;
+        //private IRMetaVariable m_TypeMetaVariable = null;
 
         private SObject[] m_StaticMemObjectList = null;
         public RuntimeType(IRMetaClass rc, List<RuntimeType > rtList )
