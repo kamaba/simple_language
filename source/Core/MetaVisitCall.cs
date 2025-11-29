@@ -216,7 +216,7 @@ namespace SimpleLanguage.Core
             vn.methodCall = new MetaMethodCall(mt.metaClass, null, mf, null, null, null, mv);
             return vn;
         }
-        public static MetaVisitNode CraeteByNewClass(MetaType mt, MetaVariable mv = null )
+        public static MetaVisitNode CreateByNewClass(MetaType mt, MetaVariable mv = null)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
@@ -228,6 +228,22 @@ namespace SimpleLanguage.Core
             {
                 vn.m_ReturnMetaType = new MetaType(mt);
             }
+
+            return vn;
+        }
+        public static MetaVisitNode CreateByNewArrayClass(MetaType mt, MetaFunction mf, MetaVariable mv = null)
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.m_CallMetaType = mt;
+            //vn.m_MetaBraceStatementsContent = mb;
+            vn.visitType = EVisitType.New;
+            vn.variable = mv;
+            if (mt.metaClass is MetaGenTemplateClass mgtc)
+            {
+                vn.m_ReturnMetaType = new MetaType(mt);
+            }
+            vn.methodCall = new MetaMethodCall(mt.metaClass, null, mf, null, null, null, mv);
 
             return vn;
         }

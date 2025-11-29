@@ -750,7 +750,6 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "StackIndex 是负数!");
                             return;
                         }
-
                         var v = m_ValueStack[stackIndex];
 
                         RuntimeType rt = null;

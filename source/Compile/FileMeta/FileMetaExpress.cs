@@ -9,7 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Xml.Linq;
 using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Compile
@@ -275,6 +274,11 @@ namespace SimpleLanguage.Compile
                     }
                     break;
                 case ETokenType.Comma:                  // ,
+                    {
+                        priority = SignComputePriority.Level12_Split;
+                    }
+                    break;
+                case ETokenType.Colon:                  // :
                     {
                         priority = SignComputePriority.Level12_Split;
                     }
@@ -571,15 +575,14 @@ namespace SimpleLanguage.Compile
     }
     public class FileMetaBraceTerm : FileMetaBaseTerm
     {
-        public List<FileMetaSyntax> fileMetaAssignSyntaxList => m_FileMetaAssignSyntaxList;
-        public List<FileMetaCallLink> fileMetaCallLinkList => m_FileMetaCallLinkList;
-        public bool isArray { get; set; } = false;
-
-        private List<FileMetaSyntax> m_FileMetaAssignSyntaxList = new List<FileMetaSyntax>();
-        private List<FileMetaCallLink> m_FileMetaCallLinkList = new List<FileMetaCallLink>();
+        //public List<FileMetaSyntax> fileMetaAssignSyntaxList => m_FileMetaAssignSyntaxList;
+        //public List<FileMetaCallLink> fileMetaCallLinkList => m_FileMetaCallLinkList;
+        //private List<FileMetaSyntax> m_FileMetaAssignSyntaxList = new List<FileMetaSyntax>();
+        //private List<FileMetaCallLink> m_FileMetaCallLinkList = new List<FileMetaCallLink>();
         private Token m_BraceEndToken = null;
         private Node m_Node = null;
-        // { a = 10, b = 20, c = Class1() }
+        // { a = 10, b = 20, c = Class1(), 10, [1,2,3], [[1,2],[3,4],100], Class1():100, (1,2,3) }
+        // 支持大括号的内容 有 赋值语句 一般在动态类赋值里边使用 有直接的常量值, 有内嵌数组, 还有可能支持 Map的kv形式  (1,2,3) 这个不确定支不支持
         public FileMetaBraceTerm( FileMeta fm, Node node )
         {
             m_FileMeta = fm;
@@ -611,6 +614,10 @@ namespace SimpleLanguage.Compile
                 {
                     continue;
                 }
+                //else if( c2node.nodeType == ENodeType.Bracket )
+                //{
+                //    nodeListList.Add(c2node);
+                //}
                 else
                 {
                     tempNodeList.Add(c2node);
@@ -631,7 +638,7 @@ namespace SimpleLanguage.Compile
                 for (int j = 0; j < nodeList.Count; j++)
                 {
                     var nl2 = nodeList[j];
-                    if (nl2.nodeType == ENodeType.Assign)
+                    if (nl2.nodeType == ENodeType.Assign) // a= 100
                     {
                         if (assignToken == null)
                         {
@@ -641,6 +648,18 @@ namespace SimpleLanguage.Compile
                         else
                         {
                             Log.AddInStructFileMeta(EError.None, " Errorr FileMetaBraceTerm.HandleBraceTerm 解析{ a = ?} 时，多个=号 Token: " + assignToken.ToLexemeAllString() );
+                        }
+                    }
+                    else if( nl2.nodeType == ENodeType.Key && nl2.token.type == ETokenType.Colon ) // Map<int,string>(){ 100:"aaa", 200:"bbb" }
+                    {
+                        if (assignToken == null)
+                        {
+                            assignToken = nl2.token;
+                            continue;
+                        }
+                        else
+                        {
+                            Log.AddInStructFileMeta(EError.None, " Errorr FileMetaBraceTerm.HandleBraceTerm 解析{ a:'aaa'} 时，多个:号 Token: " + assignToken.ToLexemeAllString());
                         }
                     }
                     else
@@ -655,24 +674,18 @@ namespace SimpleLanguage.Compile
                         }
                     }
                 }
-                if( i == 0 )
-                {
-                    if (defineNodeList.Count == 1 && valueNodeList.Count == 0)
-                    {
-                        isArray = true;
-                    }
-                    else
-                    {
-                        isArray = false;
-                    }
-                }
 
-                if(isArray)
+                if(defineNodeList.Count > 0 && valueNodeList.Count == 0 && assignToken == null )
                 {
-                    if (defineNodeList.Count >= 1 && valueNodeList.Count == 0)
+                    if (defineNodeList[0].nodeType == ENodeType.Bracket)
                     {
-                        FileMetaCallLink fmcl = new FileMetaCallLink(m_FileMeta, defineNodeList[0]);
-                        fileMetaCallLinkList.Add(fmcl);
+                        FileMetaBracketTerm tmbt = new FileMetaBracketTerm(m_FileMeta, defineNodeList[0]);
+                        AddFileMetaTerm(tmbt);
+                    }
+                    else if (defineNodeList[0].nodeType == ENodeType.Brace)
+                    {
+                        FileMetaBraceTerm tmbt = new FileMetaBraceTerm(m_FileMeta, defineNodeList[0]);
+                        AddFileMetaTerm(tmbt);
                     }
                     else
                     {
@@ -680,8 +693,9 @@ namespace SimpleLanguage.Compile
                         continue;
                     }
                 }
-                else
+                else if( assignToken != null && defineNodeList.Count > 0 && valueNodeList.Count > 0 )
                 {
+                    /*
                     if ( (defineNodeList.Count != 1 && defineNodeList.Count != 2 ) || valueNodeList.Count < 1)
                     {
                         Log.AddInStructFileMeta(EError.None, "Error 在解析为{}中，赋值= 解析有问题!!");
@@ -704,6 +718,15 @@ namespace SimpleLanguage.Compile
                         fmoas.isAppendSemiColon = false;
                         m_FileMetaAssignSyntaxList.Add(fmoas);
                     }
+                    */
+                    FileMetaBaseTerm defineNodeTerm = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, defineNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
+                    FileMetaBaseTerm valueNodeTerm = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
+                    FileMetaSymbolTerm fst = new FileMetaSymbolTerm(m_FileMeta, assignToken) {  left = defineNodeTerm, right = valueNodeTerm };
+                    AddFileMetaTerm (fst);
+                }
+                else
+                {
+                    Log.AddInStructFileMeta(EError.None, "Error 在解析为{}中，出现了不该出现的格式");
                 }
             }
         }
@@ -714,24 +737,10 @@ namespace SimpleLanguage.Compile
         public override string ToFormatString()
         {
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.Append(m_Token?.lexeme.ToString());
-            if( isArray )
+            stringBuilder.Append(m_Token?.lexeme.ToString());            
+            foreach( var v in m_FileMetaExpressList )
             {
-                for (int i = 0; i < m_FileMetaCallLinkList.Count; i++)
-                {
-                    stringBuilder.Append(m_FileMetaCallLinkList[i].ToFormatString());
-                    if (i < m_FileMetaCallLinkList.Count - 1)
-                        stringBuilder.Append(",");
-                }
-            }
-            else
-            {
-                for (int i = 0; i < m_FileMetaAssignSyntaxList.Count; i++)
-                {
-                    stringBuilder.Append(m_FileMetaAssignSyntaxList[i].ToFormatString());
-                    if (i < m_FileMetaAssignSyntaxList.Count - 1)
-                        stringBuilder.Append(",");
-                }
+                stringBuilder.Append(v.ToFormatString());
             }
             stringBuilder.Append(m_BraceEndToken?.lexeme.ToString());
             return stringBuilder.ToString();
@@ -749,18 +758,21 @@ namespace SimpleLanguage.Compile
     }
     public class FileMetaBracketTerm : FileMetaBaseTerm
     {
-        public Token endToken => m_BracketeEndToken;
+        public Token beginToken => m_BeginBracketToken;
+        public Token endToken => m_EndBracketetToken;
 
-        Token m_BracketeEndToken = null;
-        // = [1,2,3,4,A(),[1,2,3]]
+        Token m_BeginBracketToken = null;
+        Token m_EndBracketetToken = null;
+        // = [1][2][var1.index]                               
         public FileMetaBracketTerm(FileMeta fm, Node node )
         {
             m_FileMeta = fm;
             m_Root = this;
             m_Token = node.token;
-            m_BracketeEndToken = node.endToken;
+            m_BeginBracketToken = node.token;
+            m_EndBracketetToken = node.endToken;
 
-            for( int i = 0; i < node.childList.Count; i++ )
+            for ( int i = 0; i < node.childList.Count; i++ )
             {
                 var cnode = node.childList[i];
                 if( cnode.nodeType == ENodeType.ConstValue )
@@ -777,6 +789,11 @@ namespace SimpleLanguage.Compile
                 {
                     var fileMetaSymbolTerm = new FileMetaSymbolTerm(m_FileMeta, cnode.token);
                     AddFileMetaTerm(fileMetaSymbolTerm);
+                    if (i == node.childList.Count - 1)
+                    {
+                        Log.AddInStructFileMeta(EError.None, "Warning [1,2,3,]有多余逗号出现??");
+                    }
+                    continue;
                 }
                 else if (cnode.nodeType == ENodeType.Par)
                 {
@@ -801,7 +818,7 @@ namespace SimpleLanguage.Compile
                 }
             }
         }
-        // = [{a=20;b="aaa";},{a=30;b="ccc";}] 
+        // = [{a=20;b="aaa";},{a=30;b="ccc";}]  在data里边，有这样使用的过程
         public FileMetaBracketTerm( FileMeta fm, Node node, int a )
         {
             int type = -1;
@@ -883,8 +900,8 @@ namespace SimpleLanguage.Compile
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("BeginBraceToken:" + m_Token?.ToLexemeAllString());
-            sb.Append("EndBraceToken:" + m_BracketeEndToken?.ToLexemeAllString());
+            sb.Append("BeginBraceToken:" + m_BeginBracketToken?.ToLexemeAllString());
+            sb.Append("EndBraceToken:" + m_EndBracketetToken?.ToLexemeAllString());
 
             return sb.ToString();
         }

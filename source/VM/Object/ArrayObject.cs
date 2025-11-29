@@ -503,7 +503,7 @@ namespace SimpleLanguage.VM
                     {
                         if (anyobj != null)
                         {
-                            anyobj.SetValue(EType.String, svalue.stringValue);
+                            anyobj.SetValue(EType.Array, svalue.arrayValue);
                             return;
                         }
                         ArrayObject arrayobj = m_Array.GetValue(index) as ArrayObject;

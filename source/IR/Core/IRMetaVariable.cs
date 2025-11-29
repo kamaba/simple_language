@@ -37,7 +37,7 @@ namespace SimpleLanguage.IR
         private List<IRData> m_IRDataList = new List<IRData>();
         private IRMetaType m_IRMetaType = null;
         private IRMetaVariableFrom m_IRMetaVariableFrom = IRMetaVariableFrom.None;
-        private bool m_IsTemplate = false;
+        //private bool m_IsTemplate = false;
         private int m_Id = -1;
         private int m_Index = -1;
         private string m_Name = "";
