@@ -39,6 +39,12 @@ namespace SimpeLanguage.Project
         static void run( string path )
         {
             int index = path.lastIndexOf('\');
+            if index != -1
+            {
+                rootPath = path.subString(0,index)
+            }
+
+            
         }
     }
 }

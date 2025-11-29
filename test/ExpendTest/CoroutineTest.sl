@@ -10,6 +10,7 @@ Coroutinest
         await asyio.waitSecond( 1 )
 
         Console.print("cor2")
+        
 
 
     }
