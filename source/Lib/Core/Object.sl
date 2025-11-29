@@ -10,44 +10,35 @@ public class Core.Object
     }
     public bool equals(object obj)
     {
-        ret RuntimeHelpers.Equals(this, obj);
+        ret SimpleLanguage.Lib.ObjectClass.EqualObject(this, obj);
     }
-    #!
-    public static bool equals(object objA, object objB)
+    public static bool objectEquals(object objA, object objB)
     {
-        if (objA == objB)
-        {
-            ret true;
-        }
         if (objA == null || objB == null)
         {
             ret false;
         }
         ret objA.equals(objB);
     }
-    public static bool referenceEquals(object? objA, object? objB)
+    public static bool refEquals(object objA, object objB)
     {
-        ret objA == objB;
+        ret objA.ref == objB.ref;
     }
     public Object clone()
     {
-        ret Object();
-    }
-    以下是系统方法
-    public Object cast<T>()
+        ret SimpleLanguage.Lib.ObjectClass.CloneObject(this);
+    }    
+    public object get `````````````````````ref`````````````````````()
     {
-        ret this;
-    }
-    public object get ref()
-    {
-        ret null
+        ret SimpleLanguage.Lib.ObjectClass.ObjectRef(this);
     }
     get object  refWeak()
     {
+        ret SimpleLanguage.Lib.ObjectClass.ObjectWeakRef(this);
     } 
     int get refCount()
     {
-        ret 0;
+        ret SimpleLanguage.Lib.ObjectClass.RefCount(this);
     }
     free()
     {
@@ -58,4 +49,9 @@ public class Core.Object
 
     }
     !#
+    以下是系统方法
+    public Object cast<T>()
+    {
+        ret this;
+    }
 }
