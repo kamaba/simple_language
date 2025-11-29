@@ -1,9 +1,6 @@
 ﻿using SimpleLanguage.IR;
-using SimpleLanguage.Parse;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.VM
 {

@@ -1515,10 +1515,10 @@ namespace SimpleLanguage.Compile
                     _HandleExpressNodeProcess(currentExpressNode, null);
                     return;
                 }
-                else if( currentExpressNode.nodeType == ENodeType.Bracket )         //Class[]
+                else if( currentExpressNode.nodeType == ENodeType.Bracket )         //Class[][][][](){}
                 {
                     node.parseIndex++;
-                    finalNode.bracketNode = currentExpressNode;
+                    finalNode.AddBracketNode( currentExpressNode );
                     currentExpressNode.isDel = true;
 
                     if( currentExpressNode.extendLinkNodeList.Count > 0 )
@@ -1530,6 +1530,7 @@ namespace SimpleLanguage.Compile
                     else
                     {
                         _HandleExpressNodeProcess(currentExpressNode, null);
+                        _HandleExpressNodeProcess(node, finalNode);
                         return;
                     }
                 }

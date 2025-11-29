@@ -66,7 +66,8 @@ namespace SimpleLanguage.Compile
         public Node parent = null;              //父节点
         public Node parNode { get; set; } = null;             //(小括号的节点
         public Node blockNode { get; set; } = null;           //{大括号的节点
-        public Node bracketNode { get; set; } = null;         //[中括号的节点
+        public Node bracketNode => m_BracketNodeList.Count > 0 ? m_BracketNodeList[m_BracketNodeList.Count - 1] : null;
+        public List<Node> bracketNodeList => m_BracketNodeList;
         public Node angleNode { get; set; } = null;
         public Token linkToken;                 //.节点
         public Token atToken;                   // $节点
@@ -74,6 +75,7 @@ namespace SimpleLanguage.Compile
 
         public ENodeType nodeType { get; set; } = ENodeType.None;
         private List<Node> m_ExtendLinkNodeList { get; set; } = new List<Node>();
+        private List<Node> m_BracketNodeList = new List<Node>();
         public List<Node> childList { get; set; } = new List<Node>();    //子内容节点
 
         public int parseIndex = 0;
@@ -140,6 +142,10 @@ namespace SimpleLanguage.Compile
             if (lastNode == null) return;
 
             lastNode.m_ExtendLinkNodeList.Add(node);
+        }
+        public void AddBracketNode( Node bracketNode )
+        {
+            m_BracketNodeList.Add(bracketNode);
         }
         public void SetLinkNode( List<Node> nodeList )
         {

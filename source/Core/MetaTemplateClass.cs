@@ -107,6 +107,18 @@ namespace SimpleLanguage.Core
                 this.m_MetaTemplateMapDict[tec] = m_ClassLevelRelationData;
             }
         }
+        public bool IsContainMetaClass( MetaClass mc )
+        {
+            if( mc == this )
+            {
+                return true;
+            }
+            if(m_MetaTemplateMapDict.ContainsKey(mc ) )
+            {
+                return true;
+            }
+            return false;
+        }
         public MetaClass GetSourceMetaClass( MetaClass mc )
         {
 

@@ -288,57 +288,57 @@ namespace SimpleLanguage.IR
             {
                 IRNewArray irnewArray = new IRNewArray();
                 EArrayType arrayType = EArrayType.Int32;
-                if(mnoen.arrayType.metaClass == CoreMetaClassManager.arrayMetaClass )
+                if(mnoen.metaType.metaClass == CoreMetaClassManager.arrayMetaClass )
                 {
                     arrayType = EArrayType.Array;
                 }
                 else
                 {
-                    if (mnoen.arrayType.metaClass == CoreMetaClassManager.byteMetaClass)
+                    if (mnoen.metaType.metaClass == CoreMetaClassManager.byteMetaClass)
                     {
                         arrayType = EArrayType.Byte;
                     }
-                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.sbyteMetaClass)
+                    else if (mnoen.metaType.metaClass == CoreMetaClassManager.sbyteMetaClass)
                     {
                         arrayType = EArrayType.SByte;
                     }
-                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.int16MetaClass)
+                    else if (mnoen.metaType.metaClass == CoreMetaClassManager.int16MetaClass)
                     {
                         arrayType = EArrayType.Int16;
                     }
-                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.uint16MetaClass)
+                    else if (mnoen.metaType.metaClass == CoreMetaClassManager.uint16MetaClass)
                     {
                         arrayType = EArrayType.UInt16;
                     }
-                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.int32MetaClass)
+                    else if (mnoen.metaType.metaClass == CoreMetaClassManager.int32MetaClass)
                     {
                         arrayType = EArrayType.Int32;
                     }
-                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.uint32MetaClass)
+                    else if (mnoen.metaType.metaClass == CoreMetaClassManager.uint32MetaClass)
                     {
                         arrayType = EArrayType.UInt32;
                     }
-                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.int64MetaClass)
+                    else if (mnoen.metaType.metaClass == CoreMetaClassManager.int64MetaClass)
                     {
                         arrayType = EArrayType.Int64;
                     }
-                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.uint64MetaClass)
+                    else if (mnoen.metaType.metaClass == CoreMetaClassManager.uint64MetaClass)
                     {
                         arrayType = EArrayType.UInt64;
                     }
-                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.float32MetaClass)
+                    else if (mnoen.metaType.metaClass == CoreMetaClassManager.float32MetaClass)
                     {
                         arrayType = EArrayType.Single;
                     }
-                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.float64MetaClass)
+                    else if (mnoen.metaType.metaClass == CoreMetaClassManager.float64MetaClass)
                     {
                         arrayType = EArrayType.Double;
                     }
-                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.stringMetaClass)
+                    else if (mnoen.metaType.metaClass == CoreMetaClassManager.stringMetaClass)
                     {
                         arrayType = EArrayType.String;
                     }
-                    else if (mnoen.arrayType.metaClass == CoreMetaClassManager.objectMetaClass)
+                    else if (mnoen.metaType.metaClass == CoreMetaClassManager.objectMetaClass)
                     {
                         arrayType = EArrayType.Any;
                     }
@@ -348,7 +348,7 @@ namespace SimpleLanguage.IR
                     }
                 }
                 irnewArray.eArrayType = arrayType;
-                irnewArray.irMetaType = IRMetaType.CreateIRMetaTypeByArrayMetaTypeList(mnoen.arrayType, owirmc);
+                irnewArray.irMetaType = IRMetaType.CreateIRMetaTypeByArrayMetaTypeList(mnoen.metaType, owirmc);
                 irnewArray.length = mnoen.arrayLength;
 
                 IRNew irNew = new IRNew(irMethod, irnewArray);
@@ -384,21 +384,21 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                if (mnoen.metaDefineType.eType == EMetaTypeType.MetaGenClass)
+                if (mnoen.metaType.eType == EMetaTypeType.MetaGenClass)
                 {
                     if (mnoen.ownerMetaClass is MetaGenTemplateClass mgtc)
                     {
                         owirmc = IRManager.instance.GetIRMetaClassById(mgtc.metaTemplateClass.GetHashCode());
                     }
-                    newObjectIRMT = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.metaDefineType, owirmc);
-                    irmc = IRManager.instance.GetIRMetaClassById(mnoen.metaDefineType.GetTemplateMetaClass().GetHashCode());
+                    newObjectIRMT = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.metaType, owirmc);
+                    irmc = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
 
                 }
-                if (mnoen.metaDefineType.eType == EMetaTypeType.MetaClass)
+                if (mnoen.metaType.eType == EMetaTypeType.MetaClass)
                 {
                     owirmc = IRManager.instance.GetIRMetaClassById(mnoen.ownerMetaClass.GetHashCode());
-                    IRMetaClass newObjIRMC = IRManager.instance.GetIRMetaClassById(mnoen.metaDefineType.GetTemplateMetaClass().GetHashCode());
-                    irmc = IRManager.instance.GetIRMetaClassById(mnoen.metaDefineType.GetTemplateMetaClass().GetHashCode());
+                    IRMetaClass newObjIRMC = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
+                    irmc = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
                     newObjectIRMT = new IRMetaType(newObjIRMC);
                     IRNew irNew = new IRNew(irMethod, newObjIRMC);
                     AddIRRangeData(irNew.IRDataList);
@@ -406,8 +406,8 @@ namespace SimpleLanguage.IR
                 else
                 {
                     owirmc = IRManager.instance.GetIRMetaClassById(mnoen.ownerMetaClass.GetHashCode());
-                    IRMetaClass newObjIRMC = IRManager.instance.GetIRMetaClassById(mnoen.metaDefineType.GetTemplateMetaClass().GetHashCode());
-                    irmc = IRManager.instance.GetIRMetaClassById(mnoen.metaDefineType.GetTemplateMetaClass().GetHashCode());
+                    IRMetaClass newObjIRMC = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
+                    irmc = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
                     newObjectIRMT = new IRMetaType(newObjIRMC);
                     IRNew irNew = new IRNew(irMethod, newObjIRMC);
                     AddIRRangeData(irNew.IRDataList);

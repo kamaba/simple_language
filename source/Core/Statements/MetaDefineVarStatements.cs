@@ -71,9 +71,14 @@ namespace SimpleLanguage.Core
                     mgtc.ParseGenTemplateClass(mgtc);
                     mgtc.ParseGenMemberVarible();
                 }
-                if(mdt.metaClass == CoreMetaClassManager.arrayMetaClass )
+                if(fmcd.isArray )
                 {
-                    mdt.SetArrayDimension(1);
+                    var list = fmcd.arrayDimsionLengthList;
+                    mdt.SetArrayDimension(list.Count);
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        mdt.SetArrayDimensionLengthByIndex(i, list[i]);
+                    }
                 }
 
                 m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
@@ -134,7 +139,13 @@ namespace SimpleLanguage.Core
                 var mcen = m_ExpressNode as MetaCallLinkExpressNode;
                 if (mcen?.isNewExpressNode == true )
                 {
-                    m_ExpressNode = new MetaNewObjectExpressNode(mcen);
+                    m_ExpressNode = new MetaNewObjectExpressNode(mdt, mcen);
+                    m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                    m_ExpressNode.CalcReturnType();
+                }
+                else if( m_ExpressNode is MetaArrayExpressNode maen )
+                {
+                    m_ExpressNode = new MetaNewObjectExpressNode(maen, ownerMetaClass, m_OwnerMetaBlockStatements, m_DefineVarMetaVariable );
                     m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
                     m_ExpressNode.CalcReturnType();
                 }

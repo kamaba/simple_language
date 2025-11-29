@@ -87,7 +87,9 @@ namespace Core
         override string toString()
         {
             if( this._metaClass == null )
+            {
                 ret "no_meta_class"
+            }
 
             ret this._metaClass.className;
         }
@@ -111,13 +113,13 @@ namespace Core
         set _setValue_( int index, object val )
         {
             #Lib.Array.SetArrayValue( this._ptr, 5,  index, val )
-            Lib.Array.SetArrayValueThis( this, index, val )
+            SimpleLanguage.Lib.Array.SetArrayValueThis( this, index, val )
         }
 
-        object get _getValue_( int index )
+        get object  _getValue_( int index )
         {
             #ret Lib.Array.GetArrayValue( this._ptr, 5,  index )
-            ret Lib.Array.GetArrayValueThis( this, index )
+            ret SimpleLanguage.Lib.Array.GetArrayValueThis( this, index )
         }
         setValues( Int64 valPtr, int len )
         {
@@ -153,38 +155,57 @@ ArrayTest
 {
     ArrClass
     {
-        int i = 0;
+        int i1 = 0;
+        i2 = "aaa"
     }
     Level<T>
     {
-
+        T t = new()
     }
     static fun()
-    {  
-        #!
+    { 
         int intvalue = 20
-        a1 = [intvalue,1];    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
-        a1._setValue_( 1, 123 )
-        aa = a1._getValue_(1)
-        System.Console.WriteLine("1111111111= " + aa )
-        !#
+        var ac = ArrClass(){ i1 = intvalue, i2 = "okok" }
+        #System.Console.WriteLine("1111111111= " + ac.i1 + "    " + ac.i2 )
+
+        # a1 = object[2]{intvalue,1};    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
+        # alist = List(2){ intvalue, 1 }
+        # int[] a30 = {1,2,3,4}
+        # map = Map<int,string>(){ a1.$0:"al", 33:"wang" }
+        # a111 = [[[1,2,3],[3,4,5],[6,7,8]],[ [10,11,12],[14,15,15],[16,17,18] ]];  # int[2][3][3] 
+        object[3][2][] a1 = int[3][2][]{ [ [1,2,3], [3,4,5] ], [ [5,6,6], [7,8,9] ] };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
+        System.Console.WriteLine("1111111111= " + a1[0][0][0] )
+        #object[][] a2 = int[2][3];
+        #a2[0] = int[3]
+        #a2[1] = [[1,2,3],[2],[3,4]]
+        #a1._setValue_( 1, 123 )
+        #aa = a1._getValue_(1)
+        #System.Console.WriteLine("1111111111= " + aa )
+        #! !#
 
         #!
-        int[] a33 = [1,2,3,4];
+        int[] a33 = {1,2,3,4};
+        a33[3] = 123
+        var aa333 =  a33[0];
+        System.Console.WriteLine("1111111111= " + a33[3] + "-----" + a33[0] + "xxxxx=" + aa333 )
+        !#
+
+         #!
+        int[2][] a335 = {[], int[3]{ 1,2,3 } };
         a33[3] = 123
         var aa333 =  a33[0];
         System.Console.WriteLine("1111111111= " + a33[3] + "-----" + a33[0] + "xxxxx=" + aa333 )
         !#
 
         #!
-        a34 = [1,2,3,4]
+        a34 = List<int>[]{1,2,3,4}
         aa = 3
         a34.$aa = 111
         var aaaa34v = a34.$3
         System.Console.WriteLine("1111111111= " + aaaa34v )
         !#
 
-        var ac = ArrClass(){ i = 30 }
+        
         #!
         a35 = [[0,1,2,ac,4],[[11,12],[13,14]]];
         # a35[0] = [0,1,2,3,4] a35[1] = [[1,2,3],[2,3,4],[4,5,6],[7,8,9]]  a34[1][0][2] = 3  a35是个一维两值数组，访问a35[1] 是确定对象访问 再访问 是一个二维纯int数组，然后是a35[1][0][2] 后边两位是纯数组访问
@@ -204,15 +225,19 @@ ArrayTest
         !#
         
         #!
-        array arr = [1,2,3]
+        array arr = {1,2,3}
         System.Console.WriteLine("22222222= " +arr[1] )
         !#
+
         #array arr = Array( 10, int.type )
         #arr[2] = 100
         #System.Console.WriteLine("22222222= " +arr[2] )
-
-        #!
-        object[][] a42 = [[1.2,1.3,1.4,1.5],[3,4,5]];    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于  
+        
+        #levelvar = Level<int>();
+        #Level<int>[][] a43 = { { levelvar, levelvar}, { levelvar, levelvar } };
+        # a44 = Level<int>[]
+        
+        #object[][] a42 = { {1.2,1.3,1.4,1.5},{3,4,5} };    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于  
         #Array( 2, Array.type ){ Array(5, float.type ){ 1.2, 1.3, 1.4, 1.5 }, Array( 3, int.tye ){3,4,5}   } 
         #!
         a2 = Array(5, int.type ){1,2,3,4,5.0f};   #默认int List 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  先申请 int 长度为5的数组，然后把后边的数据进行填存，但这时
@@ -220,16 +245,16 @@ ArrayTest
         a3 = Array( 20 );               # 长度为20的List
         a4 = Array.dim( 3 ){ Array(), Array(), Array() }   # 请申一个3x1的数组 内容为null
 
-        int[][][] a = [[1,2,3,4],[5,6,7,8]]   # 为交错数组，本语言不支持多维数组，需要自己封装 
+        int[][][] a = { { {1,2,3},{1,2,3,4} }, { {1,2,3},{5,6,7,8} } }  # 
         a[1][1][1] = 12    #这种情况，需要拿到 先拿第一维的数组，然后再拿第一维中第一组，
         ArrClass[][] arrclass1 = new(10,10);
         arrClass2 = ArrClass[10][10][];
-        avalue222 = a[1,1,1]
+        avalue222 = a[1][1][1]
              
         
-        var a4 = [1.2,1.3,1.5];    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于 Array( 3, float.type ){ 1.2, 1.3, 1.5};
+        var a4 = {1.2,1.3,1.5};    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于 Array( 3, float.type ){ 1.2, 1.3, 1.5};
         
-        a5 = ["aa", 1, "232", 1.0f];  # 相当于Array( 5, object.type)( "aa", 1, "232", 1.0f, XC() );
+        a5 = {"aa", 1, "232", 1.0f };  # 相当于Array( 5, object.type)( "aa", 1, "232", 1.0f, XC() );
         
         # c# 的方法  List<ArrClass2> arr2 = new ArrClass2[100]; 这里边使用的是 arr2 = ArrClass2[100];
         ArrClass2[] a6 = Array(4, ArrClass2.type );  # 数组表示使用 List<T>() new List对象 长度为4的int
@@ -242,7 +267,7 @@ ArrayTest
         
         bb2 = Array(100, int.type ){ 1,2,3,4,5 };    # 等于 Array<int>( 100, 10 )  {1,2,3,4,5};        
              
-        int[] bb3 = [1,2,3,4,5 ];    #与上相同  Array<int>(5){ 1,2,3,4,5}
+        int[] bb3 = {1,2,3,4,5 };    #与上相同  Array<int>(5){ 1,2,3,4,5}
 
         #ArrClass[] arr2 = ArrClass[10]{};    #不允许 这种的写法  只允许new(10)
         #arr2 = Array();           
@@ -270,7 +295,7 @@ ArrayTest
             }
             a.i = 200
         }
-        for( a in [1,2,3,4] )
+        for( a in {1,2,3,4} )
         {
             i = a.index + 1
         }
@@ -299,3 +324,4 @@ ArrayTest
 # 3.1.4 Array 没有具体的Add方法，只有 Copy
 # 3.1.5 Array(){ Array(){ Array(){} } } 可申请多维数组，多维数组时，必须有数量    Array(5){ Array(2){   Array(10){}, Array(12){}  } }   即为一个 5x2x12的三维数据
 # 3.1.6 数组不支持多维数组，只支持交错数组，如果要实现多维数组，需要用户自己实现
+# 3.1.7 给数据赋值，只能使用 {} 的方法，往里边填存数据  不能使用[]的方式，该符号，只在定义数组，或者是数组取值的时候使用

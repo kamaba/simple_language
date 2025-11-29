@@ -7,6 +7,7 @@
 //****************************************************************************
 
 
+using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
 using System.Text;
@@ -36,11 +37,13 @@ namespace SimpleLanguage.Core
         public bool isEnum => m_MetaClass is MetaEnum;
         public bool isData => m_MetaClass is MetaData;
         public bool isArray => m_EType == EMetaTypeType.Array;
+        public bool isMap => false;
         public bool isTemplate => m_EType == EMetaTypeType.Template;
         public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
         public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData;
 
-        public int arrayDimension => m_ArrayDimension;
+        public int arrayDimension => m_ArrayDimensionLengthList.Count;
+        public List<int> arrayDimensionLengthList => m_ArrayDimensionLengthList;
         public EMetaTypeType eType => m_EType;
         public MetaClass metaClass => m_MetaClass;
         public MetaTemplate metaTemplate => m_MetaTemplate;
@@ -62,8 +65,7 @@ namespace SimpleLanguage.Core
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         private List<MetaType> m_GenTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         private List<MetaType> m_ArrayMetaTypeList = new List<MetaType>();
-        private int m_ArrayDimension = 0;
-
+        private List<int> m_ArrayDimensionLengthList = new List<int>();
         public MetaType()
         {
         }
@@ -134,6 +136,14 @@ namespace SimpleLanguage.Core
             this.m_EnumValue = mt.m_EnumValue;
             //this.m_FromName = mt.m_FromName;
             this.m_EType = mt.m_EType;
+
+            this.m_ArrayDimensionLengthList = new List<int>( mt.m_ArrayDimensionLengthList.ToArray() );
+
+            for( int i = 0; i < mt.m_ArrayMetaTypeList.Count; i++ )
+            {
+                MetaType mtc = new MetaType(mt.m_ArrayMetaTypeList[i]);
+                m_ArrayMetaTypeList.Add(mtc);
+            }
             for (int i = 0; i < mt.m_DefineTemplateMetaTypeList.Count; i++)
             {
                 MetaType mtc = new MetaType(mt.m_DefineTemplateMetaTypeList[i]);
@@ -157,8 +167,90 @@ namespace SimpleLanguage.Core
         }
         public void SetArrayDimension( int disension  )
         {
+            if( disension > 0 )
+            {
+                m_EType = EMetaTypeType.Array;
+                m_ArrayDimensionLengthList.Clear();
+                for (int i = 0; i < disension; i++)
+                    m_ArrayDimensionLengthList.Add(-1);
+            }
+        }
+        public void SetUnLimitArray()
+        {
             m_EType = EMetaTypeType.Array;
-            m_ArrayDimension = disension;
+            m_ArrayDimensionLengthList.Add(-1);
+        }
+        //降维处理
+        public void SetArrayDimensionByFrontMetaType( MetaType mt )
+        {
+            if(mt.arrayDimension > 1 )
+            {
+                m_EType = EMetaTypeType.Array;
+                m_ArrayDimensionLengthList.Clear();
+                for( int i = 1; i <  mt.m_ArrayDimensionLengthList.Count; i++)
+                {
+                    m_ArrayDimensionLengthList.Add(mt.m_ArrayDimensionLengthList[i]);
+                }
+            }
+        }
+        public void SetArrayDimensionLengthByIndex(int index, int length)
+        {
+            if (index < 0 || index >= m_ArrayDimensionLengthList.Count)
+            {
+                Log.AddInStructMeta(EError.None, "设置数组维度通过索引号失败，超出了范围!");
+                return;
+            }
+            m_ArrayDimensionLengthList[index] = length;
+        }
+        public void SetArrayDismensionLength( List<int> list )
+        {
+            m_ArrayDimensionLengthList = list;
+        }
+        public int GetArrayDimensionLengthByIndex(int index )
+        {
+            if (index < 0 || index >= m_ArrayDimensionLengthList.Count)
+            {
+                Log.AddInStructMeta(EError.None, "设置数组维度通过索引号失败，超出了范围!");
+                return -1;
+            }
+            return m_ArrayDimensionLengthList[index];
+        }
+        public void AutoCreateArrayMetaType()
+        {
+            List<int> templateAddArray = new List<int>(m_ArrayDimensionLengthList);
+
+            HandleArrayCreateType(templateAddArray, this);
+        }
+        // 这块的作用是，生成数组内部嵌套的数组
+        void HandleArrayCreateType(List<int> templateAddArray, MetaType mt )
+        {
+            int length = 0;
+            if (templateAddArray.Count > 0)
+            {
+                length = templateAddArray[0];
+                templateAddArray.RemoveAt(0);
+            }
+            else
+            {
+                return;
+            }
+            for (int f = 0; f < length; f++)
+            {
+                MetaType mtnew = new MetaType(this.metaClass);
+                if (templateAddArray.Count > 0)
+                    mtnew.SetArrayDimension(templateAddArray.Count);
+                mt.AddArrayMetaType(mtnew);
+
+                if (templateAddArray.Count == 0)
+                {
+                    continue;
+                }
+                else
+                {
+                    HandleArrayCreateType(templateAddArray, mtnew );
+                    templateAddArray.Add(length);
+                }
+            }
         }
         public void SetMetaType( MetaType mt )
         {
@@ -293,6 +385,9 @@ namespace SimpleLanguage.Core
         public void SetArrayMetaType( List<MetaType> list )
         {
             m_ArrayMetaTypeList = list;
+            m_ArrayDimensionLengthList.Clear();
+            m_ArrayDimensionLengthList.Add(list.Count);
+            m_EType = EMetaTypeType.Array;
         }
         //public void SetSourceMetaType( MetaType sourceMt )
         //{
@@ -494,7 +589,10 @@ namespace SimpleLanguage.Core
                 {
                     sb.Append(m_MetaClass.allClassName);
                 }
-                sb.Append("[]");
+                for( int i = 0; i < this.m_ArrayDimensionLengthList.Count; i++ )
+                {
+                    sb.Append("[" + this.m_ArrayDimensionLengthList[i] + "]");
+                }
             }
             else
             {

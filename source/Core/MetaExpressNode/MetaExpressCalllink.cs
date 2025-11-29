@@ -6,6 +6,7 @@
 //  Description:  
 //****************************************************************************
 
+using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile;
 
@@ -42,7 +43,7 @@ namespace SimpleLanguage.Core
             {
                 m_MetaCallLink.Parse( auc );
 
-                if( m_MetaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.New )
+                if(m_MetaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.New )
                 {
                     m_IsNewExpressNode = true;
                 }
@@ -61,7 +62,7 @@ namespace SimpleLanguage.Core
                 m_MetaCallLink.CalcReturnType();
             }
 
-            m_MetaDefineType = GetReturnMetaDefineType();
+            m_MetaType = GetReturnMetaDefineType();
         }
         public MetaVariable GetMetaVariable()
         {
@@ -73,15 +74,15 @@ namespace SimpleLanguage.Core
         }
         public override MetaType GetReturnMetaDefineType()
         {
-            if (m_MetaDefineType != null)
+            if (m_MetaType != null)
             {
-                return m_MetaDefineType;
+                return m_MetaType;
             }
             if (m_MetaCallLink == null)
                 return null;
 
-            m_MetaDefineType = m_MetaCallLink.GetMetaDefineType();
-            return m_MetaDefineType;
+            m_MetaType = m_MetaCallLink.GetMetaDefineType();
+            return m_MetaType;
         }
         public MetaExpressNode ConvertConstExpressNode()
         {

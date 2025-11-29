@@ -11,6 +11,7 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -101,6 +102,7 @@ namespace SimpleLanguage.Core
         public MetaCallNode frontCallNode => m_FrontCallNode;
         public ECallNodeType callNodeType => m_CallNodeType;
         public MetaExpressNode metaExpressValue => m_ExpressNode;
+        public List<MetaExpressNode> bracketExpressList => m_BracketExpressList;
         public List<MetaType> metaTemplateParamsList => m_MetaTemplateParamsList;
         //public MetaBraceOrBracketStatementsContent metaBraceStatementsContent => m_MetaBraceStatementsContent;
         public MetaInputParamCollection metaInputParamCollection => m_MetaInputParamCollection;
@@ -138,6 +140,7 @@ namespace SimpleLanguage.Core
         private MetaExpressNode m_ExpressNode = null;    // a+b+([expressNode[3+20+10.0f]).ToString() 中的3+20+10.f就是表示式 , fun(expressNode)
         private MetaVariable m_DefineMetaVariable = null;
         private MetaVariable m_StoreMetaVariable = null;
+        private List<MetaExpressNode> m_BracketExpressList = new List<MetaExpressNode>();   // a[1][1][1][]   解析的是这个里边的1,或者是在[]里边的变量
 
         private MetaNode m_MetaNode = null;
         private MetaType m_MetaType = null;
@@ -152,8 +155,14 @@ namespace SimpleLanguage.Core
         private string m_Name;
         //private bool m_NextNotAllowParse = false;
         private bool m_VisitFlag = false;
+
         public MetaCallNode()
         { }
+        public MetaCallNode( MetaConstExpressNode mcen )
+        {
+            m_CallNodeType = ECallNodeType.ConstValue;
+            m_ExpressNode = mcen;
+        }
         public MetaCallNode(FileMetaCallNode fmcn1, FileMetaCallNode fmcn2, MetaClass mc, MetaBlockStatements mbs, MetaType fdmt )
         {
             m_FileMetaCallSign = fmcn1;
@@ -165,15 +174,12 @@ namespace SimpleLanguage.Core
             m_IsFunction = m_FileMetaCallNode.isCallFunction;
 
             m_IsArray = m_FileMetaCallNode.isArray;
-            //for (int i = 0; i < m_FileMetaCallNode.arrayNodeList.Count; i++)
-            //{
-            //    MetaCallLink cmcl = new MetaCallLink(m_FileMetaCallNode.arrayNodeList[i], mc, mbs, fdmt, m_DefineMetaVariable );
-            //    m_MetaArrayCallNodeList.Add(cmcl);
-            //}
-            //if (m_FileMetaCallNode.fileMetaBraceTerm != null)
-            //{
-            //    m_MetaBraceStatementsContent = new MetaBraceOrBracketStatementsContent( m_FileMetaCallNode.fileMetaBraceTerm, m_OwnerMetaFunctionBlock, m_OwnerMetaClass);
-            //}
+            /*
+            if (m_FileMetaCallNode.fileMetaBraceTerm != null)
+            {
+                m_MetaBraceStatementsContent = new MetaBraceOrBracketStatementsContent(m_FileMetaCallNode.fileMetaBraceTerm, m_OwnerMetaFunctionBlock, m_OwnerMetaClass);
+            }
+            */
         }
         public void SetFrontCallNode(MetaCallNode mcn)
         {
@@ -240,7 +246,24 @@ namespace SimpleLanguage.Core
                     return true;
                 }
             }
-            return CreateCallNode();
+            bool flag = CreateCallNode();
+            if (m_FileMetaCallNode.fileMetaBracketTermList.Count > 0)
+            {
+                for (int i = 0; i < m_FileMetaCallNode.fileMetaBracketTermList.Count; i++)
+                {
+                    CreateExpressParam cep = new CreateExpressParam();
+                    cep.fme = m_FileMetaCallNode.fileMetaBracketTermList[i];
+                    cep.equalMetaVariable = m_DefineMetaVariable;
+                    cep.metaType = m_MetaType;
+                    cep.ownerMBS = m_OwnerMetaFunctionBlock;
+                    cep.ownerMetaClass = m_OwnerMetaFunctionBlock.ownerMetaClass;
+
+                    var en = ExpressManager.CreateExpressNodeByCEP(cep);
+                    en.Parse(_auc);
+                    m_BracketExpressList.Add(en);
+                }
+            }
+            return flag;
         }
         bool CreateCallNode()
         {
@@ -1123,85 +1146,6 @@ namespace SimpleLanguage.Core
                 }
                 else if ( m_MetaClass is MetaClass)
                 {
-                    if( this.m_IsArray )
-                    {
-                        /*
-                        if (m_MetaArrayCallNodeList.Count > 0)   //int[??]
-                        {
-                            //m_MetaTemplateParamsCollection = new MetaInputTemplateCollection();
-                            //m_MetaTemplateParamsCollection.AddMetaTemplateParamsList(new MetaType(m_MetaClass));
-
-                            m_MetaInputParamCollection = new MetaInputParamCollection(m_OwnerMetaClass, m_OwnerMetaFunctionBlock);
-
-                            Token token = m_FileMetaCallNode.arrayNodeList[0].callNodeList[0].token;
-                            int arr1 = int.Parse(token.lexeme.ToString());
-                            int arr2 = 0;
-                            int arr3 = 0;
-                            int count = arr1;
-
-                            MetaConstExpressNode mcen1 = null;
-                            MetaConstExpressNode mcen2 = null;
-                            MetaConstExpressNode mcen3 = null;
-                            if (m_FileMetaCallNode.arrayNodeList.Count > 1 )
-                            {
-                                Token token2 = m_FileMetaCallNode.arrayNodeList[1].callNodeList[0].token;
-                                mcen2 = new MetaConstExpressNode(token.GetEType(), token2.lexeme);
-                                arr2 = int.Parse(token2.lexeme.ToString());
-                                if (arr2 == 0)
-                                {
-                                    Log.AddInStructMeta(EError.None, "Error 数组的第二维长度应该大于0");
-                                }
-                                count = count * arr2;
-                            }
-                            if (m_FileMetaCallNode.arrayNodeList.Count > 2 )
-                            {
-                                Token token3 = m_FileMetaCallNode.arrayNodeList[1].callNodeList[0].token;
-                                mcen3 = new MetaConstExpressNode(token.GetEType(), token.lexeme);
-                                arr3 = int.Parse(token.lexeme.ToString());
-                                if (arr3 == 0)
-                                {
-                                    Log.AddInStructMeta(EError.None, "Error 数组的第三维长度应该大于0");
-                                }
-                                count = count * arr3;
-                            }
-
-                            mcen1 = new MetaConstExpressNode(EType.Int32, count);
-                            m_MetaInputParamCollection.AddMetaInputParam(new MetaInputParam(mcen1));
-
-                            if (mcen2 != null)
-                            {
-                                m_MetaInputParamCollection.AddMetaInputParam(new MetaInputParam(mcen2));
-                            }
-                            if (mcen3 != null)
-                            {
-                                m_MetaInputParamCollection.AddMetaInputParam(new MetaInputParam(mcen3));
-                            }
-                            MetaClass tmc = CoreMetaClassManager.arrayMetaClass;
-                            //MetaClass templateMC = tmc.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_MetaTemplateParamsCollection);
-                            //if (templateMC != null)
-                            //{
-                            //    MetaMemberFunction mmf = templateMC.GetMetaMemberFunctionByNameAndInputParamCollect("_init_", m_MetaInputParamCollection);
-                            //    if (mmf != null)
-                            //    {
-                            //        m_MetaFunction = mmf;
-                            //        m_MetaClass = templateMC;
-                            //        m_CallNodeType = ECallNodeType.NewClass;
-
-                            //        if (m_FileMetaCallNode.fileMetaBraceTerm != null)
-                            //        {
-                            //            m_MetaBraceStatementsContent = new MetaBraceOrBracketStatementsContent(m_FileMetaCallNode.fileMetaBraceTerm, m_OwnerMetaFunctionBlock, m_OwnerMetaClass);
-                            //            m_MetaBraceStatementsContent.Parse();
-                            //        }
-
-                            //    }
-                            //}
-                            //else
-                            //{
-                            //    Debug.WriteLine("Error 没有找到模版!!");
-                            //}
-                        }
-                        */
-                    }
                 }
                 else if( m_MetaData != null )
                 {
@@ -1311,15 +1255,11 @@ namespace SimpleLanguage.Core
             MetaNode retMC = null;
             // 查找定义关键字的class => range   array
             if (m_Token.extend != null)
-            {                
-                EType etype = EType.None;
-                if (Enum.TryParse<EType>(m_Token.extend.ToString(), out etype))
+            {
+                MetaNode findMB = CoreMetaClassManager.GetCoreMetaClass(m_Token.extend.ToString());
+                if (findMB?.IsMetaClass() == true)
                 {
-                    var retMC2 = CoreMetaClassManager.GetMetaClassByEType(etype);
-                    if ( retMC2 != null )
-                    {
-                        retMC = retMC2.metaNode;
-                    }
+                    retMC = findMB;
                 }
             }
             //查找类模型
