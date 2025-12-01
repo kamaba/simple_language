@@ -336,9 +336,9 @@ namespace SimpleLanguage.Compile
                     {
                         var fmbt = m_FileMetaBracketTermList[i];
                         sb.Append(fmbt.beginToken?.lexeme?.ToString());
-                        for (int j = 0; j < fmbt?.fileMetaExpressList?.Count; i++)
+                        for (int j = 0; j < fmbt?.fileMetaExpressList?.Count; j++)
                         {
-                            sb.Append(fmbt?.fileMetaExpressList[i].ToFormatString());
+                            sb.Append(fmbt?.fileMetaExpressList[j].ToFormatString());
                             if (i < fmbt?.fileMetaExpressList.Count - 1)
                                 sb.Append(",");
                         }

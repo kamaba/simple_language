@@ -5,7 +5,6 @@
 //  DateTime: 2022/11/22 12:00:00
 //  Description: 
 //****************************************************************************
-using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using System;
@@ -16,13 +15,13 @@ namespace SimpleLanguage.VM
         private int m_Length = 0;
         private Array m_Array = null;
         private EArrayType eArrayType = EArrayType.Byte;
-        private IRMetaType m_IRMetaType = null;
-        public ArrayObject( EArrayType eArrType, IRMetaType irmt, int length )
+        //private IRMetaType m_IRMetaType = null;
+        public ArrayObject( EArrayType eArrType, int length )
         {
             m_Etype = EType.Array;
             eArrayType = eArrType;
             m_Length = length;
-            m_IRMetaType = irmt;
+            //m_IRMetaType = irmt;
             CreateArray();
         }
         public void SetArray( ArrayObject ao )
@@ -34,6 +33,10 @@ namespace SimpleLanguage.VM
         void CreateArray()
         {
             int length = m_Length;
+            if(m_Length < 0 )
+            {
+                return;
+            }
             switch (eArrayType)
             {
                 case EArrayType.Byte:
@@ -142,21 +145,27 @@ namespace SimpleLanguage.VM
                 case EArrayType.Array:
                     {
                         m_Array = new ArrayObject[length];
-                        for (int i = 0; i < m_IRMetaType.irMetaTypeList.Count; i++)
-                        {
-                            var irlc = m_IRMetaType.irMetaTypeList[i];
-                            RuntimeType rt = null;
-                            if (irlc.isArray)
-                            {
-                                rt = RuntimeTypeManager.arrayRuntimeType;
-                            }
-                            else
-                            {
-                                rt = new RuntimeType(irlc.irMetaClass, new System.Collections.Generic.List<RuntimeType>());
-                            }
-                            SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, false);
-                            m_Array.SetValue(sobj, i);
-                        }
+                        //for (int i = 0; i < length; i++)
+                        //{
+                        //    var anyobj = new ArrayObject("");
+                        //    anyobj.SetNull();
+                        //    m_Array.SetValue(anyobj, i);
+                        //}
+                        //for (int i = 0; i < m_IRMetaType.irMetaTypeList.Count; i++)
+                        //{
+                        //    var irlc = m_IRMetaType.irMetaTypeList[i];
+                        //    RuntimeType rt = null;
+                        //    if (irlc.isArray)
+                        //    {
+                        //        rt = RuntimeTypeManager.arrayRuntimeType;
+                        //    }
+                        //    else
+                        //    {
+                        //        rt = new RuntimeType(irlc.irMetaClass, new System.Collections.Generic.List<RuntimeType>());
+                        //    }
+                        //    SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, false);
+                        //    m_Array.SetValue(sobj, i);
+                        //}
                     }
                     break;
                 case EArrayType.Any:
@@ -172,7 +181,8 @@ namespace SimpleLanguage.VM
                     break;
                 case EArrayType.Class:
                     {
-                        m_Array = new SObject[length];
+                        m_Array = new ClassObject[length];
+                        /*
                         for (int i = 0; i < m_IRMetaType.irMetaTypeList.Count; i++)
                         {
                             var irlc = m_IRMetaType.irMetaTypeList[i];
@@ -188,6 +198,7 @@ namespace SimpleLanguage.VM
                             SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, false);
                             m_Array.SetValue(sobj, i);
                         }
+                        */
                     }
                     break;
             }

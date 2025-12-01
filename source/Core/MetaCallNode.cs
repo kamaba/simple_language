@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.Core
 {
@@ -100,6 +101,7 @@ namespace SimpleLanguage.Core
     {
         public string mame => m_Name;
         public MetaCallNode frontCallNode => m_FrontCallNode;
+        public MetaExpressNode inputExpressNode => m_InputExpressNode;
         public ECallNodeType callNodeType => m_CallNodeType;
         public MetaExpressNode metaExpressValue => m_ExpressNode;
         public List<MetaExpressNode> bracketExpressList => m_BracketExpressList;
@@ -126,6 +128,7 @@ namespace SimpleLanguage.Core
         private MetaCallNode m_FrontCallNode = null;
         private FileMetaCallNode m_FileMetaCallSign = null;
         private FileMetaCallNode m_FileMetaCallNode = null;
+        private MetaExpressNode m_InputExpressNode = null;
         private Token m_Token = null;
 
         private MetaType m_CallMetaType = null;
@@ -158,10 +161,12 @@ namespace SimpleLanguage.Core
 
         public MetaCallNode()
         { }
-        public MetaCallNode( MetaConstExpressNode mcen )
+        public MetaCallNode( MetaExpressNode mcen, MetaClass mc, MetaBlockStatements mbs, MetaType fdmt )
         {
-            m_CallNodeType = ECallNodeType.ConstValue;
-            m_ExpressNode = mcen;
+            m_InputExpressNode = mcen;
+            m_OwnerMetaClass = mc;
+            m_OwnerMetaFunctionBlock = mbs;
+            m_FrontDefineMetaType = fdmt;
         }
         public MetaCallNode(FileMetaCallNode fmcn1, FileMetaCallNode fmcn2, MetaClass mc, MetaBlockStatements mbs, MetaType fdmt )
         {
@@ -199,6 +204,7 @@ namespace SimpleLanguage.Core
         }
         public bool ParseNode(AllowUseSettings _auc)
         {
+            bool flag = false;
             m_AllowUseSettings = _auc;
             if (m_FileMetaCallSign != null)
             {
@@ -218,60 +224,103 @@ namespace SimpleLanguage.Core
                     return false;
                 }
             }
-            if (m_FileMetaCallNode == null)
+
+            if (m_InputExpressNode != null)
             {
-                Log.AddInStructMeta(EError.None, "Error 定义原数据为空!! " + m_Token.ToLexemeAllString());
+                flag = FindArrayNode();
             }
-            if (m_FileMetaCallNode.fileMetaParTerm != null && !m_IsFunction )
+            else
             {
-                var firstNode = m_FileMetaCallNode.fileMetaParTerm.fileMetaExpressList[0];
-                if (firstNode == null)
+                if (m_FileMetaCallNode == null )
                 {
-                    Log.AddInStructMeta(EError.None, "Error 不能使用输入()中的内容 0号位的没有内容!!");
+                    Log.AddInStructMeta(EError.None, "Error 定义原数据为空!! " + m_Token.ToLexemeAllString());
+                }
+                if (m_FileMetaCallNode != null && m_FileMetaCallNode.fileMetaParTerm != null && !m_IsFunction)
+                {
+                    var firstNode = m_FileMetaCallNode.fileMetaParTerm.fileMetaExpressList[0];
+                    if (firstNode == null)
+                    {
+                        Log.AddInStructMeta(EError.None, "Error 不能使用输入()中的内容 0号位的没有内容!!");
+                    }
+                    else
+                    {
+                        CreateExpressParam cep = new CreateExpressParam()
+                        {
+                            ownerMetaClass = m_OwnerMetaClass,
+                            ownerMBS = m_OwnerMetaFunctionBlock,
+                            metaType = null,
+                            fme = firstNode,
+                        };
+                        m_ExpressNode = ExpressManager.CreateExpressNode(cep);
+                        m_ExpressNode.Parse(_auc);
+                        m_ExpressNode.CalcReturnType();
+                        m_MetaType = m_ExpressNode.GetReturnMetaDefineType();
+                        m_CallNodeType = ECallNodeType.Express;
+                        return true;
+                    }
                 }
                 else
                 {
-                    CreateExpressParam cep = new CreateExpressParam()
-                    {
-                        ownerMetaClass = m_OwnerMetaClass,
-                        ownerMBS = m_OwnerMetaFunctionBlock,
-                        metaType = null,
-                        fme = firstNode,
-                    };
-                    m_ExpressNode = ExpressManager.CreateExpressNode(cep);
-                    m_ExpressNode.Parse(_auc);
-                    m_ExpressNode.CalcReturnType();
-                    m_MetaType = m_ExpressNode.GetReturnMetaDefineType();
-                    m_CallNodeType = ECallNodeType.Express;
-                    return true;
+                    flag = CreateCallNode();
                 }
-            }
-            bool flag = CreateCallNode();
-            if (m_FileMetaCallNode.fileMetaBracketTermList.Count > 0)
-            {
-                for (int i = 0; i < m_FileMetaCallNode.fileMetaBracketTermList.Count; i++)
+                if (m_FileMetaCallNode.fileMetaBracketTermList.Count > 0)
                 {
-                    CreateExpressParam cep = new CreateExpressParam();
-                    cep.fme = m_FileMetaCallNode.fileMetaBracketTermList[i];
-                    cep.equalMetaVariable = m_DefineMetaVariable;
-                    cep.metaType = m_MetaType;
-                    cep.ownerMBS = m_OwnerMetaFunctionBlock;
-                    cep.ownerMetaClass = m_OwnerMetaFunctionBlock.ownerMetaClass;
+                    for (int i = 0; i < m_FileMetaCallNode.fileMetaBracketTermList.Count; i++)
+                    {
+                        CreateExpressParam cep = new CreateExpressParam();
+                        cep.fme = m_FileMetaCallNode.fileMetaBracketTermList[i];
+                        cep.equalMetaVariable = m_DefineMetaVariable;
+                        cep.metaType = m_MetaType;
+                        cep.ownerMBS = m_OwnerMetaFunctionBlock;
+                        cep.ownerMetaClass = m_OwnerMetaFunctionBlock.ownerMetaClass;
 
-                    var en = ExpressManager.CreateExpressNodeByCEP(cep);
-                    en.Parse(_auc);
-                    m_BracketExpressList.Add(en);
+                        var en = ExpressManager.CreateExpressNodeByCEP(cep);
+                        en.Parse(_auc);
+                        m_BracketExpressList.Add(en);
+                    }
                 }
             }
             return flag;
         }
+        bool FindArrayNode()
+        {
+            if(m_InputExpressNode is MetaConstExpressNode mcen )
+            {
+                m_ExpressNode = mcen;
+                m_VisitFlag = true;
+                m_Name = mcen.value.ToString();
+                HandleVisit();
+            }
+            else if(m_InputExpressNode is MetaCallLinkExpressNode mclen )
+            {
+                m_ExpressNode = mclen;
+                m_VisitFlag = true;
+                HandleVisit();
+            }
+            else if(m_InputExpressNode is MetaArrayExpressNode maen2 )
+            {
+                if(maen2.metaCallArray.Count == 1 )
+                {
+                    var maen3 = maen2.metaCallArray[0] as MetaConstExpressNode;
+                    m_ExpressNode = maen3;
+                    m_VisitFlag = true;
+                    m_Name = maen3.value.ToString();
+                    HandleVisit();
+                }
+            }
+            else
+            {
+                Log.AddInStructMeta(EError.None, "Error 不支持表达式类型!!");
+            }
+            return true;
+        }
         bool CreateCallNode()
         {
-            int tokenLine = m_FileMetaCallNode.token != null ? m_FileMetaCallNode.token.sourceBeginLine : -1;
+            int tokenLine = m_FileMetaCallNode?.token != null ? m_FileMetaCallNode.token.sourceBeginLine : -1;
             m_Name = m_FileMetaCallNode.name;
 
             string fatherName = m_FrontCallNode?.m_Name;
-            bool isAt = m_FileMetaCallNode.atToken != null || m_VisitFlag;
+            bool isAt = m_FileMetaCallNode?.atToken != null || m_VisitFlag;
             // 当前是否是第一个元素
             bool isFirst = m_FrontCallNode == null;
             int templateCount = this.m_FileMetaCallNode.inputTemplateNodeList.Count;
@@ -1201,7 +1250,7 @@ namespace SimpleLanguage.Core
                 }
                 */
                 var variable = m_FrontCallNode.m_MetaVariable;
-                if (m_FileMetaCallNode.atToken != null || m_VisitFlag)
+                if (m_FileMetaCallNode?.atToken != null || m_VisitFlag)
                 {
                     // Array1.$i.x   Array1.$mmq.x;
                     var getmv2 = m_OwnerMetaFunctionBlock.GetMetaVariableByName(m_Name);
@@ -1220,6 +1269,22 @@ namespace SimpleLanguage.Core
                     }
                     else if( m_ExpressNode is MetaConstExpressNode mcen )
                     {
+                        var index = (int)mcen.value;
+                        var list = variable.realMetaType.arrayDimensionLengthList;
+                        if (variable.realMetaType.isArray && list.Count >= 0 )
+                        {
+                            if( list[0] > 0 && list[0] < index )
+                            {
+                                Log.AddInStructMeta(EError.None, "数组下标记超过了！");
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            Log.AddInStructMeta(EError.None, "非数组的处理！");
+                            return;
+                        }
+
                         m_MetaVariable = new MetaVisitVariable("Visit_" + mcen.value.ToString(), m_OwnerMetaClass, m_OwnerMetaFunctionBlock, variable, mcen );
 
                         m_CallNodeType = ECallNodeType.VisitVariable;

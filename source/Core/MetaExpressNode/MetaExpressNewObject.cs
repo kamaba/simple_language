@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.IR;
@@ -820,7 +821,7 @@ namespace SimpleLanguage.Core
 
         public bool needInitMemberVariable => m_NeedInitMemberVariable;
         public ENewType newType => m_NewType;
-        public int arrayLength => m_MetaType?.isArray == true ? m_MetaType.GetArrayDimensionLengthByIndex(1) : 0;
+        public int arrayLength => m_MetaType?.isArray == true ? m_MetaType.GetArrayDimensionLengthByIndex(0) : 0;
         public List<MetaExpressNode> metaInputParamList => m_MetaInputParamList;
         public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
         public MetaVariable storeMetaVariable => m_StoreMetaVariable;
@@ -1116,21 +1117,11 @@ namespace SimpleLanguage.Core
 
                 m_RealMetaType = new MetaType(inputType);
 
-                int disension = 1;
                 List<MetaType> listMT = new List<MetaType>();
-                bool isPureArray = true;
                 for( int i = 0; i < m_MetaBraceOrBracketStatementsContent.assignStatementsList.Count; i++ )
                 {
                     var mt = m_MetaBraceOrBracketStatementsContent.assignStatementsList[i].GetRetMetaType();
                     listMT.Add(mt);
-                    if( !mt.isArray )
-                    {
-                        isPureArray = false;
-                    }
-                }
-                if( isPureArray )
-                {
-                    disension++;
                 }
                 m_RealMetaType.SetArrayMetaType(listMT);
 
@@ -1182,6 +1173,22 @@ namespace SimpleLanguage.Core
                 if (flag)
                 {
                     Log.AddInStructMeta(EError.None, "在[]中，只允许数字形式存在");
+                }
+            }
+            int use_n_numone = 0;
+            for( int i = depthLength.Count - 1; i >= 0; i--)
+            {
+                if(depthLength[i] == -1 )
+                {
+                    if( use_n_numone == 2 )
+                    {
+                        Log.AddInStructMeta(EError.None, "在[]中，只允许从后边向前[3][-1][-1]这种形式，而不能使用[3][-1][2] 这种形式");
+                        continue;
+                    }
+                }
+                else
+                {
+                    use_n_numone = 2;
                 }
             }
 
@@ -1328,7 +1335,7 @@ namespace SimpleLanguage.Core
                         int curlen = m_MetaType.arrayDimensionLengthList[0];
                         if ( curlen == -1 )
                         {
-
+                            m_MetaType.arrayDimensionLengthList[0] = m_RealMetaType.arrayDimensionLengthList[0];
                         }
                         else
                         {
