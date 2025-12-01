@@ -110,6 +110,42 @@ namespace Core
             uint allSize = length * 4
             #this._ptr = Lib.Array.CreateArray( length, 4 )
         }
+        _next_<T>()
+        {
+            T t = 
+        }
+        bool moveNext()
+        {
+            this._index++;
+            bool hasNext = this._index < this.length
+
+            if hasNext
+            {
+                this._current = this._value[this._index];
+            }
+            else
+            {
+                this._current = null
+            }
+            ret hasNext
+
+        }
+        get T _current_<T>()
+        {
+            #检查迭代器状态（未启动或已结束时抛出异常）
+            if this._index < 0
+            {
+                ret null
+                #throw StateError("迭代器未调用 moveNext()");
+            }
+            if this._index >= _list.length )
+            {
+                ret null
+                throw StateError("迭代器已结束");
+            }
+            # 返回缓存的当前元素（非空断言，因为 hasNext 为 true 时才会访问）
+            ret this._current;
+        }
         set _setValue_( int index, object val )
         {
             #Lib.Array.SetArrayValue( this._ptr, 5,  index, val )
@@ -174,16 +210,35 @@ ArrayTest
         
         System.Console.WriteLine("1111111111= " + a1[0] )
         
+        #var iter = a1.iter
         for v in a1 
         {
             System.Console.WriteLine("----------= " + v.toString() )
         }
+        #!
+        label start
+        if a1._hasNext_
+        {
+            v = a1._next_
+            then_statement
+            goto start
+        }
+        else
+        {
+            v = null
+            goto end
+        }
+        label end
+        !#
         
         # alist = List(2){ intvalue, 1 }
         # int[] a30 = {1,2,3,4}
         # map = Map<int,string>(){ a1.$0:"al", 33:"wang" }
         # a111 = [[[1,2,3],[3,4,5],[6,7,8]],[ [10,11,12],[14,15,15],[16,17,18] ]];  # int[2][3][3] 
+    
         #object[3][2][] a1 = int[3][2][]{ [ [1,2,3], [] ], [ [5], [7,8,9,5] ], [[100]] };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
+        #还需要处理  [[100]] => 直接写100的情况，这种情况的话，需要检查 外层是否直接是array形式，如果是，则需要对应关系化处理
+
         #!
         for v in a1
         {
@@ -197,10 +252,10 @@ ArrayTest
                 }
             }
         }
-        
+                
         axxx = int[3]{1,2,3}
         axxx2 = int[3]{ 3,4,5 }
-        axxx3 = array[2]{axxx,axxx2}
+        axxx3 = int[2][]{axxx,axxx2}
         axxx11 = int[2]{5,6}
         axxx12 = int[4]{ 7,8,9,5 }
         axxx13 = arry[2]{axxx11,axxx12} 

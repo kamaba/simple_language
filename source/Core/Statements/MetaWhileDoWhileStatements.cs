@@ -15,15 +15,31 @@ namespace SimpleLanguage.Core
 {
     public sealed class MetaForStatements : MetaStatements
     {
+        public bool isForIn => m_IsForIn;
+        public MetaVariable forIterateVariable => m_ForIterateVariable;
+        public MetaVariable forInContent => m_ForInContent;
+        public MetaVariable ifCeqVariable => m_IfCeqVariable;
+        public MetaMemberFunction hasNextFunction => m_HasNextFunction;
+        public MetaMemberFunction nextValueFunction => m_NextValueFunction;
+        public MetaBlockStatements thenMetaStatements => m_ThenMetaStatements;
+        public MetaDefineVarStatements defineVarStatements => m_DefineVarStatements;
+        public MetaAssignStatements assignStatements => m_AssignStatements;
+        public MetaExpressNode conditionExpress => m_ConditionExpress;
+        public MetaAssignStatements stepStatements => m_StepStatements;
+
         private bool m_IsForIn = false;
-        private MetaVariable m_ForMetaVariable;
+        private MetaVariable m_ForIterateVariable;
         private MetaVariable m_ForInContent = null;
-        private FileMetaKeyForSyntax m_FileMetaKeyForSyntax = null;
+        private MetaVariable m_IfCeqVariable = null;
         private MetaBlockStatements m_ThenMetaStatements = null;
         private MetaDefineVarStatements m_DefineVarStatements = null;
         private MetaAssignStatements m_AssignStatements = null;
         private MetaExpressNode m_ConditionExpress = null;
         private MetaAssignStatements m_StepStatements = null;
+        private MetaMemberFunction m_HasNextFunction = null;
+        private MetaMemberFunction m_NextValueFunction = null;
+
+        private FileMetaKeyForSyntax m_FileMetaKeyForSyntax = null;
         public MetaForStatements(MetaBlockStatements mbs, FileMetaKeyForSyntax fmkfs ) : base(mbs)
         {
             m_FileMetaKeyForSyntax = fmkfs;
@@ -102,7 +118,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        m_ForMetaVariable = new MetaIteratorVariable(fmcd.fileMetaClassDefine, fmcd.nameToken, ownerMetaClass, m_OwnerMetaBlockStatements, m_ForInContent, forMVMC);
+                        m_ForIterateVariable = new MetaIteratorVariable(fmcd.fileMetaClassDefine, fmcd.nameToken, ownerMetaClass, m_OwnerMetaBlockStatements, m_ForInContent, forMVMC);
                     }
                 }
                 else if( m_FileMetaKeyForSyntax.fileMetaClassDefine is FileMetaCallSyntax fmcs )
@@ -116,17 +132,20 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        m_ForMetaVariable = new MetaIteratorVariable( null, fmcs.variableRef.callNodeList[0].token, ownerMetaClass, m_OwnerMetaBlockStatements, m_ForInContent, forMVMC);
+                        m_ForIterateVariable = new MetaIteratorVariable( null, fmcs.variableRef.callNodeList[0].token, ownerMetaClass, m_OwnerMetaBlockStatements, m_ForInContent, forMVMC);
                     }
                 }
-                if(m_ForMetaVariable == null )
+                if(m_ForIterateVariable == null )
                 {
                     Log.AddInStructMeta(EError.None, "Error For x in X必须有!!");
                     return;
                 }
-                m_ForMetaVariable.Parse();
+                m_ForIterateVariable.Parse();
 
-                m_ThenMetaStatements.UpdateMetaVariableDict(m_ForMetaVariable);
+                m_HasNextFunction = m_ForInContent.realMetaType.metaClass.GetFirstMetaMemberFunctionByName("_hasNext_");
+                m_NextValueFunction = m_ForInContent.realMetaType.metaClass.GetFirstMetaMemberFunctionByName("_next_");
+
+                m_ThenMetaStatements.UpdateMetaVariableDict(m_ForIterateVariable);
             }
             else
             {
@@ -176,24 +195,24 @@ namespace SimpleLanguage.Core
 
                 if (m_DefineVarStatements != null)
                 {
-                    m_ForMetaVariable = m_DefineVarStatements.defineVarMetaVariable;
+                    m_ForIterateVariable = m_DefineVarStatements.defineVarMetaVariable;
                 }
                 else if ( m_AssignStatements != null)
                 {
-                    m_ForMetaVariable = m_AssignStatements.metaVariable;
+                    m_ForIterateVariable = m_AssignStatements.metaVariable;
                 }
-                if (m_ForMetaVariable == null)
+                if (m_ForIterateVariable == null)
                 {
                     Log.AddInStructMeta(EError.None, "Error 没有找到相应的变量!!");
                 }
-                m_ThenMetaStatements.UpdateMetaVariableDict(m_ForMetaVariable);
+                m_ThenMetaStatements.UpdateMetaVariableDict(m_ForIterateVariable);
 
                 if (m_FileMetaKeyForSyntax.conditionExpress != null)
                 {
                     CreateExpressParam cep2 = new CreateExpressParam()
                     {
                         ownerMBS = m_ThenMetaStatements,
-                        metaType = m_ForMetaVariable.metaDefineType,
+                        metaType = m_ForIterateVariable.metaDefineType,
                         fme = m_FileMetaKeyForSyntax.conditionExpress,
                         isStatic = false,
                         isConst = false,
@@ -223,7 +242,7 @@ namespace SimpleLanguage.Core
             sb.Append("for ");
             if (m_IsForIn)
             {
-                sb.Append(m_ForMetaVariable.name);
+                sb.Append(m_ForIterateVariable.name);
                 sb.Append(" in ");
                 sb.Append(m_ForInContent.name);
             }
