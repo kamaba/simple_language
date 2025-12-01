@@ -9,6 +9,7 @@
 
 
 using SimpleLanguage.Core;
+using System.Text;
 
 namespace SimpleLanguage.IR
 {
@@ -23,123 +24,132 @@ namespace SimpleLanguage.IR
         public IRBranch ifIRData = null;            //判断是否到终点if判断
         public IRBranch brIRData = null;            //for结束点返回起点语句
         public IRNop endIRData = null;           //for语句点
+        IRCallFunction hasNextCallFunction = null;
+        IRCallFunction nextCallFunction = null;
 
         private IRExpress m_IRConditionExpress = null;
         public void ParseIRStatements(MetaForStatements ms)
         {
             startIRData = new IRNop(irMethod);
             endIRData = new IRNop(irMethod);
-
             m_IRStatements.Add(startIRData);
 
-            //if (m_IsForIn)
-            //{
-            //    IRStoreVariable irStoreVar = new IRStoreVariable(irMethod, m_ForMetaVariable);
-            //    m_IRStatements.Add(irStoreVar);
-            //    //if (m_FileMetaOpAssignSyntax != null)
-            //    //{
-            //    //    irStoreVar.data.SetDebugInfoByToken(m_FileMetaOpAssignSyntax.assignToken);
-            //    //}
+            if( ms.isForIn )
+            {
+                /*
+                var irmt2 = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(maien.convertTargetMetaVariable.metaDefineType, owirmc);
+                IRStoreVariable irStoreVar = IRStoreVariable.CreateIRStoreVariable(irmt2, irMethod, ms.forIterateMetaVariable );
+                m_IRStatements.Add(irStoreVar);
+                //if (m_FileMetaOpAssignSyntax != null)
+                //{
+                //    irStoreVar.data.SetDebugInfoByToken(m_FileMetaOpAssignSyntax.assignToken);
+                //}
 
-            //    m_ThenMetaStatements.ParseAllIRStatements();
-            //    m_IRStatements.AddRange(m_ThenMetaStatements.irStatements);
-            //}
-            //else
-            //{
-            //    if (m_NewStatements != null)
-            //    {
-            //        m_NewStatements.ParseIRStatements();
-            //        m_IRStatements.AddRange(m_NewStatements.irStatements);
-            //    }
-            //    else if (m_AssignStatements != null)
-            //    {
-            //        m_AssignStatements.ParseIRStatements();
-            //        m_IRStatements.AddRange(m_AssignStatements.irStatements);
-            //    }
-            //    forStartIRData = new IRNop( irMethod );
-            //    m_IRStatements.Add(forStartIRData);
+                //m_ThenMetaStatements.ParseAllIRStatements();
+                //m_IRStatements.AddRange(m_ThenMetaStatements.irStatements);
+                */
+            }
+            else
+            {
+                /*
+                if (m_NewStatements != null)
+                {
+                    m_NewStatements.ParseIRStatements();
+                    m_IRStatements.AddRange(m_NewStatements.irStatements);
+                }
+                else if (m_AssignStatements != null)
+                {
+                    m_AssignStatements.ParseIRStatements();
+                    m_IRStatements.AddRange(m_AssignStatements.irStatements);
+                }
+                forStartIRData = new IRNop(irMethod);
+                m_IRStatements.Add(forStartIRData);
 
-            //    if (m_StepStatements != null)
-            //    {
-            //        m_StepStatements.ParseIRStatements();
-            //        m_IRStatements.AddRange(m_StepStatements.irStatements);
-            //    }
+                if (m_StepStatements != null)
+                {
+                    m_StepStatements.ParseIRStatements();
+                    m_IRStatements.AddRange(m_StepStatements.irStatements);
+                }
 
-            //    if (m_ConditionExpress != null)
-            //    {
-            //        m_IRConditionExpress = new IRExpress(irMethod, m_ConditionExpress);
-            //        m_IRStatements.Add(m_IRConditionExpress);
+                if (m_ConditionExpress != null)
+                {
+                    m_IRConditionExpress = new IRExpress(irMethod, m_ConditionExpress);
+                    m_IRStatements.Add(m_IRConditionExpress);
 
-            //        ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, endIRData.data);
-            //        m_IRStatements.Add(ifIRData);
-            //    }
-            //    m_ThenMetaStatements.ParseAllIRStatements();
-            //    m_IRStatements.AddRange(m_ThenMetaStatements.irStatements);
-            //}
+                    ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, endIRData.data);
+                    m_IRStatements.Add(ifIRData);
+                }
+                m_ThenMetaStatements.ParseAllIRStatements();
+                m_IRStatements.AddRange(m_ThenMetaStatements.irStatements);
+                */
+            }
 
-            //brIRData = new IRBranch(irMethod, EIROpCode.Br, forStartIRData.data );
-            //m_IRStatements.Add(brIRData);
-            //m_IRStatements.Add(endIRData);
+            brIRData = new IRBranch(irMethod, EIROpCode.Br, forStartIRData.data);
+            m_IRStatements.Add(brIRData);
+            m_IRStatements.Add(endIRData);
 
-            //if (m_NextMetaStatements != null)
-            //{
-            //    m_NextMetaStatements.ParseIRStatements();
-            //}
+            if ( ms.nextMetaStatements != null)
+            {
+                IRBlockStatements irbs = new IRBlockStatements(irMethod);
+                irbs.ParseAllIRStatements(ms.nextMetaStatements as MetaBlockStatements );
+            }
         }
-        //public override string ToIRString()
-        //{
-        //    StringBuilder sb = new StringBuilder();
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
 
-        //    sb.Append("#for ");
-        //    if (m_IsForIn)
-        //    {
-        //        sb.Append(m_ForMetaVariable.name);
-        //        sb.Append(" in ");
-        //        sb.Append(m_ForInContent.name);
-        //    }
-        //    sb.AppendLine("#");
-        //    sb.Append("{");
-        //    sb.Append(Environment.NewLine);
+            sb.Append("#for ");
+            /*
+            if (m_IsForIn)
+            {
+                sb.Append(m_ForMetaVariable.name);
+                sb.Append(" in ");
+                sb.Append(m_ForInContent.name);
+            }
+            sb.AppendLine("#");
+            sb.Append("{");
+            sb.Append(Environment.NewLine);
 
-        //    if (!m_IsForIn)
-        //    {
-        //        if (m_NewStatements != null)
-        //        {
-        //            sb.Append(m_NewStatements.ToIRString());
-        //        }
-        //        if (m_AssignStatements != null)
-        //        {
-        //            sb.Append(m_AssignStatements.ToIRString());
-        //        }
+            if (!m_IsForIn)
+            {
+                if (m_NewStatements != null)
+                {
+                    sb.Append(m_NewStatements.ToIRString());
+                }
+                if (m_AssignStatements != null)
+                {
+                    sb.Append(m_AssignStatements.ToIRString());
+                }
 
-        //        if (m_ConditionExpress != null)
-        //        {
-        //            sb.Append(Environment.NewLine);
-        //            for (int i = 0; i < deep + 1; i++)
-        //            {
-        //                sb.Append(Global.tabChar);
-        //            }
-        //            sb.Append("if ");
-        //            sb.Append(m_ConditionExpress.ToFormatString());
-        //            sb.Append("{break;}");
-        //            sb.Append(Environment.NewLine);
-        //        }
-        //        if (m_StepStatements != null)
-        //        {
-        //            sb.Append(m_StepStatements.ToIRString());
-        //        }
-        //        sb.Append(m_ThenMetaStatements?.ToIRString());
-        //    }
-        //    else
-        //    {
-        //    }
+                if (m_ConditionExpress != null)
+                {
+                    sb.Append(Environment.NewLine);
+                    for (int i = 0; i < deep + 1; i++)
+                    {
+                        sb.Append(Global.tabChar);
+                    }
+                    sb.Append("if ");
+                    sb.Append(m_ConditionExpress.ToFormatString());
+                    sb.Append("{break;}");
+                    sb.Append(Environment.NewLine);
+                }
+                if (m_StepStatements != null)
+                {
+                    sb.Append(m_StepStatements.ToIRString());
+                }
+                sb.Append(m_ThenMetaStatements?.ToIRString());
+            }
+            else
+            {
+            }
 
-        //    sb.Append("}");
+            sb.Append("}");
 
-        //    sb.Append(Environment.NewLine);
+            sb.Append(Environment.NewLine);
+            */
 
-        //    return sb.ToString();
-        //}
+            return sb.ToString();
+        }
     }
 
     public class IRWhileDoWhileStatements : IRStatements
