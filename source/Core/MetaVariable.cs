@@ -11,6 +11,7 @@ using SimpleLanguage.Compile;
 
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text;
 using System.Xml.Linq;
 
@@ -32,6 +33,7 @@ namespace SimpleLanguage.Core
         public virtual bool isStatic => m_IsStatic;
         public virtual bool isConst => m_IsConst;
         public virtual bool isParsed => m_IsParsed;
+        public virtual bool isIterate => m_IsIterate;
         public bool isArgument => m_VariableFrom == EVariableFrom.Argument;
         public bool isGlobal => m_VariableFrom == EVariableFrom.Global;
         public bool isArray
@@ -57,6 +59,7 @@ namespace SimpleLanguage.Core
         protected bool m_IsParsed = false;
         protected bool m_IsStatic = false;
         protected bool m_IsConst = false;
+        protected bool m_IsIterate = false;
         protected bool m_IsDefineMetaType = false;      //该字段是表明，该类型使用了定义类型， 如果是var 或者是没定义的，则可以使用真实的类型
         //用来存放扩展包含变量
         protected Dictionary<string, MetaVariable> m_MetaVariableDict = new Dictionary<string, MetaVariable>();
@@ -113,6 +116,7 @@ namespace SimpleLanguage.Core
         public void SetRealMetaType( MetaType realMt )
         {
             this.m_RealMetaType = realMt;
+            this.m_IsIterate = realMt.isIterate;
         }
         public MetaClass GetOwnerClassTemplateClass()
         {
@@ -158,6 +162,10 @@ namespace SimpleLanguage.Core
         public void SetMetaDefineType( MetaType mdt )
         {
             m_DefineMetaType = mdt;
+        }
+        public void SetIsIterate( bool iterate )
+        {
+            this.m_IsIterate = iterate;
         }
         public virtual void SetOwnerBlockstatements(MetaBlockStatements mbs)
         {
@@ -273,6 +281,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_SourceMetaVariable = lmv;
+            m_IsDefineMetaType = lmv.isDefineMetaType;                 
             m_FashVisitConstExpressNode = mvv;
             m_FashVisit = true;
         }
@@ -317,8 +326,11 @@ namespace SimpleLanguage.Core
                     {
                         getMt = new MetaType(m_SourceMetaVariable.metaDefineType.metaClass);
                         getMt.SetArrayDimensionByFrontMetaType(m_SourceMetaVariable.metaDefineType);
+                    }    
+                    else
+                    {
+                        getMt = new MetaType(m_SourceMetaVariable.metaDefineType.metaClass);
                     }
-                    
                 }
                 else
                 {
@@ -403,36 +415,53 @@ namespace SimpleLanguage.Core
 #pragma warning disable CS0414 // 字段“MetaIteratorVariable.m_Index”已被赋值，但从未使用过它的值
         int m_Index = 0;
 #pragma warning restore CS0414 // 字段“MetaIteratorVariable.m_Index”已被赋值，但从未使用过它的值
-        MetaVariable m_LocalMetaVariable = null;
+        MetaVariable m_ContentMetaVariable = null;
         MetaType m_OrgMetaDefineType = null;
         MetaVariable m_IndexMetaVariable = null;
         MetaVariable m_ValueMetaVariable = null;
+        FileMetaClassDefine m_FileMetaClassDefine = null;
+        private Token m_VariableNameToken = null;
 
-        public MetaIteratorVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaType orgMC)
+        public MetaIteratorVariable(FileMetaClassDefine _fmcl, Token variableNameToken, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaType orgMC)
         {
-            m_Name = _name;
+            m_FileMetaClassDefine = _fmcl;
+            m_VariableNameToken = variableNameToken;
+            m_Name = variableNameToken.lexeme.ToString();
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
-            m_LocalMetaVariable = lmv;
+            m_ContentMetaVariable = lmv;
             m_OrgMetaDefineType = orgMC;
             m_IndexMetaVariable = new MetaVariable("index", EVariableFrom.ArrayInner, mbs, mc, new MetaType(CoreMetaClassManager.int32MetaClass));
             m_ValueMetaVariable = new MetaVariable("value", EVariableFrom.ArrayInner, mbs, mc, new MetaType(orgMC.metaClass));
             m_IndexMetaVariable.AddPingToken(lmv.pingToken);
             m_ValueMetaVariable.AddPingToken(lmv.pingToken);
-            if (lmv.isArray)
+        }
+        public override bool Parse()
+        {
+            if(m_FileMetaClassDefine != null )
             {
-                var gmit = m_LocalMetaVariable.metaDefineType.GetMetaInputTemplateByIndex();
-                if (gmit == null)
-                {
-                    Log.AddInStructMeta(EError.None, "Error 访问的Array中，没有找到模版 名称!!");
-                    return;
-                }
-                m_DefineMetaType = new MetaType(gmit);
+                m_DefineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, m_OwnerMetaBlockStatements.ownerMetaFunction as MetaMemberFunction, m_FileMetaClassDefine );
+                m_IsDefineMetaType = true;
             }
             else
             {
-                m_DefineMetaType = lmv.metaDefineType;
+                m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
+            if (m_ContentMetaVariable.isArray)
+            {
+                var gmit = m_ContentMetaVariable.realMetaType;
+                if (gmit == null)
+                {
+                    Log.AddInStructMeta(EError.None, "Error 访问的Array中，没有找到模版 名称!!");
+                    return false;
+                }
+                m_RealMetaType = new MetaType(gmit);
+            }
+            else
+            {
+                m_RealMetaType = new MetaType(m_ContentMetaVariable.realMetaType.metaClass);
+            }
+            return true;
         }
         public MetaClass GetIteratorMetaClass()
         {
@@ -460,8 +489,8 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(m_LocalMetaVariable.name);
-            if (m_LocalMetaVariable.isArray)
+            sb.Append(m_ContentMetaVariable.name);
+            if (m_ContentMetaVariable.isArray)
             {
                 sb.Append("[");
                 //sb.Append(m_DefineMetaType.ToFormatString());

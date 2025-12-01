@@ -6,14 +6,9 @@
 //  Description:  this's a calllink's node handle
 //****************************************************************************
 using SimpleLanguage.Compile;
-
-
 using SimpleLanguage.Parse;
-using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Text;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.Core
 {
@@ -86,17 +81,6 @@ namespace SimpleLanguage.Core
             getterFunction = clone.getterFunction;
         }
     }
-    //public class Level1<T1,T2>
-    //{
-    //    static T1 t1 = default(T1);
-    //    static T1 Open( T1 t )
-    //    {
-    //        Level1<T1, short>.t1 = t1;
-
-    //        return t1
-    //    }
-    //}
-
     public sealed class MetaCallNode
     {
         public string mame => m_Name;

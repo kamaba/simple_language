@@ -687,6 +687,16 @@ namespace SimpleLanguage.Compile
                         FileMetaBraceTerm tmbt = new FileMetaBraceTerm(m_FileMeta, defineNodeList[0]);
                         AddFileMetaTerm(tmbt);
                     }
+                    else if (defineNodeList[0].nodeType == ENodeType.IdentifierLink)
+                    {
+                        var tmbt = new FileMetaCallTerm(m_FileMeta, defineNodeList[0]);
+                        AddFileMetaTerm(tmbt);
+                    }
+                    else if (defineNodeList[0].nodeType == ENodeType.ConstValue)
+                    {
+                        var tmbt = new FileMetaConstValueTerm(m_FileMeta, defineNodeList[0].token );
+                        AddFileMetaTerm(tmbt);
+                    }
                     else
                     {
                         Log.AddInStructFileMeta(EError.None, "Error 在解析为{}中，数组形式 解析有问题!!");

@@ -33,7 +33,7 @@ namespace SimpleLanguage.Core
             }
         }
         //public MetaClass typeInferenceClass => m_TypeInferenceClass;
-
+        public bool isIterate => m_IsIterate;
         public bool isEnum => m_MetaClass is MetaEnum;
         public bool isData => m_MetaClass is MetaData;
         public bool isArray => m_EType == EMetaTypeType.Array;
@@ -66,6 +66,7 @@ namespace SimpleLanguage.Core
         private List<MetaType> m_GenTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         private List<MetaType> m_ArrayMetaTypeList = new List<MetaType>();
         private List<int> m_ArrayDimensionLengthList = new List<int>();
+        private bool m_IsIterate = false;
         public MetaType()
         {
         }
@@ -136,6 +137,7 @@ namespace SimpleLanguage.Core
             this.m_EnumValue = mt.m_EnumValue;
             //this.m_FromName = mt.m_FromName;
             this.m_EType = mt.m_EType;
+            this.m_IsIterate = mt.m_IsIterate;
 
             this.m_ArrayDimensionLengthList = new List<int>( mt.m_ArrayDimensionLengthList.ToArray() );
 
@@ -155,15 +157,9 @@ namespace SimpleLanguage.Core
                 m_GenTemplateMetaTypeList.Add(mtc);
             }
         }
-        public bool IsCanForIn()
+        public void SetIsIterate( bool isIterate )
         {
-            if(m_MetaClass is MetaEnum )//m_MetaClass is MetaData ||  )
-            { return true; }
-            if( m_MetaClass.eType == EType.Array
-                || m_MetaClass.eType == EType.Range )
-            { return true; }
-
-            return false;
+            m_IsIterate = isIterate;
         }
         public void SetArrayDimension( int disension  )
         {
@@ -173,6 +169,7 @@ namespace SimpleLanguage.Core
                 m_ArrayDimensionLengthList.Clear();
                 for (int i = 0; i < disension; i++)
                     m_ArrayDimensionLengthList.Add(-1);
+                m_IsIterate = true;
             }
         }
         public void SetUnLimitArray()
@@ -186,6 +183,7 @@ namespace SimpleLanguage.Core
             if(mt.arrayDimension > 1 )
             {
                 m_EType = EMetaTypeType.Array;
+                m_IsIterate = true;
                 m_ArrayDimensionLengthList.Clear();
                 for( int i = 1; i <  mt.m_ArrayDimensionLengthList.Count; i++)
                 {
@@ -205,6 +203,10 @@ namespace SimpleLanguage.Core
         public void SetArrayDismensionLength( List<int> list )
         {
             m_ArrayDimensionLengthList = list;
+            if( list.Count > 0 )
+            {
+                m_IsIterate = true;
+            }
         }
         public int GetArrayDimensionLengthByIndex(int index )
         {
@@ -268,6 +270,7 @@ namespace SimpleLanguage.Core
             this.m_EnumValue = mt.m_EnumValue;
             //this.m_FromName = mt.m_FromName;
             this.m_EType = mt.m_EType;
+            this.m_IsIterate = mt.m_IsIterate;
             this.m_DefineTemplateMetaTypeList = mt.m_DefineTemplateMetaTypeList;
             this.m_GenTemplateMetaTypeList = mt.m_GenTemplateMetaTypeList;
         }
@@ -394,6 +397,7 @@ namespace SimpleLanguage.Core
             m_ArrayDimensionLengthList.Clear();
             m_ArrayDimensionLengthList.Add(list.Count);
             m_EType = EMetaTypeType.Array;
+            m_IsIterate = true;
         }
         //public void SetSourceMetaType( MetaType sourceMt )
         //{

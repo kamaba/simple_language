@@ -164,20 +164,40 @@ ArrayTest
     }
     static fun()
     { 
-        #int intvalue = 20
+        int intvalue = 20
         #var ac = ArrClass(){ i1 = intvalue, i2 = "okok" }
         #System.Console.WriteLine("1111111111= " + ac.i1 + "    " + ac.i2 )
 
          # arr22 = int[2][] { [1,2,3,4] }
 
-        # a1 = object[2]{intvalue,1};    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
+        a1 = object[2]{intvalue,1};    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
+        
+        System.Console.WriteLine("1111111111= " + a1[0] )
+        
+        for v in a1 
+        {
+            System.Console.WriteLine("----------= " + v.toString() )
+        }
+        
         # alist = List(2){ intvalue, 1 }
         # int[] a30 = {1,2,3,4}
         # map = Map<int,string>(){ a1.$0:"al", 33:"wang" }
         # a111 = [[[1,2,3],[3,4,5],[6,7,8]],[ [10,11,12],[14,15,15],[16,17,18] ]];  # int[2][3][3] 
-        object[3][2][] a1 = int[3][2][]{ [ [1,2,3], [] ], [ [5], [7,8,9,5] ], [[100]] };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
-        
+        #object[3][2][] a1 = int[3][2][]{ [ [1,2,3], [] ], [ [5], [7,8,9,5] ], [[100]] };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         #!
+        for v in a1
+        {
+            var v2 = v.length
+            if v.length > 0
+            {
+                var v2 = v.$0
+                if( v.$0.length > 0 )
+                {
+                    System.Console.WriteLine("----------= " + v2.$0 )
+                }
+            }
+        }
+        
         axxx = int[3]{1,2,3}
         axxx2 = int[3]{ 3,4,5 }
         axxx3 = array[2]{axxx,axxx2}
@@ -189,7 +209,7 @@ ArrayTest
         a1 = array[3]{ axxx3, axxx13, axx23 }
         !#
 
-        System.Console.WriteLine("1111111111= " + a1[2][0][0] )
+        #System.Console.WriteLine("1111111111= " + a1[0] )
        
         #object[][] a2 = int[2][3];
         #a2[0] = int[3]
