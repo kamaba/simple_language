@@ -49,6 +49,7 @@ namespace SimpleLanguage.Core
                 var firstNode = new MetaCallNode(null, fmcn, m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt);
                 frontMetaNode = firstNode;
                 m_CallNodeList.Add(firstNode);
+                firstNode.SetStoreMetaVariable(mv);
                 //AddMetaArrayNode(fmcn, frontDefineMt, mv, frontMetaNode);
             }
 
@@ -68,6 +69,7 @@ namespace SimpleLanguage.Core
                     {
                         var fmn1 = new MetaCallNode(null, cn1, m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt);
                         fmn1.SetFrontCallNode(frontMetaNode);
+                        fmn1.SetStoreMetaVariable(mv);
                         frontMetaNode = fmn1;
                         //AddMetaArrayNode(cn1, frontDefineMt, mv, frontMetaNode);
                     }
@@ -75,6 +77,7 @@ namespace SimpleLanguage.Core
                     {
                         var fmn2 = new MetaCallNode(cn1, cn2, m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt);
                         fmn2.SetFrontCallNode(frontMetaNode);
+                        fmn2.SetStoreMetaVariable(mv);
                         m_CallNodeList.Add(fmn2);                        
                         frontMetaNode = fmn2;
                         //AddMetaArrayNode(cn2, frontDefineMt, mv, frontMetaNode);
@@ -84,6 +87,7 @@ namespace SimpleLanguage.Core
                 {
                     var fmn1 = new MetaCallNode(null, cn1, m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt);
                     fmn1.SetFrontCallNode(frontMetaNode);
+                    fmn1.SetStoreMetaVariable(mv);
                     frontMetaNode = fmn1;
                     m_CallNodeList.Add(fmn1);
                     //AddMetaArrayNode(cn1, frontDefineMt, mv, frontMetaNode);
@@ -97,6 +101,7 @@ namespace SimpleLanguage.Core
 
                     var fmn2 = new MetaCallNode(null, cn2, m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt);
                     fmn2.SetFrontCallNode(fmn1);
+                    fmn2.SetStoreMetaVariable(mv);
                     m_CallNodeList.Add(fmn2);
                     frontMetaNode = fmn2;
                     //AddMetaArrayNode(cn2, frontDefineMt, mv, frontMetaNode  );
@@ -194,7 +199,7 @@ namespace SimpleLanguage.Core
                                 var frontcn = cnt;
                                 if( cnt.metaVariable.isArray )
                                 {
-                                    if( cnt.bracketExpressList.Count <= cnt.metaVariable.metaDefineType.arrayDimension )
+                                    if( cnt.bracketExpressList.Count <= cnt.metaVariable.realMetaType.arrayDimension )
                                     {
                                         for (int j = 0; j < cnt.bracketExpressList.Count; j++)
                                         {

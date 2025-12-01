@@ -582,6 +582,26 @@ namespace SimpleLanguage.Core
                     }
                     */
                 }
+                else if( fmbt is FileMetaCallTerm fmct )
+                {
+                    CreateExpressParam cep = new CreateExpressParam();
+                    cep.ownerMetaClass = m_OwnerMetaClass;
+                    cep.ownerMBS = m_OwnerMetaBlockStatements;
+                    cep.metaType = new MetaType(m_DefineMetaType.metaClass);
+                    cep.fme = fmct;
+                    cep.equalMetaVariable = m_EqualMetaVariable;
+                    MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
+                    men.Parse(new AllowUseSettings());
+                    men.CalcReturnType();
+                    MetaType mt2 = men.GetReturnMetaDefineType();
+                    if (!mt2.metaClass.IsContainMetaClass(m_DefineMetaType.metaClass))
+                    {
+                        Log.AddInStructMeta(EError.None, "里边的元素与外边定义的类，不对应，需要调整数据，或者是定义的结构 ");
+                    }
+                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
+                    mas.CalcReturnType();
+                    m_AssignStatementsList.Add(mas);
+                }
                 else if (fmbt is FileMetaConstValueTerm fmcvt)
                 {
                     CreateExpressParam cep = new CreateExpressParam();
@@ -1142,8 +1162,6 @@ namespace SimpleLanguage.Core
                     m_RealMetaType = new MetaType(m_NewMetaType);
                 }
             }
-
-            CalcReturnType();
         }
         List<int> depthLength = new List<int>();
         public void HnaldeArrayType( MetaCallNode lastNode, MetaType mt  )
@@ -1244,45 +1262,52 @@ namespace SimpleLanguage.Core
             {
                 if (m_NewMetaType.isArray)
                 {
-                    if (m_DefineMetaType.isArray == false)
+                    if (m_StoreMetaVariable?.isDefineMetaType == true )
                     {
-                        Log.AddInStructMeta(EError.None, "如果定义了，结构，必须与new对象的类型一样才可以");
-                        return;
-                    }
-                    else
-                    {
-                        if (m_NewMetaType.arrayDimensionLengthList.Count == m_DefineMetaType.arrayDimensionLengthList.Count)
+                        if (m_DefineMetaType.isArray == false)
                         {
-                            for (int i = 0; i < m_DefineMetaType.arrayDimensionLengthList.Count; i++)
-                            {
-                                if (m_DefineMetaType.arrayDimensionLengthList[i] == -1 )
-                                {
-
-                                }
-                                else if(m_NewMetaType.arrayDimensionLengthList[i] == -1 )
-                                {
-                                    if(m_DefineMetaType.arrayDimensionLengthList[i] != -1 )
-                                    {
-                                        Log.AddInStructMeta(EError.None, "如果前边定义了长度，new的时候必须和前边的长度一样!");
-                                        return;
-                                    }
-                                }
-                                else
-                                {
-                                    if (m_NewMetaType.arrayDimensionLengthList[i] != m_DefineMetaType.arrayDimensionLengthList[i])
-                                    {
-                                        Log.AddInStructMeta(EError.None, "如果前边定义了长度，new的时候必须和前边的长度一样!");
-                                        return;
-                                    }
-                                }
-                            }
-                            m_MetaType = new MetaType(m_NewMetaType);                                
+                            Log.AddInStructMeta(EError.None, "如果定义了，结构，必须与new对象的类型一样才可以");
+                            return;
                         }
                         else
                         {
-                            Log.AddInStructMeta(EError.None, "定义数组与new数组 的维度不同");
-                            return;
-                        }                        
+                            if (m_NewMetaType.arrayDimensionLengthList.Count == m_DefineMetaType.arrayDimensionLengthList.Count)
+                            {
+                                for (int i = 0; i < m_DefineMetaType.arrayDimensionLengthList.Count; i++)
+                                {
+                                    if (m_DefineMetaType.arrayDimensionLengthList[i] == -1)
+                                    {
+
+                                    }
+                                    else if (m_NewMetaType.arrayDimensionLengthList[i] == -1)
+                                    {
+                                        if (m_DefineMetaType.arrayDimensionLengthList[i] != -1)
+                                        {
+                                            Log.AddInStructMeta(EError.None, "如果前边定义了长度，new的时候必须和前边的长度一样!");
+                                            return;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (m_NewMetaType.arrayDimensionLengthList[i] != m_DefineMetaType.arrayDimensionLengthList[i])
+                                        {
+                                            Log.AddInStructMeta(EError.None, "如果前边定义了长度，new的时候必须和前边的长度一样!");
+                                            return;
+                                        }
+                                    }
+                                }
+                                m_MetaType = new MetaType(m_NewMetaType);
+                            }
+                            else
+                            {
+                                Log.AddInStructMeta(EError.None, "定义数组与new数组 的维度不同");
+                                return;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        m_MetaType = new MetaType(m_NewMetaType);
                     }
                 }
                 else

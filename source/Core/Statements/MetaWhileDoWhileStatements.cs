@@ -50,6 +50,7 @@ namespace SimpleLanguage.Core
                 {
                     CreateExpressParam cep2 = new CreateExpressParam()
                     {
+                        ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass,
                         ownerMBS = m_OwnerMetaBlockStatements,
                         metaType = null,
                         fme = m_FileMetaKeyForSyntax.conditionExpress,
@@ -58,6 +59,7 @@ namespace SimpleLanguage.Core
                         parsefrom = EParseFrom.StatementRightExpress
                     };
                     m_ConditionExpress = ExpressManager.CreateExpressNode(cep2);
+                    m_ConditionExpress.Parse(new AllowUseSettings());
                     m_ConditionExpress.CalcReturnType();
                 }
 
@@ -77,10 +79,10 @@ namespace SimpleLanguage.Core
                     m_ForInContent = new MetaVariable("forcontent_" + GetHashCode().ToString(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, ownerMetaClass, mnoen.GetReturnMetaDefineType() );
                     m_ThenMetaStatements.UpdateMetaVariableDict(m_ForInContent);
                 }
-                MetaType mdt = m_ForInContent.metaDefineType;
-                if ( !mdt.IsCanForIn() )
+                MetaType mdt = m_ForInContent.realMetaType;
+                if ( !m_ForInContent.isIterate )
                 {
-                    Log.AddInStructMeta(EError.None, "Error For in 表达式，应该是个数组形式!");
+                    Log.AddInStructMeta(EError.None, "Error For in 必须是支持迭代器iterate");
                     return;
                 }
                 var forMVMC = mdt.GetMetaInputTemplateByIndex();
@@ -89,23 +91,40 @@ namespace SimpleLanguage.Core
                     forMVMC = m_ForInContent.metaDefineType;
                 }
 
-                var fmcd = m_FileMetaKeyForSyntax.fileMetaClassDefine as FileMetaCallSyntax;
-                if( fmcd == null )
+                if( m_FileMetaKeyForSyntax.fileMetaClassDefine is FileMetaDefineVariableSyntax fmcd )
+                {
+                    string dname = fmcd.name;
+                    var dmv = m_ThenMetaStatements.GetMetaVariableByName(dname);
+                    if (dmv != null)
+                    {
+                        Log.AddInStructMeta(EError.None, "Error 在 for .. in 中，不允许从for 外边定义遍历变量!!");
+                        return;
+                    }
+                    else
+                    {
+                        m_ForMetaVariable = new MetaIteratorVariable(fmcd.fileMetaClassDefine, fmcd.nameToken, ownerMetaClass, m_OwnerMetaBlockStatements, m_ForInContent, forMVMC);
+                    }
+                }
+                else if( m_FileMetaKeyForSyntax.fileMetaClassDefine is FileMetaCallSyntax fmcs )
+                {
+                    string dname = fmcs.variableRef.name;
+                    var dmv = m_ThenMetaStatements.GetMetaVariableByName(dname);
+                    if (dmv != null)
+                    {
+                        Log.AddInStructMeta(EError.None, "Error 在 for .. in 中，不允许从for 外边定义遍历变量!!");
+                        return;
+                    }
+                    else
+                    {
+                        m_ForMetaVariable = new MetaIteratorVariable( null, fmcs.variableRef.callNodeList[0].token, ownerMetaClass, m_OwnerMetaBlockStatements, m_ForInContent, forMVMC);
+                    }
+                }
+                if(m_ForMetaVariable == null )
                 {
                     Log.AddInStructMeta(EError.None, "Error For x in X必须有!!");
                     return;
                 }
-                string dname = fmcd.variableRef.name;
-                var dmv = m_ThenMetaStatements.GetMetaVariableByName(dname);
-                if (dmv != null )
-                {
-                    Log.AddInStructMeta(EError.None, "Error 在 for .. in 中，不允许从for 外边定义遍历变量!!");
-                    return;
-                }
-                else
-                {
-                    m_ForMetaVariable = new MetaIteratorVariable(dname, ownerMetaClass, m_OwnerMetaBlockStatements, m_ForInContent, forMVMC );
-                }
+                m_ForMetaVariable.Parse();
 
                 m_ThenMetaStatements.UpdateMetaVariableDict(m_ForMetaVariable);
             }
