@@ -307,34 +307,43 @@ namespace SimpleLanguage.Core
         }
         public override void ParseDefineMetaType()
         {
+            MetaType getMt = null;
             if (m_SourceMetaVariable.isDefineMetaType)
             {
                 if (m_SourceMetaVariable.metaDefineType.isArray)
                 {
-                    if (m_SourceMetaVariable.metaDefineType.metaClass == CoreMetaClassManager.arrayMetaClass)
+                    List<int> arraydim = m_SourceMetaVariable.metaDefineType.arrayDimensionLengthList;
+                    if ( arraydim.Count > 1 )
                     {
-                        m_DefineMetaType = new MetaType(m_SourceMetaVariable.metaDefineType);
+                        getMt = new MetaType(m_SourceMetaVariable.metaDefineType.metaClass);
+                        getMt.SetArrayDimensionByFrontMetaType(m_SourceMetaVariable.metaDefineType);
                     }
+                    
                 }
                 else
                 {
 
                 }
             }
-            else
+            
+            if(getMt == null )
             {
                 m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-
+            }
+            else
+            {
+                m_DefineMetaType = new MetaType(getMt);
             }
         }
         public override void  ParseRealMetaType()
         {
             if (m_SourceMetaVariable.realMetaType.isArray)
             {
-                if( m_SourceMetaVariable.realMetaType.arrayDimension > 1 )
+                List<int> arraydim = m_SourceMetaVariable.realMetaType.arrayDimensionLengthList;
+                if (arraydim.Count > 1 )
                 {
-                    m_RealMetaType = new MetaType(m_SourceMetaVariable.realMetaType);
-                    m_RealMetaType.SetArrayDimension(m_SourceMetaVariable.realMetaType.arrayDimension - 1);
+                    m_RealMetaType = new MetaType(m_SourceMetaVariable.realMetaType.metaClass);
+                    m_RealMetaType.SetArrayDimensionByFrontMetaType(m_SourceMetaVariable.realMetaType);
                 }
                 else
                 {
@@ -344,7 +353,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        m_RealMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                        m_RealMetaType = new MetaType(m_SourceMetaVariable.realMetaType.metaClass);
                     }
                 }
             }

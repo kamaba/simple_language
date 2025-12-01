@@ -288,7 +288,7 @@ namespace SimpleLanguage.IR
             {
                 IRNewArray irnewArray = new IRNewArray();
                 EArrayType arrayType = EArrayType.Int32;
-                if(mnoen.metaType.metaClass == CoreMetaClassManager.arrayMetaClass )
+                if( mnoen.metaType.arrayDimensionLengthList.Count > 1 || mnoen.metaType.metaClass == CoreMetaClassManager.arrayMetaClass )
                 {
                     arrayType = EArrayType.Array;
                 }

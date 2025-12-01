@@ -99,7 +99,7 @@ namespace SimpleLanguage.VM
             }
             else if (name == "Core.Array" || name == "Array")
             {
-                sobj = new ArrayObject( EArrayType.Array, new IRMetaType(rt.irClass), 0 );
+                sobj = new ArrayObject( EArrayType.Array, 0 );
                 sobj.typeId = 0;
             }
             else if( name == "Core.Type" || name == "Type" )

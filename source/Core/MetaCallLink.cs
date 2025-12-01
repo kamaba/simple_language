@@ -6,6 +6,7 @@
 //  Description:  this's a common node handles
 //****************************************************************************
 using SimpleLanguage.Compile;
+using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
 using System.Text;
@@ -159,6 +160,7 @@ namespace SimpleLanguage.Core
             allowUseSettings.setterFunction = false;
             allowUseSettings.getterFunction = true;
             bool flag = true;
+            List<MetaCallNode> newList = new List<MetaCallNode>();
             for (int i = 0; i < m_CallNodeList.Count; i++)
             {
                 if (flag)
@@ -179,6 +181,38 @@ namespace SimpleLanguage.Core
                             Log.AddInStructMeta(EError.None, "Parse Statement Error 在使用NewClassName的方式，后边不允许有其它的调用!");
                         }
                     }
+                    if( flag )
+                    {
+                        newList.Add(m_CallNodeList[i]);
+                        var cnt = m_CallNodeList[i];
+                        if ( (cnt.callNodeType == ECallNodeType.MemberVariableName
+                            || cnt.callNodeType == ECallNodeType.FunctionInnerVariableName ) 
+                            && cnt.bracketExpressList.Count > 0 )
+                        {
+                            if (cnt.metaVariable != null)
+                            {
+                                var frontcn = cnt;
+                                if( cnt.metaVariable.isArray )
+                                {
+                                    if( cnt.bracketExpressList.Count <= cnt.metaVariable.metaDefineType.arrayDimension )
+                                    {
+                                        for (int j = 0; j < cnt.bracketExpressList.Count; j++)
+                                        {
+                                            MetaCallNode mcn = new MetaCallNode(cnt.bracketExpressList[j], cnt.ownerMetaFunctionBlock.ownerMetaClass, cnt.ownerMetaFunctionBlock, cnt.metaType );
+                                            mcn.SetFrontCallNode(frontcn);
+                                            mcn.ParseNode(allowUseSettings);
+                                            newList.Add(mcn);
+                                            frontcn = mcn;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Log.AddInStructMeta(EError.None, "Parse 使用[][][] 访问超过了数组的维度!");
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -189,11 +223,11 @@ namespace SimpleLanguage.Core
                 MetaCallNode frontNode = null;
                 while (true)
                 {
-                    if( i >= m_CallNodeList.Count )
+                    if( i >= newList.Count )
                     {
                         break;
                     }
-                    MetaCallNode mcn = m_CallNodeList[i++];
+                    MetaCallNode mcn = newList[i++];
                     if( mcn == null )
                     {
                         break;
@@ -222,7 +256,7 @@ namespace SimpleLanguage.Core
             {
                 case MetaConstExpressNode mcen:
                     {
-                        var newmcn = new MetaCallNode(mcen);
+                        var newmcn = new MetaCallNode(mcen, m_OwnerMetaClass, m_OwnerMetaBlockStatements, mcen.metaType );
                         bracketCNList.Add(newmcn);
                     }
                     break;

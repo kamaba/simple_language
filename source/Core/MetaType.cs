@@ -237,8 +237,10 @@ namespace SimpleLanguage.Core
             for (int f = 0; f < length; f++)
             {
                 MetaType mtnew = new MetaType(this.metaClass);
-                if (templateAddArray.Count > 0)
-                    mtnew.SetArrayDimension(templateAddArray.Count);
+                if(templateAddArray.Count > 0 )
+                {
+                    mtnew.SetArrayDismensionLength(templateAddArray);
+                }
                 mt.AddArrayMetaType(mtnew);
 
                 if (templateAddArray.Count == 0)
@@ -250,6 +252,10 @@ namespace SimpleLanguage.Core
                     HandleArrayCreateType(templateAddArray, mtnew );
                     templateAddArray.Add(length);
                 }
+            }
+            if(mt.m_ArrayDimensionLengthList.Count > 0 )
+            {
+                mt.m_ArrayDimensionLengthList[0] = mt.arrayMetaTypeList.Count;
             }
         }
         public void SetMetaType( MetaType mt )
