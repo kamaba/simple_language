@@ -9,6 +9,9 @@
 
 
 using SimpleLanguage.Core;
+using SimpleLanguage.IR.Statements;
+using SimpleLanguage.Parse;
+using System.Collections.Generic;
 using System.Text;
 
 namespace SimpleLanguage.IR
@@ -21,9 +24,9 @@ namespace SimpleLanguage.IR
         }
         public IRNop startIRData = null;       //for开始执行起点
         public IRNop forStartIRData = null;    //for 循环返回起点
+        public IRNop endIRData = null;           //for语句点
         public IRBranch ifIRData = null;            //判断是否到终点if判断
         public IRBranch brIRData = null;            //for结束点返回起点语句
-        public IRNop endIRData = null;           //for语句点
         IRCallFunction hasNextCallFunction = null;
         IRCallFunction nextCallFunction = null;
 
@@ -36,18 +39,79 @@ namespace SimpleLanguage.IR
 
             if( ms.isForIn )
             {
-                /*
-                var irmt2 = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(maien.convertTargetMetaVariable.metaDefineType, owirmc);
-                IRStoreVariable irStoreVar = IRStoreVariable.CreateIRStoreVariable(irmt2, irMethod, ms.forIterateMetaVariable );
-                m_IRStatements.Add(irStoreVar);
-                //if (m_FileMetaOpAssignSyntax != null)
-                //{
-                //    irStoreVar.data.SetDebugInfoByToken(m_FileMetaOpAssignSyntax.assignToken);
-                //}
+                var fun = ms.hasNextFunction;
 
-                //m_ThenMetaStatements.ParseAllIRStatements();
-                //m_IRStatements.AddRange(m_ThenMetaStatements.irStatements);
-                */
+                //--------------------var1._hasNext_()
+                var irmc = IRManager.instance.GetIRMetaClassById( ms.forInContent.metaDefineType.GetTemplateMetaClass().GetHashCode());
+                var irmt = new IRMetaType(irmc);
+                var runmethod = irmc.GetIRNonStaticMethodIndexByName("hasNext", out int index );
+
+                var irmethodcall = new IRMethodCall(irmt, new List<IRMetaType>(), runmethod, 0 );
+                IRData datacall = new IRData();
+                datacall.opCode = EIROpCode.CallDynamic;
+                datacall.opValue = irmethodcall;
+                datacall.index = 1;
+                //datacall.SetDebugInfoByToken(mf.pingToken);
+                IRBase irbase = new IRBase(datacall);
+                m_IRStatements.Add(irbase);
+                // -----------end----------------------
+
+                //----------------------if current return
+                ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, null);
+                m_IRStatements.Add(ifIRData);
+
+                //----------------------var = a1._next_
+                            // var load
+                IRLoadVariable irlv = IRLoadVariable.CreateLoadVariable(null, null, irMethod, ms.forIterateVariable );
+                m_IRStatements.Add(irlv);
+
+                // a1._next_
+                //--------------------var1._hasNext_()
+                var _next_irmc = IRManager.instance.GetIRMetaClassById(ms.forInContent.metaDefineType.GetTemplateMetaClass().GetHashCode());
+                var _next_irmt = new IRMetaType(_next_irmc);
+                var _next_runmethod = irmc.GetIRNonStaticMethodIndexByName("current", out int _next_index );
+
+                var _next_irmethodcall = new IRMethodCall(irmt, new List<IRMetaType>(), _next_runmethod, 0);
+                IRData _next_datacall = new IRData();
+                _next_datacall.opCode = EIROpCode.CallDynamic;
+                _next_datacall.opValue = irmethodcall;
+                _next_datacall.index = 1;
+                //datacall.SetDebugInfoByToken(mf.pingToken);
+                IRBase _next_irbase = new IRBase(_next_datacall);
+                m_IRStatements.Add(_next_irbase);
+
+                IRStoreVariable _next_store_ = IRStoreVariable.CreateIRStoreVariable(null, null, irMethod, ms.forIterateVariable);
+                m_IRStatements.Add(_next_store_);
+
+                //---------------------if then 
+                IRBlockStatements irbs = new IRBlockStatements(irMethod);
+                irbs.ParseAllIRStatements(ms.thenMetaStatements);
+                m_IRStatements.AddRange(irbs.irStatements);
+
+                //------------------------goto start label
+                IRBranch mirbs = new IRBranch(irMethod, EIROpCode.BrLabel, startIRData.data );
+                m_IRStatements.Add(mirbs);
+
+                //-------------------------else label
+                m_IRStatements.Add(endIRData);
+
+
+                //----------------------------var1 = null   ir: load null ir: store current stack
+                IRLoadVariable irlv22 = IRLoadVariable.CreateLoadVariable(null, null, irMethod, ms.forIterateVariable);
+                m_IRStatements.Add(irlv22);
+
+                IRData _load_null_ = new IRData();
+                _load_null_.opCode = EIROpCode.LoadConstNull;
+                IRBase _load_null_base_ = new IRBase(_load_null_);
+                m_IRStatements.Add(_load_null_base_);
+
+                IRData _save_null_store_ = new IRData();
+                _save_null_store_.opCode = EIROpCode.StoreNotStaticField1;
+                _save_null_store_.opValue = irmethodcall;
+                _save_null_store_.index = 1;
+
+                IRBase _save_null_sotre_null_ = new IRBase(_save_null_store_);
+                m_IRStatements.Add(_save_null_sotre_null_);
             }
             else
             {
@@ -81,11 +145,11 @@ namespace SimpleLanguage.IR
                 }
                 m_ThenMetaStatements.ParseAllIRStatements();
                 m_IRStatements.AddRange(m_ThenMetaStatements.irStatements);
+                
+                brIRData = new IRBranch(irMethod, EIROpCode.Br, forStartIRData.data);
+                m_IRStatements.Add(brIRData);
                 */
             }
-
-            brIRData = new IRBranch(irMethod, EIROpCode.Br, forStartIRData.data);
-            m_IRStatements.Add(brIRData);
             m_IRStatements.Add(endIRData);
 
             if ( ms.nextMetaStatements != null)

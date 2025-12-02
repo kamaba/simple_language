@@ -7,13 +7,9 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-
-
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Text;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.Core
 {
@@ -245,17 +241,17 @@ namespace SimpleLanguage.Core
             Link,
             AT
         }
-        public bool fashVisit => m_FashVisit;
+        public bool fastVisit => m_FastVisit;
         public MetaVariable sourceMetaVariable => m_SourceMetaVariable;
         public MetaCallLink targetMetaVisitCallLink => m_TargetMetaVisitCallLink;
-        public MetaConstExpressNode fashVisitConstExpressNode => m_FashVisitConstExpressNode;
+        public MetaConstExpressNode fastVisitConstExpressNode => m_FastVisitConstExpressNode;
 
         MetaVariable m_SourceMetaVariable = null;
         EVisitType m_VisitType = EVisitType.AT;
         MetaCallLink m_TargetMetaVisitCallLink = null;
         string m_AtName = "";
-        private bool m_FashVisit = false;
-        private MetaConstExpressNode m_FashVisitConstExpressNode = null;
+        private bool m_FastVisit = false;
+        private MetaConstExpressNode m_FastVisitConstExpressNode = null;
         private int? m_Index = null;
 
         public MetaVisitVariable(MetaVariable source, MetaVariable target)
@@ -282,8 +278,8 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             m_SourceMetaVariable = lmv;
             m_IsDefineMetaType = lmv.isDefineMetaType;                 
-            m_FashVisitConstExpressNode = mvv;
-            m_FashVisit = true;
+            m_FastVisitConstExpressNode = mvv;
+            m_FastVisit = true;
         }
         public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaCallLink mvv )
         {
@@ -292,7 +288,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_SourceMetaVariable = lmv;
-            m_FashVisit = false;
+            m_FastVisit = false;
             if (lmv.isArray)
             {
                 if (mvv == null && string.IsNullOrEmpty(m_AtName))
