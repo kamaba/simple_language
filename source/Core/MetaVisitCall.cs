@@ -181,6 +181,7 @@ namespace SimpleLanguage.Core
             Enum,
             MetaClass,
             Express,
+            TemplateName,
         }
         public MetaConstExpressNode constValueExpress { get; private set; } = null;
         public MetaExpressNode express { get; set; } = null;
@@ -195,6 +196,7 @@ namespace SimpleLanguage.Core
         //private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent = null;
         protected MetaType m_ReturnMetaType = null;
         //protected MetaClass m_CallerMetaClass = null;
+        protected MetaTemplate m_MetaTemplate = null;
         protected MetaType m_CallMetaType = null; //该变量，一般是为 T t = new() 这种情况准备的
 
         public static MetaVisitNode CreateByVisitMetaClass( MetaType mt )
@@ -332,6 +334,15 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
+        public static MetaVisitNode CreateByTemplate(MetaTemplate _metatemplate)
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.visitType = EVisitType.TemplateName;
+            vn.m_MetaTemplate = _metatemplate;
+
+            return vn;
+        }
         public void SetMethodCall( MetaMethodCall _methodCall)
         {
             this.methodCall = _methodCall;
@@ -373,11 +384,19 @@ namespace SimpleLanguage.Core
                     }
                     case EVisitType.Variable:
                     {
-                        return this.variable.metaDefineType;
+                        if( this.variable.isDefineMetaType )
+                        {
+                            return this.variable.metaDefineType;
+                        }
+                        return this.variable.realMetaType;
                     }
                 case EVisitType.New:
                     {
                         return m_CallMetaType;
+                    }
+                case EVisitType.TemplateName:
+                    {
+                        return new MetaType( m_MetaTemplate );
                     }
                 default:
                     {

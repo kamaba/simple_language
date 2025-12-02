@@ -1459,6 +1459,17 @@ namespace SimpleLanguage.Compile
                         }
                     }
                 }
+                if (cnode.nodeType == ENodeType.Key )
+                {
+                    if (i + 1 < node.childList.Count)
+                    {
+                        var nnode = node.childList[i + 1];
+                        if (nnode.nodeType == ENodeType.LeftAngle)
+                        {
+                            isAngleFlagIndex++;
+                        }
+                    }
+                }
             }
             if(isAngleFlagIndex != 0 )
             { return true; }

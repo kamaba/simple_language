@@ -107,7 +107,17 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                return GetMetaTypeByInputTemplateList(curMc, getmc, fmcd.inputTemplateNodeList);
+                var ret = GetMetaTypeByInputTemplateList(curMc, getmc, fmcd.inputTemplateNodeList);
+                if (fmcd.isArray)
+                {
+                    var list = fmcd.arrayDimsionLengthList;
+                    ret.SetArrayDimension(list.Count);
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        ret.SetArrayDimensionLengthByIndex(i, list[i]);
+                    }
+                }
+                return ret;
             }
             return null;
         }
@@ -244,7 +254,17 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                return GetMetaTypeByTemplateList(curMc, getmc, findFun, fmcd.inputTemplateNodeList);
+                var ret =  GetMetaTypeByTemplateList(curMc, getmc, findFun, fmcd.inputTemplateNodeList);
+                if (fmcd.isArray)
+                {
+                    var list = fmcd.arrayDimsionLengthList;
+                    ret.SetArrayDimension(list.Count);
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        ret.SetArrayDimensionLengthByIndex(i, list[i]);
+                    }
+                }
+                return ret;
             }
             return null;
         }

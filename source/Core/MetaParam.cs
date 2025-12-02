@@ -186,7 +186,7 @@ namespace SimpleLanguage.Core
             if( mip != null)
             {
                 var retMC = mip.GetRetMetaClass();
-                var relation = ClassManager.ValidateClassRelationByMetaClass(m_MetaVariable.metaDefineType.metaClass, retMC);
+                var relation = ClassManager.ValidateClassRelationByMetaClass(m_MetaVariable.realMetaType.metaClass, retMC);
 
                 if (relation == ClassManager.EClassRelation.Same || relation == ClassManager.EClassRelation.Child)
                 {
@@ -362,7 +362,7 @@ namespace SimpleLanguage.Core
                 var mdp = m_MetaDefineParamList[m_MetaDefineParamList.Count - 1];
                 if( mdp.isExtendParams && mdp.metaVariable.isArray )
                 {
-                    var mdt = mdp.metaVariable.metaDefineType;
+                    var mdt = mdp.metaVariable.realMetaType;
                     for( int i = 0; i < mpc.metaInputParamList.Count; i++ ) 
                     {
                         var mip = mpc.metaInputParamList[i];                        

@@ -596,7 +596,7 @@ namespace SimpleLanguage.Core
                     MetaType mt2 = men.GetReturnMetaDefineType();
                     if (!mt2.metaClass.IsContainMetaClass(m_DefineMetaType.metaClass))
                     {
-                        Log.AddInStructMeta(EError.None, "里边的元素与外边定义的类，不对应，需要调整数据，或者是定义的结构 ");
+                        Log.AddInStructMeta(EError.None, "里边的元素与外边定义的类11，不对应，需要调整数据，或者是定义的结构 ");
                     }
                     var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
                     mas.CalcReturnType();
@@ -616,7 +616,7 @@ namespace SimpleLanguage.Core
                     MetaType mt2 = men.GetReturnMetaDefineType();
                     if ( !mt2.metaClass.IsContainMetaClass( m_DefineMetaType.metaClass ) )
                     {
-                        Log.AddInStructMeta(EError.None, "里边的元素与外边定义的类，不对应，需要调整数据，或者是定义的结构 "); 
+                        Log.AddInStructMeta(EError.None, "里边的元素与外边定义的类22，不对应，需要调整数据，或者是定义的结构 "); 
                     }
                     var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
                     mas.CalcReturnType();

@@ -213,11 +213,10 @@ namespace SimpleLanguage.Core
             {
                 return;
             }
-            if( CoreMetaClassManager.IsIncludeMetaClass( this ) )
+            if( this == CoreMetaClassManager.objectMetaClass )
             {
                 return;
             }
-
             if (this.m_ExtendClassMetaType != null)
             {
                 Log.AddInStructMeta(EError.None, "已绑定过了继承类 : " + extendClass.name );

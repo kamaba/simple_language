@@ -37,6 +37,7 @@ namespace SimpleLanguage.Core
         public bool isEnum => m_MetaClass is MetaEnum;
         public bool isData => m_MetaClass is MetaData;
         public bool isArray => m_EType == EMetaTypeType.Array;
+        public bool isNull => m_MetaClass == CoreMetaClassManager.nullMetaClass;
         public bool isMap => false;
         public bool isTemplate => m_EType == EMetaTypeType.Template;
         public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;

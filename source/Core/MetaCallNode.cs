@@ -100,6 +100,7 @@ namespace SimpleLanguage.Core
         //public MetaData metaData => m_MetaData;
         //public MetaEnum metaEnum => m_MetaEnum;
         public MetaVariable metaVariable => m_MetaVariable;
+        public MetaTemplate metaTemplate => m_MetaTemplate;
         public MetaFunction metaFunction => m_MetaFunction;
         public MetaType metaType => m_MetaType;
 
@@ -1427,14 +1428,12 @@ namespace SimpleLanguage.Core
                 if (ownerFun != null)
                 {
                     //函数的参数是否是模版，如果是，则返回
-                    var metaDefineParam = ownerFun.GetMetaDefineParamByName(inputname);
-                    if (metaDefineParam != null)
+                    var metaTemplate = ownerFun.GetMetaDefineTemplateByName(inputname);
+                    if (metaTemplate != null)
                     {
-                        if( metaDefineParam.metaVariable != null )
-                        {
-                            m_MetaVariable = mv;
-                            m_CallNodeType = ECallNodeType.FunctionInnerVariableName;
-                        }
+                        m_MetaTemplate = metaTemplate;
+                        m_CallNodeType = ECallNodeType.TemplateName;
+                        return true;
                     }
                 }
             }
