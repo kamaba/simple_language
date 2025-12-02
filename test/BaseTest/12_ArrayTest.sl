@@ -117,13 +117,14 @@ namespace Core
 
             if hasNext_var
             {
-                this._current = this._value[this._index];
+                var retobj = SimpleLanguage.Lib.Array.GetArrayValueThis( this, this._index )
+                this._current = retobj
             }
             else
             {
                 this._current = null
             }
-            ret hasNext
+            ret hasNext_var
 
         }
         get object current()
@@ -151,17 +152,18 @@ namespace Core
                 ret 
             }
             this._index = ind;
-            this._current = this._value[this._index];
+            var retobj = SimpleLanguage.Lib.Array.GetArrayValueThis( this, ind )
+            this._current = retobj;
         }
-        set setValue( int index, object val )
+        set setValue( int __index, object val )
         {
             #Lib.Array.SetArrayValue( this._ptr, 5,  index, val )
-            SimpleLanguage.Lib.Array.SetArrayValueThis( this, index, val )
+            SimpleLanguage.Lib.Array.SetArrayValueThis( this, __index, val )
         }
-        get object getValue( int index )
+        get object getValue( int __index )
         {
             #ret Lib.Array.GetArrayValue( this._ptr, 5,  index )
-            ret SimpleLanguage.Lib.Array.GetArrayValueThis( this, index )
+            ret SimpleLanguage.Lib.Array.GetArrayValueThis( this, __index )
         }
         setValues( Int64 valPtr, int len )
         {

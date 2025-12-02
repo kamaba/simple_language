@@ -812,8 +812,17 @@ namespace SimpleLanguage.Compile
                 }
                 else if (cnode.nodeType == ENodeType.Key)
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error 不支持在[]中解析Key的逻辑!!");
-                    continue;
+                    if( cnode.token.type == ETokenType.This 
+                        || cnode.token.type == ETokenType.Base )
+                    {
+                        var fileMetaCallTerm = new FileMetaCallTerm(m_FileMeta, cnode);
+                        AddFileMetaTerm(fileMetaCallTerm);
+                    }
+                    else
+                    {
+                        Log.AddInStructFileMeta(EError.None, "Error 不支持在[]中解析Key的逻辑!!");
+                        continue;
+                    }
                 }
                 else if (cnode.nodeType == ENodeType.Brace )
                 {

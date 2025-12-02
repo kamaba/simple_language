@@ -176,10 +176,6 @@ namespace SimpleLanguage.Core
                 {
                     m_RealMetaType = new MetaType(m_DefineMetaType);
                 }
-                else
-                {
-
-                }
             }
         }
         public virtual int CalcParseLevelBeCall(int level)
@@ -299,6 +295,7 @@ namespace SimpleLanguage.Core
                         if (constExpressNode.eType == EType.Null)
                         {
                             isCheckReturnType = false;
+                            m_RealMetaType = new MetaType(m_DefineMetaType);
                         }
                     }
                     if (isCheckReturnType)
@@ -365,10 +362,17 @@ namespace SimpleLanguage.Core
                     {
                         if( !(constExpressNode != null && constExpressNode.eType == EType.Null ) )
                         {
-                            if (expressRetMetaDefineType.metaClass == ownerMetaClass && !m_IsStatic )
+                            if (expressRetMetaDefineType.isArray)
                             {
-                                Log.AddInStructMeta(EError.None, "Error 自己类内部不允许包含 自己的实体，必须赋值为null");
-                                return;
+
+                            }
+                            else 
+                            {
+                                if( expressRetMetaDefineType.metaClass == ownerMetaClass && !m_IsStatic )
+                                {
+                                    Log.AddInStructMeta(EError.None, "Error 自己类内部不允许包含 自己的实体2，必须赋值为null");
+                                    return;
+                                }
                             }
                             SetRealMetaType(expressRetMetaDefineType);
                         }
@@ -382,12 +386,36 @@ namespace SimpleLanguage.Core
                     {
                         if (compareClass != null)
                         {
-                            if (expressRetMetaDefineType.metaClass == ownerMetaClass)
+                            if (expressRetMetaDefineType.isArray)
                             {
-                                Log.AddInStructMeta(EError.None, "Error 自己类内部不允许包含 自己的实体，必须赋值为null");
-                                return;
+
+                            }
+                            else
+                            {
+                                if (expressRetMetaDefineType.metaClass == ownerMetaClass)
+                                {
+                                    Log.AddInStructMeta(EError.None, "Error 自己类内部不允许包含 自己的实体3，必须赋值为null");
+                                    return;
+                                }
                             }
                             SetRealMetaType(expressRetMetaDefineType);
+                        }
+                    }
+                    else if(relation == ClassManager.EClassRelation.Similar )
+                    {
+                        if( compareClass != null )
+                        {
+                            if(IsClassAdapt(curClass, compareClass ) )
+                            {
+                                if( m_IsDefineMetaType )
+                                {
+                                    SetRealMetaType(expressRetMetaDefineType);
+                                }
+                                else
+                                {
+                                    SetRealMetaType(new MetaType(curClass) );
+                                }
+                            }
                         }
                     }
                     else
@@ -397,6 +425,43 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
+        }
+        public bool IsClassAdapt( MetaClass mc1, MetaClass mc2 )
+        {
+            if( mc1 == CoreMetaClassManager.int64MetaClass
+                || mc1 == CoreMetaClassManager.uint64MetaClass )
+            {
+                if( mc2 == CoreMetaClassManager.byteMetaClass
+                    || mc2 == CoreMetaClassManager.sbyteMetaClass
+                    || mc2 == CoreMetaClassManager.int16MetaClass
+                    || mc2 == CoreMetaClassManager.uint16MetaClass 
+                    || mc2 == CoreMetaClassManager.int32MetaClass 
+                    || mc2 == CoreMetaClassManager.uint32MetaClass )
+                {
+                    return true;
+                }
+            }
+            else if (mc1 == CoreMetaClassManager.int32MetaClass
+                || mc1 == CoreMetaClassManager.uint32MetaClass)
+            {
+                if (mc2 == CoreMetaClassManager.byteMetaClass
+                    || mc2 == CoreMetaClassManager.sbyteMetaClass
+                    || mc2 == CoreMetaClassManager.int16MetaClass
+                    || mc2 == CoreMetaClassManager.uint16MetaClass)
+                {
+                    return true;
+                }
+            }
+            else if (mc1 == CoreMetaClassManager.int16MetaClass
+                || mc1 == CoreMetaClassManager.uint16MetaClass)
+            {
+                if (mc2 == CoreMetaClassManager.byteMetaClass
+                    || mc2 == CoreMetaClassManager.sbyteMetaClass )
+                {
+                    return true;
+                }
+            }
+            return false;
         }
         public MetaExpressNode SimulateExpressRun(MetaExpressNode node)
         {

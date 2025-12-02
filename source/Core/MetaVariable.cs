@@ -420,6 +420,7 @@ namespace SimpleLanguage.Core
 
         public MetaIteratorVariable(FileMetaClassDefine _fmcl, Token variableNameToken, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaType orgMC)
         {
+            m_VariableFrom = EVariableFrom.LocalStatement;
             m_FileMetaClassDefine = _fmcl;
             m_VariableNameToken = variableNameToken;
             m_Name = variableNameToken.lexeme.ToString();

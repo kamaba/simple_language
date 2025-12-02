@@ -71,15 +71,6 @@ namespace SimpleLanguage.Core
                     mgtc.ParseGenTemplateClass(mgtc);
                     mgtc.ParseGenMemberVarible();
                 }
-                if(fmcd.isArray )
-                {
-                    var list = fmcd.arrayDimsionLengthList;
-                    mdt.SetArrayDimension(list.Count);
-                    for (int i = 0; i < list.Count; i++)
-                    {
-                        mdt.SetArrayDimensionLengthByIndex(i, list[i]);
-                    }
-                }
 
                 m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
                 m_DefineVarMetaVariable.SetIsDefineMetaType(true);

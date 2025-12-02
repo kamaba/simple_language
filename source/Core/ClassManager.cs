@@ -93,6 +93,10 @@ namespace SimpleLanguage.Core
                     return CoreMetaClassManager.objectMetaClass;
                 case "Void":
                     return CoreMetaClassManager.voidMetaClass;
+                case "ArrayObject":
+                    {
+                        return CoreMetaClassManager.arrayMetaClass;
+                    }
             }
             return null;
         }

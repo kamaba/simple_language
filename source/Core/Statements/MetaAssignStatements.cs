@@ -284,7 +284,14 @@ namespace SimpleLanguage.Core
                         return;
                     }
                 }
-                expressMdt = m_MetaVariable.metaDefineType;
+                if( m_MetaVariable.isDefineMetaType )
+                {
+                    expressMdt = m_MetaVariable.metaDefineType;
+                }
+                else
+                {
+                    expressMdt = m_MetaVariable.realMetaType;
+                }
             }
 
             if (m_FileMetaOpAssignSyntax.express != null)
@@ -345,7 +352,15 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                m_MetaVariable.SetRealMetaType(expressRetMetaDefineType);
+                if( m_MetaVariable is MetaMemberVariable mmv )
+                {
+
+                }
+                else
+                {
+                    if( !expressRetMetaDefineType.isNull )
+                        m_MetaVariable.SetRealMetaType(expressRetMetaDefineType);
+                }
             }
 
             if(m_IsSetStatements == false )
