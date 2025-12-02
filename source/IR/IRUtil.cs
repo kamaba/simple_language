@@ -6,10 +6,6 @@
 //  Description: IR common function
 //****************************************************************************
 
-using SimpleLanguage.Core;
-using System.Collections.Generic;
-using System.Text;
-
 namespace SimpleLanguage.IR
 {
     public class IRUtil

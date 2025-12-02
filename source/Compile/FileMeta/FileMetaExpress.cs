@@ -1085,10 +1085,6 @@ namespace SimpleLanguage.Compile
                     || node.token?.type == ETokenType.Base
                     || node.token?.type == ETokenType.New)
                     {
-                        if (fmbt != null)
-                        {
-                            Log.AddInStructFileMeta(EError.None, "Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString());
-                        }
                         fmbt = new FileMetaCallTerm(m_FileMeta, node);
                         fmbt.priority = int.MaxValue;
                         AddFileMetaTerm(fmbt);
@@ -1102,7 +1098,7 @@ namespace SimpleLanguage.Compile
                 {
                     if(fmbt != null )
                     {
-                        Log.AddInStructFileMeta(EError.None, "Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString() );
+                        Log.AddInStructFileMeta(EError.None, "Error 表达式不允许多个自定义元素存在33!!" + fmbt.ToTokenString() );
                     }
                     fmbt = new FileMetaCallTerm(m_FileMeta, node);
                     fmbt.priority = int.MaxValue;

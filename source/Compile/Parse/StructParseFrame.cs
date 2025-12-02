@@ -648,6 +648,10 @@ namespace SimpleLanguage.Compile
                     }
                     break;
                 }
+                else if( curNode.nodeType == ENodeType.Bracket )
+                {
+                    nodeList[nodeList.Count - 1].AddBracketNode( curNode );
+                }
                 else
                 {
                     Log.AddInStructFileMeta(EError.None, "Error ParseClassNode 不允许在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());

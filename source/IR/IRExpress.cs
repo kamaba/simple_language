@@ -9,12 +9,9 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.IR;
 using SimpleLanguage.Parse;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.IR
 {

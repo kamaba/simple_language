@@ -97,9 +97,9 @@ namespace Core
     public class Array
     {
         int _length = 0
-        int _rank = 1
         int type = 0;
-
+        _index = 0;
+        _current = null
         long _ptr = 0
 
         _init_(){
@@ -109,17 +109,13 @@ namespace Core
         {
             uint allSize = length * 4
             #this._ptr = Lib.Array.CreateArray( length, 4 )
-        }
-        _next_<T>()
-        {
-            T t = 
-        }
-        bool moveNext()
+        }      
+        bool hasNext()
         {
             this._index++;
-            bool hasNext = this._index < this.length
+            bool hasNext_var = this._index < this._length
 
-            if hasNext
+            if hasNext_var
             {
                 this._current = this._value[this._index];
             }
@@ -130,29 +126,39 @@ namespace Core
             ret hasNext
 
         }
-        get T _current_<T>()
+        get object current()
         {
-            #检查迭代器状态（未启动或已结束时抛出异常）
-            if this._index < 0
-            {
-                ret null
-                #throw StateError("迭代器未调用 moveNext()");
-            }
-            if this._index >= _list.length )
-            {
-                ret null
-                throw StateError("迭代器已结束");
-            }
-            # 返回缓存的当前元素（非空断言，因为 hasNext 为 true 时才会访问）
             ret this._current;
         }
-        set _setValue_( int index, object val )
+        get T current<T>()
+        {
+            ret this._current as T;
+        }
+        get int index()
+        {
+            ret this._index;
+        }
+        set void index( int ind )
+        {
+            if( ind < 0 )
+            {
+                #throw error("");
+                ret
+            }
+            if( ind >= this._length )
+            {
+                #throw error("超出了范围")
+                ret 
+            }
+            this._index = ind;
+            this._current = this._value[this._index];
+        }
+        set setValue( int index, object val )
         {
             #Lib.Array.SetArrayValue( this._ptr, 5,  index, val )
             SimpleLanguage.Lib.Array.SetArrayValueThis( this, index, val )
         }
-
-        get object  _getValue_( int index )
+        get object getValue( int index )
         {
             #ret Lib.Array.GetArrayValue( this._ptr, 5,  index )
             ret SimpleLanguage.Lib.Array.GetArrayValueThis( this, index )
@@ -161,7 +167,6 @@ namespace Core
         {
             #Lib.Array.SetArrayValue( this._ptr, 1,  valPtr, len )
         }
-
         #!
         public static Array CreateInstance(Type elementType, int length);
         public static Array CreateInstance(Type elementType, int length1, int length2 );
@@ -223,12 +228,7 @@ ArrayTest
             then_statement
             goto start
         }
-        else
-        {
-            v = null
-            goto end
-        }
-        label end
+        v = null
         !#
         
         # alist = List(2){ intvalue, 1 }

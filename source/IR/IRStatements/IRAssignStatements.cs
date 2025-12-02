@@ -122,11 +122,11 @@ namespace SimpleLanguage.IR
                             m_IRStatements.Add(irVar);
                             */
 
-                            if( mv.fashVisit )
+                            if( mv.fastVisit )
                             {
                                 IRData irdata = new IRData();
-                                irdata.opValue = (int)mv.fashVisitConstExpressNode.value;
-                                irdata.index = (int)mv.fashVisitConstExpressNode.value;
+                                irdata.opValue = (int)mv.fastVisitConstExpressNode.value;
+                                irdata.index = (int)mv.fastVisitConstExpressNode.value;
                                 irdata.opCode = EIROpCode.StoreArrayIndex;
                                 IRBase irbase = new IRBase();
                                 irbase.AddIRData(irdata);

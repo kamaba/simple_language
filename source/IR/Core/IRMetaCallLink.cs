@@ -79,10 +79,10 @@ namespace SimpleLanguage.Core.IR
                 irList.Add(irVar);
                 */
 
-                if ( mv.fashVisit )
+                if ( mv.fastVisit )
                 {
                     IRData irdata = new IRData();
-                    string val = mv.fashVisitConstExpressNode.value.ToString();
+                    string val = mv.fastVisitConstExpressNode.value.ToString();
                     int.TryParse(val, out int index);
                     irdata.opValue = index;
                     irdata.index = index;
