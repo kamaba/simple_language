@@ -26,8 +26,8 @@ namespace SimpleLanguage.VM
         public float floatValue;
         public double doubleValue;
         public string stringValue;
+        public SObject sobject;
         public ArrayObject arrayValue;
-        public ClassObject sobject;
         public bool isNull;
         public void SetNullValue()
         {
@@ -259,7 +259,11 @@ namespace SimpleLanguage.VM
                 case EType.Array:
                     {
                         return arrayValue;
-                    }   
+                    }
+                case EType.Object:
+                    {
+                        return (sobject as AnyObject).value;
+                    }
                 default:return sobject;
             }
         }
@@ -429,7 +433,12 @@ namespace SimpleLanguage.VM
                                 break;
                             case EType.Class:
                                 {
-                                    sobject = tobj as ClassObject;
+                                    sobject = anyobj.value as ClassObject;
+                                }
+                                break;
+                            case EType.Object:
+                                {
+                                    sobject = anyobj.value as SObject;
                                 }
                                 break;
                         }                        
@@ -661,6 +670,85 @@ namespace SimpleLanguage.VM
                     {
                         eType = EType.String;
                         stringValue = obj.ToString();
+                    }
+                    break;
+                case AnyObject ao:
+                    {
+                        switch( ao.eType )
+                        {
+                            case EType.Byte:
+                                {
+                                    int8Value = (byte)ao.value;
+                                    eType = EType.Byte;
+                                }
+                                break;
+                            case EType.SByte:
+                                {
+                                    sint8Value = (sbyte)ao.value;
+                                    eType = EType.SByte;
+                                }
+                                break;
+                            case EType.Int16:
+                                {
+                                    int16Value = (Int16)ao.value;
+                                    eType = EType.Int16;
+                                }
+                                break;
+                            case EType.UInt16:
+                                {
+                                    uint16Value = (UInt16)ao.value;
+                                    eType = EType.UInt16;
+                                }
+                                break;
+                            case EType.Int32:
+                                {
+                                    int32Value = (int)ao.value;
+                                    eType = EType.Int32;
+                                }
+                                break;
+                            case EType.UInt32:
+                                {
+                                    uint32Value = (UInt32)ao.value;
+                                    eType = EType.UInt32;
+                                }
+                                break;
+                            case EType.Int64:
+                                {
+                                    int64Value = (Int64)ao.value;
+                                    eType = EType.Int64;
+                                }
+                                break;
+                            case EType.UInt64:
+                                {
+                                    uint64Value = (UInt64)ao.value;
+                                    eType = EType.UInt64;
+                                }
+                                break;
+                            case EType.Float32:
+                                {
+                                    floatValue = (Single)ao.value;
+                                    eType = EType.UInt32;
+                                }
+                                break;
+                            case EType.Float64:
+                                {
+                                    doubleValue = (Double)ao.value;
+                                    eType = EType.UInt32;
+                                }
+                                break;
+                            case EType.String:
+                                {
+                                    stringValue = ao.value.ToString();
+                                    eType = EType.String;
+                                }
+                                break;
+                            default:
+                                {
+                                    sobject = ao;
+                                    eType = EType.Object;
+                                }
+                                break;
+                        }
                     }
                     break;
             }

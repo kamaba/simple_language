@@ -6,6 +6,8 @@
 //  Description: 
 //****************************************************************************
 
+using SimpleLanguage.IR;
+
 namespace SimpleLanguage.VM
 {
     public class SObject
@@ -14,6 +16,7 @@ namespace SimpleLanguage.VM
         public EType eType => m_Etype;
         protected EType m_Etype = EType.Class;
         public bool m_IsNull = false;
+        public IRMetaClass irMetaClass => m_RuntimeType?.irClass;
         public RuntimeType runtimeType => m_RuntimeType;
         public short typeId { get; set; } = 0;
         public int refCount { get; set; } = 0;

@@ -35,7 +35,9 @@ namespace SimpleLanguage.VM
             }
             else if (name == "Core.Object" || name == "Object")
             {
-                sobj = new AnyObject();
+                var ao = new AnyObject();
+                ao.SetValue(EType.Object, ao);
+                sobj = ao;
             }
             else if (name == "Core.Byte" || name == "Byte")
             {
@@ -417,7 +419,7 @@ namespace SimpleLanguage.VM
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
-                            to.SetClassObject(svalue.sobject);
+                            to.SetClassObject(svalue.sobject as ClassObject);
                             return;
                         }
                         AnyObject anyObject = obj as AnyObject;
@@ -447,7 +449,17 @@ namespace SimpleLanguage.VM
                             Debug.Write("该类型不是Class类型!!");
                             return;
                         }
-                        classObj.SetValue(svalue.sobject);
+                        classObj.SetValue(svalue.sobject as ClassObject);
+                    }
+                    break;
+                case EType.Object:
+                    {
+                        AnyObject anyObject = obj as AnyObject;
+                        if (anyObject != null)
+                        {
+                            anyObject.SetValue(EType.Class, obj);
+                            return;
+                        }
                     }
                     break;
             }

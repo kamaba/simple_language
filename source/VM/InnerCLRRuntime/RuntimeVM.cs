@@ -277,7 +277,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             SValue sval = InnerCLRRuntimeVM.topCLRRuntime.GetCurrentIndexValue(m_ValueIndex-1);
             m_ValueStack[m_ValueIndex++] = sval;
-            m_IRMetaClass = sval.sobject?.irMetaClass;
+            m_IRMetaClass = (sval.sobject as ClassObject).irMetaClass;
         }
         public void ClearNewObject()
         {
@@ -352,6 +352,11 @@ namespace SimpleLanguage.VM.Runtime
                 case EType.Class:
                     {
                         (sStore.sobject as ClassObject).SetMemberVariableSValue(iri.index, sValue);
+                    }
+                    break;
+                case EType.Array:
+                    {
+                        sStore.arrayValue.SetMemberVariableSValue(iri.index, sValue);
                     }
                     break;
                 default:
@@ -517,6 +522,11 @@ namespace SimpleLanguage.VM.Runtime
                         if (v.eType == EType.Class)
                         {
                             var co = (v.sobject as ClassObject);
+                            co.value.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
+                        }
+                        else if( v.eType == EType.Array )
+                        {
+                            var co = (v.arrayValue as ArrayObject);
                             co.value.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
                         }
                         //栈位不变，因为当前对象位的被通过索引取出来的成员变量值，覆盖掉， 所以栈位不会发生变化
@@ -702,15 +712,21 @@ namespace SimpleLanguage.VM.Runtime
                                 return;
                             }
                             var v = m_ValueStack[stackIndex];
-                            rt = v.sobject.runtimeType;
                             if (v.eType == EType.Class)
                             {
                                 var co = (v.sobject as ClassObject);
                                 irc = co.value.irMetaClass;
+                                rt = v.sobject.runtimeType;
+                            }
+                            else if( v.eType == EType.Array )
+                            {
+                                rt = RuntimeTypeManager.arrayRuntimeType;
+                                irc = IRManager.instance.GetIRMetaClassByName(v.eType.ToString());
                             }
                             else
                             {
                                 irc = IRManager.instance.GetIRMetaClassByName(v.eType.ToString());
+                                rt = RuntimeTypeManager.GetRuntimeTypeByMT(irc);
                             }
                             if (irc == null)
                             {
@@ -909,15 +925,33 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Add:
                     {
-                        if( m_ValueIndex - 2 < 0 )
+                        if (m_ValueIndex - 2 < 0)
                         {
                             Log.AddVM(EError.None, "Error 加法运算!!超出的栈范围");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex-2].AddSValue(ref m_ValueStack[m_ValueIndex-1], false, out bool isMethod );
-                        if( isMethod )
+                        m_ValueStack[m_ValueIndex - 2].AddSValue(ref m_ValueStack[m_ValueIndex - 1], false, out bool isMethod);
+                        if (isMethod)
                         {
                             m_ValueStack[m_ValueIndex - 3] = m_ValueStack[m_ValueIndex - 1];
+                            m_ValueIndex -= 2;
+                        }
+                        else
+                        {
+                            m_ValueIndex--;
+                        }
+                    }
+                    break;
+                case EIROpCode.IAdd:
+                    {
+                        if (m_ValueIndex - 2 < 0)
+                        {
+                            Log.AddVM(EError.None, "Error 加法运算!!超出的栈范围");
+                            break;
+                        }
+                        m_ValueStack[m_ValueIndex - 2].AddSValue(ref m_ValueStack[m_ValueIndex - 1], false, out bool isMethod);
+                        if (isMethod)
+                        {
                             m_ValueIndex -= 2;
                         }
                         else
@@ -1119,6 +1153,11 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
+
+                        SValue.CompareSValue1AndValue2(ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], 0 );
+                        m_ValueIndex--;
+
+                        /*
                         SValue.CompareEuqalSValue1AndValue2( ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], false, out bool isMethod);
                         if (isMethod)
                         {
@@ -1129,6 +1168,7 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             m_ValueIndex--;
                         }
+                        */
                     }
                     break;
                 case EIROpCode.Cge:
@@ -1138,7 +1178,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
-                        SValue.CompareSValue1AndValue2(ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], 2);
+                        SValue.CompareSValue1AndValue2(ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], 1 );
                         m_ValueIndex--;
                     }
                     break;
@@ -1149,7 +1189,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
-                        SValue.CompareSValue1AndValue2(ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], 1);
+                        SValue.CompareSValue1AndValue2(ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], 2 );
                         m_ValueIndex--;
                     }
                     break;
@@ -1160,7 +1200,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
-                        SValue.CompareSValue1AndValue2(ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], 1);
+                        SValue.CompareSValue1AndValue2(ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], 3 );
                         m_ValueIndex--;
                     }
                     break;

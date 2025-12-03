@@ -10,18 +10,19 @@ using SimpleLanguage.Parse;
 using System;
 namespace SimpleLanguage.VM
 {
-    public class ArrayObject : SObject
+    public class ArrayObject : ClassObject
     {
         private int m_Length = 0;
         private Array m_Array = null;
         private EArrayType eArrayType = EArrayType.Byte;
         //private IRMetaType m_IRMetaType = null;
-        public ArrayObject( EArrayType eArrType, int length )
+        public ArrayObject( EArrayType eArrType, int length ) : base( RuntimeTypeManager.arrayRuntimeType, false )
         {
             m_Etype = EType.Array;
             eArrayType = eArrType;
             m_Length = length;
             //m_IRMetaType = irmt;
+            CreateObject();
             CreateArray();
         }
         public void SetArray( ArrayObject ao )
@@ -29,6 +30,7 @@ namespace SimpleLanguage.VM
             eArrayType = ao.eArrayType;
             m_Length = ao.m_Length;
             m_Array = ao.m_Array;
+            m_MemberObjectArray = ao.m_MemberObjectArray;
         }
         void CreateArray()
         {

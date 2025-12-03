@@ -149,6 +149,82 @@ namespace SimpleLanguage.Core
             }
             return false;
         }
+
+        public static EType GetETypeByMetaClass(MetaClass mc)
+        {
+            if (mc == voidMetaClass)
+            {
+                return EType.Void;
+            }
+            else if (mc == nullMetaClass )
+            {
+                return EType.Null;
+            }
+            else if (mc == byteMetaClass)
+            {
+                return EType.Byte;
+            }
+            else if (mc == sbyteMetaClass)
+            {
+                return EType.SByte;
+            }
+            else if (mc == int16MetaClass)
+            {
+                return EType.Int16;
+            }
+            else if (mc == uint16MetaClass)
+            {
+                return EType.UInt16;
+            }
+            else if (mc == int32MetaClass)
+            {
+                return EType.Int32;
+            }
+            else if (mc == uint32MetaClass)
+            {
+                return EType.UInt32;
+            }
+            else if (mc == int64MetaClass)
+            {
+                return EType.Int64;
+            }
+            else if (mc == uint64MetaClass)
+            {
+                return EType.UInt64;
+            }
+            else if (mc == float32MetaClass)
+            {
+                return EType.Float32;
+            }
+            else if (mc == float64MetaClass)
+            {
+                return EType.Float64;
+            }
+            else if (mc == stringMetaClass)
+            {
+                return EType.String;
+            }
+            else if (mc == objectMetaClass )
+            {
+                return EType.Object;
+            }
+            else if (mc == typeMetaClass )
+            {
+                return EType.Type;
+            }
+            else if (mc == arrayMetaClass )
+            {
+                return EType.Array;
+            }
+            else if (mc == rangeMetaClass )
+            {
+                return EType.Range;
+            }
+            else
+            {
+                return EType.Class;
+            }
+        }
         public static MetaClass GetMetaClassByEType(EType etype)
         {
             switch (etype)

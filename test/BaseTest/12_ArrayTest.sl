@@ -39,7 +39,12 @@ namespace Core
         _init_(Int32 val )
         {
             
-        }        
+        }
+
+        override string toString()
+        {
+            ret Lib.Int32Class.GetValueToString( this )
+        }
     }
     class UInt32
     {
@@ -97,7 +102,7 @@ namespace Core
     public class Array
     {
         int _length = 0
-        int type = 0;
+        Type _type = null;
         _index = 0;
         _current = null
         long _ptr = 0
@@ -105,16 +110,20 @@ namespace Core
         _init_(){
             this._listPtr = 0
         }
-        _init_( int length )
+        _init_( int __len )
         {
-            uint allSize = length * 4
+            #uint allSize = __len * 4            
+            this._length = __len
             #this._ptr = Lib.Array.CreateArray( length, 4 )
-        }      
+        }
+        _init_( int __len, Type __type )
+        {
+            this._length = __len
+            this._type = __type
+        }
         bool hasNext()
         {
-            this._index++;
-            bool hasNext_var = this._index < this._length
-
+            bool hasNext_var = this._index < this._length 
             if hasNext_var
             {
                 var retobj = SimpleLanguage.Lib.Array.GetArrayValueThis( this, this._index )
@@ -124,6 +133,8 @@ namespace Core
             {
                 this._current = null
             }
+            this._index++;
+            System.Console.WriteLine("index=============== " + this._index )
             ret hasNext_var
 
         }
@@ -213,20 +224,21 @@ ArrayTest
 
          # arr22 = int[2][] { [1,2,3,4] }
 
-        a1 = object[2]{intvalue,1};    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
+        a1 = object[4]{intvalue,1,3,4};    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         
-        System.Console.WriteLine("1111111111= " + a1[0] )
+        #System.Console.WriteLine("1111111111= " + a1[0] )
         
-        #var iter = a1.iter
+        a1.index = 0
         for v in a1 
         {
             System.Console.WriteLine("----------= " + v.toString() )
         }
         #!
         label start
-        if a1._hasNext_
+        bool f = a1.hasNext()
+        if 
         {
-            v = a1._next_
+            v = a1.current()
             then_statement
             goto start
         }

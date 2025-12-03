@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
 using SimpleLanguage.Compile;
-using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 
 
@@ -1388,15 +1386,17 @@ namespace SimpleLanguage.Core
             if( m_MetaType.isArray )
             {
                 m_MetaType.AutoCreateArrayMetaType();
-                mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaBraceOrBracketStatementsContent.count)));
+                mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaType.arrayDimensionLengthList[0] )));
                 mipc.CaleReturnType();
+
+                m_MetaMemberFunction = m_RealMetaType.metaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, mipc);
+                SetInputParams(mipc);
             }
             else
             {
-
+                m_MetaMemberFunction = m_MetaType.metaClass.GetMetaMemberConstructFunction(mipc);
+                SetInputParams(mipc);
             }
-            m_MetaMemberFunction = m_MetaType.metaClass.GetMetaMemberConstructFunction(mipc);
-            SetInputParams(mipc);
         }
         public override MetaType GetReturnMetaDefineType()
         {

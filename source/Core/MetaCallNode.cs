@@ -774,11 +774,25 @@ namespace SimpleLanguage.Core
                             MetaClass mc = null;
                             if ( mv.isDefineMetaType )
                             {
-                                mc = mv.metaDefineType.metaClass;
+                                if( mv.metaDefineType.isArray )
+                                {
+                                    mc = CoreMetaClassManager.arrayMetaClass;
+                                }
+                                else
+                                {
+                                    mc = mv.metaDefineType.metaClass;
+                                }
                             }
                             else
                             {
-                                mc = mv.realMetaType.metaClass;
+                                if (mv.realMetaType.isArray)
+                                {
+                                    mc = CoreMetaClassManager.arrayMetaClass;
+                                }
+                                else
+                                {
+                                    mc = mv.realMetaType.eType == EMetaTypeType.TemplateClassWithTemplate ? mv.realMetaType.metaClass : mv.realMetaType.metaClass;
+                                }
                             }
                             if (mc is MetaData)
                             {
@@ -824,16 +838,7 @@ namespace SimpleLanguage.Core
                                 }
                                 else
                                 {
-                                    MetaClass tmc = null;
-                                    if (mv.isDefineMetaType)
-                                    {
-                                        tmc = mv.metaDefineType.metaClass;
-                                    }
-                                    else
-                                    {
-                                        tmc = mv.realMetaType.eType == EMetaTypeType.TemplateClassWithTemplate ? mv.realMetaType.metaClass : mv.realMetaType.metaClass;
-                                    }
-                                    if (GetFunctionOrVariableByOwnerClass(tmc, m_Name) == false)
+                                    if (GetFunctionOrVariableByOwnerClass(mc, m_Name) == false)
                                     {
                                         return false;
                                     }

@@ -29,7 +29,7 @@ namespace SimpleLanguage.Core
         public virtual bool isStatic => m_IsStatic;
         public virtual bool isConst => m_IsConst;
         public virtual bool isParsed => m_IsParsed;
-        public virtual bool isIterate => m_IsIterate;
+        public virtual bool isCanIterate => m_IsCanIterate;
         public bool isArgument => m_VariableFrom == EVariableFrom.Argument;
         public bool isGlobal => m_VariableFrom == EVariableFrom.Global;
         public bool isArray
@@ -55,7 +55,7 @@ namespace SimpleLanguage.Core
         protected bool m_IsParsed = false;
         protected bool m_IsStatic = false;
         protected bool m_IsConst = false;
-        protected bool m_IsIterate = false;
+        protected bool m_IsCanIterate = false;
         protected bool m_IsDefineMetaType = false;      //该字段是表明，该类型使用了定义类型， 如果是var 或者是没定义的，则可以使用真实的类型
         //用来存放扩展包含变量
         protected Dictionary<string, MetaVariable> m_MetaVariableDict = new Dictionary<string, MetaVariable>();
@@ -112,20 +112,39 @@ namespace SimpleLanguage.Core
         public void SetRealMetaType( MetaType realMt )
         {
             this.m_RealMetaType = realMt;
-            this.m_IsIterate = realMt.isIterate;
+            this.m_IsCanIterate = realMt.canIterate;
         }
         public MetaClass GetOwnerClassTemplateClass()
+        {
+            if( m_OwnerMetaClass is MetaGenTemplateClass mgtc )
+            {
+                return mgtc.metaTemplateClass;
+            }
+            return m_OwnerMetaClass;
+        }
+        public virtual MetaClass GetTemplateMetaClass()
         {
             if( isArray )
             {
                 return CoreMetaClassManager.arrayMetaClass;
             }
 
-            if( m_OwnerMetaClass is MetaGenTemplateClass mgtc )
+            if( m_IsDefineMetaType )
             {
-                return mgtc.metaTemplateClass;
+                if ( m_DefineMetaType.metaClass is MetaGenTemplateClass mgtc)
+                {
+                    return mgtc.metaTemplateClass;
+                }
+                return m_DefineMetaType.metaClass;
             }
-            return m_OwnerMetaClass;
+            else
+            {
+                if( m_RealMetaType.metaClass is MetaGenTemplateClass mgtc )
+                {
+                    return mgtc.metaTemplateClass;
+                }
+                return m_RealMetaType.metaClass;
+            }
         }
         public void AddPingToken( string path, int beginline, int beginpos, int endline, int endpos )
         {
@@ -159,9 +178,9 @@ namespace SimpleLanguage.Core
         {
             m_DefineMetaType = mdt;
         }
-        public void SetIsIterate( bool iterate )
+        public void SetIsCanIterate( bool iterate )
         {
-            this.m_IsIterate = iterate;
+            this.m_IsCanIterate = iterate;
         }
         public virtual void SetOwnerBlockstatements(MetaBlockStatements mbs)
         {
@@ -453,6 +472,7 @@ namespace SimpleLanguage.Core
                     return false;
                 }
                 m_RealMetaType = new MetaType(gmit);
+                m_RealMetaType.SetArrayDimensionByFrontMetaType(gmit);
             }
             else
             {
@@ -463,6 +483,11 @@ namespace SimpleLanguage.Core
         public MetaClass GetIteratorMetaClass()
         {
             return m_OrgMetaDefineType.metaClass;
+        }
+
+        public override MetaClass GetTemplateMetaClass()
+        {
+            return m_RealMetaType.metaClass;
         }
 
 

@@ -19,6 +19,7 @@ namespace SimpleLanguage.Core
         public MetaVariable forIterateVariable => m_ForIterateVariable;
         public MetaVariable forInContent => m_ForInContent;
         public MetaVariable ifCeqVariable => m_IfCeqVariable;
+        public MetaVariable indexVariable => m_IndexVariable;
         public MetaMemberFunction hasNextFunction => m_HasNextFunction;
         public MetaMemberFunction nextValueFunction => m_NextValueFunction;
         public MetaBlockStatements thenMetaStatements => m_ThenMetaStatements;
@@ -31,6 +32,7 @@ namespace SimpleLanguage.Core
         private MetaVariable m_ForIterateVariable;
         private MetaVariable m_ForInContent = null;
         private MetaVariable m_IfCeqVariable = null;
+        private MetaVariable m_IndexVariable = null;
         private MetaBlockStatements m_ThenMetaStatements = null;
         private MetaDefineVarStatements m_DefineVarStatements = null;
         private MetaAssignStatements m_AssignStatements = null;
@@ -96,7 +98,7 @@ namespace SimpleLanguage.Core
                     m_ThenMetaStatements.UpdateMetaVariableDict(m_ForInContent);
                 }
                 MetaType mdt = m_ForInContent.realMetaType;
-                if ( !m_ForInContent.isIterate )
+                if ( !m_ForInContent.isCanIterate )
                 {
                     Log.AddInStructMeta(EError.None, "Error For in 必须是支持迭代器iterate");
                     return;
@@ -145,6 +147,14 @@ namespace SimpleLanguage.Core
                 m_HasNextFunction = m_ForInContent.realMetaType.metaClass.GetFirstMetaMemberFunctionByName("_hasNext_");
                 m_NextValueFunction = m_ForInContent.realMetaType.metaClass.GetFirstMetaMemberFunctionByName("_next_");
 
+                if( m_ForInContent.realMetaType.isArray )
+                {
+                    m_IndexVariable = CoreMetaClassManager.arrayMetaClass.GetMetaMemberVariableByName("_index");
+                }
+                else
+                {
+                    m_IndexVariable = m_ForInContent.realMetaType.metaClass.GetMetaMemberVariableByName("_index");
+                }
                 m_ThenMetaStatements.UpdateMetaVariableDict(m_ForIterateVariable);
             }
             else
