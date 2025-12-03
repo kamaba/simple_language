@@ -428,9 +428,11 @@ namespace SimpleLanguage.IR
                     }
                     newObjectIRMT = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.metaType, owirmc);
                     irmc = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
+                    IRNew irNew = new IRNew(irMethod, newObjectIRMT);
+                    AddIRRangeData(irNew.IRDataList);
 
                 }
-                if (mnoen.metaType.eType == EMetaTypeType.MetaClass)
+                else if (mnoen.metaType.eType == EMetaTypeType.MetaClass)
                 {
                     owirmc = IRManager.instance.GetIRMetaClassById(mnoen.ownerMetaClass.GetHashCode());
                     IRMetaClass newObjIRMC = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
@@ -445,7 +447,7 @@ namespace SimpleLanguage.IR
                     IRMetaClass newObjIRMC = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
                     irmc = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
                     newObjectIRMT = new IRMetaType(newObjIRMC);
-                    IRNew irNew = new IRNew(irMethod, newObjIRMC);
+                    IRNew irNew = new IRNew(irMethod, newObjectIRMT);
                     AddIRRangeData(irNew.IRDataList);
                 }
 

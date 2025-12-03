@@ -195,6 +195,7 @@ namespace SimpleLanguage.Core
             else
             {
                 m_EType = EMetaTypeType.MetaClass;
+                m_MetaClass = mt.m_MetaClass;
                 m_CanIterate = false;
                 m_ArrayDimensionLengthList.Clear();
             }

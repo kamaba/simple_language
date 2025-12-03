@@ -219,6 +219,16 @@ namespace SimpleLanguage.Core
             {
                 m_MetaExpress.CalcReturnType();
 
+                if( m_MetaExpress is MetaCallLinkExpressNode mcen )
+                {
+                    if( mcen.isNewExpressNode )
+                    {
+                        m_MetaExpress = new MetaNewObjectExpressNode(m_MetaType, mcen);
+                        m_MetaExpress.Parse(new AllowUseSettings());
+                        m_MetaExpress.CalcReturnType();
+                    }
+                }
+
                 if (m_MetaMemberVariable != null)
                 {
                     MetaClass retMetaClass = m_MetaMemberVariable.metaDefineType.metaClass;
@@ -888,7 +898,10 @@ namespace SimpleLanguage.Core
                 m_NewType = ENewType.CommomClass;
                 if( mcen.metaCallLink.callNodeList.Count > 0 )
                 {
-                    var fma = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1].fileMetaBraceTerm;
+                    var lastNode = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
+                    SetInputParams(lastNode.metaInputParamCollection);
+
+                    var fma = lastNode.fileMetaBraceTerm;
                     m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fma, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
                     m_MetaBraceOrBracketStatementsContent.SetMetaType(m_NewMetaType);
                 }
@@ -1389,13 +1402,13 @@ namespace SimpleLanguage.Core
                 mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaType.arrayDimensionLengthList[0] )));
                 mipc.CaleReturnType();
 
-                m_MetaMemberFunction = m_RealMetaType.metaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, mipc);
+                m_MetaMemberFunction =  CoreMetaClassManager.arrayMetaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, mipc);
                 SetInputParams(mipc);
             }
             else
             {
-                m_MetaMemberFunction = m_MetaType.metaClass.GetMetaMemberConstructFunction(mipc);
-                SetInputParams(mipc);
+                //m_MetaMemberFunction = m_MetaType.metaClass.GetMetaMemberConstructFunction(mipc);
+                //SetInputParams(mipc);
             }
         }
         public override MetaType GetReturnMetaDefineType()
