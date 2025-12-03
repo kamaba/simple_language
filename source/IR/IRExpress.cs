@@ -351,6 +351,45 @@ namespace SimpleLanguage.IR
                 IRNew irNew = new IRNew(irMethod, irnewArray);
                 AddIRRangeData(irNew.IRDataList);
 
+                if (mnoen.metaMemberFunction != null)
+                {
+                    IRDup irdup = new IRDup(irMethod);
+                    m_IRDataList.AddRange(irdup.IRDataList);
+
+                    var paramCount = mnoen.metaInputParamList.Count;
+                    for (int j = 0; j < paramCount; j++)
+                    {
+                        IRExpress irexpress = new IRExpress(m_IRMethod, mnoen.metaInputParamList[j]);
+                        AddIRRangeData(irexpress.IRDataList);
+                    }
+
+                    int callMethodIndex = -1;
+                    string fname = "";
+
+                    MetaClass mc2 = null;
+                    if (mnoen.metaMemberFunction.sourceMetaMemberFunction != null)
+                        mc2 = mnoen.metaMemberFunction.sourceMetaMemberFunction.ownerMetaClass;
+                    else
+                        mc2 = mnoen.metaMemberFunction.ownerMetaClass;
+
+                    fname = mnoen.metaMemberFunction.virtualFunctionName;
+                    irmc = IRManager.instance.GetIRMetaClassById(mc2.GetHashCode());
+
+                    var runtimeMethod = irmc.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
+                    if (callMethodIndex == -1)
+                    {
+                        Log.AddGenIR(EError.None, "没有找到构建对象函数!");
+                    }
+                    List<IRMetaType> functionMtList = new List<IRMetaType>();
+                    var irmethodcall = new IRMethodCall(newObjectIRMT, functionMtList, runtimeMethod, paramCount);
+                    IRData datacall = new IRData();
+                    datacall.opCode = EIROpCode.CallVirt;
+                    datacall.index = callMethodIndex;
+                    datacall.opValue = irmethodcall;
+                    //datacall.SetDebugInfoByToken(mf.pingToken);
+                    AddIRData(datacall);
+                }
+
                 if (mnoen.metaBraceOrBracketStatementsContent?.assignStatementsList?.Count > 0)
                 {
                     for (int y = 0; y < mnoen.metaBraceOrBracketStatementsContent.assignStatementsList.Count; y++)

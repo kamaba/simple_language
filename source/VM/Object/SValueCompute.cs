@@ -348,7 +348,8 @@ namespace SimpleLanguage.VM
                 {
                     str = sval.GetValueObject().ToString();
                 }
-                stringValue = this.GetValueObject().ToString() + str;
+                stringValue = str + this.GetValueObject().ToString();
+                this.eType = EType.String;
             }
             else if (this.eType == EType.String)
             {

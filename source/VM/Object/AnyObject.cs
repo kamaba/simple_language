@@ -6,10 +6,6 @@
 //  Description:  Any Object can use any type data!
 //****************************************************************************
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using SimpleLanguage.Core;
 
 namespace SimpleLanguage.VM
 {

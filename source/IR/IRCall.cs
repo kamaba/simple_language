@@ -183,7 +183,7 @@ namespace SimpleLanguage.IR
                         else
                         {
                             IRPop irpop = new IRPop(m_IRMethod);
-                            AddIRData(irpop.data);
+                            //AddIRData(irpop.data);
                         }
                     }
                 }

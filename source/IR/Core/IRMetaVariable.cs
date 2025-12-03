@@ -87,7 +87,7 @@ namespace SimpleLanguage.IR
             //    }
             //}
             //else 
-            IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mv.ownerMetaClass.GetHashCode());
+            IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
             m_IRMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mv.realMetaType, owirmc);
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme)

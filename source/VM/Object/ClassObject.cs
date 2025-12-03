@@ -23,12 +23,11 @@ namespace SimpleLanguage.VM
     public class ClassObject : SObject
     {
         public ClassObject value => m_Object;
-        public IRMetaClass irMetaClass=> m_RuntimeType?.irClass;
 
-        private ClassObject m_Object = null;
-        private byte[] m_Data = null;   /*  m_Data  结构  bit形，只有运算时要用 1-> byte 2->sbyte   3-> int16  4-> uint16    */
-        private short[] m_Type = null;
-        private SObject[] m_MemberObjectArray = null;
+        protected ClassObject m_Object = null;
+        protected byte[] m_Data = null;   /*  m_Data  结构  bit形，只有运算时要用 1-> byte 2->sbyte   3-> int16  4-> uint16    */
+        protected short[] m_Type = null;
+        protected SObject[] m_MemberObjectArray = null;
         protected List<IRMetaVariable> m_IRMetaVariableList = null;
         protected List<RuntimeType> m_IRTemplateList = new List<RuntimeType>();
 
