@@ -14,6 +14,7 @@ using SimpleLanguage.Parse;
 using SimpleLanguage.VM;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.IR
 {
@@ -36,7 +37,8 @@ namespace SimpleLanguage.IR
         {
             startIRData = new IRNop(irMethod);
             endIRData = new IRNop(irMethod);
-            m_IRStatements.Add(startIRData);
+
+
 
             if( ms.isForIn )
             {
@@ -45,12 +47,23 @@ namespace SimpleLanguage.IR
                 var content_irmc = IRManager.instance.GetIRMetaClassById(ms.forInContent.GetTemplateMetaClass().GetHashCode());
                 var content_irmt = new IRMetaType(content_irmc);
                 // -------------------load var1 set _index = 0 
+
+                IRData loadnum0 = new IRData();
+                loadnum0.opCode = EIROpCode.LoadConstInt32;
+                loadnum0.opValue = 0;
+                //datacall.SetDebugInfoByToken(mf.pingToken);
+                IRBase irloadnum = new IRBase(loadnum0);
+                m_IRStatements.Add(irloadnum);
+
                 IRLoadVariable loadv_content = IRLoadVariable.CreateLoadVariable(content_irmt, content_irmc, irMethod, ms.forInContent);
                 m_IRStatements.Add(loadv_content);
 
                 var index_irmc = IRManager.instance.GetIRMetaClassByName("Core.Int32");
                 var index_irmt = new IRMetaType(content_irmc);
                 IRStoreVariable irStoreVar = IRStoreVariable.CreateIRStoreVariable(index_irmt, index_irmc, irMethod, ms.indexVariable );
+                m_IRStatements.Add(irStoreVar);
+
+                m_IRStatements.Add(startIRData);
 
                 var it_irmc = IRManager.instance.GetIRMetaClassById(ms.forIterateVariable.GetTemplateMetaClass().GetHashCode());
                 var it_irmt = new IRMetaType(it_irmc);
@@ -122,6 +135,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
+                m_IRStatements.Add(startIRData);
                 /*
                 if (m_NewStatements != null)
                 {

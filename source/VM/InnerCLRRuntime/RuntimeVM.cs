@@ -275,7 +275,7 @@ namespace SimpleLanguage.VM.Runtime
         }
         public void SetNewObject()
         {
-            SValue sval = InnerCLRRuntimeVM.topCLRRuntime.GetCurrentIndexValue(m_ValueIndex-1);
+            SValue sval = InnerCLRRuntimeVM.topCLRRuntime.GetCurrentIndexValue(InnerCLRRuntimeVM.topCLRRuntime.m_ValueIndex - 1);
             m_ValueStack[m_ValueIndex++] = sval;
             m_IRMetaClass = (sval.sobject as ClassObject).irMetaClass;
         }
@@ -851,7 +851,7 @@ namespace SimpleLanguage.VM.Runtime
                         m_ValueStack[m_ValueIndex++].SetSObject(sob);
                     }
                     break;
-                case EIROpCode.NewTemplateClass:
+                case EIROpCode.NewTemplateObject:
                     {
                         IRMetaType mdt = iri.opValue as IRMetaType;
 

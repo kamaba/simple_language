@@ -37,7 +37,7 @@ namespace SimpleLanguage.IR
         LocalGlobal,
 
         NewObject,
-        NewTemplateClass,
+        NewTemplateObject,
         NewArray,
         Dup,
         Pop,

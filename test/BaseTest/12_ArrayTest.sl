@@ -215,6 +215,14 @@ ArrayTest
     Level<T>
     {
         T t = new()
+        _init_( obj )
+        {
+            this.t = obj as T
+        }
+        override string toString()
+        {
+            ret this.t.toString()
+        }
     }
     static fun()
     { 
@@ -223,12 +231,13 @@ ArrayTest
         #System.Console.WriteLine("1111111111= " + ac.i1 + "    " + ac.i2 )
 
          # arr22 = int[2][] { [1,2,3,4] }
+        
+        a1 = Level<int>[2]{ Level<int>(3), Level<int>(4) }
 
-        a1 = object[4]{intvalue,1,3,4};    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
+        #a1 = object[4]{intvalue,1,3,4};    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         
         #System.Console.WriteLine("1111111111= " + a1[0] )
         
-        a1.index = 0
         for v in a1 
         {
             System.Console.WriteLine("----------= " + v.toString() )

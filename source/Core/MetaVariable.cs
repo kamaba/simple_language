@@ -487,7 +487,22 @@ namespace SimpleLanguage.Core
 
         public override MetaClass GetTemplateMetaClass()
         {
-            return m_RealMetaType.metaClass;
+            if( m_IsDefineMetaType )
+            {
+                if (m_DefineMetaType.metaClass is MetaGenTemplateClass mgtc)
+                {
+                    return mgtc.metaTemplateClass;
+                }
+                return m_DefineMetaType.metaClass;
+            }
+            else
+            {
+                if( m_RealMetaType.metaClass is MetaGenTemplateClass mgtc )
+                {
+                    return mgtc.metaTemplateClass;
+                }
+                return m_RealMetaType.metaClass;
+            }
         }
 
 
