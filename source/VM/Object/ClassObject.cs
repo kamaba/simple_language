@@ -519,6 +519,17 @@ namespace SimpleLanguage.VM
                             }
                             stringObj.SetValue(svalue.stringValue);
                         }
+                        else if( mva.eType == EType.Object )
+                        {
+                            AnyObject anyObj = m_MemberObjectArray[index] as AnyObject;
+                            if (anyObj == null)
+                            {
+                                anyObj.SetValue(EType.Class, svalue.sobject);
+                                return;
+                            }
+                            //classObj.SetValue(svalue.sobject as ClassObject);
+                            m_MemberObjectArray[index] = svalue.sobject;
+                        }
                         else
                         {
                             ClassObject classObj = m_MemberObjectArray[index] as ClassObject;

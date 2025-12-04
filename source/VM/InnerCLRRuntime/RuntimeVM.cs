@@ -866,7 +866,10 @@ namespace SimpleLanguage.VM.Runtime
 
 
                         var irList = rt.irClass.CreateStaticMetaMetaVariableIRList();
-                        InnerCLRRuntimeVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
+                        if( irList.Count > 0 )
+                        {
+                            InnerCLRRuntimeVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
+                        }
                     }
                     break;
                 case EIROpCode.NewArray:

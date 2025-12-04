@@ -15,14 +15,11 @@ namespace SimpleLanguage.Core
 {
     public sealed class MetaCallLinkExpressNode : MetaExpressNode
     {
-        public bool isNewExpressNode => m_IsNewExpressNode;
         public MetaCallLink metaCallLink => m_MetaCallLink;
 
         private MetaCallLink m_MetaCallLink = null;
 
         private MetaVariable m_EqualMetaVariable = null;
-
-        private bool m_IsNewExpressNode = false;
         public MetaCallLinkExpressNode( FileMetaCallLink fmcl, MetaClass mc, MetaBlockStatements mbs, MetaVariable mv )
         {
             m_OwnerMetaClass = mc;

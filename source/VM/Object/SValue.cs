@@ -751,6 +751,12 @@ namespace SimpleLanguage.VM
                         }
                     }
                     break;
+                default:
+                    {
+                        sobject = obj as ClassObject;
+                        eType = EType.Class;
+                    }
+                    break;
             }
         }
         public SObject CreateSObject()

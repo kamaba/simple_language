@@ -87,7 +87,7 @@ namespace Core
     {
         int _hashCode = 0
         MetaClass _metaClass = null
-        public Type[] typelist = new()
+        public Type[] typelist = null
 
         override string toString()
         {

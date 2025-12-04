@@ -42,7 +42,7 @@ namespace SimpleLanguage.Core
                 return MetaTypeFactory.GetOpLevelByMetaType(m_MetaType);
             }
         }
-
+        public bool isNewExpressNode => m_IsNewExpressNode;
         public MetaType metaType => m_MetaType;
         public MetaClass ownerMetaClass => m_OwnerMetaClass;
         public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
@@ -50,6 +50,9 @@ namespace SimpleLanguage.Core
         protected MetaClass m_OwnerMetaClass = null;
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
         protected MetaType m_MetaType = null;
+        protected bool m_IsNewExpressNode = false;
+
+
         public virtual int CalcParseLevel(int level) { return level; }
         public virtual void CalcReturnType() { }
         public virtual void Parse(AllowUseSettings auc) { }
