@@ -58,7 +58,15 @@ namespace SimpleLanguage.Lib
         }
         public static object GetArrayValueThis(ArrayObject ao, int index)
         {
-            return ao.GetValue(index);
+            var retobj =  ao.GetValue(index);
+            if( retobj == null )
+            {
+                var retobj2 = new AnyObject();
+                retobj2.SetNull();
+
+                return retobj2;
+            }
+            return retobj;
         }
         public static void SetArrayValues( Int64 ptr, int type, int beginIndex, Int64 valPtr, int length )
         {

@@ -203,6 +203,11 @@ namespace SimpleLanguage.VM
                 Log.AddVM(EError.None, "执行的参数超出范围!!");
                 return;
             }
+            if( svalue.isNull )
+            {
+                m_MemberObjectArray[index].SetNull();
+                return;
+            }
             AnyObject anyobj = m_MemberObjectArray[index] as AnyObject;
             switch (svalue.eType)
             {

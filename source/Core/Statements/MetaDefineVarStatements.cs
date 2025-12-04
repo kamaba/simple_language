@@ -55,7 +55,7 @@ namespace SimpleLanguage.Core
         private void Parse()
         {
             string defineName = m_Name;
-            MetaType mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
+            MetaType mdt = null;
             var metaFunction = m_OwnerMetaBlockStatements?.ownerMetaFunction;
 
 #pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
@@ -130,7 +130,7 @@ namespace SimpleLanguage.Core
                 var mcen = m_ExpressNode as MetaCallLinkExpressNode;
                 if (mcen?.isNewExpressNode == true )
                 {
-                    m_ExpressNode = new MetaNewObjectExpressNode(mdt, mcen);
+                    m_ExpressNode = new MetaNewObjectExpressNode( mdt, mcen);
                     m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
                     m_ExpressNode.CalcReturnType();
                 }
