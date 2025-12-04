@@ -10,6 +10,7 @@ using SimpleLanguage.Parse;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
@@ -767,6 +768,12 @@ namespace SimpleLanguage.VM.Runtime
                             return;
                         }
                         var v = m_ValueStack[stackIndex];
+
+                        if( v.isNull )
+                        {
+                            Debug.Assert( false, "当前值为空!!" );
+                            return;
+                        }
 
                         RuntimeType rt = null;
                         IRMetaClass irc = null;

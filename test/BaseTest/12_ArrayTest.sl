@@ -126,8 +126,7 @@ namespace Core
             bool hasNext_var = this._index < this._length 
             if hasNext_var
             {
-                var retobj = SimpleLanguage.Lib.Array.GetArrayValueThis( this, this._index )
-                this._current = retobj
+                this._current = SimpleLanguage.Lib.Array.GetArrayValueThis( this, this._index )
             }
             else
             {
@@ -231,8 +230,8 @@ ArrayTest
         #System.Console.WriteLine("1111111111= " + ac.i1 + "    " + ac.i2 )
 
          # arr22 = int[2][] { [1,2,3,4] }
-        
-        a1 = Level<int>[2]{ Level<int>(3), Level<int>(4) }
+        li = Level<int>(100)
+        a1 = Level<int>[5]{ Level<int>(3), Level<int>(4) }
 
         #a1 = object[4]{intvalue,1,3,4};    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         
@@ -240,7 +239,10 @@ ArrayTest
         
         for v in a1 
         {
-            System.Console.WriteLine("----------= " + v.toString() )
+            if v != null
+            {
+                System.Console.WriteLine("----------= " + v.toString() )
+            }
         }
         #!
         label start

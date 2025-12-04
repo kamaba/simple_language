@@ -745,6 +745,7 @@ namespace SimpleLanguage.VM
                             default:
                                 {
                                     sobject = ao;
+                                    isNull = sobject.isNull;
                                     eType = EType.Object;
                                 }
                                 break;
@@ -755,6 +756,7 @@ namespace SimpleLanguage.VM
                     {
                         sobject = obj as ClassObject;
                         eType = EType.Class;
+                        isNull = sobject.isNull;
                     }
                     break;
             }

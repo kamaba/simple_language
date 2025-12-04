@@ -109,6 +109,26 @@ namespace SimpleLanguage.Core
         {
             this.m_IsDefineMetaType = flag;
         }
+        public MetaType GetDefineMetaTypeIsDefine()
+        {
+            if( this.m_IsDefineMetaType )
+            {
+                return m_DefineMetaType;
+            }
+            return null;
+        }
+        public MetaType GetFinalMetaType()
+        {
+            if( m_RealMetaType != null )
+            {
+                return m_RealMetaType;
+            }
+            if (this.m_IsDefineMetaType)
+            {
+                return m_DefineMetaType;
+            }
+            return null;
+        }
         public void SetRealMetaType( MetaType realMt )
         {
             this.m_RealMetaType = realMt;
