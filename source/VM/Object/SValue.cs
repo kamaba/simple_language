@@ -31,8 +31,10 @@ namespace SimpleLanguage.VM
         public bool isNull;
         public void SetNullValue()
         {
-            SetNull();
+            arrayValue = null;
+            sobject = null;
             eType = EType.Null;
+            isNull = true;
         }
         public void SetBoolValue( bool val )
         {
