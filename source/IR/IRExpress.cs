@@ -76,7 +76,7 @@ namespace SimpleLanguage.IR
                         IRMetaCallLink irmc = new IRMetaCallLink();
                         if ( m_IRManager != null )
                         {
-                            irmc.ParseToIRDataListByIRManager(m_IRManager, mcn.metaCallLink.visitNodeList);
+                            irmc.ParseToIRDataList(null, mcn.metaCallLink.visitNodeList);
                         }
                         else
                         {
@@ -137,7 +137,7 @@ namespace SimpleLanguage.IR
                     break;
                 default:
                     {
-                        Debug.Write("Error IR表达式错误!!");
+                        Debug.Assert( false, "Error IR表达式错误!!");
                     }
                     break;
             }
@@ -443,10 +443,10 @@ namespace SimpleLanguage.IR
                 }
                 else
                 {
-                    owirmc = IRManager.instance.GetIRMetaClassById(mnoen.ownerMetaClass.GetHashCode());
-                    IRMetaClass newObjIRMC = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
+                    owirmc = IRManager.instance.GetIRMetaClassById(mnoen.ownerMetaClass.GetHashCode());                    
                     irmc = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
-                    newObjectIRMT = new IRMetaType(newObjIRMC);
+                    newObjectIRMT = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.metaType, owirmc);
+
                     IRNew irNew = new IRNew(irMethod, newObjectIRMT);
                     AddIRRangeData(irNew.IRDataList);
                 }

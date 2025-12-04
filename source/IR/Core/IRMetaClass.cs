@@ -265,20 +265,25 @@ namespace SimpleLanguage.IR
 
             foreach( var v in m_LocalIRMetaVariableList )
             {
-                var irexp = new IRExpress( IRManager.instance, v.express );
+                if (v.express is MetaNewObjectExpressNode mnoe)
+                {
+                    IRNewExpress irexp = new IRNewExpress(null, mnoe);
+                    list.AddRange(irexp.IRDataList);
+                }
+                else
+                {
+                    var irexp = new IRExpress(IRManager.instance, v.express);
+                    list.AddRange(irexp.IRDataList);
 
-                v.SetIRDataList(irexp.IRDataList);
+                }
 
                 IRData irdata = new IRData();
-                irdata.id = irexp.IRDataList.Count;
+                irdata.id = list.Count;
                 irdata.opValue = v.irMetaType;
                 irdata.opCode = EIROpCode.StoreNotStaticField1;
                 irdata.index = v.index;
 
-                List<IRData> list22 = new List<IRData>(irexp.IRDataList);
-                list22.Add(irdata);
-
-                list.AddRange(list22);
+                list.Add(irdata);
             }
 
             return list;
