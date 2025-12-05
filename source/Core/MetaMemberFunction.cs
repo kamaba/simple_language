@@ -474,7 +474,8 @@ namespace SimpleLanguage.Core
                 if (m_FileMetaMemberFunction.defineMetaClass != null)
                 {
                     FileMetaClassDefine cmr = m_FileMetaMemberFunction.defineMetaClass;
-                    var defineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(m_OwnerMetaClass, this, cmr);
+                    m_DefineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(m_OwnerMetaClass, this, cmr);
+                    m_IsDefineMetaType = true;
 
                     if (m_ConstructInitFunction && defineMetaType.metaClass != CoreMetaClassManager.voidMetaClass )
                     {
@@ -485,6 +486,14 @@ namespace SimpleLanguage.Core
                         m_ReturnMetaVariable.SetMetaDefineType(defineMetaType);
                         m_ReturnMetaVariable.SetRealMetaType(defineMetaType);
                     }
+                    m_ReturnMetaVariable.SetMetaDefineType(m_DefineMetaType);
+                    m_ReturnMetaVariable.SetRealMetaType(new MetaType(m_DefineMetaType));
+                }
+                else
+                {
+                    m_DefineMetaType = m_ReturnMetaVariable.metaDefineType;
+                    m_IsDefineMetaType = false;
+                    m_ReturnMetaVariable.SetRealMetaType(new MetaType(m_DefineMetaType));
                 }
             }
             for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
@@ -493,6 +502,11 @@ namespace SimpleLanguage.Core
                 mpl.ParseMetaDefineType();
             }
             UpdateVritualFunctionName();
+        }
+        public bool ParseInterface()
+        {
+
+            return true;
         }
         public virtual void CreateMetaExpress()
         {
@@ -966,7 +980,7 @@ namespace SimpleLanguage.Core
                 sb.Append(" interface");
             }
             sb.Append(" ");
-            sb.Append( m_ReturnMetaVariable?.metaDefineType.ToFormatString() );
+            sb.Append( m_ReturnMetaVariable?.GetFinalMetaType().ToFormatString() );
             sb.Append(" " + name );
             sb.Append(m_MetaMemberParamCollection.ToFormatString());
             sb.Append(Environment.NewLine);

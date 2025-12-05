@@ -16,6 +16,12 @@ namespace SimpleLanguage.Core
     public class TypeManager
     {
         public static TypeManager instance = new TypeManager();
+
+        // 比较两个MetaType的内容， 主要通过 MetaClass 和里边的MetaType的遍历 都相同 
+        public bool CompareMetaType( MetaType mt1, MetaType mt2 )
+        {
+            return MetaType.EqualMetaDefineType( mt1, mt2 );
+        }
         public bool UpdateMetaTypeByGenClassAndFunction(MetaType mt, MetaGenTemplateClass mgtc, MetaGenTemplateFunction mgtf )
         {
             bool isNeedReg = false;

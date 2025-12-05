@@ -62,6 +62,10 @@ namespace SimpleLanguage.Core
             {
                 GetReturnMetaDefineType();
             }
+            if(m_MetaType?.isArray == true )
+            {
+                return CoreMetaClassManager.arrayMetaClass;
+            }
             return m_MetaType?.metaClass;
         }
         public virtual void SetMetaType( MetaType mt )

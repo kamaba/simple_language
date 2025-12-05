@@ -73,6 +73,9 @@ namespace SimpleLanguage.Core
         public static MetaClass float32MetaClass { get; private set; } = null;
         public static MetaClass float64MetaClass { get; private set; } = null;
         public static MetaClass arrayMetaClass { get; private set; } = null;
+        public static MetaClass listMetaClass { get; private set; } = null;
+        public static MetaClass tulpeMetaClass { get; private set; } = null;
+        public static MetaClass mapMetaClass { get; private set; } = null;
         public static MetaClass rangeMetaClass { get; private set; } = null;
         public static MetaClass dynamicMetaClass { get; private set; } = null;
         public static MetaClass dynamicMetaData { get; private set; } = null;

@@ -146,9 +146,22 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             m_IsStatic = m_FileMetaMemeberVariable?.staticToken != null;
             m_VariableFrom = EVariableFrom.Member;
+
+            if( string.IsNullOrEmpty( m_Name ) )
+            {
+                Log.AddInStructMeta(EError.None, "没有找到定义变量名称!");
+                m_Name = "Error_" + GetHashCode().ToString();
+            }
             if (m_FileMetaMemeberVariable.permissionToken != null)
             {
                 m_Permission = CompilerUtil.GetPerMissionByString(m_FileMetaMemeberVariable.permissionToken?.lexeme.ToString());
+            }
+            else
+            {
+                if(m_Name[0] == '_' )
+                {
+                    m_Permission = EPermission.Private;
+                }
             }
             m_SourceMetaClass = mc;
             SetOwnerMetaClass(mc);

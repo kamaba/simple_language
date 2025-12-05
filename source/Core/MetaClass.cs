@@ -12,6 +12,7 @@ using System.Text;
 using SimpleLanguage.Compile;
 using System.Linq;
 using SimpleLanguage.Parse;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.Core
 {
@@ -277,7 +278,7 @@ namespace SimpleLanguage.Core
                         Log.AddInStructMeta(EError.None, "没有找到接口相关的定义类!!");
                         continue;
                     }
-                    m_InterfaceMetaType.Add(getmt);
+                    this.m_InterfaceMetaType.Add(getmt);
                 }
             }
             if (this.m_MetaTemplateList.Count == 0)
@@ -478,9 +479,45 @@ namespace SimpleLanguage.Core
                 it.ParseDefineMetaType();
             }
         }
-        public bool CheckInterface()
+        public void CheckInterface()
         {
-            return true;
+            foreach (var it in m_InterfaceMetaType )
+            {
+                MetaClass interfaceMc = it.GetTemplateMetaClass();
+            
+                foreach( var interfaceMMF in interfaceMc.m_FileCollectMetaMemberFunctionList )
+                {
+                    bool certified = false;
+                    foreach ( var selfMMF in this.m_FileCollectMetaMemberFunctionList )
+                    {
+                        if (!interfaceMMF.name.Equals(selfMMF.name))
+                            continue;
+                        if ( interfaceMMF.metaMemberTemplateCollection.IsEqualMetaDefineTemplateCollection( selfMMF.metaMemberTemplateCollection )
+                            && interfaceMMF.metaMemberParamCollection.IsEqualMetaDefineParamCollection(selfMMF.metaMemberParamCollection))
+                        {
+                            if( selfMMF.isOverrideFunction )
+                            {
+                                certified = true;
+                            }
+                        }
+                    }
+                    if (!certified)
+                    {
+                        Log.AddInStructMeta(EError.None, "严重错误，必须在接口类型中，要实现接口的函数");
+                    }
+                }
+            }
+        }
+        public bool GetInterfaceByMetaType( MetaType mc )
+        {
+            foreach( var v in m_InterfaceMetaType )
+            {
+                if( TypeManager.instance.CompareMetaType( v, mc ) )
+                {
+                    return true;
+                }
+            }
+            return false;
         }
         public MetaType AddMetaPreTemplateClass( MetaType mt, bool isParse, out bool isGenMetaClass )
         {
@@ -649,6 +686,16 @@ namespace SimpleLanguage.Core
                 }
                 m_ExtendLevel = level;
             }
+        }
+        public bool IsInterfaceByMetaClass( MetaClass mc )
+        {
+            if (m_InterfaceClass.Count == 0)
+            {
+                return false;
+            }
+
+            var interfaceMc = m_InterfaceClass.Find(a => a == mc);
+            return interfaceMc != null;
         }
         public bool IsParseMetaClass(MetaClass parentClass, bool isIncludeSelf = true )
         {

@@ -186,9 +186,11 @@ namespace SimpleLanguage.Core
             if( mip != null)
             {
                 var retMC = mip.GetRetMetaClass();
-                var relation = ClassManager.ValidateClassRelationByMetaClass(m_MetaVariable.realMetaType.metaClass, retMC);
+                var relation = ClassManager.ValidateClassRelationByMetaClass(m_MetaVariable.GetFinalTemplateMetaClass(), retMC);
 
-                if (relation == ClassManager.EClassRelation.Same || relation == ClassManager.EClassRelation.Child)
+                if (relation == ClassManager.EClassRelation.Same 
+                    || relation == ClassManager.EClassRelation.Child 
+                    || relation == ClassManager.EClassRelation.Interface )
                 {
                     return true;
                 }

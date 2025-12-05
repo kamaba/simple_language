@@ -27,6 +27,7 @@ namespace SimpleLanguage.Core
         public MetaAssignStatements assignStatements => m_AssignStatements;
         public MetaExpressNode conditionExpress => m_ConditionExpress;
         public MetaAssignStatements stepStatements => m_StepStatements;
+        public MetaNewObjectExpressNode newObjectExpressIterator => m_NewObjectExpressIterator;
 
         private bool m_IsForIn = false;
         private MetaVariable m_ForIterateVariable;
@@ -40,6 +41,7 @@ namespace SimpleLanguage.Core
         private MetaAssignStatements m_StepStatements = null;
         private MetaMemberFunction m_HasNextFunction = null;
         private MetaMemberFunction m_NextValueFunction = null;
+        private MetaNewObjectExpressNode m_NewObjectExpressIterator = null;
 
         private FileMetaKeyForSyntax m_FileMetaKeyForSyntax = null;
         public MetaForStatements(MetaBlockStatements mbs, FileMetaKeyForSyntax fmkfs ) : base(mbs)
@@ -97,8 +99,8 @@ namespace SimpleLanguage.Core
                     m_ForInContent = new MetaVariable("forcontent_" + GetHashCode().ToString(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, ownerMetaClass, mnoen.GetReturnMetaDefineType() );
                     m_ThenMetaStatements.UpdateMetaVariableDict(m_ForInContent);
                 }
-                MetaType mdt = m_ForInContent.realMetaType;
-                if ( !m_ForInContent.isCanIterate )
+                MetaType mdt = m_ForInContent.GetFinalMetaType();
+                if ( !m_ForInContent.GetIsCanCanIterate() )
                 {
                     Log.AddInStructMeta(EError.None, "Error For in 必须是支持迭代器iterate");
                     return;
@@ -109,7 +111,18 @@ namespace SimpleLanguage.Core
                     forMVMC = m_ForInContent.metaDefineType;
                 }
 
-                if( m_FileMetaKeyForSyntax.fileMetaClassDefine is FileMetaDefineVariableSyntax fmcd )
+                MetaClass mc = ClassManager.instance.GetClassByName("Core.IterateVariable");
+
+
+                MetaInputParamCollection mipc = new MetaInputParamCollection(m_OwnerMetaBlockStatements.ownerMetaClass, m_OwnerMetaBlockStatements);
+                MetaInputParam mip = new MetaInputParam(m_ConditionExpress);
+                mipc.AddMetaInputParam(mip);
+
+                MetaMemberFunction mmf = mc.GetMetaMemberConstructFunction(mipc);
+
+                m_NewObjectExpressIterator = new MetaNewObjectExpressNode(new MetaType(mc), m_OwnerMetaBlockStatements.ownerMetaClass, m_OwnerMetaBlockStatements, null, mmf );
+
+                if ( m_FileMetaKeyForSyntax.fileMetaClassDefine is FileMetaDefineVariableSyntax fmcd )
                 {
                     string dname = fmcd.name;
                     var dmv = m_ThenMetaStatements.GetMetaVariableByName(dname);
@@ -120,7 +133,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        m_ForIterateVariable = new MetaIteratorVariable(fmcd.fileMetaClassDefine, fmcd.nameToken, ownerMetaClass, m_OwnerMetaBlockStatements, m_ForInContent, forMVMC);
+                        m_ForIterateVariable = new MetaIteratorVariable(fmcd.fileMetaClassDefine, fmcd.nameToken, ownerMetaClass, m_OwnerMetaBlockStatements, m_NewObjectExpressIterator );
                     }
                 }
                 else if( m_FileMetaKeyForSyntax.fileMetaClassDefine is FileMetaCallSyntax fmcs )
@@ -134,7 +147,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        m_ForIterateVariable = new MetaIteratorVariable( null, fmcs.variableRef.callNodeList[0].token, ownerMetaClass, m_OwnerMetaBlockStatements, m_ForInContent, forMVMC);
+                        m_ForIterateVariable = new MetaIteratorVariable( null, fmcs.variableRef.callNodeList[0].token, ownerMetaClass, m_OwnerMetaBlockStatements, m_NewObjectExpressIterator );
                     }
                 }
                 if(m_ForIterateVariable == null )
@@ -142,10 +155,13 @@ namespace SimpleLanguage.Core
                     Log.AddInStructMeta(EError.None, "Error For x in X必须有!!");
                     return;
                 }
+                m_NewObjectExpressIterator.SetStoreMetaVariable(m_ForIterateVariable);
                 m_ForIterateVariable.Parse();
 
-                m_HasNextFunction = m_ForInContent.realMetaType.metaClass.GetFirstMetaMemberFunctionByName("_hasNext_");
-                m_NextValueFunction = m_ForInContent.realMetaType.metaClass.GetFirstMetaMemberFunctionByName("_next_");
+
+
+                m_HasNextFunction = m_ForIterateVariable.realMetaType.metaClass.GetFirstMetaMemberFunctionByName("hasNext");
+                m_NextValueFunction = m_ForIterateVariable.realMetaType.metaClass.GetFirstMetaMemberFunctionByName("current");
 
                 if( m_ForInContent.realMetaType.isArray )
                 {

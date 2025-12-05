@@ -98,8 +98,63 @@ namespace Core
 
             ret this._metaClass.className;
         }
-    }    
-    public class Array
+    }
+    public interface IIterator
+    {
+        void reset()
+        bool moveNext()
+        get object current()
+        void release()
+    }
+    public interface IIterable
+    {
+        IIterator iterator()
+    }
+
+    public class IterateVariable interface IIterator
+    {
+        _start = 0
+        _index = 0
+        _value = null
+        IIterator _iterator = null
+        _isDone = false;
+
+
+        _init_( IIterable __it )
+        {
+            this._iterator = __it.iterator();
+            this._iterator.reset()
+        }
+        get int index(){ ret this._index }
+        get object value(){ ret this._value }
+
+        override void reset()
+        {
+            this._isDone = false
+            this._start = 0
+            this._index = 0
+            this._value = null
+        }
+        override bool moveNext()
+        {
+            if this._isDone
+            {
+                ret false
+            }
+            this._isDone = this._iterator.moveNext()
+            ret this._isDone
+        }
+        override get object current()
+        {
+            this._value = this._iterator.current()
+            ret this._value
+        }
+        override void release()
+        {
+            
+        }
+    }
+    public class Array interface IIterable, IIterator
     {
         int _length = 0
         Type _type = null;
@@ -107,9 +162,18 @@ namespace Core
         _current = null
         long _ptr = 0
 
-        _init_(){
-            this._listPtr = 0
+           
+        public static Array createInstance(int length)
+        {
+            var arr = Array(length)
+            ret arr
         }
+        public static Array CreateInstance(Type elementType, int length1 )
+        {            
+            var arr = Array(length1, elementType)
+            ret arr
+        }
+
         _init_( int __len )
         {
             #uint allSize = __len * 4            
@@ -120,9 +184,13 @@ namespace Core
         {
             this._length = __len
             this._type = __type
-        }
-        bool hasNext()
+        }        
+        override void reset()
         {
+            this._index = 0;
+        }
+        override bool moveNext()
+        {            
             bool hasNext_var = this._index < this._length 
             if hasNext_var
             {
@@ -135,11 +203,18 @@ namespace Core
             this._index++;
             System.Console.WriteLine("index=============== " + this._index )
             ret hasNext_var
-
+            ret true
         }
-        get object current()
+        override object current()
         {
             ret this._current;
+        }
+        override void release()
+        {
+        }
+        override IIterator iterator()
+        {
+            ret this
         }
         get T current<T>()
         {
@@ -178,28 +253,7 @@ namespace Core
         setValues( Int64 valPtr, int len )
         {
             #Lib.Array.SetArrayValue( this._ptr, 1,  valPtr, len )
-        }
-        #!
-        public static Array CreateInstance(Type elementType, int length);
-        public static Array CreateInstance(Type elementType, int length1, int length2 );
-        public static Array CreateInstance(Type elementType, int length1, int length2, int lenght3 );;
-        !#
-        #!
-        _init_( uint length, Type type )
-        {        
-            uint allSize = length * type.length
-            this._listPtr = ArrayMetaClass.SetArrayLength( allSize )
-        }
-        _init_( uint length, Type type, int rank )
-        {
-            uint unitLength = type.length
-            this.length = length
-            this.rank = rank
-            uint allSize = length * type.length
-
-            this._listPtr = ArrayMetaClass.SetArrayLength( allSize )
-        }
-        !#
+        }     
     }
 }
 
@@ -250,10 +304,11 @@ ArrayTest
         }
         #!
         label start
-        bool f = a1.hasNext()
+        v = Iterator( a1 )
+        bool f = v.hasNext()
         if 
         {
-            v = a1.current()
+            v = v.current()
             then_statement
             goto start
         }
@@ -444,3 +499,10 @@ ArrayTest
 # 3.1.5 Array(){ Array(){ Array(){} } } 可申请多维数组，多维数组时，必须有数量    Array(5){ Array(2){   Array(10){}, Array(12){}  } }   即为一个 5x2x12的三维数据
 # 3.1.6 数组不支持多维数组，只支持交错数组，如果要实现多维数组，需要用户自己实现
 # 3.1.7 给数据赋值，只能使用 {} 的方法，往里边填存数据  不能使用[]的方式，该符号，只在定义数组，或者是数组取值的时候使用
+
+
+#!
+1. 在使用迭代器时，需要先new一个iterateVariable 对象
+2. 然后把IIterable放到本地的_iterable节点中
+3. 
+!#
