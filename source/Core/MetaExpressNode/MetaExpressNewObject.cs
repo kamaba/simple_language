@@ -1002,13 +1002,22 @@ namespace SimpleLanguage.Core
                 //m_MetaConstructFunctionCall = new MetaMethodCall(null, null, tfunction, null, mdpc, null, null);
             }
         }
-        public MetaNewObjectExpressNode( MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs )
+        // 手动构建NewObject表达式
+        public MetaNewObjectExpressNode(MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs)
         {
             m_OwnerMetaClass = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
             m_MetaType = new MetaType(mt);
             //m_MetaConstructFunctionCall = new MetaMethodCall(mt.metaClass, mt.defineTemplateMetaTypeList, m_OwnerMetaBlockStatements.ownerMetaFunction,
             //    null, null, null, null );
+        }
+        public MetaNewObjectExpressNode(MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs, MetaVariable storeMv, MetaMemberFunction mmf)
+        {
+            m_OwnerMetaClass = ownerMC;
+            m_OwnerMetaBlockStatements = mbs;
+            m_MetaType = new MetaType(mt);
+            m_StoreMetaVariable = storeMv;
+            m_MetaMemberFunction = mmf;
         }
         // 解析后的[] 然后再进行newArray
         public MetaNewObjectExpressNode(MetaArrayExpressNode maen, MetaClass mc, MetaBlockStatements mbs, MetaVariable equalMV )
@@ -1159,6 +1168,10 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
+        }
+        public void SetStoreMetaVariable( MetaVariable smv )
+        {
+            this.m_StoreMetaVariable = smv;
         }
         public override int CalcParseLevel(int level)
         {

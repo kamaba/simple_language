@@ -93,7 +93,7 @@ namespace SimpleLanguage.Core
         }
         public MetaType GeMetaDefineType()
         {
-            return m_VMCallMetaFunction.metaDefineType;
+            return m_VMCallMetaFunction.GetFinalMetaType();
         }
         public MetaFunction GetTemplateMemberFunction()
         {

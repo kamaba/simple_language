@@ -42,7 +42,46 @@ namespace SimpleLanguage.IR
 
             if( ms.isForIn )
             {
+                var it_irmc =  IRManager.instance.GetIRMetaClassById(ms.newObjectExpressIterator.ownerMetaClass.GetHashCode());
+                var it_irmt = new IRMetaType(it_irmc);
 
+                //--------------------var1._hasNext_()
+
+                IRNewExpress iren = new IRNewExpress( irMethod, ms.newObjectExpressIterator);
+                m_IRStatements.Add(iren);
+
+                var runmethod = it_irmc.GetIRNonStaticMethodIndexByName("hasNext", out int index);
+                var irmethodcall = new IRMethodCall(it_irmt, new List<IRMetaType>(), runmethod, 0);
+                IRData datacall = new IRData();
+                datacall.opCode = EIROpCode.CallDynamic;
+                datacall.opValue = irmethodcall;
+                datacall.index = 1;
+                //datacall.SetDebugInfoByToken(mf.pingToken);
+                IRBase irbase = new IRBase(datacall);
+                m_IRStatements.Add(irbase);
+
+                //----------------------if hasNext() goto end
+                ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, endIRData.data);
+                m_IRStatements.Add(ifIRData);
+
+                //----------------------var = a1.current()
+                // var load
+                IRLoadVariable loadvariable_it = IRLoadVariable.CreateLoadVariable(it_irmt, it_irmc, irMethod, ms.forIterateVariable);
+                m_IRStatements.Add(loadvariable_it);
+                //--------------------var1.current()
+
+                var _current_runmethod = it_irmc.GetIRNonStaticMethodIndexByName("current", out int _next_index);
+
+                var _current_irmethodcall = new IRMethodCall(it_irmt, new List<IRMetaType>(), _current_runmethod, 0);
+                IRData _current_datacall = new IRData();
+                _current_datacall.opCode = EIROpCode.CallDynamic;
+                _current_datacall.opValue = _current_irmethodcall;
+                _current_datacall.index = 1;
+                //datacall.SetDebugInfoByToken(mf.pingToken);
+                IRBase _next_irbase = new IRBase(_current_datacall);
+                m_IRStatements.Add(_next_irbase);
+
+                /*
                 var fun = ms.hasNextFunction;
                 var content_irmc = IRManager.instance.GetIRMetaClassById(ms.forInContent.GetTemplateMetaClass().GetHashCode());
                 var content_irmt = new IRMetaType(content_irmc);
@@ -64,9 +103,6 @@ namespace SimpleLanguage.IR
                 m_IRStatements.Add(irStoreVar);
 
                 m_IRStatements.Add(startIRData);
-
-                var it_irmc = IRManager.instance.GetIRMetaClassById(ms.forIterateVariable.GetTemplateMetaClass().GetHashCode());
-                var it_irmt = new IRMetaType(it_irmc);
 
                 // -------------------load var1 
                 m_IRStatements.Add(loadv_content);
@@ -132,6 +168,7 @@ namespace SimpleLanguage.IR
                 IRBase _load_null_base_ = new IRBase(_load_null_);
                 m_IRStatements.Add(_load_null_base_);
                 m_IRStatements.Add(storevar_it);
+                */
             }
             else
             {

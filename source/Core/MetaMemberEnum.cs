@@ -93,10 +93,23 @@ namespace SimpleLanguage.Core
             {
                 Log.AddInStructMeta(EError.None, "Error ENum中，不允许有静态关键字，而是全部是静态关键字!!");
             }
+
+            if (string.IsNullOrEmpty(m_Name))
+            {
+                Log.AddInStructMeta(EError.None, "没有找到定义变量名称!");
+                m_Name = "Error_" + GetHashCode().ToString();
+            }
             if (m_FileMetaMemeberVariable.permissionToken != null)
             {
                 Log.AddInStructMeta(EError.None, "Error Enum中，不允许使用public/private等权限关键字!!");
                 m_Permission = CompilerUtil.GetPerMissionByString(m_FileMetaMemeberVariable.permissionToken?.lexeme.ToString());
+            }
+            else
+            {
+                if (m_Name[0] == '_')
+                {
+                    m_Permission = EPermission.Private;
+                }
             }
 
             SetOwnerMetaClass(mc);

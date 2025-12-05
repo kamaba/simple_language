@@ -24,6 +24,7 @@ namespace SimpleLanguage.Core
             Child,
             Parent,
             Similar,
+            Interface,
             SameClassNotSameInputTemplate,
             SameClassAndSameInputTemplate,
         }
@@ -660,6 +661,10 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
+                    if(compareClass.IsInterfaceByMetaClass( curClass ) )
+                    {
+                        return EClassRelation.Interface;
+                    }
                     if (curClass.IsParseMetaClass(compareClass))
                     {
                         return EClassRelation.Parent;

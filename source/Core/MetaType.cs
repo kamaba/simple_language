@@ -7,10 +7,8 @@
 //****************************************************************************
 
 
-using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
-using System.Security.AccessControl;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -33,13 +31,11 @@ namespace SimpleLanguage.Core
                 return m_MetaClass?.allClassName;
             }
         }
-        //public MetaClass typeInferenceClass => m_TypeInferenceClass;
-        public bool canIterate => m_CanIterate;
         public bool isEnum => m_MetaClass is MetaEnum;
         public bool isData => m_MetaClass is MetaData;
         public bool isArray => m_EType == EMetaTypeType.Array;
         public bool isNull => m_MetaClass == CoreMetaClassManager.nullMetaClass;
-        public bool isMap => false;
+        public bool isMap => m_MetaClass == CoreMetaClassManager.mapMetaClass;
         public bool isTemplate => m_EType == EMetaTypeType.Template;
         public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
         public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData;
@@ -57,18 +53,15 @@ namespace SimpleLanguage.Core
 
         private EMetaTypeType m_EType = EMetaTypeType.None;
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
-        //private MetaClass m_TypeInferenceClass = null;                  //推理类
         private MetaType m_ParentMetaType = null;
         private MetaTemplate m_MetaTemplate = null;
         //private MetaType m_SourceMetaType = null;                         //生成类的 对应来源类
         //private MetaGenTemplate m_MetaGenTemplate = null;
-        private MetaExpressNode m_DefaultExpressNode = null;        // int a => a = 0;
         private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         private List<MetaType> m_GenTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         private List<MetaType> m_ArrayMetaTypeList = new List<MetaType>();
         private List<int> m_ArrayDimensionLengthList = new List<int>();
-        private bool m_CanIterate = false;
         public MetaType()
         {
         }
@@ -92,7 +85,6 @@ namespace SimpleLanguage.Core
             {
                 Log.AddInStructMeta(EError.None, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
-            //m_IsDefineMetaClass = false;
             m_MetaClass = mc;
             m_EType = EMetaTypeType.MetaClass;
         }
@@ -102,7 +94,6 @@ namespace SimpleLanguage.Core
             {
                 Log.AddInStructMeta(EError.None, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
-            //m_IsDefineMetaClass = false;
             //m_TemplateMetaClass = templatemc;
             m_MetaClass = mc;
             m_DefineTemplateMetaTypeList = mtList;
@@ -135,11 +126,9 @@ namespace SimpleLanguage.Core
             //this.m_TemplateMetaClass = mt.m_TemplateMetaClass;
             this.m_ParentMetaType = mt.m_ParentMetaType;
             this.m_MetaTemplate = mt.m_MetaTemplate;
-            this.m_DefaultExpressNode = mt.m_DefaultExpressNode;
             this.m_EnumValue = mt.m_EnumValue;
             //this.m_FromName = mt.m_FromName;
             this.m_EType = mt.m_EType;
-            this.m_CanIterate = mt.m_CanIterate;
 
             this.m_ArrayDimensionLengthList = new List<int>( mt.m_ArrayDimensionLengthList.ToArray() );
 
@@ -159,10 +148,6 @@ namespace SimpleLanguage.Core
                 m_GenTemplateMetaTypeList.Add(mtc);
             }
         }
-        public void SetCanIterate( bool canIterate )
-        {
-            m_CanIterate = canIterate;
-        }
         public void SetArrayDimension( int disension  )
         {
             if( disension > 0 )
@@ -171,7 +156,6 @@ namespace SimpleLanguage.Core
                 m_ArrayDimensionLengthList.Clear();
                 for (int i = 0; i < disension; i++)
                     m_ArrayDimensionLengthList.Add(-1);
-                m_CanIterate = true;
             }
         }
         public void SetUnLimitArray()
@@ -185,7 +169,6 @@ namespace SimpleLanguage.Core
             if(mt.arrayDimension > 1 )
             {
                 m_EType = EMetaTypeType.Array;
-                m_CanIterate = true;
                 m_ArrayDimensionLengthList.Clear();
                 for( int i = 1; i <  mt.m_ArrayDimensionLengthList.Count; i++)
                 {
@@ -196,7 +179,6 @@ namespace SimpleLanguage.Core
             {
                 m_EType = EMetaTypeType.MetaClass;
                 m_MetaClass = mt.m_MetaClass;
-                m_CanIterate = false;
                 m_ArrayDimensionLengthList.Clear();
             }
         }
@@ -212,10 +194,6 @@ namespace SimpleLanguage.Core
         public void SetArrayDismensionLength( List<int> list )
         {
             m_ArrayDimensionLengthList = list;
-            if( list.Count > 0 )
-            {
-                m_CanIterate = true;
-            }
         }
         public int GetArrayDimensionLengthByIndex(int index )
         {
@@ -275,11 +253,9 @@ namespace SimpleLanguage.Core
             //this.m_TemplateMetaClass = mt.m_TemplateMetaClass;
             this.m_ParentMetaType = mt.m_ParentMetaType;
             this.m_MetaTemplate = mt.m_MetaTemplate;
-            this.m_DefaultExpressNode = mt.m_DefaultExpressNode;
             this.m_EnumValue = mt.m_EnumValue;
             //this.m_FromName = mt.m_FromName;
             this.m_EType = mt.m_EType;
-            this.m_CanIterate = mt.m_CanIterate;
             this.m_DefineTemplateMetaTypeList = mt.m_DefineTemplateMetaTypeList;
             this.m_GenTemplateMetaTypeList = mt.m_GenTemplateMetaTypeList;
         }
@@ -406,7 +382,6 @@ namespace SimpleLanguage.Core
             m_ArrayDimensionLengthList.Clear();
             m_ArrayDimensionLengthList.Add(list.Count);
             m_EType = EMetaTypeType.Array;
-            m_CanIterate = true;
         }
         //public void SetSourceMetaType( MetaType sourceMt )
         //{
@@ -481,12 +456,7 @@ namespace SimpleLanguage.Core
         //public void SetGenMetaTemplate(MetaGenTemplate mt)
         //{
         //    //this.m_MetaGenTemplate = mt;
-        //}
-        
-        //public void SetTypeInferenceClass(MetaClass mc )
-        //{
-        //    this.m_TypeInferenceClass = mc;
-        //}
+        //}        
         public void SetTemplateMetaClass( MetaClass mc )
         {
             //m_TemplateMetaClass = mc;
@@ -544,17 +514,6 @@ namespace SimpleLanguage.Core
             if (index < 0 || index >= m_DefineTemplateMetaTypeList.Count) return null;
 
             return m_DefineTemplateMetaTypeList[index];
-        }
-        public MetaExpressNode GetDefaultExpressNode()
-        {
-            if (m_DefaultExpressNode != null)
-            {
-                return m_DefaultExpressNode;
-            }
-            else
-            {
-                return m_MetaClass.defaultExpressNode;
-            }
         }
         public override string ToFormatString()
         {

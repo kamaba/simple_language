@@ -258,7 +258,7 @@ namespace SimpleLanguage.Core
             }
             if (m_ExpressNode == null)
             {
-                m_ExpressNode = m_DefineVarMetaVariable.metaDefineType.GetDefaultExpressNode();
+                m_ExpressNode = m_DefineVarMetaVariable.GetFinalTemplateMetaClass().defaultExpressNode;
             }
             SetTRMetaVariable(m_DefineVarMetaVariable);
         }        

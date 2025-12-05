@@ -23,8 +23,7 @@ namespace SimpleLanguage.Core
         {
             m_FileMetaReturnSyntax = fmrs;
 
-            MetaType mdt = mbs.ownerMetaFunction.metaDefineType;
-
+            MetaType mdt = mbs.ownerMetaFunction.GetFinalMetaType();
 
             CreateExpressParam cep2 = new CreateExpressParam()
             {

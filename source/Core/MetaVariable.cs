@@ -29,7 +29,6 @@ namespace SimpleLanguage.Core
         public virtual bool isStatic => m_IsStatic;
         public virtual bool isConst => m_IsConst;
         public virtual bool isParsed => m_IsParsed;
-        public virtual bool isCanIterate => m_IsCanIterate;
         public bool isArgument => m_VariableFrom == EVariableFrom.Argument;
         public bool isGlobal => m_VariableFrom == EVariableFrom.Global;
         public bool isArray
@@ -55,7 +54,6 @@ namespace SimpleLanguage.Core
         protected bool m_IsParsed = false;
         protected bool m_IsStatic = false;
         protected bool m_IsConst = false;
-        protected bool m_IsCanIterate = false;
         protected bool m_IsDefineMetaType = false;      //该字段是表明，该类型使用了定义类型， 如果是var 或者是没定义的，则可以使用真实的类型
         //用来存放扩展包含变量
         protected Dictionary<string, MetaVariable> m_MetaVariableDict = new Dictionary<string, MetaVariable>();
@@ -119,20 +117,78 @@ namespace SimpleLanguage.Core
         }
         public MetaType GetFinalMetaType()
         {
-            if( m_RealMetaType != null )
-            {
-                return m_RealMetaType;
-            }
             if (this.m_IsDefineMetaType)
             {
                 return m_DefineMetaType;
             }
+            else
+            {
+                if (m_RealMetaType != null)
+                {
+                    return m_RealMetaType;
+                }
+            }
             return null;
+        }
+        public MetaClass GetFinalTemplateMetaClass()
+        {
+
+            MetaClass mc = null;
+            if (m_IsDefineMetaType)
+            {
+                if (m_DefineMetaType.isArray)
+                {
+                    return CoreMetaClassManager.arrayMetaClass;
+                }
+                if (m_DefineMetaType.metaClass is MetaGenTemplateClass mgtc)
+                {
+                    mc = mgtc;
+                }
+                else
+                {
+                    mc = m_DefineMetaType.metaClass;
+                }
+            }
+            else
+            {
+                if( m_RealMetaType.isArray )
+                {
+                    return CoreMetaClassManager.arrayMetaClass;
+                }
+                if (m_RealMetaType.metaClass is MetaGenTemplateClass mgtc)
+                {
+                    mc = mgtc;
+                }
+                else
+                {
+                    mc = m_RealMetaType.metaClass;
+                }
+            }
+            return mc;
         }
         public void SetRealMetaType( MetaType realMt )
         {
             this.m_RealMetaType = realMt;
-            this.m_IsCanIterate = realMt.canIterate;
+        }
+        public bool GetIsCanCanIterate()
+        {
+            MetaClass mc = GetFinalTemplateMetaClass();
+
+            if (mc is MetaEnum)
+            {
+                return true;
+            }
+            else
+            {
+                MetaClass findMc = ClassManager.instance.GetClassByName("Core.IIterable");
+                MetaType mt = new MetaType(findMc);
+                if ( mc.GetInterfaceByMetaType(mt) )
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
         public MetaClass GetOwnerClassTemplateClass()
         {
@@ -197,10 +253,6 @@ namespace SimpleLanguage.Core
         public void SetMetaDefineType( MetaType mdt )
         {
             m_DefineMetaType = mdt;
-        }
-        public void SetIsCanIterate( bool iterate )
-        {
-            this.m_IsCanIterate = iterate;
         }
         public virtual void SetOwnerBlockstatements(MetaBlockStatements mbs)
         {
@@ -456,21 +508,23 @@ namespace SimpleLanguage.Core
         MetaVariable m_ValueMetaVariable = null;
         FileMetaClassDefine m_FileMetaClassDefine = null;
         private Token m_VariableNameToken = null;
+        MetaNewObjectExpressNode m_MetaNewObjectExpressNode = null;
 
-        public MetaIteratorVariable(FileMetaClassDefine _fmcl, Token variableNameToken, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaType orgMC)
+        public MetaIteratorVariable(FileMetaClassDefine _fmcl, Token variableNameToken, MetaClass mc, MetaBlockStatements mbs, MetaNewObjectExpressNode moben )
         {
-            m_VariableFrom = EVariableFrom.LocalStatement;
             m_FileMetaClassDefine = _fmcl;
+            m_VariableFrom = EVariableFrom.LocalStatement;
             m_VariableNameToken = variableNameToken;
             m_Name = variableNameToken.lexeme.ToString();
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
-            m_ContentMetaVariable = lmv;
-            m_OrgMetaDefineType = orgMC;
-            m_IndexMetaVariable = new MetaVariable("index", EVariableFrom.ArrayInner, mbs, mc, new MetaType(CoreMetaClassManager.int32MetaClass));
-            m_ValueMetaVariable = new MetaVariable("value", EVariableFrom.ArrayInner, mbs, mc, new MetaType(orgMC.metaClass));
-            m_IndexMetaVariable.AddPingToken(lmv.pingToken);
-            m_ValueMetaVariable.AddPingToken(lmv.pingToken);
+            m_MetaNewObjectExpressNode = moben;
+            //m_ContentMetaVariable = lmv;
+            //m_OrgMetaDefineType = orgMC;
+            //m_IndexMetaVariable = new MetaVariable("index", EVariableFrom.ArrayInner, mbs, mc, new MetaType(CoreMetaClassManager.int32MetaClass));
+            //m_ValueMetaVariable = new MetaVariable("value", EVariableFrom.ArrayInner, mbs, mc, new MetaType(orgMC.metaClass));
+            //m_IndexMetaVariable.AddPingToken(lmv.pingToken);
+            //m_ValueMetaVariable.AddPingToken(lmv.pingToken);
         }
         public override bool Parse()
         {
@@ -481,51 +535,14 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-            }
-            if (m_ContentMetaVariable.isArray)
-            {
-                var gmit = m_ContentMetaVariable.realMetaType;
-                if (gmit == null)
+                if(m_MetaNewObjectExpressNode != null )
                 {
-                    Log.AddInStructMeta(EError.None, "Error 访问的Array中，没有找到模版 名称!!");
-                    return false;
+                    m_DefineMetaType = m_MetaNewObjectExpressNode.GetReturnMetaDefineType();
                 }
-                m_RealMetaType = new MetaType(gmit);
-                m_RealMetaType.SetArrayDimensionByFrontMetaType(gmit);
             }
-            else
-            {
-                m_RealMetaType = new MetaType(m_ContentMetaVariable.realMetaType.metaClass);
-            }
+            m_RealMetaType = new MetaType(m_DefineMetaType);
             return true;
         }
-        public MetaClass GetIteratorMetaClass()
-        {
-            return m_OrgMetaDefineType.metaClass;
-        }
-
-        public override MetaClass GetTemplateMetaClass()
-        {
-            if( m_IsDefineMetaType )
-            {
-                if (m_DefineMetaType.metaClass is MetaGenTemplateClass mgtc)
-                {
-                    return mgtc.metaTemplateClass;
-                }
-                return m_DefineMetaType.metaClass;
-            }
-            else
-            {
-                if( m_RealMetaType.metaClass is MetaGenTemplateClass mgtc )
-                {
-                    return mgtc.metaTemplateClass;
-                }
-                return m_RealMetaType.metaClass;
-            }
-        }
-
-
         public override MetaVariable GetMetaVariable(string name)
         {
             if (name == "index")

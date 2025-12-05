@@ -27,17 +27,9 @@ namespace SimpleLanguage.Core
     }
     public class MetaFunction : MetaBase
     {
-        public MetaType metaDefineType
-        {
-            get
-            {
-                if( m_ReturnMetaVariable != null )
-                {
-                    return m_ReturnMetaVariable.metaDefineType;
-                }
-                return null;
-            }
-        }
+        public bool isDefineMetaType => m_IsDefineMetaType;
+        public MetaType defineMetaType => m_DefineMetaType;
+        public MetaType realMetaType => m_RealMetaType;
         public Token pingToken => m_PintTokenList.Count > 0 ? m_PintTokenList[0] : null;
         public virtual bool isStatic => m_IsStatic;
         public virtual bool isParsed => m_IsParsed;
@@ -99,6 +91,9 @@ namespace SimpleLanguage.Core
         protected EMethodCallType m_MethodCallType = EMethodCallType.Local;
         private List<LabelData> m_LabelDataList = new List<LabelData>();
         protected bool m_IsStatic = false;
+        protected bool m_IsDefineMetaType = false;
+        protected MetaType m_DefineMetaType = null;
+        protected MetaType m_RealMetaType = null;
         #endregion
 
         #region Compile or Debug
@@ -118,6 +113,9 @@ namespace SimpleLanguage.Core
             m_FunctionAllName = null;
             m_PintTokenList = mf.m_PintTokenList;
             m_VirtualFunctionName = mf.m_VirtualFunctionName;
+            m_DefineMetaType = m_DefineMetaType != null ? new MetaType(mf.m_DefineMetaType) : null;
+            m_RealMetaType = realMetaType != null ? new MetaType(mf.realMetaType) : null;
+            m_IsDefineMetaType = mf.m_IsDefineMetaType;
 
             m_OwnerMetaClass = mf.m_OwnerMetaClass; 
             m_MetaBlockStatements = mf.m_MetaBlockStatements;
@@ -227,6 +225,17 @@ namespace SimpleLanguage.Core
         public MetaDefineParam GetMetaDefineParamByName( string name )
         {
             return m_MetaMemberParamCollection.GetMetaDefineParamByName(name);
+        }
+        public MetaType GetFinalMetaType()
+        {
+            if( m_IsDefineMetaType )
+            {
+                return m_DefineMetaType;
+            }
+            else
+            {
+                return m_RealMetaType;
+            }
         }
         public bool IsEqualMetaFunction( MetaFunction mf )
         {
