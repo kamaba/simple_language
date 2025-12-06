@@ -1,25 +1,29 @@
 
-public class Map<TKey,TValue> extends Object
+public class Core.Map<TKey,TValue> extends Object interface Core.IIterable<T>, Core.IIterator<T>
 {
-    private class MapEntity
+    private class MapEntity<T,V>
     {
         public int hashId = 0
-        public TKey key = TKey.default
-        public TValue value = TValue.default
+        public T key = null
+        public V value = null
     }
 
-    List<MapEntity> m_MapContent = List<MapEntity>()
+    List<MapEntity<TKey,TVvalue> > m_MapContent = List<<TKey,TVvalue> >()
 
 
     void add( TKey key, TValue value )
     {
+        MapEntity<TKey,TValue> me = new()
+        me.key = key;
+        me.value = value
 
+        
     }
-    TValue get( TKey key )
+    get TValue getValue( TKey key )
     {
         return TValue.default;
     }
-    public bool Include( TKey key )
+    public bool containByKey( TKey key )
     {
         return false;
     }    

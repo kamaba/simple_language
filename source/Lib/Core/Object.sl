@@ -1,17 +1,6 @@
 
 public class Core.Object
-{
-    void _init_()
-    {
-    }
-    public Int32 get hashCode()
-    {
-        ret SimpleLanguage.Lib.ObjectClass.GetHashCodeBySObject( this )
-    }
-    public bool equals(object obj)
-    {
-        ret SimpleLanguage.Lib.ObjectClass.EqualObject(this, obj);
-    }
+{    
     public static bool objectEquals(object objA, object objB)
     {
         if (objA == null || objB == null)
@@ -24,19 +13,31 @@ public class Core.Object
     {
         ret objA.ref == objB.ref;
     }
-    public Object clone()
+
+    void _init_()
+    {
+    }
+    public Int32 get hashCode()
+    {
+        ret SimpleLanguage.Lib.ObjectClass.GetHashCodeBySObject( this )
+    }
+    public bool equals(object obj)
+    {
+        ret SimpleLanguage.Lib.ObjectClass.EqualObject(this, obj);
+    }
+    Object clone()
     {
         ret SimpleLanguage.Lib.ObjectClass.CloneObject(this);
     }    
-    public object get `````````````````````ref`````````````````````()
+    object get ref()
     {
         ret SimpleLanguage.Lib.ObjectClass.ObjectRef(this);
     }
-    get object  refWeak()
+    get object refWeak()
     {
         ret SimpleLanguage.Lib.ObjectClass.ObjectWeakRef(this);
     } 
-    int get refCount()
+    get int refCount()
     {
         ret SimpleLanguage.Lib.ObjectClass.RefCount(this);
     }
@@ -48,10 +49,12 @@ public class Core.Object
     {
 
     }
-    !#
-    以下是系统方法
-    public Object cast<T>()
+    public T cast<T>()
     {
-        ret this;
+        ret this as T;
+    }
+    string toString()
+    {
+        ret ""
     }
 }

@@ -3,35 +3,44 @@ import CSharp.SimpleLanguage
 Core.Int32 extends Object
 {
     const int MaxValue = 0x7fffffff;
-    const int MinValue = unchecked((int)0x80000000);
+    const int MinValue = 0x80000000;
 
-    #private Int32 _value = 0i;
-
-    _init_()
-    {
-    }
-    _init_( Int32 _val )
-    {
-        SimpleLanguage.Lib.Int32Class.SetInt32Value( this, _val )
-        #this._value = _val        
-    }
-    override String toString()
-    {
-        ret SimpleLanguage.Lib.Int32Class.ConvertToString( this )
-    }
+    _value = 0i;
+    
     static String Int32ToString( Int32 value )
     {
         ret SimpleLanguage.Lib.Int32Class.Int32ToString( value )
     }
-    #!
-    cast( Type t )
+    public static Int32 parseString( string s )
     {
-        if t == Int16.type 
-        {
-            ret Convert.Int32ConvertToInt16( m_Value )
-        }
+        ret 0
     }
 
+    _init_()
+    {
+        this._value = 0i;
+    }
+    _init_( Int32 _val )
+    {
+        this._value = _val
+        SimpleLanguage.Lib.Int32Class.SetInt32Value( this, _val )
+    }
+    _init_( Float32 f )
+    {
+        this._value = f.toInt32()
+    }
+    _init_( Int8 _val )
+    {
+        this._value = _val.toInt32()
+    }
+    _init_( Int64 _val )
+    {
+        this._value = _val.toInt32()
+    }
+    T cast<T>()
+    {
+        ret null
+    }
     public int compareTo(object value)
     {
         if (value == null)
@@ -41,10 +50,36 @@ Core.Int32 extends Object
 
         ret 0
     }
-
-    public static int parse( string s )
+    Int8 toInt8()
     {
         ret 0
     }
-    !#
+    SInt8 toSInt8()
+    {
+        ret 0
+    }
+    Int16 toSInt16()
+    {
+        ret 0
+    }
+    UInt16 toUInt16()
+    {
+        ret 0
+    }
+    UInt32 toUInt32()
+    {
+        ret 0
+    }
+    Float32 toFloat32()
+    {
+        ret 0
+    }
+    Float64 toFloat64()
+    {
+        ret 0
+    }
+    override String toString()
+    {
+        ret SimpleLanguage.Lib.Int32Class.ConvertToString( this )
+    }
 }
