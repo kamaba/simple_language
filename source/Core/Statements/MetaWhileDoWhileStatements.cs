@@ -121,6 +121,7 @@ namespace SimpleLanguage.Core
                 MetaMemberFunction mmf = mc.GetMetaMemberConstructFunction(mipc);
 
                 m_NewObjectExpressIterator = new MetaNewObjectExpressNode(new MetaType(mc), m_OwnerMetaBlockStatements.ownerMetaClass, m_OwnerMetaBlockStatements, null, mmf );
+                m_NewObjectExpressIterator.SetInputParams(mipc);
 
                 if ( m_FileMetaKeyForSyntax.fileMetaClassDefine is FileMetaDefineVariableSyntax fmcd )
                 {

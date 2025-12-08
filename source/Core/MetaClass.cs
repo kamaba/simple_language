@@ -498,6 +498,7 @@ namespace SimpleLanguage.Core
                             if( selfMMF.isOverrideFunction )
                             {
                                 certified = true;
+                                selfMMF.SetIsOverrideInterface(true);
                             }
                         }
                     }

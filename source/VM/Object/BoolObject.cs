@@ -6,16 +6,11 @@
 //  Description: 
 //****************************************************************************
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using SimpleLanguage.Core;
-
 namespace SimpleLanguage.VM
 {
     public class BoolObject : SObject
     {
-        public bool value { get; set; } = false;
+        public bool value { get; protected set; } = false;
 
         public BoolObject( bool flag ) : base(EType.Boolean )
         {

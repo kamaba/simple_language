@@ -193,6 +193,7 @@ namespace SimpleLanguage.Core
         public bool isTemplateFunction => m_IsTemplateFunction;
         public bool isWithInterface => m_IsWithInterface;
         public bool isOverrideFunction => m_IsOverrideFunction;
+        public bool isOverrideInterface => m_IsOverrideInterface;        
         public bool isConstructInitFunction => m_ConstructInitFunction;
         public bool isGet => m_IsGet;
         public bool isSet => m_IsSet;
@@ -209,6 +210,7 @@ namespace SimpleLanguage.Core
         #region 属性
         protected bool m_IsTemplateFunction = false;
         protected bool m_IsOverrideFunction = false;
+        protected bool m_IsOverrideInterface = false;
         protected bool m_IsGet = false;
         protected bool m_IsSet = false;
         protected bool m_IsFinal = false;
@@ -292,6 +294,10 @@ namespace SimpleLanguage.Core
             }
             m_MetaBlockStatements = new MetaBlockStatements(this, null);
             m_MetaBlockStatements.isOnFunction = true;
+            if(mc.isInterfaceClass )
+            {
+                m_IsOverrideInterface = true;
+            }
 
             Init();
         }
@@ -317,7 +323,7 @@ namespace SimpleLanguage.Core
         }
         protected void Init()
         {
-            m_ConstructInitFunction = this.name == "_init_";
+            m_ConstructInitFunction = this.m_Name == "_init_";
 
             MetaType defineMetaType = null;
             if (m_ConstructInitFunction)
@@ -369,6 +375,10 @@ namespace SimpleLanguage.Core
         public void SetIsOverrideFunction(bool flag )
         {
             m_IsOverrideFunction = flag;
+        }
+        public void SetIsOverrideInterface(bool flag )
+        {
+            this.m_IsOverrideInterface = flag;
         }
         public Token GetToken()
         {

@@ -20,6 +20,7 @@ namespace SimpleLanguage.IR
         public string id { get; set; } = "";
         public string virtualFunctionName { get; set; } = "";
         public string onlyFunctionName { get; set; } = "";
+        public bool interfaceMethod => m_InterfaceMethod;
         public IRManager irManager { get; private set; } = null;
         public IRMetaClass irOwnerMetaClass => m_IROwnerMetaClass;
         //private List<IRMetaVariable> methodInputTemplateObject => m_MethodInputTemplateObject;
@@ -36,6 +37,7 @@ namespace SimpleLanguage.IR
         private List<IRData> m_IRDataList = new List<IRData>();
         private MetaFunction m_BindMetaFunction = null;
         private IRMetaClass m_IROwnerMetaClass = null;
+        private bool m_InterfaceMethod = false;
         public IRMethod(IRManager irma, MetaFunction func )
         {
             irManager = irma;
@@ -44,6 +46,11 @@ namespace SimpleLanguage.IR
             this.virtualFunctionName = func.virtualFunctionName;
             this.onlyFunctionName = func.name;
             m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(func.ownerMetaClass.GetHashCode());
+
+            if( func is MetaMemberFunction mmf )
+            {
+                m_InterfaceMethod = mmf.isOverrideInterface;
+            }
         }
         public void Parse()
         {

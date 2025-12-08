@@ -141,7 +141,8 @@ namespace Core
             {
                 ret false
             }
-            this._isDone = this._iterator.moveNext()
+            this._index++
+            this._isDone = this._iterator.moveNext()            
             ret this._isDone
         }
         override get object current()
@@ -203,7 +204,6 @@ namespace Core
             this._index++;
             System.Console.WriteLine("index=============== " + this._index )
             ret hasNext_var
-            ret true
         }
         override object current()
         {
@@ -279,21 +279,22 @@ ArrayTest
     }
     static fun()
     { 
-        int intvalue = 20
+        #int intvalue = 20
         #var ac = ArrClass(){ i1 = intvalue, i2 = "okok" }
         #System.Console.WriteLine("1111111111= " + ac.i1 + "    " + ac.i2 )
 
          # arr22 = int[2][] { [1,2,3,4] }
-        li = Level<int>(100)
-        a1 = Level<int>[5]{ Level<int>(3), null, Level<int>(4) }
+        #li = Level<int>(100)
+        #a1 = Level<int>[5]{ Level<int>(3), null, Level<int>(4) }
+        a1 = [101,102]
 
         #a1 = object[4]{intvalue,null,3 };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         
-        System.Console.WriteLine("1111111111= " + a1[2] )
+        #System.Console.WriteLine("1111111111= " + a1[1] )
         
         for v in a1 
         {
-            if v != null
+            if v.value != null
             {
                 System.Console.WriteLine("----------= " + v.toString() )
             }
@@ -303,12 +304,12 @@ ArrayTest
             }
         }
         #!
-        label start
         v = Iterator( a1 )
         bool f = v.hasNext()
-        if 
+        label start
+        if f
         {
-            v = v.current()
+            v.current()
             then_statement
             goto start
         }

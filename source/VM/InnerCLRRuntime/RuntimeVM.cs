@@ -8,15 +8,37 @@
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Security.Cryptography;
 
 namespace SimpleLanguage.VM.Runtime
 {
+    //前置类型
+    public enum EVMType : Byte
+    {
+        None,
+        Null,
+        Void,
+        Class,
+        Enum,
+        Data,
+        Boolean,
+        Bit,
+        Byte,
+        SByte,
+        Int16,
+        UInt16,
+        Int32,
+        UInt32,
+        Float16,
+        Float32,
+        Int64,
+        UInt64,
+        Float64,
+        Int128,
+        UInt128,
+        String,
+    }
     public class RuntimeVM
     {
         public string id { get; set; } = "";
@@ -357,7 +379,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EType.Array:
                     {
-                        sStore.arrayValue.SetMemberVariableSValue(iri.index, sValue);
+                        (sStore.sobject as ArrayObject).SetMemberVariableSValue(iri.index, sValue);
                     }
                     break;
                 default:
@@ -376,7 +398,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadConstNull:
                     {
-                        m_ValueStack[m_ValueIndex++].SetNullValue();
+                        m_ValueStack[m_ValueIndex++].SetNullValueType();
                     }
                     break; 
                 case EIROpCode.LoadConstByte:
@@ -527,7 +549,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else if( v.eType == EType.Array )
                         {
-                            var co = (v.arrayValue as ArrayObject);
+                            var co = (v.sobject as ArrayObject);
                             co.value.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
                         }
                         //栈位不变，因为当前对象位的被通过索引取出来的成员变量值，覆盖掉， 所以栈位不会发生变化
@@ -597,7 +619,7 @@ namespace SimpleLanguage.VM.Runtime
                         var v = m_ValueStack[m_ValueIndex - 1];
                         if (v.eType == EType.Array)
                         {
-                            v.arrayValue.LoadValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
+                            (v.sobject as ArrayObject).LoadValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
                         }
                         else
                         {
@@ -621,10 +643,11 @@ namespace SimpleLanguage.VM.Runtime
 
                         if (sStore.eType == EType.Array)
                         {
-                            sStore.arrayValue.StoreValue(iri.index, sValue);
+                            (sStore.sobject as ArrayObject).StoreValue(iri.index, sValue);
                         }
                         else
                         {
+                            Debug.Assert(false, "不是数组类型!!");
                             Log.AddVM(EError.None, "不是数组类型!!");
                         }
                         m_ValueIndex -= 2;
@@ -638,10 +661,11 @@ namespace SimpleLanguage.VM.Runtime
                         if (arrayref.eType == EType.Array)
                         {
                             int index = (int)loadindex.GetValueObject();
-                            arrayref.arrayValue.LoadValue(index, ref m_ValueStack[m_ValueIndex - 2]);
+                            (arrayref.sobject as ArrayObject).LoadValue(index, ref m_ValueStack[m_ValueIndex - 2]);
                         }
                         else
                         {
+                            Debug.Assert(false, "不是数组类型!!");
                             Log.AddVM(EError.None, "不是数组类型!!");
                         }
                         m_ValueIndex -= 1;
@@ -656,10 +680,11 @@ namespace SimpleLanguage.VM.Runtime
                         if (arrayref.eType == EType.Array)
                         {
                             int index = (int)loadindex.GetValueObject();
-                            arrayref.arrayValue.StoreValue(index, storevalue );
+                            (arrayref.sobject as ArrayObject).StoreValue(index, storevalue );
                         }
                         else
                         {
+                            Debug.Assert(false, "不是数组类型!!");
                             Log.AddVM(EError.None, "不是数组类型!!");
                         }
                         m_ValueIndex -= 3;
@@ -695,7 +720,6 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             InnerCLRRuntimeVM.RunIRMethod(classRTList, mfc.irMethod);
                         }
-
                     }
                     break;
                 case EIROpCode.CallDynamic:
@@ -734,6 +758,11 @@ namespace SimpleLanguage.VM.Runtime
                                 Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
                                 return;
                             }
+                            if (mfc.irMethod == null)
+                            {
+                                Debug.Assert(false, "没有找到合适的调用方式");
+                                return;
+                            }
                             if (mfc.irMethod.id == "type")
                             {
                                 var sobj = RuntimeTypeManager.CreateTypeObject(rt);
@@ -747,7 +776,22 @@ namespace SimpleLanguage.VM.Runtime
                                     var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], irc, rt.runtimeTemplateList, true);
                                     rtList.Add(crt);
                                 }
-                                InnerCLRRuntimeVM.RunIRMethod(rtList, mfc.irMethod );
+                                if( mfc.irMethod.interfaceMethod )
+                                {
+                                    var irmethod = irc.GetIRNonStaticMethodIndexByName(mfc.methodName, out int index);
+                                    if (irmethod != null)
+                                    {
+                                        InnerCLRRuntimeVM.RunIRMethod(rtList, irmethod);
+                                    }
+                                    else
+                                    {
+                                        Debug.Assert(false, "没有找到合适的调用方式");
+                                    }
+                                }
+                                else
+                                {
+                                    InnerCLRRuntimeVM.RunIRMethod(rtList, mfc.irMethod);
+                                }
                             }
                         }
                         else
@@ -800,27 +844,22 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         IRMethod cfc = irc.GetIRNonStaticMethodByIndex(iri.index);
 
-                        //Dictionary<int,int> mapTemplate = irc.GetIRMetaTypeByTemplateAndClassRelation(cfc.irOwnerMetaClass, 0 );
 
+                        if (cfc == null)
+                        {
+                            Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
+                            Debug.Assert(false, "没有找到索引是" + iri.index  + "的函数!");
+                            return;
+                        }
                         List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
                         for ( int i = 0; i < mfc.irTemplateMetaType.Count; i++ )
                         {
                             var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], irc, rt.runtimeTemplateList, true );
                             rtList.Add(crt);
                         }
-                        //if( irc.irName == "Int8"
-                        //    || irc.irName == "SInt8"
-                        //    || irc.irName == "Int16"
-                        //    || irc.irName == "UInt16"
-                        //    || irc.irName == "Int32"
-                        //    || irc.irName == "UInt32"
-                        //    || irc.irName == "Int64"
-                        //    || irc.irName == "UInt64" )
-                        //{
-                        //    return;
-                        //}
-
                         InnerCLRRuntimeVM.RunIRMethod( rtList, cfc);
+
+                        var a = ObjectManager.classObjectDict;
                     }
                     break;
                 case EIROpCode.CallCSharpMethod:
@@ -856,6 +895,12 @@ namespace SimpleLanguage.VM.Runtime
                             ObjectManager.AddClassObject(co);
                         }
                         m_ValueStack[m_ValueIndex++].SetSObject(sob);
+
+                        var irList = rt.irClass.CreateStaticMetaMetaVariableIRList();
+                        if (irList.Count > 0)
+                        {
+                            InnerCLRRuntimeVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
+                        }
                     }
                     break;
                 case EIROpCode.NewTemplateObject:
@@ -884,7 +929,7 @@ namespace SimpleLanguage.VM.Runtime
                         IRNewArray mdt = iri.opValue as IRNewArray;
                         var rt = GetClassRuntimeType(mdt.irMetaType, mdt.irMetaType.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
                         ArrayObject sob = new ArrayObject(mdt.eArrayType, mdt.length);
-                        ObjectManager.AddArrayObject(sob);
+                        ObjectManager.AddClassObject(sob);
                         m_ValueStack[m_ValueIndex++].SetSObject(sob);
                     }
                     break;
