@@ -4,6 +4,7 @@ const data BookData
 {
     name = "ABC"
     pageCount = 20
+    price = 20
 }
 
 data BP
@@ -28,6 +29,27 @@ BindDataTest
         bc.width = 20               
         bc.height = 40      
     }
+}
+
+public interface CalcPrice bind BookData
+{
+    float calc(){
+        ret this.price * 1
+    }
+}
+
+public class SeltBookData bind BookData interface CalcPrice
+{
+    public int count = 20
+    override float calc(){
+        ret this.price * count
+    }
+    #!
+    这个里边，如果使用了CalePrice的接口，是bind 的类，必须在该类上，有绑定该类的关系 
+    这样的话，就可以对该接口进行绑定数据的计算，例如， 书的价格是固定price 在seltBookData类中，有卖出多少本的count ，又bind了BookData
+    这时，使用了CalcPrice的接口，接口有bind BookData的数据，所以SeltBookData 验证是否也绑定了BookData，发现绑定过，不会报错
+    然后实现 override float calc() 方法是，可以直接使用 当然，在interface定义里边，也可以验证this.price * 1 这样的语句 
+    !#
 }
 
 #!
