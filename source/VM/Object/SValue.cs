@@ -33,19 +33,27 @@ namespace SimpleLanguage.VM
             eType = EType.Null;
             isNull = true;
         }
+        public void SetNull()
+        {
+            isNull = true;
+            int8Value = 0;
+            sint8Value = 0;
+            int16Value = 0;
+            uint16Value = 0;
+            int32Value = 0;
+            uint32Value = 0;
+            int64Value = 0;
+            uint64Value = 0;
+            floatValue = 0;
+            doubleValue = 0;
+            stringValue = null;
+            sobject = null;
+        }
         public void SetBoolValue( bool val )
         {
             isNull = false;
             eType = EType.Boolean;
             int8Value = val ? (byte)1 : (byte)0;
-        }
-        public void SetNull()
-        {
-            isNull = true;
-            if (sobject != null )
-            {
-                sobject.SetNull();
-            }
         }
         public void SetInt8Value(byte val)
         {
@@ -115,12 +123,6 @@ namespace SimpleLanguage.VM
         {
             eType = EType.String;
             stringValue = val;
-            isNull = false;
-        }
-        public void SetArrayValue( ArrayObject arrobj )
-        {
-            eType = EType.Array;
-            sobject = arrobj;
             isNull = false;
         }
         public void ConvertByEType(EType neType )

@@ -234,6 +234,19 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Boolean:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValue(EType.Boolean, svalue.int8Value == 1);
+                            return;
+                        }
+
+                        BoolObject boolObj = m_MemberObjectArray[index] as BoolObject;
+                        if (boolObj == null)
+                        {
+                            Log.AddVM(EError.None, "Boolean 该类型不是Int32类型!!");
+                            return;
+                        }
+                        boolObj.SetValue(svalue.int8Value == 1);
 
                     }
                     break;
