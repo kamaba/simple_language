@@ -8,6 +8,7 @@
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using System;
+using System.Diagnostics;
 namespace SimpleLanguage.VM
 {
     public class ArrayObject : ClassObject
@@ -295,7 +296,8 @@ namespace SimpleLanguage.VM
                     case EArrayType.Array:
                         {
                             var arr = obj as ArrayObject;
-                            sval.SetArrayValue(arr);
+                            Debug.Assert(arr != null);
+                            sval.SetSObject(arr);
                         }
                         break;
                     case EArrayType.Any:
