@@ -1,16 +1,26 @@
-﻿using SimpleLanguage.IR;
+﻿//****************************************************************************
+//  File:      SObject.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/11/22 12:00:00
+//  Description: 
+//****************************************************************************
+
+using SimpleLanguage.IR;
+using SimpleLanguage.VM.Runtime;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace SimpleLanguage.VM
 {
-    public class ObjectManager
+    public class ObjectObjectManager
     {
         //public static Dictionary<int, DataObject> dataObjectDict = new Dictionarny<int, DataObject>();
-        public static Dictionary<int, ClassObject> classObjectDict = new Dictionary<int, ClassObject>();
+        public static Dictionary<int, VMObjectHeader> classObjectDict = new Dictionary<int, VMObjectHeader>();
         //public static Dictionary<int, ArrayObject> arrayObjectDict = new Dictionary<int, ArrayObject>();
 
-        public static void AddClassObject(ClassObject cl)
+        public static void AddClassObject(VMObjectHeader cl)
         {
             if (!classObjectDict.ContainsKey(cl.GetHashCode()))
             {
@@ -24,105 +34,106 @@ namespace SimpleLanguage.VM
         //        arrayObjectDict.Add(cl.GetHashCode(), cl);
         //    }
         //}
-        public static SObject CreateObjectByRuntimeType( RuntimeType rt, bool isCreateMemObject = false )
+        public static VMObjectHeader CreateObjectByRuntimeType(RuntimeType rt, bool isCreateMemObject = false)
         {
-            SObject sobj = null;
+            VMObjectHeader sobj = new VMObjectHeader();
             string name = rt.irClass.irName;
-            if (name == "Core.Boolean" || name == "Boolean")
-            {
-                sobj = new BoolObject(false);
-                sobj.typeId = 1;
-            }
-            else if (name == "Core.Object" || name == "Object")
-            {
-                var ao = new AnyObject();
-                ao.SetValue(EType.Object, ao);
-                sobj = ao;
-            }
-            else if (name == "Core.Byte" || name == "Byte")
-            {
-                sobj = new ByteObject(0);
-                sobj.typeId = 3;
-            }
-            else if (name == "Core.SByte" || name == "SByte")
-            {
-                sobj = new SByteObject(0);
-                sobj.typeId = 3;
-            }
-            else if (name == "Core.Int16" || name == "Int16")
-            {
-                sobj = new Int16Object(0);
-                sobj.typeId = 3;
-            }
-            else if (name == "Core.UInt16" || name == "UInt16")
-            {
-                sobj = new UInt16Object(0);
-                sobj.typeId = 3;
-            }
-            else if (name == "Core.Int32" || name == "Int32")
-            {
-                sobj = new Int32Object(0);
-                sobj.typeId = 3;
-            }
-            else if (name == "Core.UInt32" || name == "UInt32")
-            {
-                sobj = new UInt32Object(0);
-                sobj.typeId = 3;
-            }
-            else if (name == "Core.Int64" || name == "Int64")
-            {
-                sobj = new Int64Object(0);
-                sobj.typeId = 3;
-            }
-            else if (name == "Core.UInt64" || name == "UInt64")
-            {
-                sobj = new UInt64Object(0);
-                sobj.typeId = 3;
-            }
-            else if (name == "Core.Float32" || name == "Float32")
-            {
-                sobj = new FloatObject();
-                sobj.typeId = 4;
-            }
-            else if (name == "Core.Float64" || name == "Float64")
-            {
-                sobj = new DoubleObject();
-                sobj.typeId = 5;
-            }
-            else if (name == "Core.String" || name == "String")
-            {
-                sobj = new StringObject("");
-                sobj.typeId = 10;
-            }
-            else if (name == "Core.Void" || name == "Void")
-            {
-                sobj = new VoidObject();
-                sobj.typeId = 0;
-            }
-            else if (name == "Core.Array" || name == "Array")
-            {
-                sobj = new ArrayObject( EArrayType.Array, 0 );
-                sobj.typeId = 0;
-            }
-            else if( name == "Core.Type" || name == "Type" )
-            {
-                sobj = new ClassObject( rt );
-                sobj.typeId = 0;
-            }
-            else
-            {
-                var co = new ClassObject(rt);
-                if(isCreateMemObject )
-                {
-                    co.CreateObject();
-                }
-                sobj = co;
-            }
+            //if (name == "Core.Boolean" || name == "Boolean")
+            //{
+            //    sobj = new VMBooleanObject();
+            //    sobj2.hea
+            //    sobj.typeId = 1;
+            //}
+            //else if (name == "Core.Object" || name == "Object")
+            //{
+            //    var ao = new AnyObject();
+            //    ao.SetValue(EType.Object, ao);
+            //    sobj = ao;
+            //}
+            //else if (name == "Core.Byte" || name == "Byte")
+            //{
+            //    sobj = new ByteObject(0);
+            //    sobj.typeId = 3;
+            //}
+            //else if (name == "Core.SByte" || name == "SByte")
+            //{
+            //    sobj = new SByteObject(0);
+            //    sobj.typeId = 3;
+            //}
+            //else if (name == "Core.Int16" || name == "Int16")
+            //{
+            //    sobj = new Int16Object(0);
+            //    sobj.typeId = 3;
+            //}
+            //else if (name == "Core.UInt16" || name == "UInt16")
+            //{
+            //    sobj = new UInt16Object(0);
+            //    sobj.typeId = 3;
+            //}
+            //else if (name == "Core.Int32" || name == "Int32")
+            //{
+            //    sobj = new Int32Object(0);
+            //    sobj.typeId = 3;
+            //}
+            //else if (name == "Core.UInt32" || name == "UInt32")
+            //{
+            //    sobj = new UInt32Object(0);
+            //    sobj.typeId = 3;
+            //}
+            //else if (name == "Core.Int64" || name == "Int64")
+            //{
+            //    sobj = new Int64Object(0);
+            //    sobj.typeId = 3;
+            //}
+            //else if (name == "Core.UInt64" || name == "UInt64")
+            //{
+            //    sobj = new UInt64Object(0);
+            //    sobj.typeId = 3;
+            //}
+            //else if (name == "Core.Float32" || name == "Float32")
+            //{
+            //    sobj = new FloatObject();
+            //    sobj.typeId = 4;
+            //}
+            //else if (name == "Core.Float64" || name == "Float64")
+            //{
+            //    sobj = new DoubleObject();
+            //    sobj.typeId = 5;
+            //}
+            //else if (name == "Core.String" || name == "String")
+            //{
+            //    sobj = new StringObject("");
+            //    sobj.typeId = 10;
+            //}
+            //else if (name == "Core.Void" || name == "Void")
+            //{
+            //    sobj = new VoidObject();
+            //    sobj.typeId = 0;
+            //}
+            //else if (name == "Core.Array" || name == "Array")
+            //{
+            //    sobj = new ArrayObject(EArrayType.Array, 0);
+            //    sobj.typeId = 0;
+            //}
+            //else if (name == "Core.Type" || name == "Type")
+            //{
+            //    sobj = new ClassObject(rt);
+            //    sobj.typeId = 0;
+            //}
+            //else
+            //{
+            //    var co = new ClassObject(rt);
+            //    if (isCreateMemObject)
+            //    {
+            //        co.CreateObject();
+            //    }
+            //    sobj = co;
+            //}
             return sobj;
         }
         public static void SetObjectByValue(SObject obj, ref SValue svalue)
         {
-            if(svalue.isNull )
+            if (svalue.isNull)
             {
                 obj.SetNull();
                 return;
@@ -137,7 +148,7 @@ namespace SimpleLanguage.VM
                 case EType.Boolean:
                     {
                         TemplateObject to = obj as TemplateObject;
-                        if( to != null )
+                        if (to != null)
                         {
                             to.SetValue(EType.Boolean, svalue.int8Value);
                         }
@@ -349,7 +360,7 @@ namespace SimpleLanguage.VM
                             return;
                         }
                         ClassObject classobj = obj as ClassObject;
-                        if ( classobj != null )
+                        if (classobj != null)
                         {
                         }
                         StringObject stringObj = obj as StringObject;
@@ -363,10 +374,10 @@ namespace SimpleLanguage.VM
                     break;
                 case EType.Array:
                     {
-                        if( obj is ClassObject co )
+                        if (obj is ClassObject co)
                         {
-                            var ao = svalue.sobject as ClassObject;
-                            Debug.Assert( ao != null );
+                            var ao = svalue.sobject as ArrayObject;
+                            Debug.Assert(ao != null);
                             co.SetValue(ao);
                         }
                     }
@@ -426,9 +437,9 @@ namespace SimpleLanguage.VM
                         AnyObject anyObject = obj as AnyObject;
                         if (anyObject != null)
                         {
-                            if( svalue.sobject is ClassObject co )
+                            if (svalue.sobject is ClassObject co)
                             {
-                                anyObject.SetValue(EType.Class, co.value );
+                                anyObject.SetValue(EType.Class, co.value);
                             }
                             return;
                         }
@@ -439,9 +450,9 @@ namespace SimpleLanguage.VM
                             return;
                         }
                         BoolObject boolObject = obj as BoolObject;
-                        if( boolObject != null )
+                        if (boolObject != null)
                         {
-                            boolObject.SetValue(svalue.int8Value==1 ? true : false);
+                            boolObject.SetValue(svalue.int8Value == 1 ? true : false);
                             return;
                         }
                         ClassObject classObj = obj as ClassObject;

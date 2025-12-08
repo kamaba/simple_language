@@ -1138,7 +1138,7 @@ namespace SimpleLanguage.Core
 
             mt.SetArrayDismensionLength(depthLength);
         }
-        void SetInputParams(MetaInputParamCollection _paramCollection)
+        public void SetInputParams(MetaInputParamCollection _paramCollection)
         {
             if(m_MetaMemberFunction == null )
             {

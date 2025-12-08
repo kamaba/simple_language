@@ -10,17 +10,21 @@ using SimpleLanguage.IR;
 
 namespace SimpleLanguage.VM
 {
-    public class SObject
+    public abstract class SObject
     {
         public bool isNull => m_IsNull;
         public EType eType => m_Etype;
-        protected EType m_Etype = EType.Class;
-        public bool m_IsNull = false;
         public IRMetaClass irMetaClass => m_RuntimeType?.irClass;
         public RuntimeType runtimeType => m_RuntimeType;
         public short typeId { get; set; } = 0;
         public int refCount { get; set; } = 0;
+
+
+
+        protected EType m_Etype = EType.Class;
+        protected bool m_IsNull = false;
         protected RuntimeType m_RuntimeType = null;
+        protected int m_Length = 0; 
         public int id { get; set; } = 0;
 
         static int idCount = 0;

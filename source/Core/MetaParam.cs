@@ -131,7 +131,8 @@ namespace SimpleLanguage.Core
                 m_MetaVariable.SetIsDefineMetaType(true);
             }
             m_MetaVariable.SetMetaDefineType(mdt);
-            if(m_FileMetaParamter != null )
+            m_MetaVariable.SetRealMetaType(mdt);
+
             {
                 m_MetaVariable.AddPingToken(m_FileMetaParamter.token);
             }

@@ -161,12 +161,25 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                IRData datacall = new IRData();
-                datacall.opCode = EIROpCode.CallVirt;
-                datacall.index = callMethodIndex;
-                datacall.opValue = irmethodcall;
-                datacall.SetDebugInfoByToken(mf.pingToken);
-                AddIRData(datacall);
+                if(m_IRRuntimeMethod.interfaceMethod )
+                {
+                    IRData datacall = new IRData();
+                    datacall.opCode = EIROpCode.CallDynamic;
+                    datacall.opValue = irmethodcall;
+                    datacall.index = paramCount + 1;
+                    datacall.SetDebugInfoByToken(mf.pingToken);
+                    AddIRData(datacall);
+                }
+                else
+                {
+                    IRData datacall = new IRData();
+                    datacall.opCode = EIROpCode.CallVirt;
+                    datacall.index = callMethodIndex;
+                    datacall.opValue = irmethodcall;
+                    datacall.SetDebugInfoByToken(mf.pingToken);
+                    AddIRData(datacall);
+                }
+
             }
 
             if( mfc.isRecieveReturnValue == false )

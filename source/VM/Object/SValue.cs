@@ -6,7 +6,6 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.IR;
 using System;
 using System.Diagnostics;
 namespace SimpleLanguage.VM
@@ -27,11 +26,9 @@ namespace SimpleLanguage.VM
         public double doubleValue;
         public string stringValue;
         public SObject sobject;
-        public ArrayObject arrayValue;
         public bool isNull;
-        public void SetNullValue()
+        public void SetNullValueType()
         {
-            arrayValue = null;
             sobject = null;
             eType = EType.Null;
             isNull = true;
@@ -123,7 +120,7 @@ namespace SimpleLanguage.VM
         public void SetArrayValue( ArrayObject arrobj )
         {
             eType = EType.Array;
-            arrayValue = arrobj;
+            sobject = arrobj;
             isNull = false;
         }
         public void ConvertByEType(EType neType )
@@ -260,7 +257,7 @@ namespace SimpleLanguage.VM
                     }
                 case EType.Array:
                     {
-                        return arrayValue;
+                        return (sobject as ArrayObject);
                     }
                 case EType.Object:
                     {
@@ -364,7 +361,7 @@ namespace SimpleLanguage.VM
                 case ArrayObject arrayobj:
                     {
                         eType = EType.Array;
-                        arrayValue = arrayobj;
+                        sobject = arrayobj;
                     }
                     break;
                 case AnyObject anyobj:
@@ -592,7 +589,7 @@ namespace SimpleLanguage.VM
                     }
                 case EType.Array:
                     {
-                        return arrayValue;
+                        return sobject;
                     }
             }
             return sobject;
@@ -636,6 +633,12 @@ namespace SimpleLanguage.VM
                     {
                         eType = EType.Int32;
                         int32Value = (int)obj;
+                    }
+                    break;
+                case Int32Object int32Obj:
+                    {
+                        eType = EType.Int32;
+                        int32Value = int32Obj.value;
                     }
                     break;
                 case UInt32 int32:

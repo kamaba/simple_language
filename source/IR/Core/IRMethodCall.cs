@@ -17,13 +17,14 @@ namespace SimpleLanguage.IR
         public IRMetaType metaType => m_MetaType;
         public IRMethod irMethod => m_IRMethod;
         public int paramCount => m_ParamCount;
+        public string methodName => m_IRMethod != null ? m_IRMethod.onlyFunctionName : "";
 
 
         private List<IRMetaType> m_IrTemplateMetaType = null;
         private IRMetaType m_MetaType = null;
         private IRMethod m_IRMethod = null;
         private int m_ParamCount = 0;
-        public IRMethodCall(IRMetaType mt, List<IRMetaType> mtList, IRMethod irmethod, int paramCount )
+        public IRMethodCall(IRMetaType mt, List<IRMetaType> mtList, IRMethod irmethod, int paramCount)
         {
             m_MetaType = mt;
             m_IrTemplateMetaType = mtList;

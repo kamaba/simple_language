@@ -330,7 +330,7 @@ namespace SimpleLanguage.VM
                     {
                         if (sval2.eType == EType.Array )
                         {
-                            if( sval1.arrayValue == sval2.arrayValue )
+                            if( sval1.sobject == sval2.sobject )
                             {
                                 sval1.SetBoolValue(true);
                             }

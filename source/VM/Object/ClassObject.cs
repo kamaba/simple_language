@@ -6,11 +6,10 @@
 //  Description: 
 //****************************************************************************
 
-using System.Collections.Generic;
-using System.Text;
-using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
+using System.Collections.Generic;
+using System.Text;
 
 namespace SimpleLanguage.VM
 {
@@ -25,8 +24,8 @@ namespace SimpleLanguage.VM
         public ClassObject value => m_Object;
 
         protected ClassObject m_Object = null;
-        protected byte[] m_Data = null;   /*  m_Data  结构  bit形，只有运算时要用 1-> byte 2->sbyte   3-> int16  4-> uint16    */
-        protected short[] m_Type = null;
+        //protected byte[] m_Data = null;   /*  m_Data  结构  bit形，只有运算时要用 1-> byte 2->sbyte   3-> int16  4-> uint16    */
+        //protected short[] m_Type = null;
         protected SObject[] m_MemberObjectArray = null;
         protected List<IRMetaVariable> m_IRMetaVariableList = null;
         protected List<RuntimeType> m_IRTemplateList = new List<RuntimeType>();
@@ -37,13 +36,13 @@ namespace SimpleLanguage.VM
             m_RuntimeType = irmt;
 
             int byteCount = m_RuntimeType.irClass.byteCount;
-            m_Data = new byte[byteCount];
+            //m_Data = new byte[byteCount];
             typeId = (short)m_RuntimeType.irClass.id;
             m_IRTemplateList = irmt.runtimeTemplateList;
 
             m_IRMetaVariableList = isStatic ? m_RuntimeType.irClass.staticIRMetaVariableList : m_RuntimeType.irClass.localIRMetaVariableList;
             m_MemberObjectArray = new SObject[m_IRMetaVariableList.Count];
-            m_Type = new short[m_IRMetaVariableList.Count];
+            //m_Type = new short[m_IRMetaVariableList.Count];
             m_Object = this;
         }
         //public RuntimeType GetClassRuntimeType(IRMetaType irmt, IRMetaClass ownerMC, bool isAdd = false)
@@ -91,7 +90,7 @@ namespace SimpleLanguage.VM
                 {
                     continue;
                 }
-                m_Type[i] = sobj.typeId;
+                //m_Type[i] = sobj.typeId;
                 m_MemberObjectArray[i] = sobj;
             }
         }
@@ -104,9 +103,12 @@ namespace SimpleLanguage.VM
             }
             return m_MemberObjectArray[index];
         }
-        public void SetValue(ClassObject val )
+        public virtual void SetValue(ClassObject val )
         {
             m_Object = val.m_Object;
+            m_MemberObjectArray = val.m_MemberObjectArray;
+
+
             val.refCount++;
         }
         public void GetMemberVariableSValue( int index, ref SValue svalue )
@@ -124,6 +126,11 @@ namespace SimpleLanguage.VM
             var mmv = m_MemberObjectArray[index];
             switch (mmv)
             {
+                case BoolObject boolObj:
+                    {
+                        svalue.SetBoolValue(boolObj.value);
+                    }
+                    break;
                 case ByteObject byteob:
                     {
                         svalue.SetInt8Value(byteob.value);

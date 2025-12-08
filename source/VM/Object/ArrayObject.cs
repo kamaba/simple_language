@@ -12,25 +12,25 @@ namespace SimpleLanguage.VM
 {
     public class ArrayObject : ClassObject
     {
-        private int m_Length = 0;
         private Array m_Array = null;
         private EArrayType eArrayType = EArrayType.Byte;
-        //private IRMetaType m_IRMetaType = null;
         public ArrayObject( EArrayType eArrType, int length ) : base( RuntimeTypeManager.arrayRuntimeType, false )
         {
             m_Etype = EType.Array;
             eArrayType = eArrType;
             m_Length = length;
-            //m_IRMetaType = irmt;
             CreateObject();
             CreateArray();
         }
-        public void SetArray( ArrayObject ao )
+        public override void SetValue(ClassObject val)
         {
-            eArrayType = ao.eArrayType;
-            m_Length = ao.m_Length;
-            m_Array = ao.m_Array;
-            m_MemberObjectArray = ao.m_MemberObjectArray;
+            base.SetValue(val);
+            if ( val is ArrayObject ao )
+            {
+                eArrayType = ao.eArrayType;
+                m_Length = ao.m_Length;
+                m_Array = ao.m_Array;
+            }
         }
         void CreateArray()
         {
@@ -516,16 +516,16 @@ namespace SimpleLanguage.VM
                     {
                         if (anyobj != null)
                         {
-                            anyobj.SetValue(EType.Array, svalue.arrayValue);
+                            anyobj.SetValue(EType.Array, svalue.sobject);
                             return;
                         }
                         ArrayObject arrayobj = m_Array.GetValue(index) as ArrayObject;
                         if (arrayobj != null)
                         {
-                            arrayobj.SetArray(svalue.arrayValue);
+                            arrayobj.SetValue(svalue.sobject as ClassObject);
                             return;
                         }
-                        m_Array.SetValue(svalue.arrayValue, index);
+                        m_Array.SetValue(svalue.sobject, index);
                     }
                     break;
                 case EType.Class:
