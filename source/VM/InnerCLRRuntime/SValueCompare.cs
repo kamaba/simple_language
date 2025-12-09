@@ -9,7 +9,6 @@
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using SimpleLanguage.VM.Runtime;
-using System;
 using System.Collections.Generic;
 
 namespace SimpleLanguage.VM
@@ -532,7 +531,7 @@ namespace SimpleLanguage.VM
             }
             else
             {
-                if(sval1.eType == EType.Object )
+                if(sval1.eType == EType.Class )
                 {
                     ClassObject co = (sval1.sobject as ClassObject);
                     if (co != null)

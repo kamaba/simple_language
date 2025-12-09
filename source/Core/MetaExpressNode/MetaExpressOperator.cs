@@ -57,7 +57,7 @@ namespace SimpleLanguage.Core
         {
             if ( m_OpSign == ESingleOpSign.Not)
             {
-                m_MetaType.SetMetaClass( CoreMetaClassManager.booleanMetaClass );
+                m_MetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
             }
             else
             {

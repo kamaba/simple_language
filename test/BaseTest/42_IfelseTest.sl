@@ -1,3 +1,84 @@
+import Std
+import CSharp.SimpleLanguage
+import CSharp.System
+
+
+namespace Core
+{
+    class Object
+    {
+        public void _init_()
+        {
+
+        }
+        public string toString()
+        {
+            ret ""
+        }
+    }
+    class Byte extends Object
+    {
+    }
+    class Boolean
+    {
+
+    }
+    class SByte
+    {
+        
+    }
+    class Int16
+    {
+        
+    }
+    class UInt16
+    {
+        
+    }
+    class Int32
+    {
+        _init_(Int32 val )
+        {
+            
+        }
+
+        override string toString()
+        {
+            ret SimpleLanguage.Lib.Int32Class.GetValueToString( this )
+        }
+    }
+    class UInt32
+    {
+        
+    }
+    class Int64
+    {
+        
+    }
+    class UInt64
+    {
+        
+    }
+    class Float32
+    {
+        
+    }
+    class Float64
+    {
+        _init_(Float64 f)
+        {
+
+        }
+    }
+    class String
+    {
+        _init_( String str )
+        {
+
+        }
+    }
+}
+
 IfelseTest
 {
     Class1
@@ -6,8 +87,20 @@ IfelseTest
     {
         i = 0
     }
-    static Func()
+    static string GetTest1()
     {
+        a = new()
+        if a != null 
+        {
+            ret "Test"
+        }
+        ret ""
+    }
+    static fun()
+    {
+        aa = GetTest1()
+        System.Console.WriteLine("ififififif-----------------ifififiififif----: " + aa )
+        #!
         m = 0;
         if m >= 0 && m < 100 && m != 50
         { 
@@ -87,18 +180,19 @@ IfelseTest
         {
             a = 10;
         }
+        !#
 
         #enum的对比
 
         #data数据类的对比
 
-        #class的对比 
-        
+        #class的对比         
         
     }
     static FunIfCondition()
     {
         #这部分还没有实现
+        #!
         a = null;
         if a       #等于 if a != null
         { 
@@ -107,7 +201,6 @@ IfelseTest
         {
             a = Class1();
         }
-
         c1 = Class1();
         Class2 c2 = c1;
         if c2
@@ -131,8 +224,8 @@ IfelseTest
         {
              tr 10
         }    #局部返回 tr  像 if/switch/while/dowhile/for/for in/
-
-        a = 100 ? a == 10 : -100;
+        !#
+        #a = 100 ? a == 10 : -100;
     }
 }
        

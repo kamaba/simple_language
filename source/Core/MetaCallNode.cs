@@ -1404,11 +1404,11 @@ namespace SimpleLanguage.Core
                     {
                         m_MetaFunction = mmf;
                         m_MetaClass = mc; List<MetaType> mtList = new List<MetaType>();
-                        for (int i = 0; i < mmv.ownerMetaClass.metaTemplateList.Count; i++)
+                        for (int i = 0; i < mmf.ownerMetaClass.metaTemplateList.Count; i++)
                         {
-                            mtList.Add(new MetaType(mmv.ownerMetaClass.metaTemplateList[i], mmv.ownerMetaClass.metaTemplateList[i].name ));
+                            mtList.Add(new MetaType(mmf.ownerMetaClass.metaTemplateList[i], mmv.ownerMetaClass.metaTemplateList[i].name ));
                         }
-                        m_CallMetaType = new MetaType(mmv.ownerMetaClass, mtList);
+                        m_CallMetaType = new MetaType(mmf.ownerMetaClass, mtList);
                         m_CallNodeType = ECallNodeType.MemberFunctionName;
                         return true;
                     }

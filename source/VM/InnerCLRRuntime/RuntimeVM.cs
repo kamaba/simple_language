@@ -536,6 +536,7 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.StoreReturn:
                     {
                         SetReturnVariableSValue(iri.index, m_ValueStack[--m_ValueIndex]);
+                        m_ExecuteIndex = m_ExecuteCount;
                     }
                     break; 
                 case EIROpCode.LoadNotStaticField:
@@ -1128,7 +1129,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error Not运算!!超出的栈范围");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex].NotSValue();
+                        m_ValueStack[m_ValueIndex-1].NotSValue();
                     }
                     break;
                 case EIROpCode.Neg:
@@ -1138,7 +1139,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error Neg运算!!超出的栈范围");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex].NegSValue(false);
+                        m_ValueStack[m_ValueIndex-1].NegSValue(false);
                     }
                     break;
                 case EIROpCode.And:

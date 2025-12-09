@@ -1024,7 +1024,6 @@ namespace SimpleLanguage.Core
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
-            m_RealMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             m_NewType = ENewType.ArrayClass;
             m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(maen, mc, mbs, equalMV );
         }
@@ -1283,7 +1282,7 @@ namespace SimpleLanguage.Core
                 {
                     if (m_MetaType == null)
                     {
-                        m_MetaType = new MetaType(m_RealMetaType);
+                        m_MetaType = new MetaType(m_RealMetaType);                        
                     }
                     else
                     {

@@ -31,6 +31,9 @@ namespace SimpleLanguage.IR
 
                 IRStoreVariable irsv = IRStoreVariable.CreateStaticReturnIRSV();
                 m_IRStatements.Add(irsv);
+
+                IRBranch irbranch = new IRBranch(this.irMethod, EIROpCode.BrLabel, irMethod.funEndLabelData );
+                m_IRStatements.Add(irbranch);
             }
         }
     }

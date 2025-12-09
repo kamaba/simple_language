@@ -26,12 +26,13 @@ namespace SimpleLanguage.VM
         public override void SetValue(ClassObject val)
         {
             base.SetValue(val);
-            if ( val is ArrayObject ao )
-            {
-                eArrayType = ao.eArrayType;
-                m_Length = ao.m_Length;
-                m_Array = ao.m_Array;
-            }
+            var ao  = val as ArrayObject;
+
+            Debug.Assert( ao != null );
+
+            eArrayType = ao.eArrayType;
+            m_Length = ao.m_Length;
+            m_Array = ao.m_Array;
         }
         void CreateArray()
         {
@@ -42,8 +43,24 @@ namespace SimpleLanguage.VM
             }
             switch (eArrayType)
             {
+                case EArrayType.Boolean:
+                    {
+                        m_Array = new bool[length];
+                        /*
+                        m_Array = new Boolean[length];
+                        for (int i = 0; i < length; i++)
+                        {
+                            var anyobj = new BoolObject(false);
+                            anyobj.SetNull();
+                            m_Array.SetValue(anyobj, i);
+                        }
+                        */
+                    }
+                    break;
                 case EArrayType.Byte:
                     {
+                        m_Array = new Byte[length];
+                        /*
                         m_Array = new ByteObject[length];
                         for (int i = 0; i < length; i++)
                         {
@@ -51,10 +68,13 @@ namespace SimpleLanguage.VM
                             anyobj.SetNull();
                             m_Array.SetValue(anyobj, i);
                         }
+                        */
                     }
                     break;
                 case EArrayType.SByte:
                     {
+                        m_Array = new SByte[length];
+                        /*
                         m_Array = new SByteObject[length];
                         for (int i = 0; i < length; i++)
                         {
@@ -62,10 +82,13 @@ namespace SimpleLanguage.VM
                             anyobj.SetNull();
                             m_Array.SetValue(anyobj, i);
                         }
+                        */
                     }
                     break;
                 case EArrayType.Int16:
                     {
+                        m_Array = new Int16[length];
+                        /*
                         m_Array = new Int16Object[length];
                         for (int i = 0; i < length; i++)
                         {
@@ -73,10 +96,13 @@ namespace SimpleLanguage.VM
                             anyobj.SetNull();
                             m_Array.SetValue(anyobj, i);
                         }
+                        */
                     }
                     break;
                 case EArrayType.UInt16:
                     {
+                        m_Array = new UInt16[length];
+                        /*
                         m_Array = new UInt16Object[length];
                         for (int i = 0; i < length; i++)
                         {
@@ -84,10 +110,13 @@ namespace SimpleLanguage.VM
                             anyobj.SetNull();
                             m_Array.SetValue(anyobj, i);
                         }
+                        */
                     }
                     break;
                 case EArrayType.Int32:
                     {
+                        m_Array = new Int32[length];
+                        /*
                         m_Array = new Int32Object[length];
                         for (int i = 0; i < length; i++)
                         {
@@ -95,10 +124,13 @@ namespace SimpleLanguage.VM
                             anyobj.SetNull();
                             m_Array.SetValue(anyobj, i);
                         }
+                        */
                     }
                     break;
                 case EArrayType.UInt32:
                     {
+                        m_Array = new UInt32[length];
+                        /*
                         m_Array = new UInt32Object[length];
 
                         for (int i = 0; i < length; i++)
@@ -107,10 +139,13 @@ namespace SimpleLanguage.VM
                             anyobj.SetNull();
                             m_Array.SetValue(anyobj, i);
                         }
+                        */
                     }
                     break;
                 case EArrayType.Int64:
                     {
+                        m_Array = new Int64[length];
+                        /*
                         m_Array = new Int64Object[length];
 
                         for (int i = 0; i < length; i++)
@@ -119,10 +154,13 @@ namespace SimpleLanguage.VM
                             anyobj.SetNull();
                             m_Array.SetValue(anyobj, i);
                         }
+                        */
                     }
                     break;
                 case EArrayType.UInt64:
                     {
+                        m_Array = new UInt64[length];
+                        /*
                         m_Array = new UInt64Object[length];
 
                         for (int i = 0; i < length; i++)
@@ -131,10 +169,13 @@ namespace SimpleLanguage.VM
                             anyobj.SetNull();
                             m_Array.SetValue(anyobj, i);
                         }
+                        */
                     }
                     break;
                 case EArrayType.String:
                     {
+                        m_Array = new String[length];
+                        /*
                         m_Array = new StringObject[length];
 
                         for (int i = 0; i < length; i++)
@@ -143,6 +184,7 @@ namespace SimpleLanguage.VM
                             anyobj.SetNull();
                             m_Array.SetValue(anyobj, i);
                         }
+                        */
                     }
                     break;
                 case EArrayType.Array:
@@ -174,12 +216,14 @@ namespace SimpleLanguage.VM
                 case EArrayType.Any:
                     {
                         m_Array = new AnyObject[length];
+                        /*
                         for (int i = 0; i < length; i++)
                         {
                             var anyobj = new AnyObject();
                             anyobj.SetNull();
                             m_Array.SetValue(anyobj, i);
                         }
+                        */
                     }
                     break;
                 case EArrayType.Class:
@@ -224,13 +268,16 @@ namespace SimpleLanguage.VM
             {
                 switch (eArrayType)
                 {
+                    case EArrayType.Boolean:
+                        {
+                            BoolObject val = obj as BoolObject;
+                            sval.SetBoolValue(val.value);
+                        }
+                        break;
                     case EArrayType.Byte:
                         {
                             ByteObject val = obj as ByteObject;
-                            if(val?.isNull == true )
-                            {
-                                sval.SetInt8Value(val.value);
-                            }
+                            sval.SetInt8Value(val.value);
                         }
                         break;
                     case EArrayType.SByte:
@@ -310,6 +357,12 @@ namespace SimpleLanguage.VM
                             sval.SetSObject(obj as ClassObject);
                         }
                         break;
+                    default:  
+                        {
+                            Debug.Assert(false);
+                            Log.AddVM(EError.None, "不支持该类型的数组读取!!");
+                        }
+                        break;
                 }
             }
         }
@@ -333,17 +386,38 @@ namespace SimpleLanguage.VM
         }
         public void StoreValue(int index, SValue svalue)
         {
-            AnyObject anyobj = m_Array.GetValue(index) as AnyObject;
+            AnyObject anyobj = m_Array.GetValue(index) as AnyObject;           
             switch (svalue.eType)
             {
                 case EType.Null:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetNull();
+                            return;
+                        }
                         m_Array.SetValue(null, index);
                     }
                     break;
                 case EType.Boolean:
                     {
-                        m_Array.SetValue(svalue.int8Value == 1 ? true : false, index);
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValue( EType.Boolean, svalue.int8Value == 1 );
+                            return;
+                        }
+
+                        //BoolObject boolobj = m_Array.GetValue(index) as BoolObject;
+                        //if (boolobj == null)
+                        //{
+                        //    boolobj = new BoolObject(svalue.int8Value == 1 );
+                        //    m_Array.SetValue(boolobj, index);
+                        //    return;
+                        //}
+                        //else
+                        //{
+                            m_Array.SetValue(svalue.int8Value == 1 ? true : false, index);
+                        //}
                     }
                     break;
                 case EType.Byte:
@@ -353,15 +427,6 @@ namespace SimpleLanguage.VM
                             anyobj.SetValue(EType.Byte, svalue.int8Value);
                             return;
                         }
-                        //ByteObject bo = svalue.int8Value
-
-                        //ByteObject byteObj = m_MemberObjectArray[index] as ByteObject;
-                        //if (byteObj == null)
-                        //{
-                        //    Log.AddVM(EError.None, "Byte 该类型不是Int32类型!!");
-                        //    return;
-                        //}
-                        //byteObj.SetValue(svalue.int8Value);
                         m_Array.SetValue(svalue.int8Value, index);
                     }
                     break;
@@ -393,7 +458,17 @@ namespace SimpleLanguage.VM
                             anyobj.SetValue(EType.UInt16, svalue.uint16Value);
                             return;
                         }
-                        m_Array.SetValue(svalue.uint16Value, index);
+                        //UInt16Object uint16obj = m_Array.GetValue(index) as UInt16Object;
+                        //if (uint16obj == null)
+                        //{
+                        //    uint16obj = new UInt16Object(svalue.uint16Value);
+                        //    m_Array.SetValue(uint16obj, index);
+                        //    return;
+                        //}
+                        //else
+                        //{
+                            m_Array.SetValue(svalue.uint16Value, index);
+                        //}
                     }
                     break;
                 case EType.Int32:
@@ -403,19 +478,16 @@ namespace SimpleLanguage.VM
                             anyobj.SetValue(EType.Int32, svalue.int32Value);
                             return;
                         }
-                        Int32Object int32obj = m_Array.GetValue(index) as Int32Object;
-                        if(int32obj == null )
-                        {
-                            int32obj = new Int32Object(svalue.int32Value);
-                            m_Array.SetValue(int32obj, index);
-                            return;
-                        }
-                        else
-                        {
-                            int32obj.SetValue(svalue.int32Value);
-                            return;
-                        }
-                        m_Array.SetValue(svalue.int32Value, index);
+                        //Int32Object int32obj = m_Array.GetValue(index) as Int32Object;
+                        //if(int32obj == null )
+                        //{
+                        //    int32obj = new Int32Object(svalue.int32Value);
+                        //    return;
+                        //}
+                        //else
+                        //{
+                                m_Array.SetValue(svalue.int32Value, index);
+                        //}
                     }
                     break;
                 case EType.UInt32:
@@ -425,12 +497,12 @@ namespace SimpleLanguage.VM
                             anyobj.SetValue(EType.UInt32, svalue.uint32Value);
                             return;
                         }
-                        UInt32Object int32obj = m_Array.GetValue(index) as UInt32Object;
-                        if (int32obj != null)
-                        {
-                            int32obj.SetValue(svalue.uint32Value);
-                            return;
-                        }
+                        //UInt32Object int32obj = m_Array.GetValue(index) as UInt32Object;
+                        //if (int32obj != null)
+                        //{
+                        //    int32obj.SetValue(svalue.uint32Value);
+                        //    return;
+                        //}
                         m_Array.SetValue(svalue.uint32Value, index);
                     }
                     break;
@@ -441,12 +513,12 @@ namespace SimpleLanguage.VM
                             anyobj.SetValue(EType.Int64, svalue.int64Value);
                             return;
                         }
-                        Int64Object int64obj = m_Array.GetValue(index) as Int64Object;
-                        if (int64obj != null)
-                        {
-                            int64obj.SetValue(svalue.int64Value);
-                            return;
-                        }
+                        //Int64Object int64obj = m_Array.GetValue(index) as Int64Object;
+                        //if (int64obj != null)
+                        //{
+                        //    int64obj.SetValue(svalue.int64Value);
+                        //    return;
+                        //}
                         m_Array.SetValue(svalue.int64Value, index);
                     }
                     break;
@@ -457,12 +529,12 @@ namespace SimpleLanguage.VM
                             anyobj.SetValue(EType.UInt64, svalue.uint64Value);
                             return;
                         }
-                        UInt64Object uint64obj = m_Array.GetValue(index) as UInt64Object;
-                        if (uint64obj != null)
-                        {
-                            uint64obj.SetValue(svalue.uint64Value);
-                            return;
-                        }
+                        //UInt64Object uint64obj = m_Array.GetValue(index) as UInt64Object;
+                        //if (uint64obj != null)
+                        //{
+                        //    uint64obj.SetValue(svalue.uint64Value);
+                        //    return;
+                        //}
                         m_Array.SetValue(svalue.uint64Value, index);
                     }
                     break;
@@ -473,12 +545,12 @@ namespace SimpleLanguage.VM
                             anyobj.SetValue(EType.Float32, svalue.floatValue);
                             return;
                         }
-                        FloatObject float32obj = m_Array.GetValue(index) as FloatObject;
-                        if (float32obj != null)
-                        {
-                            float32obj.SetValue(svalue.floatValue);
-                            return;
-                        }
+                        //FloatObject float32obj = m_Array.GetValue(index) as FloatObject;
+                        //if (float32obj != null)
+                        //{
+                        //    float32obj.SetValue(svalue.floatValue);
+                        //    return;
+                        //}
                         m_Array.SetValue(svalue.floatValue, index);
                     }
                     break;
@@ -489,12 +561,12 @@ namespace SimpleLanguage.VM
                             anyobj.SetValue(EType.Float64, svalue.doubleValue);
                             return;
                         }
-                        DoubleObject doubleobj = m_Array.GetValue(index) as DoubleObject;
-                        if (doubleobj != null)
-                        {
-                            doubleobj.SetValue(svalue.doubleValue);
-                            return;
-                        }
+                        //DoubleObject doubleobj = m_Array.GetValue(index) as DoubleObject;
+                        //if (doubleobj != null)
+                        //{
+                        //    doubleobj.SetValue(svalue.doubleValue);
+                        //    return;
+                        //}
                         m_Array.SetValue(svalue.doubleValue, index);
                     }
                     break;
@@ -505,12 +577,12 @@ namespace SimpleLanguage.VM
                             anyobj.SetValue(EType.String, svalue.stringValue);
                             return;
                         }
-                        StringObject stringobj = m_Array.GetValue(index) as StringObject;
-                        if (stringobj != null)
-                        {
-                            stringobj.SetValue(svalue.stringValue);
-                            return;
-                        }
+                        //StringObject stringobj = m_Array.GetValue(index) as StringObject;
+                        //if (stringobj != null)
+                        //{
+                        //    stringobj.SetValue(svalue.stringValue);
+                        //    return;
+                        //}
                         m_Array.SetValue(svalue.stringValue, index);
                     }
                     break;
@@ -521,12 +593,12 @@ namespace SimpleLanguage.VM
                             anyobj.SetValue(EType.Array, svalue.sobject);
                             return;
                         }
-                        ArrayObject arrayobj = m_Array.GetValue(index) as ArrayObject;
-                        if (arrayobj != null)
-                        {
-                            arrayobj.SetValue(svalue.sobject as ClassObject);
-                            return;
-                        }
+                        //ArrayObject arrayobj = m_Array.GetValue(index) as ArrayObject;
+                        //if (arrayobj != null)
+                        //{
+                        //    arrayobj.SetValue(svalue.sobject as ClassObject);
+                        //    return;
+                        //}
                         m_Array.SetValue(svalue.sobject, index);
                     }
                     break;
@@ -662,29 +734,91 @@ namespace SimpleLanguage.VM
         {
             switch (eArrayType)
             {
-                case  EArrayType.Byte:
+                case  EArrayType.Boolean:
                     {
                         m_Array.SetValue( (byte)svalue == 1 ? true : false, index);
                     }
                     break;
+                case EArrayType.Byte:
+                    {
+                        m_Array.SetValue((byte)svalue, index);
+                    }
+                    break;
+                case EArrayType.SByte:
+                    {
+                        m_Array.SetValue((sbyte)svalue, index);
+                    }
+                    break;
+                case EArrayType.Int16:
+                    {
+                        m_Array.SetValue((Int16)svalue, index);
+                    }
+                    break;
+                case EArrayType.UInt16:
+                    {
+                        m_Array.SetValue((UInt16)svalue, index);
+                    }
+                    break;
                 case EArrayType.Int32:
                     {
-                        m_Array.SetValue( (int)svalue, index);
+                        m_Array.SetValue((int)svalue, index);
+                    }
+                    break;
+                case EArrayType.UInt32:
+                    {
+                        m_Array.SetValue((UInt32)svalue, index);
+                    }
+                    break;
+                case EArrayType.Int64:
+                    {
+                        m_Array.SetValue((Int64)svalue, index);
+                    }
+                    break;
+                case EArrayType.UInt64:
+                    {
+                        m_Array.SetValue((UInt64)svalue, index);
+                    }
+                    break;
+                case EArrayType.Single:
+                    {
+                        m_Array.SetValue((float)svalue, index);
+                    }
+                    break;
+                case EArrayType.Double:
+                    {
+                        m_Array.SetValue((double)svalue, index);
                     }
                     break;
                 case EArrayType.String:
                     {
-                        m_Array.SetValue( svalue.ToString(), index);
+                        m_Array.SetValue( (string)svalue, index);
+                    }
+                    break;
+                case EArrayType.Array:
+                    {
+                        ArrayObject ao = svalue as ArrayObject;
+                        Debug.Assert(ao != null);
+                        m_Array.SetValue(ao, index);
                     }
                     break;
                 case EArrayType.Any:
                     {
-                        m_Array.SetValue(svalue, index);
+                        AnyObject ao = svalue as AnyObject;
+                        Debug.Assert(ao != null);
+                        m_Array.SetValue(ao, index);
                     }
                     break;
                 case EArrayType.Class:
                     {
-                        m_Array.SetValue(svalue, index);
+                        ClassObject ao = svalue as ClassObject;
+                        Debug.Assert(ao != null);
+                        m_Array.SetValue(ao, index);
+                    }
+                    break;
+                default:    
+                    {
+                        Debug.Assert(false);
+                        Log.AddVM(EError.None, "不支持该类型的数组存储!!");
                     }
                     break;
             }

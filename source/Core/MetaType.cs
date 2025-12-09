@@ -208,6 +208,7 @@ namespace SimpleLanguage.Core
         {
             List<int> templateAddArray = new List<int>(m_ArrayDimensionLengthList);
 
+            this.arrayMetaTypeList.Clear();
             HandleArrayCreateType(templateAddArray, this);
         }
         // 这块的作用是，生成数组内部嵌套的数组

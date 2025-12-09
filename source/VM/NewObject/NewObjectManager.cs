@@ -131,6 +131,7 @@ namespace SimpleLanguage.VM
             //}
             return sobj;
         }
+        /*
         public static void SetObjectByValue(SObject obj, ref SValue svalue)
         {
             if (svalue.isNull)
@@ -380,6 +381,10 @@ namespace SimpleLanguage.VM
                             Debug.Assert(ao != null);
                             co.SetValue(ao);
                         }
+                        else
+                        {
+                            Debug.Assert(false);
+                        }
                     }
                     break;
                 case EType.Float32:
@@ -476,5 +481,6 @@ namespace SimpleLanguage.VM
                     break;
             }
         }
+    */
     }
 }
