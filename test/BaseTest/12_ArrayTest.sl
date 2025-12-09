@@ -142,8 +142,9 @@ namespace Core
                 ret false
             }
             this._index++
-            this._isDone = this._iterator.moveNext()            
-            ret this._isDone
+            var flag = this._iterator.moveNext()
+            this._isDone = !flag
+            ret flag
         }
         override get object current()
         {
@@ -153,6 +154,17 @@ namespace Core
         override void release()
         {
             
+        }
+        override string toString()
+        {
+            if( this._value != null )
+            {
+                ret this._value.toString()
+            }
+            else
+            {
+                ret ""
+            }
         }
     }
     public class Array interface IIterable, IIterator
@@ -285,8 +297,8 @@ ArrayTest
 
          # arr22 = int[2][] { [1,2,3,4] }
         #li = Level<int>(100)
-        #a1 = Level<int>[5]{ Level<int>(3), null, Level<int>(4) }
-        a1 = [101,102]
+        a1 = Level<int>[5]{ Level<int>(3), null, Level<int>(4) }
+        #a1 = [101,102]
 
         #a1 = object[4]{intvalue,null,3 };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         
@@ -296,11 +308,11 @@ ArrayTest
         {
             if v.value != null
             {
-                System.Console.WriteLine("----------= " + v.toString() )
+                System.Console.WriteLine("------------value: " + v.toString() )
             }
             else
             {                
-                System.Console.WriteLine("----------= " + v.index )
+                System.Console.WriteLine("============index: " + v.index )
             }
         }
         #!

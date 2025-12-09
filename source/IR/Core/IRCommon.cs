@@ -13,6 +13,7 @@ namespace SimpleLanguage.IR
     public enum EArrayType
     {
         None,
+        Boolean,
         Byte,
         SByte,
         Int16,

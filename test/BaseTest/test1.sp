@@ -75,6 +75,7 @@ Project
         #TypeTest.fun()
         #ClassAs_Is.fun()
         ArrayTest.fun()
+        #IfelseTest.fun()
         #ReloadSignTest.fun()
     }
     static Test()

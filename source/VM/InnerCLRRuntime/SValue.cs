@@ -29,9 +29,8 @@ namespace SimpleLanguage.VM
         public bool isNull;
         public void SetNullValueType()
         {
-            sobject = null;
             eType = EType.Null;
-            isNull = true;
+            SetNull();
         }
         public void SetNull()
         {
@@ -125,12 +124,297 @@ namespace SimpleLanguage.VM
             stringValue = val;
             isNull = false;
         }
+        public void SetSObject(SObject val)
+        {
+            isNull = val.isNull;
+            if (isNull)
+            {
+                return;
+            }
+            switch (val)
+            {
+                case VoidObject voidobj:
+                    {
+
+                    }
+                    break;
+                case BoolObject boolobj:
+                    {
+                        eType = EType.Boolean;
+                        int8Value = boolobj.value ? (byte)1 : (byte)0;
+                    }
+                    break;
+                case ByteObject int8obj:
+                    {
+                        eType = EType.Byte;
+                        int8Value = int8obj.value;
+                    }
+                    break;
+                case SByteObject sint8obj:
+                    {
+                        eType = EType.SByte;
+                        sint8Value = sint8obj.value;
+                    }
+                    break;
+                //case CharObject charObj:
+                //    {
+                //        eType = EType.Char;
+                //        charValue = charObj.value;
+                //    }
+                //    break;
+                case Int16Object int16obj:
+                    {
+                        eType = EType.Int16;
+                        int16Value = int16obj.value;
+                    }
+                    break;
+                case UInt16Object uint16obj:
+                    {
+                        eType = EType.UInt16;
+                        uint16Value = uint16obj.value;
+                    }
+                    break;
+                case Int32Object int32obj:
+                    {
+                        eType = EType.Int32;
+                        int32Value = int32obj.value;
+                    }
+                    break;
+                case UInt32Object uint32obj:
+                    {
+                        eType = EType.UInt32;
+                        uint32Value = uint32obj.value;
+                    }
+                    break;
+                case Int64Object int64obj:
+                    {
+                        eType = EType.Int64;
+                        int64Value = int64obj.value;
+                    }
+                    break;
+                case UInt64Object uint64obj:
+                    {
+                        eType = EType.UInt64;
+                        uint64Value = uint64obj.value;
+                    }
+                    break;
+                case FloatObject floatobj:
+                    {
+                        eType = EType.Float32;
+                        floatValue = floatobj.value;
+                    }
+                    break;
+                case DoubleObject doubleobj:
+                    {
+                        eType = EType.Float64;
+                        doubleValue = doubleobj.value;
+                    }
+                    break;
+                case StringObject stringobj:
+                    {
+                        eType = EType.String;
+                        stringValue = stringobj.value;
+                    }
+                    break;
+                case ArrayObject arrayobj:
+                    {
+                        eType = EType.Array;
+                        sobject = arrayobj;
+                    }
+                    break;
+                case AnyObject anyobj:
+                    {
+                        eType = anyobj.eType;
+                        object tobj = anyobj.value;
+                        switch (eType)
+                        {
+                            case EType.Byte:
+                                {
+                                    int8Value = (byte)(tobj);
+                                }
+                                break;
+                            case EType.Boolean:
+                                {
+                                    int8Value = (byte)(tobj);
+                                }
+                                break;
+                            case EType.SByte:
+                                {
+                                    sint8Value = (sbyte)(tobj);
+                                }
+                                break;
+                            //case EType.Char:
+                            //    {
+                            //        charValue = (char)(tobj);
+                            //    }
+                            //    break;
+                            case EType.Int16:
+                                {
+                                    int16Value = (short)(tobj);
+                                }
+                                break;
+                            case EType.UInt16:
+                                {
+                                    uint16Value = (ushort)(tobj);
+                                }
+                                break;
+                            case EType.Int32:
+                                {
+                                    int32Value = (int)(tobj);
+                                }
+                                break;
+                            case EType.UInt32:
+                                {
+                                    uint32Value = (uint)(tobj);
+                                }
+                                break;
+                            case EType.Int64:
+                                {
+                                    int64Value = (long)(tobj);
+                                }
+                                break;
+                            case EType.UInt64:
+                                {
+                                    uint64Value = (ulong)(tobj);
+                                }
+                                break;
+                            case EType.Float32:
+                                {
+                                    floatValue = (float)(tobj);
+                                }
+                                break;
+                            case EType.Float64:
+                                {
+                                    doubleValue = (double)(tobj);
+                                }
+                                break;
+                            case EType.String:
+                                {
+                                    stringValue = tobj as String;
+                                }
+                                break;
+                            case EType.Object:
+                                {
+                                    sobject = tobj as AnyObject;
+                                }
+                                break;
+                            case EType.Class:
+                                {
+                                    sobject = anyobj.value as ClassObject;
+                                }
+                                break;
+                            default:
+                                {
+                                    sobject = anyobj;
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                case TemplateObject templateobj:
+                    {
+                        if (templateobj.isNull)
+                        {
+                            this.SetNull();
+                            return;
+                        }
+                        eType = templateobj.eType;
+                        object tobj = templateobj.value;
+                        switch (eType)
+                        {
+                            case EType.Byte:
+                                {
+                                    int8Value = (byte)(tobj);
+                                }
+                                break;
+                            case EType.Boolean:
+                                {
+                                    int8Value = int.Parse(tobj.ToString()) == 1 ? (byte)1 : (byte)0;
+                                }
+                                break;
+                            case EType.SByte:
+                                {
+                                    sint8Value = (sbyte)(tobj);
+                                }
+                                break;
+                            //case EType.Char:
+                            //    {
+                            //        charValue = (char)(tobj);
+                            //    }
+                            //    break;
+                            case EType.Int16:
+                                {
+                                    int16Value = (short)(tobj);
+                                }
+                                break;
+                            case EType.UInt16:
+                                {
+                                    uint16Value = (ushort)(tobj);
+                                }
+                                break;
+                            case EType.Int32:
+                                {
+                                    int32Value = (int)(tobj);
+                                }
+                                break;
+                            case EType.UInt32:
+                                {
+                                    uint32Value = (uint)(tobj);
+                                }
+                                break;
+                            case EType.Int64:
+                                {
+                                    int64Value = (long)(tobj);
+                                }
+                                break;
+                            case EType.UInt64:
+                                {
+                                    uint64Value = (ulong)(tobj);
+                                }
+                                break;
+                            case EType.Float32:
+                                {
+                                    floatValue = (float)(tobj);
+                                }
+                                break;
+                            case EType.Float64:
+                                {
+                                    doubleValue = (double)(tobj);
+                                }
+                                break;
+                            case EType.String:
+                                {
+                                    stringValue = tobj as String;
+                                }
+                                break;
+                            case EType.Class:
+                                {
+                                    sobject = (tobj as ClassObject).value;
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                default:
+                    {
+                        eType = EType.Class;
+                        sobject = (val as ClassObject).value;
+                    }
+                    break;
+            }
+        }
         public void ConvertByEType(EType neType )
         {
             object cur = GetValueObject();
             
             switch (neType)
             {
+                case EType.Boolean:
+                    {
+                        eType = EType.Boolean;
+                        int8Value = Convert.ToByte(cur);
+                    }
+                    break;
                 case EType.Byte:
                     {
                         eType = EType.Byte;
@@ -261,286 +545,21 @@ namespace SimpleLanguage.VM
                     {
                         return (sobject as ArrayObject);
                     }
-                case EType.Object:
-                    {
-                        return (sobject as AnyObject).value;
-                    }
-                default:return sobject;
-            }
-        }
-        public void SetSObject(SObject val)
-        {
-            isNull = val.isNull;
-            if( isNull )
-            {
-                return;
-            }
-            switch( val )
-            {
-                case VoidObject voidobj:
-                    {
-
-                    }
-                    break;
-                case BoolObject boolobj:
-                    {
-                        eType = EType.Boolean;
-                        int8Value = boolobj.value ? (byte)1 : (byte)0;
-                    }
-                    break;
-                case ByteObject int8obj:
-                    {
-                        eType = EType.Byte;
-                        int8Value = int8obj.value;
-                    }
-                    break;
-                case SByteObject sint8obj:
-                    {
-                        eType = EType.SByte;
-                        sint8Value = sint8obj.value;
-                    }
-                    break;
-                //case CharObject charObj:
+                //case EType.Object:
                 //    {
-                //        eType = EType.Char;
-                //        charValue = charObj.value;
+                //        return (sobject as AnyObject).value;
                 //    }
-                //    break;
-                case Int16Object int16obj:
-                    {
-                        eType = EType.Int16;
-                        int16Value = int16obj.value;
-                    }
-                    break;
-                case UInt16Object uint16obj:
-                    {
-                        eType = EType.UInt16;
-                        uint16Value = uint16obj.value;
-                    }
-                    break;
-                case Int32Object int32obj:
-                    {
-                        eType = EType.Int32;
-                        int32Value = int32obj.value;
-                    }
-                    break;
-                case UInt32Object uint32obj:
-                    {
-                        eType = EType.UInt32;
-                        uint32Value = uint32obj.value;
-                    }
-                    break;
-                case Int64Object int64obj:
-                    {
-                        eType = EType.Int64;
-                        int64Value = int64obj.value;
-                    }
-                    break;
-                case UInt64Object uint64obj:
-                    {
-                        eType = EType.UInt64;
-                        uint64Value = uint64obj.value;
-                    }
-                    break;
-                case FloatObject floatobj:
-                    {
-                        eType = EType.Float32;
-                        floatValue = floatobj.value;
-                    }
-                    break;
-                case DoubleObject doubleobj:
-                    {
-                        eType = EType.Float64;
-                        doubleValue = doubleobj.value;
-                    }
-                    break;
-                case StringObject stringobj:
-                    {
-                        eType = EType.String;
-                        stringValue = stringobj.value;
-                    }
-                    break;
-                case ArrayObject arrayobj:
-                    {
-                        eType = EType.Array;
-                        sobject = arrayobj;
-                    }
-                    break;
-                case AnyObject anyobj:
-                    {
-                        eType = anyobj.eType;
-                        object tobj = anyobj.value;
-                        switch (eType)
-                        {
-                            case EType.Byte:
-                                {
-                                    int8Value = (byte)(tobj);
-                                }
-                                break;
-                            case EType.SByte:
-                                {
-                                    sint8Value = (sbyte)(tobj);
-                                }
-                                break;
-                            //case EType.Char:
-                            //    {
-                            //        charValue = (char)(tobj);
-                            //    }
-                            //    break;
-                            case EType.Int16:
-                                {
-                                    int16Value = (short)(tobj);
-                                }
-                                break;
-                            case EType.UInt16:
-                                {
-                                    uint16Value = (ushort)(tobj);
-                                }
-                                break;
-                            case EType.Int32:
-                                {
-                                    int32Value = (int)(tobj);
-                                }
-                                break;
-                            case EType.UInt32:
-                                {
-                                    uint32Value = (uint)(tobj);
-                                }
-                                break;
-                            case EType.Int64:
-                                {
-                                    int64Value = (long)(tobj);
-                                }
-                                break;
-                            case EType.UInt64:
-                                {
-                                    uint64Value = (ulong)(tobj);
-                                }
-                                break;
-                            case EType.Float32:
-                                {
-                                    floatValue = (float)(tobj);
-                                }
-                                break;
-                            case EType.Float64:
-                                {
-                                    doubleValue = (double)(tobj);
-                                }
-                                break;
-                            case EType.String:
-                                {
-                                    stringValue = tobj as String;
-                                }
-                                break;
-                            case EType.Class:
-                                {
-                                    sobject = anyobj.value as ClassObject;
-                                }
-                                break;
-                            case EType.Object:
-                                {
-                                    sobject = anyobj.value as SObject;
-                                }
-                                break;
-                        }                        
-                    }
-                    break;
-                case TemplateObject templateobj:
-                    {
-                        if(templateobj.isNull )
-                        {
-                            this.SetNull();
-                            return;
-                        }
-                        eType = templateobj.eType;
-                        object tobj = templateobj.value;
-                        switch (eType)
-                        {
-                            case EType.Byte:
-                                {
-                                    int8Value = (byte)(tobj);
-                                }
-                                break;
-                            case EType.Boolean:
-                                {
-                                    int8Value = int.Parse(tobj.ToString()) == 1 ? (byte)1 : (byte)0;
-                                }
-                                break;
-                            case EType.SByte:
-                                {
-                                    sint8Value = (sbyte)(tobj);
-                                }
-                                break;
-                            //case EType.Char:
-                            //    {
-                            //        charValue = (char)(tobj);
-                            //    }
-                            //    break;
-                            case EType.Int16:
-                                {
-                                    int16Value = (short)(tobj);
-                                }
-                                break;
-                            case EType.UInt16:
-                                {
-                                    uint16Value = (ushort)(tobj);
-                                }
-                                break;
-                            case EType.Int32:
-                                {
-                                    int32Value = (int)(tobj);
-                                }
-                                break;
-                            case EType.UInt32:
-                                {
-                                    uint32Value = (uint)(tobj);
-                                }
-                                break;
-                            case EType.Int64:
-                                {
-                                    int64Value = (long)(tobj);
-                                }
-                                break;
-                            case EType.UInt64:
-                                {
-                                    uint64Value = (ulong)(tobj);
-                                }
-                                break;
-                            case EType.Float32:
-                                {
-                                    floatValue = (float)(tobj);
-                                }
-                                break;
-                            case EType.Float64:
-                                {
-                                    doubleValue = (double)(tobj);
-                                }
-                                break;
-                            case EType.String:
-                                {
-                                    stringValue = tobj as String;
-                                }
-                                break;
-                            case EType.Class:
-                                {
-                                    sobject = (tobj as ClassObject).value;
-                                }
-                                break;
-                        }
-                    }
-                    break;
-                default:
-                    {
-                        eType = EType.Class;
-                        sobject = (val as ClassObject).value;
-                    }
-                    break;
+                default:return sobject;
             }
         }
         public System.Object CreateCSharpObject()
         {
             switch (eType)
             {
+                case EType.Boolean:
+                    {
+                        return int8Value == 1;
+                    }
                 case EType.Byte:
                     {
                         return int8Value;
@@ -588,10 +607,6 @@ namespace SimpleLanguage.VM
                 case EType.String:
                     {
                         return stringValue;
-                    }
-                case EType.Array:
-                    {
-                        return sobject;
                     }
             }
             return sobject;
@@ -753,7 +768,7 @@ namespace SimpleLanguage.VM
                                 {
                                     sobject = ao;
                                     isNull = sobject.isNull;
-                                    eType = EType.Object;
+                                    eType = EType.Class;
                                 }
                                 break;
                         }
@@ -761,7 +776,7 @@ namespace SimpleLanguage.VM
                     break;
                 default:
                     {
-                        sobject = obj as ClassObject;
+                        sobject = obj as SObject;
                         eType = EType.Class;
                         isNull = sobject.isNull;
                     }
@@ -776,13 +791,13 @@ namespace SimpleLanguage.VM
                     {
                         return new ByteObject(int8Value);
                     }
-                case EType.SByte:
-                    {
-                        return new SByteObject(sint8Value);
-                    }
                 case EType.Boolean:
                     {
                         return new BoolObject(int8Value == 1);
+                    }
+                case EType.SByte:
+                    {
+                        return new SByteObject(sint8Value);
                     }
                 //case EType.Char:
                 //    {

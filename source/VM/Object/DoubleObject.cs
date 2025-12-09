@@ -7,10 +7,6 @@
 //****************************************************************************
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using SimpleLanguage.Core;
-
 namespace SimpleLanguage.VM
 {
     class DoubleObject : SObject

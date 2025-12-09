@@ -94,21 +94,19 @@ namespace SimpleLanguage.VM
                 m_MemberObjectArray[i] = sobj;
             }
         }
-        public SObject GetMemberVariable(int index)
-        {
-            if (index > m_MemberObjectArray.Length)
-            {
-                Log.AddVM(EError.None, "执行的参数超出范围!!");
-                return null;
-            }
-            return m_MemberObjectArray[index];
-        }
+        //public SObject GetMemberVariable(int index)
+        //{
+        //    if (index > m_MemberObjectArray.Length)
+        //    {
+        //        Log.AddVM(EError.None, "执行的参数超出范围!!");
+        //        return null;
+        //    }
+        //    return m_MemberObjectArray[index];
+        //}
         public virtual void SetValue(ClassObject val )
         {
             m_Object = val.m_Object;
             m_MemberObjectArray = val.m_MemberObjectArray;
-
-
             val.refCount++;
         }
         public void GetMemberVariableSValue( int index, ref SValue svalue )
@@ -544,17 +542,17 @@ namespace SimpleLanguage.VM
                             }
                             stringObj.SetValue(svalue.stringValue);
                         }
-                        else if( mva.eType == EType.Object )
-                        {
-                            AnyObject anyObj = m_MemberObjectArray[index] as AnyObject;
-                            if (anyObj == null)
-                            {
-                                anyObj.SetValue(EType.Class, svalue.sobject);
-                                return;
-                            }
-                            //classObj.SetValue(svalue.sobject as ClassObject);
-                            m_MemberObjectArray[index] = svalue.sobject;
-                        }
+                        //else if( mva.eType == EType.Object )
+                        //{
+                        //    AnyObject anyObj = m_MemberObjectArray[index] as AnyObject;
+                        //    if (anyObj == null)
+                        //    {
+                        //        anyObj.SetValue(EType.Class, svalue.sobject);
+                        //        return;
+                        //    }
+                        //    //classObj.SetValue(svalue.sobject as ClassObject);
+                        //    m_MemberObjectArray[index] = svalue.sobject;
+                        //}
                         else
                         {
                             ClassObject classObj = m_MemberObjectArray[index] as ClassObject;

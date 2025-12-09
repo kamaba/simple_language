@@ -12,7 +12,6 @@ namespace SimpleLanguage.VM
     public class AnyObject : SObject
     {
         public object value;
-
         public AnyObject()
         {
         }

@@ -10,7 +10,7 @@ using SimpleLanguage.IR;
 
 namespace SimpleLanguage.VM
 {
-    public abstract class SObject
+    public class SObject
     {
         public bool isNull => m_IsNull;
         public EType eType => m_Etype;
@@ -24,7 +24,8 @@ namespace SimpleLanguage.VM
         protected EType m_Etype = EType.Class;
         protected bool m_IsNull = false;
         protected RuntimeType m_RuntimeType = null;
-        protected int m_Length = 0; 
+        protected int m_Length = 0;
+        //protected object value;
         public int id { get; set; } = 0;
 
         static int idCount = 0;
@@ -36,6 +37,13 @@ namespace SimpleLanguage.VM
         {
             this.m_Etype = etype;
         }
+
+        //public void SetValue(EType _eType, System.Object val)
+        //{
+        //    m_IsNull = false;
+        //    m_Etype = _eType;
+        //    value = val;
+        //}
         public virtual void SetNull()
         {
             m_IsNull = true;
@@ -43,6 +51,7 @@ namespace SimpleLanguage.VM
         public virtual string ToFormatString()
         {
             return "";
+            //return value.ToString();
         }
     }
 }

@@ -348,10 +348,6 @@ namespace SimpleLanguage.VM
                             anyObject.SetValue(EType.String, svalue.stringValue);
                             return;
                         }
-                        ClassObject classobj = obj as ClassObject;
-                        if ( classobj != null )
-                        {
-                        }
                         StringObject stringObj = obj as StringObject;
                         if (stringObj == null)
                         {
@@ -359,16 +355,6 @@ namespace SimpleLanguage.VM
                             return;
                         }
                         stringObj.SetValue(svalue.stringValue);
-                    }
-                    break;
-                case EType.Array:
-                    {
-                        if( obj is ClassObject co )
-                        {
-                            var ao = svalue.sobject as ClassObject;
-                            Debug.Assert( ao != null );
-                            co.SetValue(ao);
-                        }
                     }
                     break;
                 case EType.Float32:
@@ -415,6 +401,45 @@ namespace SimpleLanguage.VM
                         doubleObj.SetValue(svalue.doubleValue);
                     }
                     break;
+                case EType.Array:
+                    {
+                        if (obj is ClassObject co)
+                        {
+                            var ao = svalue.sobject as ClassObject;
+                            Debug.Assert(ao != null);
+                            co.SetValue(ao);
+                        }
+                        else
+                        {
+                            Debug.Assert(false);
+                        }
+                    }
+                    break;
+                case EType.Object:
+                    {
+                        if (svalue.sobject is AnyObject co)
+                        {
+                            AnyObject anyObject = obj as AnyObject;
+                            if (anyObject != null)
+                            {
+                                anyObject.SetValue(co.eType, co.value);
+                                return;
+                            }
+                            ClassObject classObj = obj as ClassObject;
+                            if (classObj == null)
+                            {
+                                Debug.Assert(false);
+                                Debug.Write("该类型不是Class类型!!");
+                                return;
+                            }
+                            classObj.SetValue(svalue.sobject as ClassObject);
+                        }
+                        else
+                        {
+                            Debug.Assert(false);
+                        }
+                    }
+                    break;
                 case EType.Class:
                     {
                         TemplateObject to = obj as TemplateObject;
@@ -432,6 +457,15 @@ namespace SimpleLanguage.VM
                             }
                             return;
                         }
+                        ClassObject classObj = obj as ClassObject;
+                        if (classObj == null)
+                        {
+                            Debug.Assert(false);
+                            Debug.Write("该类型不是Class类型!!");
+                            return;
+                        }
+                        classObj.SetValue(svalue.sobject as ClassObject);
+                        /*
                         Int32Object int32Obj = obj as Int32Object;
                         if (int32Obj != null)
                         {
@@ -439,28 +473,17 @@ namespace SimpleLanguage.VM
                             return;
                         }
                         BoolObject boolObject = obj as BoolObject;
-                        if( boolObject != null )
+                        if (boolObject != null)
                         {
-                            boolObject.SetValue(svalue.int8Value==1 ? true : false);
+                            boolObject.SetValue(svalue.int8Value == 1 ? true : false);
                             return;
                         }
-                        ClassObject classObj = obj as ClassObject;
-                        if (classObj == null)
-                        {
-                            Debug.Write("该类型不是Class类型!!");
-                            return;
-                        }
-                        classObj.SetValue(svalue.sobject as ClassObject);
+                        */
                     }
                     break;
-                case EType.Object:
+                default:
                     {
-                        AnyObject anyObject = obj as AnyObject;
-                        if (anyObject != null)
-                        {
-                            anyObject.SetValue(EType.Class, obj);
-                            return;
-                        }
+                        Debug.Assert(false);
                     }
                     break;
             }
