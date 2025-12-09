@@ -6,7 +6,7 @@
 //  Description: 
 //****************************************************************************
 using SimpleLanguage.Core;
-
+using SimpleLanguage.VM.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,12 +17,7 @@ namespace SimpleLanguage.VM
     {
         public string value;
 
-        public StringObject() : base(EType.String)
-        {
-            m_RuntimeType = RuntimeTypeManager.stringRuntimeType;
-        }
-
-        public StringObject(string str) : base( EType.String )
+        public StringObject(string str) : base(EVMType.String )
         {
             value = str;
             m_RuntimeType = RuntimeTypeManager.stringRuntimeType;

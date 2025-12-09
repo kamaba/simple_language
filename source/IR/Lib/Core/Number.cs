@@ -14,7 +14,7 @@ namespace SimpleLanguage.Lib
     {
 
     }
-    public static class ByteObject
+    public static class Int8Object
     {
 
     }

@@ -19,11 +19,29 @@ namespace SimpleLanguage.VM.Runtime
         None,
         Null,
         Void,
+        Object,
         Class,
         Enum,
         Data,
+        Array,
+
+        RawBoolean,
+        RawByte,
+        RawSByte,
+        RawInt16,
+        RawUInt16,
+        RawInt32,
+        RawUInt32,
+        RawFloat16,
+        RawFloat32,
+        RawInt64,
+        RawUInt64,
+        RawFloat64,
+        RawInt128,
+        RawUInt128,
+        RawString,
+
         Boolean,
-        Bit,
         Byte,
         SByte,
         Int16,
@@ -355,29 +373,29 @@ namespace SimpleLanguage.VM.Runtime
         {
             switch (sStore.eType)
             {
-                case EType.Boolean:
-                case EType.Byte: sStore.SetInt8Value(sValue.int8Value); break;
-                case EType.SByte: sStore.SetSInt8Value(sValue.sint8Value); break;
-                case EType.Int16: sStore.SetInt16Value(sValue.int16Value); break;
-                case EType.UInt16: sStore.SetUInt16Value(sValue.uint16Value); break;
-                case EType.Int32: sStore.SetInt32Value(sValue.int32Value); break;
-                case EType.UInt32: sStore.SetUInt32Value(sValue.uint32Value); break;
-                case EType.Int64: sStore.SetInt64Value(sValue.int64Value); break;
-                case EType.UInt64: sStore.SetUInt64Value(sValue.uint64Value); break;
-                case EType.Float32: sStore.SetFloatValue(sValue.floatValue); break;
-                case EType.Float64: sStore.SetDoubleValue(sValue.doubleValue); break;
-                case EType.String: sStore.SetStringValue(sValue.stringValue); break;
-                case EType.Null:
+                case EVMType.Boolean:
+                case EVMType.Byte: sStore.SetInt8Value(sValue.int8Value); break;
+                case EVMType.SByte: sStore.SetSInt8Value(sValue.sint8Value); break;
+                case EVMType.Int16: sStore.SetInt16Value(sValue.int16Value); break;
+                case EVMType.UInt16: sStore.SetUInt16Value(sValue.uint16Value); break;
+                case EVMType.Int32: sStore.SetInt32Value(sValue.int32Value); break;
+                case EVMType.UInt32: sStore.SetUInt32Value(sValue.uint32Value); break;
+                case EVMType.Int64: sStore.SetInt64Value(sValue.int64Value); break;
+                case EVMType.UInt64: sStore.SetUInt64Value(sValue.uint64Value); break;
+                case EVMType.Float32: sStore.SetFloatValue(sValue.floatValue); break;
+                case EVMType.Float64: sStore.SetDoubleValue(sValue.doubleValue); break;
+                case EVMType.String: sStore.SetStringValue(sValue.stringValue); break;
+                case EVMType.Null:
                     {
                         sStore.SetNull();
                     }
                     break;
-                case EType.Class:
+                case EVMType.Class:
                     {
                         (sStore.sobject as ClassObject).SetMemberVariableSValue(iri.index, sValue);
                     }
                     break;
-                case EType.Array:
+                case EVMType.Array:
                     {
                         (sStore.sobject as ArrayObject).SetMemberVariableSValue(iri.index, sValue);
                     }
@@ -468,52 +486,52 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Convert_I8:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.Byte);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Byte);
                     }
                     break;
                 case EIROpCode.Convert_SI8:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.SByte);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.SByte);
                     }
                     break;
                 case EIROpCode.Convert_I16:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.Int16);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int16);
                     }
                     break;
                 case EIROpCode.Convert_UI16:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.UInt16);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt16);
                     }
                     break;
                 case EIROpCode.Convert_I32:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.Int32);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int32);
                     }
                     break;
                 case EIROpCode.Convert_UI32:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.UInt32);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt32);
                     }
                     break;
                 case EIROpCode.Convert_I64:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.Int64);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int64);
                     }
                     break;
                 case EIROpCode.Convert_UI64:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.UInt64);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt64);
                     }
                     break;
                 case EIROpCode.Convert_R4:
                     {
-                        m_ValueStack[m_ValueIndex-1].ConvertByEType(EType.Float32);
+                        m_ValueStack[m_ValueIndex-1].ConvertByEType(EVMType.Float32);
                     }
                     break;
                 case EIROpCode.Convert_R8:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.Float64);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Float64);
                     }
                     break;
                 case EIROpCode.LoadArgument:
@@ -543,12 +561,12 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         var v = m_ValueStack[m_ValueIndex - 1];
 
-                        if (v.eType == EType.Class)
+                        if (v.eType == EVMType.Class)
                         {
                             var co = (v.sobject as ClassObject);
                             co.value.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
                         }
-                        else if( v.eType == EType.Array )
+                        else if( v.eType == EVMType.Array )
                         {
                             var co = (v.sobject as ArrayObject);
                             co.value.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
@@ -618,7 +636,7 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.LoadArrayIndex:
                     {
                         var v = m_ValueStack[m_ValueIndex - 1];
-                        if (v.eType == EType.Array)
+                        if (v.eType == EVMType.Array)
                         {
                             (v.sobject as ArrayObject).LoadValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
                         }
@@ -642,7 +660,7 @@ namespace SimpleLanguage.VM.Runtime
                         SValue sStore = m_ValueStack[m_ValueIndex - int1];
                         SValue sValue = m_ValueStack[m_ValueIndex - int2];
 
-                        if (sStore.eType == EType.Array)
+                        if (sStore.eType == EVMType.Array)
                         {
                             (sStore.sobject as ArrayObject).StoreValue(iri.index, sValue);
                         }
@@ -659,7 +677,7 @@ namespace SimpleLanguage.VM.Runtime
                         SValue arrayref = m_ValueStack[m_ValueIndex - 2];
                         SValue loadindex = m_ValueStack[m_ValueIndex - 1];
 
-                        if (arrayref.eType == EType.Array)
+                        if (arrayref.eType == EVMType.Array)
                         {
                             int index = (int)loadindex.GetValueObject();
                             (arrayref.sobject as ArrayObject).LoadValue(index, ref m_ValueStack[m_ValueIndex - 2]);
@@ -678,7 +696,7 @@ namespace SimpleLanguage.VM.Runtime
                         SValue arrayref = m_ValueStack[m_ValueIndex - 2];
                         SValue loadindex = m_ValueStack[m_ValueIndex - 1];
 
-                        if (arrayref.eType == EType.Array)
+                        if (arrayref.eType == EVMType.Array)
                         {
                             int index = (int)loadindex.GetValueObject();
                             (arrayref.sobject as ArrayObject).StoreValue(index, storevalue );
@@ -738,13 +756,13 @@ namespace SimpleLanguage.VM.Runtime
                                 return;
                             }
                             var v = m_ValueStack[stackIndex];
-                            if (v.eType == EType.Class)
+                            if (v.eType == EVMType.Class)
                             {
                                 var co = (v.sobject as ClassObject);
                                 irc = co.value.irMetaClass;
                                 rt = v.sobject.runtimeType;
                             }
-                            else if( v.eType == EType.Array )
+                            else if( v.eType == EVMType.Array )
                             {
                                 rt = RuntimeTypeManager.arrayRuntimeType;
                                 irc = IRManager.instance.GetIRMetaClassByName(v.eType.ToString());
@@ -822,13 +840,13 @@ namespace SimpleLanguage.VM.Runtime
 
                         RuntimeType rt = null;
                         IRMetaClass irc = null;
-                        if (v.eType == EType.Class)
+                        if (v.eType == EVMType.Class)
                         {
                             var co = (v.sobject as ClassObject);
                             irc = co.value.irMetaClass;
                             rt = co.value.runtimeType;
                         }
-                        else if( v.eType == EType.Array )
+                        else if( v.eType == EVMType.Array )
                         {
                             irc = IRManager.instance.GetIRMetaClassByName("Array");
                             rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irc);
@@ -958,7 +976,7 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.BrFalse:
                     {
                         var v = m_ValueStack[--m_ValueIndex];
-                        if (v.eType == EType.Boolean)
+                        if (v.eType == EVMType.Boolean)
                         {
                             if (v.int8Value == 0)
                             {
@@ -970,7 +988,7 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.BrTrue:
                     {
                         var v = m_ValueStack[--m_ValueIndex];
-                        if (v.eType == EType.Boolean)
+                        if (v.eType == EVMType.Boolean)
                         {
                             if (v.int8Value == 1)
                             {
@@ -1279,7 +1297,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            if (v1.eType == EType.Class)
+                            if (v1.eType == EVMType.Class)
                             {
                                 if (!v1.sobject.runtimeType.IsExtendsRelation(rt))
                                 {

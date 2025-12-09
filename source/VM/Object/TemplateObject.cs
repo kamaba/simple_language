@@ -5,6 +5,8 @@
 //  DateTime: 2022/11/22 12:00:00
 //  Description: 
 //****************************************************************************
+using SimpleLanguage.VM.Runtime;
+
 namespace SimpleLanguage.VM
 {
     public class TemplateObject : SObject
@@ -20,7 +22,7 @@ namespace SimpleLanguage.VM
             value = val;
             val.refCount++;
         }
-        public void SetValue(EType _eType, System.Object val)
+        public void SetValue(EVMType _eType, System.Object val)
         {
             m_Etype = _eType;
             value = val;

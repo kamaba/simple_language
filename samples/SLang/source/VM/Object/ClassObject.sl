@@ -125,12 +125,12 @@ namespace SimpleLanguage.VM
             var mmv = m_MemberObjectArray[index];
             switch (mmv)
             {
-                case ByteObject byteob:
+                case Int8Object byteob:
                     {
                         svalue.SetInt8Value(byteob.value);
                     }
                     break;
-                case SByteObject sbyteobj:
+                case SInt8Object sbyteobj:
                     {
                         svalue.SetSInt8Value(sbyteobj.value);
                     }
@@ -165,12 +165,12 @@ namespace SimpleLanguage.VM
                         svalue.SetUInt64Value(uint64Obj.value);
                     }
                     break;
-                case FloatObject floatobj:
+                case Float32Object floatobj:
                     {
                         svalue.SetFloatValue(floatobj.value);
                     }
                     break;
-                case DoubleObject doubleobj:
+                case Float64Object doubleobj:
                     {
                         svalue.SetDoubleValue(doubleobj.value);
                     }
@@ -234,7 +234,7 @@ namespace SimpleLanguage.VM
                             return;
                         }
 
-                        ByteObject byteObj = m_MemberObjectArray[index] as ByteObject;
+                        Int8Object byteObj = m_MemberObjectArray[index] as Int8Object;
                         if (byteObj == null)
                         {
                             Log.AddVM(EError.None, "Byte 该类型不是Int32类型!!");
@@ -251,7 +251,7 @@ namespace SimpleLanguage.VM
                             return;
                         }
 
-                        SByteObject sbyteObj = m_MemberObjectArray[index] as SByteObject;
+                        SInt8Object sbyteObj = m_MemberObjectArray[index] as SInt8Object;
                         if (sbyteObj == null)
                         {
                             Log.AddVM(EError.None, "Sbyte 该类型不是Int32类型!!");
@@ -376,7 +376,7 @@ namespace SimpleLanguage.VM
                             return;
                         }
 
-                        FloatObject floatObj = m_MemberObjectArray[index] as FloatObject;
+                        Float32Object floatObj = m_MemberObjectArray[index] as Float32Object;
                         if (floatObj == null)
                         {
                             Log.AddVM(EError.None, "Float 该类型不是float类型!!");
@@ -393,7 +393,7 @@ namespace SimpleLanguage.VM
                             return;
                         }
 
-                        DoubleObject doubleObj = m_MemberObjectArray[index] as DoubleObject;
+                        Float64Object doubleObj = m_MemberObjectArray[index] as Float64Object;
                         if (doubleObj == null)
                         {
                             Log.AddVM(EError.None, "Double 该类型不是Double类型!!");
@@ -425,10 +425,10 @@ namespace SimpleLanguage.VM
                         if (mva.eType == EType.Byte)
                         {
 
-                            ByteObject byteObj = mva as ByteObject;
+                            Int8Object byteObj = mva as Int8Object;
                             if (byteObj == null)
                             {
-                                Log.AddVM(EError.None, "Class ByteObject 该类型不是Int32类型!!");
+                                Log.AddVM(EError.None, "Class Int8Object 该类型不是Int32类型!!");
                                 return;
                             }
                             byteObj.SetValue(svalue.int8Value);
@@ -436,10 +436,10 @@ namespace SimpleLanguage.VM
                         else if (mva.eType == EType.SByte)
                         {
 
-                            SByteObject sbyteObj = mva as SByteObject;
+                            SInt8Object sbyteObj = mva as SInt8Object;
                             if (sbyteObj == null)
                             {
-                                Log.AddVM(EError.None, "Class SByteObject 该类型不是Int32类型!!");
+                                Log.AddVM(EError.None, "Class SInt8Object 该类型不是Int32类型!!");
                                 return;
                             }
                             sbyteObj.SetValue(svalue.sint8Value);
