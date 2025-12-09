@@ -250,13 +250,13 @@ namespace SimpleLanguage.VM
                         int8Value = boolobj.value ? (byte)1 : (byte)0;
                     }
                     break;
-                case ByteObject int8obj:
+                case Int8Object int8obj:
                     {
                         eType = EType.Byte;
                         int8Value = int8obj.value;
                     }
                     break;
-                case SByteObject sint8obj:
+                case SInt8Object sint8obj:
                     {
                         eType = EType.SByte;
                         sint8Value = sint8obj.value;
@@ -304,13 +304,13 @@ namespace SimpleLanguage.VM
                         uint64Value = uint64obj.value;
                     }
                     break;
-                case FloatObject floatobj:
+                case Float32Object floatobj:
                     {
                         eType = EType.Float32;
                         floatValue = floatobj.value;
                     }
                     break;
-                case DoubleObject doubleobj:
+                case Float64Object doubleobj:
                     {
                         eType = EType.Float64;
                         doubleValue = doubleobj.value;
@@ -628,11 +628,11 @@ namespace SimpleLanguage.VM
             {
                 case EType.Byte:
                     {
-                        return new ByteObject(int8Value);
+                        return new Int8Object(int8Value);
                     }
                 case EType.SByte:
                     {
-                        return new SByteObject(sint8Value);
+                        return new SInt8Object(sint8Value);
                     }
                 case EType.Boolean:
                     {

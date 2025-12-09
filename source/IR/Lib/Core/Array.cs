@@ -8,6 +8,7 @@
 
 
 using SimpleLanguage.VM;
+using SimpleLanguage.VM.Runtime;
 using System;
 using System.Runtime.InteropServices;
 
@@ -60,7 +61,7 @@ namespace SimpleLanguage.Lib
             var retobj =  ao.GetValue(index);
             if( retobj == null )
             {
-                var retobj2 = new SObject(EType.Class);
+                var retobj2 = new SObject(EVMType.Object);
                 retobj2.SetNull();
 
                 return retobj2;
