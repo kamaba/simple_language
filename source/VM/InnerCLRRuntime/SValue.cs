@@ -127,6 +127,11 @@ namespace SimpleLanguage.VM
         }
         public void SetSObject(SObject val)
         {
+            if( val == null )
+            {
+                isNull = true;
+                return;
+            }
             isNull = val.isNull;
             if (isNull)
             {
@@ -559,15 +564,15 @@ namespace SimpleLanguage.VM
         {
             switch (eType)
             {
-                case EVMType.Boolean:
+                case EVMType.RawBoolean:
                     {
                         return int8Value == 1;
                     }
-                case EVMType.Byte:
+                case EVMType.RawByte:
                     {
                         return int8Value;
                     }
-                case EVMType.SByte:
+                case EVMType.RawSByte:
                     {
                         return sint8Value;
                     }
@@ -575,40 +580,94 @@ namespace SimpleLanguage.VM
                 //    {
                 //        return charValue;
                 //    }
-                case EVMType.Int16:
+                case EVMType.RawInt16:
                     {
                         return int16Value;
                     }
+                case EVMType.RawUInt16:
+                    {
+                        return uint16Value;
+                    }
+                case EVMType.RawInt32:
+                    {
+                        return int32Value;
+                    }
+                case EVMType.RawUInt32:
+                    {
+                        return uint32Value;
+                    }
+                case EVMType.RawInt64:
+                    {
+                        return int64Value;
+                    }
+                case EVMType.RawUInt64:
+                    {
+                        return uint64Value;
+                    }
+                case EVMType.RawFloat32:
+                    {
+                        return floatValue;
+                    }
+                case EVMType.RawFloat64:
+                    {
+                        return doubleValue;
+                    }
+                case EVMType.RawString:
+                    {
+                        return stringValue;
+                    }
+                case EVMType.Boolean:
+                    {
+                        return new BoolObject(int8Value == 1);
+                    }
+                case EVMType.Byte:
+                    {
+                        return new Int8Object(int8Value );
+                    }
+                case EVMType.SByte:
+                    {
+                        return new SInt8Object(sint8Value);
+                    }
+                //case EVMType.Char:
+                //    {
+                //        return charValue;
+                //    }
+                case EVMType.Int16:
+                    {
+                        return new Int16Object(int16Value);
+                    }
                 case EVMType.UInt16:
                     {
+                        return new Int8Object(int8Value);
                         return uint16Value;
                     }
                 case EVMType.Int32:
                     {
-                        return int32Value;
+                        return new Int32Object(int32Value);
                     }
                 case EVMType.UInt32:
                     {
-                        return uint32Value;
+                        return new UInt32Object(uint32Value);
                     }
                 case EVMType.Int64:
                     {
-                        return int64Value;
+                        return new Int64Object(int64Value);
                     }
                 case EVMType.UInt64:
                     {
-                        return uint64Value;
+                        return new UInt64Object(uint64Value);
                     }
                 case EVMType.Float32:
                     {
-                        return floatValue;
+                        return new Float32Object(floatValue);
                     }
                 case EVMType.Float64:
                     {
-                        return doubleValue;
+                        return new Float64Object(doubleValue);
                     }
                 case EVMType.String:
                     {
+                        return new Int8Object(int8Value);
                         return stringValue;
                     }
             }

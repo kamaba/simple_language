@@ -856,6 +856,13 @@ namespace SimpleLanguage.VM.Runtime
                             irc = co.irMetaClass;
                             rt = co.runtimeType;
                         }
+                        else if( v.eType == EVMType.Object )
+                        {
+                            SObject co = (v.sobject.value) as SObject;
+                            Debug.Assert(co != null);
+                            irc = co.irMetaClass;
+                            rt = co.runtimeType;
+                        }
                         //else if( v.eType == EVMType.Array )
                         //{
                         //    irc = IRManager.instance.GetIRMetaClassByName("Array");
