@@ -126,7 +126,10 @@ namespace Core
             this._iterator.reset()
         }
         get int index(){ ret this._index }
-        get object value(){ ret this._value }
+        get object value()
+        {
+             ret this._value 
+        }
 
         override void reset()
         {
@@ -143,6 +146,7 @@ namespace Core
             }
             this._index++
             var flag = this._iterator.moveNext()
+            this._value = this._iterator.current()
             this._isDone = !flag
             ret flag
         }

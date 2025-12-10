@@ -408,6 +408,11 @@ namespace SimpleLanguage.VM
             }
             if( anyobj != null )
             {
+                if( svalue.isNull )
+                {
+                    anyobj.SetNull();
+                    return;
+                }
                 var valobj = svalue.GetSObject();
                 anyobj.SetValue(valobj);
                 return;

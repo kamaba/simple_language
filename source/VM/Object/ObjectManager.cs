@@ -477,9 +477,14 @@ namespace SimpleLanguage.VM
         }
         public static void GetObjectByValue(SObject obj, ref SValue svalue)
         {
-            if (svalue.isNull)
+            if( obj == null )
             {
-                obj.SetNull();
+                svalue.SetNull();
+                return;
+            }
+            if (obj.isNull)
+            {
+                svalue.SetNull();
                 return;
             }
             switch (obj.eType)

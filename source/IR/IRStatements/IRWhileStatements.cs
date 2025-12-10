@@ -67,18 +67,18 @@ namespace SimpleLanguage.IR
                 ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, endIRData.data);
                 m_IRStatements.Add(ifIRData);
 
-                // 5. 加载迭代器对象，调用 current()，并赋值给变量
-                IRLoadVariable loadIteratorForCurrent = IRLoadVariable.CreateLoadVariable(it_irmt, it_irmc, irMethod, ms.forIterateVariable);
-                m_IRStatements.Add(loadIteratorForCurrent);
+                //// 5. 加载迭代器对象，调用 current()，并赋值给变量
+                //IRLoadVariable loadIteratorForCurrent = IRLoadVariable.CreateLoadVariable(it_irmt, it_irmc, irMethod, ms.forIterateVariable);
+                //m_IRStatements.Add(loadIteratorForCurrent);
 
-                var currentMethodIndex = it_irmc.GetIRNonStaticMethodIndexByName("current", out int currentIndex);
-                var currentCall = new IRMethodCall(it_irmt, new List<IRMetaType>(), currentMethodIndex, 0);
-                IRData currentCallData = new IRData();
-                currentCallData.opCode = EIROpCode.CallDynamic;
-                currentCallData.opValue = currentCall;
-                currentCallData.index = 1;
-                IRBase currentCallBase = new IRBase(currentCallData);
-                m_IRStatements.Add(currentCallBase);
+                //var currentMethodIndex = it_irmc.GetIRNonStaticMethodIndexByName("current", out int currentIndex);
+                //var currentCall = new IRMethodCall(it_irmt, new List<IRMetaType>(), currentMethodIndex, 0);
+                //IRData currentCallData = new IRData();
+                //currentCallData.opCode = EIROpCode.CallDynamic;
+                //currentCallData.opValue = currentCall;
+                //currentCallData.index = 1;
+                //IRBase currentCallBase = new IRBase(currentCallData);
+                //m_IRStatements.Add(currentCallBase);
 
                 // 6. 存储当前值到变量（如有需要）
                 //IRStoreVariable storeCurrentValue = IRStoreVariable.CreateIRStoreVariable(it_irmt, it_irmc, irMethod, ms.forIterateVariable);
