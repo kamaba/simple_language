@@ -26,7 +26,7 @@ namespace SimpleLanguage.VM
         protected bool m_IsNull = false;
         protected RuntimeType m_RuntimeType = null;
         protected int m_Length = 0;
-        protected object value;
+        public object value;
         public int id { get; set; } = 0;
 
         static int idCount = 0;
@@ -38,7 +38,6 @@ namespace SimpleLanguage.VM
         public SObject( EVMType etype )
         {
             this.m_Etype = etype;
-            value = this;
         }
         public void SetValue(System.Object val)
         {

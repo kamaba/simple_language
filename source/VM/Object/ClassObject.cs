@@ -6,6 +6,7 @@
 //  Description: 
 //****************************************************************************
 
+using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using SimpleLanguage.VM.Runtime;
@@ -45,7 +46,10 @@ namespace SimpleLanguage.VM
             m_IRMetaVariableList = isStatic ? m_RuntimeType.irClass.staticIRMetaVariableList : m_RuntimeType.irClass.localIRMetaVariableList;
             m_MemberObjectArray = new SObject[m_IRMetaVariableList.Count];
             //m_Type = new short[m_IRMetaVariableList.Count];
-            m_Object = this;
+        }
+        public void SetClassObject( ClassObject co )
+        {
+            this.m_Object = co;
         }
         //public RuntimeType GetClassRuntimeType(IRMetaType irmt, IRMetaClass ownerMC, bool isAdd = false)
         //{
@@ -105,10 +109,9 @@ namespace SimpleLanguage.VM
         //    }
         //    return m_MemberObjectArray[index];
         //}
-        public virtual void SetValue(ClassObject val )
+        public virtual void SetSValue(ClassObject val )
         {
             m_Object = val.m_Object;
-            m_MemberObjectArray = val.m_MemberObjectArray;
             val.refCount++;
         }
         public void GetMemberVariableSValue( int index, ref SValue svalue )
@@ -198,7 +201,7 @@ namespace SimpleLanguage.VM
                     break;
                 default:
                     {
-                        svalue.SetSObject(mmv);
+                        svalue.SetSObject(mmv.value as SObject);
                     }
                     break;
             }
@@ -471,7 +474,19 @@ namespace SimpleLanguage.VM
                         stringObj.SetValue(svalue.stringValue);
                     }
                     break;
+                case EVMType.Object:
+                    {
+                        if( anyobj != null )
+                        {
+                            anyobj.SetValue(svalue.sobject);
+                        }
+                        else
+                        {
+                            Debug.Assert(false, "没有适当的匹配类型");
+                        }
+                    }break;
                 case EVMType.Class:
+                case EVMType.Array:
                     {
                         var mva = m_MemberObjectArray[index];
 

@@ -12,7 +12,7 @@ namespace SimpleLanguage.VM
 {
     public class BoolObject : SObject
     {
-        public bool value { get; protected set; } = false;
+        public new bool value { get; protected set; } = false;
 
         public BoolObject(bool flag) : base(EVMType.Boolean)
         {

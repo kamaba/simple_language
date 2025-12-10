@@ -24,17 +24,18 @@ namespace SimpleLanguage.VM
             CreateObject();
             CreateArray();
         }
-        public override void SetValue(ClassObject val)
-        {
-            base.SetValue(val);
-            var ao  = val as ArrayObject;
+        //public override void SetSValue(ClassObject val)
+        //{
+        //    base.SetValue(val);
 
-            Debug.Assert( ao != null );
+        //    var ao  = m_Object as ArrayObject;
 
-            eArrayType = ao.eArrayType;
-            m_Length = ao.m_Length;
-            m_Array = ao.m_Array;
-        }
+        //    Debug.Assert( ao != null );
+
+        //    eArrayType = ao.eArrayType;
+        //    m_Length = ao.m_Length;
+        //    m_Array = ao.m_Array;
+        //}
         void CreateArray()
         {
             int length = m_Length;
@@ -263,6 +264,18 @@ namespace SimpleLanguage.VM
             }
 
             object obj = m_Array.GetValue(index);
+
+
+            SObject anyobj = null;
+            if (m_Array.GetValue(index) is SObject sobj)
+            {
+                if (sobj.eType == EVMType.Object)
+                {
+                    anyobj = sobj;
+                    obj = sobj.value;
+                }
+            }
+
             if ( obj != null )
             {
                 switch (eArrayType)
@@ -385,7 +398,22 @@ namespace SimpleLanguage.VM
         }
         public void StoreValue(int index, SValue svalue)
         {
-            SObject anyobj = m_Array.GetValue(index) as SObject;           
+            SObject anyobj = null;
+            if( m_Array.GetValue(index) is SObject sobj )
+            {
+                if( sobj.eType == EVMType.Object )
+                {
+                    anyobj = sobj;
+                }
+            }
+            if( anyobj != null )
+            {
+                var valobj = svalue.GetSObject();
+                anyobj.SetValue(valobj);
+                return;
+            }
+
+
             switch (svalue.eType)
             {
                 case EVMType.Null:
