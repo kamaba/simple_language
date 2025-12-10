@@ -200,7 +200,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 if( sobjs[i].runtimeType != RuntimeTypeManager.voidRuntimeType )
                 {
-                    m_ValueStack[m_ValueIndex++].SetSObject(sobjs[i]);
+                    GetReturnVariableSValue(sobjs[i],ref  m_ValueStack[m_ValueIndex++] );
                 }
             }
         }
@@ -219,14 +219,14 @@ namespace SimpleLanguage.VM.Runtime
 
             return m_LocalVariableObjectArray[index];
         }
-        public SObject GetArgumentValue( int index )
+        public void GetArgumentValue( int index, ref SValue svalue )
         {
             if (index > m_ArgumentObjectArray.Length)
             {
                 Log.AddVM(EError.None, $"SVM Error FunctionName:{this.id} 执行的参数超出范围!!");
-                return null;
+                return;
             }
-            return m_ArgumentObjectArray[index];
+            ObjectManager.GetObjectByValue(m_ArgumentObjectArray[index], ref svalue);
         }
         public void SetArgumentValue( int index, SValue svalue)
         {
@@ -246,6 +246,15 @@ namespace SimpleLanguage.VM.Runtime
             }
             ObjectManager.SetObjectByValue(m_LocalVariableObjectArray[index], ref svalue);
         }
+        public void GetLocalVariableSValue(int index, ref SValue svalue)
+        {
+            if (index > m_LocalVariableObjectArray.Length)
+            {
+                Log.AddVM(EError.None, "执行的栈超出范围!!");
+                return;
+            }
+            ObjectManager.GetObjectByValue(m_LocalVariableObjectArray[index], ref svalue);
+        }
         public void SetReturnVariableSValue(int index, SValue svalue)
         {
             if (index > m_ReturnObjectArray.Length)
@@ -254,6 +263,10 @@ namespace SimpleLanguage.VM.Runtime
                 return;
             }
             ObjectManager.SetObjectByValue(m_ReturnObjectArray[index], ref svalue);
+        }
+        public void GetReturnVariableSValue( SObject sobj, ref SValue svalue)
+        {            
+            ObjectManager.GetObjectByValue(sobj, ref svalue);
         }
         public SValue GetCurrentIndexValue( int index  )
         {
@@ -536,14 +549,12 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadArgument:
                     {
-                        var vval = GetArgumentValue(iri.index);
-                        m_ValueStack[m_ValueIndex++].SetSObject(vval);
+                        GetArgumentValue(iri.index, ref m_ValueStack[m_ValueIndex++]);
                     }
                     break;
                 case EIROpCode.LoadLocal:
                     {
-                        var vval = GetLocalVariableValue(iri.index);
-                        m_ValueStack[m_ValueIndex++].SetSObject( vval );
+                        GetLocalVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex++]);
                     }
                     break;
                 case EIROpCode.StoreLocal:
@@ -561,15 +572,14 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         var v = m_ValueStack[m_ValueIndex - 1];
 
-                        if (v.eType == EVMType.Class)
+                        if (v.eType == EVMType.Class || v.eType == EVMType.Array )
                         {
                             var co = (v.sobject as ClassObject);
-                            co.value.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
+                            co.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
                         }
-                        else if( v.eType == EVMType.Array )
+                        else
                         {
-                            var co = (v.sobject as ArrayObject);
-                            co.value.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
+                            Debug.Assert(false, "还未确定其它类型可以拿值 ，如果拿成员变量，应该也是固定的几个变量! 比如value一类的");
                         }
                         //栈位不变，因为当前对象位的被通过索引取出来的成员变量值，覆盖掉， 所以栈位不会发生变化
                     }
@@ -759,7 +769,7 @@ namespace SimpleLanguage.VM.Runtime
                             if (v.eType == EVMType.Class)
                             {
                                 var co = (v.sobject as ClassObject);
-                                irc = co.value.irMetaClass;
+                                irc = co.irMetaClass;
                                 rt = v.sobject.runtimeType;
                             }
                             else if( v.eType == EVMType.Array )
@@ -840,17 +850,17 @@ namespace SimpleLanguage.VM.Runtime
 
                         RuntimeType rt = null;
                         IRMetaClass irc = null;
-                        if (v.eType == EVMType.Class)
+                        if (v.eType == EVMType.Class || v.eType == EVMType.Array )
                         {
                             var co = (v.sobject as ClassObject);
-                            irc = co.value.irMetaClass;
-                            rt = co.value.runtimeType;
+                            irc = co.irMetaClass;
+                            rt = co.runtimeType;
                         }
-                        else if( v.eType == EVMType.Array )
-                        {
-                            irc = IRManager.instance.GetIRMetaClassByName("Array");
-                            rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irc);
-                        }
+                        //else if( v.eType == EVMType.Array )
+                        //{
+                        //    irc = IRManager.instance.GetIRMetaClassByName("Array");
+                        //    rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irc);
+                        //}
                         else
                         {
                             irc = IRManager.instance.GetIRMetaClassByName(v.eType.ToString());
