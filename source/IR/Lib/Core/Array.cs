@@ -16,6 +16,7 @@ namespace SimpleLanguage.Lib
 {
     public static class Array
     {
+        //public static Int64 CreateArray(Int32Object arrayLength, Int32Object elementSize) => CreateArray(arrayLength.value, elementSize.value);
         public static Int64 CreateArray(int arrayLength, int elementSize )
         {
             System.Array newa = new int[10];
@@ -42,7 +43,8 @@ namespace SimpleLanguage.Lib
         }
 
 
-        public static void SetArrayValueThis( ArrayObject ao, int index, object value )
+        //public static void SetArrayValueThis(ArrayObject ao, Int32Object index, object value) => SetArrayValueThis(ao, index.value, value);
+        public static void SetArrayValueThis(ArrayObject ao, int index, object value)
         {
             ao.StoreObject(index, value);
         }
@@ -56,6 +58,7 @@ namespace SimpleLanguage.Lib
             IntPtr newptr = new IntPtr(ptr);
             return Mem.ReadPointer(newptr, type, index);
         }
+        //public static object GetArrayValueThis(ArrayObject ao, Int32Object index ) => GetArrayValueThis(ao, index.value );
         public static object GetArrayValueThis(ArrayObject ao, int index)
         {
             var retobj =  ao.GetValue(index);

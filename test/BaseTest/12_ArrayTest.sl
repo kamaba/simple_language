@@ -36,14 +36,14 @@ namespace Core
     }
     class Int32
     {
-        _init_(Int32 val )
+        Int32 _value = 0i
+        _init_( Int32 val )
         {
-            
+            this._value = val
         }
-
         override string toString()
         {
-            ret Lib.Int32Class.GetValueToString( this )
+            ret SimpleLanguage.Lib.StringObject.Int32ToString(this._value)
         }
     }
     class UInt32
@@ -71,6 +71,11 @@ namespace Core
     }
     class String
     {
+        String _value = "";
+        _init_( Int32 _val )
+        {
+            
+        }
         _init_( String str )
         {
 
@@ -114,7 +119,7 @@ namespace Core
     public class IterateVariable interface IIterator
     {
         _start = 0
-        _index = 0
+        public _index = 0
         _value = null
         IIterator _iterator = null
         _isDone = false;
@@ -218,7 +223,7 @@ namespace Core
                 this._current = null
             }
             this._index++;
-            #System.Console.WriteLine("index=============== " + this._index )
+            #System.Console.WriteLine(" Array.moveNext-----" + this._index )
             ret hasNext_var
         }
         override object current()
@@ -316,7 +321,7 @@ ArrayTest
             }
             else
             {                
-                System.Console.WriteLine("============index: " + v.index )
+                System.Console.WriteLine("============index: " + v._index )
             }
         }
         #!

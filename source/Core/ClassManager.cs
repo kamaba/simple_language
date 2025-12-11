@@ -63,44 +63,6 @@ namespace SimpleLanguage.Core
                 return m_AllClassDict[nname];
             return null;
         }
-        public MetaClass GetMetaClassByCSharpType(System.Type type)
-        {
-            string typeName = type.Name;
-            switch (typeName)
-            {
-                case "Byte":
-                    return CoreMetaClassManager.byteMetaClass;
-                case "SByte":
-                    return CoreMetaClassManager.sbyteMetaClass;
-                case "Int16":
-                    return CoreMetaClassManager.int16MetaClass;
-                case "UInt16":
-                    return CoreMetaClassManager.uint16MetaClass;
-                case "Int32":
-                    return CoreMetaClassManager.int32MetaClass;
-                case "UInt32":
-                    return CoreMetaClassManager.uint32MetaClass;
-                case "Int64":
-                    return CoreMetaClassManager.int64MetaClass;
-                case "UInt64":
-                    return CoreMetaClassManager.uint64MetaClass;
-                case "Float32":
-                    return CoreMetaClassManager.float32MetaClass;
-                case "Float64":
-                    return CoreMetaClassManager.float64MetaClass;
-                case "String":
-                    return CoreMetaClassManager.stringMetaClass;
-                case "Object":
-                    return CoreMetaClassManager.objectMetaClass;
-                case "Void":
-                    return CoreMetaClassManager.voidMetaClass;
-                case "ArrayObject":
-                    {
-                        return CoreMetaClassManager.arrayMetaClass;
-                    }
-            }
-            return null;
-        }
         public bool AddMetaClass( MetaClass mc, MetaModule mm = null )
         {
             MetaNode topLevelNamespace = mm?.metaNode;

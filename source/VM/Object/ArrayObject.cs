@@ -414,7 +414,7 @@ namespace SimpleLanguage.VM
                     return;
                 }
                 var valobj = svalue.GetSObject();
-                anyobj.SetValue(valobj);
+                m_Array.SetValue(valobj, index);
                 return;
             }
 

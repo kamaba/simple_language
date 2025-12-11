@@ -491,6 +491,16 @@ namespace SimpleLanguage.VM
                 case EVMType.UInt64:
                 case EVMType.Float32:
                 case EVMType.Float64:
+                //case EVMType.RawByte:
+                //case EVMType.RawSByte:
+                //case EVMType.RawInt16:
+                //case EVMType.RawUInt16:
+                //case EVMType.RawInt32:
+                //case EVMType.RawUInt32:
+                //case EVMType.RawInt64:
+                //case EVMType.RawUInt64:
+                //case EVMType.RawFloat32:
+                //case EVMType.RawFloat64:
                     valnum1 = sval1.GetValueObject() as dynamic;
                     break;
             }
@@ -507,6 +517,16 @@ namespace SimpleLanguage.VM
                 case EVMType.UInt64:
                 case EVMType.Float32:
                 case EVMType.Float64:
+                //case EVMType.RawByte:
+                //case EVMType.RawSByte:
+                //case EVMType.RawInt16:
+                //case EVMType.RawUInt16:
+                //case EVMType.RawInt32:
+                //case EVMType.RawUInt32:
+                //case EVMType.RawInt64:
+                //case EVMType.RawUInt64:
+                //case EVMType.RawFloat32:
+                //case EVMType.RawFloat64:
                     valnum2 = sval2.GetValueObject() as dynamic;
                     break;
             }
