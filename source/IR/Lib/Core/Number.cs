@@ -18,21 +18,21 @@ namespace SimpleLanguage.Lib
     {
 
     }
-
-
     public class Int32ObjectData : BaseObjectData
     {
 
     }
+
+
     public static class Int32Class
     {
-        public static string GetValueToString(System.Object obj)
+        public static string GetValueToString(Int32Object sobj)
         {
-            if( obj.GetType() == typeof(System.Int32) )
-            {
-                return obj.ToString();
-            }
-            Int32Object sobj = obj as Int32Object;
+            //if( obj.GetType() == typeof(System.Int32) )
+            //{
+            //    return obj.ToString();
+            //}
+            //Int32Object sobj = obj as Int32Object;
             if(sobj != null )
             {
                 return sobj.value.ToString();

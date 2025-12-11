@@ -1,11 +1,67 @@
 ﻿
 using SimpleLanguage.CSharp;
 using SimpleLanguage.VM;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Core
 {
     public class MetaTypeCSharp
     {
+        public static MetaClass GetMetaClassByCSharpType(System.Type type)
+        {
+            string typeName = type.Name;
+            switch (typeName)
+            {
+                case "Boolean":
+                case "BoolObject":
+                    return CoreMetaClassManager.byteMetaClass;
+                case "Byte":
+                case "ByteObject":
+                    return CoreMetaClassManager.byteMetaClass;
+                case "SByte":
+                case "SByteObject":
+                    return CoreMetaClassManager.sbyteMetaClass;
+                case "Int16":
+                case "Int16Object":
+                    return CoreMetaClassManager.int16MetaClass;
+                case "UInt16":
+                case "UInt16Object":
+                    return CoreMetaClassManager.uint16MetaClass;
+                case "Int32":
+                case "Int32Object":
+                    return CoreMetaClassManager.int32MetaClass;
+                case "UInt32":
+                case "UInt32Object":
+                    return CoreMetaClassManager.uint32MetaClass;
+                case "Int64":
+                case "Int64Object":
+                    return CoreMetaClassManager.int64MetaClass;
+                case "UInt64":
+                case "UInt64Object":
+                    return CoreMetaClassManager.uint64MetaClass;
+                case "Float32":
+                case "Float32Object":
+                    return CoreMetaClassManager.float32MetaClass;
+                case "Float64":
+                case "Float64Object":
+                    return CoreMetaClassManager.float64MetaClass;
+                case "String":
+                case "StringObject":
+                    return CoreMetaClassManager.stringMetaClass;
+                case "Object":
+                case "SObject":
+                    return CoreMetaClassManager.objectMetaClass;
+                case "Void":
+                case "VoidObject":
+                    return CoreMetaClassManager.voidMetaClass;
+                case "ArrayObject":
+                    {
+                        return CoreMetaClassManager.arrayMetaClass;
+                    }
+            }
+            Debug.Assert(false);
+            return null;
+        }
         public static string GetClassNameByCSharpType(System.Type type)
         {
             if (type == null)
@@ -33,55 +89,72 @@ namespace SimpleLanguage.Core
         }
         public static System.Type FindCSharpType( MetaClass mc )
         {
-            System.Type type = null;
-
-            if (mc == CoreMetaClassManager.byteMetaClass)
+            System.Type type = null;// typeof( mc );
+            
+            if( mc == CoreMetaClassManager.booleanMetaClass )
             {
-                type = typeof(System.Byte);
+                type = typeof(BoolObject);
+                //type = typeof(System.Boolean);
+            }
+            else if (mc == CoreMetaClassManager.byteMetaClass)
+            {
+                type = typeof(Int8Object);
+                //type = typeof(System.Byte);
             }
             else if (mc == CoreMetaClassManager.sbyteMetaClass)
             {
-                type = typeof(System.SByte);
+                type = typeof(SInt8Object);
+                //type = typeof(System.SByte);
             }
             else if (mc == CoreMetaClassManager.int16MetaClass)
             {
-                type = typeof(System.Int16);
+                type = typeof(Int16Object);
+                //type = typeof(System.Int16);
             }
             else if (mc == CoreMetaClassManager.uint16MetaClass)
             {
-                type = typeof(System.UInt16);
+                type = typeof(UInt16Object);
+                //type = typeof(System.UInt16);
             }
             else if (mc == CoreMetaClassManager.int32MetaClass)
             {
-                type = typeof(System.Int32);
+                type = typeof(Int32Object);
+                //type = typeof(System.Int32);
             }
             else if(mc == CoreMetaClassManager.uint32MetaClass )
             {
-                type = typeof(System.UInt32);
+                type = typeof(UInt32Object);
+                //type = typeof(System.UInt32);
             }
             else if (mc == CoreMetaClassManager.int64MetaClass)
             {
-                type = typeof(System.Int64);
+                type = typeof(Int64Object);
+                //type = typeof(System.Int64);
             }
             else if (mc == CoreMetaClassManager.uint64MetaClass)
             {
-                type = typeof(System.UInt64);
+                type = typeof(UInt64Object);
+                //type = typeof(System.UInt64);
             }
             else if (mc == CoreMetaClassManager.float32MetaClass)
             {
-                type = typeof(System.Single);
+                type = typeof(Float32Object);
+                //type = typeof(System.Single);
             }
             else if (mc == CoreMetaClassManager.float64MetaClass)
             {
-                type = typeof(System.Double);
+                type = typeof(Float64Object);
+                //type = typeof(System.Double);
             }
             else if( mc == CoreMetaClassManager.stringMetaClass )
             {
-                type = typeof(System.String);
+                type = typeof(StringObject);
+                //type = typeof(System.String);
             }
             else if( mc == CoreMetaClassManager.objectMetaClass )
             {
-                type = typeof(System.Object);
+                type = typeof(SObject);
+                //type = typeof(System.Object);
             }
             else if( mc == CoreMetaClassManager.arrayMetaClass )
             {
@@ -91,6 +164,7 @@ namespace SimpleLanguage.Core
             {
                 type = CSharpManager.FindCSharpType(mc.allClassName );
             }
+            
             return type;
         }
     }
