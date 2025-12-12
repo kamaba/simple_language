@@ -11,9 +11,6 @@ namespace SimpleLanguage.VM
 {
     public class TemplateObject : SObject
     {
-        private ClassObject m_ExtendObject = null;
-
-        public object value;
         public TemplateObject() :base(  )
         {
         }

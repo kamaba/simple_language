@@ -633,7 +633,8 @@ namespace SimpleLanguage.VM
                             ClassObject classObj = null;
                             if (anyobj != null)
                             {
-                                anyobj.SetValue(svalue.sobject);
+                                m_MemberObjectArray[index] = svalue.sobject;
+                                //anyobj.SetValue(svalue.sobject);
                                 return;
                             }
                             classObj = m_MemberObjectArray[index] as ClassObject;
