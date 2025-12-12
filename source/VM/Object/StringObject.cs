@@ -25,6 +25,7 @@ namespace SimpleLanguage.VM
         public void SetValue(String _val)
         {
             value = _val;
+            m_IsNull = false;
         }
         public static StringObject SetToString( Int32MetaClass mc )
         {
