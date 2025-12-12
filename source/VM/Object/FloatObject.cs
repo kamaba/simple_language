@@ -20,6 +20,7 @@ namespace SimpleLanguage.VM
         public void SetValue(Single _val)
         {
             value = _val;
+            m_IsNull = false;
         }
         public Int32 ToInt()
         {
@@ -41,6 +42,7 @@ namespace SimpleLanguage.VM
         public void SetValue(Double _val)
         {
             value = _val;
+            m_IsNull = false;
         }
         public override string ToFormatString()
         {

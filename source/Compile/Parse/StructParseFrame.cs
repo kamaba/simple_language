@@ -1403,6 +1403,10 @@ namespace SimpleLanguage.Compile
                 {
                     list.Add(node.childList[i]);
                 }
+                else
+                {
+                    node.childList[i].parseIndex = 0;
+                }
             }
             node.childList = list;
         }

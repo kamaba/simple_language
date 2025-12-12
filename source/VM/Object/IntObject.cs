@@ -22,6 +22,7 @@ namespace SimpleLanguage.VM
         public void SetValue(bool _val)
         {
             value = _val;
+            m_IsNull = false;
         }
         public override string ToFormatString()
         {
@@ -38,6 +39,7 @@ namespace SimpleLanguage.VM
         public void SetValue(Byte _val)
         {
             value = _val;
+            m_IsNull = false;
         }
         public override string ToFormatString()
         {
@@ -55,6 +57,7 @@ namespace SimpleLanguage.VM
         public void SetValue(SByte _val)
         {
             value = _val;
+            m_IsNull = false;
         }
         public override string ToFormatString()
         {
@@ -71,6 +74,7 @@ namespace SimpleLanguage.VM
         public void SetValue(Int16 _val)
         {
             value = _val;
+            m_IsNull = false;
         }
         public override string ToFormatString()
         {
@@ -87,6 +91,7 @@ namespace SimpleLanguage.VM
         public void SetValue(UInt16 _val)
         {
             value = _val;
+            m_IsNull = false;
         }
         public override string ToFormatString()
         {
@@ -104,6 +109,7 @@ namespace SimpleLanguage.VM
         public void SetValue(Int32 _val)
         {
             value = (int)_val;
+            m_IsNull = false;
         }
         public void AddInt32( Int32Object int32Obj )
         {
@@ -185,6 +191,7 @@ namespace SimpleLanguage.VM
         public void SetValue(UInt32 _val)
         {
             value = _val;
+            m_IsNull = false;
         }
         public override string ToFormatString()
         {
@@ -203,6 +210,7 @@ namespace SimpleLanguage.VM
         public void SetValue(Int64 _val)
         {
             value = _val;
+            m_IsNull = false;
         }
         public override string ToFormatString()
         {
@@ -219,6 +227,7 @@ namespace SimpleLanguage.VM
         public void SetValue(UInt64 _val)
         {
             value = _val;
+            m_IsNull = false;
         }
         public override string ToFormatString()
         {
