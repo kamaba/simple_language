@@ -664,6 +664,14 @@ namespace SimpleLanguage.Core
 
                 var cmcmt = cmc.GetRetMetaType();
                 var nmcmt = nmc.GetRetMetaType();
+                if( cmcmt.isNull )
+                {
+                    return CoreMetaClassManager.objectMetaClass;
+                }
+                if( nmcmt.isNull )
+                {
+                    return CoreMetaClassManager.objectMetaClass;
+                }
                 if( cmcmt.isArray && nmcmt.isArray && frontOpLevel < nmc.opLevel )
                 {
                     mc = CoreMetaClassManager.arrayMetaClass;
