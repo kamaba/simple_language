@@ -16,6 +16,9 @@ namespace SimpleLanguage.Lib
     }
     public static class StringObject
     {
-
+        public static string Int32ToString( int d )
+        {
+            return d.ToString();
+        }
     }
 }

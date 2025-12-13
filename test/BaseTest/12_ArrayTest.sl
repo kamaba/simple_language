@@ -36,14 +36,14 @@ namespace Core
     }
     class Int32
     {
-        _init_(Int32 val )
+        Int32 _value = 0i
+        _init_( Int32 val )
         {
-            
+            this._value = val
         }
-
         override string toString()
         {
-            ret Lib.Int32Class.GetValueToString( this )
+            ret SimpleLanguage.Lib.StringObject.Int32ToString(this._value)
         }
     }
     class UInt32
@@ -71,6 +71,11 @@ namespace Core
     }
     class String
     {
+        String _value = "";
+        _init_( Int32 _val )
+        {
+            
+        }
         _init_( String str )
         {
 
@@ -114,7 +119,7 @@ namespace Core
     public class IterateVariable interface IIterator
     {
         _start = 0
-        _index = 0
+        public _index = 0
         _value = null
         IIterator _iterator = null
         _isDone = false;
@@ -126,7 +131,10 @@ namespace Core
             this._iterator.reset()
         }
         get int index(){ ret this._index }
-        get object value(){ ret this._value }
+        get object value()
+        {
+             ret this._value 
+        }
 
         override void reset()
         {
@@ -142,8 +150,10 @@ namespace Core
                 ret false
             }
             this._index++
-            this._isDone = this._iterator.moveNext()            
-            ret this._isDone
+            var flag = this._iterator.moveNext()
+            this._value = this._iterator.current()
+            this._isDone = !flag
+            ret flag
         }
         override get object current()
         {
@@ -153,6 +163,17 @@ namespace Core
         override void release()
         {
             
+        }
+        override string toString()
+        {
+            if( this._value != null )
+            {
+                ret this._value.toString()
+            }
+            else
+            {
+                ret ""
+            }
         }
     }
     public class Array interface IIterable, IIterator
@@ -202,7 +223,7 @@ namespace Core
                 this._current = null
             }
             this._index++;
-            System.Console.WriteLine("index=============== " + this._index )
+            #System.Console.WriteLine(" Array.moveNext-----" + this._index )
             ret hasNext_var
         }
         override object current()
@@ -279,14 +300,14 @@ ArrayTest
     }
     static fun()
     { 
-        #int intvalue = 20
+        int intvalue = 20
         #var ac = ArrClass(){ i1 = intvalue, i2 = "okok" }
         #System.Console.WriteLine("1111111111= " + ac.i1 + "    " + ac.i2 )
 
          # arr22 = int[2][] { [1,2,3,4] }
-        #li = Level<int>(100)
-        #a1 = Level<int>[5]{ Level<int>(3), null, Level<int>(4) }
-        a1 = [101,102]
+        li = Level<int>(100)
+        a1 = Level<int>[5]{ Level<int>(3), null, Level<int>(4), li }
+        #a1 = [101,102,null,104]
 
         #a1 = object[4]{intvalue,null,3 };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         
@@ -296,11 +317,11 @@ ArrayTest
         {
             if v.value != null
             {
-                System.Console.WriteLine("----------= " + v.toString() )
+                System.Console.WriteLine("------------value: " + v.toString() )
             }
             else
             {                
-                System.Console.WriteLine("----------= " + v.index )
+                System.Console.WriteLine("============index: " + v._index )
             }
         }
         #!

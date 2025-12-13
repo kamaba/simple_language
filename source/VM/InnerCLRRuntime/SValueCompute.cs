@@ -19,7 +19,7 @@ namespace SimpleLanguage.VM
         {
             switch (this.eType)
             {
-                case EType.Int64:
+                case EVMType.Int64:
                     {
                         long svalLong = (long)svalue.GetValueObject();
                         if(sign==0)
@@ -44,9 +44,9 @@ namespace SimpleLanguage.VM
                             int64Value = int64Value >> (int)svalLong;
                     }
                     break;
-                case EType.UInt64:
+                case EVMType.UInt64:
                     {
-                        if(svalue.eType == EType.UInt64 )
+                        if(svalue.eType == EVMType.UInt64 )
                         {
                             if (sign == 0)
                                 uint64Value += svalue.uint64Value;
@@ -95,7 +95,7 @@ namespace SimpleLanguage.VM
                         }
                     }
                     break;
-                case EType.Int32:
+                case EVMType.Int32:
                     {
                         int svalInt = (int)svalue.GetValueObject();
                         if (sign == 0)
@@ -120,7 +120,7 @@ namespace SimpleLanguage.VM
                             int32Value = int32Value >> (int)svalInt;
                     }
                     break;
-                case EType.UInt32:
+                case EVMType.UInt32:
                     {
                         uint svalUInt = (uint)svalue.GetValueObject();
                         if (sign == 0)
@@ -145,7 +145,7 @@ namespace SimpleLanguage.VM
                             uint32Value = uint32Value >> (int)svalUInt;
                     }
                     break;
-                case EType.Int16:
+                case EVMType.Int16:
                     {
                         short svalShort = (short)svalue.GetValueObject();
                         if (sign == 0)
@@ -170,7 +170,7 @@ namespace SimpleLanguage.VM
                             int16Value = (short)(int16Value >> svalShort);
                     }
                     break;
-                case EType.UInt16:
+                case EVMType.UInt16:
                     {
 
                         short svalShort = (short)svalue.GetValueObject();
@@ -196,7 +196,7 @@ namespace SimpleLanguage.VM
                             int16Value = (short)(int16Value >> svalShort);
                     }
                     break;
-                //case EType.Char:
+                //case EVMType.Char:
                 //    {
 
                 //        char svalChar = (char)svalue.GetValueObject();
@@ -222,7 +222,7 @@ namespace SimpleLanguage.VM
                 //            charValue = (char)(charValue >> svalChar);
                 //    }
                 //    break;
-                case EType.Byte:
+                case EVMType.Byte:
                     {
 
                         byte svalByte = (byte)svalue.GetValueObject();
@@ -248,7 +248,7 @@ namespace SimpleLanguage.VM
                             int8Value = (byte)(int16Value >> svalByte);
                     }
                     break;
-                case EType.SByte:
+                case EVMType.SByte:
                     {
 
                         sbyte svalSbyte = (sbyte)svalue.GetValueObject();
@@ -274,7 +274,7 @@ namespace SimpleLanguage.VM
                             sint8Value = (sbyte)(sint8Value >> svalSbyte);
                     }
                     break;
-                case EType.Float32:
+                case EVMType.Float32:
                     {
                         float svalFloat = (float)svalue.GetValueObject();
                         if (sign == 0)
@@ -293,7 +293,7 @@ namespace SimpleLanguage.VM
                         }
                     }
                     break;
-                case EType.Float64:
+                case EVMType.Float64:
                     {
                         double svalDouble = (double)svalue.GetValueObject();
                         if (sign == 0)
@@ -322,10 +322,10 @@ namespace SimpleLanguage.VM
         public void AddSValue(ref SValue sval, bool isUnsign, out bool isMethodCall )
         {
             isMethodCall = false;
-            if (sval.eType == EType.String)
+            if (sval.eType == EVMType.String)
             {
                 string str = "";
-                if( this.eType == EType.Class )
+                if( this.eType == EVMType.Class )
                 {
                     ClassObject co = this.sobject as ClassObject;
                     if (co != null)
@@ -348,13 +348,13 @@ namespace SimpleLanguage.VM
                 {
                     str = sval.GetValueObject().ToString();
                 }
-                stringValue = str + this.GetValueObject().ToString();
-                this.eType = EType.String;
+                stringValue = this.GetValueObject().ToString() + str;
+                this.eType = EVMType.String;
             }
-            else if (this.eType == EType.String)
+            else if (this.eType == EVMType.String)
             {
                 string str = "";
-                if (sval.eType == EType.Class)
+                if (sval.eType == EVMType.Class)
                 {
                     ClassObject co = sval.sobject as ClassObject;
                     if (co != null)
@@ -380,13 +380,13 @@ namespace SimpleLanguage.VM
                 }
                 stringValue = this.GetValueObject().ToString() + str;
             }
-            else if( this.eType == EType.Array )
+            else if( this.eType == EVMType.Array )
             {
                 // 处理array1 + array2
             }
             else
             {
-                if( this.eType == EType.Class )
+                if( this.eType == EVMType.Class )
                 {
                     ClassObject co = sval.sobject as ClassObject;
                     if (co != null)
@@ -436,62 +436,62 @@ namespace SimpleLanguage.VM
         {
             switch (eType)
             {
-                case EType.Byte:
+                case EVMType.Byte:
                     {
-                        eType = EType.Boolean;
+                        eType = EVMType.Boolean;
                        int8Value = (int8Value== 0) ? (byte)1: (byte)0;
                     }
                     break;
-                case EType.SByte:
+                case EVMType.SByte:
                     {
-                        eType = EType.Boolean;
+                        eType = EVMType.Boolean;
                         int8Value = (sint8Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
-                case EType.Boolean:
+                case EVMType.Boolean:
                     {
                         int8Value = (int8Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
-                //case EType.Char:
+                //case EVMType.Char:
                 //    {
-                //        eType = EType.Boolean;
+                //        eType = EVMType.Boolean;
                 //        int8Value = (charValue == 0) ? (byte)1 : (byte)0;
                 //    }
                 //    break;
-                case EType.Int16:
+                case EVMType.Int16:
                     {
-                        eType = EType.Boolean;
+                        eType = EVMType.Boolean;
                         int8Value = (int16Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
-                case EType.UInt16:
+                case EVMType.UInt16:
                     {
-                        eType = EType.Boolean;
+                        eType = EVMType.Boolean;
                         int8Value = (uint16Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
-                case EType.Int32:
+                case EVMType.Int32:
                     {
-                        eType = EType.Boolean;
+                        eType = EVMType.Boolean;
                         int8Value = (int32Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
-                case EType.UInt32:
+                case EVMType.UInt32:
                     {
-                        eType = EType.Boolean;
+                        eType = EVMType.Boolean;
                         int8Value = (uint32Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
-                case EType.Int64:
+                case EVMType.Int64:
                     {
-                        eType = EType.Boolean;
+                        eType = EVMType.Boolean;
                         int8Value = (uint32Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
-                case EType.UInt64:
+                case EVMType.UInt64:
                     {
-                        eType = EType.Boolean;
+                        eType = EVMType.Boolean;
                         int8Value = (uint64Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
@@ -501,52 +501,52 @@ namespace SimpleLanguage.VM
         {
             switch (eType)
             {
-                case EType.Byte:
+                case EVMType.Byte:
                     {
-                        eType = EType.Int32;
+                        eType = EVMType.Int32;
                         int32Value = -int8Value;
                     }
                     break;
-                case EType.SByte:
+                case EVMType.SByte:
                     {
-                        eType = EType.Int32;
+                        eType = EVMType.Int32;
                         int32Value = -sint8Value;
                     }
                     break;
-                //case EType.Char:
+                //case EVMType.Char:
                 //    {
-                //        eType = EType.Int32;
+                //        eType = EVMType.Int32;
                 //        int32Value = -charValue;
                 //    }
                 //    break;
-                case EType.Int16:
+                case EVMType.Int16:
                     {
                         int16Value = (short)(-int16Value);
                     }
                     break;
-                case EType.UInt16:
+                case EVMType.UInt16:
                     {
-                        eType = EType.Int32;
+                        eType = EVMType.Int32;
                         int32Value = (-uint16Value);
                     }
                     break;
-                case EType.Int32:
+                case EVMType.Int32:
                     {
                         int32Value = -int32Value;
                     }
                     break;
-                case EType.UInt32:
+                case EVMType.UInt32:
                     {
-                        eType = EType.Int64;
+                        eType = EVMType.Int64;
                         int64Value = -uint32Value;
                     }
                     break;
-                case EType.Int64:
+                case EVMType.Int64:
                     {
                         int64Value = -int64Value;
                     }
                     break;
-                case EType.UInt64:
+                case EVMType.UInt64:
                     {
                         Debug.Write("Error -value 1");
                     }

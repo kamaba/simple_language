@@ -133,24 +133,24 @@ namespace SimpleLanguage.VM.Runtime
         {
             switch (sStore.eType)
             {
-                case EType.Boolean:
-                case EType.Byte: sStore.SetInt8Value(sValue.int8Value); break;
-                case EType.SByte: sStore.SetSInt8Value(sValue.sint8Value); break;
-                case EType.Int16: sStore.SetInt16Value(sValue.int16Value); break;
-                case EType.UInt16: sStore.SetUInt16Value(sValue.uint16Value); break;
-                case EType.Int32: sStore.SetInt32Value(sValue.int32Value); break;
-                case EType.UInt32: sStore.SetUInt32Value(sValue.uint32Value); break;
-                case EType.Int64: sStore.SetInt64Value(sValue.int64Value); break;
-                case EType.UInt64: sStore.SetUInt64Value(sValue.uint64Value); break;
-                case EType.Float32: sStore.SetFloatValue(sValue.floatValue); break;
-                case EType.Float64: sStore.SetDoubleValue(sValue.doubleValue); break;
-                case EType.String: sStore.SetStringValue(sValue.stringValue); break;
-                case EType.Null:
+                case EVMType.Boolean:
+                case EVMType.Byte: sStore.SetInt8Value(sValue.int8Value); break;
+                case EVMType.SByte: sStore.SetSInt8Value(sValue.sint8Value); break;
+                case EVMType.Int16: sStore.SetInt16Value(sValue.int16Value); break;
+                case EVMType.UInt16: sStore.SetUInt16Value(sValue.uint16Value); break;
+                case EVMType.Int32: sStore.SetInt32Value(sValue.int32Value); break;
+                case EVMType.UInt32: sStore.SetUInt32Value(sValue.uint32Value); break;
+                case EVMType.Int64: sStore.SetInt64Value(sValue.int64Value); break;
+                case EVMType.UInt64: sStore.SetUInt64Value(sValue.uint64Value); break;
+                case EVMType.Float32: sStore.SetFloatValue(sValue.floatValue); break;
+                case EVMType.Float64: sStore.SetDoubleValue(sValue.doubleValue); break;
+                case EVMType.String: sStore.SetStringValue(sValue.stringValue); break;
+                case EVMType.Null:
                     {
                         sStore.SetNull();
                     }
                     break;
-                case EType.Class:
+                case EVMType.Class:
                     {
                         sStore.SetSObject(sValue.sobject);
                     }

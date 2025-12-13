@@ -664,6 +664,14 @@ namespace SimpleLanguage.Core
 
                 var cmcmt = cmc.GetRetMetaType();
                 var nmcmt = nmc.GetRetMetaType();
+                if( cmcmt.isNull )
+                {
+                    return CoreMetaClassManager.objectMetaClass;
+                }
+                if( nmcmt.isNull )
+                {
+                    return CoreMetaClassManager.objectMetaClass;
+                }
                 if( cmcmt.isArray && nmcmt.isArray && frontOpLevel < nmc.opLevel )
                 {
                     mc = CoreMetaClassManager.arrayMetaClass;
@@ -1024,7 +1032,6 @@ namespace SimpleLanguage.Core
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
-            m_RealMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             m_NewType = ENewType.ArrayClass;
             m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(maen, mc, mbs, equalMV );
         }
@@ -1283,7 +1290,7 @@ namespace SimpleLanguage.Core
                 {
                     if (m_MetaType == null)
                     {
-                        m_MetaType = new MetaType(m_RealMetaType);
+                        m_MetaType = new MetaType(m_RealMetaType);                        
                     }
                     else
                     {

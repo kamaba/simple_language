@@ -47,7 +47,6 @@ namespace SimpleLanguage.Core
             {
                 m_ReturnMetaDefineType = new MetaType( CoreMetaClassManager.voidMetaClass );
             }
-
         }        
         public override string ToFormatString()
         {

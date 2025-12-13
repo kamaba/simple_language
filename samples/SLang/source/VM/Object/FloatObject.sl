@@ -1,5 +1,5 @@
 ﻿//****************************************************************************
-//  File:      FloatObject.cs
+//  File:      Float32Object.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/11/22 12:00:00
@@ -9,10 +9,10 @@
 using System;
 namespace SimpleLanguage.VM
 {
-    public class FloatObject : SObject
+    public class Float32Object : SObject
     {
         public Single value;
-        public FloatObject() : base(EType.Float32)
+        public Float32Object() : base(EType.Float32)
         { }
         public void SetValue(Single _val)
         {

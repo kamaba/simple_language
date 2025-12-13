@@ -124,18 +124,17 @@ namespace SimpleLanguage.Core
 
         //    Parse();
         //}
-        public MetaMemberVariable(MetaClass mc, string _name, MetaClass _defineTypeClass, MetaConstExpressNode men = null )
-        {
-            m_Name = _name;
-            m_IsInnerDefine = true;
-            m_FromType = EFromType.Manual;
-            m_DefineMetaType = new MetaType(_defineTypeClass);
-            m_DefineMetaType.SetMetaClass(_defineTypeClass);
-            m_Express = men;
-            m_VariableFrom = EVariableFrom.Member;
+        //public MetaMemberVariable(MetaClass mc, string _name, MetaClass _defineTypeClass, MetaConstExpressNode men = null )
+        //{
+        //    m_Name = _name;
+        //    m_IsInnerDefine = true;
+        //    m_FromType = EFromType.Manual;
+        //    m_DefineMetaType = new MetaType(_defineTypeClass);
+        //    m_Express = men;
+        //    m_VariableFrom = EVariableFrom.Member;
 
-            SetOwnerMetaClass(mc);
-        }
+        //    SetOwnerMetaClass(mc);
+        //}
         public MetaMemberVariable( MetaClass mc, FileMetaMemberVariable fmmv )
         {
             m_FileMetaMemeberVariable = fmmv;
@@ -448,13 +447,13 @@ namespace SimpleLanguage.Core
                     {
                         if( !(constExpressNode != null && constExpressNode.eType == EType.Null ) )
                         {
-                            if (expressRetMetaDefineType.isArray)
+                            if( TypeManager.IsCoreMetaType( expressRetMetaDefineType ) )
                             {
 
                             }
-                            else 
+                            else
                             {
-                                if( expressRetMetaDefineType.metaClass == ownerMetaClass && !m_IsStatic )
+                                if (expressRetMetaDefineType.metaClass == ownerMetaClass && !m_IsStatic)
                                 {
                                     Log.AddInStructMeta(EError.None, "Error 自己类内部不允许包含 自己的实体2，必须赋值为null");
                                     return;

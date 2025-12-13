@@ -5,11 +5,13 @@
 //  DateTime: 2022/11/30 12:00:00
 //  Description: master use .net clr system. new create method instance than running code virtual machine 
 //****************************************************************************
+using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -19,11 +21,31 @@ namespace SimpleLanguage.VM.Runtime
         None,
         Null,
         Void,
+        Object,
         Class,
         Enum,
         Data,
+        Array,
+
+        /*
+        RawBoolean,
+        RawByte,
+        RawSByte,
+        RawInt16,
+        RawUInt16,
+        RawInt32,
+        RawUInt32,
+        RawFloat16,
+        RawFloat32,
+        RawInt64,
+        RawUInt64,
+        RawFloat64,
+        RawInt128,
+        RawUInt128,
+        RawString,
+        */
+
         Boolean,
-        Bit,
         Byte,
         SByte,
         Int16,
@@ -46,7 +68,7 @@ namespace SimpleLanguage.VM.Runtime
         public bool isPersistent { get; set; } = false;
         public SObject[] returnObjectArray => m_ReturnObjectArray;
 
-        private SValue[] m_ValueStack = null;
+        public SValue[] m_ValueStack = null;
         public ushort m_ValueIndex = 0;
 
         private List<RuntimeType> m_InputTemplateRuntimeTypeList = new List<RuntimeType>();
@@ -181,8 +203,8 @@ namespace SimpleLanguage.VM.Runtime
             for( int i = 0; i < sobjs.Length; i++ )
             {
                 if( sobjs[i].runtimeType != RuntimeTypeManager.voidRuntimeType )
-                {
-                    m_ValueStack[m_ValueIndex++].SetSObject(sobjs[i]);
+                {                    
+                    GetObjectByValue(4, i, sobjs, ref m_ValueStack[m_ValueIndex++] );
                 }
             }
         }
@@ -201,14 +223,14 @@ namespace SimpleLanguage.VM.Runtime
 
             return m_LocalVariableObjectArray[index];
         }
-        public SObject GetArgumentValue( int index )
+        public void GetArgumentValue( int index, ref SValue svalue )
         {
             if (index > m_ArgumentObjectArray.Length)
             {
                 Log.AddVM(EError.None, $"SVM Error FunctionName:{this.id} 执行的参数超出范围!!");
-                return null;
+                return;
             }
-            return m_ArgumentObjectArray[index];
+            GetObjectByValue( 0, index, null, ref svalue);
         }
         public void SetArgumentValue( int index, SValue svalue)
         {
@@ -217,7 +239,7 @@ namespace SimpleLanguage.VM.Runtime
                 Log.AddVM(EError.None, "执行的参数超出范围!!");
                 return;
             }
-            ObjectManager.SetObjectByValue(m_ArgumentObjectArray[index], ref svalue);
+            SetObjectByValue( 0, index, ref svalue);
         }
         public void SetLocalVariableSValue(int index, SValue svalue)
         {
@@ -226,7 +248,16 @@ namespace SimpleLanguage.VM.Runtime
                 Log.AddVM(EError.None, "执行的栈超出范围!!");
                 return;
             }
-            ObjectManager.SetObjectByValue(m_LocalVariableObjectArray[index], ref svalue);
+            SetObjectByValue(1, index, ref svalue);
+        }
+        public void GetLocalVariableSValue(int index, ref SValue svalue)
+        {
+            if (index > m_LocalVariableObjectArray.Length)
+            {
+                Log.AddVM(EError.None, "执行的栈超出范围!!");
+                return;
+            }
+            GetObjectByValue(1, index, null, ref svalue);
         }
         public void SetReturnVariableSValue(int index, SValue svalue)
         {
@@ -235,7 +266,7 @@ namespace SimpleLanguage.VM.Runtime
                 Log.AddVM(EError.None, "执行的栈超出范围!!");
                 return;
             }
-            ObjectManager.SetObjectByValue(m_ReturnObjectArray[index], ref svalue);
+            SetObjectByValue(2, index, ref svalue);
         }
         public SValue GetCurrentIndexValue( int index  )
         {
@@ -300,7 +331,10 @@ namespace SimpleLanguage.VM.Runtime
         {
             SValue sval = InnerCLRRuntimeVM.topCLRRuntime.GetCurrentIndexValue(InnerCLRRuntimeVM.topCLRRuntime.m_ValueIndex - 1);
             m_ValueStack[m_ValueIndex++] = sval;
-            m_IRMetaClass = (sval.sobject as ClassObject).irMetaClass;
+            if( sval.eType == EVMType.Class )
+            {
+                m_IRMetaClass = (sval.sobject as ClassObject).irMetaClass;
+            }
         }
         public void ClearNewObject()
         {
@@ -355,29 +389,29 @@ namespace SimpleLanguage.VM.Runtime
         {
             switch (sStore.eType)
             {
-                case EType.Boolean:
-                case EType.Byte: sStore.SetInt8Value(sValue.int8Value); break;
-                case EType.SByte: sStore.SetSInt8Value(sValue.sint8Value); break;
-                case EType.Int16: sStore.SetInt16Value(sValue.int16Value); break;
-                case EType.UInt16: sStore.SetUInt16Value(sValue.uint16Value); break;
-                case EType.Int32: sStore.SetInt32Value(sValue.int32Value); break;
-                case EType.UInt32: sStore.SetUInt32Value(sValue.uint32Value); break;
-                case EType.Int64: sStore.SetInt64Value(sValue.int64Value); break;
-                case EType.UInt64: sStore.SetUInt64Value(sValue.uint64Value); break;
-                case EType.Float32: sStore.SetFloatValue(sValue.floatValue); break;
-                case EType.Float64: sStore.SetDoubleValue(sValue.doubleValue); break;
-                case EType.String: sStore.SetStringValue(sValue.stringValue); break;
-                case EType.Null:
+                case EVMType.Boolean:
+                case EVMType.Byte: sStore.SetInt8Value(sValue.int8Value); break;
+                case EVMType.SByte: sStore.SetSInt8Value(sValue.sint8Value); break;
+                case EVMType.Int16: sStore.SetInt16Value(sValue.int16Value); break;
+                case EVMType.UInt16: sStore.SetUInt16Value(sValue.uint16Value); break;
+                case EVMType.Int32: sStore.SetInt32Value(sValue.int32Value); break;
+                case EVMType.UInt32: sStore.SetUInt32Value(sValue.uint32Value); break;
+                case EVMType.Int64: sStore.SetInt64Value(sValue.int64Value); break;
+                case EVMType.UInt64: sStore.SetUInt64Value(sValue.uint64Value); break;
+                case EVMType.Float32: sStore.SetFloatValue(sValue.floatValue); break;
+                case EVMType.Float64: sStore.SetDoubleValue(sValue.doubleValue); break;
+                case EVMType.String: sStore.SetStringValue(sValue.stringValue); break;
+                case EVMType.Null:
                     {
                         sStore.SetNull();
                     }
                     break;
-                case EType.Class:
+                case EVMType.Class:
                     {
                         (sStore.sobject as ClassObject).SetMemberVariableSValue(iri.index, sValue);
                     }
                     break;
-                case EType.Array:
+                case EVMType.Array:
                     {
                         (sStore.sobject as ArrayObject).SetMemberVariableSValue(iri.index, sValue);
                     }
@@ -392,7 +426,7 @@ namespace SimpleLanguage.VM.Runtime
         public void RunInstruction( IRData iri )
         {
             //栈位的移动的规则，使用当前位为空的概念，只要栈被使用掉，索引则加1，所以索引最少为0
-             switch ( iri.opCode )
+            switch ( iri.opCode )
             {
                 case EIROpCode.Nop:
                     break;
@@ -468,64 +502,62 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Convert_I8:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.Byte);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Byte);
                     }
                     break;
                 case EIROpCode.Convert_SI8:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.SByte);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.SByte);
                     }
                     break;
                 case EIROpCode.Convert_I16:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.Int16);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int16);
                     }
                     break;
                 case EIROpCode.Convert_UI16:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.UInt16);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt16);
                     }
                     break;
                 case EIROpCode.Convert_I32:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.Int32);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int32);
                     }
                     break;
                 case EIROpCode.Convert_UI32:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.UInt32);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt32);
                     }
                     break;
                 case EIROpCode.Convert_I64:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.Int64);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int64);
                     }
                     break;
                 case EIROpCode.Convert_UI64:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.UInt64);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt64);
                     }
                     break;
                 case EIROpCode.Convert_R4:
                     {
-                        m_ValueStack[m_ValueIndex-1].ConvertByEType(EType.Float32);
+                        m_ValueStack[m_ValueIndex-1].ConvertByEType(EVMType.Float32);
                     }
                     break;
                 case EIROpCode.Convert_R8:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EType.Float64);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Float64);
                     }
                     break;
                 case EIROpCode.LoadArgument:
                     {
-                        var vval = GetArgumentValue(iri.index);
-                        m_ValueStack[m_ValueIndex++].SetSObject(vval);
+                        GetArgumentValue(iri.index, ref m_ValueStack[m_ValueIndex++]);
                     }
                     break;
                 case EIROpCode.LoadLocal:
                     {
-                        var vval = GetLocalVariableValue(iri.index);
-                        m_ValueStack[m_ValueIndex++].SetSObject( vval );
+                        GetLocalVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex++]);
                     }
                     break;
                 case EIROpCode.StoreLocal:
@@ -536,21 +568,26 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.StoreReturn:
                     {
                         SetReturnVariableSValue(iri.index, m_ValueStack[--m_ValueIndex]);
+                        m_ExecuteIndex = m_ExecuteCount;
                     }
                     break; 
                 case EIROpCode.LoadNotStaticField:
                     {
                         var v = m_ValueStack[m_ValueIndex - 1];
 
-                        if (v.eType == EType.Class)
+                        if (v.eType == EVMType.Class || v.eType == EVMType.Array )
                         {
                             var co = (v.sobject as ClassObject);
-                            co.value.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
+                            co.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
                         }
-                        else if( v.eType == EType.Array )
+                        //else if( v.eType == EVMType.Int32 
+                        //    )
+                        //{
+
+                        //}
+                        else
                         {
-                            var co = (v.sobject as ArrayObject);
-                            co.value.GetMemberVariableSValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
+                            //Debug.Assert(false, "还未确定其它类型可以拿值 ，如果拿成员变量，应该也是固定的几个变量! 比如value一类的");
                         }
                         //栈位不变，因为当前对象位的被通过索引取出来的成员变量值，覆盖掉， 所以栈位不会发生变化
                     }
@@ -617,7 +654,7 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.LoadArrayIndex:
                     {
                         var v = m_ValueStack[m_ValueIndex - 1];
-                        if (v.eType == EType.Array)
+                        if (v.eType == EVMType.Array)
                         {
                             (v.sobject as ArrayObject).LoadValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
                         }
@@ -641,7 +678,7 @@ namespace SimpleLanguage.VM.Runtime
                         SValue sStore = m_ValueStack[m_ValueIndex - int1];
                         SValue sValue = m_ValueStack[m_ValueIndex - int2];
 
-                        if (sStore.eType == EType.Array)
+                        if (sStore.eType == EVMType.Array)
                         {
                             (sStore.sobject as ArrayObject).StoreValue(iri.index, sValue);
                         }
@@ -658,7 +695,7 @@ namespace SimpleLanguage.VM.Runtime
                         SValue arrayref = m_ValueStack[m_ValueIndex - 2];
                         SValue loadindex = m_ValueStack[m_ValueIndex - 1];
 
-                        if (arrayref.eType == EType.Array)
+                        if (arrayref.eType == EVMType.Array)
                         {
                             int index = (int)loadindex.GetValueObject();
                             (arrayref.sobject as ArrayObject).LoadValue(index, ref m_ValueStack[m_ValueIndex - 2]);
@@ -677,7 +714,7 @@ namespace SimpleLanguage.VM.Runtime
                         SValue arrayref = m_ValueStack[m_ValueIndex - 2];
                         SValue loadindex = m_ValueStack[m_ValueIndex - 1];
 
-                        if (arrayref.eType == EType.Array)
+                        if (arrayref.eType == EVMType.Array)
                         {
                             int index = (int)loadindex.GetValueObject();
                             (arrayref.sobject as ArrayObject).StoreValue(index, storevalue );
@@ -737,13 +774,13 @@ namespace SimpleLanguage.VM.Runtime
                                 return;
                             }
                             var v = m_ValueStack[stackIndex];
-                            if (v.eType == EType.Class)
+                            if (v.eType == EVMType.Class)
                             {
                                 var co = (v.sobject as ClassObject);
-                                irc = co.value.irMetaClass;
+                                irc = co.irMetaClass;
                                 rt = v.sobject.runtimeType;
                             }
-                            else if( v.eType == EType.Array )
+                            else if( v.eType == EVMType.Array )
                             {
                                 rt = RuntimeTypeManager.arrayRuntimeType;
                                 irc = IRManager.instance.GetIRMetaClassByName(v.eType.ToString());
@@ -821,17 +858,25 @@ namespace SimpleLanguage.VM.Runtime
 
                         RuntimeType rt = null;
                         IRMetaClass irc = null;
-                        if (v.eType == EType.Class)
+                        if (v.eType == EVMType.Class || v.eType == EVMType.Array )
                         {
                             var co = (v.sobject as ClassObject);
-                            irc = co.value.irMetaClass;
-                            rt = co.value.runtimeType;
+                            irc = co.irMetaClass;
+                            rt = co.runtimeType;
                         }
-                        else if( v.eType == EType.Array )
+                        else if( v.eType == EVMType.Object )
                         {
-                            irc = IRManager.instance.GetIRMetaClassByName("Array");
-                            rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irc);
+                            SObject co = (v.sobject.value) as SObject;
+                            m_ValueStack[stackIndex].SetSObject(co);
+                            Debug.Assert(co != null);
+                            irc = co.irMetaClass;
+                            rt = co.runtimeType;
                         }
+                        //else if( v.eType == EVMType.Array )
+                        //{
+                        //    irc = IRManager.instance.GetIRMetaClassByName("Array");
+                        //    rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irc);
+                        //}
                         else
                         {
                             irc = IRManager.instance.GetIRMetaClassByName(v.eType.ToString());
@@ -864,23 +909,8 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.CallCSharpMethod:
                     {
-                        var mfc = iri.opValue as IRCallFunction;
-                        Object targetObject = null;
-                        Object[] paramsObj = new Object[mfc.paramCount];
-                        if( mfc.target )
-                        {
-                            targetObject = m_ValueStack[--m_ValueIndex].CreateCSharpObject();
-                        }
-                        for (int i = 0; i < paramsObj.Length; i++)
-                        {
-                            paramsObj[i] = m_ValueStack[m_ValueIndex-paramsObj.Length+i].CreateCSharpObject();
-                        }
-                        m_ValueIndex -= (ushort)(paramsObj.Length-1);
-                        Object obj = mfc.InvokeCSharp(targetObject, paramsObj);
-                        if (obj != null)
-                        {
-                            m_ValueStack[m_ValueIndex++].CreateSObjectByCSharpObject(obj);
-                        }
+                        var mfc = iri.opValue as IRCallFunction;                       
+                        mfc.InvokeCSharp( this );
                     }
                     break;
                 case EIROpCode.NewObject:
@@ -957,19 +987,27 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.BrFalse:
                     {
                         var v = m_ValueStack[--m_ValueIndex];
-                        if (v.eType == EType.Boolean)
+                        if (v.eType == EVMType.Boolean)
                         {
                             if (v.int8Value == 0)
                             {
                                 m_ExecuteIndex = (ushort)iri.index;
                             }
                         }
+                        //else if( v.eType == EVMType.RawBoolean )
+                        //{
+                        //    if (v.int8Value == 0)
+                        //    {
+                        //        m_ExecuteIndex = (ushort)iri.index;
+                        //    }
+                        //}
                     }
                     break;
                 case EIROpCode.BrTrue:
                     {
                         var v = m_ValueStack[--m_ValueIndex];
-                        if (v.eType == EType.Boolean)
+                        if (v.eType == EVMType.Boolean)
+                           // || v.eType == EVMType.RawBoolean 
                         {
                             if (v.int8Value == 1)
                             {
@@ -1128,7 +1166,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error Not运算!!超出的栈范围");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex].NotSValue();
+                        m_ValueStack[m_ValueIndex-1].NotSValue();
                     }
                     break;
                 case EIROpCode.Neg:
@@ -1138,7 +1176,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error Neg运算!!超出的栈范围");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex].NegSValue(false);
+                        m_ValueStack[m_ValueIndex-1].NegSValue(false);
                     }
                     break;
                 case EIROpCode.And:
@@ -1278,7 +1316,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            if (v1.eType == EType.Class)
+                            if (v1.eType == EVMType.Class)
                             {
                                 if (!v1.sobject.runtimeType.IsExtendsRelation(rt))
                                 {
@@ -1298,6 +1336,930 @@ namespace SimpleLanguage.VM.Runtime
                 default:
                     {
                         Log.AddVM(EError.None, "Error 暂不支持" + iri.opCode.ToString() + "的处理!!");
+                    }
+                    break;
+            }
+        }
+
+        public void SetObjectByValue(int type, int index, ref SValue svalue)
+        {
+            SObject obj = null;
+            if (type == 0)
+            {
+                obj = m_ArgumentObjectArray[index];
+            }
+            else if (type == 1)
+            {
+                obj = m_LocalVariableObjectArray[index];
+            }
+            else if( type == 2)
+            {
+                obj = m_ReturnObjectArray[index];
+            }
+            Debug.Assert(obj != null);
+            if (svalue.isNull)
+            {
+                obj.SetNull();
+                return;
+            }
+            bool anyObj = obj.eType == EVMType.Object;
+            if( anyObj )
+            {
+                var svalobj = svalue.GetSObject();
+                if (type == 0)
+                {
+                    m_ArgumentObjectArray[index] = svalobj;
+                }
+                else if (type == 1)
+                {
+                    m_LocalVariableObjectArray[index] = svalobj; ;
+                }
+                else if (type == 2)
+                {
+                    m_ReturnObjectArray[index] = svalobj; ;
+                }
+                return;
+            }
+
+            switch (svalue.eType)
+            {
+                case EVMType.Null:
+                    {
+                        obj.SetNull();
+                    }
+                    break;
+                //case EVMType.RawBoolean:
+                //    {
+                //        TemplateObject to = obj as TemplateObject;
+                //        if (to != null)
+                //        {
+                //            to.SetValue(EVMType.Boolean, svalue.int8Value);
+                //        }
+                //        BoolObject boolObj = obj as BoolObject;
+                //        if (boolObj == null)
+                //        {
+                //            Debug.Write("该类型不是Boolean类型!!");
+                //            return;
+                //        }
+                //        boolObj.SetValue(svalue.int8Value == 1);
+                //    }
+                //    break;
+                case EVMType.Boolean:
+                    {
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            to.SetValue(EVMType.Boolean, svalue.int8Value);
+                        }
+                        BoolObject boolObj = obj as BoolObject;
+                        if (boolObj == null)
+                        {
+                            Debug.Write("该类型不是Boolean类型!!");
+                            return;
+                        }
+                        boolObj.SetValue(svalue.int8Value == 1);
+                    }
+                    break;
+                //case EVMType.RawByte:
+                //    {
+                //        TemplateObject to = obj as TemplateObject;
+                //        if (to != null)
+                //        {
+                //            to.SetValue(EVMType.Byte, svalue.int8Value);
+                //            return;
+                //        }
+                //        Int8Object byteObj = obj as Int8Object;
+                //        if (byteObj == null)
+                //        {
+                //            Debug.Write("该类型不是Byte类型!!");
+                //            return;
+                //        }
+                //        byteObj.SetValue(svalue.int8Value);
+                //    }
+                //    break;
+                case EVMType.Byte:
+                    {
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            to.SetValue(EVMType.Byte, svalue.int8Value);
+                            return;
+                        }
+                        Int8Object byteObj = obj as Int8Object;
+                        if (byteObj == null)
+                        {
+                            Debug.Write("该类型不是Byte类型!!");
+                            return;
+                        }
+                        byteObj.SetValue(svalue.int8Value);
+                    }
+                    break;
+                //case EVMType.RawSByte:
+                //    {
+                //        TemplateObject to = obj as TemplateObject;
+                //        if (to != null)
+                //        {
+                //            to.SetValue(EVMType.SByte, svalue.sint8Value);
+                //        }
+                //        SInt8Object byteObj = obj as SInt8Object;
+                //        if (byteObj == null)
+                //        {
+                //            Debug.Write("该类型不是SByte类型!!");
+                //            return;
+                //        }
+                //        byteObj.SetValue(svalue.sint8Value);
+                //    }
+                //    break;
+                case EVMType.SByte:
+                    {
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            to.SetValue(EVMType.SByte, svalue.sint8Value);
+                        }
+                        SInt8Object byteObj = obj as SInt8Object;
+                        if (byteObj == null)
+                        {
+                            Debug.Write("该类型不是SByte类型!!");
+                            return;
+                        }
+                        byteObj.SetValue(svalue.sint8Value);
+                    }
+                    break;
+                //case EVMType.RawInt16:
+                //    {
+                //        TemplateObject to = obj as TemplateObject;
+                //        if (to != null)
+                //        {
+                //            to.SetValue(EVMType.Int16, svalue.int16Value);
+                //        }
+                //        Int16Object int16Obj = obj as Int16Object;
+                //        if (int16Obj == null)
+                //        {
+                //            Debug.Write("该类型不是Int32类型!!");
+                //            return;
+                //        }
+                //        int16Obj.SetValue(svalue.int16Value);
+                //    }
+                //    break;
+                case EVMType.Int16:
+                    {
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            to.SetValue(EVMType.Int16, svalue.int16Value);
+                        }
+                        Int16Object int16Obj = obj as Int16Object;
+                        if (int16Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        int16Obj.SetValue(svalue.int16Value);
+                    }
+                    break;
+                //case EVMType.RawUInt16:
+                //    {
+                //        TemplateObject to = obj as TemplateObject;
+                //        if (to != null)
+                //        {
+                //            to.SetValue(EVMType.UInt16, svalue.uint16Value);
+                //        }
+                //        UInt16Object uint16Obj = obj as UInt16Object;
+                //        if (uint16Obj == null)
+                //        {
+                //            Debug.Write("该类型不是Int32类型!!");
+                //            return;
+                //        }
+                //        uint16Obj.SetValue(svalue.uint16Value);
+                //    }
+                //    break;
+                case EVMType.UInt16:
+                    {
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            to.SetValue(EVMType.UInt16, svalue.uint16Value);
+                        }
+                        UInt16Object uint16Obj = obj as UInt16Object;
+                        if (uint16Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        uint16Obj.SetValue(svalue.uint16Value);
+                    }
+                    break;
+                //case EVMType.RawInt32:
+                //    {
+                //        TemplateObject to = obj as TemplateObject;
+                //        if (to != null)
+                //        {
+                //            to.SetValue(EVMType.Int32, svalue.int32Value);
+                //            return;
+                //        }
+                //        Int32Object int32Obj = obj as Int32Object;
+                //        if (int32Obj == null)
+                //        {
+                //            Debug.Write("该类型不是Int32类型!!");
+                //            return;
+                //        }
+                //        int32Obj.SetValue(svalue.int32Value);
+                //    }
+                //    break;
+                case EVMType.Int32:
+                    {
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            to.SetValue(EVMType.Int32, svalue.int32Value);
+                            return;
+                        }
+                        Int32Object int32Obj = obj as Int32Object;
+                        if (int32Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        int32Obj.SetValue(svalue.int32Value);
+                    }
+                    break;
+                //case EVMType.RawUInt32:
+                //    {
+                //        TemplateObject to = obj as TemplateObject;
+                //        if (to != null)
+                //        {
+                //            to.SetValue(EVMType.UInt32, svalue.uint32Value);
+                //        }
+                //        UInt32Object uint32Obj = obj as UInt32Object;
+                //        if (uint32Obj == null)
+                //        {
+                //            Debug.Write("该类型不是Int32类型!!");
+                //            return;
+                //        }
+                //        uint32Obj.SetValue(svalue.uint32Value);
+                //    }
+                //    break;
+                case EVMType.UInt32:
+                    {
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            to.SetValue(EVMType.UInt32, svalue.uint32Value);
+                        }
+                        UInt32Object uint32Obj = obj as UInt32Object;
+                        if (uint32Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        uint32Obj.SetValue(svalue.uint32Value);
+                    }
+                    break;
+                //case EVMType.RawInt64:
+                //    {
+                //        TemplateObject to = obj as TemplateObject;
+                //        if (to != null)
+                //        {
+                //            to.SetValue(EVMType.Int64, svalue.int64Value);
+                //        }
+                //        Int64Object int64Obj = obj as Int64Object;
+                //        if (int64Obj == null)
+                //        {
+                //            Debug.Write("该类型不是Int32类型!!");
+                //            return;
+                //        }
+                //        int64Obj.SetValue(svalue.int64Value);
+                //    }
+                //    break;
+                case EVMType.Int64:
+                    {
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            to.SetValue(EVMType.Int64, svalue.int64Value);
+                        }
+                        Int64Object int64Obj = obj as Int64Object;
+                        if (int64Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        int64Obj.SetValue(svalue.int64Value);
+                    }
+                    break;
+                //case EVMType.RawUInt64:
+                //    {
+                //        TemplateObject to = obj as TemplateObject;
+                //        if (to != null)
+                //        {
+                //            to.SetValue(EVMType.UInt64, svalue.uint64Value);
+                //        }
+                //        UInt64Object uint64Obj = obj as UInt64Object;
+                //        if (uint64Obj == null)
+                //        {
+                //            Debug.Write("该类型不是Int32类型!!");
+                //            return;
+                //        }
+                //        uint64Obj.SetValue(svalue.uint64Value);
+                //    }
+                //    break;
+                case EVMType.UInt64:
+                    {
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            to.SetValue(EVMType.UInt64, svalue.uint64Value);
+                        }
+                        UInt64Object uint64Obj = obj as UInt64Object;
+                        if (uint64Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        uint64Obj.SetValue(svalue.uint64Value);
+                    }
+                    break;
+                //case EVMType.RawFloat32:
+                //    {
+                //        TemplateObject to = obj as TemplateObject;
+                //        if (to != null)
+                //        {
+                //            to.SetValue(EVMType.Float32, svalue.floatValue);
+                //        }
+                //        Float32Object floatObj = obj as Float32Object;
+                //        if (floatObj == null)
+                //        {
+                //            Debug.Write("该类型不是Int32类型!!");
+                //            return;
+                //        }
+                //        floatObj.SetValue(svalue.floatValue);
+                //    }
+                //    break;
+                case EVMType.Float32:
+                    {
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            to.SetValue(EVMType.Float32, svalue.floatValue);
+                        }
+                        Float32Object floatObj = obj as Float32Object;
+                        if (floatObj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        floatObj.SetValue(svalue.floatValue);
+                    }
+                    break;
+                //case EVMType.RawFloat64:
+                //    {
+                //        TemplateObject to = obj as TemplateObject;
+                //        if (to != null)
+                //        {
+                //            to.SetValue(EVMType.Float64, svalue.doubleValue);
+                //        }
+                //        Float64Object doubleObj = obj as Float64Object;
+                //        if (doubleObj == null)
+                //        {
+                //            Debug.Write("该类型不是Int32类型!!");
+                //            return;
+                //        }
+                //        doubleObj.SetValue(svalue.doubleValue);
+                //    }
+                //    break;
+                case EVMType.Float64:
+                    {
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            to.SetValue(EVMType.Float64, svalue.doubleValue);
+                        }
+                        Float64Object doubleObj = obj as Float64Object;
+                        if (doubleObj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        doubleObj.SetValue(svalue.doubleValue);
+                    }
+                    break;
+                //case EVMType.RawString:
+                //    {
+                //        TemplateObject to = obj as TemplateObject;
+                //        if (to != null)
+                //        {
+                //            to.SetValue(EVMType.String, svalue.stringValue);
+                //            return;
+                //        }
+                //        StringObject stringObj = obj as StringObject;
+                //        if (stringObj == null)
+                //        {
+                //            Debug.Write("该类型不是Int32类型!!");
+                //            return;
+                //        }
+                //        stringObj.SetValue(svalue.stringValue);
+                //    }
+                //    break;
+                case EVMType.String:
+                    {
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            to.SetValue(EVMType.String, svalue.stringValue);
+                            return;
+                        }
+                        StringObject stringObj = obj as StringObject;
+                        if (stringObj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        stringObj.SetValue(svalue.stringValue);
+                    }
+                    break;
+                case EVMType.Array:
+                    {
+                        if (obj is ClassObject co)
+                        {
+                            var ao = svalue.sobject as ClassObject;
+                            Debug.Assert(ao != null);
+                            //co.SetClassObject(ao);
+                            if (type == 0)
+                            {
+                                m_ArgumentObjectArray[index] = ao;
+                            }
+                            else if (type == 1)
+                            {
+                                m_LocalVariableObjectArray[index] = ao; ;
+                            }
+                            else if (type == 2)
+                            {
+                                m_ReturnObjectArray[index] = ao; ;
+                            }
+                        }
+                        else
+                        {
+                            Debug.Assert(false);
+                        }
+                    }
+                    break;
+                case EVMType.Object:
+                    {
+                        if (svalue.eType == EVMType.Object)
+                        {
+                            obj.SetValue(svalue.sobject);
+                        }
+                        else
+                        {
+                            Debug.Assert(false);
+                        }
+                    }
+                    break;
+                case EVMType.Class:
+                    {
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            to.SetClassObject(svalue.sobject as ClassObject);
+                            return;
+                        }
+                        //AnyObject anyObject = obj as AnyObject;
+                        //if (anyObject != null)
+                        //{
+                        //    if( svalue.sobject is ClassObject co )
+                        //    {
+                        //        anyObject.SetValue(EVMType.Class, co.value );
+                        //    }
+                        //    return;
+                        //}
+                        ClassObject classObj = obj as ClassObject;
+                        if (classObj == null)
+                        {
+                            Debug.Assert(false);
+                            Debug.Write("该类型不是Class类型!!");
+                            return;
+                        }
+                        classObj.SetClassObject(svalue.sobject as ClassObject);
+                        /*
+                        Int32Object int32Obj = obj as Int32Object;
+                        if (int32Obj != null)
+                        {
+                            int32Obj.SetValue(svalue.int32Value);
+                            return;
+                        }
+                        BoolObject boolObject = obj as BoolObject;
+                        if (boolObject != null)
+                        {
+                            boolObject.SetValue(svalue.int8Value == 1 ? true : false);
+                            return;
+                        }
+                        */
+                    }
+                    break;
+                default:
+                    {
+                        Debug.Assert(false);
+                    }
+                    break;
+            }
+        }
+        public void GetObjectByValue(int type, int index, SObject[] sobjarr, ref SValue svalue)
+        {
+            SObject obj = null;
+            if (type == 0)
+            {
+                obj = m_ArgumentObjectArray[index];
+            }
+            else if (type == 1)
+            {
+                obj = m_LocalVariableObjectArray[index];
+            }
+            else if (type == 2)
+            {
+                obj = m_ReturnObjectArray[index];
+            }
+            else
+            {
+                obj = sobjarr[index];
+            }
+                Debug.Assert(obj != null);
+            if( obj.isNull )
+            {
+                svalue.SetNull();
+                return;
+            }
+           
+            bool anyObj = svalue.eType == EVMType.Object;
+            if (anyObj)
+            {
+                svalue.SetSObject( obj );
+                return;
+            }
+            switch (obj.eType)
+            {
+                case EVMType.Null:
+                    {
+                        svalue.SetNull();
+                    }
+                    break;
+                case EVMType.Boolean:
+                    {
+                        //TemplateObject to = obj as TemplateObject;
+                        //if (to != null)
+                        //{
+                        //    to.SetValue(EVMType.Boolean, svalue.int8Value);
+                        //}
+                        //AnyObject anyObject = obj as AnyObject;
+                        //if (anyObject != null)
+                        //{
+                        //    anyObject.SetValue(EVMType.Boolean, svalue.int8Value);
+                        //    return;
+                        //}
+                        BoolObject boolObj = obj as BoolObject;
+                        if (boolObj == null)
+                        {
+                            Debug.Write("该类型不是Boolean类型!!");
+                            return;
+                        }
+                        svalue.SetBoolValue(boolObj.value);
+                    }
+                    break;
+                case EVMType.Byte:
+                    {
+                        //TemplateObject to = obj as TemplateObject;
+                        //if (to != null)
+                        //{
+                        //    to.SetValue(EVMType.Byte, svalue.int8Value);
+                        //    return;
+                        //}
+                        //AnyObject anyObject = obj as AnyObject;
+                        //if (anyObject != null)
+                        //{
+                        //    anyObject.SetValue(EVMType.Byte, svalue.int8Value);
+                        //    return;
+                        //}
+                        Int8Object byteObj = obj as Int8Object;
+                        if (byteObj == null)
+                        {
+                            Debug.Write("该类型不是Byte类型!!");
+                            return;
+                        }
+                        svalue.SetInt8Value(byteObj.value);
+                    }
+                    break;
+                case EVMType.SByte:
+                    {
+                        //TemplateObject to = obj as TemplateObject;
+                        //if (to != null)
+                        //{
+                        //    to.SetValue(EVMType.SByte, svalue.sint8Value);
+                        //}
+                        //AnyObject anyObject = obj as AnyObject;
+                        //if (anyObject != null)
+                        //{
+                        //    anyObject.SetValue(EVMType.SByte, svalue.sint8Value);
+                        //    return;
+                        //}
+                        SInt8Object byteObj = obj as SInt8Object;
+                        if (byteObj == null)
+                        {
+                            Debug.Write("该类型不是SByte类型!!");
+                            return;
+                        }
+                        svalue.SetSInt8Value(byteObj.value);
+                    }
+                    break;
+                case EVMType.Int16:
+                    {
+                        //TemplateObject to = obj as TemplateObject;
+                        //if (to != null)
+                        //{
+                        //    to.SetValue(EVMType.Int16, svalue.int16Value);
+                        //}
+                        //AnyObject anyObject = obj as AnyObject;
+                        //if (anyObject != null)
+                        //{
+                        //    anyObject.SetValue(EVMType.Int16, svalue.int16Value);
+                        //    return;
+                        //}
+                        Int16Object int16Obj = obj as Int16Object;
+                        if (int16Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetInt16Value(int16Obj.value);
+                    }
+                    break;
+                case EVMType.UInt16:
+                    {
+                        //TemplateObject to = obj as TemplateObject;
+                        //if (to != null)
+                        //{
+                        //    to.SetValue(EVMType.UInt16, svalue.uint16Value);
+                        //}
+                        //AnyObject anyObject = obj as AnyObject;
+                        //if (anyObject != null)
+                        //{
+                        //    anyObject.SetValue(EVMType.UInt16, svalue.uint16Value);
+                        //    return;
+                        //}
+                        UInt16Object uint16Obj = obj as UInt16Object;
+                        if (uint16Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetUInt16Value(uint16Obj.value);
+                    }
+                    break;
+                case EVMType.Int32:
+                    {
+                        //TemplateObject to = obj as TemplateObject;
+                        //if (to != null)
+                        //{
+                        //    to.SetValue(EVMType.Int32, svalue.int32Value);
+                        //    return;
+                        //}
+                        //AnyObject anyObject = obj as AnyObject;
+                        //if (anyObject != null)
+                        //{
+                        //    anyObject.SetValue(EVMType.Int32, svalue.int32Value);
+                        //    return;
+                        //}
+                        Int32Object int32Obj = obj as Int32Object;
+                        if (int32Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetInt32Value(int32Obj.value);
+                    }
+                    break;
+                case EVMType.UInt32:
+                    {
+                        //TemplateObject to = obj as TemplateObject;
+                        //if (to != null)
+                        //{
+                        //    to.SetValue(EVMType.UInt32, svalue.uint32Value);
+                        //}
+                        //AnyObject anyObject = obj as AnyObject;
+                        //if (anyObject != null)
+                        //{
+                        //    anyObject.SetValue(EVMType.UInt32, svalue.uint32Value);
+                        //    return;
+                        //}
+                        UInt32Object uint32Obj = obj as UInt32Object;
+                        if (uint32Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetUInt32Value(uint32Obj.value);
+                    }
+                    break;
+                case EVMType.Int64:
+                    {
+                        //TemplateObject to = obj as TemplateObject;
+                        //if (to != null)
+                        //{
+                        //    to.SetValue(EVMType.Int64, svalue.int64Value);
+                        //}
+                        //AnyObject anyObject = obj as AnyObject;
+                        //if (anyObject != null)
+                        //{
+                        //    anyObject.SetValue(EVMType.Int64, svalue.int64Value);
+                        //    return;
+                        //}
+                        Int64Object int64Obj = obj as Int64Object;
+                        if (int64Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetInt64Value(int64Obj.value);
+                    }
+                    break;
+                case EVMType.UInt64:
+                    {
+                        //TemplateObject to = obj as TemplateObject;
+                        //if (to != null)
+                        //{
+                        //    to.SetValue(EVMType.UInt64, svalue.uint64Value);
+                        //}
+                        //AnyObject anyObject = obj as AnyObject;
+                        //if (anyObject != null)
+                        //{
+                        //    anyObject.SetValue(EVMType.UInt64, svalue.uint64Value);
+                        //    return;
+                        //}
+                        UInt64Object uint64Obj = obj as UInt64Object;
+                        if (uint64Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetUInt64Value(uint64Obj.value);
+                    }
+                    break;
+                case EVMType.String:
+                    {
+                        //TemplateObject to = obj as TemplateObject;
+                        //if (to != null)
+                        //{
+                        //    to.SetValue(EVMType.String, svalue.stringValue);
+                        //    return;
+                        //}
+                        //AnyObject anyObject = obj as AnyObject;
+                        //if (anyObject != null)
+                        //{
+                        //    anyObject.SetValue(EVMType.String, svalue.stringValue);
+                        //    return;
+                        //}
+                        StringObject stringObj = obj as StringObject;
+                        if (stringObj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetStringValue(stringObj.value);
+                    }
+                    break;
+                case EVMType.Float32:
+                    {
+                        //TemplateObject to = obj as TemplateObject;
+                        //if (to != null)
+                        //{
+                        //    to.SetValue(EVMType.Float32, svalue.floatValue);
+                        //}
+                        //AnyObject anyObject = obj as AnyObject;
+                        //if (anyObject != null)
+                        //{
+                        //    anyObject.SetValue(EVMType.Float32, svalue.floatValue);
+                        //    return;
+                        //}
+                        Float32Object floatObj = obj as Float32Object;
+                        if (floatObj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetFloatValue(floatObj.value);
+                    }
+                    break;
+                case EVMType.Float64:
+                    {
+                        //TemplateObject to = obj as TemplateObject;
+                        //if (to != null)
+                        //{
+                        //    to.SetValue(EVMType.Float64, svalue.doubleValue);
+                        //}
+                        //AnyObject anyObject = obj as AnyObject;
+                        //if (anyObject != null)
+                        //{
+                        //    anyObject.SetValue(EVMType.Float64, svalue.doubleValue);
+                        //    return;
+                        //}
+                        Float64Object doubleObj = obj as Float64Object;
+                        if (doubleObj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetDoubleValue(doubleObj.value);
+                    }
+                    break;
+                case EVMType.Array:
+                    {
+                        if (obj is ClassObject co)
+                        {
+                            svalue.SetSObject(co.value);
+                        }
+                        else
+                        {
+                            Debug.Assert(false);
+                        }
+                    }
+                    break;
+                case EVMType.Object:
+                    {
+                        if (obj.eType == EVMType.Object)
+                        {
+                            svalue.SetSObject(obj.value as SObject);
+                        }
+                        else
+                        {
+                            Debug.Assert(false);
+                        }
+                    }
+                    break;
+                case EVMType.Class:
+                    {
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetSObject(to.value as SObject);
+                            return;
+                        }
+                        //AnyObject anyObject = obj as AnyObject;
+                        //if (anyObject != null)
+                        //{
+                        //    if( svalue.sobject is ClassObject co )
+                        //    {
+                        //        anyObject.SetValue(EVMType.Class, co.value );
+                        //    }
+                        //    return;
+                        //}
+                        //4代表的是直接传值 ，所以，原来值啥样就传进去
+                        if( type == 4 )
+                        {
+                            if (obj is ClassObject co)
+                            {
+                                if(co.value != null )
+                                {
+                                    svalue.SetSObject(co.value as SObject );
+                                }
+                                else
+                                {
+                                    svalue.SetSObject(co);
+                                }
+                            }
+                            else
+                            {
+                                Debug.Assert(false);
+                            }
+                        }
+                        else
+                        {
+                            if (obj is ClassObject co)
+                            {
+                                svalue.SetSObject(co.value as SObject);
+                            }
+                            else
+                            {
+                                Debug.Assert(false);
+                            }
+                        }
+                        /*
+                        Int32Object int32Obj = obj as Int32Object;
+                        if (int32Obj != null)
+                        {
+                            int32Obj.SetValue(svalue.int32Value);
+                            return;
+                        }
+                        BoolObject boolObject = obj as BoolObject;
+                        if (boolObject != null)
+                        {
+                            boolObject.SetValue(svalue.int8Value == 1 ? true : false);
+                            return;
+                        }
+                        */
+                    }
+                    break;
+                default:
+                    {
+                        Debug.Assert(false);
                     }
                     break;
             }
