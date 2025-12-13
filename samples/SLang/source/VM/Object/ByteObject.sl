@@ -1,5 +1,5 @@
 ﻿//****************************************************************************
-//  File:      ByteObject.cs
+//  File:      Int8Object.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/11/22 12:00:00
@@ -13,11 +13,11 @@ using SimpleLanguage.Core;
 
 namespace SimpleLanguage.VM
 {
-    public class ByteObject : SObject
+    public class Int8Object : SObject
     {
         public Byte value;
 
-        public ByteObject(Byte _val) : base(EType.Byte)
+        public Int8Object(Byte _val) : base(EType.Byte)
         {
             value = _val;
         }
@@ -30,11 +30,11 @@ namespace SimpleLanguage.VM
             return value.ToString();
         }
     }
-    public class SByteObject : SObject
+    public class SInt8Object : SObject
     {
         public SByte value;
 
-        public SByteObject(SByte _val) : base(EType.SByte)
+        public SInt8Object(SByte _val) : base(EType.SByte)
         {
             value = _val;
         }

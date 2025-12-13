@@ -9,7 +9,6 @@
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using SimpleLanguage.VM.Runtime;
-using System;
 using System.Collections.Generic;
 
 namespace SimpleLanguage.VM
@@ -26,62 +25,62 @@ namespace SimpleLanguage.VM
 #pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
             switch (eType)
             {
-                case EType.Int32:
-                case EType.UInt32:
+                case EVMType.Int32:
+                case EVMType.UInt32:
                     {
                         
                     }
                     break;
-                case EType.String:
+                case EVMType.String:
                     {
                         switch (sval.eType)
                         {
-                            case EType.Byte:
+                            case EVMType.Byte:
                                 {
                                     stringValue += sval.int8Value.ToString();
                                 }
                                 break;
-                            case EType.SByte:
+                            case EVMType.SByte:
                                 {
                                     stringValue += sval.sint8Value.ToString();
                                 }
                                 break;
-                            //case EType.Char:
+                            //case EVMType.Char:
                             //    {
                             //        stringValue += sval.charValue.ToString();
                             //    }
                             //    break;
-                            case EType.Int16:
+                            case EVMType.Int16:
                                 {
                                     stringValue += sval.int16Value.ToString();
                                 }
                                 break;
-                            case EType.UInt16:
+                            case EVMType.UInt16:
                                 {
                                     stringValue += sval.uint16Value.ToString();
                                 }
                                 break;
-                            case EType.Int32:
+                            case EVMType.Int32:
                                 {
                                     stringValue += sval.int32Value.ToString();
                                 }
                                 break;
-                            case EType.UInt32:
+                            case EVMType.UInt32:
                                 {
                                     stringValue += sval.uint32Value.ToString();
                                 }
                                 break;
-                            case EType.Int64:
+                            case EVMType.Int64:
                                 {
                                     stringValue += sval.int64Value.ToString();
                                 }
                                 break;
-                            case EType.UInt64:
+                            case EVMType.UInt64:
                                 {
                                     stringValue += sval.uint64Value.ToString();
                                 }
                                 break;
-                            case EType.String:
+                            case EVMType.String:
                                 {
                                     stringValue += sval.stringValue;
                                 }
@@ -92,8 +91,8 @@ namespace SimpleLanguage.VM
             }
             switch (sval.eType)
             {
-                case EType.Int32: int32Value += sval.int32Value; break;
-                case EType.String:
+                case EVMType.Int32: int32Value += sval.int32Value; break;
+                case EVMType.String:
                     {
                         SetStringValue(int32Value.ToString() + sval.stringValue);
                     }
@@ -271,11 +270,11 @@ namespace SimpleLanguage.VM
             switch (sval1.eType)
             {
                 //String 只允许对字符形式比较 
-                case EType.String:
+                case EVMType.String:
                     {
                         switch (sval2.eType)
                         {
-                            case EType.String:
+                            case EVMType.String:
                                 {
                                     if (isEqual)
                                         sval1.SetBoolValue(sval1.stringValue == sval2.stringValue);
@@ -291,11 +290,11 @@ namespace SimpleLanguage.VM
                         return;
                     }
                 //只允许对boolean 只允许对字符形式比较 
-                case EType.Boolean:
+                case EVMType.Boolean:
                     {
                         switch (sval2.eType)
                         {
-                            case EType.Boolean:
+                            case EVMType.Boolean:
                                 {
                                     if (isEqual)
                                     {
@@ -314,21 +313,21 @@ namespace SimpleLanguage.VM
                         }
                         return;
                     }
-                case EType.Byte:
-                case EType.SByte:
-                case EType.Int16:
-                case EType.UInt16:
-                case EType.Int32:
-                case EType.UInt32:
-                case EType.Int64:
-                case EType.UInt64:
-                case EType.Float32:
-                case EType.Float64:
+                case EVMType.Byte:
+                case EVMType.SByte:
+                case EVMType.Int16:
+                case EVMType.UInt16:
+                case EVMType.Int32:
+                case EVMType.UInt32:
+                case EVMType.Int64:
+                case EVMType.UInt64:
+                case EVMType.Float32:
+                case EVMType.Float64:
                     valnum1 = sval1.GetValueObject() as dynamic;
                     break;
-                case EType.Array:
+                case EVMType.Array:
                     {
-                        if (sval2.eType == EType.Array )
+                        if (sval2.eType == EVMType.Array )
                         {
                             if( sval1.sobject == sval2.sobject )
                             {
@@ -345,7 +344,7 @@ namespace SimpleLanguage.VM
                         }
                     }
                     break;
-                case EType.Class:
+                case EVMType.Class:
                     {
                         ClassObject co = (sval1.sobject as ClassObject);
                         RuntimeType rt = co.value.runtimeType;
@@ -364,7 +363,7 @@ namespace SimpleLanguage.VM
                         }
                         else
                         {
-                            if (sval2.eType == EType.Class)
+                            if (sval2.eType == EVMType.Class)
                             {
                                 if (sval1.sobject == sval2.sobject)
                                 {
@@ -388,34 +387,34 @@ namespace SimpleLanguage.VM
 
             switch (sval2.eType)
             {
-                case EType.String:
+                case EVMType.String:
                     {
                         Log.AddVM(EError.None, " VM Compare SVAlue 比较的低码还没有完善!!");
                         //return;
                     }
                     break;
-                case EType.Boolean:
+                case EVMType.Boolean:
                     {
                         Log.AddVM(EError.None, " VM Compare SVAlue 比较的低码还没有完善!!");
                         //return;
                     }
                     break;
-                case EType.Byte:
-                case EType.SByte:
-                case EType.Int16:
-                case EType.UInt16:
-                case EType.Int32:
-                case EType.UInt32:
-                case EType.Int64:
-                case EType.UInt64:
-                case EType.Float32:
-                case EType.Float64:
+                case EVMType.Byte:
+                case EVMType.SByte:
+                case EVMType.Int16:
+                case EVMType.UInt16:
+                case EVMType.Int32:
+                case EVMType.UInt32:
+                case EVMType.Int64:
+                case EVMType.UInt64:
+                case EVMType.Float32:
+                case EVMType.Float64:
                     valnum2 = sval2.GetValueObject() as dynamic;
                     break;
-                case EType.Array: { 
+                case EVMType.Array: { 
                     }
                     break;
-                case EType.Class:
+                case EVMType.Class:
                     {
                         ClassObject co = (sval2.sobject as ClassObject);
                         RuntimeType rt = co.value.runtimeType;
@@ -434,7 +433,7 @@ namespace SimpleLanguage.VM
                         }
                         else
                         {
-                            if (sval1.eType == EType.Class)
+                            if (sval1.eType == EVMType.Class)
                             {
                                 if (sval1.sobject == sval2.sobject)
                                 {
@@ -482,32 +481,52 @@ namespace SimpleLanguage.VM
             dynamic valnum2 = null;
             switch (sval1.eType)
             {
-                case EType.Byte:
-                case EType.SByte:
-                case EType.Int16:
-                case EType.UInt16:
-                case EType.Int32:
-                case EType.UInt32:
-                case EType.Int64:
-                case EType.UInt64:
-                case EType.Float32:
-                case EType.Float64:
+                case EVMType.Byte:
+                case EVMType.SByte:
+                case EVMType.Int16:
+                case EVMType.UInt16:
+                case EVMType.Int32:
+                case EVMType.UInt32:
+                case EVMType.Int64:
+                case EVMType.UInt64:
+                case EVMType.Float32:
+                case EVMType.Float64:
+                //case EVMType.RawByte:
+                //case EVMType.RawSByte:
+                //case EVMType.RawInt16:
+                //case EVMType.RawUInt16:
+                //case EVMType.RawInt32:
+                //case EVMType.RawUInt32:
+                //case EVMType.RawInt64:
+                //case EVMType.RawUInt64:
+                //case EVMType.RawFloat32:
+                //case EVMType.RawFloat64:
                     valnum1 = sval1.GetValueObject() as dynamic;
                     break;
             }
 
             switch (sval2.eType)
             {
-                case EType.Byte:
-                case EType.SByte:
-                case EType.Int16:
-                case EType.UInt16:
-                case EType.Int32:
-                case EType.UInt32:
-                case EType.Int64:
-                case EType.UInt64:
-                case EType.Float32:
-                case EType.Float64:
+                case EVMType.Byte:
+                case EVMType.SByte:
+                case EVMType.Int16:
+                case EVMType.UInt16:
+                case EVMType.Int32:
+                case EVMType.UInt32:
+                case EVMType.Int64:
+                case EVMType.UInt64:
+                case EVMType.Float32:
+                case EVMType.Float64:
+                //case EVMType.RawByte:
+                //case EVMType.RawSByte:
+                //case EVMType.RawInt16:
+                //case EVMType.RawUInt16:
+                //case EVMType.RawInt32:
+                //case EVMType.RawUInt32:
+                //case EVMType.RawInt64:
+                //case EVMType.RawUInt64:
+                //case EVMType.RawFloat32:
+                //case EVMType.RawFloat64:
                     valnum2 = sval2.GetValueObject() as dynamic;
                     break;
             }
@@ -532,7 +551,7 @@ namespace SimpleLanguage.VM
             }
             else
             {
-                if(sval1.eType == EType.Object )
+                if(sval1.eType == EVMType.Class )
                 {
                     ClassObject co = (sval1.sobject as ClassObject);
                     if (co != null)

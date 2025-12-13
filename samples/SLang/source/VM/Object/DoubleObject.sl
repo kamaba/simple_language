@@ -1,5 +1,5 @@
 ﻿//****************************************************************************
-//  File:      DoubleObject.cs
+//  File:      Float64Object.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/11/22 12:00:00
@@ -13,10 +13,10 @@ using SimpleLanguage.Core;
 
 namespace SimpleLanguage.VM
 {
-    class DoubleObject : SObject
+    class Float64Object : SObject
     {
         public Double value;
-        public DoubleObject() : base(EType.Float64)
+        public Float64Object() : base(EType.Float64)
         { }
         public void SetValue(Double _val)
         {

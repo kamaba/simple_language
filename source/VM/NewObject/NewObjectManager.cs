@@ -52,12 +52,12 @@ namespace SimpleLanguage.VM
             //}
             //else if (name == "Core.Byte" || name == "Byte")
             //{
-            //    sobj = new ByteObject(0);
+            //    sobj = new Int8Object(0);
             //    sobj.typeId = 3;
             //}
             //else if (name == "Core.SByte" || name == "SByte")
             //{
-            //    sobj = new SByteObject(0);
+            //    sobj = new SInt8Object(0);
             //    sobj.typeId = 3;
             //}
             //else if (name == "Core.Int16" || name == "Int16")
@@ -92,12 +92,12 @@ namespace SimpleLanguage.VM
             //}
             //else if (name == "Core.Float32" || name == "Float32")
             //{
-            //    sobj = new FloatObject();
+            //    sobj = new Float32Object();
             //    sobj.typeId = 4;
             //}
             //else if (name == "Core.Float64" || name == "Float64")
             //{
-            //    sobj = new DoubleObject();
+            //    sobj = new Float64Object();
             //    sobj.typeId = 5;
             //}
             //else if (name == "Core.String" || name == "String")
@@ -131,6 +131,7 @@ namespace SimpleLanguage.VM
             //}
             return sobj;
         }
+        /*
         public static void SetObjectByValue(SObject obj, ref SValue svalue)
         {
             if (svalue.isNull)
@@ -181,7 +182,7 @@ namespace SimpleLanguage.VM
                             anyObject.SetValue(EType.Byte, svalue.int8Value);
                             return;
                         }
-                        ByteObject byteObj = obj as ByteObject;
+                        Int8Object byteObj = obj as Int8Object;
                         if (byteObj == null)
                         {
                             Debug.Write("该类型不是Byte类型!!");
@@ -203,7 +204,7 @@ namespace SimpleLanguage.VM
                             anyObject.SetValue(EType.SByte, svalue.sint8Value);
                             return;
                         }
-                        SByteObject byteObj = obj as SByteObject;
+                        SInt8Object byteObj = obj as SInt8Object;
                         if (byteObj == null)
                         {
                             Debug.Write("该类型不是SByte类型!!");
@@ -380,6 +381,10 @@ namespace SimpleLanguage.VM
                             Debug.Assert(ao != null);
                             co.SetValue(ao);
                         }
+                        else
+                        {
+                            Debug.Assert(false);
+                        }
                     }
                     break;
                 case EType.Float32:
@@ -395,7 +400,7 @@ namespace SimpleLanguage.VM
                             anyObject.SetValue(EType.Float32, svalue.floatValue);
                             return;
                         }
-                        FloatObject floatObj = obj as FloatObject;
+                        Float32Object floatObj = obj as Float32Object;
                         if (floatObj == null)
                         {
                             Debug.Write("该类型不是Int32类型!!");
@@ -417,7 +422,7 @@ namespace SimpleLanguage.VM
                             anyObject.SetValue(EType.Float64, svalue.doubleValue);
                             return;
                         }
-                        DoubleObject doubleObj = obj as DoubleObject;
+                        Float64Object doubleObj = obj as Float64Object;
                         if (doubleObj == null)
                         {
                             Debug.Write("该类型不是Int32类型!!");
@@ -476,5 +481,6 @@ namespace SimpleLanguage.VM
                     break;
             }
         }
+    */
     }
 }

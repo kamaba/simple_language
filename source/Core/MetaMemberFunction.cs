@@ -697,7 +697,7 @@ namespace SimpleLanguage.Core
             {
                 var childFms = rootMs.GetCurrentSyntaxAndMove();
                 HandleMetaSyntax(currentBlockStatements, ref beforeStatements,  childFms );
-            }
+            }           
             return beforeStatements;
         }
         public static MetaStatements HandleMetaSyntax(MetaBlockStatements currentBlockStatements, 

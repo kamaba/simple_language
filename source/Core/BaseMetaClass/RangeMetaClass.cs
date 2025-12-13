@@ -15,14 +15,6 @@ namespace SimpleLanguage.Core
             m_Type = EType.Class;
             m_ClassDefineType = EClassDefineType.InnerDefine;
         }
-        public override void ParseInnerVariable()
-        {
-            MetaMemberVariable index = new MetaMemberVariable(this, "index", CoreMetaClassManager.int32MetaClass);
-            AddMetaMemberVariable(index);
-
-            //MetaMemberVariable tvalue = new MetaMemberVariable(this, "value", CoreMetaClassManager.templateMetaClass);
-            //AddMetaMemberVariable(tvalue);
-        }
         public static MetaClass CreateMetaClass()
         {
             ArrayIteratorMetaClass mc = new ArrayIteratorMetaClass();

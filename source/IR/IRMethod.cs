@@ -22,6 +22,7 @@ namespace SimpleLanguage.IR
         public string onlyFunctionName { get; set; } = "";
         public bool interfaceMethod => m_InterfaceMethod;
         public IRManager irManager { get; private set; } = null;
+        public IRData funEndLabelData => m_FunEndLabelData;
         public IRMetaClass irOwnerMetaClass => m_IROwnerMetaClass;
         //private List<IRMetaVariable> methodInputTemplateObject => m_MethodInputTemplateObject;
         public List<IRMetaVariable> methodArgumentList => m_MethodArgumentList;
@@ -38,6 +39,7 @@ namespace SimpleLanguage.IR
         private MetaFunction m_BindMetaFunction = null;
         private IRMetaClass m_IROwnerMetaClass = null;
         private bool m_InterfaceMethod = false;
+        private IRData m_FunEndLabelData = null;
         public IRMethod(IRManager irma, MetaFunction func )
         {
             irManager = irma;
@@ -51,6 +53,8 @@ namespace SimpleLanguage.IR
             {
                 m_InterfaceMethod = mmf.isOverrideInterface;
             }
+            m_FunEndLabelData = new IRData();
+            m_FunEndLabelData.opCode = EIROpCode.Label;
         }
         public void Parse()
         {
@@ -94,6 +98,8 @@ namespace SimpleLanguage.IR
             }
             IRBlockStatements irbs = new IRBlockStatements(this);
             irbs.ParseAllIRStatements(mbs);
+
+
             for (int i = 0; i < irbs.irStatements.Count; i++)
             {
                 for (int j = 0; j < irbs.irStatements[i].IRDataList.Count; j++)
@@ -104,6 +110,8 @@ namespace SimpleLanguage.IR
                     m_IRDataList.Add(addIR);
                 }
             }
+            m_FunEndLabelData.id = m_IRDataList.Count;
+            m_IRDataList.Add(m_FunEndLabelData);
 
             for (int i = 0; i < m_LabelList.Count; i++)
             {

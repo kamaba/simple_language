@@ -18,6 +18,35 @@ namespace SimpleLanguage.Core
         public static TypeManager instance = new TypeManager();
 
         // 比较两个MetaType的内容， 主要通过 MetaClass 和里边的MetaType的遍历 都相同 
+
+
+        public static bool IsCoreMetaType( MetaType mt )
+        {
+            if( mt.isArray )
+            {
+                return true;
+            }
+            if( mt.eType == EMetaTypeType.MetaClass )
+            {
+                var curClass = mt.metaClass;
+                if (curClass == CoreMetaClassManager.byteMetaClass
+                    || curClass == CoreMetaClassManager.sbyteMetaClass
+                    //|| curClass == CoreMetaClassManager.charMetaClass
+                    || curClass == CoreMetaClassManager.int16MetaClass
+                    || curClass == CoreMetaClassManager.uint16MetaClass
+                    || curClass == CoreMetaClassManager.int32MetaClass
+                    || curClass == CoreMetaClassManager.uint32MetaClass
+                    || curClass == CoreMetaClassManager.int64MetaClass
+                    || curClass == CoreMetaClassManager.uint64MetaClass
+                    || curClass == CoreMetaClassManager.booleanMetaClass
+                    || curClass == CoreMetaClassManager.stringMetaClass
+                    || curClass == CoreMetaClassManager.arrayMetaClass )
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         public bool CompareMetaType( MetaType mt1, MetaType mt2 )
         {
             return MetaType.EqualMetaDefineType( mt1, mt2 );
