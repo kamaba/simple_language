@@ -18,7 +18,7 @@ namespace SimpleLanguage.VM
         private EArrayType eArrayType = EArrayType.Byte;
         public ArrayObject( EArrayType eArrType, int length ) : base( RuntimeTypeManager.arrayRuntimeType, false )
         {
-            m_Etype = EVMType.Array;
+            m_Type = EVMType.Array;
             eArrayType = eArrType;
             m_Length = length;
             CreateObject();

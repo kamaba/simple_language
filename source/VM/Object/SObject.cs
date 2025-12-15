@@ -14,15 +14,18 @@ namespace SimpleLanguage.VM
     public class SObject
     {
         public bool isNull => m_IsNull;
-        public EVMType eType => m_Etype;
+        public EVMType eType => m_Type;
+        public EVMType eAnyType => m_AnyType;
+
         public IRMetaClass irMetaClass => m_RuntimeType?.irClass;
         public RuntimeType runtimeType => m_RuntimeType;
         public short typeId { get; set; } = 0;
         public int refCount { get; set; } = 0;
 
 
+        protected EVMType m_Type = EVMType.Class;
+        protected EVMType m_AnyType = EVMType.Class;
 
-        protected EVMType m_Etype = EVMType.Class;
         protected bool m_IsNull = false;
         protected RuntimeType m_RuntimeType = null;
         protected int m_Length = 0;
@@ -37,10 +40,16 @@ namespace SimpleLanguage.VM
         }
         public SObject( EVMType etype )
         {
-            this.m_Etype = etype;
+            this.m_Type = etype;
         }
         public void SetValue(System.Object val)
         {
+            m_IsNull = false;
+            value = val;
+        }
+        public void SetValueByType(EVMType vmType, System.Object val)
+        {
+            m_AnyType = vmType;
             m_IsNull = false;
             value = val;
         }
