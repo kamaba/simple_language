@@ -433,86 +433,87 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Boolean:
                     {
-                        var int8obj = new BoolObject(svalue.int8Value == 1);
+                        //var int8obj = new BoolObject(svalue.int8Value == 1);
                         //anyobj.SetValue( EVMType.Boolean, int8obj );
-                        m_Array.SetValue(int8obj, index);
+                        m_Array.SetValue(svalue.int8Value == 1, index);
                     }
                     break;
                 case EVMType.Byte:
                     {
-                        var i8obj = new Int8Object(svalue.int8Value);
+                        //var i8obj = new Int8Object(svalue.int8Value);
                         //anyobj.SetValue(EVMType.Byte, i8obj );
-                        m_Array.SetValue(i8obj, index);
+                        m_Array.SetValue(svalue.int8Value, index);
                     }
                     break;
                 case EVMType.SByte:
                     {
-                        var si8obj = new SInt8Object(svalue.sint8Value);
+                        //var si8obj = new SInt8Object(svalue.sint8Value);
                         //anyobj.SetValue(EVMType.SByte, si8obj );
-                        m_Array.SetValue(si8obj, index);
+                        m_Array.SetValue(svalue.sint8Value, index);
                     }
                     break;
                 case EVMType.Int16:
                     {
-                        var i16obj = new Int16Object(svalue.int16Value);
+                        //var i16obj = new Int16Object(svalue.int16Value);
                         //anyobj.SetValue(EVMType.Int16, i16obj );
-                        m_Array.SetValue(i16obj, index);
+                        m_Array.SetValue(svalue.int16Value, index);
                     }
                     break;
                 case EVMType.UInt16:
                     {
-                        var ui16obj = new UInt16Object(svalue.uint16Value);
+                        //var ui16obj = new UInt16Object(svalue.uint16Value);
                         //anyobj.SetValue(EVMType.UInt16, ui16obj );
-                        m_Array.SetValue(ui16obj, index);
+                        m_Array.SetValue(svalue.uint16Value, index);
                     }
                     break;
                 case EVMType.Int32:
                     {
-                        var i32obj = new Int32Object(svalue.int32Value);
+                        //var i32obj = new Int32Object(svalue.int32Value);
                         //anyobj.SetValue(EVMType.Int32, i32obj);
-                        m_Array.SetValue(i32obj, index);
+                        //m_Array.SetValue(i32obj, index);
+                        m_Array.SetValue(svalue.int32Value, index);
                     }
                     break;
                 case EVMType.UInt32:
                     {
-                        var ui32obj = new UInt32Object(svalue.uint32Value);
+                        //var ui32obj = new UInt32Object(svalue.uint32Value);
                         //anyobj.SetValue(EVMType.UInt32, ui32obj );
-                        m_Array.SetValue(ui32obj, index);
+                        m_Array.SetValue(svalue.uint32Value, index);
                     }
                     break;
                 case EVMType.Int64:
                     {
-                        var i64obj = new Int64Object(svalue.int64Value);
+                        //var i64obj = new Int64Object(svalue.int64Value);
                         //anyobj.SetValue(EVMType.Int64, i64obj );
-                        m_Array.SetValue(i64obj, index);
+                        m_Array.SetValue(svalue.int64Value, index);
                     }
                     break;
                 case EVMType.UInt64:
                     {
-                        var ui64obj = new UInt64Object(svalue.uint64Value);
+                        //var ui64obj = new UInt64Object(svalue.uint64Value);
                         //anyobj.SetValue(EVMType.UInt64, ui64obj );
-                        m_Array.SetValue(ui64obj, index);
+                        m_Array.SetValue(svalue.uint64Value, index);
                     }
                     break;
                 case EVMType.Float32:
                     {
-                        var f32obj = new Float32Object(svalue.floatValue);
+                        //var f32obj = new Float32Object(svalue.floatValue);
                         //anyobj.SetValue(EVMType.Float32, f32obj);
-                        m_Array.SetValue(f32obj, index);
+                        m_Array.SetValue(svalue.floatValue, index);
                     }
                     break;
                 case EVMType.Float64:
                     {
-                        var f64obj = new Float64Object(svalue.doubleValue);
+                        //var f64obj = new Float64Object(svalue.doubleValue);
                         //anyobj.SetValue(EVMType.Float64, f64obj );
-                        m_Array.SetValue(f64obj, index);
+                        m_Array.SetValue(svalue.doubleValue, index);
                     }
                     break;
                 case EVMType.String:
                     {
-                        var stringobj = new StringObject(svalue.stringValue);
+                        //var stringobj = new StringObject(svalue.stringValue);
                         //anyobj.SetValue(EVMType.String, stringobj );
-                        m_Array.SetValue(stringobj, index);
+                        m_Array.SetValue(svalue.stringValue, index);
                     }
                     break;
                 case EVMType.Array:

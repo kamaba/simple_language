@@ -115,6 +115,17 @@ namespace Core
     {
         IIterator iterator()
     }
+    public interface IIterator<T>
+    {
+        void reset()
+        bool moveNext()
+        get T current()
+        void release()
+    }
+    public interface IIterable<T>
+    {
+        IIterator<T> iterator()
+    }
 
     public class IterateVariable interface IIterator
     {
@@ -176,23 +187,84 @@ namespace Core
             }
         }
     }
-    public class Array interface IIterable, IIterator
+    
+    public class IterateVariable<T> interface IIterator<T>
+    {
+        _start = 0
+        public _index = 0
+        T _value = null
+        IIterator<T> _iterator = null
+        _isDone = false;
+
+
+        _init_( IIterable __it )
+        {
+            this._iterator = __it.iterator();
+            this._iterator.reset()
+        }
+        get int index(){ ret this._index }
+        get T value()
+        {
+             ret this._value 
+        }
+
+        override void reset()
+        {
+            this._isDone = false
+            this._start = 0
+            this._index = 0
+            this._value = null
+        }
+        override bool moveNext()
+        {
+            if this._isDone
+            {
+                ret false
+            }
+            this._index++
+            var flag = this._iterator.moveNext()
+            this._value = this._iterator.current()
+            this._isDone = !flag
+            ret flag
+        }
+        override get T current()
+        {
+            this._value = this._iterator.current()
+            ret this._value
+        }
+        override void release()
+        {
+            
+        }
+        override string toString()
+        {
+            if( this._value != null )
+            {
+                ret this._value.toString()
+            }
+            else
+            {
+                ret ""
+            }
+        }
+    }
+    
+    public class Array<T> interface IIterable<T>, IIterator<T>
     {
         int _length = 0
         Type _type = null;
         _index = 0;
-        _current = null
+        T _current = null
         long _ptr = 0
-
            
         public static Array createInstance(int length)
         {
             var arr = Array(length)
             ret arr
         }
-        public static Array CreateInstance(Type elementType, int length1 )
+        public static Array CreateInstance<T>( int length1 )
         {            
-            var arr = Array(length1, elementType)
+            var arr = Array<T>(length1)
             ret arr
         }
 
@@ -202,11 +274,6 @@ namespace Core
             this._length = __len
             #this._ptr = Lib.Array.CreateArray( length, 4 )
         }
-        _init_( int __len, Type __type )
-        {
-            this._length = __len
-            this._type = __type
-        }        
         override void reset()
         {
             this._index = 0;
@@ -226,20 +293,16 @@ namespace Core
             #System.Console.WriteLine(" Array.moveNext-----" + this._index )
             ret hasNext_var
         }
-        override object current()
+        override T current()
         {
             ret this._current;
         }
         override void release()
         {
         }
-        override IIterator iterator()
+        override IIterator<T> iterator()
         {
             ret this
-        }
-        get T current<T>()
-        {
-            ret this._current as T;
         }
         get int index()
         {
@@ -261,12 +324,12 @@ namespace Core
             var retobj = SimpleLanguage.Lib.Array.GetArrayValueThis( this, ind )
             this._current = retobj;
         }
-        set setValue( int __index, object val )
+        set setValue( int __index, T val )
         {
             #Lib.Array.SetArrayValue( this._ptr, 5,  index, val )
             SimpleLanguage.Lib.Array.SetArrayValueThis( this, __index, val )
         }
-        get object getValue( int __index )
+        get T getValue( int __index )
         {
             #ret Lib.Array.GetArrayValue( this._ptr, 5,  index )
             ret SimpleLanguage.Lib.Array.GetArrayValueThis( this, __index )
@@ -274,7 +337,21 @@ namespace Core
         setValues( Int64 valPtr, int len )
         {
             #Lib.Array.SetArrayValue( this._ptr, 1,  valPtr, len )
-        }     
+        }
+        override string toString()
+        {            
+            string showstr = "["
+            for i = 0, i < this._length, i++
+            {
+                var cur = SimpleLanguage.Lib.Array.GetArrayValueThis( this, i )
+                showstr = showstr + cur.toString()
+                if( i < this._length - 1 )
+                {
+                    showstr += ","
+                }
+            }
+            ret showstr + "]"
+        }
     }
 }
 
@@ -306,17 +383,27 @@ ArrayTest
 
          # arr22 = int[2][] { [1,2,3,4] }
         li = Level<int>(100)
-        a1 = Level<int>[5]{ Level<int>(3), null, Level<int>(4), li }
+        #a1 = Level<int>[5]{ Level<int>(3), null, Level<int>(4), li }
         #a1 = [101,102,null,104]
 
         #a1 = object[4]{intvalue,null,3 };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         
         #System.Console.WriteLine("1111111111= " + a1[1] )
         
-        for v in a1 
+        #int[] a1 = {1,2,3,4}
+        a1 = [[[1,2,3],[3,4,5],[6,7,8]],[ [10,11,12],[14,15,15],[16,17,18] ]];  # int[2][3][3]     
+        #object[3][2][] a1 = int[3][2][]{ [ [1,2,3], [] ], [ [5], [7,8,9,5] ], [[100]] };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
+        #还需要处理  [[100]] => 直接写100的情况，这种情况的话，需要检查 外层是否直接是array形式，如果是，则需要对应关系化处理
+
+        
+        for v in a1
         {
             if v.value != null
-            {
+            {                
+                for v2 in iter
+                {
+                    System.Console.WriteLine("level2---------value:" + v2.toString() )
+                }
                 System.Console.WriteLine("------------value: " + v.toString() )
             }
             else
@@ -325,7 +412,7 @@ ArrayTest
             }
         }
         #!
-        v = Iterator( a1 )
+        v = Iterator( a1 )  使用a1.type 变成T
         bool f = v.hasNext()
         label start
         if f
@@ -337,13 +424,7 @@ ArrayTest
         v = null
         !#        
         # alist = List(2){ intvalue, 1 }
-        # int[] a30 = {1,2,3,4}
         # map = Map<int,string>(){ a1.$0:"al", 33:"wang" }
-        # a111 = [[[1,2,3],[3,4,5],[6,7,8]],[ [10,11,12],[14,15,15],[16,17,18] ]];  # int[2][3][3] 
-    
-        #object[3][2][] a1 = int[3][2][]{ [ [1,2,3], [] ], [ [5], [7,8,9,5] ], [[100]] };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
-        #还需要处理  [[100]] => 直接写100的情况，这种情况的话，需要检查 外层是否直接是array形式，如果是，则需要对应关系化处理
-
         #!
         for v in a1
         {
@@ -391,17 +472,7 @@ ArrayTest
         a33[3] = 123
         var aa333 =  a33[0];
         System.Console.WriteLine("1111111111= " + a33[3] + "-----" + a33[0] + "xxxxx=" + aa333 )
-        !#
-
-        #!
-        a34 = List<int>[]{1,2,3,4}
-        aa = 3
-        a34.$aa = 111
-        var aaaa34v = a34.$3
-        System.Console.WriteLine("1111111111= " + aaaa34v )
-        !#
-
-        
+        !#        
         #!
         a35 = [[0,1,2,ac,4],[[11,12],[13,14]]];
         # a35[0] = [0,1,2,3,4] a35[1] = [[1,2,3],[2,3,4],[4,5,6],[7,8,9]]  a34[1][0][2] = 3  a35是个一维两值数组，访问a35[1] 是确定对象访问 再访问 是一个二维纯int数组，然后是a35[1][0][2] 后边两位是纯数组访问
@@ -412,7 +483,7 @@ ArrayTest
         System.Console.WriteLine("1111111111= " + a35.$1.$aa.$1 )
 
         var tt1 = a35.$aa.$3
-        if tt1 is ArrClass tt2 
+        if tt1 is ArrClass tt2
         {
             tt2.i = 200
             var aa1111 = tt2.i;
@@ -448,7 +519,7 @@ ArrayTest
         avalue222 = a[1][1][1]
              
         
-        var a4 = {1.2,1.3,1.5};    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于 Array( 3, float.type ){ 1.2, 1.3, 1.5};
+        var a4 = {1.2,1.3,1.5};    #如果使用{}的形式，必须在前边声明类型，才可以使用 通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于 Array( 3, float.type ){ 1.2, 1.3, 1.5};
         
         a5 = {"aa", 1, "232", 1.0f };  # 相当于Array( 5, object.type)( "aa", 1, "232", 1.0f, XC() );
         

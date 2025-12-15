@@ -239,13 +239,15 @@ namespace SimpleLanguage.Core
                     CreateExpressParam cep2 = new CreateExpressParam()
                     {
                         ownerMBS = m_ThenMetaStatements,
-                        metaType = m_ForIterateVariable.metaDefineType,
+                        ownerMetaClass = m_ThenMetaStatements.ownerMetaClass,
+                        metaType = new MetaType( CoreMetaClassManager.booleanMetaClass ),
                         fme = m_FileMetaKeyForSyntax.conditionExpress,
                         isStatic = false,
                         isConst = false,
                         parsefrom = EParseFrom.StatementRightExpress
                     };
                     m_ConditionExpress = ExpressManager.CreateExpressNode(cep2);
+                    m_ConditionExpress.Parse(new AllowUseSettings());
                     m_ConditionExpress.CalcReturnType();
                 }
             }

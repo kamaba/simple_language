@@ -1819,20 +1819,17 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EVMType.Array:
                     {
+                        if (anyObj)
+                        {
+                            obj.SetValueByType(EVMType.Class, svalue.sobject );
+                            return;
+                        }
                         if (obj is ClassObject co)
                         {
                             var ao = svalue.sobject as ClassObject;
                             Debug.Assert(ao != null);
-                            //co.SetClassObject(ao);
-                            if (anyObj)
-                            {
-                                obj.SetValueByType(EVMType.Array, ao);
-                                return;
-                            }
-                            else
-                            {
-                                (obj as ClassObject).SetClassObject(ao);
-                            }
+                            //co.SetClassObject(ao);                            
+                            (obj as ClassObject).SetClassObject(ao);
                         }
                         else
                         {
