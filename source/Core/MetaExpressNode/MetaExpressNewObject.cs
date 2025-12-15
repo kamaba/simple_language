@@ -147,6 +147,7 @@ namespace SimpleLanguage.Core
             if( m_MetaExpress is MetaArrayExpressNode maen )
             {
                 m_MetaExpress = new MetaNewObjectExpressNode(maen, mc.metaClass, mbs, null);
+                m_MetaExpress.Parse(new AllowUseSettings());
             }
         }
         public MetaBraceAssignStatements(MetaBlockStatements mbs, MetaExpressNode men, MetaMemberVariable mmv )
@@ -1045,9 +1046,18 @@ namespace SimpleLanguage.Core
         {
             m_OwnerMetaClass = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
-            m_MetaType = new MetaType(mt);
+            m_DefineMetaType = new MetaType(mt);
+            m_NewMetaType = new MetaType(mt);
+            if( m_NewMetaType.isArray )
+            {
+                m_NewType = ENewType.ArrayClass;
+            }
+            else
+            {
+                m_NewType = ENewType.CommomClass;
+            }
             m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fmbt, ownerMC, mbs, equalMV);
-            m_MetaBraceOrBracketStatementsContent.SetMetaType(m_MetaType);
+            m_MetaBraceOrBracketStatementsContent.SetMetaType(m_DefineMetaType);
         }
         // Array arr = [1,2,3]   [Class1(), Class2(), variable1.a.b(),100]
         public MetaNewObjectExpressNode( FileMetaBracketTerm fmbt, MetaType mt, MetaClass mc, MetaBlockStatements mbs, MetaVariable equalMV )
@@ -1351,10 +1361,29 @@ namespace SimpleLanguage.Core
 
                 MetaType mt2 = mbc.GetRetMetaType();
 
-                if( m_MetaType.metaClass.IsContainMetaClass( mt2.metaClass ) )
+                if( m_MetaType.isArray )
                 {
-                    Log.AddInStructMeta(EError.None, "里边的元素与外边定义的类11，不对应，需要调整数据，或者是定义的结构 ");
+                    if( m_MetaType.metaClass == CoreMetaClassManager.arrayMetaClass 
+                        && mt2.isArray )
+                    {
+
+                    }
+                    else
+                    {
+                        if (!m_MetaType.metaClass.IsContainMetaClass(mt2.metaClass))
+                        {
+                            Log.AddInStructMeta(EError.None, "里边的元素与边的数据类型不对应，不对应，需要调整数据，或者是定义的结构 ");
+                        }
+                    }
                 }
+                else
+                {
+                    if (!m_MetaType.metaClass.IsContainMetaClass(mt2.metaClass))
+                    {
+                        Log.AddInStructMeta(EError.None, "里边的元素与外边定义的类11，不对应，需要调整数据，或者是定义的结构 ");
+                    }
+                }
+
             }
         }
         public override MetaType GetReturnMetaDefineType()

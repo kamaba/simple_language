@@ -10,6 +10,7 @@ using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using SimpleLanguage.VM.Runtime;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -206,7 +207,74 @@ namespace SimpleLanguage.VM
                     break;
                 default:
                     {
-                        svalue.SetSObject(mmv.value as SObject);
+                        switch( mmv.eAnyType )
+                        {
+                            case EVMType.Boolean:
+                                {
+                                    svalue.SetBoolValue((bool)mmv.value);
+                                }
+                                break;
+                            case EVMType.Byte:
+                                {
+                                    svalue.SetInt8Value((byte)mmv.value);
+                                }
+                                break;
+                            case EVMType.SByte:
+                                {
+                                    svalue.SetSInt8Value((sbyte)mmv.value);
+                                }
+                                break;
+                            case EVMType.Int16:
+                                {
+                                    svalue.SetInt16Value((Int16)mmv.value);
+                                }
+                                break;
+                            case EVMType.UInt16:
+                                {
+                                    svalue.SetUInt16Value((UInt16)mmv.value);
+                                }
+                                break;
+                            case EVMType.Int32:
+                                {
+                                    svalue.SetInt32Value((Int32)mmv.value);
+                                }
+                                break;
+                            case EVMType.UInt32:
+                                {
+                                    svalue.SetUInt32Value((UInt32)mmv.value);
+                                }
+                                break;
+                            case EVMType.Int64:
+                                {
+                                    svalue.SetInt64Value((Int64)mmv.value);
+                                }
+                                break;
+                            case EVMType.UInt64:
+                                {
+                                    svalue.SetUInt64Value((UInt64)mmv.value);
+                                }
+                                break;
+                            case EVMType.Float32:
+                                {
+                                    svalue.SetFloatValue((Single)mmv.value);
+                                }
+                                break;
+                            case EVMType.Float64:
+                                {
+                                    svalue.SetDoubleValue((Double)mmv.value);
+                                }
+                                break;
+                            case EVMType.String:
+                                {
+                                    svalue.SetStringValue((string)mmv.value);
+                                }
+                                break;
+                            default:
+                                {
+                                    svalue.SetSObject(mmv.value as SObject);
+                                }
+                                break;
+                        }
                     }
                     break;
             }
