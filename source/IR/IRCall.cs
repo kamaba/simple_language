@@ -471,7 +471,7 @@ namespace SimpleLanguage.IR
                     break;
                 default:
                     {
-                        sva.SetSObject(obj  as SObject);
+                        sva.SetSObject(obj as SObject);
                     }
                     break;
             }
