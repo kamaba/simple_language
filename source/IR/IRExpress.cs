@@ -93,10 +93,14 @@ namespace SimpleLanguage.IR
                         //maien.GetReturnMetaClass();
                         if( maien.isAs )
                         {
-                            var owirmc = IRManager.instance.GetIRMetaClassById(maien.currentVariable.GetOwnerClassTemplateClass().GetHashCode());
-                            var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(maien.currentVariable.metaDefineType, owirmc);
-                            IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, maien.currentVariable );
-                            AddIRRangeData(irload.IRDataList);
+                            var aaa = maien.currentVariable.GetOwnerClassTemplateClass();
+                            var owirmc = IRManager.instance.GetIRMetaClassById(aaa.GetHashCode());
+                            if ( maien.currentVariable.variableFrom != MetaVariable.EVariableFrom.None )
+                            {
+                                var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(maien.currentVariable.metaDefineType, owirmc);
+                                IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, maien.currentVariable);
+                                AddIRRangeData(irload.IRDataList);
+                            }
 
                             IRData irdata = new IRData();
                             irdata.opCode = EIROpCode.CastClass;
@@ -284,10 +288,11 @@ namespace SimpleLanguage.IR
             if( mnoen.newType == MetaNewObjectExpressNode.ENewType.ArrayClass )
             {
                 IRNewArray irnewArray = new IRNewArray();
-                EArrayType arrayType = EArrayType.Int32;
-                if( mnoen.metaType.arrayDimensionLengthList.Count > 1 || mnoen.metaType.metaClass == CoreMetaClassManager.arrayMetaClass )
+                EArrayType arrayType = EArrayType.Any;
+                if( mnoen.metaType.IsArray() )
                 {
-                    arrayType = EArrayType.Array;
+                    //arrayType = mnoen.metaType.genTemplateMetaTypeList[0];
+                    arrayType = EArrayType.Int32;
                 }
                 else
                 {
@@ -345,7 +350,7 @@ namespace SimpleLanguage.IR
                     }
                 }
                 irnewArray.eArrayType = arrayType;
-                irnewArray.irMetaType = IRMetaType.CreateIRMetaTypeByArrayMetaTypeList(mnoen.metaType, owirmc);
+                irnewArray.irMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.metaType, owirmc);
                 irnewArray.length = mnoen.arrayLength;
 
                 IRNew irNew = new IRNew(irMethod, irnewArray);

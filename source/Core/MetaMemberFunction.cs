@@ -343,14 +343,14 @@ namespace SimpleLanguage.Core
                 var mt = new MetaType(m_OwnerMetaClass);
                 if( m_OwnerMetaClass.isTemplateClass )
                 {
-                    var tt = new MetaTemplate(m_OwnerMetaClass, "this");
+                    var tt = new MetaTemplate(m_OwnerMetaClass, "this", CoreMetaClassManager.objectMetaClass );
                     tt.SetIndex(0);
                     tt.SetInConstraintMetaClass(m_OwnerMetaClass);
                     mt = new MetaType(tt, "this" );
                 }
                 m_ThisMetaVariable = new MetaVariable(m_OwnerMetaClass.allClassName + "." + m_Name + ".this", MetaVariable.EVariableFrom.Argument, null, m_OwnerMetaClass, mt );
             }
-            m_ReturnMetaVariable = new MetaVariable(m_OwnerMetaClass.allClassName + "." + m_Name + ".define", MetaVariable.EVariableFrom.Argument, null, m_OwnerMetaClass, defineMetaType );
+            m_ReturnMetaVariable = new MetaVariable(m_OwnerMetaClass.allClassName + "." + m_Name + ".return", MetaVariable.EVariableFrom.None, null, m_OwnerMetaClass, defineMetaType );
         }
         public override void SetDeep(int deep)
         {

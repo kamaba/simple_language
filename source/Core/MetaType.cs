@@ -16,7 +16,6 @@ namespace SimpleLanguage.Core
     public enum EMetaTypeType
     {
         None,
-        Array,
         MetaClass,
         MetaGenClass,
         Template,
@@ -33,22 +32,21 @@ namespace SimpleLanguage.Core
         }
         public bool isEnum => m_MetaClass is MetaEnum;
         public bool isData => m_MetaClass is MetaData;
-        public bool isArray => m_EType == EMetaTypeType.Array;
         public bool isNull => m_MetaClass == CoreMetaClassManager.nullMetaClass;
         public bool isMap => m_MetaClass == CoreMetaClassManager.mapMetaClass;
         public bool isTemplate => m_EType == EMetaTypeType.Template;
         public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
         public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData;
+        public int arrayLength => m_ArrayLength;
 
-        public int arrayDimension => m_ArrayDimensionLengthList.Count;
-        public List<int> arrayDimensionLengthList => m_ArrayDimensionLengthList;
+        //public List<int> arrayDimensionLengthList => m_ArrayDimensionLengthList;
         public EMetaTypeType eType => m_EType;
         public MetaClass metaClass => m_MetaClass;
         public MetaTemplate metaTemplate => m_MetaTemplate;
         public MetaMemberEnum enumValue => m_EnumValue;
         public List<MetaType> defineTemplateMetaTypeList => m_DefineTemplateMetaTypeList;
         public List<MetaType> genTemplateMetaTypeList => m_GenTemplateMetaTypeList;
-        public List<MetaType> arrayMetaTypeList => m_ArrayMetaTypeList;
+        //public List<MetaType> arrayMetaTypeList => m_ArrayMetaTypeList;
         //public MetaGenTemplate metaGenTemplate => m_MetaGenTemplate;
 
         private EMetaTypeType m_EType = EMetaTypeType.None;
@@ -60,8 +58,9 @@ namespace SimpleLanguage.Core
         private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         private List<MetaType> m_GenTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
-        private List<MetaType> m_ArrayMetaTypeList = new List<MetaType>();
-        private List<int> m_ArrayDimensionLengthList = new List<int>();
+        //private List<MetaType> m_ArrayMetaTypeList = new List<MetaType>();
+        //private List<int> m_ArrayDimensionLengthList = new List<int>();
+        private int m_ArrayLength = 0;
         public MetaType()
         {
         }
@@ -129,14 +128,15 @@ namespace SimpleLanguage.Core
             this.m_EnumValue = mt.m_EnumValue;
             //this.m_FromName = mt.m_FromName;
             this.m_EType = mt.m_EType;
+            this.m_ArrayLength = mt.m_ArrayLength;
 
-            this.m_ArrayDimensionLengthList = new List<int>( mt.m_ArrayDimensionLengthList.ToArray() );
+            //this.m_ArrayDimensionLengthList = new List<int>( mt.m_ArrayDimensionLengthList.ToArray() );
 
-            for( int i = 0; i < mt.m_ArrayMetaTypeList.Count; i++ )
-            {
-                MetaType mtc = new MetaType(mt.m_ArrayMetaTypeList[i]);
-                m_ArrayMetaTypeList.Add(mtc);
-            }
+            //for( int i = 0; i < mt.m_ArrayMetaTypeList.Count; i++ )
+            //{
+            //    MetaType mtc = new MetaType(mt.m_ArrayMetaTypeList[i]);
+            //    m_ArrayMetaTypeList.Add(mtc);
+            //}
             for (int i = 0; i < mt.m_DefineTemplateMetaTypeList.Count; i++)
             {
                 MetaType mtc = new MetaType(mt.m_DefineTemplateMetaTypeList[i]);
@@ -148,69 +148,120 @@ namespace SimpleLanguage.Core
                 m_GenTemplateMetaTypeList.Add(mtc);
             }
         }
-        public void SetArrayDimension( int disension  )
+        public bool IsArray()
         {
-            if( disension > 0 )
+            if( m_EType == EMetaTypeType.MetaGenClass )
             {
-                m_EType = EMetaTypeType.Array;
-                m_ArrayDimensionLengthList.Clear();
-                for (int i = 0; i < disension; i++)
-                    m_ArrayDimensionLengthList.Add(-1);
-            }
-        }
-        public void SetUnLimitArray()
-        {
-            m_EType = EMetaTypeType.Array;
-            m_ArrayDimensionLengthList.Add(-1);
-        }
-        //降维处理
-        public void SetArrayDimensionByFrontMetaType( MetaType mt )
-        {
-            if(mt.arrayDimension > 1 )
-            {
-                m_EType = EMetaTypeType.Array;
-                m_ArrayDimensionLengthList.Clear();
-                for( int i = 1; i <  mt.m_ArrayDimensionLengthList.Count; i++)
+                if( m_MetaClass is MetaGenTemplateClass mgtc )
                 {
-                    m_ArrayDimensionLengthList.Add(mt.m_ArrayDimensionLengthList[i]);
+                    if( mgtc.metaTemplateClass == CoreMetaClassManager.arrayMetaClass )
+                    {
+                        return true;
+                    }
                 }
             }
-            else
+            else if( m_EType == EMetaTypeType.MetaClass )
             {
-                m_EType = EMetaTypeType.MetaClass;
-                m_MetaClass = mt.m_MetaClass;
-                m_ArrayDimensionLengthList.Clear();
+                if (m_MetaClass == CoreMetaClassManager.arrayMetaClass)
+                {
+                    return true;
+                }
             }
-        }
-        public void SetArrayDimensionLengthByIndex(int index, int length)
-        {
-            if (index < 0 || index >= m_ArrayDimensionLengthList.Count)
+            else if( m_EType == EMetaTypeType.TemplateClassWithTemplate )
             {
-                Log.AddInStructMeta(EError.None, "设置数组维度通过索引号失败，超出了范围!");
-                return;
+                if (m_MetaClass == CoreMetaClassManager.arrayMetaClass)
+                {
+                    return true;
+                }
             }
-            m_ArrayDimensionLengthList[index] = length;
+                return false;
         }
-        public void SetArrayDismensionLength( List<int> list )
+        public int ArrayDimension()
         {
-            m_ArrayDimensionLengthList = list;
-        }
-        public int GetArrayDimensionLengthByIndex(int index )
-        {
-            if (index < 0 || index >= m_ArrayDimensionLengthList.Count)
+            MetaType curmt = this;
+            int dismesion = 0;
+            while(true)
             {
-                Log.AddInStructMeta(EError.None, "设置数组维度通过索引号失败，超出了范围!");
-                return -1;
+                if(IsArray())
+                {
+                    dismesion++;
+                    if( m_GenTemplateMetaTypeList.Count == 1 )
+                    {
+                        curmt = m_GenTemplateMetaTypeList[0];
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    break;
+                }
             }
-            return m_ArrayDimensionLengthList[index];
+            return dismesion;
         }
-        public void AutoCreateArrayMetaType()
+        public List<int> ArrayDimensionLengthList()
         {
-            List<int> templateAddArray = new List<int>(m_ArrayDimensionLengthList);
+            List<int> list = new List<int>();
 
-            this.arrayMetaTypeList.Clear();
-            HandleArrayCreateType(templateAddArray, this);
+
+
+            return list;
         }
+        public void SetArrayLength( int len )
+        {
+            this.m_ArrayLength = len;
+        }
+        //public void SetArrayDimension( int disension  )
+        //{
+        //    if( disension > 0 )
+        //    {
+        //        m_ArrayDimensionLengthList.Clear();
+        //        for (int i = 0; i < disension; i++)
+        //            m_ArrayDimensionLengthList.Add(-1);
+        //    }
+        //}
+        //降维处理
+        //public void SetArrayDimensionByFrontMetaType( MetaType mt )
+        //{
+        //    if(mt.arrayDimension > 1 )
+        //    {
+        //        m_ArrayDimensionLengthList.Clear();
+        //        for( int i = 1; i <  mt.m_ArrayDimensionLengthList.Count; i++)
+        //        {
+        //            m_ArrayDimensionLengthList.Add(mt.m_ArrayDimensionLengthList[i]);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        m_EType = EMetaTypeType.MetaClass;
+        //        m_MetaClass = mt.m_MetaClass;
+        //        m_ArrayDimensionLengthList.Clear();
+        //    }
+        //}
+        //public void SetArrayDimensionLengthByIndex(int index, int length)
+        //{
+        //    if (index < 0 || index >= m_ArrayDimensionLengthList.Count)
+        //    {
+        //        Log.AddInStructMeta(EError.None, "设置数组维度通过索引号失败，超出了范围!");
+        //        return;
+        //    }
+        //    m_ArrayDimensionLengthList[index] = length;
+        //}
+        //public void SetArrayDismensionLength( List<int> list )
+        //{
+        //    m_ArrayDimensionLengthList = list;
+        //}
+        //public int GetArrayDimensionLengthByIndex(int index )
+        //{
+        //    if (index < 0 || index >= m_ArrayDimensionLengthList.Count)
+        //    {
+        //        Log.AddInStructMeta(EError.None, "设置数组维度通过索引号失败，超出了范围!");
+        //        return -1;
+        //    }
+        //    return m_ArrayDimensionLengthList[index];
+        //}
         // 这块的作用是，生成数组内部嵌套的数组
         void HandleArrayCreateType(List<int> templateAddArray, MetaType mt )
         {
@@ -229,9 +280,9 @@ namespace SimpleLanguage.Core
                 MetaType mtnew = new MetaType(this.metaClass);
                 if(templateAddArray.Count > 0 )
                 {
-                    mtnew.SetArrayDismensionLength(templateAddArray);
+                    //mtnew.SetArrayDismensionLength(templateAddArray);
                 }
-                mt.AddArrayMetaType(mtnew);
+                //mt.AddArrayMetaType(mtnew);
 
                 if (templateAddArray.Count == 0)
                 {
@@ -243,10 +294,10 @@ namespace SimpleLanguage.Core
                     templateAddArray.Add(length);
                 }
             }
-            if(mt.m_ArrayDimensionLengthList.Count > 0 )
-            {
-                mt.m_ArrayDimensionLengthList[0] = mt.arrayMetaTypeList.Count;
-            }
+            //if(mt.m_ArrayDimensionLengthList.Count > 0 )
+            //{
+            //    //mt.m_ArrayDimensionLengthList[0] = mt.arrayMetaTypeList.Count;
+            //}
         }
         public void SetMetaType( MetaType mt )
         {
@@ -373,17 +424,17 @@ namespace SimpleLanguage.Core
         {
             m_GenTemplateMetaTypeList.Add(mt);
         }
-        public void AddArrayMetaType( MetaType mt )
-        {
-            m_ArrayMetaTypeList.Add(mt);
-        }
-        public void SetArrayMetaType( List<MetaType> list )
-        {
-            m_ArrayMetaTypeList = list;
-            m_ArrayDimensionLengthList.Clear();
-            m_ArrayDimensionLengthList.Add(list.Count);
-            m_EType = EMetaTypeType.Array;
-        }
+        //public void AddArrayMetaType( MetaType mt )
+        //{
+        //    m_ArrayMetaTypeList.Add(mt);
+        //}
+        //public void SetArrayMetaType( List<MetaType> list )
+        //{
+        //    m_ArrayMetaTypeList = list;
+        //    m_ArrayDimensionLengthList.Clear();
+        //    m_ArrayDimensionLengthList.Add(list.Count);
+        //    m_EType = EMetaTypeType.Array;
+        //}
         //public void SetSourceMetaType( MetaType sourceMt )
         //{
         //    this.m_SourceMetaType = sourceMt;
@@ -550,27 +601,60 @@ namespace SimpleLanguage.Core
             }
             else if( eType == EMetaTypeType.TemplateClassWithTemplate )
             {
-                if (m_MetaTemplate != null)
+                if (m_MetaClass != null)
                 {
-                    sb.Append(m_MetaTemplate.name);
+                    sb.Append(m_MetaClass.allClassName);
                 }
+                if (m_DefineTemplateMetaTypeList.Count > 0)
+                {
+                    sb.Append("<");
+
+                    for (int i = 0; i < m_DefineTemplateMetaTypeList.Count; i++)
+                    {
+                        sb.Append(m_DefineTemplateMetaTypeList[i].ToString());
+                        if (i < m_DefineTemplateMetaTypeList.Count - 1)
+                        {
+                            sb.Append(",");
+                        }
+                    }
+                    sb.Append(">");
+                }
+                if(m_MetaClass == CoreMetaClassManager.arrayMetaClass )
+                    sb.Append("[" + this.m_ArrayLength + "]");
             }
-            else if( eType == EMetaTypeType.MetaClass )
+            else if (eType == EMetaTypeType.MetaClass)
             {
                 if (m_MetaClass != null)
                 {
                     sb.Append(m_MetaClass.allClassName);
                 }
             }
-            else if( eType == EMetaTypeType.Array )
+            else if (eType == EMetaTypeType.MetaGenClass )
             {
                 if (m_MetaClass != null)
                 {
-                    sb.Append(m_MetaClass.allClassName);
-                }
-                for( int i = 0; i < this.m_ArrayDimensionLengthList.Count; i++ )
-                {
-                    sb.Append("[" + this.m_ArrayDimensionLengthList[i] + "]");
+                    if(m_MetaClass is MetaGenTemplateClass mgtc )
+                    {
+                        sb.Append(mgtc.metaTemplateClass.metaNode.allName);
+                        if (m_GenTemplateMetaTypeList.Count > 0)
+                        {
+                            sb.Append("<");
+
+                            for (int i = 0; i < m_GenTemplateMetaTypeList.Count; i++)
+                            {
+                                sb.Append(m_GenTemplateMetaTypeList[i].ToString());
+                                if (i < m_GenTemplateMetaTypeList.Count - 1)
+                                {
+                                    sb.Append(",");
+                                }
+                            }
+                            sb.Append(">");
+                        }
+                        if ( mgtc.metaTemplateClass == CoreMetaClassManager.arrayMetaClass )
+                        {
+                            sb.Append("[" + this.m_ArrayLength + "]");
+                        }
+                    }
                 }
             }
             else
@@ -587,20 +671,6 @@ namespace SimpleLanguage.Core
                     //}
                     //else 
                 }
-            }
-            if (m_DefineTemplateMetaTypeList.Count > 0)
-            {
-                sb.Append("<");
-
-                for (int i = 0; i < m_DefineTemplateMetaTypeList.Count; i++)
-                {
-                    sb.Append(m_DefineTemplateMetaTypeList[i].ToString());
-                    if (i < m_DefineTemplateMetaTypeList.Count - 1)
-                    {
-                        sb.Append(",");
-                    }
-                }
-                sb.Append(">");
             }
 
             return sb.ToString();

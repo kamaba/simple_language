@@ -9,6 +9,7 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Core
 {
@@ -73,7 +74,11 @@ namespace SimpleLanguage.Core
                     string tTemplateName = fmc.templateDefineList[i].name;
                     if ( m_MetaTemplateList.Find(a => a.name == tTemplateName) != null)
                     {
-                        Log.AddInStructMeta(EError.None, "Error 定义模式名称重复!!");
+                        if(classDefineType == EClassDefineType.InnerDefine )
+                        {
+                            Log.AddInStructMeta(EError.None, "Error 定义模式名称重复!!");
+                            Debug.Assert(false);
+                        }
                     }
                     else
                     {

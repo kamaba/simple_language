@@ -127,7 +127,7 @@ namespace SimpleLanguage.CSharp
                     frontName = frontName.Remove(0, 7);
                 }
             }
-            MetaNode getmb = FindCSharpClassOrNameSpace(frontName, name);
+            MetaNode getmb = FindCSharpClassOrNameSpace(frontName, name, out bool isAdd );
             if (getmb == null) return null;
 
             if(getmb.isMetaNamespace )
@@ -156,12 +156,17 @@ namespace SimpleLanguage.CSharp
             }
 
             getmb.UpdateAllName();
+            if( getmb.IsMetaClass() && isAdd )
+            {
+                ClassManager.instance.AddRuntimeMetaClass(getmb.GetMetaClassByTemplateCount(0));
+            }
 
 
             return getmb;
         }
-        public static MetaNode FindCSharpClassOrNameSpace( string frontName, string name )
+        public static MetaNode FindCSharpClassOrNameSpace( string frontName, string name, out bool isAdd )
         {
+            isAdd = false;
             string allName = frontName + "." + name;
             for (int k = 0; k < canSearchAssemblyList.Count; k++)
             {
@@ -179,11 +184,13 @@ namespace SimpleLanguage.CSharp
                 {
                     if (ttype.IsClass)
                     {
-                        MetaClassCSharp mc = new MetaClassCSharp(ttype.Name, ttype);                        
+                        isAdd = true;
+                        MetaClassCSharp mc = new MetaClassCSharp(ttype.Name, ttype);
                         return new MetaNode(mc);
                     }
                     else if (ttype.IsTypeDefinition)
                     {
+                        isAdd = true;
                         MetaNamespaceCSharp nmn = new MetaNamespaceCSharp(ttype.Name);
                         return new MetaNode(nmn);
                     }
@@ -201,6 +208,7 @@ namespace SimpleLanguage.CSharp
                         string cuns = namespaces[l];
                         if (cuns == allName)
                         {
+                            isAdd = true;
                             MetaNamespaceCSharp nmn = new MetaNamespaceCSharp(name);
                             return new MetaNode(nmn);
                         }

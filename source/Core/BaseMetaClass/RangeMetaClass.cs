@@ -8,19 +8,6 @@
 
 namespace SimpleLanguage.Core
 {
-    public class RangeIteratorMetaClass : MetaClass
-    {
-        public RangeIteratorMetaClass() : base(DefaultObject.Class.ToString())
-        {
-            m_Type = EType.Class;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
-        }
-        public static MetaClass CreateMetaClass()
-        {
-            ArrayIteratorMetaClass mc = new ArrayIteratorMetaClass();
-            return mc;
-        }
-    }
     public class RangeMetaClass : MetaClass
     {
         public RangeMetaClass():base( DefaultObject.Range.ToString() )
@@ -28,7 +15,7 @@ namespace SimpleLanguage.Core
             m_Type = EType.Range;
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_ClassDefineType = EClassDefineType.InnerDefine;
-            m_MetaTemplateList.Add( new MetaTemplate(this, "T") );
+            m_MetaTemplateList.Add( new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass ) );
         }
         public override void ParseInnerVariable()
         {
