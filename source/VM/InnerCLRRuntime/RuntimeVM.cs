@@ -295,8 +295,7 @@ namespace SimpleLanguage.VM.Runtime
                         rtList.Add(crt);
                     }
                 }
-                RuntimeType rt = irmt.isArray ? RuntimeTypeManager.arrayRuntimeType :
-                    RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.irMetaClass, rtList);
+                RuntimeType rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.irMetaClass, rtList);
                 if( rt == null && isAdd )
                 {
                     rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(irmt.irMetaClass, rtList);
@@ -955,9 +954,15 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         IRNewArray mdt = iri.opValue as IRNewArray;
                         var rt = GetClassRuntimeType(mdt.irMetaType, mdt.irMetaType.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
-                        ArrayObject sob = new ArrayObject(mdt.eArrayType, mdt.length);
+                        ArrayObject sob = new ArrayObject(rt, mdt.eArrayType, mdt.length);
                         ObjectManager.AddClassObject(sob);
                         m_ValueStack[m_ValueIndex++].SetSObject(sob);
+
+                        var irList = rt.irClass.CreateStaticMetaMetaVariableIRList();
+                        if (irList.Count > 0)
+                        {
+                            InnerCLRRuntimeVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
+                        }
                     }
                     break;
                 case EIROpCode.Dup:

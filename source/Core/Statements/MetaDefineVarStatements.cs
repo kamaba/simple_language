@@ -25,7 +25,6 @@ namespace SimpleLanguage.Core
 
         private MetaVariable m_DefineVarMetaVariable = null;
         private MetaExpressNode m_ExpressNode = null;
-        private bool m_IsNeedCastStatements = false;
         public MetaDefineVarStatements( MetaBlockStatements mbs ) : base(mbs)
         {
         }

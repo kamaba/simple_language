@@ -240,9 +240,9 @@ namespace SimpleLanguage.Core
                         if( findmc2.classDefineType == EClassDefineType.StructDefine )
                         {
                             findmc2.BindFileMetaClass(fmc);
-                            findmc2.SetClassDefineType(EClassDefineType.CodeDefine);
                             findmc2.ParseFileMetaClassTemplate(fmc);
                             findmc2.ParseFileMetaClassMemeberVarAndFunc(fmc);
+                            findmc2.SetClassDefineType(EClassDefineType.CodeDefine);
                             return findmc2;
                         }
                         else
@@ -312,6 +312,7 @@ namespace SimpleLanguage.Core
                             fmc.SetMetaClass(ffmc);
                             ffmc.BindFileMetaClass(fmc);
                             ffmc.SetClassDefineType(EClassDefineType.CodeDefine);
+                            ffmc.metaTemplateList.Clear();
                             ffmc.ParseFileMetaClassTemplate(fmc);
                             ffmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
                             ffmc.UpdateClassAllName();

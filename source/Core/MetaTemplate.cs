@@ -45,10 +45,18 @@ namespace SimpleLanguage.Core
             m_Index = mt.m_Index;
             
         }
-        public MetaTemplate( MetaClass mc, string name )
+        public MetaTemplate( MetaClass mc, string name, MetaClass extendClass )
         {
             m_Name = name;
             m_OwnerClass = mc;
+            if( extendClass == null )
+            {
+                m_ExtendsMetaClass = CoreMetaClassManager.objectMetaClass;
+            }
+            else
+            {
+                m_ExtendsMetaClass = extendClass;
+            }
         }
         public void SetIndex( int index )
         {

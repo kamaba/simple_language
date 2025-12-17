@@ -52,8 +52,8 @@ namespace SimpleLanguage.IR
                 var it_irmt = new IRMetaType(it_irmc);
 
                 // 1. 创建迭代器对象，并赋值给循环变量
-                IRNewExpress iren = new IRNewExpress(irMethod, ms.newObjectExpressIterator);
-                m_IRStatements.Add(iren);
+                //IRNewExpress iren = new IRNewExpress(irMethod, ms.newObjectExpressIterator);
+                //m_IRStatements.Add(iren);
 
 
                 IRStoreVariable storeIterator = IRStoreVariable.CreateIRStoreVariable(it_irmt, it_irmc, irMethod, ms.forIterateVariable);

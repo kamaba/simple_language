@@ -94,12 +94,19 @@ namespace SimpleLanguage.Core
 
             if( m_MetaCallArray.Count > 0 )
             {
-                m_MetaType.SetArrayDimension(1);
+                //m_MetaType.SetArrayDimension(1);
+                m_MetaType.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
+                MetaType cmt = new MetaType(CoreMetaClassManager.objectMetaClass);
+                m_MetaType.AddDefineTemplateMetaType(cmt);
+                m_MetaType.AddGenTemplateMetaType(cmt);
+
+                m_MetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(m_MetaType, true, out bool isgmc);
+                m_MetaType.SetArrayLength(m_MetaCallArray.Count);
             }
-            for (int i = 0; i < m_MetaCallArray.Count; i++)
-            {
-                var mcac = m_MetaCallArray[i];
-            }
+            //for (int i = 0; i < m_MetaCallArray.Count; i++)
+            //{
+            //    var mcac = m_MetaCallArray[i];
+            //}
             //if (m_MetaCallLink == null)
             //    return null;
 

@@ -8,6 +8,7 @@ namespace SimpleLanguage.Core
         {
             m_RefFromType = RefFromType.CSharp;
         }
+        /*
         public MetaNode GetChildrenMetaNodeByName(string name )
         {
             MetaNode mb = base.metaNode.GetChildrenMetaNodeByName(name);
@@ -16,7 +17,7 @@ namespace SimpleLanguage.Core
             {
                 return mb;
             }
-            mb = CSharpManager.FindCSharpClassOrNameSpace(this.name, name);
+            mb = CSharpManager.FindCSharpClassOrNameSpace(this.name, name, out bool isAdd );
 
             if (mb != null)
             {
@@ -29,7 +30,7 @@ namespace SimpleLanguage.Core
 
             return mb;
         }
-
+        */
         public MetaNode GetCSharpMetaClassOrNamespaceAndCreateByName(string name)
         {
             var mb = this.m_MetaNode.GetChildrenMetaNodeByName(name);

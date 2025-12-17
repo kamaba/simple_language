@@ -9,7 +9,10 @@
 
 using SimpleLanguage.Compile;
 using SimpleLanguage.Parse;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace SimpleLanguage.Core
 {
@@ -22,10 +25,6 @@ namespace SimpleLanguage.Core
 
         public static bool IsCoreMetaType( MetaType mt )
         {
-            if( mt.isArray )
-            {
-                return true;
-            }
             if( mt.eType == EMetaTypeType.MetaClass )
             {
                 var curClass = mt.metaClass;
@@ -145,12 +144,8 @@ namespace SimpleLanguage.Core
                 var ret = GetMetaTypeByInputTemplateList(curMc, getmc, fmcd.inputTemplateNodeList);
                 if (fmcd.isArray)
                 {
-                    var list = fmcd.arrayDimsionLengthList;
-                    ret.SetArrayDimension(list.Count);
-                    for (int i = 0; i < list.Count; i++)
-                    {
-                        ret.SetArrayDimensionLengthByIndex(i, list[i]);
-                    }
+                    var rarraymt = AddArrayTemplate(ret, fmcd.arrayDimsionLengthList);
+                    return rarraymt;
                 }
                 return ret;
             }
@@ -293,15 +288,28 @@ namespace SimpleLanguage.Core
                 if (fmcd.isArray)
                 {
                     var list = fmcd.arrayDimsionLengthList;
-                    ret.SetArrayDimension(list.Count);
-                    for (int i = 0; i < list.Count; i++)
-                    {
-                        ret.SetArrayDimensionLengthByIndex(i, list[i]);
-                    }
+                    var rarraymt = AddArrayTemplate(ret, list);
+                    return rarraymt;
                 }
                 return ret;
             }
             return null;
+        }
+        MetaType AddArrayTemplate( MetaType arrayMt, List<int> list )
+        {
+            MetaType cmt = new MetaType(arrayMt.metaClass);
+            for (int i = list.Count - 1; i >= 0; i--)
+            {
+                MetaType mt = new MetaType();
+                mt.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
+                MetaType dmt = new MetaType(cmt);
+                mt.AddDefineTemplateMetaType(dmt);
+                mt.AddGenTemplateMetaType(dmt);
+
+                cmt = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(mt, true, out bool igmc);
+                cmt.SetArrayLength(list[i]);
+            }
+            return cmt;
         }
         public MetaType GetMetaTypeByTemplateList(MetaClass curMc, MetaNode getmc, MetaMemberFunction findFun, List<FileInputTemplateNode> inputTemplateNodeList)
         {            

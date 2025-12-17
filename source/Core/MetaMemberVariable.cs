@@ -29,7 +29,6 @@ namespace SimpleLanguage.Core
         public MetaMemberVariable sourceMetaMemberVariable => m_SourceMetaMemberVariable;
         public MetaClass sourceMetaClass => m_SourceMetaClass;
         public EFromType fromType => m_FromType;
-        public int index => m_Index;
         public MetaExpressNode express => m_Express;
         public int parseLevel { get; set; } = -1;
         public bool isInnerDefine => m_IsInnerDefine;
@@ -41,22 +40,10 @@ namespace SimpleLanguage.Core
         private MetaExpressNode m_Express = null;
         private bool m_IsInnerDefine = false;
         private MetaMemberVariable m_SourceMetaMemberVariable = null;
+        protected List<MetaMemberVariable> m_TemplateChildMetaMemberVariableList = new List<MetaMemberVariable>();
         protected MetaClass m_SourceMetaClass = null;
         //private Dictionary< string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
-
-        private bool m_IsSupportConstructionFunctionOnlyBraceType = true;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
-        private bool m_IsSupportConstructionFunctionConnectBraceType = true;  //是否支持构造函数名称后边加{}形式    Class1{ a = Class2(){} } 不支持
-        private bool m_IsSupportConstructionFunctionOnlyParType = true; //是否支持构造函数使用 仅()形式    Class1{ a = () } 不支持
-#pragma warning disable CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseStaticMetaMemeberFunction”已被赋值，但从未使用过它的值
-        private bool m_IsSupportInExpressUseStaticMetaMemeberFunction = true;   //是否在成员支持静态函数的
-#pragma warning restore CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseStaticMetaMemeberFunction”已被赋值，但从未使用过它的值
-#pragma warning disable CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseStaticMetaVariable”已被赋值，但从未使用过它的值
-        private bool m_IsSupportInExpressUseStaticMetaVariable = true;     //是否在成员中支持静态变量
-#pragma warning restore CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseStaticMetaVariable”已被赋值，但从未使用过它的值
-#pragma warning disable CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseCurrentClassNotStaticMemberMetaVariable”已被赋值，但从未使用过它的值
-        private bool m_IsSupportInExpressUseCurrentClassNotStaticMemberMetaVariable = true;  //是否支持在表达式中使用本类或父类中的非静态变量
-#pragma warning restore CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseCurrentClassNotStaticMemberMetaVariable”已被赋值，但从未使用过它的值
-
+        
         public static int s_ConstLevel = 10000000;
         public static int s_IsHaveRetStaticLevel = 100000000;
         public static int s_NoHaveRetStaticLevel = 200000000;
@@ -83,6 +70,7 @@ namespace SimpleLanguage.Core
             m_IsStatic = mmv.m_IsStatic;
             m_Permission = mmv.m_Permission;
             m_SourceMetaMemberVariable = mmv;
+            mmv.m_TemplateChildMetaMemberVariableList.Add(this);
         }
         public MetaMemberVariable(MetaClass mc, string _name)
         {
@@ -93,48 +81,7 @@ namespace SimpleLanguage.Core
             m_VariableFrom = EVariableFrom.Member;
 
             SetOwnerMetaClass(mc);
-        } 
-        //public MetaMemberVariable(MetaMemberVariable parentNode, FileMetaMemberVariable fmmv, int _index)
-        //{
-        //    m_Name = m_FileMetaMemeberVariable.name;
-        //    m_FromType = EFromType.Manual;
-        //    m_Index = _index;
-        //    m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-        //    SetOwnerMetaClass(parentNode.ownerMetaClass);
-        //    isConst = parentNode.isConst;
-
-        //    m_FileMetaMemeberVariable = fmmv;
-        //    m_IsEnumValue = false;
-        //    m_Name = fmmv.name;
-        //    m_Index = _index;
-        //    fmmv.SetMetaMemberVariable(this);
-        //    m_FromType = EFromType.Code;
-        //    m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-        //    isStatic = m_FileMetaMemeberVariable?.staticToken != null;
-        //    if (isStatic)
-        //    {
-        //        Debug.Write("Error ENum中，不允许有静态关键字，而是全部是静态关键字!!");
-        //    }
-        //    if (m_FileMetaMemeberVariable.permissionToken != null)
-        //    {
-        //        permission = CompilerUtil.GetPerMissionByString(m_FileMetaMemeberVariable.permissionToken?.lexeme.ToString());
-        //    }
-
-        //    //SetOwnerMetaClass(mc);
-
-        //    Parse();
-        //}
-        //public MetaMemberVariable(MetaClass mc, string _name, MetaClass _defineTypeClass, MetaConstExpressNode men = null )
-        //{
-        //    m_Name = _name;
-        //    m_IsInnerDefine = true;
-        //    m_FromType = EFromType.Manual;
-        //    m_DefineMetaType = new MetaType(_defineTypeClass);
-        //    m_Express = men;
-        //    m_VariableFrom = EVariableFrom.Member;
-
-        //    SetOwnerMetaClass(mc);
-        //}
+        }
         public MetaMemberVariable( MetaClass mc, FileMetaMemberVariable fmmv )
         {
             m_FileMetaMemeberVariable = fmmv;
@@ -394,6 +341,17 @@ namespace SimpleLanguage.Core
                                 return;
                             }
                             m_RealMetaType = dmct;
+                            if( !m_IsDefineMetaType )
+                            {
+                                m_DefineMetaType = new MetaType(m_RealMetaType);
+                            }
+                            foreach( var v in m_TemplateChildMetaMemberVariableList )
+                            {
+                                if( !v.isDefineMetaType )
+                                {
+                                    v.m_RealMetaType = m_RealMetaType;
+                                }
+                            }
                         }
                     }
                 }
@@ -471,7 +429,7 @@ namespace SimpleLanguage.Core
                     {
                         if (compareClass != null)
                         {
-                            if (expressRetMetaDefineType.isArray)
+                            if (expressRetMetaDefineType.IsArray() )
                             {
 
                             }
@@ -603,7 +561,7 @@ namespace SimpleLanguage.Core
                 {
                     if (fmpt != null)            // for example: Class1 obj = (1,2,3,4);
                     {
-                        if( m_IsSupportConstructionFunctionOnlyParType )
+                        if( ProjectManager.isSupportConstructionFunctionOnlyParType )
                         {
                         }
                         else
@@ -614,7 +572,7 @@ namespace SimpleLanguage.Core
                     }
                     else if (fmbt != null)
                     {
-                        if (m_IsSupportConstructionFunctionOnlyBraceType)
+                        if (ProjectManager.isSupportConstructionFunctionOnlyBraceType)
                         {
                         }
                         else
@@ -628,7 +586,7 @@ namespace SimpleLanguage.Core
                         if( fmct.callLink.callNodeList.Count > 0 )
                         {
                             var finalNode = fmct.callLink.callNodeList[fmct.callLink.callNodeList.Count - 1];
-                            if( finalNode.fileMetaBraceTerm != null && !m_IsSupportConstructionFunctionConnectBraceType )
+                            if( finalNode.fileMetaBraceTerm != null && !ProjectManager.isSupportConstructionFunctionConnectBraceType)
                             {
                                 Log.AddInStructMeta(EError.None, "Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                                 return null;
@@ -653,7 +611,7 @@ namespace SimpleLanguage.Core
                         if (fmct.callLink.callNodeList.Count > 0)
                         {
                             var finalNode = fmct.callLink.callNodeList[fmct.callLink.callNodeList.Count - 1];
-                            if (finalNode.fileMetaBraceTerm != null && !m_IsSupportConstructionFunctionConnectBraceType)
+                            if (finalNode.fileMetaBraceTerm != null && !ProjectManager.isSupportConstructionFunctionConnectBraceType)
                             {
                                 Log.AddInStructMeta(EError.None, "Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                                 return null;
@@ -672,8 +630,8 @@ namespace SimpleLanguage.Core
             cep.isStatic = isStatic;
             cep.allowUseIfSyntax = false;
             cep.allowUseSwitchSyntax = false;
-            cep.allowUseParSyntax = m_IsSupportConstructionFunctionOnlyParType;
-            cep.allowUseBraceSyntax = m_IsSupportConstructionFunctionOnlyBraceType;
+            cep.allowUseParSyntax = ProjectManager.isSupportConstructionFunctionOnlyParType;
+            cep.allowUseBraceSyntax = ProjectManager.isSupportConstructionFunctionOnlyBraceType;
             cep.fme = root;
 
             MetaExpressNode mn = ExpressManager.CreateExpressNode(cep);

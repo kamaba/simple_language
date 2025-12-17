@@ -244,6 +244,10 @@ namespace SimpleLanguage.Core
         {
             MetaMemberVariable mgmv = new MetaMemberVariable(mmv);
             mgmv.SetOwnerMetaClass(this);
+            if(mgmv.realMetaType == null )
+            {
+                mgmv.SetRealMetaType(new MetaType(mgmv.metaDefineType));
+            }
             TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mgmv.realMetaType, this, null );
             return mgmv;
         }

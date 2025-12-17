@@ -8,26 +8,19 @@
 
 namespace SimpleLanguage.Core
 {
-    public class IEnumerableMetaClass : MetaClass
+    public class IteratorMetaClass : MetaClass
     {
-        public IEnumerableMetaClass() : base(DefaultObject.Array.ToString())
-        {
-            m_Type = EType.Array;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
-            SetExtendClass(CoreMetaClassManager.objectMetaClass);
-            //m_MetaTemplateList.Add(new TemplateMetaClass("T"));
-        }
-    }
-    public class ArrayIteratorMetaClass : MetaClass
-    {
-        public ArrayIteratorMetaClass() : base(DefaultObject.Array.ToString())
+        public IteratorMetaClass() : base(DefaultObject.Array.ToString())
         {
             m_Type = EType.Class;
             m_ClassDefineType = EClassDefineType.InnerDefine;
+
+            var mt = new MetaTemplate( this, "T", CoreMetaClassManager.objectMetaClass );
+            m_MetaTemplateList.Add(mt);
         }
         public static MetaClass CreateMetaClass()
         {
-            ArrayIteratorMetaClass mc = new ArrayIteratorMetaClass();
+            IteratorMetaClass mc = new IteratorMetaClass();
             return mc;
         }
     }
@@ -38,6 +31,10 @@ namespace SimpleLanguage.Core
             m_Type = EType.Array;
             m_ClassDefineType = EClassDefineType.InnerDefine;
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
+
+
+            var mt = new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass );
+            m_MetaTemplateList.Add(mt);
         }
         public static MetaClass CreateMetaClass()
         {

@@ -520,6 +520,17 @@ namespace SimpleLanguage.Core
             }
             return false;
         }
+        public bool GetInterfaceByMetaClass(MetaClass mc )
+        {
+            foreach (var v in m_InterfaceMetaType)
+            {
+                if( v.metaClass == mc )
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         public MetaType AddMetaPreTemplateClass( MetaType mt, bool isParse, out bool isGenMetaClass )
         {
             isGenMetaClass = false;

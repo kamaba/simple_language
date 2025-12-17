@@ -774,25 +774,11 @@ namespace SimpleLanguage.Core
                             MetaClass mc = null;
                             if ( mv.isDefineMetaType )
                             {
-                                if( mv.metaDefineType.isArray )
-                                {
-                                    mc = CoreMetaClassManager.arrayMetaClass;
-                                }
-                                else
-                                {
-                                    mc = mv.metaDefineType.metaClass;
-                                }
+                                mc = mv.metaDefineType.eType == EMetaTypeType.TemplateClassWithTemplate ? mv.metaDefineType.metaClass : mv.metaDefineType.metaClass;
                             }
                             else
                             {
-                                if (mv.realMetaType.isArray)
-                                {
-                                    mc = CoreMetaClassManager.arrayMetaClass;
-                                }
-                                else
-                                {
-                                    mc = mv.realMetaType.eType == EMetaTypeType.TemplateClassWithTemplate ? mv.realMetaType.metaClass : mv.realMetaType.metaClass;
-                                }
+                                mc = mv.realMetaType.eType == EMetaTypeType.TemplateClassWithTemplate ? mv.realMetaType.metaClass : mv.realMetaType.metaClass;
                             }
                             if (mc is MetaData)
                             {
@@ -1260,8 +1246,8 @@ namespace SimpleLanguage.Core
                     else if( m_ExpressNode is MetaConstExpressNode mcen )
                     {
                         var index = (int)mcen.value;
-                        var list = variable.realMetaType.arrayDimensionLengthList;
-                        if (variable.realMetaType.isArray && list.Count >= 0 )
+                        var list = variable.realMetaType.ArrayDimensionLengthList();
+                        if (variable.realMetaType.IsArray() && list.Count >= 0 )
                         {
                             if( list[0] > 0 && list[0] < index )
                             {

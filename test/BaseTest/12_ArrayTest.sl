@@ -43,7 +43,7 @@ namespace Core
         }
         override string toString()
         {
-            ret SimpleLanguage.Lib.StringObject.Int32ToString(this._value)
+            ret SimpleLanguage.Lib.StringClass.Int32ToString(this._value)
         }
     }
     class UInt32
@@ -120,6 +120,7 @@ namespace Core
         void reset()
         bool moveNext()
         get T current()
+        set void current( T t )
         void release()
     }
     public interface IIterable<T>
@@ -127,8 +128,8 @@ namespace Core
         IIterator<T> iterator()
     }
 
-    public class IterateVariable interface IIterator
-    {
+    public class Iterater interface IIterator
+    {        
         _start = 0
         public _index = 0
         _value = null
@@ -188,7 +189,7 @@ namespace Core
         }
     }
     
-    public class IterateVariable<T> interface IIterator<T>
+    public class Iterater<T> interface IIterator<T>
     {
         _start = 0
         public _index = 0
@@ -196,8 +197,7 @@ namespace Core
         IIterator<T> _iterator = null
         _isDone = false;
 
-
-        _init_( IIterable __it )
+        _init_( IIterable<T> __it )
         {
             this._iterator = __it.iterator();
             this._iterator.reset()
@@ -248,7 +248,10 @@ namespace Core
             }
         }
     }
-    
+    public interface IArray
+    {
+    }
+
     public class Array<T> interface IIterable<T>, IIterator<T>
     {
         int _length = 0
@@ -257,14 +260,14 @@ namespace Core
         T _current = null
         long _ptr = 0
            
-        public static Array createInstance(int length)
+        public static Array<Object> createInstance(int length)
         {
-            var arr = Array(length)
+            var arr = Array<Object>(length)
             ret arr
         }
-        public static Array CreateInstance<T>( int length1 )
+        public static Array<CT> CreateInstance<CT>( int length1 )
         {            
-            var arr = Array<T>(length1)
+            var arr = Array<CT>(length1)
             ret arr
         }
 
@@ -272,7 +275,7 @@ namespace Core
         {
             #uint allSize = __len * 4            
             this._length = __len
-            #this._ptr = Lib.Array.CreateArray( length, 4 )
+            #this._ptr = Lib.ArrayClass.CreateArray( length, 4 )
         }
         override void reset()
         {
@@ -283,7 +286,7 @@ namespace Core
             bool hasNext_var = this._index < this._length 
             if hasNext_var
             {
-                this._current = SimpleLanguage.Lib.Array.GetArrayValueThis( this, this._index )
+                this._current = SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, this._index ) as T
             }
             else
             {
@@ -296,6 +299,11 @@ namespace Core
         override T current()
         {
             ret this._current;
+        }
+        override set void current( T val )
+        {
+            SimpleLanguage.Lib.ArrayClass.SetArrayValueThis( this, this._index, val )
+            this._current = val
         }
         override void release()
         {
@@ -321,29 +329,29 @@ namespace Core
                 ret 
             }
             this._index = ind;
-            var retobj = SimpleLanguage.Lib.Array.GetArrayValueThis( this, ind )
+            var retobj = SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, ind )
             this._current = retobj;
         }
         set setValue( int __index, T val )
         {
             #Lib.Array.SetArrayValue( this._ptr, 5,  index, val )
-            SimpleLanguage.Lib.Array.SetArrayValueThis( this, __index, val )
+            SimpleLanguage.Lib.ArrayClass.SetArrayValueThis( this, __index, val )
         }
         get T getValue( int __index )
         {
-            #ret Lib.Array.GetArrayValue( this._ptr, 5,  index )
-            ret SimpleLanguage.Lib.Array.GetArrayValueThis( this, __index )
+            #ret Lib.ArrayClass.GetArrayValue( this._ptr, 5,  index )
+            ret SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, __index )
         }
         setValues( Int64 valPtr, int len )
         {
-            #Lib.Array.SetArrayValue( this._ptr, 1,  valPtr, len )
+            #Lib.ArrayClass.SetArrayValue( this._ptr, 1,  valPtr, len )
         }
         override string toString()
         {            
             string showstr = "["
             for i = 0, i < this._length, i++
             {
-                var cur = SimpleLanguage.Lib.Array.GetArrayValueThis( this, i )
+                var cur = SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, i )
                 showstr = showstr + cur.toString()
                 if( i < this._length - 1 )
                 {
@@ -391,16 +399,16 @@ ArrayTest
         #System.Console.WriteLine("1111111111= " + a1[1] )
         
         #int[] a1 = {1,2,3,4}
-        a1 = [[[1,2,3],[3,4,5],[6,7,8]],[ [10,11,12],[14,15,15],[16,17,18] ]];  # int[2][3][3]     
+        int[2][3][] a1 = [[[1,2,3],[3,4,5],[6,7,8]],[ [10,11,12],[14,15,15],[16,17,18] ]];  # int[2][3][3]     
         #object[3][2][] a1 = int[3][2][]{ [ [1,2,3], [] ], [ [5], [7,8,9,5] ], [[100]] };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         #还需要处理  [[100]] => 直接写100的情况，这种情况的话，需要检查 外层是否直接是array形式，如果是，则需要对应关系化处理
-
+        var a2 = Array<Int32>(intvalue)
         
         for v in a1
         {
-            if v.value != null
+            if v != null
             {                
-                for v2 in iter
+                for v2 in v
                 {
                     System.Console.WriteLine("level2---------value:" + v2.toString() )
                 }
@@ -412,12 +420,12 @@ ArrayTest
             }
         }
         #!
-        v = Iterator( a1 )  使用a1.type 变成T
-        bool f = v.hasNext()
+        var iter = a1.iterator()  使用a1.type 变成T
+        bool f = iter.hasNext()
         label start
         if f
         {
-            v.current()
+            v = iter.current()
             then_statement
             goto start
         }
@@ -552,17 +560,17 @@ ArrayTest
         arr1.$"aa".i = 20;          #需要重写_index_( string s )才可以使用
         
         arr1.index = 2;     #数组的当前游标
-        arr1.value.i = 10;   #数组当前游标的植
+        arr1.current.i = 10;   #数组当前游标的植
         for a in arr1      #使用for 的 a 是封装过的it里边包含 Index() 也可以直接a = ArrClass();替代里边的值
         {
             if a.index == 20   #系统自带Index()函数  如果在使用for 时，则object.Index()表示他的下标
             {
-                a.value = ArrClass(){ i = 100 }
+                a.current = ArrClass(){ i = 100 }
                 continue
             }
             a.i = 200
         }
-        for( a in {1,2,3,4} )
+        for( a in [1,2,3,4] )
         {
             i = a.index + 1
         }
