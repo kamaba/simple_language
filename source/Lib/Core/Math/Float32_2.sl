@@ -1,85 +1,17 @@
 
-
-public class List<T>
+public class Float32_2 extends Object
 {
-    Array arraycontent = null
+    public Float32 x = 0.0f
+    public Float32 y = 0.0f;
 
-    public int hasCount;
-
-    public void add( T t )
+    public void _init_( Float32 _x, Float32 _y )
     {
-        if( this.arraycontent.count < this.hasCount )
-        {
-            this.arraycontent.[this.hasCount] = t
-            this.hasCount++
-        }
-    }
-    void insert( int index, T t )
-    {
-
-    }
-    public void clear()
-    {
-
-    }
-    T find( Action( t ) action ){
-        ret null
-    }
-    public bool remove( Object obj )
-    {
-        ret false
-    }
-    public bool contains( object obj )
-    {
-        ret false
-    }
-    public bool removeAt( int index )
-    {
-        ret false
-    }
-    T get _value_( int index )
-    {
-        ret null
-    }
-    T set _value_( int index )
-    {
-        ret null
-    }
-    T at( int index )
-    {
-
-    }
-    public void set captity( int cap )
-    {
-        //SL.Core.ClassManager.instance.SetMetaClass( this, )
+        this.x = _x;
+        this.y = _y;
     }
 
-    Set<T> toSet()
+    publci override string toString()
     {
-        Set<T> sett = new()
-        for v in this
-        {
-            sett.add(v)
-        }
-        ret sett
-    }
-    Map<int,T> toMap()
-    {
-        Map<int,T> map = new()        
-        for i = 0, i < this.count(), i++
-        {
-            map.add(i, _value[i] )
-        }
-        ret map
-    }
-    T[] toArray()
-    {
-        T[] arrt = new(this.count())
-
-        ret arrt
-    }
-    string override string toString()
-    {
-        ret ""
+        ret string.toFormat( "x={0} y ={1}", this.x, this.y )
     }
 }

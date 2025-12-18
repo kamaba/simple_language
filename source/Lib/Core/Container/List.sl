@@ -2,21 +2,15 @@
     public class Core.List interface Core.IIterable, Core.IIterator
     {
         int _length = 0
-        Type _type = null;
         _index = 0;
         _current = null
         long _ptr = 0
 
            
-        public static Array createInstance(int length)
+        public static List createInstance(int length)
         {
-            var arr = Array(length)
-            ret arr
-        }
-        public static Array CreateInstance(Type elementType, int length1 )
-        {            
-            var arr = Array(length1, elementType)
-            ret arr
+            var list = List(length)
+            ret list
         }
 
         _init_( int __len )
@@ -25,11 +19,6 @@
             this._length = __len
             #this._ptr = Lib.Array.CreateArray( length, 4 )
         }
-        _init_( int __len, Type __type )
-        {
-            this._length = __len
-            this._type = __type
-        }        
         override void reset()
         {
             this._index = 0;
