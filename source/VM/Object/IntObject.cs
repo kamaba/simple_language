@@ -186,7 +186,7 @@ namespace SimpleLanguage.VM
         public UInt32Object(UInt32 obj) : base(EVMType.UInt32)
         {
             value = obj;
-            m_Etype = EVMType.UInt32;
+            m_Type = EVMType.UInt32;
         }
         public void SetValue(UInt32 _val)
         {

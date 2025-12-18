@@ -171,6 +171,7 @@ namespace SimpleLanguage.Compile
             }
             return mb;
         }
+        /*
         public MetaNode GetMetaNodeByImportNamespace( string name )
         {
             for (int i = 0; i < m_ImportMetaNamespaceList.Count; i++)
@@ -189,6 +190,7 @@ namespace SimpleLanguage.Compile
             }
             return null;
         }
+        */
         //public MetaNode GetMetaBaseByName( string name )
         //{
         //    MetaModule mm = ModuleManager.instance.GetMetaModuleByName(name);

@@ -1,4 +1,12 @@
-﻿using SimpleLanguage.IR;
+﻿//****************************************************************************
+//  File:      ObjectManager.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/11/22 12:00:00
+//  Description: 
+//****************************************************************************
+
+using SimpleLanguage.IR;
 using SimpleLanguage.VM.Runtime;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -101,7 +109,7 @@ namespace SimpleLanguage.VM
             }
             else if (name == "Core.Array" || name == "Array")
             {
-                sobj = new ArrayObject(EArrayType.Array, 0);
+                sobj = new ArrayObject( rt, 0);
                 sobj.typeId = 0;
             }
             else if (name == "Core.Type" || name == "Type")

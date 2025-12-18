@@ -33,12 +33,12 @@ namespace SimpleLanguage.Core
         public bool isGlobal => m_VariableFrom == EVariableFrom.Global;
         public bool isArray
         {
-            get { return m_IsDefineMetaType ? (m_DefineMetaType != null ? m_DefineMetaType.isArray : false) : (m_RealMetaType != null ? m_RealMetaType.isArray : false); }
+            get { return m_IsDefineMetaType ? (m_DefineMetaType != null ? m_DefineMetaType.IsArray() : false) : (m_RealMetaType != null ? m_RealMetaType.IsArray() : false); }
         }
 
         public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
         public EVariableFrom variableFrom => m_VariableFrom;
-        public  MetaType metaDefineType => m_DefineMetaType;
+        public MetaType defineMetaType => m_DefineMetaType;
         public MetaType realMetaType => m_RealMetaType;
         public MetaClass ownerMetaClass => m_OwnerMetaClass;
         public MetaVariable sourceMetaVariable => m_SourceMetaVariable;
@@ -135,14 +135,10 @@ namespace SimpleLanguage.Core
 
             MetaClass mc = null;
             if (m_IsDefineMetaType)
-            {
-                if (m_DefineMetaType.isArray)
-                {
-                    return CoreMetaClassManager.arrayMetaClass;
-                }
+            {                
                 if (m_DefineMetaType.metaClass is MetaGenTemplateClass mgtc)
                 {
-                    mc = mgtc;
+                    mc = mgtc.metaTemplateClass;
                 }
                 else
                 {
@@ -151,13 +147,9 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                if( m_RealMetaType.isArray )
-                {
-                    return CoreMetaClassManager.arrayMetaClass;
-                }
                 if (m_RealMetaType.metaClass is MetaGenTemplateClass mgtc)
                 {
-                    mc = mgtc;
+                    mc = mgtc.metaTemplateClass;
                 }
                 else
                 {
@@ -181,8 +173,12 @@ namespace SimpleLanguage.Core
             else
             {
                 MetaClass findMc = ClassManager.instance.GetClassByName("Core.IIterable");
-                MetaType mt = new MetaType(findMc);
-                if ( mc.GetInterfaceByMetaType(mt) )
+                if (mc.GetInterfaceByMetaClass(findMc))
+                {
+                    return true;
+                }
+                MetaClass findMc2 = ClassManager.instance.GetClassByName("Core.IIterable<T>", 1 );
+                if (mc.GetInterfaceByMetaClass(findMc2))
                 {
                     return true;
                 }
@@ -350,7 +346,7 @@ namespace SimpleLanguage.Core
             m_VisitType = EVisitType.Link;
             m_SourceMetaVariable = source;
            // m_TargetMetaVariable = target;
-            m_DefineMetaType = target.metaDefineType;
+            m_DefineMetaType = target.defineMetaType;
         }
         public int GetIRMemberIndex()
         {
@@ -406,17 +402,17 @@ namespace SimpleLanguage.Core
             MetaType getMt = null;
             if (m_SourceMetaVariable.isDefineMetaType)
             {
-                if (m_SourceMetaVariable.metaDefineType.isArray)
+                if (m_SourceMetaVariable.defineMetaType.IsArray() )
                 {
-                    List<int> arraydim = m_SourceMetaVariable.metaDefineType.arrayDimensionLengthList;
+                    List<int> arraydim = m_SourceMetaVariable.defineMetaType.ArrayDimensionLengthList();
                     if ( arraydim.Count > 1 )
                     {
-                        getMt = new MetaType(m_SourceMetaVariable.metaDefineType.metaClass);
-                        getMt.SetArrayDimensionByFrontMetaType(m_SourceMetaVariable.metaDefineType);
+                        getMt = new MetaType(m_SourceMetaVariable.defineMetaType.metaClass);
+                        //getMt.SetArrayDimensionByFrontMetaType(m_SourceMetaVariable.metaDefineType);
                     }    
                     else
                     {
-                        getMt = new MetaType(m_SourceMetaVariable.metaDefineType.metaClass);
+                        getMt = new MetaType(m_SourceMetaVariable.defineMetaType.metaClass);
                     }
                 }
                 else
@@ -436,21 +432,21 @@ namespace SimpleLanguage.Core
         }
         public override void  ParseRealMetaType()
         {
-            if (m_SourceMetaVariable.realMetaType.isArray)
+            if (m_SourceMetaVariable.realMetaType.IsArray() )
             {
-                List<int> arraydim = m_SourceMetaVariable.realMetaType.arrayDimensionLengthList;
+                List<int> arraydim = m_SourceMetaVariable.realMetaType.ArrayDimensionLengthList();
                 if (arraydim.Count > 1 )
                 {
                     m_RealMetaType = new MetaType(m_SourceMetaVariable.realMetaType.metaClass);
-                    m_RealMetaType.SetArrayDimensionByFrontMetaType(m_SourceMetaVariable.realMetaType);
+                    //m_RealMetaType.SetArrayDimensionByFrontMetaType(m_SourceMetaVariable.realMetaType);
                 }
                 else
                 {
-                    if (m_Index != null && m_Index > 0 && m_Index < m_SourceMetaVariable.realMetaType.arrayMetaTypeList.Count)
-                    {
-                        m_RealMetaType = m_SourceMetaVariable.realMetaType.arrayMetaTypeList[(int)m_Index];
-                    }
-                    else
+                    //if (m_Index != null && m_Index > 0 && m_Index < m_SourceMetaVariable.realMetaType.arrayMetaTypeList.Count)
+                    //{
+                    //    m_RealMetaType = m_SourceMetaVariable.realMetaType.arrayMetaTypeList[(int)m_Index];
+                    //}
+                    //else
                     {
                         m_RealMetaType = new MetaType(m_SourceMetaVariable.realMetaType.metaClass);
                     }
@@ -470,7 +466,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_SourceMetaVariable != null)
                 {
-                    sb.Append("[" + m_SourceMetaVariable.metaDefineType.name + "]");
+                    sb.Append("[" + m_SourceMetaVariable.defineMetaType.name + "]");
                     sb.Append(m_SourceMetaVariable.name);
                     sb.Append(".");
                 }
@@ -508,9 +504,8 @@ namespace SimpleLanguage.Core
         MetaVariable m_ValueMetaVariable = null;
         FileMetaClassDefine m_FileMetaClassDefine = null;
         private Token m_VariableNameToken = null;
-        MetaNewObjectExpressNode m_MetaNewObjectExpressNode = null;
 
-        public MetaIteratorVariable(FileMetaClassDefine _fmcl, Token variableNameToken, MetaClass mc, MetaBlockStatements mbs, MetaNewObjectExpressNode moben )
+        public MetaIteratorVariable(FileMetaClassDefine _fmcl, Token variableNameToken, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv )
         {
             m_FileMetaClassDefine = _fmcl;
             m_VariableFrom = EVariableFrom.LocalStatement;
@@ -518,8 +513,7 @@ namespace SimpleLanguage.Core
             m_Name = variableNameToken.lexeme.ToString();
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
-            m_MetaNewObjectExpressNode = moben;
-            //m_ContentMetaVariable = lmv;
+            m_ContentMetaVariable = lmv;
             //m_OrgMetaDefineType = orgMC;
             //m_IndexMetaVariable = new MetaVariable("index", EVariableFrom.ArrayInner, mbs, mc, new MetaType(CoreMetaClassManager.int32MetaClass));
             //m_ValueMetaVariable = new MetaVariable("value", EVariableFrom.ArrayInner, mbs, mc, new MetaType(orgMC.metaClass));
@@ -535,9 +529,16 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                if(m_MetaNewObjectExpressNode != null )
+                if( m_DefineMetaType == null )
                 {
-                    m_DefineMetaType = m_MetaNewObjectExpressNode.GetReturnMetaDefineType();
+                    if(m_ContentMetaVariable.isDefineMetaType )
+                    {
+                        m_DefineMetaType = m_ContentMetaVariable.defineMetaType.genTemplateMetaTypeList[0];
+                    }
+                    else
+                    {
+                        m_DefineMetaType = m_ContentMetaVariable.realMetaType.genTemplateMetaTypeList[0];
+                    }
                 }
             }
             m_RealMetaType = new MetaType(m_DefineMetaType);

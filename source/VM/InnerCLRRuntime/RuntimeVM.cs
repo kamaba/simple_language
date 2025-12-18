@@ -5,13 +5,18 @@
 //  DateTime: 2022/11/30 12:00:00
 //  Description: master use .net clr system. new create method instance than running code virtual machine 
 //****************************************************************************
-using SimpleLanguage.Core;
+//  File:      RuntimeVM.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/11/22 12:00:00
+//  Description: 
+//****************************************************************************
+
 using SimpleLanguage.IR;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -27,7 +32,6 @@ namespace SimpleLanguage.VM.Runtime
         Data,
         Array,
 
-        /*
         RawBoolean,
         RawByte,
         RawSByte,
@@ -43,7 +47,6 @@ namespace SimpleLanguage.VM.Runtime
         RawInt128,
         RawUInt128,
         RawString,
-        */
 
         Boolean,
         Byte,
@@ -204,24 +207,18 @@ namespace SimpleLanguage.VM.Runtime
             {
                 if( sobjs[i].runtimeType != RuntimeTypeManager.voidRuntimeType )
                 {                    
-                    GetObjectByValue(4, i, sobjs, ref m_ValueStack[m_ValueIndex++] );
+                    //GetObjectByValue(4, i, sobjs, ref m_ValueStack[m_ValueIndex++] );
+                    var obj = sobjs[i];
+                    Debug.Assert(obj != null);
+                    if (obj.isNull)
+                    {
+                        m_ValueStack[m_ValueIndex++].SetNull();
+                        return;
+                    }
+                    SetSValue(obj, obj.eType, ref m_ValueStack[m_ValueIndex] );
+                    m_ValueIndex++;
                 }
             }
-        }
-        public SObject GetLocalVariableValue( int index )
-        {
-            if (index > m_LocalVariableObjectArray.Length)
-            {
-                Log.AddVM(EError.None, "执行的栈超出范围!!");
-                return null;
-            }
-            if(index < 0 )
-            {
-                Log.AddVM(EError.None, "执行的栈超出范围!!-");
-                return null;
-            }
-
-            return m_LocalVariableObjectArray[index];
         }
         public void GetArgumentValue( int index, ref SValue svalue )
         {
@@ -230,7 +227,7 @@ namespace SimpleLanguage.VM.Runtime
                 Log.AddVM(EError.None, $"SVM Error FunctionName:{this.id} 执行的参数超出范围!!");
                 return;
             }
-            GetObjectByValue( 0, index, null, ref svalue);
+            GetObjectByValue( 0, index, ref svalue);
         }
         public void SetArgumentValue( int index, SValue svalue)
         {
@@ -257,7 +254,7 @@ namespace SimpleLanguage.VM.Runtime
                 Log.AddVM(EError.None, "执行的栈超出范围!!");
                 return;
             }
-            GetObjectByValue(1, index, null, ref svalue);
+            GetObjectByValue(1, index, ref svalue);
         }
         public void SetReturnVariableSValue(int index, SValue svalue)
         {
@@ -298,8 +295,7 @@ namespace SimpleLanguage.VM.Runtime
                         rtList.Add(crt);
                     }
                 }
-                RuntimeType rt = irmt.isArray ? RuntimeTypeManager.arrayRuntimeType :
-                    RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.irMetaClass, rtList);
+                RuntimeType rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.irMetaClass, rtList);
                 if( rt == null && isAdd )
                 {
                     rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(irmt.irMetaClass, rtList);
@@ -774,16 +770,12 @@ namespace SimpleLanguage.VM.Runtime
                                 return;
                             }
                             var v = m_ValueStack[stackIndex];
-                            if (v.eType == EVMType.Class)
+                            if (v.eType == EVMType.Class
+                                || v.eType == EVMType.Array )
                             {
                                 var co = (v.sobject as ClassObject);
                                 irc = co.irMetaClass;
                                 rt = v.sobject.runtimeType;
-                            }
-                            else if( v.eType == EVMType.Array )
-                            {
-                                rt = RuntimeTypeManager.arrayRuntimeType;
-                                irc = IRManager.instance.GetIRMetaClassByName(v.eType.ToString());
                             }
                             else
                             {
@@ -958,9 +950,15 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         IRNewArray mdt = iri.opValue as IRNewArray;
                         var rt = GetClassRuntimeType(mdt.irMetaType, mdt.irMetaType.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
-                        ArrayObject sob = new ArrayObject(mdt.eArrayType, mdt.length);
+                        ArrayObject sob = new ArrayObject(rt, mdt.length);
                         ObjectManager.AddClassObject(sob);
                         m_ValueStack[m_ValueIndex++].SetSObject(sob);
+
+                        //var irList = rt.irClass.CreateStaticMetaMetaVariableIRList();
+                        //if (irList.Count > 0)
+                        //{
+                        //    InnerCLRRuntimeVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
+                        //}
                     }
                     break;
                 case EIROpCode.Dup:
@@ -1363,24 +1361,6 @@ namespace SimpleLanguage.VM.Runtime
                 return;
             }
             bool anyObj = obj.eType == EVMType.Object;
-            if( anyObj )
-            {
-                var svalobj = svalue.GetSObject();
-                if (type == 0)
-                {
-                    m_ArgumentObjectArray[index] = svalobj;
-                }
-                else if (type == 1)
-                {
-                    m_LocalVariableObjectArray[index] = svalobj; ;
-                }
-                else if (type == 2)
-                {
-                    m_ReturnObjectArray[index] = svalobj; ;
-                }
-                return;
-            }
-
             switch (svalue.eType)
             {
                 case EVMType.Null:
@@ -1406,6 +1386,11 @@ namespace SimpleLanguage.VM.Runtime
                 //    break;
                 case EVMType.Boolean:
                     {
+                        if( anyObj )
+                        {
+                            obj.SetValueByType(  EVMType.Boolean, svalue.int8Value == 1 );
+                            return;
+                        }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
@@ -1439,6 +1424,11 @@ namespace SimpleLanguage.VM.Runtime
                 //    break;
                 case EVMType.Byte:
                     {
+                        if (anyObj)
+                        {
+                            obj.SetValueByType(EVMType.Byte, svalue.int8Value );
+                            return;
+                        }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
@@ -1472,6 +1462,11 @@ namespace SimpleLanguage.VM.Runtime
                 //    break;
                 case EVMType.SByte:
                     {
+                        if (anyObj)
+                        {
+                            obj.SetValueByType(EVMType.SByte, svalue.sint8Value);
+                            return;
+                        }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
@@ -1504,6 +1499,11 @@ namespace SimpleLanguage.VM.Runtime
                 //    break;
                 case EVMType.Int16:
                     {
+                        if (anyObj)
+                        {
+                            obj.SetValueByType(EVMType.Int16, svalue.int16Value);
+                            return;
+                        }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
@@ -1536,6 +1536,11 @@ namespace SimpleLanguage.VM.Runtime
                 //    break;
                 case EVMType.UInt16:
                     {
+                        if (anyObj)
+                        {
+                            obj.SetValueByType(EVMType.UInt16, svalue.int16Value);
+                            return;
+                        }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
@@ -1569,6 +1574,11 @@ namespace SimpleLanguage.VM.Runtime
                 //    break;
                 case EVMType.Int32:
                     {
+                        if (anyObj)
+                        {
+                            obj.SetValueByType(EVMType.Int32, svalue.int32Value);
+                            return;
+                        }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
@@ -1602,6 +1612,11 @@ namespace SimpleLanguage.VM.Runtime
                 //    break;
                 case EVMType.UInt32:
                     {
+                        if (anyObj)
+                        {
+                            obj.SetValueByType(EVMType.UInt32, svalue.uint32Value);
+                            return;
+                        }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
@@ -1634,6 +1649,11 @@ namespace SimpleLanguage.VM.Runtime
                 //    break;
                 case EVMType.Int64:
                     {
+                        if (anyObj)
+                        {
+                            obj.SetValueByType(EVMType.Int64, svalue.int64Value);
+                            return;
+                        }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
@@ -1666,6 +1686,11 @@ namespace SimpleLanguage.VM.Runtime
                 //    break;
                 case EVMType.UInt64:
                     {
+                        if (anyObj)
+                        {
+                            obj.SetValueByType(EVMType.UInt64, svalue.uint64Value);
+                            return;
+                        }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
@@ -1698,6 +1723,11 @@ namespace SimpleLanguage.VM.Runtime
                 //    break;
                 case EVMType.Float32:
                     {
+                        if (anyObj)
+                        {
+                            obj.SetValueByType(EVMType.Float32, svalue.floatValue);
+                            return;
+                        }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
@@ -1730,6 +1760,11 @@ namespace SimpleLanguage.VM.Runtime
                 //    break;
                 case EVMType.Float64:
                     {
+                        if (anyObj)
+                        {
+                            obj.SetValueByType(EVMType.Float64, svalue.doubleValue);
+                            return;
+                        }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
@@ -1763,6 +1798,11 @@ namespace SimpleLanguage.VM.Runtime
                 //    break;
                 case EVMType.String:
                     {
+                        if (anyObj)
+                        {
+                            obj.SetValueByType(EVMType.String, svalue.stringValue);
+                            return;
+                        }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
@@ -1780,23 +1820,23 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EVMType.Array:
                     {
+                        if (anyObj)
+                        {
+                            obj.SetValueByType(EVMType.Class, svalue.sobject );
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            to.SetClassObject(svalue.sobject as ClassObject);
+                            return;
+                        }
                         if (obj is ClassObject co)
                         {
                             var ao = svalue.sobject as ClassObject;
                             Debug.Assert(ao != null);
-                            //co.SetClassObject(ao);
-                            if (type == 0)
-                            {
-                                m_ArgumentObjectArray[index] = ao;
-                            }
-                            else if (type == 1)
-                            {
-                                m_LocalVariableObjectArray[index] = ao; ;
-                            }
-                            else if (type == 2)
-                            {
-                                m_ReturnObjectArray[index] = ao; ;
-                            }
+                            //co.SetClassObject(ao);                            
+                            (obj as ClassObject).SetClassObject(ao);
                         }
                         else
                         {
@@ -1808,7 +1848,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (svalue.eType == EVMType.Object)
                         {
-                            obj.SetValue(svalue.sobject);
+                            obj.SetValueByType(EVMType.Object, svalue.sobject);
                         }
                         else
                         {
@@ -1833,6 +1873,12 @@ namespace SimpleLanguage.VM.Runtime
                         //    }
                         //    return;
                         //}
+
+                        if (anyObj)
+                        {
+                            obj.SetValueByType(EVMType.Class, svalue.sobject);
+                            return;
+                        }
                         ClassObject classObj = obj as ClassObject;
                         if (classObj == null)
                         {
@@ -1864,7 +1910,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
             }
         }
-        public void GetObjectByValue(int type, int index, SObject[] sobjarr, ref SValue svalue)
+        public void GetObjectByValue(int type, int index, ref SValue svalue)
         {
             SObject obj = null;
             if (type == 0)
@@ -1879,24 +1925,18 @@ namespace SimpleLanguage.VM.Runtime
             {
                 obj = m_ReturnObjectArray[index];
             }
-            else
-            {
-                obj = sobjarr[index];
-            }
             Debug.Assert(obj != null);
             if( obj.isNull )
             {
                 svalue.SetNull();
                 return;
             }
-           
+            SetSValue(obj, obj.eType, ref svalue);
+        }
+        public void SetSValue( SObject obj, EVMType etype, ref SValue svalue )
+        {
             bool anyObj = svalue.eType == EVMType.Object;
-            if (anyObj)
-            {
-                svalue.SetSObject( obj );
-                return;
-            }
-            switch (obj.eType)
+            switch (etype)
             {
                 case EVMType.Null:
                     {
@@ -1905,17 +1945,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EVMType.Boolean:
                     {
-                        //TemplateObject to = obj as TemplateObject;
-                        //if (to != null)
-                        //{
-                        //    to.SetValue(EVMType.Boolean, svalue.int8Value);
-                        //}
-                        //AnyObject anyObject = obj as AnyObject;
-                        //if (anyObject != null)
-                        //{
-                        //    anyObject.SetValue(EVMType.Boolean, svalue.int8Value);
-                        //    return;
-                        //}
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.Boolean)
+                            {
+                                svalue.SetBoolValue((bool)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
                         BoolObject boolObj = obj as BoolObject;
                         if (boolObj == null)
                         {
@@ -1927,18 +1968,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EVMType.Byte:
                     {
-                        //TemplateObject to = obj as TemplateObject;
-                        //if (to != null)
-                        //{
-                        //    to.SetValue(EVMType.Byte, svalue.int8Value);
-                        //    return;
-                        //}
-                        //AnyObject anyObject = obj as AnyObject;
-                        //if (anyObject != null)
-                        //{
-                        //    anyObject.SetValue(EVMType.Byte, svalue.int8Value);
-                        //    return;
-                        //}
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.Byte)
+                            {
+                                svalue.SetInt8Value((byte)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
                         Int8Object byteObj = obj as Int8Object;
                         if (byteObj == null)
                         {
@@ -1950,17 +1991,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EVMType.SByte:
                     {
-                        //TemplateObject to = obj as TemplateObject;
-                        //if (to != null)
-                        //{
-                        //    to.SetValue(EVMType.SByte, svalue.sint8Value);
-                        //}
-                        //AnyObject anyObject = obj as AnyObject;
-                        //if (anyObject != null)
-                        //{
-                        //    anyObject.SetValue(EVMType.SByte, svalue.sint8Value);
-                        //    return;
-                        //}
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.SByte)
+                            {
+                                svalue.SetSInt8Value((sbyte)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
                         SInt8Object byteObj = obj as SInt8Object;
                         if (byteObj == null)
                         {
@@ -1972,17 +2014,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EVMType.Int16:
                     {
-                        //TemplateObject to = obj as TemplateObject;
-                        //if (to != null)
-                        //{
-                        //    to.SetValue(EVMType.Int16, svalue.int16Value);
-                        //}
-                        //AnyObject anyObject = obj as AnyObject;
-                        //if (anyObject != null)
-                        //{
-                        //    anyObject.SetValue(EVMType.Int16, svalue.int16Value);
-                        //    return;
-                        //}
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.Int16)
+                            {
+                                svalue.SetInt16Value((short)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
                         Int16Object int16Obj = obj as Int16Object;
                         if (int16Obj == null)
                         {
@@ -1994,17 +2037,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EVMType.UInt16:
                     {
-                        //TemplateObject to = obj as TemplateObject;
-                        //if (to != null)
-                        //{
-                        //    to.SetValue(EVMType.UInt16, svalue.uint16Value);
-                        //}
-                        //AnyObject anyObject = obj as AnyObject;
-                        //if (anyObject != null)
-                        //{
-                        //    anyObject.SetValue(EVMType.UInt16, svalue.uint16Value);
-                        //    return;
-                        //}
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.UInt16)
+                            {
+                                svalue.SetUInt16Value((ushort)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
                         UInt16Object uint16Obj = obj as UInt16Object;
                         if (uint16Obj == null)
                         {
@@ -2016,18 +2060,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EVMType.Int32:
                     {
-                        //TemplateObject to = obj as TemplateObject;
-                        //if (to != null)
-                        //{
-                        //    to.SetValue(EVMType.Int32, svalue.int32Value);
-                        //    return;
-                        //}
-                        //AnyObject anyObject = obj as AnyObject;
-                        //if (anyObject != null)
-                        //{
-                        //    anyObject.SetValue(EVMType.Int32, svalue.int32Value);
-                        //    return;
-                        //}
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.Int32)
+                            {
+                                svalue.SetInt32Value((int)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
                         Int32Object int32Obj = obj as Int32Object;
                         if (int32Obj == null)
                         {
@@ -2039,17 +2083,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EVMType.UInt32:
                     {
-                        //TemplateObject to = obj as TemplateObject;
-                        //if (to != null)
-                        //{
-                        //    to.SetValue(EVMType.UInt32, svalue.uint32Value);
-                        //}
-                        //AnyObject anyObject = obj as AnyObject;
-                        //if (anyObject != null)
-                        //{
-                        //    anyObject.SetValue(EVMType.UInt32, svalue.uint32Value);
-                        //    return;
-                        //}
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.UInt32)
+                            {
+                                svalue.SetUInt32Value((uint)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
                         UInt32Object uint32Obj = obj as UInt32Object;
                         if (uint32Obj == null)
                         {
@@ -2061,17 +2106,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EVMType.Int64:
                     {
-                        //TemplateObject to = obj as TemplateObject;
-                        //if (to != null)
-                        //{
-                        //    to.SetValue(EVMType.Int64, svalue.int64Value);
-                        //}
-                        //AnyObject anyObject = obj as AnyObject;
-                        //if (anyObject != null)
-                        //{
-                        //    anyObject.SetValue(EVMType.Int64, svalue.int64Value);
-                        //    return;
-                        //}
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.Int64)
+                            {
+                                svalue.SetInt64Value((long)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
                         Int64Object int64Obj = obj as Int64Object;
                         if (int64Obj == null)
                         {
@@ -2083,17 +2129,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EVMType.UInt64:
                     {
-                        //TemplateObject to = obj as TemplateObject;
-                        //if (to != null)
-                        //{
-                        //    to.SetValue(EVMType.UInt64, svalue.uint64Value);
-                        //}
-                        //AnyObject anyObject = obj as AnyObject;
-                        //if (anyObject != null)
-                        //{
-                        //    anyObject.SetValue(EVMType.UInt64, svalue.uint64Value);
-                        //    return;
-                        //}
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.UInt64)
+                            {
+                                svalue.SetUInt64Value((ulong)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
                         UInt64Object uint64Obj = obj as UInt64Object;
                         if (uint64Obj == null)
                         {
@@ -2103,42 +2150,20 @@ namespace SimpleLanguage.VM.Runtime
                         svalue.SetUInt64Value(uint64Obj.value);
                     }
                     break;
-                case EVMType.String:
-                    {
-                        //TemplateObject to = obj as TemplateObject;
-                        //if (to != null)
-                        //{
-                        //    to.SetValue(EVMType.String, svalue.stringValue);
-                        //    return;
-                        //}
-                        //AnyObject anyObject = obj as AnyObject;
-                        //if (anyObject != null)
-                        //{
-                        //    anyObject.SetValue(EVMType.String, svalue.stringValue);
-                        //    return;
-                        //}
-                        StringObject stringObj = obj as StringObject;
-                        if (stringObj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        svalue.SetStringValue(stringObj.value);
-                    }
-                    break;
                 case EVMType.Float32:
                     {
-                        //TemplateObject to = obj as TemplateObject;
-                        //if (to != null)
-                        //{
-                        //    to.SetValue(EVMType.Float32, svalue.floatValue);
-                        //}
-                        //AnyObject anyObject = obj as AnyObject;
-                        //if (anyObject != null)
-                        //{
-                        //    anyObject.SetValue(EVMType.Float32, svalue.floatValue);
-                        //    return;
-                        //}
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.Float32)
+                            {
+                                svalue.SetFloatValue((float)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
                         Float32Object floatObj = obj as Float32Object;
                         if (floatObj == null)
                         {
@@ -2150,17 +2175,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EVMType.Float64:
                     {
-                        //TemplateObject to = obj as TemplateObject;
-                        //if (to != null)
-                        //{
-                        //    to.SetValue(EVMType.Float64, svalue.doubleValue);
-                        //}
-                        //AnyObject anyObject = obj as AnyObject;
-                        //if (anyObject != null)
-                        //{
-                        //    anyObject.SetValue(EVMType.Float64, svalue.doubleValue);
-                        //    return;
-                        //}
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.Float64)
+                            {
+                                svalue.SetDoubleValue((double)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
                         Float64Object doubleObj = obj as Float64Object;
                         if (doubleObj == null)
                         {
@@ -2168,6 +2194,29 @@ namespace SimpleLanguage.VM.Runtime
                             return;
                         }
                         svalue.SetDoubleValue(doubleObj.value);
+                    }
+                    break;
+                case EVMType.String:
+                    {
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.String)
+                            {
+                                svalue.SetStringValue((string)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
+                        StringObject stringObj = obj as StringObject;
+                        if (stringObj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetStringValue(stringObj.value);
                     }
                     break;
                 case EVMType.Array:
@@ -2184,18 +2233,83 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EVMType.Object:
                     {
-                        if (obj.eType == EVMType.Object)
+                        switch( obj.eAnyType )
                         {
-                            svalue.SetSObject(obj.value as SObject);
-                        }
-                        else
-                        {
-                            Debug.Assert(false);
+                            case EVMType.Boolean:
+                                {
+                                    svalue.SetBoolValue((bool)obj.value);
+                                }
+                                break;
+                            case EVMType.Byte:
+                                {
+                                    svalue.SetInt8Value((byte)obj.value);
+                                }
+                                break;
+                            case EVMType.SByte:
+                                {
+                                    svalue.SetSInt8Value((sbyte)obj.value);
+                                }
+                                break;
+                            case EVMType.Int16:
+                                {
+                                    svalue.SetInt16Value((Int16)obj.value);
+                                }
+                                break;
+                            case EVMType.UInt16:
+                                {
+                                    svalue.SetUInt16Value((UInt16)obj.value);
+                                }
+                                break;
+                            case EVMType.Int32:
+                                {
+                                    svalue.SetInt32Value((Int32)obj.value);
+                                }
+                                break;
+                            case EVMType.UInt32:
+                                {
+                                    svalue.SetUInt32Value((UInt32)obj.value);
+                                }
+                                break;
+                            case EVMType.Int64:
+                                {
+                                    svalue.SetInt64Value((Int64)obj.value);
+                                }
+                                break;
+                            case EVMType.UInt64:
+                                {
+                                    svalue.SetUInt64Value((UInt64)obj.value);
+                                }
+                                break;
+                            case EVMType.Float32:
+                                {
+                                    svalue.SetFloatValue((float)obj.value);
+                                }
+                                break;
+                            case EVMType.Float64:
+                                {
+                                    svalue.SetDoubleValue((double)obj.value);
+                                }
+                                break;
+                            case EVMType.String:
+                                {
+                                    svalue.SetStringValue((string)obj.value);
+                                }
+                                break;
+                            default:
+                                {
+                                    svalue.SetSObject(obj.value as SObject);
+                                }
+                                break;
                         }
                     }
                     break;
                 case EVMType.Class:
                     {
+                        if (anyObj)
+                        {
+                            svalue.SetSObject(obj.value as SObject);
+                            return;
+                        }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
@@ -2212,26 +2326,26 @@ namespace SimpleLanguage.VM.Runtime
                         //    return;
                         //}
                         //4代表的是直接传值 ，所以，原来值啥样就传进去
-                        if( type == 4 )
-                        {
-                            if (obj is ClassObject co)
-                            {
-                                if(co.value != null )
-                                {
-                                    svalue.SetSObject(co.value as SObject );
-                                }
-                                else
-                                {
-                                    svalue.SetSObject(co);
-                                }
-                            }
-                            else
-                            {
-                                Debug.Assert(false);
-                            }
-                        }
-                        else
-                        {
+                        //if (type == 4)
+                        //{
+                        //    if (obj is ClassObject co)
+                        //    {
+                        //        if (co.value != null)
+                        //        {
+                        //            svalue.SetSObject(co.value as SObject);
+                        //        }
+                        //        else
+                        //        {
+                        //            svalue.SetSObject(co);
+                        //        }
+                        //    }
+                        //    else
+                        //    {
+                        //        Debug.Assert(false);
+                        //    }
+                        //}
+                        //else
+                        //{
                             if (obj is ClassObject co)
                             {
                                 svalue.SetSObject(co.value as SObject);
@@ -2240,7 +2354,7 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 Debug.Assert(false);
                             }
-                        }
+                        //}
                         /*
                         Int32Object int32Obj = obj as Int32Object;
                         if (int32Obj != null)

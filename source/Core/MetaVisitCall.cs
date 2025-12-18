@@ -78,7 +78,7 @@ namespace SimpleLanguage.Core
             m_LoadMetaVariable = loadMv;
             m_StoreMetaVariable = storeMv;
 
-            if( m_VMCallMetaFunction.returnMetaVariable.metaDefineType.metaClass?.eType == EType.Void )
+            if( m_VMCallMetaFunction.returnMetaVariable.defineMetaType.metaClass?.eType == EType.Void )
             {
                 m_IsRecieveReturnValue = true;
             }
@@ -374,19 +374,19 @@ namespace SimpleLanguage.Core
                     {
                         if( methodCall.metaMemberFunction != null )
                         {
-                            return methodCall.metaMemberFunction.returnMetaVariable.metaDefineType;
+                            return methodCall.metaMemberFunction.returnMetaVariable.defineMetaType;
                         }
-                        return methodCall.function.returnMetaVariable.metaDefineType;
+                        return methodCall.function.returnMetaVariable.defineMetaType;
                     }
                     case EVisitType.VisitVariable:
                     {
-                        return visitVariable.metaDefineType;
+                        return visitVariable.defineMetaType;
                     }
                     case EVisitType.Variable:
                     {
                         if( this.variable.isDefineMetaType )
                         {
-                            return this.variable.metaDefineType;
+                            return this.variable.defineMetaType;
                         }
                         return this.variable.realMetaType;
                     }

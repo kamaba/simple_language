@@ -44,6 +44,14 @@ namespace SimpleLanguage.Parse
         static ProjectData m_Data = new ProjectData( "ProjectData", false );
         public static string rootPath = "";
 
+        public static bool isSupportConstructionFunctionOnlyBraceType = true;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
+        public static bool isSupportConstructionFunctionConnectBraceType = true;  //是否支持构造函数名称后边加{}形式    Class1{ a = Class2(){} } 不支持
+        public static bool isSupportConstructionFunctionOnlyParType = true; //是否支持构造函数使用 仅()形式    Class1{ a = () } 不支持
+        public static bool isSupportInExpressUseStaticMetaMemeberFunction = true;   //是否在成员支持静态函数的
+        public static bool isSupportInExpressUseStaticMetaVariable = true;     //是否在成员中支持静态变量
+        public static bool isSupportInExpressUseCurrentClassNotStaticMemberMetaVariable = true;  //是否支持在表达式中使用本类或父类中的非静态变量
+       
+
         public static MetaData globalData = new MetaData( "global", false, true, false );
         public static void Run( string path, CommandInputArgs cinputArgs )
         {

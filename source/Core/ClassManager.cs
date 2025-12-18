@@ -169,7 +169,7 @@ namespace SimpleLanguage.Core
                     if (curMV.isConst == cpMV.isConst
                         || curMV.isStatic == cpMV.isStatic
                         || curMV.name == cpMV.name
-                        || curMV.metaDefineType == cpMV.metaDefineType)
+                        || curMV.defineMetaType == cpMV.defineMetaType)
                     {
 
                     }
@@ -200,7 +200,7 @@ namespace SimpleLanguage.Core
                 var vval = v.Value;
                 var val2 = cpClassList[v.Key];
 
-                if( vval.metaDefineType.metaClass != val2.metaDefineType.metaClass )
+                if( vval.defineMetaType.metaClass != val2.defineMetaType.metaClass )
                 {
                     return false;
                 }
@@ -240,9 +240,9 @@ namespace SimpleLanguage.Core
                         if( findmc2.classDefineType == EClassDefineType.StructDefine )
                         {
                             findmc2.BindFileMetaClass(fmc);
-                            findmc2.SetClassDefineType(EClassDefineType.CodeDefine);
                             findmc2.ParseFileMetaClassTemplate(fmc);
                             findmc2.ParseFileMetaClassMemeberVarAndFunc(fmc);
+                            findmc2.SetClassDefineType(EClassDefineType.CodeDefine);
                             return findmc2;
                         }
                         else
@@ -312,6 +312,7 @@ namespace SimpleLanguage.Core
                             fmc.SetMetaClass(ffmc);
                             ffmc.BindFileMetaClass(fmc);
                             ffmc.SetClassDefineType(EClassDefineType.CodeDefine);
+                            ffmc.metaTemplateList.Clear();
                             ffmc.ParseFileMetaClassTemplate(fmc);
                             ffmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
                             ffmc.UpdateClassAllName();

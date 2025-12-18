@@ -51,10 +51,10 @@ namespace SimpleLanguage.IR
                         //这种是  Obja.Objb = new()的方式
                         var mv = finalMVN.GetRetMetaVariable();
 
-                        var irmc = IRManager.instance.GetIRMetaClassById(mv.metaDefineType.GetTemplateMetaClass().GetHashCode());
+                        var irmc = IRManager.instance.GetIRMetaClassById(mv.defineMetaType.GetTemplateMetaClass().GetHashCode());
                         var owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
 
-                        IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable( IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.metaDefineType, owirmc), irmc, irMethod, finalMVN.GetOrgTemplateMetaVariable() );
+                        IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable( IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.defineMetaType, owirmc), irmc, irMethod, finalMVN.GetOrgTemplateMetaVariable() );
                         m_IRStatements.Add(irsv);
 
                     }
@@ -93,13 +93,13 @@ namespace SimpleLanguage.IR
                         {
                             var mv = cl.GetRetMetaVariable();
 
-                            var irmc = IRManager.instance.GetIRMetaClassById(mv.metaDefineType.GetTemplateMetaClass().GetHashCode());
+                            var irmc = IRManager.instance.GetIRMetaClassById(mv.defineMetaType.GetTemplateMetaClass().GetHashCode());
                             var owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
                             IRMetaType irmt = null;
                             if (cl.callMetaType == null)
                             {
                                 irmc = IRManager.instance.GetIRMetaClassById(mv.ownerMetaClass.GetHashCode());
-                                irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.metaDefineType, owirmc);
+                                irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.defineMetaType, owirmc);
                             }
                             else
                             {

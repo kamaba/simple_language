@@ -16,7 +16,6 @@ namespace SimpleLanguage.IR
 {
     public class IRMetaType
     {
-        public bool isArray => m_IsArray;
         public IRMetaClass irMetaClass => m_IRMetaClass;
         public IRMetaClass irOwnerMetaClass => m_IROwnerMetaClass;
         public List<IRMetaType> irMetaTypeList => m_IRMetaTypeList;
@@ -25,7 +24,7 @@ namespace SimpleLanguage.IR
         public IRMetaClass m_IRMetaClass = null;
         private IRMetaClass m_IROwnerMetaClass = null;
         private List<IRMetaType> m_IRMetaTypeList = new List<IRMetaType>();
-        private bool m_IsArray = false;
+        //private bool m_IsArray = false;
 
         private int m_TemplateIndex = -1;
 
@@ -39,7 +38,7 @@ namespace SimpleLanguage.IR
         }
         public IRMetaType( MetaType type )
         {
-            this.m_IsArray = type.isArray;
+            //this.m_IsArray = type.isArray;
             if (type.eType == EMetaTypeType.MetaClass)
             {
                 m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
@@ -69,7 +68,7 @@ namespace SimpleLanguage.IR
         {
             IRMetaType irmt = new();
             irmt.m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id);
-            irmt.m_IsArray = type.isArray;
+            //irmt.m_IsArray = type.isArray;
             if (type.eType == EMetaTypeType.MetaClass)
             {
                 irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
@@ -97,7 +96,7 @@ namespace SimpleLanguage.IR
         public static IRMetaType CreateIRMetaTypeByDefineTemplateMetaTypeList(MetaType type, IRMetaClass ownerIRMc )
         {
             IRMetaType irmt = new();
-            irmt.m_IsArray = type.isArray;
+            //irmt.m_IsArray = type.IsArray();
             irmt.m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id );
             if (type.eType == EMetaTypeType.MetaClass)
             {
@@ -116,35 +115,6 @@ namespace SimpleLanguage.IR
             for (int i = 0; i < type.defineTemplateMetaTypeList.Count; i++)
             {
                 irmt.m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(type.defineTemplateMetaTypeList[i], irmt.m_IROwnerMetaClass));
-            }
-            if (irmt.m_IRMetaClass == null || irmt.m_IROwnerMetaClass == null)
-            {
-                Debug.Assert(false, "这个不可以为空!");
-            }
-            return irmt;
-        }
-        public static IRMetaType CreateIRMetaTypeByArrayMetaTypeList(MetaType type, IRMetaClass ownerIRMc)
-        {
-            IRMetaType irmt = new();
-            irmt.m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id);
-            irmt.m_IsArray = type.isArray;
-            if (type.eType == EMetaTypeType.MetaClass)
-            {
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
-            }
-            else if (type.eType == EMetaTypeType.Template)
-            {
-                irmt.m_TemplateIndex = type.metaTemplate.index;
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
-            }
-            else
-            {
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
-            }
-
-            for (int i = 0; i < type.arrayMetaTypeList.Count; i++)
-            {
-                irmt.m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByArrayMetaTypeList(type.arrayMetaTypeList[i], irmt.m_IROwnerMetaClass));
             }
             if (irmt.m_IRMetaClass == null || irmt.m_IROwnerMetaClass == null)
             {

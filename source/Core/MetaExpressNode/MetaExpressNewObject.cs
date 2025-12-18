@@ -95,9 +95,6 @@ namespace SimpleLanguage.Core
                     m_MetaMemberData.ParseChildMemberData();
                 }
             }
-            else if( mt.isArray )
-            {
-            }
             else
             {
                 if (mt.isData)
@@ -131,7 +128,7 @@ namespace SimpleLanguage.Core
                 CreateExpressParam cep = new CreateExpressParam();
                 cep.fme = fmst.right;
                 cep.equalMetaVariable = m_MetaMemberVariable;
-                cep.metaType = new MetaType(m_MetaMemberVariable.metaDefineType);
+                cep.metaType = new MetaType(m_MetaMemberVariable.defineMetaType);
                 cep.ownerMBS = m_OwnerMetaBlockStatements;
                 cep.ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass;
 
@@ -147,6 +144,7 @@ namespace SimpleLanguage.Core
             if( m_MetaExpress is MetaArrayExpressNode maen )
             {
                 m_MetaExpress = new MetaNewObjectExpressNode(maen, mc.metaClass, mbs, null);
+                m_MetaExpress.Parse(new AllowUseSettings());
             }
         }
         public MetaBraceAssignStatements(MetaBlockStatements mbs, MetaExpressNode men, MetaMemberVariable mmv )
@@ -239,13 +237,13 @@ namespace SimpleLanguage.Core
 
                 if (m_MetaMemberVariable != null)
                 {
-                    MetaClass retMetaClass = m_MetaMemberVariable.metaDefineType.metaClass;
+                    MetaClass retMetaClass = m_MetaMemberVariable.defineMetaType.metaClass;
                     MetaClass ownerMetaClass = m_MetaMemberVariable.ownerMetaClass;
                     //bool m_IsNeedCastStatements = false;
                 }
                 else if( m_MetaMemberData != null )
                 {
-                    MetaClass retMetaClass = m_MetaMemberData.metaDefineType.metaClass;
+                    MetaClass retMetaClass = m_MetaMemberData.defineMetaType.metaClass;
                     MetaClass ownerMetaClass = m_MetaMemberData.ownerMetaClass;
                     //bool m_IsNeedCastStatements = false;
                 }
@@ -495,13 +493,13 @@ namespace SimpleLanguage.Core
                     m_ContentType = EStatementsContentType.DataValueAssign;
                 }
             }
-            else if (mt.isArray)// 数组类型的处理
+            else if (mt.IsArray() )// 数组类型的处理
             {
                 m_ContentType = EStatementsContentType.ArrayValue;
                 if (fmbt is FileMetaBracketTerm fmst)
                 {
                     var newmt = new MetaType(mt);
-                    newmt.SetArrayDimensionByFrontMetaType(mt);
+                    //newmt.SetArrayDimensionByFrontMetaType(mt);
 
                     MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmst, newmt, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_EqualMetaVariable);
                     mnoe.Parse(new AllowUseSettings());
@@ -672,58 +670,50 @@ namespace SimpleLanguage.Core
                 {
                     return CoreMetaClassManager.objectMetaClass;
                 }
-                if( cmcmt.isArray && nmcmt.isArray && frontOpLevel < nmc.opLevel )
+                if (cmc.opLevel == nmc.opLevel && nmc.opLevel > frontOpLevel)
                 {
-                    mc = CoreMetaClassManager.arrayMetaClass;
-                    frontOpLevel = nmc.opLevel;
-                }
-                else
-                {
-                    if (cmc.opLevel == nmc.opLevel && nmc.opLevel > frontOpLevel)
+                    if (cmc.opLevel == 10)
                     {
-                        if (cmc.opLevel == 10)
+                        var cur = cmc.GetRetMetaClass();
+                        var next = nmc.GetRetMetaClass();
+                        var relation = ClassManager.ValidateClassRelationByMetaClass(cur, next);
+                        if (relation == ClassManager.EClassRelation.Same
+                            || relation == ClassManager.EClassRelation.Child)
                         {
-                            var cur = cmc.GetRetMetaClass();
-                            var next = nmc.GetRetMetaClass();
-                            var relation = ClassManager.ValidateClassRelationByMetaClass(cur, next);
-                            if (relation == ClassManager.EClassRelation.Same
-                                || relation == ClassManager.EClassRelation.Child)
-                            {
-                                mc = next;
-                                frontOpLevel = cmc.opLevel;
-                            }
-                            else if (relation == ClassManager.EClassRelation.Parent)
-                            {
-                                mc = cur;
-                            }
-                            else
-                            {
-                                isAllSame = false;
-                                break;
-                            }
+                            mc = next;
+                            frontOpLevel = cmc.opLevel;
+                        }
+                        else if (relation == ClassManager.EClassRelation.Parent)
+                        {
+                            mc = cur;
                         }
                         else
                         {
-                            mc = cmc.GetRetMetaClass();
-                            frontOpLevel = cmc.opLevel;
-                            isAllSame = true;
+                            isAllSame = false;
+                            break;
                         }
-
                     }
                     else
                     {
-                        if (nmc.opLevel > frontOpLevel)
+                        mc = cmc.GetRetMetaClass();
+                        frontOpLevel = cmc.opLevel;
+                        isAllSame = true;
+                    }
+
+                }
+                else
+                {
+                    if (nmc.opLevel > frontOpLevel)
+                    {
+                        if (cmc.opLevel > nmc.opLevel)
                         {
-                            if (cmc.opLevel > nmc.opLevel)
-                            {
-                                frontOpLevel = cmc.opLevel;
-                                mc = cmc.GetRetMetaClass();
-                            }
-                            else
-                            {
-                                frontOpLevel = nmc.opLevel;
-                                mc = nmc.GetRetMetaClass();
-                            }
+                            frontOpLevel = cmc.opLevel;
+                            mc = cmc.GetRetMetaClass();
+                        }
+                        else
+                        {
+                            frontOpLevel = nmc.opLevel;
+                            mc = nmc.GetRetMetaClass();
                         }
                     }
                 }
@@ -763,7 +753,7 @@ namespace SimpleLanguage.Core
 
         public bool needInitMemberVariable => m_NeedInitMemberVariable;
         public ENewType newType => m_NewType;
-        public int arrayLength => m_MetaType?.isArray == true ? m_MetaType.GetArrayDimensionLengthByIndex(0) : 0;
+        public int arrayLength => m_MetaType.arrayLength;
         public List<MetaExpressNode> metaInputParamList => m_MetaInputParamList;
         public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
         public MetaVariable storeMetaVariable => m_StoreMetaVariable;
@@ -796,29 +786,22 @@ namespace SimpleLanguage.Core
             m_MetaMemberFunction = mcen.metaCallLink.finalCallNode.methodCall.function as MetaMemberFunction;
             m_NewMetaType = mcen.metaCallLink.finalCallNode.callMetaType;
             
-            if( mcen.metaCallLink.finalCallNode.callMetaType.isArray )
+            if( mcen.metaCallLink.finalCallNode.callMetaType.IsArray() )
             {
                 m_NewType = ENewType.ArrayClass;
-                var lastNode = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
-                var fma = lastNode.fileMetaBraceTerm;
-                m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fma, m_OwnerMetaClass,
-                    m_OwnerMetaBlockStatements,  m_StoreMetaVariable );
-
-                HnaldeArrayType(lastNode, m_NewMetaType );
-                m_MetaBraceOrBracketStatementsContent.SetMetaType(m_NewMetaType);
             }
             else
             {
                 m_NewType = ENewType.CommomClass;
-                if( mcen.metaCallLink.callNodeList.Count > 0 )
-                {
-                    var lastNode = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
-                    SetInputParams(lastNode.metaInputParamCollection);
+            }
+            if (mcen.metaCallLink.callNodeList.Count > 0)
+            {
+                var lastNode = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
+                SetInputParams(lastNode.metaInputParamCollection);
 
-                    var fma = lastNode.fileMetaBraceTerm;
-                    m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fma, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
-                    m_MetaBraceOrBracketStatementsContent.SetMetaType(m_NewMetaType);
-                }
+                var fma = lastNode.fileMetaBraceTerm;
+                m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fma, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
+                m_MetaBraceOrBracketStatementsContent.SetMetaType(m_NewMetaType);
             }
         }
         /* 下边的要合并到上边的处理方法里边
@@ -1019,20 +1002,21 @@ namespace SimpleLanguage.Core
             //m_MetaConstructFunctionCall = new MetaMethodCall(mt.metaClass, mt.defineTemplateMetaTypeList, m_OwnerMetaBlockStatements.ownerMetaFunction,
             //    null, null, null, null );
         }
-        public MetaNewObjectExpressNode(MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs, MetaVariable storeMv, MetaMemberFunction mmf)
-        {
-            m_OwnerMetaClass = ownerMC;
-            m_OwnerMetaBlockStatements = mbs;
-            m_MetaType = new MetaType(mt);
-            m_StoreMetaVariable = storeMv;
-            m_MetaMemberFunction = mmf;
-        }
+        //public MetaNewObjectExpressNode(MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs, MetaVariable storeMv, MetaMemberFunction mmf)
+        //{
+        //    m_OwnerMetaClass = ownerMC;
+        //    m_OwnerMetaBlockStatements = mbs;
+        //    m_MetaType = new MetaType(mt);
+        //    m_StoreMetaVariable = storeMv;
+        //    m_MetaMemberFunction = mmf;
+        //}
         // 解析后的[] 然后再进行newArray
         public MetaNewObjectExpressNode(MetaArrayExpressNode maen, MetaClass mc, MetaBlockStatements mbs, MetaVariable equalMV )
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_NewType = ENewType.ArrayClass;
+            m_NewMetaType = maen.GetReturnMetaDefineType();
             m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(maen, mc, mbs, equalMV );
         }
 
@@ -1045,9 +1029,18 @@ namespace SimpleLanguage.Core
         {
             m_OwnerMetaClass = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
-            m_MetaType = new MetaType(mt);
+            m_DefineMetaType = new MetaType(mt);
+            m_NewMetaType = new MetaType(mt);
+            if( m_NewMetaType.IsArray() )
+            {
+                m_NewType = ENewType.ArrayClass;
+            }
+            else
+            {
+                m_NewType = ENewType.CommomClass;
+            }
             m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fmbt, ownerMC, mbs, equalMV);
-            m_MetaBraceOrBracketStatementsContent.SetMetaType(m_MetaType);
+            m_MetaBraceOrBracketStatementsContent.SetMetaType(m_DefineMetaType);
         }
         // Array arr = [1,2,3]   [Class1(), Class2(), variable1.a.b(),100]
         public MetaNewObjectExpressNode( FileMetaBracketTerm fmbt, MetaType mt, MetaClass mc, MetaBlockStatements mbs, MetaVariable equalMV )
@@ -1066,17 +1059,29 @@ namespace SimpleLanguage.Core
             if(m_NewType == ENewType.ArrayClass )
             {
                 m_MetaBraceOrBracketStatementsContent.Parse();
-                MetaClass inputType = m_MetaBraceOrBracketStatementsContent.GetMaxLevelMetaClassType();
 
-                m_RealMetaType = new MetaType(inputType);
-
-                List<MetaType> listMT = new List<MetaType>();
-                for( int i = 0; i < m_MetaBraceOrBracketStatementsContent.assignStatementsList.Count; i++ )
+                if(m_MetaBraceOrBracketStatementsContent.assignStatementsList.Count > 0 )
                 {
-                    var mt = m_MetaBraceOrBracketStatementsContent.assignStatementsList[i].GetRetMetaType();
-                    listMT.Add(mt);
+                    MetaClass inputType = m_MetaBraceOrBracketStatementsContent.GetMaxLevelMetaClassType();
+
+                    m_RealMetaType = new MetaType(inputType);
+                    //List<MetaType> listMT = new List<MetaType>();
+                    //for( int i = 0; i < m_MetaBraceOrBracketStatementsContent.assignStatementsList.Count; i++ )
+                    //{
+                    //    var mt = m_MetaBraceOrBracketStatementsContent.assignStatementsList[i].GetRetMetaType();
+                    //    listMT.Add(mt);
+                    //}
+                    MetaType newRMT = new MetaType();
+                    newRMT.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
+                    newRMT.AddDefineTemplateMetaType(m_RealMetaType);
+                    newRMT.AddGenTemplateMetaType(m_RealMetaType);
+                    m_RealMetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out bool isIGM);
+                    m_RealMetaType.SetArrayLength(m_MetaBraceOrBracketStatementsContent.assignStatementsList.Count);
                 }
-                m_RealMetaType.SetArrayMetaType(listMT);
+                else
+                {
+                    m_RealMetaType = null;
+                }
 
             }
             else if( m_NewType == ENewType.CommomClass )
@@ -1096,55 +1101,55 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        List<int> depthLength = new List<int>();
-        public void HnaldeArrayType( MetaCallNode lastNode, MetaType mt  )
-        {
-            for (int i = 0; i < lastNode.bracketExpressList.Count; i++)
-            {
-                bool flag = true;
-                if (lastNode.bracketExpressList[i] is MetaArrayExpressNode maen)
-                {
-                    if( maen.metaCallArray.Count == 1 )
-                    {
-                        if( maen.metaCallArray[0] is MetaConstExpressNode mcenc )
-                        {
-                            if (mcenc.eType == EType.Int32)
-                            {
-                                flag = false;
-                                depthLength.Add((int)mcenc.value);
-                            }
-                        }
-                    }
-                    else if( maen.metaCallArray.Count == 0 && i == lastNode.bracketExpressList.Count - 1 )
-                    {
-                        flag = false;
-                        depthLength.Add(-1);
-                    }
-                }
-                if (flag)
-                {
-                    Log.AddInStructMeta(EError.None, "在[]中，只允许数字形式存在");
-                }
-            }
-            int use_n_numone = 0;
-            for( int i = depthLength.Count - 1; i >= 0; i--)
-            {
-                if(depthLength[i] == -1 )
-                {
-                    if( use_n_numone == 2 )
-                    {
-                        Log.AddInStructMeta(EError.None, "在[]中，只允许从后边向前[3][-1][-1]这种形式，而不能使用[3][-1][2] 这种形式");
-                        continue;
-                    }
-                }
-                else
-                {
-                    use_n_numone = 2;
-                }
-            }
+        //List<int> depthLength = new List<int>();
+        //public void HnaldeArrayType( MetaCallNode lastNode, MetaType mt  )
+        //{
+        //    for (int i = 0; i < lastNode.bracketExpressList.Count; i++)
+        //    {
+        //        bool flag = true;
+        //        if (lastNode.bracketExpressList[i] is MetaArrayExpressNode maen)
+        //        {
+        //            if( maen.metaCallArray.Count == 1 )
+        //            {
+        //                if( maen.metaCallArray[0] is MetaConstExpressNode mcenc )
+        //                {
+        //                    if (mcenc.eType == EType.Int32)
+        //                    {
+        //                        flag = false;
+        //                        depthLength.Add((int)mcenc.value);
+        //                    }
+        //                }
+        //            }
+        //            else if( maen.metaCallArray.Count == 0 && i == lastNode.bracketExpressList.Count - 1 )
+        //            {
+        //                flag = false;
+        //                depthLength.Add(-1);
+        //            }
+        //        }
+        //        if (flag)
+        //        {
+        //            Log.AddInStructMeta(EError.None, "在[]中，只允许数字形式存在");
+        //        }
+        //    }
+        //    int use_n_numone = 0;
+        //    for( int i = depthLength.Count - 1; i >= 0; i--)
+        //    {
+        //        if(depthLength[i] == -1 )
+        //        {
+        //            if( use_n_numone == 2 )
+        //            {
+        //                Log.AddInStructMeta(EError.None, "在[]中，只允许从后边向前[3][-1][-1]这种形式，而不能使用[3][-1][2] 这种形式");
+        //                continue;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            use_n_numone = 2;
+        //        }
+        //    }
 
-            mt.SetArrayDismensionLength(depthLength);
-        }
+        //    mt.SetArrayDismensionLength(depthLength);
+        //}
         public void SetInputParams(MetaInputParamCollection _paramCollection)
         {
             if(m_MetaMemberFunction == null )
@@ -1197,49 +1202,50 @@ namespace SimpleLanguage.Core
 
             if (m_DefineMetaType != null && m_NewMetaType != null )
             {
-                if (m_NewMetaType.isArray)
+                if (m_NewMetaType.IsArray() )
                 {
                     if (m_StoreMetaVariable?.isDefineMetaType == true )
                     {
-                        if (m_DefineMetaType.isArray == false)
+                        if (m_DefineMetaType.IsArray() == false)
                         {
                             Log.AddInStructMeta(EError.None, "如果定义了，结构，必须与new对象的类型一样才可以");
                             return;
                         }
                         else
                         {
-                            if (m_NewMetaType.arrayDimensionLengthList.Count == m_DefineMetaType.arrayDimensionLengthList.Count)
-                            {
-                                for (int i = 0; i < m_DefineMetaType.arrayDimensionLengthList.Count; i++)
-                                {
-                                    if (m_DefineMetaType.arrayDimensionLengthList[i] == -1)
-                                    {
+                            Debug.Assert(false);
+                            //if (m_NewMetaType.arrayDimensionLengthList.Count == m_DefineMetaType.arrayDimensionLengthList.Count)
+                            //{
+                            //    for (int i = 0; i < m_DefineMetaType.arrayDimensionLengthList.Count; i++)
+                            //    {
+                            //        if (m_DefineMetaType.arrayDimensionLengthList[i] == -1)
+                            //        {
 
-                                    }
-                                    else if (m_NewMetaType.arrayDimensionLengthList[i] == -1)
-                                    {
-                                        if (m_DefineMetaType.arrayDimensionLengthList[i] != -1)
-                                        {
-                                            Log.AddInStructMeta(EError.None, "如果前边定义了长度，new的时候必须和前边的长度一样!");
-                                            return;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (m_NewMetaType.arrayDimensionLengthList[i] != m_DefineMetaType.arrayDimensionLengthList[i])
-                                        {
-                                            Log.AddInStructMeta(EError.None, "如果前边定义了长度，new的时候必须和前边的长度一样!");
-                                            return;
-                                        }
-                                    }
-                                }
-                                m_MetaType = new MetaType(m_NewMetaType);
-                            }
-                            else
-                            {
-                                Log.AddInStructMeta(EError.None, "定义数组与new数组 的维度不同");
-                                return;
-                            }
+                            //        }
+                            //        else if (m_NewMetaType.arrayDimensionLengthList[i] == -1)
+                            //        {
+                            //            if (m_DefineMetaType.arrayDimensionLengthList[i] != -1)
+                            //            {
+                            //                Log.AddInStructMeta(EError.None, "如果前边定义了长度，new的时候必须和前边的长度一样!");
+                            //                return;
+                            //            }
+                            //        }
+                            //        else
+                            //        {
+                            //            if (m_NewMetaType.arrayDimensionLengthList[i] != m_DefineMetaType.arrayDimensionLengthList[i])
+                            //            {
+                            //                Log.AddInStructMeta(EError.None, "如果前边定义了长度，new的时候必须和前边的长度一样!");
+                            //                return;
+                            //            }
+                            //        }
+                            //    }
+                            //    m_MetaType = new MetaType(m_NewMetaType);
+                            //}
+                            //else
+                            //{
+                            //    Log.AddInStructMeta(EError.None, "定义数组与new数组 的维度不同");
+                            //    return;
+                            //}
                         }
                     }
                     else
@@ -1249,7 +1255,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    if (m_DefineMetaType.isArray )
+                    if (m_DefineMetaType.IsArray() )
                     {
                         Log.AddInStructMeta(EError.None, "如果定义了，结构，必须与new对象的类型一样才可以");
                         return;
@@ -1286,7 +1292,7 @@ namespace SimpleLanguage.Core
 
             if(m_RealMetaType != null )
             {
-                if (m_RealMetaType.isArray)
+                if (m_RealMetaType.IsArray() )
                 {
                     if (m_MetaType == null)
                     {
@@ -1294,42 +1300,51 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        int curlen = m_MetaType.arrayDimensionLengthList[0];
-                        if ( curlen == -1 )
+                        if( m_MetaType.arrayLength == -1 )
                         {
-                            m_MetaType.arrayDimensionLengthList[0] = m_RealMetaType.arrayDimensionLengthList[0];
+                            m_MetaType.SetArrayLength(m_RealMetaType.arrayLength);
                         }
                         else
                         {
-
-                            if (curlen > m_RealMetaType.arrayDimensionLengthList.Count)
+                            if( m_MetaType.arrayLength < m_RealMetaType.arrayLength )
                             {
-                                for (int i = 0; i < m_RealMetaType.arrayDimensionLengthList.Count; i++)
-                                {
-                                    if (m_MetaType.arrayDimensionLengthList[i] < m_RealMetaType.arrayDimensionLengthList[i])
-                                    {
-                                        Log.AddInStructMeta(EError.None, "数组赋值内容给出的长度超出了定义长度!");
-                                        return;
-                                    }
-                                }
+                                //这也还是写具体的数组类型对比，和多维长度对比，暂留以后写
+                                Log.AddInStructMeta(EError.None, "数组赋值内容给出的长度超出了定义长度!");
+                                Debug.Assert(false);
+                                return;
                             }
-
                         }
                     }
                 }
                 else
                 {
-
+                    if (m_MetaType == null)
+                    {
+                        m_MetaType = new MetaType(m_RealMetaType);
+                    }
                 }
             }
-            if( m_MetaType.isArray )
+            if( m_MetaType.IsArray() )
             {
-                m_MetaType.AutoCreateArrayMetaType();
-                mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaType.arrayDimensionLengthList[0] )));
-                mipc.CaleReturnType();
+                if(m_MetaInputParamList.Count == 0)
+                {
+                    mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaType.arrayLength)));
+                    mipc.CaleReturnType();
 
-                m_MetaMemberFunction =  CoreMetaClassManager.arrayMetaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, mipc);
-                SetInputParams(mipc);
+                    m_MetaMemberFunction = CoreMetaClassManager.arrayMetaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, mipc);
+                    SetInputParams(mipc);
+                }
+                else if( m_MetaInputParamList.Count == 1 )
+                {
+                    if( m_MetaInputParamList[0] is MetaConstExpressNode mcen )
+                    {
+                        mcen.value = m_MetaType.arrayLength;
+                    }                    
+                }
+                else
+                {
+                    Debug.Assert(false);
+                }
             }
             else
             {
@@ -1351,10 +1366,23 @@ namespace SimpleLanguage.Core
 
                 MetaType mt2 = mbc.GetRetMetaType();
 
-                if( m_MetaType.metaClass.IsContainMetaClass( mt2.metaClass ) )
+                if( m_MetaType.IsArray() )
                 {
-                    Log.AddInStructMeta(EError.None, "里边的元素与外边定义的类11，不对应，需要调整数据，或者是定义的结构 ");
+                    var cmt = m_MetaType.genTemplateMetaTypeList[0];
+                    
+                    if (!cmt.metaClass.IsContainMetaClass(mt2.metaClass))
+                    {
+                        Log.AddInStructMeta(EError.None, "里边的元素与边的数据类型不对应，不对应，需要调整数据，或者是定义的结构 ");
+                    }
                 }
+                else
+                {
+                    if (!m_MetaType.metaClass.IsContainMetaClass(mt2.metaClass))
+                    {
+                        Log.AddInStructMeta(EError.None, "里边的元素与外边定义的类11，不对应，需要调整数据，或者是定义的结构 ");
+                    }
+                }
+
             }
         }
         public override MetaType GetReturnMetaDefineType()
