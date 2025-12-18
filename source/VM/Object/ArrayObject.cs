@@ -15,11 +15,11 @@ namespace SimpleLanguage.VM
     public class ArrayObject : ClassObject
     {
         private Array m_Array = null;
-        private EArrayType eArrayType = EArrayType.Byte;
-        public ArrayObject(RuntimeType rt, EArrayType eArrType, int length ) : base( rt, false )
+        private RuntimeType eArrayType = null;
+        public ArrayObject(RuntimeType rt, int length ) : base( rt, false )
         {
             m_Type = EVMType.Array;
-            eArrayType = eArrType;
+            eArrayType = rt.runtimeTemplateList[0];
             m_Length = length;
             CreateObject();
             CreateArray();
@@ -43,9 +43,9 @@ namespace SimpleLanguage.VM
             {
                 return;
             }
-            switch (eArrayType)
+            switch (eArrayType.eType)
             {
-                case EArrayType.Boolean:
+                case EVMType.Boolean:
                     {
                         m_Array = new bool[length];
                         /*
@@ -59,7 +59,7 @@ namespace SimpleLanguage.VM
                         */
                     }
                     break;
-                case EArrayType.Byte:
+                case EVMType.Byte:
                     {
                         m_Array = new Byte[length];
                         /*
@@ -73,7 +73,7 @@ namespace SimpleLanguage.VM
                         */
                     }
                     break;
-                case EArrayType.SByte:
+                case EVMType.SByte:
                     {
                         m_Array = new SByte[length];
                         /*
@@ -87,7 +87,7 @@ namespace SimpleLanguage.VM
                         */
                     }
                     break;
-                case EArrayType.Int16:
+                case EVMType.Int16:
                     {
                         m_Array = new Int16[length];
                         /*
@@ -101,7 +101,7 @@ namespace SimpleLanguage.VM
                         */
                     }
                     break;
-                case EArrayType.UInt16:
+                case EVMType.UInt16:
                     {
                         m_Array = new UInt16[length];
                         /*
@@ -115,7 +115,7 @@ namespace SimpleLanguage.VM
                         */
                     }
                     break;
-                case EArrayType.Int32:
+                case EVMType.Int32:
                     {
                         m_Array = new Int32[length];
                         /*
@@ -129,7 +129,7 @@ namespace SimpleLanguage.VM
                         */
                     }
                     break;
-                case EArrayType.UInt32:
+                case EVMType.UInt32:
                     {
                         m_Array = new UInt32[length];
                         /*
@@ -144,7 +144,7 @@ namespace SimpleLanguage.VM
                         */
                     }
                     break;
-                case EArrayType.Int64:
+                case EVMType.Int64:
                     {
                         m_Array = new Int64[length];
                         /*
@@ -159,7 +159,7 @@ namespace SimpleLanguage.VM
                         */
                     }
                     break;
-                case EArrayType.UInt64:
+                case EVMType.UInt64:
                     {
                         m_Array = new UInt64[length];
                         /*
@@ -174,7 +174,7 @@ namespace SimpleLanguage.VM
                         */
                     }
                     break;
-                case EArrayType.String:
+                case EVMType.String:
                     {
                         m_Array = new String[length];
                         /*
@@ -189,7 +189,7 @@ namespace SimpleLanguage.VM
                         */
                     }
                     break;
-                case EArrayType.Array:
+                case EVMType.Array:
                     {
                         m_Array = new ArrayObject[length];
                         //for (int i = 0; i < length; i++)
@@ -215,18 +215,7 @@ namespace SimpleLanguage.VM
                         //}
                     }
                     break;
-                case EArrayType.Any:
-                    {
-                        m_Array = new SObject[length];                        
-                        for (int i = 0; i < length; i++)
-                        {
-                            var anyobj = new SObject(EVMType.Object);
-                            anyobj.SetNull();
-                            m_Array.SetValue(anyobj, i);
-                        }
-                    }
-                    break;
-                case EArrayType.Class:
+                case EVMType.Class:
                     {
                         m_Array = new ClassObject[length];
                         /*
@@ -246,6 +235,12 @@ namespace SimpleLanguage.VM
                             m_Array.SetValue(sobj, i);
                         }
                         */
+                    }
+                    break;
+                default:
+                    {
+                        Debug.Assert(false);
+                        Log.AddVM(EError.None, "不支持该类型的数组创建!!");
                     }
                     break;
             }
@@ -278,93 +273,93 @@ namespace SimpleLanguage.VM
 
             if ( obj != null )
             {
-                switch (eArrayType)
+                switch (eArrayType.eType)
                 {
-                    case EArrayType.Boolean:
+                    case EVMType.Boolean:
                         {
                             BoolObject val = obj as BoolObject;
                             sval.SetBoolValue(val.value);
                         }
                         break;
-                    case EArrayType.Byte:
+                    case EVMType.Byte:
                         {
                             Int8Object val = obj as Int8Object;
                             sval.SetInt8Value(val.value);
                         }
                         break;
-                    case EArrayType.SByte:
+                    case EVMType.SByte:
                         {
                             SInt8Object val = obj as SInt8Object;
                             sval.SetSInt8Value(val.value);
                         }
                         break;
-                    case EArrayType.Int16:
+                    case EVMType.Int16:
                         {
                             Int16Object val = obj as Int16Object;
                             sval.SetInt16Value(val.value);
                         }
                         break;
-                    case EArrayType.UInt16:
+                    case EVMType.UInt16:
                         {
                             UInt16Object val = obj as UInt16Object;
                             sval.SetUInt16Value(val.value);
                         }
                         break;
-                    case EArrayType.Int32:
+                    case EVMType.Int32:
                         {
                             Int32Object val = obj as Int32Object;
                             sval.SetInt32Value(val.value);
                         }
                         break;
-                    case EArrayType.UInt32:
+                    case EVMType.UInt32:
                         {
                             UInt32Object val = obj as UInt32Object;
                             sval.SetUInt32Value(val.value);
                         }
                         break;
-                    case EArrayType.Int64:
+                    case EVMType.Int64:
                         {
                             Int64Object val = obj as Int64Object;
                             sval.SetInt64Value(val.value);
                         }
                         break;
-                    case EArrayType.UInt64:
+                    case EVMType.UInt64:
                         {
                             UInt64Object val = obj as UInt64Object;
                             sval.SetUInt64Value(val.value);
                         }
                         break;
-                    case EArrayType.Single:
+                    case EVMType.Float32:
                         {
                             Float32Object val = obj as Float32Object;
                             sval.SetFloatValue(val.value);
                         }
                         break;
-                    case EArrayType.Double:
+                    case EVMType.Float64:
                         {
                             Float64Object val = obj as Float64Object;
                             sval.SetDoubleValue(val.value);
                         }
                         break;
-                    case EArrayType.String:
+                    case EVMType.String:
                         {
                             StringObject val = obj as StringObject;
                             sval.SetStringValue(val.value);
                         }
                         break;
-                    case EArrayType.Array:
+                    case EVMType.Array:
                         {
                             var arr = obj as ArrayObject;
                             Debug.Assert(arr != null);
                             sval.SetSObject(arr);
                         }
                         break;
-                    case EArrayType.Any:
+                    case EVMType.Object:
                         {
                             sval.SetSObject(obj as SObject);
                         }
                         break;
-                    case EArrayType.Class:
+                    case EVMType.Class:
                         {
                             sval.SetSObject(obj as ClassObject);
                         }
@@ -664,83 +659,83 @@ namespace SimpleLanguage.VM
         }
         public void StoreObject(int index, object svalue)
         {
-            switch (eArrayType)
+            switch (eArrayType.eType)
             {
-                case  EArrayType.Boolean:
+                case  EVMType.Boolean:
                     {
                         m_Array.SetValue( (byte)svalue == 1 ? true : false, index);
                     }
                     break;
-                case EArrayType.Byte:
+                case EVMType.Byte:
                     {
                         m_Array.SetValue((byte)svalue, index);
                     }
                     break;
-                case EArrayType.SByte:
+                case EVMType.SByte:
                     {
                         m_Array.SetValue((sbyte)svalue, index);
                     }
                     break;
-                case EArrayType.Int16:
+                case EVMType.Int16:
                     {
                         m_Array.SetValue((Int16)svalue, index);
                     }
                     break;
-                case EArrayType.UInt16:
+                case EVMType.UInt16:
                     {
                         m_Array.SetValue((UInt16)svalue, index);
                     }
                     break;
-                case EArrayType.Int32:
+                case EVMType.Int32:
                     {
                         m_Array.SetValue((int)svalue, index);
                     }
                     break;
-                case EArrayType.UInt32:
+                case EVMType.UInt32:
                     {
                         m_Array.SetValue((UInt32)svalue, index);
                     }
                     break;
-                case EArrayType.Int64:
+                case EVMType.Int64:
                     {
                         m_Array.SetValue((Int64)svalue, index);
                     }
                     break;
-                case EArrayType.UInt64:
+                case EVMType.UInt64:
                     {
                         m_Array.SetValue((UInt64)svalue, index);
                     }
                     break;
-                case EArrayType.Single:
+                case EVMType.Float32:
                     {
                         m_Array.SetValue((float)svalue, index);
                     }
                     break;
-                case EArrayType.Double:
+                case EVMType.Float64:
                     {
                         m_Array.SetValue((double)svalue, index);
                     }
                     break;
-                case EArrayType.String:
+                case EVMType.String:
                     {
                         m_Array.SetValue( (string)svalue, index);
                     }
                     break;
-                case EArrayType.Array:
+                case EVMType.Array:
                     {
                         ArrayObject ao = svalue as ArrayObject;
                         Debug.Assert(ao != null);
                         m_Array.SetValue(ao, index);
                     }
                     break;
-                case EArrayType.Any:
+                case EVMType.Object:
                     {
                         SObject ao = svalue as SObject;
                         Debug.Assert(ao != null);
                         m_Array.SetValue(ao, index);
                     }
                     break;
-                case EArrayType.Class:
+                case EVMType.Class:
                     {
                         ClassObject ao = svalue as ClassObject;
                         Debug.Assert(ao != null);

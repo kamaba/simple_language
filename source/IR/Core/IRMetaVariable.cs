@@ -9,6 +9,7 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace SimpleLanguage.IR
 {
@@ -60,35 +61,36 @@ namespace SimpleLanguage.IR
                     m_IRMetaVariableFrom = IRMetaVariableFrom.Member;
                 }
             }
-            else if( mv.variableFrom == MetaVariable.EVariableFrom.Argument )
+            else if( mv.variableFrom == MetaVariable.EVariableFrom.None )
+            {
+
+            }
+            else if (mv.variableFrom == MetaVariable.EVariableFrom.Argument)
             {
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Argument;
             }
-            else if( mv.variableFrom == MetaVariable.EVariableFrom.LocalStatement )
+            else if (mv.variableFrom == MetaVariable.EVariableFrom.LocalStatement)
             {
                 m_IRMetaVariableFrom = IRMetaVariableFrom.LocalStatement;
             }
-            else if( mv.variableFrom == MetaVariable.EVariableFrom.Global )
+            else if (mv.variableFrom == MetaVariable.EVariableFrom.Global)
             {
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Global;
             }
             else
             {
+                Debug.Assert(false);
                 Log.AddGenIR(EError.None, "IRMetaVariable 没有找到对应的from ");
             }
-            //if( mv.metaDefineType.eType == EMetaTypeType.Template )
-            //{
-            //    m_IsTemplate = true;
-            //    m_TemplateName = IRManager.GetIRNameByMetaType(mv.metaDefineType);
-            //    m_IRMetaClass = new IRMetaClass(IRManager.instance, mv.metaDefineType.metaTemplate.name);
-            //    if( m_IRMetaClass == null )
-            //    {
-
-            //    }
-            //}
-            //else 
             IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
-            m_IRMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mv.realMetaType, owirmc);
+            //if( mv.isDefineMetaType )
+            //{
+                m_IRMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mv.defineMetaType, owirmc);
+            //}
+            //else
+            //{
+            //    m_IRMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mv.realMetaType, owirmc);
+            //}
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme)
         {

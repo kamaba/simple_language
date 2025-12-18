@@ -101,7 +101,7 @@ namespace SimpleLanguage.Core.AOT
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(m_ReturnMetaVariable?.metaDefineType.ToFormatString());
+            sb.Append(m_ReturnMetaVariable?.defineMetaType.ToFormatString());
             sb.Append(" ");
             sb.Append(name);
             sb.Append("<");

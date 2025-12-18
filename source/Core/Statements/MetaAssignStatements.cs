@@ -286,7 +286,7 @@ namespace SimpleLanguage.Core
                 }
                 if( m_MetaVariable.isDefineMetaType )
                 {
-                    expressMdt = m_MetaVariable.metaDefineType;
+                    expressMdt = m_MetaVariable.defineMetaType;
                 }
                 else
                 {
@@ -523,7 +523,7 @@ namespace SimpleLanguage.Core
                 if(m_IsNeedCastState)
                 {
                     sb.Append(".Cast<");
-                    sb.Append(m_MetaVariable.metaDefineType.ToFormatString());
+                    sb.Append(m_MetaVariable.defineMetaType.ToFormatString());
                     sb.Append(">()");
                 }
             }

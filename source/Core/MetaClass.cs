@@ -12,7 +12,6 @@ using System.Text;
 using SimpleLanguage.Compile;
 using System.Linq;
 using SimpleLanguage.Parse;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.Core
 {
@@ -659,7 +658,7 @@ namespace SimpleLanguage.Core
             {
                 return;
             }
-            AddDefineConstructFunction();
+            //AddDefineConstructFunction();
             if (m_DefaultExpressNode == null )
             {
                 MetaType mdt = new MetaType(this);
@@ -773,18 +772,18 @@ namespace SimpleLanguage.Core
             }
             return false;
         }
-        public void AddDefineConstructFunction()
-        {
-            MetaMemberFunction mmf = GetMetaMemberConstructDefaultFunction();
-            if (mmf == null)
-            {
-                mmf = new MetaMemberFunction(this, "_init_");
-                mmf.SetReturnMetaClass(CoreMetaClassManager.voidMetaClass);
-                mmf.Parse();
-                AddMetaMemberFunction(mmf);
-                MethodManager.instance.AddOriginalMemeberFunction(mmf);
-            }
-        }
+        //public void AddDefineConstructFunction()
+        //{
+        //    MetaMemberFunction mmf = GetMetaMemberConstructDefaultFunction();
+        //    if (mmf == null)
+        //    {
+        //        mmf = new MetaMemberFunction(this, "_init_");
+        //        mmf.SetReturnMetaClass(CoreMetaClassManager.voidMetaClass);
+        //        mmf.Parse();
+        //        AddMetaMemberFunction(mmf);
+        //        MethodManager.instance.AddOriginalMemeberFunction(mmf);
+        //    }
+        //}
         public void AddDefineInstanceValue()
         {
             MetaMemberVariable mmv = this.GetMetaMemberVariableByName( "instance" );

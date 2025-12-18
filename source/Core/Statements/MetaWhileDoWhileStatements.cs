@@ -106,7 +106,7 @@ namespace SimpleLanguage.Core
                 var forMVMC = mdt.GetMetaInputTemplateByIndex();
                 if( forMVMC == null )
                 {
-                    forMVMC = m_ForInContent.metaDefineType;
+                    forMVMC = m_ForInContent.defineMetaType;
                 }
                 var mc = mdt.GetTemplateMetaClass();
                 if ( m_FileMetaKeyForSyntax.fileMetaClassDefine is FileMetaDefineVariableSyntax fmcd )

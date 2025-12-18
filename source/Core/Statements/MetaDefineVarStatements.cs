@@ -304,11 +304,11 @@ namespace SimpleLanguage.Core
                 sb.Append(Global.tabChar);
             sb.Append(m_DefineVarMetaVariable.ToFormatString());
             sb.Append(" = ");
-            if (m_DefineVarMetaVariable.metaDefineType.isData)
+            if (m_DefineVarMetaVariable.defineMetaType.isData)
             {
                 sb.Append(m_ExpressNode.ToFormatString());
             }
-            else if (m_DefineVarMetaVariable.metaDefineType.isEnum)
+            else if (m_DefineVarMetaVariable.defineMetaType.isEnum)
             {
             }
             else
@@ -320,7 +320,7 @@ namespace SimpleLanguage.Core
                 sb.Append(m_ExpressNode.ToFormatString());
                 if (m_IsNeedCastState)
                 {
-                    sb.Append(").cast<" + m_DefineVarMetaVariable.metaDefineType.metaClass.allClassName + ">()");
+                    sb.Append(").cast<" + m_DefineVarMetaVariable.defineMetaType.metaClass.allClassName + ">()");
                 }
                 sb.Append(";");
             }

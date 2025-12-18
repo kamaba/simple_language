@@ -109,7 +109,7 @@ namespace SimpleLanguage.IR
             {
                 IRMetaClass irmc = new IRMetaClass(v);
                 m_IRMetaClassList.Add(irmc);
-                if(!v.isGenTemplate )
+                if(!v.isGenTemplate && !v.isTemplateClass )
                     RuntimeTypeManager.AddRuntimeTypeByClass(irmc);
             }
             var list = RuntimeTypeManager.runtimeList;

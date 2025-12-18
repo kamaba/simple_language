@@ -128,7 +128,7 @@ namespace SimpleLanguage.Core
                 CreateExpressParam cep = new CreateExpressParam();
                 cep.fme = fmst.right;
                 cep.equalMetaVariable = m_MetaMemberVariable;
-                cep.metaType = new MetaType(m_MetaMemberVariable.metaDefineType);
+                cep.metaType = new MetaType(m_MetaMemberVariable.defineMetaType);
                 cep.ownerMBS = m_OwnerMetaBlockStatements;
                 cep.ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass;
 
@@ -237,13 +237,13 @@ namespace SimpleLanguage.Core
 
                 if (m_MetaMemberVariable != null)
                 {
-                    MetaClass retMetaClass = m_MetaMemberVariable.metaDefineType.metaClass;
+                    MetaClass retMetaClass = m_MetaMemberVariable.defineMetaType.metaClass;
                     MetaClass ownerMetaClass = m_MetaMemberVariable.ownerMetaClass;
                     //bool m_IsNeedCastStatements = false;
                 }
                 else if( m_MetaMemberData != null )
                 {
-                    MetaClass retMetaClass = m_MetaMemberData.metaDefineType.metaClass;
+                    MetaClass retMetaClass = m_MetaMemberData.defineMetaType.metaClass;
                     MetaClass ownerMetaClass = m_MetaMemberData.ownerMetaClass;
                     //bool m_IsNeedCastStatements = false;
                 }
@@ -1002,20 +1002,21 @@ namespace SimpleLanguage.Core
             //m_MetaConstructFunctionCall = new MetaMethodCall(mt.metaClass, mt.defineTemplateMetaTypeList, m_OwnerMetaBlockStatements.ownerMetaFunction,
             //    null, null, null, null );
         }
-        public MetaNewObjectExpressNode(MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs, MetaVariable storeMv, MetaMemberFunction mmf)
-        {
-            m_OwnerMetaClass = ownerMC;
-            m_OwnerMetaBlockStatements = mbs;
-            m_MetaType = new MetaType(mt);
-            m_StoreMetaVariable = storeMv;
-            m_MetaMemberFunction = mmf;
-        }
+        //public MetaNewObjectExpressNode(MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs, MetaVariable storeMv, MetaMemberFunction mmf)
+        //{
+        //    m_OwnerMetaClass = ownerMC;
+        //    m_OwnerMetaBlockStatements = mbs;
+        //    m_MetaType = new MetaType(mt);
+        //    m_StoreMetaVariable = storeMv;
+        //    m_MetaMemberFunction = mmf;
+        //}
         // 解析后的[] 然后再进行newArray
         public MetaNewObjectExpressNode(MetaArrayExpressNode maen, MetaClass mc, MetaBlockStatements mbs, MetaVariable equalMV )
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_NewType = ENewType.ArrayClass;
+            m_NewMetaType = maen.GetReturnMetaDefineType();
             m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(maen, mc, mbs, equalMV );
         }
 
@@ -1325,14 +1326,24 @@ namespace SimpleLanguage.Core
             }
             if( m_MetaType.IsArray() )
             {
-                if(m_MetaType.arrayLength == -1 )
+                if(m_MetaInputParamList.Count == 0)
                 {
                     mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaType.arrayLength)));
                     mipc.CaleReturnType();
 
                     m_MetaMemberFunction = CoreMetaClassManager.arrayMetaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, mipc);
                     SetInputParams(mipc);
-
+                }
+                else if( m_MetaInputParamList.Count == 1 )
+                {
+                    if( m_MetaInputParamList[0] is MetaConstExpressNode mcen )
+                    {
+                        mcen.value = m_MetaType.arrayLength;
+                    }                    
+                }
+                else
+                {
+                    Debug.Assert(false);
                 }
             }
             else

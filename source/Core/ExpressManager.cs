@@ -237,7 +237,7 @@ namespace SimpleLanguage.Core
                         }
                     case FileMetaBracketTerm fmbt:
                         {
-                            MetaArrayExpressNode maen = new MetaArrayExpressNode(fmbt.fileMetaExpressList, cep.ownerMetaClass, cep.ownerMBS, cep.equalMetaVariable);
+                            MetaArrayExpressNode maen = new MetaArrayExpressNode(fmbt.fileMetaExpressList, cep.ownerMetaClass, cep.ownerMBS, cep.metaType, cep.equalMetaVariable);
 
                             return maen;
                         }

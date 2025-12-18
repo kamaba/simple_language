@@ -200,7 +200,7 @@ namespace SimpleLanguage.Core.AOT
                     if (curMV.isConst == cpMV.isConst
                         || curMV.isStatic == cpMV.isStatic
                         || curMV.name == cpMV.name
-                        || curMV.metaDefineType == cpMV.metaDefineType)
+                        || curMV.defineMetaType == cpMV.defineMetaType)
                     {
 
                     }
@@ -231,7 +231,7 @@ namespace SimpleLanguage.Core.AOT
                 var vval = v.Value;
                 var val2 = cpClassList[v.Key];
 
-                if( vval.metaDefineType.metaClass != val2.metaDefineType.metaClass )
+                if( vval.defineMetaType.metaClass != val2.defineMetaType.metaClass )
                 {
                     return false;
                 }

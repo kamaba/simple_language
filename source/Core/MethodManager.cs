@@ -49,7 +49,7 @@ namespace SimpleLanguage.Core
                     return null;
                 }
 
-                mb = mv.metaDefineType.metaClass;
+                mb = mv.defineMetaType.metaClass;
 
                 if (mb == null)
                     return null;
