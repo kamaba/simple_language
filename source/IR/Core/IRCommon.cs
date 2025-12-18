@@ -10,6 +10,7 @@ using SimpleLanguage.VM;
 
 namespace SimpleLanguage.IR
 {
+    /*
     public enum EArrayType
     {
         None,
@@ -29,9 +30,9 @@ namespace SimpleLanguage.IR
         Any,
         Class,
     }
+    */
     public class IRNewArray
     {
-        public EArrayType eArrayType;
         public IRMetaType irMetaType;
         public int length;
     }

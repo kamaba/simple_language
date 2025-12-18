@@ -102,21 +102,21 @@ namespace SimpleLanguage.Core
         }
         void ParseMetaMemberFunctionDefineMetaType()
         {
-            if ( m_ReturnMetaVariable?.metaDefineType != null)
+            if ( m_ReturnMetaVariable?.defineMetaType != null)
             {
-                if (!(m_ReturnMetaVariable.metaDefineType.eType == EMetaTypeType.MetaClass
-                    && m_ReturnMetaVariable.metaDefineType.metaClass.isTemplateClass == false))
+                if (!(m_ReturnMetaVariable.defineMetaType.eType == EMetaTypeType.MetaClass
+                    && m_ReturnMetaVariable.defineMetaType.metaClass.isTemplateClass == false))
                 {
-                    TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(m_ReturnMetaVariable.metaDefineType, m_OwnerMetaClass as MetaGenTemplateClass, this );
+                    TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(m_ReturnMetaVariable.defineMetaType, m_OwnerMetaClass as MetaGenTemplateClass, this );
                 }
             }
             for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
             {
                 var mdp = m_MetaMemberParamCollection.metaDefineParamList[i];
-                if (!(mdp.metaVariable.metaDefineType.eType == EMetaTypeType.MetaClass
-                    && mdp.metaVariable.metaDefineType.metaClass.isTemplateClass == false))
+                if (!(mdp.metaVariable.defineMetaType.eType == EMetaTypeType.MetaClass
+                    && mdp.metaVariable.defineMetaType.metaClass.isTemplateClass == false))
                 {
-                    TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mdp.metaVariable.metaDefineType, m_OwnerMetaClass as MetaGenTemplateClass, this );
+                    TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mdp.metaVariable.defineMetaType, m_OwnerMetaClass as MetaGenTemplateClass, this );
                 }
             }
         }
@@ -182,7 +182,7 @@ namespace SimpleLanguage.Core
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(returnMetaVariable?.metaDefineType?.ToFormatString());
+            sb.Append(returnMetaVariable?.defineMetaType?.ToFormatString());
             sb.Append(" ");
             sb.Append(name);
             sb.Append("<");

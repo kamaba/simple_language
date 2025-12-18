@@ -219,7 +219,7 @@ namespace SimpleLanguage.Core
         {
             if( m_ReturnMetaVariable != null )
             {
-                m_ReturnMetaVariable.metaDefineType.SetMetaClass(metaClass);
+                m_ReturnMetaVariable.defineMetaType.SetMetaClass(metaClass);
             }
         }
         public MetaDefineParam GetMetaDefineParamByName( string name )

@@ -169,8 +169,8 @@ namespace SimpleLanguage.Core
         {
             if (param != null)
             {
-                MetaType md = param.metaVariable.metaDefineType;
-                if ( !MetaType.EqualMetaDefineType( md, metaVariable.metaDefineType ) )
+                MetaType md = param.metaVariable.defineMetaType;
+                if ( !MetaType.EqualMetaDefineType( md, metaVariable.defineMetaType) )
                 {
                     return false;
                 }
@@ -235,7 +235,7 @@ namespace SimpleLanguage.Core
 
             if (m_MetaVariable != null)
             {
-                sb.Append(m_MetaVariable.metaDefineType.ToFormatString() );
+                sb.Append(m_MetaVariable.defineMetaType.ToFormatString() );
                 sb.Append(" ");
                 sb.Append(m_Name);
             }

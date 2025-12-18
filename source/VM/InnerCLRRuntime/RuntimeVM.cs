@@ -770,16 +770,12 @@ namespace SimpleLanguage.VM.Runtime
                                 return;
                             }
                             var v = m_ValueStack[stackIndex];
-                            if (v.eType == EVMType.Class)
+                            if (v.eType == EVMType.Class
+                                || v.eType == EVMType.Array )
                             {
                                 var co = (v.sobject as ClassObject);
                                 irc = co.irMetaClass;
                                 rt = v.sobject.runtimeType;
-                            }
-                            else if( v.eType == EVMType.Array )
-                            {
-                                rt = RuntimeTypeManager.arrayRuntimeType;
-                                irc = IRManager.instance.GetIRMetaClassByName(v.eType.ToString());
                             }
                             else
                             {
@@ -954,15 +950,15 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         IRNewArray mdt = iri.opValue as IRNewArray;
                         var rt = GetClassRuntimeType(mdt.irMetaType, mdt.irMetaType.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
-                        ArrayObject sob = new ArrayObject(rt, mdt.eArrayType, mdt.length);
+                        ArrayObject sob = new ArrayObject(rt, mdt.length);
                         ObjectManager.AddClassObject(sob);
                         m_ValueStack[m_ValueIndex++].SetSObject(sob);
 
-                        var irList = rt.irClass.CreateStaticMetaMetaVariableIRList();
-                        if (irList.Count > 0)
-                        {
-                            InnerCLRRuntimeVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
-                        }
+                        //var irList = rt.irClass.CreateStaticMetaMetaVariableIRList();
+                        //if (irList.Count > 0)
+                        //{
+                        //    InnerCLRRuntimeVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
+                        //}
                     }
                     break;
                 case EIROpCode.Dup:
@@ -1827,6 +1823,12 @@ namespace SimpleLanguage.VM.Runtime
                         if (anyObj)
                         {
                             obj.SetValueByType(EVMType.Class, svalue.sobject );
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            to.SetClassObject(svalue.sobject as ClassObject);
                             return;
                         }
                         if (obj is ClassObject co)

@@ -109,7 +109,7 @@ namespace SimpleLanguage.VM
             }
             else if (name == "Core.Array" || name == "Array")
             {
-                sobj = new ArrayObject( RuntimeTypeManager.arrayRuntimeType, EArrayType.Array, 0);
+                sobj = new ArrayObject( rt, 0);
                 sobj.typeId = 0;
             }
             else if (name == "Core.Type" || name == "Type")

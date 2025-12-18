@@ -9,10 +9,7 @@
 
 using SimpleLanguage.Compile;
 using SimpleLanguage.Parse;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
 
 namespace SimpleLanguage.Core
 {

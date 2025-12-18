@@ -501,7 +501,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    m_DefineMetaType = m_ReturnMetaVariable.metaDefineType;
+                    m_DefineMetaType = m_ReturnMetaVariable.defineMetaType;
                     m_IsDefineMetaType = false;
                     m_ReturnMetaVariable.SetRealMetaType(new MetaType(m_DefineMetaType));
                 }
@@ -574,7 +574,7 @@ namespace SimpleLanguage.Core
             StringBuilder sb = new StringBuilder();
             sb.Append(m_Name);
             sb.Append("_");
-            sb.Append(m_ReturnMetaVariable.metaDefineType.ToString() );
+            sb.Append(m_ReturnMetaVariable.defineMetaType.ToString() );
             sb.Append("_");
             sb.Append(m_MetaMemberParamCollection.maxParamCount);
             if(m_MetaMemberParamCollection.maxParamCount > 0 )
@@ -583,7 +583,7 @@ namespace SimpleLanguage.Core
                 for (int i = 0; i < m_MetaMemberParamCollection.maxParamCount; i++)
                 {
                     var mdp = m_MetaMemberParamCollection.metaDefineParamList[i];
-                    sb.Append(mdp.metaVariable.metaDefineType.ToString());
+                    sb.Append(mdp.metaVariable.defineMetaType.ToString());
                     if (i < m_MetaMemberParamCollection.maxParamCount - 1)
                     {
                         sb.Append("_");
@@ -922,7 +922,7 @@ namespace SimpleLanguage.Core
             StringBuilder sb = new StringBuilder();
             if( m_ReturnMetaVariable != null )
             {
-                sb.Append(m_ReturnMetaVariable.metaDefineType.ToFormatString());
+                sb.Append(m_ReturnMetaVariable.defineMetaType.ToFormatString());
             }
             sb.Append(" "); 
             

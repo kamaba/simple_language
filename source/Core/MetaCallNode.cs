@@ -774,7 +774,7 @@ namespace SimpleLanguage.Core
                             MetaClass mc = null;
                             if ( mv.isDefineMetaType )
                             {
-                                mc = mv.metaDefineType.eType == EMetaTypeType.TemplateClassWithTemplate ? mv.metaDefineType.metaClass : mv.metaDefineType.metaClass;
+                                mc = mv.defineMetaType.eType == EMetaTypeType.TemplateClassWithTemplate ? mv.defineMetaType.metaClass : mv.defineMetaType.metaClass;
                             }
                             else
                             {

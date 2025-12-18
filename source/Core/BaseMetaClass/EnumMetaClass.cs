@@ -21,17 +21,17 @@ namespace SimpleLanguage.Core
             m_Type = EType.Enum;
             m_ClassDefineType = EClassDefineType.InnerDefine;
         }
-        public override void ParseInnerFunction()
-        {
-            AddCoreFunction();
-        }
-        public void AddCoreFunction()
-        {
-            MetaMemberFunction values = new MetaMemberFunction(this, "_values_");
-            values.SetIsGet( true );
-            values.SetReturnMetaClass(CoreMetaClassManager.arrayMetaClass);
-            AddMetaMemberFunction(values);
-        }
+        //public override void ParseInnerFunction()
+        //{
+        //    //AddCoreFunction();
+        //}
+        //public void AddCoreFunction()
+        //{
+        //    MetaMemberFunction values = new MetaMemberFunction(this, "_values_");
+        //    values.SetIsGet( true );
+        //    values.SetReturnMetaClass(CoreMetaClassManager.arrayMetaClass);
+        //    AddMetaMemberFunction(values);
+        //}
         public static MetaClass CreateMetaClass()
         {
             EnumMetaClass mc = new EnumMetaClass();

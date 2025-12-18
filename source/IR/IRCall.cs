@@ -37,7 +37,7 @@ namespace SimpleLanguage.IR
             if (mfc.loadMetaVariable != null)
             {
                 owirmc = IRManager.instance.GetIRMetaClassById(mfc.loadMetaVariable.GetOwnerClassTemplateClass().GetHashCode());
-                irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mfc.loadMetaVariable.metaDefineType, owirmc);
+                irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mfc.loadMetaVariable.defineMetaType, owirmc);
                 IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, mfc.loadMetaVariable );
                 AddIRRangeData(irload.IRDataList);
             }

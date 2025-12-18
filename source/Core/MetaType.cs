@@ -38,16 +38,12 @@ namespace SimpleLanguage.Core
         public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
         public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData;
         public int arrayLength => m_ArrayLength;
-
-        //public List<int> arrayDimensionLengthList => m_ArrayDimensionLengthList;
         public EMetaTypeType eType => m_EType;
         public MetaClass metaClass => m_MetaClass;
         public MetaTemplate metaTemplate => m_MetaTemplate;
         public MetaMemberEnum enumValue => m_EnumValue;
         public List<MetaType> defineTemplateMetaTypeList => m_DefineTemplateMetaTypeList;
         public List<MetaType> genTemplateMetaTypeList => m_GenTemplateMetaTypeList;
-        //public List<MetaType> arrayMetaTypeList => m_ArrayMetaTypeList;
-        //public MetaGenTemplate metaGenTemplate => m_MetaGenTemplate;
 
         private EMetaTypeType m_EType = EMetaTypeType.None;
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
@@ -58,8 +54,6 @@ namespace SimpleLanguage.Core
         private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         private List<MetaType> m_GenTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
-        //private List<MetaType> m_ArrayMetaTypeList = new List<MetaType>();
-        //private List<int> m_ArrayDimensionLengthList = new List<int>();
         private int m_ArrayLength = 0;
         public MetaType()
         {
@@ -69,7 +63,6 @@ namespace SimpleLanguage.Core
             m_EType = EMetaTypeType.Template;
             m_MetaTemplate = mt;
             m_MetaClass = mt.extendsMetaClass;
-            //m_FromName = fromName;
         }
         public MetaType( MetaGenTemplateClass mgtc, List<MetaType> defineMTList, List<MetaType> genMTList )
         {
@@ -129,14 +122,6 @@ namespace SimpleLanguage.Core
             //this.m_FromName = mt.m_FromName;
             this.m_EType = mt.m_EType;
             this.m_ArrayLength = mt.m_ArrayLength;
-
-            //this.m_ArrayDimensionLengthList = new List<int>( mt.m_ArrayDimensionLengthList.ToArray() );
-
-            //for( int i = 0; i < mt.m_ArrayMetaTypeList.Count; i++ )
-            //{
-            //    MetaType mtc = new MetaType(mt.m_ArrayMetaTypeList[i]);
-            //    m_ArrayMetaTypeList.Add(mtc);
-            //}
             for (int i = 0; i < mt.m_DefineTemplateMetaTypeList.Count; i++)
             {
                 MetaType mtc = new MetaType(mt.m_DefineTemplateMetaTypeList[i]);
@@ -204,100 +189,11 @@ namespace SimpleLanguage.Core
         public List<int> ArrayDimensionLengthList()
         {
             List<int> list = new List<int>();
-
-
-
             return list;
         }
         public void SetArrayLength( int len )
         {
             this.m_ArrayLength = len;
-        }
-        //public void SetArrayDimension( int disension  )
-        //{
-        //    if( disension > 0 )
-        //    {
-        //        m_ArrayDimensionLengthList.Clear();
-        //        for (int i = 0; i < disension; i++)
-        //            m_ArrayDimensionLengthList.Add(-1);
-        //    }
-        //}
-        //降维处理
-        //public void SetArrayDimensionByFrontMetaType( MetaType mt )
-        //{
-        //    if(mt.arrayDimension > 1 )
-        //    {
-        //        m_ArrayDimensionLengthList.Clear();
-        //        for( int i = 1; i <  mt.m_ArrayDimensionLengthList.Count; i++)
-        //        {
-        //            m_ArrayDimensionLengthList.Add(mt.m_ArrayDimensionLengthList[i]);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        m_EType = EMetaTypeType.MetaClass;
-        //        m_MetaClass = mt.m_MetaClass;
-        //        m_ArrayDimensionLengthList.Clear();
-        //    }
-        //}
-        //public void SetArrayDimensionLengthByIndex(int index, int length)
-        //{
-        //    if (index < 0 || index >= m_ArrayDimensionLengthList.Count)
-        //    {
-        //        Log.AddInStructMeta(EError.None, "设置数组维度通过索引号失败，超出了范围!");
-        //        return;
-        //    }
-        //    m_ArrayDimensionLengthList[index] = length;
-        //}
-        //public void SetArrayDismensionLength( List<int> list )
-        //{
-        //    m_ArrayDimensionLengthList = list;
-        //}
-        //public int GetArrayDimensionLengthByIndex(int index )
-        //{
-        //    if (index < 0 || index >= m_ArrayDimensionLengthList.Count)
-        //    {
-        //        Log.AddInStructMeta(EError.None, "设置数组维度通过索引号失败，超出了范围!");
-        //        return -1;
-        //    }
-        //    return m_ArrayDimensionLengthList[index];
-        //}
-        // 这块的作用是，生成数组内部嵌套的数组
-        void HandleArrayCreateType(List<int> templateAddArray, MetaType mt )
-        {
-            int length = 0;
-            if (templateAddArray.Count > 0)
-            {
-                length = templateAddArray[0];
-                templateAddArray.RemoveAt(0);
-            }
-            else
-            {
-                return;
-            }
-            for (int f = 0; f < length; f++)
-            {
-                MetaType mtnew = new MetaType(this.metaClass);
-                if(templateAddArray.Count > 0 )
-                {
-                    //mtnew.SetArrayDismensionLength(templateAddArray);
-                }
-                //mt.AddArrayMetaType(mtnew);
-
-                if (templateAddArray.Count == 0)
-                {
-                    continue;
-                }
-                else
-                {
-                    HandleArrayCreateType(templateAddArray, mtnew );
-                    templateAddArray.Add(length);
-                }
-            }
-            //if(mt.m_ArrayDimensionLengthList.Count > 0 )
-            //{
-            //    //mt.m_ArrayDimensionLengthList[0] = mt.arrayMetaTypeList.Count;
-            //}
         }
         public void SetMetaType( MetaType mt )
         {
