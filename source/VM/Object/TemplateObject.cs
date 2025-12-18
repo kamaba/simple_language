@@ -21,7 +21,7 @@ namespace SimpleLanguage.VM
         }
         public void SetValue(EVMType _eType, System.Object val)
         {
-            m_Etype = _eType;
+            m_Type = _eType;
             value = val;
         }
         public override string ToFormatString()

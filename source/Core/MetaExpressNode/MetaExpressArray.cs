@@ -4,6 +4,7 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Core.IR;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -16,10 +17,24 @@ namespace SimpleLanguage.Core
 
         List<FileMetaBaseTerm>  m_FileMetaBaseTermList = new List<FileMetaBaseTerm>();
         List<MetaExpressNode>   m_MetaCallArray = new List<MetaExpressNode>();
-        public MetaArrayExpressNode( List<FileMetaBaseTerm> fmcl, MetaClass mc, MetaBlockStatements mbs, MetaVariable mv)
+        public MetaArrayExpressNode( List<FileMetaBaseTerm> fmcl, MetaClass mc, MetaBlockStatements mbs, MetaType defineMT, MetaVariable mv  )
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
+
+            if(defineMT == null )
+            {
+                Debug.Assert(false);
+                return;
+            }
+            if( !defineMT.IsArray() || defineMT.defineTemplateMetaTypeList.Count != 1 )
+            {
+                Debug.Assert(false);
+                return;
+            }
+
+            this.m_MetaType = defineMT;
+            var cmt = m_MetaType.defineTemplateMetaTypeList[0];
 
             m_FileMetaBaseTermList = fmcl;
 
@@ -36,8 +51,8 @@ namespace SimpleLanguage.Core
                     {
                         CreateExpressParam cep = new CreateExpressParam();
                         cep.fme = fmc;
-                        cep.equalMetaVariable = mv;
-                        cep.metaType = mv?.metaDefineType;
+                        cep.equalMetaVariable = null;
+                        cep.metaType = cmt;
                         cep.ownerMBS = m_OwnerMetaBlockStatements;
                         cep.ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass;
 
@@ -94,12 +109,19 @@ namespace SimpleLanguage.Core
 
             if( m_MetaCallArray.Count > 0 )
             {
-                m_MetaType.SetArrayDimension(1);
+                //m_MetaType.SetArrayDimension(1);
+                m_MetaType.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
+                MetaType cmt = new MetaType(CoreMetaClassManager.objectMetaClass);
+                m_MetaType.AddDefineTemplateMetaType(cmt);
+                m_MetaType.AddGenTemplateMetaType(cmt);
+
+                m_MetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(m_MetaType, true, out bool isgmc);
+                m_MetaType.SetArrayLength(m_MetaCallArray.Count);
             }
-            for (int i = 0; i < m_MetaCallArray.Count; i++)
-            {
-                var mcac = m_MetaCallArray[i];
-            }
+            //for (int i = 0; i < m_MetaCallArray.Count; i++)
+            //{
+            //    var mcac = m_MetaCallArray[i];
+            //}
             //if (m_MetaCallLink == null)
             //    return null;
 

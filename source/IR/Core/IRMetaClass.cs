@@ -19,6 +19,7 @@ namespace SimpleLanguage.IR
         public int id { get; set; } = 0;
         public string irName => m_IRName;
         public int byteCount => m_ByteCount;
+        public int templateCount => m_TemplateCount;
         public bool needInitMemberVariable => m_NeedInitMemberVariable;
 
         public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
@@ -33,6 +34,7 @@ namespace SimpleLanguage.IR
         private List<IRMethod> m_IROperatorMethodList = new List<IRMethod>();
         private string m_IRName = "";
         private MetaClass m_MetaClass = null;
+        private int m_TemplateCount = 0;
 
         private int allocSize = 0;
         private List<EType> m_MetaTypeList = new List<EType>();
@@ -45,6 +47,7 @@ namespace SimpleLanguage.IR
             m_MetaClass = mc;
             id = mc.GetHashCode();
             m_IRName = IRManager.GetIRNameByMetaClass(mc);
+            m_TemplateCount = mc.metaTemplateList.Count;
         }        
         public IRMethod GetIRNonStaticMethodByIndex( int index )
         {

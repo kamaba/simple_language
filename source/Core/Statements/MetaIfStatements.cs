@@ -104,7 +104,7 @@ namespace SimpleLanguage.Core
                     {
                         sb.Append(Global.tabChar);
                     }
-                    sb.Append(m_BoolConditionVariable.metaDefineType.metaClass.allClassName);
+                    sb.Append(m_BoolConditionVariable.defineMetaType.metaClass.allClassName);
                     sb.Append(" ");
                     sb.Append(m_BoolConditionVariable.name);
                     sb.Append(" = ");
@@ -165,7 +165,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                mdt = m_MetaVariable.metaDefineType;
+                mdt = m_MetaVariable.defineMetaType;
             }
 
             CreateExpressParam cep = new CreateExpressParam()

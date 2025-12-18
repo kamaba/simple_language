@@ -74,7 +74,7 @@ namespace SimpleLanguage.Core.IR
                     }
                     else
                     {
-                        irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.metaDefineType, owirmc);
+                        irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.defineMetaType, owirmc);
                     }
                     irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
                 }

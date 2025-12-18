@@ -232,7 +232,7 @@ namespace SimpleLanguage.Core
                 {
                     m_MemberDataType = EMemberDataType.MemberData;
                 }
-                else if (m_DefineMetaType.isArray)
+                else if (m_DefineMetaType.IsArray() )
                 {
                     m_MemberDataType = EMemberDataType.MemberArray;
                 }

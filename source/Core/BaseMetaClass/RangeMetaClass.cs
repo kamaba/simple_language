@@ -8,19 +8,6 @@
 
 namespace SimpleLanguage.Core
 {
-    public class RangeIteratorMetaClass : MetaClass
-    {
-        public RangeIteratorMetaClass() : base(DefaultObject.Class.ToString())
-        {
-            m_Type = EType.Class;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
-        }
-        public static MetaClass CreateMetaClass()
-        {
-            ArrayIteratorMetaClass mc = new ArrayIteratorMetaClass();
-            return mc;
-        }
-    }
     public class RangeMetaClass : MetaClass
     {
         public RangeMetaClass():base( DefaultObject.Range.ToString() )
@@ -28,41 +15,7 @@ namespace SimpleLanguage.Core
             m_Type = EType.Range;
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_ClassDefineType = EClassDefineType.InnerDefine;
-            m_MetaTemplateList.Add( new MetaTemplate(this, "T") );
-        }
-        public override void ParseInnerVariable()
-        {
-            //MetaTemplate mt = m_MetaTemplateList[0];
-
-            //MetaMemberVariable m_Start = new MetaMemberVariable(this, "m_Start", mt );
-            //AddMetaMemberVariable(m_Start);
-            //MetaMemberVariable m_End = new MetaMemberVariable(this, "m_End", mt );
-            //AddMetaMemberVariable(m_End);
-            //MetaMemberVariable m_Step = new MetaMemberVariable(this, "m_Step", mt );
-            //AddMetaMemberVariable(m_Step);
-
-            //MetaMemberVariable index = new MetaMemberVariable(this, "index", CoreMetaClassManager.int32MetaClass);
-            //AddMetaMemberVariable(index);
-
-            ////MetaMemberVariable tvalue = new MetaMemberVariable(this, "value", CoreMetaClassManager.templateMetaClass);
-            ////AddMetaMemberVariable(tvalue);
-        }
-        public override void ParseInnerFunction()
-        {
-            MetaMemberFunction _init_ = new MetaMemberFunction(this, "_init_");
-            _init_.SetReturnMetaClass(CoreMetaClassManager.rangeMetaClass);
-
-            //MetaTemplate mt = m_MetaTemplateList[0];
-
-            //_init_.AddMetaDefineParam(new MetaDefineParam("_start", this, null, mt ));
-            //_init_.AddMetaDefineParam(new MetaDefineParam("_end", this, null, mt ));
-            //_init_.AddMetaDefineParam(new MetaDefineParam("_step", this, null, mt ));
-            //AddInnerMetaMemberFunction(_init_);
-
-            //MetaMemberFunction IsIn = new MetaMemberFunction(this, "IsIn");
-            //IsIn.AddMetaDefineParam(new MetaDefineParam("name", this, null, mt ));
-            //IsIn.SetMetaDefineType(new MetaType(CoreMetaClassManager.voidMetaClass));
-            //AddInnerMetaMemberFunction(IsIn);
+            m_MetaTemplateList.Add( new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass ) );
         }
         public static MetaClass CreateMetaClass()
         {

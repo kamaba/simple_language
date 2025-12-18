@@ -11,6 +11,7 @@ using SimpleLanguage.Parse;
 using SimpleLanguage.VM.Runtime;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.VM
@@ -37,6 +38,95 @@ namespace SimpleLanguage.VM
                 RuntimeType rt = GetClassRuntimeType(irClass.staticIRMetaVariableList[i].irMetaType, true);
                 m_StaticMemObjectList[i] = ObjectManager.CreateObjectByRuntimeType( rt, true );
             }
+
+            if (Enum.TryParse<EVMType>(irClass.irName, true, out var eoutType))
+            {
+                eType = eoutType;
+            }
+            else
+            {
+                eType = EVMType.Class;
+            }
+            //eType = GetVMType(irClass.irName);
+        }
+        public static EVMType GetVMType( string irName)
+        {
+            EVMType eType = EVMType.None;
+            switch (irName)
+            {
+                case "Boolean":
+                    {
+                        eType = EVMType.Boolean;
+                    }
+                    break;
+                case "Byte":
+                    {
+                        eType = EVMType.Byte;
+                    }
+                    break;
+                case "SByte":
+                    {
+                        eType = EVMType.SByte;
+                    }
+                    break;
+                case "Int16":
+                    {
+                        eType = EVMType.Int16;
+                    }
+                    break;
+                case "UInt16":
+                    {
+                        eType = EVMType.UInt16;
+                    }
+                    break;
+                case "Int32":
+                    {
+                        eType = EVMType.Int32;
+                    }
+                    break;
+                case "UInt32":
+                    {
+                        eType = EVMType.UInt32;
+                    }
+                    break;
+                case "Int64":
+                    {
+                        eType = EVMType.Int64;
+                    }
+                    break;
+                case "UInt64":
+                    {
+                        eType = EVMType.UInt64;
+                    }
+                    break;
+                case "Float32":
+                    {
+                        eType = EVMType.Float32;
+                    }
+                    break;
+                case "Float64":
+                    {
+                        eType = EVMType.Float64;
+                    }
+                    break;
+                case "String":
+                    {
+                        eType = EVMType.String;
+                    }
+                    break;
+                case "Object":
+                    {
+                        eType = EVMType.Object;
+                    }
+                    break;
+                default:
+                    {
+                        eType = EVMType.Class;
+                    }
+                    break;
+            }
+
+            return eType;
         }
         public RuntimeType GetExtendsTemplateRuntimeType(IRMetaType irmt, List<RuntimeType> _runtimeTemplateList )
         {
@@ -515,7 +605,6 @@ namespace SimpleLanguage.VM
         public static List<RuntimeType> runtimeList => s_RuntimeList;
 
         private static List<RuntimeType> s_RuntimeList = new List<RuntimeType>();
-        public static RuntimeType arrayRuntimeType => m_ArrayRuntimeType;
         public static RuntimeType typeRuntimeType => m_TypeRuntimeType;
         public static RuntimeType voidRuntimeType => m_VoidRuntimeType;
         public static RuntimeType byteRuntimeType => m_ByteRuntimeType;
@@ -530,7 +619,6 @@ namespace SimpleLanguage.VM
         public static RuntimeType float64RuntimeType => m_Float64RuntimeType;
         public static RuntimeType stringRuntimeType => m_StringRuntimeType;
 
-        private static RuntimeType m_ArrayRuntimeType = null;
         private static RuntimeType m_TypeRuntimeType = null;
         private static RuntimeType m_VoidRuntimeType = null;
         private static RuntimeType m_ByteRuntimeType = null;
@@ -652,12 +740,14 @@ namespace SimpleLanguage.VM
         }
         public static RuntimeType AddRuntimeTypeByClassAndTemplate(IRMetaClass rmc, List<RuntimeType> inputTemplateTypeList)
         {
+            if(rmc.templateCount != inputTemplateTypeList.Count )
+            {
+                Debug.Assert(false);
+                return null;
+            }
+
             RuntimeType rt = new RuntimeType(rmc, inputTemplateTypeList);
 
-            if( rmc.irName == "Array" )
-            {
-                m_ArrayRuntimeType = rt;
-            }
             if( rmc.irName == "Type" )
             {
                 m_TypeRuntimeType = rt;
@@ -718,14 +808,6 @@ namespace SimpleLanguage.VM
         public static RuntimeType AddRuntimeTypeByClass( IRMetaClass rmc )
         {
             RuntimeType rt = new RuntimeType(rmc, null );
-            if( Enum.TryParse<EVMType>(rmc.irName, true, out  var eType) )
-            {
-                rt.eType = eType;
-            }
-            if (rmc.irName == "Array")
-            {
-                m_ArrayRuntimeType = rt;
-            }
             if (rmc.irName == "Type")
             {
                 m_TypeRuntimeType = rt;

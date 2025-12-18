@@ -30,9 +30,13 @@ namespace SimpleLanguage.IR
         public void ParseAllIRStatements(MetaBlockStatements ms)
         {
             MetaStatements nextmbs = ms.nextMetaStatements;
+            ParseAnyIRStatements(nextmbs);
+        }
+        public void ParseAnyIRStatements( MetaStatements nextmbs )
+        {
             while (nextmbs != null)
             {
-                switch(nextmbs)
+                switch (nextmbs)
                 {
                     case MetaBlockStatements mbs:
                         {

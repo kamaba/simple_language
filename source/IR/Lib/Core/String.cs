@@ -14,7 +14,7 @@ namespace SimpleLanguage.Lib
     {
 
     }
-    public static class StringObject
+    public static class StringClass
     {
         public static string Int32ToString( int d )
         {

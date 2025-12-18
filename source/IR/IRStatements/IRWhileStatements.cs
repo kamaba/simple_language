@@ -25,8 +25,6 @@ namespace SimpleLanguage.IR
         public IRNop endIRData = null;           //for语句点
         public IRBranch ifIRData = null;            //判断是否到终点if判断
         public IRBranch brIRData = null;            //for结束点返回起点语句
-        IRCallFunction hasNextCallFunction = null;
-        IRCallFunction nextCallFunction = null;
 
         private IRExpress m_IRConditionExpress = null;
         public void ParseIRStatements(MetaForStatements ms)
@@ -36,12 +34,26 @@ namespace SimpleLanguage.IR
 
             if (ms.isForIn)
             {
+
+                /*
+                 * for v in variable1
+                 * 以下是对上边的IR解释
+                 * v = iteratorMetaVariable( forMV )
+                 * startLabel                 * 
+                 * if( v.hasMove() )   //conditionExpress
+                 *      thenstatement
+                 *      goto startLabel
+                 * else
+                 *      goto endLabel
+                 * endLabel
+                 * nextStatements
+                 */
                 var it_irmc = IRManager.instance.GetIRMetaClassById(ms.forIterateVariable.GetFinalTemplateMetaClass().GetHashCode());
                 var it_irmt = new IRMetaType(it_irmc);
 
                 // 1. 创建迭代器对象，并赋值给循环变量
-                IRNewExpress iren = new IRNewExpress(irMethod, ms.newObjectExpressIterator);
-                m_IRStatements.Add(iren);
+                //IRNewExpress iren = new IRNewExpress(irMethod, ms.newObjectExpressIterator);
+                //m_IRStatements.Add(iren);
 
 
                 IRStoreVariable storeIterator = IRStoreVariable.CreateIRStoreVariable(it_irmt, it_irmc, irMethod, ms.forIterateVariable);
@@ -115,48 +127,69 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                m_IRStatements.Add(startIRData);
                 /*
-                if (m_NewStatements != null)
-                {
-                    m_NewStatements.ParseIRStatements();
-                    m_IRStatements.AddRange(m_NewStatements.irStatements);
-                }
-                else if (m_AssignStatements != null)
-                {
-                    m_AssignStatements.ParseIRStatements();
-                    m_IRStatements.AddRange(m_AssignStatements.irStatements);
-                }
-                forStartIRData = new IRNop(irMethod);
-                m_IRStatements.Add(forStartIRData);
+                 * for( i = 0, i < express; i++ ) 
+                 * 以下是对上边的IR解释
+                 * define i = 0  如果i在前边声明 则i = 0
+                 * startLabel
+                 * i = i + 1
+                 * if( i < express )   //conditionExpress
+                 *      thenstatement
+                 *      goto startLabel
+                 * else
+                 *      goto endLabel
+                 * endLabel
+                 * nextStatements
+                 */
 
-                if (m_StepStatements != null)
+                if (ms.defineVarStatements != null)
                 {
-                    m_StepStatements.ParseIRStatements();
-                    m_IRStatements.AddRange(m_StepStatements.irStatements);
+                    IRDefineVarStatements irdvs = new IRDefineVarStatements( this.irMethod );
+                    irdvs.ParseIRStatements(ms.defineVarStatements);                       
+                    m_IRStatements.AddRange(irdvs.irStatements);
                 }
-
-                if (m_ConditionExpress != null)
+                else if (ms.assignStatements != null)
                 {
-                    m_IRConditionExpress = new IRExpress(irMethod, m_ConditionExpress);
+                    IRAssignStatements iras = new IRAssignStatements(this.irMethod);
+                    iras.ParseIRStatements(ms.assignStatements);
+                    m_IRStatements.AddRange(iras.irStatements);
+                }
+                // 2. 循环起点
+                m_IRStatements.Add(startIRData);
+
+                if ( ms.conditionExpress != null)
+                {
+                    m_IRConditionExpress = new IRExpress(irMethod, ms.conditionExpress );
                     m_IRStatements.Add(m_IRConditionExpress);
 
+                    // 4. 判断 moveNext() 返回值，false 跳出循环
                     ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, endIRData.data);
                     m_IRStatements.Add(ifIRData);
                 }
-                m_ThenMetaStatements.ParseAllIRStatements();
-                m_IRStatements.AddRange(m_ThenMetaStatements.irStatements);
-                
-                brIRData = new IRBranch(irMethod, EIROpCode.Br, forStartIRData.data);
+                IRBlockStatements loopBody = new IRBlockStatements(irMethod);
+                loopBody.ParseAllIRStatements(ms.thenMetaStatements);
+                m_IRStatements.AddRange(loopBody.irStatements);
+
+
+                if (ms.stepStatements != null)
+                {
+                    IRAssignStatements irstep = new IRAssignStatements(this.irMethod);
+                    irstep.ParseIRStatements(ms.stepStatements);
+                    m_IRStatements.AddRange(irstep.irStatements);
+                }
+
+                // 8. 跳回循环起点
+                brIRData = new IRBranch(irMethod, EIROpCode.Br, startIRData.data);
                 m_IRStatements.Add(brIRData);
-                */
+
+                // 9. 循环结束标记
+                m_IRStatements.Add(endIRData);
             }
-            m_IRStatements.Add(endIRData);
 
             if (ms.nextMetaStatements != null)
             {
                 IRBlockStatements irbs = new IRBlockStatements(irMethod);
-                irbs.ParseAllIRStatements(ms.nextMetaStatements as MetaBlockStatements);
+                irbs.ParseAnyIRStatements(ms.nextMetaStatements);
             }
         }
         public override string ToString()
