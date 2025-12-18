@@ -1883,7 +1883,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 obj = sobjarr[index];
             }
-                Debug.Assert(obj != null);
+            Debug.Assert(obj != null);
             if( obj.isNull )
             {
                 svalue.SetNull();

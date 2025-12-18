@@ -19,4 +19,8 @@ public class Core.String extends Object
     {
         ret Int32.Parse( value );
     }
+    public static string toFormat( string _fomrat, parmas object[] para )
+    {
+        
+    }
 }
