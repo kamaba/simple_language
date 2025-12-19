@@ -5,40 +5,47 @@ public class Core.Float32 extends Object
     public const MaxValue = 20d;
     public const MinValue = -1d;
 
-    Float32 value;
+    Float32 _value = 0.0f
+
+    public void _init_( Float32 f )
+    {
+        this._value = f
+    }
 
 
     public static bool IsFinite( Float32 f )
     {
         return false;
     }
-    public override get Type type()
-    {
-        ret null
-    }
 
 
-    public override String toString()
+    public override String toString( string format )
     {
-        return this;
+        return string.format( this._value );
     }
-    Cast<T>()
+    T cast<T>()
     {
-        if T == Int32 
+        Type _type = T.type
+        if _type == Int32.type
         {
             return Int32.ParseFloat( value );
         }
-        elif T == Long
+        elif _type == Int64.type
         {
             return Int64.ParseFloat( value );
         }
-        elif T == String
+        elif _type == String.type
         {
             return String.ParseFloat( value );
         }
-        return 0.0f;
+        return new T()
     }
-    public static Int32 toInt32( Float _value )
+
+    public Int32 toInt32()
+    {
+        ret FloatConvertInt32( this._value )
+    }
+    public static Int32 FloatConvertInt32( Float _value )
     {
         return Int32.Parse( _value );
     }

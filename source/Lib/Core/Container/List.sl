@@ -2,8 +2,8 @@
     public class Core.List interface Core.IIterable, Core.IIterator
     {
         int _length = 0
-        _index = 0;
-        _current = null
+        int _index = 0;
+        Object _current = null
         long _ptr = 0
 
            
@@ -95,6 +95,7 @@
     public class Core.List<T> interface Core.IIterable<T>, Core.IIterator<T>
     {
         int _length = 0
+        int _capitaly = 0
         Type _type = null;
         _index = 0;
         T _current = null
@@ -174,7 +175,15 @@
         }     
         public void add(T t )
         {
-
+            if this._length < this._capitaly
+            {
+                SimpleLanguage.Lib.Array.SetArrayValueThis( this, this._length, val )
+                this._length++
+            }
+            else
+            {
+                
+            }
         }
         public void remove( T t )
         {

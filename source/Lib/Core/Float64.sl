@@ -1,92 +1,54 @@
-import System.Math.UF as AB;
-import Application.Core;
 
-namespace Application.Core;
-namespace Application.Core1;
-
-namespace Application.Core.M2;
-
-namespace Application
+@Nickname("f64") 
+@Nickname("Vector64_3")
+public class Core.Float64 extends Object
 {
-    namespace Core
-    {
-        Class2
-        {
-            static a = 20.0f.ToString().ToInt() + Core.M2.Class3.m2.a / 30 * 100;
-            public int x = 0;
-            Class2()
-            {
-                int a = 20;
-                M2.Class3 mc = { a = 30 };
-                Class222.a = 10;
-                M2.Class3.m += 10;
-                M2.Class3.GetClass2().x -= 10;
-                x = 20;
-                x += 10;
-                {
-                    if( x = 35 )
-                    {
-                        System.Debug.Write( "x=" + x );
-                    }
-                }
-            }
-            Class222
-            {
-                static int a = 20;
-            }
+    public const Epsilen = 4.9123123213d;
+    public const MaxValue = 20d;
+    public const MinValue = -1d;
 
-            static void Init()
-            {
-                M2.Class3 m;
-            }
-        }
-        M2.Class3
+    Float32 _value = 0.0f
+
+    public void _init_( Float32 f )
+    {
+        this._value = f
+    }
+
+
+    public static bool IsFinite( Float32 f )
+    {
+        return false;
+    }
+
+
+    public override String toString( string format )
+    {
+        return string.format( this._value );
+    }
+    T cast<T>()
+    {
+        Type _type = T.type
+        if _type == Int32.type
         {
-            static Class2 class2;
-            public static Class2 GetClass2()
-            {
-                return class2;
-            }
-            a = 20;
-            static m = 20;
-            Class2.Class222 m2;
+            return Int32.ParseFloat( value );
         }
+        elif _type == Int64.type
+        {
+            return Int64.ParseFloat( value );
+        }
+        elif _type == String.type
+        {
+            return String.ParseFloat( value );
+        }
+        return new T()
+    }
+
+    public Int32 toInt32()
+    {
+        ret FloatConvertInt32( this._value )
+    }
+    public static Int32 FloatConvertInt32( Float _value )
+    {
+        return Int32.Parse( _value );
     }
 }
-
-##!
-Class1
-{
-    #!
-    public static bool ab = 10 <= 10 / (20+1 * 35 - (32/15) );
-    private static bx = -20;
-    Application.Core.Class2 c2 = Class2( 20 );
-    int a = 10 + (1 - ( 3 * ( 3 / ( -Class2.m2 - 100 ) )  * 30 ) ) / 10 * (15 - (22/2 + 1 ) ) - 20 / -10;
-    int x1 = 10 + (1-20) * 33/20 + 10/20 - 22 * 2/1;
-    Class2 c3 = { m = 20 };
-    !#
-    print()
-    {
-        int x = 20;
-        int a = 20;
-        {
-            Debug.Write( "p1=" + p1 , " x=" + a );
-        }
-
-        Class2 c;
-        Debug.Write("").m.A(2).a += 10;
-    }
-    pinrt( int p1 = ( 20 / ( 11 / 11 ) + 1 ), int p2 = 2 + 20 / (10 * 10 ) )
-    {
-    }
-}
-Application.Core1.Class2
-{
-    static int m2 = 10;
-    m = 10;
-    Class2( int x )
-    {
-        m = 10;
-    }
-}
-!##
