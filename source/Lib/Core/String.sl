@@ -15,7 +15,15 @@ public class Core.String extends Object
     {
         ret this;
     }
-    static Int32 toInt32( String value )
+    Int32 toInt32()
+    {
+        if( Int32.tryInt32( this._value, Int32 int32val ) )
+        {
+            ret int32val
+        }
+        ret null
+    }
+    static Int32 StringtoInt32( String value )
     {
         ret Int32.Parse( value );
     }

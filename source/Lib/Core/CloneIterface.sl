@@ -10,7 +10,12 @@
     #!
     public class Level<T> interface Core.IClone
     {
-        Level<T> clone();
+        T _value = null
+        public Level<T> clone()
+        {
+            Level<T> newclone = Level<T>()
+            newclone._value = this._value
+            ret newclone
+        }
     }
-
     !#
