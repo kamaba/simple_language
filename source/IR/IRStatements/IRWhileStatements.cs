@@ -34,11 +34,10 @@ namespace SimpleLanguage.IR
 
             if (ms.isForIn)
             {
-
                 /*
                  * for v in variable1
                  * 以下是对上边的IR解释
-                 * v = iteratorMetaVariable( forMV )
+                 * v = variable1.iterator()
                  * startLabel                 * 
                  * if( v.hasMove() )   //conditionExpress
                  *      thenstatement

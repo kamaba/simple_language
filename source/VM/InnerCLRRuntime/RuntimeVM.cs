@@ -948,11 +948,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.NewArray:
                     {
-                        IRNewArray mdt = iri.opValue as IRNewArray;
-                        var rt = GetClassRuntimeType(mdt.irMetaType, mdt.irMetaType.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
-                        ArrayObject sob = new ArrayObject(rt, mdt.length);
+                        var sval = m_ValueStack[m_ValueIndex - 1];
+                        if( sval.eType != EVMType.Int32)
+                        {
+                            Log.AddVM(EError.None, "创建数组长度不是Int32类型!!");
+                            break;
+                        }
+
+                        IRMetaType mdt = iri.opValue as IRMetaType;
+                        var rt = GetClassRuntimeType(mdt, m_IRMetaClass != null ? m_IRMetaClass : mdt.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
+                        ArrayObject sob = new ArrayObject(rt, sval.int32Value );
                         ObjectManager.AddClassObject(sob);
-                        m_ValueStack[m_ValueIndex++].SetSObject(sob);
+                        m_ValueStack[m_ValueIndex-1].SetSObject(sob);
 
                         //var irList = rt.irClass.CreateStaticMetaMetaVariableIRList();
                         //if (irList.Count > 0)

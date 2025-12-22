@@ -421,9 +421,10 @@ ArrayTest
         }
         #!
         var iter = a1.iterator()  使用a1.type 变成T
-        bool f = iter.hasNext()
+        bool f = false
+        v = null
         label start
-        if f
+        if f = iter.hasNext()
         {
             v = iter.current()
             then_statement

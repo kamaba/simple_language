@@ -287,11 +287,11 @@ namespace SimpleLanguage.IR
 
             if( mnoen.newType == MetaNewObjectExpressNode.ENewType.ArrayClass )
             {
-                IRNewArray irnewArray = new IRNewArray();
-                irnewArray.irMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.metaType, owirmc);
-                irnewArray.length = mnoen.arrayLength;
+                IRExpress ire = new IRExpress(irMethod, mnoen.arrayLengthExpress );
+                m_IRDataList.AddRange(ire.IRDataList);
 
-                IRNew irNew = new IRNew(irMethod, irnewArray);
+                var irMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.metaType, owirmc);
+                IRNew irNew = new IRNew(irMethod, irMetaType, 0 );
                 AddIRRangeData(irNew.IRDataList);
 
                 if (mnoen.metaMemberFunction != null)

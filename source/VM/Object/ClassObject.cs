@@ -8,6 +8,7 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.IR;
+using SimpleLanguage.Lib;
 using SimpleLanguage.Parse;
 using SimpleLanguage.VM.Runtime;
 using System;
@@ -99,6 +100,10 @@ namespace SimpleLanguage.VM
                 }
                 //m_Type[i] = sobj.typeId;
                 m_MemberObjectArray[i] = sobj;
+                if( i == 0 )
+                {
+                    (sobj as Int32Object).SetValue(m_Length);
+                }
             }
         }
         //public SObject GetMemberVariable(int index)
