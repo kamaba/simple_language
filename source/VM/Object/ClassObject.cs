@@ -202,7 +202,7 @@ namespace SimpleLanguage.VM
                     break;
                 case ClassObject classObj:
                     {
-                        svalue.SetSObject(classObj);
+                        svalue.SetSObject(classObj.value);
                     }
                     break;
                 case TemplateObject templateObj:
@@ -736,8 +736,8 @@ namespace SimpleLanguage.VM
                                 Log.AddVM(EError.None, "该类型不是classObj类型!!");
                                 return;
                             }
-                            //classObj.SetValue(svalue.sobject as ClassObject);
-                            m_MemberObjectArray[index] = svalue.sobject as ClassObject;
+                            classObj.SetClassObject(svalue.sobject as ClassObject);
+                            //m_MemberObjectArray[index].SetValueByType( EVMType.Class, svalue.sobject );
                         }
                     }
                     break;

@@ -1328,6 +1328,17 @@ namespace SimpleLanguage.VM.Runtime
                                     m_ValueStack[m_ValueIndex - 1].SetNull();
                                 }
                             }
+                            else if( v1.eType == EVMType.Array )
+                            {
+                                if( rt.eType == EVMType.Array || rt.eType == EVMType.Class )
+                                {
+
+                                }
+                                else
+                                {
+                                    m_ValueStack[m_ValueIndex - 1].SetNull();
+                                }
+                            }
                             else
                             {
                                 if (v1.eType != rt.eType)
@@ -1964,6 +1975,13 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             return;
                         }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetBoolValue((bool)to.value);
+                            return;
+                        }
+
                         BoolObject boolObj = obj as BoolObject;
                         if (boolObj == null)
                         {
@@ -1987,6 +2005,14 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             return;
                         }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetInt8Value((Byte)to.value);
+                            to.SetValue(EVMType.Byte, obj.value);
+                            return;
+                        }
+
                         Int8Object byteObj = obj as Int8Object;
                         if (byteObj == null)
                         {
@@ -2010,6 +2036,13 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             return;
                         }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetSInt8Value((SByte)to.value);
+                            return;
+                        }
+
                         SInt8Object byteObj = obj as SInt8Object;
                         if (byteObj == null)
                         {
@@ -2033,6 +2066,13 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             return;
                         }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetInt16Value((Int16)to.value);
+                            return;
+                        }
+
                         Int16Object int16Obj = obj as Int16Object;
                         if (int16Obj == null)
                         {
@@ -2056,6 +2096,13 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             return;
                         }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetUInt16Value((UInt16)to.value);
+                            return;
+                        }
+
                         UInt16Object uint16Obj = obj as UInt16Object;
                         if (uint16Obj == null)
                         {
@@ -2077,6 +2124,12 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 Debug.Assert(false, "该类型不是Boolean类型!!");
                             }
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if( to != null )
+                        {
+                            svalue.SetInt32Value((int)to.value);
                             return;
                         }
                         Int32Object int32Obj = obj as Int32Object;
@@ -2102,6 +2155,12 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             return;
                         }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetUInt32Value((UInt32)to.value);
+                            return;
+                        }
                         UInt32Object uint32Obj = obj as UInt32Object;
                         if (uint32Obj == null)
                         {
@@ -2123,6 +2182,12 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 Debug.Assert(false, "该类型不是Boolean类型!!");
                             }
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetInt64Value((Int64)to.value);
                             return;
                         }
                         Int64Object int64Obj = obj as Int64Object;
@@ -2148,6 +2213,13 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             return;
                         }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetUInt64Value((UInt64)to.value);
+                            return;
+                        }
+
                         UInt64Object uint64Obj = obj as UInt64Object;
                         if (uint64Obj == null)
                         {
@@ -2171,6 +2243,13 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             return;
                         }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetFloatValue((Single)to.value);
+                            return;
+                        }
+
                         Float32Object floatObj = obj as Float32Object;
                         if (floatObj == null)
                         {
@@ -2194,6 +2273,13 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             return;
                         }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetDoubleValue((Double)to.value);
+                            return;
+                        }
+
                         Float64Object doubleObj = obj as Float64Object;
                         if (doubleObj == null)
                         {
@@ -2217,6 +2303,13 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             return;
                         }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetStringValue((String)to.value);
+                            return;
+                        }
+
                         StringObject stringObj = obj as StringObject;
                         if (stringObj == null)
                         {
