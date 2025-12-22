@@ -754,6 +754,7 @@ namespace SimpleLanguage.Core
         public bool needInitMemberVariable => m_NeedInitMemberVariable;
         public ENewType newType => m_NewType;
         public int arrayLength => m_MetaType.arrayLength;
+        public MetaExpressNode arrayLengthExpress => m_ArrayLengthExpress;
         public List<MetaExpressNode> metaInputParamList => m_MetaInputParamList;
         public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
         public MetaVariable storeMetaVariable => m_StoreMetaVariable;
@@ -772,6 +773,7 @@ namespace SimpleLanguage.Core
         private MetaType m_DefineMetaType = null;
         private MetaType m_NewMetaType = null;
         private MetaType m_RealMetaType = null;
+        private MetaExpressNode m_ArrayLengthExpress = null;
         protected MetaVariable m_StoreMetaVariable = null; //模板或者是调用时的函数        
         protected MetaMemberFunction m_MetaMemberFunction = null;
         protected List<MetaExpressNode> m_MetaInputParamList = new List<MetaExpressNode>();
@@ -1345,6 +1347,8 @@ namespace SimpleLanguage.Core
                 {
                     Debug.Assert(false);
                 }
+                m_ArrayLengthExpress = m_MetaInputParamList[0];
+                m_MetaMemberFunction = null;
             }
             else
             {
