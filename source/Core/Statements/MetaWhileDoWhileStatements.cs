@@ -19,6 +19,7 @@ namespace SimpleLanguage.Core
         public bool isForIn => m_IsForIn;
         public MetaVariable forIterateVariable => m_ForIterateVariable;
         public MetaVariable forInContent => m_ForInContent;
+        public MetaVariable forInContentIterator => m_ForInContentIterator;
         public MetaVariable ifCeqVariable => m_IfCeqVariable;
         //public MetaVariable indexVariable => m_IndexVariable;
         public MetaMemberFunction hasNextFunction => m_HasNextFunction;
@@ -32,6 +33,7 @@ namespace SimpleLanguage.Core
         private bool m_IsForIn = false;
         private MetaVariable m_ForIterateVariable = null;
         private MetaVariable m_ForInContent = null;
+        private MetaVariable m_ForInContentIterator = null;
         private MetaVariable m_IfCeqVariable = null;
         //private MetaVariable m_IndexVariable = null;
         private MetaBlockStatements m_ThenMetaStatements = null;
@@ -103,6 +105,12 @@ namespace SimpleLanguage.Core
                     Log.AddInStructMeta(EError.None, "Error For in 必须是支持迭代器iterate");
                     return;
                 }
+                MetaClass iterMT = ClassManager.instance.GetClassByName("Core.IIterator<T>", 1);
+                m_ForInContentIterator = new MetaVariable("for_iterator_" + GetHashCode().ToString(), 
+                    MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, ownerMetaClass, 
+                    new MetaType( iterMT, mdt.genTemplateMetaTypeList ) );
+                m_ThenMetaStatements.UpdateMetaVariableDict(m_ForInContentIterator);
+
                 var forMVMC = mdt.GetMetaInputTemplateByIndex();
                 if( forMVMC == null )
                 {

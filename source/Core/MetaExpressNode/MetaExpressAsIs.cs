@@ -15,7 +15,7 @@ namespace SimpleLanguage.Core
 {
     public sealed class MetaAsIsExpressNode : MetaExpressNode
     {
-        public MetaVariable currentVariable => m_CurrentVariable;
+        public MetaCallLink currentVariableLink => m_CurrentVariableLink;
         public MetaVariable convertTargetMetaVariable => m_ConvertTargetMetaVariable;
         public MetaType convertTargetMetaType => m_ConvertTargetMetaType;
         public bool isAs => m_IsAs;
@@ -23,7 +23,7 @@ namespace SimpleLanguage.Core
 
         private FileMetaAsOrIsTerm m_FileMetaKeyAsIsSyntax = null;
         private MetaVariable m_ReturnMetaVariable = null;
-        private MetaVariable m_CurrentVariable = null;
+        //private MetaVariable m_CurrentVariable = null;
         private MetaType m_ConvertTargetMetaType = null;
         private MetaVariable m_ConvertTargetMetaVariable = null;
 
@@ -73,12 +73,12 @@ namespace SimpleLanguage.Core
             if(m_CurrentVariableLink != null )
             {
                 m_CurrentVariableLink.Parse(auc);
-                m_CurrentVariable = m_CurrentVariableLink.ExecuteGetMetaVariable();
-                if( m_CurrentVariable == null )
-                {
-                    Log.AddInStructMeta(EError.None, "没有找到相关的转化对象");
-                    return;
-                }
+                //m_CurrentVariable = m_CurrentVariableLink.ExecuteGetMetaVariable();
+                //if( m_CurrentVariable == null )
+                //{
+                //    Log.AddInStructMeta(EError.None, "没有找到相关的转化对象");
+                //    return;
+                //}
             }
 
             if(m_ConvertTargetMetaTypeLink != null )
@@ -86,7 +86,7 @@ namespace SimpleLanguage.Core
                 m_ConvertTargetMetaTypeLink.Parse(auc);
                 m_ConvertTargetMetaType = m_ConvertTargetMetaTypeLink.GetMetaDefineType();
 
-                if (m_ConvertTargetMetaVariable == null )                    
+                if (m_ConvertTargetMetaVariable == null && isAs == false )                    
                 {
                     string nametoken = this.GetHashCode() + "_auto_cast_target_mv";
                     if(m_FileMetaKeyAsIsSyntax.convertIsTypeNameToken != null)
@@ -110,7 +110,7 @@ namespace SimpleLanguage.Core
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(m_CurrentVariable.name + " ");
+            sb.Append(m_CurrentVariableLink.ToFormatString() + " ");
             sb.Append(m_FileMetaKeyAsIsSyntax.asOrIsToken.lexeme.ToString() + " ");
             sb.Append(m_ConvertTargetMetaType.ToFormatString() + " ");
             if(m_ConvertTargetMetaVariable != null )

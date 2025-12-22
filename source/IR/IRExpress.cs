@@ -9,6 +9,7 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.IR;
 using SimpleLanguage.Parse;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -90,18 +91,17 @@ namespace SimpleLanguage.IR
                     break;
                 case MetaAsIsExpressNode maien:
                     {
-                        //maien.GetReturnMetaClass();
-                        if( maien.isAs )
+                        IRMetaCallLink irmcl = new IRMetaCallLink();
+                        irmcl.ParseToIRDataList(m_IRMethod, maien.currentVariableLink.visitNodeList);
+                        for (int i = 0; i < irmcl.irList.Count; i++)
                         {
-                            var aaa = maien.currentVariable.GetOwnerClassTemplateClass();
-                            var owirmc = IRManager.instance.GetIRMetaClassById(aaa.GetHashCode());
-                            if ( maien.currentVariable.variableFrom != MetaVariable.EVariableFrom.None )
-                            {
-                                var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(maien.currentVariable.defineMetaType, owirmc);
-                                IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, maien.currentVariable);
-                                AddIRRangeData(irload.IRDataList);
-                            }
+                            m_IRDataList.AddRange(irmcl.irList[i].IRDataList);
+                        }
+                        var ownerMetaClass = maien.ownerMetaClass;
+                        var owirmc = IRManager.instance.GetIRMetaClassById(ownerMetaClass.GetHashCode());
 
+                        if ( maien.isAs )
+                        {                            
                             IRData irdata = new IRData();
                             irdata.opCode = EIROpCode.CastClass;
                             irdata.opValue = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList( maien.convertTargetMetaType, owirmc);
@@ -110,11 +110,6 @@ namespace SimpleLanguage.IR
                         }
                         else
                         {
-                            var owirmc = IRManager.instance.GetIRMetaClassById(maien.currentVariable.GetOwnerClassTemplateClass().GetHashCode());
-                            var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(maien.currentVariable.defineMetaType, owirmc);
-                            IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, maien.currentVariable);
-                            AddIRRangeData(irload.IRDataList);
-
                             IRData irdata = new IRData();
                             irdata.opCode = EIROpCode.CastClass;
                             irdata.opValue = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(maien.convertTargetMetaType, owirmc);
