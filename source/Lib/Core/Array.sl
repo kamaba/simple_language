@@ -29,6 +29,7 @@
             this._length = __len
             #this._ptr = Lib.ArrayClass.CreateArray( length, 4 )
         }
+        get int length(){ ret this._length }
 
         #接口层
         override void reset()
@@ -115,3 +116,17 @@
             ret showstr + "]"
         }
     }
+
+    #!
+        var iter = a1.iterator()  使用a1.type 变成T
+        bool f = false
+        v = null
+        label start
+        if f = iter.moveNext()
+        {
+            v = iter.current()
+            then_statement
+            goto start
+        }
+        v = null
+    !#        

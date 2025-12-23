@@ -249,11 +249,13 @@ namespace SimpleLanguage.VM
         {
             if (index < 0)
             {
+                Debug.Assert(false);
                 Log.AddVM(EError.None, "执行的参数超出范围!! < 0 ");
                 return;
             }
             if (index >= m_Length )
             {
+                Debug.Assert(false);
                 Log.AddVM(EError.None, "执行的参数超出范围!!");
                 return;
             }
@@ -278,73 +280,159 @@ namespace SimpleLanguage.VM
                     case EVMType.Boolean:
                         {
                             BoolObject val = obj as BoolObject;
-                            sval.SetBoolValue(val.value);
+                            if (val != null)
+                            {
+                                sval.SetBoolValue(val.value);
+                            }
+                            else
+                            {
+                                sval.SetBoolValue((bool)obj);
+                            }
                         }
                         break;
                     case EVMType.Byte:
                         {
                             Int8Object val = obj as Int8Object;
-                            sval.SetInt8Value(val.value);
+                            if (val != null)
+                            {
+                                sval.SetInt8Value(val.value);
+                            }
+                            else
+                            {
+                                sval.SetInt8Value((Byte)obj);
+                            }
                         }
                         break;
                     case EVMType.SByte:
                         {
                             SInt8Object val = obj as SInt8Object;
-                            sval.SetSInt8Value(val.value);
+                            if (val != null)
+                            {
+                                sval.SetSInt8Value(val.value);
+                            }
+                            else
+                            {
+                                sval.SetSInt8Value((SByte)obj);
+                            }
                         }
                         break;
                     case EVMType.Int16:
                         {
                             Int16Object val = obj as Int16Object;
+                            if (val != null)
+                            {
+                                sval.SetInt32Value(val.value);
+                            }
+                            else
+                            {
+                                sval.SetInt32Value((int)obj);
+                            }
                             sval.SetInt16Value(val.value);
                         }
                         break;
                     case EVMType.UInt16:
                         {
                             UInt16Object val = obj as UInt16Object;
+                            if (val != null)
+                            {
+                                sval.SetInt32Value(val.value);
+                            }
+                            else
+                            {
+                                sval.SetInt32Value((int)obj);
+                            }
                             sval.SetUInt16Value(val.value);
                         }
                         break;
                     case EVMType.Int32:
                         {
                             Int32Object val = obj as Int32Object;
-                            sval.SetInt32Value(val.value);
+                            if (val != null)
+                            {
+                                sval.SetInt32Value(val.value);
+                            }
+                            else
+                            {
+                                sval.SetInt32Value((int)obj);
+                            }
                         }
                         break;
                     case EVMType.UInt32:
                         {
                             UInt32Object val = obj as UInt32Object;
-                            sval.SetUInt32Value(val.value);
+                            if (val != null)
+                            {
+                                sval.SetUInt32Value(val.value);
+                            }
+                            else
+                            {
+                                sval.SetUInt32Value((UInt32)obj);
+                            }
                         }
                         break;
                     case EVMType.Int64:
                         {
                             Int64Object val = obj as Int64Object;
-                            sval.SetInt64Value(val.value);
+                            if (val != null)
+                            {
+                                sval.SetInt64Value(val.value);
+                            }
+                            else
+                            {
+                                sval.SetInt64Value((long)obj);
+                            }
                         }
                         break;
                     case EVMType.UInt64:
                         {
                             UInt64Object val = obj as UInt64Object;
-                            sval.SetUInt64Value(val.value);
+                            if (val != null)
+                            {
+                                sval.SetUInt64Value(val.value);
+                            }
+                            else
+                            {
+                                sval.SetUInt64Value((UInt64)obj);
+                            }
                         }
                         break;
                     case EVMType.Float32:
                         {
                             Float32Object val = obj as Float32Object;
-                            sval.SetFloatValue(val.value);
+                            if (val != null)
+                            {
+                                sval.SetFloatValue(val.value);
+                            }
+                            else
+                            {
+                                sval.SetFloatValue((float)obj);
+                            }
                         }
                         break;
                     case EVMType.Float64:
                         {
                             Float64Object val = obj as Float64Object;
-                            sval.SetDoubleValue(val.value);
+                            if (val != null)
+                            {
+                                sval.SetDoubleValue(val.value);
+                            }
+                            else
+                            {
+                                sval.SetDoubleValue((double)obj);
+                            }
                         }
                         break;
                     case EVMType.String:
                         {
                             StringObject val = obj as StringObject;
-                            sval.SetStringValue(val.value);
+                            if (val != null)
+                            {
+                                sval.SetStringValue(val.value);
+                            }
+                            else
+                            {
+                                sval.SetStringValue((string)obj);
+                            }
                         }
                         break;
                     case EVMType.Array:

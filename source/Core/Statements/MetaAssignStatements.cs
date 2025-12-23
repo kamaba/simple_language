@@ -86,6 +86,7 @@ namespace SimpleLanguage.Core
     }
     public partial class MetaAssignStatements : MetaStatements
     {
+        public EOpSign opSign => m_OpSign;
         public MetaExpressNode finalMetaExpress => m_FinalMetaExpress;
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaExpressNode expressNode => m_ExpressNode;
@@ -96,9 +97,7 @@ namespace SimpleLanguage.Core
         private FileMetaDefineVariableSyntax m_FileMetaDefineVariableSyntax = null;
 
         private MetaVariable m_MetaVariable = null;
-#pragma warning disable CS0414 // 字段“MetaAssignStatements.m_OpSign”已被赋值，但从未使用过它的值
         private EOpSign m_OpSign;
-#pragma warning restore CS0414 // 字段“MetaAssignStatements.m_OpSign”已被赋值，但从未使用过它的值
         private ELeftRightOpSign m_AutoAddExpressOpSign;
         private Token m_SignToken = null;
         private bool m_IsSetStatements = false;
@@ -165,69 +164,70 @@ namespace SimpleLanguage.Core
                 case ETokenType.Assign:
                     {
                         isCanNew = true;
+                        m_OpSign = EOpSign.None;
                     }
                     break;
                 case ETokenType.PlusAssign:
                     {
                         m_IsAssign = true;
                         m_OpSign = EOpSign.Plus;
-                        m_AutoAddExpressOpSign = ELeftRightOpSign.Add;
+                        //m_AutoAddExpressOpSign = ELeftRightOpSign.Add;
                     }
                     break;
                 case ETokenType.MinusAssign:
                     {
                         m_IsAssign = true;
                         m_OpSign = EOpSign.Minus;
-                        m_AutoAddExpressOpSign = ELeftRightOpSign.Minus;
+                        //m_AutoAddExpressOpSign = ELeftRightOpSign.Minus;
                     }
                     break;
                 case ETokenType.DivideAssign:
                     {
                         m_IsAssign = true;
                         m_OpSign = EOpSign.Divide;
-                        m_AutoAddExpressOpSign = ELeftRightOpSign.Divide;
+                        //m_AutoAddExpressOpSign = ELeftRightOpSign.Divide;
                     }
                     break;
                 case ETokenType.MultiplyAssign:
                     {
                         m_IsAssign = true;
                         m_OpSign = EOpSign.Multiply;
-                        m_AutoAddExpressOpSign = ELeftRightOpSign.Multiply;
+                        //m_AutoAddExpressOpSign = ELeftRightOpSign.Multiply;
                     }
                     break;
                 case ETokenType.InclusiveOrAssign:
                     {
                         m_IsAssign = true;
                         m_OpSign = EOpSign.InclusiveOr;
-                        m_AutoAddExpressOpSign = ELeftRightOpSign.InclusiveOr;
+                        //m_AutoAddExpressOpSign = ELeftRightOpSign.InclusiveOr;
                     }
                     break;
                 case ETokenType.CombineAssign:
                     {
                         m_IsAssign = true;
                         m_OpSign = EOpSign.Combine;
-                        m_AutoAddExpressOpSign = ELeftRightOpSign.Combine;
+                        //m_AutoAddExpressOpSign = ELeftRightOpSign.Combine;
                     }
                     break;
                 case ETokenType.XORAssign:
                     {
                         m_IsAssign = true;
                         m_OpSign = EOpSign.XOR;
-                        m_AutoAddExpressOpSign = ELeftRightOpSign.XOR;
+                        //m_AutoAddExpressOpSign = ELeftRightOpSign.XOR;
                     }
                     break;
                 case ETokenType.DoublePlus:
                     {
                         m_IsAssign = true;
                         m_OpSign = EOpSign.Plus;
-                        m_AutoAddExpressOpSign = ELeftRightOpSign.Add;
+                        //m_AutoAddExpressOpSign = ELeftRightOpSign.Add;
                     }
                     break;
                 case ETokenType.DoubleMinus:
                     {
                         m_IsAssign = true;
                         m_OpSign = EOpSign.Minus;
-                        m_AutoAddExpressOpSign = ELeftRightOpSign.Minus;
+                        //m_AutoAddExpressOpSign = ELeftRightOpSign.Minus;
                     }
                     break;
                 default:
@@ -308,7 +308,7 @@ namespace SimpleLanguage.Core
                     equalMetaVariable = m_MetaVariable
                 };
                 m_ExpressNode = ExpressManager.CreateExpressNodeByCEP(cep);
-                
+                m_ExpressNode.Parse(new AllowUseSettings());
                 if (m_ExpressNode == null)
                 {
                     Log.AddInStructMeta( EError.None, "Error 解析新建变量语句时，表达式解析为空!!");
@@ -341,7 +341,6 @@ namespace SimpleLanguage.Core
                 Log.AddInStructMeta( EError.None, "Error 类: " + ownerMetaClass?.allClassName + "没有找到变量:[" + m_FileMetaOpAssignSyntax.express.ToFormatString() + "]的定义!!! 69 ");
                 return;
             }
-            m_FinalMetaExpress.Parse(new AllowUseSettings() { });
             m_FinalMetaExpress.CalcReturnType();
 
             MetaType expressRetMetaDefineType = m_FinalMetaExpress.GetReturnMetaDefineType();
@@ -465,16 +464,6 @@ namespace SimpleLanguage.Core
             }
             return;
         }
-
-        //public override MetaStatements GenTemplateClassStatement(MetaGenTemplateClass mgt, MetaBlockStatements parentMs)
-        //{
-        //    if (m_NextMetaStatements != null)
-        //    {
-        //        //m_NextMetaStatements.GenTemplateClassStatement(mgt);
-        //    }
-
-        //    return null;
-        //}
         public override void UpdateOwnerMetaClass(MetaClass ownerclass)
         {
             //this.m_MetaVariable?.SetOwnerMetaClass(ownerclass);

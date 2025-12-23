@@ -54,7 +54,7 @@ namespace SimpleLanguage.Core
         private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         private List<MetaType> m_GenTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
-        private int m_ArrayLength = 0;
+        private int m_ArrayLength = -1;
         public MetaType()
         {
         }
@@ -167,12 +167,12 @@ namespace SimpleLanguage.Core
             int dismesion = 0;
             while(true)
             {
-                if(IsArray())
+                if(curmt.IsArray())
                 {
                     dismesion++;
-                    if( m_GenTemplateMetaTypeList.Count == 1 )
+                    if(curmt.m_GenTemplateMetaTypeList.Count == 1 )
                     {
-                        curmt = m_GenTemplateMetaTypeList[0];
+                        curmt = curmt.m_GenTemplateMetaTypeList[0];
                     }
                     else
                     {
@@ -189,6 +189,28 @@ namespace SimpleLanguage.Core
         public List<int> ArrayDimensionLengthList()
         {
             List<int> list = new List<int>();
+
+            MetaType curmt = this;
+            while (true)
+            {
+                if (curmt.IsArray())
+                {
+                    list.Add(curmt.arrayLength);
+                    if (curmt.m_GenTemplateMetaTypeList.Count == 1)
+                    {
+                        curmt = curmt.m_GenTemplateMetaTypeList[0];
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+
             return list;
         }
         public void SetArrayLength( int len )
@@ -392,6 +414,11 @@ namespace SimpleLanguage.Core
         {
             m_MetaClass = mc;
             m_EType = EMetaTypeType.MetaClass;
+        }
+        public void SetGenMetaClass( MetaGenTemplateClass mgtc )
+        {
+            m_MetaClass = mgtc;
+            m_EType = EMetaTypeType.MetaGenClass;
         }
         public void SetMetaTemplate(MetaTemplate mt)
         {

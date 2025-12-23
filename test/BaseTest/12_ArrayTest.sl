@@ -260,9 +260,9 @@ namespace Core
         T _current = null
         long _ptr = 0
            
-        public static Array<T> createInstance(int length)
+        public static Array<T> createInstance(int length1)
         {
-            var arr = Array<T>(length)
+            var arr = Array<T>(length1)
             ret arr
         }
         public static Array<CT> CreateInstance<CT>( int length1 )
@@ -277,6 +277,7 @@ namespace Core
             this._length = __len
             #this._ptr = Lib.ArrayClass.CreateArray( length, 4 )
         }
+        get int length(){ ret this._length }
         override void reset()
         {
             this._index = 0;
@@ -347,8 +348,7 @@ namespace Core
             #Lib.ArrayClass.SetArrayValue( this._ptr, 1,  valPtr, len )
         }
         override string toString()
-        {            
-            #!
+        {         
             string showstr = "["
             for i = 0, i < this._length, i++
             {
@@ -360,8 +360,6 @@ namespace Core
                 }
             }
             ret showstr + "]"
-            !#
-            ret "aaaa"
         }
     }
 }
@@ -393,7 +391,7 @@ ArrayTest
         #System.Console.WriteLine("1111111111= " + ac.i1 + "    " + ac.i2 )
 
          # arr22 = int[2][] { [1,2,3,4] }
-        li = Level<int>(100)
+        #li = Level<int>(100)
         #a1 = Level<int>[5]{ Level<int>(3), null, Level<int>(4), li }
         #a1 = [101,102,null,104]
 
@@ -401,58 +399,36 @@ ArrayTest
         
         #System.Console.WriteLine("1111111111= " + a1[1] )
         
-        int[] a1 = {1,2,3,4}
+        #int[] a1 = {1,2,3,4}
         #int[2][3][] a1 = [[[1,2,3],[3,4,5],[6,7,8]],[ [10,11,12],[14,15,15],[16,17,18] ]];  # int[2][3][3]     
         #object[3][2][] a1 = int[3][2][]{ [ [1,2,3], [] ], [ [5], [7,8,9,5] ], [[100]] };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         #还需要处理  [[100]] => 直接写100的情况，这种情况的话，需要检查 外层是否直接是array形式，如果是，则需要对应关系化处理
-        var a2 = Array<Int32>.createInstance(intvalue)
-        
+        Int32[] a2 = Array<Int32>.createInstance(intvalue)        
+        a2.$1 += 100    
+        System.Console.WriteLine("1111111111= " + a2[1] )
+        #a2[2] += 300    
+        #System.Console.WriteLine("1111111111= " + a2.$2 )
+        #!
         for v in a1
         {
             if v != null
-            {     
-                #!           
+            {              
                 for v2 in v
                 {
-                    System.Console.WriteLine("level2---------value:" + v2.toString() )
+                    System.Console.WriteLine("level2---------value2: = " + v2.toString() )
+                    for i = 0, i < v2.length, i++
+                    {
+                        System.Console.WriteLine("level3---------value3 :==" + v2[i].toString() )
+                    }
                 }
-                !#
-                System.Console.WriteLine("------------value: " + v.toString() )
+                #System.Console.WriteLine("------------value: " + v.toString() )
             }
             else
             {                
                 System.Console.WriteLine("============index: " + v )
             }
         }
-        #!
-        var iter = a1.iterator()  使用a1.type 变成T
-        bool f = false
-        v = null
-        label start
-        if f = iter.moveNext()
-        {
-            v = iter.current()
-            then_statement
-            goto start
-        }
-        v = null
-        !#        
-        # alist = List(2){ intvalue, 1 }
-        # map = Map<int,string>(){ a1.$0:"al", 33:"wang" }
-        #!
-        for v in a1
-        {
-            var v2 = v.length
-            if v.length > 0
-            {
-                var v2 = v.$0
-                if( v.$0.length > 0 )
-                {
-                    System.Console.WriteLine("----------= " + v2.$0 )
-                }
-            }
-        }
-                
+
         axxx = int[3]{1,2,3}
         axxx2 = int[3]{ 3,4,5 }
         axxx3 = int[2][]{axxx,axxx2}
@@ -472,8 +448,7 @@ ArrayTest
         #a1._setValue_( 1, 123 )
         #aa = a1._getValue_(1)
         #System.Console.WriteLine("1111111111= " + aa )
-        #! !#
-
+        
         #!
         int[] a33 = {1,2,3,4};
         a33[3] = 123
@@ -506,13 +481,9 @@ ArrayTest
         !#
         
         #!
-        array arr = {1,2,3}
+        Array<int> arr = {1,2,3}
         System.Console.WriteLine("22222222= " +arr[1] )
         !#
-
-        #array arr = Array( 10, int.type )
-        #arr[2] = 100
-        #System.Console.WriteLine("22222222= " +arr[2] )
         
         #levelvar = Level<int>();
         #Level<int>[][] a43 = { { levelvar, levelvar}, { levelvar, levelvar } };
@@ -540,13 +511,13 @@ ArrayTest
         # c# 的方法  List<ArrClass2> arr2 = new ArrClass2[100]; 这里边使用的是 arr2 = ArrClass2[100];
         ArrClass2[] a6 = Array(4, ArrClass2.type );  # 数组表示使用 List<T>() new List对象 长度为4的int
         
-        float[] a7 = Array(){ 1.2, 2.2, 3.4 };  #  需要{}的内容特殊处理   
+        float[] a7 = Array<float>(){ 1.2, 2.2, 3.4 };  #  需要{}的内容特殊处理   
         
-        float[] a8 = Array( 20, float.type ){1,2,3,5,3.3};   #申请一个长度为20的数组  通过后边数据决定 其实使用的是ArrayInt
+        float[] a8 = Array<float>( 20 ){1,2,3,5,3.3};   #申请一个长度为20的数组  通过后边数据决定 其实使用的是ArrayInt
        
-        #a9 = Array( 27 ).gen(3); #申请一个三维数组，边界分别为3,3,3     
+        #a9 = Array<int>( 27 ).gen(3); #申请一个三维数组，边界分别为3,3,3     
         
-        bb2 = Array(100, int.type ){ 1,2,3,4,5 };    # 等于 Array<int>( 100, 10 )  {1,2,3,4,5};        
+        bb2 = Array<int>(100 ){ 1,2,3,4,5 };    # 等于 Array<int>( 100, 10 )  {1,2,3,4,5};        
              
         int[] bb3 = {1,2,3,4,5 };    #与上相同  Array<int>(5){ 1,2,3,4,5}
 

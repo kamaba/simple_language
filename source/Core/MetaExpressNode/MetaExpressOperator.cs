@@ -245,7 +245,7 @@ namespace SimpleLanguage.Core
             {
                 case ETokenType.Plus:
                     m_OpLevelSign = ELeftRightOpSign.Add;
-                    break;
+                    break;     
                 case ETokenType.Minus:
                     m_OpLevelSign = ELeftRightOpSign.Minus;
                     break;

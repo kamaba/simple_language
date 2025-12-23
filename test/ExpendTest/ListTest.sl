@@ -56,6 +56,9 @@ ListTest
         var a3 = List<int>( [1,2,3,4,100,32] );
         List<List<int>> b = List<List<int>>();
 
+        
+        # alist = List(2){ intvalue, 1 }
+
         for i = 0, i < a.count
         {
             i++;

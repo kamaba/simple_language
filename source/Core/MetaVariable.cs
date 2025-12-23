@@ -23,7 +23,7 @@ namespace SimpleLanguage.Core
             Argument,
             LocalStatement,
             Member,
-            ArrayInner,
+            ArrayValue,
         }
         public bool isDefineMetaType => m_IsDefineMetaType;
         public virtual bool isStatic => m_IsStatic;
@@ -359,6 +359,7 @@ namespace SimpleLanguage.Core
         }
         public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaConstExpressNode mvv)
         {
+            m_VariableFrom = EVariableFrom.ArrayValue;
             m_Name = _name;
             m_AtName = _name;
             m_OwnerMetaClass = mc;
@@ -370,6 +371,7 @@ namespace SimpleLanguage.Core
         }
         public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaCallLink mvv )
         {
+            m_VariableFrom = EVariableFrom.ArrayValue;
             m_Name = _name;
             m_AtName = _name;
             m_OwnerMetaClass = mc;
@@ -392,6 +394,7 @@ namespace SimpleLanguage.Core
                         if(mvv.visitNodeList[0].constValueExpress.eType == EType.Int32 )
                         {
                             m_Index = (int)mvv.visitNodeList[0].constValueExpress.value;
+                            m_FastVisit = true;
                         }
                     }
                 }
@@ -400,19 +403,13 @@ namespace SimpleLanguage.Core
         public override void ParseDefineMetaType()
         {
             MetaType getMt = null;
-            if (m_SourceMetaVariable.isDefineMetaType)
+            if ( this.m_SourceMetaVariable.isDefineMetaType)
             {
                 if (m_SourceMetaVariable.defineMetaType.IsArray() )
                 {
-                    List<int> arraydim = m_SourceMetaVariable.defineMetaType.ArrayDimensionLengthList();
-                    if ( arraydim.Count > 1 )
+                    if(m_SourceMetaVariable.defineMetaType.genTemplateMetaTypeList.Count > 0 )
                     {
-                        getMt = new MetaType(m_SourceMetaVariable.defineMetaType.metaClass);
-                        //getMt.SetArrayDimensionByFrontMetaType(m_SourceMetaVariable.metaDefineType);
-                    }    
-                    else
-                    {
-                        getMt = new MetaType(m_SourceMetaVariable.defineMetaType.metaClass);
+                        getMt = new MetaType(m_SourceMetaVariable.defineMetaType.genTemplateMetaTypeList[0] );
                     }
                 }
                 else
@@ -434,22 +431,10 @@ namespace SimpleLanguage.Core
         {
             if (m_SourceMetaVariable.realMetaType.IsArray() )
             {
-                List<int> arraydim = m_SourceMetaVariable.realMetaType.ArrayDimensionLengthList();
-                if (arraydim.Count > 1 )
+                m_RealMetaType = new MetaType(m_SourceMetaVariable.realMetaType.genTemplateMetaTypeList[0]);
+                if( m_IsDefineMetaType == false )
                 {
-                    m_RealMetaType = new MetaType(m_SourceMetaVariable.realMetaType.metaClass);
-                    //m_RealMetaType.SetArrayDimensionByFrontMetaType(m_SourceMetaVariable.realMetaType);
-                }
-                else
-                {
-                    //if (m_Index != null && m_Index > 0 && m_Index < m_SourceMetaVariable.realMetaType.arrayMetaTypeList.Count)
-                    //{
-                    //    m_RealMetaType = m_SourceMetaVariable.realMetaType.arrayMetaTypeList[(int)m_Index];
-                    //}
-                    //else
-                    {
-                        m_RealMetaType = new MetaType(m_SourceMetaVariable.realMetaType.metaClass);
-                    }
+                    m_DefineMetaType = new MetaType(m_RealMetaType);
                 }
             }
             else
@@ -495,13 +480,11 @@ namespace SimpleLanguage.Core
     }
     public class MetaIteratorVariable : MetaVariable
     {
-#pragma warning disable CS0414 // 字段“MetaIteratorVariable.m_Index”已被赋值，但从未使用过它的值
         int m_Index = 0;
-#pragma warning restore CS0414 // 字段“MetaIteratorVariable.m_Index”已被赋值，但从未使用过它的值
         MetaVariable m_ContentMetaVariable = null;
-        MetaType m_OrgMetaDefineType = null;
-        MetaVariable m_IndexMetaVariable = null;
-        MetaVariable m_ValueMetaVariable = null;
+        //MetaType m_OrgMetaDefineType = null;
+        //MetaVariable m_IndexMetaVariable = null;
+        //MetaVariable m_ValueMetaVariable = null;
         FileMetaClassDefine m_FileMetaClassDefine = null;
         private Token m_VariableNameToken = null;
 
@@ -546,19 +529,20 @@ namespace SimpleLanguage.Core
         }
         public override MetaVariable GetMetaVariable(string name)
         {
-            if (name == "index")
-            {
-                return m_IndexMetaVariable;
-            }
-            else if (name == "value")
-            {
-                return m_ValueMetaVariable;
-            }
+            //if (name == "index")
+            //{
+            //    return m_IndexMetaVariable;
+            //}
+            //else if (name == "value")
+            //{
+            //    return m_ValueMetaVariable;
+            //}
             if (m_MetaVariableDict.ContainsKey(name))
             {
                 return m_MetaVariableDict[name];
             }
-            return m_OrgMetaDefineType.metaClass.GetMetaMemberVariableByName(name);
+            //return m_OrgMetaDefineType.metaClass.GetMetaMemberVariableByName(name);
+            return null;
         }
         public override string ToFormatString()
         {
