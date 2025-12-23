@@ -22,6 +22,7 @@ namespace SimpleLanguage.IR
         Static,
         Global,
         Return,
+        Array,
     }
     public class IRMetaVariable
     {
@@ -76,6 +77,10 @@ namespace SimpleLanguage.IR
             else if (mv.variableFrom == MetaVariable.EVariableFrom.Global)
             {
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Global;
+            }
+            else if( mv.variableFrom == MetaVariable.EVariableFrom.ArrayValue )
+            {
+                m_IRMetaVariableFrom = IRMetaVariableFrom.Array;
             }
             else
             {

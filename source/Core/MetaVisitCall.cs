@@ -362,7 +362,7 @@ namespace SimpleLanguage.Core
             }
             return t;
         }
-        public MetaType GetMetaDefineType()
+        public MetaType GetMetaType()
         {
             if( m_ReturnMetaType != null )
             {
@@ -376,11 +376,19 @@ namespace SimpleLanguage.Core
                         {
                             return methodCall.metaMemberFunction.returnMetaVariable.defineMetaType;
                         }
-                        return methodCall.function.returnMetaVariable.defineMetaType;
+                        if( methodCall.function.returnMetaVariable.isDefineMetaType )
+                        {
+                            return methodCall.function.returnMetaVariable.defineMetaType;
+                        }
+                        return methodCall.function.returnMetaVariable.realMetaType;
                     }
                     case EVisitType.VisitVariable:
                     {
-                        return visitVariable.defineMetaType;
+                        if( this.visitVariable.isDefineMetaType )
+                        {
+                            return visitVariable.defineMetaType;
+                        }
+                        return this.visitVariable.realMetaType;
                     }
                     case EVisitType.Variable:
                     {
@@ -408,7 +416,7 @@ namespace SimpleLanguage.Core
         }
         public MetaClass GetMetaClass()
         {
-            var mt = GetMetaDefineType();
+            var mt = GetMetaType();
             if( mt == null )
             {
                 Log.AddInStructMeta(EError.None, "Error");
@@ -461,7 +469,7 @@ namespace SimpleLanguage.Core
         }
         public void CalcReturnType()
         {
-            GetMetaDefineType();
+            GetMetaType();
         }
         public string ToFormatString()
         {

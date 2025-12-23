@@ -71,7 +71,7 @@ namespace SimpleLanguage.Core
                     Log.AddInStructMeta(EError.None, "MetaClass is Null");
                     return false;
                 }
-                mt.SetMetaClass(newmc);
+                mt.SetGenMetaClass(newmc);
                 return true;
             }
             if (mt.isTemplate)

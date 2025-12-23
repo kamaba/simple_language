@@ -209,6 +209,10 @@ namespace SimpleLanguage.Core
                                             newList.Add(mcn);
                                             frontcn = mcn;
                                         }
+                                        if (m_CallNodeList.Count > i + 1  )
+                                        {
+                                            m_CallNodeList[i + 1].SetFrontCallNode( frontcn );
+                                        }
                                     }
                                     else
                                     {
@@ -524,7 +528,7 @@ namespace SimpleLanguage.Core
             MetaType mt = null;
             for (int i = 0; i < m_VisitNodeList.Count; i++)
             {
-                mt = m_VisitNodeList[i].GetMetaDefineType();
+                mt = m_VisitNodeList[i].GetMetaType();
             }
             return mt;
         }

@@ -9,7 +9,6 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.IR;
 using SimpleLanguage.Parse;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -165,6 +164,11 @@ namespace SimpleLanguage.IR
             switch (opSign)
             {
                 case ELeftRightOpSign.Add:
+                    {
+                        data.opCode = EIROpCode.Add;
+                    }
+                    break;
+                case ELeftRightOpSign.IAdd:
                     {
                         data.opCode = EIROpCode.Add;
                     }

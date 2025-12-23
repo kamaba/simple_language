@@ -322,6 +322,7 @@ namespace SimpleLanguage
 
     public enum EOpSign
     {
+        None,
         Plus,
         Minus,
         Multiply,

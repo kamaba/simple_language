@@ -91,36 +91,9 @@ namespace SimpleLanguage.Core.IR
 
                 IRMetaClass irmc = IRManager.instance.GetIRMetaClassById(mv.sourceMetaVariable.GetOwnerClassTemplateClass().GetHashCode());
                 IRMetaType irmt = new IRMetaType(irmc);
-                /*
+
                 IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv.sourceMetaVariable);
                 irList.Add(irVar);
-                */
-
-                if ( mv.fastVisit )
-                {
-                    IRData irdata = new IRData();
-                    string val = mv.fastVisitConstExpressNode.value.ToString();
-                    int.TryParse(val, out int index);
-                    irdata.opValue = index;
-                    irdata.index = index;
-                    irdata.opCode = EIROpCode.LoadArrayIndex;
-                    IRBase irbase = new IRBase();
-                    irbase.AddIRData(irdata);
-                    irList.Add(irbase);
-                }
-                else
-                {
-                    IRMetaCallLink irmcl = new IRMetaCallLink();
-                    irmcl.ParseToIRDataList(_irMethod, mv.targetMetaVisitCallLink.visitNodeList);
-                    irList.AddRange(irmcl.irList);
-
-                    IRData irdata = new IRData();
-                    irdata.opValue = 0;
-                    irdata.opCode = EIROpCode.LoadArrayIndexField;
-                    IRBase irbase = new IRBase();
-                    irbase.AddIRData(irdata);
-                    irList.Add(irbase);
-                }
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MethodCall)
             {

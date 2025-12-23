@@ -117,10 +117,7 @@ namespace SimpleLanguage.IR
 
                             IRMetaClass irmc = IRManager.instance.GetIRMetaClassById(mv.sourceMetaVariable.GetOwnerClassTemplateClass().GetHashCode());
                             IRMetaType irmt = new IRMetaType(irmc);
-                            /*
-                            IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, irMethod, mv.sourceMetaVariable);
-                            m_IRStatements.Add(irVar);
-                            */
+
 
                             if( mv.fastVisit )
                             {
@@ -157,9 +154,15 @@ namespace SimpleLanguage.IR
                         }
                     }
                 }
+
+                switch( ms.opSign )
+                {
+                    case EOpSign.Plus:
+                        {
+                        }
+                        break;
+                }
             }
-
-
         }
     }
 }

@@ -7,11 +7,14 @@
 //****************************************************************************
 
 
+using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
+using SimpleLanguage.Core.IR;
 using SimpleLanguage.Parse;
 using SimpleLanguage.VM;
 using SimpleLanguage.VM.Runtime;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
@@ -38,7 +41,7 @@ namespace SimpleLanguage.IR
             {
                 owirmc = IRManager.instance.GetIRMetaClassById(mfc.loadMetaVariable.GetOwnerClassTemplateClass().GetHashCode());
                 irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mfc.loadMetaVariable.defineMetaType, owirmc);
-                IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, mfc.loadMetaVariable );
+                IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, mfc.loadMetaVariable);
                 AddIRRangeData(irload.IRDataList);
             }
 

@@ -250,12 +250,22 @@ namespace SimpleLanguage.Core
                 }
                 if (m_FileMetaCallNode.fileMetaBracketTermList.Count > 0)
                 {
+                    var mt = m_MetaType;
+                    if (mt == null )
+                    {
+                        if( m_CallNodeType == ECallNodeType.VisitVariable
+                            || m_CallNodeType == ECallNodeType.MemberVariableName
+                            || m_CallNodeType == ECallNodeType.FunctionInnerVariableName  )
+                        {
+                            mt = m_MetaVariable.isDefineMetaType ? m_MetaVariable.defineMetaType : m_MetaVariable.realMetaType;
+                        }
+                    }
                     for (int i = 0; i < m_FileMetaCallNode.fileMetaBracketTermList.Count; i++)
                     {
                         CreateExpressParam cep = new CreateExpressParam();
                         cep.fme = m_FileMetaCallNode.fileMetaBracketTermList[i];
                         cep.equalMetaVariable = m_DefineMetaVariable;
-                        cep.metaType = m_MetaType;
+                        cep.metaType = mt;
                         cep.ownerMBS = m_OwnerMetaFunctionBlock;
                         cep.ownerMetaClass = m_OwnerMetaFunctionBlock.ownerMetaClass;
 
@@ -280,17 +290,28 @@ namespace SimpleLanguage.Core
             {
                 m_ExpressNode = mclen;
                 m_VisitFlag = true;
+                m_Name = mclen.metaCallLink.finalCallNode.variable.name;
                 HandleVisit();
             }
             else if(m_InputExpressNode is MetaArrayExpressNode maen2 )
             {
                 if(maen2.metaCallArray.Count == 1 )
                 {
-                    var maen3 = maen2.metaCallArray[0] as MetaConstExpressNode;
-                    m_ExpressNode = maen3;
-                    m_VisitFlag = true;
-                    m_Name = maen3.value.ToString();
-                    HandleVisit();
+                    var maen3 = maen2.metaCallArray[0];
+                    if( maen3 is MetaConstExpressNode mcen2 )
+                    {
+                        m_ExpressNode = mcen2;
+                        m_VisitFlag = true;
+                        m_Name = mcen2.value.ToString();
+                        HandleVisit();
+                    }
+                    else if(maen3 is MetaCallLinkExpressNode mclen2 )
+                    {
+                        m_ExpressNode = mclen2;
+                        m_VisitFlag = true;
+                        m_Name = mclen2.metaCallLink.finalCallNode.variable.name;
+                        HandleVisit();
+                    }
                 }
             }
             else
@@ -751,10 +772,10 @@ namespace SimpleLanguage.Core
                     {
                         MetaBase tempMetaBase2 = null;
                         var mv = m_FrontCallNode.m_MetaVariable;
-                        if( frontCNT == ECallNodeType.VisitVariable )
-                        {
-                            //mv = (mv as MetaVisitVariable).targetMetaVisitNode;
-                        }
+                        //if( frontCNT == ECallNodeType.VisitVariable && (mv is MetaVisitVariable mvv) )
+                        //{
+                        //    mv = mvv;
+                        //}
                         MetaVariable getmv2 = null;
                         if ( mv.isArray )
                         {
@@ -1249,10 +1270,13 @@ namespace SimpleLanguage.Core
                         var list = variable.realMetaType.ArrayDimensionLengthList();
                         if (variable.realMetaType.IsArray() && list.Count >= 0 )
                         {
-                            if( list[0] > 0 && list[0] < index )
+                            if (list[0] != -1 )
                             {
-                                Log.AddInStructMeta(EError.None, "数组下标记超过了！");
-                                return;
+                                if (list[0] > 0 && list[0] < index)
+                                {
+                                    Log.AddInStructMeta(EError.None, "数组下标记超过了！");
+                                    return;
+                                }
                             }
                         }
                         else
@@ -1272,6 +1296,7 @@ namespace SimpleLanguage.Core
 
                     m_MetaVariable.ParseDefineMetaType();
                     m_MetaVariable.ParseRealMetaType();
+                    m_MetaType = m_MetaVariable.realMetaType;
 
                 }
             }

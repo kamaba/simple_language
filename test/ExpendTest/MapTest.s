@@ -11,6 +11,22 @@ ArrayTest
         int[,] a3 = 1...1000;
         int[2,3,4] a4 = 1...1000;
         int[2,3,4,5,6] = 1...1000;
+
+        
+        # map = Map<int,string>(){ a1.$0:"al", 33:"wang" }
+        #!
+        for v in a1
+        {
+            var v2 = v.length
+            if v.length > 0
+            {
+                var v2 = v.$0
+                if( v.$0.length > 0 )
+                {
+                    System.Console.WriteLine("----------= " + v2.$0 )
+                }
+            }
+        }
         #!
         a3 = Array(1,2,3,4,5);   #默认int array
         a5 = [1,2,3,4,5];   #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型 
