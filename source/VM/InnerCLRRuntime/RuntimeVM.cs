@@ -706,9 +706,9 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.StoreArrayIndexField:
                     {
-                        SValue storevalue = m_ValueStack[m_ValueIndex - 3];
-                        SValue arrayref = m_ValueStack[m_ValueIndex - 2];
-                        SValue loadindex = m_ValueStack[m_ValueIndex - 1];
+                        SValue arrayref = m_ValueStack[m_ValueIndex - 3];
+                        SValue loadindex = m_ValueStack[m_ValueIndex - 2];
+                        SValue storevalue = m_ValueStack[m_ValueIndex - 1];
 
                         if (arrayref.eType == EVMType.Array)
                         {
@@ -970,8 +970,21 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Dup:
                     {
-                        var sval = m_ValueStack[m_ValueIndex - 1];
-                        m_ValueStack[m_ValueIndex++] = sval;
+                        if(iri.opValue == null )
+                        {
+                            var sval = m_ValueStack[m_ValueIndex - 1];
+                            m_ValueStack[m_ValueIndex++] = sval;
+                        }
+                        else
+                        {
+                            int count = (int)iri.opValue;
+                            int curVIndex = m_ValueIndex;
+                            for( int i = count-1; i >= 0; i-- )
+                            {
+                                var sval = m_ValueStack[curVIndex - i - 1];
+                                m_ValueStack[m_ValueIndex++] = sval;
+                            }
+                        }
                     }
                     break;
                 case EIROpCode.Pop:
@@ -1032,24 +1045,6 @@ namespace SimpleLanguage.VM.Runtime
                         if (isMethod)
                         {
                             m_ValueStack[m_ValueIndex - 3] = m_ValueStack[m_ValueIndex - 1];
-                            m_ValueIndex -= 2;
-                        }
-                        else
-                        {
-                            m_ValueIndex--;
-                        }
-                    }
-                    break;
-                case EIROpCode.IAdd:
-                    {
-                        if (m_ValueIndex - 2 < 0)
-                        {
-                            Log.AddVM(EError.None, "Error 加法运算!!超出的栈范围");
-                            break;
-                        }
-                        m_ValueStack[m_ValueIndex - 2].AddSValue(ref m_ValueStack[m_ValueIndex - 1], false, out bool isMethod);
-                        if (isMethod)
-                        {
                             m_ValueIndex -= 2;
                         }
                         else

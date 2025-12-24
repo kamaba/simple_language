@@ -29,7 +29,7 @@ namespace SimpleLanguage.Core.IR
                 irList.AddRange(ExecOnceCnode(_irMethod, cnode));
             }
         }
-        public static List<IRBase> ExecOnceCnode(IRMethod _irMethod, MetaVisitNode cnode)
+        public static List<IRBase> ExecOnceCnode(IRMethod _irMethod, MetaVisitNode cnode, int dupcount = 0 )
         {
             var irmanager = IRManager.instance;
             List<IRBase> irList = new List<IRBase>();
@@ -89,10 +89,10 @@ namespace SimpleLanguage.Core.IR
             {
                 MetaVisitVariable mv = cnode.visitVariable;
 
-                IRMetaClass irmc = IRManager.instance.GetIRMetaClassById(mv.sourceMetaVariable.GetOwnerClassTemplateClass().GetHashCode());
+                IRMetaClass irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
                 IRMetaType irmt = new IRMetaType(irmc);
 
-                IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv.sourceMetaVariable);
+                IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv );
                 irList.Add(irVar);
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MethodCall)

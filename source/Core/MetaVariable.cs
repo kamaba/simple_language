@@ -442,6 +442,10 @@ namespace SimpleLanguage.Core
                 m_RealMetaType = new MetaType(m_SourceMetaVariable.realMetaType.metaClass);
             }
         }
+        public void SetNotUseFast()
+        {
+            m_FastVisit = false;
+        }
 
         public override string ToFormatString()
         {

@@ -7,18 +7,14 @@
 //****************************************************************************
 
 
-using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
-using SimpleLanguage.Core.IR;
 using SimpleLanguage.Parse;
 using SimpleLanguage.VM;
 using SimpleLanguage.VM.Runtime;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.IR
 {

@@ -10,9 +10,7 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.IR;
 using SimpleLanguage.Parse;
-using System;
 using System.Diagnostics;
-using System.Reflection;
 using System.Text;
 
 namespace SimpleLanguage.IR
@@ -82,7 +80,13 @@ namespace SimpleLanguage.IR
                     {
                         IRData irdata = new IRData();
                         string val = mvv.fastVisitConstExpressNode.value.ToString();
-                        int.TryParse(val, out index);
+                        if( int.TryParse(val, out index) )
+                        {
+                            if( index < 0 )
+                            {
+                                Debug.Assert(false, "取值下标不能为负数!");
+                            }
+                        }
                         irdata.opValue = index;
                         irdata.index = index;
                         irdata.opCode = EIROpCode.LoadArrayIndex;
@@ -92,11 +96,19 @@ namespace SimpleLanguage.IR
                     }
                     else
                     {
-                        IRMetaCallLink irmcl = new IRMetaCallLink();
-                        irmcl.ParseToIRDataList(_irMethod, mvv.targetMetaVisitCallLink.visitNodeList);
+                        if( mvv.fastVisitConstExpressNode != null )
+                        {
+                            IRExpress irexpress = new IRExpress(_irMethod, mvv.fastVisitConstExpressNode );
+                            irVar.m_IRDataList.AddRange(irexpress.IRDataList);
+                        }
+                        else
+                        {
+                            IRMetaCallLink irmcl = new IRMetaCallLink();
+                            irmcl.ParseToIRDataList(_irMethod, mvv.targetMetaVisitCallLink.visitNodeList);
+                            for (int i = 0; i < irmcl.irList.Count; i++)
+                                irVar.m_IRDataList.AddRange(irmcl.irList[i].IRDataList);
+                        }
 
-                        for (int i = 0; i < irmcl.irList.Count; i++)
-                            irVar.m_IRDataList.AddRange(irmcl.irList[i].IRDataList);
 
                         IRData irdata = new IRData();
                         irdata.opCode = EIROpCode.LoadArrayIndexField;
@@ -123,7 +135,7 @@ namespace SimpleLanguage.IR
         protected IRLoadVariable()
         {
         }
-        protected IRLoadVariable( IRMetaType irmt, IRMethod _irMethod, int id, IRMetaVariableFrom irmvf ) : base(_irMethod)
+        public IRLoadVariable( IRMetaType irmt, IRMethod _irMethod, int id, IRMetaVariableFrom irmvf ) : base(_irMethod)
         {
             if( irmvf == IRMetaVariableFrom.Global )
             {
@@ -144,6 +156,11 @@ namespace SimpleLanguage.IR
                 //data.SetDebugInfoByToken(mv.pingToken);
                 m_LoadVarData.index = id;
                 m_LoadVarData.opCode = EIROpCode.LoadNotStaticField;
+                m_IRDataList.Add(m_LoadVarData);
+            }
+            else if( irmvf == IRMetaVariableFrom.Array )
+            {
+                m_LoadVarData.opCode = EIROpCode.LoadArrayIndexField;
                 m_IRDataList.Add(m_LoadVarData);
             }
             else if (irmvf == IRMetaVariableFrom.LocalStatement)
@@ -225,7 +242,7 @@ namespace SimpleLanguage.IR
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.ArrayValue)
             {
-                IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global);
+                IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Array );
                 return irsv;
             }
             else if( mv.variableFrom == MetaVariable.EVariableFrom.Global )
