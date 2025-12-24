@@ -95,6 +95,14 @@ namespace SimpleLanguage.Core
         {
             return m_VMCallMetaFunction.GetFinalMetaType();
         }
+        public void AddMetaInputParamList(MetaExpressNode inputp )
+        {
+            m_MetaInputParamList.Add(inputp);
+        }
+        public bool ValidateInputParamAndDefineParam()
+        {
+            return true;
+        }
         public MetaFunction GetTemplateMemberFunction()
         {
             if( m_VMCallMetaFunction is MetaGenTemplateFunction mgtf )

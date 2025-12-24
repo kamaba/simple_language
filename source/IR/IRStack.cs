@@ -22,6 +22,13 @@ namespace SimpleLanguage.IR
         public IRData data = new IRData();
         public IRDup(IRMethod irMethod) : base(irMethod)
         {
+            data.opValue = null;
+            data.opCode = EIROpCode.Dup;
+            m_IRDataList.Add(data);
+        }
+        public IRDup(IRMethod irMethod, int dupcount ):base(irMethod )
+        {
+            data.opValue = dupcount;
             data.opCode = EIROpCode.Dup;
             m_IRDataList.Add(data);
         }

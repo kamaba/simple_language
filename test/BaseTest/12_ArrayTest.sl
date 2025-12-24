@@ -128,6 +128,7 @@ namespace Core
         IIterator<T> iterator()
     }
 
+    #!
     public class Iterater interface IIterator
     {        
         _start = 0
@@ -188,7 +189,8 @@ namespace Core
             }
         }
     }
-    
+    !#
+    #!
     public class Iterater<T> interface IIterator<T>
     {
         _start = 0
@@ -248,6 +250,8 @@ namespace Core
             }
         }
     }
+    !#
+
     public interface IArray
     {
     }
@@ -404,8 +408,16 @@ ArrayTest
         #object[3][2][] a1 = int[3][2][]{ [ [1,2,3], [] ], [ [5], [7,8,9,5] ], [[100]] };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         #还需要处理  [[100]] => 直接写100的情况，这种情况的话，需要检查 外层是否直接是array形式，如果是，则需要对应关系化处理
         Int32[] a2 = Array<Int32>.createInstance(intvalue)        
+        a2[1] = 50
         a2.$1 += 100    
+        a2[1] = a2.$1 + 200
+        a2[1]--
         System.Console.WriteLine("1111111111= " + a2[1] )
+        
+        System.Console.WriteLine("1111111111= " + intvalue )
+        intvalue = 40
+        intvalue -= 13
+        System.Console.WriteLine("1111111111= " + intvalue )
         #a2[2] += 300    
         #System.Console.WriteLine("1111111111= " + a2.$2 )
         #!

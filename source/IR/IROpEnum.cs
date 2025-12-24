@@ -57,24 +57,19 @@ namespace SimpleLanguage.IR
 
         //运算指令
         Add,                   // +
-        IAdd,
         Add_Un,
         Minus,                  // -
-        IMinus,
         Minus_Un,
         Multiply,               // *
-        IMultiply,
         Multiply_Un,
         Divide,                 // /
-        IDivide,
         Divide_Un,              //
         Modulo,                 // %
-        IModulo,
         Module_Un,
         InclusiveOr,            // |
         InclusiveOr_Un,
         Combine,                // &
-        Combine_Un,         
+        Combine_Un,
         XOR,                    // ^
         XOR_Un,
         Shr,                    // >>

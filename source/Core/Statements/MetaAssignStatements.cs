@@ -86,10 +86,11 @@ namespace SimpleLanguage.Core
     }
     public partial class MetaAssignStatements : MetaStatements
     {
+        public MetaMethodCall leftMethodCall => m_LeftMethodCall;
         public EOpSign opSign => m_OpSign;
-        public MetaExpressNode finalMetaExpress => m_FinalMetaExpress;
+        public ELeftRightOpSign autoAddExpressOpSign => m_AutoAddExpressOpSign;
+        public MetaExpressNode rightMetaExpress => m_RightMetaExpress;
         public MetaVariable metaVariable => m_MetaVariable;
-        public MetaExpressNode expressNode => m_ExpressNode;
         public MetaCallLinkExpressNode leftMetaExpress => m_LeftMetaExpress;
         public bool isNewStatements => false;
 
@@ -100,15 +101,14 @@ namespace SimpleLanguage.Core
         private EOpSign m_OpSign;
         private ELeftRightOpSign m_AutoAddExpressOpSign;
         private Token m_SignToken = null;
-        private bool m_IsSetStatements = false;
-        private bool m_IsAssign = false;
+        //private bool m_IsAssign = false;
 
-        private MetaExpressNode m_ExpressNode;
         private MetaCallLinkExpressNode m_LeftMetaExpress;
-        private MetaExpressNode m_FinalMetaExpress;
-#pragma warning disable CS0414 // 字段“MetaAssignStatements.m_IsNeedCastStatements”已被赋值，但从未使用过它的值
+        private MetaMethodCall m_LeftMethodCall = null;
+        private MetaVisitVariable m_LeftLastVisitVariable = null;
+
+        private MetaExpressNode m_RightMetaExpress;
         private bool m_IsNeedCastStatements = false;
-#pragma warning restore CS0414 // 字段“MetaAssignStatements.m_IsNeedCastStatements”已被赋值，但从未使用过它的值
 
         public MetaAssignStatements( MetaBlockStatements mbs ):base( mbs )
         {
@@ -151,83 +151,123 @@ namespace SimpleLanguage.Core
                 Log.AddInStructMeta(EError.None, "Error MetaAssignStatements ParseDefine!!!" + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
                 return;
             }
+            if(m_FileMetaOpAssignSyntax?.staticToken != null )
+            {
+                Log.AddInStructMeta(EError.None, "Error 不允许在语句中，出现static字段! " + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
+            }
 
             m_LeftMetaExpress = new MetaCallLinkExpressNode(metaCallLink);
+            AllowUseSettings auc = new AllowUseSettings();
+            auc.useNotStatic = false;
+            auc.useNotConst = m_FileMetaOpAssignSyntax?.constToken == null ? false : true;
+            auc.setterFunction = true;
+            auc.getterFunction = false;
+            m_LeftMetaExpress.Parse(auc);
+            m_LeftMetaExpress.CalcReturnType();
+
+            if (m_LeftMetaExpress.metaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.MethodCall)
+            {
+                var fun = m_LeftMetaExpress.metaCallLink.finalCallNode.methodCall.function;
+                if (fun is MetaMemberFunction)
+                {
+                    MetaMemberFunction mmf = fun as MetaMemberFunction;
+                    if (mmf.isSet)
+                    {
+                        m_LeftMethodCall = m_LeftMetaExpress.metaCallLink.finalCallNode.methodCall;
+                    }
+                }
+            }
+            else if( m_LeftMetaExpress.metaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.VisitVariable )
+            {
+                m_LeftLastVisitVariable = m_LeftMetaExpress.metaCallLink.finalCallNode.visitVariable;
+            }
+
+            // setStatements    Class1{ set void A(int value) { } }  a.A = 10;  => a.A(10);
+            if (m_LeftMethodCall != null)
+            {
+                if (m_SignToken?.type == ETokenType.Assign)
+                {
+                }
+                else
+                {
+                    //这里只能使用等号进行赋值操作  a.A += 10;  是不允许的
+                    Log.AddInStructMeta(EError.None, "Error set语句只能使用=号进行赋值操作!!");
+                    return;
+                }
+            }
 
             ETokenType ett = m_SignToken.type;
-
-#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
-            bool isCanNew = false;
-#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
             switch( ett )
             {
                 case ETokenType.Assign:
                     {
-                        isCanNew = true;
                         m_OpSign = EOpSign.None;
+                        m_AutoAddExpressOpSign = ELeftRightOpSign.None;
                     }
                     break;
                 case ETokenType.PlusAssign:
                     {
-                        m_IsAssign = true;
+                        //m_IsAssign = true;
                         m_OpSign = EOpSign.Plus;
-                        //m_AutoAddExpressOpSign = ELeftRightOpSign.Add;
+                        m_AutoAddExpressOpSign = ELeftRightOpSign.Add;
                     }
                     break;
                 case ETokenType.MinusAssign:
                     {
-                        m_IsAssign = true;
+                        //m_IsAssign = true;
                         m_OpSign = EOpSign.Minus;
-                        //m_AutoAddExpressOpSign = ELeftRightOpSign.Minus;
+                        m_AutoAddExpressOpSign = ELeftRightOpSign.Minus;
                     }
                     break;
                 case ETokenType.DivideAssign:
                     {
-                        m_IsAssign = true;
+                        //m_IsAssign = true;
                         m_OpSign = EOpSign.Divide;
-                        //m_AutoAddExpressOpSign = ELeftRightOpSign.Divide;
+                        m_AutoAddExpressOpSign = ELeftRightOpSign.Divide;
                     }
                     break;
                 case ETokenType.MultiplyAssign:
                     {
-                        m_IsAssign = true;
+                        //m_IsAssign = true;
                         m_OpSign = EOpSign.Multiply;
-                        //m_AutoAddExpressOpSign = ELeftRightOpSign.Multiply;
+                        m_AutoAddExpressOpSign = ELeftRightOpSign.Multiply;
                     }
                     break;
                 case ETokenType.InclusiveOrAssign:
                     {
-                        m_IsAssign = true;
+                        //m_IsAssign = true;
                         m_OpSign = EOpSign.InclusiveOr;
-                        //m_AutoAddExpressOpSign = ELeftRightOpSign.InclusiveOr;
+                        m_AutoAddExpressOpSign = ELeftRightOpSign.InclusiveOr;
                     }
                     break;
                 case ETokenType.CombineAssign:
                     {
-                        m_IsAssign = true;
+                        //m_IsAssign = true;
                         m_OpSign = EOpSign.Combine;
-                        //m_AutoAddExpressOpSign = ELeftRightOpSign.Combine;
+                        m_AutoAddExpressOpSign = ELeftRightOpSign.Combine;
                     }
                     break;
                 case ETokenType.XORAssign:
                     {
-                        m_IsAssign = true;
+                        //m_IsAssign = true;
                         m_OpSign = EOpSign.XOR;
-                        //m_AutoAddExpressOpSign = ELeftRightOpSign.XOR;
+                        m_AutoAddExpressOpSign = ELeftRightOpSign.XOR;
                     }
                     break;
                 case ETokenType.DoublePlus:
                     {
-                        m_IsAssign = true;
+                        //m_IsAssign = true;
                         m_OpSign = EOpSign.Plus;
-                        //m_AutoAddExpressOpSign = ELeftRightOpSign.Add;
+                        m_AutoAddExpressOpSign = ELeftRightOpSign.Add;
+                        m_RightMetaExpress = new MetaConstExpressNode(EType.Int32, 1);
                     }
                     break;
                 case ETokenType.DoubleMinus:
                     {
-                        m_IsAssign = true;
+                        //m_IsAssign = true;
                         m_OpSign = EOpSign.Minus;
-                        //m_AutoAddExpressOpSign = ELeftRightOpSign.Minus;
+                        m_RightMetaExpress = new MetaConstExpressNode(EType.Int32, 1);
+                        m_AutoAddExpressOpSign = ELeftRightOpSign.Minus;
                     }
                     break;
                 default:
@@ -236,29 +276,14 @@ namespace SimpleLanguage.Core
                     }
                     break;
             }
-            AllowUseSettings auc = new AllowUseSettings();
-            auc.useNotStatic = m_FileMetaOpAssignSyntax?.staticToken != null ? false : true;
-            auc.useNotConst = m_FileMetaOpAssignSyntax?.constToken == null ? false : true;
-            auc.setterFunction = true;
-            auc.getterFunction = false;
-            m_LeftMetaExpress.Parse(auc);
-            m_LeftMetaExpress.CalcReturnType();
-
-            if(m_LeftMetaExpress.metaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.MethodCall )
+            if(m_OpSign != EOpSign.None )
             {
-                var fun = m_LeftMetaExpress.metaCallLink.finalCallNode.methodCall.function;
-                if ( fun is MetaMemberFunction)
-                {
-                    MetaMemberFunction mmf = fun as MetaMemberFunction;
-                    if (mmf.isSet)
-                    {
-                        m_IsSetStatements = true;
-                    }
-                }
+                m_LeftLastVisitVariable?.SetNotUseFast();
             }
 
+
             MetaType expressMdt = new MetaType(CoreMetaClassManager.objectMetaClass);
-            if (!m_IsSetStatements)
+            if (m_LeftMethodCall == null)
             {
                 m_MetaVariable = m_LeftMetaExpress.GetMetaVariable();
                 if (m_MetaVariable == null)
@@ -269,6 +294,7 @@ namespace SimpleLanguage.Core
                 if(m_MetaVariable.isConst )
                 {
                     Log.AddInStructMeta( EError.None, "Error 类型为Const类型，不允许使用赋值!!");
+                    return;
                 }
 
                 m_Name = m_MetaVariable.name;
@@ -307,9 +333,9 @@ namespace SimpleLanguage.Core
                     parsefrom = EParseFrom.StatementRightExpress,
                     equalMetaVariable = m_MetaVariable
                 };
-                m_ExpressNode = ExpressManager.CreateExpressNodeByCEP(cep);
-                m_ExpressNode.Parse(new AllowUseSettings());
-                if (m_ExpressNode == null)
+                m_RightMetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
+                m_RightMetaExpress.Parse(new AllowUseSettings());
+                if (m_RightMetaExpress == null)
                 {
                     Log.AddInStructMeta( EError.None, "Error 解析新建变量语句时，表达式解析为空!!");
                     return;
@@ -317,33 +343,15 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                if ( m_SignToken != null && m_ExpressNode == null)
+                if(m_RightMetaExpress == null)
                 {
-                    if (m_SignToken?.type == ETokenType.DoublePlus
-                        || m_SignToken?.type == ETokenType.DoubleMinus)
-                    {
-                        m_ExpressNode = new MetaConstExpressNode(EType.Int32, 1);
-                    }
+                    Log.AddInStructMeta( EError.None, "Error 解析新建变量语句时，表达式为空!!__2");
+                    return;
                 }
             }
+            m_RightMetaExpress.CalcReturnType();
 
-            if (m_IsAssign)
-            {
-                m_FinalMetaExpress = new MetaOpExpressNode(m_LeftMetaExpress, m_ExpressNode, m_AutoAddExpressOpSign );
-            }
-            else
-            {
-                m_FinalMetaExpress = m_ExpressNode;
-            }
-
-            if (m_FinalMetaExpress == null)
-            {
-                Log.AddInStructMeta( EError.None, "Error 类: " + ownerMetaClass?.allClassName + "没有找到变量:[" + m_FileMetaOpAssignSyntax.express.ToFormatString() + "]的定义!!! 69 ");
-                return;
-            }
-            m_FinalMetaExpress.CalcReturnType();
-
-            MetaType expressRetMetaDefineType = m_FinalMetaExpress.GetReturnMetaDefineType();
+            MetaType expressRetMetaDefineType = m_RightMetaExpress.GetReturnMetaDefineType();
             if (expressRetMetaDefineType == null)
             {
                 Log.AddInStructMeta( EError.None, "Error 解析新建变量语句时，表达式返回类型为空!!__3");
@@ -362,107 +370,115 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            if(m_IsSetStatements == false )
+            if(m_LeftMethodCall == null )
             {
-                //Class1{  set name( string _n) { _name = _n } }
-                // c1 = Class1()
-                // c1.name = "aa"  =>   c1.name("aa")
-                // 相当于 给 set 函数传参数
-
-                MetaType mdt = m_MetaVariable.realMetaType;
-
-                //if( mdt.metaTemplate != null )
-                //{
-                //    if( expressRetMetaDefineType?.metaTemplate != mdt.metaTemplate )
-                //    {
-                //        Log.AddInStructMeta( EError.None, "Error 模版与类定义的模版不相同!!");
-                //    }
-                //}
-                //else
-                //{
-                if(expressRetMetaDefineType.metaClass == CoreMetaClassManager.nullMetaClass )
-                {
-
-                }
-                else
-                {
-                    ClassManager.EClassRelation relation = ClassManager.EClassRelation.No;
-                    MetaClass curClass = mdt.metaClass;
-
-                    MetaClass compareClass = null;
-                    MetaConstExpressNode constExpressNode = m_ExpressNode as MetaConstExpressNode;
-                    if (constExpressNode != null && constExpressNode.eType == EType.Null)
-                    {
-                        relation = ClassManager.EClassRelation.Same;
-                    }
-                    else
-                    {
-                        compareClass = expressRetMetaDefineType.metaClass;
-                        if (mdt.isTemplate)
-                        {
-                            if (curClass == compareClass )
-                            {
-                                relation = ClassManager.EClassRelation.Same;
-                            }
-                        }
-                        else
-                        {
-                            relation = ClassManager.ValidateClassRelationByMetaClass(curClass, compareClass);
-                        }
-                    }
-                    StringBuilder sb = new StringBuilder();
-                        sb.Append("Warning 在类: " + m_OwnerMetaBlockStatements?.ownerMetaClass.allClassName + " 函数: " + m_OwnerMetaBlockStatements.ownerMetaFunction?.name + "中  ");
-                        if (curClass != null)
-                        {
-                            sb.Append(" 定义类 : " + curClass.allClassName);
-                        }
-                        sb.Append(" 名称为: " + m_Name?.ToString());
-                        sb.Append("与后边赋值语句中 ");
-                        if (compareClass != null)
-                            sb.Append("表达式类为: " + compareClass.allClassName);
-                        if (relation == ClassManager.EClassRelation.No)
-                        {
-                            sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
-                            Log.AddInStructMeta(EError.None, sb.ToString());
-                            m_IsNeedCastState = true;
-                        }
-                        else if (relation == ClassManager.EClassRelation.Similar)
-                        {
-                            sb.Append("数字类型相似，可能会有强转会有精度的丢失!");
-                            Log.AddInStructMeta(EError.None, sb.ToString());
-                            m_IsNeedCastState = true;
-                        }
-                        else if (relation == ClassManager.EClassRelation.Same)
-                        {
-                        }
-                        else if (relation == ClassManager.EClassRelation.Parent)
-                        {
-                            sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
-                            Log.AddInStructMeta(EError.None, sb.ToString());
-                            m_IsNeedCastState = true;
-                        }
-                        else if (relation == ClassManager.EClassRelation.Child)
-                        {
-                            if (compareClass != null)
-                            {
-                                m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
-                            }
-                        }
-                        else
-                        {
-                            sb.Append("表达式错误，或者是定义类型错误");
-                            Log.AddInStructMeta(EError.None, sb.ToString());
-                        }
-                }
-                //}
+                CheckLeftAndRightExpress();
             }
             else
             {
-                MetaInputParam mip = new MetaInputParam(m_ExpressNode);
-                //mfc.metaInputParamCollection.AddMetaInputParam(mip);
-                //mfc.CheckMetaFunctionMatchInputParamCollection();
+                m_LeftMethodCall.AddMetaInputParamList(m_RightMetaExpress);
+                if(!m_LeftMethodCall.ValidateInputParamAndDefineParam() )
+                {
+                    Log.AddInStructMeta(EError.None, "Error 输入参数与定义参数不正确");
+                    return;
+                }
             }
             return;
+        }
+        void CheckLeftAndRightExpress()
+        {
+            MetaType expressRetMetaDefineType = m_RightMetaExpress.GetReturnMetaDefineType();
+            //Class1{  set name( string _n) { _name = _n } }
+            // c1 = Class1()
+            // c1.name = "aa"  =>   c1.name("aa")
+            // 相当于 给 set 函数传参数
+
+            MetaType mdt = m_MetaVariable.realMetaType;
+
+            //if( mdt.metaTemplate != null )
+            //{
+            //    if( expressRetMetaDefineType?.metaTemplate != mdt.metaTemplate )
+            //    {
+            //        Log.AddInStructMeta( EError.None, "Error 模版与类定义的模版不相同!!");
+            //    }
+            //}
+            //else
+            //{
+            if (expressRetMetaDefineType.metaClass == CoreMetaClassManager.nullMetaClass)
+            {
+
+            }
+            else
+            {
+                ClassManager.EClassRelation relation = ClassManager.EClassRelation.No;
+                MetaClass curClass = mdt.metaClass;
+
+                MetaClass compareClass = null;
+                MetaConstExpressNode constExpressNode = m_RightMetaExpress as MetaConstExpressNode;
+                if (constExpressNode != null && constExpressNode.eType == EType.Null)
+                {
+                    relation = ClassManager.EClassRelation.Same;
+                }
+                else
+                {
+                    compareClass = expressRetMetaDefineType.metaClass;
+                    if (mdt.isTemplate)
+                    {
+                        if (curClass == compareClass)
+                        {
+                            relation = ClassManager.EClassRelation.Same;
+                        }
+                    }
+                    else
+                    {
+                        relation = ClassManager.ValidateClassRelationByMetaClass(curClass, compareClass);
+                    }
+                }
+                StringBuilder sb = new StringBuilder();
+                sb.Append("Warning 在类: " + m_OwnerMetaBlockStatements?.ownerMetaClass.allClassName + " 函数: " + m_OwnerMetaBlockStatements.ownerMetaFunction?.name + "中  ");
+                if (curClass != null)
+                {
+                    sb.Append(" 定义类 : " + curClass.allClassName);
+                }
+                sb.Append(" 名称为: " + m_Name?.ToString());
+                sb.Append("与后边赋值语句中 ");
+                if (compareClass != null)
+                    sb.Append("表达式类为: " + compareClass.allClassName);
+                if (relation == ClassManager.EClassRelation.No)
+                {
+                    sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
+                    Log.AddInStructMeta(EError.None, sb.ToString());
+                    m_IsNeedCastState = true;
+                }
+                else if (relation == ClassManager.EClassRelation.Similar)
+                {
+                    sb.Append("数字类型相似，可能会有强转会有精度的丢失!");
+                    Log.AddInStructMeta(EError.None, sb.ToString());
+                    m_IsNeedCastState = true;
+                }
+                else if (relation == ClassManager.EClassRelation.Same)
+                {
+                }
+                else if (relation == ClassManager.EClassRelation.Parent)
+                {
+                    sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
+                    Log.AddInStructMeta(EError.None, sb.ToString());
+                    m_IsNeedCastState = true;
+                }
+                else if (relation == ClassManager.EClassRelation.Child)
+                {
+                    if (compareClass != null)
+                    {
+                        m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
+                    }
+                }
+                else
+                {
+                    sb.Append("表达式错误，或者是定义类型错误");
+                    Log.AddInStructMeta(EError.None, sb.ToString());
+                }
+            }
+            //}
         }
         public override void UpdateOwnerMetaClass(MetaClass ownerclass)
         {
@@ -489,7 +505,7 @@ namespace SimpleLanguage.Core
                 sb.Append(Global.tabChar);
             
             
-            if(m_IsSetStatements)
+            if(m_LeftMethodCall != null)
             {
                 sb.Append(m_LeftMetaExpress.metaCallLink.ToFormatString());
             }
@@ -505,9 +521,9 @@ namespace SimpleLanguage.Core
                 }
                 sb.Append(" = ");
 
-                if (m_FinalMetaExpress != null)
+                if (m_RightMetaExpress != null)
                 {
-                    sb.Append(m_FinalMetaExpress.ToFormatString());
+                    sb.Append(m_RightMetaExpress.ToFormatString());
                 }
                 if(m_IsNeedCastState)
                 {

@@ -5,16 +5,12 @@ namespace SimpleLanguage.Core
 {
     public enum ELeftRightOpSign
     {
+        None,
         Add,
-        IAdd,
         Minus,
-        IMinus,
         Multiply,
-        IMultiply,
         Divide,
-        IDivide,
         Modulo,
-        IModulo,
         InclusiveOr,
         Combine,
         XOR,
