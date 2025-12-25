@@ -98,6 +98,10 @@ namespace SimpleLanguage.VM
                 {
                     continue;
                 }
+                if( sobj is ClassObject co )
+                {
+                    co.SetNull();
+                }
                 //m_Type[i] = sobj.typeId;
                 m_MemberObjectArray[i] = sobj;
                 if( i == 0 )
@@ -118,6 +122,7 @@ namespace SimpleLanguage.VM
         public virtual void SetSValue(ClassObject val )
         {
             m_Object = val.m_Object;
+            m_IsNull = m_Object == null;
             val.refCount++;
         }
         public void GetMemberVariableSValue( int index, ref SValue svalue )

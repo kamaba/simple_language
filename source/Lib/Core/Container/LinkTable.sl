@@ -1,21 +1,22 @@
 
 
-class Node{
-  value = null;
-  Node next = null
-  
-  Node( _val, Node _next )
-  {
-
-  }
-}
 
 public class LinkTable extends Object
-{
-    Node node = null;    
-
+{    
+    class Node
+    {
+        value = null;
+        Node next = null
     
-    public void Add( t )
+        Node( _val, Node _next )
+        {
+
+        }
+    }
+
+    Node node = null;
+    
+    public void add( t )
     {
         if( node == null )
         {
@@ -28,6 +29,27 @@ public class LinkTable extends Object
             next.value = t 
 
             node.next = next;
+        }
+    }
+    public void remove( Node rn )
+    {
+
+    }
+    public Node find( Node n )
+    {
+        Node find = node
+        while true
+        {
+            if find == null 
+            {
+                ret find
+            }
+
+            if( find == n )
+            {
+                ret find
+            }
+            find = find.next
         }
     }
 }
