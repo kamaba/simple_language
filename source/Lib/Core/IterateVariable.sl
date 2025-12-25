@@ -102,7 +102,7 @@
         }
         override get T current()
         {
-            this._value = this._iterator.current()
+            #this._value = this._iterator.current()
             ret this._value
         }
         override void release()

@@ -591,8 +591,8 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.StoreNotStaticField2:
                     {
                         // -2在存储的值 -1表示要存储的对象 存储完成，直接变成位置0
-                        SValue sValue = m_ValueStack[m_ValueIndex - 2];
-                        SValue sStore = m_ValueStack[m_ValueIndex - 1];
+                        SValue sStore = m_ValueStack[m_ValueIndex - 2];
+                        SValue sValue = m_ValueStack[m_ValueIndex - 1];
                         SetValue(ref sValue, ref sStore, iri);
                         m_ValueIndex -= 2;
                     }
@@ -600,8 +600,8 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.StoreNotStaticField1:
                     {
                         // -2在存储的值 -1表示要存储的对象 存储完成，直接变成位置0
-                        SValue sValue = m_ValueStack[m_ValueIndex - 1];
                         SValue sStore = m_ValueStack[m_ValueIndex - 2];
+                        SValue sValue = m_ValueStack[m_ValueIndex - 1];
                         SetValue(ref sValue, ref sStore, iri);
                         m_ValueIndex -= 1;
                     }

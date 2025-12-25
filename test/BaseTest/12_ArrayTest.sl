@@ -403,10 +403,11 @@ ArrayTest
         
         #System.Console.WriteLine("1111111111= " + a1[1] )
         
-        #int[] a1 = {1,2,3,4}
+        int[] a1 = {1,2}
         #int[2][3][] a1 = [[[1,2,3],[3,4,5],[6,7,8]],[ [10,11,12],[14,15,15],[16,17,18] ]];  # int[2][3][3]     
         #object[3][2][] a1 = int[3][2][]{ [ [1,2,3], [] ], [ [5], [7,8,9,5] ], [[100]] };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         #还需要处理  [[100]] => 直接写100的情况，这种情况的话，需要检查 外层是否直接是array形式，如果是，则需要对应关系化处理
+        #!
         Int32[] a2 = Array<Int32>.createInstance(intvalue)        
         a2[1] = 50
         a2.$1 += 100    
@@ -430,14 +431,15 @@ ArrayTest
             }
             System.Console.WriteLine("1111111111= " + a2.$i )
         }
-
+        !#
         #a2[2] += 300    
         #System.Console.WriteLine("1111111111= " + a2.$2 )
-        #!
+        
         for v in a1
         {
             if v != null
-            {              
+            {      
+                #!        
                 for v2 in v
                 {
                     System.Console.WriteLine("level2---------value2: = " + v2.toString() )
@@ -446,14 +448,15 @@ ArrayTest
                         System.Console.WriteLine("level3---------value3 :==" + v2[i].toString() )
                     }
                 }
-                #System.Console.WriteLine("------------value: " + v.toString() )
+                !#
+                System.Console.WriteLine("------------value: " + v.toString() )
             }
             else
             {                
                 System.Console.WriteLine("============index: " + v )
             }
         }
-
+        #!
         axxx = int[3]{1,2,3}
         axxx2 = int[3]{ 3,4,5 }
         axxx3 = int[2][]{axxx,axxx2}

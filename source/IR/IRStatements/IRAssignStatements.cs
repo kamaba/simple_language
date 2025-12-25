@@ -80,6 +80,17 @@ namespace SimpleLanguage.IR
             {
                 var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, lastCL);
                 m_IRStatements.AddRange(list);
+
+                if (ms.autoAddExpressOpSign != ELeftRightOpSign.None)
+                {
+                    IRDup irdup = new IRDup(this.irMethod);
+                    m_IRStatements.Add(irdup);
+
+                    if (lastCL.variable.isStatic)
+                    {
+                        Debug.Assert(false);
+                    }
+                }
             }
             else
             {
@@ -110,7 +121,7 @@ namespace SimpleLanguage.IR
             var owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
             var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.defineMetaType, owirmc);
 
-            IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irmt, irmc, irMethod, mv);
+            IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irmt, owirmc, irMethod, mv);
             m_IRStatements.Add(irsv);
             //if ( ms.isNewStatements )
             //{

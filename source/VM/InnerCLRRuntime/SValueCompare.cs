@@ -389,13 +389,13 @@ namespace SimpleLanguage.VM
             {
                 case EVMType.String:
                     {
-                        Log.AddVM(EError.None, " VM Compare SVAlue 比较的低码还没有完善!!");
+                        Log.AddVM(EError.None, " VM Compare SVAlue string 比较的低码还没有完善!!");
                         //return;
                     }
                     break;
                 case EVMType.Boolean:
                     {
-                        Log.AddVM(EError.None, " VM Compare SVAlue 比较的低码还没有完善!!");
+                        Log.AddVM(EError.None, " VM Compare SVAlue boolean 比较的低码还没有完善!!");
                         //return;
                     }
                     break;
@@ -469,7 +469,7 @@ namespace SimpleLanguage.VM
             else
             {
                 sval2.SetBoolValue(false);
-                Log.AddVM(EError.None, " VM Compare SVAlue 比较的低码还没有完善!!");
+                Log.AddVM(EError.None, "else VM Compare SVAlue 比较的低码还没有完善!!");
             }
         }
 
@@ -571,7 +571,7 @@ namespace SimpleLanguage.VM
                 {
                     sval2.SetBoolValue(false);
                 }
-                Log.AddVM(EError.None, " VM Compare SVAlue 比较的低码还没有完善!!");
+                Log.AddVM(EError.None, " end VM Compare SVAlue 比较的低码还没有完善!!");
             }
         }
     }
