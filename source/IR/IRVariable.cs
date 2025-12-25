@@ -96,18 +96,8 @@ namespace SimpleLanguage.IR
                     }
                     else
                     {
-                        if( mvv.fastVisitConstExpressNode != null )
-                        {
-                            IRExpress irexpress = new IRExpress(_irMethod, mvv.fastVisitConstExpressNode );
-                            irVar.m_IRDataList.AddRange(irexpress.IRDataList);
-                        }
-                        else
-                        {
-                            IRMetaCallLink irmcl = new IRMetaCallLink();
-                            irmcl.ParseToIRDataList(_irMethod, mvv.targetMetaVisitCallLink.visitNodeList);
-                            for (int i = 0; i < irmcl.irList.Count; i++)
-                                irVar.m_IRDataList.AddRange(irmcl.irList[i].IRDataList);
-                        }
+                        IRExpress irexpress = new IRExpress(_irMethod, mvv.visitExpressNode );
+                        irVar.m_IRDataList.AddRange(irexpress.IRDataList);
 
 
                         IRData irdata = new IRData();

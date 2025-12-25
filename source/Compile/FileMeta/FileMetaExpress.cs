@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Parse;
 
@@ -782,60 +783,104 @@ namespace SimpleLanguage.Compile
             m_BeginBracketToken = node.token;
             m_EndBracketetToken = node.endToken;
 
+            List<List<Node>> nodeListList = new List<List<Node>>();
+
+            List<Node> tnodeList = new List<Node>();
             for ( int i = 0; i < node.childList.Count; i++ )
             {
                 var cnode = node.childList[i];
-                if( cnode.nodeType == ENodeType.ConstValue )
+                if (cnode.nodeType == ENodeType.Symbol && cnode.token?.type == ETokenType.Comma)
                 {
-                    var fileMetaConstValueTerm = new FileMetaConstValueTerm(m_FileMeta,cnode.token);
-                    AddFileMetaTerm(fileMetaConstValueTerm);
-                }
-                else if( cnode.nodeType == ENodeType.Bracket )
-                {
-                    var fileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, cnode);
-                    AddFileMetaTerm(fileMetaBracketTerm);
-                }
-                else if( cnode.nodeType == ENodeType.Comma )
-                {
-                    var fileMetaSymbolTerm = new FileMetaSymbolTerm(m_FileMeta, cnode.token);
-                    AddFileMetaTerm(fileMetaSymbolTerm);
-                    if (i == node.childList.Count - 1)
-                    {
-                        Log.AddInStructFileMeta(EError.None, "Warning [1,2,3,]有多余逗号出现??");
-                    }
-                    continue;
-                }
-                else if (cnode.nodeType == ENodeType.Par)
-                {
-                    Log.AddInStructFileMeta(EError.None, "Error 不支持在[]中解析()的逻辑!!");
-                    continue;
-                }
-                else if (cnode.nodeType == ENodeType.Key)
-                {
-                    if( cnode.token.type == ETokenType.This 
-                        || cnode.token.type == ETokenType.Base )
-                    {
-                        var fileMetaCallTerm = new FileMetaCallTerm(m_FileMeta, cnode);
-                        AddFileMetaTerm(fileMetaCallTerm);
-                    }
-                    else
-                    {
-                        Log.AddInStructFileMeta(EError.None, "Error 不支持在[]中解析Key的逻辑!!");
-                        continue;
-                    }
-                }
-                else if (cnode.nodeType == ENodeType.Brace )
-                {
-                    var fileMetaBraceTerm = new FileMetaBraceTerm(m_FileMeta, cnode);
-                    AddFileMetaTerm(fileMetaBraceTerm);
+                //    var fileMetaSymbolTerm = new FileMetaSymbolTerm(m_FileMeta, cnode.token);
+                //    AddFileMetaTerm(fileMetaSymbolTerm);
+                //    if (i == node.childList.Count - 1)
+                //    {
+                //        Log.AddInStructFileMeta(EError.None, "Warning [1,2,3,]有多余逗号出现??");
+                //        Debug.Assert(false);
+                //    }
+                    nodeListList.Add(tnodeList);
                     continue;
                 }
                 else
                 {
+                    tnodeList.Add(cnode);
+                }
+            }
+            if(tnodeList.Count > 0 )
+                nodeListList.Add(tnodeList);
+
+            for ( int i = 0; i < nodeListList.Count; i++ )
+            {
+                var cnodelist = nodeListList[i];
+
+                var fvt = FileMetatUtil.CreateFileMetaExpress(fm, cnodelist, FileMetaTermExpress.EExpressType.Common);
+
+                AddFileMetaTerm(fvt);
+            }
+
+            /*
+            if( cnode.nodeType == ENodeType.ConstValue )
+            {
+                var fileMetaConstValueTerm = new FileMetaConstValueTerm(m_FileMeta,cnode.token);
+                AddFileMetaTerm(fileMetaConstValueTerm);
+            }
+            else if( cnode.nodeType == ENodeType.Bracket )
+            {
+                var fileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, cnode);
+                AddFileMetaTerm(fileMetaBracketTerm);
+            }
+            else if( cnode.nodeType == ENodeType.Comma )
+            {
+                var fileMetaSymbolTerm = new FileMetaSymbolTerm(m_FileMeta, cnode.token);
+                AddFileMetaTerm(fileMetaSymbolTerm);
+                if (i == node.childList.Count - 1)
+                {
+                    Log.AddInStructFileMeta(EError.None, "Warning [1,2,3,]有多余逗号出现??");
+                }
+                continue;
+            }
+            else if (cnode.nodeType == ENodeType.Par)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error 不支持在[]中解析()的逻辑!!");
+                continue;
+            }
+            else if (cnode.nodeType == ENodeType.Key)
+            {
+                if( cnode.token.type == ETokenType.This 
+                    || cnode.token.type == ETokenType.Base )
+                {
                     var fileMetaCallTerm = new FileMetaCallTerm(m_FileMeta, cnode);
                     AddFileMetaTerm(fileMetaCallTerm);
                 }
+                else
+                {
+                    Log.AddInStructFileMeta(EError.None, "Error 不支持在[]中解析Key的逻辑!!");
+                    continue;
+                }
             }
+            else if (cnode.nodeType == ENodeType.Brace )
+            {
+                var fileMetaBraceTerm = new FileMetaBraceTerm(m_FileMeta, cnode);
+                AddFileMetaTerm(fileMetaBraceTerm);
+                continue;
+            }
+            else if( cnode.nodeType == ENodeType.Symbol )
+            {
+                var fileMetaSymbolTerm = new FileMetaSymbolTerm(m_FileMeta, cnode.token);
+                AddFileMetaTerm(fileMetaSymbolTerm);
+                if (i == node.childList.Count - 1)
+                {
+                    Log.AddInStructFileMeta(EError.None, "Warning [1,2,3,]有多余逗号出现??");
+                    Debug.Assert(false);
+                }
+                continue;
+            }
+            else
+            {
+                var fileMetaCallTerm = new FileMetaCallTerm(m_FileMeta, cnode);
+                AddFileMetaTerm(fileMetaCallTerm);
+            }
+            */
         }
         // = [{a=20;b="aaa";},{a=30;b="ccc";}]  在data里边，有这样使用的过程
         public FileMetaBracketTerm( FileMeta fm, Node node, int a )

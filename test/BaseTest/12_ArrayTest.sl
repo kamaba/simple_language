@@ -418,6 +418,19 @@ ArrayTest
         intvalue = 40
         intvalue -= 13
         System.Console.WriteLine("1111111111= " + intvalue )
+        for i = 0, i < a2.length, i++
+        {
+            if i > 0 
+            {
+                a2[i] = a2[i-1] + 100  #$()访问变量  a2[i-1] 都还没有做
+            }
+            else
+            {
+                a2[0] = 123
+            }
+            System.Console.WriteLine("1111111111= " + a2.$i )
+        }
+
         #a2[2] += 300    
         #System.Console.WriteLine("1111111111= " + a2.$2 )
         #!

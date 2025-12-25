@@ -6,7 +6,6 @@
 //  Description:  
 //****************************************************************************
 
-using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile;
 

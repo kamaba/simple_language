@@ -329,16 +329,15 @@ namespace SimpleLanguage.Core
             AT
         }
         public bool fastVisit => m_FastVisit;
-        public MetaVariable sourceMetaVariable => m_SourceMetaVariable;
-        public MetaCallLink targetMetaVisitCallLink => m_TargetMetaVisitCallLink;
-        public MetaConstExpressNode fastVisitConstExpressNode => m_FastVisitConstExpressNode;
+        public MetaExpressNode visitExpressNode => m_VisitExpressNode;
+        public MetaConstExpressNode fastVisitConstExpressNode => m_VisitExpressNode as MetaConstExpressNode;
 
-        MetaVariable m_SourceMetaVariable = null;
-        EVisitType m_VisitType = EVisitType.AT;
-        MetaCallLink m_TargetMetaVisitCallLink = null;
+        private MetaVariable m_SourceMetaVariable = null;
+        private EVisitType m_VisitType = EVisitType.AT;
+        //private MetaCallLink m_TargetMetaVisitCallLink = null;
         string m_AtName = "";
         private bool m_FastVisit = false;
-        private MetaConstExpressNode m_FastVisitConstExpressNode = null;
+        private MetaExpressNode m_VisitExpressNode = null;
         private int? m_Index = null;
 
         public MetaVisitVariable(MetaVariable source, MetaVariable target)
@@ -365,11 +364,11 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_SourceMetaVariable = lmv;
-            m_IsDefineMetaType = lmv.isDefineMetaType;                 
-            m_FastVisitConstExpressNode = mvv;
+            m_IsDefineMetaType = lmv.isDefineMetaType;   
+            m_VisitExpressNode = mvv;
             m_FastVisit = true;
         }
-        public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaCallLink mvv )
+        public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaCallLink mvv)
         {
             m_VariableFrom = EVariableFrom.ArrayValue;
             m_Name = _name;
@@ -385,19 +384,38 @@ namespace SimpleLanguage.Core
                     Log.AddInStructMeta(EError.None, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
                     return;
                 }
-                m_TargetMetaVisitCallLink = mvv;
+                m_VisitExpressNode = new MetaCallLinkExpressNode(mvv);
 
-                if( mvv.visitNodeList.Count == 1 )
+                if (mvv.visitNodeList.Count == 1)
                 {
-                    if( mvv.visitNodeList[0].constValueExpress != null )
+                    if (mvv.visitNodeList[0].constValueExpress != null)
                     {
-                        if(mvv.visitNodeList[0].constValueExpress.eType == EType.Int32 )
+                        if (mvv.visitNodeList[0].constValueExpress.eType == EType.Int32)
                         {
                             m_Index = (int)mvv.visitNodeList[0].constValueExpress.value;
                             m_FastVisit = true;
                         }
                     }
                 }
+            }
+        }
+        public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaOpExpressNode moe )
+        {
+            m_VariableFrom = EVariableFrom.ArrayValue;
+            m_Name = _name;
+            m_AtName = _name;
+            m_OwnerMetaClass = mc;
+            m_OwnerMetaBlockStatements = mbs;
+            m_SourceMetaVariable = lmv;
+            m_FastVisit = false;
+            if (lmv.isArray)
+            {
+                if (moe == null && string.IsNullOrEmpty(m_AtName))
+                {
+                    Log.AddInStructMeta(EError.None, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
+                    return;
+                }
+                m_VisitExpressNode = moe;
             }
         }
         public override void ParseDefineMetaType()
