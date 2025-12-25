@@ -8,6 +8,7 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -312,6 +313,21 @@ namespace SimpleLanguage.Core
                         m_Name = mclen2.metaCallLink.finalCallNode.variable.name;
                         HandleVisit();
                     }
+                    else if( maen3 is MetaOpExpressNode moen )
+                    {
+                        m_ExpressNode = moen;
+                        m_VisitFlag = true;
+                        m_Name = "express" + moen.GetHashCode().ToString();
+                        HandleVisit();
+                    }
+                    else
+                    {
+                        Debug.Assert(false);
+                    }
+                }
+                else
+                {
+                    Debug.Assert(false);
                 }
             }
             else
@@ -1289,8 +1305,20 @@ namespace SimpleLanguage.Core
 
                         m_CallNodeType = ECallNodeType.VisitVariable;
                     }
+                    else if(m_ExpressNode is MetaOpExpressNode moen )
+                    {
+                        string inputMVName = "Visit_" + m_Name;
+                        m_MetaVariable = variable.GetMetaVariable(inputMVName);
+                        if (m_MetaVariable == null)
+                        {
+                            m_MetaVariable = new MetaVisitVariable(inputMVName, m_OwnerMetaClass, m_OwnerMetaFunctionBlock, variable, moen );
+                            variable.AddMetaVariable(m_MetaVariable);
+                        }
+                        m_CallNodeType = ECallNodeType.VisitVariable;
+                    }
                     else
                     {
+                        Debug.Assert(false);
                         Log.AddInStructMeta(EError.None, "没有找到适合的访问节点的变量一类的！");
                     }
 

@@ -7,7 +7,6 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.Compile;
 
 using SimpleLanguage.Parse;
 using System;

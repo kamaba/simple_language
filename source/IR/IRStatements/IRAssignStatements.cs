@@ -59,18 +59,8 @@ namespace SimpleLanguage.IR
             if (lastCL.visitType == MetaVisitNode.EVisitType.VisitVariable)
             {
                 MetaVisitVariable mvv = lastCL.visitVariable;
-                if (mvv.fastVisitConstExpressNode != null)
-                {
-                    IRExpress irexpress = new IRExpress(irMethod, mvv.fastVisitConstExpressNode);
-                    m_IRStatements.Add(irexpress);
-                }
-                else
-                {
-                    IRMetaCallLink irmcl = new IRMetaCallLink();
-                    irmcl.ParseToIRDataList(irMethod, mvv.targetMetaVisitCallLink.visitNodeList);
-                    for (int i = 0; i < irmcl.irList.Count; i++)
-                        m_IRStatements.Add(irmcl.irList[i]);
-                }
+                IRExpress irexpress = new IRExpress(irMethod, mvv.visitExpressNode);
+                m_IRStatements.Add(irexpress);
 
                 if (ms.autoAddExpressOpSign != ELeftRightOpSign.None)
                 {

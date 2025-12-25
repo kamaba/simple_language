@@ -2,10 +2,9 @@
 
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.Core.IR;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Security.Cryptography;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -40,25 +39,18 @@ namespace SimpleLanguage.Core
 
             if (m_FileMetaBaseTermList != null)
             {
-                for (int i = 0; i < m_FileMetaBaseTermList.Count; i++)
+                for( int i = 0; i < m_FileMetaBaseTermList.Count; i++ )
                 {
-                    var fmc = m_FileMetaBaseTermList[i];
+                    var cterm = m_FileMetaBaseTermList[i];
+                    CreateExpressParam cep = new CreateExpressParam();
+                    cep.fme = cterm;
+                    cep.equalMetaVariable = null;
+                    cep.metaType = cmt;
+                    cep.ownerMBS = m_OwnerMetaBlockStatements;
+                    cep.ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass;
 
-                    if( fmc is FileMetaSymbolTerm fmst )
-                    {
-                    }
-                    else
-                    {
-                        CreateExpressParam cep = new CreateExpressParam();
-                        cep.fme = fmc;
-                        cep.equalMetaVariable = null;
-                        cep.metaType = cmt;
-                        cep.ownerMBS = m_OwnerMetaBlockStatements;
-                        cep.ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass;
-
-                        var en = ExpressManager.CreateExpressNodeByCEP(cep);
-                        m_MetaCallArray.Add(en);
-                    }
+                    var en = ExpressManager.CreateExpressNodeByCEP(cep);
+                    m_MetaCallArray.Add(en);
                 }
             }
         }
