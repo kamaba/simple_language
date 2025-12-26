@@ -120,10 +120,10 @@ namespace SimpleLanguage.IR
                     {
                         Debug.Assert(false);
                     }
-                }
 
-                var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, lastCL);
-                m_IRStatements.AddRange(list);
+                    var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, lastCL);
+                    m_IRStatements.AddRange(list);
+                }
 
             }
             else
