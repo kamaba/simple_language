@@ -370,9 +370,7 @@ namespace SimpleLanguage.Core
                 if( mcn.bracketExpressList.Count > 0 )
                 {
                     MetaClass cmc = mcn.metaType.metaClass;
-                    //mcn.metaType.SetArrayDimension(mcn.bracketExpressList.Count);
-                    MetaMemberFunction mmf = GetInitMemberFunction(cmc);
-                    MetaVisitNode mvn = MetaVisitNode.CreateByNewArrayClass(mcn.metaType, mmf, mcn.storeMetaVariable);
+                    MetaVisitNode mvn = MetaVisitNode.CreateByNewArrayClass(mcn.metaType, mcn.bracketExpressList, mcn.storeMetaVariable);
                     m_VisitNodeList.Add(mvn);
                 }
                 else
@@ -386,9 +384,7 @@ namespace SimpleLanguage.Core
                 if (mcn.bracketExpressList.Count > 0)
                 {
                     MetaClass cmc = mcn.metaType.metaClass;
-                    //mcn.metaType.SetArrayDimension(mcn.bracketExpressList.Count);
-                    MetaMemberFunction mmf = GetInitMemberFunction(cmc);
-                    MetaVisitNode mvn = MetaVisitNode.CreateByNewArrayClass(mcn.metaType, mmf, mcn.storeMetaVariable);
+                    MetaVisitNode mvn = MetaVisitNode.CreateByNewArrayClass(mcn.metaType, mcn.bracketExpressList, mcn.storeMetaVariable);
                     m_VisitNodeList.Add(mvn);
                 }
                 else

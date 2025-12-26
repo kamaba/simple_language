@@ -496,12 +496,15 @@ namespace SimpleLanguage.Core
             else if (mt.IsArray() )// 数组类型的处理
             {
                 m_ContentType = EStatementsContentType.ArrayValue;
+                if( m_DefineMetaType.genTemplateMetaTypeList.Count != 1 )
+                {
+                    Debug.Assert(false);
+                }
+                MetaType cmt = m_DefineMetaType.genTemplateMetaTypeList[0];
                 if (fmbt is FileMetaBracketTerm fmst)
                 {
-                    var newmt = new MetaType(mt);
-                    //newmt.SetArrayDimensionByFrontMetaType(mt);
 
-                    MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmst, newmt, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_EqualMetaVariable);
+                    MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmst, cmt, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_EqualMetaVariable);
                     mnoe.Parse(new AllowUseSettings());
                     var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, mnoe, m_EqualMetaVariable as MetaMemberVariable);
                     m_AssignStatementsList.Add(mas);                    
@@ -511,7 +514,7 @@ namespace SimpleLanguage.Core
                     CreateExpressParam cep = new CreateExpressParam();
                     cep.ownerMetaClass = m_OwnerMetaClass;
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
-                    cep.metaType = new MetaType(m_DefineMetaType.metaClass);
+                    cep.metaType = new MetaType(cmt);
                     cep.fme = fmct;
                     cep.equalMetaVariable = m_EqualMetaVariable;
                     MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
@@ -525,7 +528,7 @@ namespace SimpleLanguage.Core
                     CreateExpressParam cep = new CreateExpressParam();
                     cep.ownerMetaClass = m_OwnerMetaClass;
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
-                    cep.metaType = new MetaType( m_DefineMetaType.metaClass );
+                    cep.metaType = new MetaType(cmt);
                     cep.fme = fmcvt;
                     cep.equalMetaVariable = m_EqualMetaVariable;
                     MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
@@ -781,29 +784,39 @@ namespace SimpleLanguage.Core
         // Class1(10){ c1 = 20, c2 = 30 }  int[2][]{ [1,2,3], [3,4,5] }
         public MetaNewObjectExpressNode( MetaType defineMt, MetaCallLinkExpressNode mcen )
         {
-            m_DefineMetaType = defineMt;
+            m_DefineMetaType = defineMt != null ? new MetaType( defineMt ) : null;
             m_OwnerMetaClass = mcen.ownerMetaClass;
             m_OwnerMetaBlockStatements = mcen.ownerMetaBlockStatements;
             m_StoreMetaVariable = mcen.GetMetaVariable();
-            m_MetaMemberFunction = mcen.metaCallLink.finalCallNode.methodCall.function as MetaMemberFunction;
-            m_NewMetaType = mcen.metaCallLink.finalCallNode.callMetaType;
-            
-            if( mcen.metaCallLink.finalCallNode.callMetaType.IsArray() )
+
+            m_MetaMemberFunction = mcen.metaCallLink.finalCallNode.methodCall?.function as MetaMemberFunction;
+            m_NewMetaType = new MetaType( mcen.metaCallLink.finalCallNode.callMetaType );
+            if ( mcen.metaCallLink.finalCallNode.callMetaType.IsArray() )
             {
                 m_NewType = ENewType.ArrayClass;
+
+                if (mcen.metaCallLink.callNodeList.Count > 0)
+                {
+                    var lastNode = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
+                    SetInputParams(lastNode.metaInputParamCollection);
+
+                    var fma = lastNode.fileMetaBraceTerm;
+                    m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fma, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
+                    m_MetaBraceOrBracketStatementsContent.SetMetaType(m_NewMetaType);
+                }
             }
             else
             {
                 m_NewType = ENewType.CommomClass;
-            }
-            if (mcen.metaCallLink.callNodeList.Count > 0)
-            {
-                var lastNode = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
-                SetInputParams(lastNode.metaInputParamCollection);
+                if (mcen.metaCallLink.callNodeList.Count > 0)
+                {
+                    var lastNode = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
+                    SetInputParams(lastNode.metaInputParamCollection);
 
-                var fma = lastNode.fileMetaBraceTerm;
-                m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fma, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
-                m_MetaBraceOrBracketStatementsContent.SetMetaType(m_NewMetaType);
+                    var fma = lastNode.fileMetaBraceTerm;
+                    m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fma, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
+                    m_MetaBraceOrBracketStatementsContent.SetMetaType(m_NewMetaType);
+                }
             }
         }
         /* 下边的要合并到上边的处理方法里边
@@ -1182,6 +1195,27 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
+            if( newType == ENewType.ArrayClass )
+            {
+                if( m_MetaInputParamList.Count == 1 )
+                {
+                    if (m_NewMetaType != null)
+                    {
+                        if (m_MetaInputParamList[0] is MetaConstExpressNode mcen )
+                        {
+                            m_NewMetaType.SetArrayLength( (int)mcen.value);
+                        }
+                    }
+                    else
+                    {
+                        Debug.Assert(false);
+                    }
+                }
+                else
+                {
+                    Debug.Assert(false);
+                }
+            }
         }
         public void SetStoreMetaVariable( MetaVariable smv )
         {
@@ -1215,39 +1249,47 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Debug.Assert(false);
-                            //if (m_NewMetaType.arrayDimensionLengthList.Count == m_DefineMetaType.arrayDimensionLengthList.Count)
-                            //{
-                            //    for (int i = 0; i < m_DefineMetaType.arrayDimensionLengthList.Count; i++)
-                            //    {
-                            //        if (m_DefineMetaType.arrayDimensionLengthList[i] == -1)
-                            //        {
+                            var list1 = m_DefineMetaType.ArrayDimensionLengthList();
+                            var list2 = m_NewMetaType.ArrayDimensionLengthList();
 
-                            //        }
-                            //        else if (m_NewMetaType.arrayDimensionLengthList[i] == -1)
-                            //        {
-                            //            if (m_DefineMetaType.arrayDimensionLengthList[i] != -1)
-                            //            {
-                            //                Log.AddInStructMeta(EError.None, "如果前边定义了长度，new的时候必须和前边的长度一样!");
-                            //                return;
-                            //            }
-                            //        }
-                            //        else
-                            //        {
-                            //            if (m_NewMetaType.arrayDimensionLengthList[i] != m_DefineMetaType.arrayDimensionLengthList[i])
-                            //            {
-                            //                Log.AddInStructMeta(EError.None, "如果前边定义了长度，new的时候必须和前边的长度一样!");
-                            //                return;
-                            //            }
-                            //        }
-                            //    }
-                            //    m_MetaType = new MetaType(m_NewMetaType);
-                            //}
-                            //else
-                            //{
-                            //    Log.AddInStructMeta(EError.None, "定义数组与new数组 的维度不同");
-                            //    return;
-                            //}
+                            if (list1.Count == list2.Count && list1.Count != 0 )
+                            {
+                                for (int i = 0; i < list1.Count; i++)
+                                {
+                                    if( i == list1.Count - 1 )
+                                    {
+                                        if(list1[i] != -1 )
+                                        {
+                                            Debug.Assert(false, "最后一位数组定义，不能为实体值!");
+                                            return;
+                                        }
+                                    }
+                                    if (list1[i] == -1)
+                                    {
+                                        if(list2[i] == -1 )
+                                        {
+                                            Debug.Assert(false, "不是最后一位 生成的数组，需要定义数组长度");
+                                            return;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (list1[i] != list2[i])
+                                        {
+                                            Debug.Assert(false, "最后一位数组定义，不能为实体值!");
+                                            Log.AddInStructMeta(EError.None, "如果前边定义了长度，new的时候必须和前边的长度一样!");
+                                            return;
+                                        }
+                                    }
+                                }
+                                m_MetaType = new MetaType(m_NewMetaType);
+                            }
+                            else
+                            {
+                                Debug.Assert(false);
+                                Log.AddInStructMeta(EError.None, "定义数组与new数组 的维度不同");
+                                return;
+                            }
                         }
                     }
                     else

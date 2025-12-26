@@ -404,7 +404,7 @@ ArrayTest
         #System.Console.WriteLine("1111111111= " + a1[1] )
         
         #int[] a1 = {1,2,4,5}
-        a1 = [[[1,2,3],[3,4,5],[6,7,8]],[ [10,11,12],[14,15,15],[16,17,18] ] ]; 
+        #a1 = [[[1,2,3],[3,4,5],[6,7,8]],[ [10,11,12],[14,15,15],[16,17,18] ] ]; 
         #int[2][3][] a1 = {[[1,2,3],[3,4,5],[6,7,8]],[ [10,11,12],[14,15,15],[16,17,18] ]};  # int[2][3][3]     
         #object[3][2][] a1 = int[3][2][]{ [ [1,2,3], [] ], [ [5], [7,8,9,5] ], [[100]] };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         #还需要处理  [[100]] => 直接写100的情况，这种情况的话，需要检查 外层是否直接是array形式，如果是，则需要对应关系化处理
@@ -436,30 +436,10 @@ ArrayTest
         #a2[2] += 300    
         #System.Console.WriteLine("1111111111= " + a2.$2 )
         
-        for v in a1
-        {
-            if v != null
-            {      
-                ## !        
-                for v2 in v
-                {
-                    System.Console.WriteLine("level2---------value2: = " + v2.toString() )
-                    for i = 0, i < v2.length, i++
-                    {
-                        System.Console.WriteLine("level3---------value3 :==" + v2[i].toString() )
-                    }
-                }
-                #!#
-                #System.Console.WriteLine("------------value: " + v.toString() )
-            }
-            else
-            {                
-                System.Console.WriteLine("============index: " + v )
-            }
-        }
-        #!
         axxx = int[3]{1,2,3}
-        axxx2 = int[3]{ 3,4,5 }
+        int[] axxx2 = new(4){ 3,4,5 }
+        
+        #!
         axxx3 = int[2][]{axxx,axxx2}
         axxx11 = int[2]{5,6}
         axxx12 = int[4]{ 7,8,9,5 }
@@ -468,6 +448,33 @@ ArrayTest
         axx23 = array[1]{ axx22}
         a1 = array[3]{ axxx3, axxx13, axx23 }
         !#
+        
+        for v in axxx2
+        {
+            System.Console.WriteLine("level2---------value2: = " + v.toString() )
+        }
+        #!
+        for v in a1
+        {
+            if v != null
+            {         
+                for v2 in v
+                {
+                    System.Console.WriteLine("level2---------value2: = " + v2.toString() )
+                    for i = 0, i < v2.length, i++
+                    {
+                        System.Console.WriteLine("level3---------value3 :==" + v2[i].toString() )
+                    }
+                }
+                #System.Console.WriteLine("------------value: " + v.toString() )
+            }
+            else
+            {                
+                System.Console.WriteLine("============index: " + v )
+            }
+        }
+        !#
+
 
         #System.Console.WriteLine("1111111111= " + a1[0] )
        

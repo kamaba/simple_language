@@ -9,6 +9,7 @@
 
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -241,19 +242,51 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CreateByNewArrayClass(MetaType mt, MetaFunction mf, MetaVariable mv = null)
+        public static MetaVisitNode CreateByNewArrayClass(MetaType mt, List<MetaExpressNode> list, MetaVariable mv = null)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.m_CallMetaType = mt;
+            List<int> arrayLengthList = new List<int>();
+            for( int i = 0; i < list.Count; i++ )
+            {
+                if (list[i] is MetaConstExpressNode mcen )
+                {
+                    arrayLengthList.Add( (int)mcen.value );
+                }
+                else if (list[i] is MetaArrayExpressNode maen )
+                {
+                    if( maen.metaCallArray.Count == 1 )
+                    {
+                        if( maen.metaCallArray[0] is MetaConstExpressNode mcen2 )
+                        {
+                            arrayLengthList.Add((int)mcen2.value);
+                        }
+                        else
+                        {
+                            Debug.Assert(false);
+                        }
+                    }
+                    else
+                    {
+                        Debug.Assert(false);
+                    }
+                }
+                else
+                {
+                    arrayLengthList.Add(-1);
+                }
+            }
+
+            MetaType newRMT = new MetaType(mt);
+            newRMT = TypeManager.instance.AddArrayTemplate(newRMT, arrayLengthList);
+            vn.m_CallMetaType = newRMT;
             //vn.m_MetaBraceStatementsContent = mb;
             vn.visitType = EVisitType.New;
             vn.variable = mv;
-            if (mt.metaClass is MetaGenTemplateClass mgtc)
+            if (newRMT.metaClass is MetaGenTemplateClass mgtc)
             {
                 vn.m_ReturnMetaType = new MetaType(mt);
             }
-            vn.methodCall = new MetaMethodCall(mt.metaClass, null, mf, null, null, null, mv);
 
             return vn;
         }
