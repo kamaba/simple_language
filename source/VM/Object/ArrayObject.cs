@@ -47,7 +47,7 @@ namespace SimpleLanguage.VM
             {
                 case EVMType.Boolean:
                     {
-                        m_Array = new bool[length];
+                        m_Array = new bool?[length];
                         /*
                         m_Array = new Boolean[length];
                         for (int i = 0; i < length; i++)
@@ -61,7 +61,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Byte:
                     {
-                        m_Array = new Byte[length];
+                        m_Array = new Byte?[length];
                         /*
                         m_Array = new Int8Object[length];
                         for (int i = 0; i < length; i++)
@@ -75,7 +75,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.SByte:
                     {
-                        m_Array = new SByte[length];
+                        m_Array = new SByte?[length];
                         /*
                         m_Array = new SInt8Object[length];
                         for (int i = 0; i < length; i++)
@@ -89,7 +89,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Int16:
                     {
-                        m_Array = new Int16[length];
+                        m_Array = new Int16?[length];
                         /*
                         m_Array = new Int16Object[length];
                         for (int i = 0; i < length; i++)
@@ -103,7 +103,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.UInt16:
                     {
-                        m_Array = new UInt16[length];
+                        m_Array = new UInt16?[length];
                         /*
                         m_Array = new UInt16Object[length];
                         for (int i = 0; i < length; i++)
@@ -117,7 +117,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Int32:
                     {
-                        m_Array = new Int32[length];
+                        m_Array = new Int32?[length];
                         /*
                         m_Array = new Int32Object[length];
                         for (int i = 0; i < length; i++)
@@ -131,7 +131,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.UInt32:
                     {
-                        m_Array = new UInt32[length];
+                        m_Array = new UInt32?[length];
                         /*
                         m_Array = new UInt32Object[length];
 
@@ -146,7 +146,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Int64:
                     {
-                        m_Array = new Int64[length];
+                        m_Array = new Int64?[length];
                         /*
                         m_Array = new Int64Object[length];
 
@@ -161,7 +161,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.UInt64:
                     {
-                        m_Array = new UInt64[length];
+                        m_Array = new UInt64?[length];
                         /*
                         m_Array = new UInt64Object[length];
 
@@ -176,7 +176,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.String:
                     {
-                        m_Array = new String[length];
+                        m_Array = new String?[length];
                         /*
                         m_Array = new StringObject[length];
 

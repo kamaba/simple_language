@@ -436,8 +436,8 @@ ArrayTest
         #a2[2] += 300    
         #System.Console.WriteLine("1111111111= " + a2.$2 )
         
-        axxx = int[3]{1,2,3}
-        int[] axxx2 = new(4){ 3,4,5 }
+        #axxx = int[3]{1,2,3}
+        int[] axxx2 = new(4){ null,4,5 }
         
         #!
         axxx3 = int[2][]{axxx,axxx2}
@@ -451,7 +451,9 @@ ArrayTest
         
         for v in axxx2
         {
-            System.Console.WriteLine("level2---------value2: = " + v.toString() )
+            if v != null{
+                System.Console.WriteLine("level2---------value2: = " + v.toString() )
+            }
         }
         #!
         for v in a1
