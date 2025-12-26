@@ -78,19 +78,53 @@ namespace SimpleLanguage.IR
             }
             else if (lastCL.visitType == MetaVisitNode.EVisitType.Variable)
             {
-                var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, lastCL);
-                m_IRStatements.AddRange(list);
+                /*
+                 * 
+                 *
+                 MetaVariable mv22 = lastCL.GetRetMetaVariable();
+
+                IRMetaType irmt2 = null;
+                IRMetaClass irmc2 = null;
+                IRMetaClass owirmc2 = IRManager.instance.GetIRMetaClassById(mv22.GetOwnerClassTemplateClass().GetHashCode());
+                if (mv22.isStatic)
+                {
+                    if (lastCL.callMetaType != null)
+                    {
+                        irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
+                    }
+                    else
+                    {
+                        irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.defineMetaType, owirmc);
+                    }
+                    irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
+                }
+                else
+                {
+                    irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
+                }
+                IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);
+                irList.Add(irVar);
+                 */
 
                 if (ms.autoAddExpressOpSign != ELeftRightOpSign.None)
                 {
-                    IRDup irdup = new IRDup(this.irMethod);
-                    m_IRStatements.Add(irdup);
+                    MetaVariable mvtt = lastCL.GetOrgTemplateMetaVariable();
+                    if (mvtt.variableFrom == MetaVariable.EVariableFrom.Member
+                        || mvtt.variableFrom == MetaVariable.EVariableFrom.Global)
+                    {
+                        IRDup irdup = new IRDup(this.irMethod);
+                        m_IRStatements.Add(irdup);
+                    }
 
                     if (lastCL.variable.isStatic)
                     {
                         Debug.Assert(false);
                     }
                 }
+
+                var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, lastCL);
+                m_IRStatements.AddRange(list);
+
             }
             else
             {
@@ -109,7 +143,7 @@ namespace SimpleLanguage.IR
             }
 
             IRData irsign = IRUtil.CreateLeftAndRightIRData(ms.autoAddExpressOpSign);
-            if( irsign != null )
+            if( irsign != null && irsign.opCode != EIROpCode.Nop )
             {
                 IRBase irbase = new IRBase(irsign);
                 m_IRStatements.Add(irbase);
