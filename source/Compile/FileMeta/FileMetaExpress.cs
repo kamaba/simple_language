@@ -6,11 +6,12 @@
 //  Description: 
 //****************************************************************************
 
+using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using SimpleLanguage.Parse;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.Compile
 {
@@ -789,7 +790,7 @@ namespace SimpleLanguage.Compile
             for ( int i = 0; i < node.childList.Count; i++ )
             {
                 var cnode = node.childList[i];
-                if (cnode.nodeType == ENodeType.Symbol && cnode.token?.type == ETokenType.Comma)
+                if (cnode.nodeType == ENodeType.Comma )
                 {
                 //    var fileMetaSymbolTerm = new FileMetaSymbolTerm(m_FileMeta, cnode.token);
                 //    AddFileMetaTerm(fileMetaSymbolTerm);
@@ -799,6 +800,7 @@ namespace SimpleLanguage.Compile
                 //        Debug.Assert(false);
                 //    }
                     nodeListList.Add(tnodeList);
+                    tnodeList = new List<Node>();
                     continue;
                 }
                 else
@@ -1182,9 +1184,16 @@ namespace SimpleLanguage.Compile
                     nfmbt.priority = SignComputePriority.Level1;
                     AddFileMetaTerm(nfmbt);
                 }
+                else if( node.nodeType == ENodeType.Bracket )
+                {
+                    var fileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, node );
+                    fileMetaBracketTerm.priority = SignComputePriority.Level1;
+                    AddFileMetaTerm(fileMetaBracketTerm);
+                }
                 else
                 {
-                    Log.AddInStructFileMeta(EError.None, "没有找到该类型: " + node.token.type.ToString()  +  " 位置: "  + node.token.ToLexemeAllString() );
+                    Debug.Assert(false);
+                    Log.AddInStructFileMeta(EError.None, "没有找到该类型: " + node.token.type.ToString() + " 位置: " + node.token.ToLexemeAllString());
                 }
             }
         }

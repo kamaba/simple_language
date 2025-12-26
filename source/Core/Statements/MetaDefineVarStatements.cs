@@ -161,6 +161,7 @@ namespace SimpleLanguage.Core
                 }
                 if (isCheckReturnType)
                 {
+                    //m_DefineVarMetaVariable.SetMetaDefineType(expressRetMetaDefineType);
                     m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                 }
             }

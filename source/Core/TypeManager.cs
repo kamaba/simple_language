@@ -19,7 +19,6 @@ namespace SimpleLanguage.Core
 
         // 比较两个MetaType的内容， 主要通过 MetaClass 和里边的MetaType的遍历 都相同 
 
-
         public static bool IsCoreMetaType( MetaType mt )
         {
             if( mt.eType == EMetaTypeType.MetaClass )

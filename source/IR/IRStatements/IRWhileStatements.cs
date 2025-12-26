@@ -47,14 +47,16 @@ namespace SimpleLanguage.IR
                  * endLabel
                  * nextStatements
                  */
-                var itv_irownermc = IRManager.instance.GetIRMetaClassById(ms.forIterateVariable.GetOwnerClassTemplateClass().GetHashCode());
-                var itv_irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(ms.forIterateVariable.defineMetaType, itv_irownermc );
+                var irownermc = IRManager.instance.GetIRMetaClassById(ms.forIterateVariable.GetOwnerClassTemplateClass().GetHashCode());
+                var itv_irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(ms.forIterateVariable.defineMetaType, irownermc);
 
-                var content_irownermc = IRManager.instance.GetIRMetaClassById(ms.forInContent.GetOwnerClassTemplateClass().GetHashCode());
-                var content_irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(ms.forInContent.defineMetaType, content_irownermc );
+                //var content_irownermc = IRManager.instance.GetIRMetaClassById(ms.forInContent.GetOwnerClassTemplateClass().GetHashCode());
+                MetaType dmt = ms.forInContent.isDefineMetaType ? ms.forInContent.defineMetaType : ms.forInContent.realMetaType;
+                var content_irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList( dmt, irownermc);
 
-                var iterator_irownermc = IRManager.instance.GetIRMetaClassById(ms.forInContentIterator.GetOwnerClassTemplateClass().GetHashCode());
-                var iterator_irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(ms.forInContentIterator.defineMetaType, iterator_irownermc );
+                //var iterator_irownermc = IRManager.instance.GetIRMetaClassById(ms.forInContentIterator.GetOwnerClassTemplateClass().GetHashCode());
+                MetaType it_dmt = ms.forInContentIterator.isDefineMetaType ? ms.forInContentIterator.defineMetaType : ms.forInContentIterator.realMetaType;
+                var iterator_irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(it_dmt, irownermc );
 
                 // 1. 创建迭代器对象，并赋值给循环变量
 
