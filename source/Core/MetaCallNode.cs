@@ -251,15 +251,10 @@ namespace SimpleLanguage.Core
                 }
                 if (m_FileMetaCallNode.fileMetaBracketTermList.Count > 0)
                 {
-                    var mt = m_MetaType;
-                    if (mt == null )
+                    MetaType mt = null;
+                    if ( m_DefineMetaVariable != null )
                     {
-                        if( m_CallNodeType == ECallNodeType.VisitVariable
-                            || m_CallNodeType == ECallNodeType.MemberVariableName
-                            || m_CallNodeType == ECallNodeType.FunctionInnerVariableName  )
-                        {
-                            mt = m_MetaVariable.isDefineMetaType ? m_MetaVariable.defineMetaType : m_MetaVariable.realMetaType;
-                        }
+                        mt = m_DefineMetaVariable.isDefineMetaType ? m_DefineMetaVariable.defineMetaType : null;
                     }
                     for (int i = 0; i < m_FileMetaCallNode.fileMetaBracketTermList.Count; i++)
                     {

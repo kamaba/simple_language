@@ -443,10 +443,6 @@ namespace SimpleLanguage.Core
             m_MetaClass = mc;
             m_EType = EMetaTypeType.TemplateClassWithTemplate;
         }
-        public void UpdateMetaClassByRawMetaClassAndInputTemplateCollection()
-        {
-            //m_MetaClass = m_RawMetaClass.GetGenTemplateMetaClassIfNotThenGenTemplateClass(m_InputTemplateCollection);
-        }
         //生成注册后的 模板类的实例类
         public MetaClass UpdateMetaGenTemplate( List<MetaGenTemplate> metaGenTemplateList)
         {

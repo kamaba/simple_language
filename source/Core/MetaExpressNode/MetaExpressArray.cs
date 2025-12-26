@@ -2,6 +2,7 @@
 
 
 using SimpleLanguage.Compile;
+using SimpleLanguage.Parse;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Intrinsics.X86;
@@ -27,6 +28,7 @@ namespace SimpleLanguage.Core
                 if (!defineMT.IsArray() || defineMT.defineTemplateMetaTypeList.Count != 1)
                 {
                     Debug.Assert(false);
+                    Log.AddInStructMeta(EError.None, "如果是表达式创建数组对象，必须最后一位知道是多少的长度!");
                     return;
                 }
                 this.m_MetaType = defineMT;

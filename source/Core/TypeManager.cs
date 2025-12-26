@@ -291,7 +291,7 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        MetaType AddArrayTemplate( MetaType arrayMt, List<int> list )
+        public MetaType AddArrayTemplate( MetaType arrayMt, List<int> list )
         {
             MetaType cmt = new MetaType(arrayMt.metaClass);
             for (int i = list.Count - 1; i >= 0; i--)
