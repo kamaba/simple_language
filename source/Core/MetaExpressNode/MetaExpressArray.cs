@@ -21,19 +21,17 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
 
-            if(defineMT == null )
+            MetaType cmt = null;
+            if (defineMT != null )
             {
-                Debug.Assert(false);
-                return;
+                if (!defineMT.IsArray() || defineMT.defineTemplateMetaTypeList.Count != 1)
+                {
+                    Debug.Assert(false);
+                    return;
+                }
+                this.m_MetaType = defineMT;
+                cmt = m_MetaType.defineTemplateMetaTypeList[0];
             }
-            if( !defineMT.IsArray() || defineMT.defineTemplateMetaTypeList.Count != 1 )
-            {
-                Debug.Assert(false);
-                return;
-            }
-
-            this.m_MetaType = defineMT;
-            var cmt = m_MetaType.defineTemplateMetaTypeList[0];
 
             m_FileMetaBaseTermList = fmcl;
 
@@ -101,23 +99,39 @@ namespace SimpleLanguage.Core
 
             if( m_MetaCallArray.Count > 0 )
             {
-                //m_MetaType.SetArrayDimension(1);
                 m_MetaType.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
-                MetaType cmt = new MetaType(CoreMetaClassManager.objectMetaClass);
+
+
+                MetaType cmt = null;
+                for ( int i = 0; i < m_MetaCallArray.Count; i++ )
+                {
+                    MetaType cmt2 = m_MetaCallArray[i].GetReturnMetaDefineType();
+                    if( cmt2.metaClass == CoreMetaClassManager.objectMetaClass )
+                    {
+                        break;
+                    }
+
+                    if( cmt != null )
+                    {
+                        if( cmt.metaClass != cmt2.metaClass )
+                        {
+                            cmt =new MetaType( CoreMetaClassManager.objectMetaClass );
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        cmt = cmt2;                       
+                    }
+                }
                 m_MetaType.AddDefineTemplateMetaType(cmt);
                 m_MetaType.AddGenTemplateMetaType(cmt);
 
-                m_MetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(m_MetaType, true, out bool isgmc);
-                m_MetaType.SetArrayLength(m_MetaCallArray.Count);
-            }
-            //for (int i = 0; i < m_MetaCallArray.Count; i++)
-            //{
-            //    var mcac = m_MetaCallArray[i];
-            //}
-            //if (m_MetaCallLink == null)
-            //    return null;
+                var newmt = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(m_MetaType, true, out bool isgmc);
+                newmt.SetArrayLength(m_MetaCallArray.Count);
 
-            //m_MetaDefineType = m_MetaCallLink.GetMetaDefineType();
+                m_MetaType = new MetaType(newmt.metaClass as MetaGenTemplateClass, m_MetaType.defineTemplateMetaTypeList, m_MetaType.genTemplateMetaTypeList);
+            }
             return m_MetaType;
         }
         public override string ToFormatString()

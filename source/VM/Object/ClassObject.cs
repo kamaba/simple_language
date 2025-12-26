@@ -52,6 +52,7 @@ namespace SimpleLanguage.VM
         public void SetClassObject( ClassObject co )
         {
             this.m_Object = co;
+            m_IsNull = co == null;
         }
         //public RuntimeType GetClassRuntimeType(IRMetaType irmt, IRMetaClass ownerMC, bool isAdd = false)
         //{

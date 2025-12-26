@@ -58,6 +58,11 @@ namespace SimpleLanguage.Core
         public MetaType()
         {
         }
+        public MetaType( EType etype )
+        {
+            m_EType = EMetaTypeType.MetaClass;
+            m_MetaClass = CoreMetaClassManager.GetMetaClassByEType(etype);
+        }
         public MetaType(MetaTemplate mt, string fromName = "" )
         {
             m_EType = EMetaTypeType.Template;

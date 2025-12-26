@@ -117,6 +117,7 @@ namespace SimpleLanguage.Core
                     }
                     break;
             }
+            m_MetaType = new MetaType(eType);
         }
         public override void CalcReturnType()
         {
