@@ -191,7 +191,8 @@ namespace SimpleLanguage.Core
                         newList.Add(m_CallNodeList[i]);
                         var cnt = m_CallNodeList[i];
                         if ( (cnt.callNodeType == ECallNodeType.MemberVariableName
-                            || cnt.callNodeType == ECallNodeType.FunctionInnerVariableName ) 
+                            || cnt.callNodeType == ECallNodeType.FunctionInnerVariableName
+                            || cnt.callNodeType == ECallNodeType.ClassName ) 
                             && cnt.bracketExpressList.Count > 0 )
                         {
                             if (cnt.metaVariable != null)

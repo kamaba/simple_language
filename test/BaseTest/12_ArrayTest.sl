@@ -357,7 +357,15 @@ namespace Core
             for i = 0, i < this._length, i++
             {
                 var cur = SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, i )
-                showstr = showstr + cur.toString()
+                if( cur != null )
+                {
+                    showstr = showstr + cur.toString()
+                }
+                else
+                {
+                    showstr += "null"
+                }                
+                
                 if( i < this._length - 1 )
                 {
                     showstr += ","
@@ -436,11 +444,11 @@ ArrayTest
         #a2[2] += 300    
         #System.Console.WriteLine("1111111111= " + a2.$2 )
         
-        #axxx = int[3]{1,2,3}
+        axxx = int[3]{1,2,3}
         int[] axxx2 = new(4){ null,4,5 }
-        
-        #!
         axxx3 = int[2][]{axxx,axxx2}
+        #!
+        
         axxx11 = int[2]{5,6}
         axxx12 = int[4]{ 7,8,9,5 }
         axxx13 = arry[2]{axxx11,axxx12} 
@@ -449,7 +457,7 @@ ArrayTest
         a1 = array[3]{ axxx3, axxx13, axx23 }
         !#
         
-        for v in axxx2
+        for v in axxx3
         {
             if v != null{
                 System.Console.WriteLine("level2---------value2: = " + v.toString() )
