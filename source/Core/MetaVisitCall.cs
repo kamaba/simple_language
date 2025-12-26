@@ -268,7 +268,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Debug.Assert(false);
+                        arrayLengthList.Add(-1);
                     }
                 }
                 else
