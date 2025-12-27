@@ -8,6 +8,7 @@
 
 
 using SimpleLanguage.Parse;
+using SimpleLanguage.VM;
 using System.Collections.Generic;
 using System.Text;
 
@@ -365,6 +366,54 @@ namespace SimpleLanguage.Core
         public MetaMemberFunction GetMetaMemberConstructFunction( MetaInputParamCollection input = null)
         {
             return m_MetaClass?.GetMetaMemberConstructFunction(input);
+        }
+        public static bool ExtendRelateionMetaType( MetaType mdtL, MetaType mdtR )
+        {
+            if (mdtL == null || mdtR == null)
+                return false;
+
+            if (mdtL.eType != mdtR.eType)
+            {
+                return false;
+            }
+
+            if (mdtL.eType == EMetaTypeType.Template)
+            {
+                if (mdtL.metaTemplate == mdtR.metaTemplate)
+                {
+                    return true;
+                }
+            }
+            else if (mdtL.eType == EMetaTypeType.MetaClass)
+            {
+                if (mdtR.metaClass.IsContainMetaClass( mdtL.metaClass ) )
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                if (mdtL.m_MetaClass != mdtR.m_MetaClass)
+                {
+                    return false;
+                }
+                if (mdtL.m_DefineTemplateMetaTypeList.Count != mdtR.m_DefineTemplateMetaTypeList.Count)
+                {
+                    return false;
+                }
+                for (int i = 0; i < mdtL.m_DefineTemplateMetaTypeList.Count; i++)
+                {
+                    var lv = mdtL.m_DefineTemplateMetaTypeList[i];
+                    var rv = mdtR.m_DefineTemplateMetaTypeList[i];
+                    if (EqualMetaDefineType(lv, rv) == false)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            return false;
         }
         public static bool EqualMetaDefineType(MetaType mdtL, MetaType mdtR)
         {

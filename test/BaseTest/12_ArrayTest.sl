@@ -444,18 +444,40 @@ ArrayTest
         #a2[2] += 300    
         #System.Console.WriteLine("1111111111= " + a2.$2 )
         
-        axxx = int[3]{1,2,3}
-        int[] axxx2 = new(4){ null,4,5 }
-        axxx3 = int[2][]{axxx,axxx2}
-        #!
+        #axxx = int[3]{1,2,3}
+        #int[] axxx2 = new(4){ null,4,5 }
+        #axxx3 = int[2][]{axxx,axxx2}
         
-        axxx11 = int[2]{5,6}
-        axxx12 = int[4]{ 7,8,9,5 }
-        axxx13 = arry[2]{axxx11,axxx12} 
+        #!
+        object[] axxx11 = int[2]
+        axxx11[0] = 5
+        axxx11[1] = 6
+
+        
+        for v in axxx11
+        {
+            if v != null{
+                System.Console.WriteLine("level2---------value2: = " + v.toString() )
+            }
+        }
+        !#
+
+        int[] aaaxx12 = Array<int>.createInstance(2)
+        aaaxx12[0] = 5
+        aaaxx12[1] = 6    
+        axxx12 = [ 7,8,9,5 ]
+        axxx13 = Array<int>[2][] { aaaxx12, [1,2,3,4] } 
+        for v in axxx13
+        {
+            if v != null{
+                System.Console.WriteLine("level2---------value2: = " + v.toString() )
+            }
+        }
+
+        #!
         axx22 = int[1]{100}
         axx23 = array[1]{ axx22}
         a1 = array[3]{ axxx3, axxx13, axx23 }
-        !#
         
         for v in axxx3
         {
@@ -463,7 +485,7 @@ ArrayTest
                 System.Console.WriteLine("level2---------value2: = " + v.toString() )
             }
         }
-        #!
+        
         for v in a1
         {
             if v != null
@@ -629,4 +651,8 @@ ArrayTest
 1. 在使用迭代器时，需要先new一个iterateVariable 对象
 2. 然后把IIterable放到本地的_iterable节点中
 3. 
+!#
+
+#!
+可以设置某个变量，是不为空
 !#

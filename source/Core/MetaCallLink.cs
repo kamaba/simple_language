@@ -200,6 +200,7 @@ namespace SimpleLanguage.Core
                                 var frontcn = cnt;
                                 if( cnt.metaVariable.isArray )
                                 {
+                                    //arryobject.@i arrayobject.@1
                                     if( cnt.bracketExpressList.Count <= cnt.metaVariable.realMetaType.ArrayDimension() )
                                     {
                                         for (int j = 0; j < cnt.bracketExpressList.Count; j++)
