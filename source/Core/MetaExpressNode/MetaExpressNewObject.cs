@@ -1263,6 +1263,14 @@ namespace SimpleLanguage.Core
                                             Debug.Assert(false, "最后一位数组定义，不能为实体值!");
                                             return;
                                         }
+                                        var cmt1 = m_DefineMetaType.genTemplateMetaTypeList[0];
+                                        var cmt2 = m_NewMetaType.genTemplateMetaTypeList[0];
+
+                                        if( !MetaType.ExtendRelateionMetaType( cmt1, cmt2 ) )
+                                        {
+                                            Debug.Assert(false, "定义数组，没有子类的关联");
+                                            return;
+                                        }
                                     }
                                     if (list1[i] == -1)
                                     {

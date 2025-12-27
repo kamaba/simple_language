@@ -199,6 +199,10 @@ namespace SimpleLanguage.Core
                     //{
 
                     //}
+                    else if( mdt.IsArray() )
+                    {
+                        m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
+                    }
                     else
                     {
                         MetaClass compareClass = null;
@@ -216,7 +220,7 @@ namespace SimpleLanguage.Core
                         sb.Append("Warning 在类: " + metaFunction?.ownerMetaClass.allClassName + " 函数: " + metaFunction?.name + "中  ");
                         if (curClass != null)
                         {
-                            sb.Append(" 定义类 : " + curClass.allClassName );
+                            sb.Append(" 定义类 : " + curClass.allClassName);
                         }
                         if (defineName != null)
                         {
@@ -224,7 +228,7 @@ namespace SimpleLanguage.Core
                         }
                         sb.Append("与后边赋值语句中 ");
                         if (compareClass != null)
-                            sb.Append("表达式类为: " + compareClass.allClassName );
+                            sb.Append("表达式类为: " + compareClass.allClassName);
                         if (relation == ClassManager.EClassRelation.No)
                         {
                             sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
