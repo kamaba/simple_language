@@ -34,10 +34,11 @@ namespace SimpleLanguage.Core
             {
                 ownerMBS = m_OwnerMetaBlockStatements,
                 ownerMetaClass = m_OwnerMetaClass,
-                metaType = new MetaType(CoreMetaClassManager.objectMetaClass),
+                metaType = null,
                 fme = m_FileInputParamNode.express,
                 isStatic = false,
                 isConst = false,
+                allowNewVariable = true,
                 parsefrom = EParseFrom.InputParamExpress
             };
             m_Express = ExpressManager.CreateExpressNode(cep);

@@ -10,7 +10,8 @@ GenClass2{
     static fun()
     {
         Level1 l1 = new()
-        l1.mm();                    #纯手动管理对象，不加入自动管理
+        #l1.mm();                    #纯手动管理对象，不加入自动管理
+        Mem.Maunul( l1 );           #手动管理 
 
         var refl1 = l1
         refl11 = l1.ref            # 自带get ref()方式 引用计数加1
