@@ -32,6 +32,7 @@ namespace SimpleLanguage.Core
         public FileMetaBaseTerm fme;
         public bool isStatic;
         public bool isConst;
+        public bool allowNewVariable;
         public bool allowUseIfSyntax;
         public bool allowUseSwitchSyntax;
         public bool allowUseParSyntax;
@@ -48,6 +49,7 @@ namespace SimpleLanguage.Core
             fme = null;
             isStatic = false;
             isConst = false;
+            allowNewVariable = false;
             allowUseIfSyntax = false;
             allowUseSwitchSyntax = false;
             allowUseParSyntax = false;
@@ -64,6 +66,7 @@ namespace SimpleLanguage.Core
             fme = clone.fme;
             isStatic = clone.isStatic;
             isConst = clone.isConst;
+            allowNewVariable = clone.allowNewVariable;
             allowUseIfSyntax = clone.allowUseIfSyntax;
             allowUseSwitchSyntax = clone.allowUseSwitchSyntax;
             allowUseParSyntax = clone.allowUseParSyntax;
@@ -238,6 +241,15 @@ namespace SimpleLanguage.Core
                     case FileMetaBracketTerm fmbt:
                         {
                             MetaArrayExpressNode maen = new MetaArrayExpressNode(fmbt.fileMetaExpressList, cep.ownerMetaClass, cep.ownerMBS, cep.metaType, cep.equalMetaVariable);
+
+                            if( cep.allowNewVariable )
+                            {
+                                var newob = new MetaNewObjectExpressNode(maen, cep.ownerMetaClass, cep.ownerMBS, cep.equalMetaVariable );
+                                newob.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                                newob.CalcReturnType();
+
+                                return newob;
+                            }
 
                             return maen;
                         }

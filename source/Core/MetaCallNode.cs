@@ -1431,7 +1431,7 @@ namespace SimpleLanguage.Core
                         return false;
                     }
                 }
-                var mmf = mc.GetFirstMetaMemberFunctionByName(inputname);
+                var mmf = mc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount(inputname, m_MetaTemplateParamsList.Count, m_MetaInputParamCollection, true );
                 if( mmf != null )
                 {
                     if ( mmf.isStatic )

@@ -256,7 +256,17 @@ namespace Core
     {
     }
 
-    public class Array<T> interface IArray,IIterable<T>, IIterator<T>,IIterable, IIterator
+    public class Array extends Array<Object>
+    {
+        
+        public static Array<object> createInstance(int length1)
+        {
+            var arr = Array<T>(length1)
+            ret arr
+        }
+    }
+
+    public class Array<T> interface IIterable<T>, IIterator<T>,IIterable, IIterator
     {
         int _length = 0
         Type _type = null;
@@ -467,29 +477,25 @@ ArrayTest
         }
         !#
 
+        #!
         for v in [1000,2000,3000,1005]
         {
-            if v != null{
+            if v != null {
                 System.Console.WriteLine("level2---------value2: = " + v.toString() )
             }
-        }
+        } 
+        !#
 
-        #!
         int[] aaaxx12 = Array<int>.createInstance(2)
         aaaxx12[0] = 5
         aaaxx12[1] = 6    
         axxx12 = [ 7,8,9,5 ]
         #axxx13 = Array<Array<int> >(2) { aaaxx12, [1,2,3,4] } 
         axxx13 = object[2][] { aaaxx12, [1,2,3,4] } 
+             
+        testArray( [101,102] ) 
         testArray( axxx13 )
-       
-        for v in axxx13
-        {
-            if v != null{
-                System.Console.WriteLine("level2---------value2: = " + v.toString() )
-            }
-        }
- #!
+
         #!
         axx22 = int[1]{100}
         axx23 = array[1]{ axx22}

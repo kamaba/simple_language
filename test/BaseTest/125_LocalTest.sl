@@ -5,7 +5,7 @@ import CSharp.System
 
 local
 {
-    sqlite = Sqlite3("d:/file.db")
+    sqlite = Std.Sql.Sqlite3("d:/file.db")
 
     if( sqlite == null )
     {
