@@ -215,6 +215,17 @@ namespace SimpleLanguage.VM
                         //}
                     }
                     break;
+                case EVMType.Object:
+                    {
+                        m_Array = new SObject[length];
+                        for( int i = 0; i < length; i++ )
+                        {
+                            SObject sobj = new SObject(EVMType.Object);
+                            sobj.SetNull();
+                            m_Array.SetValue(sobj, i);
+                        }
+                    }
+                    break;
                 case EVMType.Class:
                     {
                         m_Array = new ClassObject[length];
