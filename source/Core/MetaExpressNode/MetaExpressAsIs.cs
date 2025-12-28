@@ -6,10 +6,11 @@
 //  Description:  
 //****************************************************************************
 
-using System.Diagnostics;
-using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Parse;
+using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace SimpleLanguage.Core
 {
@@ -28,7 +29,6 @@ namespace SimpleLanguage.Core
         private MetaVariable m_ConvertTargetMetaVariable = null;
 
         private MetaCallLink m_CurrentVariableLink = null;
-        private MetaCallLink m_ConvertTargetMetaTypeLink = null;
         private FileMetaSymbolTerm m_FileMetaBaseTerm = null;
         private bool m_IsAs = false;
 
@@ -61,12 +61,13 @@ namespace SimpleLanguage.Core
             }
             m_CurrentVariableLink = new MetaCallLink(m_FileMetaKeyAsIsSyntax.variableCallLink, m_OwnerMetaClass, m_OwnerMetaBlockStatements, null, null);
 
-            if ( m_FileMetaKeyAsIsSyntax.defineTypeLink == null )
+            if ( m_FileMetaKeyAsIsSyntax.defineType == null )
             {
+                Debug.Assert(false, "没有定义转换的类型");
                 Log.AddInStructMeta(EError.None, "定义的类型不正确");
                 return;
             }
-            m_ConvertTargetMetaTypeLink = new MetaCallLink(m_FileMetaKeyAsIsSyntax.defineTypeLink, m_OwnerMetaClass, m_OwnerMetaBlockStatements, null, null);
+            m_ConvertTargetMetaType = null;
         }
         public override void Parse(AllowUseSettings auc)
         {
@@ -81,10 +82,9 @@ namespace SimpleLanguage.Core
                 //}
             }
 
-            if(m_ConvertTargetMetaTypeLink != null )
+            if(m_FileMetaKeyAsIsSyntax.defineType != null )
             {
-                m_ConvertTargetMetaTypeLink.Parse(auc);
-                m_ConvertTargetMetaType = m_ConvertTargetMetaTypeLink.GetMetaDefineType();
+                m_ConvertTargetMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, m_OwnerMetaBlockStatements.ownerMetaFunction as MetaMemberFunction, m_FileMetaKeyAsIsSyntax.defineType );
 
                 if (m_ConvertTargetMetaVariable == null && isAs == false )                    
                 {

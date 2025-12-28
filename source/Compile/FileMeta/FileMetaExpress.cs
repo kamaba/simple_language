@@ -309,13 +309,13 @@ namespace SimpleLanguage.Compile
     {
         public bool isAsTerm => m_AsOrIsToken?.type == ETokenType.As;
         public FileMetaCallLink variableCallLink => m_VariableCallLink;
-        public FileMetaCallLink defineTypeLink => m_DefineTypeLink;
+        public FileMetaClassDefine defineType => m_DefineType;
         public Token convertIsTypeNameToken => m_ConvertIsTypeNameToken;
         public Token asOrIsToken => m_AsOrIsToken;
 
         private FileMetaCallLink m_VariableCallLink = null;
         private Token m_AsOrIsToken = null;
-        private FileMetaCallLink m_DefineTypeLink = null;
+        private FileMetaClassDefine m_DefineType = null;
         private Token m_ConvertIsTypeNameToken = null;
 
         // 1. var1 as Class1  2. var1 is Class1   3. var1 is Class1 var2
@@ -332,7 +332,7 @@ namespace SimpleLanguage.Compile
             {
                 m_VariableCallLink = new FileMetaCallLink(fm, nodeList2[0]);
                 m_AsOrIsToken = nodeList2[1].token;
-                m_DefineTypeLink = new FileMetaCallLink(fm, nodeList2[2]);
+                m_DefineType = new FileMetaClassDefine(fm, nodeList2[2]);
                 if(nodeList2.Count == 4 )
                 {
                     m_ConvertIsTypeNameToken = nodeList2[3].token;

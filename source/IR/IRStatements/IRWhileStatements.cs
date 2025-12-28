@@ -58,6 +58,19 @@ namespace SimpleLanguage.IR
                 MetaType it_dmt = ms.forInContentIterator.isDefineMetaType ? ms.forInContentIterator.defineMetaType : ms.forInContentIterator.realMetaType;
                 var iterator_irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(it_dmt, irownermc );
 
+                if (ms.conditionExpress != null)
+                {
+                    if (ms.conditionExpress is MetaNewObjectExpressNode mnoen)
+                    {
+                        var irNewConditionExpress = new IRNewExpress(irMethod, mnoen);
+                        m_IRStatements.Add(irNewConditionExpress);
+
+
+                        IRStoreVariable irStoreVar = IRStoreVariable.CreateIRStoreVariable(content_irmt, null, irMethod, ms.forInContent);
+                        m_IRStatements.Add(irStoreVar);
+                    }
+                }
+
                 // 1. 创建迭代器对象，并赋值给循环变量
 
                 IRLoadVariable loadContentVar = IRLoadVariable.CreateLoadVariable(content_irmt, null, irMethod, ms.forInContent );
@@ -177,8 +190,16 @@ namespace SimpleLanguage.IR
 
                 if ( ms.conditionExpress != null)
                 {
-                    m_IRConditionExpress = new IRExpress(irMethod, ms.conditionExpress );
-                    m_IRStatements.Add(m_IRConditionExpress);
+                    if( ms.conditionExpress is MetaNewObjectExpressNode mnoen )
+                    {
+                        var irNewConditionExpress = new IRNewExpress(irMethod, mnoen);
+                        m_IRStatements.Add(irNewConditionExpress);
+                    }
+                    else
+                    {
+                        m_IRConditionExpress = new IRExpress(irMethod, ms.conditionExpress);
+                        m_IRStatements.Add(m_IRConditionExpress);
+                    }
 
                     // 4. 判断 moveNext() 返回值，false 跳出循环
                     ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, endIRData.data);

@@ -506,6 +506,7 @@ namespace SimpleLanguage.Core
 
                     MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmst, cmt, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_EqualMetaVariable);
                     mnoe.Parse(new AllowUseSettings());
+                    mnoe.CalcReturnType();
                     var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, mnoe, m_EqualMetaVariable as MetaMemberVariable);
                     m_AssignStatementsList.Add(mas);                    
                 }

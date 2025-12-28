@@ -81,6 +81,15 @@ namespace SimpleLanguage.Core
                     m_ConditionExpress = ExpressManager.CreateExpressNode(cep2);
                     m_ConditionExpress.Parse(new AllowUseSettings());
                     m_ConditionExpress.CalcReturnType();
+
+                    if (m_ConditionExpress is MetaArrayExpressNode maen)
+                    {
+                        //m_ForInContent = new MetaVariable("auto_" + this.GetHashCode().ToString(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, 
+                        //    ownerMetaClass, null);
+                        m_ConditionExpress = new MetaNewObjectExpressNode(maen, ownerMetaClass, m_OwnerMetaBlockStatements, null );
+                        m_ConditionExpress.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                        m_ConditionExpress.CalcReturnType();
+                    }
                 }
 
                 var mcallEn = m_ConditionExpress as MetaCallLinkExpressNode;
@@ -98,6 +107,7 @@ namespace SimpleLanguage.Core
                 {
                     m_ForInContent = new MetaVariable("forcontent_" + GetHashCode().ToString(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, ownerMetaClass, mnoen.GetReturnMetaDefineType() );
                     m_ThenMetaStatements.UpdateMetaVariableDict(m_ForInContent);
+                    mnoen.SetStoreMetaVariable(m_ForInContent);
                 }
                 MetaType mdt = m_ForInContent.GetFinalMetaType();
                 if ( !m_ForInContent.GetIsCanCanIterate() )

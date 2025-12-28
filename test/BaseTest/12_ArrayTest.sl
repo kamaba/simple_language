@@ -256,7 +256,7 @@ namespace Core
     {
     }
 
-    public class Array<T> interface IIterable<T>, IIterator<T>
+    public class Array<T> interface IArray,IIterable<T>, IIterator<T>,IIterable, IIterator
     {
         int _length = 0
         Type _type = null;
@@ -269,12 +269,6 @@ namespace Core
             var arr = Array<T>(length1)
             ret arr
         }
-        public static Array<CT> CreateInstance<CT>( int length1 )
-        {            
-            var arr = Array<CT>(length1)
-            ret arr
-        }
-
         _init_( int __len )
         {
             #uint allSize = __len * 4            
@@ -396,6 +390,17 @@ ArrayTest
             ret this.t.toString()
         }
     }
+    static testArray( arr )
+    {
+        var iter = arr as object[]
+        if iter != null
+        {
+            for v in iter 
+            {
+                System.Console.WriteLine("1111111111= " + v.toString() )
+            }
+        }
+    }
     static fun()
     { 
         int intvalue = 20
@@ -462,18 +467,29 @@ ArrayTest
         }
         !#
 
-        int[] aaaxx12 = Array<int>.createInstance(2)
-        aaaxx12[0] = 5
-        aaaxx12[1] = 6    
-        axxx12 = [ 7,8,9,5 ]
-        axxx13 = Array<int>[2][] { aaaxx12, [1,2,3,4] } 
-        for v in axxx13
+        for v in [1000,2000,3000,1005]
         {
             if v != null{
                 System.Console.WriteLine("level2---------value2: = " + v.toString() )
             }
         }
 
+        #!
+        int[] aaaxx12 = Array<int>.createInstance(2)
+        aaaxx12[0] = 5
+        aaaxx12[1] = 6    
+        axxx12 = [ 7,8,9,5 ]
+        #axxx13 = Array<Array<int> >(2) { aaaxx12, [1,2,3,4] } 
+        axxx13 = object[2][] { aaaxx12, [1,2,3,4] } 
+        testArray( axxx13 )
+       
+        for v in axxx13
+        {
+            if v != null{
+                System.Console.WriteLine("level2---------value2: = " + v.toString() )
+            }
+        }
+ #!
         #!
         axx22 = int[1]{100}
         axx23 = array[1]{ axx22}
