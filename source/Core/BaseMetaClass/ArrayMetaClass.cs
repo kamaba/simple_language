@@ -26,14 +26,14 @@ namespace SimpleLanguage.Core
     }
     public class ArrayMetaClass : MetaClass
     {
-        public ArrayMetaClass():base(DefaultObject.Array.ToString() )
+        public ArrayMetaClass() : base(DefaultObject.Array.ToString())
         {
             m_Type = EType.Array;
             m_ClassDefineType = EClassDefineType.InnerDefine;
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
 
 
-            var mt = new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass );
+            var mt = new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass);
             m_MetaTemplateList.Add(mt);
         }
         public static MetaClass CreateMetaClass()

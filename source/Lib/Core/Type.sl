@@ -2,8 +2,8 @@
 
     public class Core.MetaClass
     {
-        _namespaceName = "";
-        _className = "";
+        string _namespaceName = "";
+        string _className = "";
 
         get string className(){ ret this._className; }
     }

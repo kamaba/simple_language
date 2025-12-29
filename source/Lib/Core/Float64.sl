@@ -25,6 +25,7 @@ public class Core.Float64 extends Object
     {
         return string.format( this._value );
     }
+    #!
     T cast<T>()
     {
         Type _type = T.type
@@ -42,6 +43,7 @@ public class Core.Float64 extends Object
         }
         return new T()
     }
+    !#
 
     public Int32 toInt32()
     {

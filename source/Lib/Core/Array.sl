@@ -1,25 +1,16 @@
 
 
-    public interface IArray
-    {
-    }
-
     public class Array<T> interface IIterable<T>, IIterator<T>
     {
         int _length = 0
         Type _type = null;
-        _index = 0;
+        int _index = 0;
         T _current = null
         long _ptr = 0
            
         public static Array<T> createInstance(int length)
         {
             var arr = Array<T>(length)
-            ret arr
-        }
-        public static Array<CT> CreateInstance<CT>( int length1 )
-        {            
-            var arr = Array<CT>(length1)
             ret arr
         }
 
@@ -84,8 +75,9 @@
                 ret 
             }
             this._index = ind;
-            var retobj = SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, ind )
-            this._current = retobj;
+            this._current = SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, ind )
+            #retobj = impleLanguage.Lib.ArrayClass.GetArrayValueThis( this, ind )
+            #this._current = retobj;
         }
         set setValue( int __index, T val )
         {
@@ -114,6 +106,15 @@
                 }
             }
             ret showstr + "]"
+        }
+    }
+
+    public class Array extends Array<Object>
+    {        
+        public static Array<Object> createInstance(int length1)
+        {
+            var arr = Array<Object>(length1)
+            ret arr
         }
     }
 

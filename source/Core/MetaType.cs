@@ -427,7 +427,7 @@ namespace SimpleLanguage.Core
 
             if( mdtL.eType == EMetaTypeType.Template )
             {
-                if( mdtL.metaTemplate ==  mdtR.metaTemplate )
+                //if( mdtL.metaTemplate ==  mdtR.metaTemplate )
                 {
                     return true;
                 }

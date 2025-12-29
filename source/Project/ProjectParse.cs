@@ -630,8 +630,8 @@ namespace SimpleLanguage.Project
             m_ProjectData.BindFileMetaClass(fmc);
             m_ProjectData.ParseFileMetaDataMemeberData(fmc);
             //BuildDefineNameStruct();
-            m_ProjectData.ParseMemberVariableDefineMetaType();
-            m_ProjectData.ParseMemberFunctionDefineMetaType();
+            m_ProjectData.ParseFileCollectMemberVariableDefineMetaType();
+            m_ProjectData.ParseFileCollectMemberFunctionDefineMetaType();
         }
         public void ParseGlobalVariable()
         {

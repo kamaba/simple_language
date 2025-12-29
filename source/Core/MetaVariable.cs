@@ -93,7 +93,10 @@ namespace SimpleLanguage.Core
             {
                 m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
-            m_RealMetaType = new MetaType(m_DefineMetaType);
+            if(mdt != null )
+            {
+                m_RealMetaType = new MetaType(mdt);
+            }
         } 
         public virtual void SetOwnerMetaClass(MetaClass ownerclass)
         {
@@ -132,8 +135,7 @@ namespace SimpleLanguage.Core
         }
         public MetaClass GetFinalTemplateMetaClass()
         {
-
-            MetaClass mc = null;
+            MetaClass mc = CoreMetaClassManager.objectMetaClass;
             if (m_IsDefineMetaType)
             {                
                 if (m_DefineMetaType.metaClass is MetaGenTemplateClass mgtc)
@@ -145,15 +147,18 @@ namespace SimpleLanguage.Core
                     mc = m_DefineMetaType.metaClass;
                 }
             }
-            else
+            else 
             {
-                if (m_RealMetaType.metaClass is MetaGenTemplateClass mgtc)
+                if(m_RealMetaType != null )
                 {
-                    mc = mgtc.metaTemplateClass;
-                }
-                else
-                {
-                    mc = m_RealMetaType.metaClass;
+                    if (m_RealMetaType.metaClass is MetaGenTemplateClass mgtc)
+                    {
+                        mc = mgtc.metaTemplateClass;
+                    }
+                    else
+                    {
+                        mc = m_RealMetaType.metaClass;
+                    }
                 }
             }
             return mc;
