@@ -272,7 +272,7 @@ namespace SimpleLanguage.Core
             sb.Append("for ");
             if (m_IsForIn)
             {
-                sb.Append(m_ForIterateVariable.name);
+                sb.Append( this.m_ForIterateVariable.name);
                 sb.Append(" in ");
                 sb.Append(m_ForInContent.name);
             }

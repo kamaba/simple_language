@@ -12,12 +12,10 @@ public class Core.Float32 extends Object
         this._value = f
     }
 
-
-    public static bool IsFinite( Float32 f )
+    public static bool isFinite( Float32 f )
     {
         return false;
     }
-
 
     public override String toString( string format )
     {
@@ -43,7 +41,7 @@ public class Core.Float32 extends Object
 
     public Int32 toInt32()
     {
-        ret FloatConvertInt32( this._value )
+        ret SimpleLanguage.Lib.Float32.FloatConvertInt32( this._value )
     }
     public static Int32 FloatConvertInt32( Float _value )
     {

@@ -9,6 +9,7 @@
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -141,9 +142,26 @@ namespace SimpleLanguage.Core
             m_MetaMemberVariableDict.Clear();
             m_MetaMemberFunctionTemplateNodeDict.Clear();
             m_MetaExtendMemeberVariableDict.Clear();
-            m_ExtendClassMetaType = this.m_MetaTemplateClass.extendClassMetaType;
-            TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(m_ExtendClassMetaType, this, null);
-            m_ExtendClass = m_ExtendClassMetaType.metaClass;
+
+            var ecmt = this.m_MetaTemplateClass.extendClassMetaType;
+            if (ecmt != null )
+            {
+                if( ecmt.eType == EMetaTypeType.TemplateClassWithTemplate )
+                {
+                    m_ExtendClassMetaType = this.m_MetaTemplateClass.extendClassMetaType;
+                    TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(m_ExtendClassMetaType, this, null);
+                    m_ExtendClass = m_ExtendClassMetaType.metaClass;
+                }
+                else if( ecmt.eType == EMetaTypeType.MetaClass )
+                {
+                    m_ExtendClassMetaType = this.m_MetaTemplateClass.extendClassMetaType;
+                    m_ExtendClass = m_ExtendClassMetaType.metaClass;
+                }
+                else
+                {
+                    Debug.Assert(false);
+                }
+            }
 
             m_ExtendClass.ParseGenTemplateClass(m_ExtendClass as MetaGenTemplateClass);
 
@@ -155,17 +173,32 @@ namespace SimpleLanguage.Core
             {
                 return;
             }
-            if(m_ExtendClass == null )
+            if(this.m_ExtendClass == null )
             {
                 return;
             }
             m_ExtendClass.ParseGenMemberVarible();
 
+            //这个函数主要是用来生成模板实体的
+
+            ParseInterfaceRelation();
             ParseMemberVariableDefineMetaType();
             ParseMemberFunctionDefineMetaType();
 
             m_GenTemplateMemberFlag = true;
         }
+
+        public override void ParseInterfaceRelation()
+        {
+            for( int i = 0; i < m_MetaTemplateClass.interfaceMetaType.Count; i++ )
+            {
+                var nmt = new MetaType(m_MetaTemplateClass.interfaceMetaType[i]);
+                TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(nmt, this, null);
+                m_InterfaceMetaType.Add(nmt);
+                this.m_InterfaceClass.Add(m_InterfaceMetaType[i].metaClass);
+            }
+        }
+
         public override void HandleExtendMemberVariable()
         {
             base.HandleExtendMemberVariable();
@@ -175,7 +208,18 @@ namespace SimpleLanguage.Core
             this.m_NonStaticVirtualMetaMemberFunctionList = m_ExtendClass.nonStaticVirtualMetaMemberFunctionList;
             this.m_StaticMetaMemberFunctionList = m_ExtendClass.staticMetaMemberFunctionList;
         }
-        public override void ParseMemberVariableDefineMetaType()
+        public override void HandleExtendAndInterfaceMetaTypeInstnace()
+        {
+            TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(this.m_ExtendClassMetaType, this, null);
+            m_ExtendClass = this.m_ExtendClassMetaType.metaClass;
+
+            for( int i = 0; i < this.m_InterfaceMetaType.Count; i++ )
+            {
+                TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(this.m_InterfaceMetaType[i], this, null);
+                this.m_InterfaceClass.Add(this.m_InterfaceMetaType[i].metaClass);
+            }
+        }
+        public void ParseMemberVariableDefineMetaType()
         {
             List<MetaMemberVariable> mmvList = new List<MetaMemberVariable>();
             foreach (var v in m_ExtendClass.metaExtendMemeberVariableDict)
@@ -251,7 +295,7 @@ namespace SimpleLanguage.Core
             TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mgmv.realMetaType, this, null );
             return mgmv;
         }
-        public override void ParseMemberFunctionDefineMetaType()
+        public void ParseMemberFunctionDefineMetaType()
         {
             List<MetaMemberFunction> mmfList = new();
             foreach (var it in this.m_MetaTemplateClass.fileCollectMetaMemberFunctionList)

@@ -109,6 +109,7 @@ namespace Core
         void reset()
         bool moveNext()
         get object current()
+        set void current( Object t )
         void release()
     }
     public interface IIterable
@@ -234,6 +235,9 @@ namespace Core
             this._value = this._iterator.current()
             ret this._value
         }
+        override set void current( T val )
+        {
+        }
         override void release()
         {
             
@@ -255,18 +259,7 @@ namespace Core
     public interface IArray
     {
     }
-
-    public class Array extends Array<Object>
-    {
-        
-        public static Array<object> createInstance(int length1)
-        {
-            var arr = Array<T>(length1)
-            ret arr
-        }
-    }
-
-    public class Array<T> interface IIterable<T>, IIterator<T>,IIterable, IIterator
+    public class Array<T> interface IIterable<T>, IIterator<T>
     {
         int _length = 0
         Type _type = null;
@@ -309,10 +302,10 @@ namespace Core
         {
             ret this._current;
         }
-        override set void current( T val )
+        override set void current( T currentval )
         {
-            SimpleLanguage.Lib.ArrayClass.SetArrayValueThis( this, this._index, val )
-            this._current = val
+            SimpleLanguage.Lib.ArrayClass.SetArrayValueThis( this, this._index, currentval )
+            this._current = currentval
         }
         override void release()
         {
@@ -378,8 +371,23 @@ namespace Core
             ret showstr + "]"
         }
     }
-}
+    #需要把Array 的生成关系，也放Array里边，并且记录，如果是实体类，都需要把生成模板的传参都记录，然后通过 拿到模板的位置，然后拿到模板传入的实体
+    public class Array extends Array<Object>
+    {        
+        public static Array<Object> createInstance(int length1)
+        {
+            var arr = Array<Object>(length1)
+            ret arr
+        }
+    }
+    #!
+    不允许这样定义，如果Array已经有了约束，则在子类继承的时候，发现已经有了继承模板实体，则不允许再子类中，进行模板扩展
+    public class ArrayTC<T> extends Array
+    {
 
+    }
+    !#
+}
 
 ArrayTest
 {
@@ -402,7 +410,7 @@ ArrayTest
     }
     static testArray( arr )
     {
-        var iter = arr as object[]
+        var iter = arr as Array
         if iter != null
         {
             for v in iter 
@@ -486,15 +494,19 @@ ArrayTest
         } 
         !#
 
+        Array arr = Array(2){ 111, "222" }
+        #需要把数组的类型的逆变也计算出来，然后确定是否正确
+        testArray( arr )
+        #!
         int[] aaaxx12 = Array<int>.createInstance(2)
         aaaxx12[0] = 5
         aaaxx12[1] = 6    
         axxx12 = [ 7,8,9,5 ]
         #axxx13 = Array<Array<int> >(2) { aaaxx12, [1,2,3,4] } 
         axxx13 = object[2][] { aaaxx12, [1,2,3,4] } 
-             
-        testArray( [101,102] ) 
-        testArray( axxx13 )
+        !#   
+        #testArray( [101,102] ) 
+        #testArray( axxx13 )
 
         #!
         axx22 = int[1]{100}
@@ -533,7 +545,7 @@ ArrayTest
         #System.Console.WriteLine("1111111111= " + a1[0] )
        
         #object[][] a2 = int[2][3];
-        #a2[0] = int[3]
+        #a2[0] = int[3]       #通过传入的int[]类型决定 是否可以new
         #a2[1] = [[1,2,3],[2],[3,4]]
         #a1._setValue_( 1, 123 )
         #aa = a1._getValue_(1)
@@ -582,10 +594,10 @@ ArrayTest
         #object[][] a42 = { {1.2,1.3,1.4,1.5},{3,4,5} };    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于  
         #Array( 2, Array.type ){ Array(5, float.type ){ 1.2, 1.3, 1.4, 1.5 }, Array( 3, int.tye ){3,4,5}   } 
         #!
-        a2 = Array(5, int.type ){1,2,3,4,5.0f};   #默认int List 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  先申请 int 长度为5的数组，然后把后边的数据进行填存，但这时
+        a2 = Array<int>(5){1,2,3,4,5.0f};   #默认int List 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  先申请 int 长度为5的数组，然后把后边的数据进行填存，但这时
         #发现5.0f写入时，会提示  存在 float-> int 
-        a3 = Array( 20 );               # 长度为20的List
-        a4 = Array.dim( 3 ){ Array(), Array(), Array() }   # 请申一个3x1的数组 内容为null
+        a3 = Array( 20 );               # 长度为20的 Array<object>(20)
+        a4 = Array( 3 ){ Array(0), Array(0), Array(0) }   # 请申一个3x1的数组 内容为null
 
         int[][][] a = { { {1,2,3},{1,2,3,4} }, { {1,2,3},{5,6,7,8} } }  # 
         a[1][1][1] = 12    #这种情况，需要拿到 先拿第一维的数组，然后再拿第一维中第一组，
@@ -612,7 +624,7 @@ ArrayTest
         int[] bb3 = {1,2,3,4,5 };    #与上相同  Array<int>(5){ 1,2,3,4,5}
 
         #ArrClass[] arr2 = ArrClass[10]{};    #不允许 这种的写法  只允许new(10)
-        #arr2 = Array();           
+        #arr2 = Array(0);           
         #arr1.setLength( 100 );         #设置数组的长度
         #arr1[0].i = 20;
  

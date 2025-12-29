@@ -32,6 +32,7 @@ namespace SimpleLanguage.Core
         public int extendLevel => m_ExtendLevel;
         public bool isInterfaceClass => m_IsInterfaceClass;
         public List<MetaClass> interfaceClass => m_InterfaceClass;
+        public List<MetaType> interfaceMetaType => m_InterfaceMetaType;
         public MetaExpressNode defaultExpressNode => m_DefaultExpressNode;
         public Dictionary<string, MetaMemberVariable> allMetaMemberVariableDict
         {
@@ -72,6 +73,7 @@ namespace SimpleLanguage.Core
         protected Dictionary<Token, FileMetaClass> m_FileMetaClassDict = new Dictionary<Token, FileMetaClass>();
         protected MetaClass m_ExtendClass = null;
         protected MetaType m_ExtendClassMetaType = null;
+        protected bool m_AllowExtendsClassWithTemplate = true;             //允许继承类 是否可携带模板  像 ListInt : List<int>{} ListIntEx<T> : List<int> 这种情况不允许
         protected List<MetaType> m_BindStructTemplateMetaClassList = new List<MetaType>();
         protected List<MetaClass> m_InterfaceClass = new List<MetaClass>();
         protected List<MetaType> m_InterfaceMetaType = new List<MetaType>();
@@ -79,11 +81,10 @@ namespace SimpleLanguage.Core
         protected List<MetaMemberVariable> m_FileCollectMetaMemberVariable = new List<MetaMemberVariable>();
         protected Dictionary<string, MetaMemberVariable> m_MetaExtendMemeberVariableDict = new Dictionary<string, MetaMemberVariable>();
         protected Dictionary<string, MetaMemberFunctionTemplateNode> m_MetaMemberFunctionTemplateNodeDict = new Dictionary<string, MetaMemberFunctionTemplateNode>();
-        //protected List<MetaMemberFunction> m_CurrentClassMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected List<MetaMemberFunction> m_FileCollectMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
+        protected List<MetaType> m_FileCollectMetaInterfaceList = new List<MetaType>();
         protected List<MetaMemberFunction> m_NonStaticVirtualMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected List<MetaMemberFunction> m_StaticMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
-        //protected List<MetaMemberFunction> m_AllMetaMemberFunctionList = new List<MetaMemberFunction>();
         protected List<MetaMemberFunction> m_TempInnerFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected MetaExpressNode m_DefaultExpressNode = null;
         protected EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
@@ -104,11 +105,11 @@ namespace SimpleLanguage.Core
         {
             m_Name = _name;
             m_Type = _type;
-        }       
+        }
         public MetaClass( MetaClass mc ) : base(mc)
         {
             m_Name = mc.m_Name;
-            this.m_AllName = mc.m_AllName;
+            this.m_AllName = mc.m_AllName; 
             m_Type = mc.m_Type;
             m_FileMetaClassDict = mc.m_FileMetaClassDict;
             m_ExtendClass = mc.m_ExtendClass;
@@ -117,14 +118,17 @@ namespace SimpleLanguage.Core
                 m_ExtendLevel = m_ExtendClass.m_ExtendLevel;
             }
             m_InterfaceClass = mc.m_InterfaceClass;
+            m_InterfaceMetaType = mc.m_InterfaceMetaType;
 
-            m_MetaMemberVariableDict = mc.m_MetaMemberVariableDict;
-            m_FileCollectMetaMemberVariable = mc.m_FileCollectMetaMemberVariable;
             m_MetaExtendMemeberVariableDict = mc.m_MetaExtendMemeberVariableDict;
+            m_MetaMemberVariableDict = mc.m_MetaMemberVariableDict;
+
+            m_FileCollectMetaMemberVariable = mc.m_FileCollectMetaMemberVariable;
+            m_FileCollectMetaInterfaceList = mc.m_FileCollectMetaInterfaceList;
+            m_FileCollectMetaMemberFunctionList = mc.m_FileCollectMetaMemberFunctionList;
+            m_AllowExtendsClassWithTemplate = mc.m_AllowExtendsClassWithTemplate;
 
             m_MetaMemberFunctionTemplateNodeDict = mc.m_MetaMemberFunctionTemplateNodeDict;
-            //m_CurrentClassMetaMemberFunctionList = mc.m_CurrentClassMetaMemberFunctionList;
-            m_FileCollectMetaMemberFunctionList = mc.m_FileCollectMetaMemberFunctionList;
             m_NonStaticVirtualMetaMemberFunctionList = mc.m_NonStaticVirtualMetaMemberFunctionList;
             m_StaticMetaMemberFunctionList = mc.m_StaticMetaMemberFunctionList;
             m_DefaultExpressNode = mc.m_DefaultExpressNode;
@@ -264,7 +268,7 @@ namespace SimpleLanguage.Core
         }
         public virtual void ParseInterfaceRelation()
         {
-            m_InterfaceMetaType.Clear();
+            m_FileCollectMetaInterfaceList.Clear();
             foreach ( var v in this.fileMetaClassDict )
             {
                 for( int i = 0; i < v.Value.interfaceClassList.Count; i++ )
@@ -277,14 +281,29 @@ namespace SimpleLanguage.Core
                         Log.AddInStructMeta(EError.None, "没有找到接口相关的定义类!!");
                         continue;
                     }
-                    this.m_InterfaceMetaType.Add(getmt);
+                    this.m_FileCollectMetaInterfaceList.Add(getmt);
                 }
             }
-            if (this.m_MetaTemplateList.Count == 0)
+        }
+        public virtual void HandleExtendInterface()
+        {
+            if (m_ExtendClass == null)
             {
-                for( int i = 0; i < m_InterfaceMetaType.Count; i++ )
+                return;
+            }
+            else
+            {
+                foreach (var v in m_ExtendClass.m_InterfaceMetaType )
                 {
-                    AddInterfaceClass(m_InterfaceMetaType[i].metaClass);
+                    this.m_InterfaceMetaType.Add(new MetaType(v) );
+                }
+                foreach( var v in m_FileCollectMetaInterfaceList )
+                {
+                    this.m_InterfaceMetaType.Add(v);
+                }
+                foreach( var v in m_InterfaceMetaType )
+                {
+                    this.m_InterfaceClass.Add(v.metaClass);
                 }
             }
         }
@@ -341,7 +360,7 @@ namespace SimpleLanguage.Core
         {
             if (this.m_ExtendClass == null)
             {
-                foreach (var v in m_FileCollectMetaMemberFunctionList )
+                foreach (var v in m_FileCollectMetaMemberFunctionList)
                 {
                     if (v.isStatic)
                     {
@@ -372,7 +391,7 @@ namespace SimpleLanguage.Core
                             canAdd = false;
                             m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
                             continue;
-                        }                        
+                        }
                     }
                     if (canAdd)
                     {
@@ -464,14 +483,36 @@ namespace SimpleLanguage.Core
             }
             m_TempInnerFunctionList.Clear();
         }
-        public virtual void ParseMemberVariableDefineMetaType()
+        public virtual void HandleExtendAndInterfaceMetaTypeInstnace()
+        {
+            if(m_ExtendClassMetaType?.metaClass is MetaGenTemplateClass mgtc )
+            {
+                mgtc.ParseGenTemplateClass(mgtc);
+                mgtc.ParseGenMemberVarible();
+                m_ExtendClass = mgtc;
+            }
+            HandleExtendInterface();
+            //for (int i = 0; i < this.m_InterfaceMetaType.Count; i++)
+            //{
+            //    if( this.m_InterfaceMetaType[i].metaClass is MetaGenTemplateClass mgtc2 )
+            //    {
+            //        mgtc2.ParseGenTemplateClass(mgtc2);
+            //        mgtc2.ParseGenMemberVarible();
+            //        this.m_InterfaceClass.Add(mgtc2);
+            //    }
+            //}
+
+            HandleExtendMemberVariable();
+            HandleExtendMemberFunction();
+        }
+        public virtual void ParseFileCollectMemberVariableDefineMetaType()
         {
             foreach (var it in this.m_FileCollectMetaMemberVariable )
             {
                 it.ParseDefineMetaType();
             }
         }
-        public virtual void ParseMemberFunctionDefineMetaType()
+        public virtual void ParseFileCollectMemberFunctionDefineMetaType()
         {
             foreach (var it in m_FileCollectMetaMemberFunctionList )
             {
@@ -480,7 +521,7 @@ namespace SimpleLanguage.Core
         }
         public void CheckInterface()
         {
-            foreach (var it in m_InterfaceMetaType )
+            foreach (var it in this.m_InterfaceMetaType )
             {
                 MetaClass interfaceMc = it.GetTemplateMetaClass();
             
@@ -498,6 +539,7 @@ namespace SimpleLanguage.Core
                             {
                                 certified = true;
                                 selfMMF.SetIsOverrideInterface(true);
+                                break;
                             }
                         }
                     }
@@ -521,6 +563,21 @@ namespace SimpleLanguage.Core
         }
         public bool GetInterfaceByMetaClass(MetaClass mc )
         {
+            foreach( var v in this.m_InterfaceClass )
+            {
+                if( v is MetaGenTemplateClass mgtc )
+                {
+                    if( mgtc.metaTemplateClass == mc )
+                    {
+                        return true;
+                    }
+                }
+                if (v == mc)
+                {
+                    return true;
+                }
+            }
+            /*
             foreach (var v in m_InterfaceMetaType)
             {
                 if( v.metaClass == mc )
@@ -528,6 +585,7 @@ namespace SimpleLanguage.Core
                     return true;
                 }
             }
+            */
             return false;
         }
         public MetaType AddMetaPreTemplateClass( MetaType mt, bool isParse, out bool isGenMetaClass )
@@ -693,7 +751,14 @@ namespace SimpleLanguage.Core
                 while (mc != null)
                 {
                     level++;
-                    mc = mc.extendClass;
+                    if( mc is MetaGenTemplateClass mgtc )
+                    {
+                        mc = mgtc.metaTemplateClass;
+                    }
+                    else
+                    {
+                        mc = mc.extendClass;
+                    }
                 }
                 m_ExtendLevel = level;
             }

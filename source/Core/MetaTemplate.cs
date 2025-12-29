@@ -62,7 +62,7 @@ namespace SimpleLanguage.Core
         {
             this.m_Index = index;
         }
-        public void ParseInConstraint()
+        public void ParseTemplateInConstraint()
         {
             if (m_FileMetaTemplateDefine != null)
             {

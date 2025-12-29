@@ -474,39 +474,32 @@ namespace SimpleLanguage.Core
             m_AllClassDict.Add(acn, mc);
 
         }
-        public void HandleExtendMember()
+        public void ParseInitMetaClassList()
         {
             foreach (var it in m_InitHandleMetaClassList)
             {
-                it.CalcExtendLevel();
-            }
-
-            m_InitHandleMetaClassList.Sort((x, y) => x.extendLevel - y.extendLevel);
-            
-            foreach (var it in m_InitHandleMetaClassList )
-            {
-                it.HandleExtendMemberVariable();
-                it.HandleExtendMemberFunction();
-            }
-            foreach( var it in m_InitHandleMetaClassList )
-            {
-                it.ParseGenTemplateClassMetaType();
-            }
-        }
-        public void ParseInitMetaClassList()
-        {
-            foreach (var it in m_InitHandleMetaClassList )
-            {
-                it.ParseMetaInConstraint();
+                it.ParseMetaTemplateInConstraint();
                 it.ParseExtendsRelation();
                 it.ParseInterfaceRelation();
                 AddRuntimeMetaClass(it);
             }
-            foreach( var it in m_InitHandleMetaClassList )
+
+            foreach (var it in m_InitHandleMetaClassList)
             {
-                it.ParseMemberVariableDefineMetaType();
-                it.ParseMemberFunctionDefineMetaType();
+                it.CalcExtendLevel();
             }
+            m_InitHandleMetaClassList.Sort((x, y) => x.extendLevel - y.extendLevel);
+
+            foreach (var it in m_InitHandleMetaClassList)
+            {
+                it.ParseFileCollectMemberVariableDefineMetaType();
+                it.ParseFileCollectMemberFunctionDefineMetaType();
+                it.HandleExtendAndInterfaceMetaTypeInstnace();
+            }
+            //foreach( var it in m_InitHandleMetaClassList )
+            //{
+            //    it.ParseGenTemplateClassMetaType();
+            //}
         }
         public void UpdateMetaGenTemplateClassHandle()
         {

@@ -58,11 +58,11 @@ namespace SimpleLanguage.Core
         {
             return m_MetaTemplateList.Find(a => a.name == name) != null;
         }
-        public void ParseMetaInConstraint()
+        public void ParseMetaTemplateInConstraint()
         {
             foreach (var it in m_MetaTemplateList)
             {
-                it.ParseInConstraint();
+                it.ParseTemplateInConstraint();
             }
         }
         public MetaClass ParseFileMetaClassTemplate(FileMetaClass fmc)
@@ -337,15 +337,16 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public virtual void ParseGenTemplateClassMetaType()
-        {
-            var list = new List<MetaGenTemplateClass>(m_MetaGenTemplateClassList);
-            foreach ( var v in list )
-            {
-                v.ParseGenTemplateClass(v);
-                v.ParseGenMemberVarible();
-            }
-        }
+        //public virtual void ParseGenTemplateClassMetaType()
+        //{
+        //    //生成已有模板里边的内容
+        //    var list = new List<MetaGenTemplateClass>(m_MetaGenTemplateClassList);
+        //    foreach ( var v in list )
+        //    {
+        //        v.ParseGenTemplateClass(v);
+        //        v.ParseGenMemberVarible();
+        //    }
+        //}
         public MetaGenTemplateClass GetGenTemplateMetaClassByTemplateList(List<MetaGenTemplate> list)
         {
             foreach (var v in m_MetaGenTemplateClassList)

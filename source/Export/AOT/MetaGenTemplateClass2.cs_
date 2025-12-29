@@ -176,7 +176,7 @@ namespace SimpleLanguage.Core.AOT
             //    }
             //}
         }
-        public override void ParseMemberVariableDefineMetaType()
+        public void ParseMemberVariableDefineMetaType()
         {
             foreach (var it in this.m_MetaTemplateClass.metaMemberVariableDict)
             {
