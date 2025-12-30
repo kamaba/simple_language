@@ -145,7 +145,7 @@ namespace SimpleLanguage.Core
             {
                 if( m_MetaClass is MetaGenTemplateClass mgtc )
                 {
-                    if( mgtc.metaTemplateClass == CoreMetaClassManager.arrayMetaClass )
+                    if(mgtc.metaTemplateClass.ExtendClassContainMetaClass( CoreMetaClassManager.arrayMetaClass ) )
                     {
                         return true;
                     }
@@ -153,9 +153,26 @@ namespace SimpleLanguage.Core
             }
             else if( m_EType == EMetaTypeType.MetaClass )
             {
-                if (m_MetaClass == CoreMetaClassManager.arrayMetaClass)
+                MetaClass cmc = m_MetaClass;
+                while ( true )
                 {
-                    return true;
+                    if(cmc is MetaGenTemplateClass mgtc )
+                    {
+                        if( mgtc.metaTemplateClass.ExtendClassContainMetaClass(CoreMetaClassManager.arrayMetaClass) )
+                        {
+                            return true;
+                        }
+                    }
+                    if( cmc == CoreMetaClassManager.arrayMetaClass )
+                    {
+                        return true;
+                    }
+                    cmc = cmc.extendClass;
+                    if( cmc == null || cmc == CoreMetaClassManager.objectMetaClass )
+                    {
+                        break;
+                    }
+                    int a = 10;
                 }
             }
             else if( m_EType == EMetaTypeType.TemplateClassWithTemplate )
@@ -234,6 +251,28 @@ namespace SimpleLanguage.Core
             this.m_EType = mt.m_EType;
             this.m_DefineTemplateMetaTypeList = mt.m_DefineTemplateMetaTypeList;
             this.m_GenTemplateMetaTypeList = mt.m_GenTemplateMetaTypeList;
+        }
+        public List<MetaType> GetGenTemplateMetaTypeList()
+        {
+            if( eType == EMetaTypeType.MetaClass )
+            {
+                return this.m_MetaClass.genMetaTypeTemplateList;
+            }
+            return this.m_GenTemplateMetaTypeList;
+        }
+        public MetaType GetGenMetaTypeByIndex( int index = 0)
+        {
+            if (this.eType == EMetaTypeType.MetaClass
+                )
+            {
+                return this.metaClass.GetGenMetaTypeTemplateByIndex(index);
+            }
+            else if (this.eType == EMetaTypeType.TemplateClassWithTemplate
+                 || this.eType == EMetaTypeType.MetaGenClass )
+            {
+                return this.m_GenTemplateMetaTypeList[index];
+            }
+            return null;
         }
         public MetaClass GetTemplateMetaClass(out bool isGTC)
         {
@@ -374,6 +413,13 @@ namespace SimpleLanguage.Core
 
             if (mdtL.eType != mdtR.eType)
             {
+                if( mdtR.metaClass is MetaGenTemplateClass mgtc )
+                {
+                    if( mdtL.metaClass.ExtendClassContainMetaClass( mgtc.metaTemplateClass ) )
+                    {
+                        return true;
+                    }
+                }
                 return false;
             }
 

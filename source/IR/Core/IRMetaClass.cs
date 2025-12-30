@@ -8,6 +8,7 @@
 
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Core;
 using SimpleLanguage.Parse;
@@ -24,6 +25,7 @@ namespace SimpleLanguage.IR
 
         public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
         public List<IRMetaVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;
+        public List<IRMetaType> irMetaTypeList => m_IRMetaTypeList;
 
 
         Dictionary<int, Dictionary<int, IRMetaType>> m_IRMetaClassMapTemplateDict = new Dictionary<int, Dictionary<int, IRMetaType>>();
@@ -32,6 +34,7 @@ namespace SimpleLanguage.IR
         private List<IRMetaVariable> m_StaticIRMetaVariableList = new List<IRMetaVariable>();
         private List<IRMethod> m_IRNotStaticMethodList = new List<IRMethod>();
         private List<IRMethod> m_IROperatorMethodList = new List<IRMethod>();
+        private List<IRMetaType> m_IRMetaTypeList = new List<IRMetaType>();
         private string m_IRName = "";
         private MetaClass m_MetaClass = null;
         private int m_TemplateCount = 0;
@@ -47,7 +50,6 @@ namespace SimpleLanguage.IR
             m_MetaClass = mc;
             id = mc.GetHashCode();
             m_IRName = IRManager.GetIRNameByMetaClass(mc);
-            m_TemplateCount = mc.metaTemplateList.Count;
         }        
         public IRMethod GetIRNonStaticMethodByIndex( int index )
         {
@@ -247,6 +249,27 @@ namespace SimpleLanguage.IR
                 IRManager.instance.AddIRMethod(gmf);
             }
         }
+        public void CreateGenMetaTypeTemplateList()
+        {
+            foreach (var v in this.m_MetaClass.genMetaTypeTemplateList )
+            {
+                var nmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(v, this);
+                this.m_IRMetaTypeList.Add(nmt);
+            }
+            m_TemplateCount = this.m_IRMetaTypeList.Count;
+            
+            if( m_TemplateCount == 0 )
+            {
+                m_TemplateCount = this.m_MetaClass.metaTemplateList.Count;
+            }
+            else
+            {
+                if( this.m_MetaClass.metaTemplateList.Count > 0 )
+                {
+                    Debug.Assert(false, "");
+                }
+            }
+        }
         public void CreateTemplateRelation()
         {
             foreach( var v in this.m_MetaClass.metaTemplateMapDict )
@@ -268,6 +291,10 @@ namespace SimpleLanguage.IR
 
             foreach( var v in m_LocalIRMetaVariableList )
             {
+                if(v.express == null )
+                {
+                    continue;
+                }
                 if (v.express is MetaNewObjectExpressNode mnoe)
                 {
                     IRNewExpress irexp = new IRNewExpress(null, mnoe);

@@ -598,7 +598,7 @@ namespace SimpleLanguage.VM
                     {
                         if( anyobj != null )
                         {
-                            anyobj.SetValueByType(EVMType.Object, svalue.sobject);
+                            anyobj.SetValueByType(svalue.sobject.eAnyType, svalue.sobject.value);
                             //anyobj.SetValue(svalue.sobject.value as SObject);
                         }
                         else

@@ -858,11 +858,12 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else if( v.eType == EVMType.Object )
                         {
-                            SObject co = (v.sobject.value) as SObject;
-                            m_ValueStack[stackIndex].SetSObject(co);
-                            Debug.Assert(co != null);
-                            irc = co.irMetaClass;
-                            rt = co.runtimeType;
+                            SObject co = (v.sobject) as SObject;
+                            m_ValueStack[stackIndex].SetValue(co);
+                            var nco = m_ValueStack[stackIndex].GetSObject();
+                            Debug.Assert(nco != null);
+                            irc = nco.irMetaClass;
+                            rt = nco.runtimeType;
                         }
                         //else if( v.eType == EVMType.Array )
                         //{
@@ -1306,7 +1307,10 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         IRMetaType mdt = iri.opValue as IRMetaType;
                         var rt = GetClassRuntimeType(mdt, m_IRMetaClass != null ? m_IRMetaClass : mdt.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
-
+                        if( rt.eType == EVMType.Object )
+                        {
+                            break;
+                        }
 
                         var v1 = m_ValueStack[m_ValueIndex-1];
 
@@ -1328,6 +1332,9 @@ namespace SimpleLanguage.VM.Runtime
                                 if( rt.eType == EVMType.Array || rt.eType == EVMType.Class )
                                 {
 
+                                }
+                                else if( rt.eType == EVMType.Object )
+                                {
                                 }
                                 else
                                 {

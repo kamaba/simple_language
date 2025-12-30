@@ -543,11 +543,11 @@ namespace SimpleLanguage.Core
                 {
                     if(m_ContentMetaVariable.isDefineMetaType )
                     {
-                        m_DefineMetaType = m_ContentMetaVariable.defineMetaType.genTemplateMetaTypeList[0];
+                        m_DefineMetaType = m_ContentMetaVariable.defineMetaType.GetGenMetaTypeByIndex(0);
                     }
                     else
                     {
-                        m_DefineMetaType = m_ContentMetaVariable.realMetaType.genTemplateMetaTypeList[0];
+                        m_DefineMetaType = m_ContentMetaVariable.realMetaType.GetGenMetaTypeByIndex(0);
                     }
                 }
             }

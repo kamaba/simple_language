@@ -129,6 +129,93 @@ namespace SimpleLanguage.VM
 
             Log.AddVM(EError.None, "SetStringValue" + val );
         }
+
+        public void SetValue(SObject val)
+        {
+            eType = val.eAnyType;
+            SetTypeValue(eType, val.value);
+        }
+        public void SetTypeValue( EVMType etype, object tobj )
+        {
+            switch (eType)
+            {
+                case EVMType.Byte:
+                    {
+                        int8Value = (byte)(tobj);
+                    }
+                    break;
+                case EVMType.Boolean:
+                    {
+                        int8Value = int.Parse(tobj.ToString()) == 1 ? (byte)1 : (byte)0;
+                    }
+                    break;
+                case EVMType.SByte:
+                    {
+                        sint8Value = (sbyte)(tobj);
+                    }
+                    break;
+                //case EVMType.Char:
+                //    {
+                //        charValue = (char)(tobj);
+                //    }
+                //    break;
+                case EVMType.Int16:
+                    {
+                        int16Value = (short)(tobj);
+                    }
+                    break;
+                case EVMType.UInt16:
+                    {
+                        uint16Value = (ushort)(tobj);
+                    }
+                    break;
+                case EVMType.Int32:
+                    {
+                        int32Value = (int)(tobj);
+                    }
+                    break;
+                case EVMType.UInt32:
+                    {
+                        uint32Value = (uint)(tobj);
+                    }
+                    break;
+                case EVMType.Int64:
+                    {
+                        int64Value = (long)(tobj);
+                    }
+                    break;
+                case EVMType.UInt64:
+                    {
+                        uint64Value = (ulong)(tobj);
+                    }
+                    break;
+                case EVMType.Float32:
+                    {
+                        floatValue = (float)(tobj);
+                    }
+                    break;
+                case EVMType.Float64:
+                    {
+                        doubleValue = (double)(tobj);
+                    }
+                    break;
+                case EVMType.String:
+                    {
+                        stringValue = tobj as String;
+                    }
+                    break;
+                case EVMType.Class:
+                    {
+                        sobject = (tobj as ClassObject).value;
+                    }
+                    break;
+                default:
+                    {
+                        Debug.Assert(false);
+                    }
+                    break;
+            }
+        }
         public void SetSObject(SObject val)
         {
             if( val == null )
@@ -241,80 +328,7 @@ namespace SimpleLanguage.VM
                             return;
                         }
                         eType = templateobj.eType;
-                        object tobj = templateobj.value;
-                        switch (eType)
-                        {
-                            case EVMType.Byte:
-                                {
-                                    int8Value = (byte)(tobj);
-                                }
-                                break;
-                            case EVMType.Boolean:
-                                {
-                                    int8Value = int.Parse(tobj.ToString()) == 1 ? (byte)1 : (byte)0;
-                                }
-                                break;
-                            case EVMType.SByte:
-                                {
-                                    sint8Value = (sbyte)(tobj);
-                                }
-                                break;
-                            //case EVMType.Char:
-                            //    {
-                            //        charValue = (char)(tobj);
-                            //    }
-                            //    break;
-                            case EVMType.Int16:
-                                {
-                                    int16Value = (short)(tobj);
-                                }
-                                break;
-                            case EVMType.UInt16:
-                                {
-                                    uint16Value = (ushort)(tobj);
-                                }
-                                break;
-                            case EVMType.Int32:
-                                {
-                                    int32Value = (int)(tobj);
-                                }
-                                break;
-                            case EVMType.UInt32:
-                                {
-                                    uint32Value = (uint)(tobj);
-                                }
-                                break;
-                            case EVMType.Int64:
-                                {
-                                    int64Value = (long)(tobj);
-                                }
-                                break;
-                            case EVMType.UInt64:
-                                {
-                                    uint64Value = (ulong)(tobj);
-                                }
-                                break;
-                            case EVMType.Float32:
-                                {
-                                    floatValue = (float)(tobj);
-                                }
-                                break;
-                            case EVMType.Float64:
-                                {
-                                    doubleValue = (double)(tobj);
-                                }
-                                break;
-                            case EVMType.String:
-                                {
-                                    stringValue = tobj as String;
-                                }
-                                break;
-                            case EVMType.Class:
-                                {
-                                    sobject = (tobj as ClassObject).value;
-                                }
-                                break;
-                        }
+                        SetTypeValue(eType, templateobj.value);
                     }
                     break;
                 default:

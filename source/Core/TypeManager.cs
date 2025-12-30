@@ -42,10 +42,6 @@ namespace SimpleLanguage.Core
             }
             return false;
         }
-        public MetaType GetGen( MetaType mt )
-        {
-
-        }
         public bool CompareMetaType( MetaType mt1, MetaType mt2 )
         {
             return MetaType.EqualMetaDefineType( mt1, mt2 );
