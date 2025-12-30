@@ -12,6 +12,7 @@ using System.Text;
 using SimpleLanguage.Compile;
 using System.Linq;
 using SimpleLanguage.Parse;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Core
 {
@@ -27,6 +28,7 @@ namespace SimpleLanguage.Core
 
         public EType eType => m_Type;
         public EClassDefineType classDefineType => m_ClassDefineType;
+        public bool allowExtendsClassWithTemplate => m_GenMetaTypeTemplateList.Count > 0 ;             //允许继承类 是否可携带模板  像 ListInt : List<int>{} ListIntEx<T> : List<int> 这种情况不允许
         public MetaClass extendClass => m_ExtendClass;
         public MetaType extendClassMetaType => m_ExtendClassMetaType;
         public int extendLevel => m_ExtendLevel;
@@ -56,6 +58,7 @@ namespace SimpleLanguage.Core
                 return allMetaMemberVariableList;
             }
         }
+        public List<MetaType> genMetaTypeTemplateList => m_GenMetaTypeTemplateList;
         public List<MetaMemberFunction> nonStaticVirtualMetaMemberFunctionList => m_NonStaticVirtualMetaMemberFunctionList;
         public List<MetaMemberFunction> staticMetaMemberFunctionList => m_StaticMetaMemberFunctionList;
         public List<MetaMemberVariable> fileCollectMetaMemberVariable => m_FileCollectMetaMemberVariable;
@@ -73,7 +76,7 @@ namespace SimpleLanguage.Core
         protected Dictionary<Token, FileMetaClass> m_FileMetaClassDict = new Dictionary<Token, FileMetaClass>();
         protected MetaClass m_ExtendClass = null;
         protected MetaType m_ExtendClassMetaType = null;
-        protected bool m_AllowExtendsClassWithTemplate = true;             //允许继承类 是否可携带模板  像 ListInt : List<int>{} ListIntEx<T> : List<int> 这种情况不允许
+        protected List<MetaType> m_GenMetaTypeTemplateList = new List<MetaType>();  //生成类的传入模板值 比如 ListInst extends List<int> 这野牛ListInst 也有<int>这个属性
         protected List<MetaType> m_BindStructTemplateMetaClassList = new List<MetaType>();
         protected List<MetaClass> m_InterfaceClass = new List<MetaClass>();
         protected List<MetaType> m_InterfaceMetaType = new List<MetaType>();
@@ -126,7 +129,7 @@ namespace SimpleLanguage.Core
             m_FileCollectMetaMemberVariable = mc.m_FileCollectMetaMemberVariable;
             m_FileCollectMetaInterfaceList = mc.m_FileCollectMetaInterfaceList;
             m_FileCollectMetaMemberFunctionList = mc.m_FileCollectMetaMemberFunctionList;
-            m_AllowExtendsClassWithTemplate = mc.m_AllowExtendsClassWithTemplate;
+            m_GenMetaTypeTemplateList = mc.m_GenMetaTypeTemplateList;
 
             m_MetaMemberFunctionTemplateNodeDict = mc.m_MetaMemberFunctionTemplateNodeDict;
             m_NonStaticVirtualMetaMemberFunctionList = mc.m_NonStaticVirtualMetaMemberFunctionList;
@@ -490,8 +493,31 @@ namespace SimpleLanguage.Core
                 mgtc.ParseGenTemplateClass(mgtc);
                 mgtc.ParseGenMemberVarible();
                 m_ExtendClass = mgtc;
+
+                for( int i = 0; i < m_ExtendClassMetaType.genTemplateMetaTypeList.Count; i++ )
+                {
+                    this.m_GenMetaTypeTemplateList.Add(m_ExtendClassMetaType.genTemplateMetaTypeList[i] );
+                }
             }
-            HandleExtendInterface();
+            else
+            {
+                if( m_GenMetaTypeTemplateList.Count > 0 )
+                {
+                    if( m_MetaTemplateList.Count > 0 )
+                    {
+                        Debug.Assert(false, "如果在继承的父类中已经有了模板实体，在子类中，则不允许再次定义模板!!");
+                    }
+                    else
+                    {
+                        for (int i = 0; i < m_GenMetaTypeTemplateList.Count; i++)
+                        {
+                            this.m_GenMetaTypeTemplateList.Add(m_GenMetaTypeTemplateList[i]);
+                        }
+                    }
+                }
+            }
+
+
             //for (int i = 0; i < this.m_InterfaceMetaType.Count; i++)
             //{
             //    if( this.m_InterfaceMetaType[i].metaClass is MetaGenTemplateClass mgtc2 )
@@ -502,8 +528,17 @@ namespace SimpleLanguage.Core
             //    }
             //}
 
+            HandleExtendInterface();
             HandleExtendMemberVariable();
             HandleExtendMemberFunction();
+        }
+        public MetaType GetGenMetaTypeTemplateByIndex( int index )
+        {
+            if( index < 0 || index > m_GenMetaTypeTemplateList.Count )
+            {
+                return null;
+            }
+            return m_GenMetaTypeTemplateList[index];
         }
         public virtual void ParseFileCollectMemberVariableDefineMetaType()
         {
@@ -782,6 +817,26 @@ namespace SimpleLanguage.Core
                     break;
                 
                 if( mc == parentClass)
+                {
+                    return true;
+                }
+                mc = mc.m_ExtendClass;
+            }
+            return false;
+        }
+        public bool ExtendClassContainMetaClass(MetaClass commc )
+        {
+            MetaClass mc = this;
+            while (mc != null)
+            {
+                if( mc is MetaGenTemplateClass mgtc )
+                {
+                    if( mgtc.metaTemplateClass == commc )
+                    {
+                        return true;
+                    }
+                }
+                if (mc == commc)
                 {
                     return true;
                 }

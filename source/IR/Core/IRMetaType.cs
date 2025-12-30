@@ -69,9 +69,23 @@ namespace SimpleLanguage.IR
             IRMetaType irmt = new();
             irmt.m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id);
             //irmt.m_IsArray = type.isArray;
+
+            var gtmc = type.GetTemplateMetaClass();
             if (type.eType == EMetaTypeType.MetaClass)
             {
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(gtmc.GetHashCode());
+
+                if( gtmc.genMetaTypeTemplateList.Count > 0 )
+                {
+                    if( type.genTemplateMetaTypeList.Count > 0 )
+                    {
+                        Debug.Assert(false, "不允许在已经实例化的模板类中，再次定义模板!");
+                    }
+                    for (int i = 0; i < gtmc.genMetaTypeTemplateList.Count; i++)
+                    {
+                        irmt.m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(gtmc.genMetaTypeTemplateList[i], irmt.m_IROwnerMetaClass));
+                    }
+                }
             }
             else if (type.eType == EMetaTypeType.Template)
             {

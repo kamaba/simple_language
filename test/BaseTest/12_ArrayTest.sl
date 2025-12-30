@@ -80,6 +80,10 @@ namespace Core
         {
 
         }
+        public string toString()
+        {
+            ret this._value;
+        }
     }
     public class MetaClass
     {
@@ -413,7 +417,7 @@ ArrayTest
         var iter = arr as Array
         if iter != null
         {
-            for v in iter 
+            for v in iter
             {
                 System.Console.WriteLine("1111111111= " + v.toString() )
             }
@@ -494,24 +498,23 @@ ArrayTest
         } 
         !#
 
-        Array arr = Array(2){ 111, "222" }
+        #Array arr = Array(2){ 111, "222" }
         #需要把数组的类型的逆变也计算出来，然后确定是否正确
-        testArray( arr )
-        #!
+        #testArray( [arr,"10001", 3000] )
+        
         int[] aaaxx12 = Array<int>.createInstance(2)
         aaaxx12[0] = 5
         aaaxx12[1] = 6    
         axxx12 = [ 7,8,9,5 ]
         #axxx13 = Array<Array<int> >(2) { aaaxx12, [1,2,3,4] } 
-        axxx13 = object[2][] { aaaxx12, [1,2,3,4] } 
-        !#   
+        Array<Array> axxx13 = object[2][] { aaaxx12, [991,992,993,994] } 
+         
         #testArray( [101,102] ) 
         #testArray( axxx13 )
 
-        #!
         axx22 = int[1]{100}
-        axx23 = array[1]{ axx22}
-        a1 = array[3]{ axxx3, axxx13, axx23 }
+        axx23 = Array[1]{ axx22}
+        a1 = Array[3]{ axxx3, axxx13, axx23 }
         
         for v in axxx3
         {

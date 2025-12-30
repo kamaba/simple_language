@@ -414,6 +414,17 @@ namespace SimpleLanguage.Core
                     HandleBraceTermNode(fas, m_DefineMetaType);
                 }
             }
+            else
+            {
+                for (int i = 0; i < this.assignStatementsList.Count; i++)
+                {
+                    var asl = this.assignStatementsList[i];
+                    if (asl.expressNode != null)
+                    {
+                        asl.expressNode.Parse(new AllowUseSettings());
+                    }
+                }
+            }
         }
         //处理在{ Node1, Node2  } 在{}大括号中的Node1, Node2 这样的节点 Node1, 可以是 aaa = 1, "aa":1, 2:33, [1,2,3] [1] 3, this.value 这样的形式
         public void HandleBraceTermNode( FileMetaBaseTerm fmbt, MetaType mt )
@@ -496,11 +507,12 @@ namespace SimpleLanguage.Core
             else if (mt.IsArray() )// 数组类型的处理
             {
                 m_ContentType = EStatementsContentType.ArrayValue;
-                if( m_DefineMetaType.genTemplateMetaTypeList.Count != 1 )
+                var genList = m_DefineMetaType.GetGenTemplateMetaTypeList();
+                if (genList.Count != 1 )
                 {
                     Debug.Assert(false);
                 }
-                MetaType cmt = m_DefineMetaType.genTemplateMetaTypeList[0];
+                MetaType cmt = genList[0];
                 if (fmbt is FileMetaBracketTerm fmst)
                 {
 
@@ -671,6 +683,10 @@ namespace SimpleLanguage.Core
                     return CoreMetaClassManager.objectMetaClass;
                 }
                 if( nmcmt.isNull )
+                {
+                    return CoreMetaClassManager.objectMetaClass;
+                }
+                if( cmcmt.metaClass != nmcmt.metaClass )
                 {
                     return CoreMetaClassManager.objectMetaClass;
                 }
@@ -1032,7 +1048,6 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_NewType = ENewType.ArrayClass;
-            m_NewMetaType = maen.GetReturnMetaDefineType();
             m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(maen, mc, mbs, equalMV );
         }
 
@@ -1071,8 +1086,8 @@ namespace SimpleLanguage.Core
         }
         public override void Parse(AllowUseSettings auc)
         {
-            //该函数，进行，计算出， 要创建的类，使用的初始化函数，以及，初始化成员的解析            
-            if(m_NewType == ENewType.ArrayClass )
+            //该函数，进行，计算出， 要创建的类，使用的初始化函数，以及，初始化成员的解析            //
+            if (m_NewType == ENewType.ArrayClass )
             {
                 m_MetaBraceOrBracketStatementsContent.Parse();
 
@@ -1209,7 +1224,11 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Debug.Assert(false);
+                        if (m_MetaInputParamList[0] is MetaConstExpressNode mcen)
+                        {
+                            //m_NewMetaType.SetArrayLength((int)mcen.value);
+                        }
+                        //Debug.Assert(false);
                     }
                 }
                 else
@@ -1264,8 +1283,8 @@ namespace SimpleLanguage.Core
                                             Debug.Assert(false, "最后一位数组定义，不能为实体值!");
                                             return;
                                         }
-                                        var cmt1 = m_DefineMetaType.genTemplateMetaTypeList[0];
-                                        var cmt2 = m_NewMetaType.genTemplateMetaTypeList[0];
+                                        var cmt1 = m_DefineMetaType.GetGenMetaTypeByIndex(0);
+                                        var cmt2 = m_NewMetaType.GetGenMetaTypeByIndex(0);
 
                                         if( !MetaType.ExtendRelateionMetaType( cmt1, cmt2 ) )
                                         {
@@ -1273,21 +1292,24 @@ namespace SimpleLanguage.Core
                                             return;
                                         }
                                     }
-                                    if (list1[i] == -1)
-                                    {
-                                        if(list2[i] == -1 )
-                                        {
-                                            Debug.Assert(false, "不是最后一位 生成的数组，需要定义数组长度");
-                                            return;
-                                        }
-                                    }
                                     else
                                     {
-                                        if (list1[i] != list2[i])
+                                        if (list1[i] == -1)
                                         {
-                                            Debug.Assert(false, "最后一位数组定义，不能为实体值!");
-                                            Log.AddInStructMeta(EError.None, "如果前边定义了长度，new的时候必须和前边的长度一样!");
-                                            return;
+                                            if (list2[i] == -1)
+                                            {
+                                                Debug.Assert(false, "不是最后一位 生成的数组，需要定义数组长度");
+                                                return;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (list1[i] != list2[i])
+                                            {
+                                                Debug.Assert(false, "最后一位数组定义，不能为实体值!");
+                                                Log.AddInStructMeta(EError.None, "如果前边定义了长度，new的时候必须和前边的长度一样!");
+                                                return;
+                                            }
                                         }
                                     }
                                 }
@@ -1423,7 +1445,7 @@ namespace SimpleLanguage.Core
 
                 if( m_MetaType.IsArray() )
                 {
-                    var cmt = m_MetaType.genTemplateMetaTypeList[0];
+                    var cmt = m_MetaType.GetGenMetaTypeByIndex(0);
                     
                     if (!cmt.metaClass.IsContainMetaClass(mt2.metaClass))
                     {

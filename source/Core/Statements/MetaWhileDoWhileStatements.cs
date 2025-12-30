@@ -118,7 +118,7 @@ namespace SimpleLanguage.Core
                 MetaClass iterMT = ClassManager.instance.GetClassByName("Core.IIterator<T>", 1);
                 m_ForInContentIterator = new MetaVariable("for_iterator_" + GetHashCode().ToString(), 
                     MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, ownerMetaClass, 
-                    new MetaType( iterMT, mdt.genTemplateMetaTypeList ) );
+                    new MetaType( iterMT, mdt.GetGenTemplateMetaTypeList() ) );
                 m_ThenMetaStatements.UpdateMetaVariableDict(m_ForInContentIterator);
 
                 var forMVMC = mdt.GetMetaInputTemplateByIndex();

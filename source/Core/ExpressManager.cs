@@ -245,9 +245,6 @@ namespace SimpleLanguage.Core
                             if( cep.allowNewVariable )
                             {
                                 var newob = new MetaNewObjectExpressNode(maen, cep.ownerMetaClass, cep.ownerMBS, cep.equalMetaVariable );
-                                newob.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
-                                newob.CalcReturnType();
-
                                 return newob;
                             }
 

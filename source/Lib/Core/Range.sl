@@ -1,6 +1,6 @@
 
 
-    public class Range<T> interface IIterable<T>, IIterator<T>
+    public class Range<T:Number> interface IIterable<T>, IIterator<T>
     {
         T _start = null
         T _end = null

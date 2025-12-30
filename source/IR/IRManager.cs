@@ -118,6 +118,7 @@ namespace SimpleLanguage.IR
                 v.CreateMemberData();
                 v.CreateMemberMethod();
                 v.CreateTemplateRelation();
+                v.CreateGenMetaTypeTemplateList();
             }
             
             foreach ( var v in m_IRMetaClassList)
@@ -210,11 +211,24 @@ namespace SimpleLanguage.IR
         }
         public IRMethod TranslateIRByFunction( MetaFunction mf )
         {
-            if(IRMethodDict.ContainsKey( mf.functionAllName ) )
+            var hmf = mf;
+            if( mf is MetaMemberFunction mmf )
             {
-                return IRMethodDict[mf.functionAllName];
+                if(mmf.sourceMetaMemberFunction != null )
+                {
+                    hmf = mmf.sourceMetaMemberFunction;
+                }
+                else
+                {
+                    hmf = mmf;
+                }
             }
-            IRMethod irmethod = new IRMethod(this, mf );
+
+            if(IRMethodDict.ContainsKey(hmf.functionAllName ) )
+            {
+                return IRMethodDict[hmf.functionAllName];
+            }
+            IRMethod irmethod = new IRMethod(this, hmf);
             return irmethod;
         }
         public static string GetIRNameByMetaClass(MetaClass mc)

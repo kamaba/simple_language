@@ -507,9 +507,7 @@ namespace SimpleLanguage.VM
                     anyobj.SetNull();
                     return;
                 }
-                var valobj = svalue.GetSObject();
-                m_Array.SetValue(valobj, index);
-                return;
+                //var valobj = svalue.GetSObject();
             }
 
 
@@ -527,6 +525,11 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Boolean:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValueByType(EVMType.Boolean, svalue.int8Value == 1);
+                            return;
+                        }
                         //var int8obj = new BoolObject(svalue.int8Value == 1);
                         //anyobj.SetValue( EVMType.Boolean, int8obj );
                         m_Array.SetValue(svalue.int8Value == 1, index);
@@ -534,6 +537,11 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Byte:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValueByType(EVMType.Byte, svalue.int8Value );
+                            return;
+                        }
                         //var i8obj = new Int8Object(svalue.int8Value);
                         //anyobj.SetValue(EVMType.Byte, i8obj );
                         m_Array.SetValue(svalue.int8Value, index);
@@ -541,6 +549,11 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.SByte:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValueByType(EVMType.SByte, svalue.sint8Value );
+                            return;
+                        }
                         //var si8obj = new SInt8Object(svalue.sint8Value);
                         //anyobj.SetValue(EVMType.SByte, si8obj );
                         m_Array.SetValue(svalue.sint8Value, index);
@@ -548,6 +561,11 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Int16:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValueByType(EVMType.Int16, svalue.int16Value);
+                            return;
+                        }
                         //var i16obj = new Int16Object(svalue.int16Value);
                         //anyobj.SetValue(EVMType.Int16, i16obj );
                         m_Array.SetValue(svalue.int16Value, index);
@@ -555,6 +573,11 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.UInt16:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValueByType(EVMType.UInt16, svalue.uint16Value );
+                            return;
+                        }
                         //var ui16obj = new UInt16Object(svalue.uint16Value);
                         //anyobj.SetValue(EVMType.UInt16, ui16obj );
                         m_Array.SetValue(svalue.uint16Value, index);
@@ -562,6 +585,11 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Int32:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValueByType(EVMType.Int32, svalue.int32Value);
+                            return;
+                        }
                         //var i32obj = new Int32Object(svalue.int32Value);
                         //anyobj.SetValue(EVMType.Int32, i32obj);
                         //m_Array.SetValue(i32obj, index);
@@ -570,6 +598,11 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.UInt32:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValueByType(EVMType.UInt32, svalue.int32Value );
+                            return;
+                        }
                         //var ui32obj = new UInt32Object(svalue.uint32Value);
                         //anyobj.SetValue(EVMType.UInt32, ui32obj );
                         m_Array.SetValue(svalue.uint32Value, index);
@@ -577,6 +610,11 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Int64:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValueByType(EVMType.Int64, svalue.int64Value );
+                            return;
+                        }
                         //var i64obj = new Int64Object(svalue.int64Value);
                         //anyobj.SetValue(EVMType.Int64, i64obj );
                         m_Array.SetValue(svalue.int64Value, index);
@@ -584,6 +622,11 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.UInt64:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValueByType(EVMType.UInt64, svalue.uint64Value );
+                            return;
+                        }
                         //var ui64obj = new UInt64Object(svalue.uint64Value);
                         //anyobj.SetValue(EVMType.UInt64, ui64obj );
                         m_Array.SetValue(svalue.uint64Value, index);
@@ -591,6 +634,11 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Float32:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValueByType(EVMType.Float32, svalue.floatValue );
+                            return;
+                        }
                         //var f32obj = new Float32Object(svalue.floatValue);
                         //anyobj.SetValue(EVMType.Float32, f32obj);
                         m_Array.SetValue(svalue.floatValue, index);
@@ -598,6 +646,11 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Float64:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValueByType(EVMType.Float64, svalue.doubleValue );
+                            return;
+                        }
                         //var f64obj = new Float64Object(svalue.doubleValue);
                         //anyobj.SetValue(EVMType.Float64, f64obj );
                         m_Array.SetValue(svalue.doubleValue, index);
@@ -605,6 +658,11 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.String:
                     {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValueByType(EVMType.String, svalue.stringValue );
+                            return;
+                        }
                         //var stringobj = new StringObject(svalue.stringValue);
                         //anyobj.SetValue(EVMType.String, stringobj );
                         m_Array.SetValue(svalue.stringValue, index);
