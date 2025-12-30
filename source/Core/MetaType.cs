@@ -437,6 +437,26 @@ namespace SimpleLanguage.Core
                     return true;
                 }
             }
+            else if( mdtL.eType == EMetaTypeType.MetaGenClass )
+            {
+                if( mdtL.metaClass is MetaGenTemplateClass mgtc )
+                {
+                    if( mdtR.eType == EMetaTypeType.MetaGenClass )
+                    {
+                        if( mgtc.metaTemplateClass == (mdtR.metaClass as MetaGenTemplateClass).metaTemplateClass )
+                        {
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        if( mgtc.metaTemplateClass == mdtR.metaClass )
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
             else
             {
                 if (mdtL.m_MetaClass != mdtR.m_MetaClass)

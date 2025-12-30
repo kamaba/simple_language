@@ -259,10 +259,6 @@ namespace Core
         }
     }
     !#
-
-    public interface IArray
-    {
-    }
     public class Array<T> interface IIterable<T>, IIterator<T>
     {
         int _length = 0
@@ -376,6 +372,7 @@ namespace Core
         }
     }
     #需要把Array 的生成关系，也放Array里边，并且记录，如果是实体类，都需要把生成模板的传参都记录，然后通过 拿到模板的位置，然后拿到模板传入的实体
+    #!
     public class Array extends Array<Object>
     {        
         public static Array<Object> createInstance(int length1)
@@ -384,6 +381,7 @@ namespace Core
             ret arr
         }
     }
+    !#
     #!
     不允许这样定义，如果Array已经有了约束，则在子类继承的时候，发现已经有了继承模板实体，则不允许再子类中，进行模板扩展
     public class ArrayTC<T> extends Array
@@ -414,7 +412,7 @@ ArrayTest
     }
     static testArray( arr )
     {
-        var iter = arr as Array
+        var iter = arr as Array<Object>
         if iter != null
         {
             for v in iter
@@ -507,22 +505,22 @@ ArrayTest
         aaaxx12[1] = 6    
         axxx12 = [ 7,8,9,5 ]
         #axxx13 = Array<Array<int> >(2) { aaaxx12, [1,2,3,4] } 
-        Array<Array> axxx13 = object[2][] { aaaxx12, [991,992,993,994] } 
+        Array<Array<Object> > axxx13 = object[2][] { aaaxx12, [991,992,993,994] } 
          
         #testArray( [101,102] ) 
         #testArray( axxx13 )
 
         axx22 = int[1]{100}
-        axx23 = Array[1]{ axx22}
-        a1 = Array[3]{ axxx3, axxx13, axx23 }
+        axx23 = object[1]{ axx22}
+        a1 = Array<Object>(3){ 1, axxx13, axx23 }       
         
-        for v in axxx3
+        for v in a1
         {
             if v != null{
                 System.Console.WriteLine("level2---------value2: = " + v.toString() )
             }
         }
-        
+        #!
         for v in a1
         {
             if v != null
