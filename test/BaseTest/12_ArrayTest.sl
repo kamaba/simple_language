@@ -513,13 +513,15 @@ ArrayTest
         axx22 = int[1]{100}
         axx23 = object[1]{ axx22}
         a1 = Array<Object>(3){ 1, axxx13, axx23 }       
+        testArray(a1)
         
         for v in a1
         {
             if v != null{
-                System.Console.WriteLine("level2---------value2: = " + v.toString() )
+                System.Console.WriteLine("level2=================value2: = " + v.toString() )
             }
         }
+        
         #!
         for v in a1
         {

@@ -76,6 +76,16 @@ namespace SimpleLanguage.IR
                 IRLoadVariable loadContentVar = IRLoadVariable.CreateLoadVariable(content_irmt, null, irMethod, ms.forInContent );
                 m_IRStatements.Add(loadContentVar);
 
+                var resetMethodInst = content_irmt.irMetaClass.GetIRNonStaticMethodIndexByName("reset", out int restIndex);
+                var restCall = new IRMethodCall(content_irmt, new List<IRMetaType>(), resetMethodInst, 0);
+                IRData restCallData = new IRData();
+                restCallData.opCode = EIROpCode.CallDynamic;
+                restCallData.opValue = restCall;
+                restCallData.index = 1;
+                IRBase restCallBase = new IRBase(restCallData);
+                m_IRStatements.Add(restCallBase);
+
+                m_IRStatements.Add(loadContentVar);
                 var iteratorMethodInst = content_irmt.irMetaClass.GetIRNonStaticMethodIndexByName("iterator", out int iteratorIndex);
                 var iteratorCall = new IRMethodCall(content_irmt, new List<IRMetaType>(), iteratorMethodInst, 0);
                 IRData iteratorCallData = new IRData();
