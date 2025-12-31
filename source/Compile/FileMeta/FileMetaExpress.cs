@@ -1074,7 +1074,7 @@ namespace SimpleLanguage.Compile
         {
             m_FileMeta = fm;
             Node tn = new Node( null );
-            tn.childList = nodeList;
+            tn.SetChildList( nodeList );
             var childList = StructParse.HandleExpressNode(tn);
             expressType = _expressType;
 

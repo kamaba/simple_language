@@ -10,6 +10,8 @@ using SimpleLanguage.Compile;
 
 using SimpleLanguage.Parse;
 using System;
+using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -330,14 +332,29 @@ namespace SimpleLanguage.Core
                     isStatic = false,
                     isConst = false,
                     parsefrom = EParseFrom.StatementRightExpress,
-                    equalMetaVariable = m_MetaVariable
+                    equalMetaVariable = m_MetaVariable,
+                    allowNewVariable = true,
                 };
                 m_RightMetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
                 m_RightMetaExpress.Parse(new AllowUseSettings());
                 if (m_RightMetaExpress == null)
                 {
+                    Debug.Assert(false, "");
                     Log.AddInStructMeta( EError.None, "Error 解析新建变量语句时，表达式解析为空!!");
                     return;
+                }
+
+                var mcen = m_RightMetaExpress as MetaCallLinkExpressNode;
+                if (mcen?.isNewExpressNode == true)
+                {
+                    m_RightMetaExpress = new MetaNewObjectExpressNode(expressMdt, mcen);
+                    m_RightMetaExpress.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                    m_RightMetaExpress.CalcReturnType();
+                }
+                else if (m_RightMetaExpress is MetaArrayExpressNode maen)
+                {
+                    m_RightMetaExpress = new MetaNewObjectExpressNode(maen, ownerMetaClass, m_OwnerMetaBlockStatements, m_MetaVariable );
+                    m_RightMetaExpress.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
                 }
             }
             else

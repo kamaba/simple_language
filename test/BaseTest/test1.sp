@@ -69,7 +69,10 @@ Project
     }
     !#
     static Main()
-    {        
+    {
+        #typedef Array = Array<Object>
+        #typedef ArrayOK<T> = Array<T>
+        
         #GenClass.fun()
         #GenFunction.fun();
         #TypeTest.fun()

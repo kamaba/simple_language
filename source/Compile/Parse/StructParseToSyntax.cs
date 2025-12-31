@@ -390,7 +390,7 @@ namespace SimpleLanguage.Compile
             FileMetaCallLink varRef = null;
 
             Node parseNode = new Node(null);
-            parseNode.childList = beforeNodeList;
+            parseNode.SetChildList(beforeNodeList);
             parseNode.parseIndex = 0;
             var handleBeforeList = HandleBeforeNode(parseNode);           
 
@@ -518,7 +518,7 @@ namespace SimpleLanguage.Compile
                 //    Debug.Write("Error 不允许嵌套除if/switch以外的语句!!");
                 //}
             }
-            if (fme == null)
+            if (fme == null && afterNodeList.Count > 0 )
             {
                 fme = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, afterNodeList, FileMetaTermExpress.EExpressType.Common);
             }

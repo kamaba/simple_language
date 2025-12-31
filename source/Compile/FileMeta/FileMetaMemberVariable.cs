@@ -132,7 +132,7 @@ namespace SimpleLanguage.Compile
             }
 
             Node beforeNode = new Node( null );
-            beforeNode.childList = bedoreNodeList;
+            beforeNode.SetChildList(bedoreNodeList);
             beforeNode.parseIndex = 0;
             var defineNodeList = StructParse.HandleBeforeNode(beforeNode);
 

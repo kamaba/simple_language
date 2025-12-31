@@ -44,7 +44,7 @@ namespace SimpleLanguage.Core
         public bool AddMetaMemberFunction(MetaMemberFunction mmf)
         {
             MetaMemberFunctionNode find = null;
-            if (m_MetaTemplateFunctionNodeDict.ContainsKey(mmf.metaMemberTemplateCollection.count))
+            if (this.m_MetaTemplateFunctionNodeDict.ContainsKey(mmf.metaMemberTemplateCollection.count))
             {
                 find = m_MetaTemplateFunctionNodeDict[mmf.metaMemberTemplateCollection.count];
             }
