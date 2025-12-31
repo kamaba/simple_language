@@ -598,6 +598,10 @@ namespace SimpleLanguage.Core
         }
         public bool GetInterfaceByMetaClass(MetaClass mc )
         {
+            if( this == mc )
+            {
+                return true;
+            }
             foreach( var v in this.m_InterfaceClass )
             {
                 if( v is MetaGenTemplateClass mgtc )

@@ -137,6 +137,10 @@ namespace SimpleLanguage.Compile
             }
             return node;
         }
+        public void SetChildList( List<Node> nodes )
+        {
+            this.childList = nodes;
+        }   
         public void AddLinkNode(Node node )
         {
             if (lastNode == null) return;

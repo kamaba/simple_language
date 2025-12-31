@@ -134,8 +134,16 @@ namespace SimpleLanguage.IR
             //如果不是 a.setValue(xxx)这种方式，那么就执行右边的表达式
             if (ms.rightMetaExpress != null)
             {
-                m_IRExpress = new IRExpress(irMethod, ms.rightMetaExpress);
-                m_IRStatements.Add(m_IRExpress);
+                if( ms.rightMetaExpress is MetaNewObjectExpressNode mnoen )
+                {
+                    var m_IRExpress1 = new IRNewExpress(irMethod, mnoen );
+                    m_IRStatements.Add(m_IRExpress1);
+                }
+                else
+                {
+                    m_IRExpress = new IRExpress(irMethod, ms.rightMetaExpress);
+                    m_IRStatements.Add(m_IRExpress);
+                }
             }
             else
             {

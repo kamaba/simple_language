@@ -1408,7 +1408,7 @@ namespace SimpleLanguage.Compile
                     node.childList[i].parseIndex = 0;
                 }
             }
-            node.childList = list;
+            node.SetChildList(list);
         }
         //判断>> 还是> > 具体是否是表达式
         private static bool IsCommonExpressNode( Node node )
@@ -1567,6 +1567,7 @@ namespace SimpleLanguage.Compile
                     cnode.isDel = true;
                     node.parseIndex++;
                     parentNode.angleNode = cnode;
+                    //parentNode.AddAngleNode(cnode);
                 }
                 else if (cnode.nodeType == ENodeType.RightAngle)
                 {

@@ -113,153 +113,21 @@ namespace Core
         void reset()
         bool moveNext()
         get object current()
-        set void current( Object t )
-        void release()
     }
+    public interface IIterator<T> extends IIterator
+    {
+        get T current()
+    }
+
     public interface IIterable
     {
         IIterator iterator()
-    }
-    public interface IIterator<T>
-    {
-        void reset()
-        bool moveNext()
-        get T current()
-        set void current( T t )
-        void release()
     }
     public interface IIterable<T>
     {
         IIterator<T> iterator()
     }
-
-    #!
-    public class Iterater interface IIterator
-    {        
-        _start = 0
-        public _index = 0
-        _value = null
-        IIterator _iterator = null
-        _isDone = false;
-
-
-        _init_( IIterable __it )
-        {
-            this._iterator = __it.iterator();
-            this._iterator.reset()
-        }
-        get int index(){ ret this._index }
-        get object value()
-        {
-             ret this._value 
-        }
-
-        override void reset()
-        {
-            this._isDone = false
-            this._start = 0
-            this._index = 0
-            this._value = null
-        }
-        override bool moveNext()
-        {
-            if this._isDone
-            {
-                ret false
-            }
-            this._index++
-            var flag = this._iterator.moveNext()
-            this._value = this._iterator.current()
-            this._isDone = !flag
-            ret flag
-        }
-        override get object current()
-        {
-            this._value = this._iterator.current()
-            ret this._value
-        }
-        override void release()
-        {
-            
-        }
-        override string toString()
-        {
-            if( this._value != null )
-            {
-                ret this._value.toString()
-            }
-            else
-            {
-                ret ""
-            }
-        }
-    }
-    !#
-    #!
-    public class Iterater<T> interface IIterator<T>
-    {
-        _start = 0
-        public _index = 0
-        T _value = null
-        IIterator<T> _iterator = null
-        _isDone = false;
-
-        _init_( IIterable<T> __it )
-        {
-            this._iterator = __it.iterator();
-            this._iterator.reset()
-        }
-        get int index(){ ret this._index }
-        get T value()
-        {
-             ret this._value 
-        }
-
-        override void reset()
-        {
-            this._isDone = false
-            this._start = 0
-            this._index = 0
-            this._value = null
-        }
-        override bool moveNext()
-        {
-            if this._isDone
-            {
-                ret false
-            }
-            this._index++
-            var flag = this._iterator.moveNext()
-            this._value = this._iterator.current()
-            this._isDone = !flag
-            ret flag
-        }
-        override get T current()
-        {
-            this._value = this._iterator.current()
-            ret this._value
-        }
-        override set void current( T val )
-        {
-        }
-        override void release()
-        {
-            
-        }
-        override string toString()
-        {
-            if( this._value != null )
-            {
-                ret this._value.toString()
-            }
-            else
-            {
-                ret ""
-            }
-        }
-    }
-    !#
-    public class Array<T> interface IIterable<T>, IIterator<T>
+    public class Array<T> interface IIterable<T>, IIterator<T>, IIterable
     {
         int _length = 0
         Type _type = null;
@@ -302,11 +170,13 @@ namespace Core
         {
             ret this._current;
         }
-        override set void current( T currentval )
+        #!
+        set void current( T currentval )
         {
             SimpleLanguage.Lib.ArrayClass.SetArrayValueThis( this, this._index, currentval )
             this._current = currentval
         }
+        !#
         override void release()
         {
         }
@@ -314,6 +184,12 @@ namespace Core
         {
             ret this
         }
+        #!
+        override IIterator iterator()
+        {
+            ret this
+        }
+        !#
         get int index()
         {
             ret this._index;
@@ -413,6 +289,8 @@ ArrayTest
     static testArray( arr )
     {
         var iter = arr as Array<Object>
+        #iter = arr as IIterable<Object>
+        #iter = arr as IIterable
         if iter != null
         {
             for v in iter
@@ -436,6 +314,8 @@ ArrayTest
         
         #System.Console.WriteLine("1111111111= " + a1[1] )
         
+        ax = [ Class2[3], Class2(2,10){ x= 100, y = [1,2,3,4] } ]
+
         #int[] a1 = {1,2,4,5}
         #a1 = [[[1,2,3],[3,4,5],[6,7,8]],[ [10,11,12],[14,15,15],[16,17,18] ] ]; 
         #int[2][3][] a1 = {[[1,2,3],[3,4,5],[6,7,8]],[ [10,11,12],[14,15,15],[16,17,18] ]};  # int[2][3][3]     
@@ -500,6 +380,7 @@ ArrayTest
         #需要把数组的类型的逆变也计算出来，然后确定是否正确
         #testArray( [arr,"10001", 3000] )
         
+        #!
         int[] aaaxx12 = Array<int>.createInstance(2)
         aaaxx12[0] = 5
         aaaxx12[1] = 6    
@@ -547,9 +428,16 @@ ArrayTest
 
         #System.Console.WriteLine("1111111111= " + a1[0] )
        
-        #object[][] a2 = int[2][3];
-        #a2[0] = int[3]       #通过传入的int[]类型决定 是否可以new
-        #a2[1] = [[1,2,3],[2],[3,4]]
+        object[][] a2 = int[2][4];
+        a2[0] = int[4]       #通过传入的int[]类型决定 是否可以new
+        a2[0][0] = 999
+        a2[0].$1 = 998
+        a2.$0.$2 = 997
+        a2.$0.$3 = 996
+        a2[1] = [1,100,1000]
+        a2[1].setValue( 0, 2222 );
+        testArray(a2)
+
         #a1._setValue_( 1, 123 )
         #aa = a1._getValue_(1)
         #System.Console.WriteLine("1111111111= " + aa )

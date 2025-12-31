@@ -36,7 +36,7 @@ namespace SimpleLanguage.Compile
             var listDefieNode = new List<Node>();
             var valueNodeList = new List<Node>();
             Node beforeNode = new Node(null);
-            beforeNode.childList = inputNodeList;
+            beforeNode.SetChildList(inputNodeList);
             beforeNode.parseIndex = 0;
             var nodeList = StructParse.HandleBeforeNode(beforeNode);
             if (!FileMetatUtil.SplitNodeList(nodeList, listDefieNode, valueNodeList, ref m_AssignToken))
