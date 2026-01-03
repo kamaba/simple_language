@@ -314,7 +314,7 @@ ArrayTest
         
         #System.Console.WriteLine("1111111111= " + a1[1] )
         
-        ax = [ Class2[3], Class2(2,10){ x= 100, y = [1,2,3,4] } ]
+        #ax = [ Class2[3], Class2(2,10){ qx= 100, y = [1,2,3,4] } ]
 
         #int[] a1 = {1,2,4,5}
         #a1 = [[[1,2,3],[3,4,5],[6,7,8]],[ [10,11,12],[14,15,15],[16,17,18] ] ]; 
@@ -362,7 +362,7 @@ ArrayTest
         for v in axxx11
         {
             if v != null{
-                System.Console.WriteLine("level2---------value2: = " + v.toString() )
+                Console.print("level2---------value2: = " + v.toString() )
             }
         }
         !#
@@ -376,7 +376,7 @@ ArrayTest
         } 
         !#
 
-        #Array arr = Array(2){ 111, "222" }
+        #Array arr = Array(2){ 111, "222" } 如果使用了typedef Array = Array<object> 会进行类似于宏的替换 会变成Array<Object> arr = A
         #需要把数组的类型的逆变也计算出来，然后确定是否正确
         #testArray( [arr,"10001", 3000] )
         
@@ -430,6 +430,7 @@ ArrayTest
        
         object[][] a2 = int[2][4];
         a2[0] = int[4]       #通过传入的int[]类型决定 是否可以new
+        a2[1] = Array<int>(10)
         a2[0][0] = 999
         a2[0].$1 = 998
         a2.$0.$2 = 997
@@ -450,7 +451,7 @@ ArrayTest
         !#
 
          #!
-        int[2][] a335 = {[], int[3]{ 1,2,3 } };
+        int[2][] a335 = {[], int[3]{ 1,2,3 }, int[20] };
         a33[3] = 123
         var aa333 =  a33[0];
         System.Console.WriteLine("1111111111= " + a33[3] + "-----" + a33[0] + "xxxxx=" + aa333 )
@@ -479,7 +480,7 @@ ArrayTest
         !#
         
         #levelvar = Level<int>();
-        #Level<int>[][] a43 = { { levelvar, levelvar}, { levelvar, levelvar } };
+        #Level<int>[][] a43 = { [ levelvar, levelvar ], [ levelvar, levelvar ] };
         # a44 = Level<int>[]
         
         #object[][] a42 = { {1.2,1.3,1.4,1.5},{3,4,5} };    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于  
@@ -499,7 +500,7 @@ ArrayTest
         
         var a4 = {1.2,1.3,1.5};    #如果使用{}的形式，必须在前边声明类型，才可以使用 通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于 Array( 3, float.type ){ 1.2, 1.3, 1.5};
         
-        a5 = {"aa", 1, "232", 1.0f };  # 相当于Array( 5, object.type)( "aa", 1, "232", 1.0f, XC() );
+        a5 = object[]{"aa", 1, "232", 1.0f };  # 相当于Array( 5, object.type)( "aa", 1, "232", 1.0f, XC() );
         
         # c# 的方法  List<ArrClass2> arr2 = new ArrClass2[100]; 这里边使用的是 arr2 = ArrClass2[100];
         ArrClass2[] a6 = Array(4, ArrClass2.type );  # 数组表示使用 List<T>() new List对象 长度为4的int
@@ -556,7 +557,8 @@ ArrayTest
             arr1[i].i = 100;
             arr1.$i.i = 100;
 
-            i+=2;
+            i+=2;ui6yh
+            
         }
         !#
 
