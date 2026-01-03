@@ -17,6 +17,6 @@ public class Std.IO.Directory
     }
     static string[] getFiles( string path, string suffix, SearchOption option )
     {
-
+        ret null
     }
 }
