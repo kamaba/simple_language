@@ -428,6 +428,7 @@ ArrayTest
 
         #System.Console.WriteLine("1111111111= " + a1[0] )
        
+        #!
         object[][] a2 = int[2][4];
         a2[0] = int[4]       #通过传入的int[]类型决定 是否可以new
         a2[1] = Array<int>(10)
@@ -438,10 +439,7 @@ ArrayTest
         a2[1] = [1,100,1000]
         a2[1].setValue( 0, 2222 );
         testArray(a2)
-
-        #a1._setValue_( 1, 123 )
-        #aa = a1._getValue_(1)
-        #System.Console.WriteLine("1111111111= " + aa )
+        !#
         
         #!
         int[] a33 = {1,2,3,4};
@@ -450,12 +448,14 @@ ArrayTest
         System.Console.WriteLine("1111111111= " + a33[3] + "-----" + a33[0] + "xxxxx=" + aa333 )
         !#
 
-         #!
-        int[2][] a335 = {[], int[3]{ 1,2,3 }, int[20] };
-        a33[3] = 123
-        var aa333 =  a33[0];
-        System.Console.WriteLine("1111111111= " + a33[3] + "-----" + a33[0] + "xxxxx=" + aa333 )
-        !#        
+         
+        int[4][] a335 = {[], int[3]{ 871,872,873 }, int[20] };
+        a335[2][1] = 123
+        var aa333 =  a335[0];
+        System.Console.WriteLine("1111111111= " + a335[2].toString() + "-----" + a335[0].toString() );# + "xxxxx=" + a335 )
+
+        #testArray(a335)
+              
         #!
         a35 = [[0,1,2,ac,4],[[11,12],[13,14]]];
         # a35[0] = [0,1,2,3,4] a35[1] = [[1,2,3],[2,3,4],[4,5,6],[7,8,9]]  a34[1][0][2] = 3  a35是个一维两值数组，访问a35[1] 是确定对象访问 再访问 是一个二维纯int数组，然后是a35[1][0][2] 后边两位是纯数组访问

@@ -1,5 +1,4 @@
 
-
 enum Std.IO.SearchOption
 {
     TopDirectoryOnly = 0

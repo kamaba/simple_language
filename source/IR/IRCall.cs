@@ -404,6 +404,10 @@ namespace SimpleLanguage.IR
                         {
                             return new StringObject(sval.stringValue);
                         }
+                case EVMType.Array:
+                    {
+                        return sval.sobject as ArrayObject;
+                    }
                 }
             return sval.sobject;
         }

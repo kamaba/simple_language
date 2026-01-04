@@ -12,6 +12,7 @@ namespace SimpleLanguage.VM
 {
     public class Float32Object : SObject
     {
+        public override object getValue() { return value; }
         public Single value;
         public Float32Object( Single _val ) : base(EVMType.Float32)
         {
@@ -34,6 +35,7 @@ namespace SimpleLanguage.VM
 
     class Float64Object : SObject
     {
+        public override object getValue() { return value; }
         public Double value;
         public Float64Object(Double _val) : base(EVMType.Float64)
         {
