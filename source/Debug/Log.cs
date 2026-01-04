@@ -6,6 +6,7 @@
 //  Description: 
 //****************************************************************************
 
+using SimpleLanguage.Compile.Logging;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
 using System;
@@ -130,6 +131,7 @@ namespace SimpleLanguage.Parse
     {
 
     }
+
     public class Log
     {
         static List<LogData> logDataList = new List<LogData>();
@@ -138,7 +140,7 @@ namespace SimpleLanguage.Parse
             Console.WriteLine(data.ToString());
             logDataList.Add(data);
         }
-        public static void AddInInitProject(Token token, EError err, string msg)
+        public static LogData AddInInitProject(Token token, EError err, string msg)
         {
             LogData ld = new LogData()
             {
@@ -150,6 +152,7 @@ namespace SimpleLanguage.Parse
             ld.message = msg;
             ld.error = err;
             AddCodeFileLog(ld);
+            return ld;
         }
         public static LogData AddProcess(EProcess proc, EError err, string msg)
         {
@@ -203,6 +206,35 @@ namespace SimpleLanguage.Parse
             ld.message = msg;
             ld.error = err;
             AddCodeFileLog(ld);
+
+            // Forward to new logging system with a default id
+            try
+            {
+                var defId = 99999;
+                var logger = LogManager.GetLogger(ErrorModule.FileMeta);
+                // ensure default definition exists
+                if (!ErrorRegistry.Instance.TryGet(defId, out _))
+                {
+                    ErrorRegistry.Instance.Register(new ErrorDefinition()
+                    {
+                        Id = defId,
+                        MessageTemplate = "{0}",
+                        Severity = ErrorSeverity.Warning,
+                        ParamCount = 1,
+                        Module = ErrorModule.FileMeta,
+                        AbortCurrent = false,
+                        AbortLater = false,
+                        DisplayType = ErrorDisplayType.Direct,
+                        FixHint = ""
+                    });
+                }
+                logger.Log(defId, msg);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Log forward failed: " + ex.Message);
+            }
+
             return ld;
         }
         public static LogData AddInStructFileMeta(EError err, string msg, Token token )
@@ -218,6 +250,34 @@ namespace SimpleLanguage.Parse
             ld.message = msg;
             ld.error = err;
             AddCodeFileLog(ld);
+
+            // Forward to new logging system
+            try
+            {
+                var defId = 99999;
+                var logger = LogManager.GetLogger(ErrorModule.FileMeta);
+                if (!ErrorRegistry.Instance.TryGet(defId, out _))
+                {
+                    ErrorRegistry.Instance.Register(new ErrorDefinition()
+                    {
+                        Id = defId,
+                        MessageTemplate = "{0}",
+                        Severity = ErrorSeverity.Warning,
+                        ParamCount = 1,
+                        Module = ErrorModule.FileMeta,
+                        AbortCurrent = false,
+                        AbortLater = false,
+                        DisplayType = ErrorDisplayType.TokenDisplay,
+                        FixHint = ""
+                    });
+                }
+                logger.LogWithToken(defId, token, msg);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Log forward failed: " + ex.Message);
+            }
+
             return ld;
         }
         public static LogData AddInStructMeta(EError err, string msg)

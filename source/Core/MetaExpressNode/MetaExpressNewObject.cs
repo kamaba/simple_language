@@ -144,7 +144,7 @@ namespace SimpleLanguage.Core
             if( m_MetaExpress is MetaArrayExpressNode maen )
             {
                 m_MetaExpress = new MetaNewObjectExpressNode(maen, mc.metaClass, mbs, null);
-                m_MetaExpress.Parse(new AllowUseSettings());
+                //m_MetaExpress.Parse(new AllowUseSettings());
             }
         }
         public MetaBraceAssignStatements(MetaBlockStatements mbs, MetaExpressNode men, MetaMemberVariable mmv )
@@ -382,7 +382,7 @@ namespace SimpleLanguage.Core
             {
                 var men = m_MetaArrayExpressNode.metaCallArray[i];
                 MetaBraceAssignStatements mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
-                mas.CalcReturnType();
+                //mas.CalcReturnType();
                 m_AssignStatementsList.Add(mas);
             }
             m_ContentType = EStatementsContentType.ArrayValue;
@@ -1485,7 +1485,7 @@ namespace SimpleLanguage.Core
         }
         public override MetaType GetReturnMetaDefineType()
         {
-            if(m_MetaType != null )
+            if(this.m_MetaType != null )
             {
                 return m_MetaType;
             }
