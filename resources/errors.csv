@@ -1,0 +1,6 @@
+id,messageTemplate,severity,paramCount,module,abortCurrent,abortLater,displayType,fixHint
+1000,"Unknown token '{0}'",Error,1,TokenParse,false,false,TokenDisplay,"检查输入字符和词法规则"
+2000,"Node build failed: {0}",Error,1,Node,false,false,Direct,"检查上游 token 列表"
+3000,"FileMeta build failed: {0}",Error,1,FileMeta,true,true,Direct,"检查文件结构和语法"
+4000,"Meta type mismatch: expected {0} but got {1}",Error,2,CoreMeta,false,false,Direct,"检查变量/成员类型声明"
+5000,"IR translate error: {0}",Error,1,IR,false,false,Direct,"检查元数据和类型"
