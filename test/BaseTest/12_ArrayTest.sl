@@ -448,15 +448,15 @@ ArrayTest
         System.Console.WriteLine("1111111111= " + a33[3] + "-----" + a33[0] + "xxxxx=" + aa333 )
         !#
 
-         
+        #!
         int[4][] a335 = {[], int[3]{ 871,872,873 }, int[20] };
         a335[2][1] = 123
         var aa333 =  a335[0];
         System.Console.WriteLine("1111111111= " + a335[2].toString() + "-----" + a335[0].toString() );# + "xxxxx=" + a335 )
-
         #testArray(a335)
-              
-        #!
+        !# 
+        
+        #!            
         a35 = [[0,1,2,ac,4],[[11,12],[13,14]]];
         # a35[0] = [0,1,2,3,4] a35[1] = [[1,2,3],[2,3,4],[4,5,6],[7,8,9]]  a34[1][0][2] = 3  a35是个一维两值数组，访问a35[1] 是确定对象访问 再访问 是一个二维纯int数组，然后是a35[1][0][2] 后边两位是纯数组访问
         aa = 0
@@ -472,11 +472,6 @@ ArrayTest
             var aa1111 = tt2.i;
             System.Console.WriteLine("22222222= " +aa1111 )
         }
-        !#
-        
-        #!
-        Array<int> arr = {1,2,3}
-        System.Console.WriteLine("22222222= " +arr[1] )
         !#
         
         #levelvar = Level<int>();
