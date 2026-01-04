@@ -557,8 +557,23 @@ namespace SimpleLanguage.Core
                         Log.AddInStructMeta(EError.None, "间隔符号不对,应该使用,");
                     }
                 }
+                else if( fmbt is FileMetaTermExpress termexpress )
+                {
+                    CreateExpressParam cep = new CreateExpressParam();
+                    cep.ownerMetaClass = m_OwnerMetaClass;
+                    cep.ownerMBS = m_OwnerMetaBlockStatements;
+                    cep.metaType = new MetaType(cmt);
+                    cep.fme = termexpress;
+                    cep.equalMetaVariable = m_EqualMetaVariable;
+                    MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
+                    men.Parse(new AllowUseSettings());
+                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
+                    mas.CalcReturnType();
+                    m_AssignStatementsList.Add(mas);
+                }
                 else
                 {
+                    Debug.Assert(false);
                     Log.AddInStructMeta(EError.None, "Error 在数组里边应该是FileMetaBracketTerm 类型!");
                 }
             }
@@ -1403,7 +1418,13 @@ namespace SimpleLanguage.Core
             {
                 if(m_MetaInputParamList.Count == 0)
                 {
-                    mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaType.arrayLength)));
+                    int alen = m_MetaType.arrayLength;
+                    if( alen == -1 && m_RealMetaType == null )
+                    {
+                        alen = 0;
+                    }
+
+                    mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, alen )));
                     mipc.CaleReturnType();
 
                     m_MetaMemberFunction = CoreMetaClassManager.arrayMetaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, mipc);

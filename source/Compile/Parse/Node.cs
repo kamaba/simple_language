@@ -177,8 +177,16 @@ namespace SimpleLanguage.Compile
         {
             if (setParent)
                 c.parent = this;
-            this.childList.Add(c);
-            lastNode = c;
+            if( (c.nodeType == ENodeType.Par ) &&
+                lastNode?.extendLinkNodeList.Count > 0 )
+            {
+                lastNode.extendLinkNodeList[lastNode.extendLinkNodeList .Count- 1].parNode = c;
+            }
+            else
+            {
+                this.childList.Add(c);
+                lastNode = c;
+            }
         }
         public void AddSyntax( Node c )
         {

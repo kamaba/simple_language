@@ -15,6 +15,7 @@ namespace SimpleLanguage.VM
 {
     class StringObject : SObject
     {
+        public override object getValue() { return value; }
         public string value;
 
         public StringObject(string str) : base(EVMType.String )

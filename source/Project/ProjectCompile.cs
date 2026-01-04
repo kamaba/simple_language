@@ -72,9 +72,11 @@ namespace SimpleLanguage.Project
 
             m_TokenParse.BuildStruct();
 
-            m_ProjectBuild = new StructParse(m_ProjectFile, m_TokenParse.rootNode);
+            m_ProjectBuild = new StructParse(m_ProjectFile, m_TokenParse.rootNode, m_LexerParse.GetListTokensWidthEnd() );
 
             m_ProjectBuild.ParseRootNodeToFileMeta();
+
+            //m_ProjectBuild.ParseTokenToFileMeta();
 
             m_ProjectParse = new ProjectParse(m_ProjectFile, m_Data);
 

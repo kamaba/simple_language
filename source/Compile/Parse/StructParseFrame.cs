@@ -9,6 +9,7 @@
 
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.Compile
 {
@@ -80,10 +81,12 @@ namespace SimpleLanguage.Compile
         protected Stack<ParseCurrentNodeInfo> m_CurrentNodeInfoStack = new Stack<ParseCurrentNodeInfo>();
 
         protected Node m_RootNode = null;
-        public StructParse(FileMeta fm, Node node)
+        protected List<Token> m_TokenList = new List<Token>();
+        public StructParse(FileMeta fm, Node node, List<Token> tokenList    )
         {
             m_FileMeta = fm;
             m_RootNode = node;
+            m_TokenList = tokenList;
         }
         private void AddParseFileNodeInfo()
         {
@@ -200,7 +203,46 @@ namespace SimpleLanguage.Compile
                 ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fms);
                 m_CurrentNodeInfoStack.Push(pcni);
             }
-        }        
+        }
+        public void ParseTokenToFileMeta()
+        {
+            AddParseFileNodeInfo();
+
+            foreach (var token in m_TokenList)
+            {
+                switch (token.type)
+                {
+                    case ETokenType.Import:
+                        {
+                            //ParseImport(pnode);
+                        }
+                        break;
+                    case ETokenType.Namespace:
+                        {
+                            //ParseNamespace(pnode);
+                        }
+                        break;
+                    case ETokenType.Const:
+                    case ETokenType.Data:
+                    case ETokenType.Enum:
+                    case ETokenType.Class:
+                    case ETokenType.Extern:
+                    case ETokenType.Public:
+                    case ETokenType.Private:
+                    case ETokenType.Projected:
+                    case ETokenType.Partial:
+                        {
+                            //ParseNamespaceOrTopClass(pnode);
+                        }
+                        break;
+                    default:
+                        {
+                            //Log.AddInStructFileMeta(EError.None, "Error 不允许 在File头级目录中出现 : " + node.token.lexeme.ToString());
+                        }
+                        break;
+                }
+            }
+        }
         public void ParseRootNodeToFileMeta()
         {
             AddParseFileNodeInfo();
@@ -1516,6 +1558,7 @@ namespace SimpleLanguage.Compile
                     {
                         finalNode.SetLinkNode(currentExpressNode.extendLinkNodeList);   // Q.Map()[.Cast]
                         _HandleExpressNodeProcess(node, currentExpressNode);           //Q.Map().[Cast]
+                        _HandleExpressNodeProcess(node, finalNode);
                         return;
                     }
                     else
@@ -1544,6 +1587,7 @@ namespace SimpleLanguage.Compile
                     {
                         finalNode.SetLinkNode(currentExpressNode.extendLinkNodeList);   // Array[1].20;
                         _HandleExpressNodeProcess(currentExpressNode, null );                        // Array[1].Fun( 1, 2 );
+                        _HandleExpressNodeProcess(node, finalNode);
                         return;
                     }
                     else

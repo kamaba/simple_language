@@ -12,6 +12,7 @@ namespace SimpleLanguage.VM
 {
     public class BoolObject : SObject
     {
+        public override object getValue() { return value; }
         public new bool value { get; protected set; } = false;
 
         public BoolObject(bool flag) : base(EVMType.Boolean)
@@ -31,6 +32,7 @@ namespace SimpleLanguage.VM
     }
     public class Int8Object : SObject
     {
+        public override object getValue() { return value; }
         public  new Byte value;
         public Int8Object(Byte _val) : base(EVMType.Byte)
         {
@@ -48,6 +50,7 @@ namespace SimpleLanguage.VM
     }
     public class SInt8Object : SObject
     {
+        public override object getValue() { return value; }
         public  new SByte value;
 
         public SInt8Object(SByte _val) : base(EVMType.SByte)
@@ -66,6 +69,7 @@ namespace SimpleLanguage.VM
     }
     class Int16Object : SObject
     {
+        public override object getValue() { return value; }
         public new Int16 value;
         public Int16Object(Int16 val) : base(EVMType.Int16)
         {
@@ -83,6 +87,7 @@ namespace SimpleLanguage.VM
     }
     public class UInt16Object : SObject
     {
+        public override object getValue() { return value; }
         public new UInt16 value;
         public UInt16Object(UInt16 val) : base(EVMType.UInt16)
         {
@@ -100,6 +105,7 @@ namespace SimpleLanguage.VM
     }
     public class Int32Object : SObject
     {
+        public override object getValue() { return value; }
         public new int value = 0;
         public Int32Object( int obj ) : base(EVMType.Int32)
         {
@@ -182,6 +188,7 @@ namespace SimpleLanguage.VM
     }
     class UInt32Object : SObject
     {
+        public override object getValue() { return value; }
         public new UInt32 value;
         public UInt32Object(UInt32 obj) : base(EVMType.UInt32)
         {
@@ -202,6 +209,7 @@ namespace SimpleLanguage.VM
 
     public class Int64Object : SObject
     {
+        public override object getValue() { return value; }
         public new Int64 value;
         public Int64Object(Int64 val) : base(EVMType.Int64)
         {
@@ -219,6 +227,7 @@ namespace SimpleLanguage.VM
     }
     public class UInt64Object : SObject
     {
+        public override object getValue() { return value; }
         public new UInt64 value;
         public UInt64Object(UInt64 val) : base(EVMType.UInt64)
         {

@@ -679,28 +679,29 @@ namespace SimpleLanguage.Compile
 
                 if(defineNodeList.Count > 0 && valueNodeList.Count == 0 && assignToken == null )
                 {
-                    if (defineNodeList[0].nodeType == ENodeType.Bracket)
+                    if (defineNodeList[0].nodeType == ENodeType.Bracket && defineNodeList.Count == 1 )
                     {
                         FileMetaBracketTerm tmbt = new FileMetaBracketTerm(m_FileMeta, defineNodeList[0]);
                         AddFileMetaTerm(tmbt);
                     }
-                    else if (defineNodeList[0].nodeType == ENodeType.Brace)
+                    else if (defineNodeList[0].nodeType == ENodeType.Brace && defineNodeList.Count == 1)
                     {
                         FileMetaBraceTerm tmbt = new FileMetaBraceTerm(m_FileMeta, defineNodeList[0]);
                         AddFileMetaTerm(tmbt);
                     }
                     else if (defineNodeList[0].nodeType == ENodeType.IdentifierLink)
                     {
-                        var tmbt = new FileMetaCallTerm(m_FileMeta, defineNodeList[0]);
-                        AddFileMetaTerm(tmbt);
+                        var valueNodeTerm = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, defineNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
+                        AddFileMetaTerm(valueNodeTerm);
                     }
-                    else if (defineNodeList[0].nodeType == ENodeType.ConstValue)
+                    else if (defineNodeList[0].nodeType == ENodeType.ConstValue && defineNodeList.Count == 1)
                     {
                         var tmbt = new FileMetaConstValueTerm(m_FileMeta, defineNodeList[0].token );
                         AddFileMetaTerm(tmbt);
                     }
                     else
                     {
+                        Debug.Assert(false, "");
                         Log.AddInStructFileMeta(EError.None, "Error 在解析为{}中，数组形式 解析有问题!!");
                         continue;
                     }

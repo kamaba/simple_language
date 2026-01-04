@@ -17,6 +17,8 @@ namespace SimpleLanguage.VM
         public EVMType eType => m_Type;
         public EVMType eAnyType => m_AnyType;
 
+        public virtual object getValue() { return value; }
+
         public IRMetaClass irMetaClass => m_RuntimeType?.irClass;
         public RuntimeType runtimeType => m_RuntimeType;
         public short typeId { get; set; } = 0;

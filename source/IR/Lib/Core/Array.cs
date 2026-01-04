@@ -46,7 +46,14 @@ namespace SimpleLanguage.Lib
         //public static void SetArrayValueThis(ArrayObject ao, Int32Object index, object value) => SetArrayValueThis(ao, index.value, value);
         public static void SetArrayValueThis(ArrayObject ao, int index, object value)
         {
-            ao.StoreObject(index, value);
+            if (value is SObject sobj)
+            {
+                ao.StoreObject(index, sobj.getValue() );
+            }
+            else
+            {
+                ao.StoreObject(index, value);
+            }
         }
         public static void SetArrayValue( Int64 ptr, int type, int index, object value )
         {

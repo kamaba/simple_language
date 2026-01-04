@@ -1550,9 +1550,9 @@ namespace SimpleLanguage.Compile
                         num++;
                     }
 
-                    var spacetoken = new Token(m_Path, ETokenType.Space, "", bline, bchar);
-                    spacetoken.SetSrouceEnd(m_SourceLine, m_SourceChar);
-                    spacetoken.SetExtend(num);
+                    //var spacetoken = new Token(m_Path, ETokenType.Space, "", bline, bchar);
+                    //spacetoken.SetSrouceEnd(m_SourceLine, m_SourceChar);
+                    //spacetoken.SetExtend(num);
                     //m_ListTokens.Add(spacetoken);
                 }
                 else if( m_CurChar == '\t' || m_CurChar == '\r' )
