@@ -224,11 +224,11 @@ namespace SimpleLanguage.IR
                     AddIRData(datacall);
                 }
 
-                if (mnoen.metaBraceOrBracketStatementsContent?.assignStatementsList?.Count > 0)
+                if (mnoen.metaContent?.assignStatementsList?.Count > 0)
                 {
-                    for (int y = 0; y < mnoen.metaBraceOrBracketStatementsContent.assignStatementsList.Count; y++)
+                    for (int y = 0; y < mnoen.metaContent.assignStatementsList.Count; y++)
                     {
-                        var asl = mnoen.metaBraceOrBracketStatementsContent.assignStatementsList[y];
+                        var asl = mnoen.metaContent.assignStatementsList[y];
 
                         IRDup irdup = new IRDup(irMethod);
                         AddIRRangeData(irdup.IRDataList);
@@ -292,12 +292,12 @@ namespace SimpleLanguage.IR
                         for (int x = 0; x < irmc.localIRMetaVariableList.Count; x++)
                         {
                             var lirmv = irmc.localIRMetaVariableList[x];
-                            if (mnoen.metaBraceOrBracketStatementsContent?.assignStatementsList?.Count > 0)
+                            if (mnoen.metaContent?.assignStatementsList?.Count > 0)
                             {
                                 MetaExpressNode men = lirmv.express;
-                                for (int y = 0; y < mnoen.metaBraceOrBracketStatementsContent.assignStatementsList.Count; y++)
+                                for (int y = 0; y < mnoen.metaContent.assignStatementsList.Count; y++)
                                 {
-                                    var asl = mnoen.metaBraceOrBracketStatementsContent.assignStatementsList[y];
+                                    var asl = mnoen.metaContent.assignStatementsList[y];
                                     if (asl.metaMemberVariable.GetHashCode() == lirmv.id )
                                     {
                                         men = asl.expressNode;

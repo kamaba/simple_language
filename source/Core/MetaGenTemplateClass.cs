@@ -35,6 +35,12 @@ namespace SimpleLanguage.Core
             m_FileCollectMetaMemberVariable = mtc.fileCollectMetaMemberVariable;
             m_FileCollectMetaMemberFunctionList = mtc.fileCollectMetaMemberFunctionList;
 
+            foreach( var v in list )
+            {
+                m_GenMetaClassTemplateList.Add(v.metaType.metaClass);
+            }
+            this.UpdateGenMetaClassTemplateList();
+
 
             StringBuilder sb = new StringBuilder();
             sb.Append(m_MetaTemplateClass.pathName);

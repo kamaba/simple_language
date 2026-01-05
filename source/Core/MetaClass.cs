@@ -28,7 +28,7 @@ namespace SimpleLanguage.Core
 
         public EType eType => m_Type;
         public EClassDefineType classDefineType => m_ClassDefineType;
-        public bool allowExtendsClassWithTemplate => m_GenMetaTypeTemplateList.Count > 0 ;             //允许继承类 是否可携带模板  像 ListInt : List<int>{} ListIntEx<T> : List<int> 这种情况不允许
+        public bool allowExtendsClassWithTemplate => m_GenMetaClassTemplateList.Count > 0 ;             //允许继承类 是否可携带模板  像 ListInt : List<int>{} ListIntEx<T> : List<int> 这种情况不允许
         public MetaClass extendClass => m_ExtendClass;
         public MetaType extendClassMetaType => m_ExtendClassMetaType;
         public int extendLevel => m_ExtendLevel;
@@ -59,6 +59,7 @@ namespace SimpleLanguage.Core
             }
         }
         public List<MetaType> genMetaTypeTemplateList => m_GenMetaTypeTemplateList;
+        public List<MetaClass> genMetaClassTemplateList => m_GenMetaClassTemplateList;
         public List<MetaMemberFunction> nonStaticVirtualMetaMemberFunctionList => m_NonStaticVirtualMetaMemberFunctionList;
         public List<MetaMemberFunction> staticMetaMemberFunctionList => m_StaticMetaMemberFunctionList;
         public List<MetaMemberVariable> fileCollectMetaMemberVariable => m_FileCollectMetaMemberVariable;
@@ -77,6 +78,7 @@ namespace SimpleLanguage.Core
         protected MetaClass m_ExtendClass = null;
         protected MetaType m_ExtendClassMetaType = null;
         protected List<MetaType> m_GenMetaTypeTemplateList = new List<MetaType>();  //生成类的传入模板值 比如 ListInst extends List<int> 这野牛ListInst 也有<int>这个属性
+        protected List<MetaClass> m_GenMetaClassTemplateList = new List<MetaClass>();//未来使用这种方式使用 绑定模板
         protected List<MetaType> m_BindStructTemplateMetaClassList = new List<MetaType>();
         protected List<MetaClass> m_InterfaceClass = new List<MetaClass>();
         protected List<MetaType> m_InterfaceMetaType = new List<MetaType>();
@@ -129,6 +131,7 @@ namespace SimpleLanguage.Core
             m_FileCollectMetaMemberVariable = mc.m_FileCollectMetaMemberVariable;
             m_FileCollectMetaInterfaceList = mc.m_FileCollectMetaInterfaceList;
             m_FileCollectMetaMemberFunctionList = mc.m_FileCollectMetaMemberFunctionList;
+            m_GenMetaClassTemplateList = mc.m_GenMetaClassTemplateList;
             m_GenMetaTypeTemplateList = mc.m_GenMetaTypeTemplateList;
 
             m_MetaMemberFunctionTemplateNodeDict = mc.m_MetaMemberFunctionTemplateNodeDict;
@@ -182,6 +185,14 @@ namespace SimpleLanguage.Core
             }
 
             this.m_AllName = sb.ToString();
+        }
+        public void UpdateGenMetaClassTemplateList()
+        {
+            m_GenMetaTypeTemplateList.Clear();  
+            for( int i = 0; i < m_GenMetaClassTemplateList.Count; i++ )
+            {
+                m_GenMetaTypeTemplateList.Add( new MetaType( m_GenMetaClassTemplateList[i] ) );
+            }
         }
         public void SetDefaultExpressNode( MetaExpressNode defaultExpressNode )
         {
@@ -494,28 +505,15 @@ namespace SimpleLanguage.Core
                 mgtc.ParseGenMemberVarible();
                 m_ExtendClass = mgtc;
 
-                for( int i = 0; i < m_ExtendClassMetaType.genTemplateMetaTypeList.Count; i++ )
+                for( int i = 0; i < mgtc.genMetaClassTemplateList.Count; i++ )
                 {
-                    this.m_GenMetaTypeTemplateList.Add(m_ExtendClassMetaType.genTemplateMetaTypeList[i] );
+                    this.m_GenMetaClassTemplateList.Add(mgtc.genMetaClassTemplateList[i]);
                 }
             }
             else
             {
-                if( m_GenMetaTypeTemplateList.Count > 0 )
-                {
-                    if( m_MetaTemplateList.Count > 0 )
-                    {
-                        Debug.Assert(false, "如果在继承的父类中已经有了模板实体，在子类中，则不允许再次定义模板!!");
-                    }
-                    else
-                    {
-                        for (int i = 0; i < m_GenMetaTypeTemplateList.Count; i++)
-                        {
-                            this.m_GenMetaTypeTemplateList.Add(m_GenMetaTypeTemplateList[i]);
-                        }
-                    }
-                }
             }
+            this.UpdateGenMetaClassTemplateList();
 
 
             //for (int i = 0; i < this.m_InterfaceMetaType.Count; i++)
@@ -532,9 +530,14 @@ namespace SimpleLanguage.Core
             HandleExtendMemberVariable();
             HandleExtendMemberFunction();
         }
-        public MetaType GetGenMetaTypeTemplateByIndex( int index )
+        public void SetGenMetaClassTemplateList( List<MetaClass> mtlist )
         {
-            if( index < 0 || index > m_GenMetaTypeTemplateList.Count )
+            m_GenMetaClassTemplateList = mtlist;
+            this.UpdateGenMetaClassTemplateList();
+        }
+        public MetaType GetGenMetaTypeTemplateByIndex(int index)
+        {
+            if (index < 0 || index >= this.m_GenMetaClassTemplateList.Count)
             {
                 return null;
             }
@@ -634,7 +637,8 @@ namespace SimpleLanguage.Core
             {
                 return null;
             }
-            MetaGenTemplateClass mgtc = mt.metaClass.AddMetaTemplateClassByMetaClassAndMetaTemplateMetaTypeList( mt.genTemplateMetaTypeList );
+            //原来使用的是genTemplateMetaType 现在换成了 define方式 试试，以后 gen 和define要分离，gen只在生成类中取
+            MetaGenTemplateClass mgtc = mt.metaClass.AddMetaTemplateClassByMetaClassAndMetaTemplateMetaTypeList( mt.defineTemplateMetaTypeList );
 
             if ( mgtc  != null )
             {
@@ -644,7 +648,7 @@ namespace SimpleLanguage.Core
                     mgtc.ParseGenTemplateClass(mgtc);
                     mgtc.ParseGenMemberVarible();
                 }
-                return new MetaType(mgtc, mt.defineTemplateMetaTypeList, mt.genTemplateMetaTypeList );
+                return new MetaType(mgtc, mt.defineTemplateMetaTypeList, mt.defineTemplateMetaTypeList );
             }
 
             var find = BindStructTemplateMetaClassList( mt );

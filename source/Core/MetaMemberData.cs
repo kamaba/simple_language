@@ -335,9 +335,9 @@ namespace SimpleLanguage.Core
                 var cne = m_Express as MetaCallLinkExpressNode;
                 if ( mne != null )
                 {
-                    for (int i = 0; i < mne.metaBraceOrBracketStatementsContent?.assignStatementsList?.Count; i++)
+                    for (int i = 0; i < mne.metaContent?.assignStatementsList?.Count; i++)
                     {
-                        var asl = mne.metaBraceOrBracketStatementsContent.assignStatementsList[i];
+                        var asl = mne.metaContent.assignStatementsList[i];
 
                         if (asl == null) continue;
 
