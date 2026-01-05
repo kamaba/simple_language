@@ -10,6 +10,7 @@
 using SimpleLanguage.Parse;
 using SimpleLanguage.VM;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -44,7 +45,7 @@ namespace SimpleLanguage.Core
         public MetaTemplate metaTemplate => m_MetaTemplate;
         public MetaMemberEnum enumValue => m_EnumValue;
         public List<MetaType> defineTemplateMetaTypeList => m_DefineTemplateMetaTypeList;
-        public List<MetaType> genTemplateMetaTypeList => m_GenTemplateMetaTypeList;
+        //public List<MetaType> genTemplateMetaTypeList => m_GenTemplateMetaTypeList;
 
         private EMetaTypeType m_EType = EMetaTypeType.None;
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
@@ -54,7 +55,7 @@ namespace SimpleLanguage.Core
         //private MetaGenTemplate m_MetaGenTemplate = null;
         private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
-        private List<MetaType> m_GenTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
+        //private List<MetaType> m_GenTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中  //慢慢的移除 直接使用gen class中的数据
         private int m_ArrayLength = -1;
         public MetaType()
         {
@@ -75,7 +76,7 @@ namespace SimpleLanguage.Core
             m_EType = EMetaTypeType.MetaGenClass;
             m_MetaClass = mgtc;
             m_DefineTemplateMetaTypeList = defineMTList;
-            m_GenTemplateMetaTypeList = genMTList;
+            //m_GenTemplateMetaTypeList = genMTList;
         }
         public MetaType( MetaClass mc )
         {
@@ -95,7 +96,7 @@ namespace SimpleLanguage.Core
             //m_TemplateMetaClass = templatemc;
             m_MetaClass = mc;
             m_DefineTemplateMetaTypeList = mtList;
-            m_GenTemplateMetaTypeList = mtList;
+            //m_GenTemplateMetaTypeList = mtList;
             m_EType = EMetaTypeType.TemplateClassWithTemplate;
         }
         public MetaType( MetaClass mc, MetaClass templatemc, MetaInputTemplateCollection mitc )
@@ -133,11 +134,11 @@ namespace SimpleLanguage.Core
                 MetaType mtc = new MetaType(mt.m_DefineTemplateMetaTypeList[i]);
                 m_DefineTemplateMetaTypeList.Add(mtc);
             }
-            for (int i = 0; i < mt.m_GenTemplateMetaTypeList.Count; i++)
-            {
-                MetaType mtc = new MetaType(mt.m_GenTemplateMetaTypeList[i]);
-                m_GenTemplateMetaTypeList.Add(mtc);
-            }
+            //for (int i = 0; i < mt.m_GenTemplateMetaTypeList.Count; i++)
+            //{
+            //    MetaType mtc = new MetaType(mt.m_GenTemplateMetaTypeList[i]);
+            //    m_GenTemplateMetaTypeList.Add(mtc);
+            //}
         }
         public bool IsArray()
         {
@@ -193,9 +194,10 @@ namespace SimpleLanguage.Core
                 if(curmt.IsArray())
                 {
                     dismesion++;
-                    if(curmt.m_GenTemplateMetaTypeList.Count == 1 )
+                    var list = curmt.GetGenTemplateMetaTypeList();
+                    if(list.Count == 1 )
                     {
-                        curmt = curmt.m_GenTemplateMetaTypeList[0];
+                        curmt = list[0];
                     }
                     else
                     {
@@ -219,9 +221,10 @@ namespace SimpleLanguage.Core
                 if (curmt.IsArray())
                 {
                     list.Add(curmt.arrayLength);
-                    if (curmt.m_GenTemplateMetaTypeList.Count == 1)
+                    var gmlist = curmt.GetGenTemplateMetaTypeList();
+                    if (gmlist.Count == 1)
                     {
-                        curmt = curmt.m_GenTemplateMetaTypeList[0];
+                        curmt = gmlist[0];
                     }
                     else
                     {
@@ -250,7 +253,7 @@ namespace SimpleLanguage.Core
             //this.m_FromName = mt.m_FromName;
             this.m_EType = mt.m_EType;
             this.m_DefineTemplateMetaTypeList = mt.m_DefineTemplateMetaTypeList;
-            this.m_GenTemplateMetaTypeList = mt.m_GenTemplateMetaTypeList;
+            //this.m_GenTemplateMetaTypeList = mt.m_GenTemplateMetaTypeList;
         }
         public List<MetaType> GetGenTemplateMetaTypeList()
         {
@@ -258,19 +261,19 @@ namespace SimpleLanguage.Core
             {
                 return this.m_MetaClass.genMetaTypeTemplateList;
             }
-            return this.m_GenTemplateMetaTypeList;
+            return this.m_DefineTemplateMetaTypeList;
         }
-        public MetaType GetGenMetaTypeByIndex( int index = 0)
+        public MetaType GetMetaTypeByIndex( int index = 0)
         {
+            //Debug.Assert(false, "");
             if (this.eType == EMetaTypeType.MetaClass
-                )
+                || this.eType == EMetaTypeType.MetaGenClass )
             {
                 return this.metaClass.GetGenMetaTypeTemplateByIndex(index);
             }
-            else if (this.eType == EMetaTypeType.TemplateClassWithTemplate
-                 || this.eType == EMetaTypeType.MetaGenClass )
+            else if (this.eType == EMetaTypeType.TemplateClassWithTemplate )
             {
-                return this.m_GenTemplateMetaTypeList[index];
+                return this.m_DefineTemplateMetaTypeList[index];
             }
             return null;
         }
@@ -311,9 +314,10 @@ namespace SimpleLanguage.Core
         }
         public bool GenTemplateIsIncludeTemplate()
         {
-            for (int i = 0; i < m_GenTemplateMetaTypeList.Count; i++)
+            Debug.Assert(false, "");
+            for (int i = 0; i < m_DefineTemplateMetaTypeList.Count; i++)
             {
-                var tmt = m_GenTemplateMetaTypeList[i];
+                var tmt = m_DefineTemplateMetaTypeList[i];
                 if (tmt.GenTemplateIsIncludeTemplate())
                 {
                     return true;
@@ -383,10 +387,10 @@ namespace SimpleLanguage.Core
             mt.m_ParentMetaType = this;
             m_DefineTemplateMetaTypeList.Add(mt);
         }
-        public void AddGenTemplateMetaType(MetaType mt)
-        {
-            m_GenTemplateMetaTypeList.Add(mt);
-        }
+        //public void AddGenTemplateMetaType(MetaType mt)
+        //{
+        //    m_GenTemplateMetaTypeList.Add(mt);
+        //}
         //public void AddArrayMetaType( MetaType mt )
         //{
         //    m_ArrayMetaTypeList.Add(mt);
@@ -620,9 +624,9 @@ namespace SimpleLanguage.Core
             {
                 sb.Append(this.m_MetaClass.allClassName);
             }
-            for( int i = 0; i < this.genTemplateMetaTypeList.Count; i++ )
+            for( int i = 0; i < this.m_DefineTemplateMetaTypeList.Count; i++ )
             {
-                sb.AppendLine(this.genTemplateMetaTypeList[i].ToString());
+                sb.AppendLine(this.m_DefineTemplateMetaTypeList[i].ToString());
             }
 
             return sb.ToString();
@@ -675,20 +679,20 @@ namespace SimpleLanguage.Core
                     if(m_MetaClass is MetaGenTemplateClass mgtc )
                     {
                         sb.Append(mgtc.metaTemplateClass.metaNode.allName);
-                        if (m_GenTemplateMetaTypeList.Count > 0)
-                        {
-                            sb.Append("<");
+                        //if (m_GenTemplateMetaTypeList.Count > 0)
+                        //{
+                        //    sb.Append("<");
 
-                            for (int i = 0; i < m_GenTemplateMetaTypeList.Count; i++)
-                            {
-                                sb.Append(m_GenTemplateMetaTypeList[i].ToString());
-                                if (i < m_GenTemplateMetaTypeList.Count - 1)
-                                {
-                                    sb.Append(",");
-                                }
-                            }
-                            sb.Append(">");
-                        }
+                        //    for (int i = 0; i < m_GenTemplateMetaTypeList.Count; i++)
+                        //    {
+                        //        sb.Append(m_GenTemplateMetaTypeList[i].ToString());
+                        //        if (i < m_GenTemplateMetaTypeList.Count - 1)
+                        //        {
+                        //            sb.Append(",");
+                        //        }
+                        //    }
+                        //    sb.Append(">");
+                        //}
                         if ( mgtc.metaTemplateClass == CoreMetaClassManager.arrayMetaClass )
                         {
                             sb.Append("[" + this.m_ArrayLength + "]");

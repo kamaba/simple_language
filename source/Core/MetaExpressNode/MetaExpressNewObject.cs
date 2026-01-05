@@ -16,8 +16,50 @@ using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Core
 {
+    // a = { i1 = 10 } 这个过程式的处理
     public class MetaBraceAssignStatements
     {
+        /*
+        public MetaBraceAssignStatements(MetaBlockStatements mbs, MetaType mt, FileMetaOpAssignSyntax fmos)
+        {
+            m_FileMetaOpAssignSyntax = fmos;
+            m_OwnerMetaBlockStatements = mbs;
+            if (fmos != null)
+            {
+                m_AssignToken = fmos.assignToken;
+                if (fmos.variableRef.isOnlyName)
+                {
+                    
+
+                }
+                else
+                {
+                    Debug.Write("Error 在类" + mbs.ownerMetaClass?.allClassName + "函数: " + mbs.ownerMetaFunction.name
+                        + " 语句: " + fmos.variableRef.ToTokenString());
+                }
+            }
+        }
+        public MetaBraceAssignStatements(MetaBlockStatements mbs, MetaType mt, FileMetaDefineVariableSyntax fmdvs)
+        {
+            m_FileMetaDefineVariableSyntax = fmdvs;
+            m_OwnerMetaBlockStatements = mbs;
+            if (fmdvs != null)
+            {
+                m_AssignToken = fmdvs.assignToken;
+
+                m_DefineName = m_FileMetaDefineVariableSyntax.name;
+
+                var fmcd = m_FileMetaDefineVariableSyntax.fileMetaClassDefine;
+                var getMC = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance(mbs.ownerMetaClass, fmcd);
+                var mdt = new MetaType(getMC);
+                m_MetaMemberVariable = new MetaMemberVariable(null, m_DefineName, mdt.metaClass);
+
+                var fileExpress = m_FileMetaDefineVariableSyntax.express;
+                m_MetaExpress = CreateExpressNodeInNewObjectStatements(m_MetaMemberVariable, m_OwnerMetaBlockStatements, fileExpress);
+
+            }
+        }
+        */
         public int opLevel => m_MetaExpress.opLevel;
         public MetaMemberVariable metaMemberVariable => m_MetaMemberVariable;
         public MetaMemberData metaMemberData => m_MetaMemberData;
@@ -38,14 +80,8 @@ namespace SimpleLanguage.Core
         public MetaBraceAssignStatements(FileMetaCallTerm fmct, MetaType mt, MetaBlockStatements mbs )
         {
             m_MetaType = mt;
-            m_FileMetaCallTerm = fmct;
-            
+            m_FileMetaCallTerm = fmct;            
             m_MetaExpress = new MetaCallLinkExpressNode(fmct.callLink, mt.metaClass, mbs, null);
-            AllowUseSettings auc = new AllowUseSettings();
-            auc.useNotConst = false;
-            auc.useNotStatic = false;
-            m_MetaExpress.Parse(auc);
-            m_MetaExpress.CalcReturnType();            
         }
         public MetaBraceAssignStatements(FileMetaSymbolTerm fmst, MetaType mt, MetaBlockStatements mbs )
         {
@@ -131,21 +167,13 @@ namespace SimpleLanguage.Core
                 cep.metaType = new MetaType(m_MetaMemberVariable.defineMetaType);
                 cep.ownerMBS = m_OwnerMetaBlockStatements;
                 cep.ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass;
-
                 m_MetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
-                m_MetaExpress.Parse(new AllowUseSettings());
             }
         }
         public MetaBraceAssignStatements(MetaBlockStatements mbs, MetaType mc, MetaExpressNode men)
         {
             m_OwnerMetaBlockStatements = mbs;
             m_MetaExpress = men;
-
-            if( m_MetaExpress is MetaArrayExpressNode maen )
-            {
-                m_MetaExpress = new MetaNewObjectExpressNode(maen, mc.metaClass, mbs, null);
-                //m_MetaExpress.Parse(new AllowUseSettings());
-            }
         }
         public MetaBraceAssignStatements(MetaBlockStatements mbs, MetaExpressNode men, MetaMemberVariable mmv )
         {
@@ -153,59 +181,28 @@ namespace SimpleLanguage.Core
             m_MetaExpress = men;
             this.m_MetaMemberVariable = mmv;
         }
-        /*
-        public MetaBraceAssignStatements(MetaBlockStatements mbs, MetaType mt, FileMetaOpAssignSyntax fmos)
+        public void Parse( AllowUseSettings aus )
         {
-            m_FileMetaOpAssignSyntax = fmos;
-            m_OwnerMetaBlockStatements = mbs;
-            if (fmos != null)
+            if( m_MetaExpress != null )
             {
-                m_AssignToken = fmos.assignToken;
-                if (fmos.variableRef.isOnlyName)
+                if (m_MetaExpress is MetaCallLinkExpressNode mcen)
                 {
-                    
-
+                    if (mcen.isNewExpressNode)
+                    {
+                        m_MetaExpress = new MetaNewObjectExpressNode(m_MetaType, mcen);
+                        m_MetaExpress.Parse(aus);
+                    }
+                }
+                if (m_MetaExpress is MetaArrayExpressNode maen)
+                {
+                    m_MetaExpress = new MetaNewObjectExpressNode(maen, m_OwnerMetaBlockStatements.ownerMetaClass, m_OwnerMetaBlockStatements, null);
+                    m_MetaExpress.Parse(aus);
                 }
                 else
                 {
-                    Debug.Write("Error 在类" + mbs.ownerMetaClass?.allClassName + "函数: " + mbs.ownerMetaFunction.name
-                        + " 语句: " + fmos.variableRef.ToTokenString());
+                    m_MetaExpress.Parse(aus);
                 }
             }
-        }
-        public MetaBraceAssignStatements(MetaBlockStatements mbs, MetaType mt, FileMetaDefineVariableSyntax fmdvs)
-        {
-            m_FileMetaDefineVariableSyntax = fmdvs;
-            m_OwnerMetaBlockStatements = mbs;
-            if (fmdvs != null)
-            {
-                m_AssignToken = fmdvs.assignToken;
-
-                m_DefineName = m_FileMetaDefineVariableSyntax.name;
-
-                var fmcd = m_FileMetaDefineVariableSyntax.fileMetaClassDefine;
-                var getMC = ClassManager.instance.GetMetaClassAndRegisterExptendTemplateClassInstance(mbs.ownerMetaClass, fmcd);
-                var mdt = new MetaType(getMC);
-                m_MetaMemberVariable = new MetaMemberVariable(null, m_DefineName, mdt.metaClass);
-
-                var fileExpress = m_FileMetaDefineVariableSyntax.express;
-                m_MetaExpress = CreateExpressNodeInNewObjectStatements(m_MetaMemberVariable, m_OwnerMetaBlockStatements, fileExpress);
-
-            }
-        }
-        */
-
-        public MetaClass GetRetMetaClass()
-        {
-            if (m_MetaMemberVariable != null)
-            {
-                return m_MetaMemberVariable.ownerMetaClass;
-            }
-            if (m_MetaExpress != null)
-            {
-                return m_MetaExpress.GetReturnMetaClass();
-            }
-            return null;
         }
         public MetaType GetRetMetaType()
         {
@@ -219,22 +216,11 @@ namespace SimpleLanguage.Core
         {
             this.m_DefineName = definaname;
         }
-        public bool CalcReturnType()
+        public void CalcReturnType()
         {
             if (m_MetaExpress != null)
             {
                 m_MetaExpress.CalcReturnType();
-
-                if( m_MetaExpress is MetaCallLinkExpressNode mcen )
-                {
-                    if( mcen.isNewExpressNode )
-                    {
-                        m_MetaExpress = new MetaNewObjectExpressNode(m_MetaType, mcen);
-                        m_MetaExpress.Parse(new AllowUseSettings());
-                        m_MetaExpress.CalcReturnType();
-                    }
-                }
-
                 if (m_MetaMemberVariable != null)
                 {
                     MetaClass retMetaClass = m_MetaMemberVariable.defineMetaType.metaClass;
@@ -253,9 +239,9 @@ namespace SimpleLanguage.Core
             }
             else
             {
+                Debug.Assert(false);
                 Debug.Write("使用{}赋值，表达式不允许为空!!");
             }
-            return true;
         }
         // 创建NewObject 即 Class c = Class(){ var1 = 1; } 的方式使用 1即生成的表达式
         /*
@@ -342,7 +328,7 @@ namespace SimpleLanguage.Core
             return sb.ToString();
         }
     }
-    public class MetaBraceOrBracketStatementsContent
+    public class MetaNewObjectStatementsContent
     {
         public enum EStatementsContentType
         {
@@ -371,7 +357,7 @@ namespace SimpleLanguage.Core
 
         private FileMetaBaseTerm m_FileMetaBaseTerm = null;
 
-        public MetaBraceOrBracketStatementsContent( MetaArrayExpressNode maen, MetaClass mc, MetaBlockStatements mbs, MetaVariable parentMt)
+        public MetaNewObjectStatementsContent( MetaArrayExpressNode maen, MetaClass mc, MetaBlockStatements mbs, MetaVariable parentMt)
         {
             m_OwnerMetaBlockStatements = mbs;
             m_OwnerMetaClass = mc;
@@ -387,7 +373,7 @@ namespace SimpleLanguage.Core
             }
             m_ContentType = EStatementsContentType.ArrayValue;
         }
-        public MetaBraceOrBracketStatementsContent( FileMetaBaseTerm fmbt, MetaClass mc, MetaBlockStatements mbs, MetaVariable parentMt)
+        public MetaNewObjectStatementsContent( FileMetaBaseTerm fmbt, MetaClass mc, MetaBlockStatements mbs, MetaVariable parentMt)
         {
             m_FileMetaBaseTerm = fmbt;
             m_OwnerMetaBlockStatements = mbs;
@@ -399,7 +385,7 @@ namespace SimpleLanguage.Core
         {
             m_DefineMetaType = mt;
         }
-        public void Parse()
+        public void Parse(AllowUseSettings aws)
         {
             if( m_FileMetaBaseTerm is FileMetaBraceTerm fmbt2 )
             {
@@ -411,23 +397,21 @@ namespace SimpleLanguage.Core
                 for (int i = 0; i < m_FileMetaBaseTerm.fileMetaExpressList.Count; i++)
                 {
                     var fas = m_FileMetaBaseTerm.fileMetaExpressList[i];
-                    HandleBraceTermNode(fas, m_DefineMetaType);
+                    HandleBraceTermNode(fas, m_DefineMetaType, aws);
                 }
             }
             else
             {
-                for (int i = 0; i < this.assignStatementsList.Count; i++)
+                for (int i = 0; i < this.m_AssignStatementsList.Count; i++)
                 {
-                    var asl = this.assignStatementsList[i];
-                    if (asl.expressNode != null)
-                    {
-                        asl.expressNode.Parse(new AllowUseSettings());
-                    }
+                    var asl = this.m_AssignStatementsList[i];
+                    asl.Parse(aws);
+                    asl.CalcReturnType();
                 }
             }
         }
         //处理在{ Node1, Node2  } 在{}大括号中的Node1, Node2 这样的节点 Node1, 可以是 aaa = 1, "aa":1, 2:33, [1,2,3] [1] 3, this.value 这样的形式
-        public void HandleBraceTermNode( FileMetaBaseTerm fmbt, MetaType mt )
+        public void HandleBraceTermNode( FileMetaBaseTerm fmbt, MetaType mt, AllowUseSettings aws)
         {
             if (mt.isData)
             {
@@ -455,7 +439,7 @@ namespace SimpleLanguage.Core
                     if (fmbt is FileMetaSymbolTerm fmst)                   
                     {
                         MetaBraceAssignStatements mas = new MetaBraceAssignStatements(fmst, m_DefineMetaType, m_OwnerMetaBlockStatements );
-                        mas.CalcReturnType();
+                        //mas.CalcReturnType();
                         assignStatementsList.Add(mas);
                     }
                     else
@@ -493,7 +477,7 @@ namespace SimpleLanguage.Core
                     if (fmbt is FileMetaSymbolTerm fmst)
                     {
                         MetaBraceAssignStatements mas = new MetaBraceAssignStatements(fmst, m_DefineMetaType, m_OwnerMetaBlockStatements);
-                        mas.CalcReturnType();
+                        //mas.CalcReturnType();
                         assignStatementsList.Add(mas);
                     }
                     else
@@ -515,9 +499,8 @@ namespace SimpleLanguage.Core
                 MetaType cmt = genList[0];
                 if (fmbt is FileMetaBracketTerm fmst)
                 {
-
                     MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmst, cmt, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_EqualMetaVariable);
-                    mnoe.Parse(new AllowUseSettings());
+                    mnoe.Parse(aws);
                     mnoe.CalcReturnType();
                     var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, mnoe, m_EqualMetaVariable as MetaMemberVariable);
                     m_AssignStatementsList.Add(mas);                    
@@ -663,7 +646,8 @@ namespace SimpleLanguage.Core
                 {
                     if (fmbt is FileMetaSymbolTerm fmst)
                     {
-                        var mas = new MetaBraceAssignStatements(fmst, m_DefineMetaType, m_OwnerMetaBlockStatements);                        
+                        var mas = new MetaBraceAssignStatements(fmst, m_DefineMetaType, m_OwnerMetaBlockStatements);
+                        mas.Parse(aws);
                         mas.CalcReturnType();
                         assignStatementsList.Add(mas);
                     }
@@ -676,16 +660,17 @@ namespace SimpleLanguage.Core
                 }
             }            
         }
-        public MetaClass GetMaxLevelMetaClassType()
+        public MetaType GetMaxLevelMetaType()
         {
             //这个函数要处理 [1,2,3] 相同情况的类型    [1, 2.3f, 3.0d] 相同数字的最大类型确定 
             // [1UL, 2.3f] 这种情况，刚都按object处理  [1,"123", 3.0f] 不相同时 结果是object
-            MetaClass mc = CoreMetaClassManager.objectMetaClass;
+            //MetaClass mc = CoreMetaClassManager.objectMetaClass;
 #pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
             bool isAllSame = true;
 #pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
 
             int frontOpLevel = 0;
+            var mt = new MetaType(CoreMetaClassManager.objectMetaClass);
             for (int i = 0; i < m_AssignStatementsList.Count - 1; i++)
             {
                 MetaBraceAssignStatements cmc = m_AssignStatementsList[i];
@@ -695,32 +680,34 @@ namespace SimpleLanguage.Core
                 var nmcmt = nmc.GetRetMetaType();
                 if( cmcmt.isNull )
                 {
-                    return CoreMetaClassManager.objectMetaClass;
+                    return mt;
                 }
                 if( nmcmt.isNull )
                 {
-                    return CoreMetaClassManager.objectMetaClass;
+                    return mt;
                 }
                 if( cmcmt.metaClass != nmcmt.metaClass )
                 {
-                    return CoreMetaClassManager.objectMetaClass;
+                    return mt;
                 }
                 if (cmc.opLevel == nmc.opLevel && nmc.opLevel > frontOpLevel)
                 {
                     if (cmc.opLevel == 10)
                     {
-                        var cur = cmc.GetRetMetaClass();
-                        var next = nmc.GetRetMetaClass();
+                        var cutmt = cmc.GetRetMetaType();
+                        var nextmt = nmc.GetRetMetaType();
+                        var cur = cutmt.metaClass;
+                        var next = nextmt.metaClass;
                         var relation = ClassManager.ValidateClassRelationByMetaClass(cur, next);
                         if (relation == ClassManager.EClassRelation.Same
                             || relation == ClassManager.EClassRelation.Child)
                         {
-                            mc = next;
+                            mt = nextmt;
                             frontOpLevel = cmc.opLevel;
                         }
                         else if (relation == ClassManager.EClassRelation.Parent)
                         {
-                            mc = cur;
+                            mt = cutmt;
                         }
                         else
                         {
@@ -730,7 +717,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        mc = cmc.GetRetMetaClass();
+                        mt = cmc.GetRetMetaType();
                         frontOpLevel = cmc.opLevel;
                         isAllSame = true;
                     }
@@ -743,17 +730,17 @@ namespace SimpleLanguage.Core
                         if (cmc.opLevel > nmc.opLevel)
                         {
                             frontOpLevel = cmc.opLevel;
-                            mc = cmc.GetRetMetaClass();
+                            mt = cmc.GetRetMetaType();
                         }
                         else
                         {
                             frontOpLevel = nmc.opLevel;
-                            mc = nmc.GetRetMetaClass();
+                            mt = nmc.GetRetMetaType();
                         }
                     }
                 }
             }
-            return mc;
+            return mt;
         }
         public string ToFormatString()
         {
@@ -793,7 +780,7 @@ namespace SimpleLanguage.Core
         public List<MetaExpressNode> metaInputParamList => m_MetaInputParamList;
         public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
         public MetaVariable storeMetaVariable => m_StoreMetaVariable;
-        public MetaBraceOrBracketStatementsContent metaBraceOrBracketStatementsContent => m_MetaBraceOrBracketStatementsContent;
+        public MetaNewObjectStatementsContent metaContent => m_MetaContent;
 
         private FileMetaParTerm m_FileMetaParTerm = null;
         private FileMetaCallTerm m_FileMetaCallTerm = null;
@@ -801,7 +788,7 @@ namespace SimpleLanguage.Core
         private FileMetaConstValueTerm m_FileMetaConstValueTerm = null;
 
         private MetaExpressNode m_MetaEnumValue = null;
-        private MetaBraceOrBracketStatementsContent m_MetaBraceOrBracketStatementsContent = null;
+        private MetaNewObjectStatementsContent m_MetaContent = null;
         private ENewType m_NewType = ENewType.CommomClass;
         private bool m_NeedInitMemberVariable = true;
 
@@ -833,8 +820,8 @@ namespace SimpleLanguage.Core
                     SetInputParams(lastNode.metaInputParamCollection);
 
                     var fma = lastNode.fileMetaBraceTerm;
-                    m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fma, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
-                    m_MetaBraceOrBracketStatementsContent.SetMetaType(m_NewMetaType);
+                    m_MetaContent = new MetaNewObjectStatementsContent(fma, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
+                    m_MetaContent.SetMetaType(m_NewMetaType);
                 }
             }
             else
@@ -846,137 +833,17 @@ namespace SimpleLanguage.Core
                     SetInputParams(lastNode.metaInputParamCollection);
 
                     var fma = lastNode.fileMetaBraceTerm;
-                    m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fma, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
-                    m_MetaBraceOrBracketStatementsContent.SetMetaType(m_NewMetaType);
+                    m_MetaContent = new MetaNewObjectStatementsContent(fma, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
+                    m_MetaContent.SetMetaType(m_NewMetaType);
                 }
             }
         }
-        /* 下边的要合并到上边的处理方法里边
-        // Class1<Int32> a = Class1<Int32>( 10 ){ a = 20; } 
-        // Enum1 e1 = Enum1.Val1( 20 );
-        // c = Class1(){ a = 20, b = 20}  => 定义类
-        public MetaNewObjectExpressNode(FileMetaCallTerm fmct, MetaCallLink mcl, MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs, MetaMethodCall mmf)
-        {
-            m_FileMetaCallTerm = fmct;
-            m_OwnerMetaClass = ownerMC;
-            m_OwnerMetaBlockStatements = mbs;
-            //m_MetaConstructFunctionCall = mmf;
-            m_MetaType = new MetaType(mt);
-            var fmcn = mcl.finalCallNode;
-
-            bool needByFileMetaParTermSetTemplate = false;
-            MetaInputTemplateCollection mitc = new MetaInputTemplateCollection();
-            MetaClass createMC = null;
-            if (false)//!m_MetaType.isDefineMetaClass) 此处需要检查是否使用定义的类型
-            {
-                if (fmcn.visitType == MetaVisitNode.EVisitType.New)
-                {
-                    m_MetaType.SetMetaClass(fmcn.methodCall.function.ownerMetaClass);
-                }
-            }
-            //if (fmcn.callNodeType == ECallNodeType.EnumDefaultValue)
-            //{
-            //    m_MetaType.SetEnumValue(fmcn.GetMetaMemeberVariable());
-            //}
-            //else if (fmcn.callNodeType == ECallNodeType.EnumNewValue)
-            //{
-            //    m_MetaType.SetEnumValue(fmcn.GetMetaMemeberVariable());
-            //    m_MetaEnumValue = fmcn.metaExpressValue;
-            //}
-            else if (fmcn.visitType == MetaVisitNode.EVisitType.MethodCall)
-            {
-                createMC = mmf.function.ownerMetaClass;
-                m_MetaType.SetMetaClass(createMC);
-                if (createMC.metaTemplateList.Count > 0)
-                {
-                    //if (fmcn.metaTemplateParamsCollection == null)
-                    //{
-                    //    needByFileMetaParTermSetTemplate = true;
-                    //}
-                }
-            }
-
-            ////if (fmcn != null && fmcn.methodCall?.instance != null)
-            ////{
-            ////    m_MetaBraceOrBracketStatementsContent = fmcn.metaBraceStatementsContent;
-            ////}
-            var list = fmct.callLink?.callNodeList;
-            if (list != null && list.Count > 0)
-            {
-                var listfinalNode = list[list.Count - 1];
-                FileMetaBraceTerm fmbt = listfinalNode.fileMetaBraceTerm;
-                if (fmbt != null)
-                {
-                    //Debug.Write("Error 待测试!!!");
-                    m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fmbt, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
-                    m_MetaBraceOrBracketStatementsContent.SetMetaType(m_MetaType);
-                    m_MetaBraceOrBracketStatementsContent.Parse();
-                    var metaInputTemplateCollection = new MetaInputTemplateCollection();
-                    MetaClass mc = m_MetaBraceOrBracketStatementsContent.GetMaxLevelMetaClassType();
-                    metaInputTemplateCollection.AddMetaTemplateParamsList(new MetaType(mc));
-
-                    m_MetaType.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
-
-                    //if (fmcn.metaTemplateParamsCollection == null)
-                    //{
-                    //    m_MetaType.SetMetaInputTemplateCollection(metaInputTemplateCollection);
-                    //}
-                    //else
-                    //{
-                    //    m_MetaType.SetMetaInputTemplateCollection(fmcn.metaTemplateParamsCollection);
-                    //}
-                    m_MetaType.UpdateMetaClassByRawMetaClassAndInputTemplateCollection();
-                }
-                FileMetaParTerm fmpt = listfinalNode.fileMetaParTerm;
-                if (fmpt != null)
-                {
-                    m_FileMetaParTerm = fmpt;
-                    if (needByFileMetaParTermSetTemplate)
-                    {
-                        Debug.Write("Error 待测试!!!");
-                        List<MetaClass> mtList = new List<MetaClass>();
-                        MetaInputParamCollection mipc = new MetaInputParamCollection(m_FileMetaParTerm, ownerMC, mbs);
-                        for (int i = 0; i < mipc.count; i++)
-                        {
-                            var mp = mipc.metaInputParamList[i];
-                            mp.CaleReturnType();
-                            mtList.Add(mp.GetRetMetaClass());
-                        }
-                        if (createMC == CoreMetaClassManager.rangeMetaClass)
-                        {
-                            bool isSame = true;
-                            for (int i = 0; i < mtList.Count - 1; i++)
-                            {
-                                var curMc = mtList[i];
-                                var nextMc = mtList[i + 1];
-                                if (curMc != nextMc)
-                                {
-                                    isSame = false;
-                                    break;
-                                }
-                            }
-                            if (isSame)
-                            {
-                                m_MetaType.AddDefineTemplateMetaType(new MetaType(mtList[0]));
-                                m_MetaType.AddGenTemplateMetaType(new MetaType(mtList[0]));
-                            }
-                        }
-                    }
-                    //MetaInputParam mip = new MetaInputParam(new MetaConstExpressNode(EType.Int16, assignStatementsList.Count));
-                    //mipc.AddMetaInputParam(mip);
-                }
-
-            }
-            Init();
-        }
-        */
-
         // dynamic c = { c1 = 100, c2 = 200 }
         public MetaNewObjectExpressNode( MetaClass ownermc, List<MetaDynamicClass> list )
         {
             m_OwnerMetaClass = ownermc;
             m_OwnerMetaBlockStatements = null;
-            m_MetaBraceOrBracketStatementsContent = null;;
+            m_MetaContent = null;;
 
             var metaInputTemplateCollection = new MetaInputTemplateCollection();
             //MetaType mitp = new MetaType(MetaDynamicClass);
@@ -1063,9 +930,8 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_NewType = ENewType.ArrayClass;
-            m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(maen, mc, mbs, equalMV );
+            m_MetaContent = new MetaNewObjectStatementsContent(maen, mc, mbs, equalMV );
         }
-
         // Class1 c = { a = 20, b = 20 };  => Class1 c = Class1(); c.a = 20; c.b = 20;
         // dynamic c = {a = 20, b = 20} => 动态类 
         // data c = {a = 20, b = 20} | c = {a = 20, b = 20} => 动态数据  
@@ -1085,30 +951,30 @@ namespace SimpleLanguage.Core
             {
                 m_NewType = ENewType.CommomClass;
             }
-            m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fmbt, ownerMC, mbs, equalMV);
-            m_MetaBraceOrBracketStatementsContent.SetMetaType(m_DefineMetaType);
+            m_MetaContent = new MetaNewObjectStatementsContent(fmbt, ownerMC, mbs, equalMV);
+            m_MetaContent.SetMetaType(m_DefineMetaType);
         }
         // Array arr = [1,2,3]   [Class1(), Class2(), variable1.a.b(),100]
         public MetaNewObjectExpressNode( FileMetaBracketTerm fmbt, MetaType mt, MetaClass mc, MetaBlockStatements mbs, MetaVariable equalMV )
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
-            m_MetaBraceOrBracketStatementsContent = new MetaBraceOrBracketStatementsContent(fmbt, m_OwnerMetaClass, m_OwnerMetaBlockStatements, equalMV);
+            m_MetaContent = new MetaNewObjectStatementsContent(fmbt, m_OwnerMetaClass, m_OwnerMetaBlockStatements, equalMV);
 
             m_NewMetaType = new MetaType(mt);
             m_NewType = ENewType.ArrayClass;
-            m_MetaBraceOrBracketStatementsContent.SetMetaType(m_NewMetaType);
+            m_MetaContent.SetMetaType(m_NewMetaType);
         }
         public override void Parse(AllowUseSettings auc)
         {
             //该函数，进行，计算出， 要创建的类，使用的初始化函数，以及，初始化成员的解析            //
             if (m_NewType == ENewType.ArrayClass )
             {
-                m_MetaBraceOrBracketStatementsContent.Parse();
+                m_MetaContent.Parse(auc);
 
-                if(m_MetaBraceOrBracketStatementsContent.assignStatementsList.Count > 0 )
+                if(m_MetaContent.assignStatementsList.Count > 0 )
                 {
-                    MetaClass inputType = m_MetaBraceOrBracketStatementsContent.GetMaxLevelMetaClassType();
+                    MetaType inputType = m_MetaContent.GetMaxLevelMetaType();
 
                     m_RealMetaType = new MetaType(inputType);
                     //List<MetaType> listMT = new List<MetaType>();
@@ -1120,9 +986,9 @@ namespace SimpleLanguage.Core
                     MetaType newRMT = new MetaType();
                     newRMT.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
                     newRMT.AddDefineTemplateMetaType(m_RealMetaType);
-                    newRMT.AddGenTemplateMetaType(m_RealMetaType);
+                    //newRMT.AddGenTemplateMetaType(m_RealMetaType);
                     m_RealMetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out bool isIGM);
-                    m_RealMetaType.SetArrayLength(m_MetaBraceOrBracketStatementsContent.assignStatementsList.Count);
+                    m_RealMetaType.SetArrayLength(m_MetaContent.assignStatementsList.Count);
                 }
                 else
                 {
@@ -1132,14 +998,14 @@ namespace SimpleLanguage.Core
             }
             else if( m_NewType == ENewType.CommomClass )
             {
-                m_MetaBraceOrBracketStatementsContent.Parse();
-                if (m_MetaBraceOrBracketStatementsContent.contentType == MetaBraceOrBracketStatementsContent.EStatementsContentType.DynamicClass)
+                m_MetaContent.Parse(auc);
+                if (m_MetaContent.contentType == MetaNewObjectStatementsContent.EStatementsContentType.DynamicClass)
                 {
-                    m_RealMetaType = m_MetaBraceOrBracketStatementsContent.defineMetaType;
+                    m_RealMetaType = m_MetaContent.defineMetaType;
                 }
-                else if (m_MetaBraceOrBracketStatementsContent.contentType == MetaBraceOrBracketStatementsContent.EStatementsContentType.DynamicData)
+                else if (m_MetaContent.contentType == MetaNewObjectStatementsContent.EStatementsContentType.DynamicData)
                 {
-                    m_RealMetaType = m_MetaBraceOrBracketStatementsContent.defineMetaType;
+                    m_RealMetaType = m_MetaContent.defineMetaType;
                 }
                 else
                 {
@@ -1298,8 +1164,8 @@ namespace SimpleLanguage.Core
                                             Debug.Assert(false, "最后一位数组定义，不能为实体值!");
                                             return;
                                         }
-                                        var cmt1 = m_DefineMetaType.GetGenMetaTypeByIndex(0);
-                                        var cmt2 = m_NewMetaType.GetGenMetaTypeByIndex(0);
+                                        var cmt1 = m_DefineMetaType.GetMetaTypeByIndex(0);
+                                        var cmt2 = m_NewMetaType.GetMetaTypeByIndex(0);
 
                                         if( !MetaType.ExtendRelateionMetaType( cmt1, cmt2 ) )
                                         {
@@ -1456,9 +1322,9 @@ namespace SimpleLanguage.Core
         {
             //这里要解析 定义数组 的类型，与子元素的类型 是否，可以匹配
 
-            for( int i = 0; i < m_MetaBraceOrBracketStatementsContent.count; i++ )
+            for( int i = 0; i < m_MetaContent.count; i++ )
             {
-                var mbc = m_MetaBraceOrBracketStatementsContent.assignStatementsList[i];
+                var mbc = m_MetaContent.assignStatementsList[i];
 
                 if (mbc == null) continue;
 
@@ -1466,7 +1332,7 @@ namespace SimpleLanguage.Core
 
                 if( m_MetaType.IsArray() )
                 {
-                    var cmt = m_MetaType.GetGenMetaTypeByIndex(0);
+                    var cmt = m_MetaType.GetMetaTypeByIndex(0);
                     
                     if (!cmt.metaClass.IsContainMetaClass(mt2.metaClass))
                     {
@@ -1520,18 +1386,18 @@ namespace SimpleLanguage.Core
             {
                 sb.Append(m_MetaType.name);
                 sb.Append("{");
-                if (m_MetaBraceOrBracketStatementsContent != null)
+                if (m_MetaContent != null)
                 {
-                    for( int i = 0; i < m_MetaBraceOrBracketStatementsContent.count ; i++ )
+                    for( int i = 0; i < m_MetaContent.count ; i++ )
                     {
-                        var bsc = m_MetaBraceOrBracketStatementsContent.assignStatementsList[i];
+                        var bsc = m_MetaContent.assignStatementsList[i];
                         if( bsc == null )
                         {
                             continue;
                         }
                         sb.Append(bsc.metaMemberData?.ToFormatString2(m_MetaType.isDynamicData));
 
-                        if( i < m_MetaBraceOrBracketStatementsContent.count - 1 )
+                        if( i < m_MetaContent.count - 1 )
                         {
                             sb.Append(",");
                         }
@@ -1567,7 +1433,7 @@ namespace SimpleLanguage.Core
                 //    }
                 //    sb.Append(")");
                 //}
-                sb.Append(m_MetaBraceOrBracketStatementsContent?.ToFormatString());
+                sb.Append(m_MetaContent?.ToFormatString());
             }
 
             return sb.ToString();

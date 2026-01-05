@@ -4,13 +4,14 @@
     <TargetFramework>net6.0</TargetFramework>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <ApplicationIcon />
-    <StartupObject />
+    <StartupObject>SimpleLanguage.Program</StartupObject>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
     <IncludeSymbols>True</IncludeSymbols>
     <IsPublishable>False</IsPublishable>
     <FileUpgradeFlags>40</FileUpgradeFlags>
     <UpgradeBackupLocation>D:\project\dotnet\lang\simple_language\Backup\</UpgradeBackupLocation>
     <OldToolsVersion>2.0</OldToolsVersion>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;EditorMode</DefineConstants>
@@ -44,5 +45,8 @@
     <Folder Include="source\Export\ExportCPlusCode\" />
     <Folder Include="source\OtherLanguage\CSharp\Statements\" />
     <Folder Include="source\VM\NewObject\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tools\ExtractLogs\ExtractLogs.csproj" />
   </ItemGroup>
 </Project>

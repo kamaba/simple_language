@@ -6,20 +6,37 @@ using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Compile.Logging
 {
+    /// <summary>
+    /// Central access point for per-module loggers and initialization.
+    /// Call Initialize to load definitions before logging occurs.
+    /// </summary>
     public class LogManager
     {
         private static readonly ConcurrentDictionary<ErrorModule, ModuleLogger> _loggers = new ConcurrentDictionary<ErrorModule, ModuleLogger>();
+
+        /// <summary>
+        /// Obtain a logger for a specific logical module.
+        /// The returned logger implements formatting, diagnostic construction and abort behaviour.
+        /// </summary>
         public static ModuleLogger GetLogger(ErrorModule module)
         {
             return _loggers.GetOrAdd(module, m => new ModuleLogger(m));
         }
 
+        /// <summary>
+        /// Load the error registry from a CSV file. Should be called once during startup.
+        /// </summary>
         public static void Initialize(string csvPath)
         {
             ErrorRegistry.Instance.LoadFromCsv(csvPath);
         }
     }
 
+    /// <summary>
+    /// Module-specific logger implementing the small ILogger API.
+    /// It resolves ErrorDefinition by id and creates Diagnostics. If the definition
+    /// requests aborting the current module the logger throws CompilationAbortException.
+    /// </summary>
     public class ModuleLogger : ILogger
     {
         private readonly ErrorModule _module;
@@ -28,6 +45,10 @@ namespace SimpleLanguage.Compile.Logging
             _module = module;
         }
 
+        /// <summary>
+        /// Log an error by id and optional formatting arguments.
+        /// If the ErrorDefinition specifies AbortCurrent or severity Assert this will throw.
+        /// </summary>
         public void Log(int errorId, params object[] args)
         {
             if (!ErrorRegistry.Instance.TryGet(errorId, out var def))
@@ -52,6 +73,9 @@ namespace SimpleLanguage.Compile.Logging
             }
         }
 
+        /// <summary>
+        /// Log an error associated with a Token. The token's file and location are embedded into the Diagnostic.
+        /// </summary>
         public void LogWithToken(int errorId, Token token, params object[] args)
         {
             if (!ErrorRegistry.Instance.TryGet(errorId, out var def))
@@ -82,6 +106,9 @@ namespace SimpleLanguage.Compile.Logging
             }
         }
 
+        /// <summary>
+        /// Force an assert (throws CompilationAbortException unconditionally).
+        /// </summary>
         public void Assert(int errorId, params object[] args)
         {
             if (!ErrorRegistry.Instance.TryGet(errorId, out var def))

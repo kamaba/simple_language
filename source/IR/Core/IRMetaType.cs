@@ -74,18 +74,6 @@ namespace SimpleLanguage.IR
             if (type.eType == EMetaTypeType.MetaClass)
             {
                 irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(gtmc.GetHashCode());
-
-                if( gtmc.genMetaTypeTemplateList.Count > 0 )
-                {
-                    if( type.genTemplateMetaTypeList.Count > 0 )
-                    {
-                        Debug.Assert(false, "不允许在已经实例化的模板类中，再次定义模板!");
-                    }
-                    for (int i = 0; i < gtmc.genMetaTypeTemplateList.Count; i++)
-                    {
-                        irmt.m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(gtmc.genMetaTypeTemplateList[i], irmt.m_IROwnerMetaClass));
-                    }
-                }
             }
             else if (type.eType == EMetaTypeType.Template)
             {
@@ -96,11 +84,15 @@ namespace SimpleLanguage.IR
             {
                 irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
             }
-
-            for (int i = 0; i < type.genTemplateMetaTypeList.Count; i++)
+            var lits = type.GetGenTemplateMetaTypeList();
+            for (int i = 0; i < lits.Count; i++)
             {
-                irmt.m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(type.genTemplateMetaTypeList[i], irmt.m_IROwnerMetaClass));
+                irmt.m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(lits[i], irmt.m_IROwnerMetaClass));
             }
+            //for (int i = 0; i < type.genTemplateMetaTypeList.Count; i++)
+            //{
+            //    irmt.m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(type.genTemplateMetaTypeList[i], irmt.m_IROwnerMetaClass));
+            //}
             if (irmt.m_IRMetaClass == null || irmt.m_IROwnerMetaClass == null)
             {
                 Debug.Assert(false, "这个不可以为空!");

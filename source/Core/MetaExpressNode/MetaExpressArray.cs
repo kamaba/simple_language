@@ -127,12 +127,12 @@ namespace SimpleLanguage.Core
                     }
                 }
                 m_MetaType.AddDefineTemplateMetaType(cmt);
-                m_MetaType.AddGenTemplateMetaType(cmt);
+                //m_MetaType.AddGenTemplateMetaType(cmt);
 
                 var newmt = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(m_MetaType, true, out bool isgmc);
                 newmt.SetArrayLength(m_MetaCallArray.Count);
 
-                m_MetaType = new MetaType(newmt.metaClass as MetaGenTemplateClass, m_MetaType.defineTemplateMetaTypeList, m_MetaType.genTemplateMetaTypeList);
+                m_MetaType = new MetaType(newmt.metaClass as MetaGenTemplateClass, m_MetaType.defineTemplateMetaTypeList, m_MetaType.defineTemplateMetaTypeList);
             }
             return m_MetaType;
         }

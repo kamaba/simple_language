@@ -7,20 +7,40 @@ using System.Linq;
 
 namespace SimpleLanguage.Compile.Logging
 {
+    /// <summary>
+    /// Registry of ErrorDefinition loaded from a CSV configuration.
+    /// Provides lookup by numeric id and an enumerable view of all definitions.
+    /// </summary>
     public class ErrorRegistry
     {
         private ConcurrentDictionary<int, ErrorDefinition> _dict = new ConcurrentDictionary<int, ErrorDefinition>();
+
+        /// <summary>
+        /// Global singleton instance. The registry is lightweight and safe to use from multiple threads.
+        /// </summary>
         public static ErrorRegistry Instance { get; } = new ErrorRegistry();
 
         private ErrorRegistry() { }
 
+        /// <summary>
+        /// Try get an ErrorDefinition by its id.
+        /// </summary>
         public bool TryGet(int id, out ErrorDefinition def)
         {
             return _dict.TryGetValue(id, out def);
         }
 
+        /// <summary>
+        /// Enumerate all registered definitions ordered by id.
+        /// </summary>
         public IEnumerable<ErrorDefinition> AllDefinitions => _dict.Values.OrderBy(d => d.Id);
 
+        /// <summary>
+        /// Load definitions from a CSV file. The expected columns are:
+        /// id,messageTemplate,severity,paramCount,module,abortCurrent,abortLater,displayType,fixHint
+        /// Lines with invalid format are skipped.
+        /// </summary>
+        /// <param name="path">Path to CSV file.</param>
         public void LoadFromCsv(string path)
         {
             if (!File.Exists(path)) return;
@@ -54,6 +74,10 @@ namespace SimpleLanguage.Compile.Logging
             }
         }
 
+        /// <summary>
+        /// Basic CSV parser that supports quoted fields. It does not handle escaped quotes.
+        /// It is intentionally simple because the CSV we use is small and controlled.
+        /// </summary>
         private static string[] SplitCsvLine(string line)
         {
             var list = new List<string>();
@@ -79,6 +103,9 @@ namespace SimpleLanguage.Compile.Logging
             return list.ToArray();
         }
 
+        /// <summary>
+        /// Register or update an ErrorDefinition programmatically.
+        /// </summary>
         public void Register(ErrorDefinition def)
         {
             _dict[def.Id] = def;

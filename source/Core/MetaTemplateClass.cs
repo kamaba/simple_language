@@ -196,11 +196,12 @@ namespace SimpleLanguage.Core
         }
         public void ReplaceMetaTypeTemplateMeta( MetaType mt, ClassLevelRelationData clrd )
         {
-            if (mt.genTemplateMetaTypeList.Count > 0)
+            Debug.Assert(false, "");
+            if (mt.defineTemplateMetaTypeList.Count > 0)
             {
-                for (int i = 0; i < mt.genTemplateMetaTypeList.Count; i++)
+                for (int i = 0; i < mt.defineTemplateMetaTypeList.Count; i++)
                 {
-                    ReplaceMetaTypeTemplateMeta(mt.genTemplateMetaTypeList[i], clrd);
+                    ReplaceMetaTypeTemplateMeta(mt.defineTemplateMetaTypeList[i], clrd);
                 }
             }
             if (mt.isTemplate)
@@ -284,18 +285,20 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public MetaGenTemplateClass AddInstanceMetaClass( List<MetaType> inputlist )
-        {
-            List<MetaClass> list = new List<MetaClass>();
-            foreach (var item in inputlist )
-            {
-                if (item.isTemplate == false)
-                {
-                    list.Add(item.metaClass);
-                }
-            }
-            return AddInstanceMetaClass(list);
-        }
+        //public MetaGenTemplateClass AddInstanceMetaClass( List<MetaType> inputlist )
+        //{
+        //    List<MetaClass> list = new List<MetaClass>();
+        //    foreach (var item in inputlist )
+        //    {
+        //        if (item.isTemplate == false)
+        //        {
+        //            list.Add(item.metaClass);
+        //        }
+        //    }
+        //    var retinst = AddInstanceMetaClass(list);
+        //    retinst.SetGenMetaTypeTemplateList(inputlist);
+        //    return retinst;
+        //}
         public MetaGenTemplateClass AddInstanceMetaClass(List<MetaClass> list, bool isParse = false )
         {
             if(list.Count == 0)
@@ -325,7 +328,7 @@ namespace SimpleLanguage.Core
                 MetaGenTemplateClass mgtc = GetGenTemplateMetaClassByTemplateList(list2);
                 if (mgtc == null)
                 {
-                    mgtc = new MetaGenTemplateClass(this, list2);                    
+                    mgtc = new MetaGenTemplateClass(this, list2);
                     this.AddGenTemplateMetaClass(mgtc);
                     if (isParse)
                     {
