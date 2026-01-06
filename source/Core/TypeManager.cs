@@ -349,7 +349,7 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < inputTemplateNodeList.Count; i++)
             {
                 var t = RegisterTemplateDefineMetaTemplateFunction(findfn, findFun, inputTemplateNodeList[i], isParse );
-                mt.AddDefineTemplateMetaType(new MetaType(regMc.metaTemplateList[i]) );
+                mt.AddDefineTemplateMetaType(t);
                 //mt.AddGenTemplateMetaType(t);
             }
             mt = regMc.AddMetaPreTemplateClass(mt, isParse, out bool igmc);

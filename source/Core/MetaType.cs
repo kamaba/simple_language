@@ -277,16 +277,16 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public MetaClass GetTemplateMetaClass(out bool isGTC)
-        {
-            isGTC = false;
-            if (m_MetaClass is MetaGenTemplateClass mgtc)
-            {
-                isGTC = true;
-                return mgtc.metaTemplateClass;
-            }
-            return m_MetaClass;
-        }
+        //public MetaClass GetTemplateMetaClass(out bool isGTC)
+        //{
+        //    isGTC = false;
+        //    if (m_MetaClass is MetaGenTemplateClass mgtc)
+        //    {
+        //        isGTC = true;
+        //        return mgtc.metaTemplateClass;
+        //    }
+        //    return m_MetaClass;
+        //}
         public MetaClass GetTemplateMetaClass()
         {
             if (m_MetaClass is MetaGenTemplateClass mgtc)
@@ -670,34 +670,54 @@ namespace SimpleLanguage.Core
                 if (m_MetaClass != null)
                 {
                     sb.Append(m_MetaClass.allClassName);
+                    if (m_MetaClass.genMetaClassTemplateList.Count > 0)
+                    {
+                        sb.Append("<");
+
+                        for (int i = 0; i < m_MetaClass.genMetaClassTemplateList.Count; i++)
+                        {
+                            sb.Append(m_MetaClass.genMetaClassTemplateList[i].ToString());
+                            if (i < m_MetaClass.genMetaClassTemplateList.Count - 1)
+                            {
+                                sb.Append(",");
+                            }
+                        }
+                        sb.Append(">");
+                    }
+                }
+                else
+                {
+                    Debug.Assert(false);
                 }
             }
             else if (eType == EMetaTypeType.MetaGenClass )
             {
-                if (m_MetaClass != null)
+                if (m_MetaClass is MetaGenTemplateClass mgtc)
                 {
-                    if(m_MetaClass is MetaGenTemplateClass mgtc )
-                    {
-                        sb.Append(mgtc.metaTemplateClass.metaNode.allName);
-                        //if (m_GenTemplateMetaTypeList.Count > 0)
-                        //{
-                        //    sb.Append("<");
+                    sb.Append(mgtc.metaTemplateClass.metaNode.allName);
 
-                        //    for (int i = 0; i < m_GenTemplateMetaTypeList.Count; i++)
-                        //    {
-                        //        sb.Append(m_GenTemplateMetaTypeList[i].ToString());
-                        //        if (i < m_GenTemplateMetaTypeList.Count - 1)
-                        //        {
-                        //            sb.Append(",");
-                        //        }
-                        //    }
-                        //    sb.Append(">");
-                        //}
-                        if ( mgtc.metaTemplateClass == CoreMetaClassManager.arrayMetaClass )
+                    if (mgtc.genMetaClassTemplateList.Count > 0)
+                    {
+                        sb.Append("<");
+
+                        for (int i = 0; i < mgtc.genMetaClassTemplateList.Count; i++)
                         {
-                            sb.Append("[" + this.m_ArrayLength + "]");
+                            sb.Append(mgtc.genMetaClassTemplateList[i].ToString());
+                            if (i < mgtc.genMetaClassTemplateList.Count - 1)
+                            {
+                                sb.Append(",");
+                            }
                         }
+                        sb.Append(">");
                     }
+                    if (mgtc.metaTemplateClass == CoreMetaClassManager.arrayMetaClass)
+                    {
+                        sb.Append("[" + this.m_ArrayLength + "]");
+                    }
+                }
+                else
+                {
+                    Debug.Assert(false);
                 }
             }
             else

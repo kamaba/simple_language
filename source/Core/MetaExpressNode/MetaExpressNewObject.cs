@@ -671,6 +671,7 @@ namespace SimpleLanguage.Core
 
             int frontOpLevel = 0;
             var mt = new MetaType(CoreMetaClassManager.objectMetaClass);
+            var objmt = new MetaType(CoreMetaClassManager.objectMetaClass);
             for (int i = 0; i < m_AssignStatementsList.Count - 1; i++)
             {
                 MetaBraceAssignStatements cmc = m_AssignStatementsList[i];
@@ -680,15 +681,15 @@ namespace SimpleLanguage.Core
                 var nmcmt = nmc.GetRetMetaType();
                 if( cmcmt.isNull )
                 {
-                    return mt;
+                    return objmt;
                 }
                 if( nmcmt.isNull )
                 {
-                    return mt;
+                    return objmt;
                 }
                 if( cmcmt.metaClass != nmcmt.metaClass )
                 {
-                    return mt;
+                    return objmt;
                 }
                 if (cmc.opLevel == nmc.opLevel && nmc.opLevel > frontOpLevel)
                 {

@@ -6,7 +6,6 @@
 //  Description: Generator Template Class's entity by Template Class
 //****************************************************************************
 
-using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
