@@ -257,7 +257,7 @@ namespace SimpleLanguage.Core
         }
         public List<MetaType> GetGenTemplateMetaTypeList()
         {
-            if( eType == EMetaTypeType.MetaClass )
+            if( eType == EMetaTypeType.MetaClass || eType == EMetaTypeType.MetaGenClass )
             {
                 return this.m_MetaClass.genMetaTypeTemplateList;
             }

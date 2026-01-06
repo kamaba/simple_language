@@ -300,7 +300,10 @@ ArrayTest
         {
             for v in iter
             {
-                System.Console.WriteLine("1111111111= " + v.toString() )
+                if v != null
+                {
+                 System.Console.WriteLine("1111111111= " + v.toString() )
+                }
             }
         }
     }
@@ -460,14 +463,10 @@ ArrayTest
         System.Console.WriteLine("1111111111= " + a335[2].toString() + "-----" + a335[0].toString() );# + "xxxxx=" + a335 )
         #testArray(a335)
         !# 
-
-
-
+        #!
         a35 = [[0,1,2,ac,4],[[11,12],[13,14]]];
         testArray(a35)
-
-
-        
+        !#      
 
         #!            
         # a35[0] = [0,1,2,3,4] a35[1] = [[1,2,3],[2,3,4],[4,5,6],[7,8,9]]  a34[1][0][2] = 3  a35是个一维两值数组，访问a35[1] 是确定对象访问 再访问 是一个二维纯int数组，然后是a35[1][0][2] 后边两位是纯数组访问
@@ -486,9 +485,31 @@ ArrayTest
         }
         !#
         
-        #levelvar = Level<int>();
-        #Level<int>[][] a43 = { [ levelvar, levelvar ], [ levelvar, levelvar ] };
-        # a44 = Level<int>[]
+        #!
+        levelvar = Level<int>(100);
+        Level<int>[][] a35 = { [ levelvar, levelvar ], [ levelvar, levelvar ] };        
+        testArray(a35)
+        !#
+        
+        #!
+        strarr = string[]{"abbc", "cccc", "a100"}
+        testArray(strarr)
+        !#
+
+        #a44 = Level<int>[10]
+        Level<int>[] a44 = new(15) { Level<int>(200) }
+        a44[1] = Level<int>(10000)
+        a44[1].t = 100
+        
+        for i = 4, i < 8, i++
+        {
+            a44[i] = Level<int>( i * 10000 )
+            a44[i].t += 135 
+        }
+        
+        testArray(a44)
+        
+
         
         #object[][] a42 = { {1.2,1.3,1.4,1.5},{3,4,5} };    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于  
         #Array( 2, Array.type ){ Array(5, float.type ){ 1.2, 1.3, 1.4, 1.5 }, Array( 3, int.tye ){3,4,5}   } 
@@ -515,13 +536,7 @@ ArrayTest
         float[] a7 = Array<float>(){ 1.2, 2.2, 3.4 };  #  需要{}的内容特殊处理   
         
         float[] a8 = Array<float>( 20 ){1,2,3,5,3.3};   #申请一个长度为20的数组  通过后边数据决定 其实使用的是ArrayInt
-       
-        #a9 = Array<int>( 27 ).gen(3); #申请一个三维数组，边界分别为3,3,3     
-        
-        bb2 = Array<int>(100 ){ 1,2,3,4,5 };    # 等于 Array<int>( 100, 10 )  {1,2,3,4,5};        
-             
-        int[] bb3 = {1,2,3,4,5 };    #与上相同  Array<int>(5){ 1,2,3,4,5}
-
+                            
         #ArrClass[] arr2 = ArrClass[10]{};    #不允许 这种的写法  只允许new(10)
         #arr2 = Array(0);           
         #arr1.setLength( 100 );         #设置数组的长度
