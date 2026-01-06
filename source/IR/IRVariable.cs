@@ -39,7 +39,12 @@ namespace SimpleLanguage.IR
                 int index = -1;
                 if (irmc != null )
                 {
-                    index = irmc.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                    MetaVariable gmv = mv;
+                    if( mv.sourceMetaVariable != null )
+                    {
+                        gmv = mv.sourceMetaVariable;
+                    }
+                    index = irmc.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode());
                 }
                 if ( mv.isStatic )
                 {
@@ -207,11 +212,17 @@ namespace SimpleLanguage.IR
             {
                 int index = -1;
                 var cirmc = irmc == null ? irmt.irMetaClass : irmc;
+
+                MetaVariable gmv = mv;
+                if( mv.sourceMetaVariable != null )
+                {
+                    gmv = mv.sourceMetaVariable;
+                }
                 if (cirmc != null )
                 {
-                    index = cirmc.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                    index = cirmc.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode());
                 }
-                if (mv.isStatic)
+                if (gmv.isStatic)
                 {
                     if( mv.realMetaType.GenTemplateIsIncludeTemplate() )
                     {

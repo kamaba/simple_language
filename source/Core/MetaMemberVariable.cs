@@ -26,7 +26,7 @@ namespace SimpleLanguage.Core
     }
     public class MetaMemberVariable : MetaVariable, IComparable<MetaMemberVariable>
     {
-        public MetaMemberVariable sourceMetaMemberVariable => m_SourceMetaMemberVariable;
+        public MetaMemberVariable sourceMetaMemberVariable => m_SourceMetaVariable as MetaMemberVariable;
         public MetaClass sourceMetaClass => m_SourceMetaClass;
         public EFromType fromType => m_FromType;
         public MetaExpressNode express => m_Express;
@@ -39,7 +39,6 @@ namespace SimpleLanguage.Core
         private FileMetaMemberVariable m_FileMetaMemeberVariable;
         private MetaExpressNode m_Express = null;
         private bool m_IsInnerDefine = false;
-        private MetaMemberVariable m_SourceMetaMemberVariable = null;
         protected List<MetaMemberVariable> m_TemplateChildMetaMemberVariableList = new List<MetaMemberVariable>();
         protected MetaClass m_SourceMetaClass = null;
         //private Dictionary< string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
@@ -69,7 +68,6 @@ namespace SimpleLanguage.Core
             m_FromType = mmv.m_FromType;  
             m_IsStatic = mmv.m_IsStatic;
             m_Permission = mmv.m_Permission;
-            m_SourceMetaMemberVariable = mmv;
             mmv.m_TemplateChildMetaMemberVariableList.Add(this);
         }
         public MetaMemberVariable(MetaClass mc, string _name)
