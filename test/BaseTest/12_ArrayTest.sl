@@ -276,7 +276,7 @@ ArrayTest
 
         override string toString()
         {
-            ret "i1= " + this.i1.toString() + "  i2= " + this.i2
+            ret "ArrClass(){ i1= " + this.i1.toString() + "  i2= " + this.i2 + "}"
         }
     }
     Level<T>
@@ -460,8 +460,14 @@ ArrayTest
         System.Console.WriteLine("1111111111= " + a335[2].toString() + "-----" + a335[0].toString() );# + "xxxxx=" + a335 )
         #testArray(a335)
         !# 
+
+
+
         a35 = [[0,1,2,ac,4],[[11,12],[13,14]]];
         testArray(a35)
+
+
+        
 
         #!            
         # a35[0] = [0,1,2,3,4] a35[1] = [[1,2,3],[2,3,4],[4,5,6],[7,8,9]]  a34[1][0][2] = 3  a35是个一维两值数组，访问a35[1] 是确定对象访问 再访问 是一个二维纯int数组，然后是a35[1][0][2] 后边两位是纯数组访问
