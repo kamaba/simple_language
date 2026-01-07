@@ -183,13 +183,15 @@ namespace SimpleLanguage.Compile
         {
             m_FileMeta = fm;
             ParseFunctionFromTokens(tokens);
-            
+            // 使用 Token 版本的 Block 解析逻辑，不再依赖 Node
             if (blockTokens != null && blockTokens.Count >= 2)
             {
+                // blockTokens 应该包含从 '{' 到 对应 '}' 的完整 Token 序列
                 m_LeftBraceToken = blockTokens[0];
                 m_RightBraceToken = blockTokens[blockTokens.Count - 1];
+
+                // 仅记录块的起止位置，具体语句由 Token 管线在外部构造 FileMetaSyntax 并通过 AddFileMetaSyntax 填充
                 m_FileMetaBlockSyntax = new FileMetaBlockSyntax(m_FileMeta, m_LeftBraceToken, m_RightBraceToken);
-                // 具体的 Syntax 解析需要进一步的 Token 解析器支持
             }
         }
 
@@ -487,9 +489,7 @@ namespace SimpleLanguage.Compile
                 {
                     sb.Append(m_MetaTemplatesList[i].ToFormatString());
                     if( i < m_MetaTemplatesList.Count - 1 )
-                    {
-                        sb.Append(",");
-                    }                    
+                    sb.Append(",");
                 }
                 sb.Append(">");
             }

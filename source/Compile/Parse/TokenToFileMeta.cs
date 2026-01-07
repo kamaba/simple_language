@@ -330,6 +330,13 @@ namespace SimpleLanguage.Compile
                 else if (Match(ETokenType.SemiColon)) Consume();
                 
                 FileMetaMemberFunction fmmf = new FileMetaMemberFunction(m_FileMeta, sigTokens, bodyTokens);
+
+                // 使用纯 Token 的方式解析函数体内容，填充到 fmmf.fileMetaBlockSyntax
+                if (bodyTokens != null && bodyTokens.Count > 0 && fmmf.fileMetaBlockSyntax != null)
+                {
+                    ParseFunctionBodyTokens(bodyTokens, fmmf.fileMetaBlockSyntax);
+                }
+
                 fmc.AddFileMemberFunction(fmmf);
             }
             else 
@@ -501,6 +508,66 @@ namespace SimpleLanguage.Compile
                 if (next != null && (next.type == ETokenType.Class || next.type == ETokenType.Interface || next.type == ETokenType.Enum || next.type == ETokenType.Data)) return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// 纯 Token 版本的函数体解析：将一个完整的 "{" 开始 "}" 结束的 token 序列
+        /// 拆成若干语句的 Token 列表，并交由 FileMetatUtil.CreateFileMetaSyntaxFromTokens
+        /// 创建对应的 FileMetaSyntax，挂到给定的 FileMetaBlockSyntax 下。
+        /// TokenToFileMeta 只负责“截断”，不直接 new 各种 FileMeta*Syntax。
+        /// </summary>
+        private void ParseFunctionBodyTokens(List<Token> bodyTokens, FileMetaBlockSyntax blockSyntax)
+        {
+            if (bodyTokens == null || bodyTokens.Count == 0 || blockSyntax == null)
+                return;
+
+            // 跳过首尾的 { }
+            int start = 0;
+            int end = bodyTokens.Count - 1;
+            if (bodyTokens[start].type == ETokenType.LeftBrace) start++;
+            if (end >= start && bodyTokens[end].type == ETokenType.RightBrace) end--;
+            if (end < start) return;
+
+            int depthBrace = 0;
+            int depthPar = 0;
+            int depthBracket = 0;
+            List<Token> current = new List<Token>();
+
+            void flush()
+            {
+                if (current.Count == 0) return;
+                var syntax = FileMetatUtil.CreateFileMetaSyntaxFromTokens(m_FileMeta, current);
+                current.Clear();
+                if (syntax != null)
+                {
+                    blockSyntax.AddFileMetaSyntax(syntax);
+                }
+            }
+
+            for (int i = start; i <= end; i++)
+            {
+                var t = bodyTokens[i];
+                current.Add(t);
+
+                if (t.type == ETokenType.LeftPar) depthPar++;
+                else if (t.type == ETokenType.RightPar && depthPar > 0) depthPar--;
+                else if (t.type == ETokenType.LeftBrace) depthBrace++;
+                else if (t.type == ETokenType.RightBrace && depthBrace > 0) depthBrace--;
+                else if (t.type == ETokenType.LeftBracket) depthBracket++;
+                else if (t.type == ETokenType.RightBracket && depthBracket > 0) depthBracket--;
+
+                // 顶层分号结束一条语句
+                if (depthPar == 0 && depthBrace == 0 && depthBracket == 0 && t.type == ETokenType.SemiColon)
+                {
+                    flush();
+                }
+            }
+
+            // 最后一条语句如果没有分号结尾，也尝试解析一次
+            if (current.Count > 0)
+            {
+                flush();
+            }
         }
     }
 }
