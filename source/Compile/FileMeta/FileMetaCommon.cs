@@ -262,27 +262,32 @@ namespace SimpleLanguage.Compile
             m_Token = m_Node.token;
             m_AtToken = m_Node.atToken;
 
+            // 处理括号参数：Level<T>() 的 () 部分
             if( m_Node.nodeType == ENodeType.Par )
             {
                 m_FileMetaParTerm = new FileMetaParTerm(m_FileMeta, m_Node, FileMetaTermExpress.EExpressType.Common);
-
                 m_BeginParToken = m_FileMetaParTerm.token;
                 m_EndParToken = m_FileMetaParTerm.endToken;
             }
+            
+            // 处理函数调用：Level<T>.Method() 中的 () 部分
             if(m_Node.parNode != null )
             {
                 isCallFunction = true;
-
                 m_FileMetaParTerm = new FileMetaParTerm(m_FileMeta, m_Node.parNode, FileMetaTermExpress.EExpressType.Common);
-
                 m_BeginParToken = m_FileMetaParTerm.token;
                 m_EndParToken = m_FileMetaParTerm.endToken;
             }
-            if (m_Node.angleNode != null)      // LinkCall.Call<int,string, NS.Class1>()
+            
+            // 关键修复：angleNode 必须完整保留，以支持 List<int>、Level<T>() 等泛型调用
+            // angleNode 是 < 和 > 包围的泛型参数部分，不应被合并到其他节点中
+            if (m_Node.angleNode != null)
             {
                 isTemplate = true;
                 m_BeginAngleToken = m_Node.angleNode.token;
                 m_EndAngleToken = m_Node.angleNode.endToken;
+                
+                // 遍历 angleNode 内的所有子节点（不包括逗号）
                 List<Node> list = m_Node.angleNode.childList;
                 for (int i = 0; i < list.Count; i++)
                 {
@@ -290,11 +295,14 @@ namespace SimpleLanguage.Compile
                     {
                         continue;
                     }
+                    // 为每个泛型参数创建 FileInputTemplateNode
                     var aa = new FileInputTemplateNode(m_FileMeta, list[i]);
                     m_InputTemplateNodeList.Add(aa);
                 }
             }
-            if ( m_Node.bracketNode != null )     //[1][1][2][]
+            
+            // 处理数组维度：Array[1][2] 中的 [] 部分
+            if ( m_Node.bracketNode != null )
             {
                 isArray = true;
                 for( int i = 0; i < m_Node.bracketNodeList.Count; i++ )
@@ -302,9 +310,10 @@ namespace SimpleLanguage.Compile
                     var fileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, m_Node.bracketNodeList[i] );
                     m_FileMetaBracketTermList.Add(fileMetaBracketTerm);
                 }           
-                
             }
-            if (m_Node.blockNode != null)     // { 1,2,3,4 }  { [1,2,3], [2,3,4] }
+            
+            // 处理初始化块：{...} 部分
+            if (m_Node.blockNode != null)
             {
                 m_FileMetaBraceTerm = new FileMetaBraceTerm(m_FileMeta, m_Node.blockNode );
             }
@@ -551,20 +560,29 @@ namespace SimpleLanguage.Compile
             m_ClassNameToken = m_TokenList[m_TokenList.Count - 1];
             m_MutToken = mutNode?.token;
 
+            // 关键修复：angleNode 必须完整保留，无论是否作为 linkTokenList 的一部分
+            // 这样可以正确处理 List<int>、Level<T>() 等泛型调用
             if ( node.angleNode != null )
             {
                 m_IsInputTemplateData = true;
                 m_AngleTokenBegin = node.angleNode.token;
                 m_AngleTokenEnd = node.angleNode.endToken;
-                for( int i = 0; i < node.angleNode.childList.Count; i++ )
+                
+                // 遍历angleNode内的所有子节点，构建FileInputTemplateNode
+                List<Node> list = node.angleNode.childList;
+                for( int i = 0; i < list.Count; i++ )
                 {
-                    var cnode = node.angleNode.childList[i];
+                    var cnode = list[i];
                     if (cnode.nodeType == ENodeType.Comma )
                         continue;
+                    
+                    // 为每个泛型参数创建FileInputTemplateNode
                     FileInputTemplateNode fmcn = new FileInputTemplateNode(fm, cnode);
                     m_InputTemplateNodeList.Add(fmcn);
                 }
             }
+            
+            // 处理数组维度（如果有）
             if( node.bracketNode != null )
             {
                 isArray = true;

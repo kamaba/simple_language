@@ -1438,10 +1438,12 @@ namespace SimpleLanguage.Compile
         }
         public static void DelHandleNostList( Node node )
         {
+            //现在如果嵌套的del标记是没有删除的，所以需要把里边的也进行对应的删除
             List<Node> list = new List<Node>();
             for( int i = 0; i < node.childList.Count; i++ )
             {
-                if( node.childList[i].isDel == false )
+                DelHandleNostList(node.childList[i]);
+                if ( node.childList[i].isDel == false )
                 {
                     list.Add(node.childList[i]);
                 }

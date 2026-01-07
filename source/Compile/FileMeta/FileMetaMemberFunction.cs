@@ -178,6 +178,60 @@ namespace SimpleLanguage.Compile
             m_BlockNode = block;
             ParseFunction(nodeList);
         }
+
+        public FileMetaMemberFunction(FileMeta fm, List<Token> tokens, List<Token> blockTokens)
+        {
+            m_FileMeta = fm;
+            ParseFunctionFromTokens(tokens);
+            
+            if (blockTokens != null && blockTokens.Count >= 2)
+            {
+                m_LeftBraceToken = blockTokens[0];
+                m_RightBraceToken = blockTokens[blockTokens.Count - 1];
+                m_FileMetaBlockSyntax = new FileMetaBlockSyntax(m_FileMeta, m_LeftBraceToken, m_RightBraceToken);
+                // 具体的 Syntax 解析需要进一步的 Token 解析器支持
+            }
+        }
+
+        private void ParseFunctionFromTokens(List<Token> tokens)
+        {
+            // 简化版 Token 解析逻辑，模仿 ParseFunction
+             for (int i = 0; i < tokens.Count; i++)
+             {
+                 Token t = tokens[i];
+                 if (t.type == ETokenType.Public || t.type == ETokenType.Private || t.type == ETokenType.Projected || t.type == ETokenType.Extern)
+                     m_PermissionToken = t;
+                 else if (t.type == ETokenType.Override) m_OverrideToken = t;
+                 else if (t.type == ETokenType.Static) m_StaticToken = t;
+                 else if (t.type == ETokenType.Get) m_GetToken = t;
+                 else if (t.type == ETokenType.Set) m_SetToken = t;
+                 else if (t.type == ETokenType.Final) m_FinalToken = t;
+                 else if (t.type == ETokenType.Identifier)
+                 {
+                     // 这里需要识别是返回值类型还是函数名
+                     // 简单策略：遇到 '(' 前的一个是函数名，再往前是返回值
+                     if (i + 1 < tokens.Count && tokens[i+1].type == ETokenType.LeftPar)
+                     {
+                         m_Token = t; // 函数名
+                         // 此时，如果前面还有 Identifier 或 Type，那就是返回值
+                         // 为了更准确，应该从后往前找，或者维护更复杂的状态
+                     }
+                     else
+                     {
+                         // 可能是返回值类型的一部分
+                     }
+                 }
+                 else if (t.type == ETokenType.Type || t.type == ETokenType.Void)
+                 {
+                      // 暂时认为是返回值
+                 }
+             }
+             
+             // 注意：参数列表和模板参数 parsing 需要识别 () 和 <>
+             // 在线性 Token 流中，这部分由 TokenToFileMeta 分割好传进来会更好，或者在这里扫描
+             // 假设 TokenToFileMeta 传进来的 tokens 包含了签名部分（直到 { 之前）
+        }
+
         public bool ParseFunction(List<Node> nodeList)
         {
             Token permissionToken = null;

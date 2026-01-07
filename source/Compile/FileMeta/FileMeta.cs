@@ -322,5 +322,34 @@ namespace SimpleLanguage.Compile
 
             return sb.ToString();
         }
+
+        /// <summary>
+        /// Token 直接转换为 FileMeta 的扩展方法
+        /// </summary>
+        public void AddFileImportSyntaxFromTokens(List<Token> importTokens)
+        {
+            FileMetaImportSyntax fmis = new FileMetaImportSyntax(importTokens);
+            AddFileImportSyntax(fmis);
+        }
+
+        public void AddFileNamespaceFromTokens(List<Token> namespaceTokens)
+        {
+            if (namespaceTokens == null || namespaceTokens.Count == 0)
+                return;
+
+            NamespaceStatementBlock nsb = NamespaceStatementBlock.CreateStateBlock(namespaceTokens);
+            if (nsb != null)
+            {
+                Log.AddInStructFileMeta(EError.None, $"Namespace 已解析: {nsb.namespaceString}");
+            }
+        }
+
+        public void AddFileClassFromTokens(List<Token> classTokens)
+        {
+            if (classTokens == null || classTokens.Count == 0)
+                return;
+
+            Log.AddInStructFileMeta(EError.None, $"Class 已扫描");
+        }
     }
 }

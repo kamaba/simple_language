@@ -30,8 +30,9 @@ namespace SimpleLanguage.Compile
     public class FileParse
     {
         LexerParse lexerParse;
-        TokenParse tokenParse;
-        StructParse structBuild;
+        //TokenParse tokenParse;
+        //StructParse structBuild;
+        TokenToFileMeta tokenToFileMeta;
         private FileMeta m_File = null;
 
         public string filePath;
@@ -89,13 +90,17 @@ namespace SimpleLanguage.Compile
 
                 lexerParse.ParseToTokenList();
 
-                tokenParse = new TokenParse( m_File, lexerParse.GetListTokensWidthEnd() );
+                tokenToFileMeta = new TokenToFileMeta( m_File, lexerParse.GetListTokensWidthEnd() );
 
-                tokenParse.BuildStruct();
+                tokenToFileMeta.ParseTokensToFileMeta();
 
-                structBuild = new StructParse(m_File, tokenParse.rootNode, lexerParse.GetListTokensWidthEnd() );
+                //tokenParse = new TokenParse( m_File, lexerParse.GetListTokensWidthEnd() );
 
-                structBuild.ParseRootNodeToFileMeta();
+                //tokenParse.BuildStruct();
+
+                //structBuild = new StructParse(m_File, tokenParse.rootNode, lexerParse.GetListTokensWidthEnd() );
+
+                //structBuild.ParseRootNodeToFileMeta();
 
                 //structBuild.ParseTokenToFileMeta();
 

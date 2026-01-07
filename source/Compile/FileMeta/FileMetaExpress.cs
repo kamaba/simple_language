@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.Compile
 {
@@ -324,18 +323,14 @@ namespace SimpleLanguage.Compile
             m_FileMeta = fm;
             m_Root = this;
 
-            Node node = new Node(null);
-            node.childList.AddRange(nodeList);
-            var nodeList2 = StructParse.HandleBeforeNode(node);
-
-            if (nodeList2.Count == 3 || nodeList2.Count == 4 )
+            if (nodeList.Count == 3 || nodeList.Count == 4 )
             {
-                m_VariableCallLink = new FileMetaCallLink(fm, nodeList2[0]);
-                m_AsOrIsToken = nodeList2[1].token;
-                m_DefineType = new FileMetaClassDefine(fm, nodeList2[2]);
-                if(nodeList2.Count == 4 )
+                m_VariableCallLink = new FileMetaCallLink(fm, nodeList[0]);
+                m_AsOrIsToken = nodeList[1].token;
+                m_DefineType = new FileMetaClassDefine(fm, nodeList[2]);
+                if(nodeList.Count == 4 )
                 {
-                    m_ConvertIsTypeNameToken = nodeList2[3].token;
+                    m_ConvertIsTypeNameToken = nodeList[3].token;
                     if(m_AsOrIsToken?.type == ETokenType.As )
                     {
                         Log.AddInStructFileMeta(EError.None, "Error nodeList.Count != 3/4 create AsOrIs Term Error ");
@@ -506,6 +501,9 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
+                    //Node tn = new Node(null);
+                    //tn.SetChildList(nodeList);
+                    //var childList22 = StructParse.HandleExpressNode(tn);
                     var fileMetaCallTerm = new FileMetaTermExpress(m_FileMeta, nodeList, expressType);
                     fileMetaCallTerm.priority = SignComputePriority.Level1;
                     AddFileMetaTerm(fileMetaCallTerm);
@@ -1074,12 +1072,9 @@ namespace SimpleLanguage.Compile
         public FileMetaTermExpress( FileMeta fm, List<Node> nodeList, EExpressType _expressType = EExpressType.Common )
         {
             m_FileMeta = fm;
-            Node tn = new Node( null );
-            tn.SetChildList( nodeList );
-            var childList = StructParse.HandleExpressNode(tn);
             expressType = _expressType;
 
-            CreateFileMetaExpressByChildList(childList);
+            CreateFileMetaExpressByChildList(nodeList);
         }
         void CreateFileMetaExpressByChildList(List<Node> nodeList)
         {

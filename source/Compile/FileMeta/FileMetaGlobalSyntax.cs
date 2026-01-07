@@ -64,9 +64,87 @@ namespace SimpleLanguage.Compile
             //m_AsNameStatement = NamespaceStatementBlock.CreateStateBlock(_asNameTokenList);
             return true;
         }
+
+        /// <summary>
+        /// 纯 Token 版本的 import 解析逻辑，替代 Node 依赖。
+        /// </summary>
+        private bool ParseImportSyntaxFromTokens()
+        {
+            if (m_TokenList == null || m_TokenList.Count < 2)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error import必须有2个Token!!");
+                return false;
+            }
+
+            int index = 0;
+            // 第一个必须是 import 关键字
+            var first = m_TokenList[index++];
+            if (first.type != ETokenType.Import)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error import 语句必须以 import 关键字开始!!");
+                return false;
+            }
+            m_Token = first;
+
+            // 读取 import 路径：Identifier/Type + 可选的 '.' 分隔
+            m_ImportNameListToken.Clear();
+            while (index < m_TokenList.Count)
+            {
+                var t = m_TokenList[index];
+                if (t.type == ETokenType.Identifier || t.type == ETokenType.Type)
+                {
+                    m_ImportNameListToken.Add(t);
+                    index++;
+                    continue;
+                }
+                if (t.type == ETokenType.Period)
+                {
+                    index++;
+                    continue;
+                }
+                break;
+            }
+
+            // 可选的 "as 别名" 部分
+            if (index < m_TokenList.Count && m_TokenList[index].type == ETokenType.As)
+            {
+                m_AsToken = m_TokenList[index++];
+                if (index < m_TokenList.Count && m_TokenList[index].type == ETokenType.Identifier)
+                {
+                    m_AsNameToken = m_TokenList[index++];
+                }
+                else
+                {
+                    Log.AddInStructFileMeta(EError.None, "Error import as 后必须紧跟标识符");
+                }
+            }
+
+            m_NamespaceStatement = NamespaceStatementBlock.CreateStateBlock(m_ImportNameListToken);
+            return true;
+        }
         public void Parse()
         {
-            ParseImportSyntax();
+            // 优先使用 Token 方式解析，其次退回 Node
+            if (m_TokenList != null && m_TokenList.Count > 0)
+            {
+                if (!ParseImportSyntaxFromTokens())
+                {
+                    return;
+                }
+            }
+            else
+            {
+                if (!ParseImportSyntax())
+                {
+                    return;
+                }
+            }
+
+            if (m_NamespaceStatement == null || m_NamespaceStatement.tokenList == null)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error Import 解析失败，NamespaceStatement 为空");
+                return;
+            }
 
             MetaNode mb = ModuleManager.instance.selfModule.metaNode;
             List<Token> tokenList = new List<Token>();

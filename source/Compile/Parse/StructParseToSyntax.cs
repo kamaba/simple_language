@@ -585,7 +585,11 @@ namespace SimpleLanguage.Compile
             {
                 if( akss.commonContent.Count > 0 )
                 {
-                    fms = CrateFileMetaSyntaxNoKey(akss.commonContent);
+                    Node tn = new Node(null);
+                    tn.SetChildList(akss.commonContent);
+                    var childList22 = HandleExpressNode(tn);
+
+                    fms = CrateFileMetaSyntaxNoKey(childList22);
                     AddParseSyntaxNodeInfo(fms);
                 }
             }
@@ -914,6 +918,20 @@ namespace SimpleLanguage.Compile
             var fms = new FileMetaConditionExpressSyntax(fm, cnode.token, conditionExpress, executeBlock);
 
             return fms;
+        }
+
+        public static List<Node> NormalizeExpression(Node node)
+        {
+            // If the node already looks like a common/simple expression, return children directly.
+            // Otherwise run the internal expression processing to fold par/angle/bracket/link nodes.
+            if (IsCommonExpressNode(node))
+            {
+                return node.childList;
+            }
+
+            _HandleExpressNodeProcess(node, null);
+            DelHandleNostList(node);
+            return node.childList;
         }
     }
 }

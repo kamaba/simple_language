@@ -48,39 +48,169 @@ namespace SimpleLanguage.Compile
         private FileMetaCallTerm m_FileMetaCallTermValue = null;
 
         private List<Node> m_NodeList = null;
-        public FileMetaMemberVariable( FileMeta fm, List<Node> list)
+
+        public FileMetaMemberVariable(FileMeta fm, List<Token> tokens)
+        {
+            m_FileMeta = fm;
+
+            if (tokens == null || tokens.Count == 0)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error 成员变量Token列表为空");
+                return;
+            }
+
+            // 拆分定义和表达式: before = 左边, after = 右边
+            int assignIndex = -1;
+            int depthPar = 0, depthBrace = 0, depthBracket = 0;
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                var t = tokens[i];
+                if (t.type == ETokenType.LeftPar) depthPar++;
+                else if (t.type == ETokenType.RightPar && depthPar > 0) depthPar--;
+                else if (t.type == ETokenType.LeftBrace) depthBrace++;
+                else if (t.type == ETokenType.RightBrace && depthBrace > 0) depthBrace--;
+                else if (t.type == ETokenType.LeftBracket) depthBracket++;
+                else if (t.type == ETokenType.RightBracket && depthBracket > 0) depthBracket--;
+
+                if (depthPar == 0 && depthBrace == 0 && depthBracket == 0 && t.type == ETokenType.Assign)
+                {
+                    assignIndex = i;
+                    break;
+                }
+            }
+
+            List<Token> defTokens;
+            List<Token> exprTokens = null;
+            if (assignIndex >= 0)
+            {
+                defTokens = tokens.GetRange(0, assignIndex);
+                m_AssignToken = tokens[assignIndex];
+                if (assignIndex + 1 < tokens.Count)
+                {
+                    exprTokens = tokens.GetRange(assignIndex + 1, tokens.Count - assignIndex - 1);
+                }
+            }
+            else
+            {
+                defTokens = new List<Token>(tokens);
+            }
+
+            // 去掉首尾的空白/换行/分号
+            TrimTokenList(defTokens);
+            TrimTokenList(exprTokens);
+
+            if (defTokens.Count == 0)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error 成员变量定义部分为空");
+                return;
+            }
+
+            // 解析权限/静态/mut 和 类型+名称
+            List<Token> idOrTypeTokens = new List<Token>();
+            Token mutToken = null;
+            for (int i = 0; i < defTokens.Count; i++)
+            {
+                var t = defTokens[i];
+                if (t.type == ETokenType.Public
+                    || t.type == ETokenType.Private
+                    || t.type == ETokenType.Projected
+                    || t.type == ETokenType.Extern)
+                {
+                    if (m_PermissionToken != null && m_PermissionToken != t)
+                    {
+                        Log.AddInStructFileMeta(EError.None, "Error 多重定义名称的权限定义!!");
+                    }
+                    m_PermissionToken = t;
+                }
+                else if (t.type == ETokenType.Static)
+                {
+                    if (m_StaticToken != null && m_StaticToken != t)
+                    {
+                        Log.AddInStructFileMeta(EError.None, "Error 多重定义名称的静态定义!!");
+                    }
+                    m_StaticToken = t;
+                }
+                else if (t.type == ETokenType.Mut)
+                {
+                    if (mutToken != null && mutToken != t)
+                    {
+                        Log.AddInStructFileMeta(EError.None, "Error 多重定义名称的Mut定义!!");
+                    }
+                    mutToken = t;
+                }
+                else if (t.type == ETokenType.Identifier || t.type == ETokenType.Type)
+                {
+                    idOrTypeTokens.Add(t);
+                }
+                else
+                {
+                    // 其他 token 暂时忽略/记录
+                    Log.AddInStructFileMeta(EError.None, "Error 解析变量中，不允许的类型存在!!" + t.ToLexemeAllString());
+                }
+            }
+
+            if (idOrTypeTokens.Count == 0)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error 没有找到该定义名称");
+                return;
+            }
+
+            // 最后一个视为名称，其余视为类型
+            Token nameTok = idOrTypeTokens[idOrTypeTokens.Count - 1];
+            m_Token = nameTok;
+
+            if (idOrTypeTokens.Count > 1)
+            {
+                // 构造一个虚拟的 FileMetaClassDefine，仅用 token 序列表达类型
+                // 这里复用已有通过 Node 的构造逻辑比较困难，因此暂时只记录首个类型 token，
+                // 后续可在 FileMetaClassDefine 中增加基于 Token 的构造函数。
+                Token firstTypeToken = idOrTypeTokens[0];
+                Node fakeTypeNode = new Node(firstTypeToken) { nodeType = ENodeType.IdentifierLink };
+                m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, fakeTypeNode, null);
+                m_MemberDataType = EMemberDataType.ConstVariable;
+            }
+
+            // 解析右侧表达式: 当前仅支持简单常量/表达式，复用 FileMetatUtil.CreateFileMetaExpress
+            if (exprTokens != null && exprTokens.Count > 0)
+            {
+                m_MemberDataType = EMemberDataType.ConstVariable;
+
+                // 直接使用Token版表达式构造，不再人为包装Node
+                m_Express = FileMetatUtil.CreateFileMetaExpressFromTokens(
+                    m_FileMeta,
+                    exprTokens,
+                    FileMetaTermExpress.EExpressType.MemberVariable);
+            }
+        }
+
+        private static void TrimTokenList(List<Token> list)
+        {
+            if (list == null || list.Count == 0) return;
+            int start = 0;
+            int end = list.Count - 1;
+            while (start <= end && (list[start].type == ETokenType.Space || list[start].type == ETokenType.LineEnd || list[start].type == ETokenType.SemiColon))
+                start++;
+            while (end >= start && (list[end].type == ETokenType.Space || list[end].type == ETokenType.LineEnd || list[end].type == ETokenType.SemiColon))
+                end--;
+            if (start == 0 && end == list.Count - 1) return;
+            if (end < start)
+            {
+                list.Clear();
+                return;
+            }
+            var trimmed = list.GetRange(start, end - start + 1);
+            list.Clear();
+            list.AddRange(trimmed);
+        }
+
+
+        public FileMetaMemberVariable(FileMeta fm, List<Node> list)
         {
             m_FileMeta = fm;
 
             m_NodeList = list;
 
             ParseBuildMetaVariable();
-        }
-        public FileMetaMemberVariable( FileMeta fm, Node brace )
-        {
-            //分析 {}中的内容，一般用于解析匿名函数
-            m_FileMeta = fm;
-            m_Token = brace.token;
-
-
-            List<Node> list2 = new List<Node>();
-            for ( int i = 0; i < brace.childList.Count; i++ )
-            {
-                Node c = brace.childList[i];
-                if( c.nodeType == ENodeType.LineEnd || c.nodeType == ENodeType.SemiColon )
-                {
-                    if( list2.Count == 0 )
-                    {
-                        continue;
-                    }
-                    FileMetaMemberVariable cfm = new FileMetaMemberVariable(m_FileMeta, list2);
-                    list2 = new List<Node>();
-
-                    AddFileMemberVariable(cfm);
-                    continue;
-                }
-                list2.Add(c);
-            }
         }
         public FileMetaMemberVariable(FileMeta fm, Node _beforeNode, Node _afterNode, EMemberDataType dataType)
         {
