@@ -1364,6 +1364,7 @@ namespace SimpleLanguage.Compile
         }
         void AddFileMetaClasss( Node blockNode, List<Node> nodeList)
         {
+            /*
             FileMetaClass cpc = new FileMetaClass(m_FileMeta, nodeList);
 
             AddParseClassNodeInfo(cpc);
@@ -1382,6 +1383,7 @@ namespace SimpleLanguage.Compile
             }
 
             m_CurrentNodeInfoStack.Pop();
+            */
         }
         public void ParseSyntax(Node pnode)
         {

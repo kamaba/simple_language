@@ -161,12 +161,9 @@ namespace SimpleLanguage.Compile
 
             if (idOrTypeTokens.Count > 1)
             {
-                // 构造一个虚拟的 FileMetaClassDefine，仅用 token 序列表达类型
-                // 这里复用已有通过 Node 的构造逻辑比较困难，因此暂时只记录首个类型 token，
-                // 后续可在 FileMetaClassDefine 中增加基于 Token 的构造函数。
-                Token firstTypeToken = idOrTypeTokens[0];
-                Node fakeTypeNode = new Node(firstTypeToken) { nodeType = ENodeType.IdentifierLink };
-                m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, fakeTypeNode, null);
+                // 使用纯 Token 列表构造类型定义：前面的 token 组成类型（可能包含命名空间前缀）
+                var typeTokens = idOrTypeTokens.GetRange(0, idOrTypeTokens.Count - 1);
+                m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, typeTokens);
                 m_MemberDataType = EMemberDataType.ConstVariable;
             }
 

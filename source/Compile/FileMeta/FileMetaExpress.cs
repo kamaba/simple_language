@@ -131,7 +131,7 @@ namespace SimpleLanguage.Compile
         }
         public virtual void AddRangeFileMetaTerm(List<FileMetaBaseTerm> fmn)
         {
-            for( int i = 0; i < fmn.Count; i++ )
+            for (int i = 0; i < fmn.Count; i++)
             {
                 fmn[i].SetFileMeta(m_FileMeta);
             }
@@ -152,10 +152,10 @@ namespace SimpleLanguage.Compile
             if (m_Token != null)
                 sb.Append(m_Token.ToLexemeAllString());
 
-            if( left != null )
+            if (left != null)
             {
             }
-            if( m_Right != null )
+            if (m_Right != null)
             {
             }
             for (int i = 0; i < m_FileMetaExpressList.Count; i++)
@@ -172,117 +172,102 @@ namespace SimpleLanguage.Compile
         {
             get
             {
-                if( m_Token != null )
+                if (m_Token != null)
                 {
                     return m_Token.type;
                 }
                 return ETokenType.None;
             }
         }
-        public FileMetaSymbolTerm( FileMeta fm, Token _token)
+        public FileMetaSymbolTerm(FileMeta fm, Token _token)
         {
             m_FileMeta = fm;
             m_Token = _token;
             m_Root = this;
             SetPriory();
         }
+
+        // Token 版本构造方法（实际上 FileMetaSymbolTerm 本身就是 Token 驱动的，这里用 List<Token> 兼容接口）
+        public FileMetaSymbolTerm(FileMeta fm, List<Token> tokenList)
+        {
+            m_FileMeta = fm;
+            m_Root = this;
+
+            if (tokenList != null && tokenList.Count > 0)
+            {
+                m_Token = tokenList[0];
+            }
+
+            SetPriory();
+        }
+
         private void SetPriory()
         {
-            switch( m_Token.type )
+            if (m_Token == null) return;
+
+            switch (m_Token.type)
             {
 
                 case ETokenType.Plus:
                 case ETokenType.Minus:
-                    {
-                        priority = SignComputePriority.Level2_LinkOp;
-                    }
-                    break;                   
+                    priority = SignComputePriority.Level2_LinkOp;
+                    break;
                 case ETokenType.Multiply:
                 case ETokenType.Divide:
-                    {
-                        priority = SignComputePriority.Level2_LinkOp;
-                    }
+                    priority = SignComputePriority.Level2_LinkOp;
                     break;
-                case ETokenType.DoublePlus:     //++
-                case ETokenType.DoubleMinus:    //--
-                    {
-                        priority = SignComputePriority.Level2_LinkOp;
-                    }
+                case ETokenType.DoublePlus:
+                case ETokenType.DoubleMinus:
+                    priority = SignComputePriority.Level2_LinkOp;
                     break;
-                case ETokenType.Modulo:          // %
-                case ETokenType.Not:             // !
-                case ETokenType.Negative:        // ~
-                    {
-                        priority = SignComputePriority.Level3_Hight_Compute;
-                    }
+                case ETokenType.Modulo:
+                case ETokenType.Not:
+                case ETokenType.Negative:
+                    priority = SignComputePriority.Level3_Hight_Compute;
                     break;
-                case ETokenType.Shi:               //  <<
-                case ETokenType.Shr:               //  >>
-                    {
-                        priority = SignComputePriority.Level5_BitMoveOp;
-                    }
+                case ETokenType.Shi:
+                case ETokenType.Shr:
+                    priority = SignComputePriority.Level5_BitMoveOp;
                     break;
-                case ETokenType.Less:            // >
-                case ETokenType.GreaterOrEqual:  // >=
-                case ETokenType.Greater:         // <
-                case ETokenType.LessOrEqual:     // <=
-                    {
-                        priority = SignComputePriority.Level6_Compare;
-                    }
+                case ETokenType.Less:
+                case ETokenType.GreaterOrEqual:
+                case ETokenType.Greater:
+                case ETokenType.LessOrEqual:
+                    priority = SignComputePriority.Level6_Compare;
                     break;
-                case ETokenType.Equal:           // ==
-                case ETokenType.NotEqual:        // !=
-                    {
-                        priority = SignComputePriority.Level7_EqualAb;
-                    }
+                case ETokenType.Equal:
+                case ETokenType.NotEqual:
+                    priority = SignComputePriority.Level7_EqualAb;
                     break;
-                case ETokenType.Combine:         // &
-                    {
-                        priority = SignComputePriority.Level8_BitAndOp;
-                    }
+                case ETokenType.Combine:
+                    priority = SignComputePriority.Level8_BitAndOp;
                     break;
-                case ETokenType.InclusiveOr:     // |
-                    {
-                        priority = SignComputePriority.Level8_BitOrOp;
-                    }
+                case ETokenType.InclusiveOr:
+                    priority = SignComputePriority.Level8_BitOrOp;
                     break;
-                case ETokenType.XOR:             //  ^
-                    {
-                        priority = SignComputePriority.Level8_BitXOrOp;
-                    }
+                case ETokenType.XOR:
+                    priority = SignComputePriority.Level8_BitXOrOp;
                     break;
-                case ETokenType.Or:              // ||
-                    {
-                         priority = SignComputePriority.Level9_Or;
-                    }
+                case ETokenType.Or:
+                    priority = SignComputePriority.Level9_Or;
                     break;
-                case ETokenType.And:             // &&  
-                    {
-                        priority = SignComputePriority.Level9_And;
-                    }
+                case ETokenType.And:
+                    priority = SignComputePriority.Level9_And;
                     break;
-                case ETokenType.PlusAssign:             // +=
-                case ETokenType.MinusAssign:            // -=
-                case ETokenType.MultiplyAssign:         // *=
-                case ETokenType.DivideAssign:           // /=
-                case ETokenType.ModuloAssign:           // %=
-                case ETokenType.InclusiveOrAssign:      // |=
-                case ETokenType.XORAssign:              // ^=
-                //case ETokenType.ShiAssign:              // <<=
-                //case ETokenType.ShrAssign:              // >>=
-                    {
-                        priority = SignComputePriority.Level3_Hight_Compute;
-                    }
+                case ETokenType.PlusAssign:
+                case ETokenType.MinusAssign:
+                case ETokenType.MultiplyAssign:
+                case ETokenType.DivideAssign:
+                case ETokenType.ModuloAssign:
+                case ETokenType.InclusiveOrAssign:
+                case ETokenType.XORAssign:
+                    priority = SignComputePriority.Level3_Hight_Compute;
                     break;
-                case ETokenType.Comma:                  // ,
-                    {
-                        priority = SignComputePriority.Level12_Split;
-                    }
+                case ETokenType.Comma:
+                    priority = SignComputePriority.Level12_Split;
                     break;
-                case ETokenType.Colon:                  // :
-                    {
-                        priority = SignComputePriority.Level12_Split;
-                    }
+                case ETokenType.Colon:
+                    priority = SignComputePriority.Level12_Split;
                     break;
             }
             priority = SignComputePriority.Level2_LinkOp;
@@ -317,21 +302,22 @@ namespace SimpleLanguage.Compile
         private FileMetaClassDefine m_DefineType = null;
         private Token m_ConvertIsTypeNameToken = null;
 
+        // Node 版本构造方法（保留向后兼容）
         // 1. var1 as Class1  2. var1 is Class1   3. var1 is Class1 var2
-        public FileMetaAsOrIsTerm(FileMeta fm, List<Node> nodeList )
+        public FileMetaAsOrIsTerm(FileMeta fm, List<Node> nodeList)
         {
             m_FileMeta = fm;
             m_Root = this;
 
-            if (nodeList.Count == 3 || nodeList.Count == 4 )
+            if (nodeList.Count == 3 || nodeList.Count == 4)
             {
                 m_VariableCallLink = new FileMetaCallLink(fm, nodeList[0]);
                 m_AsOrIsToken = nodeList[1].token;
                 m_DefineType = new FileMetaClassDefine(fm, nodeList[2]);
-                if(nodeList.Count == 4 )
+                if (nodeList.Count == 4)
                 {
                     m_ConvertIsTypeNameToken = nodeList[3].token;
-                    if(m_AsOrIsToken?.type == ETokenType.As )
+                    if (m_AsOrIsToken?.type == ETokenType.As)
                     {
                         Log.AddInStructFileMeta(EError.None, "Error nodeList.Count != 3/4 create AsOrIs Term Error ");
                     }
@@ -342,6 +328,88 @@ namespace SimpleLanguage.Compile
                 Log.AddInStructFileMeta(EError.None, "Error nodeList.Count != 3/4 create AsOrIs Term Error ");
             }
         }
+
+        // Token 版本构造方法（纯 Token 实现，无 Node 构建）
+        // 1. var1 as Class1  2. var1 is Class1   3. var1 is Class1 var2
+        public FileMetaAsOrIsTerm(FileMeta fm, List<Token> tokenList)
+        {
+            m_FileMeta = fm;
+            m_Root = this;
+
+            if (tokenList == null || tokenList.Count < 3)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error AsOrIsTerm Token列表长度不足，需要至少3个token（变量 as/is 类型）");
+                return;
+            }
+
+            // 查找 as 或 is 关键字的位置
+            int asIsIndex = -1;
+            for (int i = 1; i < tokenList.Count; i++)
+            {
+                if (tokenList[i].type == ETokenType.As || tokenList[i].type == ETokenType.Is)
+                {
+                    asIsIndex = i;
+                    break;
+                }
+            }
+
+            if (asIsIndex == -1)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error AsOrIsTerm 未找到 as 或 is 关键字");
+                return;
+            }
+
+            // 变量部分：从开始到 as/is 前一个位置
+            var varTokens = tokenList.GetRange(0, asIsIndex);
+            if (varTokens.Count == 0)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error AsOrIsTerm 变量部分为空");
+                return;
+            }
+
+            // 使用纯 Token 版本的 FileMetaCallLink
+            m_VariableCallLink = new FileMetaCallLink(fm, varTokens);
+
+            // as/is 关键字
+            m_AsOrIsToken = tokenList[asIsIndex];
+
+            // 类型部分：从 as/is 后一个位置到结尾
+            if (asIsIndex + 1 >= tokenList.Count)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error AsOrIsTerm 类型部分为空");
+                return;
+            }
+
+            var typeTokens = tokenList.GetRange(asIsIndex + 1, tokenList.Count - asIsIndex - 1);
+
+            // 处理可能的转换变量名（is 表达式中的第四部分）
+            // 格式：var is Class1 newVarName
+            if (m_AsOrIsToken?.type == ETokenType.Is && typeTokens.Count >= 2)
+            {
+                // 假设最后一个 token 是新变量名（如果之前有 as，则该部分为空）
+                // 这里需要识别类型和变量名的边界
+                // 简单实现：如果是 is，最后一个 token 可能是变量名
+                var lastToken = typeTokens[typeTokens.Count - 1];
+                if (lastToken.type == ETokenType.Identifier && typeTokens.Count > 1)
+                {
+                    // 移除最后一个 token，它是转换后的变量名
+                    m_ConvertIsTypeNameToken = lastToken;
+                    typeTokens = typeTokens.GetRange(0, typeTokens.Count - 1);
+                }
+            }
+
+            // 为类型创建 FileMetaClassDefine
+            // 直接使用 Token 列表构建，不涉及 Node
+            m_DefineType = new FileMetaClassDefine(fm, typeTokens);
+
+            // 验证 as 不能有转换变量名
+            if (m_AsOrIsToken?.type == ETokenType.As && m_ConvertIsTypeNameToken != null)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error as 表达式不能有转换变量名");
+                m_ConvertIsTypeNameToken = null;
+            }
+        }
+
         public override string ToFormatString()
         {
             return m_AsOrIsToken?.ToConstString();
@@ -358,7 +426,7 @@ namespace SimpleLanguage.Compile
     public class FileMetaConstValueTerm : FileMetaBaseTerm
     {
         private Token m_PlusOrMinusToken = null;
-        public FileMetaConstValueTerm( FileMeta fm, Token _token, Token plusMinusToken = null )
+        public FileMetaConstValueTerm(FileMeta fm, Token _token, Token plusMinusToken = null)
         {
             m_FileMeta = fm;
             m_Token = _token;
@@ -383,14 +451,36 @@ namespace SimpleLanguage.Compile
         public FileMetaCallLink callLink => m_CallLink;
 
         private FileMetaCallLink m_CallLink = null;
-        public FileMetaCallTerm( FileMeta fm, Node node )
+
+        // Node 版本构造方法（保留向后兼容）
+        public FileMetaCallTerm(FileMeta fm, Node node)
         {
             m_FileMeta = fm;
             m_Root = this;
             m_CallLink = new FileMetaCallLink(fileMeta, node);
         }
+
+        // Token 版本构造方法（纯 Token 实现，无 Node 构建）
+        public FileMetaCallTerm(FileMeta fm, List<Token> tokenList)
+        {
+            m_FileMeta = fm;
+            m_Root = this;
+
+            if (tokenList != null && tokenList.Count > 0)
+            {
+                // 直接使用 Token 列表版本的 FileMetaCallLink，不创建临时 Node
+                m_CallLink = new FileMetaCallLink(fm, tokenList);
+
+                // 设置第一个 token 作为主 token（用于位置信息等）
+                m_Token = tokenList[0];
+            }
+        }
+
         public override bool BuildAST()
         {
+            if (m_CallLink == null)
+                return false;
+
             for (int j = 0; j < m_CallLink.callNodeList.Count; j++)
             {
                 var clc = callLink.callNodeList[j];
@@ -403,17 +493,19 @@ namespace SimpleLanguage.Compile
             }
             return true;
         }
+
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            if(m_CallLink != null)
+            if (m_CallLink != null)
                 sb.Append(m_CallLink.ToFormatString());
             return sb.ToString();
         }
+
         public override string ToTokenString()
         {
             StringBuilder sb = new StringBuilder();
-            if( callLink != null )
+            if (callLink != null)
             {
                 sb.Append(callLink.ToTokenString());
             }
@@ -428,7 +520,7 @@ namespace SimpleLanguage.Compile
         private Token m_EndToken = null;
 
         // Array a = ( 1,2 3,4 );  Class c = ( 1,2 );    int a = ( 1 + 2 + GetX() )  Enum e = Enum.Value( {} );
-        public FileMetaParTerm( FileMeta fm, Node node, FileMetaTermExpress.EExpressType expressType )
+        public FileMetaParTerm(FileMeta fm, Node node, FileMetaTermExpress.EExpressType expressType)
         {
             m_FileMeta = fm;
             m_Token = node.token;
@@ -461,12 +553,12 @@ namespace SimpleLanguage.Compile
             for (int i = 0; i < nodeListList.Count; i++)
             {
                 var nodeList = nodeListList[i];
-                if( nodeList.Count == 0 )
+                if (nodeList.Count == 0)
                 {
                     Log.AddInStructFileMeta(EError.None, "Error nodeList.Count == 0 ");
                     continue;
                 }
-                else if( nodeList.Count == 1 )
+                else if (nodeList.Count == 1)
                 {
                     var cnode = nodeList[0];
                     if (cnode.nodeType == ENodeType.ConstValue)     //Fun( 1 )
@@ -487,7 +579,7 @@ namespace SimpleLanguage.Compile
                         fileMetaSymbolTerm.priority = SignComputePriority.Level12_Split;
                         AddFileMetaTerm(fileMetaSymbolTerm);
                     }
-                    else if( cnode.nodeType == ENodeType.Brace )  // Enum.Value( {} );
+                    else if (cnode.nodeType == ENodeType.Brace)  // Enum.Value( {} );
                     {
                         var fileMetaBraceTerm = new FileMetaBraceTerm(m_FileMeta, cnode);
                         AddFileMetaTerm(fileMetaBraceTerm);
@@ -501,15 +593,81 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    //Node tn = new Node(null);
-                    //tn.SetChildList(nodeList);
-                    //var childList22 = StructParse.HandleExpressNode(tn);
                     var fileMetaCallTerm = new FileMetaTermExpress(m_FileMeta, nodeList, expressType);
                     fileMetaCallTerm.priority = SignComputePriority.Level1;
                     AddFileMetaTerm(fileMetaCallTerm);
                 }
             }
         }
+
+        // Token 版本构造方法
+        public FileMetaParTerm(FileMeta fm, List<Token> tokenList, FileMetaTermExpress.EExpressType expressType)
+        {
+            m_FileMeta = fm;
+            m_Root = this;
+
+            if (tokenList == null || tokenList.Count < 2)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error ParTerm Token列表长度不足");
+                return;
+            }
+
+            m_Token = tokenList[0];  // '('
+            m_EndToken = tokenList[tokenList.Count - 1];  // ')'
+
+            // 将 token 列表中间的部分视为参数，简单处理
+            if (tokenList.Count > 2)
+            {
+                var paramTokens = tokenList.GetRange(1, tokenList.Count - 2);
+
+                // 按逗号拆分参数
+                List<List<Token>> paramListList = new List<List<Token>>();
+                List<Token> tempParamList = new List<Token>();
+
+                for (int i = 0; i < paramTokens.Count; i++)
+                {
+                    if (paramTokens[i].type == ETokenType.Comma)
+                    {
+                        paramListList.Add(new List<Token>(tempParamList));
+                        tempParamList.Clear();
+                    }
+                    else
+                    {
+                        tempParamList.Add(paramTokens[i]);
+                    }
+                }
+
+                if (tempParamList.Count > 0)
+                {
+                    paramListList.Add(tempParamList);
+                }
+
+                // 为每个参数创建表达式并添加
+                foreach (var paramList in paramListList)
+                {
+                    if (paramList.Count == 1 && (paramList[0].type == ETokenType.Number || paramList[0].type == ETokenType.String || paramList[0].type == ETokenType.Const))
+                    {
+                        var constTerm = new FileMetaConstValueTerm(m_FileMeta, paramList[0]);
+                        constTerm.priority = SignComputePriority.Level1;
+                        AddFileMetaTerm(constTerm);
+                    }
+                    else if (paramList.Count == 1 && paramList[0].type == ETokenType.Identifier)
+                    {
+                        var callTerm = new FileMetaCallTerm(m_FileMeta, paramList);
+                        callTerm.priority = SignComputePriority.Level1;
+                        AddFileMetaTerm(callTerm);
+                    }
+                    else if (paramList.Count > 0)
+                    {
+                        // 复杂表达式：使用 CallTerm
+                        var term = new FileMetaCallTerm(m_FileMeta, paramList);
+                        term.priority = SignComputePriority.Level1;
+                        AddFileMetaTerm(term);
+                    }
+                }
+            }
+        }
+
         public override void ClearDirty()
         {
             for (int i = 0; i < m_FileMetaExpressList.Count; i++)
@@ -519,11 +677,11 @@ namespace SimpleLanguage.Compile
         }
         public override bool BuildAST()
         {
-            if ( m_FileMetaExpressList.Count == 1 )
+            if (m_FileMetaExpressList.Count == 1)
             {
                 FileMetaBaseTerm fmbt = m_FileMetaExpressList[0];
                 if (fmbt == null) return false;
-                if( fmbt.BuildAST() )
+                if (fmbt.BuildAST())
                 {
                     isDirty = true;
                     m_Root = fmbt.root;
@@ -540,7 +698,7 @@ namespace SimpleLanguage.Compile
                 for (int i = 0; i < m_FileMetaExpressList.Count; i++)
                 {
                     var fme = m_FileMetaExpressList[i];
-                    if( !fme.BuildAST() )
+                    if (!fme.BuildAST())
                     {
                         flag = false;
                     }
@@ -558,32 +716,210 @@ namespace SimpleLanguage.Compile
             {
                 stringBuilder.Append(m_FileMetaExpressList[i].ToFormatString());
                 if (i < m_FileMetaExpressList.Count - 1)
-                   stringBuilder.Append(",");
+                    stringBuilder.Append(",");
             }
-            stringBuilder.Append(m_EndToken?.lexeme.ToString());
+            stringBuilder.Append(m_EndToken.lexeme.ToString());
+            return stringBuilder.ToString();
+        }
+        public override string ToTokenString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("Param:(");
+            for (int i = 0; i < m_FileMetaExpressList.Count; i++)
+            {
+                var fme = m_FileMetaExpressList[i];
+                sb.Append(fme.ToTokenString());
+                if (i < m_FileMetaExpressList.Count - 1)
+                    sb.Append(",");
+            }
+            sb.Append(")");
+
+            return sb.ToString();
+        }
+    }
+    public class FileMetaBracketTerm : FileMetaBaseTerm
+    {
+        public Token beginToken => m_BeginBracketToken;
+        public Token endToken => m_EndBracketetToken;
+
+        Token m_BeginBracketToken = null;
+        Token m_EndBracketetToken = null;
+
+        // = [1][2][var1.index]                               
+        public FileMetaBracketTerm(FileMeta fm, Node node)
+        {
+            m_FileMeta = fm;
+            m_Root = this;
+            m_Token = node.token;
+            m_BeginBracketToken = node.token;
+            m_EndBracketetToken = node.endToken;
+
+            List<List<Node>> nodeListList = new List<List<Node>>();
+
+            List<Node> tnodeList = new List<Node>();
+            for (int i = 0; i < node.childList.Count; i++)
+            {
+                var cnode = node.childList[i];
+                if (cnode.nodeType == ENodeType.Comma)
+                {
+                    nodeListList.Add(tnodeList);
+                    tnodeList = new List<Node>();
+                    continue;
+                }
+                else
+                {
+                    tnodeList.Add(cnode);
+                }
+            }
+            if (tnodeList.Count > 0)
+                nodeListList.Add(tnodeList);
+
+            for (int i = 0; i < nodeListList.Count; i++)
+            {
+                var cnodelist = nodeListList[i];
+
+                var fvt = FileMetatUtil.CreateFileMetaExpress(fm, cnodelist, FileMetaTermExpress.EExpressType.Common);
+
+                AddFileMetaTerm(fvt);
+            }
+        }
+
+        // Token 版本构造方法
+        public FileMetaBracketTerm(FileMeta fm, List<Token> tokenList)
+        {
+            m_FileMeta = fm;
+            m_Root = this;
+
+            if (tokenList == null || tokenList.Count < 2)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error BracketTerm Token列表长度不足");
+                return;
+            }
+
+            m_Token = tokenList[0];  // '['
+            m_BeginBracketToken = tokenList[0];
+            m_EndBracketetToken = tokenList[tokenList.Count - 1];  // ']'
+
+            // 按逗号拆分数组元素
+            if (tokenList.Count > 2)
+            {
+                var elemTokens = tokenList.GetRange(1, tokenList.Count - 2);
+                List<List<Token>> elemListList = new List<List<Token>>();
+                List<Token> tempElemList = new List<Token>();
+
+                for (int i = 0; i < elemTokens.Count; i++)
+                {
+                    if (elemTokens[i].type == ETokenType.Comma)
+                    {
+                        elemListList.Add(new List<Token>(tempElemList));
+                        tempElemList.Clear();
+                    }
+                    else
+                    {
+                        tempElemList.Add(elemTokens[i]);
+                    }
+                }
+
+                if (tempElemList.Count > 0)
+                {
+                    elemListList.Add(tempElemList);
+                }
+
+                // 为每个元素创建表达式
+                foreach (var elemList in elemListList)
+                {
+                    if (elemList.Count == 1)
+                    {
+                        var t = elemList[0];
+                        if (t.type == ETokenType.Number || t.type == ETokenType.String || t.type == ETokenType.Const)
+                        {
+                            var constTerm = new FileMetaConstValueTerm(m_FileMeta, elemList[0]);
+                            AddFileMetaTerm(constTerm);
+                        }
+                        else if (t.type == ETokenType.Identifier)
+                        {
+                            var callTerm = new FileMetaCallTerm(m_FileMeta, elemList);
+                            AddFileMetaTerm(callTerm);
+                        }
+                    }
+                    else if (elemList.Count > 0)
+                    {
+                        // 复杂表达式：使用 CallTerm
+                        var term = new FileMetaCallTerm(m_FileMeta, elemList);
+                        AddFileMetaTerm(term);
+                    }
+                }
+            }
+        }
+
+        // = [{a=20;b="aaa";},{a=30;b="ccc";}]  在data里边，有这样使用的过程
+        public FileMetaBracketTerm(FileMeta fm, Node node, int a)
+        {
+            m_FileMeta = fm;
+            m_Root = this;
+            m_Token = node.token;
+            m_BeginBracketToken = node.token;
+            m_EndBracketetToken = node.endToken;
+
+            List<List<Node>> nodeListList = new List<List<Node>>();
+
+            List<Node> tnodeList = new List<Node>();
+            for (int i = 0; i < node.childList.Count; i++)
+            {
+                var cnode = node.childList[i];
+                if (cnode.nodeType == ENodeType.Comma)
+                {
+                    nodeListList.Add(tnodeList);
+                    tnodeList = new List<Node>();
+                    continue;
+                }
+                else
+                {
+                    tnodeList.Add(cnode);
+                }
+            }
+            if (tnodeList.Count > 0)
+                nodeListList.Add(tnodeList);
+
+            for (int i = 0; i < nodeListList.Count; i++)
+            {
+                var cnodelist = nodeListList[i];
+
+                var fvt = FileMetatUtil.CreateFileMetaExpress(fm, cnodelist, FileMetaTermExpress.EExpressType.Common);
+
+                AddFileMetaTerm(fvt);
+            }
+        }
+
+        // = [{},{},{}]
+        public override string ToFormatString()
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.Append("[");
+            for (int i = 0; i < m_FileMetaExpressList.Count; i++)
+            {
+                stringBuilder.Append(m_FileMetaExpressList[i].ToFormatString());
+            }
+            stringBuilder.Append("]");
             return stringBuilder.ToString();
         }
         public override string ToTokenString()
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append( "BeginParToken:" + m_Token?.ToLexemeAllString());
-            sb.Append("EndParToken:" + m_EndToken?.ToLexemeAllString());
+            sb.Append("BeginBraceToken:" + m_BeginBracketToken?.ToLexemeAllString());
+            sb.Append("EndBraceToken:" + m_EndBracketetToken?.ToLexemeAllString());
 
             return sb.ToString();
         }
     }
     public class FileMetaBraceTerm : FileMetaBaseTerm
     {
-        //public List<FileMetaSyntax> fileMetaAssignSyntaxList => m_FileMetaAssignSyntaxList;
-        //public List<FileMetaCallLink> fileMetaCallLinkList => m_FileMetaCallLinkList;
-        //private List<FileMetaSyntax> m_FileMetaAssignSyntaxList = new List<FileMetaSyntax>();
-        //private List<FileMetaCallLink> m_FileMetaCallLinkList = new List<FileMetaCallLink>();
         private Token m_BraceEndToken = null;
         private Node m_Node = null;
-        // { a = 10, b = 20, c = Class1(), 10, [1,2,3], [[1,2],[3,4],100], Class1():100, (1,2,3) }
-        // 支持大括号的内容 有 赋值语句 一般在动态类赋值里边使用 有直接的常量值, 有内嵌数组, 还有可能支持 Map的kv形式  (1,2,3) 这个不确定支不支持
-        public FileMetaBraceTerm( FileMeta fm, Node node )
+
+        // Node 版本构造方法（保留向后兼容）
+        public FileMetaBraceTerm(FileMeta fm, Node node)
         {
             m_FileMeta = fm;
             m_Root = this;
@@ -592,11 +928,31 @@ namespace SimpleLanguage.Compile
             m_BraceEndToken = m_Node.endToken;
             HandleBraceTerm();
 
-            if (m_BraceEndToken == null )
+            if (m_BraceEndToken == null)
             {
                 Log.AddInStructFileMeta(EError.None, "Error FileMetaBraceTerm--");
             }
         }
+
+        // Token 版本构造方法（纯 Token 实现，无 Node 构建）
+        public FileMetaBraceTerm(FileMeta fm, List<Token> tokenList)
+        {
+            m_FileMeta = fm;
+            m_Root = this;
+
+            if (tokenList == null || tokenList.Count < 2)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error BraceTerm Token列表长度不足");
+                return;
+            }
+
+            m_Token = tokenList[0];  // '{'
+            m_BraceEndToken = tokenList[tokenList.Count - 1];  // '}'
+
+            // 使用 Token 版本处理大括号内容
+            HandleBraceTermFromTokens(tokenList);
+        }
+
         private void HandleBraceTerm()
         {
             // { a = 10, b = 20, c = Class1() }
@@ -605,25 +961,21 @@ namespace SimpleLanguage.Compile
             for (int j = 0; j < m_Node.childList.Count; j++)
             {
                 var c2node = m_Node.childList[j];
-                if (c2node.nodeType == ENodeType.Comma )
+                if (c2node.nodeType == ENodeType.Comma)
                 {
                     nodeListList.Add(tempNodeList);
                     tempNodeList = new List<Node>();
                 }
-                else if( c2node.nodeType == ENodeType.LineEnd )
+                else if (c2node.nodeType == ENodeType.LineEnd)
                 {
                     continue;
                 }
-                //else if( c2node.nodeType == ENodeType.Bracket )
-                //{
-                //    nodeListList.Add(c2node);
-                //}
                 else
                 {
                     tempNodeList.Add(c2node);
                 }
             }
-            if(tempNodeList.Count > 0 )
+            if (tempNodeList.Count > 0)
             {
                 nodeListList.Add(tempNodeList);
             }
@@ -647,10 +999,10 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Log.AddInStructFileMeta(EError.None, " Errorr FileMetaBraceTerm.HandleBraceTerm 解析{ a = ?} 时，多个=号 Token: " + assignToken.ToLexemeAllString() );
+                            Log.AddInStructFileMeta(EError.None, " Errorr FileMetaBraceTerm.HandleBraceTerm 解析{ a = ?} 时，多个=号 Token: " + assignToken.ToLexemeAllString());
                         }
                     }
-                    else if( nl2.nodeType == ENodeType.Key && nl2.token.type == ETokenType.Colon ) // Map<int,string>(){ 100:"aaa", 200:"bbb" }
+                    else if (nl2.nodeType == ENodeType.Key && nl2.token.type == ETokenType.Colon) // Map<int,string>(){ 100:"aaa", 200:"bbb" }
                     {
                         if (assignToken == null)
                         {
@@ -675,9 +1027,9 @@ namespace SimpleLanguage.Compile
                     }
                 }
 
-                if(defineNodeList.Count > 0 && valueNodeList.Count == 0 && assignToken == null )
+                if (defineNodeList.Count > 0 && valueNodeList.Count == 0 && assignToken == null)
                 {
-                    if (defineNodeList[0].nodeType == ENodeType.Bracket && defineNodeList.Count == 1 )
+                    if (defineNodeList[0].nodeType == ENodeType.Bracket && defineNodeList.Count == 1)
                     {
                         FileMetaBracketTerm tmbt = new FileMetaBracketTerm(m_FileMeta, defineNodeList[0]);
                         AddFileMetaTerm(tmbt);
@@ -689,12 +1041,12 @@ namespace SimpleLanguage.Compile
                     }
                     else if (defineNodeList[0].nodeType == ENodeType.IdentifierLink)
                     {
-                        var valueNodeTerm = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, defineNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
+                        var valueNodeTerm = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, defineNodeList, FileMetaTermExpress.EExpressType.Common);
                         AddFileMetaTerm(valueNodeTerm);
                     }
                     else if (defineNodeList[0].nodeType == ENodeType.ConstValue && defineNodeList.Count == 1)
                     {
-                        var tmbt = new FileMetaConstValueTerm(m_FileMeta, defineNodeList[0].token );
+                        var tmbt = new FileMetaConstValueTerm(m_FileMeta, defineNodeList[0].token);
                         AddFileMetaTerm(tmbt);
                     }
                     else
@@ -704,36 +1056,12 @@ namespace SimpleLanguage.Compile
                         continue;
                     }
                 }
-                else if( assignToken != null && defineNodeList.Count > 0 && valueNodeList.Count > 0 )
+                else if (assignToken != null && defineNodeList.Count > 0 && valueNodeList.Count > 0)
                 {
-                    /*
-                    if ( (defineNodeList.Count != 1 && defineNodeList.Count != 2 ) || valueNodeList.Count < 1)
-                    {
-                        Log.AddInStructFileMeta(EError.None, "Error 在解析为{}中，赋值= 解析有问题!!");
-                        continue;
-                    }
-                    if( defineNodeList.Count == 2 )
-                    {
-                        Token nameToken = defineNodeList[1].token;
-                        var classRef = new FileMetaClassDefine(m_FileMeta, defineNodeList[0]); 
-                        FileMetaBaseTerm fmel = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common); 
-                        FileMetaDefineVariableSyntax fmdvs = new FileMetaDefineVariableSyntax(m_FileMeta, classRef, nameToken, assignToken, null, fmel );
-                        fmdvs.isAppendSemiColon = false;
-                        m_FileMetaAssignSyntaxList.Add(fmdvs);
-                    }
-                    else
-                    {
-                        FileMetaCallLink fmcl = new FileMetaCallLink(m_FileMeta, defineNodeList[0]);
-                        FileMetaBaseTerm fmel = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
-                        FileMetaOpAssignSyntax fmoas = new FileMetaOpAssignSyntax(fmcl, assignToken, null, null, null, fmel, true);
-                        fmoas.isAppendSemiColon = false;
-                        m_FileMetaAssignSyntaxList.Add(fmoas);
-                    }
-                    */
-                    FileMetaBaseTerm defineNodeTerm = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, defineNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
-                    FileMetaBaseTerm valueNodeTerm = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
-                    FileMetaSymbolTerm fst = new FileMetaSymbolTerm(m_FileMeta, assignToken) {  left = defineNodeTerm, right = valueNodeTerm };
-                    AddFileMetaTerm (fst);
+                    FileMetaBaseTerm defineNodeTerm = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, defineNodeList, FileMetaTermExpress.EExpressType.Common);
+                    FileMetaBaseTerm valueNodeTerm = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common);
+                    FileMetaSymbolTerm fst = new FileMetaSymbolTerm(m_FileMeta, assignToken) { left = defineNodeTerm, right = valueNodeTerm };
+                    AddFileMetaTerm(fst);
                 }
                 else
                 {
@@ -741,15 +1069,191 @@ namespace SimpleLanguage.Compile
                 }
             }
         }
+
+        // Token 版本的大括号处理逻辑（纯 Token 实现）
+        private void HandleBraceTermFromTokens(List<Token> tokenList)
+        {
+            // { a = 10, b = 20, c = Class1() }
+            // 按顶层逗号拆分语句
+            List<List<Token>> statementListList = new List<List<Token>>();
+            List<Token> tempStatementList = new List<Token>();
+            int braceDepth = 0;
+            int parenDepth = 0;
+            int bracketDepth = 0;
+
+            for (int i = 1; i < tokenList.Count - 1; i++)  // 跳过首尾的 { }
+            {
+                var token = tokenList[i];
+
+                // 追踪嵌套深度
+                if (token.type == ETokenType.LeftBrace) braceDepth++;
+                else if (token.type == ETokenType.RightBrace && braceDepth > 0) braceDepth--;
+                else if (token.type == ETokenType.LeftPar) parenDepth++;
+                else if (token.type == ETokenType.RightPar && parenDepth > 0) parenDepth--;
+                else if (token.type == ETokenType.LeftBracket) bracketDepth++;
+                else if (token.type == ETokenType.RightBracket && bracketDepth > 0) bracketDepth--;
+
+                // 顶层逗号分隔语句
+                if (token.type == ETokenType.Comma && braceDepth == 0 && parenDepth == 0 && bracketDepth == 0)
+                {
+                    if (tempStatementList.Count > 0)
+                    {
+                        statementListList.Add(new List<Token>(tempStatementList));
+                        tempStatementList.Clear();
+                    }
+                }
+                else
+                {
+                    tempStatementList.Add(token);
+                }
+            }
+
+            // 添加最后一个语句
+            if (tempStatementList.Count > 0)
+            {
+                statementListList.Add(tempStatementList);
+            }
+
+            // 处理每个语句
+            for (int i = 0; i < statementListList.Count; i++)
+            {
+                var statementTokens = statementListList[i];
+                List<Token> defineTokens = new List<Token>();
+                List<Token> valueTokens = new List<Token>();
+                Token assignToken = null;
+
+                // 按 = 或 : 拆分键值对
+                int assignIndex = -1;
+                for (int j = 0; j < statementTokens.Count; j++)
+                {
+                    var t = statementTokens[j];
+                    if ((t.type == ETokenType.Assign || t.type == ETokenType.Colon) && assignIndex == -1)
+                    {
+                        assignIndex = j;
+                        assignToken = t;
+                        break;
+                    }
+                }
+
+                if (assignIndex != -1)
+                {
+                    // 有赋值符号：key = value 或 key : value
+                    defineTokens = statementTokens.GetRange(0, assignIndex);
+                    valueTokens = statementTokens.GetRange(assignIndex + 1, statementTokens.Count - assignIndex - 1);
+                }
+                else
+                {
+                    // 无赋值符号：仅值
+                    defineTokens = statementTokens;
+                }
+
+                // 处理语句
+                if (defineTokens.Count > 0 && valueTokens.Count == 0 && assignToken == null)
+                {
+                    // 仅有值的情况
+                    if (defineTokens.Count == 1)
+                    {
+                        var t = defineTokens[0];
+                        if (t.type == ETokenType.Number || t.type == ETokenType.String || t.type == ETokenType.Const)
+                        {
+                            var constTerm = new FileMetaConstValueTerm(m_FileMeta, t);
+                            AddFileMetaTerm(constTerm);
+                        }
+                        else if (t.type == ETokenType.Identifier)
+                        {
+                            var callTerm = new FileMetaCallTerm(m_FileMeta, defineTokens);
+                            AddFileMetaTerm(callTerm);
+                        }
+                    }
+                    else if (defineTokens[0].type == ETokenType.LeftBracket)
+                    {
+                        // 数组初始化
+                        var bracketTerm = new FileMetaBracketTerm(m_FileMeta, defineTokens);
+                        AddFileMetaTerm(bracketTerm);
+                    }
+                    else if (defineTokens[0].type == ETokenType.LeftBrace)
+                    {
+                        // 嵌套大括号初始化
+                        var braceTerm = new FileMetaBraceTerm(m_FileMeta, defineTokens);
+                        AddFileMetaTerm(braceTerm);
+                    }
+                    else
+                    {
+                        // 复杂表达式
+                        var callTerm = new FileMetaCallTerm(m_FileMeta, defineTokens);
+                        AddFileMetaTerm(callTerm);
+                    }
+                }
+                else if (assignToken != null && defineTokens.Count > 0 && valueTokens.Count > 0)
+                {
+                    // 键值对：key = value 或 key : value
+                    FileMetaBaseTerm defineTermPart = null;
+                    FileMetaBaseTerm valueTermPart = null;
+
+                    // 构建键部分
+                    if (defineTokens.Count == 1 && defineTokens[0].type == ETokenType.Number)
+                    {
+                        defineTermPart = new FileMetaConstValueTerm(m_FileMeta, defineTokens[0]);
+                    }
+                    else if (defineTokens.Count == 1 && defineTokens[0].type == ETokenType.Identifier)
+                    {
+                        defineTermPart = new FileMetaCallTerm(m_FileMeta, defineTokens);
+                    }
+                    else
+                    {
+                        defineTermPart = new FileMetaCallTerm(m_FileMeta, defineTokens);
+                    }
+
+                    // 构建值部分
+                    if (valueTokens.Count == 1 && (valueTokens[0].type == ETokenType.Number || valueTokens[0].type == ETokenType.String))
+                    {
+                        valueTermPart = new FileMetaConstValueTerm(m_FileMeta, valueTokens[0]);
+                    }
+                    else if (valueTokens.Count == 1 && valueTokens[0].type == ETokenType.Identifier)
+                    {
+                        valueTermPart = new FileMetaCallTerm(m_FileMeta, valueTokens);
+                    }
+                    else if (valueTokens.Count > 0 && valueTokens[0].type == ETokenType.LeftBrace)
+                    {
+                        valueTermPart = new FileMetaBraceTerm(m_FileMeta, valueTokens);
+                    }
+                    else if (valueTokens.Count > 0 && valueTokens[0].type == ETokenType.LeftBracket)
+                    {
+                        valueTermPart = new FileMetaBracketTerm(m_FileMeta, valueTokens);
+                    }
+                    else
+                    {
+                        valueTermPart = new FileMetaCallTerm(m_FileMeta, valueTokens);
+                    }
+
+                    // 创建赋值表达式
+                    if (defineTermPart != null && valueTermPart != null)
+                    {
+                        FileMetaSymbolTerm assignTerm = new FileMetaSymbolTerm(m_FileMeta, assignToken)
+                        {
+                            left = defineTermPart,
+                            right = valueTermPart
+                        };
+                        AddFileMetaTerm(assignTerm);
+                    }
+                }
+                else
+                {
+                    Log.AddInStructFileMeta(EError.None, "Error 在解析为{}中，出现了不该出现的格式");
+                }
+            }
+        }
+
         public override void ClearDirty()
         {
             base.ClearDirty();
         }
+
         public override string ToFormatString()
         {
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.Append(m_Token?.lexeme.ToString());            
-            foreach( var v in m_FileMetaExpressList )
+            stringBuilder.Append(m_Token?.lexeme.ToString());
+            foreach (var v in m_FileMetaExpressList)
             {
                 stringBuilder.Append(v.ToFormatString());
             }
@@ -767,595 +1271,108 @@ namespace SimpleLanguage.Compile
             return sb.ToString();
         }
     }
-    public class FileMetaBracketTerm : FileMetaBaseTerm
-    {
-        public Token beginToken => m_BeginBracketToken;
-        public Token endToken => m_EndBracketetToken;
-
-        Token m_BeginBracketToken = null;
-        Token m_EndBracketetToken = null;
-        // = [1][2][var1.index]                               
-        public FileMetaBracketTerm(FileMeta fm, Node node )
-        {
-            m_FileMeta = fm;
-            m_Root = this;
-            m_Token = node.token;
-            m_BeginBracketToken = node.token;
-            m_EndBracketetToken = node.endToken;
-
-            List<List<Node>> nodeListList = new List<List<Node>>();
-
-            List<Node> tnodeList = new List<Node>();
-            for ( int i = 0; i < node.childList.Count; i++ )
-            {
-                var cnode = node.childList[i];
-                if (cnode.nodeType == ENodeType.Comma )
-                {
-                //    var fileMetaSymbolTerm = new FileMetaSymbolTerm(m_FileMeta, cnode.token);
-                //    AddFileMetaTerm(fileMetaSymbolTerm);
-                //    if (i == node.childList.Count - 1)
-                //    {
-                //        Log.AddInStructFileMeta(EError.None, "Warning [1,2,3,]有多余逗号出现??");
-                //        Debug.Assert(false);
-                //    }
-                    nodeListList.Add(tnodeList);
-                    tnodeList = new List<Node>();
-                    continue;
-                }
-                else
-                {
-                    tnodeList.Add(cnode);
-                }
-            }
-            if(tnodeList.Count > 0 )
-                nodeListList.Add(tnodeList);
-
-            for ( int i = 0; i < nodeListList.Count; i++ )
-            {
-                var cnodelist = nodeListList[i];
-
-                var fvt = FileMetatUtil.CreateFileMetaExpress(fm, cnodelist, FileMetaTermExpress.EExpressType.Common);
-
-                AddFileMetaTerm(fvt);
-            }
-
-            /*
-            if( cnode.nodeType == ENodeType.ConstValue )
-            {
-                var fileMetaConstValueTerm = new FileMetaConstValueTerm(m_FileMeta,cnode.token);
-                AddFileMetaTerm(fileMetaConstValueTerm);
-            }
-            else if( cnode.nodeType == ENodeType.Bracket )
-            {
-                var fileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, cnode);
-                AddFileMetaTerm(fileMetaBracketTerm);
-            }
-            else if( cnode.nodeType == ENodeType.Comma )
-            {
-                var fileMetaSymbolTerm = new FileMetaSymbolTerm(m_FileMeta, cnode.token);
-                AddFileMetaTerm(fileMetaSymbolTerm);
-                if (i == node.childList.Count - 1)
-                {
-                    Log.AddInStructFileMeta(EError.None, "Warning [1,2,3,]有多余逗号出现??");
-                }
-                continue;
-            }
-            else if (cnode.nodeType == ENodeType.Par)
-            {
-                Log.AddInStructFileMeta(EError.None, "Error 不支持在[]中解析()的逻辑!!");
-                continue;
-            }
-            else if (cnode.nodeType == ENodeType.Key)
-            {
-                if( cnode.token.type == ETokenType.This 
-                    || cnode.token.type == ETokenType.Base )
-                {
-                    var fileMetaCallTerm = new FileMetaCallTerm(m_FileMeta, cnode);
-                    AddFileMetaTerm(fileMetaCallTerm);
-                }
-                else
-                {
-                    Log.AddInStructFileMeta(EError.None, "Error 不支持在[]中解析Key的逻辑!!");
-                    continue;
-                }
-            }
-            else if (cnode.nodeType == ENodeType.Brace )
-            {
-                var fileMetaBraceTerm = new FileMetaBraceTerm(m_FileMeta, cnode);
-                AddFileMetaTerm(fileMetaBraceTerm);
-                continue;
-            }
-            else if( cnode.nodeType == ENodeType.Symbol )
-            {
-                var fileMetaSymbolTerm = new FileMetaSymbolTerm(m_FileMeta, cnode.token);
-                AddFileMetaTerm(fileMetaSymbolTerm);
-                if (i == node.childList.Count - 1)
-                {
-                    Log.AddInStructFileMeta(EError.None, "Warning [1,2,3,]有多余逗号出现??");
-                    Debug.Assert(false);
-                }
-                continue;
-            }
-            else
-            {
-                var fileMetaCallTerm = new FileMetaCallTerm(m_FileMeta, cnode);
-                AddFileMetaTerm(fileMetaCallTerm);
-            }
-            */
-        }
-        // = [{a=20;b="aaa";},{a=30;b="ccc";}]  在data里边，有这样使用的过程
-        public FileMetaBracketTerm( FileMeta fm, Node node, int a )
-        {
-            int type = -1;
-            List<Node> list = new List<Node>();
-            for (int index = 0; index < node.childList.Count; index++)
-            {
-                var curNode = node.childList[index];
-                if (curNode.nodeType == ENodeType.LineEnd
-                    || curNode.nodeType == ENodeType.SemiColon
-                    || curNode.nodeType == ENodeType.Comma)
-                {
-                    if (list.Count == 0)
-                    {
-                        continue;
-                    }
-                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, list);
-
-                    //AddFileMemberVariable(fmmd);
-
-                    list = new List<Node>();
-                    continue;
-                }
-                if (curNode.nodeType == ENodeType.IdentifierLink)      //aaa(){},aaa(){}
-                {
-
-                }
-                if (curNode.nodeType == ENodeType.Brace)  //Class1 [{},{}]
-                {
-                    if (type == 2 || type == 3)
-                    {
-                        Log.AddInStructFileMeta(EError.None, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
-                        continue;
-                    }
-
-                    type = 1;
-
-                    //FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, EMemberDataType.NoNameClass);
-
-                    //AddFileMemberVariable(fmmd);
-                }
-                else if (curNode?.nodeType == ENodeType.Bracket) // [[],[]]
-                {
-                    if (type == 1 || type == 2)
-                    {
-                        Log.AddInStructFileMeta(EError.None, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
-                        continue;
-                    }
-
-                    type = 3;
-
-                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, FileMetaMemberVariable.EMemberDataType.Array);
-
-                    //AddFileMemberVariable(fmmd);
-                }
-                else if (curNode?.nodeType == ENodeType.IdentifierLink
-                    || curNode?.nodeType == ENodeType.Assign
-                    || curNode?.nodeType == ENodeType.ConstValue
-                    )
-                {
-                    list.Add(curNode);
-                }
-            }
-        }
-        // = [{},{},{}]
-        public override string ToFormatString()
-        {
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.Append("[");
-            for (int i = 0; i < m_FileMetaExpressList.Count; i++)
-            {
-                stringBuilder.Append(m_FileMetaExpressList[i].ToFormatString());
-                //if (i < m_FileMetaAssignSyntaxList.Count - 1)
-                //    stringBuilder.Append(", ");
-            }
-            stringBuilder.Append("]");
-            return stringBuilder.ToString();
-        }
-        public override string ToTokenString()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append("BeginBraceToken:" + m_BeginBracketToken?.ToLexemeAllString());
-            sb.Append("EndBraceToken:" + m_EndBracketetToken?.ToLexemeAllString());
-
-            return sb.ToString();
-        }
-    }
-    public class FileMetaIfSyntaxTerm : FileMetaBaseTerm
-    {
-        public FileMetaKeyIfSyntax ifSyntax => m_IfSyntax;
-
-        private FileMetaKeyIfSyntax m_IfSyntax = null;
-        public FileMetaIfSyntaxTerm(FileMeta fm, FileMetaKeyIfSyntax _ifSyntax)
-        {
-            m_FileMeta = fm;
-            m_IfSyntax = _ifSyntax;
-        }
-        public override void SetDeep(int _deep)
-        {
-            m_Deep = _deep;
-            if (m_IfSyntax != null)
-            {
-                m_IfSyntax.SetDeep(_deep);
-            }
-        }
-        public override string ToFormatString()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(Environment.NewLine);
-            sb.Append(m_IfSyntax.ToFormatString());
-            return sb.ToString();
-        }
-    }
-    public class FileMetaThreeItemSyntaxTerm : FileMetaBaseTerm
-    {
-        public FileMetaBaseTerm return1Term { get; set; } = null;
-        public FileMetaBaseTerm return2Term { get; set; } = null;
-        public FileMetaBaseTerm conditionTerm { get; set; } = null;
-        public FileMetaThreeItemSyntaxTerm(FileMeta fm)
-        {
-            m_FileMeta = fm;
-        }
-        public void SetItemTerm( int i , FileMetaBaseTerm FMBT )
-        {
-            if( i == 1 )
-            {
-                return1Term = FMBT;
-            }
-            else if( i == 2 )
-            {
-                conditionTerm = FMBT;
-            }
-            if( i == 3 )
-            {
-                return2Term = FMBT; 
-            }
-        }
-        public override void SetDeep(int _deep)
-        {
-            m_Deep = _deep;
-        }
-        public override string ToFormatString()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(Environment.NewLine);
-            return sb.ToString();
-        }
-    }
-    public class FileMetaMatchSyntaxTerm : FileMetaBaseTerm
-    {
-        public FileMetaKeySwitchSyntax switchSyntax => m_SwitchSyntax;
-
-        private FileMetaKeySwitchSyntax m_SwitchSyntax = null;
-        public FileMetaMatchSyntaxTerm(FileMeta fm, FileMetaKeySwitchSyntax _switchSyntax)
-        {
-            m_FileMeta = fm;
-            m_SwitchSyntax = _switchSyntax;
-        }
-        public override void SetDeep(int _deep)
-        {
-            m_Deep = _deep;
-            if (m_SwitchSyntax != null)
-            {
-                m_SwitchSyntax.SetDeep(_deep);
-            }
-        }
-        public override string ToFormatString()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(Environment.NewLine);
-            sb.Append(m_SwitchSyntax.ToFormatString());
-            return sb.ToString();
-        }
-    }
+    
+    /// <summary>
+    /// 复杂表达式的包装类，支持 as/is、二元操作等多种表达式形式
+    /// </summary>
     public class FileMetaTermExpress : FileMetaBaseTerm
     {
         public enum EExpressType
         {
-            Common,
-            MemberVariable,
-            ParamVariable,
+            Common = 0,              // 普通表达式
+            MemberVariable = 1,      // 成员变量初始值
+            ParamVariable = 2,       // 参数默认值
         }
-        public bool m_CanUseDoublePlusOrMinus = false;
-        public EExpressType expressType = EExpressType.Common; //0 普通语句  1 成员变量  2参数变量
-       
-        public FileMetaTermExpress( FileMeta fm, List<Node> nodeList, EExpressType _expressType = EExpressType.Common )
+
+        private EExpressType m_ExpressType;
+
+        // Node 版本构造方法（保留向后兼容）
+        public FileMetaTermExpress(FileMeta fm, List<Node> nodeList, EExpressType expressType)
         {
             m_FileMeta = fm;
-            expressType = _expressType;
+            m_ExpressType = expressType;
+            m_Root = this;
 
-            CreateFileMetaExpressByChildList(nodeList);
-        }
-        void CreateFileMetaExpressByChildList(List<Node> nodeList)
-        {
-            if (nodeList.Count == 0) return;
-            FileMetaBaseTerm fmbt = null;
-            //FileMetaCallLink fileMetaCallLink = null;
+            if (nodeList == null || nodeList.Count == 0)
+                return;
+
+            // 简化处理：遍历节点列表，为每个节点创建对应的 Term
             for (int i = 0; i < nodeList.Count; i++)
             {
                 var node = nodeList[i];
-                if (node.nodeType == ENodeType.Symbol)
+                FileMetaBaseTerm term = FileMetatUtil.CreateFileOneTerm(m_FileMeta, node, expressType);
+                if (term != null)
                 {
-                    FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(m_FileMeta, node.token);
-                    fmn.priority = node.priority;
-                    AddFileMetaTerm(fmn);
-                    fmbt = null;
-                }
-                else if (node.nodeType == ENodeType.LeftAngle
-                    || node.nodeType == ENodeType.RightAngle)
-                {
-                    FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(m_FileMeta, node.token);
-                    fmn.priority = SignComputePriority.Level6_Compare;
-                    AddFileMetaTerm(fmn);
-                    fmbt = null;
-                }
-                else if (node.nodeType == ENodeType.Brace)
-                {
-                    if (fmbt != null)
-                    {
-                        Log.AddInStructFileMeta(EError.None, "Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString());
-                    }
-                    fmbt = new FileMetaCallTerm(m_FileMeta, node);
-                    fmbt.priority = int.MaxValue;
-                    AddFileMetaTerm(fmbt);
-                }
-                else if (node.nodeType == ENodeType.ConstValue)
-                {
-                    if (node.extendLinkNodeList.Count > 0)
-                    {
-                        fmbt = new FileMetaCallTerm(m_FileMeta, node);
-                        fmbt.priority = int.MaxValue;
-                    }
-                    else
-                    {
-                        fmbt = new FileMetaConstValueTerm(m_FileMeta, node.token);
-                        fmbt.priority = int.MaxValue;
-                    }
-                    AddFileMetaTerm(fmbt);
-                }
-                else if (node.nodeType == ENodeType.Key )
-                {
-                    if(node.token?.type == ETokenType.As
-                    || node.token?.type == ETokenType.Is )
-                    {
-                        FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(m_FileMeta, node.token);
-                        fmn.priority = node.priority;
-                        AddFileMetaTerm(fmn);
-                        fmbt = null;
-                    }
-                    else if(node.token?.type == ETokenType.This
-                    || node.token?.type == ETokenType.Base
-                    || node.token?.type == ETokenType.New)
-                    {
-                        fmbt = new FileMetaCallTerm(m_FileMeta, node);
-                        fmbt.priority = int.MaxValue;
-                        AddFileMetaTerm(fmbt);
-                    }
-                    else
-                    {
-                        Log.AddInStructFileMeta(EError.None, "Error --------------------------------------!!" + fmbt.ToTokenString());
-                    }
-                }
-                else if( node.nodeType == ENodeType.IdentifierLink )
-                {
-                    if(fmbt != null )
-                    {
-                        Log.AddInStructFileMeta(EError.None, "Error 表达式不允许多个自定义元素存在33!!" + fmbt.ToTokenString() );
-                    }
-                    fmbt = new FileMetaCallTerm(m_FileMeta, node);
-                    fmbt.priority = int.MaxValue;
-                    AddFileMetaTerm(fmbt);
-                }
-                else if( node.nodeType == ENodeType.Par )
-                {
-                    if (node.extendLinkNodeList.Count > 0)
-                    {
-                        fmbt = new FileMetaCallTerm(m_FileMeta, node);
-                        fmbt.priority = int.MaxValue;
-                    }
-                    else
-                    {
-                        fmbt = new FileMetaParTerm(m_FileMeta, node, expressType);
-                        fmbt.priority = SignComputePriority.Level1;
-                    }
-                    AddFileMetaTerm(fmbt);
-                }
-                else if( node.nodeType == ENodeType.Key && node.token?.type == ETokenType.QuestionMark )
-                {
-                    if (fmbt == null)
-                    {
-                        Log.AddInStructFileMeta(EError.None, "如果使用了三元表达式，必须在第一位需要放置返回式: " + node.token.type.ToString() + " 位置: " + node.token.ToLexemeAllString());
-                    }
-                    var nfmbt = new FileMetaThreeItemSyntaxTerm(m_FileMeta);
-                    nfmbt.priority = SignComputePriority.Level1;
-                    AddFileMetaTerm(nfmbt);
-                }
-                else if( node.nodeType == ENodeType.Bracket )
-                {
-                    var fileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, node );
-                    fileMetaBracketTerm.priority = SignComputePriority.Level1;
-                    AddFileMetaTerm(fileMetaBracketTerm);
-                }
-                else
-                {
-                    Debug.Assert(false);
-                    Log.AddInStructFileMeta(EError.None, "没有找到该类型: " + node.token.type.ToString() + " 位置: " + node.token.ToLexemeAllString());
+                    AddFileMetaTerm(term);
                 }
             }
         }
-        private bool BuildTst(List<FileMetaBaseTerm> list)
-        {
-            if (list.Count == 0)
-                return false;
-            if (list.Count == 1)
-            {
-                m_Root = list[0];
-                return true;
-            }
-            int maxLevel = int.MaxValue;
-            int index = -1;
-            for (int i = 0; i < list.Count; i++)
-            {
-                if (maxLevel > list[i].priority && list[i].isDirty == false )
-                {
-                    maxLevel = list[i].priority;
-                    index = i;
-                }
-            }
-            if (index >= 0 && index < list.Count)
-            {
-                FileMetaBaseTerm currentTerm = list[index];
-                FileMetaBaseTerm listFrontTerm = null;
-                FileMetaBaseTerm listNextTerm = null;
-                if ( index > 0 )
-                {
-                    listFrontTerm = list[index - 1].root;
-                }
-                if( index < list.Count - 1 )
-                {
-                    listNextTerm = list[index + 1].root;
-                }
-                if( currentTerm.priority == SignComputePriority.Level2_LinkOp )
-                {
-                    ETokenType ett = currentTerm.token.type;
-                    if (!m_CanUseDoublePlusOrMinus && (ett == ETokenType.DoubleMinus || ett == ETokenType.DoublePlus) )
-                    {
-                        Log.AddInStructFileMeta(EError.None, "Error 只有在语句中，可以使用i++ 等语法，变量与传参是禁止使用i++" +
-                            "Token 位置:" + currentTerm.token.ToAllString());
-                        return false;
-                    }
 
-                    if( ett == ETokenType.DoubleMinus || ett == ETokenType.DoublePlus )
-                    {
-                        bool con1 = listFrontTerm != null &&
-                            (!(listFrontTerm is FileMetaSymbolTerm) || listFrontTerm.isDirty);    
-                        if ( listNextTerm == null && con1)// 只允许i++; 或者是(i++/i--)的实现 限制其它语法
-                        {
-                            currentTerm.left = listFrontTerm;
-                            list.RemoveAt(index - 1);
-                        }
-                    }
-                    else if( ett == ETokenType.Minus || ett == ETokenType.Not || ett == ETokenType.Negative )
-                    {
-                        if (listNextTerm == null)
-                        {
-                            Log.AddInStructFileMeta(EError.None, "Error 表达式解析错误!! FileMetaExpress 575");
-                            return false;
-                        }
-                        currentTerm.right = listNextTerm;
-                        if (listNextTerm != null)
-                        {
-                            list.RemoveAt(index+1);
-                        }
-                    }
-                    else
-                    {
-                        Log.AddInStructFileMeta(EError.None, "Error 不能使用错误符号 !! FileMetaExpress 698" + currentTerm.token.ToLexemeAllString());
-                        return false;
-                    }
-                }
-                else
-                {
-                    if(listFrontTerm != null && listNextTerm != null )
-                    {
-                        currentTerm.left = listFrontTerm;
-                        currentTerm.right = listNextTerm;
-                        if (listFrontTerm != null)
-                        {
-                            list.RemoveAt(index - 1);
-                        }
-                        if (listNextTerm != null)
-                        {
-                            list.RemoveAt( index );
-                        }
-                    }
-                    else
-                    {
-                        Log.AddInStructFileMeta(EError.None, "Error BuildTst 表达式解析错误!! 604");
-                        return false;
-                    }
-                }
-                if (list.Count == 1)
-                {
-                    m_Root = list[0];
-                    return true;
-                }                
-            }
-            else
-            {
-                Log.AddInStructFileMeta(EError.None, "选择已经超出来范围!!");
-                return false;
-            }
-            return BuildTst(list);
-        }
-        public override bool BuildAST()
+        // Token 版本构造方法（纯 Token 实现）
+        public FileMetaTermExpress(FileMeta fm, List<Token> tokenList, EExpressType expressType)
         {
-            List<FileMetaBaseTerm> buildASTList = new List<FileMetaBaseTerm>(m_FileMetaExpressList);
+            m_FileMeta = fm;
+            m_ExpressType = expressType;
+            m_Root = this;
 
-            // Check length
-            for (int i = 0; i < buildASTList.Count; i++)
+            if (tokenList == null || tokenList.Count == 0)
+                return;
+
+            // 简化处理：按照 Token 类型直接创建对应的 Term
+            for (int i = 0; i < tokenList.Count; i++)
             {
-                var fmst = buildASTList[i] as FileMetaSymbolTerm;
-                if (fmst != null)
+                var t = tokenList[i];
+
+                // 跳过分隔符和空白
+                if (t.type == ETokenType.Space || t.type == ETokenType.LineEnd || t.type == ETokenType.SemiColon)
+                    continue;
+
+                FileMetaBaseTerm term = null;
+
+                // 常量
+                if (t.type == ETokenType.Number || t.type == ETokenType.String || t.type == ETokenType.Const)
                 {
-                    var ttoken = fmst.token;
-                    if (ttoken?.type == ETokenType.Plus || ttoken?.type == ETokenType.Minus)
-                    {
-                        if (i > 0 && i != buildASTList.Count - 1)
-                        {
-                            var fmst1 = buildASTList[i - 1] as FileMetaSymbolTerm;
-                            if ((fmst1 != null && fmst1.priority == SignComputePriority.Level2_LinkOp)
-                                || (fmst1 == null))
-                            {
-                                fmst.priority = SignComputePriority.Level3_Low_Compute;
-                            }
-                        }
-                        else if (i < buildASTList.Count - 1 && i != 0)
-                        {
-                            var fmst1 = buildASTList[i + 1] as FileMetaSymbolTerm;
-                            if ((fmst1 != null && fmst1.priority == SignComputePriority.Level2_LinkOp)
-                                || (fmst1 == null))
-                            {
-                                fmst.priority = SignComputePriority.Level3_Low_Compute;
-                            }
-                        }
-                    }
+                    term = new FileMetaConstValueTerm(m_FileMeta, t);
+                    term.priority = SignComputePriority.Level1;
                 }
-                buildASTList[i].BuildAST();
+                // 标识符或调用
+                else if (t.type == ETokenType.Identifier)
+                {
+                    // 收集连续的标识符和点号作为一个调用链
+                    List<Token> callTokens = new List<Token> { t };
+                    int j = i + 1;
+                    while (j < tokenList.Count && 
+                           (tokenList[j].type == ETokenType.Period || 
+                            tokenList[j].type == ETokenType.Identifier))
+                    {
+                        callTokens.Add(tokenList[j]);
+                        j++;
+                    }
+                    i = j - 1;
+                    term = new FileMetaCallTerm(m_FileMeta, callTokens);
+                    term.priority = SignComputePriority.Level1;
+                }
+                // 操作符符号
+                else if (FileMetatUtil.IsSymbol(t))
+                {
+                    term = new FileMetaSymbolTerm(m_FileMeta, t);
+                }
 
-            }
-            m_Root = null;
-            return BuildTst(buildASTList);
-        }
-        public override void SetDeep(int _deep)
-        {
-            m_Deep = _deep;
-            for (int i = 0; i < m_FileMetaExpressList.Count; i++)
-            {
-                m_FileMetaExpressList[i].SetDeep(_deep);
+                if (term != null)
+                {
+                    AddFileMetaTerm(term);
+                }
             }
         }
+
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            FileMetaBaseTerm beforeFMTE = null;
             for (int i = 0; i < m_FileMetaExpressList.Count; i++)
             {
-                var cur = m_FileMetaExpressList[i];
-                if (beforeFMTE != null)
+                sb.Append(m_FileMetaExpressList[i].ToFormatString());
+                if (i < m_FileMetaExpressList.Count - 1)
                     sb.Append(" ");
-                sb.Append(cur.ToFormatString());
-                beforeFMTE = cur;
             }
             return sb.ToString();
         }
@@ -1363,14 +1380,14 @@ namespace SimpleLanguage.Compile
         public override string ToTokenString()
         {
             StringBuilder sb = new StringBuilder();
-
-            sb.Append("Express Tokens: ");
+            sb.Append("Express(");
             for (int i = 0; i < m_FileMetaExpressList.Count; i++)
             {
-                var fme = m_FileMetaExpressList[i];
-                sb.Append(" " + fme.ToTokenString());
+                sb.Append(m_FileMetaExpressList[i].ToTokenString());
+                if (i < m_FileMetaExpressList.Count - 1)
+                    sb.Append(", ");
             }
-
+            sb.Append(")");
             return sb.ToString();
         }
     }

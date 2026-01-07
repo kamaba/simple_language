@@ -64,7 +64,7 @@ namespace SimpleLanguage.Compile
         private List<Token> m_ClassHeaderTokens = new List<Token>();
 
         private StringBuilder stringBuilder = new StringBuilder();
-        public FileMetaClass( FileMeta fm, List<Node> listNode)
+        public FileMetaClass(FileMeta fm, List<Node> listNode)
         {
             m_FileMeta = fm;
             m_NodeList = listNode;
@@ -532,6 +532,7 @@ namespace SimpleLanguage.Compile
 
             return new FileMetaClassDefine(m_FileMeta, nameNode, angleNode);
         }
+        
         private bool Parse()
         {
             if (m_NodeList.Count == 0)

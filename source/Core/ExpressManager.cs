@@ -112,58 +112,10 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            FileMetaIfSyntaxTerm ifExpressTerm = fmte as FileMetaIfSyntaxTerm;
-            if ( cep.allowUseIfSyntax )
-            {
-                if (ifExpressTerm != null)
-                {
-                    MetaExecuteStatementsNode mesn = MetaExecuteStatementsNode.CreateMetaExecuteStatementsNodeByIfExpress(mdt, mc, mbs, ifExpressTerm.ifSyntax);
-                    if (mesn != null)
-                    {
-                        return mesn;
-                    }
-                }
-            }
-            else if( ifExpressTerm != null )
-            {
-                Log.AddInStructMeta(EError.None, "不允许使用If语句!!");
-                return null;
-            }
+            // FileMetaBaseTerm 无法直接转换为 FileMetaKeyIfSyntax 或 FileMetaKeySwitchSyntax
+            // 因为它们来自不同的继承树。当前的 ExpressManager 逻辑不支持直接的 if/switch 表达式
+            // 如果需要支持 if/switch 表达式，需要通过其他机制（如词法标记或额外的表达式类型）
 
-            FileMetaMatchSyntaxTerm switchExpressTerm = fmte as FileMetaMatchSyntaxTerm;
-            if ( cep.allowUseSwitchSyntax )
-            {
-                if (switchExpressTerm != null)
-                {
-                    MetaExecuteStatementsNode mesn = MetaExecuteStatementsNode.CreateMetaExecuteStatementsNodeBySwitchExpress(mdt, mc, mbs, switchExpressTerm.switchSyntax);
-                    if (mesn != null)
-                    {
-                        return mesn;
-                    }
-                }
-            }
-            else if (switchExpressTerm != null)
-            {
-                Log.AddInStructMeta(EError.None, "不允许使用Switch语句!!");
-                return null;
-            }
-
-            //这个注释掉的原因是 原来想着直接 使用 Class a = () 这样创建，后来改模式为Class a = new() 这种创建 所以没有直接解析的处理
-            //FileMetaParTerm parExpressTerm = fmte as FileMetaParTerm;
-            //if (cep.allowUseParSyntax)
-            //{
-            //    if (parExpressTerm != null)
-            //    {
-            //        MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByPar(parExpressTerm, mdt, mc, mbs);
-            //        if (mnoen != null)
-            //            return mnoen;
-            //    }
-            //}
-            //else if (parExpressTerm != null)
-            //{
-            //    Log.AddInStructMeta(EError.None, "不允许使用Switch语句!!");
-            //    return null;
-            //}
 
             return CreateExpressNode(cep);
         }

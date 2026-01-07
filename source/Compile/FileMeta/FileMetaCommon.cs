@@ -1,4 +1,4 @@
-ï»¿//****************************************************************************
+//****************************************************************************
 //  File:      FileMetaCommon.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
-using SimpleLanguage.Compile;
 using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Compile
@@ -20,7 +19,7 @@ namespace SimpleLanguage.Compile
     {
         private string m_NamespaceString = null;
         private List<string> m_NamespaceList = null;
-        private List<string> m_NamespaceStackList = null;//å±‚å å‘½åç©ºé—´åç§°
+        private List<string> m_NamespaceStackList = null;//²ãµşÃüÃû¿Õ¼äÃû³Æ
         public string namespaceString
         {
             get
@@ -117,7 +116,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddInStructFileMeta(EError.None, "Error å‘½åç©ºé—´æœ‰è¯¯ï¼Œå¿…é¡»ä¸ºX.xx.X ç±»ä¼¼çš„æ ¼å¼!");
+                        Log.AddInStructFileMeta(EError.None, "Error ÃüÃû¿Õ¼äÓĞÎó£¬±ØĞëÎªX.xx.X ÀàËÆµÄ¸ñÊ½!");
                         return null;
                     }
                 }
@@ -125,7 +124,7 @@ namespace SimpleLanguage.Compile
                 {
                     if( token[i].type != ETokenType.Period )
                     {
-                        Log.AddInStructFileMeta(EError.None, "Error å‘½åç©ºé—´æœ‰è¯¯ï¼Œå¿…é¡»ä¸ºX.xx.X ç±»ä¼¼çš„æ ¼å¼!");
+                        Log.AddInStructFileMeta(EError.None, "Error ÃüÃû¿Õ¼äÓĞÎó£¬±ØĞëÎªX.xx.X ÀàËÆµÄ¸ñÊ½!");
                         return null;
                     }
                     isIdentifier = true;
@@ -233,7 +232,6 @@ namespace SimpleLanguage.Compile
         public bool isCallFunction { get; set; } = false;
         public bool isTemplate { get; set; } = false;
         public bool isArray { get; set; } = false;
-        public Node node => m_Node;
         public FileMeta fileMeta => m_FileMeta;
 
         private Node m_Node = null;
@@ -262,7 +260,7 @@ namespace SimpleLanguage.Compile
             m_Token = m_Node.token;
             m_AtToken = m_Node.atToken;
 
-            // å¤„ç†æ‹¬å·å‚æ•°ï¼šLevel<T>() çš„ () éƒ¨åˆ†
+            // ´¦ÀíÀ¨ºÅ²ÎÊı£ºLevel<T>() µÄ () ²¿·Ö
             if( m_Node.nodeType == ENodeType.Par )
             {
                 m_FileMetaParTerm = new FileMetaParTerm(m_FileMeta, m_Node, FileMetaTermExpress.EExpressType.Common);
@@ -270,7 +268,7 @@ namespace SimpleLanguage.Compile
                 m_EndParToken = m_FileMetaParTerm.endToken;
             }
             
-            // å¤„ç†å‡½æ•°è°ƒç”¨ï¼šLevel<T>.Method() ä¸­çš„ () éƒ¨åˆ†
+            // ´¦Àíº¯Êıµ÷ÓÃ£ºLevel<T>.Method() ÖĞµÄ () ²¿·Ö
             if(m_Node.parNode != null )
             {
                 isCallFunction = true;
@@ -279,15 +277,15 @@ namespace SimpleLanguage.Compile
                 m_EndParToken = m_FileMetaParTerm.endToken;
             }
             
-            // å…³é”®ä¿®å¤ï¼šangleNode å¿…é¡»å®Œæ•´ä¿ç•™ï¼Œä»¥æ”¯æŒ List<int>ã€Level<T>() ç­‰æ³›å‹è°ƒç”¨
-            // angleNode æ˜¯ < å’Œ > åŒ…å›´çš„æ³›å‹å‚æ•°éƒ¨åˆ†ï¼Œä¸åº”è¢«åˆå¹¶åˆ°å…¶ä»–èŠ‚ç‚¹ä¸­
+            // ¹Ø¼üĞŞ¸´£ºangleNode ±ØĞëÍêÕû±£Áô£¬ÒÔÖ§³Ö List<int>¡¢Level<T>() µÈ·ºĞÍµ÷ÓÃ
+            // angleNode ÊÇ < ºÍ > °üÎ§µÄ·ºĞÍ²ÎÊı²¿·Ö£¬²»Ó¦±»ºÏ²¢µ½ÆäËû½ÚµãÖĞ
             if (m_Node.angleNode != null)
             {
                 isTemplate = true;
                 m_BeginAngleToken = m_Node.angleNode.token;
                 m_EndAngleToken = m_Node.angleNode.endToken;
                 
-                // éå† angleNode å†…çš„æ‰€æœ‰å­èŠ‚ç‚¹ï¼ˆä¸åŒ…æ‹¬é€—å·ï¼‰
+                // ±éÀú angleNode ÄÚµÄËùÓĞ×Ó½Úµã£¨²»°üÀ¨¶ººÅ£©
                 List<Node> list = m_Node.angleNode.childList;
                 for (int i = 0; i < list.Count; i++)
                 {
@@ -295,13 +293,13 @@ namespace SimpleLanguage.Compile
                     {
                         continue;
                     }
-                    // ä¸ºæ¯ä¸ªæ³›å‹å‚æ•°åˆ›å»º FileInputTemplateNode
+                    // ÎªÃ¿¸ö·ºĞÍ²ÎÊı´´½¨ FileInputTemplateNode
                     var aa = new FileInputTemplateNode(m_FileMeta, list[i]);
                     m_InputTemplateNodeList.Add(aa);
                 }
             }
             
-            // å¤„ç†æ•°ç»„ç»´åº¦ï¼šArray[1][2] ä¸­çš„ [] éƒ¨åˆ†
+            // ´¦ÀíÊı×éÎ¬¶È£ºArray[1][2] ÖĞµÄ [] ²¿·Ö
             if ( m_Node.bracketNode != null )
             {
                 isArray = true;
@@ -312,7 +310,7 @@ namespace SimpleLanguage.Compile
                 }           
             }
             
-            // å¤„ç†åˆå§‹åŒ–å—ï¼š{...} éƒ¨åˆ†
+            // ´¦Àí³õÊ¼»¯¿é£º{...} ²¿·Ö
             if (m_Node.blockNode != null)
             {
                 m_FileMetaBraceTerm = new FileMetaBraceTerm(m_FileMeta, m_Node.blockNode );
@@ -401,7 +399,7 @@ namespace SimpleLanguage.Compile
             else
             {
                 sb.Append(token?.lexeme.ToString());
-                sb.Append("åœ¨æ–‡ä»¶:" + token?.path + " è¡Œ: " + token?.sourceBeginLine + " ä½ç½®: " + token.sourceBeginChar);
+                sb.Append("ÔÚÎÄ¼ş:" + token?.path + " ĞĞ: " + token?.sourceBeginLine + " Î»ÖÃ: " + token.sourceBeginChar);
                 if (isCallFunction)
                 {
                     sb.Append( m_BeginParToken?.lexeme.ToString());
@@ -451,14 +449,126 @@ namespace SimpleLanguage.Compile
         public List<FileMetaCallNode> callNodeList => m_CallNodeList;
 
         private FileMeta m_FileMeta = null;
-        private Node m_Node = null;
+        private Node m_Node = null;  // ±£ÁôÒÔÖ§³ÖÏòºó¼æÈİ
+        private List<Token> m_TokenList = null;  // Token °æ±¾
         private List<FileMetaCallNode> m_CallNodeList = new List<FileMetaCallNode>();
+
+        // Node °æ±¾¹¹Ôì·½·¨£¨±£ÁôÏòºó¼æÈİ£©
         public FileMetaCallLink( FileMeta fm, Node node, bool isIncludeSelf = true )
         {
             m_Node = node;
             m_FileMeta = fm;
             AddChildExtendLinkList(m_Node, isIncludeSelf );
         }
+
+        // Token °æ±¾¹¹Ôì·½·¨£¨ĞÂ£©
+        public FileMetaCallLink(FileMeta fm, List<Token> tokenList)
+        {
+            m_FileMeta = fm;
+            m_TokenList = tokenList ?? new List<Token>();
+            BuildFromTokenList(m_TokenList);
+        }
+
+        // ´Ó Token ÁĞ±í¹¹½¨ CallNode Á´
+        private void BuildFromTokenList(List<Token> tokenList)
+        {
+            if (tokenList == null || tokenList.Count == 0)
+                return;
+
+            // °´µãºÅ£¨Period£©²ğ·Ö token ĞòÁĞ£¬¹¹½¨Á´Ê½µ÷ÓÃ
+            // ÀıÈç£ºa.b.c() ²ğ³É [a] [b] [c()]
+            List<List<Token>> callSegments = new List<List<Token>>();
+            List<Token> currentSegment = new List<Token>();
+
+            int parenDepth = 0;
+            int angleDepth = 0;
+            int bracketDepth = 0;
+
+            for (int i = 0; i < tokenList.Count; i++)
+            {
+                var t = tokenList[i];
+
+                // ×·×ÙÀ¨ºÅÉî¶È£¬±ÜÃâÔÚÇ¶Ì×ÖĞÎóÈÏÎªÊÇ·Ö¸ô·û
+                if (t.type == ETokenType.LeftPar) parenDepth++;
+                else if (t.type == ETokenType.RightPar && parenDepth > 0) parenDepth--;
+                else if (t.type == ETokenType.Less) angleDepth++;
+                else if (t.type == ETokenType.Greater && angleDepth > 0) angleDepth--;
+                else if (t.type == ETokenType.LeftBracket) bracketDepth++;
+                else if (t.type == ETokenType.RightBracket && bracketDepth > 0) bracketDepth--;
+
+                // ¶¥²ãµãºÅ±êÖ¾·Ö¸ô
+                if (t.type == ETokenType.Period && parenDepth == 0 && angleDepth == 0 && bracketDepth == 0)
+                {
+                    if (currentSegment.Count > 0)
+                    {
+                        callSegments.Add(new List<Token>(currentSegment));
+                        currentSegment.Clear();
+                    }
+                }
+                else
+                {
+                    currentSegment.Add(t);
+                }
+            }
+
+            // Ìí¼Ó×îºóÒ»¶Î
+            if (currentSegment.Count > 0)
+            {
+                callSegments.Add(currentSegment);
+            }
+
+            // ÎªÃ¿Ò»¶Î´´½¨ FileMetaCallNode
+            for (int i = 0; i < callSegments.Count; i++)
+            {
+                var segmentTokens = callSegments[i];
+                if (segmentTokens.Count == 0) continue;
+
+                // ¼òµ¥°æ£ºÖ±½ÓÓÃµÚÒ»¸ö token ×÷ÎªÃû³Æ£¬ºóĞø¿ÉÀ©Õ¹
+                // ¶ÔÓ¦ a¡¢b¡¢c µÈ±êÊ¶·û£¬»ò c() µÈº¯Êıµ÷ÓÃ
+                var callNode = CreateCallNodeFromTokens(m_FileMeta, segmentTokens);
+                if (callNode != null)
+                {
+                    m_CallNodeList.Add(callNode);
+                }
+            }
+        }
+
+        // ´ÓÒ»×é token ´´½¨µ¥¸ö FileMetaCallNode
+        private FileMetaCallNode CreateCallNodeFromTokens(FileMeta fm, List<Token> segmentTokens)
+        {
+            if (segmentTokens == null || segmentTokens.Count == 0)
+                return null;
+
+            // ¹¹ÔìÁÙÊ± Node£¬ÓÃÓÚ¼æÈİÏÖÓĞ FileMetaCallNode µÄÂß¼­
+            // ÕâÀïÎÒÃÇ´´½¨Ò»¸ö¼òµ¥µÄ´úÀí Node
+            Token nameToken = segmentTokens[0];
+            Node proxyNode = new Node(nameToken)
+            {
+                nodeType = ENodeType.IdentifierLink
+            };
+
+            // É¨ÃèÊÇ·ñÓĞÀ¨ºÅ¡¢½Ç¶È¡¢·½À¨ºÅ¡¢´óÀ¨ºÅ
+            int parenStart = -1, angleStart = -1, bracketStart = -1, braceStart = -1;
+
+            for (int i = 1; i < segmentTokens.Count; i++)
+            {
+                if (segmentTokens[i].type == ETokenType.LeftPar && parenStart == -1)
+                    parenStart = i;
+                else if (segmentTokens[i].type == ETokenType.Less && angleStart == -1)
+                    angleStart = i;
+                else if (segmentTokens[i].type == ETokenType.LeftBracket && bracketStart == -1)
+                    bracketStart = i;
+                else if (segmentTokens[i].type == ETokenType.LeftBrace && braceStart == -1)
+                    braceStart = i;
+            }
+
+            // ¼ò»¯£ºµ±Ç°°æ±¾Ö»Ö§³Ö»ù±¾Ãû³Æ»ò´øÀ¨ºÅµÄº¯Êıµ÷ÓÃ
+            // ·ºĞÍ¡¢Êı×é¡¢³õÊ¼»¯¿éµÄÖ§³ÖĞèÒªÀ©Õ¹ FileMetaCallNode µÄ Token °æ¹¹Ôì
+            // »òÔÚÕâÀï¹¹ÔìºÏÊÊµÄ proxy Node
+
+            return new FileMetaCallNode(fm, proxyNode);
+        }
+
         void AddChildExtendLinkList( Node cnode, bool isIncludeSelf )
         {
             List<Node> childNodeList = cnode.GetLinkNodeList( isIncludeSelf );
@@ -546,55 +656,215 @@ namespace SimpleLanguage.Compile
         private List<int> m_ArrayDimsionLengthList = new List<int>();
 
         private List<Token> m_TokenList = new List<Token>();
+        private List<Token> m_AngleTokenList = new List<Token>();  // < ... > ÖĞµÄ token ÁĞ±í
+        private List<List<Token>> m_BracketTokenListList = new List<List<Token>>();  // [ ... ] ÖĞµÄ token ÁĞ±í
         private bool m_IsInputTemplateData = false;
-        public FileMetaClassDefine(FileMeta fm, List<Token> _tokenList )
+
+        // Token °æ±¾¹¹Ôì·½·¨£¨ÍêÕûÂß¼­£©
+        public FileMetaClassDefine(FileMeta fm, List<Token> _tokenList)
         {
             m_FileMeta = fm;
-            m_TokenList = _tokenList;
-            m_ClassNameToken = _tokenList[_tokenList.Count - 1];
+            m_TokenList = _tokenList ?? new List<Token>();
+            
+            if (m_TokenList.Count > 0)
+            {
+                m_ClassNameToken = m_TokenList[m_TokenList.Count - 1];
+            }
+
+            // ´¦Àí·ºĞÍÄ£°å£º< ... >
+            ExtractAndProcessGenericTemplate();
+
+            // ´¦ÀíÊı×éÎ¬¶È£º[ ... ]
+            ExtractAndProcessArrayDimensions();
         }
-        public FileMetaClassDefine( FileMeta fm, Node node, Node mutNode = null )
+
+        // Node °æ±¾¹¹Ôì·½·¨£¨±£ÁôÏòºó¼æÈİ£©
+        public FileMetaClassDefine(FileMeta fm, Node node, Node mutNode = null)
         {
             m_FileMeta = fm;
             m_TokenList = node.linkTokenList;
             m_ClassNameToken = m_TokenList[m_TokenList.Count - 1];
             m_MutToken = mutNode?.token;
 
-            // å…³é”®ä¿®å¤ï¼šangleNode å¿…é¡»å®Œæ•´ä¿ç•™ï¼Œæ— è®ºæ˜¯å¦ä½œä¸º linkTokenList çš„ä¸€éƒ¨åˆ†
-            // è¿™æ ·å¯ä»¥æ­£ç¡®å¤„ç† List<int>ã€Level<T>() ç­‰æ³›å‹è°ƒç”¨
-            if ( node.angleNode != null )
+            // ¹Ø¼üĞŞ¸´£ºangleNode ±ØĞëÍêÕû±£Áô£¬ÎŞÂÛÊÇ·ñ×÷Îª linkTokenList µÄÒ»²¿·Ö
+            // ÕâÑù¿ÉÒÔÕıÈ·´¦Àí List<int>¡¢Level<T>() µÈ·ºĞÍµ÷ÓÃ
+            if (node.angleNode != null)
             {
                 m_IsInputTemplateData = true;
                 m_AngleTokenBegin = node.angleNode.token;
                 m_AngleTokenEnd = node.angleNode.endToken;
-                
-                // éå†angleNodeå†…çš„æ‰€æœ‰å­èŠ‚ç‚¹ï¼Œæ„å»ºFileInputTemplateNode
+
+                // ±éÀúangleNodeÄÚµÄËùÓĞ×Ó½Úµã£¬¹¹½¨FileInputTemplateNode
                 List<Node> list = node.angleNode.childList;
-                for( int i = 0; i < list.Count; i++ )
+                for (int i = 0; i < list.Count; i++)
                 {
                     var cnode = list[i];
-                    if (cnode.nodeType == ENodeType.Comma )
+                    if (cnode.nodeType == ENodeType.Comma)
                         continue;
-                    
-                    // ä¸ºæ¯ä¸ªæ³›å‹å‚æ•°åˆ›å»ºFileInputTemplateNode
+
+                    // ÎªÃ¿¸ö·ºĞÍ²ÎÊı´´½¨FileInputTemplateNode
                     FileInputTemplateNode fmcn = new FileInputTemplateNode(fm, cnode);
                     m_InputTemplateNodeList.Add(fmcn);
                 }
             }
-            
-            // å¤„ç†æ•°ç»„ç»´åº¦ï¼ˆå¦‚æœæœ‰ï¼‰
-            if( node.bracketNode != null )
+
+            // ´¦ÀíÊı×éÎ¬¶È£¨Èç¹ûÓĞ£©
+            if (node.bracketNode != null)
             {
                 isArray = true;
 
-                for( int i = 0; i < node.bracketNodeList.Count; i++ )
+                for (int i = 0; i < node.bracketNodeList.Count; i++)
                 {
-                    FileMetaBracketTerm fmbt = new FileMetaBracketTerm( m_FileMeta, node.bracketNodeList[i] );
+                    FileMetaBracketTerm fmbt = new FileMetaBracketTerm(m_FileMeta, node.bracketNodeList[i]);
                     m_FileMetaBracketTermList.Add(fmbt);
                 }
                 GetBracketListInt32Value();
             }
         }
+
+        // ´Ó Token ÁĞ±íÖĞÌáÈ¡²¢´¦Àí·ºĞÍÄ£°å < ... >
+        private void ExtractAndProcessGenericTemplate()
+        {
+            // ÔÚ m_TokenList ÖĞ²éÕÒ < ºÍ > µÄÅä¶Ô
+            // ¼ÙÉè¸ñÊ½ÀàËÆÓÚ£ºList < int >£¬ÎÒÃÇĞèÒªÌáÈ¡ < int >
+
+            int angleStart = -1;
+            int angleEnd = -1;
+            int depth = 0;
+
+            for (int i = 0; i < m_TokenList.Count; i++)
+            {
+                if (m_TokenList[i].type == ETokenType.Less)
+                {
+                    if (depth == 0)
+                        angleStart = i;
+                    depth++;
+                }
+                else if (m_TokenList[i].type == ETokenType.Greater)
+                {
+                    depth--;
+                    if (depth == 0)
+                    {
+                        angleEnd = i;
+                        break;
+                    }
+                }
+            }
+
+            // Èç¹ûÕÒµ½ÍêÕûµÄ < ... > ¶Ô
+            if (angleStart != -1 && angleEnd != -1 && angleStart < angleEnd)
+            {
+                m_IsInputTemplateData = true;
+                m_AngleTokenBegin = m_TokenList[angleStart];
+                m_AngleTokenEnd = m_TokenList[angleEnd];
+
+                // ÌáÈ¡ < ºÍ > Ö®¼äµÄ token
+                m_AngleTokenList = m_TokenList.GetRange(angleStart + 1, angleEnd - angleStart - 1);
+
+                // °´¶ººÅ²ğ·Ö·ºĞÍ²ÎÊı
+                List<List<Token>> templateParams = SplitTokensByComma(m_AngleTokenList);
+
+                // ÎªÃ¿¸ö·ºĞÍ²ÎÊı´´½¨ FileInputTemplateNode
+                foreach (var paramTokens in templateParams)
+                {
+                    if (paramTokens.Count > 0)
+                    {
+                        // ¹¹ÔìÁÙÊ± Node ÓÃÓÚ¼æÈİ FileInputTemplateNode
+                        Node paramNode = new Node(paramTokens[0]) { nodeType = ENodeType.IdentifierLink };
+                        FileInputTemplateNode fmcn = new FileInputTemplateNode(m_FileMeta, paramNode);
+                        m_InputTemplateNodeList.Add(fmcn);
+                    }
+                }
+            }
+        }
+
+        // ´Ó Token ÁĞ±íÖĞÌáÈ¡²¢´¦ÀíÊı×éÎ¬¶È [ ... ]
+        private void ExtractAndProcessArrayDimensions()
+        {
+            // ²éÕÒËùÓĞ [ ... ] ¶Ô
+            int bracketStart = -1;
+            int depth = 0;
+
+            for (int i = 0; i < m_TokenList.Count; i++)
+            {
+                if (m_TokenList[i].type == ETokenType.LeftBracket)
+                {
+                    if (depth == 0)
+                        bracketStart = i;
+                    depth++;
+                }
+                else if (m_TokenList[i].type == ETokenType.RightBracket)
+                {
+                    depth--;
+                    if (depth == 0 && bracketStart != -1)
+                    {
+                        // ÕÒµ½Ò»¸öÍêÕûµÄ [ ... ] ¶Ô
+                        isArray = true;
+                        var bracketTokens = m_TokenList.GetRange(bracketStart + 1, i - bracketStart - 1);
+                        m_BracketTokenListList.Add(bracketTokens);
+
+                        // ÎªÃ¿¸ö [ ... ] ´´½¨ FileMetaBracketTerm
+                        // ÕâÀïÎÒÃÇĞèÒª¹¹ÔìÒ»¸öÁÙÊ±µÄ°üº¬ÕâĞ© token µÄ Node À´¼æÈİ FileMetaBracketTerm
+                        if (bracketTokens.Count > 0)
+                        {
+                            // ¼ò»¯£ºÓÃµÚÒ»¸öºÍ×îºóÒ»¸ö token ´´½¨Õ¼Î»·û
+                            Node bracketNode = new Node(m_TokenList[bracketStart]) { nodeType = ENodeType.Bracket };
+                            bracketNode.endToken = m_TokenList[i];
+                            FileMetaBracketTerm fmbt = new FileMetaBracketTerm(m_FileMeta, bracketNode);
+                            m_FileMetaBracketTermList.Add(fmbt);
+                        }
+
+                        bracketStart = -1;
+                    }
+                }
+            }
+
+            // Èç¹ûÓĞÊı×éÎ¬¶È£¬»ñÈ¡ÆäÊıÖµ
+            if (isArray)
+            {
+                GetBracketListInt32Value();
+            }
+        }
+
+        // °´¶ººÅ²ğ·Ö Token ÁĞ±í
+        private List<List<Token>> SplitTokensByComma(List<Token> tokens)
+        {
+            List<List<Token>> result = new List<List<Token>>();
+            List<Token> current = new List<Token>();
+            int depth = 0;
+
+            foreach (var token in tokens)
+            {
+                // ×·×ÙÇ¶Ì×Éî¶È
+                if (token.type == ETokenType.LeftPar || token.type == ETokenType.Less || token.type == ETokenType.LeftBracket || token.type == ETokenType.LeftBrace)
+                    depth++;
+                else if (token.type == ETokenType.RightPar || token.type == ETokenType.Greater || token.type == ETokenType.RightBracket || token.type == ETokenType.RightBrace)
+                    depth--;
+
+                // ¶¥²ã¶ººÅ×÷Îª·Ö¸ô·û
+                if (token.type == ETokenType.Comma && depth == 0)
+                {
+                    if (current.Count > 0)
+                    {
+                        result.Add(new List<Token>(current));
+                        current.Clear();
+                    }
+                }
+                else
+                {
+                    current.Add(token);
+                }
+            }
+
+            // Ìí¼Ó×îºóÒ»¶Î
+            if (current.Count > 0)
+            {
+                result.Add(current);
+            }
+
+            return result;
+        }
+
         public MetaNode GetChildrenMetaNode(MetaNode mb)
         {
             if (mb == null) return null;
@@ -607,16 +877,17 @@ namespace SimpleLanguage.Compile
                     break;
             }
             return mb2;
-        }       
+        }
+
         public void GetBracketListInt32Value()
         {
             m_ArrayDimsionLengthList.Clear();
-            for ( int i = 0; i < m_FileMetaBracketTermList.Count; i++ )
+            for (int i = 0; i < m_FileMetaBracketTermList.Count; i++)
             {
                 var fmbtc = m_FileMetaBracketTermList[i];
-                if( fmbtc.fileMetaExpressList.Count == 1 )
+                if (fmbtc.fileMetaExpressList.Count == 1)
                 {
-                    if( fmbtc.fileMetaExpressList[0] is FileMetaConstValueTerm fmcvt )
+                    if (fmbtc.fileMetaExpressList[0] is FileMetaConstValueTerm fmcvt)
                     {
                         if (fmcvt.token?.type == ETokenType.Number)
                             m_ArrayDimsionLengthList.Add((int)fmcvt.token.lexeme);
@@ -627,31 +898,34 @@ namespace SimpleLanguage.Compile
                     m_ArrayDimsionLengthList.Add(-1);
                 }
             }
-            if(m_ArrayDimsionLengthList.Count != m_FileMetaBracketTermList.Count )
+            if (m_ArrayDimsionLengthList.Count != m_FileMetaBracketTermList.Count)
             {
-                Log.AddInStructFileMeta(EError.None, "æ•°ç»„è·å–é•¿åº¦æ–‡ä»¶çš„æ—¶å€™ï¼Œæœ‰å¼‚å¸¸!");
+                Log.AddInStructFileMeta(EError.None, "Êı×é»ñÈ¡³¤¶ÈÎÄ¼şµÄÊ±ºò£¬ÓĞÒì³£!");
             }
         }
+
         public override string ToString()
         {
             return allName;
         }
+
         public string ToTokenString()
         {
             return allName + " Token File:[" + m_ClassNameToken.path + "] Line:[" + m_ClassNameToken.sourceBeginLine.ToString() + "]  Char:[" + m_ClassNameToken.sourceBeginChar.ToString() + "]";
         }
+
         public string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
             sb.Append(allName);
-            if(m_IsInputTemplateData)
+            if (m_IsInputTemplateData)
             {
                 sb.Append(m_AngleTokenBegin?.lexeme.ToString());
 
-                for( int i = 0; i < m_InputTemplateNodeList.Count; i++ )
+                for (int i = 0; i < m_InputTemplateNodeList.Count; i++)
                 {
                     sb.Append(m_InputTemplateNodeList[i].ToFormatString());
-                    if( i < m_InputTemplateNodeList.Count - 1 )
+                    if (i < m_InputTemplateNodeList.Count - 1)
                     {
                         sb.Append(",");
                     }
@@ -659,15 +933,16 @@ namespace SimpleLanguage.Compile
 
                 sb.Append(m_AngleTokenEnd?.lexeme?.ToString());
             }
-            if( isArray )
+            if (isArray)
             {
-                for( int i = 0; i < m_FileMetaBracketTermList.Count; i++ )
+                for (int i = 0; i < m_FileMetaBracketTermList.Count; i++)
                 {
                     sb.Append(m_FileMetaBracketTermList[i].ToFormatString());
                 }
             }
             return sb.ToString();
         }
+
         public void AddError2(int errorId, [CallerFilePath] string pfile = "", [CallerMemberName] string pfunction = "",
             [CallerLineNumber] int line = 0)
         {
@@ -676,14 +951,14 @@ namespace SimpleLanguage.Compile
             {
                 case 0:
                     {
-                        str = "åˆ¤æ–­æ¥å£çš„æ—¶å€™æ²¡æœ‰å‘ç°[" + allName + "]ç±»";
+                        str = "ÅĞ¶Ï½Ó¿ÚµÄÊ±ºòÃ»ÓĞ·¢ÏÖ[" + allName + "]Àà";
                     }
                     break;
                 default: break;
             }
-            str = str + " \n Token: åœ¨æ–‡ä»¶:" + m_ClassNameToken.path + " å¼€å§‹è¡Œå·:" + m_ClassNameToken.sourceBeginLine.ToString() + "å¼€å§‹ä½ç½®: "
+            str = str + " \n Token: ÔÚÎÄ¼ş:" + m_ClassNameToken.path + " ¿ªÊ¼ĞĞºÅ:" + m_ClassNameToken.sourceBeginLine.ToString() + "¿ªÊ¼Î»ÖÃ: "
                 + m_ClassNameToken.sourceBeginChar.ToString();
-            str = str + " \n åœ¨ä»£ç ä¸­æ–‡ä»¶:" + pfile + "   å‡½æ•°:" + pfunction + "è¡Œå·: " + line.ToString();
+            str = str + " \n ÔÚ´úÂëÖĞÎÄ¼ş:" + pfile + "   º¯Êı:" + pfunction + "ĞĞºÅ: " + line.ToString();
             //Trace.WriteLine( "" )
             Log.AddInStructFileMeta(EError.None, str);
         }
@@ -721,7 +996,7 @@ namespace SimpleLanguage.Compile
             m_FileMeta = fm;
             if ( nodeList.Count == 0 )
             {
-                Log.AddInStructFileMeta(EError.None, "Error åœ¨<>ä¸­æ²¡æœ‰å‘ç°å…ƒç´ !!");
+                Log.AddInStructFileMeta(EError.None, "Error ÔÚ<>ÖĞÃ»ÓĞ·¢ÏÖÔªËØ!!");
                 return;
             }
             m_Token = nodeList[0].token;
@@ -732,7 +1007,7 @@ namespace SimpleLanguage.Compile
             }
             else if( nodeList.Count == 2 )
             {
-                Log.AddInStructFileMeta(EError.None, "Error åœ¨<T in> or <T []> or <T ClassName> ä½¿ç”¨æ–¹æ³•ä¸æ­£ç¡®,è¯·ä½¿ç”¨ <T in []>æˆ–è€…æ˜¯ <T in ClassName> !!");
+                Log.AddInStructFileMeta(EError.None, "Error ÔÚ<T in> or <T []> or <T ClassName> Ê¹ÓÃ·½·¨²»ÕıÈ·,ÇëÊ¹ÓÃ <T in []>»òÕßÊÇ <T in ClassName> !!");
             }
         }
         public void Parse()
