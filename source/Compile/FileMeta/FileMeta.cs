@@ -238,10 +238,8 @@ namespace SimpleLanguage.Compile
                 var fmn = m_FileSearchNamespaceList[i];
                 if (ProjectManager.useDefineNamespaceType != EUseDefineType.NoUseProjectConfigNamespace)
                 {
-                    if (!ProjectManager.data.IsIncludeDefineStruct(fmn.namespaceStatementBlock.namespaceList))
-                    {
-                        Log.AddInStructFileMeta( EError.None, "Error 暂不允许使用namespace 定义命名空间!!!" + fmn.ToFormatString() + " 位置: " + fmn.token.ToLexemeAllString());
-                    }
+                    // namespace restriction previously controlled by ProjectConfig/ProjectData
+                    // this logic is temporarily disabled while migrating to TOML-based config
                 }
                 NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(fmn);
             }

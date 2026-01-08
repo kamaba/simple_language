@@ -200,12 +200,24 @@ namespace SimpleLanguage.Compile
 
         private FileMetaCallLink m_DefineClassCallLink;
         private FileMeta m_FileMeta = null;
-        private Node m_Node = null;
+        private Node m_Node = null;  // legacy
         public FileInputTemplateNode( FileMeta fm, Node node )
         {
+            // legacy path: adapt Node to token-based pipeline
             m_FileMeta = fm;
             m_Node = node;
-            m_DefineClassCallLink = new FileMetaCallLink(fm, node);
+            m_DefineClassCallLink = node != null
+                ? new FileMetaCallLink(fm, node.linkTokenList)
+                : null;
+        }
+
+        // new token-based ctor
+        public FileInputTemplateNode(FileMeta fm, List<Token> tokens)
+        {
+            m_FileMeta = fm;
+            m_DefineClassCallLink = tokens != null
+                ? new FileMetaCallLink(fm, tokens)
+                : null;
         }
         public string ToFormatString()
         {
@@ -249,71 +261,148 @@ namespace SimpleLanguage.Compile
 
         public FileMetaCallNode( FileMeta fm, Node _node )
         {
+            // legacy entry: adapt Node to tokens, then reuse token-based ctor
             m_FileMeta = fm;
             m_Node = _node;
-            isCallFunction = false;
-
-            CreateFileMetaCallNode();
+            var tokens = _node != null ? _node.linkTokenList : null;
+            InitializeFromTokens(tokens);
         }
-        void CreateFileMetaCallNode()
-        {
-            m_Token = m_Node.token;
-            m_AtToken = m_Node.atToken;
 
-            // 处理括号参数：Level<T>() 的 () 部分
-            if( m_Node.nodeType == ENodeType.Par )
+        // new token-based ctor used by Token pipeline
+        public FileMetaCallNode(FileMeta fm, List<Token> segmentTokens)
+        {
+            m_FileMeta = fm;
+            InitializeFromTokens(segmentTokens);
+        }
+
+        // core implementation: parse one call segment from tokens
+        private void InitializeFromTokens(List<Token> segmentTokens)
+        {
+            if (segmentTokens == null || segmentTokens.Count == 0)
+                return;
+
+            m_Token = segmentTokens[0];
+
+            // scan for top-level (), <>, [] and {}
+            int parenStart = -1, parenEnd = -1;
+            int angleStart = -1, angleEnd = -1;
+            int bracketStart = -1, bracketEnd = -1;
+            int braceStart = -1, braceEnd = -1;
+            int parenDepth = 0, angleDepth = 0, bracketDepth = 0, braceDepth = 0;
+
+            for (int i = 1; i < segmentTokens.Count; i++)
             {
-                m_FileMetaParTerm = new FileMetaParTerm(m_FileMeta, m_Node, FileMetaTermExpress.EExpressType.Common);
-                m_BeginParToken = m_FileMetaParTerm.token;
-                m_EndParToken = m_FileMetaParTerm.endToken;
-            }
-            
-            // 处理函数调用：Level<T>.Method() 中的 () 部分
-            if(m_Node.parNode != null )
-            {
-                isCallFunction = true;
-                m_FileMetaParTerm = new FileMetaParTerm(m_FileMeta, m_Node.parNode, FileMetaTermExpress.EExpressType.Common);
-                m_BeginParToken = m_FileMetaParTerm.token;
-                m_EndParToken = m_FileMetaParTerm.endToken;
-            }
-            
-            // 关键修复：angleNode 必须完整保留，以支持 List<int>、Level<T>() 等泛型调用
-            // angleNode 是 < 和 > 包围的泛型参数部分，不应被合并到其他节点中
-            if (m_Node.angleNode != null)
-            {
-                isTemplate = true;
-                m_BeginAngleToken = m_Node.angleNode.token;
-                m_EndAngleToken = m_Node.angleNode.endToken;
-                
-                // 遍历 angleNode 内的所有子节点（不包括逗号）
-                List<Node> list = m_Node.angleNode.childList;
-                for (int i = 0; i < list.Count; i++)
+                var t = segmentTokens[i];
+                switch (t.type)
                 {
-                    if (list[i].nodeType == ENodeType.Comma)
-                    {
-                        continue;
-                    }
-                    // 为每个泛型参数创建 FileInputTemplateNode
-                    var aa = new FileInputTemplateNode(m_FileMeta, list[i]);
-                    m_InputTemplateNodeList.Add(aa);
+                    case ETokenType.LeftPar:
+                        if (parenDepth == 0 && parenStart == -1) parenStart = i;
+                        parenDepth++;
+                        break;
+                    case ETokenType.RightPar:
+                        parenDepth--;
+                        if (parenDepth == 0 && parenEnd == -1) parenEnd = i;
+                        break;
+                    case ETokenType.Less:
+                        if (angleDepth == 0 && angleStart == -1) angleStart = i;
+                        angleDepth++;
+                        break;
+                    case ETokenType.Greater:
+                        angleDepth--;
+                        if (angleDepth == 0 && angleEnd == -1) angleEnd = i;
+                        break;
+                    case ETokenType.LeftBracket:
+                        if (bracketDepth == 0 && bracketStart == -1) bracketStart = i;
+                        bracketDepth++;
+                        break;
+                    case ETokenType.RightBracket:
+                        bracketDepth--;
+                        if (bracketDepth == 0 && bracketEnd == -1) bracketEnd = i;
+                        break;
+                    case ETokenType.LeftBrace:
+                        if (braceDepth == 0 && braceStart == -1) braceStart = i;
+                        braceDepth++;
+                        break;
+                    case ETokenType.RightBrace:
+                        braceDepth--;
+                        if (braceDepth == 0 && braceEnd == -1) braceEnd = i;
+                        break;
                 }
             }
-            
-            // 处理数组维度：Array[1][2] 中的 [] 部分
-            if ( m_Node.bracketNode != null )
+
+            // function call parens
+            if (parenStart != -1 && parenEnd > parenStart)
+            {
+                isCallFunction = true;
+                var parTokens = segmentTokens.GetRange(parenStart, parenEnd - parenStart + 1);
+                m_FileMetaParTerm = new FileMetaParTerm(m_FileMeta, parTokens, FileMetaTermExpress.EExpressType.Common);
+                m_BeginParToken = parTokens[0];
+                m_EndParToken = parTokens[parTokens.Count - 1];
+            }
+
+            // generic angle args
+            if (angleStart != -1 && angleEnd > angleStart)
+            {
+                isTemplate = true;
+                m_BeginAngleToken = segmentTokens[angleStart];
+                m_EndAngleToken = segmentTokens[angleEnd];
+
+                var inner = segmentTokens.GetRange(angleStart + 1, angleEnd - angleStart - 1);
+                // split generic args by top-level comma
+                List<List<Token>> argTokenLists = new List<List<Token>>();
+                List<Token> cur = new List<Token>();
+                int p = 0, a = 0, b = 0, br = 0;
+                for (int i = 0; i < inner.Count; i++)
+                {
+                    var t = inner[i];
+                    switch (t.type)
+                    {
+                        case ETokenType.LeftPar: p++; break;
+                        case ETokenType.RightPar: if (p > 0) p--; break;
+                        case ETokenType.Less: a++; break;
+                        case ETokenType.Greater: if (a > 0) a--; break;
+                        case ETokenType.LeftBracket: b++; break;
+                        case ETokenType.RightBracket: if (b > 0) b--; break;
+                        case ETokenType.LeftBrace: br++; break;
+                        case ETokenType.RightBrace: if (br > 0) br--; break;
+                    }
+                    if (t.type == ETokenType.Comma && p == 0 && a == 0 && b == 0 && br == 0)
+                    {
+                        if (cur.Count > 0)
+                        {
+                            argTokenLists.Add(new List<Token>(cur));
+                            cur.Clear();
+                        }
+                    }
+                    else
+                    {
+                        cur.Add(t);
+                    }
+                }
+                if (cur.Count > 0)
+                    argTokenLists.Add(cur);
+
+                foreach (var argTokens in argTokenLists)
+                {
+                    var tplNode = new FileInputTemplateNode(m_FileMeta, argTokens);
+                    m_InputTemplateNodeList.Add(tplNode);
+                }
+            }
+
+            // single bracket pair (arrays may chain at link level)
+            if (bracketStart != -1 && bracketEnd > bracketStart)
             {
                 isArray = true;
-                for( int i = 0; i < m_Node.bracketNodeList.Count; i++ )
-                {
-                    var fileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, m_Node.bracketNodeList[i] );
-                    m_FileMetaBracketTermList.Add(fileMetaBracketTerm);
-                }           
+                var brTokens = segmentTokens.GetRange(bracketStart, bracketEnd - bracketStart + 1);
+                var brTerm = new FileMetaBracketTerm(m_FileMeta, brTokens);
+                m_FileMetaBracketTermList.Add(brTerm);
             }
-            
-            // 处理初始化块：{...} 部分
-            if (m_Node.blockNode != null)
+
+            // initializer brace
+            if (braceStart != -1 && braceEnd > braceStart)
             {
-                m_FileMetaBraceTerm = new FileMetaBraceTerm(m_FileMeta, m_Node.blockNode );
+                var brTokens = segmentTokens.GetRange(braceStart, braceEnd - braceStart + 1);
+                m_FileMetaBraceTerm = new FileMetaBraceTerm(m_FileMeta, brTokens);
             }
         }
         public string ToFormatString()
@@ -449,16 +538,18 @@ namespace SimpleLanguage.Compile
         public List<FileMetaCallNode> callNodeList => m_CallNodeList;
 
         private FileMeta m_FileMeta = null;
-        private Node m_Node = null;  // 保留以支持向后兼容
+        private Node m_Node = null;  // legacy
         private List<Token> m_TokenList = null;  // Token 版本
         private List<FileMetaCallNode> m_CallNodeList = new List<FileMetaCallNode>();
 
         // Node 版本构造方法（保留向后兼容）
         public FileMetaCallLink( FileMeta fm, Node node, bool isIncludeSelf = true )
         {
+            // legacy entry: reuse token-based pipeline via linkTokenList
             m_Node = node;
             m_FileMeta = fm;
-            AddChildExtendLinkList(m_Node, isIncludeSelf );
+            var tokens = node != null ? node.linkTokenList : null;
+            BuildFromTokenList(tokens);
         }
 
         // Token 版本构造方法（新）
@@ -523,9 +614,7 @@ namespace SimpleLanguage.Compile
                 var segmentTokens = callSegments[i];
                 if (segmentTokens.Count == 0) continue;
 
-                // 简单版：直接用第一个 token 作为名称，后续可扩展
-                // 对应 a、b、c 等标识符，或 c() 等函数调用
-                var callNode = CreateCallNodeFromTokens(m_FileMeta, segmentTokens);
+                var callNode = new FileMetaCallNode(m_FileMeta, segmentTokens);
                 if (callNode != null)
                 {
                     m_CallNodeList.Add(callNode);
@@ -533,59 +622,9 @@ namespace SimpleLanguage.Compile
             }
         }
 
-        // 从一组 token 创建单个 FileMetaCallNode
-        private FileMetaCallNode CreateCallNodeFromTokens(FileMeta fm, List<Token> segmentTokens)
-        {
-            if (segmentTokens == null || segmentTokens.Count == 0)
-                return null;
+        // legacy Node-based recursion is no longer used; token pipeline handles chaining
+        void AddChildExtendLinkList( Node cnode, bool isIncludeSelf ) { }
 
-            // 构造临时 Node，用于兼容现有 FileMetaCallNode 的逻辑
-            // 这里我们创建一个简单的代理 Node
-            Token nameToken = segmentTokens[0];
-            Node proxyNode = new Node(nameToken)
-            {
-                nodeType = ENodeType.IdentifierLink
-            };
-
-            // 扫描是否有括号、角度、方括号、大括号
-            int parenStart = -1, angleStart = -1, bracketStart = -1, braceStart = -1;
-
-            for (int i = 1; i < segmentTokens.Count; i++)
-            {
-                if (segmentTokens[i].type == ETokenType.LeftPar && parenStart == -1)
-                    parenStart = i;
-                else if (segmentTokens[i].type == ETokenType.Less && angleStart == -1)
-                    angleStart = i;
-                else if (segmentTokens[i].type == ETokenType.LeftBracket && bracketStart == -1)
-                    bracketStart = i;
-                else if (segmentTokens[i].type == ETokenType.LeftBrace && braceStart == -1)
-                    braceStart = i;
-            }
-
-            // 简化：当前版本只支持基本名称或带括号的函数调用
-            // 泛型、数组、初始化块的支持需要扩展 FileMetaCallNode 的 Token 版构造
-            // 或在这里构造合适的 proxy Node
-
-            return new FileMetaCallNode(fm, proxyNode);
-        }
-
-        void AddChildExtendLinkList( Node cnode, bool isIncludeSelf )
-        {
-            List<Node> childNodeList = cnode.GetLinkNodeList( isIncludeSelf );
-            for (int i = 0; i < childNodeList.Count; i++)
-            {
-                var cnode1 = childNodeList[i];
-                FileMetaCallNode fmcn = new FileMetaCallNode(m_FileMeta, cnode1);
-                m_CallNodeList.Add(fmcn);
-                if( i == childNodeList.Count - 1 )
-                {
-                    if( cnode1.extendLinkNodeList.Count > 0 )
-                    {
-                        AddChildExtendLinkList(cnode1, false );
-                    }
-                }
-            }
-        }
         public string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
@@ -680,46 +719,9 @@ namespace SimpleLanguage.Compile
 
         // Node 版本构造方法（保留向后兼容）
         public FileMetaClassDefine(FileMeta fm, Node node, Node mutNode = null)
+            : this(fm, node != null ? node.linkTokenList : null)
         {
-            m_FileMeta = fm;
-            m_TokenList = node.linkTokenList;
-            m_ClassNameToken = m_TokenList[m_TokenList.Count - 1];
             m_MutToken = mutNode?.token;
-
-            // 关键修复：angleNode 必须完整保留，无论是否作为 linkTokenList 的一部分
-            // 这样可以正确处理 List<int>、Level<T>() 等泛型调用
-            if (node.angleNode != null)
-            {
-                m_IsInputTemplateData = true;
-                m_AngleTokenBegin = node.angleNode.token;
-                m_AngleTokenEnd = node.angleNode.endToken;
-
-                // 遍历angleNode内的所有子节点，构建FileInputTemplateNode
-                List<Node> list = node.angleNode.childList;
-                for (int i = 0; i < list.Count; i++)
-                {
-                    var cnode = list[i];
-                    if (cnode.nodeType == ENodeType.Comma)
-                        continue;
-
-                    // 为每个泛型参数创建FileInputTemplateNode
-                    FileInputTemplateNode fmcn = new FileInputTemplateNode(fm, cnode);
-                    m_InputTemplateNodeList.Add(fmcn);
-                }
-            }
-
-            // 处理数组维度（如果有）
-            if (node.bracketNode != null)
-            {
-                isArray = true;
-
-                for (int i = 0; i < node.bracketNodeList.Count; i++)
-                {
-                    FileMetaBracketTerm fmbt = new FileMetaBracketTerm(m_FileMeta, node.bracketNodeList[i]);
-                    m_FileMetaBracketTermList.Add(fmbt);
-                }
-                GetBracketListInt32Value();
-            }
         }
 
         // 从 Token 列表中提取并处理泛型模板 < ... >
@@ -769,9 +771,7 @@ namespace SimpleLanguage.Compile
                 {
                     if (paramTokens.Count > 0)
                     {
-                        // 构造临时 Node 用于兼容 FileInputTemplateNode
-                        Node paramNode = new Node(paramTokens[0]) { nodeType = ENodeType.IdentifierLink };
-                        FileInputTemplateNode fmcn = new FileInputTemplateNode(m_FileMeta, paramNode);
+                        FileInputTemplateNode fmcn = new FileInputTemplateNode(m_FileMeta, paramTokens);
                         m_InputTemplateNodeList.Add(fmcn);
                     }
                 }
@@ -991,25 +991,25 @@ namespace SimpleLanguage.Compile
             m_Token = node.token;
             m_ExtendsNode = extendsNode;
         }
-        public FileMetaTemplateDefine( FileMeta fm, List<Node> nodeList )
-        {
-            m_FileMeta = fm;
-            if ( nodeList.Count == 0 )
-            {
-                Log.AddInStructFileMeta(EError.None, "Error 在<>中没有发现元素!!");
-                return;
-            }
-            m_Token = nodeList[0].token;
-            if( nodeList.Count == 2 )
-            {
-                m_InToken = nodeList[1].token;
-                m_InClassNameTemplateNode = new FileInputTemplateNode(fm, nodeList[2] );
-            }
-            else if( nodeList.Count == 2 )
-            {
-                Log.AddInStructFileMeta(EError.None, "Error 在<T in> or <T []> or <T ClassName> 使用方法不正确,请使用 <T in []>或者是 <T in ClassName> !!");
-            }
-        }
+         public FileMetaTemplateDefine( FileMeta fm, List<Node> nodeList )
+         {
+             m_FileMeta = fm;
+             if ( nodeList.Count == 0 )
+             {
+                 Log.AddInStructFileMeta(EError.None, "Error 在<>中没有发现元素!!");
+                 return;
+             }
+             m_Token = nodeList[0].token;
+             if( nodeList.Count == 2 )
+             {
+                 m_InToken = nodeList[1].token;
+                 m_InClassNameTemplateNode = new FileInputTemplateNode(fm, nodeList[2] );
+             }
+             else if( nodeList.Count == 2 )
+             {
+                 Log.AddInStructFileMeta(EError.None, "Error 在<T in> or <T []> or <T ClassName> 使用方法不正确,请使用 <T in []>或者是 <T in ClassName> !!");
+             }
+         }
         public void Parse()
         {
 

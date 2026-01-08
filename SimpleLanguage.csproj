@@ -36,6 +36,7 @@
     <PackageReference Include="libLLVM.runtime.win-x64" Version="20.1.2" />
     <PackageReference Include="swigged.llvm" Version="70.0.1" />
     <PackageReference Include="System.Diagnostics.Debug" Version="4.3.0" />
+    <PackageReference Include="Tomlyn" Version="0.19.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="source\Export\ExportJavascriptCode\" />

@@ -29,6 +29,8 @@ namespace SimpleLanguage.Compile
     }
     public class FileParse
     {
+        public FileMeta file => m_File;
+
         LexerParse lexerParse;
         //TokenParse tokenParse;
         //StructParse structBuild;

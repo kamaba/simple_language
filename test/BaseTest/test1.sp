@@ -1,73 +1,17 @@
 
-const data ProjectConfig
+#!
+#关于 global 的定义，到时候 和local是一对，local/global 两个，分析是定义 文件局部代码，和全局的代码，格式一样，并且里边有一些内容，可以执行
+global
 {
-    name = "Test1";
-    compileFileList = 
-    [
-        {
-            path = "12_ArrayTest.sl";
-            group = "temp";
-            tag = "all";
-            a = 200
-        }
-    ]
-    globalVariable = 
-    {
-        testclass =
-        {
-            a = 20
-            b = 30
-        }
-        pi = 3.1415f;
-        minInt = -1i;
-        maxInt = 23232323i;
-        #xc = XC;
-    }
-    proojectStruct =          #命名空间设计
-    {
-        Std =
-        {
-            type = "namespace"
-            child = 
-            {
-                Collection =
-                {
-                    type = "namespace"
-                }
-                Math =
-                {
-                    type = "class"
-                }
-                Layer1_1 =
-                {
-                    type = "namespace"
-                    child ={
-                        Layer2_1 =
-                        {
-                            type="namespace"
-                        }
-                        Layer2_2 =
-                        {
-                            type="namespace"
-                        }
-                    }
-                }
-                Layer1_2 =
-                {
-                    type = "namespace"
-                }
-            }
-        } 
-    }
+
+    pi = 3.14
+    Level1 = Level<int>(200)
+    int minInt = -1i
 }
+!#
 
 Project
 {
-    #!
-    Test1{
-        a = 20;
-    }
-    !#
     static Main()
     {
         #typedef Array = Array<Object>
@@ -84,21 +28,16 @@ Project
     static Test()
     {
        #TempTest.Fun();
+    }    
+    CompileBefore()
+    {        
     }
-    static Global()
-    {
+    CompileAfter()
+    {        
     }
-    #!
-    static void SetXC( int a )
-    {
-        #global.xc.a = a;
-    }
-    !#
 }
 
-
-# 可能 在这里边进行全局性的设置，比较命名空间，类名，还有接口的设计，设计完成后，  可以告诉类的文件位置，这样更好的布置
-
-
-
-## 最近的变化思路，把token 整齐的 放到node节点里边，  相当于  普通 关键字 {} [] ()  为同一级别
+# 在newproject后，会生成两个文件 。一个是 项目名称.sp 是扫描的入口 还有一个是项目名称.config这个是通过json配置的工程
+# 在.sp中，可以放global,也可以通过配置json的方式配置global.sl
+# 在.sp中，有Main是函数的正式入口 有Test是测试入口 ，如果在cmd中，可以加-test 可以就走test入口
+# 在Project中，可以写CompileBefore即编译前的先执行函数，和CompileAfter的函数，也可以设计 ImportDll, ExportDll的导入插件相关的函数

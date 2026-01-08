@@ -16,6 +16,8 @@ using System.IO;
 using System.Timers;
 using System.Diagnostics;
 using SimpleLanguage.Compile;
+using Tomlyn;
+using Tomlyn.Model;
 
 namespace SimpleLanguage.Project
 {
@@ -24,79 +26,70 @@ namespace SimpleLanguage.Project
         public bool isThreadCompile = false;
         public static bool isLoaded = false;
         public static FileMeta projectFileMeta => m_ProjectFile;
-        
+
         public static int structParseCount = 0;
         public static int buildParseCount = 0;
         public static int grammerParseCount = 0;
         public static int parseListCount = 0;
         public static List<FileParse> fileParseList = new List<FileParse>();
 
-        private static ProjectData m_Data = null;
-        private static string m_FileContentString = null;
         private static FileMeta m_ProjectFile = null;
-        private static LexerParse m_LexerParse = null;
-        private static TokenParse m_TokenParse = null;
-        private static StructParse m_ProjectBuild = null;
-        private static ProjectParse m_ProjectParse = null;
 
-        public static void LoadProject()
+        public static void LoadProject(string spFilePath)
         {
-            DirectoryInfo directory = new DirectoryInfo(ProjectManager.projectPath);
-
-            if( !directory.Exists)
+            if (string.IsNullOrEmpty(spFilePath))
             {
-                Debug.Write("Error 项目加载路径不正确!!");
+                Debug.Write("Error LoadProject 传入的 .sp 路径为空!!");
+                return;
             }
 
-            string[] paths = Directory.GetFiles(ProjectManager.projectPath, "*.sp", SearchOption.TopDirectoryOnly);
-            if( paths.Length == 0 )
-            {
-                Debug.Write("Error 项目加载路径没有找到sp文件!!");
-            }
-
-
-            if (!File.Exists(paths[0]))
+            // 1. 根据 .sp 路径确定项目目录
+            string projectDir = Path.GetDirectoryName(spFilePath) ?? string.Empty;
+            if (string.IsNullOrEmpty(projectDir) || !Directory.Exists(projectDir))
             {
                 Debug.Write("Error 项目加载路径不正确!!");
                 return;
             }
-            m_ProjectFile = new FileMeta(paths[0]);
 
-            byte[] buffer = File.ReadAllBytes(paths[0]);
-            m_FileContentString = System.Text.Encoding.UTF8.GetString(buffer);
+            ProjectManager.projectPath = projectDir;
 
-            m_LexerParse = new LexerParse(paths[0], m_FileContentString);
-            m_LexerParse.ParseToTokenList();
+            // 2. 使用 .sp 文件名(不含扩展名)作为项目名，加载 <ProjectName>.toml
+            string projectName = Path.GetFileNameWithoutExtension(spFilePath);
+            string tomlFileName = projectName + ".toml";
+            string tomlPath = Path.Combine(projectDir, tomlFileName);
+            System.Diagnostics.Debug.WriteLine($"[LoadProject] using config: {tomlPath}");
+             if (!File.Exists(tomlPath))
+             {
+                 Debug.Write($"Error 项目加载路径没有找到 {tomlFileName} 配置文件!!");
+                 return;
+             }
 
-            m_TokenParse = new TokenParse(m_ProjectFile, m_LexerParse.GetListTokensWidthEnd());
+            string tomlText = File.ReadAllText(tomlPath);
+            TomlTable model = Toml.ToModel(tomlText);
 
-            m_TokenParse.BuildStruct();
+            ProjectConfig config = ProjectTomlLoader.FromModel(model);
+            ProjectManager.currentProject = new Project(config);
 
-            m_ProjectBuild = new StructParse(m_ProjectFile, m_TokenParse.rootNode, m_LexerParse.GetListTokensWidthEnd() );
+            // 3. 后续逻辑仍然可以保留 m_ProjectFile，用于旧的基于 FileMeta 的流程
+            if (m_ProjectFile == null)
+            {
+                string compilefile = projectName + ".sp";
 
-            m_ProjectBuild.ParseRootNodeToFileMeta();
+                var fp = new FileParse(compilefile, new ParseFileParam());
 
-            //m_ProjectBuild.ParseTokenToFileMeta();
+                m_ProjectFile = fp.file;
 
-            m_ProjectParse = new ProjectParse(m_ProjectFile, m_Data);
-
-            m_ProjectParse.ParseProject();
-
-            m_ProjectFile.SetDeep(0);
-
-            ProjectClass.ParseCompileClass();
-
-            Debug.Write(m_ProjectFile.ToFormatString());
+                fileParseList.Add(fp);
+            }
         }
 
-        public static void Compile( string path, ProjectData pd )
+        public static void Compile( string path )
         {
             if( !isLoaded )
             {
-                ProjectManager.projectPath = path;
-                m_Data = pd;
                 isLoaded = true;
-                LoadProject();
+                // 这里的 path 现在视为 .sp 文件路径
+                LoadProject(path);
             }
             CoreMetaClassManager.instance.Init();
 
@@ -124,7 +117,7 @@ namespace SimpleLanguage.Project
 
         public static void AddFileParse( string path )
         {
-            var fp = new FileParse(Path.Combine( ProjectManager.rootPath, path), new ParseFileParam() );
+            var fp = new FileParse( path, new ParseFileParam() );
             fp.structParseComplete = StructParseComplete;
             fp.buildParseComplete = BuildParseComplete;
             fp.grammerParseComplete = GrammerParseComplete;
@@ -208,7 +201,7 @@ namespace SimpleLanguage.Project
             }
 
             ClassManager.instance.ParseInitMetaClassList();
-            m_ProjectParse.ParseGlobalVariable();
+            
 
             ClassManager.instance.CheckInterfaces();
             ClassManager.instance.ParseDefineComplete();

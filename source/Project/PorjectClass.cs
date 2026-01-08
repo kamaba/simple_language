@@ -86,76 +86,33 @@ namespace SimpleLanguage.Project
             InnerCLRRuntimeVM.Init();
             InnerCLRRuntimeVM.RunIRMethod( null, irmethod);
         }
-        public static void AddDefineNamespace( MetaNode parentRoot, DefineStruct dns, bool isAddCurrent = true )
+        // legacy namespace tree building via DefineStruct is currently not driven by TOML
+        // kept as a no-op placeholder to avoid breaking callers
+        public static void AddDefineNamespace(MetaNode parentRoot, object _, bool isAddCurrent = true)
         {
-            if (parentRoot == null) return;
-
-            MetaNode parMS = null;
-            if ( dns != null )
-            {
-                MetaNamespace nodeNS = null;
-                if (isAddCurrent)
-                {
-                    var cfindNode = parentRoot.GetChildrenMetaNodeByName(dns.name);
-                    if (cfindNode == null)
-                    {
-                        if( dns.type == DefineStruct.EDefineStructType.Class )
-                        {
-                            var gcmc = CoreMetaClassManager.GetCoreMetaClass(dns.name);
-                            if( gcmc != null )
-                            {
-                                parMS = parentRoot.AddMetaClass(gcmc.GetMetaClassByTemplateCount(0));
-                            }
-                            else
-                            {
-                                var nodens = new MetaClass(dns.name, EClassDefineType.StructDefine);
-                                parMS = parentRoot.AddMetaClass(nodens);
-                            }                         
-                        }
-                        else
-                        {
-                            nodeNS = new MetaNamespace(dns.name);
-                            parMS = parentRoot.AddMetaNamespace(nodeNS);
-                        }
-                    }
-                    else
-                    {
-                        if (!(cfindNode.isMetaNamespace))
-                        {
-                            Log.AddInStructMeta( EError.None, "Error 解析namespace添加命名空间节点时，发现已有定义类!!");
-                            return;
-                        }
-                        nodeNS = cfindNode.metaNamespace;
-                        parMS = parentRoot.AddMetaNamespace(nodeNS);
-                    }
-                }
-                else
-                {
-                    parMS = parentRoot;
-                }
-                for( int i = 0; i < dns.childDefineStruct.Count; i++ )
-                {
-                    AddDefineNamespace(parMS, dns.childDefineStruct[i] );
-                }
-            }
+            // namespace layout can be rebuilt later based on ProjectConfig if needed
         }
         public static void ProjectCompileBefore()
         {
             NamespaceManager.instance.metaNamespaceDict.Clear();
 
-            ProjectData data = ProjectManager.data;
-            AddDefineNamespace( ModuleManager.instance.selfModule.metaNode, data.namespaceRoot, false );
+            // 使用 TOML 基于的 ProjectConfig 填充编译文件列表
+            var cfg = ProjectManager.currentProject?.Config;
+            if (cfg == null)
+                return;
 
-            var fileList = data.compileFileData.compileFileDataUnitList;
-            var filter = data.compileFilterData;
+            var fileList = cfg.CompileFiles.Files;
+            var filter = cfg.CompileFilter;
 
+            System.Diagnostics.Debug.WriteLine($"[Project] compileFiles count in config = {fileList.Count}");
+ 
             for (int i = 0; i < fileList.Count; i++)
             {
                 var fld = fileList[i];
 
                 if (IsCanAddFile(filter, fld))
                 {
-                    ProjectCompile.AddFileParse(fld.path);
+                    ProjectCompile.AddFileParse(fld.Path);
                 }
             }
 
@@ -166,17 +123,28 @@ namespace SimpleLanguage.Project
             }
 
         }
-        public static bool IsCanAddFile(CompileFilterData cfd, CompileFileData.CompileFileDataUnit fileData )
+        public static bool IsCanAddFile(ProjectConfig.CompileFilterSection cfd, ProjectConfig.CompileFileItem fileData )
         {
             if (cfd == null) return true;
-            if (!cfd.IsIncludeInGroup(fileData.group))
+
+            // group 过滤
+            if (!cfd.IsAllGroup)
             {
-                return false;
+                if (cfd.Groups.Count > 0 && !cfd.Groups.Contains(fileData.Group))
+                    return false;
             }
-            if (!cfd.IsIncludeInTag(fileData.tag))
+
+            // tag 过滤
+            if (!cfd.IsAllTag)
             {
-                return false;
+                if (cfd.Tags.Count > 0 && !cfd.Tags.Contains(fileData.Tag))
+                    return false;
             }
+
+            // ignore 标志
+            if (fileData.Ignore)
+                return false;
+
             return true;
         }
         public static void ProjectCompileAfter()
