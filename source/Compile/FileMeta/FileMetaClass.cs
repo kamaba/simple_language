@@ -122,12 +122,6 @@ namespace SimpleLanguage.Compile
         /// </summary>
         private bool ParseFromTokens(List<Token> tokens)
         {
-            if (tokens == null || tokens.Count == 0)
-            {
-                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析类型头部 Token 为空");
-                return false;
-            }
-
             Token permissionToken = null;
             Token extendsToken = null;
             Token commaToken = null;
@@ -146,6 +140,7 @@ namespace SimpleLanguage.Compile
 
                 if (!isAfterName)
                 {
+                    // 前半段：权限、const、partial、class/enum/data/interface、类名
                     if (token.type == ETokenType.Public
                         || token.type == ETokenType.Private
                         || token.type == ETokenType.Projected
@@ -191,45 +186,7 @@ namespace SimpleLanguage.Compile
                             }
                             m_ClassToken = token;
                         }
-                    }
-                    else if (token.type == ETokenType.Enum)
-                    {
-                        if (m_EnumToken == null)
-                        {
-                            if (m_ClassToken != null || m_DataToken != null)
-                            {
-                                isError = true;
-                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Enum 与 Class/Data 冲突!!");
-                            }
-                            m_EnumToken = token;
-                        }
-                    }
-                    else if (token.type == ETokenType.Data)
-                    {
-                        if (m_DataToken == null)
-                        {
-                            if (m_ClassToken != null || m_EnumToken != null)
-                            {
-                                isError = true;
-                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Data 与 Class/Enum 冲突!!");
-                            }
-                            m_DataToken = token;
-                        }
-                    }
-                    else if (token.type == ETokenType.Interface)
-                    {
-                        if (m_EnumToken != null || m_DataToken != null || m_ClassToken != null)
-                        {
-                            isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error interface 与 class/enum/data 冲突!!");
-                        }
-                        if (m_PreInterfaceToken != null || m_SufInterfaceToken != null)
-                        {
-                            isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error interface 标记重复使用!!");
-                        }
-                        m_PreInterfaceToken = token;
-                    }
+                    }                    
                     else if (token.type == ETokenType.Identifier || token.type == ETokenType.Type)
                     {
                         // 第一个标识符/类型视为类名
@@ -247,20 +204,14 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    // 已经解析过类名之后，处理模板、继承和接口
+                    // 后半段：模板、extends、interface 列表
                     if (token.type == ETokenType.Less)
                     {
-                        // 模板参数列表 <T, U:Base>
                         index = ParseTemplateDefine(tokens, index + 1);
                         continue;
                     }
                     else if (token.type == ETokenType.Extends)
                     {
-                        if (extendsToken != null)
-                        {
-                            isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Extends!!");
-                        }
                         extendsToken = token;
                         index++;
                         index = ParseExtendsOrInterface(tokens, index, false);
@@ -268,11 +219,6 @@ namespace SimpleLanguage.Compile
                     }
                     else if (token.type == ETokenType.Interface)
                     {
-                        if (m_SufInterfaceToken != null || m_PreInterfaceToken != null)
-                        {
-                            isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error interface 标记重复使用!!");
-                        }
                         m_SufInterfaceToken = token;
                         index++;
                         index = ParseExtendsOrInterface(tokens, index, true);
@@ -287,7 +233,7 @@ namespace SimpleLanguage.Compile
                 index++;
             }
 
-            // 按原 Parse 末尾的一致性校验
+            // 末尾一致性检查 + SetPermissionToken(permissionToken)
             if (m_EnumToken != null)
             {
                 if (m_PreInterfaceToken != null || m_SufInterfaceToken != null)
