@@ -200,17 +200,6 @@ namespace SimpleLanguage.Compile
 
         private FileMetaCallLink m_DefineClassCallLink;
         private FileMeta m_FileMeta = null;
-        private Node m_Node = null;  // legacy
-        public FileInputTemplateNode( FileMeta fm, Node node )
-        {
-            // legacy path: adapt Node to token-based pipeline
-            m_FileMeta = fm;
-            m_Node = node;
-            m_DefineClassCallLink = node != null
-                ? new FileMetaCallLink(fm, node.linkTokenList)
-                : null;
-        }
-
         // new token-based ctor
         public FileInputTemplateNode(FileMeta fm, List<Token> tokens)
         {
@@ -219,6 +208,9 @@ namespace SimpleLanguage.Compile
                 ? new FileMetaCallLink(fm, tokens)
                 : null;
         }
+        // Node 版本构造方法（legacy，已由 Token 版本取代）
+        // public FileInputTemplateNode( FileMeta fm, Node node ) { ... }
+
         public string ToFormatString()
         {
             return m_DefineClassCallLink?.ToFormatString();
@@ -246,7 +238,6 @@ namespace SimpleLanguage.Compile
         public bool isArray { get; set; } = false;
         public FileMeta fileMeta => m_FileMeta;
 
-        private Node m_Node = null;
         private Token m_Token = null;
         private Token m_AtToken = null;
         private FileMeta m_FileMeta = null;
@@ -259,21 +250,14 @@ namespace SimpleLanguage.Compile
         private List<FileMetaBracketTerm> m_FileMetaBracketTermList = new List<FileMetaBracketTerm>();
         private List<FileInputTemplateNode> m_InputTemplateNodeList = new List<FileInputTemplateNode>();//< template1,template2 >
 
-        public FileMetaCallNode( FileMeta fm, Node _node )
-        {
-            // legacy entry: adapt Node to tokens, then reuse token-based ctor
-            m_FileMeta = fm;
-            m_Node = _node;
-            var tokens = _node != null ? _node.linkTokenList : null;
-            InitializeFromTokens(tokens);
-        }
-
         // new token-based ctor used by Token pipeline
         public FileMetaCallNode(FileMeta fm, List<Token> segmentTokens)
         {
             m_FileMeta = fm;
             InitializeFromTokens(segmentTokens);
         }
+        // Node 版本构造方法（legacy，已由 Token 版本取代）
+        // public FileMetaCallNode( FileMeta fm, Node _node ) { ... }
 
         // core implementation: parse one call segment from tokens
         private void InitializeFromTokens(List<Token> segmentTokens)
@@ -538,19 +522,9 @@ namespace SimpleLanguage.Compile
         public List<FileMetaCallNode> callNodeList => m_CallNodeList;
 
         private FileMeta m_FileMeta = null;
-        private Node m_Node = null;  // legacy
         private List<Token> m_TokenList = null;  // Token 版本
         private List<FileMetaCallNode> m_CallNodeList = new List<FileMetaCallNode>();
 
-        // Node 版本构造方法（保留向后兼容）
-        public FileMetaCallLink( FileMeta fm, Node node, bool isIncludeSelf = true )
-        {
-            // legacy entry: reuse token-based pipeline via linkTokenList
-            m_Node = node;
-            m_FileMeta = fm;
-            var tokens = node != null ? node.linkTokenList : null;
-            BuildFromTokenList(tokens);
-        }
 
         // Token 版本构造方法（新）
         public FileMetaCallLink(FileMeta fm, List<Token> tokenList)
@@ -559,6 +533,8 @@ namespace SimpleLanguage.Compile
             m_TokenList = tokenList ?? new List<Token>();
             BuildFromTokenList(m_TokenList);
         }
+        // Node 版本构造方法（legacy，已由 Token 版本取代）
+        // public FileMetaCallLink( FileMeta fm, Node node, bool isIncludeSelf = true ) { ... }
 
         // 从 Token 列表构建 CallNode 链
         private void BuildFromTokenList(List<Token> tokenList)
@@ -621,10 +597,6 @@ namespace SimpleLanguage.Compile
                 }
             }
         }
-
-        // legacy Node-based recursion is no longer used; token pipeline handles chaining
-        void AddChildExtendLinkList( Node cnode, bool isIncludeSelf ) { }
-
         public string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
@@ -705,23 +677,25 @@ namespace SimpleLanguage.Compile
             m_FileMeta = fm;
             m_TokenList = _tokenList ?? new List<Token>();
             
-            if (m_TokenList.Count > 0)
+            // 选择类名 token：在出现泛型 '<' 之前最后一个 Identifier/Type
+            int nameIndex = -1;
+            for (int i = 0; i < m_TokenList.Count; i++)
             {
-                m_ClassNameToken = m_TokenList[m_TokenList.Count - 1];
+                if (m_TokenList[i].type == ETokenType.Less)
+                    break;
+                if (m_TokenList[i].type == ETokenType.Identifier || m_TokenList[i].type == ETokenType.Type)
+                    nameIndex = i;
             }
-
+            if (nameIndex >= 0)
+            {
+                m_ClassNameToken = m_TokenList[nameIndex];
+            }
+ 
             // 处理泛型模板：< ... >
             ExtractAndProcessGenericTemplate();
 
             // 处理数组维度：[ ... ]
             ExtractAndProcessArrayDimensions();
-        }
-
-        // Node 版本构造方法（保留向后兼容）
-        public FileMetaClassDefine(FileMeta fm, Node node, Node mutNode = null)
-            : this(fm, node != null ? node.linkTokenList : null)
-        {
-            m_MutToken = mutNode?.token;
         }
 
         // 从 Token 列表中提取并处理泛型模板 < ... >
@@ -800,17 +774,17 @@ namespace SimpleLanguage.Compile
                     {
                         // 找到一个完整的 [ ... ] 对
                         isArray = true;
-                        var bracketTokens = m_TokenList.GetRange(bracketStart + 1, i - bracketStart - 1);
-                        m_BracketTokenListList.Add(bracketTokens);
+                        // 包含中括号本身，供 FileMetaBracketTerm(Token-list) 使用
+                        var fullBracketTokens = m_TokenList.GetRange(bracketStart, i - bracketStart + 1);
+                        // 仅括号内部内容用于计算维度
+                        var innerBracketTokens = m_TokenList.GetRange(bracketStart + 1, i - bracketStart - 1);
 
-                        // 为每个 [ ... ] 创建 FileMetaBracketTerm
-                        // 这里我们需要构造一个临时的包含这些 token 的 Node 来兼容 FileMetaBracketTerm
-                        if (bracketTokens.Count > 0)
+                        m_BracketTokenListList.Add(innerBracketTokens);
+
+                        // 直接使用 Token 版本的 FileMetaBracketTerm，不再构造临时 Node
+                        if (fullBracketTokens.Count > 0)
                         {
-                            // 简化：用第一个和最后一个 token 创建占位符
-                            Node bracketNode = new Node(m_TokenList[bracketStart]) { nodeType = ENodeType.Bracket };
-                            bracketNode.endToken = m_TokenList[i];
-                            FileMetaBracketTerm fmbt = new FileMetaBracketTerm(m_FileMeta, bracketNode);
+                            FileMetaBracketTerm fmbt = new FileMetaBracketTerm(m_FileMeta, fullBracketTokens);
                             m_FileMetaBracketTermList.Add(fmbt);
                         }
 
@@ -968,12 +942,8 @@ namespace SimpleLanguage.Compile
         public Token inToken => m_InToken;
         public FileInputTemplateNode inClassNameTemplateNode => m_InClassNameTemplateNode;
 
-        public Node extendNode => m_ExtendsNode;
-
         private Token m_InToken = null;
         private FileInputTemplateNode m_InClassNameTemplateNode = null;
-        private Node m_Node = null;
-        private Node m_ExtendsNode = null;
         
         // Token-based ctor: <T>, <T in U>, etc. represented as a flat token list
         public FileMetaTemplateDefine(FileMeta fm, List<Token> tokens)
@@ -1017,43 +987,6 @@ namespace SimpleLanguage.Compile
             }
         }
 
-        // legacy Node-based ctors retained for compatibility
-        public FileMetaTemplateDefine(FileMeta fm, Node node)
-        {
-            m_FileMeta = fm;
-            m_Node = node;
-            m_Token = node.token;
-            if(node.childList.Count > 0 )
-            {
-                m_ExtendsNode = node.childList[0];
-            }
-        }
-        public FileMetaTemplateDefine(FileMeta fm, Node node, Node extendsNode )
-        {
-            m_FileMeta = fm;
-            m_Node = node;
-            m_Token = node.token;
-            m_ExtendsNode = extendsNode;
-        }
-         public FileMetaTemplateDefine( FileMeta fm, List<Node> nodeList )
-         {
-             m_FileMeta = fm;
-             if ( nodeList.Count == 0 )
-             {
-                 Log.AddInStructFileMeta(EError.None, "Error 在<>中没有发现元素!!");
-                 return;
-             }
-             m_Token = nodeList[0].token;
-             if( nodeList.Count == 2 )
-             {
-                 m_InToken = nodeList[1].token;
-                 m_InClassNameTemplateNode = new FileInputTemplateNode(fm, nodeList[2] );
-             }
-             else if( nodeList.Count == 2 )
-             {
-                 Log.AddInStructFileMeta(EError.None, "Error 在<T in> or <T []> or <T ClassName> 使用方法不正确,请使用 <T in []>或者是 <T in ClassName> !!");
-             }
-         }
         public void Parse()
         {
 

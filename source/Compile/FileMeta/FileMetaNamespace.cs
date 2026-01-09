@@ -15,11 +15,9 @@ namespace SimpleLanguage.Compile
     public partial class FileMetaNamespace : FileMetaBase
     {
         public bool isSearchNamespace => m_IsSearchNamespace;
-        public Node namespaceNode => m_NamespaceNode;
-        public Node namespaceNameNode => m_NamespaceNameNode;
+        public NamespaceStatementBlock namespaceStatementBlock => m_NamespaceStatementBlock;
 
-        private Node m_NamespaceNode = null;
-        private Node m_NamespaceNameNode = null;
+        private NamespaceStatementBlock m_NamespaceStatementBlock = null;
         private Token m_BraceBeginToken = null;
         private Token m_BraceEndToken = null;
         private bool m_IsSearchNamespace = false;
@@ -47,7 +45,6 @@ namespace SimpleLanguage.Compile
         //        return null;
         //    }
         //}
-        public NamespaceStatementBlock namespaceStatementBlock => m_NamespaceStateBlock;
         protected NamespaceStatementBlock m_NamespaceStateBlock { get; set; }
 
         public FileMetaNamespace topLevelFileMetaNamespace = null;
@@ -74,35 +71,17 @@ namespace SimpleLanguage.Compile
         }
         public FileMetaNamespace( FileMetaNamespace fmn )
         {
-            this.m_NamespaceNode = fmn.m_NamespaceNode;
-            this.m_NamespaceNameNode = fmn.m_NamespaceNameNode;
+            this.m_NamespaceStatementBlock = fmn.m_NamespaceStatementBlock;
         }
 
-        public FileMetaNamespace(Node namespaceNode, Node namespaceNameNode)
+        // Node-based ctor (legacy) left commented for reference; token-based ctor below should be used instead.
+        // public FileMetaNamespace(Node namespaceNode, Node namespaceNameNode) { ... }
+
+        // Token/NamespaceStatementBlock-based ctor used by new pipeline
+        public FileMetaNamespace(NamespaceStatementBlock nsBlock)
         {
-            m_NamespaceNode = namespaceNode;
-            m_NamespaceNameNode = namespaceNameNode;
-
-
-            if (namespaceNode == null)
-            {
-                Log.AddInStructFileMeta(EError.None, "Error 在解析namespace 中，没有找到namespace设置的名称!!");
-                return;
-            }
-
-            Node blockNode = namespaceNode.blockNode;
-
-            m_Token = m_NamespaceNode.token;
-            m_IsSearchNamespace = true;
-            if (blockNode != null )
-            {
-                m_BraceBeginToken = blockNode.token;
-                m_BraceEndToken = blockNode.endToken;
-                m_IsSearchNamespace = false;
-            }
-            m_NamespaceStateBlock = NamespaceStatementBlock.CreateStateBlock(m_NamespaceNameNode.linkTokenList);
-
-        }        
+            m_NamespaceStatementBlock = nsBlock ?? throw new ArgumentNullException(nameof(nsBlock));
+        }
         public FileMetaNamespace AddFileNamespace( FileMetaNamespace dln )
         {
             dln.topLevelFileMetaNamespace = this;
@@ -155,6 +134,14 @@ namespace SimpleLanguage.Compile
             sb.Append("}");
 
             return sb.ToString();
+        }
+
+        public void BeginNamespace()
+        {
+            if (m_NamespaceStatementBlock == null) return;
+
+            // legacy: MetaManager/MetaNode 绑定逻辑已从编译器前端移除，
+            // 如需在运行时建立命名空间元数据，请在此处接入新的 Meta 管理器。
         }
     }
 }

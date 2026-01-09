@@ -20,7 +20,8 @@ namespace SimpleLanguage.Compile
         public Token m_AsToken;
         public Token m_AsNameToken;
         List<Token> m_ImportNameListToken = new List<Token>();
-        private List<Node> m_NodeList = new List<Node>();
+        // legacy Node list, no longer used in token pipeline
+        // private List<Node> m_NodeList = new List<Node>();
         private List<Token> m_TokenList = new List<Token>();
         private NamespaceStatementBlock m_NamespaceStatement = null;
 #pragma warning disable CS0649 // 从未对字段“FileMetaImportSyntax.m_AsNameStatement”赋值，字段将一直保持其默认值 null
@@ -29,40 +30,11 @@ namespace SimpleLanguage.Compile
 
         public NamespaceStatementBlock namespaceStatement => m_NamespaceStatement;
         public NamespaceStatementBlock asNameStatement => m_AsNameStatement;
-        public FileMetaImportSyntax(List<Node> _nodeList)
-        {
-            m_NodeList = _nodeList;
-        }
+        // Node 版本构造方法（legacy，已由 Token 版本取代）
+        // public FileMetaImportSyntax(List<Node> _nodeList) { ... }
         public FileMetaImportSyntax( List<Token> _tokenList )
         {
             m_TokenList = _tokenList;
-        }
-        private bool ParseImportSyntax()
-        {
-            if (m_NodeList.Count < 2)
-            {
-                Log.AddInStructFileMeta(EError.None, "Error import必须有2个节点!!");
-                return false;
-            }
-            var namespaceNode = m_NodeList[0];
-            if (namespaceNode?.token?.type == ETokenType.Import)
-            {
-                m_Token = namespaceNode.token;
-            }
-            var namespaceNameNode = m_NodeList[1];
-
-            m_ImportNameListToken = namespaceNameNode.linkTokenList;
-
-            if (m_NodeList.Count == 4)
-            {
-                m_AsToken = m_NodeList[2].token;
-                var asNameNode = m_NodeList[3];
-                m_AsNameToken = asNameNode.token;
-            }
-
-            m_NamespaceStatement = NamespaceStatementBlock.CreateStateBlock(m_ImportNameListToken);
-            //m_AsNameStatement = NamespaceStatementBlock.CreateStateBlock(_asNameTokenList);
-            return true;
         }
 
         /// <summary>
@@ -124,20 +96,10 @@ namespace SimpleLanguage.Compile
         }
         public void Parse()
         {
-            // 优先使用 Token 方式解析，其次退回 Node
-            if (m_TokenList != null && m_TokenList.Count > 0)
+            // 仅使用 Token 方式解析，Node 流程已废弃
+            if (!ParseImportSyntaxFromTokens())
             {
-                if (!ParseImportSyntaxFromTokens())
-                {
-                    return;
-                }
-            }
-            else
-            {
-                if (!ParseImportSyntax())
-                {
-                    return;
-                }
+                return;
             }
 
             if (m_NamespaceStatement == null || m_NamespaceStatement.tokenList == null)

@@ -23,90 +23,12 @@ namespace SimpleLanguage.Compile
         private Token m_ParamsToken = null;
         private FileMetaClassDefine m_ClassDefineRef = null;
         private FileMetaBaseTerm m_Express;
-        public FileMetaParamterDefine(FileMeta fileMeta, List<Node> list)
-        {
-            m_FileMeta = fileMeta;
 
-            ParseBuildMetaParamter( list );
-        }
-        public bool ParseBuildMetaParamter(List<Node> inputNodeList )
-        {
-            if (inputNodeList == null) return false;
+        // Node 版本构造与解析逻辑（legacy，已准备迁移到 Token 管线）
+        // public FileMetaParamterDefine(FileMeta fileMeta, List<Node> list) { ... }
+        // public bool ParseBuildMetaParamter(List<Node> inputNodeList) { ... }
+        // public bool GetNameAndTypeNode(List<Node> listDefieNode, ref Node nameNode, ref Node typeNode, ref Token paramstoken) { ... }
 
-            var listDefieNode = new List<Node>();
-            var valueNodeList = new List<Node>();
-            Node beforeNode = new Node(null);
-            beforeNode.SetChildList(inputNodeList);
-            beforeNode.parseIndex = 0;
-            var nodeList = StructParse.HandleBeforeNode(beforeNode);
-            if (!FileMetatUtil.SplitNodeList(nodeList, listDefieNode, valueNodeList, ref m_AssignToken))
-            {
-                Log.AddInStructFileMeta(EError.None, "Error 解析NodeList出现错误~~~");
-                return false;
-            }
-            if(valueNodeList.Count > 0 )
-                m_Express = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.ParamVariable);
-
-
-            Node nameNode = null;
-            Node typeNode = null;
-            if (!GetNameAndTypeNode(listDefieNode, ref nameNode, ref typeNode, ref m_ParamsToken ))
-            {
-                Log.AddInStructFileMeta( EError.UnMatchChar, "Error 没有找到该定义名称 必须使用例: X = 102; 的格式");
-                return false;
-            }
-            if (nameNode == null)
-            {
-                Log.AddInStructFileMeta(EError.None, "Error 没有找到该定义名称 必须使用例: X = 101; 的格式");
-                return false;
-            }
-            m_Token = nameNode?.token;
-
-            if( typeNode != null )
-                m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, typeNode );             
-
-            return true;
-        }
-        public bool GetNameAndTypeNode(List<Node> listDefieNode, ref Node nameNode, ref Node typeNode, ref Token paramstoken )
-        {
-            List<Node> removeNodeList = new List<Node>();
-            for (int i = 0; i < listDefieNode.Count - 1; i++)
-            {
-                var curNode = listDefieNode[i];
-                Node nextNode = listDefieNode[i + 1];
-                if ( nextNode.nodeType == ENodeType.Bracket)
-                {
-                    curNode.AddBracketNode( nextNode );
-                    removeNodeList.Add(nextNode);
-                }
-                else if(curNode.nodeType == ENodeType.Key && curNode.token.type == ETokenType.Params )
-                {
-                    typeNode = curNode;
-                    paramstoken = curNode.token;
-                    removeNodeList.Add(curNode);
-                }
-
-            }
-            for( int i = 0; i < removeNodeList.Count; i++)
-            {
-                listDefieNode.Remove(removeNodeList[i]);
-            }
-
-            if (listDefieNode.Count == 2)
-            {
-                typeNode = listDefieNode[0];
-                nameNode = listDefieNode[1];
-            }
-            else if (listDefieNode.Count == 1)
-            {
-                nameNode = listDefieNode[0];
-            }
-            else
-            {
-                return false;
-            }
-            return true;
-        }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
@@ -171,13 +93,11 @@ namespace SimpleLanguage.Compile
         private Token m_PermissionToken = null;
         private Token m_LeftBraceToken = null;
         private Token m_RightBraceToken = null;
-        private Node m_BlockNode;
-        public FileMetaMemberFunction( FileMeta fm, Node block, List<Node> nodeList)
-        {
-            m_FileMeta = fm;
-            m_BlockNode = block;
-            ParseFunction(nodeList);
-        }
+        // legacy Node-based block, superseded by token-based ctor
+        // private Node m_BlockNode;
+
+        // Node 版本构造方法（legacy，已由 Token 版本取代）
+        // public FileMetaMemberFunction(FileMeta fm, Node block, List<Node> nodeList) { ... }
 
         public FileMetaMemberFunction(FileMeta fm, List<Token> tokens, List<Token> blockTokens)
         {
@@ -234,218 +154,11 @@ namespace SimpleLanguage.Compile
              // 假设 TokenToFileMeta 传进来的 tokens 包含了签名部分（直到 { 之前）
         }
 
-        public bool ParseFunction(List<Node> nodeList)
-        {
-            Token permissionToken = null;
-            Token virtualToken = null;
-            int addCount = 0;
-            bool isError = false;
-            Node returnClassNameNode = null;
-            Token interfaceToken = null;
-            Token staticToken = null;
-            Token getToken = null;
-            Token setToken = null;
-            Token finalToken = null;
-            List<Token> inheritNameTokenList = new List<Token>();
-            List<Token> interfaceNameTokenList = new List<Token>();
-            List<List<Token>> interfaceTokenList = new List<List<Token>>();
-            List<Token> list = new List<Token>();
-            Node funNameNode = null;
-            Node node = new Node(null);
-            node.childList.AddRange(nodeList);
-            var nodeList2 = StructParse.HandleBeforeNode(node);
-            while (addCount < nodeList2.Count)
-            {
-                var cnode = nodeList2[addCount++];
+        // Node 版本解析函数与参数/模板解析（legacy，已由 Token 管线取代）
+        // public bool ParseFunction(List<Node> nodeList) { ... }
+        // public void ParseParam(Node parNode) { ... }
+        // public void ParseTemplate(Node node) { ... }
 
-                if (cnode.nodeType == ENodeType.IdentifierLink)
-                {
-                    if (cnode.parNode != null)
-                    {
-                        if(funNameNode != null )
-                        {
-                            Log.AddInStructFileMeta( EError.UnMatchChar, "Error 已有函数实体，不能同时出现两个函数实体!");
-                        }
-                        funNameNode = cnode;
-                    }
-                    else
-                    {
-                        returnClassNameNode = cnode;
-                    }
-                }
-                else
-                {
-                    var token = cnode.token;
-                    if (token.type == ETokenType.Public
-                        || token.type == ETokenType.Private
-                        || token.type == ETokenType.Projected
-                        || token.type == ETokenType.Extern )
-                    {
-                        if (permissionToken == null)
-                        {
-                            permissionToken = token;
-                        }
-                        else
-                        {
-                            isError = true;
-                            Log.AddInStructFileMeta(EError.None, "Error 解析过了一次权限!!");
-                        }
-                    }
-                    else if (token.type == ETokenType.Override)
-                    {
-                        if (virtualToken != null)
-                        {
-                            isError = true;
-                            Log.AddInStructFileMeta(EError.None, "Error 解析过了一次Override!!");
-                        }
-                        virtualToken = token;
-                    }
-                    else if (token.type == ETokenType.Static)
-                    {
-                        staticToken = token;
-                    }
-                    else if (token.type == ETokenType.Get)
-                    {
-                        if (getToken != null)
-                        {
-                            isError = true;
-                            Log.AddInStructFileMeta(EError.None, " Error 解析类型多个get");
-                        }
-                        getToken = token;
-                    }
-                    else if (token.type == ETokenType.Set)
-                    {
-                        if (setToken != null)
-                        {
-                            isError = true;
-                            Log.AddInStructFileMeta(EError.None, " Error 解析类型多个set");
-                        }
-                        setToken = token;
-                    }
-                    else if (token.type == ETokenType.Type || token.type == ETokenType.Void)
-                    {
-                        returnClassNameNode = cnode;
-                    }
-                    else if (token.type == ETokenType.Interface)
-                    {
-                        if (interfaceToken != null)
-                        {
-                            isError = true;
-                            Log.AddInStructFileMeta(EError.None, "Error 解析interface已使用过一次，不允许重复使用!!");
-                        }
-                        interfaceToken = token;
-                    }
-                    else if( token.type == ETokenType.Final )
-                    {
-                        if(finalToken != null )
-                        {
-                            isError = true;
-                            Log.AddInStructFileMeta(EError.None, " Error 解析类型多个final");
-                        }
-                        finalToken = token;
-                    }
-                    else
-                    {
-                        isError = true;
-                        Log.AddInStructFileMeta(EError.None, "Error 有其它未知类型在class中", token );
-                        break;
-                    }
-                }
-            }
-            if(funNameNode == null )
-            {
-                Log.AddInStructFileMeta(EError.None, "Eror 没有找到合适的函数类型: 位置: " + nodeList[0].token?.ToLexemeAllString());
-                return false;
-            }
-
-            ParseParam(funNameNode.parNode);
-            ParseTemplate(funNameNode.angleNode);
-
-            m_Token = funNameNode.token;
-            if ( m_BlockNode != null)
-            {
-                m_LeftBraceToken = m_BlockNode.token;
-                m_RightBraceToken = m_BlockNode.endToken;
-                m_FileMetaBlockSyntax = new FileMetaBlockSyntax(m_FileMeta, m_LeftBraceToken, m_RightBraceToken);
-            }
-            if( isError )
-            {
-                Log.AddInStructFileMeta(EError.None, "ParseFunction 解析函数");
-            }
-            m_OverrideToken = virtualToken;            
-            m_PermissionToken = permissionToken;
-            m_StaticToken = staticToken;
-            m_GetToken = getToken;
-            m_SetToken = setToken;
-            m_FinalToken = finalToken;
-            if (returnClassNameNode != null )
-            {
-                m_DefineMetaClass = new FileMetaClassDefine(m_FileMeta, returnClassNameNode );
-            }
-            return true;
-        }
-        public void ParseParam(Node parNode)
-        {
-            if (parNode == null) return;
-
-            List<List<Node>> tparamList = new List<List<Node>>();
-            List<Node> tempList = new List<Node>();
-
-            for (int i = 0; i < parNode.childList.Count; i++)
-            {
-                var pnode = parNode.childList[i];
-                if (pnode.nodeType == ENodeType.Comma)
-                {
-                    tparamList.Add(tempList);
-                    tempList = new List<Node>();
-                }
-                else
-                {
-                    tempList.Add(pnode);
-                }
-            }
-            if (tempList.Count > 0)
-            {
-                tparamList.Add(tempList);
-            }
-
-
-            HashSet<string> nameSet = new HashSet<string>();
-            for (int i = 0; i < tparamList.Count; i++)
-            {
-                var nodelist = tparamList[i];
-                FileMetaParamterDefine cdp = new FileMetaParamterDefine(m_FileMeta, nodelist);
-                if (nameSet.Contains(cdp.name))
-                {
-                    Log.AddInStructFileMeta(EError.None, "Error 参数名称有重名!!!");
-                }
-                AddMetaParamter(cdp);
-            }
-        }
-        public void ParseTemplate( Node node )
-        {
-            if (node == null) return;
-
-            List<Node> tempList = new List<Node>();
-            for (int i = 0; i < node.childList.Count; i++)
-            {
-                var cnode = node.childList[i];
-                if (cnode.nodeType == ENodeType.Comma)
-                {
-                    continue;
-                }
-                else
-                {
-                    FileMetaTemplateDefine cdp = new FileMetaTemplateDefine(m_FileMeta, cnode);
-                    if (m_MetaTemplatesList.Find( a=> a.name == cdp.name ) != null )
-                    {
-                        Log.AddInStructFileMeta(EError.None, "Error 参数名称有重名!!!");
-                        continue;
-                    }
-                    AddMetaTemplate(cdp);
-                }
-            }
-        }
         public override void SetDeep(int _deep)
         {
             m_Deep = _deep;
