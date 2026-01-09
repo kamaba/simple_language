@@ -324,10 +324,10 @@ namespace SimpleLanguage.Compile
             {
                 AddToken(ETokenType.GreaterOrEqual, ">=");
             }
-            else if (m_TempChar == '>')
-            {
-                AddToken(ETokenType.Shr, ">>");
-            }
+            //else if (m_TempChar == '>')
+            //{
+            //    AddToken(ETokenType.Shr, ">>");
+            //}
             else 
             {
                 AddToken(ETokenType.Greater, ">");
@@ -342,11 +342,11 @@ namespace SimpleLanguage.Compile
             {
                 AddToken(ETokenType.LessOrEqual, "<=");
             }
-            else if (m_TempChar == '<')
-            {
-                AddToken(ETokenType.Shi, "<<");
-                UndoChar();
-            }
+            //else if (m_TempChar == '<')
+            //{
+            //    AddToken(ETokenType.Shi, "<<");
+            //    UndoChar();
+            //}
             else
             {
                 AddToken(ETokenType.Less, "<");

@@ -225,10 +225,10 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Negative:
                     priority = SignComputePriority.Level3_Hight_Compute;
                     break;
-                case ETokenType.Shi:
-                case ETokenType.Shr:
-                    priority = SignComputePriority.Level5_BitMoveOp;
-                    break;
+                //case ETokenType.Shi:
+                //case ETokenType.Shr:
+                //    priority = SignComputePriority.Level5_BitMoveOp;
+                //    break;
                 case ETokenType.Less:
                 case ETokenType.GreaterOrEqual:
                 case ETokenType.Greater:

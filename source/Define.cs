@@ -140,9 +140,9 @@ namespace SimpleLanguage
         /// <summary>  ~ 取反操作 </summary>
         Negative,
         /// <summary> << 左移 </summary>
-        Shi,
+        //Shi,
         /// <summary> >> 右移 </summary>
-        Shr,
+        //Shr,
         /// <summary> # </summary>
         Sharp,
         /// <summary> ! </summary>

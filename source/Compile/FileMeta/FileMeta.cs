@@ -10,6 +10,7 @@ using SimpleLanguage.CSharp;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace SimpleLanguage.Compile
@@ -332,10 +333,15 @@ namespace SimpleLanguage.Compile
 
         public void AddFileNamespaceFromTokens(List<Token> namespaceTokens)
         {
-            if (namespaceTokens == null || namespaceTokens.Count == 0)
+            if (namespaceTokens == null || namespaceTokens.Count < 2)
+            {
+                Log.AddInStructFileMeta(EError.None, $"Namespace没有发现定义namespace");
                 return;
+            }
 
-            NamespaceStatementBlock nsb = NamespaceStatementBlock.CreateStateBlock(namespaceTokens);
+            var ntlist = namespaceTokens.Skip(1).ToList();
+
+            NamespaceStatementBlock nsb = NamespaceStatementBlock.CreateStateBlock(ntlist);
             if (nsb != null)
             {
                 Log.AddInStructFileMeta(EError.None, $"Namespace 已解析: {nsb.namespaceString}");

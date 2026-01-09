@@ -974,6 +974,50 @@ namespace SimpleLanguage.Compile
         private FileInputTemplateNode m_InClassNameTemplateNode = null;
         private Node m_Node = null;
         private Node m_ExtendsNode = null;
+        
+        // Token-based ctor: <T>, <T in U>, etc. represented as a flat token list
+        public FileMetaTemplateDefine(FileMeta fm, List<Token> tokens)
+        {
+            m_FileMeta = fm;
+            if (tokens == null || tokens.Count == 0)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error 在<>中没有发现元素!!");
+                return;
+            }
+
+            // 期望格式：T [in ConstraintType]
+            // 第一个标识符作为模板参数名
+            m_Token = tokens[0];
+
+            int index = 1;
+            // 跳过空格/行结束等
+            while (index < tokens.Count && (tokens[index].type == ETokenType.Space || tokens[index].type == ETokenType.LineEnd))
+            {
+                index++;
+            }
+
+            // 约束关键字: in
+            if (index < tokens.Count && tokens[index].type == ETokenType.Colon )
+            {
+                m_InToken = tokens[index];
+                index++;
+
+                // 跳过空格/行结束
+                while (index < tokens.Count && (tokens[index].type == ETokenType.Space || tokens[index].type == ETokenType.LineEnd))
+                {
+                    index++;
+                }
+
+                if (index < tokens.Count)
+                {
+                    // 剩余 token 视为约束类型，例如 Collections.List<Map<int,string>>
+                    var constraintTokens = tokens.GetRange(index, tokens.Count - index);
+                    m_InClassNameTemplateNode = new FileInputTemplateNode(fm, constraintTokens);
+                }
+            }
+        }
+
+        // legacy Node-based ctors retained for compatibility
         public FileMetaTemplateDefine(FileMeta fm, Node node)
         {
             m_FileMeta = fm;

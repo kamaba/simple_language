@@ -325,35 +325,23 @@ namespace SimpleLanguage.Compile
             if (nameTokens.Count == 0)
                 return;
 
-            // 这里创建一个简单的 FileMetaTemplateDefine，不再依赖 Node 结构
-            // 先构造名称部分的虚拟 Node
-            Node nameNode = new Node(nameTokens[0]) { nodeType = ENodeType.IdentifierLink };
-            if (nameTokens.Count > 1)
-            {
-                var extendNodes = new List<Node>();
-                for (int i = 1; i < nameTokens.Count; i++)
-                {
-                    extendNodes.Add(new Node(nameTokens[i]) { nodeType = ENodeType.IdentifierLink });
-                }
-                nameNode.SetLinkNode(extendNodes);
-            }
+            // nameTokens: 模板参数名及其前缀（例如 T），
+            // extendsTokens: 约束类型（例如 Collections.List<Map<int,string>>）。
+            // 统一组装为: [ nameTokens ] [ In ] [ extendsTokens ] 传给基于 Token 的构造函数。
 
-            Node extendsNode = null;
+            List<Token> allTokens = new List<Token>();
+            allTokens.AddRange(nameTokens);
+
             if (extendsTokens != null && extendsTokens.Count > 0)
             {
-                extendsNode = new Node(extendsTokens[0]) { nodeType = ENodeType.IdentifierLink };
-                if (extendsTokens.Count > 1)
-                {
-                    var extendNodes = new List<Node>();
-                    for (int i = 1; i < extendsTokens.Count; i++)
-                    {
-                        extendNodes.Add(new Node(extendsTokens[i]) { nodeType = ENodeType.IdentifierLink });
-                    }
-                    extendsNode.SetLinkNode(extendNodes);
-                }
+                // 在 name 和约束类型之间插入一个虚拟的 in 关键字，以复用 FileMetaTemplateDefine(List<Token>) 的解析逻辑。
+                Token first = nameTokens[0];
+                Token inToken = new Token(first.path, ETokenType.In, "in", first.sourceBeginLine, first.sourceBeginChar);
+                allTokens.Add(inToken);
+                allTokens.AddRange(extendsTokens);
             }
 
-            var fmtd = new FileMetaTemplateDefine(m_FileMeta, nameNode, extendsNode);
+            var fmtd = new FileMetaTemplateDefine(m_FileMeta, allTokens);
             m_TemplateDefineList.Add(fmtd);
         }
 

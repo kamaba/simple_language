@@ -8,6 +8,7 @@
 
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Parse;
 
@@ -77,6 +78,11 @@ namespace SimpleLanguage.Compile
                     assignIndex = i;
                     break;
                 }
+            }
+
+            if(assignIndex == -1 )
+            {
+                Debug.Assert(false, "在成员变量里边，没有定义=号");
             }
 
             List<Token> defTokens;

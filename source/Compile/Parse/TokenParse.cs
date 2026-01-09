@@ -441,16 +441,16 @@ namespace SimpleLanguage.Compile
                         AddSingleSign(token);
                     }
                     break;
-                case ETokenType.Shi:               //  <<
-                    {
-                        AddBitMoveOperatorSymbol(token);
-                    }
-                    break;
-                case ETokenType.Shr:               //  >>
-                    {
-                        AddBitMoveOperatorSymbol(token);
-                    }
-                    break;
+                //case ETokenType.Shi:               //  <<
+                //    {
+                //        AddBitMoveOperatorSymbol(token);
+                //    }
+                //    break;
+                //case ETokenType.Shr:               //  >>
+                //    {
+                //        AddBitMoveOperatorSymbol(token);
+                //    }
+                //    break;
                 case ETokenType.GreaterOrEqual:  // >=
                 case ETokenType.LessOrEqual:     // <=
                     {

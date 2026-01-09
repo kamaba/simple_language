@@ -54,8 +54,8 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Modulo:          // %
                 case ETokenType.Not:             // !
                 case ETokenType.Negative:        // ~
-                case ETokenType.Shi:               //  <<
-                case ETokenType.Shr:               //  >>
+                //case ETokenType.Shi:               //  <<
+                //case ETokenType.Shr:               //  >>
                 case ETokenType.Less:            // >
                 case ETokenType.GreaterOrEqual:  // >=
                 case ETokenType.Greater:         // <

@@ -11,8 +11,6 @@ using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Text;
 
 namespace SimpleLanguage.Compile
 {
@@ -62,14 +60,14 @@ namespace SimpleLanguage.Compile
                 Token token = CurrentToken;
                 if (token == null || token.type == ETokenType.Finished) break;
 
-                if (token.type == ETokenType.LineEnd || token.type == ETokenType.Space || token.type == ETokenType.SemiColon)
+                if (token.type == SimpleLanguage.ETokenType.LineEnd || token.type == SimpleLanguage.ETokenType.Space || token.type == SimpleLanguage.ETokenType.SemiColon)
                 {
                     Consume();
                     continue;
                 }
 
-                if (token.type == ETokenType.Import) ParseImportDirective();
-                else if (token.type == ETokenType.Namespace) ParseNamespaceDeclaration();
+                if (token.type == SimpleLanguage.ETokenType.Import) ParseImportDirective();
+                else if (token.type == SimpleLanguage.ETokenType.Namespace) ParseNamespaceDeclaration();
                 else if (IsClassDeclarationStart(token)) ParseClassDeclaration();
                 else Consume();
             }
@@ -78,14 +76,14 @@ namespace SimpleLanguage.Compile
         private void ParseImportDirective()
         {
             TransitionState(DFAState.InImport);
-            if (!Match(ETokenType.Import)) return;
+            if (!Match(SimpleLanguage.ETokenType.Import)) return;
 
             Token importToken = Consume();
             List<Token> importPath = ParseQualifiedName();
             List<Token> allTokens = new List<Token>() { importToken };
             allTokens.AddRange(importPath);
 
-            if (Match(ETokenType.SemiColon)) allTokens.Add(Consume());
+            if (Match(SimpleLanguage.ETokenType.SemiColon)) allTokens.Add(Consume());
 
             if (importPath.Count > 0) m_FileMeta.AddFileImportSyntaxFromTokens(allTokens);
             TransitionState(DFAState.Initial);
@@ -94,17 +92,16 @@ namespace SimpleLanguage.Compile
         private void ParseNamespaceDeclaration()
         {
             TransitionState(DFAState.InNamespace);
-            if (!Match(ETokenType.Namespace)) return;
+            if (!Match(SimpleLanguage.ETokenType.Namespace)) return;
 
             Token nsToken = Consume();
             List<Token> namespacePath = ParseQualifiedName();
-            List<Token> allTokens = new List<Token>() { nsToken };
-            allTokens.AddRange(namespacePath);
 
-            if (Match(ETokenType.SemiColon)) allTokens.Add(Consume());
-            else if (Match(ETokenType.LeftBrace)) { /* 块处理简化 */ }
+            // 这里只将命名空间路径（标识符部分）传入 FileMeta，不包含 namespace 关键字本身
+            if (Match(SimpleLanguage.ETokenType.SemiColon)) Consume();
+            else if (Match(SimpleLanguage.ETokenType.LeftBrace)) { /* 块处理简化 */ }
 
-            if (namespacePath.Count > 0) m_FileMeta.AddFileNamespaceFromTokens(allTokens);
+            if (namespacePath.Count > 0) m_FileMeta.AddFileNamespaceFromTokens(namespacePath);
             TransitionState(DFAState.Initial);
         }
 
@@ -114,13 +111,13 @@ namespace SimpleLanguage.Compile
             List<Token> classModifiers = ParseModifiers();
             Token classKeyword = null;
 
-            if (MatchAny(ETokenType.Class, ETokenType.Interface, ETokenType.Enum, ETokenType.Data)) classKeyword = Consume();
+            if (MatchAny(SimpleLanguage.ETokenType.Class, SimpleLanguage.ETokenType.Interface, SimpleLanguage.ETokenType.Enum, SimpleLanguage.ETokenType.Data)) classKeyword = Consume();
             else { TransitionState(DFAState.Initial); return; }
 
             Token classNameToken = null;
             // 这里不仅接受 Identifier，还接受被词法阶段标记为 Type 的内建类型名
             // 例如：object/int/string 等在 LexerParse.ReadIdentifier 中被解析为 ETokenType.Type
-            if (Match(ETokenType.Identifier) || Match(ETokenType.Type))
+            if (Match(SimpleLanguage.ETokenType.Identifier) || Match(SimpleLanguage.ETokenType.Type))
             {
                 classNameToken = Consume();
             }
@@ -128,15 +125,15 @@ namespace SimpleLanguage.Compile
             {
                 // 如果没有显式标识符，记录错误并构造一个占位符名称，避免后续空引用
                 Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析类型名称错误: 缺少标识符");
-                classNameToken = new Token(m_FileMeta.path, ETokenType.Identifier, "<anonymous>", 0, 0);
+                classNameToken = new Token(m_FileMeta.path, SimpleLanguage.ETokenType.Identifier, "<anonymous>", 0, 0);
             }
 
             List<Token> typeParameters = new List<Token>();
-            if (Match(ETokenType.Less)) typeParameters = ParseTypeParameters();
+            if (Match(SimpleLanguage.ETokenType.Less)) typeParameters = ParseTypeParameters();
 
             Token extendsKeyword = null;
             List<Token> baseClass = new List<Token>();
-            if (Match(ETokenType.Extends))
+            if (Match(SimpleLanguage.ETokenType.Extends))
             {
                 extendsKeyword = Consume();
                 baseClass = ParseQualifiedName();
@@ -144,21 +141,44 @@ namespace SimpleLanguage.Compile
 
             Token interfaceKeyword = null;
             List<List<Token>> interfaceList = new List<List<Token>>();
-            if (Match(ETokenType.Interface))
+            if (Match(SimpleLanguage.ETokenType.Interface))
             {
                 interfaceKeyword = Consume();
                 interfaceList = ParseInterfaceList();
             }
 
-            FileMetaClass fmc = new FileMetaClass(m_FileMeta, classNameToken, classModifiers, classKeyword);
+            //FileMetaClass fmc = new FileMetaClass(m_FileMeta, classNameToken, classModifiers, classKeyword);
+            //m_FileMeta.AddFileClassFromTokens(new List<Token>());
+            //m_FileMeta.AddFileMetaClass(fmc);
+
+            List<Token> classHeaderTokens = new List<Token>();
+            classHeaderTokens.AddRange(classModifiers);
+            if (classKeyword != null) classHeaderTokens.Add(classKeyword);
+            classHeaderTokens.Add(classNameToken);
+            if (typeParameters.Count > 0) classHeaderTokens.AddRange(typeParameters);
+            if (extendsKeyword != null) classHeaderTokens.Add(extendsKeyword);
+            if (baseClass.Count > 0) classHeaderTokens.AddRange(baseClass);
+            if (interfaceKeyword != null) classHeaderTokens.Add(interfaceKeyword);
+            if (interfaceList.Count > 0)
+            {
+                foreach (var interfaceItem in interfaceList)
+                {
+                    classHeaderTokens.AddRange(interfaceItem);
+                    // 在不同接口名之间插入逗号 token
+                    classHeaderTokens.Add(new Token(m_FileMeta.path, SimpleLanguage.ETokenType.Comma, ",", 0, 0));
+                }
+                classHeaderTokens.RemoveAt(classHeaderTokens.Count - 1); // 去掉最后一个多余的逗号
+            }
+
+            FileMetaClass fmc = new FileMetaClass(m_FileMeta, classHeaderTokens);
             m_FileMeta.AddFileClassFromTokens(new List<Token>());
             m_FileMeta.AddFileMetaClass(fmc);
 
-            if (Match(ETokenType.LineEnd))
+            if (Match(SimpleLanguage.ETokenType.LineEnd))
             {
                 Consume();
             }
-            if( Match(ETokenType.LeftBrace))
+            if( Match(SimpleLanguage.ETokenType.LeftBrace))
             {
                 ParseClassBody(fmc);
             }
@@ -167,7 +187,7 @@ namespace SimpleLanguage.Compile
 
         private void ParseClassBody(FileMetaClass fmc)
         {
-            if (!Match(ETokenType.LeftBrace)) return;
+            if (!Match(SimpleLanguage.ETokenType.LeftBrace)) return;
             // consume '{' starting the class body
 
             Token leftBraceToken = m_TokenList[m_TokenIndex++];
@@ -180,12 +200,12 @@ namespace SimpleLanguage.Compile
             while (m_TokenIndex < m_TokenList.Count && depth > 0)
             {
                 var t = CurrentToken;
-                if (t.type == ETokenType.LeftBrace)
+                if (t.type == SimpleLanguage.ETokenType.LeftBrace)
                 {
                     depth++;
                     bodyTokens.Add(Consume());
                 }
-                else if (t.type == ETokenType.RightBrace)
+                else if (t.type == SimpleLanguage.ETokenType.RightBrace)
                 {
                     depth--;
                     if (depth > 0)
@@ -297,21 +317,21 @@ namespace SimpleLanguage.Compile
             }
 
             List<Token> typeTokens = new List<Token>();
-            if (Match(ETokenType.Void) || Match(ETokenType.Type) || Match(ETokenType.Identifier))
+            if (Match(SimpleLanguage.ETokenType.Void) || Match(SimpleLanguage.ETokenType.Type) || Match(SimpleLanguage.ETokenType.Identifier))
             {
                  typeTokens.Add(Consume());
-                 if (Match(ETokenType.Less)) typeTokens.AddRange(ParseTypeParameters());
-                 while (Match(ETokenType.LeftBracket))
+                 if (Match(SimpleLanguage.ETokenType.Less)) typeTokens.AddRange(ParseTypeParameters());
+                 while (Match(SimpleLanguage.ETokenType.LeftBracket))
                  {
                      typeTokens.Add(Consume());
-                     if (Match(ETokenType.RightBracket)) typeTokens.Add(Consume());
+                     if (Match(SimpleLanguage.ETokenType.RightBracket)) typeTokens.Add(Consume());
                  }
             }
 
             Token nameToken = null;
-            if (Match(ETokenType.Identifier)) nameToken = Consume();
+            if (Match(SimpleLanguage.ETokenType.Identifier)) nameToken = Consume();
 
-            if (Match(ETokenType.LeftPar)) 
+            if (Match(SimpleLanguage.ETokenType.LeftPar)) 
             {
                 List<Token> sigTokens = new List<Token>();
                 sigTokens.AddRange(modifiers);
@@ -360,23 +380,26 @@ namespace SimpleLanguage.Compile
                 
                 if (Match(ETokenType.SemiColon)) varTokens.Add(Consume());
 
-                FileMetaMemberVariable fmmv = new FileMetaMemberVariable(m_FileMeta, varTokens);
-                fmc.AddFileMemberVariable(fmmv);
+                if(varTokens.Count > 0 )
+                {
+                    FileMetaMemberVariable fmmv = new FileMetaMemberVariable(m_FileMeta, varTokens);
+                    fmc.AddFileMemberVariable(fmmv);
+                }
             }
         }
         
         private List<Token> ParseParameters()
         {
              List<Token> tokens = new List<Token>();
-             if (Match(ETokenType.LeftPar))
+             if (Match(SimpleLanguage.ETokenType.LeftPar))
              {
                  m_Context.parenDepth++;
                  tokens.Add(Consume());
                  while (m_Context.parenDepth > 0 && m_TokenIndex < m_TokenList.Count)
                  {
                      Token t = CurrentToken;
-                     if (t.type == ETokenType.LeftPar) m_Context.parenDepth++;
-                     else if (t.type == ETokenType.RightPar) 
+                     if (t.type == SimpleLanguage.ETokenType.LeftPar) m_Context.parenDepth++;
+                     else if (t.type == SimpleLanguage.ETokenType.RightPar) 
                      {
                          m_Context.parenDepth--;
                          if (m_Context.parenDepth == 0) { tokens.Add(Consume()); break; }
@@ -390,7 +413,7 @@ namespace SimpleLanguage.Compile
         private List<Token> ParseBlockTokens()
         {
               List<Token> tokens = new List<Token>();
-              if (Match(ETokenType.LeftBrace))
+              if (Match(SimpleLanguage.ETokenType.LeftBrace))
               {
                    // include opening '{' token
                    int depth = 1;
@@ -399,12 +422,12 @@ namespace SimpleLanguage.Compile
                    while (depth > 0 && m_TokenIndex < m_TokenList.Count)
                    {
                         Token t = CurrentToken;
-                        if (t.type == ETokenType.LeftBrace)
+                        if (t.type == SimpleLanguage.ETokenType.LeftBrace)
                         {
                             depth++;
                             tokens.Add(Consume());
                         }
-                        else if (t.type == ETokenType.RightBrace)
+                        else if (t.type == SimpleLanguage.ETokenType.RightBrace)
                         {
                             depth--;
                             // always include closing '}' token belonging to this block
@@ -427,7 +450,7 @@ namespace SimpleLanguage.Compile
         private List<Token> ParseModifiers()
         {
             List<Token> modifiers = new List<Token>();
-            while (MatchAny(ETokenType.Public, ETokenType.Private, ETokenType.Projected, ETokenType.Static, ETokenType.Final, ETokenType.Const, ETokenType.Partial))
+            while (MatchAny(SimpleLanguage.ETokenType.Public, SimpleLanguage.ETokenType.Private, SimpleLanguage.ETokenType.Projected, SimpleLanguage.ETokenType.Static, SimpleLanguage.ETokenType.Final, SimpleLanguage.ETokenType.Const, SimpleLanguage.ETokenType.Partial))
                 modifiers.Add(Consume());
             return modifiers;
         }
@@ -439,8 +462,8 @@ namespace SimpleLanguage.Compile
             {
                 Token current = CurrentToken;
                 if (current == null) break;
-                if (current.type == ETokenType.Identifier || current.type == ETokenType.Type) names.Add(Consume());
-                else if (current.type == ETokenType.Period) { Consume(); continue; }
+                if (current.type == SimpleLanguage.ETokenType.Identifier || current.type == SimpleLanguage.ETokenType.Type) names.Add(Consume());
+                else if (current.type == SimpleLanguage.ETokenType.Period) { Consume(); continue; }
                 else break;
             }
             return names;
@@ -448,19 +471,51 @@ namespace SimpleLanguage.Compile
 
         private List<Token> ParseTypeParameters()
         {
-            List<Token> typeParams = new List<Token>();
-            if (!Match(ETokenType.Less)) return typeParams;
-            Consume(); 
-            m_Context.bracketDepth++;
-            int depth = 1;
-            while (depth > 0 && m_TokenIndex < m_TokenList.Count)
+            // 统一的泛型参数/类型参数解析：从当前的 '<' 开始，到匹配的 '>' 结束，
+            // 支持嵌套泛型与约束（例如 <T1:Collections.List<Map<int,string>>,T2:Core.String>）。
+            return ParseGenericBracketedTokens();
+        }
+
+        /// <summary>
+        /// 从当前位置开始解析一个完整的泛型参数块：
+        /// 形如 <T1:Collections.List<Map<int,string>>,T2:Core.String>
+        /// 结束后 m_TokenIndex 停在 '>' 之后的下一个位置。
+        /// 该函数可在解析 Array<T>、extends、interface 等场景复用。
+        /// </summary>
+        private List<Token> ParseGenericBracketedTokens()
+        {
+            List<Token> result = new List<Token>();
+            if (!Match(SimpleLanguage.ETokenType.Less))
+                return result;
+
+            int depth = 0;
+            // 从第一个 '<' 开始收集
+            while (m_TokenIndex < m_TokenList.Count)
             {
-                Token current = Consume();
-                typeParams.Add(current);
-                if (current.type == ETokenType.Less) depth++;
-                else if (current.type == ETokenType.Greater) depth--;
+                Token t = Consume();
+                result.Add(t);
+
+                if (t.type == SimpleLanguage.ETokenType.Less)
+                {
+                    depth++;
+                }
+                else if (t.type == SimpleLanguage.ETokenType.Greater)
+                {
+                    depth--;
+                    if (depth == 0)
+                    {
+                        // 完整的泛型块结束
+                        break;
+                    }
+                }
             }
-            return typeParams;
+
+            if (depth != 0)
+            {
+                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 泛型参数解析时尖括号不匹配！");
+            }
+
+            return result;
         }
 
         private List<List<Token>> ParseInterfaceList()
