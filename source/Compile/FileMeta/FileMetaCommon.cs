@@ -891,7 +891,10 @@ namespace SimpleLanguage.Compile
         public string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(allName);
+            if(m_ClassNameToken != null )
+            {
+                sb.Append(m_ClassNameToken.lexeme.ToString());
+            }
             if (m_IsInputTemplateData)
             {
                 sb.Append(m_AngleTokenBegin?.lexeme.ToString());

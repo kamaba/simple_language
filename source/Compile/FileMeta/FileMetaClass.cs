@@ -56,212 +56,98 @@ namespace SimpleLanguage.Compile
         private List<FileMetaMemberVariable> m_MemberVariableList = new List<FileMetaMemberVariable>();
         private List<FileMetaMemberFunction> m_MemberFunctionList = new List<FileMetaMemberFunction>();
         private List<FileMetaMemberData> m_MemberDataList = new List<FileMetaMemberData>();
-
-
         private NamespaceStatementBlock m_NamespaceBlock = null;
 
-        private List<Token> m_ClassHeaderTokens = new List<Token>();
-
-        private StringBuilder stringBuilder = new StringBuilder();
-        public FileMetaClass(FileMeta fm, Token nameToken, List<Token> modifiers, Token typeToken)
-        {
-            Debug.Assert(nameToken != null, "解析Class时没有发现NameToken" );
-            m_FileMeta = fm;
-
-            // 先直接保存基本 token，用于 ToFormatString 等简单场景
-            m_Token = nameToken;
-            m_PermissionToken = modifiers.Find(t => t.type == ETokenType.Public || t.type == ETokenType.Private || t.type == ETokenType.Projected || t.type == ETokenType.Extern);
-            m_StaticToken = modifiers.Find(t => t.type == ETokenType.Static);
-            m_ConstToken = modifiers.Find(t => t.type == ETokenType.Const);
-            m_PartialToken = modifiers.Find(t => t.type == ETokenType.Partial);
-
-            if (typeToken != null)
-            {
-                if (typeToken.type == ETokenType.Class) m_ClassToken = typeToken;
-                else if (typeToken.type == ETokenType.Interface) m_PreInterfaceToken = typeToken;
-                else if (typeToken.type == ETokenType.Enum) m_EnumToken = typeToken;
-                else if (typeToken.type == ETokenType.Data) m_DataToken = typeToken;
-            }
-
-            m_Id = ++s_IdCount;
-
-            // 构造一个类头部的 Token 列表，供新的纯 Token 解析逻辑使用
-            m_ClassHeaderTokens.Clear();
-            if (modifiers != null) m_ClassHeaderTokens.AddRange(modifiers);
-            if (typeToken != null) m_ClassHeaderTokens.Add(typeToken);
-            m_ClassHeaderTokens.Add(nameToken);
-
-            ParseFromTokens(m_ClassHeaderTokens);
-        }
-
-        public FileMetaClass(FileMeta fm, List<Token> tokens)
+        private StringBuilder stringBuilder = new StringBuilder();  
+        // TokenToFileMeta 专用构造函数：各部分 token 已经分拆好，直接根据参数填充状态
+        public FileMetaClass(
+            FileMeta fm,
+            List<Token> modifiers,
+            Token classKeyword,
+            List<Token> classNameTokens,
+            List<Token> typeParameters,
+            Token extendsKeyword,
+            List<Token> baseClassTokens,
+            Token interfaceKeyword,
+            List<List<Token>> interfaceTokenLists)
         {
             m_FileMeta = fm;
             m_Id = ++s_IdCount;
-            if (tokens != null && tokens.Count > 0)
+
+            // 1. 直接根据参数设置权限 / 修饰符 / class 标记
+            if (modifiers != null)
             {
-                m_ClassHeaderTokens = tokens;
-                ParseFromTokens(m_ClassHeaderTokens);
+                m_PermissionToken = modifiers.Find(t => t.type == ETokenType.Public || t.type == ETokenType.Private || t.type == ETokenType.Projected || t.type == ETokenType.Extern);
+                m_StaticToken     = modifiers.Find(t => t.type == ETokenType.Static);
+                m_ConstToken      = modifiers.Find(t => t.type == ETokenType.Const);
+                m_PartialToken    = modifiers.Find(t => t.type == ETokenType.Partial);
             }
-        }
 
-        /// <summary>
-        /// 纯 Token 版本的类头解析逻辑，不再依赖 Node。
-        /// 负责填充权限、const/static/partial、class/enum/data/interface 标记，
-        /// 以及类名、模板参数、继承类和接口列表。
-        /// </summary>
-        private bool ParseFromTokens(List<Token> tokens)
-        {
-            Token permissionToken = null;
-            Token extendsToken = null;
-            Token commaToken = null;
-            Token nameToken = null;
-            bool isAfterName = false;
-            bool isError = false;
+            if (classKeyword != null)
+            {
+                if (classKeyword.type == ETokenType.Class)      m_ClassToken      = classKeyword;
+                else if (classKeyword.type == ETokenType.Interface) m_PreInterfaceToken = classKeyword;
+                else if (classKeyword.type == ETokenType.Enum)  m_EnumToken       = classKeyword;
+                else if (classKeyword.type == ETokenType.Data)  m_DataToken       = classKeyword;
+            }
 
-            m_FileMetaExtendClass = null;
-            m_InterfaceClassList.Clear();
+            // 2. 类名（支持多段）→ m_NamespaceBlock + name/m_Token
+            if (classNameTokens != null && classNameTokens.Count > 0)
+            {
+                var nsBlock = NamespaceStatementBlock.CreateStateBlock(classNameTokens);
+                if (nsBlock != null)
+                {
+                    m_NamespaceBlock = nsBlock;
+                    var nsList = nsBlock.namespaceList;
+                    if (nsList.Count > 0)
+                    {
+                        // NamespaceStatementBlock 的最后一段即为类名字符串
+                        // 但我们仍保留原始 token 供 name/m_Token 使用
+                        m_Token = classNameTokens[classNameTokens.Count - 1];
+                    }
+                }
+            }
+
+            // 3. 模板参数
             m_TemplateDefineList.Clear();
-
-            int index = 0;
-            while (index < tokens.Count)
+            if (typeParameters != null && typeParameters.Count > 0)
             {
-                var token = tokens[index];
-
-                if (!isAfterName)
-                {
-                    // 前半段：权限、const、partial、class/enum/data/interface、类名
-                    if (token.type == ETokenType.Public
-                        || token.type == ETokenType.Private
-                        || token.type == ETokenType.Projected
-                        || token.type == ETokenType.Extern)
-                    {
-                        if (permissionToken == null)
-                        {
-                            permissionToken = token;
-                        }
-                        else
-                        {
-                            isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次权限!!");
-                        }
-                    }
-                    else if (token.type == ETokenType.Const)
-                    {
-                        if (m_ConstToken == null) m_ConstToken = token;
-                        else
-                        {
-                            isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Const!!");
-                        }
-                    }
-                    else if (token.type == ETokenType.Partial)
-                    {
-                        if (m_PartialToken != null)
-                        {
-                            isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Partial!!");
-                        }
-                        m_PartialToken = token;
-                    }
-                    else if (token.type == ETokenType.Class)
-                    {
-                        // 如果构造函数已经设置了 m_ClassToken，则这里只做一致性检查，不再覆盖或报重复
-                        if (m_ClassToken == null)
-                        {
-                            if (m_EnumToken != null || m_DataToken != null)
-                            {
-                                isError = true;
-                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Class 与 Enum/Data 冲突!!");
-                            }
-                            m_ClassToken = token;
-                        }
-                    }                    
-                    else if (token.type == ETokenType.Identifier || token.type == ETokenType.Type)
-                    {
-                        // 第一个标识符/类型视为类名
-                        if (nameToken == null)
-                        {
-                            nameToken = token;
-                            m_Token = nameToken;
-                            isAfterName = true;
-                        }
-                        else
-                        {
-                            Log.AddInStructFileMeta(EError.StructClassNameRepeat, "Error 字符两次赋值");
-                        }
-                    }
-                }
-                else
-                {
-                    // 后半段：模板、extends、interface 列表
-                    if (token.type == ETokenType.Less)
-                    {
-                        index = ParseTemplateDefine(tokens, index + 1);
-                        continue;
-                    }
-                    else if (token.type == ETokenType.Extends)
-                    {
-                        extendsToken = token;
-                        index++;
-                        index = ParseExtendsOrInterface(tokens, index, false);
-                        continue;
-                    }
-                    else if (token.type == ETokenType.Interface)
-                    {
-                        m_SufInterfaceToken = token;
-                        index++;
-                        index = ParseExtendsOrInterface(tokens, index, true);
-                        continue;
-                    }
-                    else if (token.type == ETokenType.Comma)
-                    {
-                        commaToken = token;
-                    }
-                }
-
-                index++;
+                // 直接复用 ParseTemplateDefine 逻辑
+                ParseTemplateDefine(typeParameters, 0);
             }
 
-            // 末尾一致性检查 + SetPermissionToken(permissionToken)
-            if (m_EnumToken != null)
+            // 4. 继承类
+            m_FileMetaExtendClass = null;
+            if (extendsKeyword != null && baseClassTokens != null && baseClassTokens.Count > 0)
             {
-                if (m_PreInterfaceToken != null || m_SufInterfaceToken != null)
+                var extendDef = CreateClassDefineFromTokens(baseClassTokens);
+                if (extendDef != null)
                 {
-                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Enum方式，不支持接口方式或与 enum 同级");
-                    return false;
-                }
-                if (permissionToken != null || m_PartialToken != null)
-                {
-                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Enum方式，不支持权限或partial");
-                    return false;
-                }
-            }
-            else if (m_DataToken != null)
-            {
-                if (m_PreInterfaceToken != null || m_SufInterfaceToken != null)
-                {
-                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Data方式，不支持接口方式");
-                    return false;
-                }
-                if (permissionToken != null || m_PartialToken != null)
-                {
-                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Data方式，不支持权限或partial");
-                    return false;
-                }
-            }
-            else
-            {
-                if (nameToken == null)
-                {
-                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析类型名称错误!!");
+                    m_FileMetaExtendClass = extendDef;
                 }
             }
 
-            SetPermissionToken(permissionToken);
-            return !isError;
+            // 5. 接口列表
+            m_InterfaceClassList.Clear();
+            if (interfaceKeyword != null && interfaceTokenLists != null)
+            {
+                foreach (var it in interfaceTokenLists)
+                {
+                    if (it == null || it.Count == 0) continue;
+                    var ifaceDef = CreateClassDefineFromTokens(it);
+                    if (ifaceDef != null)
+                    {
+                        m_InterfaceClassList.Add(ifaceDef);
+                    }
+                }
+            }
+
+            // 若 name 还没设置，则至少保证 m_Token 不为 null（用于错误定位）
+            if (m_Token == null && classNameTokens != null && classNameTokens.Count > 0)
+            {
+                m_Token = classNameTokens[0];
+            }
         }
-
         // 解析模板参数列表 <T, U:Base>
         private int ParseTemplateDefine(List<Token> tokens, int startIndex)
         {
@@ -270,35 +156,40 @@ namespace SimpleLanguage.Compile
             List<Token> currentExtendsTokens = new List<Token>();
 
             int index = startIndex;
-            while (index < tokens.Count)
+            // 跳过起始的 '<'，避免被当成模板名的一部分
+            if (index < tokens.Count && tokens[index].type == ETokenType.Less)
             {
-                var t = tokens[index];
-                if (t.type == ETokenType.Greater)
-                {
-                    if (currentNameTokens.Count > 0)
-                    {
-                        CreateTemplateDefine(currentNameTokens, currentExtendsTokens);
-                    }
-                    return index + 1;
-                }
-                if (t.type == ETokenType.Comma)
-                {
-                    if (currentNameTokens.Count > 0)
-                    {
-                        CreateTemplateDefine(currentNameTokens, currentExtendsTokens);
-                        currentNameTokens = new List<Token>();
-                        currentExtendsTokens = new List<Token>();
-                        inConstraint = false;
-                    }
-                    index++;
-                    continue;
-                }
-                if (t.type == ETokenType.Colon)
-                {
-                    inConstraint = true;
-                    index++;
-                    continue;
-                }
+                index++;
+            }
+             while (index < tokens.Count)
+             {
+                 var t = tokens[index];
+                 if (t.type == ETokenType.Greater)
+                 {
+                     if (currentNameTokens.Count > 0)
+                     {
+                         CreateTemplateDefine(currentNameTokens, currentExtendsTokens);
+                     }
+                     return index + 1;
+                 }
+                 if (t.type == ETokenType.Comma)
+                 {
+                     if (currentNameTokens.Count > 0)
+                     {
+                         CreateTemplateDefine(currentNameTokens, currentExtendsTokens);
+                         currentNameTokens = new List<Token>();
+                         currentExtendsTokens = new List<Token>();
+                         inConstraint = false;
+                     }
+                     index++;
+                     continue;
+                 }
+                 if (t.type == ETokenType.Colon)
+                 {
+                     inConstraint = true;
+                     index++;
+                     continue;
+                 }
 
                 if (!inConstraint)
                     currentNameTokens.Add(t);

@@ -803,10 +803,6 @@ namespace SimpleLanguage.Compile
     public class FileMetaBraceTerm : FileMetaBaseTerm
     {
         private Token m_BraceEndToken = null;
-
-        // Node 版本构造方法（legacy，已由 Token 版本取代）
-        // public FileMetaBraceTerm(FileMeta fm, Node node) { ... }
-
         // Token 版本构造方法（纯 Token 实现，无 Node 构建）
         public FileMetaBraceTerm(FileMeta fm, List<Token> tokenList)
         {
@@ -1041,10 +1037,6 @@ namespace SimpleLanguage.Compile
         }
 
         private EExpressType m_ExpressType;
-
-        // Node 版本构造方法（保留向后兼容）
-        // public FileMetaTermExpress(FileMeta fm, List<Node> nodeList, EExpressType expressType) { ... }
-
         // Token 版本构造方法（纯 Token 实现）
         public FileMetaTermExpress(FileMeta fm, List<Token> tokenList, EExpressType expressType)
         {

@@ -96,16 +96,6 @@ namespace SimpleLanguage.Compile
 
                 tokenToFileMeta.ParseTokensToFileMeta();
 
-                //tokenParse = new TokenParse( m_File, lexerParse.GetListTokensWidthEnd() );
-
-                //tokenParse.BuildStruct();
-
-                //structBuild = new StructParse(m_File, tokenParse.rootNode, lexerParse.GetListTokensWidthEnd() );
-
-                //structBuild.ParseRootNodeToFileMeta();
-
-                //structBuild.ParseTokenToFileMeta();
-
                 m_File.SetDeep(0);
 
                 if (structParseComplete != null )

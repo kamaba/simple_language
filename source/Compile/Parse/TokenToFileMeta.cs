@@ -114,18 +114,33 @@ namespace SimpleLanguage.Compile
             if (MatchAny(SimpleLanguage.ETokenType.Class, SimpleLanguage.ETokenType.Interface, SimpleLanguage.ETokenType.Enum, SimpleLanguage.ETokenType.Data)) classKeyword = Consume();
             else { TransitionState(DFAState.Initial); return; }
 
-            Token classNameToken = null;
+            // 支持多段类名：ClassP1.ClassC1.ClassC2
+            List<Token> classNameTokens = new List<Token>();
             // 这里不仅接受 Identifier，还接受被词法阶段标记为 Type 的内建类型名
             // 例如：object/int/string 等在 LexerParse.ReadIdentifier 中被解析为 ETokenType.Type
             if (Match(SimpleLanguage.ETokenType.Identifier) || Match(SimpleLanguage.ETokenType.Type))
             {
-                classNameToken = Consume();
+                classNameTokens.Add(Consume());
+                // 后续若存在 .Name 形式的多段类名，一并收集
+                while (Match(SimpleLanguage.ETokenType.Period))
+                {
+                    Consume();
+                    if (Match(SimpleLanguage.ETokenType.Identifier) || Match(SimpleLanguage.ETokenType.Type))
+                    {
+                        classNameTokens.Add(Consume());
+                    }
+                    else
+                    {
+                        Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 多段类名解析错误: '.' 后缺少标识符");
+                        break;
+                    }
+                }
             }
             else
             {
                 // 如果没有显式标识符，记录错误并构造一个占位符名称，避免后续空引用
                 Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析类型名称错误: 缺少标识符");
-                classNameToken = new Token(m_FileMeta.path, SimpleLanguage.ETokenType.Identifier, "<anonymous>", 0, 0);
+                classNameTokens.Add(new Token(m_FileMeta.path, SimpleLanguage.ETokenType.Identifier, "<anonymous>", 0, 0));
             }
 
             List<Token> typeParameters = new List<Token>();
@@ -147,32 +162,19 @@ namespace SimpleLanguage.Compile
                 interfaceList = ParseInterfaceList();
             }
 
-            //FileMetaClass fmc = new FileMetaClass(m_FileMeta, classNameToken, classModifiers, classKeyword);
-            //m_FileMeta.AddFileClassFromTokens(new List<Token>());
-            //m_FileMeta.AddFileMetaClass(fmc);
-
-            List<Token> classHeaderTokens = new List<Token>();
-            classHeaderTokens.AddRange(classModifiers);
-            if (classKeyword != null) classHeaderTokens.Add(classKeyword);
-            classHeaderTokens.Add(classNameToken);
-            if (typeParameters.Count > 0) classHeaderTokens.AddRange(typeParameters);
-            if (extendsKeyword != null) classHeaderTokens.Add(extendsKeyword);
-            if (baseClass.Count > 0) classHeaderTokens.AddRange(baseClass);
-            if (interfaceKeyword != null) classHeaderTokens.Add(interfaceKeyword);
-            if (interfaceList.Count > 0)
-            {
-                foreach (var interfaceItem in interfaceList)
-                {
-                    classHeaderTokens.AddRange(interfaceItem);
-                    // 在不同接口名之间插入逗号 token
-                    classHeaderTokens.Add(new Token(m_FileMeta.path, SimpleLanguage.ETokenType.Comma, ",", 0, 0));
-                }
-                classHeaderTokens.RemoveAt(classHeaderTokens.Count - 1); // 去掉最后一个多余的逗号
-            }
-
-            FileMetaClass fmc = new FileMetaClass(m_FileMeta, classHeaderTokens);
-            m_FileMeta.AddFileClassFromTokens(new List<Token>());
-            m_FileMeta.AddFileMetaClass(fmc);
+            // 将各部分拆分后的 Token 列表分别传入 FileMetaClass，避免在此处重新拼接
+            FileMetaClass fmc = new FileMetaClass(
+                m_FileMeta,
+                classModifiers,
+                classKeyword,
+                classNameTokens,
+                typeParameters,
+                extendsKeyword,
+                baseClass,
+                interfaceKeyword,
+                interfaceList);
+             m_FileMeta.AddFileClassFromTokens(new List<Token>());
+             m_FileMeta.AddFileMetaClass(fmc);
 
             if (Match(SimpleLanguage.ETokenType.LineEnd))
             {
@@ -525,9 +527,18 @@ namespace SimpleLanguage.Compile
             {
                 if (Match(ETokenType.LeftBrace)) break;
                 if (Match(ETokenType.Comma)) { Consume(); continue; }
+
                 List<Token> interfaceName = ParseQualifiedName();
-                if (interfaceName.Count > 0) interfaces.Add(interfaceName);
-                else break;
+                if (interfaceName.Count == 0) break;
+
+                // 如果后面紧跟 '<'，把泛型参数块一起吃掉（保证 IIterable<T> 成为完整的一段）
+                if (Match(ETokenType.Less))
+                {
+                    var genericTokens = ParseGenericBracketedTokens();
+                    interfaceName.AddRange(genericTokens);
+                }
+
+                interfaces.Add(interfaceName);
             }
             return interfaces;
         }
