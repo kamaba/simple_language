@@ -312,6 +312,16 @@ namespace SimpleLanguage.Compile
             m_MemberFunctionList.Add(fmmf);
             fmmf.SetFileMeta(m_FileMeta);
         }
+
+        /// <summary>
+        /// 返回最近添加的成员函数，用于在 TokenToFileMeta 中把函数体 token 绑定到对应的 FileMetaMemberFunction 上。
+        /// </summary>
+        public FileMetaMemberFunction GetLastMemberFunction()
+        {
+            if (m_MemberFunctionList == null || m_MemberFunctionList.Count == 0)
+                return null;
+            return m_MemberFunctionList[m_MemberFunctionList.Count - 1];
+        }
         public void SetMetaNamespace( FileMetaNamespace mn )
         {
             m_TopLevelFileMetaNamespace = mn;

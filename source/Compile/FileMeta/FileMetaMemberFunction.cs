@@ -148,6 +148,20 @@ namespace SimpleLanguage.Compile
                 m_FileMetaBlockSyntax = new FileMetaBlockSyntax(m_FileMeta, m_LeftBraceToken, m_RightBraceToken);
             }
         }
+        
+        /// <summary>
+        /// 由 Token 管线在确定完整的函数体 { } token 范围之后调用，用于在成员函数上初始化块语法节点，
+        /// 然后再由 TokenToFileMeta.ParseFunctionBodyTokens 把内部语句拆分成 FileMetaSyntax。
+        /// </summary>
+        public void InitializeBlockFromTokens(List<Token> blockTokens)
+        {
+            if (blockTokens == null || blockTokens.Count < 2)
+                return;
+
+            m_LeftBraceToken = blockTokens[0];
+            m_RightBraceToken = blockTokens[blockTokens.Count - 1];
+            m_FileMetaBlockSyntax = new FileMetaBlockSyntax(m_FileMeta, m_LeftBraceToken, m_RightBraceToken);
+        }
 
         private void ParseParametersFromTokens(List<Token> paramTokens)
         {
