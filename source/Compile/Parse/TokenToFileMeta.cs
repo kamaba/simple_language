@@ -469,19 +469,42 @@ namespace SimpleLanguage.Compile
                     blockTokens);
 
                 fmc.AddFileMemberFunction(fmmf);
+
+                // 如果这个函数有函数体，把 blockTokens 进一步切成语句，生成 FileMetaSyntax
+                if (blockTokens != null && blockTokens.Count > 0 && fmmf.fileMetaBlockSyntax != null)
+                {
+                    ParseFunctionBodyTokens(blockTokens, fmmf.fileMetaBlockSyntax);
+                }
             }
              else 
              {
-                 // 变量/字段：类型 + 名称 + 可能的初始化表达式，交给 FileMetaMemberVariable 解析
-                 List<Token> varTokens = new List<Token>();
-                 varTokens.AddRange(modifiers);
-                 varTokens.AddRange(lineTokens);
- 
-                if (varTokens.Count > 0)
+                // 变量/字段：使用已经提取好的类型 token 列表和 nameToken，将“右侧表达式”也拆成单独的 token 列表传给 FileMetaMemberVariable。
+                // 计算 nameToken 在当前行中的位置
+                int nameIndex = -1;
+                for (int i = 0; i < lineTokens.Count; i++)
                 {
-                    FileMetaMemberVariable fmmv = new FileMetaMemberVariable(m_FileMeta, varTokens);
-                    fmc.AddFileMemberVariable(fmmv);
+                    if (ReferenceEquals(lineTokens[i], nameToken))
+                    {
+                        nameIndex = i;
+                        break;
+                    }
                 }
+
+                List<Token> exprTokens = null;
+                if (nameIndex >= 0 && nameIndex + 1 < lineTokens.Count)
+                {
+                    // nameToken 之后的所有 token 视为“初始化表达式”部分（包括 = 号及后续）
+                    exprTokens = lineTokens.GetRange(nameIndex + 1, lineTokens.Count - (nameIndex + 1));
+                }
+
+                FileMetaMemberVariable fmmv = new FileMetaMemberVariable(
+                    m_FileMeta,
+                    modifiers,
+                    typeTokens,
+                    nameToken,
+                    exprTokens);
+
+                fmc.AddFileMemberVariable(fmmv);
              }
          }
         /// <summary>
