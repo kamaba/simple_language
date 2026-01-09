@@ -1,0 +1,7 @@
+
+1. TokenToFileMeta的ParseClassMember
+ParseClassMember 这个类里边的逻辑，按我说的逻辑重写下， 首先读取 像public/protected/private 等权限命名，这个是可有可无的， 第二在后边一般会加 static/final/override 等关键字，这个也是非必须定义的，再往 后就是要定义像get/set 等关键字 这个关键字，只配合function类型的使用，再往 后定义就是 TypeDefine了，这个是用来定义类型的 使用的是FileMetaClassDefine的 这个的话，可以定义自定义的类 比如 List<Map<Core.Class1, Set<Core.String>>>[][][] 也可以定义带类中模板的定义比如 List<Map<T1,T2>>[] 这种的,也可以定义像void/string/int/int[] 这种的，当然也可以是独立的定义模式T,T[][]，再往后定义则是 成员的名称NameToken, 如果是成员变量就一个关键字，如果是函数，则可以是 FunName<T1, T2:List<int>, List<Map<int,Core.ClassName>> >() 这种的形式, 因为要确定模板函数的方式。如果是函数，则有()，然后需要把括号里边的参数提取出来， 参数的定义， 也是由TypeDefine ParamNameToken构成，当然TypeDefine是非必须的 如果非函数，则必须出现=号，后边是表达 式，表达式，统一处理，如果是函数后边则是{} 这里边是存放函数的语句
+
+
+函数体内的内容处理
+嗯 做的不错，现在我们开始重点开始解析 函数体里边的内容，函数体的内容，首先确定函数的{} 然后把这块，统一去处理，一定不要丢失一些信息 解析函数体内容，基本是 按照 一行，或者是 ;号结尾，如果遇到 if/esif/else/switch/for/while/dowhile 则直接与{}绑定处理 如果遇到像 as/is 则谁在 

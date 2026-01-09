@@ -121,6 +121,7 @@ namespace SimpleLanguage.Compile
                     else if (t.type == ETokenType.Get) m_GetToken = t;
                     else if (t.type == ETokenType.Set) m_SetToken = t;
                     else if (t.type == ETokenType.Final) m_FinalToken = t;
+                    else if (t.type == ETokenType.Interface) m_InterfaceToken = t;
                 }
             }
 
