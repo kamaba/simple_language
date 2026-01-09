@@ -302,9 +302,6 @@ namespace SimpleLanguage.Compile
         private FileMetaClassDefine m_DefineType = null;
         private Token m_ConvertIsTypeNameToken = null;
 
-        // Node 版本构造方法（legacy，已完全由 Token 版本取代）
-        // public FileMetaAsOrIsTerm(FileMeta fm, List<Node> nodeList) { ... }
-
         // Token 版本构造方法（纯 Token 实现，无 Node 构建）
         public FileMetaAsOrIsTerm(FileMeta fm, List<Token> tokenList)
         {
@@ -426,9 +423,6 @@ namespace SimpleLanguage.Compile
         public FileMetaCallLink callLink => m_CallLink;
 
         private FileMetaCallLink m_CallLink = null;
-
-        // Node 版本构造方法（保留向后兼容）
-        // public FileMetaCallTerm(FileMeta fm, Node node) { ... }
 
         // Token 版本构造方法（纯 Token 实现，无 Node 构建）
         public FileMetaCallTerm(FileMeta fm, List<Token> tokenList)
