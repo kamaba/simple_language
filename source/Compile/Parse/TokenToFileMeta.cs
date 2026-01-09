@@ -1,10 +1,10 @@
-//****************************************************************************
+ï»¿//****************************************************************************
 //  File:      TokenToFileMeta.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2025/01/15 12:00:00
-//  Description: Ö±½Ó´Ó Token ×ª»»Îª FileMeta ½á¹¹£¬²»Éú³ÉÖĞ¼ä Node Ê÷
-//               Token ¡ú FileMeta µÄÖ±½Ó×ª»»Æ÷
+//  Description: ç›´æ¥ä» Token è½¬æ¢ä¸º FileMeta ç»“æ„ï¼Œä¸ç”Ÿæˆä¸­é—´ Node æ ‘
+//               Token â†’ FileMeta çš„ç›´æ¥è½¬æ¢å™¨
 //****************************************************************************
 
 using SimpleLanguage;
@@ -51,7 +51,7 @@ namespace SimpleLanguage.Compile
             }
             catch (Exception ex)
             {
-                Log.AddInStructFileMeta(EError.None, $"TokenToFileMeta ½âÎö´íÎó: {ex.Message}");
+                Log.AddInStructFileMeta(EError.None, $"TokenToFileMeta è§£æé”™è¯¯: {ex.Message}");
             }
         }
 
@@ -99,9 +99,9 @@ namespace SimpleLanguage.Compile
             Token nsToken = Consume();
             List<Token> namespacePath = ParseQualifiedName();
 
-            // ÕâÀïÖ»½«ÃüÃû¿Õ¼äÂ·¾¶£¨±êÊ¶·û²¿·Ö£©´«Èë FileMeta£¬²»°üº¬ namespace ¹Ø¼ü×Ö±¾Éí
+            // è¿™é‡Œåªå°†å‘½åç©ºé—´è·¯å¾„ï¼ˆæ ‡è¯†ç¬¦éƒ¨åˆ†ï¼‰ä¼ å…¥ FileMetaï¼Œä¸åŒ…å« namespace å…³é”®å­—æœ¬èº«
             if (Match(ETokenType.SemiColon)) Consume();
-            else if (Match(ETokenType.LeftBrace)) { /* ¿é´¦Àí¼ò»¯ */ }
+            else if (Match(ETokenType.LeftBrace)) { /* å—å¤„ç†ç®€åŒ– */ }
 
             if (namespacePath.Count > 0) m_FileMeta.AddFileNamespaceFromTokens(namespacePath);
             TransitionState(DFAState.Initial);
@@ -116,14 +116,14 @@ namespace SimpleLanguage.Compile
             if (MatchAny(SimpleLanguage.ETokenType.Class, SimpleLanguage.ETokenType.Interface, SimpleLanguage.ETokenType.Enum, SimpleLanguage.ETokenType.Data)) classKeyword = Consume();
             else { TransitionState(DFAState.Initial); return; }
 
-            // Ö§³Ö¶à¶ÎÀàÃû£ºClassP1.ClassC1.ClassC2
+            // æ”¯æŒå¤šæ®µç±»åï¼šClassP1.ClassC1.ClassC2
             List<Token> classNameTokens = new List<Token>();
-            // ÕâÀï²»½ö½ÓÊÜ Identifier£¬»¹½ÓÊÜ±»´Ê·¨½×¶Î±ê¼ÇÎª Type µÄÄÚ½¨ÀàĞÍÃû
-            // ÀıÈç£ºobject/int/string µÈÔÚ LexerParse.ReadIdentifier ÖĞ±»½âÎöÎª ETokenType.Type
+            // è¿™é‡Œä¸ä»…æ¥å— Identifierï¼Œè¿˜æ¥å—è¢«è¯æ³•é˜¶æ®µæ ‡è®°ä¸º Type çš„å†…å»ºç±»å‹å
+            // ä¾‹å¦‚ï¼šobject/int/string ç­‰åœ¨ LexerParse.ReadIdentifier ä¸­è¢«è§£æä¸º ETokenType.Type
             if (Match(SimpleLanguage.ETokenType.Identifier) || Match(SimpleLanguage.ETokenType.Type))
             {
                 classNameTokens.Add(Consume());
-                // ºóĞøÈô´æÔÚ .Name ĞÎÊ½µÄ¶à¶ÎÀàÃû£¬Ò»²¢ÊÕ¼¯
+                // åç»­è‹¥å­˜åœ¨ .Name å½¢å¼çš„å¤šæ®µç±»åï¼Œä¸€å¹¶æ”¶é›†
                 while (Match(SimpleLanguage.ETokenType.Period))
                 {
                     Consume();
@@ -133,19 +133,19 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error ¶à¶ÎÀàÃû½âÎö´íÎó: '.' ºóÈ±ÉÙ±êÊ¶·û");
+                        Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error å¤šæ®µç±»åè§£æé”™è¯¯: '.' åç¼ºå°‘æ ‡è¯†ç¬¦");
                         break;
                     }
                 }
             }
             else
             {
-                // Èç¹ûÃ»ÓĞÏÔÊ½±êÊ¶·û£¬¼ÇÂ¼´íÎó²¢¹¹ÔìÒ»¸öÕ¼Î»·ûÃû³Æ£¬±ÜÃâºóĞø¿ÕÒıÓÃ
-                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error ½âÎöÀàĞÍÃû³Æ´íÎó: È±ÉÙ±êÊ¶·û");
+                // å¦‚æœæ²¡æœ‰æ˜¾å¼æ ‡è¯†ç¬¦ï¼Œè®°å½•é”™è¯¯å¹¶æ„é€ ä¸€ä¸ªå ä½ç¬¦åç§°ï¼Œé¿å…åç»­ç©ºå¼•ç”¨
+                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error è§£æç±»å‹åç§°é”™è¯¯: ç¼ºå°‘æ ‡è¯†ç¬¦");
                 classNameTokens.Add(new Token(m_FileMeta.path, SimpleLanguage.ETokenType.Identifier, "<anonymous>", 0, 0));
             }
 
-            // ÀàÄ£°å²ÎÊı£º½ôËæÀàÃûÖ®ºóµÄ `<T1, T2:...>` Í³Ò»×ß ParseTemplateTokens
+            // ç±»æ¨¡æ¿å‚æ•°ï¼šç´§éšç±»åä¹‹åçš„ `<T1, T2:...>` ç»Ÿä¸€èµ° ParseTemplateTokens
             List<Token> typeParameters = new List<Token>();
             int tpIndex = m_TokenIndex;
             if (tpIndex < m_TokenList.Count && m_TokenList[tpIndex].type == ETokenType.Less)
@@ -170,7 +170,7 @@ namespace SimpleLanguage.Compile
                 interfaceList = ParseInterfaceList();
             }
 
-            // ½«¸÷²¿·Ö²ğ·ÖºóµÄ Token ÁĞ±í·Ö±ğ´«Èë FileMetaClass£¬±ÜÃâÔÚ´Ë´¦ÖØĞÂÆ´½Ó
+            // å°†å„éƒ¨åˆ†æ‹†åˆ†åçš„ Token åˆ—è¡¨åˆ†åˆ«ä¼ å…¥ FileMetaClassï¼Œé¿å…åœ¨æ­¤å¤„é‡æ–°æ‹¼æ¥
             FileMetaClass fmc = new FileMetaClass(
                 m_FileMeta,
                 classModifiers,
@@ -240,7 +240,7 @@ namespace SimpleLanguage.Compile
             // Now parse members from bodyTokens using a simple top-level splitter
             if (bodyTokens.Count == 0)
             {
-                Debug.Assert(false, "Ê¹ÓÃÀàµÄÇé¿ö ÒªÔÚÀàÖĞ±ØĞë ÓĞ{}ÕâÑùµÄ·¶Î§ÏŞ¶¨!");
+                Debug.Assert(false, "ä½¿ç”¨ç±»çš„æƒ…å†µ è¦åœ¨ç±»ä¸­å¿…é¡» æœ‰{}è¿™æ ·çš„èŒƒå›´é™å®š!");
                 return;
             }
 
@@ -263,7 +263,7 @@ namespace SimpleLanguage.Compile
 
                 var memberTokens = currentMember.GetRange(start, end - start + 1);
 
-                // Î¯ÍĞ¸ø ParseClassMember£ºÔÚÄÇÀïÍ³Ò»ÅĞ¶ÏÊÇÀàÖĞÀà¡¢º¯Êı£¨º¬ { }£©»¹ÊÇ±äÁ¿
+                // å§”æ‰˜ç»™ ParseClassMemberï¼šåœ¨é‚£é‡Œç»Ÿä¸€åˆ¤æ–­æ˜¯ç±»ä¸­ç±»ã€å‡½æ•°ï¼ˆå« { }ï¼‰è¿˜æ˜¯å˜é‡
                 var oldList = m_TokenList;
                 int oldIndex = m_TokenIndex;
                 m_TokenList = memberTokens;
@@ -274,7 +274,7 @@ namespace SimpleLanguage.Compile
                 }
                 catch (Exception ex)
                 {
-                    Log.AddInStructFileMeta(EError.None, $"ParseClassBody ³ÉÔ±½âÎöÒì³£: {ex.Message}");
+                    Log.AddInStructFileMeta(EError.None, $"ParseClassBody æˆå‘˜è§£æå¼‚å¸¸: {ex.Message}");
                 }
                 finally
                 {
@@ -297,7 +297,7 @@ namespace SimpleLanguage.Compile
                 else if (t.type == ETokenType.LeftBracket) bracketDepth++;
                 else if (t.type == ETokenType.RightBracket && bracketDepth > 0) bracketDepth--;
 
-                // ÔÚÀàÌåÄÚ£¬½öÔÚ¶¥²ã£¨Î´½øÈëÈÎºÎ () / {} / []£©Ê±£¬ÒÔ·ÖºÅ»òĞĞ½áÊøÀ´ÇĞ·Ö³ÉÔ±ÉùÃ÷¡£
+                // åœ¨ç±»ä½“å†…ï¼Œä»…åœ¨é¡¶å±‚ï¼ˆæœªè¿›å…¥ä»»ä½• () / {} / []ï¼‰æ—¶ï¼Œä»¥åˆ†å·æˆ–è¡Œç»“æŸæ¥åˆ‡åˆ†æˆå‘˜å£°æ˜ã€‚
                 if (parenDepth == 0 && braceDepth == 0 && bracketDepth == 0 &&
                     (t.type == ETokenType.SemiColon || t.type == ETokenType.LineEnd))
                 {
@@ -314,13 +314,13 @@ namespace SimpleLanguage.Compile
 
         private void ParseClassMember(FileMetaClass fmc)
         {
-            // Í³Ò»½âÎö£º³ÉÔ±±äÁ¿ / ³ÉÔ±º¯Êı / ÀàÖĞÀà
+            // ç»Ÿä¸€è§£æï¼šæˆå‘˜å˜é‡ / æˆå‘˜å‡½æ•° / ç±»ä¸­ç±»
             if (m_TokenList == null || m_TokenList.Count == 0)
                 return;
 
             var tokens = m_TokenList;
 
-            // È¥µôÇ°ºó¿Õ°×
+            // å»æ‰å‰åç©ºç™½
             int start = 0;
             int end = tokens.Count - 1;
             while (start <= end && (tokens[start].type == ETokenType.Space || tokens[start].type == ETokenType.LineEnd)) start++;
@@ -330,7 +330,7 @@ namespace SimpleLanguage.Compile
             tokens = tokens.GetRange(start, end - start + 1);
             int index = 0;
 
-            // 1. È¨ÏŞ¹Ø¼ü×Ö£¨¿ÉÑ¡£©£ºpublic/projected/private/extern
+            // 1. æƒé™å…³é”®å­—ï¼ˆå¯é€‰ï¼‰ï¼špublic/projected/private/extern
             var modifiers = new List<Token>();
             while (index < tokens.Count)
             {
@@ -346,7 +346,7 @@ namespace SimpleLanguage.Compile
                     break;
                 }
             }
-            // 2. ÆäËûĞŞÊÎ·û£ºstatic/final/override/mut/get/set µÈ£¨¿ÉÑ¡£¬Ë³Ğò²»ÏŞ£©
+            // 2. å…¶ä»–ä¿®é¥°ç¬¦ï¼šstatic/final/override/mut/get/set ç­‰ï¼ˆå¯é€‰ï¼Œé¡ºåºä¸é™ï¼‰
             while (index < tokens.Count)
             {
                 var t = tokens[index];
@@ -366,23 +366,23 @@ namespace SimpleLanguage.Compile
             if (index >= tokens.Count)
                 return;
 
-            // 3. ¼ì²éÊÇ·ñÊÇÀàÖĞÀà£ºµÚÒ»¸ö·ÇĞŞÊÎ·û token ÊÇ class/interface/enum/data£¬ÇÒºóÃæÓĞ '{ }'
+            // 3. æ£€æŸ¥æ˜¯å¦æ˜¯ç±»ä¸­ç±»ï¼šç¬¬ä¸€ä¸ªéä¿®é¥°ç¬¦ token æ˜¯ class/interface/enum/dataï¼Œä¸”åé¢æœ‰ '{ }'
             Token firstNonMod = tokens[index];
             if (firstNonMod.type == ETokenType.Class || firstNonMod.type == ETokenType.Interface
                 || firstNonMod.type == ETokenType.Enum || firstNonMod.type == ETokenType.Data)
             {
-                // Ö±½ÓÔÚ¶ÀÁ¢ token Á÷Àïµ÷ÓÃ ParseClassDeclaration£¬Éú³É FileMetaClass£¨ÓÉ FileMetaClass ÄÚ²¿´¦Àí innerClass ±ê¼Ç£©
+                // ç›´æ¥åœ¨ç‹¬ç«‹ token æµé‡Œè°ƒç”¨ ParseClassDeclarationï¼Œç”Ÿæˆ FileMetaClassï¼ˆç”± FileMetaClass å†…éƒ¨å¤„ç† innerClass æ ‡è®°ï¼‰
                 var oldList = m_TokenList;
                 int oldIndex = m_TokenIndex;
                 m_TokenList = tokens;
-                m_TokenIndex = index; // Ö¸Ïò class ¹Ø¼ü×Ö
+                m_TokenIndex = index; // æŒ‡å‘ class å…³é”®å­—
                 try
                 {
                     ParseClassDeclaration();
                 }
                 catch (Exception ex)
                 {
-                    Log.AddInStructFileMeta(EError.None, $"ParseClassMember ÀàÖĞÀà½âÎöÒì³£: {ex.Message}");
+                    Log.AddInStructFileMeta(EError.None, $"ParseClassMember ç±»ä¸­ç±»è§£æå¼‚å¸¸: {ex.Message}");
                 }
                 finally
                 {
@@ -392,9 +392,9 @@ namespace SimpleLanguage.Compile
                 return;
             }
 
-            // 4. ·ÇÀàÖĞÀà£º×ß³ÉÔ±±äÁ¿/º¯Êı½âÎö£¬²¢ÔÚÕâÀïÍ³Ò»¼ÆËãº¯ÊıÌå { }
+            // 4. éç±»ä¸­ç±»ï¼šèµ°æˆå‘˜å˜é‡/å‡½æ•°è§£æï¼Œå¹¶åœ¨è¿™é‡Œç»Ÿä¸€è®¡ç®—å‡½æ•°ä½“ { }
 
-            // ´Óµ±Ç° index µ½ĞĞÎ²µÄ×ÓĞòÁĞ×÷ÎªºòÑ¡
+            // ä»å½“å‰ index åˆ°è¡Œå°¾çš„å­åºåˆ—ä½œä¸ºå€™é€‰
             var tailTokens = tokens.GetRange(index, tokens.Count - index);
             List<Token> typeTokens;
             Token nameToken;
@@ -403,7 +403,7 @@ namespace SimpleLanguage.Compile
                 return;
             }
 
-            // ¼ÆËã nameToken ÔÚ tailTokens ÖĞµÄË÷Òı
+            // è®¡ç®— nameToken åœ¨ tailTokens ä¸­çš„ç´¢å¼•
             int namePosInTail = -1;
             for (int i = 0; i < tailTokens.Count; i++)
             {
@@ -416,7 +416,7 @@ namespace SimpleLanguage.Compile
             if (namePosInTail == -1)
                 return;
 
-            // 5. ¼ÆËã Name Ö®ºóµÄÎ»ÖÃ£¬ÏÈÔ½¹ı¿Õ°×£¬ÔÙ¿´ÊÇ·ñÓĞÄ£°å²ÎÊı¿é `<...>`
+            // 5. è®¡ç®— Name ä¹‹åçš„ä½ç½®ï¼Œå…ˆè¶Šè¿‡ç©ºç™½ï¼Œå†çœ‹æ˜¯å¦æœ‰æ¨¡æ¿å‚æ•°å— `<...>`
             int afterName = index + namePosInTail + 1;
             while (afterName < tokens.Count &&
                    (tokens[afterName].type == ETokenType.Space || tokens[afterName].type == ETokenType.LineEnd))
@@ -424,14 +424,14 @@ namespace SimpleLanguage.Compile
                 afterName++;
             }
 
-            // ¿ÉÑ¡µÄÄ£°å²ÎÊı¿é£ºFunName<...>(...)
+            // å¯é€‰çš„æ¨¡æ¿å‚æ•°å—ï¼šFunName<...>(...)
             List<Token> nameTemplateTokens = null;
             if (afterName < tokens.Count && tokens[afterName].type == ETokenType.Less)
             {
                 nameTemplateTokens = ParseTemplateTokens(tokens, ref afterName);
             }
 
-            // Ìø¹ıÄ£°åºóµÄ¿Õ°×
+            // è·³è¿‡æ¨¡æ¿åçš„ç©ºç™½
             while (afterName < tokens.Count &&
                    (tokens[afterName].type == ETokenType.Space || tokens[afterName].type == ETokenType.LineEnd))
             {
@@ -442,9 +442,9 @@ namespace SimpleLanguage.Compile
 
             if (hasPar)
             {
-                // === ³ÉÔ±º¯Êı ===
+                // === æˆå‘˜å‡½æ•° ===
 
-                // ½âÎöÍêÕû²ÎÊıÁĞ±í ()£¬´Ó afterName Î»ÖÃ¿ªÊ¼£¬Ê¹ÓÃ±¾µØÉî¶È¼ÆÊı±ÜÃâ¶îÍâ¹¤¾ßº¯Êı
+                // è§£æå®Œæ•´å‚æ•°åˆ—è¡¨ ()ï¼Œä» afterName ä½ç½®å¼€å§‹ï¼Œä½¿ç”¨æœ¬åœ°æ·±åº¦è®¡æ•°é¿å…é¢å¤–å·¥å…·å‡½æ•°
                 int parStart = afterName;
                 int parEnd = -1;
                 int parDepth = 0;
@@ -469,10 +469,10 @@ namespace SimpleLanguage.Compile
                     paramTokens = tokens.GetRange(parStart, parEnd - parStart + 1);
                 }
 
-                // Í³Ò»¼ÆËãº¯ÊıÌå {}£ºÈç¹ûÔÚ²ÎÊıÁĞ±íÖ®ºó´æÔÚ '{'£¬Ôò´Ó¸Ã´¦ÆğÓÃÀ¨ºÅÉî¶È·½Ê½ÌáÈ¡ÍêÕûµÄº¯ÊıÌå token
+                // ç»Ÿä¸€è®¡ç®—å‡½æ•°ä½“ {}ï¼šå¦‚æœåœ¨å‚æ•°åˆ—è¡¨ä¹‹åå­˜åœ¨ '{'ï¼Œåˆ™ä»è¯¥å¤„èµ·ç”¨æ‹¬å·æ·±åº¦æ–¹å¼æå–å®Œæ•´çš„å‡½æ•°ä½“ token
                 List<Token> blockTokens = null;
                 int searchBody = parEnd + 1;
-                // ÔÊĞí²ÎÊıÁĞ±íÓëº¯ÊıÌå '{' Ö®¼ä´æÔÚÈÎÒâÊıÁ¿µÄ¿Õ°×ºÍ»»ĞĞ
+                // å…è®¸å‚æ•°åˆ—è¡¨ä¸å‡½æ•°ä½“ '{' ä¹‹é—´å­˜åœ¨ä»»æ„æ•°é‡çš„ç©ºç™½å’Œæ¢è¡Œ
                 while (searchBody < tokens.Count &&
                        (tokens[searchBody].type == ETokenType.Space ||
                         tokens[searchBody].type == ETokenType.LineEnd ||
@@ -480,54 +480,58 @@ namespace SimpleLanguage.Compile
                 {
                     searchBody++;
                 }
-                 if (searchBody < tokens.Count && tokens[searchBody].type == ETokenType.LeftBrace)
-                 {
-                     int bDepth = 0;
-                     int bodyStart = searchBody;
-                     int bodyEnd = -1;
-                     for (int i = bodyStart; i < tokens.Count; i++)
-                     {
-                         var t = tokens[i];
-                         if (t.type == ETokenType.LeftBrace) bDepth++;
-                         else if (t.type == ETokenType.RightBrace)
-                         {
-                             bDepth--;
-                             if (bDepth == 0)
-                             {
-                                 bodyEnd = i;
-                                 break;
-                            }
-                        }
-                     }
-                     if (bodyEnd >= bodyStart)
-                     {
-                         blockTokens = tokens.GetRange(bodyStart, bodyEnd - bodyStart + 1);
-                     }
-                 }
+                 bool hasBodyBrace = false;
+int bodyStart = -1;
+int bodyEnd = -1;
 
-                var fmmf = new FileMetaMemberFunction(
-                    m_FileMeta,
-                    modifiers,
-                    typeTokens,
-                    nameToken,
-                    paramTokens,
-                    blockTokens);
+if (searchBody < tokens.Count && tokens[searchBody].type == ETokenType.LeftBrace)
+{
+    hasBodyBrace = true;
+    int bDepth = 0;
+    bodyStart = searchBody;
+    for (int i = bodyStart; i < tokens.Count; i++)
+    {
+        var t = tokens[i];
+        if (t.type == ETokenType.LeftBrace) bDepth++;
+        else if (t.type == ETokenType.RightBrace)
+        {
+            bDepth--;
+            if (bDepth == 0)
+            {
+                bodyEnd = i;
+                break;
+            }
+        }
+    }
+    if (bodyEnd >= bodyStart)
+    {
+        blockTokens = tokens.GetRange(bodyStart, bodyEnd - bodyStart + 1);
+    }
+}
 
-                fmc.AddFileMemberFunction(fmmf);
+var fmmf = new FileMetaMemberFunction(
+    m_FileMeta,
+    modifiers,
+    typeTokens,
+    nameToken,
+    paramTokens,
+    blockTokens);
 
-                if (blockTokens != null && blockTokens.Count > 0 && fmmf.fileMetaBlockSyntax != null)
-                {
-                    ParseFunctionBodyTokens(blockTokens, fmmf.fileMetaBlockSyntax);
-                }
+fmc.AddFileMemberFunction(fmmf);
+
+if (hasBodyBrace && blockTokens != null && blockTokens.Count > 0 && fmmf.fileMetaBlockSyntax != null)
+{
+    ParseFunctionBodyTokens(blockTokens, fmmf.fileMetaBlockSyntax);
+}
             }
             else
             {
-                // === ³ÉÔ±±äÁ¿ ===
+                // === æˆå‘˜å˜é‡ ===
                 int nameGlobalIndex = index + namePosInTail;
                 int exprStart = nameGlobalIndex + 1;
                 if (exprStart >= tokens.Count)
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error ³ÉÔ±±äÁ¿È±ÉÙ³õÊ¼»¯±í´ïÊ½");
+                    Log.AddInStructFileMeta(EError.None, "Error æˆå‘˜å˜é‡ç¼ºå°‘åˆå§‹åŒ–è¡¨è¾¾å¼");
                     return;
                 }
 
@@ -544,12 +548,12 @@ namespace SimpleLanguage.Compile
             }
         }
         /// <summary>
-        /// ´ÓÒ»ĞĞ³ÉÔ±ÉùÃ÷ token ÖĞÌáÈ¡ÀàĞÍÇ°×º token ÁĞ±íºÍ³ÉÔ±Ãû token£º
-        /// ½öÔÚµÚÒ»¸ö '(' Ö®Ç°²ÎÓëÊ¶±ğ£¬±ÜÃâ°Ñ²ÎÊıÁĞ±íÀïµÄ±êÊ¶·ûµ±³É³ÉÔ±Ãû¡£
-        /// ¹æÔò£º
-        ///  - Èç¹û '(' Ö®Ç°Ö»ÓĞÒ»¸ö Identifier£¬Ôò¸Ã±êÊ¶·ûÎª name£¨Èç: _init_()£©¡£
-        ///  - Èç¹ûÓĞ¶à¸ö Identifier / Type£¬Ôò×îºóÒ»¸ö Identifier Îª name£¬ÆäÇ°ÃæµÄËùÓĞ token ÊÓÎªÀàĞÍ²¿·Ö
-        ///    £¨Ö§³Ö¸´ÔÓ·ºĞÍ/ÃüÃû¿Õ¼ä/Êı×é£¬Èç List<Map<NS.ClassName, Set<Core.String>>>[][][] name£©¡£
+        /// ä»ä¸€è¡Œæˆå‘˜å£°æ˜ token ä¸­æå–ç±»å‹å‰ç¼€ token åˆ—è¡¨å’Œæˆå‘˜å tokenï¼š
+        /// ä»…åœ¨ç¬¬ä¸€ä¸ª '(' ä¹‹å‰å‚ä¸è¯†åˆ«ï¼Œé¿å…æŠŠå‚æ•°åˆ—è¡¨é‡Œçš„æ ‡è¯†ç¬¦å½“æˆæˆå‘˜åã€‚
+        /// è§„åˆ™ï¼š
+        ///  - å¦‚æœ '(' ä¹‹å‰åªæœ‰ä¸€ä¸ª Identifierï¼Œåˆ™è¯¥æ ‡è¯†ç¬¦ä¸º nameï¼ˆå¦‚: _init_()ï¼‰ã€‚
+        ///  - å¦‚æœæœ‰å¤šä¸ª Identifier / Typeï¼Œåˆ™æœ€åä¸€ä¸ª Identifier ä¸º nameï¼Œå…¶å‰é¢çš„æ‰€æœ‰ token è§†ä¸ºç±»å‹éƒ¨åˆ†
+        ///    ï¼ˆæ”¯æŒå¤æ‚æ³›å‹/å‘½åç©ºé—´/æ•°ç»„ï¼Œå¦‚ List<Map<NS.ClassName, Set<Core.String>>>[][][] nameï¼‰ã€‚
         /// </summary>
         private bool GetTypeAndNameTokens(List<Token> lineTokens, out List<Token> typeTokens, out Token nameToken )
         {
@@ -559,7 +563,7 @@ namespace SimpleLanguage.Compile
             if (lineTokens == null || lineTokens.Count == 0)
                 return false;
 
-            // ÕÒµ½µÚÒ»¸ö '('
+            // æ‰¾åˆ°ç¬¬ä¸€ä¸ª '('
             int parIndex = -1;
             for (int i = 0; i < lineTokens.Count; i++)
             {
@@ -579,9 +583,9 @@ namespace SimpleLanguage.Compile
             for (int i = 0; i < searchEnd; i++)
             {
                 var tt = lineTokens[i].type;
-                // °Ñ±êÊ¶·ûºÍÄÚ½¨ÀàĞÍÃû (ETokenType.Type) ¶¼Í³¼Æ½øÀ´£¬
-                // ÕâÑù "override string toString()" ÖĞµÄ string + toString ¶¼²ÎÓëÅĞ¶Ï£¬
-                // ×îÖÕ toString ×÷Îª name£¬string ¹éÈë typeTokens¡£
+                // æŠŠæ ‡è¯†ç¬¦å’Œå†…å»ºç±»å‹å (ETokenType.Type) éƒ½ç»Ÿè®¡è¿›æ¥ï¼Œ
+                // è¿™æ · "override string toString()" ä¸­çš„ string + toString éƒ½å‚ä¸åˆ¤æ–­ï¼Œ
+                // æœ€ç»ˆ toString ä½œä¸º nameï¼Œstring å½’å…¥ typeTokensã€‚
                 if (tt == ETokenType.Identifier || tt == ETokenType.Type || tt == ETokenType.Void )
                 {
                     if (firstIdIndex == -1)
@@ -595,18 +599,18 @@ namespace SimpleLanguage.Compile
 
             if (idCount == 0)
             {
-                // ÕûĞĞÃ»ÓĞ±êÊ¶·û/ÀàĞÍÃû£¬ÎŞ·¨×÷Îª³ÉÔ±ÉùÃ÷
+                // æ•´è¡Œæ²¡æœ‰æ ‡è¯†ç¬¦/ç±»å‹åï¼Œæ— æ³•ä½œä¸ºæˆå‘˜å£°æ˜
                 return false;
             }
 
             if (idCount == 1)
             {
-                // Ö»ÓĞÒ»¸ö Identifier/Type£º `_init_()` / `_init_(){}` Ö®Àà ¡ª¡ª ¸Ã±êÊ¶·û¾ÍÊÇ³ÉÔ±Ãû
+                // åªæœ‰ä¸€ä¸ª Identifier/Typeï¼š `_init_()` / `_init_(){}` ä¹‹ç±» â€”â€” è¯¥æ ‡è¯†ç¬¦å°±æ˜¯æˆå‘˜å
                 nameToken = lineTokens[firstIdIndex];
             }
             else
             {
-                // ´æÔÚ¶à¸ö Identifier/Type£º×îºóÒ»¸ö Identifier/Type£¨ÔÚ '(' Ö®Ç°£©×÷Îª nameToken£¬ÆäÇ°ÃæµÄÈ«²¿ÊÓÎªÀàĞÍ²¿·Ö
+                // å­˜åœ¨å¤šä¸ª Identifier/Typeï¼šæœ€åä¸€ä¸ª Identifier/Typeï¼ˆåœ¨ '(' ä¹‹å‰ï¼‰ä½œä¸º nameTokenï¼Œå…¶å‰é¢çš„å…¨éƒ¨è§†ä¸ºç±»å‹éƒ¨åˆ†
                 if (lastIdIndex > 0)
                 {
                     typeTokens.AddRange(lineTokens.GetRange(0, lastIdIndex));
@@ -646,7 +650,7 @@ namespace SimpleLanguage.Compile
                    return tokens;
                }
 
-               // Á÷Ê½Ïû·ÑÒ»¸öÍêÕûµÄ '{...}' ¿é£ºÖ»±éÀúÒ»´ÎÖ÷ token ÁĞ±í
+               // æµå¼æ¶ˆè´¹ä¸€ä¸ªå®Œæ•´çš„ '{...}' å—ï¼šåªéå†ä¸€æ¬¡ä¸» token åˆ—è¡¨
                int depth = 0;
                while (m_TokenIndex < m_TokenList.Count)
                {
@@ -665,7 +669,7 @@ namespace SimpleLanguage.Compile
                        depth--;
                        if (depth == 0)
                        {
-                           // µ±Ç° '}' ½áÊøÁËÓëÆğÊ¼ '{' ¶ÔÓ¦µÄ¿é
+                           // å½“å‰ '}' ç»“æŸäº†ä¸èµ·å§‹ '{' å¯¹åº”çš„å—
                            break;
                        }
                    }
@@ -698,16 +702,16 @@ namespace SimpleLanguage.Compile
 
         private List<Token> ParseTypeParameters()
         {
-            // Í³Ò»µÄ·ºĞÍ²ÎÊı/ÀàĞÍ²ÎÊı½âÎö£º´Óµ±Ç°µÄ '<' ¿ªÊ¼£¬µ½Æ¥ÅäµÄ '>' ½áÊø£¬
-            // Ö§³ÖÇ¶Ì×·ºĞÍÓëÔ¼Êø£¨ÀıÈç <T1:Collections.List<Map<int,string>>,T2:Core.String>£©¡£
+            // ç»Ÿä¸€çš„æ³›å‹å‚æ•°/ç±»å‹å‚æ•°è§£æï¼šä»å½“å‰çš„ '<' å¼€å§‹ï¼Œåˆ°åŒ¹é…çš„ '>' ç»“æŸï¼Œ
+            // æ”¯æŒåµŒå¥—æ³›å‹ä¸çº¦æŸï¼ˆä¾‹å¦‚ <T1:Collections.List<Map<int,string>>,T2:Core.String>ï¼‰ã€‚
             return ParseGenericBracketedTokens();
         }
 
         /// <summary>
-        /// ´Óµ±Ç°Î»ÖÃ¿ªÊ¼½âÎöÒ»¸öÍêÕûµÄ·ºĞÍ²ÎÊı¿é£º
-        /// ĞÎÈç <T1:Collections.List<Map<int,string>>,T2:Core.String>
-        /// ½áÊøºó m_TokenIndex Í£ÔÚ '>' Ö®ºóµÄÏÂÒ»¸öÎ»ÖÃ¡£
-        /// ¸Ãº¯Êı¿ÉÔÚ½âÎö Array<T>¡¢extends¡¢interface µÈ³¡¾°¸´ÓÃ¡£
+        /// ä»å½“å‰ä½ç½®å¼€å§‹è§£æä¸€ä¸ªå®Œæ•´çš„æ³›å‹å‚æ•°å—ï¼š
+        /// å½¢å¦‚ <T1:Collections.List<Map<int,string>>,T2:Core.String>
+        /// ç»“æŸå m_TokenIndex åœåœ¨ '>' ä¹‹åçš„ä¸‹ä¸€ä¸ªä½ç½®ã€‚
+        /// è¯¥å‡½æ•°å¯åœ¨è§£æ Array<T>ã€extendsã€interface ç­‰åœºæ™¯å¤ç”¨ã€‚
         /// </summary>
         private List<Token> ParseGenericBracketedTokens()
         {
@@ -716,7 +720,7 @@ namespace SimpleLanguage.Compile
                 return result;
 
             int depth = 0;
-            // ´ÓµÚÒ»¸ö '<' ¿ªÊ¼ÊÕ¼¯
+            // ä»ç¬¬ä¸€ä¸ª '<' å¼€å§‹æ”¶é›†
             while (m_TokenIndex < m_TokenList.Count)
             {
                 Token t = Consume();
@@ -731,7 +735,7 @@ namespace SimpleLanguage.Compile
                     depth--;
                     if (depth == 0)
                     {
-                        // ÍêÕûµÄ·ºĞÍ¿é½áÊø
+                        // å®Œæ•´çš„æ³›å‹å—ç»“æŸ
                         break;
                     }
                 }
@@ -739,7 +743,7 @@ namespace SimpleLanguage.Compile
 
             if (depth != 0)
             {
-                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error ·ºĞÍ²ÎÊı½âÎöÊ±¼âÀ¨ºÅ²»Æ¥Åä£¡");
+                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error æ³›å‹å‚æ•°è§£ææ—¶å°–æ‹¬å·ä¸åŒ¹é…ï¼");
             }
 
             return result;
@@ -756,7 +760,7 @@ namespace SimpleLanguage.Compile
                 List<Token> interfaceName = ParseQualifiedName();
                 if (interfaceName.Count == 0) break;
 
-                // Èç¹ûºóÃæ½ô¸ú '<'£¬°Ñ·ºĞÍ²ÎÊı¿éÒ»Æğ³Ôµô£¨±£Ö¤ IIterable<T> ³ÉÎªÍêÕûµÄÒ»¶Î£©
+                // å¦‚æœåé¢ç´§è·Ÿ '<'ï¼ŒæŠŠæ³›å‹å‚æ•°å—ä¸€èµ·åƒæ‰ï¼ˆä¿è¯ IIterable<T> æˆä¸ºå®Œæ•´çš„ä¸€æ®µï¼‰
                 if (Match(ETokenType.Less))
                 {
                     var genericTokens = ParseGenericBracketedTokens();
@@ -804,17 +808,17 @@ namespace SimpleLanguage.Compile
         }
 
         /// <summary>
-        /// ´¿ Token °æ±¾µÄº¯ÊıÌå½âÎö£º½«Ò»¸öÍêÕûµÄ "{" ¿ªÊ¼ "}" ½áÊøµÄ token ĞòÁĞ
-        /// ²ğ³ÉÈô¸ÉÓï¾äµÄ Token ÁĞ±í£¬²¢½»ÓÉ FileMetatUtil.CreateFileMetaSyntaxFromTokens
-        /// ´´½¨¶ÔÓ¦µÄ FileMetaSyntax£¬¹Òµ½¸ø¶¨µÄ FileMetaBlockSyntax ÏÂ¡£
-        /// TokenToFileMeta Ö»¸ºÔğ¡°½Ø¶Ï¡±£¬²»Ö±½Ó new ¸÷ÖÖ FileMeta*Syntax¡£
+        /// çº¯ Token ç‰ˆæœ¬çš„å‡½æ•°ä½“è§£æï¼šå°†ä¸€ä¸ªå®Œæ•´çš„ "{" å¼€å§‹ "}" ç»“æŸçš„ token åºåˆ—
+        /// æ‹†æˆè‹¥å¹²è¯­å¥çš„ Token åˆ—è¡¨ï¼Œå¹¶äº¤ç”± FileMetatUtil.CreateFileMetaSyntaxFromTokens
+        /// åˆ›å»ºå¯¹åº”çš„ FileMetaSyntaxï¼ŒæŒ‚åˆ°ç»™å®šçš„ FileMetaBlockSyntax ä¸‹ã€‚
+        /// TokenToFileMeta åªè´Ÿè´£â€œæˆªæ–­â€ï¼Œä¸ç›´æ¥ new å„ç§ FileMeta*Syntaxã€‚
         /// </summary>
         private void ParseFunctionBodyTokens(List<Token> bodyTokens, FileMetaBlockSyntax blockSyntax)
          {
              if (bodyTokens == null || bodyTokens.Count == 0 || blockSyntax == null)
                   return;
 
-            // Ìø¹ıÊ×Î²µÄ { }
+            // è·³è¿‡é¦–å°¾çš„ { }
             int start = 0;
             int end = bodyTokens.Count - 1;
             if (bodyTokens[start].type == ETokenType.LeftBrace) start++;
@@ -849,34 +853,34 @@ namespace SimpleLanguage.Compile
                 else if (t.type == ETokenType.LeftBracket) depthBracket++;
                 else if (t.type == ETokenType.RightBracket && depthBracket > 0) depthBracket--;
 
-                // 1) ¿ØÖÆÁ÷Óï¾ä if/else/for/while/do/switch£º
-                //    ÓÉ FileMetatUtil.CreateFileMetaSyntaxFromTokens ¸ºÔğÊ¶±ğ£¬ÕâÀïÖ»ÔÚÕû¸öÓï¾äµ¥Ôª½áÊøÊ± flush¡£
-                //    ÎÒÃÇÒÀÈ»ÒÔ¶¥²ã·ÖºÅ»ò¶ÔÓ¦ block ½áÊø '}' ×÷ÎªÒ»ÌõÓï¾äµÄ½áÊø±êÖ¾¡£
+                // 1) æ§åˆ¶æµè¯­å¥ if/else/for/while/do/switchï¼š
+                //    ç”± FileMetatUtil.CreateFileMetaSyntaxFromTokens è´Ÿè´£è¯†åˆ«ï¼Œè¿™é‡Œåªåœ¨æ•´ä¸ªè¯­å¥å•å…ƒç»“æŸæ—¶ flushã€‚
+                //    æˆ‘ä»¬ä¾ç„¶ä»¥é¡¶å±‚åˆ†å·æˆ–å¯¹åº” block ç»“æŸ '}' ä½œä¸ºä¸€æ¡è¯­å¥çš„ç»“æŸæ ‡å¿—ã€‚
 
-                // 2) ÆÕÍ¨±í´ïÊ½£º¶¥²ã·ÖºÅ ';' ½áÊøÒ»ÌõÓï¾ä¡£
+                // 2) æ™®é€šè¡¨è¾¾å¼ï¼šé¡¶å±‚åˆ†å· ';' ç»“æŸä¸€æ¡è¯­å¥ã€‚
                 if (depthPar == 0 && depthBrace == 0 && depthBracket == 0 && t.type == ETokenType.SemiColon)
                 {
                     flush();
                 }
-                // 3) as/is ÕâÖÖ¿ÉÄÜ²»´ø·ÖºÅ¡¢ÒÔ»»ĞĞ·Ö¸ôµÄ±í´ïÊ½£ºÔÚ¶¥²ãÓöµ½ LineEnd Ò²¿ÉÒÔ½áÊøÒ»ÌõÓï¾ä¡£
+                // 3) as/is è¿™ç§å¯èƒ½ä¸å¸¦åˆ†å·ã€ä»¥æ¢è¡Œåˆ†éš”çš„è¡¨è¾¾å¼ï¼šåœ¨é¡¶å±‚é‡åˆ° LineEnd ä¹Ÿå¯ä»¥ç»“æŸä¸€æ¡è¯­å¥ã€‚
                 else if (depthPar == 0 && depthBrace == 0 && depthBracket == 0 && t.type == ETokenType.LineEnd)
                 {
                     flush();
                 }
             }
 
-            // ×îºóÒ»ÌõÓï¾äÈç¹ûÃ»ÓĞ·ÖºÅ½áÎ²£¬Ò²³¢ÊÔ½âÎöÒ»´Î
+            // æœ€åä¸€æ¡è¯­å¥å¦‚æœæ²¡æœ‰åˆ†å·ç»“å°¾ï¼Œä¹Ÿå°è¯•è§£æä¸€æ¬¡
             if (current.Count > 0)
             {
                 flush();
             }
         }
         /// <summary>
-        /// ½âÎö½ôËæÄ³¸ö±êÊ¶·û/ÀàĞÍÃûÖ®ºóµÄÄ£°å²ÎÊı¿é£ºĞÎÈç "<T1, T2:List<int>, Map<Core.Class, string>>"¡£
-        /// ´Ó¸ø¶¨ÁĞ±íµÄµ±Ç°Î»ÖÃ (ref index) ¿ªÊ¼£¬¼Ù¶¨µ±Ç° token Îª '<'£¬
-        /// ÊÕ¼¯ÍêÕûµÄ¼âÀ¨ºÅÄÚÈİ£¨Ö§³ÖÇ¶Ì×£©£¬²¢½« index ÒÆ¶¯µ½Ä£°å¿é½áÊøÖ®ºóµÄÏÂÒ»¸öÎ»ÖÃ¡£
+        /// è§£æç´§éšæŸä¸ªæ ‡è¯†ç¬¦/ç±»å‹åä¹‹åçš„æ¨¡æ¿å‚æ•°å—ï¼šå½¢å¦‚ "<T1, T2:List<int>, Map<Core.Class, string>>"ã€‚
+        /// ä»ç»™å®šåˆ—è¡¨çš„å½“å‰ä½ç½® (ref index) ì‹œì‘ï¼Œå‡å®šå½“å‰ í† í°ä¸º '<'ï¼Œ
+        /// æ”¶é›†å®Œæ•´çš„å°–æ‹¬å·å†…å®¹ï¼ˆæ”¯æŒåµŒå¥—ï¼‰ï¼Œå¹¶å°† index ç§»åŠ¨åˆ°æ¨¡æ¿å—ç»“æŸä¹‹åçš„ä¸‹ä¸€ä¸ªä½ç½®ã€‚
         /// 
-        /// µ÷ÓÃ·½¼È¿ÉÒÔÓÃÓÚÀàÄ£°å¶¨Òå£¬Ò²¿ÉÒÔÓÃÓÚº¯ÊıÄ£°å¶¨Òå£¬±ÜÃâÖØ¸´ÊµÏÖ¡£
+        /// è°ƒç”¨æ–¹æ—¢å¯ä»¥ç”¨äºç±»æ¨¡æ¿å®šä¹‰ï¼Œä¹Ÿå¯ä»¥ç”¨äºå‡½æ•°æ¨¡æ¿å®šä¹‰ï¼Œé¿å…é‡å¤å®ç°ã€‚
         /// </summary>
         private List<Token> ParseTemplateTokens(List<Token> tokens, ref int index)
         {
