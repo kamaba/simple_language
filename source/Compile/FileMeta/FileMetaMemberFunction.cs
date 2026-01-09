@@ -99,59 +99,159 @@ namespace SimpleLanguage.Compile
         // Node 版本构造方法（legacy，已由 Token 版本取代）
         // public FileMetaMemberFunction(FileMeta fm, Node block, List<Node> nodeList) { ... }
 
-        public FileMetaMemberFunction(FileMeta fm, List<Token> tokens, List<Token> blockTokens)
+        public FileMetaMemberFunction(
+            FileMeta fm,
+            List<Token> modifiers,
+            List<Token> typeTokens,
+            Token nameToken,
+            List<Token> paramTokens,
+            List<Token> blockTokens)
         {
             m_FileMeta = fm;
-            ParseFunctionFromTokens(tokens);
-            // 使用 Token 版本的 Block 解析逻辑，不再依赖 Node
+
+            // 1. 解析修饰符
+            if (modifiers != null)
+            {
+                foreach (var t in modifiers)
+                {
+                    if (t.type == ETokenType.Public || t.type == ETokenType.Private || t.type == ETokenType.Projected || t.type == ETokenType.Extern)
+                        m_PermissionToken = t;
+                    else if (t.type == ETokenType.Override) m_OverrideToken = t;
+                    else if (t.type == ETokenType.Static) m_StaticToken = t;
+                    else if (t.type == ETokenType.Get) m_GetToken = t;
+                    else if (t.type == ETokenType.Set) m_SetToken = t;
+                    else if (t.type == ETokenType.Final) m_FinalToken = t;
+                }
+            }
+
+            // 2. 解析返回类型（与成员变量使用同一类 FileMetaClassDefine 类型定义逻辑）
+            if (typeTokens != null && typeTokens.Count > 0)
+            {
+                m_DefineMetaClass = new FileMetaClassDefine(m_FileMeta, typeTokens);
+            }
+
+            // 3. 函数名 token
+            m_Token = nameToken;
+
+            // 4. 解析参数列表：paramTokens 应包含完整的 "( ... )" token 序列
+            if (paramTokens != null && paramTokens.Count > 0)
+            {
+                ParseParametersFromTokens(paramTokens);
+            }
+
+            // 5. 函数体块 token：与原来一样，只记录 { } 边界，内部语句由 TokenToFileMeta 另行拆分
             if (blockTokens != null && blockTokens.Count >= 2)
             {
-                // blockTokens 应该包含从 '{' 到 对应 '}' 的完整 Token 序列
                 m_LeftBraceToken = blockTokens[0];
                 m_RightBraceToken = blockTokens[blockTokens.Count - 1];
-
-                // 仅记录块的起止位置，具体语句由 Token 管线在外部构造 FileMetaSyntax 并通过 AddFileMetaSyntax 填充
                 m_FileMetaBlockSyntax = new FileMetaBlockSyntax(m_FileMeta, m_LeftBraceToken, m_RightBraceToken);
             }
         }
 
-        private void ParseFunctionFromTokens(List<Token> tokens)
+        private void ParseParametersFromTokens(List<Token> paramTokens)
         {
-            // 简化版 Token 解析逻辑，模仿 ParseFunction
-             for (int i = 0; i < tokens.Count; i++)
-             {
-                 Token t = tokens[i];
-                 if (t.type == ETokenType.Public || t.type == ETokenType.Private || t.type == ETokenType.Projected || t.type == ETokenType.Extern)
-                     m_PermissionToken = t;
-                 else if (t.type == ETokenType.Override) m_OverrideToken = t;
-                 else if (t.type == ETokenType.Static) m_StaticToken = t;
-                 else if (t.type == ETokenType.Get) m_GetToken = t;
-                 else if (t.type == ETokenType.Set) m_SetToken = t;
-                 else if (t.type == ETokenType.Final) m_FinalToken = t;
-                 else if (t.type == ETokenType.Identifier)
-                 {
-                     // 这里需要识别是返回值类型还是函数名
-                     // 简单策略：遇到 '(' 前的一个是函数名，再往前是返回值
-                     if (i + 1 < tokens.Count && tokens[i+1].type == ETokenType.LeftPar)
-                     {
-                         m_Token = t; // 函数名
-                         // 此时，如果前面还有 Identifier 或 Type，那就是返回值
-                         // 为了更准确，应该从后往前找，或者维护更复杂的状态
-                     }
-                     else
-                     {
-                         // 可能是返回值类型的一部分
-                     }
-                 }
-                 else if (t.type == ETokenType.Type || t.type == ETokenType.Void)
-                 {
-                      // 暂时认为是返回值
-                 }
-             }
-             
-             // 注意：参数列表和模板参数 parsing 需要识别 () 和 <>
-             // 在线性 Token 流中，这部分由 TokenToFileMeta 分割好传进来会更好，或者在这里扫描
-             // 假设 TokenToFileMeta 传进来的 tokens 包含了签名部分（直到 { 之前）
+            // 期望格式: '(' [参数1 [, 参数2 ...]] ')'
+            if (paramTokens == null || paramTokens.Count < 2)
+                return;
+
+            int index = 0;
+            if (paramTokens[index].type != ETokenType.LeftPar)
+                return;
+
+            index++; // 跳过 '('
+            List<Token> currentParam = new List<Token>();
+            int parenDepth = 1;
+
+            for (; index < paramTokens.Count; index++)
+            {
+                var t = paramTokens[index];
+
+                if (t.type == ETokenType.LeftPar)
+                {
+                    parenDepth++;
+                    currentParam.Add(t);
+                }
+                else if (t.type == ETokenType.RightPar)
+                {
+                    parenDepth--;
+                    if (parenDepth == 0)
+                    {
+                        // 结束整个参数列表
+                        AddParameterIfAny(currentParam);
+                        break;
+                    }
+                    currentParam.Add(t);
+                }
+                else if (t.type == ETokenType.Comma && parenDepth == 1)
+                {
+                    // 顶层逗号分隔一个参数
+                    AddParameterIfAny(currentParam);
+                    currentParam.Clear();
+                }
+                else
+                {
+                    currentParam.Add(t);
+                }
+            }
+        }
+
+        private void AddParameterIfAny(List<Token> paramTokens)
+        {
+            if (paramTokens == null)
+                return;
+
+            // 去掉首尾空白
+            int start = 0;
+            int end = paramTokens.Count - 1;
+            while (start <= end && (paramTokens[start].type == ETokenType.Space || paramTokens[start].type == ETokenType.LineEnd))
+                start++;
+            while (end >= start && (paramTokens[end].type == ETokenType.Space || paramTokens[end].type == ETokenType.LineEnd))
+                end--;
+
+            if (end < start)
+                return;
+
+            var slice = paramTokens.GetRange(start, end - start + 1);
+
+            // 参数格式与成员变量类似: [TypeTokens] Name [= 表达式]
+            // 暂时只支持 "类型 名称" 或 "名称"，使用 Identifier/Type 简单拆分
+
+            List<Token> idOrType = new List<Token>();
+            foreach (var t in slice)
+            {
+                if (t.type == ETokenType.Identifier || t.type == ETokenType.Type)
+                {
+                    idOrType.Add(t);
+                }
+            }
+
+            if (idOrType.Count == 0)
+                return;
+
+            Token nameTok = idOrType[idOrType.Count - 1];
+            List<Token> typeTokens = null;
+            if (idOrType.Count > 1)
+            {
+                typeTokens = idOrType.GetRange(0, idOrType.Count - 1);
+            }
+
+            var param = new FileMetaParamterDefine();
+            param.SetFileMeta(m_FileMeta);
+            typeof(FileMetaBase)
+                .GetField("m_Token", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                ?.SetValue(param, nameTok);
+
+            if (typeTokens != null && typeTokens.Count > 0)
+            {
+                // 复用 FileMetaClassDefine 来解析参数类型
+                var classDef = new FileMetaClassDefine(m_FileMeta, typeTokens);
+                // 将解析好的类型绑定到参数
+                typeof(FileMetaParamterDefine)
+                    .GetField("m_ClassDefineRef", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                    ?.SetValue(param, classDef);
+            }
+
+            AddMetaParamter(param);
         }
 
         // Node 版本解析函数与参数/模板解析（legacy，已由 Token 管线取代）
