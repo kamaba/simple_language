@@ -784,6 +784,10 @@ namespace SimpleLanguage.Compile
             m_BeginBlock = _bblock;
             m_EndBlock = _eblock;
         }
+        public void SetRightBraceToken( Token _eblock)
+        {
+            m_EndBlock = _eblock;
+        }
         public override void SetDeep(int _deep)
         {
             m_Deep = _deep;
@@ -797,7 +801,7 @@ namespace SimpleLanguage.Compile
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < deep; i++)
                 sb.Append(Global.tabChar);
-            sb.Append(beginBlock.lexeme.ToString() + Environment.NewLine);
+            sb.Append(beginBlock?.lexeme.ToString() + Environment.NewLine);
             for( int i = 0; i < m_FileMetaSyntax.Count; i++ )
             {
                 sb.Append(m_FileMetaSyntax[i].ToFormatString());                

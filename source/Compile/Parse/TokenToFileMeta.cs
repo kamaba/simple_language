@@ -1074,56 +1074,183 @@ namespace SimpleLanguage.Compile
 
         private void ParseFunctionBodyTokens(FileMetaMemberFunction fmmf)
         {
-            if (!Match(ETokenType.LeftBrace))
+            if (fmmf == null) return;
+
+            // 确保当前位置真的是函数体起始 '{'
+            while (m_TokenIndex < m_TokenList.Count &&
+                   (m_TokenList[m_TokenIndex].type == ETokenType.Space ||
+                    m_TokenList[m_TokenIndex].type == ETokenType.LineEnd ||
+                    m_TokenList[m_TokenIndex].type == ETokenType.SemiColon))
+            {
+                m_TokenIndex++;
+            }
+            if (m_TokenIndex >= m_TokenList.Count || m_TokenList[m_TokenIndex].type != ETokenType.LeftBrace)
+            {
                 return;
+            }
 
-            FileMetaBlockSyntax blockSyntax = new FileMetaBlockSyntax(fmmf.fileMeta);
-            fmmf.SetFileMetaBlockSyntax(blockSyntax);
+            // 为函数体创建一个顶层块语法节点：只消费最外层的函数体 '{'，用于 rootBlock。
+            Token outerLeftBrace = Consume();
+            FileMetaBlockSyntax rootBlock = new FileMetaBlockSyntax(fmmf.fileMeta, outerLeftBrace, null);
+            fmmf.SetFileMetaBlockSyntax(rootBlock);
 
-           DFAState previousState = m_Context.currentState;
+            DFAState previousState = m_Context.currentState;
             TransitionState(DFAState.InFunction);
 
-            int depthBrace = 0;
+            int depthBrace = 1; // 已经消费了函数体起始 '{'
             int depthPar = 0;
             int depthBracket = 0;
             var current = new List<Token>();
 
+            // 使用一个栈维护当前所在的块，索引 0 为 rootBlock
+            var blockStack = new Stack<FileMetaBlockSyntax>();
+            blockStack.Push(rootBlock);
+
+            bool StartsWithKeyword(List<Token> tokens)
+            {
+                if (tokens == null || tokens.Count == 0) return false;
+                foreach (var tk in tokens)
+                {
+                    if (tk.type == ETokenType.Space || tk.type == ETokenType.LineEnd) continue;
+                    return tk.type == ETokenType.If
+                           || tk.type == ETokenType.Else
+                           || tk.type == ETokenType.ElseIf
+                           || tk.type == ETokenType.Switch
+                           || tk.type == ETokenType.For
+                           || tk.type == ETokenType.While
+                           || tk.type == ETokenType.DoWhile;
+                }
+                return false;
+            }
+
+            bool ContainsAsOrIs(List<Token> tokens)
+            {
+                if (tokens == null || tokens.Count == 0) return false;
+                foreach (var tk in tokens)
+                {
+                    if (tk.type == ETokenType.As || tk.type == ETokenType.Is)
+                        return true;
+                }
+                return false;
+            }
+
+            bool IsOnlyWhitespaceTokens(List<Token> tokens)
+            {
+                if (tokens == null || tokens.Count == 0)
+                {
+                    return true;
+                }
+
+                foreach (var tk in tokens)
+                {
+                    if (tk.type != ETokenType.Space && tk.type != ETokenType.LineEnd)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            bool IsOnlyBracesOrWhitespace(List<Token> tokens)
+            {
+                if (tokens == null || tokens.Count == 0) return true;
+                foreach (var tk in tokens)
+                {
+                    if (tk.type != ETokenType.Space &&
+                        tk.type != ETokenType.LineEnd &&
+                        tk.type != ETokenType.LeftBrace &&
+                        tk.type != ETokenType.RightBrace)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
             void flush()
             {
                 if (current.Count == 0) return;
+
+                // 过滤只包含空白/换行/纯大括号的“空语句”
+                if (IsOnlyWhitespaceTokens(current) || IsOnlyBracesOrWhitespace(current))
+                {
+                    current.Clear();
+                    return;
+                }
+
+                FileMetaBlockSyntax targetBlock = blockStack.Peek();
                 var syntax = FileMetatUtil.CreateFileMetaSyntaxFromTokens(m_FileMeta, current);
                 current.Clear();
                 if (syntax != null)
                 {
-                    blockSyntax.AddFileMetaSyntax(syntax);
+                    targetBlock.AddFileMetaSyntax(syntax);
                 }
             }
-
-            var first = Consume();
-            current.Add(first);
-            depthBrace = 1;
 
             while (m_TokenIndex < m_TokenList.Count && depthBrace > 0)
             {
                 var t = Consume();
-                if (t == null) break;
 
                 current.Add(t);
 
                 if (t.type == ETokenType.LeftPar) depthPar++;
                 else if (t.type == ETokenType.RightPar && depthPar > 0) depthPar--;
-                else if (t.type == ETokenType.LeftBrace) depthBrace++;
-                else if (t.type == ETokenType.RightBrace && depthBrace > 0) depthBrace--;
+                else if (t.type == ETokenType.LeftBrace)
+                {
+                    // 进入新的内层 block：为其创建独立的 FileMetaBlockSyntax，并与当前块形成嵌套关系
+                    depthBrace++;
+                    var parentBlock = blockStack.Peek();
+                    var innerBlock = new FileMetaBlockSyntax(fmmf.fileMeta, t, null);
+                    parentBlock.AddFileMetaSyntax(innerBlock);
+                    blockStack.Push(innerBlock);
+
+                    // 左大括号本身不作为独立语句触发 flush，由 block 结构表达嵌套
+                    continue;
+                }
+                else if (t.type == ETokenType.RightBrace && depthBrace > 0)
+                {
+                    depthBrace--;
+                    // 在结束当前块之前，先尝试 flush 块内部剩余语句
+                    if (current.Count > 0)
+                    {
+                        flush();
+                    }
+
+                    // 结束当前块：为该块记录右括号，并从栈中弹出
+                    var finishedBlock = blockStack.Pop();
+                    finishedBlock.SetRightBraceToken(t);
+                    continue;
+                }
                 else if (t.type == ETokenType.LeftBracket) depthBracket++;
                 else if (t.type == ETokenType.RightBracket && depthBracket > 0) depthBracket--;
 
-                if (depthPar == 0 && depthBrace == 1 && depthBracket == 0 && t.type == ETokenType.SemiColon)
+                // 顶层（当前函数体这一层）的语句分割：
+                //  1) 普通表达式/赋值/调用：以 ';' 或换行结束一条语句。
+                //  2) 控制流 if/elif/else/for/while/dowhile/switch 通常与 '{ }' 结合，
+                //     整个结构由 FileMetatUtil.CreateFileMetaSyntaxFromTokens 进一步解析，这里保持整条不被过早切断。
+                //  3) return/as/is 语句：一旦遇到 ';' 或换行即可结束该语句。
+                if (depthBrace == 1 && depthPar == 0 && depthBracket == 0)
                 {
-                    flush();
-                }
-                else if (depthPar == 0 && depthBrace == 1 && depthBracket == 0 && t.type == ETokenType.LineEnd)
-                {
-                    flush();
+                    if (t.type == ETokenType.SemiColon)
+                    {
+                        flush();
+                    }
+                    else if (t.type == ETokenType.LineEnd)
+                    {
+                        // 行结束也可以作为语句边界：
+                        // - 如果以 if/else/for/while 等关键字开头，且后面跟 '{'，则通常仍是同一条语句，
+                        //   这里依然 flush，让 FileMetatUtil 在内部识别结构。
+                        // - 对于含有 return/as/is 的表达式语句，也在换行处结束。
+                        if (StartsWithKeyword(current) || ContainsAsOrIs(current))
+                        {
+                            flush();
+                        }
+                        else
+                        {
+                            flush();
+                        }
+                    }
                 }
             }
 
@@ -1133,6 +1260,6 @@ namespace SimpleLanguage.Compile
             }
 
             m_Context.currentState = previousState;
-}
+ }
     }
 }
