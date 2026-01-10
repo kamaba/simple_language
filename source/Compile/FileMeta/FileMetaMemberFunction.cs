@@ -104,8 +104,7 @@ namespace SimpleLanguage.Compile
             List<Token> modifiers,
             List<Token> typeTokens,
             Token nameToken,
-            List<Token> paramTokens,
-            List<Token> blockTokens)
+            List<Token> paramTokens )
         {
             m_FileMeta = fm;
 
@@ -140,13 +139,13 @@ namespace SimpleLanguage.Compile
                 ParseParametersFromTokens(paramTokens);
             }
 
-            // 5. 函数体块 token：与原来一样，只记录 { } 边界，内部语句由 TokenToFileMeta 另行拆分
-            if (blockTokens != null && blockTokens.Count >= 2)
-            {
-                m_LeftBraceToken = blockTokens[0];
-                m_RightBraceToken = blockTokens[blockTokens.Count - 1];
-                m_FileMetaBlockSyntax = new FileMetaBlockSyntax(m_FileMeta, m_LeftBraceToken, m_RightBraceToken);
-            }
+            //// 5. 函数体块 token：与原来一样，只记录 { } 边界，内部语句由 TokenToFileMeta 另行拆分
+            //if (blockTokens != null && blockTokens.Count >= 2)
+            //{
+            //    m_LeftBraceToken = blockTokens[0];
+            //    m_RightBraceToken = blockTokens[blockTokens.Count - 1];
+            //    m_FileMetaBlockSyntax = new FileMetaBlockSyntax(m_FileMeta, m_LeftBraceToken, m_RightBraceToken);
+            //}
         }
         
         /// <summary>

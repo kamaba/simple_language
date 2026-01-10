@@ -5,7 +5,6 @@
 //  DateTime: 2022/5/12 12:00:00
 //  Description: 
 //****************************************************************************
-using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,7 +13,7 @@ namespace SimpleLanguage.Compile
 {
     public partial class FileMetaNamespace : FileMetaBase
     {
-        public bool isSearchNamespace => m_IsSearchNamespace;
+        public FileMetaNamespace topLevelFileMetaNamespace => m_TopLevelFileMetaNamespace;
         public NamespaceStatementBlock namespaceStatementBlock => m_NamespaceStatementBlock;
 
         private NamespaceStatementBlock m_NamespaceStatementBlock = null;
@@ -22,7 +21,6 @@ namespace SimpleLanguage.Compile
         private Token m_BraceEndToken = null;
         private bool m_IsSearchNamespace = false;
 
-        //private List<Node> m_NodeList = new List<Node>();
         public new string name
         {
             get
@@ -45,10 +43,8 @@ namespace SimpleLanguage.Compile
         //        return null;
         //    }
         //}
-        protected NamespaceStatementBlock m_NamespaceStateBlock { get; set; }
-
-        public FileMetaNamespace topLevelFileMetaNamespace = null;
-
+        private NamespaceStatementBlock m_NamespaceStateBlock = null;
+        private FileMetaNamespace m_TopLevelFileMetaNamespace = null;
         private List<FileMetaNamespace> m_MetaNamespaceList = new List<FileMetaNamespace>();
         private List<FileMetaClass> m_ChildrenClassList = new List<FileMetaClass>();
 
@@ -73,18 +69,20 @@ namespace SimpleLanguage.Compile
         {
             this.m_NamespaceStatementBlock = fmn.m_NamespaceStatementBlock;
         }
-
-        // Node-based ctor (legacy) left commented for reference; token-based ctor below should be used instead.
-        // public FileMetaNamespace(Node namespaceNode, Node namespaceNameNode) { ... }
-
-        // Token/NamespaceStatementBlock-based ctor used by new pipeline
-        public FileMetaNamespace(NamespaceStatementBlock nsBlock)
+        public FileMetaNamespace(NamespaceStatementBlock nsBlock )
         {
             m_NamespaceStatementBlock = nsBlock ?? throw new ArgumentNullException(nameof(nsBlock));
         }
+        public void SetBraceToken( Token bs, Token es )
+        {
+            m_BraceBeginToken = bs;
+            m_BraceEndToken = es;
+            if (bs != null)
+            { m_IsSearchNamespace = true; }
+        }
         public FileMetaNamespace AddFileNamespace( FileMetaNamespace dln )
         {
-            dln.topLevelFileMetaNamespace = this;
+            dln.m_TopLevelFileMetaNamespace = this;
             m_MetaNamespaceList.Add(dln);
             dln.m_Deep = this.deep + 1;
 
@@ -94,10 +92,6 @@ namespace SimpleLanguage.Compile
         {
             mc.SetMetaNamespace(this);
             m_ChildrenClassList.Add(mc);
-        }
-        public override string ToString()
-        {
-            return "namespace " + name + "{}";
         }
         public override void SetDeep(int _deep)
         {
@@ -135,13 +129,17 @@ namespace SimpleLanguage.Compile
 
             return sb.ToString();
         }
-
-        public void BeginNamespace()
+        public override string ToString()
         {
-            if (m_NamespaceStatementBlock == null) return;
-
-            // legacy: MetaManager/MetaNode 绑定逻辑已从编译器前端移除，
-            // 如需在运行时建立命名空间元数据，请在此处接入新的 Meta 管理器。
+            StringBuilder sb = new StringBuilder();
+            sb.Append("namespace ");
+            if (m_NamespaceStateBlock != null)
+            {
+                sb.AppendLine("{");
+                sb.Append(m_NamespaceStateBlock.namespaceString);
+                sb.AppendLine("}");
+            }
+            return sb.ToString();
         }
     }
 }

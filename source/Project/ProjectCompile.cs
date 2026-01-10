@@ -76,6 +76,9 @@ namespace SimpleLanguage.Project
                 string compilefile = projectName + ".sp";
 
                 var fp = new FileParse(compilefile, new ParseFileParam());
+                fp.structParseComplete = StructParseComplete;
+                fp.buildParseComplete = BuildParseComplete;
+                fp.grammerParseComplete = GrammerParseComplete;
 
                 m_ProjectFile = fp.file;
 

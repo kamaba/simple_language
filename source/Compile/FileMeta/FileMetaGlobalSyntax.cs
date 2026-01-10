@@ -11,6 +11,7 @@ using SimpleLanguage.Core;
 using SimpleLanguage.CSharp;
 using SimpleLanguage.Parse;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Compile
@@ -20,20 +21,17 @@ namespace SimpleLanguage.Compile
         public Token m_AsToken;
         public Token m_AsNameToken;
         List<Token> m_ImportNameListToken = new List<Token>();
-        // legacy Node list, no longer used in token pipeline
-        // private List<Node> m_NodeList = new List<Node>();
         private List<Token> m_TokenList = new List<Token>();
         private NamespaceStatementBlock m_NamespaceStatement = null;
-#pragma warning disable CS0649 // 从未对字段“FileMetaImportSyntax.m_AsNameStatement”赋值，字段将一直保持其默认值 null
         private NamespaceStatementBlock m_AsNameStatement = null;
-#pragma warning restore CS0649 // 从未对字段“FileMetaImportSyntax.m_AsNameStatement”赋值，字段将一直保持其默认值 null
 
         public NamespaceStatementBlock namespaceStatement => m_NamespaceStatement;
         public NamespaceStatementBlock asNameStatement => m_AsNameStatement;
         // Node 版本构造方法（legacy，已由 Token 版本取代）
         // public FileMetaImportSyntax(List<Node> _nodeList) { ... }
-        public FileMetaImportSyntax( List<Token> _tokenList )
+        public FileMetaImportSyntax( Token importToken, List<Token> _tokenList )
         {
+            m_Token = importToken;
             m_TokenList = _tokenList;
         }
 
@@ -42,55 +40,33 @@ namespace SimpleLanguage.Compile
         /// </summary>
         private bool ParseImportSyntaxFromTokens()
         {
-            if (m_TokenList == null || m_TokenList.Count < 2)
+            if (m_TokenList == null || m_TokenList.Count < 1 )
             {
+                Debug.Assert(false, "");
                 Log.AddInStructFileMeta(EError.None, "Error import必须有2个Token!!");
                 return false;
             }
 
-            int index = 0;
-            // 第一个必须是 import 关键字
-            var first = m_TokenList[index++];
-            if (first.type != ETokenType.Import)
-            {
-                Log.AddInStructFileMeta(EError.None, "Error import 语句必须以 import 关键字开始!!");
-                return false;
-            }
-            m_Token = first;
-
             // 读取 import 路径：Identifier/Type + 可选的 '.' 分隔
             m_ImportNameListToken.Clear();
-            while (index < m_TokenList.Count)
+            foreach ( var t in m_TokenList)
             {
-                var t = m_TokenList[index];
-                if (t.type == ETokenType.Identifier || t.type == ETokenType.Type)
+                if (m_AsNameToken == null)
                 {
-                    m_ImportNameListToken.Add(t);
-                    index++;
-                    continue;
-                }
-                if (t.type == ETokenType.Period)
-                {
-                    index++;
-                    continue;
-                }
-                break;
-            }
-
-            // 可选的 "as 别名" 部分
-            if (index < m_TokenList.Count && m_TokenList[index].type == ETokenType.As)
-            {
-                m_AsToken = m_TokenList[index++];
-                if (index < m_TokenList.Count && m_TokenList[index].type == ETokenType.Identifier)
-                {
-                    m_AsNameToken = m_TokenList[index++];
+                    if( t.type == ETokenType.As )
+                    {
+                        m_AsToken = t;
+                    }
+                    else
+                    {
+                        m_ImportNameListToken.Add(t);
+                    }
                 }
                 else
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error import as 后必须紧跟标识符");
+                    m_AsNameToken = t;
                 }
             }
-
             m_NamespaceStatement = NamespaceStatementBlock.CreateStateBlock(m_ImportNameListToken);
             return true;
         }
@@ -127,7 +103,7 @@ namespace SimpleLanguage.Compile
                     else
                     {
                         mb = mb.GetChildrenMetaNodeByName(name);
-                        if (!mb.isMetaNamespace )
+                        if (mb?.isMetaNamespace == true )
                         {
                             Log.AddInStructFileMeta(EError.None, "解析Import语句发生错误，没有找到对应的命名空间路径: " + m_NamespaceStatement.tokenList[i].lexeme.ToString()
                                     + "Token: " + m_NamespaceStatement.tokenList[i].sourceBeginLine.ToString());

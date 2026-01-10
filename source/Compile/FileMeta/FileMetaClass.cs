@@ -225,6 +225,12 @@ namespace SimpleLanguage.Compile
             var fmtd = new FileMetaTemplateDefine(m_FileMeta, allTokens);
             m_TemplateDefineList.Add(fmtd);
         }
+        public void AddInnerFileMetaClass( FileMetaClass fmc )
+        {
+            fmc.m_Deep = this.deep + 1;
+            fmc.SetFileMetaClass(this);
+            m_ChildrenClassList.Add(fmc);
+        }
 
         // 解析 extends 或 interface 列表
         private int ParseExtendsOrInterface(List<Token> tokens, int startIndex, bool isInterface)

@@ -10,6 +10,7 @@ using SimpleLanguage.CSharp;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -325,35 +326,32 @@ namespace SimpleLanguage.Compile
         /// <summary>
         /// Token 直接转换为 FileMeta 的扩展方法
         /// </summary>
-        public void AddFileImportSyntaxFromTokens(List<Token> importTokens)
+        public void AddFileImportSyntaxFromTokens( Token importToken, List<Token> importListTokens)
         {
-            FileMetaImportSyntax fmis = new FileMetaImportSyntax(importTokens);
+            FileMetaImportSyntax fmis = new FileMetaImportSyntax(importToken, importListTokens);
             AddFileImportSyntax(fmis);
         }
 
-        public void AddFileNamespaceFromTokens(List<Token> namespaceTokens)
+        public FileMetaNamespace AddFileNamespaceFromTokens( Token nsToken, List<Token> namespaceTokensList )
         {
-            if (namespaceTokens == null || namespaceTokens.Count < 2)
+            if (namespaceTokensList == null || namespaceTokensList.Count < 1 )
             {
                 Log.AddInStructFileMeta(EError.None, $"Namespace没有发现定义namespace");
-                return;
+                return null;
             }
 
-            var ntlist = namespaceTokens.Skip(1).ToList();
-
-            NamespaceStatementBlock nsb = NamespaceStatementBlock.CreateStateBlock(ntlist);
+            NamespaceStatementBlock nsb = NamespaceStatementBlock.CreateStateBlock(namespaceTokensList);
             if (nsb != null)
             {
-                Log.AddInStructFileMeta(EError.None, $"Namespace 已解析: {nsb.namespaceString}");
+                FileMetaNamespace fmn = new FileMetaNamespace(nsb);
+                AddFileDefineNamespace(fmn);
+                return fmn;
             }
-        }
-
-        public void AddFileClassFromTokens(List<Token> classTokens)
-        {
-            if (classTokens == null || classTokens.Count == 0)
-                return;
-
-            Log.AddInStructFileMeta(EError.None, $"Class 已扫描");
+            else
+            {
+                Debug.Assert(false, "");
+                return null;
+            }
         }
     }
 }
