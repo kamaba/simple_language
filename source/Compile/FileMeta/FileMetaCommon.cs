@@ -12,34 +12,13 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using SimpleLanguage.Parse;
+using System.Reflection.PortableExecutable;
 
 namespace SimpleLanguage.Compile
 {
     public sealed class NamespaceStatementBlock
     {
-        private string m_NamespaceString = null;
-        private List<string> m_NamespaceList = null;
-        private List<string> m_NamespaceStackList = null;//层叠命名空间名称
-        public string namespaceString
-        {
-            get
-            {
-                if (m_NamespaceString == null)
-                {
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = 0; i < m_TokenList.Count; i++)
-                    {
-                        sb.Append(m_TokenList[i].lexeme.ToString());
-                        if (i != m_TokenList.Count - 1)
-                        {
-                            sb.Append(".");
-                        }
-                    }
-                    m_NamespaceString = sb.ToString();
-                }
-                return m_NamespaceString;
-            }
-        }
+        public string namespaceString => m_NamespaceString;
         public List<string> namespaceStackList
         {
             get
@@ -80,22 +59,17 @@ namespace SimpleLanguage.Compile
             }
         }
         public List<Token> tokenList => m_TokenList;
-        //public List<MetaNamespace> metaNamespaceList => m_MetaNamespaceList;
-        protected List<Token> m_TokenList = new List<Token>();
 
-        //protected List<MetaNamespace> m_MetaNamespaceList = new List<MetaNamespace>();
-        //public MetaNamespace lastMetaNamespace
-        //{
-        //    get
-        //    {
-        //        if (m_MetaNamespaceList.Count <= 0) return null;
-        //        return m_MetaNamespaceList[m_MetaNamespaceList.Count - 1];
-        //    }
-        //}
+        protected List<Token> m_TokenList = new List<Token>();
+        private string m_NamespaceString = null;
+        private List<string> m_NamespaceList = null;
+        private List<string> m_NamespaceStackList = null;//层叠命名空间名称
 
         protected NamespaceStatementBlock(List<Token> token)
         {
             m_TokenList = token;
+
+            UpdateNamespace();
         }
         //public void AddMetaNamespace( MetaNamespace metaNamespace)
         //{
@@ -134,6 +108,22 @@ namespace SimpleLanguage.Compile
             NamespaceStatementBlock nsb = new NamespaceStatementBlock(tokenList);
 
             return nsb;
+        }
+        public void UpdateNamespace()
+        {
+            if (m_NamespaceString == null)
+            {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < m_TokenList.Count; i++)
+                {
+                    sb.Append(m_TokenList[i].lexeme.ToString());
+                    if (i != m_TokenList.Count - 1)
+                    {
+                        sb.Append(".");
+                    }
+                }
+                m_NamespaceString = sb.ToString();
+            }
         }
         public override string ToString()
         {

@@ -132,17 +132,13 @@ namespace SimpleLanguage.Compile
             {
                 ParseParametersFromTokens(paramTokens);
             }
-            m_FileMetaBlockSyntax = new FileMetaBlockSyntax(m_FileMeta);
-
-            //// 5. 函数体块 token：与原来一样，只记录 { } 边界，内部语句由 TokenToFileMeta 另行拆分
-            //if (blockTokens != null && blockTokens.Count >= 2)
-            //{
-            //    m_LeftBraceToken = blockTokens[0];
-            //    m_RightBraceToken = blockTokens[blockTokens.Count - 1];
-            //    m_FileMetaBlockSyntax = new FileMetaBlockSyntax(m_FileMeta, m_LeftBraceToken, m_RightBraceToken);
-            //}
         }
-        
+        public void SetFileMetaBlockSyntax( FileMetaBlockSyntax fmbs )
+        {
+            m_FileMetaBlockSyntax = fmbs;
+            m_FileMetaBlockSyntax.SetFileMeta(m_FileMeta);
+        }
+
         /// <summary>
         /// 由 Token 管线在确定完整的函数体 { } token 范围之后调用，用于在成员函数上初始化块语法节点，
         /// 然后再由 TokenToFileMeta.ParseFunctionBodyTokens 把内部语句拆分成 FileMetaSyntax。

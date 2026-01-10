@@ -360,7 +360,7 @@ namespace SimpleLanguage.Compile
                         var nsBlock = NamespaceStatementBlock.CreateStateBlock(nsTokens);
                         if (nsBlock != null)
                         {
-                            m_TopLevelFileMetaNamespace = new FileMetaNamespace(nsBlock);
+                            m_TopLevelFileMetaNamespace = new FileMetaNamespace(fmn.token, nsBlock);
                         }
                     }
                 }

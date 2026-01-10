@@ -343,7 +343,7 @@ namespace SimpleLanguage.Compile
             NamespaceStatementBlock nsb = NamespaceStatementBlock.CreateStateBlock(namespaceTokensList);
             if (nsb != null)
             {
-                FileMetaNamespace fmn = new FileMetaNamespace(nsb);
+                FileMetaNamespace fmn = new FileMetaNamespace(nsToken, nsb);
                 AddFileDefineNamespace(fmn);
                 return fmn;
             }

@@ -30,7 +30,7 @@ namespace SimpleLanguage.Compile
         }
 
         private FileMeta m_FileMeta;
-        private List<Token> m_TokenList;
+        private readonly List<Token> m_TokenList;
         private int m_TokenIndex = 0;
         private ParseContext m_Context;
 
@@ -68,10 +68,13 @@ namespace SimpleLanguage.Compile
                 Token token = CurrentToken;
                 if (token == null || token.type == ETokenType.Finished)
                 {
+                    m_TokenIndex++;
                     break;
                 }
 
-                if (token.type == ETokenType.LineEnd || token.type == ETokenType.Space || token.type == ETokenType.SemiColon)
+                if (token.type == ETokenType.LineEnd || token.type == ETokenType.SemiColon
+                    //|| token.type == ETokenType.Space
+                    )
                 {
                     Consume();
                     continue;
@@ -120,34 +123,14 @@ namespace SimpleLanguage.Compile
 
                         if (headTokens.Count > 0 && IsImplicitClassDeclaration(headTokens, out var _))
                         {
-                            // 将当前 token 流替换为 headTokens 调用 ParseClassDeclaration，
-                            // 仅解析类头，类体由 ParseClassDeclaration/ParseClassBody 负责。
-                            var oldList = m_TokenList;
-                            int oldIndex = m_TokenIndex;
-
-                            m_TokenList = headTokens;
-                            m_TokenIndex = 0;
-
-                            try
+                            // 当前版本暂不在此处解析隐式类头，只是将索引跳过这行，避免修改只读 m_TokenList。
+                            m_TokenIndex = lookIndex;
+                            // 跳过行结束/分号
+                            if (m_TokenIndex < m_TokenList.Count &&
+                                (m_TokenList[m_TokenIndex].type == ETokenType.LineEnd ||
+                                 m_TokenList[m_TokenIndex].type == ETokenType.SemiColon))
                             {
-                                ParseClassDeclaration();
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.AddInStructFileMeta(EError.None, $"TokenToFileMeta 隐式类解析异常: {ex.Message}");
-                            }
-                            finally
-                            {
-                                // 还原主 token 流，并把主索引跳到刚才那一行（或分号）之后
-                                m_TokenList = oldList;
-                                m_TokenIndex = lookIndex;
-                                // 跳过行结束/分号
-                                if (m_TokenIndex < m_TokenList.Count &&
-                                    (m_TokenList[m_TokenIndex].type == ETokenType.LineEnd ||
-                                     m_TokenList[m_TokenIndex].type == ETokenType.SemiColon))
-                                {
-                                    m_TokenIndex++;
-                                }
+                                m_TokenIndex++;
                             }
 
                             continue;
@@ -180,9 +163,11 @@ namespace SimpleLanguage.Compile
 
         private void ParseNamespaceDeclaration()
         {
-            TransitionState(DFAState.InNamespace);
-            if (!Match(ETokenType.Namespace)) return;
+            //if (!Match(ETokenType.Namespace)) return;
 
+            var currentState = m_Context.currentState;
+            TransitionState(DFAState.InNamespace);
+            
             Token nsToken = Consume();
             List<Token> namespacePath = ParseQualifiedName();
 
@@ -261,23 +246,25 @@ namespace SimpleLanguage.Compile
                 }
             }
 
-            TransitionState(DFAState.Initial);
+            TransitionState(currentState);
         }
 
         private void ParseClassDeclaration()
         {
+            var currentState = m_Context.currentState;
             TransitionState(DFAState.InClass);
             List<Token> classModifiers = ParseModifiers();
-            Token classKeyword = null;
 
-            if (MatchAny(SimpleLanguage.ETokenType.Class, SimpleLanguage.ETokenType.Interface, SimpleLanguage.ETokenType.Enum, SimpleLanguage.ETokenType.Data)) classKeyword = Consume();
-            else { TransitionState(DFAState.Initial); return; }
+            Token classKeyword = null;
+            if (MatchAny(SimpleLanguage.ETokenType.Class, SimpleLanguage.ETokenType.Interface, SimpleLanguage.ETokenType.Enum, SimpleLanguage.ETokenType.Data)) 
+                classKeyword = Consume();
 
             // 支持多段类名：ClassP1.ClassC1.ClassC2
             List<Token> classNameTokens = new List<Token>();
             // 这里不仅接受 Identifier，还接受被词法阶段标记为 Type 的内建类型名
             // 例如：object/int/string 等在 LexerParse.ReadIdentifier 中被解析为 ETokenType.Type
-            if (Match(SimpleLanguage.ETokenType.Identifier) || Match(SimpleLanguage.ETokenType.Type))
+            if (Match(SimpleLanguage.ETokenType.Identifier) 
+                || Match(SimpleLanguage.ETokenType.Type))
             {
                 classNameTokens.Add(Consume());
                 // 后续若存在 .Name 形式的多段类名，一并收集
@@ -298,6 +285,7 @@ namespace SimpleLanguage.Compile
             else
             {
                 // 如果没有显式标识符，记录错误并构造一个占位符名称，避免后续空引用
+                Debug.Assert(false, "类声明缺少名称标识符");
                 Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析类型名称错误: 缺少标识符");
                 classNameTokens.Add(new Token(m_FileMeta.path, SimpleLanguage.ETokenType.Identifier, "<anonymous>", 0, 0));
             }
@@ -317,6 +305,13 @@ namespace SimpleLanguage.Compile
             {
                 extendsKeyword = Consume();
                 baseClass = ParseQualifiedName();
+
+                // 如果后面紧跟 '<'，把泛型参数块一起吃掉（保证 IIterable<T> 成为完整的一段）
+                if (Match(ETokenType.Less))
+                {
+                    var genericTokens = ParseGenericBracketedTokens();
+                    baseClass.AddRange(genericTokens);
+                }
             }
 
             Token interfaceKeyword = null;
@@ -360,7 +355,8 @@ namespace SimpleLanguage.Compile
                 else
                 {
                     // 兜底：仍然挂到 FileMeta，避免丢失
-                    m_FileMeta.AddFileMetaClass(fmc);
+                    //m_FileMeta.AddFileMetaClass(fmc);
+                    Debug.Assert(false, "未知容器类型，类声明无法正确挂载");
                 }
             }
             else
@@ -384,7 +380,7 @@ namespace SimpleLanguage.Compile
                     m_ContainerStack.Pop();
                 }
             }
-            TransitionState(DFAState.Initial);
+            TransitionState(currentState);
         }
 
         private void ParseClassBody(FileMetaClass fmc)
@@ -400,71 +396,62 @@ namespace SimpleLanguage.Compile
             int bracketDepth = 0;       // 当前 [] 深度
             var currentMember = new List<Token>();
 
-             void flushCurrentMember()
-             {
-                 // 修剪前后空白/分号
-                 int start = 0;
-                 int end = currentMember.Count - 1;
-                 while (start <= end && (currentMember[start].type == ETokenType.Space || currentMember[start].type == ETokenType.LineEnd || currentMember[start].type == ETokenType.SemiColon))
-                     start++;
-                 while (end >= start && (currentMember[end].type == ETokenType.Space || currentMember[end].type == ETokenType.LineEnd || currentMember[end].type == ETokenType.SemiColon))
-                     end--;
-                 if (end < start) { currentMember.Clear(); return; }
+            void flushCurrentMember()
+            {
+                // 修剪前后空白/分号
+                int start = 0;
+                int end = currentMember.Count - 1;
+                while (start <= end && (currentMember[start].type == ETokenType.Space || currentMember[start].type == ETokenType.LineEnd || currentMember[start].type == ETokenType.SemiColon))
+                    start++;
+                while (end >= start && (currentMember[end].type == ETokenType.Space || currentMember[end].type == ETokenType.LineEnd || currentMember[end].type == ETokenType.SemiColon))
+                    end--;
+                if (end < start) { currentMember.Clear(); return; }
 
-                 var memberTokens = currentMember.GetRange(start, end - start + 1);
+                var memberTokens = currentMember.GetRange(start, end - start + 1);
 
-                 var oldList = m_TokenList;
-                 int oldIndex = m_TokenIndex;
-                 m_TokenList = memberTokens;
-                 m_TokenIndex = 0;
-                 try
-                 {
-                     // 解析成员声明（类/函数/变量），如果是函数会返回对应的 FileMetaMemberFunction
-                     ParseClassMember(fmc);
-                 }
-                 catch (Exception ex)
-                 {
-                     Log.AddInStructFileMeta(EError.None, $"ParseClassBody 成员解析异常: {ex.Message}");
-                 }
-                 finally
-                 {
-                     m_TokenList = oldList;
-                     m_TokenIndex = oldIndex;
-                 }
+                try
+                {
+                    // 解析成员声明（类/函数/变量），函数体在主 token 流上 Streaming 解析
+                    ParseClassMember(fmc, memberTokens);
+                }
+                catch (Exception ex)
+                {
+                    Log.AddInStructFileMeta(EError.None, $"ParseClassBody 成员解析异常: {ex.Message}");
+                }
 
-                 currentMember.Clear();
-             }
+                currentMember.Clear();
+            }
 
             while (m_TokenIndex < m_TokenList.Count && depth > 0)
-             {
-                 var t = CurrentToken;
+            {
+                var t = CurrentToken;
 
                 // 类体结束：遇到与起始 '{' 对应的 '}'
-                 if (t.type == ETokenType.RightBrace && depth == 1 && parenDepth == 0 && bracketDepth == 0)
-                 {
+                if (t.type == ETokenType.RightBrace && depth == 1 && parenDepth == 0 && bracketDepth == 0)
+                {
                     Consume();
                     depth--;
                     break;
-                 }
+                }
 
                 // 若当前是函数体或内部类/嵌套块起始 '{'，先将已收集的成员头部交给 ParseClassMember
-                 if (t.type == ETokenType.LeftBrace && currentMember.Count > 0)
-                 {
+                if (t.type == ETokenType.LeftBrace && currentMember.Count > 0)
+                {
                     // 先把当前 member 声明部分解析为签名（可能是函数/内部类/成员变量），
                     // 函数体解析在 ParseClassMember 中通过 Streaming 的方式消耗
-                     flushCurrentMember();
-                     continue;
-                 }
+                    flushCurrentMember();
+                    continue;
+                }
 
-                 // 累积当前成员声明 token
-                 currentMember.Add(Consume());
+                // 累积当前成员声明 token
+                currentMember.Add(Consume());
 
-                 if (t.type == ETokenType.LeftPar) parenDepth++;
-                 else if (t.type == ETokenType.RightPar && parenDepth > 0) parenDepth--;
-                 else if (t.type == ETokenType.LeftBrace) depth++;
-                 else if (t.type == ETokenType.RightBrace && depth > 0) depth--;
-                 else if (t.type == ETokenType.LeftBracket) bracketDepth++;
-                 else if (t.type == ETokenType.RightBracket && bracketDepth > 0) bracketDepth--;
+                if (t.type == ETokenType.LeftPar) parenDepth++;
+                else if (t.type == ETokenType.RightPar && parenDepth > 0) parenDepth--;
+                else if (t.type == ETokenType.LeftBrace) depth++;
+                else if (t.type == ETokenType.RightBrace && depth > 0) depth--;
+                else if (t.type == ETokenType.LeftBracket) bracketDepth++;
+                else if (t.type == ETokenType.RightBracket && bracketDepth > 0) bracketDepth--;
 
                 // 在类体内，仅在顶层（未进入任何 () / []）且未进入嵌套类/函数体时，以分号或行结束来切分成员声明。
                 if (depth == 1 && parenDepth == 0 && bracketDepth == 0 &&
@@ -472,30 +459,31 @@ namespace SimpleLanguage.Compile
                 {
                     flushCurrentMember();
                 }
-             }
+            }
 
             m_Context.braceDepth--;
 
             if (currentMember.Count > 0)
-             {
-                 flushCurrentMember();
-             }
-         }
+            {
+                flushCurrentMember();
+            }
+        }
 
-        private FileMetaMemberFunction ParseClassMember(FileMetaClass fmc)
+        private void ParseClassMember(FileMetaClass fmc, List<Token> memberTokens)
         {
             // 统一解析：成员变量 / 成员函数 / 类中类
-            if (m_TokenList == null || m_TokenList.Count == 0)
-                return null;
+            if (memberTokens == null || memberTokens.Count == 0)
+                return;
 
-            var tokens = m_TokenList;
+            var tokens = memberTokens;
 
             // 去掉前后空白
             int start = 0;
             int end = tokens.Count - 1;
             while (start <= end && (tokens[start].type == ETokenType.Space || tokens[start].type == ETokenType.LineEnd)) start++;
             while (end >= start && (tokens[end].type == ETokenType.Space || tokens[end].type == ETokenType.LineEnd)) end--;
-            if (end < start) return null;
+            if (end < start) return;
+
             tokens = tokens.GetRange(start, end - start + 1);
             int index = 0;
 
@@ -533,31 +521,15 @@ namespace SimpleLanguage.Compile
             }
 
             if (index >= tokens.Count)
-                return null;
+                return;
 
             // === 1. 显式关键字的类中类：public class Class1{} / data Class2{} 等 ===
             Token firstNonMod = tokens[index];
             if (firstNonMod.type == ETokenType.Class || firstNonMod.type == ETokenType.Interface
                 || firstNonMod.type == ETokenType.Enum || firstNonMod.type == ETokenType.Data)
             {
-                var oldList = m_TokenList;
-                int oldIndex = m_TokenIndex;
-                m_TokenList = tokens;
-                m_TokenIndex = index; // 指向 class 关键字
-                try
-                {
-                    ParseClassDeclaration();
-                }
-                catch (Exception ex)
-                {
-                    Log.AddInStructFileMeta(EError.None, $"ParseClassMember 类中类解析异常: {ex.Message}");
-                }
-                finally
-                {
-                    m_TokenList = oldList;
-                    m_TokenIndex = oldIndex;
-                }
-                return null;
+                Log.AddInStructFileMeta(EError.None, "ParseClassMember 显式类中类解析暂未实现 Streaming 版本");
+                return;
             }
 
             // === 2. 无 class 关键字的内部类声明：Class1<T> extends Object { } ===
@@ -610,24 +582,8 @@ namespace SimpleLanguage.Compile
                 if (inheritScan < tokens.Count && tokens[inheritScan].type == ETokenType.LeftBrace)
                 {
                     // 认为是无关键字内部类声明：交给 ParseClassDeclaration，逻辑与外部类一致
-                    var oldList = m_TokenList;
-                    int oldIndex = m_TokenIndex;
-                    m_TokenList = tokens;
-                    m_TokenIndex = index; // 从修饰符后第一个 token 重新进入
-                    try
-                    {
-                        ParseClassDeclaration();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.AddInStructFileMeta(EError.None, $"ParseClassMember 隐式类中类解析异常: {ex.Message}");
-                    }
-                    finally
-                    {
-                        m_TokenList = oldList;
-                        m_TokenIndex = oldIndex;
-                    }
-                    return null;
+                    Log.AddInStructFileMeta(EError.None, "ParseClassMember 隐式类中类 Streaming 解析暂未实现");
+                    return;
                 }
             }
 
@@ -639,7 +595,7 @@ namespace SimpleLanguage.Compile
             Token nameToken;
             if (!GetTypeAndNameTokens(tailTokens, out typeTokens, out nameToken))
             {
-                return null;
+                return;
             }
 
             // 计算 nameToken 在 tailTokens 中的索引
@@ -653,7 +609,7 @@ namespace SimpleLanguage.Compile
                 }
             }
             if (namePosInTail == -1)
-                return null;
+                return;
 
             // 计算 Name 之后的位置，先越过空白
             int afterName2 = index + namePosInTail + 1;
@@ -719,7 +675,6 @@ namespace SimpleLanguage.Compile
                 // 函数体解析：使用 Streaming 方式在主 token 流上从当前 '{' 开始消费，
                 // 调用方保证此时主 token 流已经停在函数体起始 '{' 位置。
                 ParseFunctionBodyTokens(fmmf);
-                return fmmf;
             }
             else
             {
@@ -742,13 +697,13 @@ namespace SimpleLanguage.Compile
                 if (!hasAssign)
                 {
                     Log.AddInStructFileMeta(EError.None, "Error 成员变量缺少 '=' 初始化表达式");
-                    return null;
+                    return;
                 }
 
                 if (exprStart >= tokens.Count)
                 {
                     Log.AddInStructFileMeta(EError.None, "Error 成员变量缺少初始化表达式");
-                    return null;
+                    return;
                 }
 
                 var exprTokens = tokens.GetRange(exprStart, tokens.Count - exprStart);
@@ -761,7 +716,7 @@ namespace SimpleLanguage.Compile
                     exprTokens);
 
                 fmc.AddFileMemberVariable(fmmv);
-                return null;
+                return;
             }
         }
 
@@ -1119,15 +1074,13 @@ namespace SimpleLanguage.Compile
 
         private void ParseFunctionBodyTokens(FileMetaMemberFunction fmmf)
         {
-            if (fmmf == null) return;
-
-            FileMetaBlockSyntax blockSyntax = fmmf.fileMetaBlockSyntax;
-            if (blockSyntax == null) return;
-
             if (!Match(ETokenType.LeftBrace))
                 return;
 
-            DFAState previousState = m_Context.currentState;
+            FileMetaBlockSyntax blockSyntax = new FileMetaBlockSyntax(fmmf.fileMeta);
+            fmmf.SetFileMetaBlockSyntax(blockSyntax);
+
+           DFAState previousState = m_Context.currentState;
             TransitionState(DFAState.InFunction);
 
             int depthBrace = 0;

@@ -13,25 +13,10 @@ namespace SimpleLanguage.Compile
 {
     public partial class FileMetaNamespace : FileMetaBase
     {
+        public override string name => m_NamespaceString;
         public FileMetaNamespace topLevelFileMetaNamespace => m_TopLevelFileMetaNamespace;
         public NamespaceStatementBlock namespaceStatementBlock => m_NamespaceStatementBlock;
 
-        private NamespaceStatementBlock m_NamespaceStatementBlock = null;
-        private Token m_BraceBeginToken = null;
-        private Token m_BraceEndToken = null;
-        private bool m_IsSearchNamespace = false;
-
-        public new string name
-        {
-            get
-            {
-                if (m_NamespaceStateBlock != null)
-                {
-                    return m_NamespaceStateBlock.namespaceString;
-                }
-                return "";
-            }
-        }
         //public List<MetaNamespace> metaNamespaceList
         //{
         //    get
@@ -43,10 +28,15 @@ namespace SimpleLanguage.Compile
         //        return null;
         //    }
         //}
-        private NamespaceStatementBlock m_NamespaceStateBlock = null;
+        private NamespaceStatementBlock m_NamespaceStatementBlock = null;
         private FileMetaNamespace m_TopLevelFileMetaNamespace = null;
         private List<FileMetaNamespace> m_MetaNamespaceList = new List<FileMetaNamespace>();
         private List<FileMetaClass> m_ChildrenClassList = new List<FileMetaClass>();
+        private Token m_BraceBeginToken = null;
+        private Token m_BraceEndToken = null;
+        private bool m_IsSearchNamespace = false;
+
+        private string m_NamespaceString = "";
 
         private static Stack<FileMetaNamespace> s_MetaNamespaceStack = new Stack<FileMetaNamespace>();
         public Stack<FileMetaNamespace> namespaceStack
@@ -69,9 +59,13 @@ namespace SimpleLanguage.Compile
         {
             this.m_NamespaceStatementBlock = fmn.m_NamespaceStatementBlock;
         }
-        public FileMetaNamespace(NamespaceStatementBlock nsBlock )
+        public FileMetaNamespace( Token namespaceToken, NamespaceStatementBlock nsBlock )
         {
+            this.m_Token = namespaceToken;
+
             m_NamespaceStatementBlock = nsBlock ?? throw new ArgumentNullException(nameof(nsBlock));
+
+            m_NamespaceString = m_NamespaceStatementBlock.namespaceString;
         }
         public void SetBraceToken( Token bs, Token es )
         {
@@ -110,7 +104,7 @@ namespace SimpleLanguage.Compile
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < deep; i++)
                 sb.Append(Global.tabChar);
-            sb.Append( m_Token.lexeme.ToString() + " " + m_NamespaceStateBlock.ToFormatString());
+            sb.Append( m_Token.lexeme.ToString() + " " + m_NamespaceStatementBlock.ToFormatString());
             sb.Append(Environment.NewLine);
             for (int i = 0; i < deep; i++)
                 sb.Append(Global.tabChar);
@@ -133,10 +127,10 @@ namespace SimpleLanguage.Compile
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("namespace ");
-            if (m_NamespaceStateBlock != null)
+            if (m_NamespaceStatementBlock != null)
             {
                 sb.AppendLine("{");
-                sb.Append(m_NamespaceStateBlock.namespaceString);
+                sb.Append(m_NamespaceStatementBlock.namespaceString);
                 sb.AppendLine("}");
             }
             return sb.ToString();
