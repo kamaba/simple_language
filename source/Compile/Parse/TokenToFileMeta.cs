@@ -66,7 +66,10 @@ namespace SimpleLanguage.Compile
             while (m_TokenIndex < m_TokenList.Count)
             {
                 Token token = CurrentToken;
-                if (token == null || token.type == ETokenType.Finished) break;
+                if (token == null || token.type == ETokenType.Finished)
+                {
+                    break;
+                }
 
                 if (token.type == ETokenType.LineEnd || token.type == ETokenType.Space || token.type == ETokenType.SemiColon)
                 {
@@ -74,10 +77,85 @@ namespace SimpleLanguage.Compile
                     continue;
                 }
 
-                if (token.type == ETokenType.Import) ParseImportDirective();
-                else if (token.type == ETokenType.Namespace) ParseNamespaceDeclaration();
-                else if (IsClassDeclarationStart(token)) ParseClassDeclaration();
-                else Consume();
+                if (token.type == ETokenType.Import)
+                {
+                    ParseImportDirective();
+                }
+                else if (token.type == ETokenType.Namespace)
+                {
+                    ParseNamespaceDeclaration();
+                }
+                else if (IsClassDeclarationStart(token))
+                {
+                    ParseClassDeclaration();
+                }
+                else
+                {
+                    // 处理 namespace 块内的隐式类定义：
+                    // 形如：
+                    //   namespace NS
+                    //   {
+                    //       ClassName
+                    //       {
+                    //       }
+                    //   }
+                    // 这里没有 class/interface/enum/data 关键字。
+                    // 只在 namespace / class 容器内尝试隐式类识别，避免污染顶层其它语句。
+                    if (m_ContainerStack.Count > 0 &&
+                        (m_ContainerStack.Peek() is FileMetaNamespace || m_ContainerStack.Peek() is FileMetaClass))
+                    {
+                        // 从当前位置收集到行尾或分号的 token，尝试识别隐式类头。
+                        var headTokens = new List<Token>();
+                        int lookIndex = m_TokenIndex;
+                        while (lookIndex < m_TokenList.Count)
+                        {
+                            var t = m_TokenList[lookIndex];
+                            if (t.type == ETokenType.LineEnd || t.type == ETokenType.SemiColon)
+                            {
+                                break;
+                            }
+                            headTokens.Add(t);
+                            lookIndex++;
+                        }
+
+                        if (headTokens.Count > 0 && IsImplicitClassDeclaration(headTokens, out var _))
+                        {
+                            // 将当前 token 流替换为 headTokens 调用 ParseClassDeclaration，
+                            // 仅解析类头，类体由 ParseClassDeclaration/ParseClassBody 负责。
+                            var oldList = m_TokenList;
+                            int oldIndex = m_TokenIndex;
+
+                            m_TokenList = headTokens;
+                            m_TokenIndex = 0;
+
+                            try
+                            {
+                                ParseClassDeclaration();
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.AddInStructFileMeta(EError.None, $"TokenToFileMeta 隐式类解析异常: {ex.Message}");
+                            }
+                            finally
+                            {
+                                // 还原主 token 流，并把主索引跳到刚才那一行（或分号）之后
+                                m_TokenList = oldList;
+                                m_TokenIndex = lookIndex;
+                                // 跳过行结束/分号
+                                if (m_TokenIndex < m_TokenList.Count &&
+                                    (m_TokenList[m_TokenIndex].type == ETokenType.LineEnd ||
+                                     m_TokenList[m_TokenIndex].type == ETokenType.SemiColon))
+                                {
+                                    m_TokenIndex++;
+                                }
+                            }
+
+                            continue;
+                        }
+                    }
+
+                    Consume();
+                }
             }
         }
 
