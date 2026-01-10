@@ -390,61 +390,21 @@ namespace SimpleLanguage.Compile
         private void ParseClassBody(FileMetaClass fmc)
         {
             if (!Match(ETokenType.LeftBrace)) return;
-            // consume '{' starting the class body
 
-            Token leftBraceToken = m_TokenList[m_TokenIndex++];
-
+            // 消费类体起始左括号 '{'
+            Consume();
             m_Context.braceDepth++;
 
-            // Collect tokens for the body until matching '}'
-            var bodyTokens = new List<Token>();
-            int depth = 1;
-            while (m_TokenIndex < m_TokenList.Count && depth > 0)
-            {
-                var t = CurrentToken;
-                if (t.type == SimpleLanguage.ETokenType.LeftBrace)
-                {
-                    depth++;
-                    bodyTokens.Add(Consume());
-                }
-                else if (t.type == SimpleLanguage.ETokenType.RightBrace)
-                {
-                    depth--;
-                    if (depth > 0)
-                    {
-                        bodyTokens.Add(Consume());
-                    }
-                    else
-                    {
-                        // consume the closing '}' for this class body
-                        Consume();
-                        break;
-                    }
-                }
-                else
-                {
-                    bodyTokens.Add(Consume());
-                }
-            }
-
-            m_Context.braceDepth--;
-
-            // Now parse members from bodyTokens using a simple top-level splitter
-            if (bodyTokens.Count == 0)
-            {
-                Debug.Assert(false, "使用类的情况 要在类中必须 有{}这样的范围限定!");
-                return;
-            }
-
-            int index = 0;
-            int parenDepth = 0;
-            int braceDepth = 0;
-            int bracketDepth = 0;
+            int depth = 1;              // 类体 brace 深度，从 1 开始
+            int parenDepth = 0;         // 当前 () 深度
+            int bracketDepth = 0;       // 当前 [] 深度
             var currentMember = new List<Token>();
 
-            void flushCurrent()
+            FileMetaMemberFunction lastParsedFunction = null;
+
+            void flushCurrentMember()
             {
-                // trim leading/trailing spaces/lineEnds
+                // 修剪前后空白/分号
                 int start = 0;
                 int end = currentMember.Count - 1;
                 while (start <= end && (currentMember[start].type == ETokenType.Space || currentMember[start].type == ETokenType.LineEnd || currentMember[start].type == ETokenType.SemiColon))
@@ -455,14 +415,14 @@ namespace SimpleLanguage.Compile
 
                 var memberTokens = currentMember.GetRange(start, end - start + 1);
 
-                // 委托给 ParseClassMember：在那里统一判断是类中类、函数（含 { }）还是变量
                 var oldList = m_TokenList;
                 int oldIndex = m_TokenIndex;
                 m_TokenList = memberTokens;
                 m_TokenIndex = 0;
                 try
                 {
-                    ParseClassMember(fmc);
+                    // 解析成员声明，若为函数则返回对应的 FileMetaMemberFunction
+                    lastParsedFunction = ParseClassMember(fmc);
                 }
                 catch (Exception ex)
                 {
@@ -477,38 +437,70 @@ namespace SimpleLanguage.Compile
                 currentMember.Clear();
             }
 
-            while (index < bodyTokens.Count)
+            while (m_TokenIndex < m_TokenList.Count && depth > 0)
             {
-                var t = bodyTokens[index++];
-                currentMember.Add(t);
+                var t = CurrentToken;
+
+                // 类体结束：遇到与起始 '{' 对应的 '}'，并且不是被 ParseFunctionBodyStreaming 消费掉的
+                if (t.type == ETokenType.RightBrace && depth == 1 && parenDepth == 0 && bracketDepth == 0)
+                {
+                    Consume();
+                    depth--;
+                    break;
+                }
+
+                // 若当前是函数体起始 '{'，由 ParseFunctionBodyStreaming 处理整个函数体
+                if (t.type == ETokenType.LeftBrace && currentMember.Count > 0)
+                {
+                    // 先把当前 member 声明部分解析为签名（可能是函数/内部类/成员变量）
+                    flushCurrentMember();
+
+                    // 如果上一条成员是函数，则在主 token 流上流式解析其函数体
+                    if (lastParsedFunction != null && Match(ETokenType.LeftBrace))
+                    {
+                        ParseFunctionBodyStreaming(lastParsedFunction);
+                        lastParsedFunction = null;
+                    }
+                    continue;
+                }
+
+                // 累积当前成员声明 token
+                currentMember.Add(Consume());
 
                 if (t.type == ETokenType.LeftPar) parenDepth++;
                 else if (t.type == ETokenType.RightPar && parenDepth > 0) parenDepth--;
-                else if (t.type == ETokenType.LeftBrace) braceDepth++;
-                else if (t.type == ETokenType.RightBrace && braceDepth > 0) braceDepth--;
+                else if (t.type == ETokenType.LeftBrace) depth++;
+                else if (t.type == ETokenType.RightBrace && depth > 0) depth--;
                 else if (t.type == ETokenType.LeftBracket) bracketDepth++;
                 else if (t.type == ETokenType.RightBracket && bracketDepth > 0) bracketDepth--;
 
-                // 在类体内，仅在顶层（未进入任何 () / {} / []）时，以分号或行结束来切分成员声明。
-                if (parenDepth == 0 && braceDepth == 0 && bracketDepth == 0 &&
+                // 在类体内，仅在顶层（未进入任何 () / []）且未进入嵌套类/函数体时，以分号或行结束来切分成员声明。
+                if (depth == 1 && parenDepth == 0 && bracketDepth == 0 &&
                     (t.type == ETokenType.SemiColon || t.type == ETokenType.LineEnd))
                 {
-                    flushCurrent();
+                    flushCurrentMember();
                 }
             }
 
-            // flush any remaining tokens that didn't end with ';' or '}'
+            m_Context.braceDepth--;
+
             if (currentMember.Count > 0)
             {
-                flushCurrent();
+                flushCurrentMember();
+                // 类体末尾如果刚好是函数声明且紧接着是函数体，也需要尝试函数体解析
+                if (lastParsedFunction != null && Match(ETokenType.LeftBrace))
+                {
+                    ParseFunctionBodyStreaming(lastParsedFunction);
+                    lastParsedFunction = null;
+                }
             }
         }
 
-        private void ParseClassMember(FileMetaClass fmc)
+        private FileMetaMemberFunction ParseClassMember(FileMetaClass fmc)
         {
             // 统一解析：成员变量 / 成员函数 / 类中类
             if (m_TokenList == null || m_TokenList.Count == 0)
-                return;
+                return null;
 
             var tokens = m_TokenList;
 
@@ -517,8 +509,7 @@ namespace SimpleLanguage.Compile
             int end = tokens.Count - 1;
             while (start <= end && (tokens[start].type == ETokenType.Space || tokens[start].type == ETokenType.LineEnd)) start++;
             while (end >= start && (tokens[end].type == ETokenType.Space || tokens[end].type == ETokenType.LineEnd)) end--;
-            if (end < start) return;
-
+            if (end < start) return null;
             tokens = tokens.GetRange(start, end - start + 1);
             int index = 0;
 
@@ -556,14 +547,13 @@ namespace SimpleLanguage.Compile
             }
 
             if (index >= tokens.Count)
-                return;
+                return null;
 
-            // 3. 检查是否是类中类：第一个非修饰符 token 是 class/interface/enum/data，且后面有 '{ }'
+            // === 1. 显式关键字的类中类：public class Class1{} / data Class2{} 等 ===
             Token firstNonMod = tokens[index];
             if (firstNonMod.type == ETokenType.Class || firstNonMod.type == ETokenType.Interface
                 || firstNonMod.type == ETokenType.Enum || firstNonMod.type == ETokenType.Data)
             {
-                // 直接在独立 token 流里调用 ParseClassDeclaration，生成 FileMetaClass（由 FileMetaClass 内部处理 innerClass 标记）
                 var oldList = m_TokenList;
                 int oldIndex = m_TokenIndex;
                 m_TokenList = tokens;
@@ -581,18 +571,89 @@ namespace SimpleLanguage.Compile
                     m_TokenList = oldList;
                     m_TokenIndex = oldIndex;
                 }
-                return;
+                return null;
             }
 
-            // 4. 非类中类：走成员变量/函数解析，并在这里统一计算函数体 { }
+            // === 2. 无 class 关键字的内部类声明：Class1<T> extends Object { } ===
+            // 从当前 index 开始，尝试识别 [类型部分] + 名称 + 可选模板 + extends/interface + '{'
+            int scan = index;
+            // 跳过可能存在的类型前缀，例如 outer.Type 或内建类型
+            while (scan < tokens.Count &&
+                   (tokens[scan].type == ETokenType.Identifier ||
+                    tokens[scan].type == ETokenType.Type ||
+                    tokens[scan].type == ETokenType.Period ||
+                    tokens[scan].type == ETokenType.Void))
+            {
+                scan++;
+            }
 
-            // 从当前 index 到行尾的子序列作为候选
+            // 名称 token 位置假定为最后一个标识符/类型名
+            int nameCandidate = scan - 1;
+            if (nameCandidate >= index &&
+                (tokens[nameCandidate].type == ETokenType.Identifier || tokens[nameCandidate].type == ETokenType.Type))
+            {
+                int afterName = nameCandidate + 1;
+                // 跳过空白
+                while (afterName < tokens.Count &&
+                       (tokens[afterName].type == ETokenType.Space || tokens[afterName].type == ETokenType.LineEnd))
+                {
+                    afterName++;
+                }
+
+                // 可选模板参数块 <T,...>
+                if (afterName < tokens.Count && tokens[afterName].type == ETokenType.Less)
+                {
+                    // 仅用于向前跳过模板，不需要保存
+                    ParseTemplateTokens(tokens, ref afterName);
+                    while (afterName < tokens.Count &&
+                           (tokens[afterName].type == ETokenType.Space || tokens[afterName].type == ETokenType.LineEnd))
+                    {
+                        afterName++;
+                    }
+                }
+
+                // 跳过 extends/interface 等继承部分，直到遇到 '{' 或 ';'
+                int inheritScan = afterName;
+                while (inheritScan < tokens.Count &&
+                       tokens[inheritScan].type != ETokenType.LeftBrace &&
+                       tokens[inheritScan].type != ETokenType.SemiColon)
+                {
+                    inheritScan++;
+                }
+
+                if (inheritScan < tokens.Count && tokens[inheritScan].type == ETokenType.LeftBrace)
+                {
+                    // 认为是无关键字内部类声明：交给 ParseClassDeclaration，逻辑与外部类一致
+                    var oldList = m_TokenList;
+                    int oldIndex = m_TokenIndex;
+                    m_TokenList = tokens;
+                    m_TokenIndex = index; // 从修饰符后第一个 token 重新进入
+                    try
+                    {
+                        ParseClassDeclaration();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.AddInStructFileMeta(EError.None, $"ParseClassMember 隐式类中类解析异常: {ex.Message}");
+                    }
+                    finally
+                    {
+                        m_TokenList = oldList;
+                        m_TokenIndex = oldIndex;
+                    }
+                    return null;
+                }
+            }
+
+            // === 3. 非类中类：成员函数 / 成员变量 ===
+
+            // 从当前 index 到行尾的子序列作为候选，提取类型前缀和名称
             var tailTokens = tokens.GetRange(index, tokens.Count - index);
             List<Token> typeTokens;
             Token nameToken;
             if (!GetTypeAndNameTokens(tailTokens, out typeTokens, out nameToken))
             {
-                return;
+                return null;
             }
 
             // 计算 nameToken 在 tailTokens 中的索引
@@ -606,61 +667,36 @@ namespace SimpleLanguage.Compile
                 }
             }
             if (namePosInTail == -1)
-                return;
+                return null;
 
-            // 5. 计算 Name 之后的位置，先越过空白，再看是否有模板参数块 `<...>`
-            int afterName = index + namePosInTail + 1;
-            while (afterName < tokens.Count &&
-                   (tokens[afterName].type == ETokenType.Space || tokens[afterName].type == ETokenType.LineEnd))
+            // 计算 Name 之后的位置，先越过空白
+            int afterName2 = index + namePosInTail + 1;
+            while (afterName2 < tokens.Count &&
+                   (tokens[afterName2].type == ETokenType.Space || tokens[afterName2].type == ETokenType.LineEnd))
             {
-                afterName++;
+                afterName2++;
             }
 
-            // 可选的模板参数块：FunName<...>(...)
+            // 可选的函数模板块：Fun<T>(...)
             List<Token> nameTemplateTokens = null;
-            if (afterName < tokens.Count && tokens[afterName].type == ETokenType.Less)
+            if (afterName2 < tokens.Count && tokens[afterName2].type == ETokenType.Less)
             {
-                nameTemplateTokens = ParseTemplateTokens(tokens, ref afterName);
+                nameTemplateTokens = ParseTemplateTokens(tokens, ref afterName2);
+                while (afterName2 < tokens.Count &&
+                       (tokens[afterName2].type == ETokenType.Space || tokens[afterName2].type == ETokenType.LineEnd))
+                {
+                    afterName2++;
+                }
             }
 
-            // 跳过模板后的空白
-            while (afterName < tokens.Count &&
-                   (tokens[afterName].type == ETokenType.Space || tokens[afterName].type == ETokenType.LineEnd))
-            {
-                afterName++;
-            }
-
-            bool hasPar = afterName < tokens.Count && tokens[afterName].type == ETokenType.LeftPar;
-
-            // 如果 name 后面直接是 '{'，且没有参数列表，则认为是“类中类”声明，支持多段类名 NS1.ClassName.ClassName2
-            if (!hasPar && afterName < tokens.Count && tokens[afterName].type == ETokenType.LeftBrace)
-            {
-                var oldList = m_TokenList;
-                int oldIndex = m_TokenIndex;
-                m_TokenList = tokens;
-                m_TokenIndex = index; // 重新从类型/关键字位置进入 ParseClassDeclaration
-                try
-                {
-                    ParseClassDeclaration();
-                }
-                catch (Exception ex)
-                {
-                    Log.AddInStructFileMeta(EError.None, $"ParseClassMember 类中类解析异常: {ex.Message}");
-                }
-                finally
-                {
-                    m_TokenList = oldList;
-                    m_TokenIndex = oldIndex;
-                }
-                return;
-            }
+            bool hasPar = afterName2 < tokens.Count && tokens[afterName2].type == ETokenType.LeftPar;
 
             if (hasPar)
             {
                 // === 成员函数 ===
 
-                // 解析完整参数列表 ()，从 afterName 位置开始，使用本地深度计数避免额外工具函数
-                int parStart = afterName;
+                // 解析完整参数列表 ()，从 afterName2 位置开始
+                int parStart = afterName2;
                 int parEnd = -1;
                 int parDepth = 0;
                 for (int i = parStart; i < tokens.Count; i++)
@@ -669,14 +705,14 @@ namespace SimpleLanguage.Compile
                     if (pt.type == ETokenType.LeftPar) parDepth++;
                     else if (pt.type == ETokenType.RightPar)
                     {
-                           parDepth--;
-                           if (parDepth == 0)
-                           {
-                               parEnd = i;
-                               break;
-                           }
-                       }
-                   }
+                        parDepth--;
+                        if (parDepth == 0)
+                        {
+                            parEnd = i;
+                            break;
+                        }
+                    }
+                }
 
                 List<Token> paramTokens = null;
                 if (parEnd >= parStart)
@@ -684,48 +720,6 @@ namespace SimpleLanguage.Compile
                     paramTokens = tokens.GetRange(parStart, parEnd - parStart + 1);
                 }
 
-                // 统一计算函数体 {}：如果在参数列表之后存在 '{'，则从该处起用括号深度方式提取完整的函数体 token
-                // List<Token> blockTokens = null;
-                // int searchBody = parEnd + 1;
-                // 允许参数列表与函数体 '{' 之间存在任意数量的空白和换行
-                // while (searchBody < tokens.Count &&
-                //        (tokens[searchBody].type == ETokenType.Space ||
-                //         tokens[searchBody].type == ETokenType.LineEnd ||
-                //         tokens[searchBody].type == ETokenType.SemiColon))
-                // {
-                //     searchBody++;
-                // }
-                //  bool hasBodyBrace = false;
-                // int bodyStart = -1;
-                // int bodyEnd = -1;
-                //
-                // if (searchBody < tokens.Count && tokens[searchBody].type == ETokenType.LeftBrace)
-                // {
-                //     hasBodyBrace = true;
-                //     int bDepth = 0;
-                //     bodyStart = searchBody;
-                //     for (int i = bodyStart; i < tokens.Count; i++)
-                //     {
-                //         var t = tokens[i];
-                //         if (t.type == ETokenType.LeftBrace) bDepth++;
-                //         else if (t.type == ETokenType.RightBrace)
-                //         {
-                //             bDepth--;
-                //             if (bDepth == 0)
-                //             {
-                //                 bodyEnd = i;
-                //                 break;
-                //             }
-                //         }
-                //     }
-                //     if (bodyEnd >= bodyStart)
-                //     {
-                //         blockTokens = tokens.GetRange(bodyStart, bodyEnd - bodyStart + 1);
-                //     }
-                // }
-
-                // 此处不再切分/计算函数体 BlockTokens，改为在外层解析整段 "{...}" 并绑定到 FileMetaMemberFunction
-                // 因此这里始终传 null，具体的 blockTokens 由外层逻辑负责填充
                 var fmmf = new FileMetaMemberFunction(
                      m_FileMeta,
                      modifiers,
@@ -735,16 +729,82 @@ namespace SimpleLanguage.Compile
                    );
 
                 fmc.AddFileMemberFunction(fmmf);
-             }
+
+                // 如果在同一成员声明行内紧接着存在函数体 '{...}'，直接在当前局部 token 视图中解析并绑定到该函数。
+                // 这里不依赖主 token 流的 m_TokenIndex，而是使用局部 tokens 列表计算函数体 token 子序列。
+                int bodyStart = parEnd + 1;
+                while (bodyStart < tokens.Count &&
+                       (tokens[bodyStart].type == ETokenType.Space ||
+                        tokens[bodyStart].type == ETokenType.LineEnd ||
+                        tokens[bodyStart].type == ETokenType.SemiColon))
+                {
+                    bodyStart++;
+                }
+
+                if (bodyStart < tokens.Count && tokens[bodyStart].type == ETokenType.LeftBrace)
+                {
+                    // 在局部 token 列表中截取完整的 '{...}' 函数体块
+                    int depthBrace = 0;
+                    int bodyEnd = -1;
+                    for (int i = bodyStart; i < tokens.Count; i++)
+                    {
+                        var bt = tokens[i];
+                        if (bt.type == ETokenType.LeftBrace)
+                        {
+                            depthBrace++;
+                        }
+                        else if (bt.type == ETokenType.RightBrace)
+                        {
+                            depthBrace--;
+                            if (depthBrace == 0)
+                            {
+                                bodyEnd = i;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (bodyEnd >= bodyStart)
+                    {
+                        var bodyTokens = tokens.GetRange(bodyStart, bodyEnd - bodyStart + 1);
+                        // 使用已有的基于 List<Token> 的函数体解析逻辑，将语句挂到 fmmf 的 blockSyntax 上
+                        if (fmmf.fileMetaBlockSyntax != null)
+                        {
+                            ParseFunctionBodyTokens(bodyTokens, fmmf.fileMetaBlockSyntax);
+                        }
+                    }
+                }
+
+                return fmmf;
+            }
             else
             {
                 // === 成员变量 ===
                 int nameGlobalIndex = index + namePosInTail;
                 int exprStart = nameGlobalIndex + 1;
+                // 成员变量必须具有 '=' 初始化表达式
+                bool hasAssign = false;
+                for (int i = exprStart; i < tokens.Count; i++)
+                {
+                    if (tokens[i].type == ETokenType.Assign)
+                    {
+                        hasAssign = true;
+                        exprStart = i + 1;
+                        break;
+                    }
+                }
+
+                Debug.Assert(hasAssign, "成员变量必须包含初始化表达式（缺少 '='）");
+                if (!hasAssign)
+                {
+                    Log.AddInStructFileMeta(EError.None, "Error 成员变量缺少 '=' 初始化表达式");
+                    return null;
+                }
+
                 if (exprStart >= tokens.Count)
                 {
                     Log.AddInStructFileMeta(EError.None, "Error 成员变量缺少初始化表达式");
-                    return;
+                    return null;
                 }
 
                 var exprTokens = tokens.GetRange(exprStart, tokens.Count - exprStart);
@@ -757,6 +817,7 @@ namespace SimpleLanguage.Compile
                     exprTokens);
 
                 fmc.AddFileMemberVariable(fmmv);
+                return null;
             }
         }
         /// <summary>
@@ -767,7 +828,7 @@ namespace SimpleLanguage.Compile
         ///  - 如果有多个 Identifier / Type，则最后一个 Identifier 为 name，其前面的所有 token 视为类型部分
         ///    （支持复杂泛型/命名空间/数组，如 List<Map<NS.ClassName, Set<Core.String>>>[][][] name）。
         /// </summary>
-        private bool GetTypeAndNameTokens(List<Token> lineTokens, out List<Token> typeTokens, out Token nameToken )
+        private bool GetTypeAndNameTokens(List<Token> lineTokens, out List<Token> typeTokens, out Token nameToken)
         {
             typeTokens = new List<Token>();
             nameToken = null;
@@ -798,7 +859,7 @@ namespace SimpleLanguage.Compile
                 // 把标识符和内建类型名 (ETokenType.Type) 都统计进来，
                 // 这样 "override string toString()" 中的 string + toString 都参与判断，
                 // 最终 toString 作为 name，string 归入 typeTokens。
-                if (tt == ETokenType.Identifier || tt == ETokenType.Type || tt == ETokenType.Void )
+                if (tt == ETokenType.Identifier || tt == ETokenType.Type || tt == ETokenType.Void)
                 {
                     if (firstIdIndex == -1)
                     {
@@ -834,60 +895,57 @@ namespace SimpleLanguage.Compile
         }
         private List<Token> ParseParameters()
         {
-             List<Token> tokens = new List<Token>();
-             if (Match(ETokenType.LeftPar))
-             {
-                 m_Context.parenDepth++;
-                 tokens.Add(Consume());
-                 while (m_Context.parenDepth > 0 && m_TokenIndex < m_TokenList.Count)
-                 {
-                     Token t = CurrentToken;
-                     if (t.type == SimpleLanguage.ETokenType.LeftPar) m_Context.parenDepth++;
-                     else if (t.type == SimpleLanguage.ETokenType.RightPar) 
-                     {
-                         m_Context.parenDepth--;
-                         if (m_Context.parenDepth == 0) { tokens.Add(Consume()); break; }
-                     }
-                     tokens.Add(Consume());
-                 }
-             }
-             return tokens;
+            List<Token> tokens = new List<Token>();
+            if (Match(ETokenType.LeftPar))
+            {
+                m_Context.parenDepth++;
+                tokens.Add(Consume());
+                while (m_Context.parenDepth > 0 && m_TokenIndex < m_TokenList.Count)
+                {
+                    Token t = CurrentToken;
+                    if (t.type == SimpleLanguage.ETokenType.LeftPar) m_Context.parenDepth++;
+                    else if (t.type == SimpleLanguage.ETokenType.RightPar)
+                    {
+                        m_Context.parenDepth--;
+                        if (m_Context.parenDepth == 0) { tokens.Add(Consume()); break; }
+                    }
+                    tokens.Add(Consume());
+                }
+            }
+            return tokens;
         }
 
         private List<Token> ParseBlockTokens()
         {
-               var tokens = new List<Token>();
-               if (!Match(ETokenType.LeftBrace))
-               {
-                   return tokens;
-               }
+            var tokens = new List<Token>();
+            if (!Match(ETokenType.LeftBrace))
+            {
+                return tokens;
+            }
 
-               // 流式消费一个完整的 '{...}' 块：只遍历一次主 token 列表
-               int depth = 0;
-               while (m_TokenIndex < m_TokenList.Count)
-               {
-                   var t = Consume();
-                   if (t == null)
-                       break;
+            // 流式消费一个完整的 '{...}' 块：只遍历一次主 token 列表
+            int depth = 0;
+            while (m_TokenIndex < m_TokenList.Count)
+            {
+                var t = Consume();
+                tokens.Add(t);
 
-                   tokens.Add(t);
+                if (t.type == ETokenType.LeftBrace)
+                {
+                    depth++;
+                }
+                else if (t.type == ETokenType.RightBrace)
+                {
+                    depth--;
+                    if (depth == 0)
+                    {
+                        // 当前 '}' 结束了与起始 '{' 对应的块
+                        break;
+                    }
+                }
+            }
 
-                   if (t.type == ETokenType.LeftBrace)
-                   {
-                       depth++;
-                   }
-                   else if (t.type == ETokenType.RightBrace)
-                   {
-                       depth--;
-                       if (depth == 0)
-                       {
-                           // 当前 '}' 结束了与起始 '{' 对应的块
-                           break;
-                       }
-                   }
-               }
-
-               return tokens;
+            return tokens;
         }
 
         private List<Token> ParseModifiers()
@@ -899,7 +957,7 @@ namespace SimpleLanguage.Compile
         }
 
         private List<Token> ParseQualifiedName()
-        {   
+        {
             List<Token> names = new List<Token>();
             while (m_TokenIndex < m_TokenList.Count)
             {
@@ -1033,7 +1091,7 @@ namespace SimpleLanguage.Compile
 
             int i = 0;
             // 跳过修饰符、空白
-            while (i < tokens.Count && 
+            while (i < tokens.Count &&
                    (tokens[i].type == ETokenType.Public ||
                     tokens[i].type == ETokenType.Private ||
                     tokens[i].type == ETokenType.Projected ||
@@ -1057,7 +1115,7 @@ namespace SimpleLanguage.Compile
             i++;
 
             // 在遇到 '{' 之前，不允许出现 '('，否则更像函数/表达式
-            while (i < tokens.Count && 
+            while (i < tokens.Count &&
                    (tokens[i].type == ETokenType.Space || tokens[i].type == ETokenType.LineEnd))
             {
                 i++;
@@ -1085,9 +1143,9 @@ namespace SimpleLanguage.Compile
         /// TokenToFileMeta 只负责“截断”，不直接 new 各种 FileMeta*Syntax。
         /// </summary>
         private void ParseFunctionBodyTokens(List<Token> bodyTokens, FileMetaBlockSyntax blockSyntax)
-         {
-             if (bodyTokens == null || bodyTokens.Count == 0 || blockSyntax == null)
-                  return;
+        {
+            if (bodyTokens == null || bodyTokens.Count == 0 || blockSyntax == null)
+                return;
 
             // 跳过首尾的 { }
             int start = 0;
@@ -1147,6 +1205,82 @@ namespace SimpleLanguage.Compile
                 flush();
             }
         }
+        /// <summary>
+        /// 流式函数体解析：从当前 token 流上的 '{' 开始，基于 DFAState.InFunction 状态，
+        /// 直接向前扫描直到匹配的右括号 '}'，并按顶层分号/换行切分语句，挂到给定的函数块语法节点中。
+        /// 注意：调用方需要确保 CurrentToken 指向函数体起始的 '{'。
+        /// </summary>
+        private void ParseFunctionBodyStreaming(FileMetaMemberFunction fmmf)
+        {
+            if (fmmf == null) return;
+
+            FileMetaBlockSyntax blockSyntax = fmmf.fileMetaBlockSyntax;
+            if (blockSyntax == null) return;
+
+            if (!Match(ETokenType.LeftBrace))
+                return;
+
+            // 进入函数体：记录当前状态，切换到 InFunction
+            DFAState previousState = m_Context.currentState;
+            TransitionState(DFAState.InFunction);
+
+            int depthBrace = 0;
+            int depthPar = 0;
+            int depthBracket = 0;
+            var current = new List<Token>();
+
+            void flush()
+            {
+                if (current.Count == 0) return;
+                var syntax = FileMetatUtil.CreateFileMetaSyntaxFromTokens(m_FileMeta, current);
+                current.Clear();
+                if (syntax != null)
+                {
+                    blockSyntax.AddFileMetaSyntax(syntax);
+                }
+            }
+
+            // 消费起始 '{'
+            var first = Consume();
+            current.Add(first);
+            depthBrace = 1;
+
+            while (m_TokenIndex < m_TokenList.Count && depthBrace > 0)
+            {
+                var t = Consume();
+                if (t == null) break;
+
+                current.Add(t);
+
+                if (t.type == ETokenType.LeftPar) depthPar++;
+                else if (t.type == ETokenType.RightPar && depthPar > 0) depthPar--;
+                else if (t.type == ETokenType.LeftBrace) depthBrace++;
+                else if (t.type == ETokenType.RightBrace && depthBrace > 0) depthBrace--;
+                else if (t.type == ETokenType.LeftBracket) depthBracket++;
+                else if (t.type == ETokenType.RightBracket && depthBracket > 0) depthBracket--;
+
+                // 顶层语句分割：与 ParseFunctionBodyTokens 中的逻辑类似，
+                // 这里 depthBrace==1 表示仍在当前函数体的顶层 block 内。
+                if (depthPar == 0 && depthBrace == 1 && depthBracket == 0 && t.type == ETokenType.SemiColon)
+                {
+                    flush();
+                }
+                else if (depthPar == 0 && depthBrace == 1 && depthBracket == 0 && t.type == ETokenType.LineEnd)
+                {
+                    flush();
+                }
+            }
+
+            // 函数体结束后，剩余内容也尝试解析一次
+            if (current.Count > 0)
+            {
+                flush();
+            }
+
+            // 退出函数体状态
+            m_Context.currentState = previousState;
+        }
+
         /// <summary>
         /// 解析紧随某个标识符/类型名之后的模板参数块：形如 "<T1, T2:List<int>, Map<Core.Class, string>>"。
         /// 从给定列表的当前位置 (ref index) 시작，假定当前 토큰为 '<'，

@@ -93,12 +93,6 @@ namespace SimpleLanguage.Compile
         private Token m_PermissionToken = null;
         private Token m_LeftBraceToken = null;
         private Token m_RightBraceToken = null;
-        // legacy Node-based block, superseded by token-based ctor
-        // private Node m_BlockNode;
-
-        // Node 版本构造方法（legacy，已由 Token 版本取代）
-        // public FileMetaMemberFunction(FileMeta fm, Node block, List<Node> nodeList) { ... }
-
         public FileMetaMemberFunction(
             FileMeta fm,
             List<Token> modifiers,
@@ -138,6 +132,7 @@ namespace SimpleLanguage.Compile
             {
                 ParseParametersFromTokens(paramTokens);
             }
+            m_FileMetaBlockSyntax = new FileMetaBlockSyntax(m_FileMeta);
 
             //// 5. 函数体块 token：与原来一样，只记录 { } 边界，内部语句由 TokenToFileMeta 另行拆分
             //if (blockTokens != null && blockTokens.Count >= 2)

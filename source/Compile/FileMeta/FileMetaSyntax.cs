@@ -775,7 +775,11 @@ namespace SimpleLanguage.Compile
 
         private Token m_BeginBlock = null;
         private Token m_EndBlock = null;
-        public FileMetaBlockSyntax( FileMeta fm, Token _bblock, Token _eblock )
+        public FileMetaBlockSyntax( FileMeta fm )
+        {
+            m_FileMeta = fm;
+        }
+        public FileMetaBlockSyntax(FileMeta fm, Token _bblock, Token _eblock)
         {
             m_BeginBlock = _bblock;
             m_EndBlock = _eblock;
