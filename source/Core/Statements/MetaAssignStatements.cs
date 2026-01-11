@@ -7,8 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-
-using SimpleLanguage.Parse;
+using SimpleLanguage.Logging;
 using System;
 using System.Diagnostics;
 using System.Security.Cryptography;

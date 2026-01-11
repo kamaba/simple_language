@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SimpleLanguage.Compile.Logging
+namespace SimpleLanguage.Logging
 {
     /// <summary>
     /// Severity level for an error/diagnostic.

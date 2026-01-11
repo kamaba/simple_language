@@ -158,11 +158,11 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                sb.Append(permis.ToFormatString());
+                sb.Append(permis.ToFormatString() + " ");
             }
             if(m_StaticToken!= null )
             {
-                sb.Append(" " + m_StaticToken.lexeme.ToString());
+                sb.Append( m_StaticToken.lexeme.ToString() + " ");
             }
 
             if (m_MemberDataType == EMemberDataType.NameClass)

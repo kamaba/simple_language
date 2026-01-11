@@ -9,7 +9,7 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
 using SimpleLanguage.CSharp;
-using SimpleLanguage.Parse;
+using SimpleLanguage.Logging;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -110,13 +110,13 @@ namespace SimpleLanguage.Compile
                         mb = mb.GetChildrenMetaNodeByName(name);
                         if (mb?.isMetaNamespace == true )
                         {
-                            Log.AddInStructFileMeta(EError.None, "解析Import语句发生错误，没有找到对应的命名空间路径: " + m_NamespaceStatement.tokenList[i].lexeme.ToString()
-                                    + "Token: " + m_NamespaceStatement.tokenList[i].sourceBeginLine.ToString());
-                            break;
+                            m_FileMeta.AddImportMetaNamespace(mb.metaNamespace);
                         }
                         else
                         {
-                            m_FileMeta.AddImportMetaNamespace(mb.metaNamespace);
+                            Log.AddInStructFileMeta(EError.None, "解析Import语句发生错误，没有找到对应的命名空间路径: " + m_NamespaceStatement.tokenList[i].lexeme.ToString()
+                                    + "Token: " + m_NamespaceStatement.tokenList[i].sourceBeginLine.ToString());
+                            break;
                         }
                     }
                 }

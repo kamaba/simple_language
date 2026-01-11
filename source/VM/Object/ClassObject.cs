@@ -9,7 +9,7 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.Lib;
-using SimpleLanguage.source.Logging;
+using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
 using System;
 using System.Collections.Generic;

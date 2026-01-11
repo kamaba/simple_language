@@ -6,7 +6,6 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Compile.Logging;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
 using System;
@@ -14,7 +13,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace SimpleLanguage.source.Logging
+namespace SimpleLanguage.Logging
 {
     public enum EError
     {

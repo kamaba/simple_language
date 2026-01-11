@@ -13,6 +13,7 @@ using SimpleLanguage.IR;
 using System.Diagnostics;
 
 using SimpleLanguage.Compile;
+using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.Project
 {

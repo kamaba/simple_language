@@ -6,7 +6,7 @@
 //  Description: class's memeber variable metadata and member 'data' metadata
 //****************************************************************************
 using SimpleLanguage.Compile;
-using SimpleLanguage.source.Logging;
+using SimpleLanguage.Logging;
 using System.Collections.Generic;
 using System.Text;
 

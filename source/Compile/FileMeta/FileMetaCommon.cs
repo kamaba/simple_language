@@ -11,8 +11,8 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
-using SimpleLanguage.Parse;
 using System.Diagnostics;
+using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.Compile
 {
@@ -531,7 +531,7 @@ namespace SimpleLanguage.Compile
                 return;
 
             // 按点号（Period）拆分 token 序列，构建链式调用
-            // 例如：a.b.c() 拆成 [a] [b] [c()]
+            // 例如：a.b.c() 拆成 [a] [.] [b] [.] [c()]
             List<List<Token>> callSegments = new List<List<Token>>();
             List<Token> currentSegment = new List<Token>();
 
@@ -551,7 +551,7 @@ namespace SimpleLanguage.Compile
                 else if (t.type == ETokenType.LeftBracket) bracketDepth++;
                 else if (t.type == ETokenType.RightBracket && bracketDepth > 0) bracketDepth--;
 
-                // 顶层点号标志分隔
+                // 顶层点号作为单独段落加入，保证 '.' 也能被下游看到
                 if (t.type == ETokenType.Period && parenDepth == 0 && angleDepth == 0 && bracketDepth == 0)
                 {
                     if (currentSegment.Count > 0)
@@ -559,6 +559,10 @@ namespace SimpleLanguage.Compile
                         callSegments.Add(new List<Token>(currentSegment));
                         currentSegment.Clear();
                     }
+
+                    // 将 '.' 本身作为独立的段加入，便于还原完整调用链 token
+                    var dotSegment = new List<Token> { t };
+                    callSegments.Add(dotSegment);
                 }
                 else
                 {

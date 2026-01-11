@@ -255,6 +255,8 @@ namespace SimpleLanguage
         Operator,
         /// <summary> global </summary>
         Global,
+        /// <summary> local </summary>
+        Local,
         /// <summary> label </summary>
         Label,
         /// <summary> while </summary>
@@ -267,6 +269,10 @@ namespace SimpleLanguage
         In,
         /// <summary> function </summary>
         Function,
+        /// <summary> Async </summary>
+        Async,
+        /// <summary> Await </summary>
+        Await,
         /// <summary> try </summary>
         Try,
         /// <summary> catch </summary>

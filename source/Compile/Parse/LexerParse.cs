@@ -6,7 +6,7 @@
 //  Description:  word lexer parse to token
 //****************************************************************************
 
-using SimpleLanguage.Parse;
+using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -1498,12 +1498,12 @@ namespace SimpleLanguage.Compile
                     tokenType = ETokenType.Identifier;
                     extend = EType.Array;
                     break;
-                //case "async":
-                //    tokenType = TokenType.Async;
-                //    break;
-                //case "await":
-                //    tokenType = TokenType.Await;
-                //    break;    
+                case "async":
+                    tokenType = ETokenType.Async;
+                    break;
+                case "await":
+                    tokenType = ETokenType.Await;
+                    break;
                 default:
                     tokenType = ETokenType.Identifier;
                     break;

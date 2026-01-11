@@ -2,7 +2,7 @@
 
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.Parse;
+using SimpleLanguage.Logging;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Intrinsics.X86;

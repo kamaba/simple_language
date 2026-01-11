@@ -7,7 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.IR;
-using SimpleLanguage.Parse;
+using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
 using System.Collections.Generic;
 

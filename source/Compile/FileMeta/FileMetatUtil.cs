@@ -7,7 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile.Grammer;
-using SimpleLanguage.Parse;
+using SimpleLanguage.Logging;
 using System.Collections.Generic;
 
 namespace SimpleLanguage.Compile
@@ -117,27 +117,61 @@ namespace SimpleLanguage.Compile
                 // 因此返回 null，交由旧 Node 流或后续扩展处理。
                 return null;
             }
+ 
+            // ===== 无关键字前缀的普通语句：赋值 / 调用 / 复杂表达式 =====
 
-            // as / is 表达式语句：cond as T / cond is T
-            // 这类语句通常作为表达式使用，这里统一走表达式构造即可
-            bool hasAsOrIs = false;
+            // 1) 检测简单形态的赋值语句：左侧是可调用/变量引用，右侧是表达式
+            int assignIndex = -1;
             for (int i = 0; i < tokens.Count; i++)
             {
-                if (tokens[i].type == ETokenType.As || tokens[i].type == ETokenType.Is)
+                if (tokens[i].type == ETokenType.Assign)
                 {
-                    hasAsOrIs = true;
+                    assignIndex = i;
                     break;
                 }
             }
-            if (hasAsOrIs)
+
+            if (assignIndex > 0)
             {
-                // 仅构造表达式，不生成单独语句节点
-                var _ = CreateFileMetaExpressFromTokens(
+                var leftTokens = tokens.GetRange(0, assignIndex);
+                var rightTokens = tokens.GetRange(assignIndex + 1, tokens.Count - assignIndex - 1);
+
+                var leftExpr = CreateFileMetaExpressFromTokens(
                     fm,
-                    tokens,
+                    leftTokens,
                     FileMetaTermExpress.EExpressType.Common);
-                return null;
+                var rightExpr = CreateFileMetaExpressFromTokens(
+                    fm,
+                    rightTokens,
+                    FileMetaTermExpress.EExpressType.Common);
+
+                if (leftExpr is FileMetaCallTerm callTerm)
+                {
+                    // 将左侧调用视作变量引用，构造 FileMetaOpAssignSyntax
+                    var opSyntax = new FileMetaOpAssignSyntax(
+                        callTerm.callLink,
+                        tokens[assignIndex],
+                        null,
+                        null,
+                        null,
+                        rightExpr,
+                        flag: true);
+                    return opSyntax;
+                }
             }
+
+            // 2) 其它情况，当作纯表达式/调用语句处理
+            var exprOnly = CreateFileMetaExpressFromTokens(
+                fm,
+                tokens,
+                FileMetaTermExpress.EExpressType.Common);
+
+            if (exprOnly is FileMetaCallTerm callExpr)
+            {
+                return new FileMetaCallSyntax(callExpr.callLink);
+            }
+
+            // 其他复杂表达式暂不生成单独语句节点，交给后续流程处理
             return null;
         }
         public static List<string> GetLinkStringMidPeriodList(List<Token> tokenList)
@@ -203,10 +237,10 @@ namespace SimpleLanguage.Compile
             return false;
         }
         public static FileMetaBaseTerm CreateFileMetaExpressFromTokens(
-            FileMeta fm,
-            List<Token> tokens,
-            FileMetaTermExpress.EExpressType eType)
-        {
+             FileMeta fm,
+             List<Token> tokens,
+             FileMetaTermExpress.EExpressType eType)
+         {
             if (tokens == null || tokens.Count == 0)
             {
                 return null;
@@ -246,7 +280,8 @@ namespace SimpleLanguage.Compile
                 }
             }
 
-            // 其它表达式交给 TokenExpressionParser 解析（完全基于 Token）
+            // 其它表达式交给 TokenExpressionParser 解析（完全基于 Token），
+            // 支持诸如 `this._metaClass == null` 这类复合条件。
             var parser = new TokenExpressionParser(fm, cleaned, eType);
             return parser.Parse();
         }
@@ -353,7 +388,7 @@ namespace SimpleLanguage.Compile
                     return new FileMetaBraceTerm(m_FileMeta, braceTokens);
                 }
 
-                // 标识符/调用/链式访问
+                // 标识符/调用/链式访问；包括 this._metaClass 之类的链式引用
                 if (t.type == ETokenType.Identifier
                     || t.type == ETokenType.This
                     || t.type == ETokenType.Base
@@ -379,7 +414,6 @@ namespace SimpleLanguage.Compile
                         // 粗略终止条件：遇到分号/运算符/大括号等视为调用结束
                         if (Current == null ||
                             Current.type == ETokenType.SemiColon ||
-                            IsSymbol(Current) ||
                             Current.type == ETokenType.LeftBrace ||
                             Current.type == ETokenType.RightBrace)
                         {

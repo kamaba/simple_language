@@ -1,5 +1,5 @@
 ﻿using SimpleLanguage.Compile;
-using SimpleLanguage.source.Logging;
+using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;

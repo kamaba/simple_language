@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Core;
-using SimpleLanguage.Parse;
+using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.IR
 {

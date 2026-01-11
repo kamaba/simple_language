@@ -7,9 +7,7 @@
 //               Token → FileMeta 的直接转换器
 //****************************************************************************
 
-using SimpleLanguage;
-using SimpleLanguage.Compile;
-using SimpleLanguage.Parse;
+using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

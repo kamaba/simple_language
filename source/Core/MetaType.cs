@@ -7,8 +7,7 @@
 //****************************************************************************
 
 
-using SimpleLanguage.source.Logging;
-using SimpleLanguage.VM;
+using SimpleLanguage.Logging;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;

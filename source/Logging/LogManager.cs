@@ -2,9 +2,10 @@ using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
+using SimpleLanguage.Compile;
 using SimpleLanguage.Parse;
 
-namespace SimpleLanguage.Compile.Logging
+namespace SimpleLanguage.Logging
 {
     /// <summary>
     /// Central access point for per-module loggers and initialization.

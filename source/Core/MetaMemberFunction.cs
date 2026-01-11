@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile;
-using SimpleLanguage.Parse;
+using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.Core
 {
