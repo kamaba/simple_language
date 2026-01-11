@@ -18,6 +18,128 @@ namespace SimpleLanguage.Compile
     /// </summary>
     public partial class FileMetatUtil
     {
+        /// <summary>
+        /// 根据一条语句的 Token 列表创建对应的 FileMetaSyntax。
+        /// 该方法只关心“这是一条什么语句”，不负责切分多条语句。
+        /// 后续可以在这里逐步扩展 if/while/for/switch 等关键字。
+        /// </summary>
+        public static FileMetaSyntax CreateFileMetaSyntaxFromTokens(
+            FileMeta fm,
+            List<Token> statementTokens)
+        {
+            if (fm == null || statementTokens == null || statementTokens.Count == 0)
+                return null;
+
+            // 简单去掉前后空白/换行/分号
+            var tokens = TrimTokenList(statementTokens);
+            if (tokens.Count == 0)
+                return null;
+
+            var first = tokens[0];
+
+            // return 语句：return expr;
+            if (first.type == ETokenType.Return)
+            {
+                var exprTokens = new List<Token>();
+                for (int i = 1; i < tokens.Count; i++)
+                    exprTokens.Add(tokens[i]);
+
+                var expr = CreateFileMetaExpressFromTokens(
+                    fm,
+                    exprTokens,
+                    FileMetaTermExpress.EExpressType.Common);
+
+                return new FileMetaKeyReturnSyntax(fm, first, expr);
+            }
+
+            // if / while / dowhile / for / switch / as-is 语句
+            // 当前仅提供最小骨架：识别关键字，并构造对应的语法节点壳，“这种语法”能否通过编译还要看后续完整性检查
+            if (first.type == ETokenType.If)
+            {
+                // if (cond) { } 简化版：条件=整个 tokens[1..]，block 由外部 BlockSyntax 表示
+                var condTokens = tokens.GetRange(1, tokens.Count - 1);
+                var cond = CreateFileMetaExpressFromTokens(
+                    fm,
+                    condTokens,
+                    FileMetaTermExpress.EExpressType.Common);
+                var dummyBlock = new FileMetaBlockSyntax(fm, null, null);
+                var ifCond = new FileMetaConditionExpressSyntax(fm, first, cond, dummyBlock);
+                var ifSyntax = new FileMetaKeyIfSyntax(fm);
+                ifSyntax.SetFileMetaConditionExpressSyntax(ifCond);
+                return ifSyntax;
+            }
+
+            if (first.type == ETokenType.While)
+            {
+                // while (cond) { }  条件表达式由 tokens[1..] 提供，具体执行块仍由外部 BlockSyntax 表示
+                var condTokens = tokens.GetRange(1, tokens.Count - 1);
+                var cond = CreateFileMetaExpressFromTokens(
+                    fm,
+                    condTokens,
+                    FileMetaTermExpress.EExpressType.Common);
+                var dummyBlock = new FileMetaBlockSyntax(fm, null, null);
+                return new FileMetaConditionExpressSyntax(fm, first, cond, dummyBlock);
+            }
+
+            if (first.type == ETokenType.DoWhile)
+            {
+                // do..while：先构造一个空的 FileMetaKeyOnlySyntax 占位，方便后续替换为复合语句
+                var dummyBlock = new FileMetaBlockSyntax(fm, null, null);
+                return new FileMetaKeyOnlySyntax(fm, first, dummyBlock);
+            }
+
+            if (first.type == ETokenType.For)
+            {
+                // for 语句：当前不拆分 init/cond/step，全部作为条件表达式处理
+                var bodyTokens = tokens.GetRange(1, tokens.Count - 1);
+                var expr = CreateFileMetaExpressFromTokens(
+                    fm,
+                    bodyTokens,
+                    FileMetaTermExpress.EExpressType.Common);
+                var dummyBlock = new FileMetaBlockSyntax(fm, null, null);
+                var forSyntax = new FileMetaKeyForSyntax(fm, first, dummyBlock);
+                if (expr != null)
+                {
+                    forSyntax.SetConditionExpress(expr);
+                }
+                return forSyntax;
+            }
+
+            if (first.type == ETokenType.Switch)
+            {
+                // switch 语句：switch 后面的表达式作为变量引用，case/default 仍由 Node 流程解析；这里仅占位
+                var exprTokens = tokens.GetRange(1, tokens.Count - 1);
+                var expr = CreateFileMetaExpressFromTokens(
+                    fm,
+                    exprTokens,
+                    FileMetaTermExpress.EExpressType.Common);
+                // 暂时无法直接构造 FileMetaKeySwitchSyntax（需要 FileMetaCallLink 和 case block 信息），
+                // 因此返回 null，交由旧 Node 流或后续扩展处理。
+                return null;
+            }
+
+            // as / is 表达式语句：cond as T / cond is T
+            // 这类语句通常作为表达式使用，这里统一走表达式构造即可
+            bool hasAsOrIs = false;
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                if (tokens[i].type == ETokenType.As || tokens[i].type == ETokenType.Is)
+                {
+                    hasAsOrIs = true;
+                    break;
+                }
+            }
+            if (hasAsOrIs)
+            {
+                // 仅构造表达式，不生成单独语句节点
+                var _ = CreateFileMetaExpressFromTokens(
+                    fm,
+                    tokens,
+                    FileMetaTermExpress.EExpressType.Common);
+                return null;
+            }
+            return null;
+        }
         public static List<string> GetLinkStringMidPeriodList(List<Token> tokenList)
         {
             List<string> stringList = new List<string>();
@@ -329,132 +451,6 @@ namespace SimpleLanguage.Compile
             {
                 if (m_Index < m_Tokens.Count) m_Index++;
             }
-        }
-    }
-
-    public partial class FileMetatUtil
-    {
-        /// <summary>
-        /// 根据一条语句的 Token 列表创建对应的 FileMetaSyntax。
-        /// 该方法只关心“这是一条什么语句”，不负责切分多条语句。
-        /// 后续可以在这里逐步扩展 if/while/for/switch 等关键字。
-        /// </summary>
-        public static FileMetaSyntax CreateFileMetaSyntaxFromTokens(
-            FileMeta fm,
-            List<Token> statementTokens)
-        {
-            if (fm == null || statementTokens == null || statementTokens.Count == 0)
-                return null;
-
-            // 简单去掉前后空白/换行/分号
-            var tokens = TrimTokenList(statementTokens);
-            if (tokens.Count == 0)
-                return null;
-
-            var first = tokens[0];
-
-            // return 语句：return expr;
-            if (first.type == ETokenType.Return)
-            {
-                var exprTokens = new List<Token>();
-                for (int i = 1; i < tokens.Count; i++)
-                    exprTokens.Add(tokens[i]);
-
-                var expr = CreateFileMetaExpressFromTokens(
-                    fm,
-                    exprTokens,
-                    FileMetaTermExpress.EExpressType.Common);
-
-                return new FileMetaKeyReturnSyntax(fm, first, expr);
-            }
-
-            // if / while / dowhile / for / switch / as-is 语句
-            // 当前仅提供最小骨架：识别关键字，并构造对应的语法节点壳，“这种语法”能否通过编译还要看后续完整性检查
-            if (first.type == ETokenType.If)
-            {
-                // if (cond) { } 简化版：条件=整个 tokens[1..]，block 由外部 BlockSyntax 表示
-                var condTokens = tokens.GetRange(1, tokens.Count - 1);
-                var cond = CreateFileMetaExpressFromTokens(
-                    fm,
-                    condTokens,
-                    FileMetaTermExpress.EExpressType.Common);
-                var dummyBlock = new FileMetaBlockSyntax(fm, null, null);
-                var ifCond = new FileMetaConditionExpressSyntax(fm, first, cond, dummyBlock);
-                var ifSyntax = new FileMetaKeyIfSyntax(fm);
-                ifSyntax.SetFileMetaConditionExpressSyntax(ifCond);
-                return ifSyntax;
-            }
-
-            if (first.type == ETokenType.While)
-            {
-                // while (cond) { }  条件表达式由 tokens[1..] 提供，具体执行块仍由外部 BlockSyntax 表示
-                var condTokens = tokens.GetRange(1, tokens.Count - 1);
-                var cond = CreateFileMetaExpressFromTokens(
-                    fm,
-                    condTokens,
-                    FileMetaTermExpress.EExpressType.Common);
-                var dummyBlock = new FileMetaBlockSyntax(fm, null, null);
-                return new FileMetaConditionExpressSyntax(fm, first, cond, dummyBlock);
-            }
-
-            if (first.type == ETokenType.DoWhile)
-            {
-                // do..while：先构造一个空的 FileMetaKeyOnlySyntax 占位，方便后续替换为复合语句
-                var dummyBlock = new FileMetaBlockSyntax(fm, null, null);
-                return new FileMetaKeyOnlySyntax(fm, first, dummyBlock);
-            }
-
-            if (first.type == ETokenType.For)
-            {
-                // for 语句：当前不拆分 init/cond/step，全部作为条件表达式处理
-                var bodyTokens = tokens.GetRange(1, tokens.Count - 1);
-                var expr = CreateFileMetaExpressFromTokens(
-                    fm,
-                    bodyTokens,
-                    FileMetaTermExpress.EExpressType.Common);
-                var dummyBlock = new FileMetaBlockSyntax(fm, null, null);
-                var forSyntax = new FileMetaKeyForSyntax(fm, first, dummyBlock);
-                if (expr != null)
-                {
-                    forSyntax.SetConditionExpress(expr);
-                }
-                return forSyntax;
-            }
-
-            if (first.type == ETokenType.Switch)
-            {
-                // switch 语句：switch 后面的表达式作为变量引用，case/default 仍由 Node 流程解析；这里仅占位
-                var exprTokens = tokens.GetRange(1, tokens.Count - 1);
-                var expr = CreateFileMetaExpressFromTokens(
-                    fm,
-                    exprTokens,
-                    FileMetaTermExpress.EExpressType.Common);
-                // 暂时无法直接构造 FileMetaKeySwitchSyntax（需要 FileMetaCallLink 和 case block 信息），
-                // 因此返回 null，交由旧 Node 流或后续扩展处理。
-                return null;
-            }
-
-            // as / is 表达式语句：cond as T / cond is T
-            // 这类语句通常作为表达式使用，这里统一走表达式构造即可
-            bool hasAsOrIs = false;
-            for (int i = 0; i < tokens.Count; i++)
-            {
-                if (tokens[i].type == ETokenType.As || tokens[i].type == ETokenType.Is)
-                {
-                    hasAsOrIs = true;
-                    break;
-                }
-            }
-            if (hasAsOrIs)
-            {
-                // 仅构造表达式，不生成单独语句节点
-                var _ = CreateFileMetaExpressFromTokens(
-                    fm,
-                    tokens,
-                    FileMetaTermExpress.EExpressType.Common);
-                return null;
-            }
-            return null;
         }
     }
 }

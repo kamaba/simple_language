@@ -302,7 +302,6 @@ namespace SimpleLanguage.Compile
         private FileMetaClassDefine m_DefineType = null;
         private Token m_ConvertIsTypeNameToken = null;
 
-        // Token 版本构造方法（纯 Token 实现，无 Node 构建）
         public FileMetaAsOrIsTerm(FileMeta fm, List<Token> tokenList)
         {
             m_FileMeta = fm;
@@ -797,7 +796,6 @@ namespace SimpleLanguage.Compile
     public class FileMetaBraceTerm : FileMetaBaseTerm
     {
         private Token m_BraceEndToken = null;
-        // Token 版本构造方法（纯 Token 实现，无 Node 构建）
         public FileMetaBraceTerm(FileMeta fm, List<Token> tokenList)
         {
             m_FileMeta = fm;
@@ -1031,7 +1029,6 @@ namespace SimpleLanguage.Compile
         }
 
         private EExpressType m_ExpressType;
-        // Token 版本构造方法（纯 Token 实现）
         public FileMetaTermExpress(FileMeta fm, List<Token> tokenList, EExpressType expressType)
         {
             m_FileMeta = fm;

@@ -8,7 +8,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Compile
 {    
@@ -814,6 +813,4 @@ namespace SimpleLanguage.Compile
             return sb.ToString();
         }
     }
-
-
 }

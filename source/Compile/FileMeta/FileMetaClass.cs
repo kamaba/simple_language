@@ -94,18 +94,22 @@ namespace SimpleLanguage.Compile
             // 2. 类名（支持多段）→ m_NamespaceBlock + name/m_Token
             if (classNameTokens != null && classNameTokens.Count > 0)
             {
-                var nsBlock = NamespaceStatementBlock.CreateStateBlock(classNameTokens);
-                if (nsBlock != null)
+                if(classNameTokens.Count > 1 )
                 {
-                    m_NamespaceBlock = nsBlock;
-                    var nsList = nsBlock.namespaceList;
-                    if (nsList.Count > 0)
+                    var nsNameTokens = classNameTokens.GetRange(1, classNameTokens.Count - 1);
+                    var nsBlock = NamespaceStatementBlock.CreateStateBlock(classNameTokens);
+                    if (nsBlock != null)
                     {
-                        // NamespaceStatementBlock 的最后一段即为类名字符串
-                        // 但我们仍保留原始 token 供 name/m_Token 使用
-                        m_Token = classNameTokens[classNameTokens.Count - 1];
+                        m_NamespaceBlock = nsBlock;
+                        var nsList = nsBlock.namespaceList;
+                        if (nsList.Count > 0)
+                        {
+                        }
                     }
                 }
+                // NamespaceStatementBlock 的最后一段即为类名字符串
+                // 但我们仍保留原始 token 供 name/m_Token 使用
+                m_Token = classNameTokens[classNameTokens.Count - 1];
             }
 
             // 3. 模板参数
@@ -120,7 +124,7 @@ namespace SimpleLanguage.Compile
             m_FileMetaExtendClass = null;
             if (extendsKeyword != null && baseClassTokens != null && baseClassTokens.Count > 0)
             {
-                var extendDef = CreateClassDefineFromTokens(baseClassTokens);
+                var extendDef = new FileMetaClassDefine(m_FileMeta, baseClassTokens);
                 if (extendDef != null)
                 {
                     m_FileMetaExtendClass = extendDef;
@@ -134,7 +138,7 @@ namespace SimpleLanguage.Compile
                 foreach (var it in interfaceTokenLists)
                 {
                     if (it == null || it.Count == 0) continue;
-                    var ifaceDef = CreateClassDefineFromTokens(it);
+                    var ifaceDef = new FileMetaClassDefine(m_FileMeta, it);
                     if (ifaceDef != null)
                     {
                         m_InterfaceClassList.Add(ifaceDef);
@@ -225,13 +229,6 @@ namespace SimpleLanguage.Compile
             var fmtd = new FileMetaTemplateDefine(m_FileMeta, allTokens);
             m_TemplateDefineList.Add(fmtd);
         }
-        public void AddInnerFileMetaClass( FileMetaClass fmc )
-        {
-            fmc.m_Deep = this.deep + 1;
-            fmc.SetFileMetaClass(this);
-            m_ChildrenClassList.Add(fmc);
-        }
-
         // 解析 extends 或 interface 列表
         private int ParseExtendsOrInterface(List<Token> tokens, int startIndex, bool isInterface)
         {
@@ -269,7 +266,7 @@ namespace SimpleLanguage.Compile
 
             foreach (var group in typeTokenGroups)
             {
-                var fmcd = CreateClassDefineFromTokens(group);
+                var fmcd = new FileMetaClassDefine(m_FileMeta, group);
                 if (fmcd == null)
                     continue;
 
@@ -292,13 +289,6 @@ namespace SimpleLanguage.Compile
 
             return index;
         }
-
-        private FileMetaClassDefine CreateClassDefineFromTokens(List<Token> tokens)
-        {
-            // 直接使用基于 Token 的 FileMetaClassDefine 构造函数，
-            // 由 FileMetaClassDefine 自己在内部解析泛型参数、数组维度等信息。
-            return new FileMetaClassDefine(m_FileMeta, tokens);
-         }
         public void AddFileMemberData(FileMetaMemberData fmmd)
         {
             m_MemberDataList.Add(fmmd);
@@ -318,7 +308,6 @@ namespace SimpleLanguage.Compile
             m_MemberFunctionList.Add(fmmf);
             fmmf.SetFileMeta(m_FileMeta);
         }
-
         /// <summary>
         /// 返回最近添加的成员函数，用于在 TokenToFileMeta 中把函数体 token 绑定到对应的 FileMetaMemberFunction 上。
         /// </summary>
@@ -366,31 +355,11 @@ namespace SimpleLanguage.Compile
                 }
             }
         }
-        public void SetPartialToken( Token partialToken )
-        {
-            m_PartialToken = partialToken;
-        }
-        public void SetPermissionToken(Token permissionToken)
-        {
-            m_PermissionToken = permissionToken;
-        }
-        //public void SetParentClassNameToken(List<Token> tokenList, Node angleNode)
-        //{
-        //    if( tokenList != null && tokenList.Count > 0 )
-        //    {
-        //        FileMetaClassDefine fmcd = new FileMetaClassDefine(m_FileMeta, tokenList, angleNode);
-        //        SetExtendClass(fmcd);
-        //    }
-        //}
         public void SetMetaClass( MetaClass mc )
         {
             m_MetaClass = mc;
         }
-        //public MetaBase GetChildrenMetaBaseByName( string name )
-        //{
-        //    return  m_MetaClass.GetChildrenMetaBaseByName(name);
-        //}
-        public void AddFileMetaClass( FileMetaClass fmc )
+        public void AddInnerFileMetaClass(FileMetaClass fmc)
         {
             fmc.m_Deep = this.deep + 1;
             fmc.SetFileMetaClass(this);
@@ -491,6 +460,13 @@ namespace SimpleLanguage.Compile
                     stringBuilder.Append(m_PartialToken.lexeme.ToString() + " ");
                 else
                     stringBuilder.Append("_partial ");
+
+
+                if (m_NamespaceBlock != null)
+                {
+                    stringBuilder.Append(m_NamespaceBlock.ToFormatString());
+                    stringBuilder.Append(".");
+                }
                 if (m_ClassToken != null)
                 {
                     stringBuilder.Append(m_ClassToken.lexeme.ToString());
@@ -501,11 +477,6 @@ namespace SimpleLanguage.Compile
                     stringBuilder.Append("_class" + " ");
                 }
 
-                if (m_NamespaceBlock != null)
-                {
-                    stringBuilder.Append(m_NamespaceBlock.ToFormatString());
-                    stringBuilder.Append(".");
-                }
                 stringBuilder.Append(name);
 
                 if (m_TemplateDefineList.Count > 0)

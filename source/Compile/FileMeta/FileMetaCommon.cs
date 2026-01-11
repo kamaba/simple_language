@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using SimpleLanguage.Parse;
-using System.Reflection.PortableExecutable;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Compile
 {
@@ -77,6 +77,7 @@ namespace SimpleLanguage.Compile
         //}
         public static NamespaceStatementBlock CreateStateBlock( List<Token> token )
         {
+            Debug.Assert(token != null);
             bool isIdentifier = true;
             List<Token> tokenList = new List<Token>();
             for (int i = 0; i < token.Count; i++)
@@ -246,9 +247,6 @@ namespace SimpleLanguage.Compile
             m_FileMeta = fm;
             InitializeFromTokens(segmentTokens);
         }
-        // Node 版本构造方法（legacy，已由 Token 版本取代）
-        // public FileMetaCallNode( FileMeta fm, Node _node ) { ... }
-
         // core implementation: parse one call segment from tokens
         private void InitializeFromTokens(List<Token> segmentTokens)
         {
@@ -978,11 +976,6 @@ namespace SimpleLanguage.Compile
                     m_InClassNameTemplateNode = new FileInputTemplateNode(fm, constraintTokens);
                 }
             }
-        }
-
-        public void Parse()
-        {
-
         }
         public override string ToFormatString()
         {

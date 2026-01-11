@@ -32,21 +32,18 @@ namespace SimpleLanguage.Compile
         public Token nameToken => m_Token;
         public FileMetaBaseTerm express => m_Express;
         public Token assignToken => m_AssignToken;
+        public List<FileMetaMemberVariable> fileMetaMemberVariable => m_FileMetaMemberVariableList;
+        //public FileMetaCallTerm fileMetaCallTermValue => m_FileMetaCallTermValue;
+        public EMemberDataType DataType => m_MemberDataType;
 
         private FileMetaClassDefine m_ClassDefineRef;
         private Token m_AssignToken = null;
         private Token m_PermissionToken = null;
         private Token m_StaticToken = null;        
         private FileMetaBaseTerm m_Express;
-        public List<FileMetaMemberVariable> fileMetaMemberVariable => m_FileMetaMemberVariableList;
-        //public FileMetaConstValueTerm fileMetaConstValue => m_FileMetaConstValue;
-        public FileMetaCallTerm fileMetaCallTermValue => m_FileMetaCallTermValue;
-        public EMemberDataType DataType => m_MemberDataType;
-
         private List<FileMetaMemberVariable> m_FileMetaMemberVariableList = new List<FileMetaMemberVariable>();
         private EMemberDataType m_MemberDataType = EMemberDataType.None;
-        //private FileMetaConstValueTerm m_FileMetaConstValue = null;
-        private FileMetaCallTerm m_FileMetaCallTermValue = null;
+        //private FileMetaCallTerm m_FileMetaCallTermValue = null;
         public FileMetaMemberVariable(FileMeta fm, List<Token> modifiers, List<Token> typeTokens, Token nameToken, List<Token> exprTokens)
         {
             m_FileMeta = fm;
@@ -229,18 +226,6 @@ namespace SimpleLanguage.Compile
                 sb.Append("没有差别MemberDataType");
             }
             return sb.ToString();
-        }
-
-
-        private void ParseFromTokens(List<Token> tokens)
-        {
-            // legacy 构造入口保留，实际解析逻辑已内联到上述构造函数中新管线中使用的路径中。
-            // 新的 TokenToFileMeta 管线不再调用此方法。
-        }
-
-        private void ParseExpress(List<Token> tokens)
-        {
-            // legacy 表达式解析入口，现有调用路径直接通过 FileMetatUtil.CreateFileMetaExpressFromTokens 完成。
         }
     }
 }

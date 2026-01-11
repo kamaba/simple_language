@@ -51,6 +51,11 @@ namespace SimpleLanguage.Compile
             m_ImportNameListToken.Clear();
             foreach ( var t in m_TokenList)
             {
+                if( t.type == ETokenType.SemiColon )
+                {
+                    break;
+                }
+
                 if (m_AsNameToken == null)
                 {
                     if( t.type == ETokenType.As )
