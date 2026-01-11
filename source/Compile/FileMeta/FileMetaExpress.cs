@@ -499,25 +499,46 @@ namespace SimpleLanguage.Compile
             m_Token = tokenList[0];  // '('
             m_EndToken = tokenList[tokenList.Count - 1];  // ')'
 
-            // 将 token 列表中间的部分视为参数，简单处理
+            // 将 token 列表中间的部分视为参数，交给统一的表达式解析器
             if (tokenList.Count > 2)
             {
                 var paramTokens = tokenList.GetRange(1, tokenList.Count - 2);
 
-                // 按逗号拆分参数
+                // 按顶层逗号拆分参数 token 列表
                 List<List<Token>> paramListList = new List<List<Token>>();
                 List<Token> tempParamList = new List<Token>();
 
+                int parenDepth = 0;
+                int angleDepth = 0;
+                int bracketDepth = 0;
+                int braceDepth = 0;
+
                 for (int i = 0; i < paramTokens.Count; i++)
                 {
-                    if (paramTokens[i].type == ETokenType.Comma)
+                    var t = paramTokens[i];
+
+                    // 跟踪嵌套深度，避免在括号/泛型/数组/大括号内部误拆
+                    if (t.type == ETokenType.LeftPar) parenDepth++;
+                    else if (t.type == ETokenType.RightPar && parenDepth > 0) parenDepth--;
+                    else if (t.type == ETokenType.Less) angleDepth++;
+                    else if (t.type == ETokenType.Greater && angleDepth > 0) angleDepth--;
+                    else if (t.type == ETokenType.LeftBracket) bracketDepth++;
+                    else if (t.type == ETokenType.RightBracket && bracketDepth > 0) bracketDepth--;
+                    else if (t.type == ETokenType.LeftBrace) braceDepth++;
+                    else if (t.type == ETokenType.RightBrace && braceDepth > 0) braceDepth--;
+
+                    // 顶层逗号作为参数分隔符
+                    if (t.type == ETokenType.Comma && parenDepth == 0 && angleDepth == 0 && bracketDepth == 0 && braceDepth == 0)
                     {
-                        paramListList.Add(new List<Token>(tempParamList));
-                        tempParamList.Clear();
+                        if (tempParamList.Count > 0)
+                        {
+                            paramListList.Add(new List<Token>(tempParamList));
+                            tempParamList.Clear();
+                        }
                     }
                     else
                     {
-                        tempParamList.Add(paramTokens[i]);
+                        tempParamList.Add(t);
                     }
                 }
 
@@ -526,27 +547,19 @@ namespace SimpleLanguage.Compile
                     paramListList.Add(tempParamList);
                 }
 
-                // 为每个参数创建表达式并添加
+                // 为每个参数调用统一的表达式构造入口
                 foreach (var paramList in paramListList)
                 {
-                    if (paramList.Count == 1 && (paramList[0].type == ETokenType.Number || paramList[0].type == ETokenType.String || paramList[0].type == ETokenType.Const))
+                    var expr = FileMetatUtil.CreateFileMetaExpressFromTokens(
+                        m_FileMeta,
+                        paramList,
+                        expressType == FileMetaTermExpress.EExpressType.ParamVariable
+                            ? FileMetaTermExpress.EExpressType.ParamVariable
+                            : FileMetaTermExpress.EExpressType.Common);
+
+                    if (expr != null)
                     {
-                        var constTerm = new FileMetaConstValueTerm(m_FileMeta, paramList[0]);
-                        constTerm.priority = SignComputePriority.Level1;
-                        AddFileMetaTerm(constTerm);
-                    }
-                    else if (paramList.Count == 1 && paramList[0].type == ETokenType.Identifier)
-                    {
-                        var callTerm = new FileMetaCallTerm(m_FileMeta, paramList);
-                        callTerm.priority = SignComputePriority.Level1;
-                        AddFileMetaTerm(callTerm);
-                    }
-                    else if (paramList.Count > 0)
-                    {
-                        // 复杂表达式：使用 CallTerm
-                        var term = new FileMetaCallTerm(m_FileMeta, paramList);
-                        term.priority = SignComputePriority.Level1;
-                        AddFileMetaTerm(term);
+                        AddFileMetaTerm(expr);
                     }
                 }
             }
