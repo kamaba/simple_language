@@ -18,6 +18,7 @@ using System.Diagnostics;
 using SimpleLanguage.Compile;
 using Tomlyn;
 using Tomlyn.Model;
+using SimpleLanguage.source.Logging;
 
 namespace SimpleLanguage.Project
 {

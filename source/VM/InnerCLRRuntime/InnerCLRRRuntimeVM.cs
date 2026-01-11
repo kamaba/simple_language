@@ -1,6 +1,6 @@
 ﻿
 using SimpleLanguage.IR;
-using SimpleLanguage.Parse;
+using SimpleLanguage.source.Logging;
 using System;
 using System.Collections;
 using System.Collections.Generic;

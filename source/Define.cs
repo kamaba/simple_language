@@ -364,10 +364,6 @@ namespace SimpleLanguage
         public const int Level12_Split = 130;                //,
     }
 
-    class Define
-    {
-
-    }
     public class Global
     {
         public const string tabChar = "    ";
