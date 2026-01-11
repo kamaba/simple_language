@@ -46,3 +46,9 @@ path = "lib/std"
 
 [[references]]
 path = "lib/core"
+
+[[struct.tree]]
+namespace = "Std"
+
+[[struct.tree]]
+class = "Std.Console"

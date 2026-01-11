@@ -32,8 +32,6 @@ namespace SimpleLanguage.Compile
         public FileMeta file => m_File;
 
         LexerParse lexerParse;
-        //TokenParse tokenParse;
-        //StructParse structBuild;
         TokenToFileMeta tokenToFileMeta;
         private FileMeta m_File = null;
 
@@ -92,9 +90,13 @@ namespace SimpleLanguage.Compile
 
                 lexerParse.ParseToTokenList();
 
+                m_FileCompileState.SetLoadState( FileCompileState.ELoadState.LexerParse );
+
                 tokenToFileMeta = new TokenToFileMeta( m_File, lexerParse.GetListTokensWidthEnd() );
 
                 tokenToFileMeta.ParseTokensToFileMeta();
+
+                m_FileCompileState.SetLoadState(FileCompileState.ELoadState.TokenParse );
 
                 m_File.SetDeep(0);
 

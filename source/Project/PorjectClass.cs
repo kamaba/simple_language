@@ -86,11 +86,78 @@ namespace SimpleLanguage.Project
             InnerCLRRuntimeVM.Init();
             InnerCLRRuntimeVM.RunIRMethod( null, irmethod);
         }
-        // legacy namespace tree building via DefineStruct is currently not driven by TOML
-        // kept as a no-op placeholder to avoid breaking callers
-        public static void AddDefineNamespace(MetaNode parentRoot, object _, bool isAddCurrent = true)
+        // Build MetaNode / MetaNamespace tree from StructTreeNode description.
+        // parentRoot: existing MetaNode root (通常是 ModuleManager.instance.selfModule.metaNode)
+        // node: StructTreeNode from ProjectConfig.StructTree (Root/Namespace/Class)
+        public static void AddDefineNamespace(MetaNode parentRoot, ProjectConfig.StructTreeNode node, bool isAddCurrent = true)
         {
-            // namespace layout can be rebuilt later based on ProjectConfig if needed
+            if (parentRoot == null || node == null)
+                return;
+
+            // Root 节点只作为逻辑起点，不对应具体 namespace/class，本身不创建 MetaNamespace/MetaClass。
+            if (node.Type == ProjectConfig.StructTreeNode.NodeType.Root)
+            {
+                for (int i = 0; i < node.Children.Count; i++)
+                {
+                    AddDefineNamespace(parentRoot, node.Children[i], true);
+                }
+                return;
+            }
+
+            MetaNode parMS = null;
+
+            if (node != null)
+            {
+                if (isAddCurrent)
+                {
+                    // 尝试在当前父节点下查找同名子节点
+                    var cfindNode = parentRoot.GetChildrenMetaNodeByName(node.Name);
+                    if (cfindNode == null)
+                    {
+                        // 不存在同名节点，按 StructTreeNode 类型创建新的 MetaClass / MetaNamespace
+                        if (node.Type == ProjectConfig.StructTreeNode.NodeType.Class)
+                        {
+                            // class: 先尝试从 CoreMetaClassManager 获取内置类，否则创建普通 StructDefine 类
+                            var gcmc = CoreMetaClassManager.GetCoreMetaClass(node.Name);
+                            if (gcmc != null)
+                            {
+                                parMS = parentRoot.AddMetaClass(gcmc.GetMetaClassByTemplateCount(0));
+                            }
+                            else
+                            {
+                                var nodens = new MetaClass(node.Name, EClassDefineType.StructDefine);
+                                parMS = parentRoot.AddMetaClass(nodens);
+                            }
+                        }
+                        else
+                        {
+                            // namespace / 其它类型一律按命名空间处理
+                            var nodeNs = new MetaNamespace(node.Name);
+                            parMS = parentRoot.AddMetaNamespace(nodeNs);
+                        }
+                    }
+                    else
+                    {
+                        // 已有同名子节点，要求其必须是命名空间节点
+                        if (!cfindNode.isMetaNamespace)
+                        {
+                            Log.AddInStructMeta(EError.None, "Error 解析namespace添加命名空间节点时，发现已有定义类!!");
+                            return;
+                        }
+                        // 复用已有命名空间节点
+                        parMS = parentRoot.AddMetaNamespace(cfindNode.metaNamespace);
+                    }
+                }
+                else
+                {
+                    parMS = parentRoot;
+                }
+
+                for (int i = 0; i < node.Children.Count; i++)
+                {
+                    AddDefineNamespace(parMS, node.Children[i]);
+                }
+            }
         }
         public static void ProjectCompileBefore()
         {
@@ -100,6 +167,8 @@ namespace SimpleLanguage.Project
             var cfg = ProjectManager.currentProject?.Config;
             if (cfg == null)
                 return;
+
+            AddDefineNamespace(ModuleManager.instance.selfModule.metaNode, cfg.StructTree, false);
 
             var fileList = cfg.CompileFiles.Files;
             var filter = cfg.CompileFilter;

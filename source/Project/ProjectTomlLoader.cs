@@ -132,6 +132,31 @@ namespace SimpleLanguage.Project
                 }
             }
 
+            // [[struct.tree]]
+            if (model.TryGetValue("struct", out var structObj) && structObj is TomlTable structTable)
+            {
+                if (structTable.TryGetValue("tree", out var treeObj) && treeObj is TomlTableArray treeArray)
+                {
+                    foreach (var item in treeArray)
+                    {
+                        if (item is TomlTable treeEntry)
+                        {
+                            // namespace = "Std"
+                            if (treeEntry.TryGetValue("namespace", out var nsObj) && nsObj is string nsName)
+                            {
+                                cfg.StructTree.EnsurePath(nsName, ProjectConfig.StructTreeNode.NodeType.Namespace);
+                            }
+
+                            // class = "Std.Console"
+                            if (treeEntry.TryGetValue("class", out var classObj) && classObj is string className)
+                            {
+                                cfg.StructTree.EnsurePath(className, ProjectConfig.StructTreeNode.NodeType.Class);
+                            }
+                        }
+                    }
+                }
+            }
+
             // [[references]]
             if (model.TryGetValue("references", out var refsObj) && refsObj is TomlArray refsArray)
             {
