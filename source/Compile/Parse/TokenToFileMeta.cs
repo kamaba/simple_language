@@ -1153,8 +1153,8 @@ namespace SimpleLanguage.Compile
             TransitionState(DFAState.InFunction);
 
             int depthBrace = 1; // 已经消费了函数体起始 '{'
-            int depthPar = 0;
-            int depthBracket = 0;
+            //int depthPar = 0;
+            //int depthBracket = 0;
             var current = new List<Token>();
 
             // 使用一个栈维护当前所在的块，索引 0 为 rootBlock
@@ -1185,11 +1185,12 @@ namespace SimpleLanguage.Compile
             {
                 var t = Consume();
 
-                current.Add(t);
-
-                if (t.type == ETokenType.LeftPar) depthPar++;
-                else if (t.type == ETokenType.RightPar && depthPar > 0) depthPar--;
-                else if (t.type == ETokenType.LeftBrace)
+                //if (t.type == ETokenType.LeftPar) depthPar++;
+                //else if (t.type == ETokenType.RightPar && depthPar > 0) depthPar--;
+                //else if (t.type == ETokenType.LeftBracket) depthBracket++;
+                //else if (t.type == ETokenType.RightBracket && depthBracket > 0) depthBracket--;
+                //else                 
+                if (t.type == ETokenType.LeftBrace)
                 {
                     // 进入新的内层 block：为其创建独立的 FileMetaBlockSyntax，并与当前块形成嵌套关系
                     depthBrace++;
@@ -1214,35 +1215,17 @@ namespace SimpleLanguage.Compile
                     finishedBlock.SetRightBraceToken(t);
                     continue;
                 }
-                else if (t.type == ETokenType.LeftBracket) depthBracket++;
-                else if (t.type == ETokenType.RightBracket && depthBracket > 0) depthBracket--;
-
-                // 顶层（当前函数体这一层）的语句分割：
-                //  1) 普通表达式/赋值/调用：以 ';' 或换行结束一条语句。
-                //  2) 控制流 if/elif/else/for/while/dowhile/switch 通常与 '{ }' 结合，
-                //     整个结构由 FileMetatUtil.CreateFileMetaSyntaxFromTokens 进一步解析，这里保持整条不被过早切断。
-                //  3) return/as/is 语句：一旦遇到 ';' 或换行即可结束该语句。
-                if (depthBrace == 1 && depthPar == 0 && depthBracket == 0)
+                if (t.type == ETokenType.SemiColon)
                 {
-                    if (t.type == ETokenType.SemiColon)
-                    {
-                        flush();
-                    }
-                    else if (t.type == ETokenType.LineEnd)
-                    {
-                        // 行结束也可以作为语句边界：
-                        // - 如果以 if/else/for/while 等关键字开头，且后面跟 '{'，则通常仍是同一条语句，
-                        //   这里依然 flush，让 FileMetatUtil 在内部识别结构。
-                        // - 对于含有 return/as/is 的表达式语句，也在换行处结束。
-                        if (StartsWithKeyword(current) || ContainsAsOrIs(current))
-                        {
-                            flush();
-                        }
-                        else
-                        {
-                            flush();
-                        }
-                    }
+                    flush();
+                }
+                else if (t.type == ETokenType.LineEnd)
+                {
+                    flush();
+                }
+                else
+                {
+                    current.Add(t);
                 }
             }
 

@@ -9,6 +9,8 @@
 using SimpleLanguage.Compile.Grammer;
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
 
 namespace SimpleLanguage.Compile
 {
@@ -100,6 +102,21 @@ namespace SimpleLanguage.Compile
                 ifSyntax.SetFileMetaConditionExpressSyntax(ifCond);
                 return ifSyntax;
             }
+            else if (first.type == ETokenType.ElseIf)
+            {
+                // else if (cond) { }：本身是一个条件表达式语句块，后续由 MetaIfStatements 绑定到前一个 if
+                var condTokens = tokens.GetRange(1, tokens.Count - 1);
+                var cond = CreateFileMetaExpressFromTokens(
+                    fm,
+                    condTokens,
+                    FileMetaTermExpress.EExpressType.Common);
+                return new FileMetaConditionExpressSyntax(fm, first, cond, null);
+            }
+            else if (first.type == ETokenType.Else)
+            {
+                // else { }：仅关键字壳，真正的块由 TokenToFileMeta 构造的 FileMetaBlockSyntax 提供
+                return new FileMetaKeyOnlySyntax(fm, first, null);
+            }
 
             if (first.type == ETokenType.While)
             {
@@ -147,9 +164,11 @@ namespace SimpleLanguage.Compile
                 return null;
             }
  
-            // ===== 无关键字前缀的普通语句：赋值 / 调用 / 复杂表达式 =====
+            // ===== 无关键字前缀的普通语句：变量定义 / 赋值 / 调用 / 复杂表达式 =====
 
-            // 1) 检测简单形态的赋值语句：左侧是可调用/变量引用，右侧是表达式
+            // 1) 检测包含 '=' 的语句，区分：
+            //    - FileMetaDefineVariableSyntax:  可能带 var/dynamic/data/static/类型前缀
+            //    - FileMetaOpAssignSyntax:       纯变量引用在左侧
             int assignIndex = -1;
             for (int i = 0; i < tokens.Count; i++)
             {
@@ -165,27 +184,134 @@ namespace SimpleLanguage.Compile
                 var leftTokens = tokens.GetRange(0, assignIndex);
                 var rightTokens = tokens.GetRange(assignIndex + 1, tokens.Count - assignIndex - 1);
 
-                var leftExpr = CreateFileMetaExpressFromTokens(
-                    fm,
-                    leftTokens,
-                    FileMetaTermExpress.EExpressType.Common);
-                var rightExpr = CreateFileMetaExpressFromTokens(
-                    fm,
-                    rightTokens,
-                    FileMetaTermExpress.EExpressType.Common);
-
-                if (leftExpr is FileMetaCallTerm callTerm)
+                // 左侧可能形态：
+                //   [static] [TypeTokens...] Name
+                //   var Name
+                //   dynamic Name
+                //   data Name
+                //   objectRef.prop[index]   (赋值)
+                
+                // 先定位最后一个 Identifier 作为候选 Name
+                int lastIdIndex = -1;
+                for (int i = 0; i < leftTokens.Count; i++)
                 {
-                    // 将左侧调用视作变量引用，构造 FileMetaOpAssignSyntax
-                    var opSyntax = new FileMetaOpAssignSyntax(
-                        callTerm.callLink,
-                        tokens[assignIndex],
-                        null,
-                        null,
-                        null,
-                        rightExpr,
-                        flag: true);
-                    return opSyntax;
+                    if (leftTokens[i].type == ETokenType.Identifier)
+                    {
+                        lastIdIndex = i;
+                    }
+                }
+
+                if (lastIdIndex >= 0)
+                {
+                    Token nameToken = leftTokens[lastIdIndex];
+
+                    // 检查左侧前缀是否包含 var/dynamic/data/static/type，若有则视为定义语句
+                    bool hasDefinePrefix = false;
+                    Token dynamicToken = null;
+                    Token dataToken = null;
+                    Token varToken = null;
+                    Token staticToken = null;
+                    List<Token> typeTokens = new List<Token>();
+
+                    for (int i = 0; i < lastIdIndex; i++)
+                    {
+                        var t = leftTokens[i];
+                        if (t.type == ETokenType.Static)
+                        {
+                            staticToken = t;
+                            hasDefinePrefix = true;
+                        }
+                        else if (t.type == ETokenType.Dynamic)
+                        {
+                            dynamicToken = t;
+                            hasDefinePrefix = true;
+                        }
+                        else if (t.type == ETokenType.Data)
+                        {
+                            dataToken = t;
+                            hasDefinePrefix = true;
+                        }
+                        else if (t.type == ETokenType.Var)
+                        {
+                            varToken = t;
+                            hasDefinePrefix = true;
+                        }
+                        else if (t.type == ETokenType.Type)
+                        {
+                            typeTokens.Add(t);
+                            hasDefinePrefix = true;
+                        }
+                        else if (t.type == ETokenType.Identifier)
+                        {
+                            // 作为类型前缀的一部分，例如 NS.ClassName 之类
+                            typeTokens.Add(t);
+                        }
+                    }
+
+                    var rightExpr = CreateFileMetaExpressFromTokens(
+                        fm,
+                        rightTokens,
+                        FileMetaTermExpress.EExpressType.MemberVariable);
+
+                    if (hasDefinePrefix)
+                    {
+                        // 变量定义形式：FileMetaDefineVariableSyntax 或 带 var/dynamic/data 的 FileMetaOpAssignSyntax(hasDefine)
+                        FileMetaClassDefine classDefine = null;
+                        if (typeTokens.Count > 0)
+                        {
+                            classDefine = new FileMetaClassDefine(fm, typeTokens);
+                        }
+
+                        // 如果存在显式类型或 static，则用 FileMetaDefineVariableSyntax 表达
+                        if (classDefine != null || staticToken != null)
+                        {
+                            return new FileMetaDefineVariableSyntax(
+                                fm,
+                                classDefine,
+                                nameToken,
+                                tokens[assignIndex],
+                                staticToken,
+                                rightExpr);
+                        }
+
+                        // 否则用 hasDefine = true 的 FileMetaOpAssignSyntax 表达（var/dynamic/data）
+                        var leftCall = CreateFileMetaExpressFromTokens(
+                            fm,
+                            new List<Token> { nameToken },
+                            FileMetaTermExpress.EExpressType.Common) as FileMetaCallTerm;
+
+                        if (leftCall != null)
+                        {
+                            return new FileMetaOpAssignSyntax(
+                                leftCall.callLink,
+                                tokens[assignIndex],
+                                dynamicToken,
+                                dataToken,
+                                varToken,
+                                rightExpr,
+                                flag: true);
+                        }
+                    }
+                    else
+                    {
+                        // 无定义前缀：视为普通赋值/更新表达式，左侧整体按调用/变量引用解析
+                        var leftExpr = CreateFileMetaExpressFromTokens(
+                            fm,
+                            leftTokens,
+                            FileMetaTermExpress.EExpressType.Common);
+
+                        if (leftExpr is FileMetaCallTerm callTerm)
+                        {
+                            return new FileMetaOpAssignSyntax(
+                                callTerm.callLink,
+                                tokens[assignIndex],
+                                null,
+                                null,
+                                null,
+                                rightExpr,
+                                flag: true);
+                        }
+                    }
                 }
             }
 
@@ -323,7 +449,17 @@ namespace SimpleLanguage.Compile
             }
 
             int index = 0;
-            return ParseBinaryExpression(fm, cleaned, ref index, 0, eType);
+            var pbe = ParseBinaryExpression(fm, cleaned, ref index, 0, eType);
+
+            StringBuilder sb = new StringBuilder();
+            foreach( var v in cleaned)
+            {
+                sb.Append(v.ToString());
+            }
+            Debug.Assert(pbe != null, sb.ToString() + "生成失败了!");
+            pbe?.BuildAST();
+
+            return pbe;
         }
          // ====== 静态 Token 表达式解析函数（替代内部 TokenExpressionParser 类） ======
         private static FileMetaBaseTerm ParsePrimary(FileMeta fm, List<Token> tokens, ref int index, FileMetaTermExpress.EExpressType eType)
@@ -545,9 +681,9 @@ namespace SimpleLanguage.Compile
             if (list == null || list.Count == 0) return new List<Token>();
             int start = 0;
             int end = list.Count - 1;
-            while (start <= end && (list[start].type == ETokenType.Space || list[start].type == ETokenType.LineEnd || list[start].type == ETokenType.SemiColon))
+            while (start <= end && (list[start].type == ETokenType.Sharp || list[start].type == ETokenType.LineEnd || list[start].type == ETokenType.SemiColon))
                 start++;
-            while (end >= start && (list[end].type == ETokenType.Space || list[end].type == ETokenType.LineEnd || list[end].type == ETokenType.SemiColon))
+            while (end >= start && (list[end].type == ETokenType.Sharp || list[end].type == ETokenType.LineEnd || list[end].type == ETokenType.SemiColon))
                 end--;
             if (end < start) return new List<Token>();
             return list.GetRange(start, end - start + 1);

@@ -982,8 +982,7 @@ namespace SimpleLanguage.Compile
 
             return sb.ToString();
         }
-    }
-    
+    }    
     /// <summary>
     /// 复杂表达式的包装类，支持 as/is、二元操作等多种表达式形式
     /// </summary>
