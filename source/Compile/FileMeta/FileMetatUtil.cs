@@ -393,10 +393,10 @@ namespace SimpleLanguage.Compile
         }
         // 统一的表达式入口：单 token 快速路径 + 多 token 使用 ParseBinaryExpression
         public static FileMetaBaseTerm CreateFileMetaExpressFromTokens(
-             FileMeta fm,
-             List<Token> tokens,
-             FileMetaTermExpress.EExpressType eType)
-         {
+              FileMeta fm,
+              List<Token> tokens,
+              FileMetaTermExpress.EExpressType eType)
+          {
             if (tokens == null || tokens.Count == 0)
             {
                 return null;
@@ -448,19 +448,58 @@ namespace SimpleLanguage.Compile
                 }
             }
 
+            // 支持一条 token 序列中包含多个顶层表达式片段：
+            // 例如：a > b && c < d && e == f
+            // 这里不将所有运算符折叠成一棵树，而是拆成若干 FileMetaBaseTerm 片段，
+            // 若数量>1，则用 FileMetaTermExpress 作为容器，把这些片段依次加入 m_FileMetaExpressList；
+            // 若数量==1，则直接返回该片段。
+
+            var segmentList = new List<FileMetaBaseTerm>();
             int index = 0;
-            var pbe = ParseBinaryExpression(fm, cleaned, ref index, 0, eType);
-
-            StringBuilder sb = new StringBuilder();
-            foreach( var v in cleaned)
+            while (index < cleaned.Count)
             {
-                sb.Append(v.ToString());
-            }
-            Debug.Assert(pbe != null, sb.ToString() + "生成失败了!");
-            pbe?.BuildAST();
+                var term = ParseBinaryExpression(fm, cleaned, ref index, 0, eType);
+                if (term == null)
+                {
+                    break;
+                }
+                segmentList.AddRange(term);
 
-            return pbe;
-        }
+                // 防御性：避免死循环
+                int safeIndex = index;
+                while (safeIndex < cleaned.Count &&
+                       (cleaned[safeIndex].type == ETokenType.Space ||
+                        cleaned[safeIndex].type == ETokenType.LineEnd ||
+                        cleaned[safeIndex].type == ETokenType.SemiColon))
+                {
+                    safeIndex++;
+                }
+                if (safeIndex == index)
+                {
+                    // 当前无法前进，跳出
+                    break;
+                }
+                index = safeIndex;
+            }
+
+            if (segmentList.Count == 0)
+            {
+                return null;
+            }
+
+            if (segmentList.Count == 1)
+            {
+                var single = segmentList[0];
+                single.BuildAST();
+                return single;
+            }
+
+            // 多个表达式片段：使用 FileMetaTermExpress 作为容器
+            var termExpress = new FileMetaTermExpress(fm, new List<Token>(), eType);
+            termExpress.AddRangeFileMetaTerm(segmentList);
+            termExpress.BuildAST();
+            return termExpress;
+         }
          // ====== 静态 Token 表达式解析函数（替代内部 TokenExpressionParser 类） ======
         private static FileMetaBaseTerm ParsePrimary(FileMeta fm, List<Token> tokens, ref int index, FileMetaTermExpress.EExpressType eType)
         {
@@ -585,38 +624,43 @@ namespace SimpleLanguage.Compile
             return null;
         }
 
-        private static FileMetaBaseTerm ParseBinaryExpression(FileMeta fm, List<Token> tokens, ref int index, int parentPrecedence, FileMetaTermExpress.EExpressType eType)
-         {
-             var left = ParsePrimary(fm, tokens, ref index, eType);
-             while (true)
-             {
-                 if (index >= tokens.Count) break;
-                 var op = tokens[index];
-                 // 计算操作符优先级时，也要避免把泛型类型参数中的 < / > 当作比较运算符
-                 int prec = GetPrecedenceConsideringContext(tokens, index);
-                  if (prec <= parentPrecedence || prec == 0)
-                      break;
+        private static List<FileMetaBaseTerm> ParseBinaryExpression(FileMeta fm, List<Token> tokens, ref int index, int parentPrecedence, FileMetaTermExpress.EExpressType eType)
+        {
+            var result = new List<FileMetaBaseTerm>();
 
-                 // 跳过当前运算符 token
-                 index++;
+            while (index < tokens.Count)
+            {
+                // 左操作数或单元表达式
+                var left = ParsePrimary(fm, tokens, ref index, eType);
+                if (left == null)
+                {
+                    break;
+                }
+                result.Add(left);
 
-                 // 解析右侧操作数
-                 var right = ParsePrimary(fm, tokens, ref index, eType);
-                 if (right == null)
-                     break;
+                if (index >= tokens.Count)
+                {
+                    break;
+                }
 
-                 // 将运算符本身建成一个 FileMetaSymbolTerm 节点，并挂接左右子节点，
-                 // 这样 MetaExpressOperator 等后续阶段可以完整看到 "left op right" 结构。
-                 var opNode = new FileMetaSymbolTerm(fm, op)
-                 {
-                     left = left,
-                     right = right
-                 };
+                var op = tokens[index];
+                int prec = GetPrecedenceConsideringContext(tokens, index);
+                if (prec <= parentPrecedence || prec == 0)
+                {
+                    // 非二元运算符，结束本段解析
+                    break;
+                }
 
-                 left = opNode;
-             }
-             return left;
-         }
+                // 运算符自身作为一个 FileMetaSymbolTerm 片段加入列表
+                var opNode = new FileMetaSymbolTerm(fm, op);
+                result.Add(opNode);
+
+                // 消费运算符 token
+                index++;
+            }
+
+            return result;
+        }
 
          // 上下文敏感的优先级获取：当 < / > 处于泛型类型参数上下文中时，视为 0 优先级（非比较运算符）
          private static int GetPrecedenceConsideringContext(List<Token> tokens, int opIndex)
