@@ -456,24 +456,34 @@ namespace SimpleLanguage.Compile
              {
                  if (index >= tokens.Count) break;
                  var op = tokens[index];
-                 // 计算操作符优先级时，也要避免把泛型类型参数中的 < / > 当作比较運算符
+                 // 计算操作符优先级时，也要避免把泛型类型参数中的 < / > 当作比较运算符
                  int prec = GetPrecedenceConsideringContext(tokens, index);
                   if (prec <= parentPrecedence || prec == 0)
                       break;
 
-                 // 跳过运算符
+                 // 跳过当前运算符 token
                  index++;
+
+                 // 解析右侧操作数
                  var right = ParsePrimary(fm, tokens, ref index, eType);
                  if (right == null)
                      break;
-                 // 目前保留最小结构，返回左侧表达式；后续可在此处构造二元表达式树
-                 left = left ?? right;
+
+                 // 将运算符本身建成一个 FileMetaSymbolTerm 节点，并挂接左右子节点，
+                 // 这样 MetaExpressOperator 等后续阶段可以完整看到 "left op right" 结构。
+                 var opNode = new FileMetaSymbolTerm(fm, op)
+                 {
+                     left = left,
+                     right = right
+                 };
+
+                 left = opNode;
              }
              return left;
          }
 
-        // 上下文敏感的优先级获取：当 < / > 处于泛型类型参数上下文中时，视为 0 优先级（非比较运算符）
-        private static int GetPrecedenceConsideringContext(List<Token> tokens, int opIndex)
+         // 上下文敏感的优先级获取：当 < / > 处于泛型类型参数上下文中时，视为 0 优先级（非比较运算符）
+         private static int GetPrecedenceConsideringContext(List<Token> tokens, int opIndex)
         {
             if (opIndex < 0 || opIndex >= tokens.Count)
                 return 0;

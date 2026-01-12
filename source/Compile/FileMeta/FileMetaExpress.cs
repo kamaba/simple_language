@@ -845,18 +845,18 @@ namespace SimpleLanguage.Compile
         private void HandleBraceTermFromTokens(List<Token> tokenList)
         {
             // { a = 10, b = 20, c = Class1() }
-            // 按顶层逗号拆分语句
-            List<List<Token>> statementListList = new List<List<Token>>();
-            List<Token> tempStatementList = new List<Token>();
+            // 顶层用逗号分隔每个元素；每个元素内部统一交给表达式处理
+            List<List<Token>> elementTokenLists = new List<List<Token>>();
+            List<Token> temp = new List<Token>();
             int braceDepth = 0;
             int parenDepth = 0;
             int bracketDepth = 0;
 
-            for (int i = 1; i < tokenList.Count - 1; i++)  // 跧过首尾的 { }
+            // 跳过首尾的大括号
+            for (int i = 1; i < tokenList.Count - 1; i++)
             {
                 var token = tokenList[i];
 
-                // 追踪嵌套深度
                 if (token.type == ETokenType.LeftBrace) braceDepth++;
                 else if (token.type == ETokenType.RightBrace && braceDepth > 0) braceDepth--;
                 else if (token.type == ETokenType.LeftPar) parenDepth++;
@@ -864,40 +864,40 @@ namespace SimpleLanguage.Compile
                 else if (token.type == ETokenType.LeftBracket) bracketDepth++;
                 else if (token.type == ETokenType.RightBracket && bracketDepth > 0) bracketDepth--;
 
-                // 顶层逗号分隔语句
+                // 顶层逗号分隔元素
                 if (token.type == ETokenType.Comma && braceDepth == 0 && parenDepth == 0 && bracketDepth == 0)
                 {
-                    if (tempStatementList.Count > 0)
+                    if (temp.Count > 0)
                     {
-                        statementListList.Add(new List<Token>(tempStatementList));
-                        tempStatementList.Clear();
+                        elementTokenLists.Add(new List<Token>(temp));
+                        temp.Clear();
                     }
                 }
                 else
                 {
-                    tempStatementList.Add(token);
+                    temp.Add(token);
                 }
             }
 
-            // 添加最后一个语句
-            if (tempStatementList.Count > 0)
+            if (temp.Count > 0)
             {
-                statementListList.Add(tempStatementList);
+                elementTokenLists.Add(temp);
             }
 
-            // 处理每个语句
-            for (int i = 0; i < statementListList.Count; i++)
+            // 对每个元素，按是否存在 '=' 或 ':' 拆分键和值，统一走表达式入口
+            foreach (var elemTokens in elementTokenLists)
             {
-                var statementTokens = statementListList[i];
-                List<Token> defineTokens = new List<Token>();
-                List<Token> valueTokens = new List<Token>();
+                if (elemTokens == null || elemTokens.Count == 0)
+                    continue;
+
+                List<Token> defineTokens = null;
+                List<Token> valueTokens = null;
                 Token assignToken = null;
 
-                // 按 = 或 : 拆分键值对
                 int assignIndex = -1;
-                for (int j = 0; j < statementTokens.Count; j++)
+                for (int j = 0; j < elemTokens.Count; j++)
                 {
-                    var t = statementTokens[j];
+                    var t = elemTokens[j];
                     if ((t.type == ETokenType.Assign || t.type == ETokenType.Colon) && assignIndex == -1)
                     {
                         assignIndex = j;
@@ -908,109 +908,50 @@ namespace SimpleLanguage.Compile
 
                 if (assignIndex != -1)
                 {
-                    // 有赋值符号：key = value 或 key : value
-                    defineTokens = statementTokens.GetRange(0, assignIndex);
-                    valueTokens = statementTokens.GetRange(assignIndex + 1, statementTokens.Count - assignIndex - 1);
+                    defineTokens = elemTokens.GetRange(0, assignIndex);
+                    if (assignIndex + 1 < elemTokens.Count)
+                    {
+                        valueTokens = elemTokens.GetRange(assignIndex + 1, elemTokens.Count - assignIndex - 1);
+                    }
                 }
                 else
                 {
-                    // 无赋值符号：仅值
-                    defineTokens = statementTokens;
+                    defineTokens = elemTokens;
                 }
 
-                // 处理语句
-                if (defineTokens.Count > 0 && valueTokens.Count == 0 && assignToken == null)
+                // 仅值的元素：直接作为一个表达式
+                if (assignToken == null)
                 {
-                    // 仅有值的情况
-                    if (defineTokens.Count == 1)
+                    var expr = FileMetatUtil.CreateFileMetaExpressFromTokens(
+                        m_FileMeta,
+                        defineTokens,
+                        FileMetaTermExpress.EExpressType.Common);
+                    if (expr != null)
                     {
-                        var t = defineTokens[0];
-                        if (t.type == ETokenType.Number || t.type == ETokenType.String || t.type == ETokenType.Const)
-                        {
-                            var constTerm = new FileMetaConstValueTerm(m_FileMeta, t);
-                            AddFileMetaTerm(constTerm);
-                        }
-                        else if (t.type == ETokenType.Identifier)
-                        {
-                            var callTerm = new FileMetaCallTerm(m_FileMeta, defineTokens);
-                            AddFileMetaTerm(callTerm);
-                        }
-                    }
-                    else if (defineTokens[0].type == ETokenType.LeftBracket)
-                    {
-                        // 数组初始化
-                        var bracketTerm = new FileMetaBracketTerm(m_FileMeta, defineTokens);
-                        AddFileMetaTerm(bracketTerm);
-                    }
-                    else if (defineTokens[0].type == ETokenType.LeftBrace)
-                    {
-                        // 嵌套大括号初始化
-                        var braceTerm = new FileMetaBraceTerm(m_FileMeta, defineTokens);
-                        AddFileMetaTerm(braceTerm);
-                    }
-                    else
-                    {
-                        // 复杂表达式
-                        var callTerm = new FileMetaCallTerm(m_FileMeta, defineTokens);
-                        AddFileMetaTerm(callTerm);
+                        AddFileMetaTerm(expr);
                     }
                 }
-                else if (assignToken != null && defineTokens.Count > 0 && valueTokens.Count > 0)
+                else
                 {
-                    // 键值对：key = value 或 key : value
-                    FileMetaBaseTerm defineTermPart = null;
-                    FileMetaBaseTerm valueTermPart = null;
+                    // key = value 或 key : value
+                    var keyExpr = FileMetatUtil.CreateFileMetaExpressFromTokens(
+                        m_FileMeta,
+                        defineTokens,
+                        FileMetaTermExpress.EExpressType.Common);
+                    var valExpr = FileMetatUtil.CreateFileMetaExpressFromTokens(
+                        m_FileMeta,
+                        valueTokens,
+                        FileMetaTermExpress.EExpressType.Common);
 
-                    // 构建键部分
-                    if (defineTokens.Count == 1 && defineTokens[0].type == ETokenType.Number)
+                    if (keyExpr != null && valExpr != null)
                     {
-                        defineTermPart = new FileMetaConstValueTerm(m_FileMeta, defineTokens[0]);
-                    }
-                    else if (defineTokens.Count == 1 && defineTokens[0].type == ETokenType.Identifier)
-                    {
-                        defineTermPart = new FileMetaCallTerm(m_FileMeta, defineTokens);
-                    }
-                    else
-                    {
-                        defineTermPart = new FileMetaCallTerm(m_FileMeta, defineTokens);
-                    }
-
-                    // 构建值部分
-                    if (valueTokens.Count == 1 && (valueTokens[0].type == ETokenType.Number || valueTokens[0].type == ETokenType.String))
-                    {
-                        valueTermPart = new FileMetaConstValueTerm(m_FileMeta, valueTokens[0]);
-                    }
-                    else if (valueTokens.Count == 1 && valueTokens[0].type == ETokenType.Identifier)
-                    {
-                        valueTermPart = new FileMetaCallTerm(m_FileMeta, valueTokens);
-                    }
-                    else if (valueTokens.Count > 0 && valueTokens[0].type == ETokenType.LeftBrace)
-                    {
-                        valueTermPart = new FileMetaBraceTerm(m_FileMeta, valueTokens);
-                    }
-                    else if (valueTokens.Count > 0 && valueTokens[0].type == ETokenType.LeftBracket)
-                    {
-                        valueTermPart = new FileMetaBracketTerm(m_FileMeta, valueTokens);
-                    }
-                    else
-                    {
-                        valueTermPart = new FileMetaCallTerm(m_FileMeta, valueTokens);
-                    }
-
-                    // 创建赋值表达式
-                    if (defineTermPart != null && valueTermPart != null)
-                    {
-                        FileMetaSymbolTerm assignTerm = new FileMetaSymbolTerm(m_FileMeta, assignToken)
+                        var assignTerm = new FileMetaSymbolTerm(m_FileMeta, assignToken)
                         {
-                            left = defineTermPart,
-                            right = valueTermPart
+                            left = keyExpr,
+                            right = valExpr
                         };
                         AddFileMetaTerm(assignTerm);
                     }
-                }
-                else
-                {
-                    Log.AddInStructFileMeta(EError.None, "Error 在解析为{}中，出现了不该出现的格式");
                 }
             }
         }
