@@ -1069,7 +1069,64 @@ namespace SimpleLanguage.Compile
 
             return false;
         }
+        bool ContainsAsOrIs(List<Token> tokens)
+        {
+            if (tokens == null || tokens.Count == 0) return false;
+            foreach (var tk in tokens)
+            {
+                if (tk.type == ETokenType.As || tk.type == ETokenType.Is)
+                    return true;
+            }
+            return false;
+        }
+        bool IsOnlyWhitespaceTokens(List<Token> tokens)
+        {
+            if (tokens == null || tokens.Count == 0)
+            {
+                return true;
+            }
 
+            foreach (var tk in tokens)
+            {
+                if (tk.type != ETokenType.Space && tk.type != ETokenType.LineEnd)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        bool StartsWithKeyword(List<Token> tokens)
+        {
+            if (tokens == null || tokens.Count == 0) return false;
+            foreach (var tk in tokens)
+            {
+                if (tk.type == ETokenType.Space || tk.type == ETokenType.LineEnd) continue;
+                return tk.type == ETokenType.If
+                       || tk.type == ETokenType.Else
+                       || tk.type == ETokenType.ElseIf
+                       || tk.type == ETokenType.Switch
+                       || tk.type == ETokenType.For
+                       || tk.type == ETokenType.While
+                       || tk.type == ETokenType.DoWhile;
+            }
+            return false;
+        }
+        bool IsOnlyBracesOrWhitespace(List<Token> tokens)
+        {
+            if (tokens == null || tokens.Count == 0) return true;
+            foreach (var tk in tokens)
+            {
+                if (tk.type != ETokenType.Space &&
+                    tk.type != ETokenType.LineEnd &&
+                    tk.type != ETokenType.LeftBrace &&
+                    tk.type != ETokenType.RightBrace)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
         private void ParseFunctionBodyTokens(FileMetaMemberFunction fmmf)
         {
             if (fmmf == null) return;
@@ -1103,68 +1160,6 @@ namespace SimpleLanguage.Compile
             // 使用一个栈维护当前所在的块，索引 0 为 rootBlock
             var blockStack = new Stack<FileMetaBlockSyntax>();
             blockStack.Push(rootBlock);
-
-            bool StartsWithKeyword(List<Token> tokens)
-            {
-                if (tokens == null || tokens.Count == 0) return false;
-                foreach (var tk in tokens)
-                {
-                    if (tk.type == ETokenType.Space || tk.type == ETokenType.LineEnd) continue;
-                    return tk.type == ETokenType.If
-                           || tk.type == ETokenType.Else
-                           || tk.type == ETokenType.ElseIf
-                           || tk.type == ETokenType.Switch
-                           || tk.type == ETokenType.For
-                           || tk.type == ETokenType.While
-                           || tk.type == ETokenType.DoWhile;
-                }
-                return false;
-            }
-
-            bool ContainsAsOrIs(List<Token> tokens)
-            {
-                if (tokens == null || tokens.Count == 0) return false;
-                foreach (var tk in tokens)
-                {
-                    if (tk.type == ETokenType.As || tk.type == ETokenType.Is)
-                        return true;
-                }
-                return false;
-            }
-
-            bool IsOnlyWhitespaceTokens(List<Token> tokens)
-            {
-                if (tokens == null || tokens.Count == 0)
-                {
-                    return true;
-                }
-
-                foreach (var tk in tokens)
-                {
-                    if (tk.type != ETokenType.Space && tk.type != ETokenType.LineEnd)
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-
-            bool IsOnlyBracesOrWhitespace(List<Token> tokens)
-            {
-                if (tokens == null || tokens.Count == 0) return true;
-                foreach (var tk in tokens)
-                {
-                    if (tk.type != ETokenType.Space &&
-                        tk.type != ETokenType.LineEnd &&
-                        tk.type != ETokenType.LeftBrace &&
-                        tk.type != ETokenType.RightBrace)
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            }
 
             void flush()
             {
@@ -1202,7 +1197,6 @@ namespace SimpleLanguage.Compile
                     var innerBlock = new FileMetaBlockSyntax(fmmf.fileMeta, t, null);
                     parentBlock.AddFileMetaSyntax(innerBlock);
                     blockStack.Push(innerBlock);
-
                     // 左大括号本身不作为独立语句触发 flush，由 block 结构表达嵌套
                     continue;
                 }

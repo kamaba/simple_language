@@ -6,7 +6,6 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -23,17 +22,93 @@ namespace SimpleLanguage.Compile
         private Token m_ParamsToken = null;
         private FileMetaClassDefine m_ClassDefineRef = null;
         private FileMetaBaseTerm m_Express;
+        
+        // 通过 token 片段构建参数定义：支持 [TypeTokens] Name [= 默认值]
+        public FileMetaParamterDefine(FileMeta fm, List<Token> paramTokens)
+        {
+            if (fm == null || paramTokens == null || paramTokens.Count == 0)
+                return;
 
-        // Node 版本构造与解析逻辑（legacy，已准备迁移到 Token 管线）
-        // public FileMetaParamterDefine(FileMeta fileMeta, List<Node> list) { ... }
-        // public bool ParseBuildMetaParamter(List<Node> inputNodeList) { ... }
-        // public bool GetNameAndTypeNode(List<Node> listDefieNode, ref Node nameNode, ref Node typeNode, ref Token paramstoken) { ... }
+            m_FileMeta = fm;
+
+            // 去掉首尾空白
+            int start = 0;
+            int end = paramTokens.Count - 1;
+            while (start <= end && (paramTokens[start].type == ETokenType.Space || paramTokens[start].type == ETokenType.LineEnd))
+                start++;
+            while (end >= start && (paramTokens[end].type == ETokenType.Space || paramTokens[end].type == ETokenType.LineEnd))
+                end--;
+            if (end < start) return;
+
+            var slice = paramTokens.GetRange(start, end - start + 1);
+
+            // 寻找 '='，用于拆分默认值表达式
+            int assignIndex = -1;
+            for (int i = 0; i < slice.Count; i++)
+            {
+                if (slice[i].type == ETokenType.Assign)
+                {
+                    assignIndex = i;
+                    break;
+                }
+            }
+
+            List<Token> headerTokens;
+            List<Token> defaultExprTokens = null;
+            if (assignIndex >= 0)
+            {
+                headerTokens = slice.GetRange(0, assignIndex);
+                if (assignIndex + 1 < slice.Count)
+                {
+                    defaultExprTokens = slice.GetRange(assignIndex + 1, slice.Count - assignIndex - 1);
+                }
+                m_AssignToken = slice[assignIndex];
+            }
+            else
+            {
+                headerTokens = slice;
+            }
+
+            // 从 headerTokens 中抽取类型和名称：最后一个 Identifier/Type 作为名称，其前面的作为类型
+            List<Token> idOrType = new List<Token>();
+            for (int i = 0; i < headerTokens.Count; i++)
+            {
+                var t = headerTokens[i];
+                if (t.type == ETokenType.Identifier || t.type == ETokenType.Type)
+                {
+                    idOrType.Add(t);
+                }
+            }
+            if (idOrType.Count == 0)
+                return;
+
+            Token nameTok = idOrType[idOrType.Count - 1];
+            List<Token> typeTokens = null;
+            if (idOrType.Count > 1)
+            {
+                typeTokens = idOrType.GetRange(0, idOrType.Count - 1);
+            }
+
+            m_Token = nameTok;
+
+            if (typeTokens != null && typeTokens.Count > 0)
+            {
+                m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, typeTokens);
+            }
+
+            // 默认值表达式：使用统一表达式入口，类型为 ParamVariable
+            if (defaultExprTokens != null && defaultExprTokens.Count > 0)
+            {
+                m_Express = FileMetatUtil.CreateFileMetaExpressFromTokens(
+                    m_FileMeta,
+                    defaultExprTokens,
+                    FileMetaTermExpress.EExpressType.ParamVariable);
+            }
+        }
 
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < deep; i++)
-                sb.Append(Global.tabChar);
             if (m_ClassDefineRef != null)
                 sb.Append(" " + m_ClassDefineRef.ToFormatString());
             sb.Append(" " + m_Token?.lexeme.ToString());
@@ -91,8 +166,6 @@ namespace SimpleLanguage.Compile
         private Token m_SetToken = null;
         private Token m_OverrideToken = null;
         private Token m_PermissionToken = null;
-        private Token m_LeftBraceToken = null;
-        private Token m_RightBraceToken = null;
         public FileMetaMemberFunction(
             FileMeta fm,
             List<Token> modifiers,
@@ -137,20 +210,6 @@ namespace SimpleLanguage.Compile
         {
             m_FileMetaBlockSyntax = fmbs;
             m_FileMetaBlockSyntax.SetFileMeta(m_FileMeta);
-        }
-
-        /// <summary>
-        /// 由 Token 管线在确定完整的函数体 { } token 范围之后调用，用于在成员函数上初始化块语法节点，
-        /// 然后再由 TokenToFileMeta.ParseFunctionBodyTokens 把内部语句拆分成 FileMetaSyntax。
-        /// </summary>
-        public void InitializeBlockFromTokens(List<Token> blockTokens)
-        {
-            if (blockTokens == null || blockTokens.Count < 2)
-                return;
-
-            m_LeftBraceToken = blockTokens[0];
-            m_RightBraceToken = blockTokens[blockTokens.Count - 1];
-            m_FileMetaBlockSyntax = new FileMetaBlockSyntax(m_FileMeta, m_LeftBraceToken, m_RightBraceToken);
         }
 
         private void ParseParametersFromTokens(List<Token> paramTokens)
@@ -199,7 +258,6 @@ namespace SimpleLanguage.Compile
                 }
             }
         }
-
         private void AddParameterIfAny(List<Token> paramTokens)
         {
             if (paramTokens == null)
@@ -218,52 +276,9 @@ namespace SimpleLanguage.Compile
 
             var slice = paramTokens.GetRange(start, end - start + 1);
 
-            // 参数格式与成员变量类似: [TypeTokens] Name [= 表达式]
-            // 暂时只支持 "类型 名称" 或 "名称"，使用 Identifier/Type 简单拆分
-
-            List<Token> idOrType = new List<Token>();
-            foreach (var t in slice)
-            {
-                if (t.type == ETokenType.Identifier || t.type == ETokenType.Type)
-                {
-                    idOrType.Add(t);
-                }
-            }
-
-            if (idOrType.Count == 0)
-                return;
-
-            Token nameTok = idOrType[idOrType.Count - 1];
-            List<Token> typeTokens = null;
-            if (idOrType.Count > 1)
-            {
-                typeTokens = idOrType.GetRange(0, idOrType.Count - 1);
-            }
-
-            var param = new FileMetaParamterDefine();
-            param.SetFileMeta(m_FileMeta);
-            typeof(FileMetaBase)
-                .GetField("m_Token", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                ?.SetValue(param, nameTok);
-
-            if (typeTokens != null && typeTokens.Count > 0)
-            {
-                // 复用 FileMetaClassDefine 来解析参数类型
-                var classDef = new FileMetaClassDefine(m_FileMeta, typeTokens);
-                // 将解析好的类型绑定到参数
-                typeof(FileMetaParamterDefine)
-                    .GetField("m_ClassDefineRef", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                    ?.SetValue(param, classDef);
-            }
-
+            var param = new FileMetaParamterDefine(m_FileMeta, slice);
             AddMetaParamter(param);
         }
-
-        // Node 版本解析函数与参数/模板解析（legacy，已由 Token 管线取代）
-        // public bool ParseFunction(List<Node> nodeList) { ... }
-        // public void ParseParam(Node parNode) { ... }
-        // public void ParseTemplate(Node node) { ... }
-
         public override void SetDeep(int _deep)
         {
             m_Deep = _deep;

@@ -269,9 +269,9 @@ namespace SimpleLanguage
         In,
         /// <summary> function </summary>
         Function,
-        /// <summary> Async </summary>
+        /// <summary> async </summary>
         Async,
-        /// <summary> Await </summary>
+        /// <summary> await </summary>
         Await,
         /// <summary> try </summary>
         Try,

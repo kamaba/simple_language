@@ -9,7 +9,6 @@ using SimpleLanguage.Core;
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Compile

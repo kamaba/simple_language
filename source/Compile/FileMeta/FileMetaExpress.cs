@@ -481,9 +481,6 @@ namespace SimpleLanguage.Compile
 
         private Token m_EndToken = null;
 
-        // Node 版本构造方法（保留向后兼容）
-        // public FileMetaParTerm(FileMeta fm, Node node, FileMetaTermExpress.EExpressType expressType) { ... }
-
         // Token 版本构造方法
         public FileMetaParTerm(FileMeta fm, List<Token> tokenList, FileMetaTermExpress.EExpressType expressType)
         {
@@ -499,12 +496,14 @@ namespace SimpleLanguage.Compile
             m_Token = tokenList[0];  // '('
             m_EndToken = tokenList[tokenList.Count - 1];  // ')'
 
-            // 将 token 列表中间的部分视为参数，交给统一的表达式解析器
+            // 将 token 列表中间的部分视为参数或子表达式，交给统一的表达式解析器
             if (tokenList.Count > 2)
             {
                 var paramTokens = tokenList.GetRange(1, tokenList.Count - 2);
 
-                // 按顶层逗号拆分参数 token 列表
+                // 按顶层逗号拆分参数 token 列表：
+                // - 如果存在多个片段 => 视为函数/调用参数列表: ClassInit(a, b + (c.v-20))
+                // - 如果只有一个片段且无顶层逗号 => 视为嵌套表达式: (a + c.x / (100.0f - b))
                 List<List<Token>> paramListList = new List<List<Token>>();
                 List<Token> tempParamList = new List<Token>();
 
@@ -548,18 +547,33 @@ namespace SimpleLanguage.Compile
                 }
 
                 // 为每个参数调用统一的表达式构造入口
-                foreach (var paramList in paramListList)
+                if (paramListList.Count == 1)
                 {
-                    var expr = FileMetatUtil.CreateFileMetaExpressFromTokens(
+                    // 如果只有一个片段并且没有顶层逗号，则将整个 () 内视为一个整体表达式
+                    var innerExpr = FileMetatUtil.CreateFileMetaExpressFromTokens(
                         m_FileMeta,
-                        paramList,
-                        expressType == FileMetaTermExpress.EExpressType.ParamVariable
-                            ? FileMetaTermExpress.EExpressType.ParamVariable
-                            : FileMetaTermExpress.EExpressType.Common);
+                        paramListList[0],
+                        expressType);
 
-                    if (expr != null)
+                    if (innerExpr != null)
                     {
-                        AddFileMetaTerm(expr);
+                        AddFileMetaTerm(innerExpr);
+                    }
+                }
+                else
+                {
+                    // 多个片段：每个片段是一个独立的参数表达式
+                    foreach (var paramList in paramListList)
+                    {
+                        var expr = FileMetatUtil.CreateFileMetaExpressFromTokens(
+                            m_FileMeta,
+                            paramList,
+                            expressType);
+
+                        if (expr != null)
+                        {
+                            AddFileMetaTerm(expr);
+                        }
                     }
                 }
             }
@@ -838,7 +852,7 @@ namespace SimpleLanguage.Compile
             int parenDepth = 0;
             int bracketDepth = 0;
 
-            for (int i = 1; i < tokenList.Count - 1; i++)  // 跳过首尾的 { }
+            for (int i = 1; i < tokenList.Count - 1; i++)  // 跧过首尾的 { }
             {
                 var token = tokenList[i];
 

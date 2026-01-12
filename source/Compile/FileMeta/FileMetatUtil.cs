@@ -52,18 +52,50 @@ namespace SimpleLanguage.Compile
                 return new FileMetaKeyReturnSyntax(fm, first, expr);
             }
 
-            // if / while / dowhile / for / switch / as-is 语句
+            // label 语句：labelName:
+            if (first.type == ETokenType.Identifier && tokens.Count >= 2 && tokens[1].type == ETokenType.Colon)
+            {
+                // 假定存在 FileMetaLabelSyntax(FileMeta fm, Token nameToken)
+                return new FileMetaKeyGotoLabelSyntax(fm, first, null);
+            }
+
+            // goto 语句：goto labelName;
+            if (first.type == ETokenType.Goto && tokens.Count >= 2)
+            {
+                var targetToken = tokens[1];
+                // 假定存在 FileMetaGotoSyntax(FileMeta fm, Token gotoToken, Token labelToken)
+                return new FileMetaKeyGotoLabelSyntax(fm, first, targetToken);
+            }
+
+            // break / continue / next / try / catch / throw 等关键字语句
+            if (first.type == ETokenType.Break)
+            {
+                return new FileMetaKeyOnlySyntax(fm, first, null);
+            }
+            if (first.type == ETokenType.Continue || first.type == ETokenType.Next)
+            {
+                return new FileMetaKeyOnlySyntax(fm, first, null);
+            }
+            //if (first.type == ETokenType.Throw)
+            //{
+            //    var exprTokens = tokens.Count > 1 ? tokens.GetRange(1, tokens.Count - 1) : new List<Token>();
+            //    var expr = CreateFileMetaExpressFromTokens(fm, exprTokens, FileMetaTermExpress.EExpressType.Common);
+            //    return new FileMetaKeyThrowSyntax(fm, first, expr);
+            //}
+
+            // if / while / dowhile / for / switch 语句
+
             // 当前仅提供最小骨架：识别关键字，并构造对应的语法节点壳，“这种语法”能否通过编译还要看后续完整性检查
             if (first.type == ETokenType.If)
             {
-                // if (cond) { } 简化版：条件=整个 tokens[1..]，block 由外部 BlockSyntax 表示
+                // if (cond) { } 条件=整个 tokens[1..]，实际 block 由 TokenToFileMeta 的 {} 解析统一维护
                 var condTokens = tokens.GetRange(1, tokens.Count - 1);
                 var cond = CreateFileMetaExpressFromTokens(
                     fm,
                     condTokens,
                     FileMetaTermExpress.EExpressType.Common);
-                var dummyBlock = new FileMetaBlockSyntax(fm, null, null);
-                var ifCond = new FileMetaConditionExpressSyntax(fm, first, cond, dummyBlock);
+                // 此处不再构造占位 block，让 TokenToFileMeta 在看到后续 '{ }' 时统一创建 FileMetaBlockSyntax
+                var ifCond = new FileMetaConditionExpressSyntax(fm, first, cond, null);
                 var ifSyntax = new FileMetaKeyIfSyntax(fm);
                 ifSyntax.SetFileMetaConditionExpressSyntax(ifCond);
                 return ifSyntax;
@@ -71,33 +103,30 @@ namespace SimpleLanguage.Compile
 
             if (first.type == ETokenType.While)
             {
-                // while (cond) { }  条件表达式由 tokens[1..] 提供，具体执行块仍由外部 BlockSyntax 表示
+                // while (cond) { } 条件表达式由 tokens[1..] 提供，{} 块由 TokenToFileMeta 统一处理
                 var condTokens = tokens.GetRange(1, tokens.Count - 1);
                 var cond = CreateFileMetaExpressFromTokens(
                     fm,
                     condTokens,
                     FileMetaTermExpress.EExpressType.Common);
-                var dummyBlock = new FileMetaBlockSyntax(fm, null, null);
-                return new FileMetaConditionExpressSyntax(fm, first, cond, dummyBlock);
+                return new FileMetaConditionExpressSyntax(fm, first, cond, null);
             }
 
             if (first.type == ETokenType.DoWhile)
             {
-                // do..while：先构造一个空的 FileMetaKeyOnlySyntax 占位，方便后续替换为复合语句
-                var dummyBlock = new FileMetaBlockSyntax(fm, null, null);
-                return new FileMetaKeyOnlySyntax(fm, first, dummyBlock);
+                // do..while：这里仅返回关键字语法壳，实际块和 while 条件由 TokenToFileMeta 在 {} 和后续 while 语句中统一挂接
+                return new FileMetaKeyOnlySyntax(fm, first, null);
             }
 
             if (first.type == ETokenType.For)
             {
-                // for 语句：当前不拆分 init/cond/step，全部作为条件表达式处理
+                // for 语句：当前不拆分 init/cond/step，全部作为条件表达式处理；{} 块由 TokenToFileMeta 统一处理
                 var bodyTokens = tokens.GetRange(1, tokens.Count - 1);
                 var expr = CreateFileMetaExpressFromTokens(
                     fm,
                     bodyTokens,
                     FileMetaTermExpress.EExpressType.Common);
-                var dummyBlock = new FileMetaBlockSyntax(fm, null, null);
-                var forSyntax = new FileMetaKeyForSyntax(fm, first, dummyBlock);
+                var forSyntax = new FileMetaKeyForSyntax(fm, first, null);
                 if (expr != null)
                 {
                     forSyntax.SetConditionExpress(expr);
@@ -107,7 +136,7 @@ namespace SimpleLanguage.Compile
 
             if (first.type == ETokenType.Switch)
             {
-                // switch 语句：switch 后面的表达式作为变量引用，case/default 仍由 Node 流程解析；这里仅占位
+                // switch 语句：switch 后面的表达式作为变量引用，case/default 及 {} 块仍由 TokenToFileMeta/旧 Node 流程解析；这里仅占位
                 var exprTokens = tokens.GetRange(1, tokens.Count - 1);
                 var expr = CreateFileMetaExpressFromTokens(
                     fm,
@@ -253,6 +282,25 @@ namespace SimpleLanguage.Compile
                 return null;
             }
 
+            // 针对不同表达式类型做轻微差异化处理：
+            // - MemberVariable/ParamVariable: 不允许出现分号/多条语句，仅视为单一表达式；
+            // - Common: 语句内部的通用表达式。
+            if (eType == FileMetaTermExpress.EExpressType.MemberVariable
+                || eType == FileMetaTermExpress.EExpressType.ParamVariable)
+            {
+                // 简单防御：如果中间含有分号，截断为第一部分，避免把多句当成一个初始值/默认值
+                int semiIndex = cleaned.FindIndex(t => t.type == ETokenType.SemiColon);
+                if (semiIndex > 0)
+                {
+                    cleaned = cleaned.GetRange(0, semiIndex);
+                }
+            }
+
+            if (cleaned.Count == 0)
+            {
+                return null;
+            }
+
             if (cleaned.Count == 1)
             {
                 var t = cleaned[0];
@@ -278,24 +326,23 @@ namespace SimpleLanguage.Compile
             return ParseBinaryExpression(fm, cleaned, ref index, 0, eType);
         }
          // ====== 静态 Token 表达式解析函数（替代内部 TokenExpressionParser 类） ======
- 
-         private static FileMetaBaseTerm ParsePrimary(FileMeta fm, List<Token> tokens, ref int index, FileMetaTermExpress.EExpressType eType)
-         {
+        private static FileMetaBaseTerm ParsePrimary(FileMeta fm, List<Token> tokens, ref int index, FileMetaTermExpress.EExpressType eType)
+        {
             if (index >= tokens.Count) return null;
             var t = tokens[index];
 
-            // 常量
-            if (t.type == ETokenType.Number
-                || t.type == ETokenType.String
-                || t.type == ETokenType.BoolValue
-                || t.type == ETokenType.Null
-                || t.type == ETokenType.Const)
+             // 常量
+             if (t.type == ETokenType.Number
+                 || t.type == ETokenType.String
+                 || t.type == ETokenType.BoolValue
+                 || t.type == ETokenType.Null
+                 || t.type == ETokenType.Const)
             {
                 index++;
                 return new FileMetaConstValueTerm(fm, t);
             }
 
-            // 带括号的表达式 ( ... )
+            // (...)  / [...] / {...} / 调用 / as-is ...
             if (t.type == ETokenType.LeftPar)
             {
                 int start = index;
@@ -312,7 +359,7 @@ namespace SimpleLanguage.Compile
                 return new FileMetaParTerm(fm, parTokens, eType);
             }
 
-            // 方括号 [ ... ]
+            // 方括号 [ ... ]，数组访问或数组常量
             if (t.type == ETokenType.LeftBracket)
             {
                 int start = index;
@@ -329,7 +376,7 @@ namespace SimpleLanguage.Compile
                 return new FileMetaBracketTerm(fm, brTokens, eType);
             }
 
-            // 大括号 { ... }
+            // 大括号 { ... }，常量初始化块或复合字面量
             if (t.type == ETokenType.LeftBrace)
             {
                 int start = index;
@@ -391,7 +438,7 @@ namespace SimpleLanguage.Compile
                 return new FileMetaCallTerm(fm, callTokens);
             }
 
-            // as/is 表达式起始
+            // as/is 表达式起始：三种模式下都允许出现，例如参数默认值/成员默认值中的 as/is
             if (t.type == ETokenType.As || t.type == ETokenType.Is)
             {
                 var remain = tokens.GetRange(index, tokens.Count - index);
@@ -403,30 +450,66 @@ namespace SimpleLanguage.Compile
         }
 
         private static FileMetaBaseTerm ParseBinaryExpression(FileMeta fm, List<Token> tokens, ref int index, int parentPrecedence, FileMetaTermExpress.EExpressType eType)
-        {
-            var left = ParsePrimary(fm, tokens, ref index, eType);
-            while (true)
-            {
-                if (index >= tokens.Count) break;
-                var op = tokens[index];
-                int prec = GetPrecedence(op);
-                if (prec <= parentPrecedence || prec == 0)
-                    break;
+         {
+             var left = ParsePrimary(fm, tokens, ref index, eType);
+             while (true)
+             {
+                 if (index >= tokens.Count) break;
+                 var op = tokens[index];
+                 // 计算操作符优先级时，也要避免把泛型类型参数中的 < / > 当作比较運算符
+                 int prec = GetPrecedenceConsideringContext(tokens, index);
+                  if (prec <= parentPrecedence || prec == 0)
+                      break;
 
-                // 跳过运算符
-                index++;
-                var right = ParsePrimary(fm, tokens, ref index, eType);
-                if (right == null)
-                    break;
-                // 目前保留最小结构，返回左侧表达式；后续可在此处构造二元表达式树
-                left = left ?? right;
+                 // 跳过运算符
+                 index++;
+                 var right = ParsePrimary(fm, tokens, ref index, eType);
+                 if (right == null)
+                     break;
+                 // 目前保留最小结构，返回左侧表达式；后续可在此处构造二元表达式树
+                 left = left ?? right;
+             }
+             return left;
+         }
+
+        // 上下文敏感的优先级获取：当 < / > 处于泛型类型参数上下文中时，视为 0 优先级（非比较运算符）
+        private static int GetPrecedenceConsideringContext(List<Token> tokens, int opIndex)
+        {
+            if (opIndex < 0 || opIndex >= tokens.Count)
+                return 0;
+
+            var op = tokens[opIndex];
+            // 仅对 < / > 做上下文检查，其他操作符直接返回优先级
+            if (op.type != ETokenType.Less && op.type != ETokenType.Greater)
+            {
+                return GetPrecedence(op);
             }
-            return left;
+
+            int angleDepth = 0;
+            for (int i = 0; i < opIndex; i++)
+            {
+                if (tokens[i].type == ETokenType.Less)
+                {
+                    angleDepth++;
+                }
+                else if (tokens[i].type == ETokenType.Greater && angleDepth > 0)
+                {
+                    angleDepth--;
+                }
+            }
+
+            // 如果当前 < / > 还在泛型尖括号上下文中，则认为它属于类型参数，而不是比较运算符
+            if (angleDepth > 0)
+            {
+                return 0;
+            }
+
+            return GetPrecedence(op);
         }
 
         private static int GetPrecedence(Token op)
-        {
-            if (op == null) return 0;
+         {
+             if (op == null) return 0;
             switch (op.type)
             {
                 case ETokenType.Assign: return 1;
