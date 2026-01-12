@@ -236,6 +236,7 @@ namespace SimpleLanguage.Compile
             }
             return false;
         }
+        // 统一的表达式入口：单 token 快速路径 + 多 token 使用 ParseBinaryExpression
         public static FileMetaBaseTerm CreateFileMetaExpressFromTokens(
              FileMeta fm,
              List<Token> tokens,
@@ -246,18 +247,15 @@ namespace SimpleLanguage.Compile
                 return null;
             }
 
-            // 简单去掉首尾空白/换行/分号
             var cleaned = TrimTokenList(tokens);
             if (cleaned.Count == 0)
             {
                 return null;
             }
 
-            // 单一 Token 的快速路径（常量、标识符等）
             if (cleaned.Count == 1)
             {
                 var t = cleaned[0];
-                // 常量值: 数字/字符串/布尔/null/Const
                 if (t.type == ETokenType.Number
                     || t.type == ETokenType.String
                     || t.type == ETokenType.BoolValue
@@ -267,23 +265,186 @@ namespace SimpleLanguage.Compile
                     return new FileMetaConstValueTerm(fm, t);
                 }
 
-                // 简单标识符: 退化为调用表达式 FileMetaCallTerm
-                if (t.type == ETokenType.Identifier)
-                {
-                    return new FileMetaCallTerm(fm, cleaned);
-                }
-
-                // this/base/new 关键字也按调用处理
-                if (t.type == ETokenType.This || t.type == ETokenType.Base || t.type == ETokenType.New)
+                if (t.type == ETokenType.Identifier
+                    || t.type == ETokenType.This
+                    || t.type == ETokenType.Base
+                    || t.type == ETokenType.New)
                 {
                     return new FileMetaCallTerm(fm, cleaned);
                 }
             }
 
-            // 其它表达式交给 TokenExpressionParser 解析（完全基于 Token），
-            // 支持诸如 `this._metaClass == null` 这类复合条件。
-            var parser = new TokenExpressionParser(fm, cleaned, eType);
-            return parser.Parse();
+            int index = 0;
+            return ParseBinaryExpression(fm, cleaned, ref index, 0, eType);
+        }
+         // ====== 静态 Token 表达式解析函数（替代内部 TokenExpressionParser 类） ======
+ 
+         private static FileMetaBaseTerm ParsePrimary(FileMeta fm, List<Token> tokens, ref int index, FileMetaTermExpress.EExpressType eType)
+         {
+            if (index >= tokens.Count) return null;
+            var t = tokens[index];
+
+            // 常量
+            if (t.type == ETokenType.Number
+                || t.type == ETokenType.String
+                || t.type == ETokenType.BoolValue
+                || t.type == ETokenType.Null
+                || t.type == ETokenType.Const)
+            {
+                index++;
+                return new FileMetaConstValueTerm(fm, t);
+            }
+
+            // 带括号的表达式 ( ... )
+            if (t.type == ETokenType.LeftPar)
+            {
+                int start = index;
+                int depth = 0;
+                do
+                {
+                    if (index >= tokens.Count) break;
+                    if (tokens[index].type == ETokenType.LeftPar) depth++;
+                    else if (tokens[index].type == ETokenType.RightPar) depth--;
+                    index++;
+                } while (depth > 0 && index < tokens.Count);
+
+                var parTokens = tokens.GetRange(start, index - start);
+                return new FileMetaParTerm(fm, parTokens, eType);
+            }
+
+            // 方括号 [ ... ]
+            if (t.type == ETokenType.LeftBracket)
+            {
+                int start = index;
+                int depth = 0;
+                do
+                {
+                    if (index >= tokens.Count) break;
+                    if (tokens[index].type == ETokenType.LeftBracket) depth++;
+                    else if (tokens[index].type == ETokenType.RightBracket) depth--;
+                    index++;
+                } while (depth > 0 && index < tokens.Count);
+
+                var brTokens = tokens.GetRange(start, index - start);
+                return new FileMetaBracketTerm(fm, brTokens, eType);
+            }
+
+            // 大括号 { ... }
+            if (t.type == ETokenType.LeftBrace)
+            {
+                int start = index;
+                int depth = 0;
+                do
+                {
+                    if (index >= tokens.Count) break;
+                    if (tokens[index].type == ETokenType.LeftBrace) depth++;
+                    else if (tokens[index].type == ETokenType.RightBrace) depth--;
+                    index++;
+                } while (depth > 0 && index < tokens.Count);
+
+                var braceTokens = tokens.GetRange(start, index - start);
+                return new FileMetaBraceTerm(fm, braceTokens);
+            }
+
+            // 标识符/调用/链式访问；包括 this._metaClass 之类的链式引用
+            if (t.type == ETokenType.Identifier
+                || t.type == ETokenType.This
+                || t.type == ETokenType.Base
+                || t.type == ETokenType.New)
+            {
+                var callTokens = new List<Token>();
+                while (index < tokens.Count)
+                {
+                    var cur = tokens[index];
+                    if (cur.type == ETokenType.Identifier
+                        || cur.type == ETokenType.This
+                        || cur.type == ETokenType.Base
+                        || cur.type == ETokenType.New
+                        || cur.type == ETokenType.Period
+                        || cur.type == ETokenType.LeftPar
+                        || cur.type == ETokenType.RightPar
+                        || cur.type == ETokenType.LeftBracket
+                        || cur.type == ETokenType.RightBracket
+                        || cur.type == ETokenType.Less
+                        || cur.type == ETokenType.Greater
+                        || cur.type == ETokenType.Comma)
+                    {
+                        callTokens.Add(cur);
+                        index++;
+
+                        if (index >= tokens.Count)
+                            break;
+
+                        var next = tokens[index];
+                        if (next.type == ETokenType.SemiColon
+                            || next.type == ETokenType.LeftBrace
+                            || next.type == ETokenType.RightBrace)
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                return new FileMetaCallTerm(fm, callTokens);
+            }
+
+            // as/is 表达式起始
+            if (t.type == ETokenType.As || t.type == ETokenType.Is)
+            {
+                var remain = tokens.GetRange(index, tokens.Count - index);
+                index = tokens.Count;
+                return new FileMetaAsOrIsTerm(fm, remain);
+            }
+
+            return null;
+        }
+
+        private static FileMetaBaseTerm ParseBinaryExpression(FileMeta fm, List<Token> tokens, ref int index, int parentPrecedence, FileMetaTermExpress.EExpressType eType)
+        {
+            var left = ParsePrimary(fm, tokens, ref index, eType);
+            while (true)
+            {
+                if (index >= tokens.Count) break;
+                var op = tokens[index];
+                int prec = GetPrecedence(op);
+                if (prec <= parentPrecedence || prec == 0)
+                    break;
+
+                // 跳过运算符
+                index++;
+                var right = ParsePrimary(fm, tokens, ref index, eType);
+                if (right == null)
+                    break;
+                // 目前保留最小结构，返回左侧表达式；后续可在此处构造二元表达式树
+                left = left ?? right;
+            }
+            return left;
+        }
+
+        private static int GetPrecedence(Token op)
+        {
+            if (op == null) return 0;
+            switch (op.type)
+            {
+                case ETokenType.Assign: return 1;
+                case ETokenType.Or: return 2;               // ||
+                case ETokenType.And: return 3;              // &&
+                case ETokenType.Equal:
+                case ETokenType.NotEqual: return 4;
+                case ETokenType.Less:
+                case ETokenType.LessOrEqual:
+                case ETokenType.Greater:
+                case ETokenType.GreaterOrEqual: return 5;
+                case ETokenType.Plus:
+                case ETokenType.Minus: return 6;
+                case ETokenType.Multiply:
+                case ETokenType.Divide:
+                case ETokenType.Modulo: return 7;
+                default: return 0;
+            }
         }
 
         private static List<Token> TrimTokenList(List<Token> list)
@@ -297,194 +458,6 @@ namespace SimpleLanguage.Compile
                 end--;
             if (end < start) return new List<Token>();
             return list.GetRange(start, end - start + 1);
-        }
-
-        private sealed class TokenExpressionParser
-        {
-            private readonly FileMeta m_FileMeta;
-            private readonly List<Token> m_Tokens;
-            private readonly FileMetaTermExpress.EExpressType m_ExprType;
-            private int m_Index;
-
-            public TokenExpressionParser(FileMeta fm, List<Token> tokens, FileMetaTermExpress.EExpressType eType)
-            {
-                m_FileMeta = fm;
-                m_Tokens = tokens;
-                m_ExprType = eType;
-                m_Index = 0;
-            }
-
-            public FileMetaBaseTerm Parse()
-            {
-                // 先解析可能的括号/数组/大括号/调用等，再按二元表达式组合
-                return ParseBinaryExpression(0);
-            }
-
-            private FileMetaBaseTerm ParsePrimary()
-            {
-                var t = Current;
-                if (t == null) return null;
-
-                // 常量
-                if (t.type == ETokenType.Number
-                    || t.type == ETokenType.String
-                    || t.type == ETokenType.BoolValue
-                    || t.type == ETokenType.Null
-                    || t.type == ETokenType.Const)
-                {
-                    Advance();
-                    return new FileMetaConstValueTerm(m_FileMeta, t);
-                }
-
-                // 带括号的表达式 ( ... )
-                if (t.type == ETokenType.LeftPar)
-                {
-                    // 收集完整的 () 片段并构造 FileMetaParTerm
-                    int start = m_Index;
-                    int depth = 0;
-                    do
-                    {
-                        if (Current == null) break;
-                        if (Current.type == ETokenType.LeftPar) depth++;
-                        else if (Current.type == ETokenType.RightPar) depth--;
-                        Advance();
-                    } while (depth > 0 && m_Index < m_Tokens.Count);
-
-                    var parTokens = m_Tokens.GetRange(start, m_Index - start);
-                    return new FileMetaParTerm(m_FileMeta, parTokens, m_ExprType);
-                }
-
-                // 方括号 [ ... ]
-                if (t.type == ETokenType.LeftBracket)
-                {
-                    int start = m_Index;
-                    int depth = 0;
-                    do
-                    {
-                        if (Current == null) break;
-                        if (Current.type == ETokenType.LeftBracket) depth++;
-                        else if (Current.type == ETokenType.RightBracket) depth--;
-                        Advance();
-                    } while (depth > 0 && m_Index < m_Tokens.Count);
-
-                    var brTokens = m_Tokens.GetRange(start, m_Index - start);
-                    return new FileMetaBracketTerm(m_FileMeta, brTokens, m_ExprType);
-                }
-
-                // 大括号 { ... }
-                if (t.type == ETokenType.LeftBrace)
-                {
-                    int start = m_Index;
-                    int depth = 0;
-                    do
-                    {
-                        if (Current == null) break;
-                        if (Current.type == ETokenType.LeftBrace) depth++;
-                        else if (Current.type == ETokenType.RightBrace) depth--;
-                        Advance();
-                    } while (depth > 0 && m_Index < m_Tokens.Count);
-
-                    var braceTokens = m_Tokens.GetRange(start, m_Index - start);
-                    return new FileMetaBraceTerm(m_FileMeta, braceTokens);
-                }
-
-                // 标识符/调用/链式访问；包括 this._metaClass 之类的链式引用
-                if (t.type == ETokenType.Identifier
-                    || t.type == ETokenType.This
-                    || t.type == ETokenType.Base
-                    || t.type == ETokenType.New)
-                {
-                    var callTokens = new List<Token>();
-                    while (Current != null &&
-                           (Current.type == ETokenType.Identifier
-                            || Current.type == ETokenType.This
-                            || Current.type == ETokenType.Base
-                            || Current.type == ETokenType.New
-                            || Current.type == ETokenType.Period
-                            || Current.type == ETokenType.LeftPar
-                            || Current.type == ETokenType.RightPar
-                            || Current.type == ETokenType.LeftBracket
-                            || Current.type == ETokenType.RightBracket
-                            || Current.type == ETokenType.Less
-                            || Current.type == ETokenType.Greater
-                            || Current.type == ETokenType.Comma))
-                    {
-                        callTokens.Add(Current);
-                        Advance();
-                        // 粗略终止条件：遇到分号/运算符/大括号等视为调用结束
-                        if (Current == null ||
-                            Current.type == ETokenType.SemiColon ||
-                            Current.type == ETokenType.LeftBrace ||
-                            Current.type == ETokenType.RightBrace)
-                        {
-                            break;
-                        }
-                    }
-                    return new FileMetaCallTerm(m_FileMeta, callTokens);
-                }
-
-                // as/is 表达式起始（假定前面已经被上层拆分好）
-                if (t.type == ETokenType.As || t.type == ETokenType.Is)
-                {
-                    // 从当前位置到表达式结束全部交给 FileMetaAsOrIsTerm 解析
-                    var remain = m_Tokens.GetRange(m_Index, m_Tokens.Count - m_Index);
-                    m_Index = m_Tokens.Count;
-                    return new FileMetaAsOrIsTerm(m_FileMeta, remain);
-                }
-
-                return null;
-            }
-
-            private FileMetaBaseTerm ParseBinaryExpression(int parentPrecedence)
-            {
-                var left = ParsePrimary();
-                while (true)
-                {
-                    var op = Current;
-                    int prec = GetPrecedence(op);
-                    if (prec <= parentPrecedence)
-                        break;
-
-                    // 当前先忽略实际的二元运算构造，后续可根据需要扩展
-                    Advance();
-                    var right = ParsePrimary();
-                    if (right == null)
-                        break;
-                    // 简化处理：暂时返回左侧，保留解析结构最小可用
-                    left = left ?? right;
-                }
-                return left;
-            }
-
-            private int GetPrecedence(Token op)
-            {
-                if (op == null) return 0;
-                switch (op.type)
-                {
-                    case ETokenType.Assign: return 1;
-                    case ETokenType.Or: return 2;               // ||
-                    case ETokenType.And: return 3;              // &&
-                    case ETokenType.Equal:
-                    case ETokenType.NotEqual: return 4;
-                    case ETokenType.Less:
-                    case ETokenType.LessOrEqual:
-                    case ETokenType.Greater:
-                    case ETokenType.GreaterOrEqual: return 5;
-                    case ETokenType.Plus:
-                    case ETokenType.Minus: return 6;
-                    case ETokenType.Multiply:
-                    case ETokenType.Divide:
-                    case ETokenType.Modulo: return 7;
-                    default: return 0;
-                }
-            }
-
-            private Token Current => m_Index < m_Tokens.Count ? m_Tokens[m_Index] : null;
-
-            private void Advance()
-            {
-                if (m_Index < m_Tokens.Count) m_Index++;
-            }
         }
     }
 }
