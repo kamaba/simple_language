@@ -16,6 +16,7 @@ using System.IO;
 using System.Timers;
 using System.Diagnostics;
 using SimpleLanguage.Compile;
+using SimpleLanguage.source.Logging;
 
 namespace SimpleLanguage.Project
 {

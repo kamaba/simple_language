@@ -6,8 +6,7 @@
 //  Description: enum's memeber variable metadata and member 'data' metadata
 //****************************************************************************
 using SimpleLanguage.Compile;
-
-using SimpleLanguage.Parse;
+using SimpleLanguage.source.Logging;
 using System.Collections.Generic;
 using System.Text;
 

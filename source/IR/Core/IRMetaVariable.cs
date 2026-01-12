@@ -7,7 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
-using SimpleLanguage.Parse;
+using SimpleLanguage.source.Logging;
 using System.Collections.Generic;
 using System.Diagnostics;
 

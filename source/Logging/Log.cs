@@ -6,15 +6,14 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Compile.Logging;
-using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using SimpleLanguage.source;
 
-namespace SimpleLanguage.Parse
+namespace SimpleLanguage.source.Logging
 {
     public enum EError
     {

@@ -1,8 +1,7 @@
-
 using System;
 using System.Collections.Generic;
 
-namespace SimpleLanguage.Compile
+namespace SimpleLanguage.source
 {
     public class Token
     {

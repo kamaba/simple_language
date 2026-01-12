@@ -11,6 +11,7 @@ using System;
 using System.Text;
 using SimpleLanguage.Compile;
 using System.Diagnostics;
+using SimpleLanguage.source;
 
 namespace SimpleLanguage.Core
 {

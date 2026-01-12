@@ -8,6 +8,7 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.CSharp;
 using SimpleLanguage.Parse;
+using SimpleLanguage.source.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;

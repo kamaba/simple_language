@@ -11,7 +11,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Compile;
-using SimpleLanguage.Parse;
+using SimpleLanguage.source;
+using SimpleLanguage.source.Logging;
 
 
 namespace SimpleLanguage.Core

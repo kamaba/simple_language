@@ -6,7 +6,8 @@
 //  Description: 
 //****************************************************************************
 using SimpleLanguage.Core;
-using SimpleLanguage.Parse;
+using SimpleLanguage.source;
+using SimpleLanguage.source.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;

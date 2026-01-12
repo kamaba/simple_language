@@ -6,7 +6,7 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Compile;
+using SimpleLanguage.source;
 using System.Text;
 
 namespace SimpleLanguage.IR

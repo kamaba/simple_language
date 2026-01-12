@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using SimpleLanguage.Compile.Logging;
+using SimpleLanguage.source.Logging;
 
 namespace SimpleLanguage.Compile.Process
 {

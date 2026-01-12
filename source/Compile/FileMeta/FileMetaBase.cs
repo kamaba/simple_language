@@ -6,6 +6,8 @@
 //  Description: 
 //****************************************************************************
 
+using SimpleLanguage.source;
+
 namespace SimpleLanguage.Compile
 {
     public class FileMetaBase

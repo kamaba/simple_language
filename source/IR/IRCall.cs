@@ -8,7 +8,7 @@
 
 
 using SimpleLanguage.Core;
-using SimpleLanguage.Parse;
+using SimpleLanguage.source.Logging;
 using SimpleLanguage.VM;
 using SimpleLanguage.VM.Runtime;
 using System;

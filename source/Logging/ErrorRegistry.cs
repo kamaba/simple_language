@@ -5,7 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 
-namespace SimpleLanguage.Compile.Logging
+namespace SimpleLanguage.source.Logging
 {
     /// <summary>
     /// Registry of ErrorDefinition loaded from a CSV configuration.

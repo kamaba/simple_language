@@ -6,7 +6,7 @@
 //  Description: Meta enum's attribute
 //****************************************************************************
 using SimpleLanguage.Compile;
-using SimpleLanguage.Parse;
+using SimpleLanguage.source.Logging;
 using System;
 using System.Collections.Generic;
 

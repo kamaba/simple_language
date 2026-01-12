@@ -10,6 +10,7 @@ using System;
 using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Compile;
+using SimpleLanguage.source;
 
 namespace SimpleLanguage.Core
 {
