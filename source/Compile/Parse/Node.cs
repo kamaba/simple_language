@@ -59,27 +59,35 @@ namespace SimpleLanguage.Compile
         /*
          *   class{ static printf(){} a(){ return a } int b; } printf() a() 和b 就是子内容节点
          */
+        public List<Node> childList => m_ChildList;
         public int priority { get; set; } = -1;
         public bool isDel { get; set; } = false;
-
-        public Token token = null;              // 
-        public Token endToken = null;           // )}]
-        public Node parent = null;              //父节点
-        public Node parNode { get; set; } = null;             //(小括号的节点
-        public Node blockNode { get; set; } = null;           //{大括号的节点
-        public Node bracketNode => m_BracketNodeList.Count > 0 ? m_BracketNodeList[m_BracketNodeList.Count - 1] : null;
-        public List<Node> bracketNodeList => m_BracketNodeList;
-        public Node angleNode { get; set; } = null;
-        public Token linkToken;                 //.节点
-        public Token atToken;                   // $节点
-        public Node lastNode = null;            // 最后处理的节点
-
-        public ENodeType nodeType { get; set; } = ENodeType.None;
-        private List<Node> m_ExtendLinkNodeList { get; set; } = new List<Node>();
-        private List<Node> m_BracketNodeList = new List<Node>();
-        public List<Node> childList { get; set; } = new List<Node>();    //子内容节点
+        public Token token => m_Token;
+        public Token endToken { get; set; } = null;
+        public Token linkToken { get; set; } = null;         //.节点
+        public Token atToken { get; set; } = null;          // $节点
 
         public int parseIndex = 0;
+
+        public Node parent => m_Parent;
+        public Node parNode => m_ParNode;             //(小括号的节点
+        public Node blockNode => m_BlockNode;           //{大括号的节点
+        public Node bracketNode => m_BracketNodeList.Count > 0 ? m_BracketNodeList[m_BracketNodeList.Count - 1] : null;
+        public List<Node> bracketNodeList => m_BracketNodeList;
+        public Node angleNode => m_AngleNode;
+        public Node lastNode => m_LastNode;         // 最后处理的节点
+        public ENodeType nodeType { get; set; } =  ENodeType.None;
+
+        private List<Node> m_ExtendLinkNodeList { get; set; } = new List<Node>();
+        private List<Node> m_BracketNodeList = new List<Node>();
+        private List<Node> m_ChildList  = new List<Node>();    //子内容节点
+
+        private Node m_AngleNode = null;            // <>
+        private Node m_ParNode = null;              // ()
+        private Node m_BlockNode = null;            // {}
+        private Node m_LastNode = null;            // 最后处理的节点
+        private Node m_Parent = null;              //父节点
+        private Token m_Token = null;                  // 
 
         public Node parseCurrent
         {
@@ -123,9 +131,11 @@ namespace SimpleLanguage.Compile
                 return tlist;
             }
         }
+
+
         public Node(Token _token)
         {
-            token = _token;
+            m_Token = _token;
         }
         public Node GetParseNode(int index = 1, bool isAddIndex = true )
         {
@@ -140,8 +150,24 @@ namespace SimpleLanguage.Compile
         }
         public void SetChildList( List<Node> nodes )
         {
-            this.childList = nodes;
+            this.m_ChildList = nodes;
         }   
+        public void SetParNode( Node parNode )
+        {
+            m_ParNode = parNode;
+        }
+        public void SetBlockNode( Node blockNode )
+        {
+            m_BlockNode = blockNode;
+        }
+        public void SetAngleNode( Node angleNode )
+        {
+            m_AngleNode = angleNode;
+        }
+        //public void SetNodeType( ENodeType ent )
+        //{
+        //    m_NodeType = ent;
+        //}
         public void AddLinkNode(Node node )
         {
             if (lastNode == null) return;
@@ -177,16 +203,16 @@ namespace SimpleLanguage.Compile
         public void AddChild(Node c, bool setParent = true)
         {
             if (setParent)
-                c.parent = this;
+                c.m_Parent = this;
             if( (c.nodeType == ENodeType.Par ) &&
                 lastNode?.extendLinkNodeList.Count > 0 )
             {
-                lastNode.extendLinkNodeList[lastNode.extendLinkNodeList .Count- 1].parNode = c;
+                m_LastNode.extendLinkNodeList[m_LastNode.extendLinkNodeList .Count- 1].m_ParNode = c;
             }
             else
             {
                 this.childList.Add(c);
-                lastNode = c;
+                m_LastNode = c;
             }
         }
         public void AddSyntax( Node c )

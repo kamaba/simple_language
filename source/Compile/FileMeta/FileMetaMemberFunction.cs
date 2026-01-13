@@ -36,10 +36,12 @@ namespace SimpleLanguage.Compile
 
             var listDefieNode = new List<Node>();
             var valueNodeList = new List<Node>();
-            Node beforeNode = new Node(null);
-            beforeNode.SetChildList(inputNodeList);
-            beforeNode.parseIndex = 0;
-            var nodeList = StructParse.HandleBeforeNode(beforeNode);
+            //Node beforeNode = new Node(null);
+            //beforeNode.SetChildList(inputNodeList);
+            //beforeNode.parseIndex = 0;
+            //var nodeList = StructParse.HandleBeforeNode(beforeNode);
+            var nodeList = StructParse.HandleNodeSingleLine(inputNodeList);
+
             if (!FileMetatUtil.SplitNodeList(nodeList, listDefieNode, valueNodeList, ref m_AssignToken))
             {
                 Log.AddInStructFileMeta(EError.None, "Error 解析NodeList出现错误~~~");
@@ -196,9 +198,11 @@ namespace SimpleLanguage.Compile
             List<List<Token>> interfaceTokenList = new List<List<Token>>();
             List<Token> list = new List<Token>();
             Node funNameNode = null;
-            Node node = new Node(null);
-            node.childList.AddRange(nodeList);
-            var nodeList2 = StructParse.HandleBeforeNode(node);
+            //Node node = new Node(null);
+            //node.childList.AddRange(nodeList);
+            //var nodeList2 = StructParse.HandleBeforeNode(node);
+            var nodeList2 = StructParse.HandleNodeSingleLine(nodeList);
+
             while (addCount < nodeList2.Count)
             {
                 var cnode = nodeList2[addCount++];

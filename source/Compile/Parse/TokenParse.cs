@@ -333,7 +333,7 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Debug.Write("Error 不对称()");
+                            Debug.Assert(false, "Error 不对称()");
                         }
                     }
                     break;
@@ -359,7 +359,7 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Debug.Write("Error 不对称[]");
+                            Debug.Assert( false, "Error 不对称[]");
                         }
                     }
                     break;
@@ -449,7 +449,29 @@ namespace SimpleLanguage.Compile
                     break;
                 case ETokenType.Shr:               //  >>
                     {
-                        AddBitMoveOperatorSymbol(token);
+                        // In nested generics like Map<List<int>,string>> the lexer produces Shr.
+                        // If we're currently inside an unclosed generic angle sequence, treat this
+                        // as two closing '>' tokens.
+                        if (IsInsideGenericAngleContext())
+                        {
+                            var t1 = new Token(token);
+                            t1.SetType(ETokenType.Greater);
+                            t1.SetLexeme(">");
+                            var n1 = new Node(t1) { nodeType = ENodeType.RightAngle };
+                            currentNode.AddChild(n1);
+
+                            var t2 = new Token(token);
+                            t2.SetType(ETokenType.Greater);
+                            t2.SetLexeme(">");
+                            var n2 = new Node(t2) { nodeType = ENodeType.RightAngle };
+                            currentNode.AddChild(n2);
+
+                            m_TokenIndex++;
+                        }
+                        else
+                        {
+                            AddBitMoveOperatorSymbol(token);
+                        }
                     }
                     break;
                 case ETokenType.GreaterOrEqual:  // >=
@@ -622,11 +644,33 @@ namespace SimpleLanguage.Compile
                     break;
                 default:
                     {
-                        Debug.Write( string.Format("Line:{0} Source: {1}", token.sourceBeginLine, 
+                        Debug.Assert( false, string.Format("Line:{0} Source: {1}", token.sourceBeginLine, 
                             token.sourceBeginChar) );
                         throw new Exception( "不支持的语法 " );
                     }
             }
+        }
+        /// <summary>
+        /// Best-effort generic context detection: if there's an unclosed '<' in the current node list,
+        /// prefer treating '>>' as two generic closing tokens instead of a shift operator.
+        /// </summary>
+        private bool IsInsideGenericAngleContext()
+        {
+            // Scan current node's direct children and compute a simple depth for angle brackets.
+            // This intentionally ignores nested node stacks (Par/Brace/Bracket), because '>>' that
+            // tokenizes inside those should still typically behave as shift.
+            int depth = 0;
+            var list = currentNode?.childList;
+            if (list == null) return false;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var n = list[i];
+                if (n == null) continue;
+                if (n.nodeType == ENodeType.LeftAngle) depth++;
+                else if (n.nodeType == ENodeType.RightAngle && depth > 0) depth--;
+            }
+            return depth > 0;
         }
     }
 }

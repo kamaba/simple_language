@@ -83,12 +83,10 @@ namespace SimpleLanguage.Compile
         protected Stack<ParseCurrentNodeInfo> m_CurrentNodeInfoStack = new Stack<ParseCurrentNodeInfo>();
 
         protected Node m_RootNode = null;
-        protected List<Token> m_TokenList = new List<Token>();
-        public StructParse(FileMeta fm, Node node, List<Token> tokenList    )
+        public StructParse(FileMeta fm, Node node    )
         {
             m_FileMeta = fm;
             m_RootNode = node;
-            m_TokenList = tokenList;
         }
         private void AddParseFileNodeInfo()
         {
@@ -204,45 +202,6 @@ namespace SimpleLanguage.Compile
             {
                 ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fms);
                 m_CurrentNodeInfoStack.Push(pcni);
-            }
-        }
-        public void ParseTokenToFileMeta()
-        {
-            AddParseFileNodeInfo();
-
-            foreach (var token in m_TokenList)
-            {
-                switch (token.type)
-                {
-                    case ETokenType.Import:
-                        {
-                            //ParseImport(pnode);
-                        }
-                        break;
-                    case ETokenType.Namespace:
-                        {
-                            //ParseNamespace(pnode);
-                        }
-                        break;
-                    case ETokenType.Const:
-                    case ETokenType.Data:
-                    case ETokenType.Enum:
-                    case ETokenType.Class:
-                    case ETokenType.Extern:
-                    case ETokenType.Public:
-                    case ETokenType.Private:
-                    case ETokenType.Projected:
-                    case ETokenType.Partial:
-                        {
-                            //ParseNamespaceOrTopClass(pnode);
-                        }
-                        break;
-                    default:
-                        {
-                            //Log.AddInStructFileMeta(EError.None, "Error 不允许 在File头级目录中出现 : " + node.token.lexeme.ToString());
-                        }
-                        break;
-                }
             }
         }
         public void ParseRootNodeToFileMeta()
@@ -398,7 +357,7 @@ namespace SimpleLanguage.Compile
 
                 if (nextNode.nodeType == ENodeType.Brace)
                 {
-                    currentNode.blockNode = nextNode;
+                    currentNode.SetBlockNode( nextNode );
                     isBlock = true;
                     break;
                 }
@@ -420,7 +379,7 @@ namespace SimpleLanguage.Compile
                                 var next3Node = pnode.childList[pnode.parseIndex + 2];
                                 if (next3Node?.nodeType == ENodeType.Brace)
                                 {
-                                    currentNode.blockNode = next2Node;
+                                    currentNode.SetBlockNode( next2Node );
                                     isBlock = true;
                                     pnode.parseIndex += 3;
                                     break;
@@ -429,7 +388,7 @@ namespace SimpleLanguage.Compile
                         }
                         else if (next2Node?.nodeType == ENodeType.Brace)
                         {
-                            currentNode.blockNode = next2Node;
+                            currentNode.SetBlockNode( next2Node );
                             isBlock = true;
                             pnode.parseIndex += 2;
                             break;
@@ -487,7 +446,6 @@ namespace SimpleLanguage.Compile
             for (index = pnode.parseIndex; index < pnode.childList.Count;)
             {
                 curNode = pnode.childList[index++];
-                pnode.parseIndex = index;
 
                 if (curNode.nodeType == ENodeType.Key)
                 {
@@ -739,6 +697,7 @@ namespace SimpleLanguage.Compile
             for (index = bracketNode.parseIndex; index < bracketNode.childList.Count;)
             {
                 var curNode = bracketNode.childList[index++];
+
                 if (curNode.nodeType == ENodeType.Brace)  //Class1 [{},{}]
                 {
                     FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, false, FileMetaMemberData.EMemberDataType.Data);
@@ -822,6 +781,7 @@ namespace SimpleLanguage.Compile
             for (index = curParentNode.parseIndex; index < curParentNode.childList.Count;)
             {
                 var curNode = curParentNode.childList[index++];
+
                 Node nextNode = null;
                 if (index < curParentNode.childList.Count)
                 {
@@ -845,7 +805,7 @@ namespace SimpleLanguage.Compile
 
                             if (next2Node.nodeType == ENodeType.Par)   //Class1()
                             {
-                                curNode.parNode = next2Node;
+                                curNode.SetParNode( next2Node );
                                 index = j;
                                 isParseEnd = true;
                                 if ( j < curParentNode.childList.Count )
@@ -860,7 +820,7 @@ namespace SimpleLanguage.Compile
                                             if (next4Node == null) continue;
                                             if (next4Node.nodeType == ENodeType.Brace)
                                             {
-                                                curNode.blockNode = next4Node;
+                                                curNode.SetBlockNode( next4Node );
                                                 isParseEnd = true;
                                                 index = j + 2;
                                                 break;
@@ -875,7 +835,7 @@ namespace SimpleLanguage.Compile
                                     }
                                     else if (next3Node.nodeType == ENodeType.Brace)
                                     {
-                                        curNode.blockNode = next3Node;
+                                        curNode.SetBlockNode( next3Node );
                                         isParseEnd = true;
                                         index = j + 1;
                                         break;
@@ -892,7 +852,7 @@ namespace SimpleLanguage.Compile
                             //}
                             else if (next2Node.nodeType == ENodeType.Brace)
                             {
-                                curNode.blockNode = next2Node;
+                                curNode.SetBlockNode( next2Node );
                                 index = j;
                                 isParseEnd = true;
                                 break;
@@ -1107,6 +1067,7 @@ namespace SimpleLanguage.Compile
             for (index = pnode.parseIndex; index < pnode.childList.Count;)
             {
                 var curNode = pnode.childList[index++];
+
                 Node nextNode = null;
                 if (index < pnode.childList.Count)
                 {
@@ -1120,7 +1081,7 @@ namespace SimpleLanguage.Compile
                         nodeList.Add(curNode);
                         if (nextNode?.nodeType == ENodeType.Par)  //Enum1()
                         {
-                            curNode.parNode = nextNode;
+                            curNode.SetParNode(nextNode);
                             if (index + 1 < pnode.childList.Count)
                             {
                                 Node next2Node = pnode.childList[index + 1];
@@ -1134,7 +1095,7 @@ namespace SimpleLanguage.Compile
                                         if( next2Node?.nodeType == ENodeType.Brace )
                                         {
                                             index += 2;
-                                            curNode.blockNode = next2Node;
+                                            curNode.SetBlockNode(next2Node);
                                             blockNode = next2Node;
                                         }
                                     }
@@ -1159,7 +1120,7 @@ namespace SimpleLanguage.Compile
                             {
                                 index += 2;
                                 //curNode.angleNode = nextNode;
-                                curNode.blockNode = next2Node;
+                                curNode.SetBlockNode(next2Node);
                                 blockNode = curNode;
                             }
                             else
@@ -1286,6 +1247,7 @@ namespace SimpleLanguage.Compile
             for (index1 = bracketNode.parseIndex; index1 < bracketNode.childList.Count;)
             {
                 var curNode = bracketNode.childList[index1++];
+
                 if (curNode.nodeType == ENodeType.Brace)  //Class1 [{},{}]
                 {
                     FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, FileMetaMemberVariable.EMemberDataType.NoNameClass);
@@ -1408,7 +1370,215 @@ namespace SimpleLanguage.Compile
             }
             ParseSyntax(pnode);
         }
-        public static List<Node> HandleBeforeNode(Node node)
+        private static void HandleNodeSingleLine_Recursive(Node node)
+        {
+            if (node == null) return;
+            if (node.childList == null || node.childList.Count == 0) return;
+
+            node.parseIndex = 0;
+            var newList = HandleNodeSingleLine(node.childList);
+            node.SetChildList(newList);
+            node.parseIndex = 0;
+        }
+
+        public static List<Node> HandleNodeSingleLine(List<Node> nodeList)
+        {
+            List<Node> handleBeforeList = new List<Node>();
+
+            Node lastAttachable = null;      // last IdentifierLink or 'new'
+            Node pendingAngleOwner = null;   // identifier that owns current '<>'
+            int angleDepth = 0;              // nested generic depth
+            bool isGenericMode = false;      // true only if current identifier has a valid generic segment
+
+            // Helper local function: validates that angleNode.childList does not
+            // contain symbols that would indicate a comparison/expression instead
+            // of a type argument list.
+            bool IsValidGenericContent(Node angleNode)
+            {
+                if (angleNode == null) return false;
+                foreach (var c in angleNode.childList)
+                {
+                    if (c == null) continue;
+                    if (c.nodeType == ENodeType.Symbol)
+                    {
+                        // Disallow obvious non-type operators in generic arg list
+                        var t = c.token?.type;
+                        if (t == ETokenType.Greater
+                            || t == ETokenType.Less
+                            || t == ETokenType.GreaterOrEqual
+                            || t == ETokenType.LessOrEqual
+                            || t == ETokenType.Plus
+                            || t == ETokenType.Minus)
+                        {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+
+            for (int i = 0; i < nodeList.Count; i++)
+            {
+                var v = nodeList[i];
+                if (v == null) continue;
+
+                // Inside generic parameter list: collect everything between matching '<' '>'
+                if (pendingAngleOwner != null && angleDepth > 0)
+                {
+                    if (v.nodeType == ENodeType.LeftAngle)
+                    {
+                        angleDepth++;
+                        continue;
+                    }
+                    if (v.nodeType == ENodeType.RightAngle)
+                    {
+                        angleDepth--;
+                        if (angleDepth == 0)
+                        {
+                            // end of tentative generic segment; validate content
+                            var angleNode = pendingAngleOwner.angleNode;
+                            angleNode.endToken = v.token;
+                            bool valid = IsValidGenericContent(angleNode);
+                            if (valid)
+                            {
+                                isGenericMode = true;
+                            }
+                            else
+                            {
+                                // rollback: treat '<' and collected nodes as normal tokens
+                                // push original '<'
+                                handleBeforeList.Add(angleNode);
+                                // then its children
+                                for (int ci = 0; ci < angleNode.childList.Count; ci++)
+                                {
+                                    handleBeforeList.Add(angleNode.childList[ci]);
+                                }
+                                // and finally this '>'
+                                handleBeforeList.Add(v);
+
+                                pendingAngleOwner.SetAngleNode(null);
+                                isGenericMode = false;
+                            }
+                            pendingAngleOwner = null;
+                        }
+                        continue;
+                    }
+
+                    // Normal element inside '< >' goes to angleNode.childList
+                    pendingAngleOwner.angleNode.AddChild(v);
+                    continue;
+                }
+
+                // Start of a new identifier / 'new'
+                if (v.nodeType == ENodeType.IdentifierLink
+                    || (v.nodeType == ENodeType.Key && v.token?.type == ETokenType.New))
+                {
+                    handleBeforeList.Add(v);
+                    lastAttachable = v;
+                    isGenericMode = false;   // reset; need to re-detect for this identifier
+                    continue;
+                }
+
+                // Other keys just pass through and reset attachable target
+                if (v.nodeType == ENodeType.Key)
+                {
+                    handleBeforeList.Add(v);
+                    lastAttachable = null;
+                    isGenericMode = false;
+                    continue;
+                }
+
+                // Function call: only fold if we are in generic or plain-call mode (not comparison mode)
+                if (v.nodeType == ENodeType.Par)
+                {
+                    HandleNodeSingleLine_Recursive(v);
+                    if (lastAttachable != null && (isGenericMode || lastAttachable.angleNode == null))
+                    {
+                        lastAttachable.finalNode.SetParNode(v);
+                    }
+                    else
+                    {
+                        handleBeforeList.Add(v);
+                    }
+                    continue;
+                }
+
+                // Indexer: same rule as Par
+                if (v.nodeType == ENodeType.Bracket)
+                {
+                    HandleNodeSingleLine_Recursive(v);
+                    if (lastAttachable != null && (isGenericMode || lastAttachable.angleNode == null))
+                    {
+                        lastAttachable.finalNode.AddBracketNode(v);
+                    }
+                    else
+                    {
+                        handleBeforeList.Add(v);
+                    }
+                    continue;
+                }
+
+                // Object/initializer block: same rule as Par
+                if (v.nodeType == ENodeType.Brace)
+                {
+                    HandleNodeSingleLine_Recursive(v);
+                    if (lastAttachable != null && (isGenericMode || lastAttachable.angleNode == null))
+                    {
+                        lastAttachable.finalNode.SetBlockNode(v);
+                    }
+                    else
+                    {
+                        handleBeforeList.Add(v);
+                    }
+                    continue;
+                }
+
+                // Start of generic arguments: attach '<' node to identifier as angleNode.
+                // If later we do not see a matching valid '>' segment, we will roll back
+                // to normal comparison mode.
+                if (v.nodeType == ENodeType.LeftAngle)
+                {
+                    if (lastAttachable != null)
+                    {
+                        pendingAngleOwner = lastAttachable.finalNode;
+                        pendingAngleOwner.SetAngleNode(v);
+                        angleDepth = 1;
+                        isGenericMode = false; // will be set to true only when we see matching valid '>'
+                    }
+                    else
+                    {
+                        handleBeforeList.Add(v);
+                    }
+                    continue;
+                }
+
+                // Standalone '>' (no active angle) stays as a normal node
+                if (v.nodeType == ENodeType.RightAngle)
+                {
+                    handleBeforeList.Add(v);
+                    continue;
+                }
+
+                // Other tokens are kept as-is
+                handleBeforeList.Add(v);
+            }
+
+            // If we exit loop and still in angleDepth>0, rollback partial generic start as comparison
+            if (pendingAngleOwner != null && pendingAngleOwner.angleNode != null)
+            {
+                var angleNode = pendingAngleOwner.angleNode;
+                handleBeforeList.Add(angleNode);
+                for (int ci = 0; ci < angleNode.childList.Count; ci++)
+                {
+                    handleBeforeList.Add(angleNode.childList[ci]);
+                }
+                pendingAngleOwner.SetAngleNode(null);
+            }
+
+            return handleBeforeList;
+        }
+
+        public static List<Node> HandleBeforeNode(Node node )
         {
             List<Node> handleBeforeList = new List<Node>();
 
@@ -1417,7 +1587,6 @@ namespace SimpleLanguage.Compile
             handleBeforeList = node.childList;
 
             return handleBeforeList;
-
         }
         public static List<Node> HandleExpressNode( Node node )
         {
@@ -1443,7 +1612,8 @@ namespace SimpleLanguage.Compile
             List<Node> list = new List<Node>();
             for( int i = 0; i < node.childList.Count; i++ )
             {
-                if( node.childList[i].isDel == false )
+                DelHandleNostList(node.childList[i]);
+                if ( node.childList[i].isDel == false )
                 {
                     list.Add(node.childList[i]);
                 }
@@ -1543,24 +1713,23 @@ namespace SimpleLanguage.Compile
 
             Node finalNode = inputFinaleNode.finalNode;
             if (finalNode?.nodeType == ENodeType.IdentifierLink
-                || finalNode?.token?.type == ETokenType.New ) //Class1???
+                || finalNode?.token?.type == ETokenType.New ) //Class1???;
             {
-                if (currentExpressNode.nodeType == ENodeType.LeftAngle )       //Class<>??
+                if (currentExpressNode.nodeType == ENodeType.LeftAngle )       //Class<>??;
                 {
                     HandleAngleExpressNode(node, finalNode);
                     _HandleExpressNodeProcess(node, finalNode);
                     return;
                 }
-                else if (currentExpressNode.nodeType == ENodeType.Par)             //Class()?
+                else if (currentExpressNode.nodeType == ENodeType.Par)             //Class()?;
                 {
                     node.parseIndex++;
-                    finalNode.parNode = currentExpressNode;
+                    finalNode.SetParNode( currentExpressNode );
                     currentExpressNode.isDel = true;
                     if (currentExpressNode.extendLinkNodeList.Count > 0)
                     {
-                        finalNode.SetLinkNode(currentExpressNode.extendLinkNodeList);   // Q.Map()[.Cast]
-                        _HandleExpressNodeProcess(node, currentExpressNode);           //Q.Map().[Cast]
-                        _HandleExpressNodeProcess(node, finalNode);
+                        finalNode.SetLinkNode(currentExpressNode.extendLinkNodeList);   // Q.Map()[.Cast];
+                        _HandleExpressNodeProcess(node, currentExpressNode);           //Q.Map().[Cast];
                         return;
                     }
                     else
@@ -1571,15 +1740,15 @@ namespace SimpleLanguage.Compile
                         return;
                     }
                 }
-                else if( currentExpressNode.nodeType == ENodeType.Brace )           // M.Class(){}
+                else if( currentExpressNode.nodeType == ENodeType.Brace )           // M.Class(){};
                 {
                     node.parseIndex++;
-                    finalNode.blockNode = currentExpressNode;
+                    finalNode.SetBlockNode(currentExpressNode);
                     currentExpressNode.isDel = true;
                     _HandleExpressNodeProcess(currentExpressNode, null);
                     return;
                 }
-                else if( currentExpressNode.nodeType == ENodeType.Bracket )         //Class[][][][](){}
+                else if( currentExpressNode.nodeType == ENodeType.Bracket )         //Class[][][][](){};
                 {
                     node.parseIndex++;
                     finalNode.AddBracketNode( currentExpressNode );
@@ -1608,17 +1777,18 @@ namespace SimpleLanguage.Compile
             while (node.parseIndex < node.childList.Count)
             {
                 var cnode = node.childList[node.parseIndex];               
+
                 if (cnode.nodeType == ENodeType.LeftAngle)
                 {
                     cnode.isDel = true;
                     node.parseIndex++;
-                    parentNode.angleNode = cnode;
+                    parentNode.SetAngleNode( cnode );
                     //parentNode.AddAngleNode(cnode);
                 }
                 else if (cnode.nodeType == ENodeType.RightAngle)
                 {
                     cnode.isDel = true;
-                    parentNode.angleNode.endToken = cnode.token;
+                    parentNode.angleNode.endToken = ( cnode.token );
                     node.parseIndex++;
                     if (cnode.extendLinkNodeList?.Count > 0)
                     {
@@ -1670,7 +1840,7 @@ namespace SimpleLanguage.Compile
                         }
                         else if (nextNode.nodeType == ENodeType.Par)      //Class<>()
                         {
-                            parentNode.parNode = nextNode;
+                            parentNode.SetParNode( nextNode );
                             nextNode.isDel = true;
                             _HandleExpressNodeProcess(nextNode, null);
 
@@ -1688,7 +1858,7 @@ namespace SimpleLanguage.Compile
                                     var next2ExpressNode = node.childList[node.parseIndex];
                                     if (next2ExpressNode.nodeType == ENodeType.Brace)   //Class<>()?{}
                                     {
-                                        parentNode.blockNode = next2ExpressNode;
+                                        parentNode.SetBlockNode( next2ExpressNode );
                                         next2ExpressNode.isDel = true;
                                         _HandleExpressNodeProcess(node, parentNode );           //Q.Map<>(){}
                                         return;
@@ -1772,15 +1942,15 @@ namespace SimpleLanguage.Compile
         //    }
 
         //    Node finalNode = inputFinaleNode.finalNode;
-        //    if (finalNode?.nodeType == ENodeType.IdentifierLink) //Class1???
+        //    if (finalNode?.nodeType == ENodeType.IdentifierLink) //Class1????
         //    {
-        //        if (currentExpressNode.nodeType == ENodeType.LeftAngle)       //Class<>??
+        //        if (currentExpressNode.nodeType == ENodeType.LeftAngle )       //Class<>????
         //        {
         //            HandleAngleNode(node, finalNode);
         //            _HandleBeforeNodeProcess(node, inputFinaleNode);
         //            return;
         //        }
-        //        else if (currentExpressNode.nodeType == ENodeType.Par)             //Class()?
+        //        else if (currentExpressNode.nodeType == ENodeType.Par)             //Class()?;
         //        {
         //            finalNode.parNode = currentExpressNode;
         //            currentExpressNode.isDel = true;
@@ -1799,7 +1969,7 @@ namespace SimpleLanguage.Compile
         //                return;
         //            }
         //        }
-        //        else if (currentExpressNode.nodeType == ENodeType.Brace)           // M.Class(){}
+        //        else if (currentExpressNode.nodeType == ENodeType.Brace)           // M.Class(){};
         //        {
         //            finalNode.blockNode = currentExpressNode;
         //            currentExpressNode.isDel = true;
@@ -1808,7 +1978,7 @@ namespace SimpleLanguage.Compile
         //            _HandleBeforeNodeProcess(node, finalNode);
         //            return;
         //        }
-        //        else if (currentExpressNode.nodeType == ENodeType.Bracket)         //Class[]
+        //        else if (currentExpressNode.nodeType == ENodeType.Bracket)         //Class[][][][](){};
         //        {
         //            finalNode.bracketNode = currentExpressNode;
         //            currentExpressNode.isDel = true;

@@ -325,9 +325,10 @@ namespace SimpleLanguage.Compile
             m_FileMeta = fm;
             m_Root = this;
 
-            Node node = new Node(null);
-            node.childList.AddRange(nodeList);
-            var nodeList2 = StructParse.HandleBeforeNode(node);
+            //Node node = new Node(null);
+            //node.childList.AddRange(nodeList);
+            //var nodeList2 = StructParse.HandleBeforeNode(node);
+            var nodeList2 = StructParse.HandleNodeSingleLine(nodeList);
 
             if (nodeList2.Count == 3 || nodeList2.Count == 4 )
             {
@@ -1075,9 +1076,11 @@ namespace SimpleLanguage.Compile
         public FileMetaTermExpress( FileMeta fm, List<Node> nodeList, EExpressType _expressType = EExpressType.Common )
         {
             m_FileMeta = fm;
-            Node tn = new Node( null );
-            tn.SetChildList( nodeList );
-            var childList = StructParse.HandleExpressNode(tn);
+            //Node tn = new Node( null );
+            //tn.SetChildList( nodeList );
+            //var childList = StructParse.HandleExpressNode(tn);
+            var childList = StructParse.HandleNodeSingleLine(nodeList);
+
             expressType = _expressType;
 
             CreateFileMetaExpressByChildList(childList);

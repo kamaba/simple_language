@@ -6,7 +6,6 @@
 //  Description:  this's a common node handles
 //****************************************************************************
 using SimpleLanguage.Compile;
-using SimpleLanguage.IR;
 using SimpleLanguage.source;
 using SimpleLanguage.source.Logging;
 using System.Collections.Generic;

@@ -517,6 +517,7 @@ namespace SimpleLanguage.Core
                     MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
                     men.Parse(new AllowUseSettings());                    
                     var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
+                    mas.Parse(new AllowUseSettings());
                     mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);
                 }

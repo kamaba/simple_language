@@ -448,7 +448,7 @@ namespace SimpleLanguage.Compile
 
             public void GenFileInputTemplateNode( Node node, FileMeta fm )
             {
-                node.angleNode = angleNode;
+                node.SetAngleNode( angleNode );
                 for ( int i = 0; i < angleContentNodeList.Count; i++ )
                 {
                     node.angleNode.AddChild( angleContentNodeList[i].nameNode);

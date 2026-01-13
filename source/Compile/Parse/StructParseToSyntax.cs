@@ -391,12 +391,13 @@ namespace SimpleLanguage.Compile
             FileMetaClassDefine classRef = null;
             FileMetaCallLink varRef = null;
 
-            Node parseNode = new Node(null);
-            parseNode.SetChildList(beforeNodeList);
-            parseNode.parseIndex = 0;
-            var handleBeforeList = HandleBeforeNode(parseNode);           
+            //Node parseNode = new Node(null);
+            //parseNode.SetChildList(beforeNodeList);
+            //parseNode.parseIndex = 0;
+            //var handleBeforeList = HandleBeforeNode(parseNode);
+            var handleBeforeList = HandleNodeSingleLine(beforeNodeList);
 
-            List<Node> defineNodeList = new List<Node>();
+            List <Node> defineNodeList = new List<Node>();
             for (int i = 0; i < handleBeforeList.Count; i++)
             {
                 var cnode = handleBeforeList[i];

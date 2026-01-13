@@ -132,10 +132,11 @@ namespace SimpleLanguage.Compile
                 return false;
             }
 
-            Node beforeNode = new Node( null );
-            beforeNode.SetChildList(bedoreNodeList);
-            beforeNode.parseIndex = 0;
-            var defineNodeList = StructParse.HandleBeforeNode(beforeNode);
+            //Node beforeNode = new Node( null );
+            //beforeNode.SetChildList(bedoreNodeList);
+            //beforeNode.parseIndex = 0;
+            //var defineNodeList = StructParse.HandleBeforeNode(beforeNode);
+            var defineNodeList = StructParse.HandleNodeSingleLine(bedoreNodeList);
 
             Node nameNode = null;
             Node typeNode = null;

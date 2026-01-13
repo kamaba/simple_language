@@ -13,6 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using SimpleLanguage.source;
 using SimpleLanguage.source.Logging;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Compile
 {
@@ -223,20 +224,21 @@ namespace SimpleLanguage.Compile
             }
         }
         public bool isBrace => m_FileMetaBraceTerm != null;
+        public bool isCallFunction => m_IsCallFunction;
+        public bool isTemplate => m_IsTemplate;
+        public bool isArray => m_IsArray;
+        public Token token => m_Token;
+        public Token atToken => m_AtToken;
+        public FileMeta fileMeta => m_FileMeta;
         public List<FileInputTemplateNode> inputTemplateNodeList => m_InputTemplateNodeList;
         public FileMetaParTerm fileMetaParTerm => m_FileMetaParTerm;
         public FileMetaBraceTerm fileMetaBraceTerm => m_FileMetaBraceTerm;
         public List<FileMetaBracketTerm> fileMetaBracketTermList => m_FileMetaBracketTermList;
 
-        public Token token => m_Token;
-        public Token atToken => m_AtToken;
-        public bool isCallFunction { get; set; } = false;
-        public bool isTemplate { get; set; } = false;
-        public bool isArray { get; set; } = false;
-        public Node node => m_Node;
-        public FileMeta fileMeta => m_FileMeta;
 
-        private Node m_Node = null;
+        private bool m_IsCallFunction = false;
+        private bool m_IsTemplate = false;
+        private bool m_IsArray = false;
         private Token m_Token = null;
         private Token m_AtToken = null;
         private FileMeta m_FileMeta = null;
@@ -252,38 +254,37 @@ namespace SimpleLanguage.Compile
         public FileMetaCallNode( FileMeta fm, Node _node )
         {
             m_FileMeta = fm;
-            m_Node = _node;
-            isCallFunction = false;
 
-            CreateFileMetaCallNode();
-        }
-        void CreateFileMetaCallNode()
-        {
-            m_Token = m_Node.token;
-            m_AtToken = m_Node.atToken;
+            m_Token = _node.token;
+            m_AtToken = _node.atToken;
 
-            if( m_Node.nodeType == ENodeType.Par )
+            if (_node.nodeType == ENodeType.Par)   // ( (20+(30.0f-x)), x  )
             {
-                m_FileMetaParTerm = new FileMetaParTerm(m_FileMeta, m_Node, FileMetaTermExpress.EExpressType.Common);
+                m_FileMetaParTerm = new FileMetaParTerm(m_FileMeta, _node, FileMetaTermExpress.EExpressType.Common);
 
                 m_BeginParToken = m_FileMetaParTerm.token;
                 m_EndParToken = m_FileMetaParTerm.endToken;
+                m_FileMetaParTerm.ClearDirty();
+                m_FileMetaParTerm.BuildAST();
             }
-            if(m_Node.parNode != null )
+            if (_node.parNode != null)      //  Func( a, (b+20.0f) )
             {
-                isCallFunction = true;
+                Debug.Assert(m_FileMetaParTerm == null, "已经有解析()" );
 
-                m_FileMetaParTerm = new FileMetaParTerm(m_FileMeta, m_Node.parNode, FileMetaTermExpress.EExpressType.Common);
+                m_IsCallFunction = true;
+                m_FileMetaParTerm = new FileMetaParTerm(m_FileMeta, _node.parNode, FileMetaTermExpress.EExpressType.Common);
 
                 m_BeginParToken = m_FileMetaParTerm.token;
                 m_EndParToken = m_FileMetaParTerm.endToken;
+                m_FileMetaParTerm.ClearDirty();
+                m_FileMetaParTerm.BuildAST();
             }
-            if (m_Node.angleNode != null)      // LinkCall.Call<int,string, NS.Class1>()
+            if (_node.angleNode != null)      // LinkCall.Call<int,string, NS.Class1>()
             {
-                isTemplate = true;
-                m_BeginAngleToken = m_Node.angleNode.token;
-                m_EndAngleToken = m_Node.angleNode.endToken;
-                List<Node> list = m_Node.angleNode.childList;
+                m_IsTemplate = true;
+                m_BeginAngleToken = _node.angleNode.token;
+                m_EndAngleToken = _node.angleNode.endToken;
+                List<Node> list = _node.angleNode.childList;
                 for (int i = 0; i < list.Count; i++)
                 {
                     if (list[i].nodeType == ENodeType.Comma)
@@ -294,19 +295,18 @@ namespace SimpleLanguage.Compile
                     m_InputTemplateNodeList.Add(aa);
                 }
             }
-            if ( m_Node.bracketNode != null )     //[1][1][2][]
+            if (_node.bracketNode != null)     //[1][1][2][]
             {
-                isArray = true;
-                for( int i = 0; i < m_Node.bracketNodeList.Count; i++ )
+                m_IsArray = true;
+                for (int i = 0; i < _node.bracketNodeList.Count; i++)
                 {
-                    var fileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, m_Node.bracketNodeList[i] );
+                    var fileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, _node.bracketNodeList[i]);
                     m_FileMetaBracketTermList.Add(fileMetaBracketTerm);
-                }           
-                
+                }
             }
-            if (m_Node.blockNode != null)     // { 1,2,3,4 }  { [1,2,3], [2,3,4] }
+            if (_node.blockNode != null)     // { 1,2,3,4 }  { [1,2,3], [2,3,4] }
             {
-                m_FileMetaBraceTerm = new FileMetaBraceTerm(m_FileMeta, m_Node.blockNode );
+                m_FileMetaBraceTerm = new FileMetaBraceTerm(m_FileMeta, _node.blockNode);
             }
         }
         public string ToFormatString()
@@ -345,7 +345,7 @@ namespace SimpleLanguage.Compile
                         sb.Append(fmbt.endToken?.lexeme?.ToString());
                     }
                 }
-                if (isTemplate)
+                if (m_BeginAngleToken != null )
                 {
                     sb.Append( m_BeginAngleToken.lexeme?.ToString());
                     for (int i = 0; i < m_InputTemplateNodeList.Count; i++)
@@ -356,7 +356,7 @@ namespace SimpleLanguage.Compile
                     }
                     sb.Append( m_EndAngleToken.lexeme?.ToString());
                 }
-                if (isCallFunction)
+                if (m_BeginParToken != null)
                 {
                     sb.Append( m_BeginParToken?.lexeme.ToString());
                     //for (int i = 0; i < m_ParamList.Count; i++)
@@ -442,13 +442,11 @@ namespace SimpleLanguage.Compile
         public List<FileMetaCallNode> callNodeList => m_CallNodeList;
 
         private FileMeta m_FileMeta = null;
-        private Node m_Node = null;
         private List<FileMetaCallNode> m_CallNodeList = new List<FileMetaCallNode>();
         public FileMetaCallLink( FileMeta fm, Node node, bool isIncludeSelf = true )
         {
-            m_Node = node;
             m_FileMeta = fm;
-            AddChildExtendLinkList(m_Node, isIncludeSelf );
+            AddChildExtendLinkList(node, isIncludeSelf );
         }
         void AddChildExtendLinkList( Node cnode, bool isIncludeSelf )
         {
@@ -538,12 +536,6 @@ namespace SimpleLanguage.Compile
 
         private List<Token> m_TokenList = new List<Token>();
         private bool m_IsInputTemplateData = false;
-        public FileMetaClassDefine(FileMeta fm, List<Token> _tokenList )
-        {
-            m_FileMeta = fm;
-            m_TokenList = _tokenList;
-            m_ClassNameToken = _tokenList[_tokenList.Count - 1];
-        }
         public FileMetaClassDefine( FileMeta fm, Node node, Node mutNode = null )
         {
             m_FileMeta = fm;
