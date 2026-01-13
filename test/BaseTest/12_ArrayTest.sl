@@ -499,7 +499,9 @@ ArrayTest
         #a44 = Level<int>[10]
         Level<int>[] a44 = new(15) { Level<int>(200) }
         a44[1] = Level<int>(10000)
-        a44[1].t = 100
+        int xxx = -2
+        a44[(xxx*2+5)].t = 100
+        #a44[1].t = 100
         
         for i = 4, i < 8, i++
         {

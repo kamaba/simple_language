@@ -226,7 +226,7 @@ namespace SimpleLanguage.Compile
         public bool isBrace => m_FileMetaBraceTerm != null;
         public bool isCallFunction => m_IsCallFunction;
         public bool isTemplate => m_IsTemplate;
-        public bool isArray => m_IsArray;
+        public bool isArray => m_FileMetaBracketTermList.Count > 0;
         public Token token => m_Token;
         public Token atToken => m_AtToken;
         public FileMeta fileMeta => m_FileMeta;
@@ -238,7 +238,6 @@ namespace SimpleLanguage.Compile
 
         private bool m_IsCallFunction = false;
         private bool m_IsTemplate = false;
-        private bool m_IsArray = false;
         private Token m_Token = null;
         private Token m_AtToken = null;
         private FileMeta m_FileMeta = null;
@@ -297,7 +296,6 @@ namespace SimpleLanguage.Compile
             }
             if (_node.bracketNode != null)     //[1][1][2][]
             {
-                m_IsArray = true;
                 for (int i = 0; i < _node.bracketNodeList.Count; i++)
                 {
                     var fileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, _node.bracketNodeList[i]);
@@ -456,6 +454,15 @@ namespace SimpleLanguage.Compile
                 var cnode1 = childNodeList[i];
                 FileMetaCallNode fmcn = new FileMetaCallNode(m_FileMeta, cnode1);
                 m_CallNodeList.Add(fmcn);
+
+                if( cnode1.bracketNodeList.Count > 0 )
+                {
+                    var cnode2 = cnode1.bracketNodeList[cnode1.bracketNodeList.Count - 1];
+                    if( cnode2.extendLinkNodeList.Count > 0 )
+                    {
+                        AddChildExtendLinkList(cnode2, false);
+                    }
+                }
                 if( i == childNodeList.Count - 1 )
                 {
                     if( cnode1.extendLinkNodeList.Count > 0 )
