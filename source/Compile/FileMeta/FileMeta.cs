@@ -8,7 +8,7 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.CSharp;
 using SimpleLanguage.Parse;
-using SimpleLanguage.source.Logging;
+using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -239,10 +239,10 @@ namespace SimpleLanguage.Compile
                 var fmn = m_FileSearchNamespaceList[i];
                 if (ProjectManager.useDefineNamespaceType != EUseDefineType.NoUseProjectConfigNamespace)
                 {
-                    if (!ProjectManager.data.IsIncludeDefineStruct(fmn.namespaceStatementBlock.namespaceList))
-                    {
-                        Log.AddInStructFileMeta( EError.None, "Error 暂不允许使用namespace 定义命名空间!!!" + fmn.ToFormatString() + " 位置: " + fmn.token.ToLexemeAllString());
-                    }
+                    //if (!ProjectManager.data.IsIncludeDefineStruct(fmn.namespaceStatementBlock.namespaceList))
+                    //{
+                    //    Log.AddInStructFileMeta( EError.None, "Error 暂不允许使用namespace 定义命名空间!!!" + fmn.ToFormatString() + " 位置: " + fmn.token.ToLexemeAllString());
+                    //}
                 }
                 NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(fmn);
             }

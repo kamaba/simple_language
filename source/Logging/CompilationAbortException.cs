@@ -1,6 +1,6 @@
 using System;
 
-namespace SimpleLanguage.source.Logging
+namespace SimpleLanguage.Logging
 {
     public class CompilationAbortException : Exception
     {

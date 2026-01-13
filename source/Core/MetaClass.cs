@@ -12,8 +12,8 @@ using System.Text;
 using SimpleLanguage.Compile;
 using System.Linq;
 using System.Diagnostics;
-using SimpleLanguage.source;
-using SimpleLanguage.source.Logging;
+
+using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.Core
 {

@@ -8,8 +8,8 @@
 
 
 using SimpleLanguage.Parse;
-using SimpleLanguage.source;
-using SimpleLanguage.source.Logging;
+
+using SimpleLanguage.Logging;
 using System.Collections.Generic;
 using System.Xml.Linq;
 
@@ -199,7 +199,7 @@ namespace SimpleLanguage.Compile
             }
 
             if (isAddParseCurrentNNode)
-            {
+            { 
                 ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fms);
                 m_CurrentNodeInfoStack.Push(pcni);
             }

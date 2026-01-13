@@ -8,7 +8,7 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.IR;
-using SimpleLanguage.source.Logging;
+using SimpleLanguage.Logging;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;

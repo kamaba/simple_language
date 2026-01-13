@@ -6,7 +6,7 @@
 //  Description: Meta class's attribute
 //****************************************************************************
 
-using SimpleLanguage.source.Logging;
+using SimpleLanguage.Logging;
 using System.Collections.Generic;
 using System.Text;
 

@@ -11,9 +11,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using SimpleLanguage.source;
 
-namespace SimpleLanguage.source.Logging
+namespace SimpleLanguage.Logging
 {
     public enum EError
     {

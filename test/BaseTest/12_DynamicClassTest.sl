@@ -1,8 +1,21 @@
-import Application.Core;
+import Std;
+import CSharp.SimpleLanguage
+import CSharp.System
 
-#namespace Application.MFC;
+namespace Core
+{
+    class Object
+    {
+        public void _init_()
+        {
 
-
+        }
+        public string toString()
+        {
+            ret ""
+        }
+    }
+}
 namespace N1
 {
     Class1
@@ -15,28 +28,28 @@ namespace N1
     }
     Class1_2
     {
-        Class1 c1;
-        Class2 c2;
+        Class1 c1 = null;
+        Class2 c2 = new();
 
         _init_( Class1 x1 )
         {
             this.c1 = x1
         }
     }
-    DynamicClass
+    DynamicClassTest
     {
-        static Fun()
+        static fun()
         {
-            dynamic c1 = {a = 10; c1 = Class1(); Class1_2 c2 = Class1_2( Class1() ){ c2 = Class2() } };
+            dynamic c1 = {a = 10, c1 = Class1(), Class1_2 c2 = Class1_2( Class1() ){ c2 = Class2() } };
             #data c2 = {a=2,b="ace",N1.Class1 c1 = (){ a2 = 10}, arr1 = [1,2,3,4,5] }
             re1 = c1.c1.a2
-            Debug.Write("ret=" + re1 );
+            System.Console.WriteLine("ret=" + re1 );
         }
     }
 }
 
 
-!# 动态类说明
+#! 动态类说明
 1. 动态类，必须以dynamic关键字作为开头
 2. 如果没有开头直接写，则认为 是data 匿名数据为开头的处理
 3. 动态类可以通过 DynamicClass.addMemberVariable( c1, int, a,  10 );  或者 是定义结构体 
@@ -50,4 +63,4 @@ namespace N1
     DynamicClassaddMemeberVariable( c1, cv );
 4. 匿名数据，同样的，可以通过 DynamicData.addMemeberData( c2, MemberVariable(int.type, 10 ) )
 5. 匿名基本是可改，和操作的 基本都是通过 DynamicClass.removeMemeberData( c1, "hingo" );
-#!
+!#

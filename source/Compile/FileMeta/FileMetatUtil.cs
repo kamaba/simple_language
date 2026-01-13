@@ -7,8 +7,8 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile.Grammer;
-using SimpleLanguage.source;
-using SimpleLanguage.source.Logging;
+
+using SimpleLanguage.Logging;
 using System.Collections.Generic;
 
 namespace SimpleLanguage.Compile

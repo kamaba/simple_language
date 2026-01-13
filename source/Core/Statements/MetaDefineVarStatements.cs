@@ -11,7 +11,6 @@ using System;
 using System.Text;
 using SimpleLanguage.Compile;
 using System.Diagnostics;
-using SimpleLanguage.source;
 
 namespace SimpleLanguage.Core
 {
@@ -83,7 +82,8 @@ namespace SimpleLanguage.Core
                 Token token = m_FileMetaOpAssignSyntax.assignToken;
                 if( m_FileMetaOpAssignSyntax.dynamicToken != null )
                 {
-                    isDynamicClass = true;  
+                    isDynamicClass = true;
+                    mdt = new MetaType(CoreMetaClassManager.dynamicMetaClass);
                 }
                 if(m_FileMetaOpAssignSyntax.variableRef != null )
                 {

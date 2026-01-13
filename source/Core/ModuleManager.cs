@@ -5,7 +5,7 @@
 //  DateTime: 2022/6/12 12:00:00
 //  Description: 
 //****************************************************************************
-using SimpleLanguage.source.Logging;
+using SimpleLanguage.Logging;
 using System.Collections.Generic;
 
 namespace SimpleLanguage.Core

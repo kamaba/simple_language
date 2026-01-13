@@ -1,7 +1,7 @@
-using SimpleLanguage.source;
+
 using System;
 
-namespace SimpleLanguage.source.Logging
+namespace SimpleLanguage.Logging
 {
     public interface ILogger
     {

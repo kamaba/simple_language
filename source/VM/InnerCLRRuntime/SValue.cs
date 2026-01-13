@@ -6,7 +6,7 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.source.Logging;
+using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
 using System;
 using System.Diagnostics;

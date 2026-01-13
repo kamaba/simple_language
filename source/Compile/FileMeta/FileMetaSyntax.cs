@@ -8,8 +8,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using SimpleLanguage.source;
-using SimpleLanguage.source.Logging;
+
+using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.Compile
 {    

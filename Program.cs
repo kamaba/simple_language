@@ -56,7 +56,7 @@ namespace SimpleLanguage
         static void Main(string[] args)
         {
             CommandInputArgs inputArgs = new CommandInputArgs(args);
-            ProjectManager.Run( "../../../test/BaseTest", inputArgs );
+            ProjectManager.Run("../../../source/Lib/Core/Core.sp", inputArgs );
             Console.ReadKey();
         }
     }

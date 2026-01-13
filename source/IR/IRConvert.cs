@@ -6,7 +6,7 @@
 //  Description: type's convert about
 //****************************************************************************
 
-using SimpleLanguage.source;
+
 using System.Text;
 
 namespace SimpleLanguage.IR

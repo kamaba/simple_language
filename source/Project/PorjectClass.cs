@@ -13,7 +13,7 @@ using SimpleLanguage.IR;
 using System.Diagnostics;
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.source.Logging;
+using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.Project
 {
@@ -87,56 +87,76 @@ namespace SimpleLanguage.Project
             InnerCLRRuntimeVM.Init();
             InnerCLRRuntimeVM.RunIRMethod( null, irmethod);
         }
-        public static void AddDefineNamespace( MetaNode parentRoot, DefineStruct dns, bool isAddCurrent = true )
+        // Build MetaNode / MetaNamespace tree from StructTreeNode description.
+        // parentRoot: existing MetaNode root (通常是 ModuleManager.instance.selfModule.metaNode)
+        // node: StructTreeNode from ProjectConfig.StructTree (Root/Namespace/Class)
+        public static void AddDefineNamespace(MetaNode parentRoot, ProjectConfig.StructTreeNode node, bool isAddCurrent = true)
         {
-            if (parentRoot == null) return;
+            if (parentRoot == null || node == null)
+                return;
+
+            // Root 节点只作为逻辑起点，不对应具体 namespace/class，本身不创建 MetaNamespace/MetaClass。
+            if (node.Type == ProjectConfig.StructTreeNode.NodeType.Root)
+            {
+                for (int i = 0; i < node.Children.Count; i++)
+                {
+                    AddDefineNamespace(parentRoot, node.Children[i], true);
+                }
+                return;
+            }
 
             MetaNode parMS = null;
-            if ( dns != null )
+
+            if (node != null)
             {
-                MetaNamespace nodeNS = null;
                 if (isAddCurrent)
                 {
-                    var cfindNode = parentRoot.GetChildrenMetaNodeByName(dns.name);
+                    // 尝试在当前父节点下查找同名子节点
+                    var cfindNode = parentRoot.GetChildrenMetaNodeByName(node.Name);
                     if (cfindNode == null)
                     {
-                        if( dns.type == DefineStruct.EDefineStructType.Class )
+                        // 不存在同名节点，按 StructTreeNode 类型创建新的 MetaClass / MetaNamespace
+                        if (node.Type == ProjectConfig.StructTreeNode.NodeType.Class)
                         {
-                            var gcmc = CoreMetaClassManager.GetCoreMetaClass(dns.name);
-                            if( gcmc != null )
+                            // class: 先尝试从 CoreMetaClassManager 获取内置类，否则创建普通 StructDefine 类
+                            var gcmc = CoreMetaClassManager.GetCoreMetaClass(node.Name);
+                            if (gcmc != null)
                             {
                                 parMS = parentRoot.AddMetaClass(gcmc.GetMetaClassByTemplateCount(0));
                             }
                             else
                             {
-                                var nodens = new MetaClass(dns.name, EClassDefineType.StructDefine);
+                                var nodens = new MetaClass(node.Name, EClassDefineType.StructDefine);
                                 parMS = parentRoot.AddMetaClass(nodens);
-                            }                         
+                            }
                         }
                         else
                         {
-                            nodeNS = new MetaNamespace(dns.name);
-                            parMS = parentRoot.AddMetaNamespace(nodeNS);
+                            // namespace / 其它类型一律按命名空间处理
+                            var nodeNs = new MetaNamespace(node.Name);
+                            parMS = parentRoot.AddMetaNamespace(nodeNs);
                         }
                     }
                     else
                     {
-                        if (!(cfindNode.isMetaNamespace))
+                        // 已有同名子节点，要求其必须是命名空间节点
+                        if (!cfindNode.isMetaNamespace)
                         {
-                            Log.AddInStructMeta( EError.None, "Error 解析namespace添加命名空间节点时，发现已有定义类!!");
+                            Log.AddInStructMeta(EError.None, "Error 解析namespace添加命名空间节点时，发现已有定义类!!");
                             return;
                         }
-                        nodeNS = cfindNode.metaNamespace;
-                        parMS = parentRoot.AddMetaNamespace(nodeNS);
+                        // 复用已有命名空间节点
+                        parMS = parentRoot.AddMetaNamespace(cfindNode.metaNamespace);
                     }
                 }
                 else
                 {
                     parMS = parentRoot;
                 }
-                for( int i = 0; i < dns.childDefineStruct.Count; i++ )
+
+                for (int i = 0; i < node.Children.Count; i++)
                 {
-                    AddDefineNamespace(parMS, dns.childDefineStruct[i] );
+                    AddDefineNamespace(parMS, node.Children[i]);
                 }
             }
         }
@@ -144,19 +164,25 @@ namespace SimpleLanguage.Project
         {
             NamespaceManager.instance.metaNamespaceDict.Clear();
 
-            ProjectData data = ProjectManager.data;
-            AddDefineNamespace( ModuleManager.instance.selfModule.metaNode, data.namespaceRoot, false );
+            // 使用 TOML 基于的 ProjectConfig 填充编译文件列表
+            var cfg = ProjectManager.currentProject?.Config;
+            if (cfg == null)
+                return;
 
-            var fileList = data.compileFileData.compileFileDataUnitList;
-            var filter = data.compileFilterData;
+            AddDefineNamespace(ModuleManager.instance.selfModule.metaNode, cfg.StructTree, false);
 
+            var fileList = cfg.CompileFiles.Files;
+            var filter = cfg.CompileFilter;
+
+            System.Diagnostics.Debug.WriteLine($"[Project] compileFiles count in config = {fileList.Count}");
+ 
             for (int i = 0; i < fileList.Count; i++)
             {
                 var fld = fileList[i];
 
                 if (IsCanAddFile(filter, fld))
                 {
-                    ProjectCompile.AddFileParse(fld.path);
+                    ProjectCompile.AddFileParse(fld.Path);
                 }
             }
 
@@ -167,17 +193,28 @@ namespace SimpleLanguage.Project
             }
 
         }
-        public static bool IsCanAddFile(CompileFilterData cfd, CompileFileData.CompileFileDataUnit fileData )
+        public static bool IsCanAddFile(ProjectConfig.CompileFilterSection cfd, ProjectConfig.CompileFileItem fileData )
         {
             if (cfd == null) return true;
-            if (!cfd.IsIncludeInGroup(fileData.group))
+
+            // group 过滤
+            if (!cfd.IsAllGroup)
             {
-                return false;
+                if (cfd.Groups.Count > 0 && !cfd.Groups.Contains(fileData.Group))
+                    return false;
             }
-            if (!cfd.IsIncludeInTag(fileData.tag))
+
+            // tag 过滤
+            if (!cfd.IsAllTag)
             {
-                return false;
+                if (cfd.Tags.Count > 0 && !cfd.Tags.Contains(fileData.Tag))
+                    return false;
             }
+
+            // ignore 标志
+            if (fileData.Ignore)
+                return false;
+
             return true;
         }
         public static void ProjectCompileAfter()

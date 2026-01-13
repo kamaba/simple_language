@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "12_ArrayTest.sl";
+            path = "12_DynamicClassTest.sl";
             group = "temp";
             tag = "all";
             a = 200
@@ -77,9 +77,10 @@ Project
         #GenFunction.fun();
         #TypeTest.fun()
         #ClassAs_Is.fun()
-        ArrayTest.fun()
+        #ArrayTest.fun()
         #IfelseTest.fun()
         #ReloadSignTest.fun()
+        DynamicClassTest.fun()
     }
     static Test()
     {

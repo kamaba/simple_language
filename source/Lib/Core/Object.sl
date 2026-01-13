@@ -9,11 +9,12 @@ public class Core.Object
         }
         ret objA.equals(objB);
     }
+    #!
     public static bool refEquals(object objA, object objB)
     {
         ret objA.ref == objB.ref;
     }
-
+    !#
     void _init_()
     {
     }
@@ -25,22 +26,25 @@ public class Core.Object
     {
         ret SimpleLanguage.Lib.ObjectClass.EqualObject(this, obj);
     }
+    #!
     Object clone()
     {
         ret SimpleLanguage.Lib.ObjectClass.CloneObject(this);
-    }    
+    } 
     object get ref()
     {
         ret SimpleLanguage.Lib.ObjectClass.ObjectRef(this);
     }
+    !#   
     get object refWeak()
     {
         ret SimpleLanguage.Lib.ObjectClass.ObjectWeakRef(this);
     } 
-    get int refCount()
+    get Int32 refCount()
     {
         ret SimpleLanguage.Lib.ObjectClass.RefCount(this);
     }
+    #!
     free()
     {
 
@@ -53,8 +57,9 @@ public class Core.Object
     {
         ret this as T;
     }
+    !#
     string toString()
     {
-        ret ""
+        ret "Object"
     }
 }

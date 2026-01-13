@@ -1,8 +1,7 @@
 using System;
 using SimpleLanguage.Parse;
-using SimpleLanguage.source;
 
-namespace SimpleLanguage.source.Logging
+namespace SimpleLanguage.Logging
 {
     /// <summary>
     /// Represents a runtime diagnostic event created by the logging system.

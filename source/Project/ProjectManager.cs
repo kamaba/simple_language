@@ -9,6 +9,7 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.Project;
 using System.IO;
+using Tomlyn.Model;
 
 namespace SimpleLanguage.Parse
 {
@@ -31,7 +32,8 @@ namespace SimpleLanguage.Parse
     public class ProjectManager
     {
         public static string projectPath { get; set; } = "";
-        public static ProjectData data => m_Data;
+        public static ProjectConfig config => m_Config;
+        public static SimpleLanguage.Project.Project currentProject { get; set; }
         public static EUseDefineType useDefineNamespaceType { get; set; } = EUseDefineType.NoUseProjectConfigNamespace;
 
         public static bool useGenMetaClass { get; set; } = false;
@@ -41,7 +43,8 @@ namespace SimpleLanguage.Parse
         // 第一位是否只能使用this. base.的方式
         public static bool isFirstPosMustUseThisBaseOrStaticClassName { get; set; } = false;
 
-        static ProjectData m_Data = new ProjectData( "ProjectData", false );
+        // central project configuration (replaces legacy ProjectData for config-only usage)
+        static ProjectConfig m_Config = new ProjectConfig();
         public static string rootPath = "";
 
         public static bool isSupportConstructionFunctionOnlyBraceType = true;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
@@ -53,15 +56,24 @@ namespace SimpleLanguage.Parse
        
 
         public static MetaData globalData = new MetaData( "global", false, true, false );
-        public static void Run( string path, CommandInputArgs cinputArgs )
-        {
+         public static void Run( string path, CommandInputArgs cinputArgs )
+         {
             int index = path.LastIndexOf("\\");
             if (index != -1)
             {
                 rootPath = path.Substring(0, index);
             }
+            else
+            {
+                index = path.LastIndexOf("/");
+                if( index != -1 )
+                {
+                    rootPath = path.Substring(0, index);
+                }
+            }
 
-            ProjectCompile.Compile(path, m_Data);
+                // path 现在是 .sp 配置文件路径，ProjectCompile 会基于它加载 <ProjectName>.toml
+            ProjectCompile.Compile(path);
 
             if (!cinputArgs.isTest)
                 ProjectClass.RunMain();

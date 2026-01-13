@@ -9,7 +9,7 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Parse;
-using SimpleLanguage.source.Logging;
+using SimpleLanguage.Logging;
 using System.Collections.Generic;
 
 namespace SimpleLanguage.Core
@@ -116,13 +116,14 @@ namespace SimpleLanguage.Core
             {
                 parentNode = ModuleManager.instance.selfModule.metaNode;
             }
+            var fnode = parentNode;
             //fns.metaNamespaceList.Clear();
             for (int i = 0; i < fns.namespaceStatementBlock.tokenList.Count; i++)
             {
                 string name = fns.namespaceStatementBlock.tokenList[i].lexeme.ToString();
-                parentNode = parentNode.GetChildrenMetaNodeByName(name);
+                fnode = parentNode.GetChildrenMetaNodeByName(name);
                 bool isCreate = true;
-                if (parentNode != null)
+                if (fnode != null)
                 {
                     if (parentNode.metaNamespace == null)
                     {
@@ -132,6 +133,7 @@ namespace SimpleLanguage.Core
                     {
                         isCreate = false;
                     }
+                    parentNode = fnode;
                 }
                 else
                 {
@@ -140,7 +142,7 @@ namespace SimpleLanguage.Core
                 if( isCreate )
                 {
                     var mn = new MetaNamespace(name);
-                    if (ProjectManager.useDefineNamespaceType != EUseDefineType.NoUseProjectConfigNamespace)
+                    if (ProjectManager.useDefineNamespaceType != EUseDefineType.LimitUseProjectConfigNamespaceAndClass )
                     {
                         mn.isNotAllowCreateName = true;
                         Log.AddInStructMeta(EError.None, "Error 在使用namespace 时，在项目定义中，没有找到相关的定义!!  位置:" + fns.namespaceStatementBlock.tokenList[i].ToLexemeAllString());

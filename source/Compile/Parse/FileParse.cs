@@ -9,7 +9,7 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
 using SimpleLanguage.Parse;
-using SimpleLanguage.source.Logging;
+using SimpleLanguage.Logging;
 using System;
 using System.IO;
 
@@ -28,8 +28,10 @@ namespace SimpleLanguage.Compile
 
     }
     public class FileParse
-    {
-        LexerParse lexerParse;
+	{
+		public FileMeta file => m_File;
+
+		LexerParse lexerParse;
         TokenParse tokenParse;
         StructParse structBuild;
         private FileMeta m_File = null;

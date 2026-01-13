@@ -494,7 +494,7 @@ ArrayTest
         #!
         strarr = string[]{"abbc", "cccc", "a100"}
         testArray(strarr)
-        !#
+        
 
         #a44 = Level<int>[10]
         Level<int>[] a44 = new(15) { Level<int>(200) }
@@ -510,10 +510,12 @@ ArrayTest
         }
         
         testArray(a44)
-        
+        !#
 
         
-        #object[][] a42 = { {1.2,1.3,1.4,1.5},{3,4,5} };    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于  
+        object[][] a42 = { [1.2,1.3,1.4,1.5],[3,4,5] };    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于  
+        
+        testArray(a42)
         #Array( 2, Array.type ){ Array(5, float.type ){ 1.2, 1.3, 1.4, 1.5 }, Array( 3, int.tye ){3,4,5}   } 
         #!
         a2 = Array<int>(5){1,2,3,4,5.0f};   #默认int List 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  先申请 int 长度为5的数组，然后把后边的数据进行填存，但这时
@@ -525,11 +527,9 @@ ArrayTest
         a[1][1][1] = 12    #这种情况，需要拿到 先拿第一维的数组，然后再拿第一维中第一组，
         ArrClass[][] arrclass1 = new(10,10);
         arrClass2 = ArrClass[10][10][];
-        avalue222 = a[1][1][1]
-             
+        avalue222 = a[1][1][1]             
         
-        var a4 = {1.2,1.3,1.5};    #如果使用{}的形式，必须在前边声明类型，才可以使用 通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于 Array( 3, float.type ){ 1.2, 1.3, 1.5};
-        
+        var a4 = {1.2,1.3,1.5};    #如果使用{}的形式，必须在前边声明类型，才可以使用 通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于 Array( 3, float.type ){ 1.2, 1.3, 1.5};  
         a5 = object[]{"aa", 1, "232", 1.0f };  # 相当于Array( 5, object.type)( "aa", 1, "232", 1.0f, XC() );
         
         # c# 的方法  List<ArrClass2> arr2 = new ArrClass2[100]; 这里边使用的是 arr2 = ArrClass2[100];

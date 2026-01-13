@@ -13,7 +13,7 @@
 //****************************************************************************
 
 using SimpleLanguage.IR;
-using SimpleLanguage.source.Logging;
+using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

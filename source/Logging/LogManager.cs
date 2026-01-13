@@ -3,9 +3,8 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
 using SimpleLanguage.Parse;
-using SimpleLanguage.source;
 
-namespace SimpleLanguage.source.Logging
+namespace SimpleLanguage.Logging
 {
     /// <summary>
     /// Central access point for per-module loggers and initialization.
