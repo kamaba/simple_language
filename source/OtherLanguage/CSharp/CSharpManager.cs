@@ -124,7 +124,10 @@ namespace SimpleLanguage.CSharp
                 {
                     frontName = mb.GetAllName();
 
-                    frontName = frontName.Remove(0, 7);
+                    if( frontName.Substring(0, 7 ) == "CSharp." )
+                    {
+                        frontName = frontName.Remove(0, 7);
+                    }
                 }
             }
             MetaNode getmb = FindCSharpClassOrNameSpace(frontName, name, out bool isAdd );

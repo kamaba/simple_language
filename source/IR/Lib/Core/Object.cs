@@ -31,10 +31,28 @@ namespace SimpleLanguage.Lib
         {
             return obj.hashCode;
         }
-        public static int GetHashCodeBySObject( System.Object obj)
+        public static int GetHashCodeBySObject(System.Object obj)
         {
             SObject sobj = obj as SObject;
             return sobj.id;
+        }
+        public static int RefCount(System.Object obj)
+        {
+            SObject sobj = obj as SObject;
+            return sobj.refCount;
+        }
+        public static SObject ObjectWeakRef(System.Object obj)
+        {
+            //SObject sobj = obj as SObject;
+            //return sobj;
+            return null;
+        }
+        public static bool EqualObject( System.Object obj1, System.Object obj2 )
+        {
+            SObject sobj1 = obj1 as SObject;
+            SObject sobj2 = obj2 as SObject;
+
+            return sobj1 == sobj2;
         }
     }
 }

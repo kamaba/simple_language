@@ -166,7 +166,6 @@ namespace SimpleLanguage.Core
             {
                 return null;
             }
-
             if( root == null )
             {
                 root = ModuleManager.instance.selfModule.metaNode;

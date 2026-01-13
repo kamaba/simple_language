@@ -71,13 +71,18 @@ namespace SimpleLanguage.Project
         }
         public static void RunMain()
         {
-            MetaClass projectEntoer = ClassManager.instance.GetClassByName("S.Project", 0);
-            if (projectEntoer == null)
+            MetaClass projectEnter = ClassManager.instance.GetClassByName("S.Project", 0);
+            if (projectEnter == null)
             {
-                Debug.Write("Error 没有找到Project!!");
-                return;
+                projectEnter = ClassManager.instance.GetClassByName("Core.Project", 0);
+
+                if( projectEnter == null )
+                {
+                    Debug.Write("Error 没有找到Project!!");
+                    return;
+                }
             }
-            MetaMemberFunction mmf = projectEntoer.GetFirstMetaMemberFunctionByName("Main");
+            MetaMemberFunction mmf = projectEnter.GetFirstMetaMemberFunctionByName("Main");
             if (mmf == null)
             {
                 Debug.Write("Error 没有找到Project.Main函数!!");

@@ -28,6 +28,20 @@ ignore   = false
 priority = 0
 
 [[compileFiles.files]]
+path     = "Int32.sl"
+group    = "core"
+tag      = "ir"
+ignore   = false
+priority = 0
+
+[[compileFiles.files]]
+path     = "String.sl"
+group    = "core"
+tag      = "ir"
+ignore   = false
+priority = 0
+
+[[compileFiles.files]]
 path     = "Test/ObjectTest.sl"
 group    = "core"
 tag      = "ir"

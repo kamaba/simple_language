@@ -33,11 +33,25 @@ namespace SimpleLanguage.Lib
             //    return obj.ToString();
             //}
             //Int32Object sobj = obj as Int32Object;
-            if(sobj != null )
+            if (sobj != null)
             {
                 return sobj.value.ToString();
             }
             return "object is not int32";
+        }
+        public static string Int32ToString( int sobj)
+        {
+            return sobj.ToString();
+            //if( obj.GetType() == typeof(System.Int32) )
+            //{
+            //    return obj.ToString();
+            //}
+            //Int32Object sobj = obj as Int32Object;
+            //if (sobj != null)
+            //{
+            //    return sobj.value.ToString();
+            //}
+            //return "object is not int32";
         }
     }
 }

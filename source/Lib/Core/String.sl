@@ -1,8 +1,9 @@
+import CSharp.SimpleLanguage.Core
 
-public class Core.String extends Object
+public class String extends Object
 {
     private String _value = null
-
+    #!
     _init_( Int8 aa )
     {
         this._value = aa.toString()
@@ -11,14 +12,12 @@ public class Core.String extends Object
     {
         this._value = aa.toString()
     }
+    !#
     _init_( String aa )
     {
         this._value = aa
     }
-    String toString()
-    {
-        ret this;
-    }
+    #!
     Int32 toInt32()
     {
         if( Int32.tryInt32( this._value, Int32 int32val ) )
@@ -43,10 +42,14 @@ public class Core.String extends Object
     {
         ret 0
     }
-
     static Int32 StringtoInt32( String value )
     {
         ret Int32.Parse( value );
+    }
+    !#    
+    String toString()
+    {
+        ret this;
     }
     public static string toFormat( string _fomrat, parmas object[] para )
     {

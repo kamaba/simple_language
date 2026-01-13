@@ -217,6 +217,10 @@ namespace SimpleLanguage.Core
         {
             bool isCanAddBind = false;
             MetaNode finalTopMetaNode = ModuleManager.instance.selfModule.metaNode;
+            if( ProjectManager.currentProject?.Config?.Project?.Name == "Core" )
+            {                
+                finalTopMetaNode = ModuleManager.instance.coreModule.metaNode;
+            }
             FileMetaClass topLevelClass = fmc.topLevelFileMetaClass;
             if ( topLevelClass != null )
             {                

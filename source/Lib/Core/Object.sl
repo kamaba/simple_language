@@ -1,5 +1,6 @@
+import CSharp.SimpleLanguage.Core
 
-public class Core.Object
+public class Object
 {    
     public static bool objectEquals(object objA, object objB)
     {
@@ -34,12 +35,12 @@ public class Core.Object
     object get ref()
     {
         ret SimpleLanguage.Lib.ObjectClass.ObjectRef(this);
-    }
-    !#   
+    }  
     get object refWeak()
     {
         ret SimpleLanguage.Lib.ObjectClass.ObjectWeakRef(this);
     } 
+    !# 
     get Int32 refCount()
     {
         ret SimpleLanguage.Lib.ObjectClass.RefCount(this);

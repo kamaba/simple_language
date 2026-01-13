@@ -83,7 +83,7 @@ namespace SimpleLanguage.Project
 
                 m_ProjectFile = fp.file;
 
-                fileParseList.Add(fp);
+                //fileParseList.Add(fp);
             }
         }
 

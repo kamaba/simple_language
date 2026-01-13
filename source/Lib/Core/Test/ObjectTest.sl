@@ -13,9 +13,9 @@ ObjectTest
         bool obj_eq_obj2 = obj == obj2
         bool eq2 = obj.equals( obj2 )
         eq3 = Object.objectEquals( obj3, obj4 )
-        objweak = obj3.refWeak;
+        #objweak = obj3.refWeak;
         int refc = obj3.refCount
 
-        System.Console.WriteLine("Object= " + objwaek + "ref:" + refc )
+        System.Console.WriteLine("Object= ref:" + refc.toString() )
     }
 }

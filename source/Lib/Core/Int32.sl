@@ -1,11 +1,12 @@
+import CSharp.SimpleLanguage.Core
 import CSharp.SimpleLanguage
 
-Core.Int32 extends Object
+export class Int32 extends Object
 {
     const int MaxValue = 0x7fffffff;
     const int MinValue = 0x80000000;
 
-    _value = 0i;
+    Int32 _value = 0i;
     
     static String Int32ToString( Int32 value )
     {
@@ -15,16 +16,11 @@ Core.Int32 extends Object
     {
         ret 0
     }
-
-    _init_()
-    {
-        this._value = 0i;
-    }
     _init_( Int32 _val )
     {
         this._value = _val
-        SimpleLanguage.Lib.Int32Class.SetInt32Value( this, _val )
     }
+    #!
     _init_( Float32 f )
     {
         this._value = f.toInt32()
@@ -41,15 +37,16 @@ Core.Int32 extends Object
     {
         ret null
     }
-    public int compareTo(object value)
+    !#
+    public int compareTo(Int32 value)
     {
         if (value == null)
         {
             ret 1;
         }
-
         ret 0
     }
+    #!
     Int8 toInt8()
     {
         ret 0
@@ -78,8 +75,9 @@ Core.Int32 extends Object
     {
         ret 0
     }
+    !#
     override String toString()
     {
-        ret SimpleLanguage.Lib.Int32Class.ConvertToString( this )
+        ret SimpleLanguage.Lib.Int32Class.Int32ToString( this )
     }
 }
