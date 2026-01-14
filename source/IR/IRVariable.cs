@@ -46,7 +46,7 @@ namespace SimpleLanguage.IR
                     }
                     index = irmc.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode());
                 }
-                if ( mv.isStatic )
+                if ( mv.isStatic || mv.isConst )
                 {
                     if (mv.realMetaType.GenTemplateIsIncludeTemplate())
                     {

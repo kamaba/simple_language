@@ -2,7 +2,8 @@ Project
 {
     static Main()
     {
-        ObjectTest.fun()
+        #ObjectTest.fun()
+        NumberTest.fun()
     }
     static Test()
     {

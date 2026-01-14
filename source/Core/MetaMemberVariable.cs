@@ -414,10 +414,13 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                if (expressRetMetaDefineType.metaClass == ownerMetaClass && (!m_IsStatic && !m_IsConst) )
+                                if (!ClassManager.IsNumberClass(expressRetMetaDefineType.metaClass))
                                 {
-                                    Log.AddInStructMeta(EError.None, "Error 自己类内部不允许包含 自己的实体2，必须赋值为null");
-                                    return;
+                                    if (expressRetMetaDefineType.metaClass == ownerMetaClass && (!m_IsStatic && !m_IsConst))
+                                    {
+                                        Log.AddInStructMeta(EError.None, "Error 自己类内部不允许包含 自己的实体2，必须赋值为null");
+                                        return;
+                                    }
                                 }
                             }
                             SetRealMetaType(expressRetMetaDefineType);

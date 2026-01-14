@@ -97,7 +97,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Int32:
                     {
-                        int svalInt = (int)svalue.GetValueObject();
+                        int svalInt = int.Parse(svalue.GetValueObject().ToString());
                         if (sign == 0)
                             int32Value += svalInt;
                         else if (sign == 1)

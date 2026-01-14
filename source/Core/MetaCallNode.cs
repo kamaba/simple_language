@@ -660,7 +660,7 @@ namespace SimpleLanguage.Core
                             {
                                 if (!mmf.isStatic)
                                 {
-                                    Log.AddInStructMeta(EError.None, "Error 调用非静态成员，不能使用Class.Variable的方式!");
+                                    Log.AddInStructMeta(EError.None, "Error 调用非静态成员函数，不能使用Class.Variable的方式!");
                                     return false;
                                 }
                                 if (mmf.isConstructInitFunction && !m_AllowUseSettings.callConstructFunction)
@@ -677,9 +677,9 @@ namespace SimpleLanguage.Core
                             }                           
                             if ( m_MetaVariable is MetaMemberVariable mmv )
                             {
-                                if (!mmv.isStatic)
+                                if (!mmv.isStatic && !mmv.isConst )
                                 {
-                                    Log.AddInStructMeta(EError.None, "Error 调用非静态成员，不能使用Class.Variable的方式!");
+                                    Log.AddInStructMeta(EError.None, "Error 调用非静态成员变量，不能使用Class.Variable的方式!");
                                     return false;
                                 }
                                 if( m_FrontCallNode != null )

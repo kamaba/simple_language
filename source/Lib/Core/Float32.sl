@@ -3,7 +3,7 @@ import CSharp.SimpleLanguage
 
 public class Float32 extends Object
 {
-    public const Float32 Epsilen1 = 4.9123213f;
+    public const Float32 Epsilen = 4.9123213f;
     public const Float32 MaxValue = 20f;
     public const Float32 MinValue = -1f;
 
@@ -13,10 +13,9 @@ public class Float32 extends Object
     {
         this._value = f
     }
-
     public static bool isFinite( Float32 f )
     {
-        return false;
+        ret false;
     }
     #!
     public override String toString( string format )
