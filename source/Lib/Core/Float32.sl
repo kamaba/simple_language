@@ -1,9 +1,11 @@
+import CSharp.SimpleLanguage.Core
+import CSharp.SimpleLanguage
 
-public class Core.Float32 extends Object
+public class Float32 extends Object
 {
-    public const Epsilen = 4.9123123213d;
-    public const MaxValue = 20d;
-    public const MinValue = -1d;
+    public const Float32 Epsilen1 = 4.9123213f;
+    public const Float32 MaxValue = 20f;
+    public const Float32 MinValue = -1f;
 
     Float32 _value = 0.0f
 
@@ -16,35 +18,10 @@ public class Core.Float32 extends Object
     {
         return false;
     }
-
+    #!
     public override String toString( string format )
     {
-        return string.format( this._value );
+        return string.format( format, this._value );
     }
-    T cast<T>()
-    {
-        Type _type = T.type
-        if _type == Int32.type
-        {
-            return Int32.ParseFloat( value );
-        }
-        elif _type == Int64.type
-        {
-            return Int64.ParseFloat( value );
-        }
-        elif _type == String.type
-        {
-            return String.ParseFloat( value );
-        }
-        return new T()
-    }
-
-    public Int32 toInt32()
-    {
-        ret SimpleLanguage.Lib.Float32.FloatConvertInt32( this._value )
-    }
-    public static Int32 FloatConvertInt32( Float _value )
-    {
-        return Int32.Parse( _value );
-    }
+    !#
 }

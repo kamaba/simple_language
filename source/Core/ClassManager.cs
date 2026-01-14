@@ -579,13 +579,14 @@ namespace SimpleLanguage.Core
         {
             if (curClass == CoreMetaClassManager.byteMetaClass
                 || curClass == CoreMetaClassManager.sbyteMetaClass
-                //|| curClass == CoreMetaClassManager.charMetaClass
                 || curClass == CoreMetaClassManager.int16MetaClass
                 || curClass == CoreMetaClassManager.uint16MetaClass
                 || curClass == CoreMetaClassManager.int32MetaClass
                 || curClass == CoreMetaClassManager.uint32MetaClass
                 || curClass == CoreMetaClassManager.int64MetaClass
-                || curClass == CoreMetaClassManager.uint64MetaClass)
+                || curClass == CoreMetaClassManager.uint64MetaClass
+                || curClass == CoreMetaClassManager.float32MetaClass
+                || curClass == CoreMetaClassManager.float64MetaClass )
             {
                 return true;
             }

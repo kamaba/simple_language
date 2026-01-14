@@ -1,56 +1,25 @@
 
-@Nickname("f64") 
-@Nickname("Vector64_3")
-public class Core.Float64 extends Object
+
+public class Float64 extends Object
 {
     public const Epsilen = 4.9123123213d;
     public const MaxValue = 20d;
     public const MinValue = -1d;
 
-    Float32 _value = 0.0f
+    Float64 _value = 0.0d
 
-    public void _init_( Float32 f )
+    public void _init_( Float64 f )
     {
         this._value = f
     }
-
-
-    public static bool IsFinite( Float32 f )
+    public static bool IsFinite( Float64 f )
     {
-        return false;
-    }
-
-
-    public override String toString( string format )
-    {
-        return string.format( this._value );
+        ret false;
     }
     #!
-    T cast<T>()
+    public override String toString( string format )
     {
-        Type _type = T.type
-        if _type == Int32.type
-        {
-            return Int32.ParseFloat( value );
-        }
-        elif _type == Int64.type
-        {
-            return Int64.ParseFloat( value );
-        }
-        elif _type == String.type
-        {
-            return String.ParseFloat( value );
-        }
-        return new T()
+        ret string.format( this._value );
     }
     !#
-
-    public Int32 toInt32()
-    {
-        ret FloatConvertInt32( this._value )
-    }
-    public static Int32 FloatConvertInt32( Float _value )
-    {
-        return Int32.Parse( _value );
-    }
 }

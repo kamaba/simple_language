@@ -314,7 +314,7 @@ namespace SimpleLanguage.Core
         }
         public bool GenTemplateIsIncludeTemplate()
         {
-            Debug.Assert(false, "");
+            //Debug.Assert(false, "");
             for (int i = 0; i < m_DefineTemplateMetaTypeList.Count; i++)
             {
                 var tmt = m_DefineTemplateMetaTypeList[i];

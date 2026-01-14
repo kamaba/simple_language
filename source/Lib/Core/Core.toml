@@ -34,8 +34,32 @@ tag      = "ir"
 ignore   = false
 priority = 0
 
+
+[[compileFiles.files]]
+path     = "Byte.sl"
+group    = "core"
+tag      = "ir"
+ignore   = false
+priority = 0
+
+
 [[compileFiles.files]]
 path     = "Int32.sl"
+group    = "core"
+tag      = "ir"
+ignore   = false
+priority = 0
+
+
+[[compileFiles.files]]
+path     = "Float32.sl"
+group    = "core"
+tag      = "ir"
+ignore   = false
+priority = 0
+
+[[compileFiles.files]]
+path     = "Float64.sl"
 group    = "core"
 tag      = "ir"
 ignore   = false

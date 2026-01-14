@@ -90,6 +90,7 @@ namespace SimpleLanguage.Core
             m_FromType = EFromType.Code;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             m_IsStatic = m_FileMetaMemeberVariable?.staticToken != null;
+            m_IsConst = m_FileMetaMemeberVariable?.constToken != null;
             m_VariableFrom = EVariableFrom.Member;
 
             if( string.IsNullOrEmpty( m_Name ) )
@@ -332,12 +333,15 @@ namespace SimpleLanguage.Core
                     if (isCheckReturnType)
                     {
                         var dmct = m_Express.GetReturnMetaDefineType();
-                        if (dmct != null)
+                        if ( dmct != null)
                         {
-                            if( dmct.metaClass == ownerMetaClass )
+                            if( !ClassManager.IsNumberClass(dmct.metaClass) )
                             {
-                                Log.AddInStructMeta(EError.None, "Error 自己类内部不允许包含 自己的实体，必须赋值为null");
-                                return;
+                                if (dmct.metaClass == ownerMetaClass)
+                                {
+                                    Log.AddInStructMeta(EError.None, "Error 自己类内部不允许包含 自己的实体，必须赋值为null");
+                                    return;
+                                }
                             }
                             m_RealMetaType = dmct;
                             if( !m_IsDefineMetaType )
@@ -410,7 +414,7 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                if (expressRetMetaDefineType.metaClass == ownerMetaClass && !m_IsStatic)
+                                if (expressRetMetaDefineType.metaClass == ownerMetaClass && (!m_IsStatic && !m_IsConst) )
                                 {
                                     Log.AddInStructMeta(EError.None, "Error 自己类内部不允许包含 自己的实体2，必须赋值为null");
                                     return;

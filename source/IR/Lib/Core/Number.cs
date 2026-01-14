@@ -10,9 +10,12 @@ using SimpleLanguage.VM;
 
 namespace SimpleLanguage.Lib
 {
-    public class ByteObjectData : BaseObjectData
+    public static class ByteClass
     {
-
+        public static string ByteToString(byte sobj)
+        {
+            return sobj.ToString();
+        }        
     }
     public static class Int8Object
     {

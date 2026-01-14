@@ -54,6 +54,7 @@ namespace SimpleLanguage.VM
             m_AnyType = vmType;
             m_IsNull = false;
             value = val;
+            refCount++;
         }
         public virtual void SetNull()
         {
