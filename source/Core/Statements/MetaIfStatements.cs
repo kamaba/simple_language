@@ -11,6 +11,7 @@ using SimpleLanguage.Compile;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -39,10 +40,22 @@ namespace SimpleLanguage.Core
             private MetaExpressNode m_Express = null;
             private MetaExpressNode m_FinalExpress = null;
             private MetaBlockStatements m_ThenMetaStatements = null;
+            private MetaExpressNode m_ExecuteExpress = null;
             private MetaAssignManager m_MetaAssignManager = null;
             private IfElseState m_IfElseState = IfElseState.Null;
 
             public int deep { get; private set; } = 0;
+
+            public MetaElseIfStatements(MetaBlockStatements mbs, MetaExpressNode conditionExpress, MetaExpressNode return1Express)
+            {
+                m_Express = conditionExpress;
+
+                m_ExecuteExpress = return1Express;
+            }
+            public MetaElseIfStatements(MetaBlockStatements mbs, MetaExpressNode return1Express )
+            {
+                m_ExecuteExpress = return1Express;
+            }
             public MetaElseIfStatements( MetaBlockStatements mbs, FileMetaConditionExpressSyntax ifexpress, MetaExpressNode conditionExpress )
             {
                 m_IfOrElseIfKeySyntax = ifexpress;

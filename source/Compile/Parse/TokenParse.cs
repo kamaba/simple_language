@@ -379,12 +379,18 @@ namespace SimpleLanguage.Compile
                     break;
                 case ETokenType.QuestionMark: //?
                     {
-                        AddKeyNode(token);
+                        Node node = new Node(token);
+                        node.nodeType = ENodeType.QuestionMark;
+                        currentNode.AddChild(node);
+                        m_TokenIndex++;
                     }
                     break;
                 case ETokenType.Colon:       //:
                     {
-                        AddKeyNode(token);
+                        Node node = new Node(token);
+                        node.nodeType = ENodeType.Colon;
+                        currentNode.AddChild(node);
+                        m_TokenIndex++;
                     }
                     break;
                 case ETokenType.SemiColon:      //;

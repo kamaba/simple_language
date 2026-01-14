@@ -42,6 +42,8 @@ namespace SimpleLanguage.Compile
         Symbol,
         Period,
         Comma,
+        QuestionMark,
+        Colon,
         SemiColon,
         LineEnd,
         Assign,

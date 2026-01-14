@@ -8,6 +8,7 @@
 
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Logging;
 
@@ -28,6 +29,7 @@ namespace SimpleLanguage.Compile
         public FileMetaClassDefine classDefineRef => m_ClassDefineRef;
         public Token permissionToken => m_PermissionToken;
         public Token staticToken => m_StaticToken;
+        public Token constToken => m_ConstToken;
         public Token nameToken => m_Token;
         public FileMetaBaseTerm express => m_Express;
         public Token assignToken => m_AssignToken;
@@ -35,7 +37,9 @@ namespace SimpleLanguage.Compile
         private FileMetaClassDefine m_ClassDefineRef;
         private Token m_AssignToken = null;
         private Token m_PermissionToken = null;
-        private Token m_StaticToken = null;        
+        private Token m_StaticToken = null;
+        private Token m_ConstToken = null;
+        private Token m_MutToken = null;
         private FileMetaBaseTerm m_Express;
         public List<FileMetaMemberVariable> fileMetaMemberVariable => m_FileMetaMemberVariableList;
         //public FileMetaConstValueTerm fileMetaConstValue => m_FileMetaConstValue;
@@ -137,30 +141,22 @@ namespace SimpleLanguage.Compile
             //var defineNodeList = StructParse.HandleBeforeNode(beforeNode);
             var defineNodeList = StructParse.HandleNodeSingleLine(bedoreNodeList);
 
-            Node nameNode = null;
             Node typeNode = null;
-            Node mutNode = null;
-            if (!GetNameAndTypeToken(defineNodeList, ref typeNode, ref mutNode, ref nameNode, ref m_PermissionToken, ref m_StaticToken))
+            if (!GetNameAndTypeToken(defineNodeList, out typeNode ))
             {
                 Log.AddInStructFileMeta(EError.None, "Error 没有找到该定义名称 必须使用例: X = 103; 的格式");
                 return false;
             }
 
-            if (nameNode == null)
+            if( m_Token == null )
             {
-                Log.AddInStructFileMeta(EError.None, "Error 没有找到该定义名称 必须使用例: X = 104; 的格式");
+                Debug.Assert(false);
                 return false;
             }
-            if (nameNode.extendLinkNodeList.Count > 0)
-            {
-                Log.AddInStructFileMeta(EError.None, "Error 没有找到该定义名称 必须使用例: X = 105; 的格式");
-                return false;
-            }
-            m_Token = nameNode.token;
 
             if (typeNode != null)
             {
-                m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, typeNode, mutNode );
+                m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, typeNode );
                 m_MemberDataType = EMemberDataType.ConstVariable;
             }
 
@@ -389,9 +385,10 @@ namespace SimpleLanguage.Compile
             //    Debug.WriteLine("Error 不允许=号后边没值!!");
             //}
         }
-        public bool GetNameAndTypeToken(List<Node> defineNodeList, ref Node typeNode, ref Node mutNode, ref Node nameNode, ref Token permissionToken, ref Token staticToken)
+        bool GetNameAndTypeToken(List<Node> defineNodeList, out Node typeNode )
         {
             bool isError = false;
+            typeNode = null;
 
             List<Node> nodeList = new List<Node>();
             for (int i = 0; i < defineNodeList.Count; i++)
@@ -410,21 +407,30 @@ namespace SimpleLanguage.Compile
                         || token.type == ETokenType.Extern
                         || token.type == ETokenType.Private)
                     {
-                        if (permissionToken != null)
+                        if (m_PermissionToken != null)
                         {
                             isError = true;
                             Log.AddInStructFileMeta(EError.None, "Error 多重定义名称的权限定义!!");
                         }
-                        permissionToken = token;
+                        m_PermissionToken = token;
                     }
                     else if (token.type == ETokenType.Static)
                     {
-                        if (staticToken != null)
+                        if (m_StaticToken != null)
                         {
                             isError = true;
                             Log.AddInStructFileMeta(EError.None, "Error 多重定义名称的静态定义!!");
                         }
-                        staticToken = token;
+                        m_StaticToken = token;
+                    }
+                    else if (token.type == ETokenType.Const )
+                    {
+                        if (m_ConstToken != null)
+                        {
+                            isError = true;
+                            Log.AddInStructFileMeta(EError.None, "Error 多重定义const定义!!");
+                        }
+                        m_ConstToken = token;
                     }
                     else if( token.type == ETokenType.Type )
                     {
@@ -432,15 +438,16 @@ namespace SimpleLanguage.Compile
                     }
                     else if( token.type == ETokenType.Mut )
                     {
-                        if (mutNode != null)
+                        if (m_MutToken != null)
                         {
                             isError = true;
                             Log.AddInStructFileMeta(EError.None, "Error 多重定义名称的Mut定义!!");
                         }
-                        mutNode = cnode;
+                        m_MutToken = token;
                     }
                     else
                     {
+                        Debug.Assert(false);
                         Log.AddInStructFileMeta(EError.None, "Error 解析变量中，不允许的类型存在!!" + token.ToLexemeAllString() );
                     }
                 }
@@ -448,12 +455,12 @@ namespace SimpleLanguage.Compile
 
             if (nodeList.Count == 1)
             {
-                nameNode = nodeList[0];
+                m_Token = nodeList[0].token;
             }
             else if (nodeList.Count == 2)
             {
                 typeNode = nodeList[0];
-                nameNode = nodeList[1];
+                m_Token = nodeList[1].token;
             }
 
             return !isError;

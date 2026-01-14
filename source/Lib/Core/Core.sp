@@ -7,7 +7,7 @@ Project
     static Test()
     {
        #TempTest.Fun();
-    }    
+    }
     CompileBefore()
     {        
     }

@@ -548,7 +548,7 @@ namespace SimpleLanguage.Compile
                 var pst = rootPST[i];
                 Node nameNode = pst.nameNode;
                 pst.GenFileInputTemplateNode(nameNode, m_FileMeta);
-                FileMetaClassDefine fmcd = new FileMetaClassDefine(m_FileMeta, pst.nameNode, null );
+                FileMetaClassDefine fmcd = new FileMetaClassDefine(m_FileMeta, pst.nameNode );
                 fcdList.Add(fmcd);
             }
 

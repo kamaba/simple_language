@@ -11,6 +11,6 @@ public class Boolean extends Object
     }
     override string toString()
     {
-        ret "True" ? this._value : "False"
+        ret this._value ? "True" : "False"
     }
 }

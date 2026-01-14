@@ -233,7 +233,7 @@ namespace SimpleLanguage.Core
         {
             if( m_ChildrenMetaNodeDict.ContainsKey( mn.name ) )
             {
-                Log.AddInStructMeta(EError.None, "添加 add metanode metanode节点有问题! 有重复");
+                Log.AddInStructMeta(EError.None, $"Parent:{this.GetAllName()} Current:{ mn.name } 添加 add metanode metanode节点有问题! 有重复");
                 return false;
             }
             mn.m_ParentNode = this;

@@ -51,7 +51,7 @@ public class String extends Object
     {
         ret this;
     }
-    public static string toFormat( string _fomrat, parmas object[] para )
+    public static string toFormat( string _fomrat, params object[] para )
     {
         ret ""
     }

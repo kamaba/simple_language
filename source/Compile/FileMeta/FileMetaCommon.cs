@@ -536,19 +536,17 @@ namespace SimpleLanguage.Compile
         private Token m_ClassNameToken = null;
         private Token m_AngleTokenBegin = null;
         private Token m_AngleTokenEnd = null;
-        private Token m_MutToken = null;
         private List<FileInputTemplateNode> m_InputTemplateNodeList = new List<FileInputTemplateNode>();
         private List<FileMetaBracketTerm> m_FileMetaBracketTermList = new List<FileMetaBracketTerm>();
         private List<int> m_ArrayDimsionLengthList = new List<int>();
 
         private List<Token> m_TokenList = new List<Token>();
         private bool m_IsInputTemplateData = false;
-        public FileMetaClassDefine( FileMeta fm, Node node, Node mutNode = null )
+        public FileMetaClassDefine( FileMeta fm, Node node )
         {
             m_FileMeta = fm;
             m_TokenList = node.linkTokenList;
             m_ClassNameToken = m_TokenList[m_TokenList.Count - 1];
-            m_MutToken = mutNode?.token;
 
             if ( node.angleNode != null )
             {

@@ -7,6 +7,7 @@
 //****************************************************************************
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 using SimpleLanguage.Logging;
@@ -66,7 +67,21 @@ namespace SimpleLanguage.Compile
             m_FileMeta = fm;
             m_Token = _ifToken;
 
-            m_ConditionExpress = _condition;
+            if( _condition is FileMetaParTerm fmpt )
+            {
+                if( fmpt.fileMetaExpressList.Count == 1 )
+                {
+                    m_ConditionExpress = fmpt.fileMetaExpressList[0];
+                }
+                else
+                {
+                    Debug.Assert(false, "");
+                }
+            }
+            else
+            {
+                m_ConditionExpress = _condition;
+            }
             m_ExecuteBlockSyntax = _executeBlockSyntax;
         }
 
@@ -820,13 +835,13 @@ namespace SimpleLanguage.Compile
 
         private FileMetaBaseTerm m_ReturnExpress = null;
 
-        public static FileMetaKeyReturnSyntax ParseIfSyntax(FileMeta fm, StructParse.SyntaxNodeStruct akss)
-        {           
-            var cnode = akss.keyNode;
-            FileMetaBaseTerm conditionExpress = FileMetatUtil.CreateFileMetaExpress(fm, akss.keyContent, FileMetaTermExpress.EExpressType.Common);
-            var fms = new FileMetaKeyReturnSyntax(fm, cnode.token, conditionExpress);
-            return fms;
-        }
+        //public static FileMetaKeyReturnSyntax ParseIfSyntax(FileMeta fm, StructParse.SyntaxNodeStruct akss)
+        //{           
+        //    var cnode = akss.keyNode;
+        //    FileMetaBaseTerm conditionExpress = FileMetatUtil.CreateFileMetaExpress(fm, akss.keyContent, FileMetaTermExpress.EExpressType.Common);
+        //    var fms = new FileMetaKeyReturnSyntax(fm, cnode.token, conditionExpress);
+        //    return fms;
+        //}
         public FileMetaKeyReturnSyntax(FileMeta fm, Token _token, FileMetaBaseTerm _express )
         {
             m_FileMeta = fm;

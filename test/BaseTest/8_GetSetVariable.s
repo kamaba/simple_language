@@ -43,6 +43,8 @@ GetSetClass
             }
         }
     }
+    int bvalue = 100 { get;set; }
+    int get bvalue = 100 { set( int _v ){ this._bvalue = _v } }
     !#
 }
 GetClass2{

@@ -417,7 +417,7 @@ namespace SimpleLanguage.IR
             {
                 case bool boo:
                     {
-                        sva.SetBoolValue((byte)obj != 0);
+                        sva.SetBoolValue((bool)obj ==true );
                     }
                     break;
                 case Byte b:

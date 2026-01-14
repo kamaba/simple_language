@@ -155,36 +155,121 @@ namespace SimpleLanguage.Compile
         }
         public static FileMetaBaseTerm CreateFileMetaExpress(FileMeta fm, List<Node> nodeList, FileMetaTermExpress.EExpressType expressType)
         {
-            if (nodeList.Count == 0)
+            if (nodeList == null || nodeList.Count == 0)
                 return null;
 
-            FileMetaBaseTerm fmbt = null;
-            if ( nodeList.Count == 1 )
+            // 单节点直接走基础创建
+            if (nodeList.Count == 1)
             {
-                fmbt = CreateFileOneTerm(fm, nodeList[0], expressType );
+                var fot =  CreateFileOneTerm(fm, nodeList[0], expressType);
+                fot.BuildAST();
+                return fot;
+            }
+
+            FileMetaBaseTerm fmbt = null;
+
+            // 1) 优先在当前这一层判断三元 ?:，因为它的优先级最低，需要最先把整体拆成三个子表达式，
+            //    然后对子表达式再递归调用 CreateFileMetaExpress，继续做 as/is、三元等识别。
+            int questionIndex = -1;
+            int colonIndex = -1;
+            int depth = 0; // 简单跳过括号/大括号/中括号里的 ? :
+            for (int i = 0; i < nodeList.Count; i++)
+            {
+                var n = nodeList[i];
+                if (n.nodeType == ENodeType.Par || n.nodeType == ENodeType.Brace || n.nodeType == ENodeType.Bracket)
+                {
+                    depth++;
+                }
+                else if (n.nodeType == ENodeType.SemiColon || n.nodeType == ENodeType.LineEnd)
+                {
+                    // 语句分隔，重置
+                    if (depth == 0 && questionIndex >= 0 && colonIndex > questionIndex)
+                        break;
+                }
+
+                if (depth > 0)
+                {
+                    // 括号内部的 ?: 不在这一层处理
+                    if (n.nodeType == ENodeType.Par || n.nodeType == ENodeType.Brace || n.nodeType == ENodeType.Bracket)
+                    {
+                        depth--;
+                    }
+                    continue;
+                }
+
+                if (n.nodeType == ENodeType.QuestionMark )
+                {
+                    if (questionIndex < 0)
+                        questionIndex = i;
+                }
+                else if (n.nodeType == ENodeType.Colon && questionIndex >= 0)
+                {
+                    colonIndex = i;
+                    break;
+                }
+            }
+
+            if (questionIndex > 0 && colonIndex > questionIndex + 1 && colonIndex < nodeList.Count - 1)
+            {
+                // 拆成 condition ? trueExpr : falseExpr
+                var condList = nodeList.GetRange(0, questionIndex);
+                var trueList = nodeList.GetRange(questionIndex + 1, colonIndex - questionIndex - 1);
+                var falseList = nodeList.GetRange(colonIndex + 1, nodeList.Count - colonIndex - 1);
+
+                // 三个部分继续递归走同样逻辑（内部还可以再包含 as/is、三元等）
+                fmbt = new FileMetaThreeItemSyntaxTerm(fm,
+                    condList,
+                    trueList,
+                    falseList);
             }
             else
             {
-                bool isAsIsExpress = false;
+                // 2) 当前层不存在顶层 ?:，再判断 as/is
+                int asIsIndex = -1;
                 for (int i = 0; i < nodeList.Count; i++)
                 {
-                    if (nodeList[i].token?.type == ETokenType.As
-                        || nodeList[i].token?.type == ETokenType.Is )
+                    var t = nodeList[i].token?.type;
+                    if (t == ETokenType.As || t == ETokenType.Is)
                     {
-                        isAsIsExpress = true;
+                        asIsIndex = i;
                         break;
                     }
                 }
-                if( isAsIsExpress )
+
+                if (asIsIndex > 0 && asIsIndex < nodeList.Count - 1)
                 {
-                    fmbt = new FileMetaAsOrIsTerm(fm, nodeList);
+                    var asIsNode = nodeList[asIsIndex];
+                    var leftNodes = nodeList.GetRange(0, asIsIndex);
+                    var rightCount = nodeList.Count - asIsIndex - 1;
+                    List<Node> typeNodes = null;
+                    Node optionalVarNode = null;
+
+                    if (rightCount == 1)
+                    {
+                        // var1 as Class1  或  var1 is Class1
+                        typeNodes = new List<Node> { nodeList[asIsIndex + 1] };
+                    }
+                    else if (rightCount >= 2 && asIsNode.token?.type == ETokenType.Is)
+                    {
+                        // var1 is Class1 var2
+                        typeNodes = nodeList.GetRange(asIsIndex + 1, rightCount - 1);
+                        optionalVarNode = nodeList[nodeList.Count - 1];
+                    }
+
+                    if (typeNodes != null)
+                    {
+                        fmbt = new FileMetaAsOrIsTerm(fm, leftNodes, asIsNode.token, typeNodes, optionalVarNode);
+                    }
                 }
-                else
+
+                // 3) 既不是 ?: 也不是 as/is，则作为普通表达式交给 FileMetaTermExpress
+                if (fmbt == null)
                 {
                     fmbt = new FileMetaTermExpress(fm, nodeList, expressType);
                 }
             }
-            if( fmbt == null )
+
+            if (fmbt == null)
             {
                 Log.AddInStructFileMeta(EError.None, "Error 生成表达式错误!!");
                 return null;

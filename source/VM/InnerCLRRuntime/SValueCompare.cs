@@ -344,6 +344,15 @@ namespace SimpleLanguage.VM
                         }
                     }
                     break;
+                case EVMType.Object:
+                    {
+                        if( sval2.eType == EVMType.Object )
+                        {
+                            sval1.SetBoolValue( sval1.sobject == sval2.sobject );
+                            return;
+                        }
+                    }
+                    break;
                 case EVMType.Class:
                     {
                         ClassObject co = (sval1.sobject as ClassObject);

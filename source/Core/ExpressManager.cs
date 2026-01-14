@@ -8,7 +8,6 @@
 
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
-using System.Security.Cryptography;
 
 namespace SimpleLanguage.Core
 {
@@ -209,7 +208,11 @@ namespace SimpleLanguage.Core
                                 return men;
                             }
                         }
-                        break;
+                    case FileMetaThreeItemSyntaxTerm fmtist:
+                        {
+                            MetaThreeItemExpressNode mis = new MetaThreeItemExpressNode(ownerClass, cep.ownerMBS, fmtist );
+                            return mis;
+                        }
                     case FileMetaCallTerm fmct:     //className.functionname().varname;
                         {
                             MetaCallLinkExpressNode men2 = new MetaCallLinkExpressNode(fmct.callLink, cep.ownerMetaClass, cep.ownerMBS, cep.equalMetaVariable );

@@ -126,9 +126,29 @@ namespace SimpleLanguage.Compile
                     }
                     if ( CSharpManager.IsFindMetaCSharpNamespace(allname) )
                     {
-                        MetaNamespaceCSharp mn = new MetaNamespaceCSharp(name);
-                        curmb = curmb.AddMetaNamespace(mn);
-                        m_FileMeta.AddImportMetaNamespace(mn);
+                        var findmb = curmb.GetChildrenMetaNodeByName(name);
+
+                        if( findmb != null )
+                        {
+                            if( findmb.metaNamespace is MetaNamespaceCSharp mnc )
+                            {
+                                curmb = findmb;
+                                m_FileMeta.AddImportMetaNamespace(mnc);
+                            }
+                            else
+                            {
+                                Log.AddInStructFileMeta(EError.None, "解析Import语句发生错误，没有找到对应的命名空间路径: " + allname
+                                    + "Token: " + tokenList[i].sourceBeginLine.ToString());
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            MetaNamespaceCSharp mn = new MetaNamespaceCSharp(name);
+                            curmb = curmb.AddMetaNamespace(mn);
+                            m_FileMeta.AddImportMetaNamespace(mn);
+                        }
+                            
                     }
                 }
             }

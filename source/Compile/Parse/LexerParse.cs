@@ -680,8 +680,8 @@ namespace SimpleLanguage.Compile
         {
             switch (ReadChar())
             {
-                //case '?': AddToken(ETokenType.EmptyRet, "??"); return;
-                //case '.': AddToken(ETokenType.QuestionMarkDot, "?."); return;
+                case '?': AddToken(ETokenType.EmptyRet, "??"); return;
+                case '.': AddToken(ETokenType.QuestionMarkDot, "?."); return;
                 default: AddToken(ETokenType.QuestionMark, "?"); UndoChar(); return;
             }
         }

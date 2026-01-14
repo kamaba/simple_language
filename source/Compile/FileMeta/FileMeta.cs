@@ -249,7 +249,7 @@ namespace SimpleLanguage.Compile
         }
         public void CombineFileMeta()
         {
-            for (int i = 0; i < m_FileImportSyntax.Count; i++)
+            for (int i = 0; i < this.m_FileImportSyntax.Count; i++)
             {
                 m_FileImportSyntax[i].Parse();
             }

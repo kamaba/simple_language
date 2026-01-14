@@ -581,10 +581,10 @@ namespace SimpleLanguage.VM.Runtime
                         //{
 
                         //}
-                        else
-                        {
-                            //Debug.Assert(false, "还未确定其它类型可以拿值 ，如果拿成员变量，应该也是固定的几个变量! 比如value一类的");
-                        }
+                        //else
+                        //{
+                        //    //Debug.Assert(false, "还未确定其它类型可以拿值 ，如果拿成员变量，应该也是固定的几个变量! 比如value一类的");
+                        //}
                         //栈位不变，因为当前对象位的被通过索引取出来的成员变量值，覆盖掉， 所以栈位不会发生变化
                     }
                     break;
@@ -856,15 +856,20 @@ namespace SimpleLanguage.VM.Runtime
                             irc = co.irMetaClass;
                             rt = co.runtimeType;
                         }
-                        else if( v.eType == EVMType.Object )
-                        {
-                            SObject co = (v.sobject) as SObject;
-                            m_ValueStack[stackIndex].SetValue(co);
-                            var nco = m_ValueStack[stackIndex].GetSObject();
-                            Debug.Assert(nco != null);
-                            irc = nco.irMetaClass;
-                            rt = nco.runtimeType;
-                        }
+                        //else if( v.eType == EVMType.Object )
+                        //{
+                        //    SObject co = (v.sobject) as SObject;
+                        //    //var co = (v.sobject as ClassObject);
+                        //    irc = co.irMetaClass;
+                        //    rt = co.runtimeType;
+
+                        //    //SObject co = (v.sobject) as SObject;
+                        //    //m_ValueStack[stackIndex].SetValue(co);
+                        //    //var nco = m_ValueStack[stackIndex].GetSObject();
+                        //    //Debug.Assert(nco != null);
+                        //    //irc = nco.irMetaClass;
+                        //    //rt = nco.runtimeType;
+                        //}
                         //else if( v.eType == EVMType.Array )
                         //{
                         //    irc = IRManager.instance.GetIRMetaClassByName("Array");
@@ -1955,7 +1960,7 @@ namespace SimpleLanguage.VM.Runtime
         }
         public void SetSValue( SObject obj, EVMType etype, ref SValue svalue )
         {
-            bool anyObj = svalue.eType == EVMType.Object;
+            bool anyObj = obj.eType == EVMType.Object;
             switch (etype)
             {
                 case EVMType.Null:
@@ -1997,13 +2002,13 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (anyObj)
                         {
-                            if (obj.eAnyType == EVMType.Byte)
+                            if (obj.eAnyType == EVMType.Byte )
                             {
                                 svalue.SetInt8Value((byte)obj.value);
                             }
                             else
                             {
-                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                                Debug.Assert(false, "该类型不是boolean类型!!");
                             }
                             return;
                         }

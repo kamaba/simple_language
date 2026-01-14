@@ -83,7 +83,7 @@ namespace SimpleLanguage.Project
 
                 m_ProjectFile = fp.file;
 
-                //fileParseList.Add(fp);
+                fileParseList.Add(fp);
             }
         }
 
@@ -135,7 +135,7 @@ namespace SimpleLanguage.Project
                 if( !fileParseList[i].IsExists() )
                 {
                     isSuccess = false;
-                    Debug.Write("没有找到要编译的文件: " + fileParseList[i].filePath);
+                    Debug.Assert( false, "没有找到要编译的文件: " + fileParseList[i].filePath);
                     break;
                 }
             }
@@ -192,17 +192,17 @@ namespace SimpleLanguage.Project
                 fileParseList[i].CombineFileMeta();
             }
 
-            for (int i = 0; i < m_ProjectFile.fileMetaClassList.Count; i++)
-            {
-                var fns = m_ProjectFile.fileMetaClassList[i];
+            //for (int i = 0; i < m_ProjectFile.fileMetaClassList.Count; i++)
+            //{
+            //    var fns = m_ProjectFile.fileMetaClassList[i];
 
-                if (fns.name == "ProJectConfig"
-                    || fns.name == "Compile")
-                {
-                    continue;
-                }
-                ClassManager.instance.AddClass(fns);
-            }
+            //    if (fns.name == "ProJectConfig"
+            //        || fns.name == "Compile")
+            //    {
+            //        continue;
+            //    }
+            //    ClassManager.instance.AddClass(fns);
+            //}
 
             ClassManager.instance.ParseInitMetaClassList();
             

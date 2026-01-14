@@ -88,6 +88,32 @@ namespace SimpleLanguage.IR
                         }
                     }
                     break;
+                case MetaThreeItemExpressNode mtien:
+                    {
+                        IRExpress iexress = new IRExpress(this.m_IRMethod, mtien.conditionExpress );
+                        m_IRDataList.AddRange(iexress.IRDataList);
+
+                        IRData elseirdata = new IRData();
+                        IRData endirdata = new IRData();
+
+                        IRBranch ifbranch = new IRBranch(m_IRMethod, EIROpCode.BrFalse, elseirdata );
+                        m_IRDataList.AddRange(ifbranch.IRDataList);
+
+                        IRExpress ireturn1Exress = new IRExpress(this.m_IRMethod, mtien.return1Express );
+                        m_IRDataList.AddRange(ireturn1Exress.IRDataList);
+
+                        IRBranch br = new IRBranch(m_IRMethod, EIROpCode.Br, endirdata);
+                        m_IRDataList.AddRange(br.IRDataList);
+
+                        m_IRDataList.Add(elseirdata);
+
+                        IRExpress ireturn2Exress = new IRExpress(this.m_IRMethod, mtien.return2Express);
+                        m_IRDataList.AddRange(ireturn2Exress.IRDataList);
+
+                        m_IRDataList.Add(endirdata);
+
+                    }
+                    break;
                 case MetaAsIsExpressNode maien:
                     {
                         IRMetaCallLink irmcl = new IRMetaCallLink();

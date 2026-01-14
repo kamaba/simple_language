@@ -194,6 +194,14 @@ namespace SimpleLanguage.Compile
                 {
                     break;
                 }
+                else if (curNodeType == ENodeType.QuestionMark)
+                {
+                    keynodeStruct.AddContent(curNode);
+                }
+                else if (curNodeType == ENodeType.Colon)
+                {
+                    keynodeStruct.AddContent(curNode);
+                }
                 else if (curNodeType == ENodeType.Brace)
                 {
 #pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值

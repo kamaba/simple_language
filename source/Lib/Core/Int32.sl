@@ -1,7 +1,7 @@
 import CSharp.SimpleLanguage.Core
 import CSharp.SimpleLanguage
 
-export class Int32 extends Object
+public class Int32 extends Object
 {
     const int MaxValue = 0x7fffffff;
     const int MinValue = 0x80000000;

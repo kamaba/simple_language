@@ -167,6 +167,7 @@ namespace SimpleLanguage.Compile
             return sb.ToString();
         }
     }
+    // + - * / >> << >= == 
     public class FileMetaSymbolTerm : FileMetaBaseTerm
     {
         public ETokenType symBolType
@@ -319,33 +320,39 @@ namespace SimpleLanguage.Compile
         private Token m_ConvertIsTypeNameToken = null;
 
         // 1. var1 as Class1  2. var1 is Class1   3. var1 is Class1 var2
-        public FileMetaAsOrIsTerm(FileMeta fm, List<Node> nodeList )
+        public FileMetaAsOrIsTerm(FileMeta fm, List<Node> leftNodes, Token asOrisToken, List<Node> typeNodes, Node optionalVarNode)
         {
             m_FileMeta = fm;
             m_Root = this;
 
-            //Node node = new Node(null);
-            //node.childList.AddRange(nodeList);
-            //var nodeList2 = StructParse.HandleBeforeNode(node);
-            var nodeList2 = StructParse.HandleNodeSingleLine(nodeList);
-
-            if (nodeList2.Count == 3 || nodeList2.Count == 4 )
+            if (leftNodes == null || leftNodes.Count == 0 || typeNodes == null || typeNodes.Count == 0 || asOrisToken == null)
             {
-                m_VariableCallLink = new FileMetaCallLink(fm, nodeList2[0]);
-                m_AsOrIsToken = nodeList2[1].token;
-                m_DefineType = new FileMetaClassDefine(fm, nodeList2[2]);
-                if(nodeList2.Count == 4 )
-                {
-                    m_ConvertIsTypeNameToken = nodeList2[3].token;
-                    if(m_AsOrIsToken?.type == ETokenType.As )
-                    {
-                        Log.AddInStructFileMeta(EError.None, "Error nodeList.Count != 3/4 create AsOrIs Term Error ");
-                    }
-                }
+                Log.AddInStructFileMeta(EError.None, "Error FileMetaAsOrIsTerm 参数不合法，无法构造 as/is 表达式");
+                return;
+            }
+
+            m_AsOrIsToken = asOrisToken;
+
+            // 左侧变量调用链
+            m_VariableCallLink = new FileMetaCallLink(fm, leftNodes[0]);
+
+            // 右侧类型（支持简单类型节点列表）
+            if (typeNodes.Count == 1)
+            {
+                m_DefineType = new FileMetaClassDefine(fm, typeNodes[0]);
             }
             else
             {
-                Log.AddInStructFileMeta(EError.None, "Error nodeList.Count != 3/4 create AsOrIs Term Error ");
+                // 多节点类型（例如命名空间前缀），简单合成为一个临时 Node 再交给 FileMetaClassDefine
+                Node typeRoot = new Node(null);
+                typeRoot.SetChildList(typeNodes);
+                m_DefineType = new FileMetaClassDefine(fm, typeRoot);
+            }
+
+            // is 表达式最后可能还有一个变量名： var1 is Class1 var2
+            if (asOrisToken.type == ETokenType.Is && optionalVarNode != null)
+            {
+                m_ConvertIsTypeNameToken = optionalVarNode.token;
             }
         }
         public override string ToFormatString()
@@ -384,6 +391,7 @@ namespace SimpleLanguage.Compile
             return sb.ToString();
         }
     }
+    // 
     public class FileMetaCallTerm : FileMetaBaseTerm
     {
         public FileMetaCallLink callLink => m_CallLink;
@@ -426,6 +434,7 @@ namespace SimpleLanguage.Compile
             return sb.ToString();
         }
     }
+    //(a+b-(2*100)) (1,(a+2),3)
     public class FileMetaParTerm : FileMetaBaseTerm
     {
         public Token endToken => m_EndToken;
@@ -507,7 +516,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    var fileMetaCallTerm = new FileMetaTermExpress(m_FileMeta, nodeList, expressType);
+                    var fileMetaCallTerm = FileMetatUtil.CreateFileMetaExpress(fm, nodeList, FileMetaTermExpress.EExpressType.Common);
                     fileMetaCallTerm.priority = SignComputePriority.Level1;
                     AddFileMetaTerm(fileMetaCallTerm);
                 }
@@ -526,7 +535,7 @@ namespace SimpleLanguage.Compile
             {
                 FileMetaBaseTerm fmbt = m_FileMetaExpressList[0];
                 if (fmbt == null) return false;
-                if( fmbt.BuildAST() )
+                if( fmbt.root != null )
                 {
                     isDirty = true;
                     m_Root = fmbt.root;
@@ -534,7 +543,16 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    return false;
+                    if (fmbt.BuildAST())
+                    {
+                        isDirty = true;
+                        m_Root = fmbt.root;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
             }
             else
@@ -770,6 +788,7 @@ namespace SimpleLanguage.Compile
             return sb.ToString();
         }
     }
+    // [1,2,3,[1,2,3]]  [i][1]
     public class FileMetaBracketTerm : FileMetaBaseTerm
     {
         public Token beginToken => m_BeginBracketToken;
@@ -974,6 +993,7 @@ namespace SimpleLanguage.Compile
             return sb.ToString();
         }
     }
+    //
     public class FileMetaIfSyntaxTerm : FileMetaBaseTerm
     {
         public FileMetaKeyIfSyntax ifSyntax => m_IfSyntax;
@@ -1000,29 +1020,30 @@ namespace SimpleLanguage.Compile
             return sb.ToString();
         }
     }
+    // express ? var/const : var2/const2
     public class FileMetaThreeItemSyntaxTerm : FileMetaBaseTerm
     {
-        public FileMetaBaseTerm return1Term { get; set; } = null;
-        public FileMetaBaseTerm return2Term { get; set; } = null;
-        public FileMetaBaseTerm conditionTerm { get; set; } = null;
-        public FileMetaThreeItemSyntaxTerm(FileMeta fm)
+        public FileMetaBaseTerm return1Term => m_Return1Term;
+        public FileMetaBaseTerm return2Term => m_Return2Term;
+        public FileMetaBaseTerm conditionTerm => m_ConditionTerm;
+
+        private FileMetaBaseTerm m_Return1Term = null;
+        private FileMetaBaseTerm m_Return2Term = null;
+        private FileMetaBaseTerm m_ConditionTerm = null;
+        public FileMetaThreeItemSyntaxTerm(FileMeta fm, List<Node> conditionNodeList,
+            List<Node> returnNode1List, List<Node> returnNode2List )
         {
             m_FileMeta = fm;
+
+            m_ConditionTerm = FileMetatUtil.CreateFileMetaExpress(fm, conditionNodeList, FileMetaTermExpress.EExpressType.Common);
+            m_Return1Term = FileMetatUtil.CreateFileMetaExpress(fm, returnNode1List, FileMetaTermExpress.EExpressType.Common);
+            m_Return2Term = FileMetatUtil.CreateFileMetaExpress(fm, returnNode2List, FileMetaTermExpress.EExpressType.Common);
         }
-        public void SetItemTerm( int i , FileMetaBaseTerm FMBT )
+
+        public override bool BuildAST()
         {
-            if( i == 1 )
-            {
-                return1Term = FMBT;
-            }
-            else if( i == 2 )
-            {
-                conditionTerm = FMBT;
-            }
-            if( i == 3 )
-            {
-                return2Term = FMBT; 
-            }
+            m_Root = this;
+            return true;
         }
         public override void SetDeep(int _deep)
         {
@@ -1031,7 +1052,27 @@ namespace SimpleLanguage.Compile
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(Environment.NewLine);
+
+            sb.Append(m_ConditionTerm.ToFormatString());
+            sb.Append(" ? ");
+            sb.Append(m_Return1Term.ToFormatString());
+            sb.Append(" : ");
+            sb.Append(m_Return2Term.ToFormatString());
+
+
+            return sb.ToString();
+        }
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(m_ConditionTerm.ToString());
+            sb.Append(" ? ");
+            sb.Append(m_Return1Term.ToString());
+            sb.Append(" : ");
+            sb.Append(m_Return2Term.ToString());
+   
+
             return sb.ToString();
         }
     }
@@ -1061,6 +1102,8 @@ namespace SimpleLanguage.Compile
             return sb.ToString();
         }
     }
+
+    // a + b - 30 + (200/20).toInt()
     public class FileMetaTermExpress : FileMetaBaseTerm
     {
         public enum EExpressType
@@ -1180,13 +1223,8 @@ namespace SimpleLanguage.Compile
                 }
                 else if( node.nodeType == ENodeType.Key && node.token?.type == ETokenType.QuestionMark )
                 {
-                    if (fmbt == null)
-                    {
-                        Log.AddInStructFileMeta(EError.None, "如果使用了三元表达式，必须在第一位需要放置返回式: " + node.token.type.ToString() + " 位置: " + node.token.ToLexemeAllString());
-                    }
-                    var nfmbt = new FileMetaThreeItemSyntaxTerm(m_FileMeta);
-                    nfmbt.priority = SignComputePriority.Level1;
-                    AddFileMetaTerm(nfmbt);
+                    // 三元表达式在 FileMetatUtil.CreateFileMetaExpress 中统一处理，这里不再直接创建
+                    Log.AddInStructFileMeta(EError.None, "Warning 在表达式中检测到三元运算符'?'，请通过 CreateFileMetaExpress 入口创建表达式");
                 }
                 else if( node.nodeType == ENodeType.Bracket )
                 {

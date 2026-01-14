@@ -1342,6 +1342,14 @@ namespace SimpleLanguage.Core
             if( m_AllowUseSettings.parseFrom == EParseFrom.MemberVariableExpress )
             {
             }
+
+            MetaVariable mv = m_OwnerMetaFunctionBlock?.GetMetaVariableByName(inputname);
+            if (mv != null)
+            {
+                m_MetaVariable = mv;
+                m_CallNodeType = ECallNodeType.FunctionInnerVariableName;
+                return true;
+            }
             MetaNode retMC = null;
             // 查找定义关键字的class => range   array
             if (m_Token.extend != null)
@@ -1458,12 +1466,6 @@ namespace SimpleLanguage.Core
             //函数内成员
             if ( retMC == null )
             {
-                MetaVariable mv = m_OwnerMetaFunctionBlock?.GetMetaVariableByName(inputname);
-                if(mv != null )
-                {
-                    m_MetaVariable = mv;
-                    m_CallNodeType = ECallNodeType.FunctionInnerVariableName;
-                }
                 var ownerFun = m_OwnerMetaFunctionBlock?.ownerMetaFunction;
                 if (ownerFun != null)
                 {
