@@ -349,7 +349,9 @@ namespace SimpleLanguage.Core
                         frontNode.ownerMetaFunctionBlock.AddMetaVariable(newmv);
                     }
 
-                    MetaVisitNode mvn1 = MetaVisitNode.CreateByNewConst(frontNode.metaType, newmv);
+                    MetaVisitNode mvn1 = MetaVisitNode.CreateByNewConst(frontNode.ownerMetaClass, frontNode.ownerMetaFunctionBlock, 
+                        frontNode.metaType, frontNode.metaExpressValue as MetaConstExpressNode,
+                        newmv);
                     m_VisitNodeList.Add(mvn1);
 
                     mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType.metaClass, mcn.callMetaType.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, mcn.metaInputParamCollection, newmv, mcn.storeMetaVariable);
