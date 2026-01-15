@@ -90,6 +90,11 @@ namespace SimpleLanguage.Core
 
             MetaClass orgmc = mip.express.GetReturnMetaClass();
 
+            if( orgmc is MetaGenTemplateClass mgtc )
+            {
+                orgmc = mgtc.metaTemplateClass;
+            }
+
             if( orgmc is MetaClassCSharp mcc )
             {
                 return mcc.csharpType;

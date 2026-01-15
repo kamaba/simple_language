@@ -88,7 +88,8 @@ priority = 0
 
 [[compileFiles.files]]
 #path     = "Test/ObjectTest.sl"
-path     = "Test/NumberTest.sl"
+#path     = "Test/NumberTest.sl"
+path     = "Test/StringTest.sl"
 group    = "core"
 tag      = "ir"
 ignore   = false

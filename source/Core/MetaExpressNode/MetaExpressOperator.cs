@@ -219,7 +219,6 @@ namespace SimpleLanguage.Core
         public bool isEqualType { get; set; } = false;
         public MetaExpressNode left => m_Left;
         public MetaExpressNode right => m_Right;
-        public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
         public ELeftRightOpSign opSign => m_OpLevelSign;
         public ConvertType leftConvert => m_LeftConvert;
         public ConvertType rightConvert => m_RightConvert;
@@ -230,15 +229,18 @@ namespace SimpleLanguage.Core
         private ConvertType m_RightConvert = null;
         private ELeftRightOpSign m_OpLevelSign;
         private Token m_SignToken = null;
-        private MetaMemberFunction m_MetaMemberFunction = null;
+        private MetaType m_DefineMetaType = null;
+        private MetaType m_RealMetaType = null;
 
         private FileMetaSymbolTerm m_FileMetaBaseTerm = null;
         public MetaOpExpressNode(FileMetaSymbolTerm fme, MetaType mt, MetaExpressNode _left, MetaExpressNode _right )
         {
+            m_FileMetaBaseTerm = fme;
+
             m_Left = _left;
             m_Right = _right;
-            m_FileMetaBaseTerm = fme;
-            m_MetaType = mt;
+
+            m_DefineMetaType = mt;
 
             ETokenType ett = fme.token.type;
             m_SignToken = fme.token;
@@ -283,15 +285,9 @@ namespace SimpleLanguage.Core
                 case ETokenType.Or:
                     m_OpLevelSign = ELeftRightOpSign.Or;
                     break;
-                case ETokenType.As:
-                    m_OpLevelSign = ELeftRightOpSign.Cast;
-                    break;
-                case ETokenType.Is:
-                    m_OpLevelSign = ELeftRightOpSign.IsType;
-                    break;
                 default:
                     {
-                        Debug.Write("Error 没有适合的符号!!!" + ett.ToString());
+                        Debug.Assert( false, "Error 没有适合的符号!!!" + ett.ToString());
                     }
                     break;
             }
@@ -314,7 +310,6 @@ namespace SimpleLanguage.Core
                 || m_OpLevelSign == ELeftRightOpSign.LessOrEqual
                 || m_OpLevelSign == ELeftRightOpSign.And
                 || m_OpLevelSign == ELeftRightOpSign.Or
-                || m_OpLevelSign == ELeftRightOpSign.IsType
                     )
                 isEqualType = true;
             else
@@ -352,154 +347,166 @@ namespace SimpleLanguage.Core
             }
             ParseCompute();
 
-            GetReturnMetaDefineType();
+            m_MetaType = new MetaType(m_RealMetaType);
         }
         public void ParseCompute()
         {
+            bool isChange = false;
             if (m_Left != null && m_Right != null)
             {
-                switch (m_OpLevelSign)
+                MetaExpressNode left = m_Left;
+                MetaExpressNode right = m_Right;
+                if (m_Left.opLevel < m_Right.opLevel)
                 {
-                    case ELeftRightOpSign.Add:
-                    case ELeftRightOpSign.Minus:
-                        {
-                            ParseAddOrMinus();
-                        }
-                        break;
-                    case ELeftRightOpSign.Multiply:
-                        {
-                            ParseMultiplyOrModulo();
-                        }
-                        break;
-                    case ELeftRightOpSign.Divide:
-                        {
-                            ParseDivide();
-                        }
-                        break;
-                    case ELeftRightOpSign.Modulo:
-                        {
-                            ParseMultiplyOrModulo();
-                        }
-                        break;
-                    case ELeftRightOpSign.Cast:
-                        {
-                            ParseCast();
-                        }
-                        break;
-                    case ELeftRightOpSign.Equal:
-                    case ELeftRightOpSign.NotEqual:
-                    case ELeftRightOpSign.Greater:
-                    case ELeftRightOpSign.GreaterOrEqual:
-                    case ELeftRightOpSign.Less:
-                    case ELeftRightOpSign.LessOrEqual:
-                    case ELeftRightOpSign.Or:
-                    case ELeftRightOpSign.And:
-                    case ELeftRightOpSign.IsType:
-                        {
-                            if(m_MetaType != null )
-                            {
-                                m_MetaType.SetMetaClass(CoreMetaClassManager.booleanMetaClass);
-                            }
-                            else
-                            {
-                                m_MetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
-                            }
-                        }
-                        break;
+                    left = m_Right;
+                    right = m_Left;
+                    isChange = true;
                 }
-            }
-            else
-            {
-                Debug.Write("Error 错误，左右值不对!!");
-            }
-        }
-        public void ParseAddOrMinus()
-        {
-            if (m_Left.opLevel < m_Right.opLevel)
-            {
-                m_MetaType = m_Right.metaType;
-                //m_Left.metaDefineType.SetMetaClass(m_MetaType.metaClass);
-                //m_Left.CalcReturnType();
 
-                if (m_Right.opLevel < 10)
+                bool isFindDefineFunction = false;
+                if (left.metaType.metaClass.eType == EType.Boolean)
                 {
-                    m_LeftConvert = new ConvertType()
+                    if (right.metaType.metaClass.eType == EType.Boolean)
                     {
-                        oriType = m_Left.metaType.metaClass.eType,
-                        targetType = m_MetaType.metaClass.eType
-                    };
-                }
-            }
-            else if (m_Left.opLevel > m_Right.opLevel)
-            {
-                m_MetaType = m_Left.metaType;
-                //MetaType newmt = new MetaType(m_MetaType.metaClass);
-                //m_Right.SetMetaType(newmt);
-                //m_Right.CalcReturnType();
-                if (m_Left.opLevel < 10)
-                {
-                    m_RightConvert = new ConvertType()
+                        //都是布尔类型
+                        m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                    }
+                    else
                     {
-                        oriType = m_Right.metaType.metaClass.eType,
-                        targetType = m_MetaType.metaClass.eType
-                    };
+                        //左边布尔 右边非布尔
+                        Debug.Assert(false, "Error 布尔类型不能参与加减运算!!");
+                    }
                 }
-            }
-            else
-            {
-                m_MetaType = m_Left.metaType;
-                if (ClassManager.IsNumberClass(m_Left.metaType.metaClass)
-                    && ClassManager.IsNumberClass(m_Right.metaType.metaClass)
-                    || m_Left.metaType.metaClass == CoreMetaClassManager.stringMetaClass
-                    || m_Right.metaType.metaClass == CoreMetaClassManager.stringMetaClass ) 
+                else if (ClassManager.IsNumberClass(left.metaType.metaClass))
                 {
+                    if (ClassManager.IsNumberClass(right.metaType.metaClass))
+                    {
+                        switch (m_OpLevelSign)
+                        {
+                            case ELeftRightOpSign.Add:
+                            case ELeftRightOpSign.Minus:
+                            case ELeftRightOpSign.Multiply:
+                            case ELeftRightOpSign.Divide:
+                            case ELeftRightOpSign.Modulo:
+                            case ELeftRightOpSign.InclusiveOr:
+                            case ELeftRightOpSign.Combine:
+                            case ELeftRightOpSign.XOR:
+                            case ELeftRightOpSign.Shi:
+                            case ELeftRightOpSign.Shr:
+                                {
+                                    //都是数字类型
+                                    EType etype = MetaTypeFactory.CalcETypeByLeftAndRight(left.metaType.metaClass.eType, right.metaType.metaClass.eType, m_OpLevelSign, out int error);
+                                    if (error == 0)
+                                    {
+                                        if(etype != right.metaType.metaClass.eType )
+                                        {
+                                            m_LeftConvert = new ConvertType()
+                                            {
+                                                oriType = m_Left.metaType.metaClass.eType,
+                                                targetType = etype
+                                            };
 
+                                            m_RightConvert = new ConvertType()
+                                            {
+                                                oriType = m_Right.metaType.metaClass.eType,
+                                                targetType = etype
+                                            };
+                                        }
+
+                                        m_RealMetaType = new MetaType(CoreMetaClassManager.GetMetaClassByEType(etype));
+                                    }
+                                    else
+                                    {
+                                        Debug.Assert(false, "Error 加减运算类型计算错误!!");
+                                    }
+                                }
+                                break;
+                            case ELeftRightOpSign.Equal:
+                            case ELeftRightOpSign.NotEqual:
+                            case ELeftRightOpSign.Greater:
+                            case ELeftRightOpSign.GreaterOrEqual:
+                            case ELeftRightOpSign.Less:
+                            case ELeftRightOpSign.LessOrEqual:
+                            case ELeftRightOpSign.Or:
+                            case ELeftRightOpSign.And:
+                                {
+                                    m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                                }
+                                break;
+                        }
+                    }
+                    else if(right.metaType.metaClass.eType == EType.String)
+                    {
+                        if (m_OpLevelSign == ELeftRightOpSign.Add)
+                        {
+                            m_RealMetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
+                        }
+                        else
+                        {
+                            Debug.Assert(false, "Error 字符串类型只能参与加法运算!!");
+                        }
+                    }
+                    else
+                    {
+                        isFindDefineFunction = true;
+                    }
                 }
-            }
-        }
-        public void ParseDivide()
-        {
-            if (m_Left.opLevel < m_Right.opLevel)
-            {
-                m_MetaType = m_Right.metaType;
-            }
-            else if (m_Left.opLevel > m_Right.opLevel)
-            {
-                m_MetaType = m_Left.metaType;
-            }
-            else
-            {
-                m_MetaType = m_Left.metaType;
-            }
-        }
-        public void ParseMultiplyOrModulo()
-        {
-            if (m_Left.opLevel < m_Right.opLevel)
-            {
-                m_MetaType = m_Left.metaType;
-            }
-            else if (m_Left.opLevel > m_Right.opLevel)
-            {
-                m_MetaType = m_Left.metaType;
-            }
-            else
-            {
-                m_MetaType = m_Left.metaType;
-            }
-        }
-        public void ParseCast()
-        {
-            if (m_Left.opLevel < m_Right.opLevel)
-            {
-                m_MetaType = m_Left.metaType;
-            }
-            else if (m_Left.opLevel > m_Right.opLevel)
-            {
-                m_MetaType = m_Left.metaType;
-            }
-            else
-            {
-                m_MetaType = m_Left.metaType;
+                else if (left.metaType.metaClass.eType == EType.String)
+                {
+                    if (m_OpLevelSign == ELeftRightOpSign.Add)
+                    {
+                        m_RealMetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
+                    }
+                    else
+                    {
+                        Debug.Assert(false, "Error 字符串类型只能参与加法运算!!");
+                    }
+                }
+                else
+                {
+                    switch (m_OpLevelSign)
+                    {
+                        case ELeftRightOpSign.Add:
+                        case ELeftRightOpSign.Minus:
+                        case ELeftRightOpSign.Multiply:
+                        case ELeftRightOpSign.Divide:
+                        case ELeftRightOpSign.Modulo:
+                        case ELeftRightOpSign.InclusiveOr:
+                        case ELeftRightOpSign.Combine:
+                        case ELeftRightOpSign.XOR:
+                        case ELeftRightOpSign.Shi:
+                        case ELeftRightOpSign.Shr:
+                            {
+                                isFindDefineFunction = true;
+                            }
+                            break;
+                        case ELeftRightOpSign.Equal:
+                        case ELeftRightOpSign.NotEqual:
+                        case ELeftRightOpSign.Greater:
+                        case ELeftRightOpSign.GreaterOrEqual:
+                        case ELeftRightOpSign.Less:
+                        case ELeftRightOpSign.LessOrEqual:
+                        case ELeftRightOpSign.Or:
+                        case ELeftRightOpSign.And:
+                            {
+                                m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                            }
+                            break;
+                    }
+                }
+
+
+                if (isFindDefineFunction)
+                {
+                    var mipc = new MetaInputParamCollection(left.metaType.metaClass, null);
+                    MetaInputParam mip = new MetaInputParam(right);
+                    mipc.AddMetaInputParam(mip);
+                    var mmf = right.metaType.metaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_op_add_", 0, mipc);
+                    if (mmf == null)
+                    {
+                        Debug.Assert(false, "Error 右边类型不能转换为左边类型进行加减运算!!");
+                    }
+                }
             }
         }
         public MetaExpressNode SimulateCompute(ExpressOptimizeConfig config)

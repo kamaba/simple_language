@@ -185,6 +185,10 @@ namespace SimpleLanguage.Core
             if( mip != null)
             {
                 var retMC = mip.GetRetMetaClass();
+                if( retMC is MetaGenTemplateClass mgtc )
+                {
+                    retMC = mgtc.metaTemplateClass;
+                }
                 var relation = ClassManager.ValidateClassRelationByMetaClass(m_MetaVariable.GetFinalTemplateMetaClass(), retMC);
 
                 if (relation == ClassManager.EClassRelation.Same 
@@ -360,14 +364,21 @@ namespace SimpleLanguage.Core
                 {
                     return false;
                 }
-                var mdp = m_MetaDefineParamList[m_MetaDefineParamList.Count - 1];
-                if( mdp.isExtendParams && mdp.metaVariable.isArray )
+                var lastMdp = m_MetaDefineParamList[m_MetaDefineParamList.Count - 1];
+                if(lastMdp.isExtendParams && lastMdp.metaVariable.isArray )
                 {
-                    var mdt = mdp.metaVariable.realMetaType;
-                    for( int i = 0; i < mpc.metaInputParamList.Count; i++ ) 
+                    var mdt = lastMdp.metaVariable.isDefineMetaType ? lastMdp.metaVariable.defineMetaType : lastMdp.metaVariable.realMetaType;
+                    for( int i = 0; i < m_MetaDefineParamList.Count - 1; i++ ) 
                     {
-                        var mip = mpc.metaInputParamList[i];                        
-                        if( mip.GetRetMetaClass() != mdt.metaClass )
+                        var mdp_metaType = m_MetaDefineParamList[i].metaVariable.isDefineMetaType ? m_MetaDefineParamList[i].metaVariable.defineMetaType 
+                            : m_MetaDefineParamList[i].metaVariable.realMetaType;
+                        var mip = mpc.metaInputParamList[i];
+                        var retmc = mip.GetRetMetaClass();
+                        if( retmc is MetaGenTemplateClass mgtc )
+                        {
+                            retmc = mgtc.metaTemplateClass;
+                        }
+                        if (retmc != mdp_metaType.metaClass )
                         {
                             return false;
                         }

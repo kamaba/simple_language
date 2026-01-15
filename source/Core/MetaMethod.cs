@@ -197,6 +197,14 @@ namespace SimpleLanguage.Core
             m_LabelDataList.Add(ld);
             return ld;
         }
+        public bool IsExtentParams()
+        {
+            if(m_MetaMemberParamCollection != null )
+            {
+                return m_MetaMemberParamCollection.isExtendParams;
+            }
+            return false;
+        }
         public void UpdateLabelData(LabelData newld)
         {
             var ld = m_LabelDataList.Find(a => a.label == newld.label);

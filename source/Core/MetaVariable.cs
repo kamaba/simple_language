@@ -95,7 +95,11 @@ namespace SimpleLanguage.Core
             {
                 m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
-            if(mdt != null )
+            else
+            {
+                m_IsDefineMetaType = true;
+            }
+            if (mdt != null)
             {
                 m_RealMetaType = new MetaType(mdt);
             }

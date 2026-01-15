@@ -196,6 +196,15 @@ namespace SimpleLanguage.IR
 
     public class IRNewExpress : IRBase
     {
+        public IRNewExpress(IRMethod irMethod, MetaConstExpressNode mnoen ) : base(irMethod)
+        {
+            //var owirmc = IRManager.instance.GetIRMetaClassById(mnoen.ownerMetaClass.GetHashCode());
+            IRMetaClass newObjIRMC = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
+            var irmc = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
+            var newObjectIRMT = new IRMetaType(newObjIRMC);
+            IRNew irNew = new IRNew(irMethod, newObjIRMC);
+            AddIRRangeData(irNew.IRDataList);
+        }
         public IRNewExpress(IRMethod irMethod, MetaNewObjectExpressNode mnoen ) : base(irMethod)
         {
             IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mnoen.ownerMetaClass.GetHashCode()); 

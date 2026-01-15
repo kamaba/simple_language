@@ -1,79 +1,484 @@
-﻿
-
+﻿//****************************************************************************
+//  File:      MetaTypeFactory.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2026/1/15 12:00:00
+//  Description: 
+//****************************************************************************
 
 namespace SimpleLanguage.Core
 {
     public class MetaTypeFactory
     {
-        //    public static MetaType CreateMetaTypeByToken( Token typeToken, Token nameToken )
-        //    {
-        //        EType etype = EType.Class;
-        //        string typename = "";
-        //        if( typeToken == null )
-        //        {
-        //            return new MetaType(EType.Class, "Object");
-        //        }
-        //        if (typeToken.type == ETokenType.Class)
-        //        {
-        //            etype = EType.Class;
-        //            typename = nameToken.lexeme.ToString();
-        //        }
-        //        else if (typeToken.type == ETokenType.String)
-        //        {
-        //            etype = EType.String;
-        //            typename = "string";
-        //        }
-        //        else if (typeToken.type == ETokenType.Number)
-        //        {
-        //            MatchSystemType(typeToken.lexeme.ToString(), ref etype, ref typename);
-        //        }
-        //        var type = new MetaType(etype,MetaExpressNode typename);
-
-        //        return type;
-        //    }
         public static int GetOpLevelByMetaType( MetaType mt)
         {
             if( mt.metaClass == CoreMetaClassManager.booleanMetaClass)
             {
                 return 0;
             }
-            else if (mt.metaClass == CoreMetaClassManager.byteMetaClass
-                || mt.metaClass == CoreMetaClassManager.sbyteMetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.sbyteMetaClass)
             {
                 return 1;
             }
-            else if (mt.metaClass == CoreMetaClassManager.int16MetaClass
-                || mt.metaClass == CoreMetaClassManager.uint16MetaClass)
+            else if(mt.metaClass == CoreMetaClassManager.byteMetaClass )
             {
                 return 2;
             }
-            else if (mt.metaClass == CoreMetaClassManager.int32MetaClass
-                || mt.metaClass == CoreMetaClassManager.uint32MetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.int16MetaClass)
             {
                 return 3;
             }
-            else if (mt.metaClass == CoreMetaClassManager.int64MetaClass
-                || mt.metaClass == CoreMetaClassManager.uint64MetaClass)
+            else if ( mt.metaClass == CoreMetaClassManager.uint16MetaClass )
             {
                 return 4;
             }
-            else if (mt.metaClass == CoreMetaClassManager.float32MetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.int32MetaClass)
             {
                 return 5;
             }
-            else if (mt.metaClass == CoreMetaClassManager.float64MetaClass)
+            else if ( mt.metaClass == CoreMetaClassManager.uint32MetaClass )
             {
                 return 6;
             }
-            else if (mt.metaClass == CoreMetaClassManager.arrayMetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.int64MetaClass)
+            {
+                return 7;
+            }
+            else if ( mt.metaClass == CoreMetaClassManager.uint64MetaClass)
             {
                 return 8;
             }
-            else if (mt.metaClass == CoreMetaClassManager.stringMetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.float32MetaClass)
+            {
+                return 9;
+            }
+            else if (mt.metaClass == CoreMetaClassManager.float64MetaClass)
+            {
+                return 10;
+            }
+            else if (mt.metaClass == CoreMetaClassManager.arrayMetaClass)
             {
                 return 11;
             }
-            return 10;
+            else if (mt.metaClass == CoreMetaClassManager.stringMetaClass)
+            {
+                return 12;
+            }
+            return 13;
+        }
+        public static EType CalcETypeByLeftAndRight(EType etype1, EType etype2, ELeftRightOpSign op, out int error )
+        {
+            error = 0;
+            switch ( etype1 )
+            {
+                case EType.Byte:
+                    {
+                        switch( etype2 )
+                        {
+                            case EType.Byte:
+                                {
+                                    return EType.Byte;
+                                }
+                            case EType.SByte:
+                                {
+                                    return EType.Int16;
+                                }
+                            case EType.Int16:
+                                {
+                                    return EType.Int16;
+                                }
+                            case EType.UInt16:
+                                {
+                                    return EType.UInt16;
+                                }
+                            case EType.Int32:
+                                {
+                                    return EType.Int32;
+                                }  
+                            case EType.UInt32:
+                                {
+                                    return EType.UInt32;
+                                }
+                            case EType.Int64:
+                                {
+                                    return EType.Int64;
+                                }
+                            case EType.UInt64:
+                                {
+                                    return EType.UInt64;
+                                }       
+                            case EType.Float32:
+                                {
+                                    return EType.Float32;
+                                }   
+                            case EType.Float64:
+                                {
+                                    return EType.Float64;
+                                }
+                            default:
+                                {
+                                    error = 1;
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                case EType.SByte:
+                    {
+                        switch( etype2 )
+                        {
+                            case EType.Byte:
+                                {
+                                    return EType.Int16;
+                                }
+                            case EType.SByte:
+                                {
+                                    return EType.SByte;
+                                }
+                            case EType.Int16:
+                                {
+                                    return EType.Int16;
+                                }
+                            case EType.UInt16:
+                                {
+                                    return EType.Int32;
+                                }
+                            case EType.Int32:
+                                {
+                                    return EType.Int32;
+                                }  
+                            case EType.UInt32:
+                                {
+                                    return EType.UInt32;
+                                }
+                            case EType.Int64:
+                                {
+                                    return EType.Int64;
+                                }
+                            case EType.UInt64:
+                                {
+                                    return EType.UInt64;
+                                }       
+                            case EType.Float32:
+                                {
+                                    return EType.Float32;
+                                }   
+                            case EType.Float64:
+                                {
+                                    return EType.Float64;
+                                }
+                            default:
+                                {
+                                    error = 1;
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                case EType.Int16:
+                    {
+                        switch( etype2 )
+                        {
+                            case EType.Byte:
+                            case EType.SByte:
+                            case EType.Int16:
+                                {
+                                    return EType.Int16;
+                                }
+                            case EType.UInt16:
+                                {
+                                    return EType.Int32;
+                                }
+                            case EType.Int32:
+                                {
+                                    return EType.Int32;
+                                }  
+                            case EType.UInt32:
+                                {
+                                    return EType.UInt32;
+                                }
+                            case EType.Int64:
+                                {
+                                    return EType.Int64;
+                                }
+                            case EType.UInt64:
+                                {
+                                    return EType.UInt64;
+                                }       
+                            case EType.Float32:
+                                {
+                                    return EType.Float32;
+                                }   
+                            case EType.Float64:
+                                {
+                                    return EType.Float64;
+                                }
+                            default:
+                                {
+                                    error = 1;
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                case EType.UInt16:
+                    {
+                        switch( etype2 )
+                        {
+                            case EType.Byte:
+                            case EType.SByte:
+                            case EType.Int16:
+                                {
+                                    return EType.Int32;    
+                                }
+                            case EType.UInt16:
+                                {
+                                    return EType.UInt16;
+                                }
+                            case EType.Int32:
+                                {
+                                    return EType.Int32;
+                                }  
+                            case EType.UInt32:
+                                {
+                                    return EType.UInt32;
+                                }
+                            case EType.Int64:
+                                {
+                                    return EType.Int64;
+                                }
+                            case EType.UInt64:
+                                {
+                                    return EType.UInt64;
+                                }       
+                            case EType.Float32:
+                                {
+                                    return EType.Float32;
+                                }   
+                            case EType.Float64:
+                                {
+                                    return EType.Float64;
+                                }
+                            default:
+                                {
+                                    error = 1;
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                case EType.Int32:
+                    {
+                        switch (etype2)
+                        {
+                            case EType.Byte:
+                            case EType.SByte:
+                            case EType.Int16:
+                            case EType.UInt16:
+                            case EType.Int32:
+                                {
+                                    return EType.Int32;
+                                }
+                            case EType.UInt32:
+                                {
+                                    return EType.Int64;
+                                }
+                            case EType.Int64:
+                                {
+                                    return EType.Int64;
+                                }
+                            case EType.UInt64:
+                                {
+                                    return EType.UInt64;
+                                }
+                            case EType.Float32:
+                                {
+                                    return EType.Float32;
+                                }
+                            case EType.Float64:
+                                {
+                                    return EType.Float64;
+                                }
+                            default:
+                                {
+                                    error = 1;
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                case EType.UInt32:
+                    {
+                        switch (etype2)
+                        {
+                            case EType.Byte:
+                            case EType.SByte:
+                            case EType.Int16:
+                            case EType.UInt16:
+                                {
+                                    return EType.UInt32;
+                                }
+                            case EType.Int32:
+                                {
+                                    return EType.Int64;
+                                }
+                            case EType.UInt32:
+                                {
+                                    return EType.UInt32;
+                                }
+                            case EType.Int64:
+                                {
+                                    return EType.Int64;
+                                }
+                            case EType.UInt64:
+                                {
+                                    return EType.UInt64;
+                                }
+                            case EType.Float32:
+                                {
+                                    return EType.Float32;
+                                }
+                            case EType.Float64:
+                                {
+                                    return EType.Float64;
+                                }
+                            default:
+                                {
+                                    error = 1;
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                case EType.Int64:
+                    {
+                        switch (etype2)
+                        {
+                            case EType.Byte:
+                            case EType.SByte:
+                            case EType.Int16:
+                            case EType.UInt16:
+                            case EType.Int32:
+                            case EType.UInt32:
+                            case EType.Int64:
+                                {
+                                    return EType.Int64;
+                                }
+                            case EType.UInt64:
+                                {
+                                    error = 2;
+                                    return EType.UInt64;
+                                }
+                            case EType.Float32:
+                                {
+                                    return EType.Float64;
+                                }
+                            case EType.Float64:
+                                {
+                                    return EType.Float64;
+                                }
+                            default:
+                                {
+                                    error = 1;
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                case EType.UInt64:
+                    {
+                        switch (etype2)
+                        {
+                            case EType.Byte:
+                            case EType.SByte:
+                            case EType.Int16:
+                            case EType.UInt16:
+                            case EType.Int32:
+                            case EType.UInt32:
+                                {
+                                    return EType.UInt64;
+                                }
+                            case EType.Int64:
+                                {
+                                    error = 2;
+                                    return EType.UInt64;
+                                }
+                            case EType.UInt64:
+                                {
+                                    return EType.UInt64;
+                                }
+                            case EType.Float32:
+                                {
+                                    return EType.Float64;
+                                }
+                            case EType.Float64:
+                                {
+                                    return EType.Float64;
+                                }
+                            default:
+                                {
+                                    error = 1;
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                case EType.Float32:
+                    {
+                        switch (etype2)
+                        {
+                            case EType.Byte:
+                            case EType.SByte:
+                            case EType.Int16:
+                            case EType.UInt16:
+                            case EType.Int32:
+                            case EType.UInt32:
+                            case EType.Float32:
+                                {
+                                    return EType.Float32;
+                                }
+                            case EType.Int64:
+                            case EType.UInt64:
+                            case EType.Float64:
+                                {
+                                    return EType.Float64;
+                                }
+                            default:
+                                {
+                                    error = 1;
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                case EType.Float64:
+                    {
+                        switch (etype2)
+                        {
+                            case EType.Byte:
+                            case EType.SByte:
+                            case EType.Int16:
+                            case EType.UInt16:
+                            case EType.Int32:
+                            case EType.UInt32:
+                            case EType.Int64:
+                            case EType.UInt64:
+                            case EType.Float32:
+                            case EType.Float64:
+                                {
+                                    return EType.Float64;
+                                }
+                            default:
+                                {
+                                    error = 1;
+                                }
+                                break;
+                        }
+                    }
+                    break;
+            }
+
+            return EType.None;
         }
         public static int GetOpLevel(EType defineType)
         {

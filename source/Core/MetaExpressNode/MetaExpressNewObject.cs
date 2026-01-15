@@ -357,6 +357,11 @@ namespace SimpleLanguage.Core
 
         private FileMetaBaseTerm m_FileMetaBaseTerm = null;
 
+        public MetaNewObjectStatementsContent( MetaClass mc, MetaBlockStatements mbs )
+        {
+
+        }
+
         public MetaNewObjectStatementsContent( MetaArrayExpressNode maen, MetaClass mc, MetaBlockStatements mbs, MetaVariable parentMt)
         {
             m_OwnerMetaBlockStatements = mbs;
@@ -915,6 +920,11 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
             m_MetaType = new MetaType(mt);
+            if( m_MetaType.IsArray() )
+            {
+                m_NewType = ENewType.ArrayClass;
+            }
+            m_MetaContent = new MetaNewObjectStatementsContent( ownerMC, mbs );
             //m_MetaConstructFunctionCall = new MetaMethodCall(mt.metaClass, mt.defineTemplateMetaTypeList, m_OwnerMetaBlockStatements.ownerMetaFunction,
             //    null, null, null, null );
         }

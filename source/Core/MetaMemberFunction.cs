@@ -154,11 +154,15 @@ namespace SimpleLanguage.Core
         }
         public List<MetaMemberFunction> GetMetaMemberFunctionListByParamCount( int count )
         {
-            if (m_MetaParamFunctionDict.ContainsKey(count))
+            List<MetaMemberFunction> list = new List<MetaMemberFunction>();
+            foreach( var v in m_MetaParamFunctionDict )
             {
-                return m_MetaParamFunctionDict[count];
+                if( v.Key <= count )
+                {
+                    list.AddRange(v.Value);
+                }
             }
-            return null;
+            return list;
         }
     }
     public class MetaMemberFunction : MetaFunction

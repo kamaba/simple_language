@@ -17,6 +17,10 @@ public class String extends Object
     {
         this._value = aa
     }
+    public string format( params object[] _parmas )
+    {
+        ret SimpleLanguage.Lib.StringClass.StringFormat( this, _parmas )
+    }
     #!
     Int32 toInt32()
     {
@@ -51,8 +55,8 @@ public class String extends Object
     {
         ret this;
     }
-    public static string toFormat( string _fomrat, params object[] para )
+    public static string toFormat( string _format, params object[] _parmas )
     {
-        ret ""
+        ret SimpleLanguage.Lib.StringClass.StringFormat( _format, _parmas )
     }
 }

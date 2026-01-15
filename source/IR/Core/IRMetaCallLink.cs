@@ -101,7 +101,12 @@ namespace SimpleLanguage.Core.IR
                 IRCallFunction irCallFun = new IRCallFunction(_irMethod);
                 irCallFun.Parse(mfc);
                 irList.Add(irCallFun);
-            }            
+            }
+            else if( cnode.visitType == MetaVisitNode.EVisitType.NewConst)
+            {
+                IRNewExpress ire = new IRNewExpress(_irMethod, cnode.constValueExpress);
+                irList.Add(ire);
+            }
             else if (cnode.visitType == MetaVisitNode.EVisitType.New)
             {
                 //ParseNew(cnode, _irMethod, irList );

@@ -1610,10 +1610,28 @@ namespace SimpleLanguage.VM.Runtime
                             to.SetValue(EVMType.Int32, svalue.int32Value);
                             return;
                         }
+                        UInt32Object uint32Obj = obj as UInt32Object;
+                        if (uint32Obj != null)
+                        {
+                            uint32Obj.SetValue((uint)svalue.int32Value);
+                            return;
+                        }
+                        Int64Object int64Obj = obj as Int64Object;
+                        if (int64Obj != null)
+                        {
+                            int64Obj.SetValue((Int64)svalue.int32Value);
+                            return;
+                        }
+                        UInt64Object uint64Obj = obj as UInt64Object;
+                        if (uint64Obj != null)
+                        {
+                            uint64Obj.SetValue((UInt64)svalue.int32Value);
+                            return;
+                        }
                         Int32Object int32Obj = obj as Int32Object;
                         if (int32Obj == null)
                         {
-                            Debug.Write("该类型不是Int32类型!!");
+                            Debug.Assert( false, "该类型不是Int32类型!!");
                             return;
                         }
                         int32Obj.SetValue(svalue.int32Value);

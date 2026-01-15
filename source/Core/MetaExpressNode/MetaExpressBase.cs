@@ -15,9 +15,7 @@ namespace SimpleLanguage.Core
         Combine,
         XOR,
         Shi,
-        IShi,
         Shr,
-        IShr,
         Equal,
         NotEqual,
         Greater,
@@ -25,11 +23,7 @@ namespace SimpleLanguage.Core
         Less,
         LessOrEqual,
         And,
-        IAnd,
         Or,
-        IOr,
-        Cast,
-        IsType,
     }
     public enum ESingleOpSign
     {

@@ -741,9 +741,15 @@ namespace SimpleLanguage.Compile
                 this.m_TempChar = ReadChar();
                 if (m_TempChar == '\'')
                 {
-                    AddToken(ETokenType.String, m_Builder.ToString(), EType.String );
+                    AddToken(ETokenType.String, m_Builder.ToString(), EType.String);
                     m_Index++;
                     m_SourceChar++;
+                    break;
+                }
+                else if (m_TempChar == END_CHAR)
+                {
+                    Debug.Write("Error 单引号字符串没有找到结束符号 '\'' ");
+                    AddToken(ETokenType.String, m_Builder.ToString(), EType.String);
                     break;
                 }
                 else
@@ -752,33 +758,175 @@ namespace SimpleLanguage.Compile
                 }
             } while (true);
         }
-        /// <summary> 读取字符串 </summary>
-        void ReadString( bool isWithAtOp ) 
-        {
-            //if( isWithAtOp )
-            //{
-            //    do
-            //    {
-            //        m_TempChar = ReadChar();
-            //        if( m_TempChar == '"' )
-            //        {
-            //            AddToken(ETokenType.String, m_Builder.ToString());
-            //            m_Index++;
-            //            m_SourceChar++;
-            //            break;
-            //        }
-            //        else
-            //        {
-            //            m_Builder.Append(m_TempChar);
-            //        }
-            //    } while (true);
-            //}
-            //else
-            //{
 
+        void ReadFTripleString()
+        {
+            // f""" ... """ style: raw multiline string with $var / ${expr} interpolation
+            // No escape processing, but $name and ${expr} are recognized
+            m_Builder.Clear();
+
+            // current m_CurChar == 'f', consume the leading f"""
+            ReadChar(); // first '"'
+            ReadChar(); // second '"'
+            ReadChar(); // third '"'
+
+            bool hasInterpolation = false;
+            var literalBuilder = new StringBuilder();
+
+            do
+            {
+                m_TempChar = ReadChar();
+                if (m_TempChar == END_CHAR)
+                {
+                    Debug.Write("Error f\"\"\" 字符串没有找到结束的 \"\"\" ");
+                    break;
+                }
+
+                // check for closing """
+                if (m_TempChar == '"')
+                {
+                    char c1 = ReadChar();
+                    char c2 = ReadChar();
+                    if (c1 == '"' && c2 == '"')
+                    {
+                        // end of f""" string
+                        break;
+                    }
+                    else
+                    {
+                        // not actually closing, append and continue
+                        m_Builder.Append('"');
+                        m_Builder.Append(c1);
+                        m_Builder.Append(c2);
+                        continue;
+                    }
+                }
+
+                // handle $var / ${expr} interpolation
+                if (m_TempChar == '$')
+                {
+                    var nextChar = ReadChar();
+                    if (nextChar == '{')
+                    {
+                        // ${expr} style
+                        if (!hasInterpolation)
+                        {
+                            hasInterpolation = true;
+                            AddToken(ETokenType.String, m_Builder.ToString(), EType.String);
+                            m_Builder.Clear();
+                        }
+                        else
+                        {
+                            AddToken(ETokenType.String, m_Builder.ToString(), EType.String);
+                            m_Builder.Clear();
+                        }
+                        AddToken(ETokenType.Plus, '+');
+                        AddToken(ETokenType.LeftPar, '}');
+
+                        int braceLevel = 0;
+                        int startLine = m_SourceLine;
+                        int startChar = m_SourceChar;
+                        var exprBuilder = new StringBuilder();
+                        do
+                        {
+                            var tchar = ReadChar();
+                            if (tchar == END_CHAR)
+                            {
+                                Debug.Write("Error f\"\"\" 中的 ${} 表达式没有找到结束的 ')' ");
+                                break;
+                            }
+                            if (tchar == '}')
+                            {
+                                if (braceLevel == 0)
+                                {
+                                    break;
+                                }
+                                else
+                                {
+                                    braceLevel--;
+                                }
+                            }
+                            else if (tchar == '{')
+                            {
+                                braceLevel++;
+                            }
+                            exprBuilder.Append(tchar);
+                        } while (true);
+
+                        LexerParse lp = new LexerParse(m_Path, exprBuilder.ToString());
+                        lp.SetSourcePosition(startLine, startChar);
+                        lp.ParseToTokenList();
+                        m_ListTokens.AddRange(lp.listTokens);
+                        AddToken(ETokenType.RightPar, ')');
+                        AddToken(ETokenType.Plus, '+');
+                    }
+                    else if (IsIdentifier2(nextChar))
+                    {
+                        // $name style
+                        if (!hasInterpolation)
+                        {
+                            hasInterpolation = true;
+                            AddToken(ETokenType.String, m_Builder.ToString(), EType.String);
+                            m_Builder.Clear();
+                        }
+                        else
+                        {
+                            AddToken(ETokenType.String, m_Builder.ToString(), EType.String);
+                            m_Builder.Clear();
+                        }
+                        AddToken(ETokenType.Plus, '+');
+
+                        int startLine = m_SourceLine;
+                        int startChar = m_SourceChar;
+                        var identBuilder = new StringBuilder();
+                        identBuilder.Append(nextChar);
+                        while (true)
+                        {
+                            var ch2 = ReadChar();
+                            if (IsIdentifier2(ch2))
+                            {
+                                identBuilder.Append(ch2);
+                            }
+                            else
+                            {
+                                UndoChar();
+                                break;
+                            }
+                        }
+                        LexerParse lp = new LexerParse(m_Path, identBuilder.ToString());
+                        lp.SetSourcePosition(startLine, startChar);
+                        lp.ParseToTokenList();
+                        m_ListTokens.AddRange(lp.listTokens);
+                        AddToken(ETokenType.Plus, '+');
+                    }
+                    else
+                    {
+                        // not a valid interpolation, keep $ as literal
+                        m_Builder.Append('$');
+                        m_Builder.Append(nextChar);
+                    }
+                    continue;
+                }
+
+                // track line numbers for multiline
+                if (m_TempChar == '\n')
+                {
+                    m_SourceLine++;
+                    m_SourceChar = 0;
+                }
+
+                m_Builder.Append(m_TempChar);
+            } while (true);
+
+            // output the remaining literal
+            AddToken(ETokenType.String, m_Builder.ToString(), EType.String);
+        }
+
+        void ReadString()
+        {
             var stringBuilder = new StringBuilder();
-            stringBuilder.Append( m_Builder.ToString() );
-            AddToken(ETokenType.String,"" );
+            stringBuilder.Append(m_Builder.ToString());
+            AddToken(ETokenType.String, "");
             do
             {
                 m_TempChar = ReadChar();
@@ -788,7 +936,7 @@ namespace SimpleLanguage.Compile
                     switch (m_TempChar)
                     {
                         case '\'': m_Builder.Append('\''); break;
-                        case '\"': m_Builder.Append('\"'); break;
+                        case '"': m_Builder.Append('"'); break;
                         case '\\': m_Builder.Append('\\'); break;
                         case '$': m_Builder.Append('$'); break;
                         case 'a': m_Builder.Append('\a'); break;
@@ -895,14 +1043,14 @@ namespace SimpleLanguage.Compile
                 //}
                 else if (m_TempChar == '$')
                 {
-                    //如果字符 使用可以是 "aaaa$this.x bbbb:$cury =$(this.x+cury)" 后续补逻辑
-
+                    // string interpolation inside normal string: $name / ${expr}
                     var nextChar = ReadChar();
-                    if( nextChar == '(' )
+                    if (nextChar == '{')
                     {
+                        // ${ expr } -> close current literal, + ( expr ) + "..."
                         AddToken(ETokenType.String, m_Builder.ToString());
                         AddToken(ETokenType.Plus, '+');
-                        AddToken(ETokenType.LeftPar, '(');
+                        AddToken(ETokenType.LeftPar, '{');
                         int braceLevel = 0;
                         int startLine = m_SourceLine;
                         int startChar = m_SourceChar;
@@ -935,7 +1083,7 @@ namespace SimpleLanguage.Compile
                         AddToken(ETokenType.RightPar, ')');
 
                         var nextTempChar = ReadChar();
-                        if (nextTempChar == '\"')
+                        if (nextTempChar == '"')
                         {
                             m_Index++;
                             m_SourceChar++;
@@ -948,69 +1096,44 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
+                        // $name / $score style: treat as identifier expression
                         AddToken(ETokenType.String, m_Builder.ToString());
                         AddToken(ETokenType.Plus, '+');
-                        //AddToken(ETokenType.LeftPar, '(');
+
                         int startLine = m_SourceLine;
                         int startChar = m_SourceChar;
-                        int level = 0;
-                        bool isCheckEndAtString = false;
-                        do
+                        m_Builder.Clear();
+                        if (IsIdentifier2(nextChar))
                         {
-                            var tempChar = ReadChar();
-                            if (tempChar == ' ' || tempChar == '\"')
+                            m_Builder.Append(nextChar);
+                            while (true)
                             {
-                                if (level == 0)
+                                var ch2 = ReadChar();
+                                if (IsIdentifier2(ch2))
                                 {
-                                    isCheckEndAtString = tempChar != '\"';
-                                    break;
+                                    m_Builder.Append(ch2);
                                 }
                                 else
                                 {
-                                    m_Builder.Append(tempChar);
+                                    UndoChar();
+                                    break;
                                 }
                             }
-                            else if (tempChar == '(' || tempChar == '[')
-                            {
-                                m_Builder.Append(tempChar);
-                                level++;
-                            }
-                            else if (tempChar == ')' || tempChar == ']')
-                            {
-                                m_Builder.Append(tempChar);
-                                level--;
-                            }
-                            else if (tempChar == '\'')
-                            {
-                                m_Builder.Append('\"');
-                            }
-                            else
-                            {
-                                m_Builder.Append(tempChar);
-                            }
-                        } while (true);
-
-                        LexerParse lp = new LexerParse(m_Path, m_Builder.ToString());
-                        lp.SetSourcePosition(startLine - 1, startChar - 1);
-                        lp.ParseToTokenList();
-                        m_ListTokens.AddRange(lp.listTokens);
-                        m_Builder.Clear();
-                        //AddToken(ETokenType.RightPar, ')');
-
-                        if (isCheckEndAtString)//是否需要检查，后边的字符需要+符号处理
-                        {
-                            var nextTempChar = ReadChar();
-                            if (nextTempChar == '\"')
-                            {
-                                m_Index++;
-                                m_SourceChar++;
-                                break;
-                            }
-                            else
-                            {
-                                AddToken(ETokenType.Plus, '+');
-                            }
+                            LexerParse lp = new LexerParse(m_Path, m_Builder.ToString());
+                            lp.SetSourcePosition(startLine, startChar);
+                            lp.ParseToTokenList();
+                            m_ListTokens.AddRange(lp.listTokens);
+                            m_Builder.Clear();
                         }
+                        else
+                        {
+                            // not a valid identifier, keep as literal '$'
+                            m_Builder.Append('$');
+                            m_Builder.Append(nextChar);
+                        }
+
+                        // expect to continue string, add '+' for following literal part
+                        AddToken(ETokenType.Plus, '+');
                     }
                 }
                 else
@@ -1135,16 +1258,17 @@ namespace SimpleLanguage.Compile
         void ReadDollar()
         {
             var ch = ReadChar();
-            if (ch == '\"')
-            {
-                ReadString(true);
-            }
+            //if (ch == '\"')
+            //{
+            //    ReadString(true);
+            //}
             //else if (ch == '{')
             //{
             //    ReadChar();
             //    AddToken( ETokenType.LeftBrace);
             //}
-            else if (Char.IsNumber(ch) || Char.IsLetter(ch))
+            //else 
+            if (Char.IsNumber(ch) || Char.IsLetter(ch))
             {
                 StringBuilder sb = new StringBuilder();
                 sb.Append(ch);
@@ -1700,7 +1824,7 @@ namespace SimpleLanguage.Compile
                             ReadAt();
                             break;
                         case '\"':
-                            ReadString(false);
+                            ReadString();
                             break;
                         case '\'':
                             {
@@ -1709,6 +1833,41 @@ namespace SimpleLanguage.Compile
                             break;
                         case '0':
                             ReadNumberOrHexOrOctOrBinNumber();
+                            break;
+                        case 'f':
+                            {
+                                // check for f""" prefix
+                                if (PeekChar() == '"')
+                                {
+                                    int saveIndex = m_Index;
+                                    char c1 = PeekChar();
+                                    // move to first '"'
+                                    ReadChar();
+                                    char c2 = PeekChar();
+                                    ReadChar();
+                                    char c3 = PeekChar();
+                                    if (c1 == '"' && c2 == '"' && c3 == '"')
+                                    {
+                                        // reset to 'f' and let ReadFTripleString consume
+                                        m_Index = saveIndex;
+                                        ReadFTripleString();
+                                    }
+                                    else
+                                    {
+                                        // not actually f""", treat as identifier starting with 'f'
+                                        m_Index = saveIndex;
+                                        ReadIdentifier();
+                                        m_Index++;
+                                        m_SourceChar++;
+                                    }
+                                }
+                                else
+                                {
+                                    ReadIdentifier();
+                                    m_Index++;
+                                    m_SourceChar++;
+                                }
+                            }
                             break;
                         default:
                             if (char.IsDigit(m_CurChar))

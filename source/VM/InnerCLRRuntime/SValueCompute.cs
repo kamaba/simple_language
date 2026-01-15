@@ -21,8 +21,8 @@ namespace SimpleLanguage.VM
             {
                 case EVMType.Int64:
                     {
-                        long svalLong = (long)svalue.GetValueObject();
-                        if(sign==0)
+                        long svalLong = svalue.int64Value;
+                        if (sign == 0)
                             int64Value += svalLong;
                         else if (sign == 1)
                             int64Value -= svalLong;
@@ -37,67 +37,43 @@ namespace SimpleLanguage.VM
                         else if (sign == 6)
                             int64Value |= svalLong;
                         else if (sign == 7)
-                            int64Value = int64Value ^ svalLong;
+                            int64Value ^= svalLong;
                         else if (sign == 8)
-                            int64Value = int64Value << (int)svalLong;
+                            int64Value <<= (int)svalLong;
                         else if (sign == 9)
-                            int64Value = int64Value >> (int)svalLong;
+                            int64Value >>= (int)svalLong;
                     }
                     break;
                 case EVMType.UInt64:
                     {
-                        if(svalue.eType == EVMType.UInt64 )
-                        {
-                            if (sign == 0)
-                                uint64Value += svalue.uint64Value;
-                            else if (sign == 1)
-                                uint64Value -= svalue.uint64Value;
-                            else if (sign == 2)
-                                uint64Value *= svalue.uint64Value;
-                            else if (sign == 3)
-                                uint64Value /= svalue.uint64Value;
-                            else if (sign == 4)
-                                uint64Value %= svalue.uint64Value;
-                            else if (sign == 5)
-                                uint64Value &= svalue.uint64Value;
-                            else if (sign == 6)
-                                uint64Value |= svalue.uint64Value;
-                            else if (sign == 7)
-                                uint64Value = uint64Value ^ svalue.uint64Value;
-                            else if (sign == 8)
-                                uint64Value = uint64Value << (int)svalue.uint64Value;
-                            else if (sign == 9)
-                                uint64Value = uint64Value >> (int)svalue.uint64Value;
-                        }
-                        else
-                        {
-                            long svalLong = (long)svalue.GetValueObject();
-                            if (sign == 0)
-                                int64Value += svalLong;
-                            else if (sign == 1)
-                                int64Value -= svalLong;
-                            else if (sign == 2)
-                                int64Value *= svalLong;
-                            else if (sign == 3)
-                                int64Value /= svalLong;
-                            else if (sign == 4)
-                                int64Value %= svalLong;
-                            else if (sign == 5)
-                                int64Value &= svalLong;
-                            else if (sign == 6)
-                                int64Value |= svalLong;
-                            else if (sign == 7)
-                                int64Value = int64Value ^ svalLong;
-                            else if (sign == 8)
-                                int64Value = int64Value << (int)svalLong;
-                            else if (sign == 9)
-                                int64Value = int64Value >> (int)svalLong;
-                        }
+                        ulong svalULong = svalue.eType == EVMType.UInt64
+                            ? svalue.uint64Value
+                            : (ulong)svalue.int64Value;
+                        if (sign == 0)
+                            uint64Value += svalULong;
+                        else if (sign == 1)
+                            uint64Value -= svalULong;
+                        else if (sign == 2)
+                            uint64Value *= svalULong;
+                        else if (sign == 3)
+                            uint64Value /= svalULong;
+                        else if (sign == 4)
+                            uint64Value %= svalULong;
+                        else if (sign == 5)
+                            uint64Value &= svalULong;
+                        else if (sign == 6)
+                            uint64Value |= svalULong;
+                        else if (sign == 7)
+                            uint64Value ^= svalULong;
+                        else if (sign == 8)
+                            uint64Value <<= (int)svalULong;
+                        else if (sign == 9)
+                            uint64Value >>= (int)svalULong;
                     }
                     break;
                 case EVMType.Int32:
                     {
-                        int svalInt = int.Parse(svalue.GetValueObject().ToString());
+                        int svalInt = svalue.int32Value;
                         if (sign == 0)
                             int32Value += svalInt;
                         else if (sign == 1)
@@ -113,16 +89,16 @@ namespace SimpleLanguage.VM
                         else if (sign == 6)
                             int32Value |= svalInt;
                         else if (sign == 7)
-                            int32Value = int32Value ^ svalInt;
+                            int32Value ^= svalInt;
                         else if (sign == 8)
-                            int32Value = int32Value << (int)svalInt;
+                            int32Value <<= svalInt;
                         else if (sign == 9)
-                            int32Value = int32Value >> (int)svalInt;
+                            int32Value >>= svalInt;
                     }
                     break;
                 case EVMType.UInt32:
                     {
-                        uint svalUInt = (uint)svalue.GetValueObject();
+                        uint svalUInt = svalue.uint32Value;
                         if (sign == 0)
                             uint32Value += svalUInt;
                         else if (sign == 1)
@@ -138,16 +114,16 @@ namespace SimpleLanguage.VM
                         else if (sign == 6)
                             uint32Value |= svalUInt;
                         else if (sign == 7)
-                            uint32Value = uint32Value ^ svalUInt;
+                            uint32Value ^= svalUInt;
                         else if (sign == 8)
-                            uint32Value = uint32Value << (int)svalUInt;
+                            uint32Value <<= (int)svalUInt;
                         else if (sign == 9)
-                            uint32Value = uint32Value >> (int)svalUInt;
+                            uint32Value >>= (int)svalUInt;
                     }
                     break;
                 case EVMType.Int16:
                     {
-                        short svalShort = (short)svalue.GetValueObject();
+                        short svalShort = svalue.int16Value;
                         if (sign == 0)
                             int16Value += svalShort;
                         else if (sign == 1)
@@ -172,60 +148,32 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.UInt16:
                     {
-
-                        short svalShort = (short)svalue.GetValueObject();
+                        ushort svalUShort = svalue.uint16Value;
                         if (sign == 0)
-                            int16Value += svalShort;
+                            uint16Value += svalUShort;
                         else if (sign == 1)
-                            int16Value -= svalShort;
+                            uint16Value -= svalUShort;
                         else if (sign == 2)
-                            int16Value *= svalShort;
+                            uint16Value *= svalUShort;
                         else if (sign == 3)
-                            int16Value /= svalShort;
+                            uint16Value /= svalUShort;
                         else if (sign == 4)
-                            int16Value %= svalShort;
+                            uint16Value %= svalUShort;
                         else if (sign == 5)
-                            int16Value &= svalShort;
+                            uint16Value &= svalUShort;
                         else if (sign == 6)
-                            int16Value |= svalShort;
+                            uint16Value |= svalUShort;
                         else if (sign == 7)
-                            int16Value = (short)(int16Value ^ svalShort);
+                            uint16Value = (ushort)(uint16Value ^ svalUShort);
                         else if (sign == 8)
-                            int16Value = (short)(int16Value << svalShort);
+                            uint16Value = (ushort)(uint16Value << svalUShort);
                         else if (sign == 9)
-                            int16Value = (short)(int16Value >> svalShort);
+                            uint16Value = (ushort)(uint16Value >> svalUShort);
                     }
                     break;
-                //case EVMType.Char:
-                //    {
-
-                //        char svalChar = (char)svalue.GetValueObject();
-                //        if (sign == 0)
-                //            charValue += svalChar;
-                //        else if (sign == 1)
-                //            charValue -= svalChar;
-                //        else if (sign == 2)
-                //            charValue *= svalChar;
-                //        else if (sign == 3)
-                //            charValue /= svalChar;
-                //        else if (sign == 4)
-                //            charValue %= svalChar;
-                //        else if (sign == 5)
-                //            charValue &= svalChar;
-                //        else if (sign == 6)
-                //            charValue |= svalChar;
-                //        else if (sign == 7)
-                //            charValue = (char)(charValue ^ svalChar);
-                //        else if (sign == 8)
-                //            charValue = (char)(charValue << svalChar);
-                //        else if (sign == 9)
-                //            charValue = (char)(charValue >> svalChar);
-                //    }
-                //    break;
                 case EVMType.Byte:
                     {
-
-                        byte svalByte = (byte)svalue.GetValueObject();
+                        byte svalByte = svalue.int8Value;
                         if (sign == 0)
                             int8Value += svalByte;
                         else if (sign == 1)
@@ -241,17 +189,16 @@ namespace SimpleLanguage.VM
                         else if (sign == 6)
                             int8Value |= svalByte;
                         else if (sign == 7)
-                            int8Value = (byte)(int16Value ^ svalByte);
+                            int8Value = (byte)(int8Value ^ svalByte);
                         else if (sign == 8)
-                            int8Value = (byte)(int16Value << svalByte);
+                            int8Value = (byte)(int8Value << svalByte);
                         else if (sign == 9)
-                            int8Value = (byte)(int16Value >> svalByte);
+                            int8Value = (byte)(int8Value >> svalByte);
                     }
                     break;
                 case EVMType.SByte:
                     {
-
-                        sbyte svalSbyte = (sbyte)svalue.GetValueObject();
+                        sbyte svalSbyte = svalue.sint8Value;
                         if (sign == 0)
                             sint8Value += svalSbyte;
                         else if (sign == 1)
@@ -276,7 +223,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Float32:
                     {
-                        float svalFloat = (float)svalue.GetValueObject();
+                        float svalFloat = svalue.floatValue;
                         if (sign == 0)
                             floatValue += svalFloat;
                         else if (sign == 1)
@@ -295,7 +242,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Float64:
                     {
-                        double svalDouble = (double)svalue.GetValueObject();
+                        double svalDouble = svalue.doubleValue;
                         if (sign == 0)
                             doubleValue += svalDouble;
                         else if (sign == 1)
@@ -314,11 +261,12 @@ namespace SimpleLanguage.VM
                     break;
                 default:
                     {
-                        Debug.Write("Error -------------");
+                        Debug.Write("Error 不支持该类型的算术/位运算");
                     }
                     break;
             }
         }
+
         public void AddSValue(ref SValue sval, bool isUnsign, out bool isMethodCall )
         {
             isMethodCall = false;
@@ -407,30 +355,39 @@ namespace SimpleLanguage.VM
         }
         public void MinusSValue(SValue sval, bool isUnsign)
         {
+            ComputeSVAlue(1, ref sval, isUnsign);
         }
         public void MultiplySValue(SValue sval, bool isUnsign)
         {
+            ComputeSVAlue(2, ref sval, isUnsign);
         }
         public void DivSValue(SValue sval, bool isUnsign)
         {
+            ComputeSVAlue(3, ref sval, isUnsign);
         }
         public void ModuloSValue(SValue sval, bool isUnsign)
         {
+            ComputeSVAlue(4, ref sval, isUnsign);
         }
         public void CombineSValue(SValue sval, bool isUnsign)
         {
+            ComputeSVAlue(5, ref sval, isUnsign);
         }
         public void InclusiveOrSValue(SValue sval, bool isUnsign)
         {
+            ComputeSVAlue(6, ref sval, isUnsign);
         }
         public void XORSValue(SValue sval, bool isUnsign)
         {
+            ComputeSVAlue(7, ref sval, isUnsign);
         }
         public void ShrSValue(SValue sval, bool isUnsign)
         {
+            ComputeSVAlue(9, ref sval, isUnsign);
         }
         public void ShiSValue(SValue sval, bool isUnsign)
         {
+            ComputeSVAlue(8, ref sval, isUnsign);
         }
         public void NotSValue()
         {
@@ -486,7 +443,7 @@ namespace SimpleLanguage.VM
                 case EVMType.Int64:
                     {
                         eType = EVMType.Boolean;
-                        int8Value = (uint32Value == 0) ? (byte)1 : (byte)0;
+                        int8Value = (int64Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.UInt64:

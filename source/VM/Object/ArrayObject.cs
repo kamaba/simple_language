@@ -14,6 +14,8 @@ namespace SimpleLanguage.VM
 {
     public class ArrayObject : ClassObject
     {
+        public Array array => m_Array;
+
         private Array m_Array = null;
         private RuntimeType eArrayType = null;
         public ArrayObject(RuntimeType rt, int length ) : base( rt, false )
