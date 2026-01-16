@@ -106,6 +106,20 @@ namespace SimpleLanguage.Core.IR
             {
                 IRNewExpress ire = new IRNewExpress(_irMethod, cnode.constValueExpress);
                 irList.Add(ire);
+
+                //var mfc = cnode.methodCall;
+                //IRCallFunction irCallFun = new IRCallFunction(_irMethod);
+                //irCallFun.Parse(mfc);
+                //irList.Add(irCallFun);
+
+
+                //var owirmc = IRManager.instance.GetIRMetaClassById(cnode.variable.ownerMetaClass.GetHashCode());
+                //var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(cnode.variable.defineMetaType, owirmc);
+
+                //IRStoreVariable irStoreVar = IRStoreVariable.CreateIRStoreVariable(irmt, owirmc,_irMethod, cnode.variable);
+
+                //irList.Add(irStoreVar);
+
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.New)
             {

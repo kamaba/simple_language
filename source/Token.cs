@@ -13,8 +13,9 @@ namespace SimpleLanguage
         public int sourceBeginChar { get; protected set; }         //开始所在列
         public int sourceEndLine { get; protected set; }            //结束所在行
         public int sourceEndChar { get; protected set; }            //结束所在行
+        public List<List<Token>> childrenTokensList => m_ChildrenTokensList;
 
-        private List<Token> m_ChildrenTokensList = new List<Token>();
+        private List<List<Token>> m_ChildrenTokensList = new List<List<Token>>();
         public Token( string _path, ETokenType tokenType, object _lexeme, int sourceLine, int sourceChar, object _extend = null )
         {
             this.path = _path;
@@ -64,7 +65,15 @@ namespace SimpleLanguage
         }    
         public void AddChildrenToken( Token token )
         {
-            m_ChildrenTokensList.Add( token );
+            // each child entry is a list of tokens representing one interpolation parameter
+            var list = new List<Token>();
+            list.Add(token);
+            m_ChildrenTokensList.Add(list);
+        }
+        public void AddChildrenTokens( List<Token> tokens )
+        {
+            if (tokens == null) return;
+            m_ChildrenTokensList.Add(new List<Token>(tokens));
         }
         public override string ToString()
         {

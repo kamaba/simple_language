@@ -911,6 +911,20 @@ namespace SimpleLanguage.VM.Runtime
                         mfc.InvokeCSharp( this );
                     }
                     break;
+                case EIROpCode.NewConstObject:
+                    {
+                        //前期先和newtemplateclass一样处理，等以后确定后，要精简单这个，使用无模板方法，省去查找的过程，直接
+                        //创建已注册的runtimeType 当前runtimeType在生成类的时候，就已经注册过来了,加快了查找方法
+                        IRMetaClass mdt = iri.opValue as IRMetaClass;
+                        var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(mdt);
+                        SObject sob = ObjectManager.CreateObjectByRuntimeType(rt, true);
+                        if (sob is ClassObject co)
+                        {
+                            ObjectManager.AddClassObject(co);
+                        }
+                        m_ValueStack[m_ValueIndex++].SetSObject(sob);
+                    }
+                    break;
                 case EIROpCode.NewObject:
                     {
                         //前期先和newtemplateclass一样处理，等以后确定后，要精简单这个，使用无模板方法，省去查找的过程，直接

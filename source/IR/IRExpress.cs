@@ -198,12 +198,19 @@ namespace SimpleLanguage.IR
     {
         public IRNewExpress(IRMethod irMethod, MetaConstExpressNode mnoen ) : base(irMethod)
         {
+
+            IRData irdata = new IRData();
+            irdata.opCode = IRManager.GetConstIROpCode(mnoen.eType);
+            irdata.opValue = mnoen.value;
+            //irdata.SetDebugInfoByToken( mcn.GetToken() );
+            AddIRData(irdata);
+
             //var owirmc = IRManager.instance.GetIRMetaClassById(mnoen.ownerMetaClass.GetHashCode());
-            IRMetaClass newObjIRMC = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
-            var irmc = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
-            var newObjectIRMT = new IRMetaType(newObjIRMC);
-            IRNew irNew = new IRNew(irMethod, newObjIRMC);
-            AddIRRangeData(irNew.IRDataList);
+            //IRMetaClass newObjIRMC = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
+            //var irmc = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
+            //var newObjectIRMT = new IRMetaType(newObjIRMC);
+            //IRNew irNew = new IRNew(irMethod, newObjIRMC);
+            //AddIRRangeData(irNew.IRDataList);
         }
         public IRNewExpress(IRMethod irMethod, MetaNewObjectExpressNode mnoen ) : base(irMethod)
         {

@@ -86,7 +86,7 @@ namespace SimpleLanguage.Core
         public EType eType { get; private set; } = EType.None;
         public MetaConstExpressNode(FileMetaConstValueTerm fmct)
         {
-            m_FileMetaConstValueTerm = fmct;
+            m_FileMetaConstValueTerm = fmct;            
 
             eType = fmct.token.GetEType();
 
@@ -100,6 +100,16 @@ namespace SimpleLanguage.Core
         public MetaConstExpressNode(MetaType mt, object val)
         {
             Parse1(eType, val);
+        }
+        public override void Parse(AllowUseSettings auc) 
+        {
+            if (m_FileMetaConstValueTerm?.token?.type == ETokenType.String)
+            {
+                if (m_FileMetaConstValueTerm.token.childrenTokensList.Count > 0)
+                {
+                    //MetaCallLink mcl = new MetaCallLink()
+                }
+            }
         }
         private void Parse1(EType _etype, object val)
         {

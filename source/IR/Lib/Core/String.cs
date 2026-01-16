@@ -29,39 +29,84 @@ namespace SimpleLanguage.Lib
                 return _format ?? string.Empty;
             }
 
-            // Simple implementation: replace each occurrence of "{}" with the next argument's ToString().
-            // If there are more placeholders than args, keep them as-is.
-            int argIndex = 0;
+            int autoIndex = 0; // auto-incrementing index for {} placeholders
             int searchIndex = 0;
             var result = new System.Text.StringBuilder(_format.Length + 32);
 
             while (searchIndex < _format.Length)
             {
-                int braceIndex = _format.IndexOf("{}", searchIndex, System.StringComparison.Ordinal);
-                if (braceIndex < 0 || argIndex >= obj.Length)
+                int braceStart = _format.IndexOf('{', searchIndex);
+                if (braceStart < 0)
                 {
-                    // no more placeholders or no more args: append the rest and stop
+                    // no more placeholders, append the rest
                     result.Append(_format, searchIndex, _format.Length - searchIndex);
                     break;
                 }
 
                 // append text before placeholder
-                if (braceIndex > searchIndex)
+                if (braceStart > searchIndex)
                 {
-                    result.Append(_format, searchIndex, braceIndex - searchIndex);
+                    result.Append(_format, searchIndex, braceStart - searchIndex);
                 }
 
-                // append formatted argument
-                var value = obj[argIndex++];
-                string str = "";
-                if( value is SObject sobj )
+                // find closing brace
+                int braceEnd = _format.IndexOf('}', braceStart + 1);
+                if (braceEnd < 0)
                 {
-                    str = sobj.value.ToString();
+                    // malformed: no closing brace, append the rest as-is
+                    result.Append(_format, braceStart, _format.Length - braceStart);
+                    break;
                 }
-                result.Append(str);
 
-                // move past "{}"
-                searchIndex = braceIndex + 2;
+                // extract content between braces
+                string placeholder = _format.Substring(braceStart + 1, braceEnd - braceStart - 1);
+                int argIndex;
+
+                if (string.IsNullOrEmpty(placeholder))
+                {
+                    // {} -> use auto-incrementing index
+                    argIndex = autoIndex++;
+                }
+                else if (int.TryParse(placeholder, out int parsedIndex))
+                {
+                    // {0}, {1}, etc. -> use explicit index
+                    argIndex = parsedIndex;
+                }
+                else
+                {
+                    // unrecognized placeholder content, keep as literal
+                    result.Append('{');
+                    result.Append(placeholder);
+                    result.Append('}');
+                    searchIndex = braceEnd + 1;
+                    continue;
+                }
+
+                // append the argument if index is valid
+                if (argIndex >= 0 && argIndex < obj.Length)
+                {
+                    var value = obj[argIndex];
+                    string str = "";
+                    if (value is SObject sobj)
+                    {
+                        str = sobj.value?.ToString() ?? "";
+                    }
+                    else if (value != null)
+                    {
+                        str = value.ToString();
+                    }
+                    result.Append(str);
+                }
+                else
+                {
+                    // index out of range, keep placeholder as-is
+                    result.Append('{');
+                    result.Append(placeholder);
+                    result.Append('}');
+                }
+
+                // move past this placeholder
+                searchIndex = braceEnd + 1;
             }
 
             return result.ToString();

@@ -871,7 +871,9 @@ namespace SimpleLanguage.Core
                     {
                         if( m_FrontCallNode.m_MetaVariable == null )
                         {
-                            string mvname = "auto_constvalue_" + m_Token.GetEType().ToString() + "_" + m_Token.lexeme.ToString();
+                            MetaConstExpressNode mcen = m_FrontCallNode.m_ExpressNode as MetaConstExpressNode;
+                            string mvname = "auto_constvalue_" + mcen.eType.ToString() 
+                                + "_" + mcen.GetHashCode();
                             var fmetaVariable = m_OwnerMetaFunctionBlock.GetMetaVariable(mvname);
                             if (fmetaVariable == null)
                             {
@@ -879,6 +881,19 @@ namespace SimpleLanguage.Core
                                     MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaFunctionBlock, m_OwnerMetaClass,
                                     new MetaType(m_FrontCallNode.m_MetaClass));
                                 m_OwnerMetaFunctionBlock.AddMetaVariable(m_FrontCallNode.m_MetaVariable);
+
+                                m_FrontCallNode.m_MetaInputParamCollection = new MetaInputParamCollection(ownerMetaClass, ownerMetaFunctionBlock);
+
+                                MetaInputParam mip = new MetaInputParam(m_FrontCallNode.metaExpressValue);
+                                m_FrontCallNode.m_MetaInputParamCollection.AddMetaInputParam(mip);
+
+                                MetaMemberFunction mmf = m_FrontCallNode.m_MetaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_FrontCallNode.m_MetaInputParamCollection );
+                                if (mmf == null)
+                                {
+                                    Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + m_FrontCallNode.m_MetaClass.allClassName + "的_init_方法!)", m_Token);
+                                    return false;
+                                }
+                                m_FrontCallNode.m_MetaFunction = mmf;
                             }
                         }
                         if (GetFunctionOrVariableByOwnerClass(m_FrontCallNode.m_MetaClass, m_Name) == false)

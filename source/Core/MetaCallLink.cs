@@ -338,23 +338,24 @@ namespace SimpleLanguage.Core
 
                     //mbobs.assignStatementsList.Add(mas);
 
-                    string name = "auto_constvalue_" + fvn.constValueExpress.eType.ToString() + "_" + fvn.constValueExpress.value.ToString();
+                    string name = "auto_constvalue_" + fvn.constValueExpress.eType.ToString() + "_" + fvn.constValueExpress.GetHashCode();
                     newmv = frontNode.ownerMetaFunctionBlock.GetMetaVariable(name);
                     if (newmv == null)
                     {
-                        var mccm = CoreMetaClassManager.GetMetaClassByEType(fvn.constValueExpress.eType);
-                        newmv = new MetaVariable(name, MetaVariable.EVariableFrom.LocalStatement,
-                        frontNode.ownerMetaFunctionBlock, frontNode.metaType.metaClass, new MetaType(mccm));
+                        Debug.Assert(false, "没有创建const变量!");
+                        //var mccm = CoreMetaClassManager.GetMetaClassByEType(fvn.constValueExpress.eType);
+                        //newmv = new MetaVariable(name, MetaVariable.EVariableFrom.LocalStatement,
+                        //frontNode.ownerMetaFunctionBlock, frontNode.metaType.metaClass, new MetaType(mccm));
 
-                        frontNode.ownerMetaFunctionBlock.AddMetaVariable(newmv);
+                        //frontNode.ownerMetaFunctionBlock.AddMetaVariable(newmv);
                     }
 
-                    MetaVisitNode mvn1 = MetaVisitNode.CreateByNewConst(frontNode.ownerMetaClass, frontNode.ownerMetaFunctionBlock, 
-                        frontNode.metaType, frontNode.metaExpressValue as MetaConstExpressNode,
-                        newmv);
+                    MetaVisitNode mvn1 = MetaVisitNode.CreateByNewConst(frontNode.ownerMetaClass, frontNode.ownerMetaFunctionBlock,
+                        frontNode.metaType, frontNode.metaExpressValue as MetaConstExpressNode, frontNode.metaFunction as MetaMemberFunction,
+                        frontNode.metaInputParamCollection, newmv);
                     m_VisitNodeList.Add(mvn1);
 
-                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType.metaClass, mcn.callMetaType.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, mcn.metaInputParamCollection, newmv, mcn.storeMetaVariable);
+                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType.metaClass, mcn.callMetaType.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, mcn.metaInputParamCollection, null, null );
                 }
                 else
                 {

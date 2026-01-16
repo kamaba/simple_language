@@ -3,6 +3,9 @@ import CSharp.SimpleLanguage.Core
 
 StringTest
 {
+    ClassT{
+        string name = "xxx"
+    }
     static fun()
     {
         name = "QuTa"
@@ -16,15 +19,17 @@ StringTest
         #输出 Name:Quta,Score=55
 
         
-        str2 = "Name:{0},Score:{1}".format( score, name )
+        str2 = "Name:{1},Score:{0}".format( (score+1)+(3*5), name+"_xx" )
         System.Console.WriteLine(str2)
-        #输出 Name:Quta,Score=55
-        #!
-        #在""中对$var 的识别 
-        str3 = "Name:$name Score:$score a+b=${(a+b).toString()}"  #像这种的的会被解析成 string.format( "Name:{} Score={} a+b={}", name, score, (a+b).toString() )
-        System.Console.WriteLine(str3)
-        #输出 Name:Quta Score=55 a+b=400
+        #输出 Name:Quta_xx,Score=71
 
+        ct = ClassT(){ name = "mmm" }
+        
+        #在""中对$var 的识别  #像这种的的会被解析成 string.format( "Name:{} Score={} a+b={}", name, score, (a+b).toString() )
+        str3 = "Name:$ct.name Score:$score a+b=${(a+b).toString()}"  
+        #System.Console.WriteLine(str3)
+        #输出 Name:Quta Score=55 a+b=400
+        #!
         #再复杂一点的
         str4 = "Name:$name Score:$score a[{}]+b[{}]=${(a+b).toString()}".format(a, b ) 
         #像这种的的会被解析成 string.format( "Name:{} Score={} a[{}]+b[{}]={}", name, score, a, b, (a+b).toString() )

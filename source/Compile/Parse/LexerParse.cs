@@ -922,6 +922,7 @@ namespace SimpleLanguage.Compile
             AddToken(ETokenType.String, m_Builder.ToString(), EType.String);
         }
 
+
         void ReadString()
         {
             var stringBuilder = new StringBuilder();
@@ -978,140 +979,87 @@ namespace SimpleLanguage.Compile
                     m_SourceChar++;
                     break;
                 }
-                //else if (m_TempChar == '{')
-                //{
-                //    stringBuilder.Append(m_Builder);
-                //    AddChildrenToken(ETokenType.String, m_Builder.ToString());
-                //    m_Builder.Clear();
-                //    int braceLevel = 0;
-                //    int startLine = m_SourceLine;
-                //    int startChar = m_SourceChar;
-                //    do
-                //    {
-                //        var tchar = ReadChar();
-                //        if (tchar == END_CHAR)
-                //            break;
-                        
-                //        if( tchar == '}' )
-                //        {
-                //            if ( braceLevel == 0 )
-                //            {
-                //                break;
-                //            }
-                //            else
-                //            {
-                //                braceLevel--;
-                //            }
-                //        }
-                //        else if( tchar == '{' )
-                //        {
-                //            braceLevel++;
-                //        }
-                //        m_Builder.Append(tchar);
-                //    } while (true);
-
-                //    LexerParse lp = new LexerParse(m_Path, m_Builder.ToString());
-                //    lp.SetSourcePosition(startLine, startChar);
-                //    lp.ParseToTokenList();
-                //    var token1 = new Token();
-                //    token1.SetExtend("param");
-                //    for ( int i = 0; i < lp.listTokens.Count; i++ )
-                //    {
-                //        token1.AddChildrenToken(lp.listTokens[i]);
-                //    }
-                //    AddChildrenToken(token1);
-                //    stringBuilder.Append("{" + m_Builder + "}");
-                //    m_Builder.Clear();
-
-                //    var nextTempChar = ReadChar();
-                //    if (nextTempChar == '\"')
-                //    {
-                //        m_Index++;
-                //        m_SourceChar++;
-                //        currentToken.SetLexeme(stringBuilder.ToString());
-                //        break;
-                //    }
-                //    else
-                //    {
-                //        UndoChar();
-                //    }
-                //}
-                //else if (m_TempChar == '}')
-                //{
-                //    Debug.Write("Error  不允许}独立出现，一般与{配对出现，如果要显示}请使用\\}");
-                //    break;
-                //}
                 else if (m_TempChar == '$')
                 {
                     // string interpolation inside normal string: $name / ${expr}
                     var nextChar = ReadChar();
                     if (nextChar == '{')
                     {
-                        // ${ expr } -> close current literal, + ( expr ) + "..."
-                        AddToken(ETokenType.String, m_Builder.ToString());
-                        AddToken(ETokenType.Plus, '+');
-                        AddToken(ETokenType.LeftPar, '{');
-                        int braceLevel = 0;
+                        // ${ expr } -> extract expression and replace with {}
+                        if (m_Builder.Length > 0)
+                        {
+                            // append accumulated literal to overall lexeme and clear
+                            stringBuilder.Append(m_Builder);
+                            m_Builder.Clear();
+                        }
+
+                        // insert placeholder
+                        stringBuilder.Append("{}");
+
+                        int braceLevel = 1;
                         int startLine = m_SourceLine;
                         int startChar = m_SourceChar;
+                        var exprBuilder = new StringBuilder();
+
                         do
                         {
                             var tchar = ReadChar();
-                            if (tchar == ')')
+                            if (tchar == END_CHAR)
+                                break;
+
+                            if (tchar == '}')
                             {
+                                braceLevel--;
                                 if (braceLevel == 0)
                                 {
                                     break;
-                                }
-                                else
-                                {
-                                    braceLevel--;
                                 }
                             }
                             else if (tchar == '{')
                             {
                                 braceLevel++;
                             }
-                            m_Builder.Append(tchar);
+                            exprBuilder.Append(tchar);
                         } while (true);
 
-                        LexerParse lp = new LexerParse(m_Path, m_Builder.ToString());
-                        lp.SetSourcePosition(startLine, startChar);
-                        lp.ParseToTokenList();
-                        m_ListTokens.AddRange(lp.listTokens);
-                        m_Builder.Clear();
-                        AddToken(ETokenType.RightPar, ')');
+                        // parse expression and add its tokens as children of current string token
+                        if (exprBuilder.Length > 0)
+                        {
+                            LexerParse lp = new LexerParse(m_Path, exprBuilder.ToString());
+                            lp.SetSourcePosition(startLine, startChar);
+                            lp.ParseToTokenList();
 
-                        var nextTempChar = ReadChar();
-                        if (nextTempChar == '"')
-                        {
-                            m_Index++;
-                            m_SourceChar++;
-                            break;
-                        }
-                        else
-                        {
-                            AddToken(ETokenType.Plus, '+');
+                            // add parsed expression token list as one parameter entry
+                            if (m_CurrentToken != null)
+                                m_CurrentToken.AddChildrenTokens(lp.listTokens);
                         }
                     }
                     else
                     {
-                        // $name / $score style: treat as identifier expression
-                        AddToken(ETokenType.String, m_Builder.ToString());
-                        AddToken(ETokenType.Plus, '+');
+                        // $name / $score style: identifier expression followed by non-identifier
+                        if (m_Builder.Length > 0)
+                        {
+                            stringBuilder.Append(m_Builder);
+                            m_Builder.Clear();
+                        }
+
+                        // insert placeholder
+                        stringBuilder.Append("{}");
 
                         int startLine = m_SourceLine;
                         int startChar = m_SourceChar;
-                        m_Builder.Clear();
+                        var identBuilder = new StringBuilder();
+
                         if (IsIdentifier2(nextChar))
                         {
-                            m_Builder.Append(nextChar);
+                            identBuilder.Append(nextChar);
+                            // read the rest of the first identifier
                             while (true)
                             {
                                 var ch2 = ReadChar();
                                 if (IsIdentifier2(ch2))
                                 {
-                                    m_Builder.Append(ch2);
+                                    identBuilder.Append(ch2);
                                 }
                                 else
                                 {
@@ -1119,21 +1067,85 @@ namespace SimpleLanguage.Compile
                                     break;
                                 }
                             }
-                            LexerParse lp = new LexerParse(m_Path, m_Builder.ToString());
-                            lp.SetSourcePosition(startLine, startChar);
-                            lp.ParseToTokenList();
-                            m_ListTokens.AddRange(lp.listTokens);
-                            m_Builder.Clear();
+
+                            // support dotted member chains: .name .prop ...
+                            while (true)
+                            {
+                                char p = PeekChar();
+                                if (p == '.')
+                                {
+                                    ReadChar(); // consume '.'
+                                    identBuilder.Append('.');
+                                    // read next identifier after dot
+                                    var nch = ReadChar();
+                                    if (IsIdentifier2(nch))
+                                    {
+                                        identBuilder.Append(nch);
+                                        while (true)
+                                        {
+                                            var ch3 = ReadChar();
+                                            if (IsIdentifier2(ch3))
+                                                identBuilder.Append(ch3);
+                                            else
+                                            {
+                                                UndoChar();
+                                                break;
+                                            }
+                                        }
+                                        continue; // check for further . chains
+                                    }
+                                    else
+                                    {
+                                        // invalid after dot, undo the failed read and stop
+                                        UndoChar(); // undo nch
+                                        // remove trailing '.' we appended (invalid chain)
+                                        identBuilder.Length = identBuilder.Length - 1;
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+
+                            if (identBuilder.Length > 0)
+                            {
+                                // parse the identifier expression (may include dots) and add resulting tokens as one parameter entry
+                                LexerParse lp = new LexerParse(m_Path, identBuilder.ToString());
+                                lp.SetSourcePosition(startLine, startChar);
+                                lp.ParseToTokenList();
+                                if (m_CurrentToken != null)
+                                    m_CurrentToken.AddChildrenTokens(lp.listTokens);
+                            }
+                        }
+                        else if (!char.IsWhiteSpace(nextChar) && nextChar != END_CHAR)
+                        {
+                            // fallback: capture until whitespace or quote as identifier (handles cases like $name<space>)
+                            identBuilder.Append(nextChar);
+                            while (true)
+                            {
+                                var ch2 = ReadChar();
+                                if (ch2 == END_CHAR || char.IsWhiteSpace(ch2) || ch2 == '"' || ch2 == '\'' )
+                                {
+                                    UndoChar();
+                                    break;
+                                }
+                                identBuilder.Append(ch2);
+                            }
+
+                            if (identBuilder.Length > 0)
+                            {
+                                LexerParse lp = new LexerParse(m_Path, identBuilder.ToString());
+                                lp.SetSourcePosition(startLine, startChar);
+                                lp.ParseToTokenList();
+                                if (m_CurrentToken != null)
+                                    m_CurrentToken.AddChildrenTokens(lp.listTokens);
+                            }
                         }
                         else
                         {
-                            // not a valid identifier, keep as literal '$'
+                            // not a valid identifier, keep as literal '$' + nextChar
                             m_Builder.Append('$');
                             m_Builder.Append(nextChar);
                         }
-
-                        // expect to continue string, add '+' for following literal part
-                        AddToken(ETokenType.Plus, '+');
                     }
                 }
                 else
@@ -1142,8 +1154,7 @@ namespace SimpleLanguage.Compile
                 }
             }
             while (true);
-            //}
-        }      
+        }
         void SharpLevel( int topLevel )
         {
             m_Builder.Clear();
