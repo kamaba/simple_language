@@ -485,22 +485,34 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadConstNull:
                     {
-                        m_ValueStack[m_ValueIndex++].SetNullValueType();
+                        int _idx = m_ValueIndex;
+                        m_ValueStack[_idx].SetNullValueType();
+                        SyncRawFromSValue(_idx);
+                        m_ValueIndex++;
                     }
                     break; 
                 case EIROpCode.LoadConstByte:
                     {
-                        m_ValueStack[m_ValueIndex++].SetInt8Value((Byte)iri.opValue);
+                        int _idx = m_ValueIndex;
+                        m_ValueStack[_idx].SetInt8Value((Byte)iri.opValue);
+                        SyncRawFromSValue(_idx);
+                        m_ValueIndex++;
                     }
                     break;
                 case EIROpCode.LoadConstSByte:
                     {
-                        m_ValueStack[m_ValueIndex++].SetSInt8Value((SByte)iri.opValue);
+                        int _idx = m_ValueIndex;
+                        m_ValueStack[_idx].SetSInt8Value((SByte)iri.opValue);
+                        SyncRawFromSValue(_idx);
+                        m_ValueIndex++;
                     }
                     break;
                 case EIROpCode.LoadConstBoolean:
                     {
-                        m_ValueStack[m_ValueIndex++].SetBoolValue((bool)iri.opValue);
+                        int _idx = m_ValueIndex;
+                        m_ValueStack[_idx].SetBoolValue((bool)iri.opValue);
+                        SyncRawFromSValue(_idx);
+                        m_ValueIndex++;
                     }
                     break;
                 //case EIROpCode.LoadConstChar:
@@ -510,47 +522,74 @@ namespace SimpleLanguage.VM.Runtime
                 //    break;
                 case EIROpCode.LoadConstInt16:
                     {
-                        m_ValueStack[m_ValueIndex++].SetInt16Value((Int16)iri.opValue);
+                        int _idx = m_ValueIndex;
+                        m_ValueStack[_idx].SetInt16Value((Int16)iri.opValue);
+                        SyncRawFromSValue(_idx);
+                        m_ValueIndex++;
                     }
                     break;
                 case EIROpCode.LoadConstUInt16:
                     {
-                        m_ValueStack[m_ValueIndex++].SetUInt16Value((UInt16)iri.opValue);
+                        int _idx = m_ValueIndex;
+                        m_ValueStack[_idx].SetUInt16Value((UInt16)iri.opValue);
+                        SyncRawFromSValue(_idx);
+                        m_ValueIndex++;
                     }
                     break;
                 case EIROpCode.LoadConstInt32:
                     {
-                        m_ValueStack[m_ValueIndex++].SetInt32Value((Int32)iri.opValue);
+                        int _idx = m_ValueIndex;
+                        m_ValueStack[_idx].SetInt32Value((Int32)iri.opValue);
+                        SyncRawFromSValue(_idx);
+                        m_ValueIndex++;
                     }
                     break;
                 case EIROpCode.LoadConstUInt32:
                     {
-                        m_ValueStack[m_ValueIndex++].SetUInt32Value((UInt32)iri.opValue);
+                        int _idx = m_ValueIndex;
+                        m_ValueStack[_idx].SetUInt32Value((UInt32)iri.opValue);
+                        SyncRawFromSValue(_idx);
+                        m_ValueIndex++;
                     }
                     break;
                 case EIROpCode.LoadConstInt64:
                     {
-                        m_ValueStack[m_ValueIndex++].SetInt64Value((Int64)iri.opValue);
+                        int _idx = m_ValueIndex;
+                        m_ValueStack[_idx].SetInt64Value((Int64)iri.opValue);
+                        SyncRawFromSValue(_idx);
+                        m_ValueIndex++;
                     }
                     break;
                 case EIROpCode.LoadConstUInt64:
                     {
-                        m_ValueStack[m_ValueIndex++].SetUInt64Value((UInt64)iri.opValue);
+                        int _idx = m_ValueIndex;
+                        m_ValueStack[_idx].SetUInt64Value((UInt64)iri.opValue);
+                        SyncRawFromSValue(_idx);
+                        m_ValueIndex++;
                     }
                     break;
                 case EIROpCode.LoadConstFloat:
                     {
-                        m_ValueStack[m_ValueIndex++].SetFloatValue((Single)iri.opValue);
+                        int _idx = m_ValueIndex;
+                        m_ValueStack[_idx].SetFloatValue((Single)iri.opValue);
+                        SyncRawFromSValue(_idx);
+                        m_ValueIndex++;
                     }
                     break;
                 case EIROpCode.LoadConstDouble:
                     {
-                        m_ValueStack[m_ValueIndex++].SetDoubleValue((Double)iri.opValue);
+                        int _idx = m_ValueIndex;
+                        m_ValueStack[_idx].SetDoubleValue((Double)iri.opValue);
+                        SyncRawFromSValue(_idx);
+                        m_ValueIndex++;
                     }
                     break;
                 case EIROpCode.LoadConstString:
                     {
-                        m_ValueStack[m_ValueIndex++].SetStringValue( (String)iri.opValue );
+                        int _idx = m_ValueIndex;
+                        m_ValueStack[_idx].SetStringValue( (String)iri.opValue );
+                        SyncRawFromSValue(_idx);
+                        m_ValueIndex++;
                     }
                     break;
                 case EIROpCode.Convert_I8:
@@ -799,7 +838,10 @@ namespace SimpleLanguage.VM.Runtime
                         if( mfc.irMethod.id == "type" )
                         {
                             var sobj = RuntimeTypeManager.CreateTypeObject(rt);
-                            m_ValueStack[m_ValueIndex++].SetSObject(sobj);
+                            int _idx = m_ValueIndex;
+                            m_ValueStack[_idx].SetSObject(sobj);
+                            SyncRawFromSValue(_idx);
+                            m_ValueIndex++;
                         }
                         else
                         {
@@ -852,7 +894,10 @@ namespace SimpleLanguage.VM.Runtime
                             if (mfc.irMethod.id == "type")
                             {
                                 var sobj = RuntimeTypeManager.CreateTypeObject(rt);
-                                m_ValueStack[m_ValueIndex++].SetSObject(sobj);
+                        int _idx = m_ValueIndex;
+                        m_ValueStack[_idx].SetSObject(sobj);
+                        SyncRawFromSValue(_idx);
+                        m_ValueIndex++;
                             }
                             else
                             {
@@ -993,7 +1038,10 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ObjectManager.AddClassObject(co);
                         }
-                        m_ValueStack[m_ValueIndex++].SetSObject(sob);
+                        int _idx = m_ValueIndex;
+                        m_ValueStack[_idx].SetSObject(sob);
+                        SyncRawFromSValue(_idx);
+                        m_ValueIndex++;
 
                         var irList = rt.irClass.CreateStaticMetaMetaVariableIRList();
                         if (irList.Count > 0)
@@ -1012,7 +1060,10 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ObjectManager.AddClassObject(co);
                         }
-                        m_ValueStack[m_ValueIndex++].SetSObject(sobj);
+                        int _idx = m_ValueIndex;
+                        m_ValueStack[_idx].SetSObject(sobj);
+                        SyncRawFromSValue(_idx);
+                        m_ValueIndex++;
                         var irc = rt.irClass;
 
 
@@ -1050,7 +1101,9 @@ namespace SimpleLanguage.VM.Runtime
                         if(iri.opValue == null )
                         {
                             var sval = m_ValueStack[m_ValueIndex - 1];
-                            m_ValueStack[m_ValueIndex++] = sval;
+                            m_ValueStack[m_ValueIndex] = sval;
+                            SyncRawFromSValue(m_ValueIndex);
+                            m_ValueIndex++;
                         }
                         else
                         {
@@ -1059,7 +1112,9 @@ namespace SimpleLanguage.VM.Runtime
                             for( int i = count-1; i >= 0; i-- )
                             {
                                 var sval = m_ValueStack[curVIndex - i - 1];
-                                m_ValueStack[m_ValueIndex++] = sval;
+                                m_ValueStack[m_ValueIndex] = sval;
+                                SyncRawFromSValue(m_ValueIndex);
+                                m_ValueIndex++;
                             }
                         }
                     }
