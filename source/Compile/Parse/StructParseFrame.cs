@@ -1488,13 +1488,53 @@ namespace SimpleLanguage.Compile
                     continue;
                 }
 
+                // Symbols (operators) break attachable chains: do not allow an identifier
+                // earlier to claim a following Par/Bracket/Brace as its member-call if an
+                // operator appears between them (e.g. `b + ()` should not become `b()`).
+                if (v.nodeType == ENodeType.Symbol)
+                {
+                    handleBeforeList.Add(v);
+                    lastAttachable = null;
+                    isGenericMode = false;
+                    continue;
+                }
+
                 // Function call: only fold if we are in generic or plain-call mode (not comparison mode)
                 if (v.nodeType == ENodeType.Par)
                 {
                     HandleNodeSingleLine_Recursive(v);
                     if (lastAttachable != null && (isGenericMode || lastAttachable.angleNode == null))
                     {
-                        lastAttachable.finalNode.SetParNode(v);
+                        // if the paren expression begins with an operator, do not treat as a call
+                        // instead treat as binary plus: append a '+' symbol and the paren as separate nodes
+                        bool startsWithOperator = false;
+                        if (v.childList != null && v.childList.Count > 0)
+                        {
+                            var first = v.childList[0];
+                            if (first.nodeType == ENodeType.Symbol)
+                            {
+                                var t = first.token.type;
+                                if (t == ETokenType.Plus || t == ETokenType.Minus || t == ETokenType.Multiply || t == ETokenType.Divide || t == ETokenType.Modulo)
+                                {
+                                    startsWithOperator = true;
+                                }
+                            }
+                        }
+
+                        if (startsWithOperator)
+                        {
+                            // insert a '+' node then the paren node as normal nodes
+                            var plusToken = new Token("", ETokenType.Plus, "+", 0, 0);
+                            var plusNode = new Node(plusToken);
+                            handleBeforeList.Add(plusNode);
+                            handleBeforeList.Add(v);
+                            // reset lastAttachable so further attachments won't bind
+                            lastAttachable = null;
+                        }
+                        else
+                        {
+                            lastAttachable.finalNode.SetParNode(v);
+                        }
                     }
                     else
                     {

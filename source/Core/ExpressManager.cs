@@ -7,7 +7,10 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
+using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
+using System.Diagnostics;
+using System.Security.Cryptography;
 
 namespace SimpleLanguage.Core
 {
@@ -204,7 +207,7 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                men = new MetaConstExpressNode(fmcvt);
+                                men = new MetaConstExpressNode(ownerClass, cep.ownerMBS, fmcvt);
                                 return men;
                             }
                         }
@@ -355,7 +358,31 @@ namespace SimpleLanguage.Core
             }
             return men;
         }
-       /*
+       
+        public static MetaExpressNode ConvertNewExpress( MetaExpressNode oldmen, MetaType mdt, MetaVariable mv )        {
+
+            MetaExpressNode menNew = oldmen;
+            if (oldmen.convertNewExpressNode == true)
+            {
+                var mcen = oldmen as MetaCallLinkExpressNode;
+                Debug.Assert(mcen != null, "");
+                menNew = new MetaNewObjectExpressNode(mdt, mcen);
+                menNew.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+
+                menNew.CalcReturnType();
+            }
+            else if (oldmen is MetaArrayExpressNode maen)
+            {
+                menNew = new MetaNewObjectExpressNode(maen, oldmen.ownerMetaClass, oldmen.ownerMetaBlockStatements, mv);
+                menNew.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                menNew.CalcReturnType();
+            }
+
+            return menNew;
+        }
+
+
+        /*
         public static void CreateNewOrCalllink( CreateExpressParam cep, out MetaNewObjectExpressNode mnoen, out MetaCallLinkExpressNode men2 )
         {
             mnoen = null;

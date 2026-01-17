@@ -61,6 +61,7 @@ namespace SimpleLanguage.Compile
          *   class{ static printf(){} a(){ return a } int b; } printf() a() 和b 就是子内容节点
          */
         public List<Node> childList => m_ChildList;
+        public List<Node> extendLinkNodeList => m_ExtendLinkNodeList;
         public int priority { get; set; } = -1;
         public bool isDel { get; set; } = false;
         public Token token => m_Token;
@@ -111,7 +112,6 @@ namespace SimpleLanguage.Compile
                 return this;
             }
         }
-        public List<Node> extendLinkNodeList => m_ExtendLinkNodeList;
         public List<Node> GetLinkNodeList(bool isIncludeSelf = true)
         {
             List<Node> tlist = new List<Node>();
@@ -153,6 +153,10 @@ namespace SimpleLanguage.Compile
         {
             this.m_ChildList = nodes;
         }   
+        public void SetLastNode( Node lastNode )
+        {
+            this.m_LastNode = lastNode;
+        }
         public void SetParNode( Node parNode )
         {
             m_ParNode = parNode;

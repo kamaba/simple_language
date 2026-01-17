@@ -182,7 +182,7 @@ namespace SimpleLanguage.Core
                         {
                             m_MemberDataType = EMemberDataType.ConstValue;
                             if(m_FileMetaMemeberData.fileMetaConstValue != null )
-                                m_Express = new MetaConstExpressNode(m_FileMetaMemeberData.fileMetaConstValue);
+                                m_Express = new MetaConstExpressNode( ownerMetaClass, null, m_FileMetaMemeberData.fileMetaConstValue);
                         }
                         break;
                 }

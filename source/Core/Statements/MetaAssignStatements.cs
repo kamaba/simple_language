@@ -7,6 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
+using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using System;
 using System.Diagnostics;
@@ -343,18 +344,7 @@ namespace SimpleLanguage.Core
                     return;
                 }
 
-                var mcen = m_RightMetaExpress as MetaCallLinkExpressNode;
-                if (mcen?.isNewExpressNode == true)
-                {
-                    m_RightMetaExpress = new MetaNewObjectExpressNode(expressMdt, mcen);
-                    m_RightMetaExpress.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
-                    m_RightMetaExpress.CalcReturnType();
-                }
-                else if (m_RightMetaExpress is MetaArrayExpressNode maen)
-                {
-                    m_RightMetaExpress = new MetaNewObjectExpressNode(maen, ownerMetaClass, m_OwnerMetaBlockStatements, m_MetaVariable );
-                    m_RightMetaExpress.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
-                }
+                m_RightMetaExpress = ExpressManager.ConvertNewExpress(m_RightMetaExpress, expressMdt, m_MetaVariable );
             }
             else
             {

@@ -131,7 +131,7 @@ namespace SimpleLanguage.Core
                         switchCaseType = SwitchCaseType.Const;
                         for (int i = 0; i < list.Count; i++)
                         {
-                            var constExpress = new MetaConstExpressNode(list[i]);
+                            var constExpress = new MetaConstExpressNode( m_OwnerMetaBlockStatements?.ownerMetaClass, m_OwnerMetaBlockStatements, list[i]);
                             constExpressList.Add(constExpress);
                         }
                     }

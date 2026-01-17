@@ -6,9 +6,9 @@
 //  Description: class's memeber variable metadata and member 'data' metadata
 //****************************************************************************
 using SimpleLanguage.Compile;
-
-using SimpleLanguage.Parse;
+using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
+using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -214,15 +214,7 @@ namespace SimpleLanguage.Core
             if (m_Express != null)
             {
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
-
-                if (m_Express.isNewExpressNode)
-                {
-                    if (m_Express is MetaCallLinkExpressNode mclen)
-                    {
-                        m_Express = new MetaNewObjectExpressNode(m_DefineMetaType, mclen);
-                        m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
-                    }
-                }
+                m_Express = ExpressManager.ConvertNewExpress(m_Express, m_RealMetaType, this );
             }
             return true;
         }

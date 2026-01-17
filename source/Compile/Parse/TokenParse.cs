@@ -81,6 +81,8 @@ namespace SimpleLanguage.Compile
                     currentNode.atToken = null;
                 }
                 currentNode.linkToken = null;
+
+
             }
             else
             {
@@ -241,6 +243,10 @@ namespace SimpleLanguage.Compile
                 var tempToken = m_TokensList[m_TokenIndex];
                 if (tempToken.type == ETokenType.Finished) { break; }
                 ParseDetailToken(tempToken);
+                if( m_TokenIndex >= m_TokenCount )
+                {
+                    break;
+                }
             }
             return;
         }
@@ -330,6 +336,7 @@ namespace SimpleLanguage.Compile
                             cnode.endToken = token;
                             m_TokenIndex++;
                             currentNode = cnode.parent;
+                            //currentNode.SetLastNode( currentNode );
                         }
                         else
                         {

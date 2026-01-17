@@ -185,23 +185,8 @@ namespace SimpleLanguage.Core
         {
             if( m_MetaExpress != null )
             {
-                if (m_MetaExpress is MetaCallLinkExpressNode mcen)
-                {
-                    if (mcen.isNewExpressNode)
-                    {
-                        m_MetaExpress = new MetaNewObjectExpressNode(m_MetaType, mcen);
-                        m_MetaExpress.Parse(aus);
-                    }
-                }
-                if (m_MetaExpress is MetaArrayExpressNode maen)
-                {
-                    m_MetaExpress = new MetaNewObjectExpressNode(maen, m_OwnerMetaBlockStatements.ownerMetaClass, m_OwnerMetaBlockStatements, null);
-                    m_MetaExpress.Parse(aus);
-                }
-                else
-                {
-                    m_MetaExpress.Parse(aus);
-                }
+                m_MetaExpress.Parse(aus);
+                m_MetaExpress = ExpressManager.ConvertNewExpress(m_MetaExpress, m_MetaType, this.m_MetaMemberVariable );                
             }
         }
         public MetaType GetRetMetaType()

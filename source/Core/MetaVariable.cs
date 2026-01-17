@@ -46,6 +46,8 @@ namespace SimpleLanguage.Core
         public MetaVariable sourceMetaVariable => m_SourceMetaVariable;
         public Token pingToken => m_PintTokenList.Count > 0 ? m_PintTokenList[0] : null;
 
+        private Token m_VariableNameToken = null;
+
         #region 属性
 
         protected MetaClass m_OwnerMetaClass = null;
@@ -111,6 +113,10 @@ namespace SimpleLanguage.Core
         public void SetIsStatic( bool iss )
         {
             this.m_IsStatic = iss;
+        }
+        public void SetVariableNameToken( Token token )
+        {
+            m_VariableNameToken = token;
         }
         public void SetIsDefineMetaType( bool flag )
         {

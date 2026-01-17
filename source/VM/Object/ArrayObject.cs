@@ -24,6 +24,9 @@ namespace SimpleLanguage.VM
             eArrayType = rt.runtimeTemplateList[0];
             m_Length = length;
             CreateObject();
+
+            (m_MemberObjectArray[0] as Int32Object).SetValue(m_Length);
+
             CreateArray();
         }
         //public override void SetSValue(ClassObject val)

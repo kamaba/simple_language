@@ -41,7 +41,7 @@ namespace SimpleLanguage.Core
 
                 if(m_MetaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.New )
                 {
-                    m_IsNewExpressNode = true;
+                    m_ConvertNewExpressNode = true;
                 }
             }
         }

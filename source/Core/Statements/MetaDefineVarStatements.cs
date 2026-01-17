@@ -125,20 +125,9 @@ namespace SimpleLanguage.Core
                     return;
                 }
                 m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
-
-                if (m_ExpressNode.isNewExpressNode == true )
-                {
-                    var mcen = m_ExpressNode as MetaCallLinkExpressNode;
-                    Debug.Assert(mcen!=null, "");
-                    m_ExpressNode = new MetaNewObjectExpressNode( mdt, mcen);
-                    m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
-                }
-                else if( m_ExpressNode is MetaArrayExpressNode maen )
-                {
-                    m_ExpressNode = new MetaNewObjectExpressNode(maen, ownerMetaClass, m_OwnerMetaBlockStatements, m_DefineVarMetaVariable );
-                    m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
-                }
                 m_ExpressNode.CalcReturnType();
+
+                m_ExpressNode = ExpressManager.ConvertNewExpress(m_ExpressNode, mdt, m_DefineVarMetaVariable );
 
                 expressRetMetaDefineType = m_ExpressNode.GetReturnMetaDefineType();               
                 if (expressRetMetaDefineType == null)

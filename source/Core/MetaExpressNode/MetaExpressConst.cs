@@ -5,10 +5,12 @@
 //  DateTime: 2025/5/18 12:00:00
 //  Description: 
 //****************************************************************************
-using System;
-using System.Diagnostics;
-using System.Text;
 using SimpleLanguage.Compile;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.ConstrainedExecution;
+using System.Text;
 
 
 namespace SimpleLanguage.Core
@@ -80,13 +82,19 @@ namespace SimpleLanguage.Core
                 return right;
             }
         }
-
-        private FileMetaConstValueTerm m_FileMetaConstValueTerm = null;
+        public MetaCallLinkExpressNode metaCallLinkExpressNode => m_MetaCallLinkExpressNode;
+        public List<MetaExpressNode> stringParseExpressList => m_StringParseExpressList;
         public object value { get; set; } = null;
         public EType eType { get; private set; } = EType.None;
-        public MetaConstExpressNode(FileMetaConstValueTerm fmct)
+
+        private FileMetaConstValueTerm m_FileMetaConstValueTerm = null;
+        private List<MetaExpressNode> m_StringParseExpressList = new List<MetaExpressNode>();
+        private MetaCallLinkExpressNode m_MetaCallLinkExpressNode = null;
+        public MetaConstExpressNode( MetaClass omc, MetaBlockStatements mbs, FileMetaConstValueTerm fmct)
         {
-            m_FileMetaConstValueTerm = fmct;            
+            m_FileMetaConstValueTerm = fmct;
+            m_OwnerMetaClass = omc;
+            m_OwnerMetaBlockStatements = mbs;
 
             eType = fmct.token.GetEType();
 
@@ -105,10 +113,41 @@ namespace SimpleLanguage.Core
         {
             if (m_FileMetaConstValueTerm?.token?.type == ETokenType.String)
             {
-                if (m_FileMetaConstValueTerm.token.childrenTokensList.Count > 0)
+                var cdlist = m_FileMetaConstValueTerm.token.childrenTokensList;
+                for( int i = 0; i < cdlist.Count; i++ )
                 {
-                    //MetaCallLink mcl = new MetaCallLink()
-                }
+
+                    Node node = new Node(null);
+                    TokenParse tp = new TokenParse(m_FileMetaConstValueTerm.fileMeta, cdlist[i] );
+                    tp.BuildStruct();
+
+                    List<Node> nodeList = tp.rootNode.childList;
+                    if( nodeList.Count > 0 )
+                    {
+                        List<Node> expressNodeList = StructParse.HandleNodeSingleLine(nodeList);
+                        //var elnd = nodeList[nodeList.Count - 1].extendLinkNodeList;
+                        //for ( int j = 0; j < elnd.Count; j++ )
+                        //{
+                        //    expressNodeList.Add(elnd[i]);
+                        //}
+
+                        var filemetaExpress = FileMetatUtil.CreateFileMetaExpress(m_FileMetaConstValueTerm.fileMeta, expressNodeList, FileMetaTermExpress.EExpressType.Common);
+
+                        CreateExpressParam cep = new CreateExpressParam();
+                        cep.fme = filemetaExpress;
+                        cep.equalMetaVariable = null;
+                        cep.metaType = new MetaType(CoreMetaClassManager.stringMetaClass);
+                        cep.ownerMBS = m_OwnerMetaBlockStatements;
+                        cep.ownerMetaClass = m_OwnerMetaClass;
+
+                        var expressc = ExpressManager.CreateExpressNode(cep);
+                        expressc.Parse(auc);
+                        expressc.CalcReturnType();
+
+                        m_StringParseExpressList.Add(expressc);
+
+                    }
+                }              
             }
         }
         private void Parse1(EType _etype, object val)

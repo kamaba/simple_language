@@ -505,6 +505,10 @@ namespace SimpleLanguage.Core
                     {
                         return new MetaType( m_MetaTemplate );
                     }
+                case EVisitType.Express:
+                    {
+                        return this.express.metaType;
+                    }
                 default:
                     {
                         Log.AddInStructMeta(EError.None, "Error ---------" + visitType.ToString() );

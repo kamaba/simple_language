@@ -134,8 +134,16 @@ namespace SimpleLanguage.Compile
             }
             else if (node.nodeType == ENodeType.Par)
             {
-                fmbt = new FileMetaParTerm(fm, node, expressType);
-                fmbt.priority = SignComputePriority.Level1;
+                if (node.extendLinkNodeList.Count > 1)
+                {
+                    fmbt = new FileMetaCallTerm(fm, node);
+                    fmbt.priority = SignComputePriority.Level1;
+                }
+                else
+                {
+                    fmbt = new FileMetaParTerm(fm, node, expressType);
+                    fmbt.priority = SignComputePriority.Level1;
+                }
             }
             else if (node.nodeType == ENodeType.Brace)
             {

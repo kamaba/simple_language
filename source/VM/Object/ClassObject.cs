@@ -88,7 +88,7 @@ namespace SimpleLanguage.VM
         //        return rt;
         //    }
         //}
-        public void CreateObject()
+        public virtual void CreateObject()
         {
             for (int i = 0; i < m_IRMetaVariableList.Count; i++)
             {
@@ -105,10 +105,6 @@ namespace SimpleLanguage.VM
                 }
                 //m_Type[i] = sobj.typeId;
                 m_MemberObjectArray[i] = sobj;
-                if( i == 0 )
-                {
-                    (sobj as Int32Object).SetValue(m_Length);
-                }
             }
         }
         //public SObject GetMemberVariable(int index)

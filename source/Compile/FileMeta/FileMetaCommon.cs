@@ -7,13 +7,14 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
+using SimpleLanguage.IR;
+using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
-
-using SimpleLanguage.Logging;
-using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.Compile
 {
@@ -445,6 +446,9 @@ namespace SimpleLanguage.Compile
         {
             m_FileMeta = fm;
             AddChildExtendLinkList(node, isIncludeSelf );
+        }
+        public FileMetaCallLink( FileMeta fm, List<Token> list )
+        {
         }
         void AddChildExtendLinkList( Node cnode, bool isIncludeSelf )
         {

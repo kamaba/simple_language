@@ -16,6 +16,10 @@ public class Int32 extends Object
     {
         ret 0
     }
+    Int32 add( Int32 _val )
+    {
+        ret this._value + _val;
+    }
     _init_( Int32 _val )
     {
         this._value = _val

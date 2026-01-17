@@ -12,23 +12,26 @@ StringTest
         score = 55
         a = 100
         b = 300
-        #System.Console.WriteLine("name=" + name )
+        #cstr = (a+b).add( (b+(score-20)) ).toString()
         
-        str1 = string.toFormat( "Name:{} Score:{} ", name, score )        
-        System.Console.WriteLine(str1)
+        #System.Console.WriteLine("name=" + cstr )
+        
+        #str1 = string.toFormat( "Name:{} Score:{} ", name, score )        
+        #System.Console.WriteLine(str1)
         #输出 Name:Quta,Score=55
 
         
-        str2 = "Name:{1},Score:{0}".format( (score+1)+(3*5), name+"_xx" )
-        System.Console.WriteLine(str2)
+        #str2 = "Name:{1},Score:{0}".format( (score+1)+(3*5), name+"_xx" )
+        #System.Console.WriteLine(str2)
         #输出 Name:Quta_xx,Score=71
 
         ct = ClassT(){ name = "mmm" }
         
         #在""中对$var 的识别  #像这种的的会被解析成 string.format( "Name:{} Score={} a+b={}", name, score, (a+b).toString() )
         str3 = "Name:$ct.name Score:$score a+b=${(a+b).toString()}"  
-        #System.Console.WriteLine(str3)
+        System.Console.WriteLine(str3)
         #输出 Name:Quta Score=55 a+b=400
+        
         #!
         #再复杂一点的
         str4 = "Name:$name Score:$score a[{}]+b[{}]=${(a+b).toString()}".format(a, b ) 
