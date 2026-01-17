@@ -468,16 +468,16 @@ namespace SimpleLanguage.VM
             {
                 if( isEqual )
                 {
-                    sval2.SetBoolValue( valnum1 == valnum2 );
+                    sval1.SetBoolValue( valnum1 == valnum2 );
                 }
                 else
                 {
-                    sval2.SetBoolValue(valnum1 != valnum2);
+                    sval1.SetBoolValue(valnum1 != valnum2);
                 }
             }
             else
             {
-                sval2.SetBoolValue(false);
+                sval1.SetBoolValue(false);
                 Log.AddVM(EError.None, "else VM Compare SVAlue 比较的低码还没有完善!!");
             }
         }
@@ -578,7 +578,7 @@ namespace SimpleLanguage.VM
                 }
                 else
                 {
-                    sval2.SetBoolValue(false);
+                    sval1.SetBoolValue(false);
                 }
                 Log.AddVM(EError.None, " end VM Compare SVAlue 比较的低码还没有完善!!");
             }

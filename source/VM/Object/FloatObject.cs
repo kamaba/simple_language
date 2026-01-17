@@ -33,7 +33,7 @@ namespace SimpleLanguage.VM
         }
     }
 
-    class Float64Object : SObject
+    public class Float64Object : SObject
     {
         public override object getValue() { return value; }
         public Double value;

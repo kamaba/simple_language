@@ -11,8 +11,19 @@ NumberTest
     {
         
     }
+    static int fibonacci(int n)
+    {
+        if (n == 0 || n == 1)
+        { ret n; }
+        ret fibonacci(n - 1) + fibonacci(n - 2);
+    }
+
     static int32Test()
-    {        
+    { 
+        var result = fibonacci(20); 
+        System.Console.WriteLine("result:" + result  )
+
+        #!
         System.Console.WriteLine("intmax:" + int.MaxValue.toString() )
 
         a = 20
@@ -25,6 +36,7 @@ NumberTest
         str = 'a($a )+b($b )=$(a + b)'
         System.Console.WriteLine( str )
         #System.Console.WriteLine( "a($a )+b($b )=$(a + b)" )
+        !#
     }
     static fun()
     {

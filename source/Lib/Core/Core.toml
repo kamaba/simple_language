@@ -42,6 +42,12 @@ tag      = "ir"
 ignore   = false
 priority = 0
 
+[[compileFiles.files]]
+path     = "SByte.sl"
+group    = "core"
+tag      = "ir"
+ignore   = false
+priority = 0
 
 [[compileFiles.files]]
 path     = "Int32.sl"
@@ -88,8 +94,8 @@ priority = 0
 
 [[compileFiles.files]]
 #path     = "Test/ObjectTest.sl"
-#path     = "Test/NumberTest.sl"
-path     = "Test/StringTest.sl"
+path     = "Test/NumberTest.sl"
+#path     = "Test/StringTest.sl"
 group    = "core"
 tag      = "ir"
 ignore   = false

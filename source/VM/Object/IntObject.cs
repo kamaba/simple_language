@@ -186,7 +186,7 @@ namespace SimpleLanguage.VM
             return value.ToString();
         }
     }
-    class UInt32Object : SObject
+    public class UInt32Object : SObject
     {
         public override object getValue() { return value; }
         public new UInt32 value;

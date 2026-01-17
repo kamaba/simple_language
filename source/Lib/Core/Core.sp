@@ -3,8 +3,8 @@ Project
     static Main()
     {
         #ObjectTest.fun()
-        #NumberTest.fun()
-        StringTest.fun()
+        NumberTest.fun()
+        #StringTest.fun()
     }
     static Test()
     {
