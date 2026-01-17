@@ -864,19 +864,11 @@ namespace SimpleLanguage.Compile
                     var esc = ReadChar();
                     switch (esc)
                     {
+                        // keep only minimal escapes for f-triple: allow escaping backslash, quotes, braces, dollar and \uXXXX
                         case '\\': m_Builder.Append('\\'); break;
                         case '"': m_Builder.Append('"'); break;
                         case '\'': m_Builder.Append('\''); break;
                         case '$': m_Builder.Append('$'); break;
-                        case 'a': m_Builder.Append('\a'); break;
-                        case 'b': m_Builder.Append('\b'); break;
-                        case 'f': m_Builder.Append('\f'); break;
-                        case 'n': m_Builder.Append('\n'); break;
-                        case 'r': m_Builder.Append('\r'); break;
-                        case 't': m_Builder.Append('\t'); break;
-                        case 'v': m_Builder.Append('\v'); break;
-                        case '0': m_Builder.Append('\0'); break;
-                        case '/': m_Builder.Append('/'); break;
                         case '{': m_Builder.Append('{'); break;
                         case '}': m_Builder.Append('}'); break;
                         case 'u':
@@ -890,7 +882,7 @@ namespace SimpleLanguage.Compile
                                 break;
                             }
                         default:
-                            // unknown escape, keep both backslash and char
+                            // treat unknown escapes (including n/t/r) as literal backslash+char
                             m_Builder.Append('\\');
                             if (esc != END_CHAR) m_Builder.Append(esc);
                             break;
@@ -951,14 +943,10 @@ namespace SimpleLanguage.Compile
                             stringBuilder.Append("${" + exprBuilder.ToString() + "}");
                         }
 
-                        // safety: ensure we're positioned after the closing '}'
-                        // ReadChar may have consumed the '}' already; attempt to read next char into m_TempChar
-                        m_TempChar = ReadChar();
-                        if (m_TempChar == END_CHAR)
-                        {
-                            break;
-                        }
-                        // fall through and handle m_TempChar in this iteration (append or newline handling)
+                        // we've handled the ${...} interpolation; continue outer loop
+                        continue;
+
+                        
                     }
 
                     // other $... cases are not recognized for f-triple; treat as literal

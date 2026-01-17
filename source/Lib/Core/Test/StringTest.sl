@@ -52,7 +52,7 @@ StringTest
         我\n今天 考了${score}分 "大Q$name QQ" 'xml' \" \t
         
         End"""    
-        System.Console.WriteLine(str6)
+        System.Console.WriteLine("----- " + str6)
 
         #!
         输出:我是一段话 我叫Quta
