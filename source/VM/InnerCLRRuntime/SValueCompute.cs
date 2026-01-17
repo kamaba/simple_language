@@ -17,254 +17,77 @@ namespace SimpleLanguage.VM
         // sign 0:+ 1:- 2:* 3:/ 4:% 5:& 6:| 7:^  8:<< 9:>>
         public void ComputeSVAlue( int sign, ref SValue svalue, bool isUnSign )
         {
-            switch (this.eType)
+            // unify numeric operations with promotion rules
+            bool leftIsFloat = (eType == EVMType.Float32 || eType == EVMType.Float64);
+            bool rightIsFloat = (svalue.eType == EVMType.Float32 || svalue.eType == EVMType.Float64);
+
+            // If any side is float -> use double precision
+            if (leftIsFloat || rightIsFloat)
             {
-                case EVMType.Int64:
-                    {
-                        long svalLong = svalue.int64Value;
-                        if (sign == 0)
-                            int64Value += svalLong;
-                        else if (sign == 1)
-                            int64Value -= svalLong;
-                        else if (sign == 2)
-                            int64Value *= svalLong;
-                        else if (sign == 3)
-                            int64Value /= svalLong;
-                        else if (sign == 4)
-                            int64Value %= svalLong;
-                        else if (sign == 5)
-                            int64Value &= svalLong;
-                        else if (sign == 6)
-                            int64Value |= svalLong;
-                        else if (sign == 7)
-                            int64Value ^= svalLong;
-                        else if (sign == 8)
-                            int64Value <<= (int)svalLong;
-                        else if (sign == 9)
-                            int64Value >>= (int)svalLong;
-                    }
-                    break;
-                case EVMType.UInt64:
-                    {
-                        ulong svalULong = svalue.eType == EVMType.UInt64
-                            ? svalue.uint64Value
-                            : (ulong)svalue.int64Value;
-                        if (sign == 0)
-                            uint64Value += svalULong;
-                        else if (sign == 1)
-                            uint64Value -= svalULong;
-                        else if (sign == 2)
-                            uint64Value *= svalULong;
-                        else if (sign == 3)
-                            uint64Value /= svalULong;
-                        else if (sign == 4)
-                            uint64Value %= svalULong;
-                        else if (sign == 5)
-                            uint64Value &= svalULong;
-                        else if (sign == 6)
-                            uint64Value |= svalULong;
-                        else if (sign == 7)
-                            uint64Value ^= svalULong;
-                        else if (sign == 8)
-                            uint64Value <<= (int)svalULong;
-                        else if (sign == 9)
-                            uint64Value >>= (int)svalULong;
-                    }
-                    break;
-                case EVMType.Int32:
-                    {
-                        int svalInt = svalue.int32Value;
-                        if (sign == 0)
-                            int32Value += svalInt;
-                        else if (sign == 1)
-                            int32Value -= svalInt;
-                        else if (sign == 2)
-                            int32Value *= svalInt;
-                        else if (sign == 3)
-                            int32Value /= svalInt;
-                        else if (sign == 4)
-                            int32Value %= svalInt;
-                        else if (sign == 5)
-                            int32Value &= svalInt;
-                        else if (sign == 6)
-                            int32Value |= svalInt;
-                        else if (sign == 7)
-                            int32Value ^= svalInt;
-                        else if (sign == 8)
-                            int32Value <<= svalInt;
-                        else if (sign == 9)
-                            int32Value >>= svalInt;
-                    }
-                    break;
-                case EVMType.UInt32:
-                    {
-                        uint svalUInt = svalue.uint32Value;
-                        if (sign == 0)
-                            uint32Value += svalUInt;
-                        else if (sign == 1)
-                            uint32Value -= svalUInt;
-                        else if (sign == 2)
-                            uint32Value *= svalUInt;
-                        else if (sign == 3)
-                            uint32Value /= svalUInt;
-                        else if (sign == 4)
-                            uint32Value %= svalUInt;
-                        else if (sign == 5)
-                            uint32Value &= svalUInt;
-                        else if (sign == 6)
-                            uint32Value |= svalUInt;
-                        else if (sign == 7)
-                            uint32Value ^= svalUInt;
-                        else if (sign == 8)
-                            uint32Value <<= (int)svalUInt;
-                        else if (sign == 9)
-                            uint32Value >>= (int)svalUInt;
-                    }
-                    break;
-                case EVMType.Int16:
-                    {
-                        short svalShort = svalue.int16Value;
-                        if (sign == 0)
-                            int16Value += svalShort;
-                        else if (sign == 1)
-                            int16Value -= svalShort;
-                        else if (sign == 2)
-                            int16Value *= svalShort;
-                        else if (sign == 3)
-                            int16Value /= svalShort;
-                        else if (sign == 4)
-                            int16Value %= svalShort;
-                        else if (sign == 5)
-                            int16Value &= svalShort;
-                        else if (sign == 6)
-                            int16Value |= svalShort;
-                        else if (sign == 7)
-                            int16Value = (short)(int16Value ^ svalShort);
-                        else if (sign == 8)
-                            int16Value = (short)(int16Value << svalShort);
-                        else if (sign == 9)
-                            int16Value = (short)(int16Value >> svalShort);
-                    }
-                    break;
-                case EVMType.UInt16:
-                    {
-                        ushort svalUShort = svalue.uint16Value;
-                        if (sign == 0)
-                            uint16Value += svalUShort;
-                        else if (sign == 1)
-                            uint16Value -= svalUShort;
-                        else if (sign == 2)
-                            uint16Value *= svalUShort;
-                        else if (sign == 3)
-                            uint16Value /= svalUShort;
-                        else if (sign == 4)
-                            uint16Value %= svalUShort;
-                        else if (sign == 5)
-                            uint16Value &= svalUShort;
-                        else if (sign == 6)
-                            uint16Value |= svalUShort;
-                        else if (sign == 7)
-                            uint16Value = (ushort)(uint16Value ^ svalUShort);
-                        else if (sign == 8)
-                            uint16Value = (ushort)(uint16Value << svalUShort);
-                        else if (sign == 9)
-                            uint16Value = (ushort)(uint16Value >> svalUShort);
-                    }
-                    break;
-                case EVMType.Byte:
-                    {
-                        byte svalByte = svalue.int8Value;
-                        if (sign == 0)
-                            int8Value += svalByte;
-                        else if (sign == 1)
-                            int8Value -= svalByte;
-                        else if (sign == 2)
-                            int8Value *= svalByte;
-                        else if (sign == 3)
-                            int8Value /= svalByte;
-                        else if (sign == 4)
-                            int8Value %= svalByte;
-                        else if (sign == 5)
-                            int8Value &= svalByte;
-                        else if (sign == 6)
-                            int8Value |= svalByte;
-                        else if (sign == 7)
-                            int8Value = (byte)(int8Value ^ svalByte);
-                        else if (sign == 8)
-                            int8Value = (byte)(int8Value << svalByte);
-                        else if (sign == 9)
-                            int8Value = (byte)(int8Value >> svalByte);
-                    }
-                    break;
-                case EVMType.SByte:
-                    {
-                        sbyte svalSbyte = svalue.sint8Value;
-                        if (sign == 0)
-                            sint8Value += svalSbyte;
-                        else if (sign == 1)
-                            sint8Value -= svalSbyte;
-                        else if (sign == 2)
-                            sint8Value *= svalSbyte;
-                        else if (sign == 3)
-                            sint8Value /= svalSbyte;
-                        else if (sign == 4)
-                            sint8Value %= svalSbyte;
-                        else if (sign == 5)
-                            sint8Value &= svalSbyte;
-                        else if (sign == 6)
-                            sint8Value |= svalSbyte;
-                        else if (sign == 7)
-                            sint8Value = (sbyte)(sint8Value ^ svalSbyte);
-                        else if (sign == 8)
-                            sint8Value = (sbyte)(sint8Value << svalSbyte);
-                        else if (sign == 9)
-                            sint8Value = (sbyte)(sint8Value >> svalSbyte);
-                    }
-                    break;
-                case EVMType.Float32:
-                    {
-                        float svalFloat = svalue.floatValue;
-                        if (sign == 0)
-                            floatValue += svalFloat;
-                        else if (sign == 1)
-                            floatValue -= svalFloat;
-                        else if (sign == 2)
-                            floatValue *= svalFloat;
-                        else if (sign == 3)
-                            floatValue /= svalFloat;
-                        else if (sign == 4)
-                            floatValue %= svalFloat;
-                        else
-                        {
-                            Debug.Write("Error 不支持Float 的这种类型的操作");
-                        }
-                    }
-                    break;
-                case EVMType.Float64:
-                    {
-                        double svalDouble = svalue.doubleValue;
-                        if (sign == 0)
-                            doubleValue += svalDouble;
-                        else if (sign == 1)
-                            doubleValue -= svalDouble;
-                        else if (sign == 2)
-                            doubleValue *= svalDouble;
-                        else if (sign == 3)
-                            doubleValue /= svalDouble;
-                        else if (sign == 4)
-                            doubleValue %= svalDouble;
-                        else
-                        {
-                            Debug.Write("Error 不支持Double 的这种类型的操作");
-                        }
-                    }
-                    break;
-                default:
-                    {
-                        Debug.Write("Error 不支持该类型的算术/位运算");
-                    }
-                    break;
+                double a = (eType == EVMType.Float64) ? doubleValue : (eType == EVMType.Float32 ? (double)floatValue : ConvertToDoubleFromIntTypes());
+                double b = (svalue.eType == EVMType.Float64) ? svalue.doubleValue : (svalue.eType == EVMType.Float32 ? (double)svalue.floatValue : svalue.ConvertToDoubleFromIntTypes());
+                double r = 0;
+                switch (sign)
+                {
+                    case 0: r = a + b; break;
+                    case 1: r = a - b; break;
+                    case 2: r = a * b; break;
+                    case 3: r = (b == 0) ? 0 : a / b; break;
+                    case 4: r = (b == 0) ? 0 : a % b; break;
+                    default:
+                        Debug.Write("Error 不支持浮点的位运算");
+                        break;
+                }
+                if (eType == EVMType.Float64)
+                    doubleValue = r;
+                else
+                    floatValue = (float)r;
+                return;
             }
+
+            // integer operations - decide signed vs unsigned based on flag or operand types
+            bool useUnsigned = isUnSign || IsUnsignedType(eType) || IsUnsignedType(svalue.eType);
+            if (useUnsigned)
+            {
+                ulong a = ConvertToULong();
+                ulong b = svalue.ConvertToULong();
+                ulong r = 0;
+                switch (sign)
+                {
+                    case 0: r = a + b; break;
+                    case 1: r = a - b; break;
+                    case 2: r = a * b; break;
+                    case 3: r = (b == 0) ? 0UL : a / b; break;
+                    case 4: r = (b == 0) ? 0UL : a % b; break;
+                    case 5: r = a & b; break;
+                    case 6: r = a | b; break;
+                    case 7: r = a ^ b; break;
+                    case 8: r = a << (int)b; break;
+                    case 9: r = a >> (int)b; break;
+                }
+                // write back according to original left type
+                AssignULongToType(r);
+                return;
+            }
+
+            // signed integer
+            long la = ConvertToLong();
+            long lb = svalue.ConvertToLong();
+            long lr = 0;
+            switch (sign)
+            {
+                case 0: lr = la + lb; break;
+                case 1: lr = la - lb; break;
+                case 2: lr = la * lb; break;
+                case 3: lr = (lb == 0) ? 0L : la / lb; break;
+                case 4: lr = (lb == 0) ? 0L : la % lb; break;
+                case 5: lr = la & lb; break;
+                case 6: lr = la | lb; break;
+                case 7: lr = la ^ lb; break;
+                case 8: lr = la << (int)lb; break;
+                case 9: lr = la >> (int)lb; break;
+            }
+            AssignLongToType(lr);
         }
 
         public void AddSValue(ref SValue sval, bool isUnsign, out bool isMethodCall )

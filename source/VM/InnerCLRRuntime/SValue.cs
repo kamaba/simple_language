@@ -108,6 +108,86 @@ namespace SimpleLanguage.VM
             eType = EVMType.UInt64;
             uint64Value = val;
         }
+        // helper conversions used by ComputeSVAlue
+        bool IsUnsignedType(EVMType t)
+        {
+            return t == EVMType.UInt16 || t == EVMType.UInt32 || t == EVMType.UInt64;
+        }
+        double ConvertToDoubleFromIntTypes()
+        {
+            switch (eType)
+            {
+                case EVMType.Byte: return int8Value;
+                case EVMType.SByte: return sint8Value;
+                case EVMType.Int16: return int16Value;
+                case EVMType.UInt16: return uint16Value;
+                case EVMType.Int32: return int32Value;
+                case EVMType.UInt32: return uint32Value;
+                case EVMType.Int64: return int64Value;
+                case EVMType.UInt64: return (double)uint64Value;
+            }
+            return 0.0;
+        }
+        ulong ConvertToULong()
+        {
+            switch (eType)
+            {
+                case EVMType.Byte: return int8Value;
+                case EVMType.SByte: return (ulong)(ulong)(byte)sint8Value;
+                case EVMType.Int16: return (ulong)(ushort)int16Value;
+                case EVMType.UInt16: return uint16Value;
+                case EVMType.Int32: return (ulong)(uint)int32Value;
+                case EVMType.UInt32: return uint32Value;
+                case EVMType.Int64: return (ulong)int64Value;
+                case EVMType.UInt64: return uint64Value;
+                default: return 0;
+            }
+        }
+        long ConvertToLong()
+        {
+            switch (eType)
+            {
+                case EVMType.Byte: return int8Value;
+                case EVMType.SByte: return sint8Value;
+                case EVMType.Int16: return int16Value;
+                case EVMType.UInt16: return uint16Value;
+                case EVMType.Int32: return int32Value;
+                case EVMType.UInt32: return uint32Value;
+                case EVMType.Int64: return int64Value;
+                case EVMType.UInt64: return (long)uint64Value;
+                default: return 0;
+            }
+        }
+        void AssignULongToType(ulong v)
+        {
+            switch (eType)
+            {
+                case EVMType.UInt64: uint64Value = v; break;
+                case EVMType.Int64: int64Value = (long)v; break;
+                case EVMType.UInt32: uint32Value = (uint)v; break;
+                case EVMType.Int32: int32Value = (int)v; break;
+                case EVMType.UInt16: uint16Value = (ushort)v; break;
+                case EVMType.Int16: int16Value = (short)v; break;
+                case EVMType.Byte: int8Value = (byte)v; break;
+                case EVMType.SByte: sint8Value = (sbyte)v; break;
+                default: break;
+            }
+        }
+        void AssignLongToType(long v)
+        {
+            switch (eType)
+            {
+                case EVMType.Int64: int64Value = v; break;
+                case EVMType.UInt64: uint64Value = (ulong)v; break;
+                case EVMType.Int32: int32Value = (int)v; break;
+                case EVMType.UInt32: uint32Value = (uint)v; break;
+                case EVMType.Int16: int16Value = (short)v; break;
+                case EVMType.UInt16: uint16Value = (ushort)v; break;
+                case EVMType.Byte: int8Value = (byte)v; break;
+                case EVMType.SByte: sint8Value = (sbyte)v; break;
+                default: break;
+            }
+        }
         public void SetFloatValue(Single val)
         {
             eType = EVMType.Float32;

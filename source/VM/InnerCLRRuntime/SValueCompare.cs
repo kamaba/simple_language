@@ -265,8 +265,8 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            dynamic valnum1 = null;
-            dynamic valnum2 = null;
+            // numeric comparison path will use explicit promotion rules
+            // handle simple cases first
             switch (sval1.eType)
             {
                 //String 只允许对字符形式比较 
@@ -323,7 +323,7 @@ namespace SimpleLanguage.VM
                 case EVMType.UInt64:
                 case EVMType.Float32:
                 case EVMType.Float64:
-                    valnum1 = sval1.GetValueObject() as dynamic;
+                    // numeric handled below via promotion
                     break;
                 case EVMType.Array:
                     {
@@ -394,6 +394,37 @@ namespace SimpleLanguage.VM
                     }
             }
 
+            // if both are numeric types -> numeric equality with promotion
+            if (IsNumericType(sval1.eType) && IsNumericType(sval2.eType))
+            {
+                // float promotion
+                bool leftFloat = (sval1.eType == EVMType.Float32 || sval1.eType == EVMType.Float64);
+                bool rightFloat = (sval2.eType == EVMType.Float32 || sval2.eType == EVMType.Float64);
+                if (leftFloat || rightFloat)
+                {
+                    double a = (sval1.eType == EVMType.Float64) ? sval1.doubleValue : (sval1.eType == EVMType.Float32 ? sval1.floatValue : sval1.ConvertToDoubleFromIntTypes());
+                    double b = (sval2.eType == EVMType.Float64) ? sval2.doubleValue : (sval2.eType == EVMType.Float32 ? sval2.floatValue : sval2.ConvertToDoubleFromIntTypes());
+                    if (isEqual) sval1.SetBoolValue(a == b); else sval1.SetBoolValue(a != b);
+                    return;
+                }
+
+                // unsigned promotion if either is unsigned
+                bool useUnsigned = sval1.IsUnsignedType(sval1.eType) || sval2.IsUnsignedType(sval2.eType);
+                if (useUnsigned)
+                {
+                    ulong a = sval1.ConvertToULong();
+                    ulong b = sval2.ConvertToULong();
+                    if (isEqual) sval1.SetBoolValue(a == b); else sval1.SetBoolValue(a != b);
+                    return;
+                }
+
+                // signed integer comparison
+                long la = sval1.ConvertToLong();
+                long lb = sval2.ConvertToLong();
+                if (isEqual) sval1.SetBoolValue(la == lb); else sval1.SetBoolValue(la != lb);
+                return;
+            }
+
             switch (sval2.eType)
             {
                 case EVMType.String:
@@ -408,18 +439,7 @@ namespace SimpleLanguage.VM
                         //return;
                     }
                     break;
-                case EVMType.Byte:
-                case EVMType.SByte:
-                case EVMType.Int16:
-                case EVMType.UInt16:
-                case EVMType.Int32:
-                case EVMType.UInt32:
-                case EVMType.Int64:
-                case EVMType.UInt64:
-                case EVMType.Float32:
-                case EVMType.Float64:
-                    valnum2 = sval2.GetValueObject() as dynamic;
-                    break;
+                // numeric types handled earlier
                 case EVMType.Array: { 
                     }
                     break;
@@ -464,31 +484,84 @@ namespace SimpleLanguage.VM
                     }
             }
 
-            if (valnum2 != null && valnum1 != null )
-            {
-                if( isEqual )
-                {
-                    sval1.SetBoolValue( valnum1 == valnum2 );
-                }
-                else
-                {
-                    sval1.SetBoolValue(valnum1 != valnum2);
-                }
-            }
-            else
-            {
-                sval1.SetBoolValue(false);
-                Log.AddVM(EError.None, "else VM Compare SVAlue 比较的低码还没有完善!!");
-            }
+            // fallback: already handled objects/classes earlier; default false
+            sval1.SetBoolValue(false);
+            Log.AddVM(EError.None, "VM Compare SVAlue 比较的低码还没有完善!!");
         }
 
 
         //0> 1:>= 2:< 3:<= 
         public static void CompareSValue1AndValue2(ref SValue sval1, ref SValue sval2, int compareSign)
         {
-            dynamic valnum1 = null;
-            dynamic valnum2 = null;
-            switch (sval1.eType)
+            // logical operators (used by VM OpCode And/Or)
+            if (compareSign == 4)
+            {
+                // logical AND
+                bool a = IsTruthy(ref sval1);
+                bool b = IsTruthy(ref sval2);
+                sval1.SetBoolValue(a && b);
+                return;
+            }
+            if (compareSign == 6)
+            {
+                // logical OR
+                bool a = IsTruthy(ref sval1);
+                bool b = IsTruthy(ref sval2);
+                sval1.SetBoolValue(a || b);
+                return;
+            }
+
+            // numeric comparisons
+            if (IsNumericType(sval1.eType) && IsNumericType(sval2.eType))
+            {
+                bool leftFloat = (sval1.eType == EVMType.Float32 || sval1.eType == EVMType.Float64);
+                bool rightFloat = (sval2.eType == EVMType.Float32 || sval2.eType == EVMType.Float64);
+                if (leftFloat || rightFloat)
+                {
+                    double a = (sval1.eType == EVMType.Float64) ? sval1.doubleValue : (sval1.eType == EVMType.Float32 ? sval1.floatValue : sval1.ConvertToDoubleFromIntTypes());
+                    double b = (sval2.eType == EVMType.Float64) ? sval2.doubleValue : (sval2.eType == EVMType.Float32 ? sval2.floatValue : sval2.ConvertToDoubleFromIntTypes());
+                    switch (compareSign)
+                    {
+                        case 0: sval1.SetBoolValue(a > b); break;
+                        case 1: sval1.SetBoolValue(a >= b); break;
+                        case 2: sval1.SetBoolValue(a < b); break;
+                        case 3: sval1.SetBoolValue(a <= b); break;
+                    }
+                    return;
+                }
+
+                bool useUnsigned = sval1.IsUnsignedType(sval1.eType) || sval2.IsUnsignedType(sval2.eType);
+                if (useUnsigned)
+                {
+                    ulong a = sval1.ConvertToULong();
+                    ulong b = sval2.ConvertToULong();
+                    switch (compareSign)
+                    {
+                        case 0: sval1.SetBoolValue(a > b); break;
+                        case 1: sval1.SetBoolValue(a >= b); break;
+                        case 2: sval1.SetBoolValue(a < b); break;
+                        case 3: sval1.SetBoolValue(a <= b); break;
+                    }
+                    return;
+                }
+
+                long la = sval1.ConvertToLong();
+                long lb = sval2.ConvertToLong();
+                switch (compareSign)
+                {
+                    case 0: sval1.SetBoolValue(la > lb); break;
+                    case 1: sval1.SetBoolValue(la >= lb); break;
+                    case 2: sval1.SetBoolValue(la < lb); break;
+                    case 3: sval1.SetBoolValue(la <= lb); break;
+                }
+                return;
+            }
+        }
+
+        // helper: numeric type check
+        static bool IsNumericType(EVMType t)
+        {
+            switch (t)
             {
                 case EVMType.Byte:
                 case EVMType.SByte:
@@ -500,87 +573,43 @@ namespace SimpleLanguage.VM
                 case EVMType.UInt64:
                 case EVMType.Float32:
                 case EVMType.Float64:
-                //case EVMType.RawByte:
-                //case EVMType.RawSByte:
-                //case EVMType.RawInt16:
-                //case EVMType.RawUInt16:
-                //case EVMType.RawInt32:
-                //case EVMType.RawUInt32:
-                //case EVMType.RawInt64:
-                //case EVMType.RawUInt64:
-                //case EVMType.RawFloat32:
-                //case EVMType.RawFloat64:
-                    valnum1 = sval1.GetValueObject() as dynamic;
-                    break;
+                    return true;
+                default:
+                    return false;
             }
+        }
 
-            switch (sval2.eType)
+        // logical && and || on truthiness
+        public static void LogicalAnd(ref SValue left, ref SValue right)
+        {
+            bool a = IsTruthy(ref left);
+            bool b = IsTruthy(ref right);
+            left.SetBoolValue(a && b);
+        }
+        public static void LogicalOr(ref SValue left, ref SValue right)
+        {
+            bool a = IsTruthy(ref left);
+            bool b = IsTruthy(ref right);
+            left.SetBoolValue(a || b);
+        }
+        static bool IsTruthy(ref SValue v)
+        {
+            if (v.isNull) return false;
+            switch (v.eType)
             {
-                case EVMType.Byte:
-                case EVMType.SByte:
-                case EVMType.Int16:
-                case EVMType.UInt16:
-                case EVMType.Int32:
-                case EVMType.UInt32:
-                case EVMType.Int64:
-                case EVMType.UInt64:
-                case EVMType.Float32:
-                case EVMType.Float64:
-                //case EVMType.RawByte:
-                //case EVMType.RawSByte:
-                //case EVMType.RawInt16:
-                //case EVMType.RawUInt16:
-                //case EVMType.RawInt32:
-                //case EVMType.RawUInt32:
-                //case EVMType.RawInt64:
-                //case EVMType.RawUInt64:
-                //case EVMType.RawFloat32:
-                //case EVMType.RawFloat64:
-                    valnum2 = sval2.GetValueObject() as dynamic;
-                    break;
-            }
-
-            if (valnum2 != null && valnum1 != null)
-            {
-                switch(compareSign )
-                {
-                    case 0:
-                        sval1.SetBoolValue(valnum1 > valnum2);
-                        break;
-                    case 1:
-                        sval1.SetBoolValue(valnum1 >= valnum2);
-                        break;
-                    case 2:
-                        sval1.SetBoolValue(valnum1 < valnum2);
-                        break;
-                    case 3:
-                        sval1.SetBoolValue(valnum1 <= valnum2);
-                        break;
-                }
-            }
-            else
-            {
-                if(sval1.eType == EVMType.Class )
-                {
-                    ClassObject co = (sval1.sobject as ClassObject);
-                    if (co != null)
-                    {
-                        var method = co.runtimeType.irClass.GetIROperatorMethodIndexByMethod(">", out int index );
-                        if( method != null )
-                        {
-
-                        }
-                    }
-                    else
-                    {
-
-                    }
-                }
-                else
-                {
-                    sval1.SetBoolValue(false);
-                }
-                Log.AddVM(EError.None, " end VM Compare SVAlue 比较的低码还没有完善!!");
+                case EVMType.Boolean: return v.int8Value != 0;
+                case EVMType.String: return !string.IsNullOrEmpty(v.stringValue);
+                case EVMType.Float32: return v.floatValue != 0.0f;
+                case EVMType.Float64: return v.doubleValue != 0.0;
+                case EVMType.Byte: return v.int8Value != 0;
+                case EVMType.SByte: return v.sint8Value != 0;
+                case EVMType.Int16: return v.int16Value != 0;
+                case EVMType.UInt16: return v.uint16Value != 0;
+                case EVMType.Int32: return v.int32Value != 0;
+                case EVMType.UInt32: return v.uint32Value != 0;
+                case EVMType.Int64: return v.int64Value != 0;
+                case EVMType.UInt64: return v.uint64Value != 0;
+                default: return v.sobject != null;
             }
         }
     }
