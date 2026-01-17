@@ -927,6 +927,7 @@ namespace SimpleLanguage.Compile
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.Append(m_Builder.ToString());
+            int plainBraceIndex = 0;
             AddToken(ETokenType.String, "");
             do
             {
@@ -973,11 +974,28 @@ namespace SimpleLanguage.Compile
                 }
                 else if (m_TempChar == '"')
                 {
-                    stringBuilder.Append(m_Builder);
+                    // flush any remaining literal into both the token lexeme and children list
+                    if (m_Builder.Length > 0)
+                    {
+                        stringBuilder.Append(m_Builder);
+                        if (m_CurrentToken != null)
+                        {
+                            var litTok = new Token(m_Path, ETokenType.String, m_Builder.ToString(), m_SourceLine, m_SourceChar);
+                            m_CurrentToken.AddChildrenTokens(new List<Token>() { litTok });
+                        }
+                        m_Builder.Clear();
+                    }
+
                     currentToken.SetLexeme(stringBuilder.ToString());
                     m_Index++;
                     m_SourceChar++;
                     break;
+                }
+                else if (m_TempChar == '{')
+                {
+                    // treat plain '{' as literal (including sequences like '{}' or '{0}')
+                    m_Builder.Append('{');
+                    continue;
                 }
                 else if (m_TempChar == '$')
                 {
@@ -988,13 +1006,18 @@ namespace SimpleLanguage.Compile
                         // ${ expr } -> extract expression and replace with {}
                         if (m_Builder.Length > 0)
                         {
-                            // append accumulated literal to overall lexeme and clear
+                            // append accumulated literal to overall lexeme
                             stringBuilder.Append(m_Builder);
+                            // add the accumulated literal as one child token list
+                            if (m_CurrentToken != null)
+                            {
+                                var litTok = new Token(m_Path, ETokenType.String, m_Builder.ToString(), m_SourceLine, m_SourceChar);
+                                m_CurrentToken.AddChildrenTokens(new List<Token>() { litTok });
+                            }
                             m_Builder.Clear();
                         }
 
-                        // insert placeholder
-                        stringBuilder.Append("{}");
+                        // no placeholder insertion here anymore; expression will be represented via children tokens
 
                         int braceLevel = 1;
                         int startLine = m_SourceLine;
@@ -1032,6 +1055,8 @@ namespace SimpleLanguage.Compile
                             // add parsed expression token list as one parameter entry
                             if (m_CurrentToken != null)
                                 m_CurrentToken.AddChildrenTokens(lp.listTokens);
+                            // include the original ${...} text into the token lexeme
+                            stringBuilder.Append("${" + exprBuilder.ToString() + "}");
                         }
                     }
                     else
@@ -1040,11 +1065,16 @@ namespace SimpleLanguage.Compile
                         if (m_Builder.Length > 0)
                         {
                             stringBuilder.Append(m_Builder);
+                            // add the accumulated literal as one child token list
+                            if (m_CurrentToken != null)
+                            {
+                                var litTok = new Token(m_Path, ETokenType.String, m_Builder.ToString(), m_SourceLine, m_SourceChar);
+                                m_CurrentToken.AddChildrenTokens(new List<Token>() { litTok });
+                            }
                             m_Builder.Clear();
                         }
 
-                        // insert placeholder
-                        stringBuilder.Append("{}");
+                        // no placeholder insertion for $ident; expression is added to children tokens
 
                         int startLine = m_SourceLine;
                         int startChar = m_SourceChar;
@@ -1114,6 +1144,8 @@ namespace SimpleLanguage.Compile
                                 lp.ParseToTokenList();
                                 if (m_CurrentToken != null)
                                     m_CurrentToken.AddChildrenTokens(lp.listTokens);
+                                // include the original $ident text into the token lexeme
+                                stringBuilder.Append("$" + identBuilder.ToString());
                             }
                         }
                         else if (!char.IsWhiteSpace(nextChar) && nextChar != END_CHAR)
@@ -1138,6 +1170,8 @@ namespace SimpleLanguage.Compile
                                 lp.ParseToTokenList();
                                 if (m_CurrentToken != null)
                                     m_CurrentToken.AddChildrenTokens(lp.listTokens);
+                                // include the original $... fallback text into the token lexeme
+                                stringBuilder.Append("$" + identBuilder.ToString());
                             }
                         }
                         else

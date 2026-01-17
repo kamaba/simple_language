@@ -27,18 +27,23 @@ StringTest
 
         ct = ClassT(){ name = "mmm" }
         
-        #在""中对$var 的识别  #像这种的的会被解析成 string.format( "Name:{} Score={} a+b={}", name, score, (a+b).toString() )
-        str3 = "Name:$ct.name Score:$score a+b=${(a+b).toString()}"  
-        System.Console.WriteLine(str3)
-        #输出 Name:Quta Score=55 a+b=400
-        
         #!
+        #在""中对$var 的识别  #像这种的的会被解析成 string.format( "Name:{} Score={} a+b={}", name, score, (a+b).toString() )
+        str3 = "{} Name:$ct.name {} Score:$score a+b=${(a+b).toString()} bb = {}" 
+        str33 = str3.format(name, score, "bb");
+        System.Console.WriteLine(str3.format(name+"---", score-50, "bbxxxx"))
+        System.Console.WriteLine(str33)
+        #输出 Name:Quta Score=55 a+b=400
+        !#
+
+        
         #再复杂一点的
         str4 = "Name:$name Score:$score a[{}]+b[{}]=${(a+b).toString()}".format(a, b ) 
         #像这种的的会被解析成 string.format( "Name:{} Score={} a[{}]+b[{}]={}", name, score, a, b, (a+b).toString() )
         System.Console.WriteLine(str4)
         #输出 Name:Quta Score=55 a[100]+b[300]=400
 
+        #!
         str5 = 'Name:\'$name\' NickName="AQ" Score=$score a{}+b{}=${(a+b).toString()}'
         System.Console.WriteLine(str5)
         #输出 Name:'$name' NickName="AQ" Score=$score a{}+b{}=${(a+b).toString()}

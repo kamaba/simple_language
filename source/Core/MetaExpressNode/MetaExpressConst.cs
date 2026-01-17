@@ -8,8 +8,7 @@
 using SimpleLanguage.Compile;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.ConstrainedExecution;
+using System.Diagnostics; 
 using System.Text;
 
 
@@ -109,50 +108,61 @@ namespace SimpleLanguage.Core
         {
             Parse1(eType, val);
         }
-        public override void Parse(AllowUseSettings auc) 
+        public override void Parse(AllowUseSettings auc)
         {
             if (m_FileMetaConstValueTerm?.token?.type == ETokenType.String)
             {
                 var cdlist = m_FileMetaConstValueTerm.token.childrenTokensList;
-                for( int i = 0; i < cdlist.Count; i++ )
+                if( cdlist.Count == 1 && (cdlist[0].Count == 1 && cdlist[0][0].type == ETokenType.String ) )
                 {
-
-                    Node node = new Node(null);
-                    TokenParse tp = new TokenParse(m_FileMetaConstValueTerm.fileMeta, cdlist[i] );
-                    tp.BuildStruct();
-
-                    List<Node> nodeList = tp.rootNode.childList;
-                    if( nodeList.Count > 0 )
+                    value = cdlist[0][0].lexeme.ToString();
+                    return;
+                }
+                else
+                {
+                    for (int i = 0; i < cdlist.Count; i++)
                     {
-                        List<Node> expressNodeList = StructParse.HandleNodeSingleLine(nodeList);
-                        //var elnd = nodeList[nodeList.Count - 1].extendLinkNodeList;
-                        //for ( int j = 0; j < elnd.Count; j++ )
-                        //{
-                        //    expressNodeList.Add(elnd[i]);
-                        //}
+                        Node node = new Node(null);
+                        TokenParse tp = new TokenParse( null, cdlist[i]);
+                        tp.BuildStruct();
 
-                        var filemetaExpress = FileMetatUtil.CreateFileMetaExpress(m_FileMetaConstValueTerm.fileMeta, expressNodeList, FileMetaTermExpress.EExpressType.Common);
+                        List<Node> nodeList = tp.rootNode.childList;
+                        if (nodeList.Count > 0)
+                        {
+                            List<Node> expressNodeList = StructParse.HandleNodeSingleLine(nodeList);
+                            //var elnd = nodeList[nodeList.Count - 1].extendLinkNodeList;
+                            //for ( int j = 0; j < elnd.Count; j++ )
+                            //{
+                            //    expressNodeList.Add(elnd[i]);
+                            //}
 
-                        CreateExpressParam cep = new CreateExpressParam();
-                        cep.fme = filemetaExpress;
-                        cep.equalMetaVariable = null;
-                        cep.metaType = new MetaType(CoreMetaClassManager.stringMetaClass);
-                        cep.ownerMBS = m_OwnerMetaBlockStatements;
-                        cep.ownerMetaClass = m_OwnerMetaClass;
+                            var filemetaExpress = FileMetatUtil.CreateFileMetaExpress(m_FileMetaConstValueTerm.fileMeta, expressNodeList, FileMetaTermExpress.EExpressType.Common);
 
-                        var expressc = ExpressManager.CreateExpressNode(cep);
-                        expressc.Parse(auc);
-                        expressc.CalcReturnType();
+                            CreateExpressParam cep = new CreateExpressParam();
+                            cep.fme = filemetaExpress;
+                            cep.equalMetaVariable = null;
+                            cep.metaType = new MetaType(CoreMetaClassManager.stringMetaClass);
+                            cep.ownerMBS = m_OwnerMetaBlockStatements;
+                            cep.ownerMetaClass = m_OwnerMetaClass;
 
-                        m_StringParseExpressList.Add(expressc);
+                            var expressc = ExpressManager.CreateExpressNode(cep);
+                            expressc.Parse(auc);
+                            expressc.CalcReturnType();
 
+                            m_StringParseExpressList.Add(expressc);
+
+                        }
                     }
-                }              
+                    if (m_StringParseExpressList.Count > 0)
+                    {
+                        m_ConvertCallExpressNode = true;
+                    }
+
+                }
             }
         }
         private void Parse1(EType _etype, object val)
         {
-            eType = _etype;
             switch (eType)
             {
                 case EType.Boolean:

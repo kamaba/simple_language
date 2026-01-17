@@ -9,6 +9,9 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
+using System.Collections.Generic;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Security.Cryptography;
 
@@ -23,6 +26,7 @@ namespace SimpleLanguage.Core
         public bool ifUnaryExpressValueIsConstThenCompute = true;// if unary express's value node is const type, then force compute 
         public bool ifOpExpressLeftAndRightIsConstThenCompute = true;
     }
+
     public struct CreateExpressParam
     {
         public MetaBlockStatements ownerMBS;
@@ -377,8 +381,27 @@ namespace SimpleLanguage.Core
                 menNew.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
                 menNew.CalcReturnType();
             }
+            else if( oldmen.convertCallExpressNode )
+            {
+                // if this constant node contains parsed string parts (interpolations),
+                // fold them into a chain of Add operations: left + right + ...
+                var mce = oldmen as MetaConstExpressNode;
+                if (mce != null && mce.stringParseExpressList != null && mce.stringParseExpressList.Count > 0)
+                {
+                    MetaExpressNode acc = mce.stringParseExpressList[0];
+                    for (int i = 1; i < mce.stringParseExpressList.Count; i++)
+                    {
+                        var right = mce.stringParseExpressList[i];
+                        acc = new MetaOpExpressNode(acc, right, ELeftRightOpSign.Add);
+                    }
+                    menNew = acc;
+                    // make sure the newly created tree is parsed and typed
+                    //menNew.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                    menNew.CalcReturnType();
+                }
+            }
 
-            return menNew;
+                return menNew;
         }
 
 
@@ -466,6 +489,41 @@ namespace SimpleLanguage.Core
                     break;
             }
             return level;
+        }
+
+        // Remove placeholders with id <= threshold, and for placeholders with id > threshold
+        // subtract threshold from their id.
+        // Example: input "{1} Name{1000} {2} Score:{1001} {3}", threshold=1000
+        // output: " Name{2} Score:{1} "
+        public static string NormalizeFormatPlaceholders(string str, int threshold = 1000)
+        {
+            if (string.IsNullOrEmpty(str)) return str;
+
+            var regex = new Regex(@"\{(\d+)\}");
+            var sb = new StringBuilder();
+            int last = 0;
+            foreach (Match m in regex.Matches(str))
+            {
+                sb.Append(str, last, m.Index - last);
+                if (int.TryParse(m.Groups[1].Value, out int id))
+                {
+                    if (id >= threshold)
+                    {
+                        sb.Append('{');
+                        sb.Append(id - threshold);
+                        sb.Append('}');
+                    }
+                    // else skip
+                }
+                else
+                {
+                    sb.Append(m.Value);
+                }
+                last = m.Index + m.Length;
+            }
+            if (last < str.Length)
+                sb.Append(str, last, str.Length - last);
+            return sb.ToString();
         }
     }
 }

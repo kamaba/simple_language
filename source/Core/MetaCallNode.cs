@@ -414,9 +414,19 @@ namespace SimpleLanguage.Core
                 //不是常量值 
                 if (!isNotConstValue)
                 {
-                    m_CallNodeType = ECallNodeType.ConstValue;
-                    m_ExpressNode = new MetaConstExpressNode(m_Token.GetEType(), m_Token.lexeme);
-                    m_MetaClass = CoreMetaClassManager.GetMetaClassByEType(m_Token.GetEType());
+                    FileMetaConstValueTerm fmcvt = new FileMetaConstValueTerm(m_FileMetaCallNode.fileMeta, m_Token);
+                    m_ExpressNode = new MetaConstExpressNode( m_OwnerMetaClass, m_OwnerMetaFunctionBlock, fmcvt );
+                    m_ExpressNode.Parse(m_AllowUseSettings);
+                    m_ExpressNode = ExpressManager.ConvertNewExpress(m_ExpressNode, m_MetaType, m_MetaVariable);
+                    if(m_ExpressNode is MetaConstExpressNode )
+                    {
+                        m_CallNodeType = ECallNodeType.ConstValue;
+                    }
+                    else
+                    {
+                        m_CallNodeType = ECallNodeType.Express;
+                    }
+                    m_MetaClass = m_ExpressNode.GetReturnMetaClass();
                     m_MetaType = new MetaType(m_MetaClass);
                 }
             }

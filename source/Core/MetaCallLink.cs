@@ -299,6 +299,10 @@ namespace SimpleLanguage.Core
             }
             return bracketCNList;
         }
+        public void AddVisitNodeList( MetaVisitNode mvn )
+        {
+            m_VisitNodeList.Add(mvn);
+        }
         public void AddVisitNodeList( int index, MetaCallNode mcn, MetaCallNode frontNode)
         {
             if (mcn.callNodeType == ECallNodeType.This)
