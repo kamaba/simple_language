@@ -752,6 +752,60 @@ namespace SimpleLanguage.Compile
                     AddToken(ETokenType.String, m_Builder.ToString(), EType.String);
                     break;
                 }
+                else if (m_TempChar == '\\')
+                {
+                    // only \' escapes single quote; otherwise keep backslash and next char literally
+                    char next = ReadChar();
+                    if (next == '\'')
+                    {
+                        m_Builder.Append('\'');
+                    }
+                    else
+                    {
+                        // put backslash as literal
+                        m_Builder.Append('\\');
+                        // handle newline after backslash specially
+                        if (next == '\r')
+                        {
+                            // consume optional \n
+                            if (PeekChar() == '\n')
+                            {
+                                ReadChar();
+                                AddLine();
+                                m_Builder.Append("\\n");
+                            }
+                            else
+                            {
+                                AddLine();
+                                m_Builder.Append("\\n");
+                            }
+                        }
+                        else if (next == '\n')
+                        {
+                            AddLine();
+                            m_Builder.Append("\\n");
+                        }
+                        else if (next != END_CHAR)
+                        {
+                            m_Builder.Append(next);
+                        }
+                    }
+                }
+                else if (m_TempChar == '\r')
+                {
+                    // normalize CR or CRLF to \n in literal
+                    if (PeekChar() == '\n')
+                    {
+                        ReadChar();
+                    }
+                    AddLine();
+                    m_Builder.Append("\\n");
+                }
+                else if (m_TempChar == '\n')
+                {
+                    AddLine();
+                    m_Builder.Append("\\n");
+                }
                 else
                 {
                     m_Builder.Append(m_TempChar);
@@ -761,17 +815,16 @@ namespace SimpleLanguage.Compile
 
         void ReadFTripleString()
         {
-            // f""" ... """ style: raw multiline string with $var / ${expr} interpolation
-            // No escape processing, but $name and ${expr} are recognized
+            // f""" ... """ style: multiline string with $var / ${expr} interpolation
             m_Builder.Clear();
+            var stringBuilder = new StringBuilder();
+            stringBuilder.Append(m_Builder.ToString());
+            AddToken(ETokenType.String, "");
 
             // current m_CurChar == 'f', consume the leading f"""
             ReadChar(); // first '"'
             ReadChar(); // second '"'
             ReadChar(); // third '"'
-
-            bool hasInterpolation = false;
-            var literalBuilder = new StringBuilder();
 
             do
             {
@@ -785,45 +838,85 @@ namespace SimpleLanguage.Compile
                 // check for closing """
                 if (m_TempChar == '"')
                 {
-                    char c1 = ReadChar();
-                    char c2 = ReadChar();
+                    int idx1 = m_Index + 1;
+                    int idx2 = m_Index + 2;
+                    char c1 = idx1 < m_Length ? m_Buffer[idx1] : END_CHAR;
+                    char c2 = idx2 < m_Length ? m_Buffer[idx2] : END_CHAR;
                     if (c1 == '"' && c2 == '"')
                     {
-                        // end of f""" string
+                        // consume the next two '"' and the third to move past closing delimiter
+                        ReadChar();
+                        ReadChar();
+                        ReadChar();
                         break;
                     }
                     else
                     {
-                        // not actually closing, append and continue
+                        // single '"' inside triple string is literal
                         m_Builder.Append('"');
-                        m_Builder.Append(c1);
-                        m_Builder.Append(c2);
                         continue;
                     }
                 }
 
-                // handle $var / ${expr} interpolation
+                if (m_TempChar == '\\')
+                {
+                    // handle escape sequences inside f-triple string
+                    var esc = ReadChar();
+                    switch (esc)
+                    {
+                        case '\\': m_Builder.Append('\\'); break;
+                        case '"': m_Builder.Append('"'); break;
+                        case '\'': m_Builder.Append('\''); break;
+                        case '$': m_Builder.Append('$'); break;
+                        case 'a': m_Builder.Append('\a'); break;
+                        case 'b': m_Builder.Append('\b'); break;
+                        case 'f': m_Builder.Append('\f'); break;
+                        case 'n': m_Builder.Append('\n'); break;
+                        case 'r': m_Builder.Append('\r'); break;
+                        case 't': m_Builder.Append('\t'); break;
+                        case 'v': m_Builder.Append('\v'); break;
+                        case '0': m_Builder.Append('\0'); break;
+                        case '/': m_Builder.Append('/'); break;
+                        case '{': m_Builder.Append('{'); break;
+                        case '}': m_Builder.Append('}'); break;
+                        case 'u':
+                            {
+                                var hex = new System.Text.StringBuilder();
+                                for (int i = 0; i < 4; i++)
+                                {
+                                    hex.Append(ReadChar());
+                                }
+                                m_Builder.Append((char)System.Convert.ToUInt16(hex.ToString(), 16));
+                                break;
+                            }
+                        default:
+                            // unknown escape, keep both backslash and char
+                            m_Builder.Append('\\');
+                            if (esc != END_CHAR) m_Builder.Append(esc);
+                            break;
+                    }
+                    continue;
+                }
+
                 if (m_TempChar == '$')
                 {
                     var nextChar = ReadChar();
                     if (nextChar == '{')
                     {
-                        // ${expr} style
-                        if (!hasInterpolation)
+                        // flush accumulated literal into children
+                        if (m_Builder.Length > 0)
                         {
-                            hasInterpolation = true;
-                            AddToken(ETokenType.String, m_Builder.ToString(), EType.String);
+                            stringBuilder.Append(m_Builder);
+                            if (m_CurrentToken != null)
+                            {
+                                var litTok = new Token(m_Path, ETokenType.String, m_Builder.ToString(), m_SourceLine, m_SourceChar);
+                                m_CurrentToken.AddChildrenTokens(new List<Token>() { litTok });
+                            }
                             m_Builder.Clear();
                         }
-                        else
-                        {
-                            AddToken(ETokenType.String, m_Builder.ToString(), EType.String);
-                            m_Builder.Clear();
-                        }
-                        AddToken(ETokenType.Plus, '+');
-                        AddToken(ETokenType.LeftPar, '}');
 
-                        int braceLevel = 0;
+                        // extract brace expression
+                        int braceLevel = 1;
                         int startLine = m_SourceLine;
                         int startChar = m_SourceChar;
                         var exprBuilder = new StringBuilder();
@@ -831,19 +924,13 @@ namespace SimpleLanguage.Compile
                         {
                             var tchar = ReadChar();
                             if (tchar == END_CHAR)
-                            {
-                                Debug.Write("Error f\"\"\" 中的 ${} 表达式没有找到结束的 ')' ");
                                 break;
-                            }
                             if (tchar == '}')
                             {
+                                braceLevel--;
                                 if (braceLevel == 0)
                                 {
                                     break;
-                                }
-                                else
-                                {
-                                    braceLevel--;
                                 }
                             }
                             else if (tchar == '{')
@@ -853,73 +940,71 @@ namespace SimpleLanguage.Compile
                             exprBuilder.Append(tchar);
                         } while (true);
 
-                        LexerParse lp = new LexerParse(m_Path, exprBuilder.ToString());
-                        lp.SetSourcePosition(startLine, startChar);
-                        lp.ParseToTokenList();
-                        m_ListTokens.AddRange(lp.listTokens);
-                        AddToken(ETokenType.RightPar, ')');
-                        AddToken(ETokenType.Plus, '+');
-                    }
-                    else if (IsIdentifier2(nextChar))
-                    {
-                        // $name style
-                        if (!hasInterpolation)
+                        if (exprBuilder.Length > 0)
                         {
-                            hasInterpolation = true;
-                            AddToken(ETokenType.String, m_Builder.ToString(), EType.String);
-                            m_Builder.Clear();
+                            LexerParse lp = new LexerParse(m_Path, exprBuilder.ToString());
+                            lp.SetSourcePosition(startLine, startChar);
+                            lp.ParseToTokenList();
+                            if (m_CurrentToken != null)
+                                m_CurrentToken.AddChildrenTokens(lp.listTokens);
+                            // include original expression into lexeme
+                            stringBuilder.Append("${" + exprBuilder.ToString() + "}");
                         }
-                        else
-                        {
-                            AddToken(ETokenType.String, m_Builder.ToString(), EType.String);
-                            m_Builder.Clear();
-                        }
-                        AddToken(ETokenType.Plus, '+');
 
-                        int startLine = m_SourceLine;
-                        int startChar = m_SourceChar;
-                        var identBuilder = new StringBuilder();
-                        identBuilder.Append(nextChar);
-                        while (true)
+                        // safety: ensure we're positioned after the closing '}'
+                        // ReadChar may have consumed the '}' already; attempt to read next char into m_TempChar
+                        m_TempChar = ReadChar();
+                        if (m_TempChar == END_CHAR)
                         {
-                            var ch2 = ReadChar();
-                            if (IsIdentifier2(ch2))
-                            {
-                                identBuilder.Append(ch2);
-                            }
-                            else
-                            {
-                                UndoChar();
-                                break;
-                            }
+                            break;
                         }
-                        LexerParse lp = new LexerParse(m_Path, identBuilder.ToString());
-                        lp.SetSourcePosition(startLine, startChar);
-                        lp.ParseToTokenList();
-                        m_ListTokens.AddRange(lp.listTokens);
-                        AddToken(ETokenType.Plus, '+');
+                        // fall through and handle m_TempChar in this iteration (append or newline handling)
+                    }
+
+                    // other $... cases are not recognized for f-triple; treat as literal
+                    if (nextChar != END_CHAR)
+                    {
+                        m_Builder.Append('$');
+                        m_Builder.Append(nextChar);
                     }
                     else
                     {
-                        // not a valid interpolation, keep $ as literal
                         m_Builder.Append('$');
-                        m_Builder.Append(nextChar);
                     }
                     continue;
                 }
 
-                // track line numbers for multiline
+                // handle newlines: keep actual newline characters and track source line
+                if (m_TempChar == '\r')
+                {
+                    if (PeekChar() == '\n') ReadChar();
+                    AddLine();
+                    m_Builder.Append('\n');
+                    continue;
+                }
                 if (m_TempChar == '\n')
                 {
-                    m_SourceLine++;
-                    m_SourceChar = 0;
+                    AddLine();
+                    m_Builder.Append('\n');
+                    continue;
                 }
 
                 m_Builder.Append(m_TempChar);
             } while (true);
 
-            // output the remaining literal
-            AddToken(ETokenType.String, m_Builder.ToString(), EType.String);
+            // flush remaining literal into children and set lexeme
+            if (m_Builder.Length > 0)
+            {
+                stringBuilder.Append(m_Builder);
+                if (m_CurrentToken != null)
+                {
+                    var litTok = new Token(m_Path, ETokenType.String, m_Builder.ToString(), m_SourceLine, m_SourceChar);
+                    m_CurrentToken.AddChildrenTokens(new List<Token>() { litTok });
+                }
+                m_Builder.Clear();
+            }
+
+            currentToken.SetLexeme(stringBuilder.ToString());
         }
 
 

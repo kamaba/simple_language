@@ -36,25 +36,26 @@ StringTest
         #输出 Name:Quta Score=55 a+b=400
         !#
 
-        
+        #!
         #再复杂一点的
         str4 = "Name:$name Score:$score a[{}]+b[{}]=${(a+b).toString()}".format(a, b ) 
         #像这种的的会被解析成 string.format( "Name:{} Score={} a[{}]+b[{}]={}", name, score, a, b, (a+b).toString() )
         System.Console.WriteLine(str4)
         #输出 Name:Quta Score=55 a[100]+b[300]=400
-
-        #!
+        !#
+        
         str5 = 'Name:\'$name\' NickName="AQ" Score=$score a{}+b{}=${(a+b).toString()}'
         System.Console.WriteLine(str5)
         #输出 Name:'$name' NickName="AQ" Score=$score a{}+b{}=${(a+b).toString()}
 
         str6 = f"""我是一段话 我叫${name}
-        我\n今天 考了${score}分 "大QQQ" 'xml' \" \t
+        我\n今天 考了${score}分 "大Q$name QQ" 'xml' \" \t
         
         End"""    
         System.Console.WriteLine(str6)
 
-        #输出:我是一段话 我叫Quta
+        #!
+        输出:我是一段话 我叫Quta
         我\n今天 考了55分 "大QQQ" 'xml' \" \t
         
         End 
