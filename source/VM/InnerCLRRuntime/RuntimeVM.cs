@@ -15,6 +15,7 @@
 using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using System;
+using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -64,7 +65,7 @@ namespace SimpleLanguage.VM.Runtime
         UInt128,
         String,
     }
-    public class RuntimeVM
+    public unsafe class RuntimeVM
     {
         public string id { get; set; } = "";
         public int level { get; set; } = 0;
@@ -72,6 +73,9 @@ namespace SimpleLanguage.VM.Runtime
         public SObject[] returnObjectArray => m_ReturnObjectArray;
 
         public SValue[] m_ValueStack = null;
+        public IntPtr m_RawBuffer = IntPtr.Zero;
+        public RawSValue* m_RawPtr = null;
+        public int m_RawCapacity = 0;
         public ushort m_ValueIndex = 0;
 
         private List<RuntimeType> m_InputTemplateRuntimeTypeList = new List<RuntimeType>();
@@ -164,30 +168,83 @@ namespace SimpleLanguage.VM.Runtime
                 m_LocalVariableObjectArray = new SObject[0];
             }
             var count = m_IRDataList.Length;
+            int capacity;
             if (count < 48)
             {
-                m_ValueStack = new SValue[128];
+                capacity = 128;
             }
             else if (count >= 48 && count < 150)
             {
-                m_ValueStack = new SValue[160];
+                capacity = 160;
             }
             else if (count >= 150 && count < 300)
             {
-                m_ValueStack = new SValue[200];
+                capacity = 200;
             }
             else if (count >= 300 && count < 500)
             {
-                m_ValueStack = new SValue[300];
+                capacity = 300;
             }
             else if (count >= 500 && count < 800)
             {
-                m_ValueStack = new SValue[400];
+                capacity = 400;
             }
             else
             {
-                m_ValueStack = new SValue[500];
-            }            
+                capacity = 500;
+            }
+            m_ValueStack = new SValue[capacity];
+            // allocate unmanaged buffer for raw values
+            int size = sizeof(RawSValue) * capacity;
+            m_RawBuffer = Marshal.AllocHGlobal(size);
+            m_RawPtr = (RawSValue*)m_RawBuffer;
+            m_RawCapacity = capacity;
+        }
+
+        ~RuntimeVM()
+        {
+            if (m_RawBuffer != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(m_RawBuffer);
+                m_RawBuffer = IntPtr.Zero;
+                m_RawPtr = null;
+                m_RawCapacity = 0;
+            }
+        }
+
+        static bool IsNumericTypeLocal(EVMType t)
+        {
+            switch (t)
+            {
+                case EVMType.Byte:
+                case EVMType.SByte:
+                case EVMType.Int16:
+                case EVMType.UInt16:
+                case EVMType.Int32:
+                case EVMType.UInt32:
+                case EVMType.Int64:
+                case EVMType.UInt64:
+                case EVMType.Float32:
+                case EVMType.Float64:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        void SyncRawFromSValue(int index)
+        {
+            if (index < 0) return;
+            if (m_RawPtr == null || index >= m_RawCapacity) return;
+            ref SValue sv = ref m_ValueStack[index];
+            if (IsNumericTypeLocal(sv.eType))
+            {
+                m_RawPtr[index] = RawSValue.FromSValue(ref sv);
+            }
+            else
+            {
+                m_RawPtr[index].eType = sv.eType;
+            }
         }
         SObject CreateObjectByIRMetaType(IRMetaType irmt, IRMetaClass curIrMc, bool isAdd = false )
         {
@@ -1064,7 +1121,22 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
                             ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
-                            left.AddSValue(ref right, false, out bool isMethod);
+                            // fast numeric path
+                            if (IsNumericTypeLocal(left.eType) && IsNumericTypeLocal(right.eType))
+                            {
+                                ref RawSValue rl = ref m_RawPtr[m_ValueIndex - 2];
+                                ref RawSValue rr = ref m_RawPtr[m_ValueIndex - 1];
+                                // ensure raw synced
+                                SyncRawFromSValue(m_ValueIndex - 2);
+                                SyncRawFromSValue(m_ValueIndex - 1);
+                                SValue.ComputeValueInlineRaw(ref rl, 0, ref rr, false);
+                                rl.ApplyToSValue(ref left);
+                                if (left.eType == EVMType.Class)
+                                {
+                                    // fallback to method path if class
+                                    left.AddSValue(ref right, false, out bool isMethodFallback);
+                                }
+                                bool isMethod = false;
                             if (isMethod)
                             {
                                 m_ValueStack[m_ValueIndex - 3] = m_ValueStack[m_ValueIndex - 1];
@@ -1073,6 +1145,20 @@ namespace SimpleLanguage.VM.Runtime
                             else
                             {
                                 m_ValueIndex--;
+                            }
+                            }
+                            else
+                            {
+                                left.AddSValue(ref right, false, out bool isMethod);
+                                if (isMethod)
+                                {
+                                    m_ValueStack[m_ValueIndex - 3] = m_ValueStack[m_ValueIndex - 1];
+                                    m_ValueIndex -= 2;
+                                }
+                                else
+                                {
+                                    m_ValueIndex--;
+                                }
                             }
                         }
                     }
@@ -1087,8 +1173,21 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
                             ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
-                            left.ComputeSVAlue(1, ref right, false);
-                            m_ValueIndex--;
+                            if (IsNumericTypeLocal(left.eType) && IsNumericTypeLocal(right.eType))
+                            {
+                                SyncRawFromSValue(m_ValueIndex - 2);
+                                SyncRawFromSValue(m_ValueIndex - 1);
+                                ref RawSValue rl = ref m_RawPtr[m_ValueIndex - 2];
+                                ref RawSValue rr = ref m_RawPtr[m_ValueIndex - 1];
+                                SValue.ComputeValueInlineRaw(ref rl, 1, ref rr, false);
+                                rl.ApplyToSValue(ref left);
+                                m_ValueIndex--;
+                            }
+                            else
+                            {
+                                left.ComputeSVAlue(1, ref right, false);
+                                m_ValueIndex--;
+                            }
                         }
                     }
                     break;
@@ -1102,8 +1201,21 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
                             ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
-                            left.ComputeSVAlue(2, ref right, false);
-                            m_ValueIndex--;
+                            if (IsNumericTypeLocal(left.eType) && IsNumericTypeLocal(right.eType))
+                            {
+                                SyncRawFromSValue(m_ValueIndex - 2);
+                                SyncRawFromSValue(m_ValueIndex - 1);
+                                ref RawSValue rl = ref m_RawPtr[m_ValueIndex - 2];
+                                ref RawSValue rr = ref m_RawPtr[m_ValueIndex - 1];
+                                SValue.ComputeValueInlineRaw(ref rl, 2, ref rr, false);
+                                rl.ApplyToSValue(ref left);
+                                m_ValueIndex--;
+                            }
+                            else
+                            {
+                                left.ComputeSVAlue(2, ref right, false);
+                                m_ValueIndex--;
+                            }
                         }
                     }
                     break;
@@ -1118,8 +1230,21 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
                             ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
-                            left.ComputeSVAlue(3, ref right, false);
-                            m_ValueIndex--;
+                            if (IsNumericTypeLocal(left.eType) && IsNumericTypeLocal(right.eType))
+                            {
+                                SyncRawFromSValue(m_ValueIndex - 2);
+                                SyncRawFromSValue(m_ValueIndex - 1);
+                                ref RawSValue rl = ref m_RawPtr[m_ValueIndex - 2];
+                                ref RawSValue rr = ref m_RawPtr[m_ValueIndex - 1];
+                                SValue.ComputeValueInlineRaw(ref rl, 3, ref rr, false);
+                                rl.ApplyToSValue(ref left);
+                                m_ValueIndex--;
+                            }
+                            else
+                            {
+                                left.ComputeSVAlue(3, ref right, false);
+                                m_ValueIndex--;
+                            }
                         }
                     }
                     break;
@@ -1134,8 +1259,21 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
                             ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
-                            left.ComputeSVAlue(4, ref right, false);
-                            m_ValueIndex--;
+                            if (IsNumericTypeLocal(left.eType) && IsNumericTypeLocal(right.eType))
+                            {
+                                SyncRawFromSValue(m_ValueIndex - 2);
+                                SyncRawFromSValue(m_ValueIndex - 1);
+                                ref RawSValue rl = ref m_RawPtr[m_ValueIndex - 2];
+                                ref RawSValue rr = ref m_RawPtr[m_ValueIndex - 1];
+                                SValue.ComputeValueInlineRaw(ref rl, 4, ref rr, false);
+                                rl.ApplyToSValue(ref left);
+                                m_ValueIndex--;
+                            }
+                            else
+                            {
+                                left.ComputeSVAlue(4, ref right, false);
+                                m_ValueIndex--;
+                            }
                         }
                     }
                     break;
@@ -1150,8 +1288,21 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
                             ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
-                            left.ComputeSVAlue(5, ref right, false);
-                            m_ValueIndex--;
+                            if (IsNumericTypeLocal(left.eType) && IsNumericTypeLocal(right.eType))
+                            {
+                                SyncRawFromSValue(m_ValueIndex - 2);
+                                SyncRawFromSValue(m_ValueIndex - 1);
+                                ref RawSValue rl = ref m_RawPtr[m_ValueIndex - 2];
+                                ref RawSValue rr = ref m_RawPtr[m_ValueIndex - 1];
+                                SValue.ComputeValueInlineRaw(ref rl, 5, ref rr, false);
+                                rl.ApplyToSValue(ref left);
+                                m_ValueIndex--;
+                            }
+                            else
+                            {
+                                left.ComputeSVAlue(5, ref right, false);
+                                m_ValueIndex--;
+                            }
                         }
                     }
                     break;
@@ -1166,8 +1317,21 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
                             ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
-                            left.ComputeSVAlue(6, ref right, false);
-                            m_ValueIndex--;
+                            if (IsNumericTypeLocal(left.eType) && IsNumericTypeLocal(right.eType))
+                            {
+                                SyncRawFromSValue(m_ValueIndex - 2);
+                                SyncRawFromSValue(m_ValueIndex - 1);
+                                ref RawSValue rl = ref m_RawPtr[m_ValueIndex - 2];
+                                ref RawSValue rr = ref m_RawPtr[m_ValueIndex - 1];
+                                SValue.ComputeValueInlineRaw(ref rl, 6, ref rr, false);
+                                rl.ApplyToSValue(ref left);
+                                m_ValueIndex--;
+                            }
+                            else
+                            {
+                                left.ComputeSVAlue(6, ref right, false);
+                                m_ValueIndex--;
+                            }
                         }
                     }
                     break;
@@ -1182,8 +1346,21 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
                             ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
-                            left.ComputeSVAlue(7, ref right, false);
-                            m_ValueIndex--;
+                            if (IsNumericTypeLocal(left.eType) && IsNumericTypeLocal(right.eType))
+                            {
+                                SyncRawFromSValue(m_ValueIndex - 2);
+                                SyncRawFromSValue(m_ValueIndex - 1);
+                                ref RawSValue rl = ref m_RawPtr[m_ValueIndex - 2];
+                                ref RawSValue rr = ref m_RawPtr[m_ValueIndex - 1];
+                                SValue.ComputeValueInlineRaw(ref rl, 7, ref rr, false);
+                                rl.ApplyToSValue(ref left);
+                                m_ValueIndex--;
+                            }
+                            else
+                            {
+                                left.ComputeSVAlue(7, ref right, false);
+                                m_ValueIndex--;
+                            }
                         }
                     }
                     break;
@@ -1197,8 +1374,21 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
                             ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
-                            left.ComputeSVAlue(8, ref right, false);
-                            m_ValueIndex--;
+                            if (IsNumericTypeLocal(left.eType) && IsNumericTypeLocal(right.eType))
+                            {
+                                SyncRawFromSValue(m_ValueIndex - 2);
+                                SyncRawFromSValue(m_ValueIndex - 1);
+                                ref RawSValue rl = ref m_RawPtr[m_ValueIndex - 2];
+                                ref RawSValue rr = ref m_RawPtr[m_ValueIndex - 1];
+                                SValue.ComputeValueInlineRaw(ref rl, 8, ref rr, false);
+                                rl.ApplyToSValue(ref left);
+                                m_ValueIndex--;
+                            }
+                            else
+                            {
+                                left.ComputeSVAlue(8, ref right, false);
+                                m_ValueIndex--;
+                            }
                         }
                     }
                     break;
@@ -1212,8 +1402,21 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
                             ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
-                            left.ComputeSVAlue(9, ref right, false);
-                            m_ValueIndex--;
+                            if (IsNumericTypeLocal(left.eType) && IsNumericTypeLocal(right.eType))
+                            {
+                                SyncRawFromSValue(m_ValueIndex - 2);
+                                SyncRawFromSValue(m_ValueIndex - 1);
+                                ref RawSValue rl = ref m_RawPtr[m_ValueIndex - 2];
+                                ref RawSValue rr = ref m_RawPtr[m_ValueIndex - 1];
+                                SValue.ComputeValueInlineRaw(ref rl, 9, ref rr, false);
+                                rl.ApplyToSValue(ref left);
+                                m_ValueIndex--;
+                            }
+                            else
+                            {
+                                left.ComputeSVAlue(9, ref right, false);
+                                m_ValueIndex--;
+                            }
                         }
                     }
                     break;
