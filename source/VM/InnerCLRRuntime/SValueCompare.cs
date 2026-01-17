@@ -592,7 +592,7 @@ namespace SimpleLanguage.VM
             bool b = IsTruthy(ref right);
             left.SetBoolValue(a || b);
         }
-        static bool IsTruthy(ref SValue v)
+        public static bool IsTruthy(ref SValue v)
         {
             if (v.isNull) return false;
             switch (v.eType)

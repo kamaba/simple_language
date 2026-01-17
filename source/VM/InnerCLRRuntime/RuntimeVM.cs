@@ -1061,15 +1061,19 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 加法运算!!超出的栈范围");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex - 2].AddSValue(ref m_ValueStack[m_ValueIndex - 1], false, out bool isMethod);
-                        if (isMethod)
                         {
-                            m_ValueStack[m_ValueIndex - 3] = m_ValueStack[m_ValueIndex - 1];
-                            m_ValueIndex -= 2;
-                        }
-                        else
-                        {
-                            m_ValueIndex--;
+                            ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
+                            ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
+                            left.AddSValue(ref right, false, out bool isMethod);
+                            if (isMethod)
+                            {
+                                m_ValueStack[m_ValueIndex - 3] = m_ValueStack[m_ValueIndex - 1];
+                                m_ValueIndex -= 2;
+                            }
+                            else
+                            {
+                                m_ValueIndex--;
+                            }
                         }
                     }
                     break;
@@ -1080,8 +1084,12 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 减法运算!!超出的栈范围");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex-2].ComputeSVAlue(1, ref m_ValueStack[m_ValueIndex - 1], false );
-                        m_ValueIndex--;
+                        {
+                            ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
+                            ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
+                            left.ComputeSVAlue(1, ref right, false);
+                            m_ValueIndex--;
+                        }
                     }
                     break;
                 case EIROpCode.Multiply:
@@ -1091,8 +1099,12 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 乘法运算!!超出的栈范围");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex - 2].ComputeSVAlue(2, ref m_ValueStack[m_ValueIndex - 1], false);
-                        m_ValueIndex--;
+                        {
+                            ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
+                            ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
+                            left.ComputeSVAlue(2, ref right, false);
+                            m_ValueIndex--;
+                        }
                     }
                     break;
                 case EIROpCode.Divide:
@@ -1103,8 +1115,12 @@ namespace SimpleLanguage.VM.Runtime
                             break;
                         }
                         //m_ValueStack[m_ValueIndex-2].DivSValue(m_ValueStack[m_ValueIndex-1], false);
-                        m_ValueStack[m_ValueIndex - 2].ComputeSVAlue(3, ref m_ValueStack[m_ValueIndex - 1], false);
-                        m_ValueIndex--;
+                        {
+                            ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
+                            ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
+                            left.ComputeSVAlue(3, ref right, false);
+                            m_ValueIndex--;
+                        }
                     }
                     break;
                 case EIROpCode.Modulo:
@@ -1115,8 +1131,12 @@ namespace SimpleLanguage.VM.Runtime
                             break;
                         }
                         //m_ValueStack[m_ValueIndex-2].ModuloSValue(m_ValueStack[m_ValueIndex-1], false);
-                        m_ValueStack[m_ValueIndex - 2].ComputeSVAlue(4, ref m_ValueStack[m_ValueIndex - 1], false);
-                        m_ValueIndex--;
+                        {
+                            ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
+                            ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
+                            left.ComputeSVAlue(4, ref right, false);
+                            m_ValueIndex--;
+                        }
                     }
                     break;
                 case EIROpCode.Combine:
@@ -1127,8 +1147,12 @@ namespace SimpleLanguage.VM.Runtime
                             break;
                         }
                         //m_ValueStack[m_ValueIndex-2].CombineSValue(m_ValueStack[m_ValueIndex-1], false);
-                        m_ValueStack[m_ValueIndex - 2].ComputeSVAlue(5, ref m_ValueStack[m_ValueIndex - 1], false);
-                        m_ValueIndex--;
+                        {
+                            ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
+                            ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
+                            left.ComputeSVAlue(5, ref right, false);
+                            m_ValueIndex--;
+                        }
                     }
                     break;
                 case EIROpCode.InclusiveOr:
@@ -1139,8 +1163,12 @@ namespace SimpleLanguage.VM.Runtime
                             break;
                         }
                         //m_ValueStack[m_ValueIndex-2].InclusiveOrSValue(m_ValueStack[m_ValueIndex-1], false);
-                        m_ValueStack[m_ValueIndex - 2].ComputeSVAlue(6, ref m_ValueStack[m_ValueIndex - 1], false);
-                        m_ValueIndex--;
+                        {
+                            ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
+                            ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
+                            left.ComputeSVAlue(6, ref right, false);
+                            m_ValueIndex--;
+                        }
                     }
                     break;
                 case EIROpCode.XOR:
@@ -1151,8 +1179,12 @@ namespace SimpleLanguage.VM.Runtime
                             break;
                         }
                         //m_ValueStack[m_ValueIndex--].XORSValue(m_ValueStack[m_ValueIndex], false);
-                        m_ValueStack[m_ValueIndex - 2].ComputeSVAlue(7, ref m_ValueStack[m_ValueIndex - 1], false);
-                        m_ValueIndex--;
+                        {
+                            ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
+                            ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
+                            left.ComputeSVAlue(7, ref right, false);
+                            m_ValueIndex--;
+                        }
                     }
                     break;
                 case EIROpCode.Shr:
@@ -1162,9 +1194,12 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 右移运算!!超出的栈范围");
                             break;
                         }
-                        //m_ValueStack[m_ValueIndex--].ShrSValue(m_ValueStack[m_ValueIndex], false);
-                        m_ValueStack[m_ValueIndex - 2].ComputeSVAlue(8, ref m_ValueStack[m_ValueIndex], false);
-                        m_ValueIndex--;
+                        {
+                            ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
+                            ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
+                            left.ComputeSVAlue(8, ref right, false);
+                            m_ValueIndex--;
+                        }
                     }
                     break;
                 case EIROpCode.Shi:
@@ -1174,9 +1209,12 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 左移运算!!超出的栈范围");
                             break;
                         }
-                        //m_ValueStack[m_ValueIndex--].ShiSValue(m_ValueStack[m_ValueIndex], false);
-                        m_ValueStack[m_ValueIndex - 2].ComputeSVAlue(9, ref m_ValueStack[m_ValueIndex], false);
-                        m_ValueIndex--;
+                        {
+                            ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
+                            ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
+                            left.ComputeSVAlue(9, ref right, false);
+                            m_ValueIndex--;
+                        }
                     }
                     break;
                 case EIROpCode.Not:
@@ -1206,8 +1244,24 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
-                        SValue.CompareSValue1AndValue2( ref m_ValueStack[m_ValueIndex - 2],ref  m_ValueStack[m_ValueIndex - 1], 4 );
-                        m_ValueIndex--;
+                        {
+                            ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
+                            ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
+                            // short-circuit: if left is false => result false without needing right's truthiness
+                            bool a = SValue.IsTruthy(ref left);
+                            if (!a)
+                            {
+                                left.SetBoolValue(false);
+                                m_ValueIndex--;
+                            }
+                            else
+                            {
+                                // need right
+                                bool b = SValue.IsTruthy(ref right);
+                                left.SetBoolValue(a && b);
+                                m_ValueIndex--;
+                            }
+                        }
                     }
                     break;
                 case EIROpCode.Or:
@@ -1217,8 +1271,23 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
                             break;
                         }
-                        SValue.CompareSValue1AndValue2(ref m_ValueStack[m_ValueIndex - 2], ref m_ValueStack[m_ValueIndex - 1], 6 );
-                        m_ValueIndex--;
+                        {
+                            ref SValue left = ref m_ValueStack[m_ValueIndex - 2];
+                            ref SValue right = ref m_ValueStack[m_ValueIndex - 1];
+                            // short-circuit: if left is true => result true
+                            bool a = SValue.IsTruthy(ref left);
+                            if (a)
+                            {
+                                left.SetBoolValue(true);
+                                m_ValueIndex--;
+                            }
+                            else
+                            {
+                                bool b = SValue.IsTruthy(ref right);
+                                left.SetBoolValue(a || b);
+                                m_ValueIndex--;
+                            }
+                        }
                     }
                     break;
                 case EIROpCode.Ceq:

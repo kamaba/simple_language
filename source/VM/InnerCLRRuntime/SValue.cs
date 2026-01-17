@@ -10,22 +10,41 @@ using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 namespace SimpleLanguage.VM
 {
     public partial struct SValue
     {
         public EVMType eType;
-        public byte int8Value;
-        public sbyte sint8Value;
+
+        [StructLayout(LayoutKind.Explicit)]
+        struct NumericUnion
+        {
+            [FieldOffset(0)] public long i64;
+            [FieldOffset(0)] public ulong u64;
+            [FieldOffset(0)] public double d;
+            [FieldOffset(0)] public float f;
+            [FieldOffset(0)] public int i32;
+            [FieldOffset(0)] public uint u32;
+            [FieldOffset(0)] public short i16;
+            [FieldOffset(0)] public ushort ui16;
+            [FieldOffset(0)] public byte i8;
+            [FieldOffset(0)] public sbyte si8;
+        }
+
+        private NumericUnion nv;
+
+        public byte int8Value { get => nv.i8; set => nv.i8 = value; }
+        public sbyte sint8Value { get => nv.si8; set => nv.si8 = value; }
         //public char charValue;
-        public short int16Value;
-        public ushort uint16Value;
-        public int int32Value;
-        public uint uint32Value;
-        public long int64Value;
-        public ulong uint64Value;
-        public float floatValue;
-        public double doubleValue;
+        public short int16Value { get => nv.i16; set => nv.i16 = value; }
+        public ushort uint16Value { get => nv.ui16; set => nv.ui16 = value; }
+        public int int32Value { get => nv.i32; set => nv.i32 = value; }
+        public uint uint32Value { get => nv.u32; set => nv.u32 = value; }
+        public long int64Value { get => nv.i64; set => nv.i64 = value; }
+        public ulong uint64Value { get => nv.u64; set => nv.u64 = value; }
+        public float floatValue { get => nv.f; set => nv.f = value; }
+        public double doubleValue { get => nv.d; set => nv.d = value; }
         public string stringValue;
         public SObject sobject;
         public bool isNull;
