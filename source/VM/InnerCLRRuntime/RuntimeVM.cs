@@ -515,7 +515,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            tmp.SetInt8Value((Byte)iri.opValue);
+                            if (iri.TryGetByte(out var vb)) tmp.SetInt8Value(vb);
+                            else if (iri.opValue != null) tmp.SetInt8Value(Convert.ToByte(iri.opValue));
                             PushSValueSynced(tmp);
                         }
                     }
@@ -524,7 +525,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            tmp.SetSInt8Value((SByte)iri.opValue);
+                            if (iri.TryGetSByte(out var vsb)) tmp.SetSInt8Value(vsb);
+                            else if (iri.opValue != null) tmp.SetSInt8Value(Convert.ToSByte(iri.opValue));
                             PushSValueSynced(tmp);
                         }
                     }
@@ -533,7 +535,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            tmp.SetBoolValue((bool)iri.opValue);
+                            if (iri.TryGetBoolean(out var vb2)) tmp.SetBoolValue(vb2);
+                            else if (iri.opValue != null) tmp.SetBoolValue(Convert.ToBoolean(iri.opValue));
                             PushSValueSynced(tmp);
                         }
                     }
@@ -547,7 +550,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            tmp.SetInt16Value((Int16)iri.opValue);
+                            if (iri.TryGetInt16(out var vi16)) tmp.SetInt16Value(vi16);
+                            else if (iri.opValue != null) tmp.SetInt16Value(Convert.ToInt16(iri.opValue));
                             PushSValueSynced(tmp);
                         }
                     }
@@ -556,7 +560,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            tmp.SetUInt16Value((UInt16)iri.opValue);
+                            if (iri.TryGetUInt16(out var vu16)) tmp.SetUInt16Value(vu16);
+                            else if (iri.opValue != null) tmp.SetUInt16Value(Convert.ToUInt16(iri.opValue));
                             PushSValueSynced(tmp);
                         }
                     }
@@ -565,7 +570,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            tmp.SetInt32Value((Int32)iri.opValue);
+                            if (iri.TryGetInt32(out var vi32)) tmp.SetInt32Value(vi32);
+                            else if (iri.opValue != null) tmp.SetInt32Value(Convert.ToInt32(iri.opValue));
                             PushSValueSynced(tmp);
                         }
                     }
@@ -574,7 +580,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            tmp.SetUInt32Value((UInt32)iri.opValue);
+                            if (iri.TryGetUInt32(out var vu32)) tmp.SetUInt32Value(vu32);
+                            else if (iri.opValue != null) tmp.SetUInt32Value(Convert.ToUInt32(iri.opValue));
                             PushSValueSynced(tmp);
                         }
                     }
@@ -583,7 +590,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            tmp.SetInt64Value((Int64)iri.opValue);
+                            if (iri.TryGetInt64(out var vi64)) tmp.SetInt64Value(vi64);
+                            else if (iri.opValue != null) tmp.SetInt64Value(Convert.ToInt64(iri.opValue));
                             PushSValueSynced(tmp);
                         }
                     }
@@ -592,7 +600,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            tmp.SetUInt64Value((UInt64)iri.opValue);
+                            if (iri.TryGetUInt64(out var vu64)) tmp.SetUInt64Value(vu64);
+                            else if (iri.opValue != null) tmp.SetUInt64Value(Convert.ToUInt64(iri.opValue));
                             PushSValueSynced(tmp);
                         }
                     }
@@ -601,7 +610,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            tmp.SetFloatValue((Single)iri.opValue);
+                            if (iri.TryGetSingle(out var vf)) tmp.SetFloatValue(vf);
+                            else if (iri.opValue != null) tmp.SetFloatValue(Convert.ToSingle(iri.opValue));
                             PushSValueSynced(tmp);
                         }
                     }
@@ -610,7 +620,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            tmp.SetDoubleValue((Double)iri.opValue);
+                            if (iri.TryGetDouble(out var vd)) tmp.SetDoubleValue(vd);
+                            else if (iri.opValue != null) tmp.SetDoubleValue(Convert.ToDouble(iri.opValue));
                             PushSValueSynced(tmp);
                         }
                     }
@@ -618,7 +629,8 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.LoadConstString:
                     {
                         SValue tmp = default;
-                        tmp.SetStringValue((String)iri.opValue);
+                        if (iri.TryGetString(out var vs)) tmp.SetStringValue(vs);
+                        else if (iri.opValue != null) tmp.SetStringValue(iri.opValue.ToString());
                         PushSValueSynced(tmp);
                     }
                     break;
