@@ -14,7 +14,7 @@ namespace SimpleLanguage.IR
         {
             IRData data = new IRData();
             data.opCode = EIROpCode.NewObject;
-            data.opValue = irmc;
+            data.SetOpValue(irmc);
             data.debugInfo = new DebugInfo() { name = irmc.irName, info = "IRNew" };
             AddIRData(data);
         }
@@ -22,7 +22,7 @@ namespace SimpleLanguage.IR
         {
             IRData data = new IRData();
             data.opCode = EIROpCode.NewTemplateObject;
-            data.opValue = opvalue;
+            data.SetOpValue(opvalue);
             data.debugInfo = new DebugInfo() { name = "", info = "NewCallClass" };
             AddIRData(data);
         }
@@ -30,7 +30,7 @@ namespace SimpleLanguage.IR
         {
             IRData data = new IRData();
             data.opCode = EIROpCode.NewArray;
-            data.opValue = opvalue;
+            data.SetOpValue(opvalue);
             data.debugInfo = new DebugInfo() { name = "", info = "NewArray" };
             AddIRData(data);
         }

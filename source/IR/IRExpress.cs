@@ -37,7 +37,7 @@ namespace SimpleLanguage.IR
                     {
                         IRData irdata = new IRData();
                         irdata.opCode = IRManager.GetConstIROpCode(mcn.eType);
-                        irdata.opValue = mcn.value;
+                        irdata.SetOpValue(mcn.value);
                         //irdata.SetDebugInfoByToken( mcn.GetToken() );
                         AddIRData(irdata);
                     }
@@ -129,7 +129,7 @@ namespace SimpleLanguage.IR
                         {                            
                             IRData irdata = new IRData();
                             irdata.opCode = EIROpCode.CastClass;
-                            irdata.opValue = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList( maien.convertTargetMetaType, owirmc);
+                            irdata.SetOpValue(IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(maien.convertTargetMetaType, owirmc));
 
                             m_IRDataList.Add(irdata);
                         }
@@ -137,7 +137,7 @@ namespace SimpleLanguage.IR
                         {
                             IRData irdata = new IRData();
                             irdata.opCode = EIROpCode.CastClass;
-                            irdata.opValue = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(maien.convertTargetMetaType, owirmc);
+                            irdata.SetOpValue(IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(maien.convertTargetMetaType, owirmc));
                             m_IRDataList.Add(irdata);
 
                             var owirmc2 = IRManager.instance.GetIRMetaClassById(maien.convertTargetMetaVariable.GetOwnerClassTemplateClass().GetHashCode());
@@ -150,7 +150,7 @@ namespace SimpleLanguage.IR
 
                             IRData irdata4 = new IRData();
                             irdata4.opCode = IRManager.GetConstIROpCode( EType.Null );
-                            irdata4.opValue = "null";
+                            irdata4.SetOpValue("null");
                             AddIRData(irdata4);
 
                             IRData irdata5 = new IRData();
@@ -288,7 +288,7 @@ namespace SimpleLanguage.IR
 
                         IRData irdatastore = new IRData();
                         irdatastore.index = y;
-                        irdatastore.opValue = true;
+                        irdatastore.SetOpValue(true);
                         irdatastore.opCode = EIROpCode.StoreArrayIndex;
                         m_IRDataList.Add(irdatastore);
                     }

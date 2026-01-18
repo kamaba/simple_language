@@ -17,7 +17,7 @@ namespace SimpleLanguage.IR
         public IRBranch( IRMethod _irMethod, EIROpCode type, IRData brIRData ) :base(_irMethod)
         {
             data.opCode = type;
-            data.opValue = brIRData;
+            data.SetOpValue(brIRData);
             AddIRData( data );
         }
         public void SetOpValue(IRData opValue)
@@ -44,7 +44,7 @@ namespace SimpleLanguage.IR
         {
             data = new IRData();
             data.opCode = isGogo ? EIROpCode.Label : EIROpCode.BrLabel;
-            data.opValue = _label;
+            data.SetOpValue(_label);
         }
         public override string ToIRString()
         {

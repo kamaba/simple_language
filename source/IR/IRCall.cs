@@ -62,7 +62,7 @@ namespace SimpleLanguage.IR
                 m_MethodInfo = mmfcsharp.methodInfo;
                 IRData data = new IRData();
                 data.opCode = EIROpCode.CallCSharpMethod;
-                data.opValue = this;
+                    data.SetOpValue(this);
                 data.SetDebugInfoByToken(mmfcsharp.GetToken());
                 AddIRData(data);
                 return;
@@ -154,7 +154,7 @@ namespace SimpleLanguage.IR
                 {
                     IRData datacall = new IRData();
                     datacall.opCode = EIROpCode.CallStatic;
-                    datacall.opValue = irmethodcall;
+                    datacall.SetOpValue(irmethodcall);
                     datacall.index = 0;
                     datacall.SetDebugInfoByToken(mf.pingToken);
                     AddIRData(datacall);
@@ -163,7 +163,7 @@ namespace SimpleLanguage.IR
                 {
                     IRData datacall = new IRData();
                     datacall.opCode = EIROpCode.CallDynamic;
-                    datacall.opValue = irmethodcall;
+                    datacall.SetOpValue(irmethodcall);
                     datacall.index = paramCount + 1;
                     datacall.SetDebugInfoByToken(mf.pingToken);
                     AddIRData(datacall);
@@ -175,7 +175,7 @@ namespace SimpleLanguage.IR
                 {
                     IRData datacall = new IRData();
                     datacall.opCode = EIROpCode.CallDynamic;
-                    datacall.opValue = irmethodcall;
+                    datacall.SetOpValue(irmethodcall);
                     datacall.index = paramCount + 1;
                     datacall.SetDebugInfoByToken(mf.pingToken);
                     AddIRData(datacall);
@@ -185,7 +185,7 @@ namespace SimpleLanguage.IR
                     IRData datacall = new IRData();
                     datacall.opCode = EIROpCode.CallVirt;
                     datacall.index = callMethodIndex;
-                    datacall.opValue = irmethodcall;
+                    datacall.SetOpValue(irmethodcall);
                     datacall.SetDebugInfoByToken(mf.pingToken);
                     AddIRData(datacall);
                 }

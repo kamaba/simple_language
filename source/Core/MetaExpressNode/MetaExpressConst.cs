@@ -16,6 +16,54 @@ namespace SimpleLanguage.Core
 {
     public sealed class MetaConstExpressNode : MetaExpressNode
     {
+        // pooled string reference (offset/length into shared byte pool)
+        public struct StringRef
+        {
+            public int Offset;
+            public int Length;
+        }
+
+        static class StringPool
+        {
+            private static List<byte> s_pool = new List<byte>();
+            private static readonly object s_lock = new object();
+
+            public static StringRef AddString(string s)
+            {
+                if (s == null)
+                {
+                    return new StringRef { Offset = -1, Length = 0 };
+                }
+                var bytes = Encoding.UTF8.GetBytes(s);
+                lock (s_lock)
+                {
+                    int off = s_pool.Count;
+                    s_pool.AddRange(bytes);
+                    return new StringRef { Offset = off, Length = bytes.Length };
+                }
+            }
+
+            public static string GetString(StringRef r)
+            {
+                if (r.Offset < 0 || r.Length == 0) return null;
+                // make copy for decoding
+                byte[] arr;
+                lock (s_lock)
+                {
+                    arr = s_pool.ToArray();
+                }
+                return Encoding.UTF8.GetString(arr, r.Offset, r.Length);
+            }
+
+            public static byte[] GetPoolBytes()
+            {
+                lock (s_lock)
+                {
+                    return s_pool.ToArray();
+                }
+            }
+        }
+
         public static MetaConstExpressNode operator +(MetaConstExpressNode left, MetaConstExpressNode right)
         {
             if (left.opLevel > right.opLevel)
@@ -84,6 +132,10 @@ namespace SimpleLanguage.Core
         public MetaCallLinkExpressNode metaCallLinkExpressNode => m_MetaCallLinkExpressNode;
         public List<MetaExpressNode> stringParseExpressList => m_StringParseExpressList;
         public object value { get; set; } = null;
+        // when eType == String, this holds the pooled string reference
+        public StringRef stringRef { get; private set; }
+        // helper to inspect pooled string during debugging
+        public string PooledString => StringPool.GetString(stringRef);
         public EType eType { get; private set; } = EType.None;
 
         private FileMetaConstValueTerm m_FileMetaConstValueTerm = null;
@@ -115,7 +167,9 @@ namespace SimpleLanguage.Core
                 var cdlist = m_FileMetaConstValueTerm.token.childrenTokensList;
                 if( cdlist.Count == 1 && (cdlist[0].Count == 1 && cdlist[0][0].type == ETokenType.String ) )
                 {
-                    value = cdlist[0][0].lexeme.ToString();
+                    var s = cdlist[0][0].lexeme.ToString();
+                    value = s;
+                    stringRef = StringPool.AddString(s);
                     return;
                 }
                 else

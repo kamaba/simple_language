@@ -55,7 +55,7 @@ namespace SimpleLanguage.IR
         }
         public void SetOpValue(IRData opValue)
         {
-            data.opValue = opValue;
+            data.SetOpValue(opValue);
         }
         public void SetDebugInfoByToken(Token token)
         {
