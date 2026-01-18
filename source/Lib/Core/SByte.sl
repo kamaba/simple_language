@@ -1,7 +1,7 @@
 import CSharp.SimpleLanguage.Core
 import CSharp.SimpleLanguage
 
-public class SByte extends Object
+public class SByte extends Num
 {    
     const SByte MaxValue = 0b1111111;
     const SByte MinValue = 0b0000000;

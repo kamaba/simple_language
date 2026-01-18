@@ -29,6 +29,7 @@ namespace SimpleLanguage
         Enum,
         Data,
         Boolean,
+        Num,
         Bit,
         Byte,
         SByte,

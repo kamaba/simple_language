@@ -43,9 +43,19 @@ namespace SimpleLanguage.Lib
         }
         public static SObject ObjectWeakRef(System.Object obj)
         {
-            //SObject sobj = obj as SObject;
-            //return sobj;
-            return null;
+            SObject sobj = obj as SObject;
+            return sobj;
+        }
+        public static System.Object CloneObject(System.Object obj)
+        {
+            // Shallow clone: for now return the same object reference.
+            // Future: perform deep clone based on runtimeType if needed.
+            return obj;
+        }
+        public static SObject ObjectRef(System.Object obj)
+        {
+            SObject sobj = obj as SObject;
+            return sobj;
         }
         public static bool EqualObject( System.Object obj1, System.Object obj2 )
         {

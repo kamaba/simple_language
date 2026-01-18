@@ -23,6 +23,14 @@ public class Array<T> interface IIterable<T>, IIterator<T>
     }
     get int length(){ ret this._length }
 
+    public void fill(T value)
+    {
+        for i = 0, i < this._length, i++
+        {
+            SimpleLanguage.Lib.ArrayClass.SetArrayValueThis(this, i, value)
+        }
+    }
+
     #接口层
     override void reset()
     {

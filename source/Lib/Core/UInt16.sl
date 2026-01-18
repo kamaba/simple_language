@@ -1,7 +1,7 @@
 import System.Math.UF as AB;
 import Std;
 
-public class UShort extends Object
+public class UInt16 extends Num
 {
-    private UShort m_Value;
+    private UInt16 m_Value;
 }

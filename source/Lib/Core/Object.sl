@@ -4,6 +4,10 @@ public class Object
 {    
     public static bool objectEquals(object objA, object objB)
     {
+        if (objA == null && objB == null)
+        {
+            ret true;
+        }
         if (objA == null || objB == null)
         {
             ret false;

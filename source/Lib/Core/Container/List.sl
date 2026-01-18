@@ -37,7 +37,7 @@
             this._index++;
             System.Console.WriteLine("index=============== " + this._index )
             ret hasNext_var
-            ret true
+            
         }
         override object current()
         {
@@ -177,12 +177,24 @@
         {
             if this._length < this._capitaly
             {
-                SimpleLanguage.Lib.Array.SetArrayValueThis( this, this._length, val )
+                SimpleLanguage.Lib.Array.SetArrayValueThis( this, this._length, t )
                 this._length++
             }
             else
             {
-                
+                // grow capacity: naive doubling
+                int newCap = this._capitaly == 0 ? 4 : this._capitaly * 2
+                var newArr = Core.List<T>(newCap)
+                for i = 0, i < this._length, i++
+                {
+                    var val = SimpleLanguage.Lib.Array.GetArrayValueThis(this, i)
+                    SimpleLanguage.Lib.Array.SetArrayValueThis(newArr, i, val)
+                }
+                SimpleLanguage.Lib.Array.SetArrayValueThis(newArr, this._length, t)
+                this._length++
+                // replace internal storage pointer
+                this._ptr = newArr._ptr
+                this._capitaly = newCap
             }
         }
         public void remove( T t )

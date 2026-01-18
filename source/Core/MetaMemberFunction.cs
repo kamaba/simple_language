@@ -198,6 +198,7 @@ namespace SimpleLanguage.Core
         public bool isTemplateFunction => m_IsTemplateFunction;
         public bool isWithInterface => m_IsWithInterface;
         public bool isOverrideFunction => m_IsOverrideFunction;
+        public bool isAbstract => m_IsAbstract;
         public bool isOverrideInterface => m_IsOverrideInterface;        
         public bool isConstructInitFunction => m_ConstructInitFunction;
         public bool isGet => m_IsGet;
@@ -545,6 +546,11 @@ namespace SimpleLanguage.Core
         }
         public void ParseStatements()
         {
+            // If this function is declared abstract, skip parsing its body/content.
+            if (m_IsAbstract)
+            {
+                return;
+            }
             bool nohasContent = false;
             if( this.m_FileMetaMemberFunction != null )
             {

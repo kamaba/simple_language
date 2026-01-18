@@ -185,6 +185,10 @@ namespace SimpleLanguage.Core
             }
                 return false;
         }
+        public bool IsNum()
+        {
+            return ClassManager.IsNumberClass(this.m_MetaClass);
+        }
         public int ArrayDimension()
         {
             MetaType curmt = this;

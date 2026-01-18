@@ -1,6 +1,6 @@
 
 
-public class Float64 extends Object
+public class Float64 extends Num
 {
     public const Epsilen = 4.9123123213d;
     public const MaxValue = 20d;

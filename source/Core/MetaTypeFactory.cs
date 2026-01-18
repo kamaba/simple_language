@@ -16,55 +16,59 @@ namespace SimpleLanguage.Core
             {
                 return 0;
             }
-            else if (mt.metaClass == CoreMetaClassManager.sbyteMetaClass)
+            else if( mt.metaClass == CoreMetaClassManager.numMetaClass )
             {
                 return 1;
             }
-            else if(mt.metaClass == CoreMetaClassManager.byteMetaClass )
+            else if (mt.metaClass == CoreMetaClassManager.sbyteMetaClass)
             {
                 return 2;
             }
-            else if (mt.metaClass == CoreMetaClassManager.int16MetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.byteMetaClass)
             {
                 return 3;
             }
-            else if ( mt.metaClass == CoreMetaClassManager.uint16MetaClass )
+            else if (mt.metaClass == CoreMetaClassManager.int16MetaClass)
             {
                 return 4;
             }
-            else if (mt.metaClass == CoreMetaClassManager.int32MetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.uint16MetaClass)
             {
                 return 5;
             }
-            else if ( mt.metaClass == CoreMetaClassManager.uint32MetaClass )
+            else if (mt.metaClass == CoreMetaClassManager.int32MetaClass)
             {
                 return 6;
             }
-            else if (mt.metaClass == CoreMetaClassManager.int64MetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.uint32MetaClass)
             {
                 return 7;
             }
-            else if ( mt.metaClass == CoreMetaClassManager.uint64MetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.int64MetaClass)
             {
                 return 8;
             }
-            else if (mt.metaClass == CoreMetaClassManager.float32MetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.uint64MetaClass)
             {
                 return 9;
             }
-            else if (mt.metaClass == CoreMetaClassManager.float64MetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.float32MetaClass)
             {
                 return 10;
             }
-            else if (mt.metaClass == CoreMetaClassManager.arrayMetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.float64MetaClass)
             {
                 return 11;
             }
-            else if (mt.metaClass == CoreMetaClassManager.stringMetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.arrayMetaClass)
             {
                 return 12;
             }
-            return 13;
+            else if (mt.metaClass == CoreMetaClassManager.stringMetaClass)
+            {
+                return 13;
+            }
+            return 14;
         }
         public static EType CalcETypeByLeftAndRight(EType etype1, EType etype2, ELeftRightOpSign op, out int error )
         {

@@ -20,6 +20,7 @@ namespace SimpleLanguage.Core
         Null,
         Object,
         Boolean,
+        Num,
         Byte,
         SByte,
         Char,
@@ -57,6 +58,7 @@ namespace SimpleLanguage.Core
         }
         public static MetaClass nullMetaClass { get; private set; } = null;
         public static MetaClass objectMetaClass { get; private set; } = null;
+        public static MetaClass numMetaClass { get; private set; } = null;
         public static MetaClass stringMetaClass { get; private set; } = null;
         public static MetaClass voidMetaClass { get; set; } = null;
         public static MetaClass typeMetaClass { get; set; } = null;
@@ -88,6 +90,7 @@ namespace SimpleLanguage.Core
         {
             nullMetaClass = NullMetaClass.CreateMetaClass();
             objectMetaClass = ObjectMetaClass.CreateMetaClass();
+            numMetaClass = NumMetaClass.CreateMetaClass();
             voidMetaClass = VoidMetaClass.CreateMetaClass();
             booleanMetaClass = BooleanMetaClass.CreateMetaClass();
             byteMetaClass = ByteMetaClass.CreateMetaClass();
@@ -112,6 +115,7 @@ namespace SimpleLanguage.Core
 
             s_InnerDefineMetaClassList.Add(objectMetaClass);
             s_InnerDefineMetaClassList.Add(voidMetaClass);
+            s_InnerDefineMetaClassList.Add(numMetaClass);
             s_InnerDefineMetaClassList.Add(booleanMetaClass);
             s_InnerDefineMetaClassList.Add(byteMetaClass);
             s_InnerDefineMetaClassList.Add(sbyteMetaClass);
@@ -166,6 +170,10 @@ namespace SimpleLanguage.Core
             else if (mc == byteMetaClass)
             {
                 return EType.Byte;
+            }
+            else if (mc == numMetaClass)
+            {
+                return EType.Num;
             }
             else if (mc == sbyteMetaClass)
             {
@@ -238,6 +246,8 @@ namespace SimpleLanguage.Core
                     return nullMetaClass;
                 case EType.Boolean:
                     return booleanMetaClass;
+                case EType.Num:
+                    return numMetaClass;
                 case EType.Byte:
                     return byteMetaClass;
                 case EType.SByte:
@@ -282,6 +292,8 @@ namespace SimpleLanguage.Core
                     return DefaultObject.Void.ToString();
                 case "null":
                     return DefaultObject.Null.ToString();
+                case "num":
+                    return DefaultObject.Num.ToString();
                 case "object":
                 case "Object":
                     return DefaultObject.Object.ToString();

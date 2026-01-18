@@ -1,4 +1,4 @@
-public class Core.Int64 extends Object
+public class Core.Int64 extends Num
 {
     public const int MaxValue = 0x7fffffff;
     public const int MinValue = unchecked((int)0x80000000);

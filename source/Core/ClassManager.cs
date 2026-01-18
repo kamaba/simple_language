@@ -577,7 +577,8 @@ namespace SimpleLanguage.Core
         //}
         public static bool IsNumberClass( MetaClass curClass )
         {
-            if (curClass == CoreMetaClassManager.byteMetaClass
+            if ( curClass == CoreMetaClassManager.numMetaClass
+                || curClass == CoreMetaClassManager.byteMetaClass
                 || curClass == CoreMetaClassManager.sbyteMetaClass
                 || curClass == CoreMetaClassManager.int16MetaClass
                 || curClass == CoreMetaClassManager.uint16MetaClass

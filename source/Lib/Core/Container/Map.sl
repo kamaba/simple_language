@@ -8,7 +8,7 @@ public class Core.Map<TKey,TValue> extends Object interface Core.IIterable<T>, C
         public V value = null
     }
 
-    List<MapEntity<TKey,TVvalue> > m_MapContent = List<<TKey,TVvalue> >()
+    List<MapEntity<TKey,TValue> > m_MapContent = List<MapEntity<TKey,TValue> >()
 
 
     void add( TKey key, TValue value )
@@ -16,16 +16,32 @@ public class Core.Map<TKey,TValue> extends Object interface Core.IIterable<T>, C
         MapEntity<TKey,TValue> me = new()
         me.key = key;
         me.value = value
-
-        
+        me.hashId = key.hashCode
+        m_MapContent.add(me)
     }
     get TValue getValue( TKey key )
     {
-        return TValue.default;
+        for i = 0, i < m_MapContent.length, i++
+        {
+            var ent = m_MapContent.getValue(i)
+            if ent != null && ent.key.equals(key)
+            {
+                ret ent.value
+            }
+        }
+        ret TValue.default
     }
     public bool containByKey( TKey key )
     {
-        return false;
+        for i = 0, i < m_MapContent.length, i++
+        {
+            var ent = m_MapContent.getValue(i)
+            if ent != null && ent.key.equals(key)
+            {
+                ret true
+            }
+        }
+        ret false
     }    
 }
 

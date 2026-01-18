@@ -3,9 +3,16 @@ import CSharp.SimpleLanguage.Core
 
 NumberTest
 {
-    static boolTest()
+    static numTest()
     {
-        
+        Num a = 1.0;
+        num b = 333
+        System.Console.WriteLine("A:" + a )
+        Num c = a + b; 
+        System.Console.WriteLine("Num:" + Num )
+
+        var d = c + 100u     
+        System.Console.WriteLine("D:" + d )
     }
     static byteTest()
     {
@@ -39,6 +46,7 @@ NumberTest
     }
     static fun()
     {
-        int32Test();
+        numTest()
+        #int32Test();
     }
 }

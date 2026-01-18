@@ -1,31 +1,26 @@
+import CSharp.SimpleLanguage.Core
 import CSharp.SimpleLanguage
 
-Core.UInt32 extends Object
+public class UInt32 extends Num
 {
-    const UInt32 MaxValue = 0x7fffffff;
-    const UInt32 MinValue = 0x80000000;
+    const uint MaxValue = 0x7fffffff;
+    const uint MinValue = 0;
 
-    _value = 0ui;
+    UInt32 _value = 0iu;
     
-    static String Int32ToString( Int32 value )
+    static String UInt32ToString( UInt32 value )
     {
         ret SimpleLanguage.Lib.Int32Class.Int32ToString( value )
     }
-    public static Int32 parseString( string s )
+    public static UInt32 parseString( string s )
     {
         ret 0
-    }
-
-    _init_( Int32 _val )
-    {
-        this._value = _val
-        SimpleLanguage.Lib.Int32Class.SetInt32Value( this, _val )
     }
     _init_( UInt32 _val )
     {
         this._value = _val
-        SimpleLanguage.Lib.Int32Class.SetInt32Value( this, _val )
     }
+    #!
     _init_( Float32 f )
     {
         this._value = f.toInt32()
@@ -42,15 +37,16 @@ Core.UInt32 extends Object
     {
         ret null
     }
-    public int compareTo(object value)
+    !#
+    public int compareTo(Int32 value)
     {
         if (value == null)
         {
             ret 1;
         }
-
         ret 0
     }
+    #!
     Int8 toInt8()
     {
         ret 0
@@ -79,8 +75,9 @@ Core.UInt32 extends Object
     {
         ret 0
     }
+    !#
     override String toString()
     {
-        ret SimpleLanguage.Lib.Int32Class.ConvertToString( this )
+        ret SimpleLanguage.Lib.Int32Class.Int32ToString( this )
     }
 }

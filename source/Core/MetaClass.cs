@@ -407,6 +407,12 @@ namespace SimpleLanguage.Core
                         //if (v2.isConstructInitFunction) continue;
                         if (efun.IsEqualMetaFunction(v2))
                         {
+                            // child provides an implementation
+                            // if parent is abstract, child must mark method with 'override'
+                            if (efun.isAbstract && !v2.isOverrideFunction)
+                            {
+                                Log.AddInStructMeta(EError.None, "Error 子类[" + this.m_AllName + "] 方法: " + v2.name + " 实现了抽象父方法但未使用 override 标记");
+                            }
                             canAdd = false;
                             m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
                             continue;
@@ -414,6 +420,11 @@ namespace SimpleLanguage.Core
                     }
                     if (canAdd)
                     {
+                        // If parent function is abstract and current class is concrete, require override
+                        if (efun.isAbstract && !this.m_IsAbstractClass)
+                        {
+                            Log.AddInStructMeta(EError.None, "Error 类[" + this.m_AllName + "] 必须实现抽象函数: " + efun.name + " 或 将类声明为 abstract");
+                        }
                         m_NonStaticVirtualMetaMemberFunctionList.Add(efun);
                     }
                 }

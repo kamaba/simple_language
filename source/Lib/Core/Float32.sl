@@ -1,7 +1,7 @@
 import CSharp.SimpleLanguage.Core
 import CSharp.SimpleLanguage
 
-public class Float32 extends Object
+public class Float32 extends Num
 {
     public const Float32 Epsilen = 4.9123213f;
     public const Float32 MaxValue = 20f;

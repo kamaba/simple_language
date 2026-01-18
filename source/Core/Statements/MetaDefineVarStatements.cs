@@ -192,6 +192,10 @@ namespace SimpleLanguage.Core
                     {
                         m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                     }
+                    else if( mdt.IsNum() )
+                    {
+                        m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
+                    }
                     else
                     {
                         MetaClass compareClass = null;
