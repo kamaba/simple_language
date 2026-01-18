@@ -8,20 +8,20 @@
 数组定义，可以有几种方式，可以使用 **Array\<T>** 的方式，也可以使用 **array()** 的方式，也可以[]的方式确定为数组的形式，一但确定数组后，就可以进行数组相关的操作，数组如果是定义，一般不申请空间，只有对数组长度定义后，是真正的申请内存空间操作，数组申请数组后，只能通过SetLength方式，重置空间长度。
 
 ```ruby 
+import CSharp.System;
 class ArrNodeClass
 {
    int i = 0;
 }
 
-import CSharp.System;
 ProjectEnter
 {
    static Main()
    {
-      a1 = Array(3, int.runtimeType ); #申请一个int型，长度为3的数组
+      a1 = Array<int>(3); #申请一个int型，长度为3的数组
       a2 = [1,2,3,4,5];    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  相当于Array(5, int.runtimeType ){1,2,3,4,5}
-      a3 = Array(5){1,2,3,4,5.0f};   #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  相当于Array<float>(5){1.0,2.0,3.0,4.0,5.0}        
-      a4 = array( 20 );               # 长度为20的Array<object>
+      a3 = Array<float>(5){1,2,3,4,5.0f};   #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  相当于Array<float>(5){1.0,2.0,3.0,4.0,5.0}        
+      a4 = array<object>( 20 );               # 长度为20的Array<object>
              
       int[] a5 = [1.2,1.3,1.5];    #通过int[] 决定后边是否与配置一样，不一样时，使用提示，否则使用强制转换如果类型不一样 相当于 Array<float>{ 1.2, 1.3, 1.5};
         
@@ -30,11 +30,11 @@ ProjectEnter
       # c# 的方法  ArrNodeClass[] arr2 = new ArrNodeClass[100]; 这里边使用的是 arr2 = ArrClass2[100];
       float[] a7 = Array<float>(){ 1.2, 2.2, 3.4 };  #   
         
-      Array<float> a8 = Array( 20 ){1,2,3,5,3.3};   #申请一个长度为20的数组
+      Array<float> a8 = Array<float>( 20 ){1,2,3,5,3.3};   #申请一个长度为20的数组
        
-      a9 = Array( 27, int.runtimeType, 3 ); #申请一个二维数组，边界分别为 int[9,3]
+      a9 = Array<int>( 27 ); #申请一个二维数组，边界分别为 int[9,3]
       
-      bb2 = Array( 100, int.runtimeType, 10 ){ 1,2,3,4,5 };    # 等于 Array<int>( 100, 10 )  {1,2,3,4,5};        
+      bb2 = Array<int>( 100 ){ 1,2,3,4,5 };    # 等于 Array<int>( 100, 10 )  {1,2,3,4,5};        
              
       int[] bb3 = [1,2,3,4,5 ];    #与上相同  Array<int>(5){ 1,2,3,4,5}
     }
@@ -73,33 +73,32 @@ ProjectEnter
       arr1.index = 20;     #数组的当前游标
       arr1.value.i = 10;   #数组当前游标的植
         
-      for a in arr1      #使用for 的 a 是封装过的it里边包含 Index() 也可以直接a = ArrNodeClass();替代里边的值
+      for a in arr1      # 使用 `for in` 迭代，`a` 是迭代封装类型，包含 `index` 与 `value`
       {
-         if a.index == 20   #系统自带Index()函数  如果在使用for 时，则object.Index()表示他的下标
+         if a.index == 20   # 系统自带 Index() 属性
          {
-            a.value = ArrNodeClass(){ i = 100 }            
+            a.value = ArrNodeClass(){ i = 100 }
             continue
          }
-         a.i = 200
+         a.value.i = 200
       }
 
-      for( a in [1,2,3,4] )
+      for (a in [1,2,3,4])
       {
-         i = a.index + 1         #遍历时，a.index是取的游标值，当然，类在定义方法或者是变量名称时，不允许使用index, value等，系统关键字。
+         i = a.index + 1         # 遍历时，a.index 返回当前项索引；注意不要在用户代码中命名字段为 `index` 或 `value`（保留字）
       }
-      
-      for i = 0, i < arr1.length
+
+      for i = 0, i < arr1.length, i++
       {
-         i++
          if i < 40
          {
             continue
          }
          arr1[i] = ArrNodeClass()
          arr1[i].i = 100
-         arr1.$i.i = 120  #与上边的操作相同
-         
-         i+=2;
+         arr1.$i.i = 120  # 等价于 arr1[i].i = 120
+
+         i += 2;
       }
     }
 }

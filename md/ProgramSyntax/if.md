@@ -15,13 +15,13 @@ SLang 提供了以下类型的判断语句。点击链接查看每个语句的�
 
 ## 语法
 ### S 中 if 语句的语法：
-```ruby 
-if boolean_expression
-{
-   # 如果布尔表达式为真将执行的语句
+```s
+if boolean_expression {
+   // 如果布尔表达式为真将执行的语句
 }
-````
-如果布尔表达式为 true，则执行 if 块内的代码
+```
+
+如果布尔表达式为 true，则执行 if 块内的代码。
 
 #### SLang 中 if...else 语句的语法：
 ```ruby 

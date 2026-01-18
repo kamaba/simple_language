@@ -25,7 +25,7 @@ This guide helps contributors and AI automation workflows to make consistent cha
    - Documentation updated if public behavior changed.
 
 6. Where to add docs
-   - Global product docs: `md/ai/PRD.md`
+   - Global product docs: `PRD.md`
    - AI prompts and guides: `md/ai/` (per component or policy)
    - Module-level docs: add `README.md` under the relevant `source/*` directory.
 

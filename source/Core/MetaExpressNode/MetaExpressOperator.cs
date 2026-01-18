@@ -364,9 +364,12 @@ namespace SimpleLanguage.Core
                 }
 
                 bool isFindDefineFunction = false;
-                if (left.metaType.metaClass.eType == EType.Boolean)
+                MetaClass leftMc = left.GetReturnMetaClass();
+                MetaClass rightMc = right.GetReturnMetaClass();
+
+                if (leftMc.eType == EType.Boolean)
                 {
-                    if (right.metaType.metaClass.eType == EType.Boolean)
+                    if (rightMc.eType == EType.Boolean)
                     {
                         //都是布尔类型
                         m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
@@ -377,9 +380,9 @@ namespace SimpleLanguage.Core
                         Debug.Assert(false, "Error 布尔类型不能参与加减运算!!");
                     }
                 }
-                else if (ClassManager.IsNumberClass(left.metaType.metaClass))
+                else if (ClassManager.IsNumberClass(leftMc))
                 {
-                    if (ClassManager.IsNumberClass(right.metaType.metaClass))
+                    if (ClassManager.IsNumberClass(rightMc))
                     {
                         switch (m_OpLevelSign)
                         {
@@ -395,20 +398,20 @@ namespace SimpleLanguage.Core
                             case ELeftRightOpSign.Shr:
                                 {
                                     //都是数字类型
-                                    EType etype = MetaTypeFactory.CalcETypeByLeftAndRight(left.metaType.metaClass.eType, right.metaType.metaClass.eType, m_OpLevelSign, out int error);
+                                    EType etype = MetaTypeFactory.CalcETypeByLeftAndRight(leftMc.eType, rightMc.eType, m_OpLevelSign, out int error);
                                     if (error == 0)
                                     {
-                                        if(etype != right.metaType.metaClass.eType )
+                                        if(etype != rightMc.eType )
                                         {
                                             m_LeftConvert = new ConvertType()
                                             {
-                                                oriType = m_Left.metaType.metaClass.eType,
+                                                oriType = leftMc.eType,
                                                 targetType = etype
                                             };
 
                                             m_RightConvert = new ConvertType()
                                             {
-                                                oriType = m_Right.metaType.metaClass.eType,
+                                                oriType = rightMc.eType,
                                                 targetType = etype
                                             };
                                         }
@@ -435,7 +438,7 @@ namespace SimpleLanguage.Core
                                 break;
                         }
                     }
-                    else if(right.metaType.metaClass.eType == EType.String)
+                    else if( leftMc.eType == EType.String)
                     {
                         if (m_OpLevelSign == ELeftRightOpSign.Add)
                         {
@@ -451,7 +454,7 @@ namespace SimpleLanguage.Core
                         isFindDefineFunction = true;
                     }
                 }
-                else if (left.metaType.metaClass.eType == EType.String)
+                else if (rightMc.eType == EType.String)
                 {
                     if (m_OpLevelSign == ELeftRightOpSign.Add)
                     {

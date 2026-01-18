@@ -1,18 +1,28 @@
-# S语言的数字
-在S语言中，已定义了多种数字类型，并且多种类型可以理解为数字，现有类型有: byte,sbyte,char,short,ushort,int,uint,long,ulong.
+# 数值类型
 
-—————————————————————————————————————————————————————————
+S 语言支持多种整数与浮点类型：`byte`, `sbyte`, `char`, `short`, `ushort`, `int` (Int32), `uint`, `long` (Int64), `ulong`，以及 `float`/`double` 等浮点类型。
 
-#数字使用语法
-- a1 = 10i;    
-- int a2 = 10;
-- a3 = 10ui;
-- a4 = 20s;
-- a5 = 20us;
-- a6 = 100000000L;
-- a7 = 10000000000uL;
-- b1 = 0b0011_1100;
+字面量后缀约定：
+- `i` 用于标注 Int32，例如 `10i`。
+- `u` / `ui` 用于无符号整数后缀（需结合位宽，如 `100uL` 表示 unsigned long）。
+- `s` / `us` 表示短整型（Int16/UInt16）。
+- `L` 表示 long（Int64），`uL` 表示 UInt64。
+- 二进制或下划线分组可写：`0b0011_1100`。
 
+示例：
 
-符号使用  == 一般表示 对象相等， 如果 int a = 2; int b = 2; 使用 int/float/double/string等常量类型，使用 a == b 时，则会表示 === 相当于 值相等
- 如果是普通对象 == 则表示对象相等 Class1 a = Class1(); Class1 b = Class1();  a!= b 因为对象不相同 但如果使用 a === b 则相同，相当于a.ToValue() == b.ToValue(); 
+```s
+var a1 = 10i;
+Int32 a2 = 10;
+var a3 = 10ui;
+var a4 = 20s; // short
+var a5 = 20us; // unsigned short
+var a6 = 100000000L; // long
+var a7 = 10000000000uL; // unsigned long
+var b1 = 0b0011_1100;
+```
+
+比较与等价：
+- 对于基本数值类型，`==` 表示值相等（等同于 `===` 对值类型）。
+- 对于对象类型，`==` 通常表示引用相等（object identity）；使用 `===` 可比较值等价（若对象支持）。
+

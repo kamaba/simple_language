@@ -3,36 +3,53 @@
 
 —————————————————————————————————————————————————————————
 
-## 类的定义 
-类的定义没有具体的关键字，只要在一个module的空间中，或者是file文件中最外层，或者是namespace的{}中，也可以在某个类中，直接定义类，下面是类定义的一般形式
+## 类的定义
 
-in the file mycore1.s
-```python
-class_name1  #这里就是类的定义
-{
-    #member variables
-    <access specifier> <data type> variable1;
-    <access specifier> <data type> variable2;
+类定义用于声明对象的结构（字段）与行为（方法）。S 语言允许在顶层、`namespace` 内或其它类中嵌套定义类。
 
-    variable1 = const value or class define;
+语法示例：
 
-    #member methods
-    <access specifier > <return type> method1( parameter list )
-    {
-        //method body
+```s
+// 简写形式
+MyClass {
+    // fields
+    Int32 x = 0;
+    String name = "";
+
+    // constructor
+    _init_(Int32 a) { this.x = a; }
+
+    // instance method
+    Int32 getX() { ret this.x; }
+
+    // static method
+    static Int32 Zero() { ret 0; }
+}
+
+// 或显式使用 class 关键字
+class OtherClass { }
+```
+### 访问控制与继承
+
+- 访问修饰符：`public` / `private` / `internal` / `projected` 等用于控制成员可见性；默认成员为 `public`。
+- 继承使用 `extends`：`class Child extends Parent {}`。
+- `final` 修饰类或成员，表示禁止继承或重写。
+
+示例：
+
+```s
+namespace Application {
+    MyClass {
+        MyChildClass { }
     }
 }
-class class_name2    #也可以使用 class关键字
-{
 
-}
+final Application.MyClass2 { }
+
+// 使用
+var amc = Application.MyClass();
+var amcc = Application.MyClass.MyChildClass();
 ```
-### 类的使用方式
-- 访问标识符 [access specifier] 指定了对类及其成员的访问规则。如果没有指定，则使用默认的访问标识的，默认访问符都为public
-- 如果要访问类的成员，你要使用点（.）运算符。
-- 类的定义，在前边可以使用namespace导航,例: class Application.MyClass{} 的方式，或者使用namespace Application{ MyClass{} }方式来确定类的名称。
-- 类中，可以嵌套子类 MyClass{  MyClassChildClass{} } 其实 访问也是通过[.]符访问子类。
-- 类可以使用final的方式，不让其它类进行继承。
 
 ```python
 namespace Application

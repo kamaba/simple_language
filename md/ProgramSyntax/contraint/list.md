@@ -1,6 +1,31 @@
-# S 的运算符
-当你定义一个类时，你定义了一个数据类型的蓝图。这实际上并没有定义任何的数据，但它定义了类的名称意味着什么，也就是说，类的对象由什么组成及在这个对象上可执行什么操作。对象是类的实例。构成类的方法和变量称为类的成员。
+# List（列表 / 可变数组）
 
-—————————————————————————————————————————————————————————
-符号使用  == 一般表示 对象相等， 如果 int a = 2; int b = 2; 使用 int/float/double/string等常量类型，使用 a == b 时，则会表示 === 相当于 值相等
- 如果是普通对象 == 则表示对象相等 Class1 a = Class1(); Class1 b = Class1();  a!= b 因为对象不相同 但如果使用 a === b 则相同，相当于a.ToValue() == b.ToValue(); 
+本节按照 Dart 风格说明 S 语言中 List 的语义与常用 API。List 是按顺序保存元素的集合，支持泛型 `List<T>`。
+
+基本特性：
+- 可变（growable）与固定长度（fixed-length）两种 List。
+- 支持按索引访问、插入、删除、遍历与常见高阶操作（map/filter/reduce）。
+
+创建：
+- 空的可变 List：`var a = List<int>();` 或 `var a = <int>[];`
+- 使用字面量：`var a = [1, 2, 3];`
+- 固定长度：`var a = List<int>(5); // 长度固定，默认为 0/默认值`
+
+常用操作：
+- `a.length`、`a.isEmpty`、`a.isNotEmpty`
+- `a.add(x)`、`a.insert(index, x)`、`a.remove(x)`、`a.removeAt(index)`、`a.clear()`
+- `a[index]`、`a[index] = value`
+- `a.map((v) => ...)`、`a.where((v) => ...)`、`a.reduce(...)`、`a.forEach(...)`
+
+示例：
+
+```s
+var lst = [1,2,3];
+lst.add(4);
+lst.insert(0, 0);
+for v in lst { Debug.Write(v); }
+var even = lst.where(x => x % 2 == 0);
+```
+
+线程与并发：List 本身为非线程安全，需在并发场景做同步控制。
+

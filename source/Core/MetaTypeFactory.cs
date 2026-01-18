@@ -75,6 +75,10 @@ namespace SimpleLanguage.Core
             error = 0;
             switch ( etype1 )
             {
+                case EType.Num:
+                    {
+                        return EType.Num;
+                    }
                 case EType.Byte:
                     {
                         switch( etype2 )

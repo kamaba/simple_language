@@ -1,6 +1,38 @@
-# S 的运算符
-当你定义一个类时，你定义了一个数据类型的蓝图。这实际上并没有定义任何的数据，但它定义了类的名称意味着什么，也就是说，类的对象由什么组成及在这个对象上可执行什么操作。对象是类的实例。构成类的方法和变量称为类的成员。
+# 接口（Interface）
 
-—————————————————————————————————————————————————————————
-符号使用  == 一般表示 对象相等， 如果 int a = 2; int b = 2; 使用 int/float/double/string等常量类型，使用 a == b 时，则会表示 === 相当于 值相等
- 如果是普通对象 == 则表示对象相等 Class1 a = Class1(); Class1 b = Class1();  a!= b 因为对象不相同 但如果使用 a === b 则相同，相当于a.ToValue() == b.ToValue(); 
+接口用于声明一组方法签名而不提供具体实现。类可以实现一个或多个接口，从而承诺提供接口中声明的方法。
+
+语法示例：
+
+```s
+interface IPrintable {
+    void print();
+}
+
+class Document implements IPrintable {
+    override void print() {
+        Debug.Write("Document print");
+    }
+}
+```
+
+说明：
+- 接口只能包含方法签名（以及可选的默认实现，若语言扩展支持）。
+- 使用 `implements` 关键字声明实现关系：`class C implements I1, I2 {}`。
+- 若类实现接口但未实现接口中所有方法，则该类必须声明为 `abstract`。
+- 接口可用于多态和依赖注入：`IPrintable p = new Document(); p.print();`。
+
+示例（接口泛型）：
+
+```s
+interface IList<T> {
+    void add(T item);
+    T get(Int32 index);
+}
+
+class ArrayList<T> implements IList<T> {
+    override void add(T item) { /* ... */ }
+    override T get(Int32 index) { /* ... */ ret default; }
+}
+```
+

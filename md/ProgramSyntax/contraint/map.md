@@ -1,6 +1,32 @@
-# S 的运算符
-当你定义一个类时，你定义了一个数据类型的蓝图。这实际上并没有定义任何的数据，但它定义了类的名称意味着什么，也就是说，类的对象由什么组成及在这个对象上可执行什么操作。对象是类的实例。构成类的方法和变量称为类的成员。
+# Map（字典 / 哈希表）
 
-—————————————————————————————————————————————————————————
-符号使用  == 一般表示 对象相等， 如果 int a = 2; int b = 2; 使用 int/float/double/string等常量类型，使用 a == b 时，则会表示 === 相当于 值相等
- 如果是普通对象 == 则表示对象相等 Class1 a = Class1(); Class1 b = Class1();  a!= b 因为对象不相同 但如果使用 a === b 则相同，相当于a.ToValue() == b.ToValue(); 
+按 Dart 风格，Map 是键值对集合，常用 `Map<K, V>` 泛型形式。Map 支持通过键快速查找值（通常基于哈希）。
+
+创建：
+- 字面量：`var m = { "a": 1, "b": 2 };`
+- 空 Map：`var m = Map<String, Int32>();`
+
+常用 API：
+- `m[key]`、`m[key] = value`
+- `m.containsKey(key)`、`m.remove(key)`、`m.clear()`
+- `m.keys`、`m.values`、`m.entries`
+
+示例：
+
+```s
+var m = { "x": 1, "y": 2 };
+if (m.containsKey("x")) { Debug.Write(m["x"]); }
+for e in m.entries { Debug.Write("${e.key}=${e.value}"); }
+```
+
+注意：
+- Map 的内部实现建议使用哈希桶以保证平均 O(1) 的查找性能（当前实现可能为线性列表）。
+
+性能与并发：
+- 平均情况下，合适的哈希实现能提供 O(1) 的读写；在负载因子过高或哈希冲突严重时，性能会退化。
+- Map 不是线程安全的；在多线程/并发场景需要通过外部锁或并发容器进行保护。
+
+常见模式：
+- 迭代键/值：`for k in m.keys { ... } for v in m.values { ... }`。
+- 条件插入：`if (!m.containsKey(k)) { m[k] = default; }`
+

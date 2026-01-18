@@ -1,6 +1,25 @@
-# S 的运算符
-当你定义一个类时，你定义了一个数据类型的蓝图。这实际上并没有定义任何的数据，但它定义了类的名称意味着什么，也就是说，类的对象由什么组成及在这个对象上可执行什么操作。对象是类的实例。构成类的方法和变量称为类的成员。
+# 环境与运行（Environment & Execution）
 
-—————————————————————————————————————————————————————————
-符号使用  == 一般表示 对象相等， 如果 int a = 2; int b = 2; 使用 int/float/double/string等常量类型，使用 a == b 时，则会表示 === 相当于 值相等
- 如果是普通对象 == 则表示对象相等 Class1 a = Class1(); Class1 b = Class1();  a!= b 因为对象不相同 但如果使用 a === b 则相同，相当于a.ToValue() == b.ToValue(); 
+本节描述如何组织项目、运行脚本和使用命令行工具启动 S 语言程序。
+
+项目入口：
+- 使用 `ProjectEnter { ... }` 声明项目入口和静态方法（如 `static Main()`、`static Test()`）。
+
+运行与命令行：
+- `run project.sp`：构建并运行 `ProjectEnter` 中的 `Main`。
+- `run project.sp -test`：运行 `Test`（如果存在）。
+
+配置文件：
+- `ProjectConfig`（通常在 `.sp` 文件内以 `const data` 声明）包含 `compileFileList`、`globalVariable` 等编译/运行时配置。
+
+示例：
+
+```bash
+run test_project.sp
+run test_project.sp -test
+```
+
+运行时集成：
+- 可通过 `import CSharp.System` 等引入底层 .NET 功能。
+- 标准库位于 `source/Lib/Core`，运行时绑定在 `source/IR/Lib` 与 `source/VM`。
+
