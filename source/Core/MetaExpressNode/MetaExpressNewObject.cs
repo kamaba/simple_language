@@ -1006,7 +1006,17 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    m_RealMetaType = new MetaType(m_NewMetaType);
+                    // Before creating instance type, check abstract class restriction
+                    var metaClass = m_NewMetaType?.metaClass;
+                    if (metaClass != null && metaClass.isAbstractClass)
+                    {
+                        Log.AddInStructMeta(EError.None, "Error: cannot instantiate abstract class: " + metaClass.name);
+                        m_RealMetaType = null;
+                    }
+                    else
+                    {
+                        m_RealMetaType = new MetaType(m_NewMetaType);
+                    }
                 }
             }
         }

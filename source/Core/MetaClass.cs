@@ -95,6 +95,9 @@ namespace SimpleLanguage.Core
         protected MetaExpressNode m_DefaultExpressNode = null;
         protected EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
         protected bool m_IsInterfaceClass = false;
+        protected bool m_IsAbstractClass = false;
+        public bool isAbstractClass => m_IsAbstractClass;
+        public void SetAbstractClass(bool v) { m_IsAbstractClass = v; }
 
         protected MetaClass()
         {
@@ -139,6 +142,7 @@ namespace SimpleLanguage.Core
             m_NonStaticVirtualMetaMemberFunctionList = mc.m_NonStaticVirtualMetaMemberFunctionList;
             m_StaticMetaMemberFunctionList = mc.m_StaticMetaMemberFunctionList;
             m_DefaultExpressNode = mc.m_DefaultExpressNode;
+            m_IsAbstractClass = mc.m_IsAbstractClass;
         }
         public override void SetDeep( int deep )
         {

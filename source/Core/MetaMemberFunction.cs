@@ -216,6 +216,7 @@ namespace SimpleLanguage.Core
         protected bool m_IsTemplateFunction = false;
         protected bool m_IsOverrideFunction = false;
         protected bool m_IsOverrideInterface = false;
+        protected bool m_IsAbstract = false;
         protected bool m_IsGet = false;
         protected bool m_IsSet = false;
         protected bool m_IsFinal = false;
@@ -247,6 +248,7 @@ namespace SimpleLanguage.Core
             m_IsGet = fmmf.getToken != null;
             m_IsSet = fmmf.setToken != null;
             m_IsFinal = fmmf.finalToken != null;
+            m_IsAbstract = fmmf.abstractToken != null;
             if ( fmmf.overrideToken != null )
             {
                 if (fmmf.overrideToken.type == ETokenType.Override)

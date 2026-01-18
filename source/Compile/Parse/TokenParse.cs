@@ -615,6 +615,7 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Get:
                 case ETokenType.Set:
                 case ETokenType.Interface:
+                case ETokenType.Abstract:
                 case ETokenType.Extends:
                 case ETokenType.If:
                 case ETokenType.ElseIf:

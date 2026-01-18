@@ -34,6 +34,12 @@ tag      = "ir"
 ignore   = false
 priority = 0
 
+[[compileFiles.files]]
+path     = "Num.sl"
+group    = "core"
+tag      = "ir"
+ignore   = false
+priority = 0
 
 [[compileFiles.files]]
 path     = "Byte.sl"

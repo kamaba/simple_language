@@ -160,6 +160,7 @@ namespace SimpleLanguage.Compile
         public Token interfaceToken => m_InterfaceToken;
         public Token staticToken => m_StaticToken;
         public Token overrideToken => m_OverrideToken;
+        public Token abstractToken => m_AbstractToken;
         public Token permissionToken => m_PermissionToken;
         public Token getToken => m_GetToken;
         public Token setToken => m_SetToken;
@@ -167,6 +168,7 @@ namespace SimpleLanguage.Compile
 
         private Token m_InterfaceToken = null;
         private Token m_StaticToken = null;
+        private Token m_AbstractToken = null;
         private Token m_FinalToken = null;
         private Token m_GetToken = null;
         private Token m_SetToken = null;
@@ -248,6 +250,15 @@ namespace SimpleLanguage.Compile
                             Log.AddInStructFileMeta(EError.None, "Error 解析过了一次Override!!");
                         }
                         virtualToken = token;
+                    }
+                    else if (token.type == ETokenType.Abstract)
+                    {
+                        if (m_AbstractToken != null)
+                        {
+                            isError = true;
+                            Log.AddInStructFileMeta(EError.None, "Error 解析过了一次Abstract!!");
+                        }
+                        m_AbstractToken = token;
                     }
                     else if (token.type == ETokenType.Static)
                     {

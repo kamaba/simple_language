@@ -1505,6 +1505,9 @@ namespace SimpleLanguage.Compile
                 case "void":
                     tokenType = ETokenType.Void;
                     break;
+                case "abstract":
+                    tokenType = ETokenType.Abstract;
+                    break;
                 case "object":
                 case "Object":
                     tokenType = ETokenType.Type;

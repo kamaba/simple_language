@@ -36,6 +36,7 @@ namespace SimpleLanguage.Compile
         #region Token
         protected Token m_PermissionToken = null;
         protected Token m_PartialToken = null;
+        protected Token m_AbstractToken = null;
         protected Token m_PreInterfaceToken = null;
         protected Token m_SufInterfaceToken = null;
         protected Token m_ClassToken = null;
@@ -234,6 +235,15 @@ namespace SimpleLanguage.Compile
                             Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Class!!");
                         }
                         m_PartialToken = token;
+                    }
+                    else if (token.type == ETokenType.Abstract)
+                    {
+                        if (m_AbstractToken != null)
+                        {
+                            isError = true;
+                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Abstract!!");
+                        }
+                        m_AbstractToken = token;
                     }
                     else if (token.type == ETokenType.Class)
                     {
@@ -628,6 +638,10 @@ namespace SimpleLanguage.Compile
         public void SetMetaClass( MetaClass mc )
         {
             m_MetaClass = mc;
+            if (m_AbstractToken != null && m_MetaClass != null)
+            {
+                m_MetaClass.SetAbstractClass(true);
+            }
         }
         //public MetaBase GetChildrenMetaBaseByName( string name )
         //{

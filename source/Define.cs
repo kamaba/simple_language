@@ -229,6 +229,8 @@ namespace SimpleLanguage
         New,
         /// <summary> partial </summary>
         Partial,
+        /// <summary> abstract </summary>
+        Abstract,
         /// <summary> namespace </summary>
         Namespace,
         /// <summary> class </summary>
