@@ -8,6 +8,7 @@ using SimpleLanguage.IR;
 using SimpleLanguage.Export.AOT;
 using System.Diagnostics;
 using System.Collections.Generic;
+using SimpleLanguage.Export;
 
 namespace SimpleLanguage
 {
@@ -61,7 +62,7 @@ namespace SimpleLanguage
         static void Main(string[] args)
         {
             // Test ReadString method
-            TestReadString();
+            //TestReadString();
             
             // Original code
             CommandInputArgs inputArgs = new CommandInputArgs(args);
@@ -70,11 +71,20 @@ namespace SimpleLanguage
             // after compilation, try exporting IR methods to LLVM IR using the AOT exporter
             try
             {
-                IRManager.instance.TranslateIR();
+                //IRManager.instance.TranslateIR();
                 var methodList = new System.Collections.Generic.List<IRMethod>(IRManager.instance.IRMethodDict.Values);
                 string outDir = Path.Combine(Directory.GetCurrentDirectory(), "Export", "AOT", "out");
-                ExportAot.Export(methodList.ToArray(), outDir);
-                Console.WriteLine($"Exported {methodList.Count} methods to: {outDir}");
+                //ExportAot.Export(methodList.ToArray(), outDir);
+
+                // Export SLVM module to Export/SLVMCode
+                var cfg = ProjectManager.config.Export;
+                var moduleName = string.IsNullOrEmpty(cfg.ModuleName) ? "SimpleLanguageMain" : cfg.ModuleName;
+                var slvmModule = SimpleLanguage.Export.SLVM.SLVMSerializer.FromIRMethods(methodList.ToArray(), moduleName);
+                string slvmDir = Path.Combine(Directory.GetCurrentDirectory(), cfg.OutputDir ?? "Export/SLVMCode");
+                if (!Directory.Exists(slvmDir)) Directory.CreateDirectory(slvmDir);
+                string slvmPath = Path.Combine(slvmDir, moduleName + ".slvm");
+                SimpleLanguage.Export.SLVM.SLVMSerializer.WriteModule(slvmModule, slvmPath, cfg);
+                Console.WriteLine($"Exported {methodList.Count} methods to SLVM file: {slvmPath}");
             }
             catch (Exception ex)
             {

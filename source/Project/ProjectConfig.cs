@@ -150,6 +150,23 @@ namespace SimpleLanguage.Project
             public Dictionary<string, string> Replace { get; set; } = new Dictionary<string, string>();
         }
 
+        // Export-related configuration
+        public ExportSection Export { get; set; } = new ExportSection();
+
+        public class ExportSection
+        {
+            // Module name to produce (overrides Project.Name when non-empty)
+            public string ModuleName { get; set; } = string.Empty;
+            // Output directory for exported artifacts
+            public string OutputDir { get; set; } = "Export/SLVMCode";
+            // Pack string pool into a single blob with offsets/lengths
+            public bool StringPoolAsBlob { get; set; } = true;
+            // Only export public methods
+            public bool ExportPublicOnly { get; set; } = false;
+            // Include additional metadata like owner class id, visibility flags
+            public bool IncludeMetadata { get; set; } = true;
+        }
+
         public class ReferenceSection
         {
             public string Path { get; set; } = string.Empty;
