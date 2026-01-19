@@ -10,65 +10,88 @@ namespace SimpleLanguage.Core
 {
     public class MetaTypeFactory
     {
+        public enum EMetaClassLevel :int 
+        {
+            Null,
+            Boolean,
+            Num,
+            SByte,
+            Byte,
+            Int16,
+            UInt16,
+            Int32,
+            UInt32,
+            Int64,
+            UInt64,
+            Float32,
+            Float64,
+            String,
+            Array,
+            Class,
+        }
         public static int GetOpLevelByMetaType( MetaType mt)
         {
-            if( mt.metaClass == CoreMetaClassManager.booleanMetaClass)
+            if (mt.metaClass == CoreMetaClassManager.nullMetaClass)
             {
-                return 0;
+                return (int)EMetaClassLevel.Null;
+            }
+            else if ( mt.metaClass == CoreMetaClassManager.booleanMetaClass)
+            {
+                return (int)EMetaClassLevel.Boolean;
             }
             else if( mt.metaClass == CoreMetaClassManager.numMetaClass )
             {
-                return 1;
+                return (int)EMetaClassLevel.Num;
             }
             else if (mt.metaClass == CoreMetaClassManager.sbyteMetaClass)
             {
-                return 2;
+                return (int)EMetaClassLevel.SByte;
             }
             else if (mt.metaClass == CoreMetaClassManager.byteMetaClass)
             {
-                return 3;
+                return (int)EMetaClassLevel.Byte;
             }
             else if (mt.metaClass == CoreMetaClassManager.int16MetaClass)
             {
-                return 4;
+                return (int)EMetaClassLevel.Int16;
             }
             else if (mt.metaClass == CoreMetaClassManager.uint16MetaClass)
             {
-                return 5;
+                return (int)EMetaClassLevel.UInt16;
             }
             else if (mt.metaClass == CoreMetaClassManager.int32MetaClass)
             {
-                return 6;
+                return (int)EMetaClassLevel.Int32;
             }
             else if (mt.metaClass == CoreMetaClassManager.uint32MetaClass)
             {
-                return 7;
+                return (int)EMetaClassLevel.UInt32;
             }
             else if (mt.metaClass == CoreMetaClassManager.int64MetaClass)
             {
-                return 8;
+                return (int)EMetaClassLevel.Int64;
             }
             else if (mt.metaClass == CoreMetaClassManager.uint64MetaClass)
             {
-                return 9;
+                return (int)EMetaClassLevel.UInt64;
             }
             else if (mt.metaClass == CoreMetaClassManager.float32MetaClass)
             {
-                return 10;
+                return (int)EMetaClassLevel.Float32;
             }
             else if (mt.metaClass == CoreMetaClassManager.float64MetaClass)
             {
-                return 11;
+                return (int)EMetaClassLevel.Float64;
             }
             else if (mt.metaClass == CoreMetaClassManager.arrayMetaClass)
             {
-                return 12;
+                return (int)EMetaClassLevel.Array;
             }
             else if (mt.metaClass == CoreMetaClassManager.stringMetaClass)
             {
-                return 13;
+                return (int)EMetaClassLevel.String;
             }
-            return 14;
+            return 100;
         }
         public static EType CalcETypeByLeftAndRight(EType etype1, EType etype2, ELeftRightOpSign op, out int error )
         {

@@ -10,7 +10,7 @@ using SimpleLanguage.VM.Runtime;
 using System;
 namespace SimpleLanguage.VM
 {
-    public class Float32Object : SObject
+    public class Float32Object : NumObject
     {
         public override object getValue() { return value; }
         public Single value;
@@ -33,7 +33,7 @@ namespace SimpleLanguage.VM
         }
     }
 
-    public class Float64Object : SObject
+    public class Float64Object : NumObject
     {
         public override object getValue() { return value; }
         public Double value;

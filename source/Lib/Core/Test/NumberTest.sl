@@ -7,11 +7,11 @@ NumberTest
     {
         Num a = 1.0;
         num b = 333
-        System.Console.WriteLine("A:" + a )
+        #System.Console.WriteLine("A:" + a )
         Num c = a + b; 
-        System.Console.WriteLine("Num:" + Num )
+        System.Console.WriteLine("Num:" + c )
 
-        var d = c + 100u     
+        var d = c + 100L     
         System.Console.WriteLine("D:" + d )
     }
     static byteTest()

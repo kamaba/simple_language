@@ -152,10 +152,10 @@ namespace SimpleLanguage.VM
             switch (eType)
             {
                 case EVMType.Byte: return int8Value;
-                case EVMType.SByte: return (ulong)(ulong)(byte)sint8Value;
-                case EVMType.Int16: return (ulong)(ushort)int16Value;
+                case EVMType.SByte: return (byte)sint8Value;
+                case EVMType.Int16: return (ushort)int16Value;
                 case EVMType.UInt16: return uint16Value;
-                case EVMType.Int32: return (ulong)(uint)int32Value;
+                case EVMType.Int32: return (uint)int32Value;
                 case EVMType.UInt32: return uint32Value;
                 case EVMType.Int64: return (ulong)int64Value;
                 case EVMType.UInt64: return uint64Value;
@@ -683,6 +683,10 @@ namespace SimpleLanguage.VM
                     }
                 case EVMType.Float64:
                 //case EVMType.RawFloat64:
+                    {
+                        return doubleValue;
+                    }
+                case EVMType.Num:
                     {
                         return doubleValue;
                     }

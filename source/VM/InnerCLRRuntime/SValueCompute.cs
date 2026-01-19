@@ -19,24 +19,111 @@ namespace SimpleLanguage.VM
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ComputeValueInline(ref SValue left, int sign, ref SValue right, bool isUnSign)
         {
-            // try fast path with RawSValue for purely numeric types
-            if (IsNumericType(left.eType) && IsNumericType(right.eType))
+            // support class-wrapped numeric objects: unbox them to primitive temporaries
+            bool leftWasClass = false;
+            bool rightWasClass = false;
+            SValue leftPrim = left;
+            SValue rightPrim = right;
+            if (left.eType == EVMType.Class && left.sobject != null)
             {
-                var rl = RawSValue.FromSValue(ref left);
-                var rr = RawSValue.FromSValue(ref right);
+                leftWasClass = true;
+                leftPrim = default;
+                leftPrim.SetSObject(left.sobject);
+            }
+            if (right.eType == EVMType.Class && right.sobject != null)
+            {
+                rightWasClass = true;
+                rightPrim = default;
+                rightPrim.SetSObject(right.sobject);
+            }
+
+            // If either side is a class-wrapped NumObject, prefer NumObject operation methods
+            bool leftIsNumObj = left.eType == EVMType.Class && left.sobject is NumObject;
+            bool rightIsNumObj = right.eType == EVMType.Class && right.sobject is NumObject;
+            if (leftIsNumObj || rightIsNumObj)
+            {
+                NumObject leftNum = leftIsNumObj ? (NumObject)left.sobject : null;
+                NumObject rightNum = rightIsNumObj ? (NumObject)right.sobject : null;
+                // left is NumObject -> perform operation on it
+                if (leftNum != null)
+                {
+                    if (rightNum == null)
+                    {
+                        // wrap primitive right into a temporary NumObject
+                        var tmp = new NumObject(EVMType.Float64);
+                        switch (rightPrim.eType)
+                        {
+                            case EVMType.Float64: tmp.SetValue(rightPrim.doubleValue); break;
+                            case EVMType.Float32: tmp.SetValue(rightPrim.floatValue); break;
+                            case EVMType.Int64: tmp.SetValue(rightPrim.int64Value); break;
+                            case EVMType.UInt64: tmp.SetValue(rightPrim.uint64Value); break;
+                            case EVMType.Int32: tmp.SetValue(rightPrim.int32Value); break;
+                            case EVMType.UInt32: tmp.SetValue(rightPrim.uint32Value); break;
+                            case EVMType.Int16: tmp.SetValue(rightPrim.int16Value); break;
+                            case EVMType.UInt16: tmp.SetValue(rightPrim.uint16Value); break;
+                            case EVMType.Byte: tmp.SetValue(rightPrim.int8Value); break;
+                            case EVMType.SByte: tmp.SetValue(rightPrim.sint8Value); break;
+                            default: tmp.SetValue(rightPrim.doubleValue); break;
+                        }
+                        leftNum.Operate(sign, tmp, isUnSign);
+                        return;
+                    }
+                    else
+                    {
+                        leftNum.Operate(sign, rightNum, isUnSign);
+                        return;
+                    }
+                }
+
+                // right is NumObject, left is primitive -> compute into left primitive
+                if (rightNum != null)
+                {
+                    var tmpLeft = new NumObject(EVMType.Float64);
+                    switch (leftPrim.eType)
+                    {
+                        case EVMType.Float64: tmpLeft.SetValue(leftPrim.doubleValue); break;
+                        case EVMType.Float32: tmpLeft.SetValue(leftPrim.floatValue); break;
+                        case EVMType.Int64: tmpLeft.SetValue(leftPrim.int64Value); break;
+                        case EVMType.UInt64: tmpLeft.SetValue(leftPrim.uint64Value); break;
+                        case EVMType.Int32: tmpLeft.SetValue(leftPrim.int32Value); break;
+                        case EVMType.UInt32: tmpLeft.SetValue(leftPrim.uint32Value); break;
+                        case EVMType.Int16: tmpLeft.SetValue(leftPrim.int16Value); break;
+                        case EVMType.UInt16: tmpLeft.SetValue(leftPrim.uint16Value); break;
+                        case EVMType.Byte: tmpLeft.SetValue(leftPrim.int8Value); break;
+                        case EVMType.SByte: tmpLeft.SetValue(leftPrim.sint8Value); break;
+                        default: tmpLeft.SetValue(leftPrim.doubleValue); break;
+                    }
+                    tmpLeft.Operate(sign, rightNum, isUnSign);
+                    // write back as double into leftPrim
+                    leftPrim.SetDoubleValue(tmpLeft.ToDouble());
+                    left = leftPrim;
+                    return;
+                }
+            }
+
+            // try fast path with RawSValue for purely numeric types (treat Num as Float64 in raw path)
+            bool leftNumericRaw = IsNumericType(leftPrim.eType) || leftPrim.eType == EVMType.Num;
+            bool rightNumericRaw = IsNumericType(rightPrim.eType) || rightPrim.eType == EVMType.Num;
+            if (leftNumericRaw && rightNumericRaw)
+            {
+                var rl = RawSValue.FromSValue(ref leftPrim);
+                var rr = RawSValue.FromSValue(ref rightPrim);
                 ComputeValueInlineRaw(ref rl, sign, ref rr, isUnSign);
-                rl.ApplyToSValue(ref left);
+                rl.ApplyToSValue(ref leftPrim);
+                // write back to original left (if it was a class-wrapped numeric, unbox result to primitive)
+                left = leftPrim;
                 return;
             }
             // unify numeric operations with promotion rules
-            bool leftIsFloat = (left.eType == EVMType.Float32 || left.eType == EVMType.Float64);
-            bool rightIsFloat = (right.eType == EVMType.Float32 || right.eType == EVMType.Float64);
+            // treat Num as float64 for promotion purposes
+            bool leftIsFloat = (leftPrim.eType == EVMType.Float32 || leftPrim.eType == EVMType.Float64 || leftPrim.eType == EVMType.Num);
+            bool rightIsFloat = (rightPrim.eType == EVMType.Float32 || rightPrim.eType == EVMType.Float64 || rightPrim.eType == EVMType.Num);
 
             // If any side is float -> use double precision
             if (leftIsFloat || rightIsFloat)
             {
-                double a = (left.eType == EVMType.Float64) ? left.doubleValue : (left.eType == EVMType.Float32 ? (double)left.floatValue : left.ConvertToDoubleFromIntTypes());
-                double b = (right.eType == EVMType.Float64) ? right.doubleValue : (right.eType == EVMType.Float32 ? (double)right.floatValue : right.ConvertToDoubleFromIntTypes());
+                double a = (leftPrim.eType == EVMType.Float64 || leftPrim.eType == EVMType.Num) ? leftPrim.doubleValue : (leftPrim.eType == EVMType.Float32 ? (double)leftPrim.floatValue : leftPrim.ConvertToDoubleFromIntTypes());
+                double b = (rightPrim.eType == EVMType.Float64 || rightPrim.eType == EVMType.Num) ? rightPrim.doubleValue : (rightPrim.eType == EVMType.Float32 ? (double)rightPrim.floatValue : rightPrim.ConvertToDoubleFromIntTypes());
                 double r = 0;
                 switch (sign)
                 {
@@ -49,19 +136,20 @@ namespace SimpleLanguage.VM
                         Debug.Write("Error 不支持浮点的位运算");
                         break;
                 }
-                if (left.eType == EVMType.Float64)
-                    left.doubleValue = r;
+                if (leftPrim.eType == EVMType.Float64 || leftPrim.eType == EVMType.Num)
+                    leftPrim.doubleValue = r;
                 else
-                    left.floatValue = (float)r;
+                    leftPrim.floatValue = (float)r;
+                left = leftPrim;
                 return;
             }
 
             // integer operations - decide signed vs unsigned based on flag or operand types
-            bool useUnsigned = isUnSign || left.IsUnsignedType(left.eType) || right.IsUnsignedType(right.eType);
+            bool useUnsigned = isUnSign || left.IsUnsignedType(leftPrim.eType) || right.IsUnsignedType(rightPrim.eType);
             if (useUnsigned)
             {
-                ulong a = left.ConvertToULong();
-                ulong b = right.ConvertToULong();
+                ulong a = leftPrim.ConvertToULong();
+                ulong b = rightPrim.ConvertToULong();
                 ulong r = 0;
                 switch (sign)
                 {
@@ -77,13 +165,14 @@ namespace SimpleLanguage.VM
                     case 9: r = a >> (int)b; break;
                 }
                 // write back according to original left type
-                left.AssignULongToType(r);
+                leftPrim.AssignULongToType(r);
+                left = leftPrim;
                 return;
             }
 
             // signed integer
-            long la = left.ConvertToLong();
-            long lb = right.ConvertToLong();
+            long la = leftPrim.ConvertToLong();
+            long lb = rightPrim.ConvertToLong();
             long lr = 0;
             switch (sign)
             {
@@ -98,7 +187,8 @@ namespace SimpleLanguage.VM
                 case 8: lr = la << (int)lb; break;
                 case 9: lr = la >> (int)lb; break;
             }
-            left.AssignLongToType(lr);
+            leftPrim.AssignLongToType(lr);
+            left = leftPrim;
         }
 
         public void ComputeSVAlue(int sign, ref SValue svalue, bool isUnSign)
@@ -111,10 +201,13 @@ namespace SimpleLanguage.VM
         {
             bool leftIsFloat = (left.eType == EVMType.Float32 || left.eType == EVMType.Float64);
             bool rightIsFloat = (right.eType == EVMType.Float32 || right.eType == EVMType.Float64);
+            // Treat Num as Float64 in raw computations
+            if (left.eType == EVMType.Num) leftIsFloat = true;
+            if (right.eType == EVMType.Num) rightIsFloat = true;
             if (leftIsFloat || rightIsFloat)
             {
-                double a = (left.eType == EVMType.Float64) ? left.Float64 : (left.eType == EVMType.Float32 ? left.Float32 : (double)left.Int64);
-                double b = (right.eType == EVMType.Float64) ? right.Float64 : (right.eType == EVMType.Float32 ? right.Float32 : (double)right.Int64);
+                double a = (left.eType == EVMType.Float64 || left.eType == EVMType.Num) ? left.Float64 : (left.eType == EVMType.Float32 ? left.Float32 : (double)left.Int64);
+                double b = (right.eType == EVMType.Float64 || right.eType == EVMType.Num) ? right.Float64 : (right.eType == EVMType.Float32 ? right.Float32 : (double)right.Int64);
                 double r = 0;
                 switch (sign)
                 {
@@ -127,7 +220,7 @@ namespace SimpleLanguage.VM
                         Debug.Write("Error 不支持浮点的位运算");
                         break;
                 }
-                if (left.eType == EVMType.Float64) left.Float64 = r; else left.Float32 = (float)r;
+                if (left.eType == EVMType.Float64 || left.eType == EVMType.Num) left.Float64 = r; else left.Float32 = (float)r;
                 return;
             }
 

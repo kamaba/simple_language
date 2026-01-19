@@ -42,6 +42,12 @@ namespace SimpleLanguage.VM
                 sobj = new BoolObject(false);
                 sobj.typeId = 1;
             }
+            else if (name == "Core.Num" || name == "Num")
+            {
+                // abstract numeric base: create a Float64Object as default runtime representation
+                sobj = new NumObject();
+                sobj.typeId = 5;
+            }
             else if (name == "Core.Object" || name == "Object")
             {
                 var ao = new SObject(EVMType.Object);

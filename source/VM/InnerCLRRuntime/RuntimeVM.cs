@@ -29,6 +29,7 @@ namespace SimpleLanguage.VM.Runtime
         Null,
         Void,
         Object,
+        Num,
         Class,
         Enum,
         Data,
@@ -217,6 +218,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             switch (t)
             {
+                case EVMType.Num:
                 case EVMType.Byte:
                 case EVMType.SByte:
                 case EVMType.Int16:
@@ -472,6 +474,18 @@ namespace SimpleLanguage.VM.Runtime
                 case EVMType.UInt64: sStore.SetUInt64Value(sValue.uint64Value); break;
                 case EVMType.Float32: sStore.SetFloatValue(sValue.floatValue); break;
                 case EVMType.Float64: sStore.SetDoubleValue(sValue.doubleValue); break;
+                case EVMType.Num:
+                    {
+                        if (sValue.sobject != null && sValue.sobject is SimpleLanguage.VM.NumObject srcNum)
+                        {
+                            sStore.SetDoubleValue(srcNum.ToDouble());
+                        }
+                        else
+                        {
+                            sStore.SetDoubleValue(sValue.doubleValue);
+                        }
+                    }
+                    break;
                 case EVMType.String: sStore.SetStringValue(sValue.stringValue); break;
                 case EVMType.Null:
                     {
@@ -1798,125 +1812,93 @@ namespace SimpleLanguage.VM.Runtime
                 return;
             }
             bool anyObj = obj.eType == EVMType.Object;
-            switch (svalue.eType)
+
+            // Simplified: decide action by target object's declared type (obj.eType)
+            // and convert source SValue into the appropriate form.
+            object srcVal = null;
+            if (svalue.eType == EVMType.Class && svalue.sobject is ClassObject sc)
+            {
+                srcVal = sc.value;
+            }
+            else
+            {
+                srcVal = svalue.GetValueObject();
+            }
+
+            switch (obj.eType)
             {
                 case EVMType.Null:
-                    {
-                        obj.SetNull();
-                    }
+                    obj.SetNull();
                     break;
-                //case EVMType.RawBoolean:
-                //    {
-                //        TemplateObject to = obj as TemplateObject;
-                //        if (to != null)
-                //        {
-                //            to.SetValue(EVMType.Boolean, svalue.int8Value);
-                //        }
-                //        BoolObject boolObj = obj as BoolObject;
-                //        if (boolObj == null)
-                //        {
-                //            Debug.Write("该类型不是Boolean类型!!");
-                //            return;
-                //        }
-                //        boolObj.SetValue(svalue.int8Value == 1);
-                //    }
-                //    break;
                 case EVMType.Boolean:
+                    if (anyObj)
                     {
-                        if( anyObj )
-                        {
-                            obj.SetValueByType(  EVMType.Boolean, svalue.int8Value == 1 );
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EVMType.Boolean, svalue.int8Value);
-                        }
-                        BoolObject boolObj = obj as BoolObject;
-                        if (boolObj == null)
-                        {
-                            Debug.Write("该类型不是Boolean类型!!");
-                            return;
-                        }
-                        boolObj.SetValue(svalue.int8Value == 1);
+                        obj.SetValueByType(EVMType.Boolean, Convert.ToBoolean(srcVal));
+                        return;
                     }
+                    // only accept boolean-compatible sources
+                    if (svalue.eType != EVMType.Boolean)
+                    {
+                        Debug.Assert(false, "类型不兼容: 目标 Boolean 但来源不是 Boolean");
+                        return;
+                    }
+                    if (obj is TemplateObject toBool)
+                    {
+                        toBool.SetValue(EVMType.Boolean, Convert.ToByte(srcVal));
+                        return;
+                    }
+                    if (obj is BoolObject bObj)
+                    {
+                        bObj.SetValue(Convert.ToBoolean(srcVal));
+                        return;
+                    }
+                    Debug.Write("该类型不是Boolean类型!!");
                     break;
-                //case EVMType.RawByte:
-                //    {
-                //        TemplateObject to = obj as TemplateObject;
-                //        if (to != null)
-                //        {
-                //            to.SetValue(EVMType.Byte, svalue.int8Value);
-                //            return;
-                //        }
-                //        Int8Object byteObj = obj as Int8Object;
-                //        if (byteObj == null)
-                //        {
-                //            Debug.Write("该类型不是Byte类型!!");
-                //            return;
-                //        }
-                //        byteObj.SetValue(svalue.int8Value);
-                //    }
-                //    break;
                 case EVMType.Byte:
+                    if (! (IsNumericTypeLocal(svalue.eType) || svalue.eType == EVMType.Num))
                     {
-                        if (anyObj)
-                        {
-                            obj.SetValueByType(EVMType.Byte, svalue.int8Value );
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EVMType.Byte, svalue.int8Value);
-                            return;
-                        }
-                        Int8Object byteObj = obj as Int8Object;
-                        if (byteObj == null)
-                        {
-                            Debug.Write("该类型不是Byte类型!!");
-                            return;
-                        }
-                        byteObj.SetValue(svalue.int8Value);
+                        Debug.Assert(false, "类型不兼容: 目标 Byte 但来源不是数字");
+                        return;
                     }
+                    if (anyObj)
+                    {
+                        obj.SetValueByType(EVMType.Byte, Convert.ToByte(srcVal));
+                        return;
+                    }
+                    if (obj is TemplateObject tByte)
+                    {
+                        tByte.SetValue(EVMType.Byte, Convert.ToByte(srcVal));
+                        return;
+                    }
+                    if (obj is Int8Object i8)
+                    {
+                        i8.SetValue(Convert.ToByte(srcVal));
+                        return;
+                    }
+                    Debug.Write("该类型不是Byte类型!!");
                     break;
-                //case EVMType.RawSByte:
-                //    {
-                //        TemplateObject to = obj as TemplateObject;
-                //        if (to != null)
-                //        {
-                //            to.SetValue(EVMType.SByte, svalue.sint8Value);
-                //        }
-                //        SInt8Object byteObj = obj as SInt8Object;
-                //        if (byteObj == null)
-                //        {
-                //            Debug.Write("该类型不是SByte类型!!");
-                //            return;
-                //        }
-                //        byteObj.SetValue(svalue.sint8Value);
-                //    }
-                //    break;
                 case EVMType.SByte:
+                    if (! (IsNumericTypeLocal(svalue.eType) || svalue.eType == EVMType.Num))
                     {
-                        if (anyObj)
-                        {
-                            obj.SetValueByType(EVMType.SByte, svalue.sint8Value);
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EVMType.SByte, svalue.sint8Value);
-                        }
-                        SInt8Object byteObj = obj as SInt8Object;
-                        if (byteObj == null)
-                        {
-                            Debug.Write("该类型不是SByte类型!!");
-                            return;
-                        }
-                        byteObj.SetValue(svalue.sint8Value);
+                        Debug.Assert(false, "类型不兼容: 目标 SByte 但来源不是数字");
+                        return;
                     }
+                    if (anyObj)
+                    {
+                        obj.SetValueByType(EVMType.SByte, Convert.ToSByte(srcVal));
+                        return;
+                    }
+                    if (obj is TemplateObject tsb)
+                    {
+                        tsb.SetValue(EVMType.SByte, Convert.ToSByte(srcVal));
+                        return;
+                    }
+                    if (obj is SInt8Object sb)
+                    {
+                        sb.SetValue(Convert.ToSByte(srcVal));
+                        return;
+                    }
+                    Debug.Write("该类型不是SByte类型!!");
                     break;
                 //case EVMType.RawInt16:
                 //    {
@@ -1935,25 +1917,27 @@ namespace SimpleLanguage.VM.Runtime
                 //    }
                 //    break;
                 case EVMType.Int16:
+                    if (! (IsNumericTypeLocal(svalue.eType) || svalue.eType == EVMType.Num))
                     {
-                        if (anyObj)
-                        {
-                            obj.SetValueByType(EVMType.Int16, svalue.int16Value);
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EVMType.Int16, svalue.int16Value);
-                        }
-                        Int16Object int16Obj = obj as Int16Object;
-                        if (int16Obj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        int16Obj.SetValue(svalue.int16Value);
+                        Debug.Assert(false, "类型不兼容: 目标 Int16 但来源不是数字");
+                        return;
                     }
+                    if (anyObj)
+                    {
+                        obj.SetValueByType(EVMType.Int16, Convert.ToInt16(srcVal));
+                        return;
+                    }
+                    if (obj is TemplateObject t16)
+                    {
+                        t16.SetValue(EVMType.Int16, Convert.ToInt16(srcVal));
+                        return;
+                    }
+                    if (obj is Int16Object i16)
+                    {
+                        i16.SetValue(Convert.ToInt16(srcVal));
+                        return;
+                    }
+                    Debug.Write("该类型不是Int16类型!!");
                     break;
                 //case EVMType.RawUInt16:
                 //    {
@@ -1972,25 +1956,27 @@ namespace SimpleLanguage.VM.Runtime
                 //    }
                 //    break;
                 case EVMType.UInt16:
+                    if (! (IsNumericTypeLocal(svalue.eType) || svalue.eType == EVMType.Num))
                     {
-                        if (anyObj)
-                        {
-                            obj.SetValueByType(EVMType.UInt16, svalue.int16Value);
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EVMType.UInt16, svalue.uint16Value);
-                        }
-                        UInt16Object uint16Obj = obj as UInt16Object;
-                        if (uint16Obj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        uint16Obj.SetValue(svalue.uint16Value);
+                        Debug.Assert(false, "类型不兼容: 目标 UInt16 但来源不是数字");
+                        return;
                     }
+                    if (anyObj)
+                    {
+                        obj.SetValueByType(EVMType.UInt16, Convert.ToUInt16(srcVal));
+                        return;
+                    }
+                    if (obj is TemplateObject tu16)
+                    {
+                        tu16.SetValue(EVMType.UInt16, Convert.ToUInt16(srcVal));
+                        return;
+                    }
+                    if (obj is UInt16Object u16)
+                    {
+                        u16.SetValue(Convert.ToUInt16(srcVal));
+                        return;
+                    }
+                    Debug.Write("该类型不是UInt16类型!!");
                     break;
                 //case EVMType.RawInt32:
                 //    {
@@ -2010,44 +1996,42 @@ namespace SimpleLanguage.VM.Runtime
                 //    }
                 //    break;
                 case EVMType.Int32:
+                    if (! (IsNumericTypeLocal(svalue.eType) || svalue.eType == EVMType.Num))
                     {
-                        if (anyObj)
-                        {
-                            obj.SetValueByType(EVMType.Int32, svalue.int32Value);
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EVMType.Int32, svalue.int32Value);
-                            return;
-                        }
-                        UInt32Object uint32Obj = obj as UInt32Object;
-                        if (uint32Obj != null)
-                        {
-                            uint32Obj.SetValue((uint)svalue.int32Value);
-                            return;
-                        }
-                        Int64Object int64Obj = obj as Int64Object;
-                        if (int64Obj != null)
-                        {
-                            int64Obj.SetValue((Int64)svalue.int32Value);
-                            return;
-                        }
-                        UInt64Object uint64Obj = obj as UInt64Object;
-                        if (uint64Obj != null)
-                        {
-                            uint64Obj.SetValue((UInt64)svalue.int32Value);
-                            return;
-                        }
-                        Int32Object int32Obj = obj as Int32Object;
-                        if (int32Obj == null)
-                        {
-                            Debug.Assert( false, "该类型不是Int32类型!!");
-                            return;
-                        }
-                        int32Obj.SetValue(svalue.int32Value);
+                        Debug.Assert(false, "类型不兼容: 目标 Int32 但来源不是数字");
+                        return;
                     }
+                    if (anyObj)
+                    {
+                        obj.SetValueByType(EVMType.Int32, Convert.ToInt32(srcVal));
+                        return;
+                    }
+                    if (obj is TemplateObject ti32)
+                    {
+                        ti32.SetValue(EVMType.Int32, Convert.ToInt32(srcVal));
+                        return;
+                    }
+                    if (obj is UInt32Object u32obj)
+                    {
+                        u32obj.SetValue(Convert.ToUInt32(srcVal));
+                        return;
+                    }
+                    if (obj is Int64Object i64obj)
+                    {
+                        i64obj.SetValue((Int64)Convert.ToInt32(srcVal));
+                        return;
+                    }
+                    if (obj is UInt64Object u64obj)
+                    {
+                        u64obj.SetValue((UInt64)Convert.ToInt32(srcVal));
+                        return;
+                    }
+                    if (obj is Int32Object i32obj)
+                    {
+                        i32obj.SetValue(Convert.ToInt32(srcVal));
+                        return;
+                    }
+                    Debug.Assert(false, "该类型不是Int32类型!!");
                     break;
                 //case EVMType.RawUInt32:
                 //    {
@@ -2066,25 +2050,27 @@ namespace SimpleLanguage.VM.Runtime
                 //    }
                 //    break;
                 case EVMType.UInt32:
+                    if (! (IsNumericTypeLocal(svalue.eType) || svalue.eType == EVMType.Num))
                     {
-                        if (anyObj)
-                        {
-                            obj.SetValueByType(EVMType.UInt32, svalue.uint32Value);
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EVMType.UInt32, svalue.uint32Value);
-                        }
-                        UInt32Object uint32Obj = obj as UInt32Object;
-                        if (uint32Obj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        uint32Obj.SetValue(svalue.uint32Value);
+                        Debug.Assert(false, "类型不兼容: 目标 UInt32 但来源不是数字");
+                        return;
                     }
+                    if (anyObj)
+                    {
+                        obj.SetValueByType(EVMType.UInt32, Convert.ToUInt32(srcVal));
+                        return;
+                    }
+                    if (obj is TemplateObject tu32)
+                    {
+                        tu32.SetValue(EVMType.UInt32, Convert.ToUInt32(srcVal));
+                        return;
+                    }
+                    if (obj is UInt32Object u32)
+                    {
+                        u32.SetValue(Convert.ToUInt32(srcVal));
+                        return;
+                    }
+                    Debug.Write("该类型不是UInt32类型!!");
                     break;
                 //case EVMType.RawInt64:
                 //    {
@@ -2103,212 +2089,178 @@ namespace SimpleLanguage.VM.Runtime
                 //    }
                 //    break;
                 case EVMType.Int64:
+                    if (! (IsNumericTypeLocal(svalue.eType) || svalue.eType == EVMType.Num))
                     {
-                        if (anyObj)
-                        {
-                            obj.SetValueByType(EVMType.Int64, svalue.int64Value);
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EVMType.Int64, svalue.int64Value);
-                        }
-                        Int64Object int64Obj = obj as Int64Object;
-                        if (int64Obj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        int64Obj.SetValue(svalue.int64Value);
+                        Debug.Assert(false, "类型不兼容: 目标 Int64 但来源不是数字");
+                        return;
                     }
+                    if (anyObj)
+                    {
+                        obj.SetValueByType(EVMType.Int64, Convert.ToInt64(srcVal));
+                        return;
+                    }
+                    if (obj is TemplateObject ti64)
+                    {
+                        ti64.SetValue(EVMType.Int64, Convert.ToInt64(srcVal));
+                        return;
+                    }
+                    if (obj is Int64Object i64)
+                    {
+                        i64.SetValue(Convert.ToInt64(srcVal));
+                        return;
+                    }
+                    Debug.Write("该类型不是Int64类型!!");
                     break;
-                //case EVMType.RawUInt64:
-                //    {
-                //        TemplateObject to = obj as TemplateObject;
-                //        if (to != null)
-                //        {
-                //            to.SetValue(EVMType.UInt64, svalue.uint64Value);
-                //        }
-                //        UInt64Object uint64Obj = obj as UInt64Object;
-                //        if (uint64Obj == null)
-                //        {
-                //            Debug.Write("该类型不是Int32类型!!");
-                //            return;
-                //        }
-                //        uint64Obj.SetValue(svalue.uint64Value);
-                //    }
-                //    break;
                 case EVMType.UInt64:
+                    if (! (IsNumericTypeLocal(svalue.eType) || svalue.eType == EVMType.Num))
                     {
-                        if (anyObj)
-                        {
-                            obj.SetValueByType(EVMType.UInt64, svalue.uint64Value);
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EVMType.UInt64, svalue.uint64Value);
-                        }
-                        UInt64Object uint64Obj = obj as UInt64Object;
-                        if (uint64Obj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        uint64Obj.SetValue(svalue.uint64Value);
+                        Debug.Assert(false, "类型不兼容: 目标 UInt64 但来源不是数字");
+                        return;
                     }
+                    if (anyObj)
+                    {
+                        obj.SetValueByType(EVMType.UInt64, Convert.ToUInt64(srcVal));
+                        return;
+                    }
+                    if (obj is TemplateObject tu64)
+                    {
+                        tu64.SetValue(EVMType.UInt64, Convert.ToUInt64(srcVal));
+                        return;
+                    }
+                    if (obj is UInt64Object u64)
+                    {
+                        u64.SetValue(Convert.ToUInt64(srcVal));
+                        return;
+                    }
+                    Debug.Write("该类型不是UInt64类型!!");
                     break;
-                //case EVMType.RawFloat32:
-                //    {
-                //        TemplateObject to = obj as TemplateObject;
-                //        if (to != null)
-                //        {
-                //            to.SetValue(EVMType.Float32, svalue.floatValue);
-                //        }
-                //        Float32Object floatObj = obj as Float32Object;
-                //        if (floatObj == null)
-                //        {
-                //            Debug.Write("该类型不是Int32类型!!");
-                //            return;
-                //        }
-                //        floatObj.SetValue(svalue.floatValue);
-                //    }
-                //    break;
                 case EVMType.Float32:
+                    if (! (IsNumericTypeLocal(svalue.eType) || svalue.eType == EVMType.Num))
                     {
-                        if (anyObj)
-                        {
-                            obj.SetValueByType(EVMType.Float32, svalue.floatValue);
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EVMType.Float32, svalue.floatValue);
-                        }
-                        Float32Object floatObj = obj as Float32Object;
-                        if (floatObj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        floatObj.SetValue(svalue.floatValue);
+                        Debug.Assert(false, "类型不兼容: 目标 Float32 但来源不是数字");
+                        return;
                     }
+                    if (anyObj)
+                    {
+                        obj.SetValueByType(EVMType.Float32, Convert.ToSingle(srcVal));
+                        return;
+                    }
+                    if (obj is TemplateObject tf32)
+                    {
+                        tf32.SetValue(EVMType.Float32, Convert.ToSingle(srcVal));
+                        return;
+                    }
+                    if (obj is Float64Object f64asf)
+                    {
+                        f64asf.SetValue(Convert.ToDouble(srcVal));
+                        return;
+                    }
+                    if (obj is Float32Object f32)
+                    {
+                        f32.SetValue(Convert.ToSingle(srcVal));
+                        return;
+                    }
+                    Debug.Write("该类型不是Float32类型!!");
                     break;
-                //case EVMType.RawFloat64:
-                //    {
-                //        TemplateObject to = obj as TemplateObject;
-                //        if (to != null)
-                //        {
-                //            to.SetValue(EVMType.Float64, svalue.doubleValue);
-                //        }
-                //        Float64Object doubleObj = obj as Float64Object;
-                //        if (doubleObj == null)
-                //        {
-                //            Debug.Write("该类型不是Int32类型!!");
-                //            return;
-                //        }
-                //        doubleObj.SetValue(svalue.doubleValue);
-                //    }
-                //    break;
                 case EVMType.Float64:
+                    if (! (IsNumericTypeLocal(svalue.eType) || svalue.eType == EVMType.Num))
                     {
-                        if (anyObj)
-                        {
-                            obj.SetValueByType(EVMType.Float64, svalue.doubleValue);
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EVMType.Float64, svalue.doubleValue);
-                        }
-                        Float64Object doubleObj = obj as Float64Object;
-                        if (doubleObj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        doubleObj.SetValue(svalue.doubleValue);
+                        Debug.Assert(false, "类型不兼容: 目标 Float64 但来源不是数字");
+                        return;
                     }
+                    if (anyObj)
+                    {
+                        obj.SetValueByType(EVMType.Float64, Convert.ToDouble(srcVal));
+                        return;
+                    }
+                    if (obj is TemplateObject tf64)
+                    {
+                        tf64.SetValue(EVMType.Float64, Convert.ToDouble(srcVal));
+                        return;
+                    }
+                    if (obj is Float64Object f64)
+                    {
+                        f64.SetValue(Convert.ToDouble(srcVal));
+                        return;
+                    }
+                    Debug.Write("该类型不是Float64类型!!");
                     break;
-                //case EVMType.RawString:
-                //    {
-                //        TemplateObject to = obj as TemplateObject;
-                //        if (to != null)
-                //        {
-                //            to.SetValue(EVMType.String, svalue.stringValue);
-                //            return;
-                //        }
-                //        StringObject stringObj = obj as StringObject;
-                //        if (stringObj == null)
-                //        {
-                //            Debug.Write("该类型不是Int32类型!!");
-                //            return;
-                //        }
-                //        stringObj.SetValue(svalue.stringValue);
-                //    }
-                //    break;
-                case EVMType.String:
+                case EVMType.Num:
+                    // only accept numeric-compatible sources
+                    if (! (IsNumericTypeLocal(svalue.eType) || svalue.eType == EVMType.Num))
                     {
-                        if (anyObj)
-                        {
-                            obj.SetValueByType(EVMType.String, svalue.stringValue);
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EVMType.String, svalue.stringValue);
-                            return;
-                        }
-                        StringObject stringObj = obj as StringObject;
-                        if (stringObj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        stringObj.SetValue(svalue.stringValue);
+                        Debug.Assert(false, "类型不兼容: 目标 Num 但来源不是数字");
+                        return;
                     }
+                    if (anyObj)
+                    {
+                        if (svalue.sobject is NumObject nn)
+                        {
+                            obj.SetValueByType(EVMType.Float64, nn.ToDouble());
+                            return;
+                        }
+                        obj.SetValueByType(EVMType.Float64, Convert.ToDouble(srcVal));
+                        return;
+                    }
+                    if (obj is NumObject nobj2)
+                    {
+                        if (svalue.sobject is NumObject nsrc2)
+                        {
+                            nobj2.SetValue(nsrc2.ToDouble());
+                            return;
+                        }
+                        nobj2.SetValue(Convert.ToDouble(srcVal));
+                        return;
+                    }
+                    obj.SetValueByType(EVMType.Float64, Convert.ToDouble(srcVal));
+                    break;
+                case EVMType.String:
+                    if (anyObj)
+                    {
+                        obj.SetValueByType(EVMType.String, srcVal?.ToString());
+                        return;
+                    }
+                    if (obj is TemplateObject tstr)
+                    {
+                        tstr.SetValue(EVMType.String, srcVal?.ToString());
+                        return;
+                    }
+                    if (obj is StringObject sObj)
+                    {
+                        sObj.SetValue(srcVal?.ToString());
+                        return;
+                    }
+                    Debug.Write("该类型不是String类型!!");
                     break;
                 case EVMType.Array:
+                    if (anyObj)
                     {
-                        if (anyObj)
-                        {
-                            obj.SetValueByType(EVMType.Class, svalue.sobject );
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetClassObject(svalue.sobject as ClassObject);
-                            return;
-                        }
-                        if (obj is ClassObject co)
-                        {
-                            var ao = svalue.sobject as ClassObject;
-                            Debug.Assert(ao != null);
-                            //co.SetClassObject(ao);                            
-                            (obj as ClassObject).SetClassObject(ao);
-                        }
-                        else
-                        {
-                            Debug.Assert(false);
-                        }
+                        obj.SetValueByType(EVMType.Class, svalue.sobject);
+                        return;
                     }
+                    if (obj is TemplateObject tarr)
+                    {
+                        tarr.SetClassObject(svalue.sobject as ClassObject);
+                        return;
+                    }
+                    if (obj is ClassObject classObjArr)
+                    {
+                        var ao = svalue.sobject as ClassObject;
+                        Debug.Assert(ao != null);
+                        classObjArr.SetClassObject(ao);
+                        return;
+                    }
+                    Debug.Assert(false);
                     break;
                 case EVMType.Object:
+                    if (svalue.eType == EVMType.Object)
                     {
-                        if (svalue.eType == EVMType.Object)
-                        {
-                            obj.SetValueByType(EVMType.Object, svalue.sobject);
-                        }
-                        else
-                        {
-                            Debug.Assert(false);
-                        }
+                        obj.SetValueByType(EVMType.Object, svalue.sobject);
+                    }
+                    else
+                    {
+                        // if source is primitive or class, store its value into any-object with appropriate any-type
+                        obj.SetValueByType(svalue.eType, srcVal);
                     }
                     break;
                 case EVMType.Class:
@@ -2726,6 +2678,43 @@ namespace SimpleLanguage.VM.Runtime
                         svalue.SetDoubleValue(doubleObj.value);
                     }
                     break;
+                case EVMType.Num:
+                    {
+                        if (anyObj)
+                        {
+                            // any-object holding a numeric value
+                            switch (obj.eAnyType)
+                            {
+                                case EVMType.Float64:
+                                    svalue.eType = EVMType.Num;
+                                    svalue.doubleValue = (double)obj.value;
+                                    svalue.isNull = false;
+                                    return;
+                                default:
+                                    svalue.eType = EVMType.Num;
+                                    svalue.doubleValue = Convert.ToDouble(obj.value);
+                                    svalue.isNull = false;
+                                    return;
+                            }
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.eType = EVMType.Num;
+                            svalue.doubleValue = Convert.ToDouble(to.value);
+                            return;
+                        }
+                        if (obj is NumObject numObj)
+                        {
+                            svalue.eType = EVMType.Num;
+                            svalue.doubleValue = numObj.ToDouble();
+                            return;
+                        }
+                        // fallback: try to extract numeric from object's value
+                        svalue.eType = EVMType.Num;
+                        svalue.doubleValue = Convert.ToDouble(obj.value);
+                    }
+                    break;
                 case EVMType.String:
                     {
                         if (anyObj)
@@ -2822,6 +2811,7 @@ namespace SimpleLanguage.VM.Runtime
                                     svalue.SetFloatValue((float)obj.value);
                                 }
                                 break;
+                            case EVMType.Num:
                             case EVMType.Float64:
                                 {
                                     svalue.SetDoubleValue((double)obj.value);

@@ -395,15 +395,16 @@ namespace SimpleLanguage.VM
             }
 
             // if both are numeric types -> numeric equality with promotion
-            if (IsNumericType(sval1.eType) && IsNumericType(sval2.eType))
+            // consider Num as numeric (float) for comparisons
+            if ((IsNumericType(sval1.eType) || sval1.eType == EVMType.Num) && (IsNumericType(sval2.eType) || sval2.eType == EVMType.Num))
             {
                 // float promotion
-                bool leftFloat = (sval1.eType == EVMType.Float32 || sval1.eType == EVMType.Float64);
-                bool rightFloat = (sval2.eType == EVMType.Float32 || sval2.eType == EVMType.Float64);
+                bool leftFloat = (sval1.eType == EVMType.Float32 || sval1.eType == EVMType.Float64 || sval1.eType == EVMType.Num);
+                bool rightFloat = (sval2.eType == EVMType.Float32 || sval2.eType == EVMType.Float64 || sval2.eType == EVMType.Num);
                 if (leftFloat || rightFloat)
                 {
-                    double a = (sval1.eType == EVMType.Float64) ? sval1.doubleValue : (sval1.eType == EVMType.Float32 ? sval1.floatValue : sval1.ConvertToDoubleFromIntTypes());
-                    double b = (sval2.eType == EVMType.Float64) ? sval2.doubleValue : (sval2.eType == EVMType.Float32 ? sval2.floatValue : sval2.ConvertToDoubleFromIntTypes());
+                    double a = (sval1.eType == EVMType.Float64 || sval1.eType == EVMType.Num) ? sval1.doubleValue : (sval1.eType == EVMType.Float32 ? sval1.floatValue : sval1.ConvertToDoubleFromIntTypes());
+                    double b = (sval2.eType == EVMType.Float64 || sval2.eType == EVMType.Num) ? sval2.doubleValue : (sval2.eType == EVMType.Float32 ? sval2.floatValue : sval2.ConvertToDoubleFromIntTypes());
                     if (isEqual) sval1.SetBoolValue(a == b); else sval1.SetBoolValue(a != b);
                     return;
                 }
@@ -512,14 +513,15 @@ namespace SimpleLanguage.VM
             }
 
             // numeric comparisons
-            if (IsNumericType(sval1.eType) && IsNumericType(sval2.eType))
+            // consider Num as numeric (float) for comparisons
+            if ((IsNumericType(sval1.eType) || sval1.eType == EVMType.Num) && (IsNumericType(sval2.eType) || sval2.eType == EVMType.Num))
             {
-                bool leftFloat = (sval1.eType == EVMType.Float32 || sval1.eType == EVMType.Float64);
-                bool rightFloat = (sval2.eType == EVMType.Float32 || sval2.eType == EVMType.Float64);
+                bool leftFloat = (sval1.eType == EVMType.Float32 || sval1.eType == EVMType.Float64 || sval1.eType == EVMType.Num);
+                bool rightFloat = (sval2.eType == EVMType.Float32 || sval2.eType == EVMType.Float64 || sval2.eType == EVMType.Num);
                 if (leftFloat || rightFloat)
                 {
-                    double a = (sval1.eType == EVMType.Float64) ? sval1.doubleValue : (sval1.eType == EVMType.Float32 ? sval1.floatValue : sval1.ConvertToDoubleFromIntTypes());
-                    double b = (sval2.eType == EVMType.Float64) ? sval2.doubleValue : (sval2.eType == EVMType.Float32 ? sval2.floatValue : sval2.ConvertToDoubleFromIntTypes());
+                    double a = (sval1.eType == EVMType.Float64 || sval1.eType == EVMType.Num) ? sval1.doubleValue : (sval1.eType == EVMType.Float32 ? sval1.floatValue : sval1.ConvertToDoubleFromIntTypes());
+                    double b = (sval2.eType == EVMType.Float64 || sval2.eType == EVMType.Num) ? sval2.doubleValue : (sval2.eType == EVMType.Float32 ? sval2.floatValue : sval2.ConvertToDoubleFromIntTypes());
                     switch (compareSign)
                     {
                         case 0: sval1.SetBoolValue(a > b); break;

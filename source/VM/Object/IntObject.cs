@@ -30,7 +30,7 @@ namespace SimpleLanguage.VM
             return value.ToString();
         }
     }
-    public class Int8Object : SObject
+    public class Int8Object : NumObject
     {
         public override object getValue() { return value; }
         public  new Byte value;
@@ -48,7 +48,7 @@ namespace SimpleLanguage.VM
             return value.ToString();
         }
     }
-    public class SInt8Object : SObject
+    public class SInt8Object : NumObject
     {
         public override object getValue() { return value; }
         public  new SByte value;
@@ -67,7 +67,7 @@ namespace SimpleLanguage.VM
             return value.ToString();
         }
     }
-    class Int16Object : SObject
+    class Int16Object : NumObject
     {
         public override object getValue() { return value; }
         public new Int16 value;
@@ -85,7 +85,7 @@ namespace SimpleLanguage.VM
             return value.ToString();
         }
     }
-    public class UInt16Object : SObject
+    public class UInt16Object : NumObject
     {
         public override object getValue() { return value; }
         public new UInt16 value;
@@ -103,7 +103,7 @@ namespace SimpleLanguage.VM
             return value.ToString();
         }
     }
-    public class Int32Object : SObject
+    public class Int32Object : NumObject
     {
         public override object getValue() { return value; }
         public new int value = 0;
@@ -186,7 +186,7 @@ namespace SimpleLanguage.VM
             return value.ToString();
         }
     }
-    public class UInt32Object : SObject
+    public class UInt32Object : NumObject
     {
         public override object getValue() { return value; }
         public new UInt32 value;
@@ -207,7 +207,7 @@ namespace SimpleLanguage.VM
     }
 
 
-    public class Int64Object : SObject
+    public class Int64Object : NumObject
     {
         public override object getValue() { return value; }
         public new Int64 value;
@@ -225,7 +225,7 @@ namespace SimpleLanguage.VM
             return value.ToString();
         }
     }
-    public class UInt64Object : SObject
+    public class UInt64Object : NumObject
     {
         public override object getValue() { return value; }
         public new UInt64 value;

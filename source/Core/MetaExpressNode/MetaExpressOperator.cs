@@ -356,7 +356,7 @@ namespace SimpleLanguage.Core
             {
                 MetaExpressNode left = m_Left;
                 MetaExpressNode right = m_Right;
-                if (m_Left.opLevel < m_Right.opLevel)
+                if (m_Left.opLevel > m_Right.opLevel)
                 {
                     left = m_Right;
                     right = m_Left;
@@ -438,7 +438,7 @@ namespace SimpleLanguage.Core
                                 break;
                         }
                     }
-                    else if( leftMc.eType == EType.String)
+                    else if( rightMc.eType == EType.String)
                     {
                         if (m_OpLevelSign == ELeftRightOpSign.Add)
                         {
@@ -454,7 +454,7 @@ namespace SimpleLanguage.Core
                         isFindDefineFunction = true;
                     }
                 }
-                else if (rightMc.eType == EType.String)
+                else if (leftMc.eType == EType.String)
                 {
                     if (m_OpLevelSign == ELeftRightOpSign.Add)
                     {
@@ -504,7 +504,7 @@ namespace SimpleLanguage.Core
                     var mipc = new MetaInputParamCollection(left.metaType.metaClass, null);
                     MetaInputParam mip = new MetaInputParam(right);
                     mipc.AddMetaInputParam(mip);
-                    var mmf = right.metaType.metaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_op_add_", 0, mipc);
+                    var mmf = rightMc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_op_add_", 0, mipc);
                     if (mmf == null)
                     {
                         Debug.Assert(false, "Error 右边类型不能转换为左边类型进行加减运算!!");

@@ -39,14 +39,8 @@ namespace SimpleLanguage.VM
                 m_StaticMemObjectList[i] = ObjectManager.CreateObjectByRuntimeType( rt, true );
             }
 
-            if (Enum.TryParse<EVMType>(irClass.irName, true, out var eoutType))
-            {
-                eType = eoutType;
-            }
-            else
-            {
-                eType = EVMType.Class;
-            }
+            // map IR class name to VM EVMType (handle abstract "Num" as Float64 default)
+            eType = GetVMType(irClass.irName);
             //eType = GetVMType(irClass.irName);
         }
         public static EVMType GetVMType( string irName)
@@ -106,6 +100,13 @@ namespace SimpleLanguage.VM
                     break;
                 case "Float64":
                     {
+                        eType = EVMType.Float64;
+                    }
+                    break;
+                case "Num":
+                case "Core.Num":
+                    {
+                        // abstract numeric base: treat as Float64 at VM level by default
                         eType = EVMType.Float64;
                     }
                     break;
