@@ -1514,9 +1514,35 @@ namespace SimpleLanguage.Compile
                             if (first.nodeType == ENodeType.Symbol)
                             {
                                 var t = first.token.type;
-                                if (t == ETokenType.Plus || t == ETokenType.Minus || t == ETokenType.Multiply || t == ETokenType.Divide || t == ETokenType.Modulo)
+                                // treat *,/,% at start as binary operator (unlikely unary)
+                                if (t == ETokenType.Multiply || t == ETokenType.Divide || t == ETokenType.Modulo)
                                 {
                                     startsWithOperator = true;
+                                }
+                                else if (t == ETokenType.Plus || t == ETokenType.Minus)
+                                {
+                                    // plus/minus can be unary. If the token after +/ - is an identifier, const, or a parenthesis/bracket/brace,
+                                    // then this is most likely a unary operator within the paren (e.g. ( -x ) or ( -f() )). In that case do not treat
+                                    // as a binary "startsWithOperator" for the parent call folding. Otherwise mark as startsWithOperator.
+                                    if (v.childList.Count > 1)
+                                    {
+                                        var second = v.childList[1];
+                                        // allow Key:this/base/new as unary operand starters as well
+                                        bool isUnaryStarter = second.nodeType == ENodeType.IdentifierLink
+                                            || second.nodeType == ENodeType.ConstValue
+                                            || second.nodeType == ENodeType.Par
+                                            || second.nodeType == ENodeType.Bracket
+                                            || second.nodeType == ENodeType.Brace
+                                            || (second.nodeType == ENodeType.Key && (second.token?.type == ETokenType.This || second.token?.type == ETokenType.Base || second.token?.type == ETokenType.New));
+                                        if (!isUnaryStarter)
+                                        {
+                                            startsWithOperator = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        startsWithOperator = true;
+                                    }
                                 }
                             }
                         }

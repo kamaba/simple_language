@@ -29,20 +29,26 @@ namespace SimpleLanguage.Lib
     {
         public static int GetHashCodeByObject(BaseObjectData obj)
         {
+            if (obj == null) return 0;
             return obj.hashCode;
         }
         public static int GetHashCodeBySObject(System.Object obj)
         {
+            if (obj == null) return 0;
             SObject sobj = obj as SObject;
+            if (sobj == null) return 0;
             return sobj.id;
         }
         public static int RefCount(System.Object obj)
         {
+            if (obj == null) return 0;
             SObject sobj = obj as SObject;
+            if (sobj == null) return 0;
             return sobj.refCount;
         }
         public static SObject ObjectWeakRef(System.Object obj)
         {
+            if (obj == null) return null;
             SObject sobj = obj as SObject;
             return sobj;
         }
@@ -54,15 +60,67 @@ namespace SimpleLanguage.Lib
         }
         public static SObject ObjectRef(System.Object obj)
         {
+            if (obj == null) return null;
             SObject sobj = obj as SObject;
             return sobj;
         }
         public static bool EqualObject( System.Object obj1, System.Object obj2 )
         {
+            if (obj1 == null && obj2 == null) return true;
+            if (obj1 == null || obj2 == null) return false;
             SObject sobj1 = obj1 as SObject;
             SObject sobj2 = obj2 as SObject;
-
             return sobj1 == sobj2;
+        }
+        
+        // decrease reference count and free resources when zero
+        public static void FreeObject(System.Object obj)
+        {
+            if (obj == null) return;
+            SObject sobj = obj as SObject;
+            if (sobj == null) return;
+            if (sobj.refCount > 0) sobj.refCount--;
+            if (sobj.refCount <= 0)
+            {
+                // try to remove from manager if it's a class object
+                try
+                {
+                    var co = sobj as ClassObject;
+                    if (co != null)
+                    {
+                        var dict = ObjectManager.classObjectDict;
+                        int key = co.GetHashCode();
+                        if (dict.ContainsKey(key))
+                        {
+                            dict.Remove(key);
+                        }
+                    }
+                }
+                catch { }
+            }
+        }
+
+        // increase reference count and register object
+        public static void ReleaseObject(System.Object obj)
+        {
+            if (obj == null) return;
+            SObject sobj = obj as SObject;
+            if (sobj == null) return;
+            sobj.refCount++;
+            try
+            {
+                var co = sobj as ClassObject;
+                if (co != null)
+                {
+                    var dict = ObjectManager.classObjectDict;
+                    int key = co.GetHashCode();
+                    if (!dict.ContainsKey(key))
+                    {
+                        dict.Add(key, co);
+                    }
+                }
+            }
+            catch { }
         }
     }
 }

@@ -11,7 +11,12 @@
 
 
 最近要解决的:
-1. cast 函数
-2. 确定那些调用是否要使用pop弹出
-3. 循环函数提前赋值
-4. 值类型的比较 
+1. 基础类的相关写作 Object
+2. 使用Num的完整
+3. 使用Byte/SByte/Int16/UInt16/Int32/UInt32/
+4. Float32/Float64
+5. String的扩展  Type的技高一扩展
+6. Array的设计 
+7. 使用typealias
+8. 使用llvm导出
+9. 导出代码module块

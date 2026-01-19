@@ -24,3 +24,6 @@ Automation
 Tips
 - Provide the AI with relevant files or functions to improve accuracy.
 - Keep prompts specific and include the expected output type (code diff, test cases, documentation).
+
+逻辑结构:
+在VM中， 会生成不同的Object比如 IntObject FloatObject StringObject 等，调用C#的方法，会直接传入这个对象，然后进行调用

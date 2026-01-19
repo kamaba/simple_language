@@ -3,6 +3,9 @@ using SimpleLanguage.Parse;
 using SimpleLanguage.Project;
 using SimpleLanguage.Compile;
 using System;
+using System.IO;
+using SimpleLanguage.IR;
+using SimpleLanguage.Export.AOT;
 using System.Diagnostics;
 using System.Collections.Generic;
 
@@ -63,7 +66,26 @@ namespace SimpleLanguage
             // Original code
             CommandInputArgs inputArgs = new CommandInputArgs(args);
             ProjectManager.Run("../../../source/Lib/Core/Core.sp", inputArgs );
-            Console.ReadKey();
+
+            // after compilation, try exporting IR methods to LLVM IR using the AOT exporter
+            try
+            {
+                IRManager.instance.TranslateIR();
+                var methodList = new System.Collections.Generic.List<IRMethod>(IRManager.instance.IRMethodDict.Values);
+                string outDir = Path.Combine(Directory.GetCurrentDirectory(), "Export", "AOT", "out");
+                ExportAot.Export(methodList.ToArray(), outDir);
+                Console.WriteLine($"Exported {methodList.Count} methods to: {outDir}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("AOT export failed: " + ex.ToString());
+            }
+
+            if (Environment.UserInteractive)
+            {
+                Console.WriteLine("Press any key to exit...");
+                Console.ReadKey();
+            }
         }
         
         static void TestReadString()

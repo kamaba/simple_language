@@ -15,6 +15,7 @@ public class Float32 extends Num
     }
     public static bool isFinite( Float32 f )
     {
+        #delegate to CLR Math if available
         ret false;
     }
     #!
@@ -23,4 +24,32 @@ public class Float32 extends Num
         return string.format( format, this._value );
     }
     !#
+    public override Int32 toInt32()
+    {
+        ret SimpleLanguage.Lib.Float32Class.ToInt32(this)
+    }
+    public override Float64 toFloat64()
+    {
+        #convert to double
+        ret this._value
+    }
+    public override Num abs()
+    {
+        ret Float32( SimpleLanguage.Lib.Float32Class.Abs(this) )
+    }
+    public override Num floor()
+    {
+        ret Float32( SimpleLanguage.Lib.Float32Class.Floor(this) )
+    }
+    public override Num ceil()
+    {
+        ret Float32( SimpleLanguage.Lib.Float32Class.Ceil(this) )
+    }
+    public override Int32 compareTo( Num other )
+    {
+        if (other == null){ret 1} 
+        Float64 ov = other.toFloat64()
+        if (this._value == ov){ ret 0 }
+        ret this._value > ov ? 1 : -1
+    }
 }

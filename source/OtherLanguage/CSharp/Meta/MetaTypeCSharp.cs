@@ -39,10 +39,10 @@ namespace SimpleLanguage.Core
                 case "UInt64":
                 case "UInt64Object":
                     return CoreMetaClassManager.uint64MetaClass;
-                case "Float32":
+                case "Single":
                 case "Float32Object":
                     return CoreMetaClassManager.float32MetaClass;
-                case "Float64":
+                case "Double":
                 case "Float64Object":
                     return CoreMetaClassManager.float64MetaClass;
                 case "String":

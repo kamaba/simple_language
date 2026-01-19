@@ -1,7 +1,13 @@
 import CSharp.SimpleLanguage.Core
 
 public class Object
-{    
+{
+    #basic constructor
+    void _init_()
+    {
+    }
+
+    #static helper: null-safe equality
     public static bool objectEquals(object objA, object objB)
     {
         if (objA == null && objB == null)
@@ -14,57 +20,56 @@ public class Object
         }
         ret objA.equals(objB);
     }
-    #!
+
+    #reference equality
     public static bool refEquals(object objA, object objB)
     {
+        if (objA == null || objB == null){ ret false };
         ret objA.ref == objB.ref;
     }
-    !#
-    void _init_()
-    {
-    }
+    #hashCode getter - delegated to runtime helper
     public Int32 get hashCode()
     {
-        ret SimpleLanguage.Lib.ObjectClass.GetHashCodeBySObject( this )
+        ret SimpleLanguage.Lib.ObjectClass.GetHashCodeBySObject(this);
     }
+
+    #equality: default delegates to runtime equality helper which may compare by reference
     public bool equals(object obj)
     {
+        if (obj == null) ret false;
         ret SimpleLanguage.Lib.ObjectClass.EqualObject(this, obj);
     }
-    #!
-    Object clone()
-    {
-        ret SimpleLanguage.Lib.ObjectClass.CloneObject(this);
-    } 
+    #runtime internal reference (object identity)
     object get ref()
     {
         ret SimpleLanguage.Lib.ObjectClass.ObjectRef(this);
-    }  
-    get object refWeak()
+    }
+
+    #weak reference getter
+    object get refWeak()
     {
         ret SimpleLanguage.Lib.ObjectClass.ObjectWeakRef(this);
-    } 
-    !# 
-    get Int32 refCount()
+    }
+
+    #reference count (for debugging)
+    public Int32 get refCount()
     {
         ret SimpleLanguage.Lib.ObjectClass.RefCount(this);
     }
-    #!
-    free()
-    {
 
-    }
-    release()
+    #free/release placeholders - runtime manages lifecycle, expose for API completeness
+    public void free()
     {
+        SimpleLanguage.Lib.ObjectClass.FreeObject(this);
+    }
 
-    }
-    public T cast<T>()
+    public void release()
     {
-        ret this as T;
+        SimpleLanguage.Lib.ObjectClass.ReleaseObject(this);
     }
-    !#
-    string toString()
+    #string representation
+    public string toString()
     {
-        ret "Object"
+        ret "Object";
     }
 }

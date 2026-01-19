@@ -16,10 +16,6 @@ public class Int32 extends Num
     {
         ret 0
     }
-    Int32 add( Int32 _val )
-    {
-        ret this._value + _val;
-    }
     _init_( Int32 _val )
     {
         this._value = _val
@@ -36,10 +32,6 @@ public class Int32 extends Num
     _init_( Int64 _val )
     {
         this._value = _val.toInt32()
-    }
-    T cast<T>()
-    {
-        ret null
     }
     !#
     public int compareTo(Int32 value)

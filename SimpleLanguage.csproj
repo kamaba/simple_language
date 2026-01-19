@@ -49,5 +49,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="tools\ExtractLogs\ExtractLogs.csproj" />
+    <None Include="tools\ScanSwiggedApi\ScanSwiggedApi.csproj" />
   </ItemGroup>
 </Project>

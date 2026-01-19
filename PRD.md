@@ -57,6 +57,7 @@ Run: `dotnet run --project SimpleLanguage.csproj` (entry points and sample scrip
 - Generic templates and meta-template instantiation.
 - Collection primitives (Array, List, Map) in `source/Lib/Core`.
 - IR export and AOT support for generating platform code.
+- 要优先学习语法规则 在md/ProgramSyntax里边有详细的文档 
 
 ## 7. Known Limitations & Next Steps
 - `Map` currently implemented as a simple list-backed store �� needs hash-bucket optimization.
