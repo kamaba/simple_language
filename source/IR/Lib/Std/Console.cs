@@ -7,7 +7,7 @@
 //****************************************************************************
 
 
-namespace SimpleLanguage.Lib
+namespace Std
 {
     public static class Console
     {

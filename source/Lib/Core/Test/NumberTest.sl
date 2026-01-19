@@ -46,7 +46,7 @@ NumberTest
     }
     static fun()
     {
-        numTest()
-        #int32Test();
+        #numTest()
+        int32Test();
     }
 }

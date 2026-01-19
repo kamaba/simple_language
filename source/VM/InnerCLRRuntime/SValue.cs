@@ -632,13 +632,15 @@ namespace SimpleLanguage.VM
         {
             switch (this.eType)
             {
+                case EVMType.Boolean:
+                    {
+                        return int8Value == 1;
+                    }
                 case EVMType.Byte:
-                //case EVMType.RawByte:
                     {
                         return int8Value;
                     }
                 case EVMType.SByte:
-                //case EVMType.RawSByte:
                     {
                         return sint8Value;
                     }
@@ -647,27 +649,22 @@ namespace SimpleLanguage.VM
                 //        return charValue;
                 //    }
                 case EVMType.Int16:
-                //case EVMType.RawInt16:
                     {
                         return int16Value;
                     }
                 case EVMType.UInt16:
-                //case EVMType.RawUInt16:
                     {
                         return uint16Value;
                     }
                 case EVMType.Int32:
-                //case EVMType.RawInt32:
                     {
                         return int32Value;
                     }
                 case EVMType.UInt32:
-                //case EVMType.RawUInt32:
                     {
                         return uint32Value;
                     }
                 case EVMType.Int64:
-                //case EVMType.RawInt64:
                     {
                         return int64Value;
                     }
@@ -677,12 +674,10 @@ namespace SimpleLanguage.VM
                         return uint64Value;
                     }
                 case EVMType.Float32:
-                //case EVMType.RawFloat32:
                     {
                         return floatValue;
                     }
                 case EVMType.Float64:
-                //case EVMType.RawFloat64:
                     {
                         return doubleValue;
                     }
@@ -691,7 +686,6 @@ namespace SimpleLanguage.VM
                         return doubleValue;
                     }
                 case EVMType.String:
-                //case EVMType.RawString:
                     {
                         return stringValue;
                     }
