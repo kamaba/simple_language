@@ -15,7 +15,7 @@ namespace SimpleLanguage.IR
 {
     public class IRAssignStatements : IRStatements
     {
-        protected IRExpress m_IRExpress = null;
+        protected IRExpressBase m_IRExpress = null;
         protected IRStoreVariable m_StoreVariable = null;
         public IRAssignStatements(IRMethod method)
         {
@@ -59,7 +59,7 @@ namespace SimpleLanguage.IR
             if (lastCL.visitType == MetaVisitNode.EVisitType.VisitVariable)
             {
                 MetaVisitVariable mvv = lastCL.visitVariable;
-                IRExpress irexpress = new IRExpress(irMethod, mvv.visitExpressNode);
+                IRExpressBase irexpress = IRExpressManager.CreateExpress(irMethod, mvv.visitExpressNode);
                 m_IRStatements.Add(irexpress);
 
                 if (ms.autoAddExpressOpSign != ELeftRightOpSign.None)
@@ -134,16 +134,8 @@ namespace SimpleLanguage.IR
             //如果不是 a.setValue(xxx)这种方式，那么就执行右边的表达式
             if (ms.rightMetaExpress != null)
             {
-                if( ms.rightMetaExpress is MetaNewObjectExpressNode mnoen )
-                {
-                    var m_IRExpress1 = new IRNewExpress(irMethod, mnoen );
-                    m_IRStatements.Add(m_IRExpress1);
-                }
-                else
-                {
-                    m_IRExpress = new IRExpress(irMethod, ms.rightMetaExpress);
-                    m_IRStatements.Add(m_IRExpress);
-                }
+                m_IRExpress = IRExpressManager.CreateExpress(irMethod, ms.rightMetaExpress);
+                m_IRStatements.Add(m_IRExpress);
             }
             else
             {

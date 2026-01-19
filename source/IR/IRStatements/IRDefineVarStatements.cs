@@ -14,7 +14,7 @@ namespace SimpleLanguage.IR
 {
     public class IRDefineVarStatements : IRStatements
     {
-        IRExpress m_IRExpress = null;
+        IRExpressBase m_IRExpress = null;
         public IRDefineVarStatements( IRMethod _method ) 
         {
             this.irMethod = _method;
@@ -26,17 +26,8 @@ namespace SimpleLanguage.IR
             IRMetaType irmt = null;
             if (ms.expressNode != null)
             {
-                mnoen = ms.expressNode as MetaNewObjectExpressNode;
-                if (mnoen != null)
-                {
-                    var irexp = new IRNewExpress( irMethod, mnoen);                    
-                    m_IRStatements.Add(irexp);
-                }
-                else
-                {
-                    m_IRExpress = new IRExpress(irMethod, ms.expressNode);
-                    m_IRStatements.Add(m_IRExpress);
-                }
+                m_IRExpress = IRExpressManager.CreateExpress(irMethod, ms.expressNode);
+                m_IRStatements.Add(m_IRExpress);
             }
             IRStoreVariable irStoreVar = IRStoreVariable.CreateIRStoreVariable(irmt, irmc, irMethod, ms.defineVarMetaVariable);
             //if(m_FileMetaOpAssignSyntax != null )

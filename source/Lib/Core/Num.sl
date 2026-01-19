@@ -26,22 +26,22 @@ public abstract class Num extends Object
     # these are used by the runtime when looking up operator implementations on class objects
     public Num _add_( Num other )
     {
-        ret Float64( this.toFloat64() + other.toFloat64() );
+        ret this.toFloat64() + other.toFloat64();
     }
     public Num _sub_( Num other )
     {
-        ret Float64( this.toFloat64() - other.toFloat64() );
+        ret this.toFloat64() - other.toFloat64();
     }
     public Num _mul_( Num other )
     {
-        ret Float64( this.toFloat64() * other.toFloat64() );
+        ret this.toFloat64() * other.toFloat64();
     }
     public Num _div_( Num other )
     {
-        ret Float64( this.toFloat64() / other.toFloat64() );
+        ret this.toFloat64() / other.toFloat64();
     }
     public Num _neg_()
     {
-        ret Float64( -this.toFloat64() );
+        ret -this.toFloat64();
     }
 }

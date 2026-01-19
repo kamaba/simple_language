@@ -31,32 +31,15 @@ namespace SimpleLanguage.Core.IR
         }
         public static List<IRBase> ExecOnceCnode(IRMethod _irMethod, MetaVisitNode cnode, int dupcount = 0 )
         {
-            var irmanager = IRManager.instance;
             List<IRBase> irList = new List<IRBase>();
             if (cnode.visitType == MetaVisitNode.EVisitType.ConstValue)
             {
-                IRExpress ire = null;
-                if (_irMethod != null )
-                {
-                    ire = new IRExpress(_irMethod , cnode.constValueExpress);
-                }
-                else
-                {
-                    ire = new IRExpress(irmanager, cnode.constValueExpress);
-                }
+                IRExpress ire = new IRExpress(_irMethod , cnode.constValueExpress);
                 irList.Add(ire);
             }
             else if( cnode.visitType == MetaVisitNode.EVisitType.Express )
             {
-                IRExpress ire = null;
-                if (_irMethod != null)
-                {
-                    ire = new IRExpress(_irMethod, cnode.express);
-                }
-                else
-                {
-                    ire = new IRExpress(irmanager, cnode.express );
-                }
+                IRExpressBase ire = IRExpressManager.CreateExpress(_irMethod, cnode.express);
                 irList.Add(ire);
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.Variable)

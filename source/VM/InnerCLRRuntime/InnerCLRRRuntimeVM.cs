@@ -102,7 +102,7 @@ namespace SimpleLanguage.VM.Runtime
                 var obj = ObjectManager.CreateObjectByRuntimeType(rt, true);
                 m_GlobalVariableValueArray[i].SetSObject(obj);
 
-                IRExpress irexpress = new IRExpress(IRManager.instance, staticArray[i].express);
+                IRExpressBase irexpress = IRExpressManager.CreateExpress(null, staticArray[i].express);
 
                 IRStoreVariable irsv = new IRStoreVariable(staticArray[i].irMetaType, null, staticArray[i].id, IRMetaVariableFrom.Global);
 

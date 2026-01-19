@@ -21,12 +21,12 @@ namespace SimpleLanguage.IR
         {
             this.irMethod = method;
         }
-        private IRExpress m_ReturnValueExpress = null;
+        private IRExpressBase m_ReturnValueExpress = null;
         public void ParseIRStatements(MetaReturnStatements ms)
         {
             if (ms.express != null)
             {
-                m_ReturnValueExpress = new IRExpress(this.irMethod, ms.express );
+                m_ReturnValueExpress = IRExpressManager.CreateExpress(this.irMethod, ms.express);
                 m_IRStatements.Add(m_ReturnValueExpress);
 
                 IRStoreVariable irsv = IRStoreVariable.CreateStaticReturnIRSV();

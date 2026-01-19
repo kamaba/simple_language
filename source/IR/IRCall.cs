@@ -44,16 +44,8 @@ namespace SimpleLanguage.IR
             paramCount = mfc.metaInputParamList.Count;
             for (int j = 0; j < paramCount; j++)
             {
-                if(mfc.metaInputParamList[j] is MetaNewObjectExpressNode mnoen )
-                {
-                    IRNewExpress irexpress = new IRNewExpress(m_IRMethod, mnoen);
-                    AddIRRangeData(irexpress.IRDataList);
-                }
-                else
-                {
-                    IRExpress irexpress = new IRExpress(m_IRMethod, mfc.metaInputParamList[j]);
-                    AddIRRangeData(irexpress.IRDataList);
-                }
+                IRExpressBase irexpress = IRExpressManager.CreateExpress(m_IRMethod, mfc.metaInputParamList[j]);
+                AddIRRangeData(irexpress.IRDataList);
             }
             MetaFunction mf = mfc.GetTemplateMemberFunction();
             MetaMemberFunctionCSharp mmfcsharp = mf as MetaMemberFunctionCSharp;

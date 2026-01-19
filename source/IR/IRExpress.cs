@@ -15,21 +15,45 @@ using System.Text;
 
 namespace SimpleLanguage.IR
 {
-    public class IRExpress : IRBase
+    public class IRExpressManager
     {
-        private IRManager m_IRManager = null;
+        public static IRExpressBase CreateExpress(IRMethod irMethod, MetaExpressNode men )
+        {
+            IRExpressBase ireb = null;
+            if ( men is MetaNewObjectExpressNode mnoe )
+            {
+                ireb = new IRNewExpress(irMethod, mnoe);
+            }
+            else
+            {
+                ireb = new IRExpress(irMethod, men);
+            }
+            return ireb;
+        }
+    }
+    public abstract class IRExpressBase : IRBase
+    {
+        public IRExpressBase(IRMethod irMethod) :base(irMethod)
+        {
+            m_IRMethod = irMethod;
+        }
+    }
+    public class IRExpress : IRExpressBase
+    {
+        public IRExpress( IRMethod irMethod, MetaConstExpressNode node ) : base( irMethod )
+        {
+            IRData irdata = new IRData();
+            irdata.opCode = IRManager.GetConstIROpCode(node.eType);
+            irdata.SetOpValue(node.value);
+            //irdata.SetDebugInfoByToken( mcn.GetToken() );
+            AddIRData(irdata);
+        }
         public IRExpress( IRMethod irMethod, MetaExpressNode node ) : base( irMethod )
         {
             //m_Node = node;
             CreateIRDataOne(node);
         }
-        public IRExpress( IRManager _irManager, MetaExpressNode node ):base()
-        {
-            m_IRManager = _irManager;
-            //m_Node = node;
-            CreateIRDataOne(node);
-        }
-        public void CreateIRDataOne(MetaExpressNode node)
+        protected void CreateIRDataOne(MetaExpressNode node)
         {
             switch (node)
             {
@@ -74,7 +98,7 @@ namespace SimpleLanguage.IR
                 case MetaCallLinkExpressNode mcn:
                     {
                         IRMetaCallLink irmc = new IRMetaCallLink();
-                        if ( m_IRManager != null )
+                        if ( m_IRMethod == null )
                         {
                             irmc.ParseToIRDataList(null, mcn.metaCallLink.visitNodeList);
                         }
@@ -90,7 +114,7 @@ namespace SimpleLanguage.IR
                     break;
                 case MetaThreeItemExpressNode mtien:
                     {
-                        IRExpress iexress = new IRExpress(this.m_IRMethod, mtien.conditionExpress );
+                        IRExpressBase iexress = IRExpressManager.CreateExpress(this.m_IRMethod, mtien.conditionExpress );
                         m_IRDataList.AddRange(iexress.IRDataList);
 
                         IRData elseirdata = new IRData();
@@ -99,7 +123,7 @@ namespace SimpleLanguage.IR
                         IRBranch ifbranch = new IRBranch(m_IRMethod, EIROpCode.BrFalse, elseirdata );
                         m_IRDataList.AddRange(ifbranch.IRDataList);
 
-                        IRExpress ireturn1Exress = new IRExpress(this.m_IRMethod, mtien.return1Express );
+                        IRExpressBase ireturn1Exress = IRExpressManager.CreateExpress(this.m_IRMethod, mtien.return1Express );
                         m_IRDataList.AddRange(ireturn1Exress.IRDataList);
 
                         IRBranch br = new IRBranch(m_IRMethod, EIROpCode.Br, endirdata);
@@ -107,7 +131,7 @@ namespace SimpleLanguage.IR
 
                         m_IRDataList.Add(elseirdata);
 
-                        IRExpress ireturn2Exress = new IRExpress(this.m_IRMethod, mtien.return2Express);
+                        IRExpressBase ireturn2Exress = IRExpressManager.CreateExpress(this.m_IRMethod, mtien.return2Express);
                         m_IRDataList.AddRange(ireturn2Exress.IRDataList);
 
                         m_IRDataList.Add(endirdata);
@@ -194,11 +218,10 @@ namespace SimpleLanguage.IR
         }
     }
 
-    public class IRNewExpress : IRBase
+    public class IRNewExpress : IRExpressBase
     {
         public IRNewExpress(IRMethod irMethod, MetaConstExpressNode mnoen ) : base(irMethod)
         {
-
             IRData irdata = new IRData();
             irdata.opCode = IRManager.GetConstIROpCode(mnoen.eType);
             irdata.opValue = mnoen.value;
@@ -220,7 +243,7 @@ namespace SimpleLanguage.IR
 
             if( mnoen.newType == MetaNewObjectExpressNode.ENewType.ArrayClass )
             {
-                IRExpress ire = new IRExpress(irMethod, mnoen.arrayLengthExpress );
+                IRExpressBase ire = IRExpressManager.CreateExpress(irMethod, mnoen.arrayLengthExpress );
                 m_IRDataList.AddRange(ire.IRDataList);
 
                 var irMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.metaType, owirmc);
@@ -235,7 +258,7 @@ namespace SimpleLanguage.IR
                     var paramCount = mnoen.metaInputParamList.Count;
                     for (int j = 0; j < paramCount; j++)
                     {
-                        IRExpress irexpress = new IRExpress(m_IRMethod, mnoen.metaInputParamList[j]);
+                        IRExpressBase irexpress = IRExpressManager.CreateExpress(m_IRMethod, mnoen.metaInputParamList[j]);
                         AddIRRangeData(irexpress.IRDataList);
                     }
 
@@ -275,16 +298,8 @@ namespace SimpleLanguage.IR
                         IRDup irdup = new IRDup(irMethod);
                         AddIRRangeData(irdup.IRDataList);
 
-                        if( asl.expressNode is MetaNewObjectExpressNode mnoe )
-                        {
-                            IRNewExpress irexp = new IRNewExpress(irMethod, mnoe );
-                            AddIRRangeData(irexp.IRDataList);
-                        }
-                        else
-                        {
-                            IRExpress irexp = new IRExpress(irMethod, asl.expressNode);
-                            AddIRRangeData(irexp.IRDataList);
-                        }
+                        IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.expressNode);
+                        AddIRRangeData(irexp.IRDataList);
 
                         IRData irdatastore = new IRData();
                         irdatastore.index = y;
@@ -347,7 +362,7 @@ namespace SimpleLanguage.IR
                                     }
                                 }
 
-                                IRExpress irexp = new IRExpress(irMethod, men );
+                                IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, men );
                                 AddIRRangeData(irexp.IRDataList);                                
 
                                 IRData irdata = new IRData();
@@ -366,7 +381,7 @@ namespace SimpleLanguage.IR
                     var paramCount = mnoen.metaInputParamList.Count;
                     for (int j = 0; j < paramCount; j++)
                     {
-                        IRExpress irexpress = new IRExpress(m_IRMethod, mnoen.metaInputParamList[j]);
+                        IRExpressBase irexpress = IRExpressManager.CreateExpress(m_IRMethod, mnoen.metaInputParamList[j]);
                         AddIRRangeData(irexpress.IRDataList);
                     }
 

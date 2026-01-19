@@ -302,7 +302,7 @@ namespace SimpleLanguage.IR
                 }
                 else
                 {
-                    var irexp = new IRExpress(IRManager.instance, v.express);
+                    var irexp = IRExpressManager.CreateExpress(null, v.express);
                     list.AddRange(irexp.IRDataList);
 
                 }

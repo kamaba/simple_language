@@ -1,5 +1,6 @@
 import CSharp.SimpleLanguage.Core
 import CSharp.SimpleLanguage
+import CSharp.System;
 
 public class Float32 extends Num
 {

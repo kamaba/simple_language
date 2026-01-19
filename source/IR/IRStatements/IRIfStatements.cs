@@ -28,7 +28,7 @@ namespace SimpleLanguage.IR
             public IRBranch ifFalseBreach = null;
             public IRNop startNop = null;
 
-            private IRExpress m_IrExpress = null;
+            private IRExpressBase m_IrExpress = null;
             public void ParseIRStatements( IRMethod _irMethod, MetaIfStatements.MetaElseIfStatements mires )
             {
                 startNop = new IRNop( _irMethod );
@@ -38,7 +38,7 @@ namespace SimpleLanguage.IR
                 {
                     //startNop.data.SetDebugInfoByToken(mires.finalExpress.GetToken());
 
-                    m_IrExpress = new IRExpress(_irMethod, mires.finalExpress);
+                    m_IrExpress = IRExpressManager.CreateExpress(_irMethod, mires.finalExpress);
                     conditionStatList.Add(m_IrExpress);
 
                     if (mires.metaAssignManager?.isNeedSetMetaVariable == true)

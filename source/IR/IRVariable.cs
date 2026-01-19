@@ -101,7 +101,7 @@ namespace SimpleLanguage.IR
                     }
                     else
                     {
-                        IRExpress irexpress = new IRExpress(_irMethod, mvv.visitExpressNode );
+                        IRExpressBase irexpress = IRExpressManager.CreateExpress(_irMethod, mvv.visitExpressNode );
                         irVar.m_IRDataList.AddRange(irexpress.IRDataList);
 
 

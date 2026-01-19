@@ -6,15 +6,16 @@
 //  Description: Manager CSharp Interface About!
 //****************************************************************************
 
+using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
 using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Data;
-using System.Linq;
-using System.Collections.Generic;
-using SimpleLanguage.Compile;
+using System.Text.RegularExpressions;
 
 namespace SimpleLanguage.CSharp
 {
@@ -32,7 +33,9 @@ namespace SimpleLanguage.CSharp
             foreach( var am in allAssembly )
             {
                 if (am.FullName != "SimpleLanguage, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
-                        && am.FullName != "System.Console, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")
+                        && am.FullName != "System.Console, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"
+                        && am.FullName != "System.Private.CoreLib, Version=6.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e"
+                        )
                 {
                     continue;
                 }

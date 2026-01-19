@@ -36,7 +36,7 @@ public class Object
     #equality: default delegates to runtime equality helper which may compare by reference
     public bool equals(object obj)
     {
-        if (obj == null) ret false;
+        if (obj == null){ ret false; }
         ret SimpleLanguage.Lib.ObjectClass.EqualObject(this, obj);
     }
     #runtime internal reference (object identity)

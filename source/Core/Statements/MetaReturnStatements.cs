@@ -25,27 +25,28 @@ namespace SimpleLanguage.Core
 
             MetaType mdt = mbs.ownerMetaFunction.GetFinalMetaType();
 
-            CreateExpressParam cep2 = new CreateExpressParam()
+            if(m_FileMetaReturnSyntax.returnExpress != null )
             {
-                ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass,
-                ownerMBS = m_OwnerMetaBlockStatements,
-                metaType = mdt,
-                fme = m_FileMetaReturnSyntax.returnExpress,
-                isStatic = false,
-                isConst = false,
-                parsefrom = EParseFrom.StatementRightExpress,
-                equalMetaVariable = mbs.ownerMetaFunction.returnMetaVariable
-            };
-            m_Express = ExpressManager.CreateExpressNode(cep2);
-            if (m_Express != null)
-            {
+                CreateExpressParam cep2 = new CreateExpressParam()
+                {
+                    ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass,
+                    ownerMBS = m_OwnerMetaBlockStatements,
+                    metaType = mdt,
+                    fme = m_FileMetaReturnSyntax.returnExpress,
+                    isStatic = false,
+                    isConst = false,
+                    parsefrom = EParseFrom.StatementRightExpress,
+                    equalMetaVariable = mbs.ownerMetaFunction.returnMetaVariable
+                };
+                m_Express = ExpressManager.CreateExpressNode(cep2);
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                m_Express = ExpressManager.ConvertNewExpress(m_Express, mdt, mbs.ownerMetaFunction.returnMetaVariable);
                 m_Express.CalcReturnType();
                 m_ReturnMetaDefineType = m_Express.GetReturnMetaDefineType();
             }
             else
             {
-                m_ReturnMetaDefineType = new MetaType( CoreMetaClassManager.voidMetaClass );
+                m_ReturnMetaDefineType = new MetaType(CoreMetaClassManager.voidMetaClass);
             }
         }        
         public override string ToFormatString()

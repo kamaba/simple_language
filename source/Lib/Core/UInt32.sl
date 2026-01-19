@@ -14,7 +14,7 @@ public class UInt32 extends Num
     }
     public static UInt32 parseString( string s )
     {
-        ret 0
+        try { ret (UInt32)System.Convert.ToUInt32(s) } catch { ret 0 }
     }
     _init_( UInt32 _val )
     {
@@ -44,7 +44,8 @@ public class UInt32 extends Num
         {
             ret 1;
         }
-        ret 0
+        if (this._value == value._value) ret 0;
+        ret this._value > (UInt32)value._value ? 1 : -1
     }
     #!
     Int8 toInt8()
@@ -79,5 +80,33 @@ public class UInt32 extends Num
     override String toString()
     {
         ret SimpleLanguage.Lib.Int32Class.Int32ToString( this )
+    }
+
+    public override Int32 toInt32()
+    {
+        ret (Int32)this._value
+    }
+    public override Float64 toFloat64()
+    {
+        ret (Float64) this._value
+    }
+    public override Num abs()
+    {
+        ret this
+    }
+    public override Num floor()
+    {
+        ret this
+    }
+    public override Num ceil()
+    {
+        ret this
+    }
+    public override Int32 compareTo( Num other )
+    {
+        if (other == null) { ret 1 }
+        Float64 ov = other.toFloat64()
+        if (this._value == ov) { ret 0 }
+        ret this._value > ov ? 1 : -1
     }
 }

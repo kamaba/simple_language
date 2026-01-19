@@ -26,7 +26,7 @@ namespace SimpleLanguage.IR
         public IRBranch ifIRData = null;            //判断是否到终点if判断
         public IRBranch brIRData = null;            //for结束点返回起点语句
 
-        private IRExpress m_IRConditionExpress = null;
+        private IRExpressBase m_IRConditionExpress = null;
         public void ParseIRStatements(MetaForStatements ms)
         {
             startIRData = new IRNop(irMethod);
@@ -200,16 +200,8 @@ namespace SimpleLanguage.IR
 
                 if ( ms.conditionExpress != null)
                 {
-                    if( ms.conditionExpress is MetaNewObjectExpressNode mnoen )
-                    {
-                        var irNewConditionExpress = new IRNewExpress(irMethod, mnoen);
-                        m_IRStatements.Add(irNewConditionExpress);
-                    }
-                    else
-                    {
-                        m_IRConditionExpress = new IRExpress(irMethod, ms.conditionExpress);
-                        m_IRStatements.Add(m_IRConditionExpress);
-                    }
+                    m_IRConditionExpress = IRExpressManager.CreateExpress(irMethod, ms.conditionExpress);
+                    m_IRStatements.Add(m_IRConditionExpress);
 
                     // 4. 判断 moveNext() 返回值，false 跳出循环
                     ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, endIRData.data);

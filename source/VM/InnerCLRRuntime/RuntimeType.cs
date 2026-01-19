@@ -523,7 +523,7 @@ namespace SimpleLanguage.VM
 
             foreach (var v in  this.irClass.localIRMetaVariableList )
             {
-                var irexp = new IRExpress(IRManager.instance, v.express);
+                var irexp = IRExpressManager.CreateExpress( null, v.express);
 
                 v.SetIRDataList(irexp.IRDataList);
 
