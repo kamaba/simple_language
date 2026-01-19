@@ -7,8 +7,10 @@ using System.IO;
 using SimpleLanguage.IR;
 using SimpleLanguage.Export.AOT;
 using System.Diagnostics;
+using System.Linq;
 using System.Collections.Generic;
 using SimpleLanguage.Export;
+using SimpleLanguage.VM;
 
 namespace SimpleLanguage
 {
@@ -85,6 +87,57 @@ namespace SimpleLanguage
                 string slvmPath = Path.Combine(slvmDir, moduleName + ".slvm");
                 SimpleLanguage.Export.SLVM.SLVMSerializer.WriteModule(slvmModule, slvmPath, cfg);
                 Console.WriteLine($"Exported {methodList.Count} methods to SLVM file: {slvmPath}");
+                try
+                {
+                    // Direct IR execution path: translate IR and run NumberTest.fun if present
+                    try
+                    {
+                        IRManager.instance.TranslateIR();
+                        // ensure runtime root
+                        if (SimpleLanguage.VM.Runtime.InnerCLRRuntimeVM.clrRuntimeStack.Count == 0)
+                        {
+                            var root = new SimpleLanguage.VM.Runtime.RuntimeVM(new List<SimpleLanguage.IR.IRData>());
+                            root.id = "__ir_root__";
+                            SimpleLanguage.VM.Runtime.InnerCLRRuntimeVM.PushCLRRuntime(root);
+                        }
+                        var directMethod = IRManager.instance.IRMethodDict.Values.FirstOrDefault(m => m.onlyFunctionName == "fun" && m.id.StartsWith("NumberTest"));
+                        if (directMethod != null)
+                        {
+                            Console.WriteLine($"Running IR method directly: {directMethod.id}");
+                            SimpleLanguage.VM.Runtime.InnerCLRRuntimeVM.RunIRMethod(new List<RuntimeType>(), directMethod);
+                            // pop temporary root
+                            if (SimpleLanguage.VM.Runtime.InnerCLRRuntimeVM.clrRuntimeStack.Count > 0)
+                            {
+                                SimpleLanguage.VM.Runtime.InnerCLRRuntimeVM.PopCLRRuntime();
+                            }
+                        }
+                    }
+                    catch (Exception exDirect)
+                    {
+                        Console.WriteLine("Direct IR run failed: " + exDirect.ToString());
+                    }
+
+                }
+                catch (Exception) { }
+                try
+                {
+                    // load module into runtime and run NumberTest.fun if present
+                    var mod = SimpleLanguage.Export.SLVM.SLVMSerializer.ReadModule(slvmPath);
+                    if (mod != null)
+                    {
+                        SimpleLanguage.VM.Runtime.InnerCLRRuntimeVM.LoadSLVMModule(slvmPath);
+                        var target = mod.methods.Find(mm => mm.onlyFunctionName == "fun" && (mm.id?.StartsWith("NumberTest") ?? false));
+                        if (target != null)
+                        {
+                            Console.WriteLine($"Running SLVM method: {target.id}");
+                            SimpleLanguage.VM.Runtime.InnerCLRRuntimeVM.RunSLVMMethodFile(slvmPath, target.id);
+                        }
+                    }
+                }
+                catch (Exception ex2)
+                {
+                    Console.WriteLine("SLVM run failed: " + ex2.ToString());
+                }
             }
             catch (Exception ex)
             {

@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using SimpleLanguage.Export.SLVM;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -14,7 +15,7 @@ namespace SimpleLanguage.VM.Runtime
         public static RuntimeVM currentCLRRuntime = null;
         public static RuntimeVM topCLRRuntime = null;
 
-        private static SValue[] m_GlobalVariableValueArray = null;
+        private static List<SValue> m_GlobalVariableValueList = new List<SValue>();
         private static Dictionary<int, int> m_GlobalVariableId2IndexDict = new Dictionary<int, int>();
         public static Stack<RuntimeVM> clrRuntimeStack => m_ClrRuntimeStack;
 
@@ -89,18 +90,20 @@ namespace SimpleLanguage.VM.Runtime
         public static void Init()
         {
             var staticArray = IRManager.instance.globalStaticVariableList;
-            m_GlobalVariableValueArray = new SValue[staticArray.Count];
+            m_GlobalVariableValueList = new List<SValue>(staticArray.Count);
 
             List<IRData> execIRList = new List<IRData>();
             for (int i = 0; i < staticArray.Count; i++)
             {
-                m_GlobalVariableId2IndexDict.Add(staticArray[i].id, i );
+                m_GlobalVariableId2IndexDict.Add(staticArray[i].id, i);
 
                 var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(staticArray[i].irMetaType);
                 IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(staticArray[i].irMetaType.irOwnerMetaClass.id);
 
                 var obj = ObjectManager.CreateObjectByRuntimeType(rt, true);
-                m_GlobalVariableValueArray[i].SetSObject(obj);
+                SValue tmp = default;
+                tmp.SetSObject(obj);
+                m_GlobalVariableValueList.Add(tmp);
 
                 IRExpressBase irexpress = IRExpressManager.CreateExpress(null, staticArray[i].express);
 
@@ -121,7 +124,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if(m_GlobalVariableId2IndexDict.ContainsKey( id ) )
             {
-                m_GlobalVariableValueArray[m_GlobalVariableId2IndexDict[id]] = savl;
+                m_GlobalVariableValueList[m_GlobalVariableId2IndexDict[id]] = savl;
             }
             else
             {
@@ -166,7 +169,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (m_GlobalVariableId2IndexDict.ContainsKey(id))
             {
-                sval = m_GlobalVariableValueArray[m_GlobalVariableId2IndexDict[id]];
+                sval = m_GlobalVariableValueList[m_GlobalVariableId2IndexDict[id]];
             }
             else
             {
@@ -194,6 +197,119 @@ namespace SimpleLanguage.VM.Runtime
             clrRuntime.ClearNewObject();
             InnerCLRRuntimeVM.PopCLRRuntime();
             
+        }
+
+        // Execute a single method from a .slvm file
+        public static void RunSLVMMethodFile(string slvmPath, string methodId)
+        {
+            var irlist = SLVMLoader.ConvertSLVMMethodToIRDataList(slvmPath, methodId);
+            if (irlist == null) return;
+
+            // ensure there is a root runtime on stack
+            bool pushedRoot = false;
+            if (m_ClrRuntimeStack.Count == 0)
+            {
+                var root = new RuntimeVM(new List<IRData>());
+                root.id = "__slvm_root__";
+                m_ClrRuntimeStack.Push(root);
+                pushedRoot = true;
+            }
+
+            topCLRRuntime = m_ClrRuntimeStack.Peek();
+            var exe = InnerCLRRuntimeVM.CreateExeSplite(new List<RuntimeType>(), new List<IRData>(irlist));
+            exe.Run(true);
+            InnerCLRRuntimeVM.PopCLRRuntime();
+
+            if (pushedRoot)
+            {
+                // pop the temporary root
+                m_ClrRuntimeStack.Pop();
+            }
+        }
+
+        // Load an entire .slvm module and register its string pool into IRManager
+        public static void LoadSLVMModule(string slvmPath)
+        {
+            var module = SLVMSerializer.ReadModule(slvmPath);
+            if (module == null) return;
+            // register strings
+            foreach (var s in module.stringPool)
+            {
+                IRManager.instance.AddStringIRStack(s);
+            }
+            // register globals
+            foreach (var g in module.globals)
+            {
+                // create simple SValue from initValue or string pool
+                SValue sval = default;
+                if (!string.IsNullOrEmpty(g.initValue))
+                {
+                    // try parse numeric, otherwise treat as string
+                    if (int.TryParse(g.initValue, out int vi)) sval.SetInt32Value(vi);
+                    else if (long.TryParse(g.initValue, out long vl)) sval.SetInt64Value(vl);
+                    else if (double.TryParse(g.initValue, out double vd)) sval.SetDoubleValue(vd);
+                    else sval.SetStringValue(g.initValue);
+                }
+                else if (g.initValueIndex >= 0 && g.initValueIndex < module.stringPool.Count)
+                {
+                    sval.SetStringValue(module.stringPool[g.initValueIndex]);
+                }
+                else
+                {
+                    sval.SetNull();
+                }
+                // prefer exported meta id when available, fallback to name hash
+                int id = g.metaId != -1 ? g.metaId : (g.name?.GetHashCode() ?? 0);
+                // if we have a corresponding IR meta variable, try to initialize runtime static member
+                if (g.metaId != -1)
+                {
+                    int gvIndex = IRManager.instance.GetGlobalStaticMetaVariableById(g.metaId);
+                    if (gvIndex >= 0)
+                    {
+                        var irmv = IRManager.instance.globalStaticVariableList[gvIndex];
+                        try
+                        {
+                            // find owner class runtime type and set its static member
+                            var owner = irmv.irMetaType.irOwnerMetaClass;
+                            var ownerRt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(owner);
+                            if (ownerRt == null)
+                            {
+                                ownerRt = RuntimeTypeManager.AddRuntimeTypeByClass(owner);
+                            }
+                            if (ownerRt != null)
+                            {
+                                ownerRt.SetMemberVariableSValue(irmv.index, sval);
+                            }
+                        }
+                        catch { }
+                    }
+                }
+
+                if (!m_GlobalVariableId2IndexDict.ContainsKey(id))
+                {
+                    int idx = m_GlobalVariableValueList.Count;
+                    m_GlobalVariableId2IndexDict[id] = idx;
+                    m_GlobalVariableValueList.Add(sval);
+                }
+            }
+
+            // register types: create placeholders in RuntimeTypeManager if necessary
+            foreach (var t in module.types)
+            {
+                // ensure IRMetaClass exists in IRManager
+                var irmc = IRManager.instance.GetIRMetaClassByName(t.name);
+                if (irmc == null)
+                {
+                    // skip unknown types for now
+                    continue;
+                }
+                // create runtime type if not exists
+                var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irmc);
+                if (rt == null)
+                {
+                    RuntimeTypeManager.AddRuntimeTypeByClass(irmc);
+                }
+            }
         }
     }
 }

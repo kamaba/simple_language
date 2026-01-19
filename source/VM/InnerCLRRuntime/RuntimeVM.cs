@@ -417,13 +417,9 @@ namespace SimpleLanguage.VM.Runtime
         public void Run(bool disStackCount)
         {
             string funName = id;
-
-            string pushChar = "";
-            for( int i = 0; i < level; i++ )
-            {
-                pushChar = '\t' + pushChar;
-            }
-            Log.AddVM(EError.None, pushChar + "[VMRuntime] [Push] Method: [" + funName +"]" );
+            // build indent string with minimal allocations
+            string pushChar = MakeIndent(level);
+            Log.AddVM(EError.None, pushChar + "[VMRuntime] [Push] Method: [" + funName + "]");
             level++;
 
             var topClrRuntime = InnerCLRRuntimeVM.topCLRRuntime;
@@ -452,12 +448,15 @@ namespace SimpleLanguage.VM.Runtime
                 m_ExecuteIndex++;
             }
             level--;
-            pushChar = "";
-            for (int i = 0; i < level; i++)
-            {
-                pushChar = '\t' + pushChar;
-            }
-            Log.AddVM( EError.None, pushChar  + "[VMRuntime] [Pop] Method: [" + funName + "]");
+            pushChar = MakeIndent(level);
+            Log.AddVM(EError.None, pushChar + "[VMRuntime] [Pop] Method: [" + funName + "]");
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static string MakeIndent(int count)
+        {
+            if (count <= 0) return string.Empty;
+            return new string('\t', count);
         }
         public static void SetValue( ref SValue sValue, ref SValue sStore, IRData iri )
         {
@@ -529,7 +528,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            if (iri.TryGetByte(out var vb)) tmp.SetInt8Value(vb);
+                            if (iri.Payload != null && iri.Payload.Length >= 1) tmp.SetInt8Value(iri.Payload[0]);
+                            else if (iri.TryGetByte(out var vb)) tmp.SetInt8Value(vb);
                             else if (iri.opValue != null) tmp.SetInt8Value(Convert.ToByte(iri.opValue));
                             PushSValueSynced(tmp);
                         }
@@ -539,7 +539,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            if (iri.TryGetSByte(out var vsb)) tmp.SetSInt8Value(vsb);
+                            if (iri.Payload != null && iri.Payload.Length >= 1) tmp.SetSInt8Value((sbyte)iri.Payload[0]);
+                            else if (iri.TryGetSByte(out var vsb)) tmp.SetSInt8Value(vsb);
                             else if (iri.opValue != null) tmp.SetSInt8Value(Convert.ToSByte(iri.opValue));
                             PushSValueSynced(tmp);
                         }
@@ -549,7 +550,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            if (iri.TryGetBoolean(out var vb2)) tmp.SetBoolValue(vb2);
+                            if (iri.Payload != null && iri.Payload.Length >= 1) tmp.SetBoolValue(BitConverter.ToBoolean(iri.Payload, 0));
+                            else if (iri.TryGetBoolean(out var vb2)) tmp.SetBoolValue(vb2);
                             else if (iri.opValue != null) tmp.SetBoolValue(Convert.ToBoolean(iri.opValue));
                             PushSValueSynced(tmp);
                         }
@@ -564,7 +566,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            if (iri.TryGetInt16(out var vi16)) tmp.SetInt16Value(vi16);
+                            if (iri.Payload != null && iri.Payload.Length >= 2) tmp.SetInt16Value(BitConverter.ToInt16(iri.Payload, 0));
+                            else if (iri.TryGetInt16(out var vi16)) tmp.SetInt16Value(vi16);
                             else if (iri.opValue != null) tmp.SetInt16Value(Convert.ToInt16(iri.opValue));
                             PushSValueSynced(tmp);
                         }
@@ -574,7 +577,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            if (iri.TryGetUInt16(out var vu16)) tmp.SetUInt16Value(vu16);
+                            if (iri.Payload != null && iri.Payload.Length >= 2) tmp.SetUInt16Value(BitConverter.ToUInt16(iri.Payload, 0));
+                            else if (iri.TryGetUInt16(out var vu16)) tmp.SetUInt16Value(vu16);
                             else if (iri.opValue != null) tmp.SetUInt16Value(Convert.ToUInt16(iri.opValue));
                             PushSValueSynced(tmp);
                         }
@@ -584,7 +588,9 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            if (iri.TryGetInt32(out var vi32)) tmp.SetInt32Value(vi32);
+                            // prefer payload if available
+                            if (iri.Payload != null && iri.Payload.Length >= 4) tmp.SetInt32Value(BitConverter.ToInt32(iri.Payload, 0));
+                            else if (iri.TryGetInt32(out var vi32)) tmp.SetInt32Value(vi32);
                             else if (iri.opValue != null) tmp.SetInt32Value(Convert.ToInt32(iri.opValue));
                             PushSValueSynced(tmp);
                         }
@@ -594,7 +600,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            if (iri.TryGetUInt32(out var vu32)) tmp.SetUInt32Value(vu32);
+                            if (iri.Payload != null && iri.Payload.Length >= 4) tmp.SetUInt32Value(BitConverter.ToUInt32(iri.Payload, 0));
+                            else if (iri.TryGetUInt32(out var vu32)) tmp.SetUInt32Value(vu32);
                             else if (iri.opValue != null) tmp.SetUInt32Value(Convert.ToUInt32(iri.opValue));
                             PushSValueSynced(tmp);
                         }
@@ -604,7 +611,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            if (iri.TryGetInt64(out var vi64)) tmp.SetInt64Value(vi64);
+                            if (iri.Payload != null && iri.Payload.Length >= 8) tmp.SetInt64Value(BitConverter.ToInt64(iri.Payload, 0));
+                            else if (iri.TryGetInt64(out var vi64)) tmp.SetInt64Value(vi64);
                             else if (iri.opValue != null) tmp.SetInt64Value(Convert.ToInt64(iri.opValue));
                             PushSValueSynced(tmp);
                         }
@@ -614,7 +622,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            if (iri.TryGetUInt64(out var vu64)) tmp.SetUInt64Value(vu64);
+                            if (iri.Payload != null && iri.Payload.Length >= 8) tmp.SetUInt64Value(BitConverter.ToUInt64(iri.Payload, 0));
+                            else if (iri.TryGetUInt64(out var vu64)) tmp.SetUInt64Value(vu64);
                             else if (iri.opValue != null) tmp.SetUInt64Value(Convert.ToUInt64(iri.opValue));
                             PushSValueSynced(tmp);
                         }
@@ -624,7 +633,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            if (iri.TryGetSingle(out var vf)) tmp.SetFloatValue(vf);
+                            if (iri.Payload != null && iri.Payload.Length >= 4) tmp.SetFloatValue(BitConverter.ToSingle(iri.Payload, 0));
+                            else if (iri.TryGetSingle(out var vf)) tmp.SetFloatValue(vf);
                             else if (iri.opValue != null) tmp.SetFloatValue(Convert.ToSingle(iri.opValue));
                             PushSValueSynced(tmp);
                         }
@@ -634,7 +644,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         {
                             SValue tmp = default;
-                            if (iri.TryGetDouble(out var vd)) tmp.SetDoubleValue(vd);
+                            if (iri.Payload != null && iri.Payload.Length >= 8) tmp.SetDoubleValue(BitConverter.ToDouble(iri.Payload, 0));
+                            else if (iri.TryGetDouble(out var vd)) tmp.SetDoubleValue(vd);
                             else if (iri.opValue != null) tmp.SetDoubleValue(Convert.ToDouble(iri.opValue));
                             PushSValueSynced(tmp);
                         }
@@ -643,7 +654,12 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.LoadConstString:
                     {
                         SValue tmp = default;
-                        if (iri.TryGetString(out var vs)) tmp.SetStringValue(vs);
+                        // prefer opValue (string pool) but if payload present, decode
+                        if (iri.Payload != null && iri.Payload.Length > 0)
+                        {
+                            tmp.SetStringValue(System.Text.Encoding.UTF8.GetString(iri.Payload));
+                        }
+                        else if (iri.TryGetString(out var vs)) tmp.SetStringValue(vs);
                         else if (iri.opValue != null) tmp.SetStringValue(iri.opValue.ToString());
                         PushSValueSynced(tmp);
                     }
@@ -1275,15 +1291,15 @@ namespace SimpleLanguage.VM.Runtime
                                     left.AddSValue(ref right, false, out bool isMethodFallback);
                                 }
                                 bool isMethod = false;
-                            if (isMethod)
-                            {
-                                m_ValueStack[m_ValueIndex - 3] = m_ValueStack[m_ValueIndex - 1];
-                                m_ValueIndex -= 2;
-                            }
-                            else
-                            {
-                                m_ValueIndex--;
-                            }
+                                if (isMethod)
+                                {
+                                    m_ValueStack[m_ValueIndex - 3] = m_ValueStack[m_ValueIndex - 1];
+                                    m_ValueIndex -= 2;
+                                }
+                                else
+                                {
+                                    m_ValueIndex--;
+                                }
                             }
                             else
                             {

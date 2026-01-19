@@ -11,6 +11,27 @@ namespace SimpleLanguage.Export.SLVM
         public int opValueIndex { get; set; } = -1;
         // resolved value (for convenience)
         public string opValue { get; set; }
+        // typed payload (for numeric/boolean bytes)
+        public byte[] payload { get; set; }
+        // payload semantic tag
+        public SLVMPayloadType payloadType { get; set; } = SLVMPayloadType.None;
+    }
+
+    public enum SLVMPayloadType : byte
+    {
+        None = 0,
+        Int32 = 1,
+        Int64 = 2,
+        Float32 = 3,
+        Float64 = 4,
+        String = 5,
+        Boolean = 6,
+        Byte = 7,
+        SByte = 8,
+        Int16 = 9,
+        UInt16 = 10,
+        UInt32 = 11,
+        UInt64 = 12
     }
 
     public class SLVMMethod
@@ -32,6 +53,8 @@ namespace SimpleLanguage.Export.SLVM
         // index into string pool for initial value (if any)
         public int initValueIndex { get; set; } = -1;
         public string initValue { get; set; }
+        // original IR meta variable id (if exported from IR)
+        public int metaId { get; set; } = -1;
     }
 
     public class SLVMType

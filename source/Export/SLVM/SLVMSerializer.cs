@@ -52,6 +52,7 @@ namespace SimpleLanguage.Export.SLVM
                 foreach (var g in module.globals)
                 {
                     bw.Write(g.name ?? "");
+                    bw.Write(g.metaId);
                     bw.Write(g.isStatic);
                     bw.Write(g.isConst);
                     bw.Write(g.initValueIndex);
@@ -81,6 +82,17 @@ namespace SimpleLanguage.Export.SLVM
                         bw.Write(ins.index);
                         bw.Write(ins.opValueIndex);
                         bw.Write(ins.opValue ?? "");
+                        // write typed payload: length + bytes
+                        if (ins.payload != null && ins.payload.Length > 0)
+                        {
+                            bw.Write((int)ins.payload.Length);
+                            bw.Write(ins.payload);
+                            bw.Write((byte)ins.payloadType);
+                        }
+                        else
+                        {
+                            bw.Write((int)0);
+                        }
                     }
                 }
             }
@@ -123,6 +135,7 @@ namespace SimpleLanguage.Export.SLVM
                 {
                     var g = new SLVMGlobal();
                     g.name = br.ReadString();
+                    try { g.metaId = br.ReadInt32(); } catch { g.metaId = -1; }
                     g.isStatic = br.ReadBoolean();
                     g.isConst = br.ReadBoolean();
                     g.initValueIndex = br.ReadInt32();
@@ -160,6 +173,12 @@ namespace SimpleLanguage.Export.SLVM
                         ins.index = br.ReadInt32();
                         ins.opValueIndex = br.ReadInt32();
                         ins.opValue = br.ReadString();
+                        int payloadLen = br.ReadInt32();
+                        if (payloadLen > 0)
+                        {
+                            ins.payload = br.ReadBytes(payloadLen);
+                            try { ins.payloadType = (SLVMPayloadType)br.ReadByte(); } catch { ins.payloadType = SLVMPayloadType.None; }
+                        }
                         m.instructions.Add(ins);
                     }
                     module.methods.Add(m);
@@ -180,19 +199,22 @@ namespace SimpleLanguage.Export.SLVM
                 mod.AddString(kv.Value);
             }
             // export global/static variables - collect from ClassManager runtime classes and MetaData
-            foreach (var mc in ClassManager.instance.runtimeClassList)
+            var clsList = ClassManager.instance.runtimeClassList;
+            for (int ci = 0; ci < clsList.Count; ci++)
             {
-                foreach (var mv in mc.GetMetaMemberVariableListByFlag(true))
+                var mc = clsList[ci];
+                var gvars = mc.GetMetaMemberVariableListByFlag(true);
+                for (int gi = 0; gi < gvars.Count; gi++)
                 {
+                    var mv = gvars[gi];
                     var sg = new SLVMGlobal();
                     sg.name = mv.name;
+                    sg.metaId = mv.GetHashCode();
                     sg.isStatic = true;
                     sg.isConst = mv.isConst;
-                    if (mv.express is MetaConstExpressNode mcen)
+                    if (mv.express is MetaConstExpressNode)
                     {
-                        var sval = mcen.value?.ToString();
-                        sg.initValue = sval;
-                        if (!string.IsNullOrEmpty(sval)) sg.initValueIndex = mod.AddString(sval);
+                        try { var mcen = (MetaConstExpressNode)mv.express; var sval = mcen.value?.ToString(); sg.initValue = sval; if (!string.IsNullOrEmpty(sval)) sg.initValueIndex = mod.AddString(sval); } catch { }
                     }
                     mod.globals.Add(sg);
                 }
@@ -223,10 +245,39 @@ namespace SimpleLanguage.Export.SLVM
                     var ins = new SLVMInstruction();
                     ins.opcode = d.opCode.ToString();
                     ins.index = d.index;
-                    ins.opValue = d.opValue != null ? d.opValue.ToString() : "";
-                    if (!string.IsNullOrEmpty(ins.opValue))
+                    // use IRData.Payload if present for typed constant
+                    if (d.Payload != null && d.Payload.Length > 0)
                     {
-                        ins.opValueIndex = mod.AddString(ins.opValue);
+                        ins.payload = d.Payload;
+                        // infer payload type from opcode
+                        switch (d.opCode)
+                        {
+                            case EIROpCode.LoadConstInt32: ins.payloadType = SLVMPayloadType.Int32; break;
+                            case EIROpCode.LoadConstInt64: ins.payloadType = SLVMPayloadType.Int64; break;
+                            case EIROpCode.LoadConstUInt32: ins.payloadType = SLVMPayloadType.UInt32; break;
+                            case EIROpCode.LoadConstUInt64: ins.payloadType = SLVMPayloadType.UInt64; break;
+                            case EIROpCode.LoadConstDouble: ins.payloadType = SLVMPayloadType.Float64; break;
+                            case EIROpCode.LoadConstFloat: ins.payloadType = SLVMPayloadType.Float32; break;
+                            case EIROpCode.LoadConstString: ins.payloadType = SLVMPayloadType.String; break;
+                            case EIROpCode.LoadConstBoolean: ins.payloadType = SLVMPayloadType.Boolean; break;
+                            case EIROpCode.LoadConstByte: ins.payloadType = SLVMPayloadType.Byte; break;
+                            case EIROpCode.LoadConstSByte: ins.payloadType = SLVMPayloadType.SByte; break;
+                            case EIROpCode.LoadConstInt16: ins.payloadType = SLVMPayloadType.Int16; break;
+                            case EIROpCode.LoadConstUInt16: ins.payloadType = SLVMPayloadType.UInt16; break;
+                            default: ins.payloadType = SLVMPayloadType.None; break;
+                        }
+                        // for string constant, also add to pool
+                        if (d.opCode == EIROpCode.LoadConstString)
+                        {
+                            string sval = d.opValue != null ? d.opValue.ToString() : null;
+                            if (!string.IsNullOrEmpty(sval)) ins.opValueIndex = mod.AddString(sval);
+                            ins.opValue = sval;
+                        }
+                    }
+                    else
+                    {
+                        ins.opValue = d.opValue != null ? d.opValue.ToString() : "";
+                        if (!string.IsNullOrEmpty(ins.opValue)) ins.opValueIndex = mod.AddString(ins.opValue);
                     }
                     sm.instructions.Add(ins);
                 }

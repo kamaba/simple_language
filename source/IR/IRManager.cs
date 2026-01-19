@@ -34,7 +34,6 @@ namespace SimpleLanguage.IR
         public List<IRMetaClass> irMetaClassList => m_IRMetaClassList;
         public Dictionary<string, IRMethod> IRMethodDict = new Dictionary<string, IRMethod>();
         public Dictionary<int, string> IRStringDict = new Dictionary<int,string>();
-        public Dictionary<int, SValue> IRConstDict = new Dictionary<int, SValue>();
         public List<IRMetaVariable> globalStaticVariableList => m_GlobalStaticVariableList;
 
         private List<IRMetaVariable> m_GlobalStaticVariableList = new List<IRMetaVariable>();
