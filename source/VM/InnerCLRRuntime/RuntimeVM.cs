@@ -1127,13 +1127,24 @@ namespace SimpleLanguage.VM.Runtime
                             Debug.Assert(false, "没有找到索引是" + iri.index  + "的函数!");
                             return;
                         }
-                        List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
-                        for ( int i = 0; i < mfc.irTemplateMetaType.Count; i++ )
+                        // special-case: if calling `.type` on an instance, return the Type object immediately
+                        if (cfc != null && cfc.id == "type")
                         {
-                            var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], irc, rt.runtimeTemplateList, true );
-                            rtList.Add(crt);
+                            var sobj = RuntimeTypeManager.CreateTypeObject(rt);
+                            SValue tmp = default;
+                            tmp.SetSObject(sobj);
+                            PushSValueSynced(tmp);
                         }
-                        InnerCLRRuntimeVM.RunIRMethod( rtList, cfc);
+                        else
+                        {
+                            List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
+                            for ( int i = 0; i < mfc.irTemplateMetaType.Count; i++ )
+                            {
+                                var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], irc, rt.runtimeTemplateList, true );
+                                rtList.Add(crt);
+                            }
+                            InnerCLRRuntimeVM.RunIRMethod( rtList, cfc);
+                        }
 
                         var a = ObjectManager.classObjectDict;
                     }

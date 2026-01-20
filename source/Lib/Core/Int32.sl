@@ -9,41 +9,25 @@ public class Int32 extends Num
 
     Int32 _value = 0i;
     
-    static String Int32ToString( Int32 value )
-    {
-        ret SimpleLanguage.Lib.Int32Class.Int32ToString( value )
-    }
-    public static Int32 parseString( string s )
-    {
-        # simple parse
-        #try
-        #{
-            var v = System.Convert.ToInt32(s);
-            ret v
-        #}
-        #catch
-        #{
-        #    ret 0
-        #}
-    }
+    
     _init_( Int32 _val )
     {
         this._value = _val
     }
-    #!
-    _init_( Float32 f )
+
+    // size helpers
+    override get int size() { ret 32 }
+    override get int byteLength() { ret 4 }
+    
+    
+    public static Int32 parseInt(string s)
     {
-        this._value = f.toInt32()
+        ret System.Convert.ToInt32(s);
     }
-    _init_( Int8 _val )
+    public static Int32 parseInt(string s, Int32 radix)
     {
-        this._value = _val.toInt32()
+        ret 0;
     }
-    _init_( Int64 _val )
-    {
-        this._value = _val.toInt32()
-    }
-    !#
     public int compareTo(Int32 value)
     {
         if (value == null)
@@ -53,54 +37,50 @@ public class Int32 extends Num
         if (this._value == value ){ ret 0; }
         ret this._value > value._value ? 1 : -1
     }
-    #!
-    Int8 toInt8()
+    override bool toBool()
     {
-        ret (Int8)this._value
+        ret SimpleLanguage.Lib.Int32Class.Int32ToBool(this._value )
     }
-    SInt8 toSInt8()
+    override Byte toByte( byte index = 0 )
     {
-        ret (SInt8)this._value
+        ret SimpleLanguage.Lib.Int32Class.Int32ToByte(this._value, index )
     }
-    Int16 toSInt16()
+    override Byte toSByte( byte index = 0 )
     {
-        ret (Int16)this._value
+        ret SimpleLanguage.Lib.Int32Class.Int32ToSByte(this._value, index )
     }
-    UInt16 toUInt16()
+    override Int16 toInt16()
     {
-        ret (UInt16)this._value
+        ret SimpleLanguage.Lib.Int32Class.Int32ToInt16(this._value )
     }
-    UInt32 toUInt32()
+    override UInt16 toUInt16()
     {
-        ret (UInt32)this._value
+        ret SimpleLanguage.Lib.Int32Class.Int32ToUInt16(this._value )
     }
-    Float32 toFloat32()
-    {
-        ret (Float32)this._value
-    }
-    Float64 toFloat64()
-    {
-        #convert to double
-        ret this._value
-    }
-    !#
-    override String toString()
-    {
-        ret SimpleLanguage.Lib.Int32Class.Int32ToString( this )
-    }
-
-    public override Int32 toInt32()
-    {
-        ret this
-    }
-    public override Float64 toFloat64()
+    override Int32 toInt32()
     {
         ret this._value
     }
-    public override Num abs()
+    override UInt32 toUInt32()
     {
-        ret Int32( System.Math.Abs(this) )
+        ret SimpleLanguage.Lib.Int32Class.Int32ToUInt32(this._value )
     }
+    override Int64 toInt64()
+    {
+        ret SimpleLanguage.Lib.Int32Class.Int32ToInt64(this._value )
+    }
+    override Int64 toUInt64()
+    {
+        ret SimpleLanguage.Lib.Int32Class.Int32ToUInt64(this._value )
+    }
+    override Float32 toFloat32()
+    {
+        ret SimpleLanguage.Lib.Int32Class.Int32ToFloat32(this._value)
+    }
+    override Float64 toFloat64()
+    {
+        ret SimpleLanguage.Lib.Int32Class.Int32ToFloat64(this._value)
+    }    
     public override Num floor()
     {
         ret this
@@ -109,11 +89,44 @@ public class Int32 extends Num
     {
         ret this
     }
-    public override Int32 compareTo( Num other )
+    public Int32 abs()
     {
-        if (other == null) { ret 1 }
-        Float64 ov = other.toFloat64()
-        if (this._value == ov) { ret 0 }
-        ret this._value > ov ? 1 : -1
+        ret System.Math.Abs(this._value)
+    }
+    public Int32 sign()
+    {
+        ret this._value > 0 ? 1 : -1
+    }
+    public bool isEven()
+    {
+        ret (this._value & 1) == 0
+    }
+    public bool isOdd()
+    {
+        ret (this._value & 1) != 0
+    }
+    public String toRadixString(int radix)
+    {
+        ret "";
+    }
+    public String toBinaryString()
+    {
+        ret this.toRadixString(2)
+    }
+    public String toHexString()
+    {
+        ret this.toRadixString(16)
+    }
+    public String toOctalString()
+    {
+        ret this.toRadixString(8)
+    }
+    public override Float64 toFloat64()
+    {
+        ret this._value
+    }
+    override String toString()
+    {
+        ret SimpleLanguage.Lib.Int32Class.Int32ToString( this )
     }
 }

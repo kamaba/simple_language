@@ -7,11 +7,17 @@ public class MetaClass
     get string className(){ ret this._className; }
 }
 
-public class Type
+public class Type extends Object
 {
     int _hashCode = 0
+    byte _eType = 0
     MetaClass _metaClass = null
-    Type[] typelist = null
+    public Type[] typelist = null
+
+    // runtime accessors filled by RuntimeTypeManager.CreateTypeObject
+    get MetaClass metaClass() { ret this._metaClass; }
+    get int hashCode() { ret this._hashCode; }
+    get int eType() { ret this._eType.toInt32(); }
 
     override string toString()
     {

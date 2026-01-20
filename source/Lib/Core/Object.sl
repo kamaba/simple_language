@@ -7,6 +7,11 @@ public class Object
     {
     }
 
+    final Type get type()
+    {
+        ret SimpleLanguage.Lib.ObjectClass.GetObjectType(this);
+    }
+
     #static helper: null-safe equality
     public static bool objectEquals(object objA, object objB)
     {

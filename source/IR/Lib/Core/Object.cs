@@ -27,6 +27,11 @@ namespace SimpleLanguage.Lib
     }
     public static class ObjectClass
     {
+        public static SObject GetObjectType(SObject sobj)
+        {
+            return sobj.runtimeType;
+        }
+        
         public static int GetHashCodeByObject(BaseObjectData obj)
         {
             if (obj == null) return 0;

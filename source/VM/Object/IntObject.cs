@@ -43,6 +43,16 @@ namespace SimpleLanguage.VM
             value = _val;
             m_IsNull = false;
         }
+        // Conversions
+        public SByte ToSByte() { return (sbyte)value; }
+        public short ToInt16() { return Convert.ToInt16(value); }
+        public ushort ToUInt16() { return Convert.ToUInt16(value); }
+        public int ToInt32() { return Convert.ToInt32(value); }
+        public uint ToUInt32() { return Convert.ToUInt32(value); }
+        public long ToInt64() { return Convert.ToInt64(value); }
+        public ulong ToUInt64() { return Convert.ToUInt64(value); }
+        public float ToFloat() { return Convert.ToSingle(value); }
+        public double ToDouble() { return Convert.ToDouble(value); }
         public override string ToFormatString()
         {
             return value.ToString();
@@ -62,6 +72,16 @@ namespace SimpleLanguage.VM
             value = _val;
             m_IsNull = false;
         }
+        // Conversions
+        public byte ToByte() { return Convert.ToByte(value); }
+        public short ToInt16() { return Convert.ToInt16(value); }
+        public ushort ToUInt16() { return Convert.ToUInt16(value); }
+        public int ToInt32() { return Convert.ToInt32(value); }
+        public uint ToUInt32() { return Convert.ToUInt32(value); }
+        public long ToInt64() { return Convert.ToInt64(value); }
+        public ulong ToUInt64() { return Convert.ToUInt64(value); }
+        public float ToFloat() { return Convert.ToSingle(value); }
+        public double ToDouble() { return Convert.ToDouble(value); }
         public override string ToFormatString()
         {
             return value.ToString();
@@ -80,6 +100,16 @@ namespace SimpleLanguage.VM
             value = _val;
             m_IsNull = false;
         }
+        // Conversions
+        public byte ToByte() { return Convert.ToByte(value); }
+        public sbyte ToSByte() { return Convert.ToSByte(value); }
+        public ushort ToUInt16() { return Convert.ToUInt16(value); }
+        public int ToInt32() { return Convert.ToInt32(value); }
+        public uint ToUInt32() { return Convert.ToUInt32(value); }
+        public long ToInt64() { return Convert.ToInt64(value); }
+        public ulong ToUInt64() { return Convert.ToUInt64(value); }
+        public float ToFloat() { return Convert.ToSingle(value); }
+        public double ToDouble() { return Convert.ToDouble(value); }
         public override string ToFormatString()
         {
             return value.ToString();
@@ -98,6 +128,16 @@ namespace SimpleLanguage.VM
             value = _val;
             m_IsNull = false;
         }
+        // Conversions
+        public byte ToByte() { return Convert.ToByte(value); }
+        public sbyte ToSByte() { return Convert.ToSByte(value); }
+        public short ToInt16() { return Convert.ToInt16(value); }
+        public int ToInt32() { return Convert.ToInt32(value); }
+        public uint ToUInt32() { return Convert.ToUInt32(value); }
+        public long ToInt64() { return Convert.ToInt64(value); }
+        public ulong ToUInt64() { return Convert.ToUInt64(value); }
+        public float ToFloat() { return Convert.ToSingle(value); }
+        public double ToDouble() { return Convert.ToDouble(value); }
         public override string ToFormatString()
         {
             return value.ToString();
@@ -177,6 +217,9 @@ namespace SimpleLanguage.VM
         {
             return Convert.ToDouble(value);
         }
+        public uint ToUInt32() { return Convert.ToUInt32(value); }
+        public long ToInt64() { return Convert.ToInt64(value); }
+        public ulong ToUInt64() { return Convert.ToUInt64(value); }
         public String Int32ToString()
         {
             return value.ToString();
@@ -200,6 +243,16 @@ namespace SimpleLanguage.VM
             value = _val;
             m_IsNull = false;
         }
+        // Conversions
+        public byte ToByte() { return Convert.ToByte(value); }
+        public sbyte ToSByte() { return Convert.ToSByte(value); }
+        public short ToInt16() { return Convert.ToInt16(value); }
+        public ushort ToUInt16() { return Convert.ToUInt16(value); }
+        public int ToInt32() { return Convert.ToInt32(value); }
+        public long ToInt64() { return Convert.ToInt64(value); }
+        public ulong ToUInt64() { return Convert.ToUInt64(value); }
+        public float ToFloat() { return Convert.ToSingle(value); }
+        public double ToDouble() { return Convert.ToDouble(value); }
         public override string ToFormatString()
         {
             return value.ToString();
@@ -220,6 +273,16 @@ namespace SimpleLanguage.VM
             value = _val;
             m_IsNull = false;
         }
+        // Conversions
+        public byte ToByte() { return Convert.ToByte(value); }
+        public sbyte ToSByte() { return Convert.ToSByte(value); }
+        public short ToInt16() { return Convert.ToInt16(value); }
+        public ushort ToUInt16() { return Convert.ToUInt16(value); }
+        public int ToInt32() { return Convert.ToInt32(value); }
+        public uint ToUInt32() { return Convert.ToUInt32(value); }
+        public ulong ToUInt64() { return Convert.ToUInt64(value); }
+        public float ToFloat() { return Convert.ToSingle(value); }
+        public double ToDouble() { return Convert.ToDouble(value); }
         public override string ToFormatString()
         {
             return value.ToString();
@@ -238,6 +301,16 @@ namespace SimpleLanguage.VM
             value = _val;
             m_IsNull = false;
         }
+        // Conversions
+        public byte ToByte() { return Convert.ToByte(value); }
+        public sbyte ToSByte() { return Convert.ToSByte(value); }
+        public short ToInt16() { return Convert.ToInt16(value); }
+        public ushort ToUInt16() { return Convert.ToUInt16(value); }
+        public int ToInt32() { return Convert.ToInt32(value); }
+        public uint ToUInt32() { return Convert.ToUInt32(value); }
+        public long ToInt64() { return Convert.ToInt64(value); }
+        public float ToFloat() { return Convert.ToSingle(value); }
+        public double ToDouble() { return Convert.ToDouble(value); }
         public override string ToFormatString()
         {
             return value.ToString();
