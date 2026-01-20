@@ -34,7 +34,7 @@ NumberTest
         System.Console.WriteLine("mod 100%3=" + modv )
 
         # mixing long/int with Num
-        var d = c + 100L     
+        var d = (c + 100L)/10.0f
         System.Console.WriteLine("Num mix long: " + d )
 
         # comparisons
