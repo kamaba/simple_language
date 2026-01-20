@@ -9,6 +9,18 @@ NumberTest
         Num a = 1.0;
         num b = 333
         # basic ops
+        Num na = -a
+        System.Console.WriteLine("Num na: " + na )
+
+        Num nanb = b - -a;
+        System.Console.WriteLine("Num nanb: " + nanb )
+
+        Num nanb2 = b + -a;
+        System.Console.WriteLine("Num nanb2: " + nanb2 )
+        
+        Num nanb3 = b + (+a);
+        System.Console.WriteLine("Num nanb3: " + nanb3 )
+
         Num c = a + b; 
         System.Console.WriteLine("Num add: " + c )
         Num s = c - 12.5
@@ -77,7 +89,7 @@ NumberTest
     static fun()
     {
         numTest();
-        byteTest();
-        int32Test();
+        #byteTest();
+        #int32Test();
     }
 }

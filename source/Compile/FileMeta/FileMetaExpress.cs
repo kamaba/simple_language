@@ -196,13 +196,15 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Plus:
                 case ETokenType.Minus:
                     {
+                        // keep plus/minus as link-op (unary prefix) priority so unary - is recognized
                         priority = SignComputePriority.Level2_LinkOp;
                     }
                     break;                   
                 case ETokenType.Multiply:
                 case ETokenType.Divide:
                     {
-                        priority = SignComputePriority.Level2_LinkOp;
+                        // * / are high-precedence binary ops
+                        priority = SignComputePriority.Level3_Hight_Compute;
                     }
                     break;
                 case ETokenType.DoublePlus:     //++
@@ -287,7 +289,7 @@ namespace SimpleLanguage.Compile
                     }
                     break;
             }
-            priority = SignComputePriority.Level2_LinkOp;
+            // leave priority as set by switch; do not override with a blanket default
         }
         public override bool BuildAST()
         {
@@ -371,6 +373,7 @@ namespace SimpleLanguage.Compile
     public class FileMetaConstValueTerm : FileMetaBaseTerm
     {
         private Token m_PlusOrMinusToken = null;
+        public Token plusMinusToken => m_PlusOrMinusToken;
         public FileMetaConstValueTerm( FileMeta fm, Token _token, Token plusMinusToken = null )
         {
             m_FileMeta = fm;
@@ -1291,7 +1294,7 @@ namespace SimpleLanguage.Compile
                             list.RemoveAt(index - 1);
                         }
                     }
-                    else if( ett == ETokenType.Minus || ett == ETokenType.Not || ett == ETokenType.Negative )
+                    else if( ett == ETokenType.Minus || ett == ETokenType.Plus || ett == ETokenType.Not || ett == ETokenType.Negative )
                     {
                         if (listNextTerm == null)
                         {
@@ -1357,23 +1360,19 @@ namespace SimpleLanguage.Compile
                     var ttoken = fmst.token;
                     if (ttoken?.type == ETokenType.Plus || ttoken?.type == ETokenType.Minus)
                     {
-                        if (i > 0 && i != buildASTList.Count - 1)
+                        // decide unary (prefix) vs binary based on previous term
+                        // unary when at start or previous term is an operator (FileMetaSymbolTerm)
+                        if (i == 0)
                         {
-                            var fmst1 = buildASTList[i - 1] as FileMetaSymbolTerm;
-                            if ((fmst1 != null && fmst1.priority == SignComputePriority.Level2_LinkOp)
-                                || (fmst1 == null))
-                            {
-                                fmst.priority = SignComputePriority.Level3_Low_Compute;
-                            }
+                            fmst.priority = SignComputePriority.Level2_LinkOp; // unary
                         }
-                        else if (i < buildASTList.Count - 1 && i != 0)
+                        else
                         {
-                            var fmst1 = buildASTList[i + 1] as FileMetaSymbolTerm;
-                            if ((fmst1 != null && fmst1.priority == SignComputePriority.Level2_LinkOp)
-                                || (fmst1 == null))
-                            {
-                                fmst.priority = SignComputePriority.Level3_Low_Compute;
-                            }
+                            var prev = buildASTList[i - 1] as FileMetaSymbolTerm;
+                            if (prev != null)
+                                fmst.priority = SignComputePriority.Level2_LinkOp; // unary
+                            else
+                                fmst.priority = SignComputePriority.Level3_Low_Compute; // binary
                         }
                     }
                 }

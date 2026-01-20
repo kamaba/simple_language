@@ -132,6 +132,7 @@ namespace SimpleLanguage.IR
         Convert_UI64,
         Convert_R4,
         Convert_R8,
+        Convert_ToString,
 
         Ret,          
     }

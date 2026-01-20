@@ -664,6 +664,43 @@ namespace SimpleLanguage.VM.Runtime
                         PushSValueSynced(tmp);
                     }
                     break;
+                case EIROpCode.Convert_ToString:
+                    {
+                        // convert top of stack to string
+                        var v = m_ValueStack[m_ValueIndex - 1];
+                        SValue res = default;
+                        if (v.eType == EVMType.String)
+                        {
+                            res = v;
+                        }
+                        else if (v.eType == EVMType.Boolean)
+                        {
+                            res.SetStringValue(v.int8Value == 1 ? "true" : "false");
+                        }
+                        else if (v.eType == EVMType.Class && v.sobject is ClassObject co)
+                        {
+                            var method = co.runtimeType.irClass.GetIRNonStaticMethodIndexByName("toString", out int idx);
+                            if (method != null)
+                            {
+                                InnerCLRRuntimeVM.RunIRMethod(co.runtimeType.runtimeTemplateList, method);
+                                var top = InnerCLRRuntimeVM.clrRuntimeStack.Peek();
+                                res = top.GetCurrentIndexValue(top.m_ValueIndex - 1);
+                                top.m_ValueIndex--;
+                            }
+                            else
+                            {
+                                res.SetStringValue(co.ToString());
+                            }
+                        }
+                        else
+                        {
+                            var obj = v.GetValueObject();
+                            res.SetStringValue(obj?.ToString());
+                        }
+                        m_ValueStack[m_ValueIndex - 1] = res;
+                        SyncRawAtIndex(m_ValueIndex - 1);
+                    }
+                    break;
                 case EIROpCode.Convert_I8:
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Byte);

@@ -41,6 +41,11 @@ namespace SimpleLanguage.Core
             {
                 m_OpSign = ESingleOpSign.Not;
             }
+            else if (fme.symBolType == ETokenType.Negative)
+            {
+                // '~' bitwise complement
+                m_OpSign = ESingleOpSign.Xor;
+            }
         }
         public void SetValue( MetaExpressNode _value )
         {
@@ -78,6 +83,11 @@ namespace SimpleLanguage.Core
                         {
                             switch (eType)
                             {
+                                case EType.Byte:
+                                    {
+                                        mcen.value = -(byte)mcen.value;
+                                        return mcen;
+                                    }
                                 case EType.Int16:
                                     {
                                         mcen.value = -(short)mcen.value;
@@ -285,6 +295,21 @@ namespace SimpleLanguage.Core
                 case ETokenType.Or:
                     m_OpLevelSign = ELeftRightOpSign.Or;
                     break;
+                case ETokenType.Combine:
+                    m_OpLevelSign = ELeftRightOpSign.Combine;
+                    break;
+                case ETokenType.InclusiveOr:
+                    m_OpLevelSign = ELeftRightOpSign.InclusiveOr;
+                    break;
+                case ETokenType.XOR:
+                    m_OpLevelSign = ELeftRightOpSign.XOR;
+                    break;
+                case ETokenType.Shi:
+                    m_OpLevelSign = ELeftRightOpSign.Shi;
+                    break;
+                case ETokenType.Shr:
+                    m_OpLevelSign = ELeftRightOpSign.Shr;
+                    break;
                 default:
                     {
                         Debug.Assert( false, "Error 没有适合的符号!!!" + ett.ToString());
@@ -373,6 +398,17 @@ namespace SimpleLanguage.Core
                     {
                         //都是布尔类型
                         m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                    }
+                    else if( rightMc.eType == EType.String)
+                    {
+                        if (m_OpLevelSign == ELeftRightOpSign.Add)
+                        {
+                            m_RealMetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
+                        }
+                        else
+                        {
+                            Debug.Assert(false, "Error 字符串类型只能参与加法运算!!");
+                        }
                     }
                     else
                     {
@@ -463,6 +499,20 @@ namespace SimpleLanguage.Core
                     else
                     {
                         Debug.Assert(false, "Error 字符串类型只能参与加法运算!!");
+                    }
+                }
+                else if ((leftMc.eType == EType.Boolean && rightMc.eType == EType.String) || (leftMc.eType == EType.String && rightMc.eType == EType.Boolean))
+                {
+                    // implicit convert boolean to string when concatenating
+                    m_RealMetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
+                    // inject convert operation: boolean -> string
+                    if (leftMc.eType == EType.Boolean)
+                    {
+                        m_LeftConvert = new ConvertType() { oriType = EType.Boolean, targetType = EType.String };
+                    }
+                    if (rightMc.eType == EType.Boolean)
+                    {
+                        m_RightConvert = new ConvertType() { oriType = EType.Boolean, targetType = EType.String };
                     }
                 }
                 else

@@ -79,16 +79,9 @@ namespace SimpleLanguage.Core
         }
         public static MetaConstExpressNode operator -(MetaConstExpressNode left, MetaConstExpressNode right)
         {
-            if (left.opLevel > right.opLevel)
-            {
-                left.ComputeMinusRight(right);
-                return left;
-            }
-            else
-            {
-                right.ComputeMinusRight(left);
-                return right;
-            }
+            // subtraction is not commutative: always compute left - right
+            left.ComputeMinusRight(right);
+            return left;
         }
         public static MetaConstExpressNode operator *(MetaConstExpressNode left, MetaConstExpressNode right)
         {
@@ -105,29 +98,15 @@ namespace SimpleLanguage.Core
         }
         public static MetaConstExpressNode operator /(MetaConstExpressNode left, MetaConstExpressNode right)
         {
-            if (left.opLevel > right.opLevel)
-            {
-                left.ComputeDivRight(right);
-                return left;
-            }
-            else
-            {
-                right.ComputeDivRight(left);
-                return right;
-            }
+            // division is not commutative: always compute left / right
+            left.ComputeDivRight(right);
+            return left;
         }
         public static MetaConstExpressNode operator %(MetaConstExpressNode left, MetaConstExpressNode right)
         {
-            if (left.opLevel > right.opLevel)
-            {
-                left.ComputeModRight(right);
-                return left;
-            }
-            else
-            {
-                right.ComputeModRight(left);
-                return right;
-            }
+            // modulo is not commutative: always compute left % right
+            left.ComputeModRight(right);
+            return left;
         }
         public MetaCallLinkExpressNode metaCallLinkExpressNode => m_MetaCallLinkExpressNode;
         public List<MetaExpressNode> stringParseExpressList => m_StringParseExpressList;
@@ -366,6 +345,13 @@ namespace SimpleLanguage.Core
                         value = value.ToString() + (string)right.value;
                     }
                     break;
+                case EType.Float32:
+                    value = (float)value + (float)right.value;
+                    break;
+                case EType.Float64:
+                case EType.Num:
+                    value = Convert.ToDouble(value) + Convert.ToDouble(right.value);
+                    break;
             }
         }
         public void ComputeMinusRight(MetaConstExpressNode right)
@@ -392,6 +378,13 @@ namespace SimpleLanguage.Core
                     break;
                 case EType.UInt64:
                     value = (ulong)value - (ulong)right.value;
+                    break;
+                case EType.Float32:
+                    value = (float)value - (float)right.value;
+                    break;
+                case EType.Float64:
+                case EType.Num:
+                    value = Convert.ToDouble(value) - Convert.ToDouble(right.value);
                     break;
             }
         }
@@ -420,6 +413,13 @@ namespace SimpleLanguage.Core
                 case EType.UInt64:
                     value = (ulong)value * (ulong)right.value;
                     break;
+                case EType.Float32:
+                    value = (float)value * (float)right.value;
+                    break;
+                case EType.Float64:
+                case EType.Num:
+                    value = Convert.ToDouble(value) * Convert.ToDouble(right.value);
+                    break;
             }
         }
         public void ComputeDivRight(MetaConstExpressNode right)
@@ -446,6 +446,13 @@ namespace SimpleLanguage.Core
                     break;
                 case EType.UInt64:
                     value = (ulong)value / (ulong)right.value;
+                    break;
+                case EType.Float32:
+                    value = (float)value / (float)right.value;
+                    break;
+                case EType.Float64:
+                case EType.Num:
+                    value = Convert.ToDouble(value) / Convert.ToDouble(right.value);
                     break;
             }
         }
@@ -474,10 +481,12 @@ namespace SimpleLanguage.Core
                 case EType.UInt64:
                     value = (ulong)value % (ulong)right.value;
                     break;
-                case EType.String:
-                    {
-                        value = value.ToString() + (string)right.value;
-                    }
+                case EType.Float32:
+                    value = (float)value % (float)right.value;
+                    break;
+                case EType.Float64:
+                case EType.Num:
+                    value = Convert.ToDouble(value) % Convert.ToDouble(right.value);
                     break;
             }
         }
@@ -703,6 +712,65 @@ namespace SimpleLanguage.Core
                             {
                                 Debug.Write("Error Not Support string < <= > >=sign operator!!");
                             }
+                            break;
+                    }
+                    break;
+                case EType.Float32:
+                    switch (opSign)
+                    {
+                        case ELeftRightOpSign.Equal:
+                            eType = EType.Boolean;
+                            value = (float)value == (float)right.value;
+                            break;
+                        case ELeftRightOpSign.NotEqual:
+                            eType = EType.Boolean;
+                            value = (float)value != (float)right.value;
+                            break;
+                        case ELeftRightOpSign.Greater:
+                            eType = EType.Boolean;
+                            value = (float)value > (float)right.value;
+                            break;
+                        case ELeftRightOpSign.GreaterOrEqual:
+                            eType = EType.Boolean;
+                            value = (float)value >= (float)right.value;
+                            break;
+                        case ELeftRightOpSign.Less:
+                            eType = EType.Boolean;
+                            value = (float)value < (float)right.value;
+                            break;
+                        case ELeftRightOpSign.LessOrEqual:
+                            eType = EType.Boolean;
+                            value = (float)value <= (float)right.value;
+                            break;
+                    }
+                    break;
+                case EType.Float64:
+                case EType.Num:
+                    switch (opSign)
+                    {
+                        case ELeftRightOpSign.Equal:
+                            eType = EType.Boolean;
+                            value = Convert.ToDouble(value) == Convert.ToDouble(right.value);
+                            break;
+                        case ELeftRightOpSign.NotEqual:
+                            eType = EType.Boolean;
+                            value = Convert.ToDouble(value) != Convert.ToDouble(right.value);
+                            break;
+                        case ELeftRightOpSign.Greater:
+                            eType = EType.Boolean;
+                            value = Convert.ToDouble(value) > Convert.ToDouble(right.value);
+                            break;
+                        case ELeftRightOpSign.GreaterOrEqual:
+                            eType = EType.Boolean;
+                            value = Convert.ToDouble(value) >= Convert.ToDouble(right.value);
+                            break;
+                        case ELeftRightOpSign.Less:
+                            eType = EType.Boolean;
+                            value = Convert.ToDouble(value) < Convert.ToDouble(right.value);
+                            break;
+                        case ELeftRightOpSign.LessOrEqual:
+                            eType = EType.Boolean;
+                            value = Convert.ToDouble(value) <= Convert.ToDouble(right.value);
                             break;
                     }
                     break;

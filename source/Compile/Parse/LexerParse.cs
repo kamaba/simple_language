@@ -345,8 +345,8 @@ namespace SimpleLanguage.Compile
             }
             else if (m_TempChar == '<')
             {
+                // double '<' form '<<' (shift left) — consume both chars and emit single token
                 AddToken(ETokenType.Shi, "<<");
-                UndoChar();
             }
             else
             {

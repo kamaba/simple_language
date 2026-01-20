@@ -49,6 +49,9 @@ namespace SimpleLanguage.IR
                 case EType.Float64:
                     irop = EIROpCode.Convert_R8;
                     break;
+                case EType.String:
+                    irop = EIROpCode.Convert_ToString;
+                    break;
             }
             data.opCode = irop;
             AddIRData( data );
