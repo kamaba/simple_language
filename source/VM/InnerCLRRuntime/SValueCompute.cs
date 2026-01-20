@@ -507,6 +507,36 @@ namespace SimpleLanguage.VM
                         Debug.Write("Error -value 1");
                     }
                     break;
+                case EVMType.Float32:
+                    {
+                        floatValue = -floatValue;
+                    }
+                    break;
+                case EVMType.Float64:
+                    {
+                        doubleValue = -doubleValue;
+                    }
+                    break;
+                case EVMType.Num:
+                    {
+                        // treat Num as double
+                        doubleValue = -doubleValue;
+                    }
+                    break;
+                case EVMType.Class:
+                    {
+                        // if wrapped numeric object (NumObject), negate its value
+                        if (sobject is NumObject nobj)
+                        {
+                            double val = nobj.ToDouble();
+                            nobj.SetValue(-val);
+                        }
+                        else
+                        {
+                            Debug.Write("Error -value on non-numeric class");
+                        }
+                    }
+                    break;
                 default:
                     {
                         Debug.Write("Error -value 2");
