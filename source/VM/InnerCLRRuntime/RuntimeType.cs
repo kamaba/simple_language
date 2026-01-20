@@ -554,29 +554,61 @@ namespace SimpleLanguage.VM
 
         public bool IsExtendsRelation( RuntimeType rt )
         {
-            if (irClass != rt.irClass)
-            {
-                return false;
-            }
+            // Use the enhanced relation which treats primitive numeric types as subtypes of Num
+            return IsExtendsRelationWithPrimitiveSupport(rt);
+        }
 
-            if(runtimeTemplateList.Count != rt.runtimeTemplateList.Count )
+        // Helper: treat primitive numeric EVMType as numeric category
+        public static bool IsNumericEType(EVMType t)
+        {
+            switch (t)
             {
-                return false;
+                case EVMType.Num:
+                case EVMType.Byte:
+                case EVMType.SByte:
+                case EVMType.Int16:
+                case EVMType.UInt16:
+                case EVMType.Int32:
+                case EVMType.UInt32:
+                case EVMType.Int64:
+                case EVMType.UInt64:
+                case EVMType.Float32:
+                case EVMType.Float64:
+                    return true;
+                default:
+                    return false;
             }
-            bool flag = true;
-            for( int i = 0; i < runtimeTemplateList.Count; i++ )
-            {
-                var r1 = runtimeTemplateList[i];
-                var r2 = rt.runtimeTemplateList[i];
+        }
 
-                if( !r1.IsExtendsRelation(r2 ) )
+        // Adapted IsExtendsRelation to consider primitive numeric types as subtypes of Num
+        public bool IsExtendsRelationWithPrimitiveSupport( RuntimeType rt )
+        {
+            // if exact same IR class, compare template arguments
+            if (irClass == rt.irClass)
+            {
+                if (runtimeTemplateList.Count != rt.runtimeTemplateList.Count)
+                    return false;
+                for (int i = 0; i < runtimeTemplateList.Count; i++)
                 {
-                    flag = false;
-                    break;
+                    if (!runtimeTemplateList[i].IsExtendsRelationWithPrimitiveSupport(rt.runtimeTemplateList[i]))
+                        return false;
+                }
+                return true;
+            }
+
+            // special: consider primitive numeric runtime types as extending Num
+            if (RuntimeTypeManager.numRuntimeType != null)
+            {
+                if (rt.irClass == RuntimeTypeManager.numRuntimeType.irClass)
+                {
+                    // this runtime type is numeric primitive (eType indicates)
+                    if (IsNumericEType(this.eType))
+                        return true;
                 }
             }
 
-            return flag;
+            // fallback to original behavior: not equal
+            return false;
         }
 
         public override string ToString()
@@ -619,9 +651,11 @@ namespace SimpleLanguage.VM
         public static RuntimeType float32RuntimeType => m_Float32RuntimeType;
         public static RuntimeType float64RuntimeType => m_Float64RuntimeType;
         public static RuntimeType stringRuntimeType => m_StringRuntimeType;
+        public static RuntimeType numRuntimeType => m_NumRuntimeType;
 
         private static RuntimeType m_TypeRuntimeType = null;
         private static RuntimeType m_VoidRuntimeType = null;
+        private static RuntimeType m_NumRuntimeType = null;
         private static RuntimeType m_ByteRuntimeType = null;
         private static RuntimeType m_SByteRuntimeType = null;
         private static RuntimeType m_Int16RuntimeType = null;
@@ -757,6 +791,10 @@ namespace SimpleLanguage.VM
             { 
                 m_VoidRuntimeType = rt; 
             }
+            else if (rmc.irName == "Num" || rmc.irName == "Core.Num")
+            {
+                m_NumRuntimeType = rt;
+            }
             else if (rmc.irName == "Byte")
             {
                 m_ByteRuntimeType = rt;
@@ -816,6 +854,10 @@ namespace SimpleLanguage.VM
             else if (rmc.irName == "Void")
             {
                 m_VoidRuntimeType = rt;
+            }
+            else if (rmc.irName == "Num" || rmc.irName == "Core.Num")
+            {
+                m_NumRuntimeType = rt;
             }
             else if (rmc.irName == "Byte")
             {

@@ -1791,48 +1791,176 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         IRMetaType mdt = iri.opValue as IRMetaType;
                         var rt = GetClassRuntimeType(mdt, m_IRMetaClass != null ? m_IRMetaClass : mdt.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
-                        if( rt.eType == EVMType.Object )
+                        if (rt.eType == EVMType.Object)
                         {
                             break;
                         }
 
-                        var v1 = m_ValueStack[m_ValueIndex-1];
+                        var v1 = m_ValueStack[m_ValueIndex - 1];
 
-                        if( v1.isNull )
+                        // Special handling: target is 'Num' (abstract numeric base) -> accept any numeric source
+                        bool targetIsNum = false;
+                        if (RuntimeTypeManager.numRuntimeType != null && rt != null)
                         {
-                            m_ValueStack[m_ValueIndex - 1].SetNull();
+                            // compare by IR meta class identity
+                            targetIsNum = rt.irClass == RuntimeTypeManager.numRuntimeType.irClass;
                         }
-                        else
+                        if (targetIsNum)
                         {
-                            if (v1.eType == EVMType.Class)
+                            if (v1.isNull)
                             {
-                                if (!v1.sobject.runtimeType.IsExtendsRelation(rt))
-                                {
-                                    m_ValueStack[m_ValueIndex - 1].SetNull();
-                                }
+                                m_ValueStack[m_ValueIndex - 1].SetNull();
                             }
-                            else if( v1.eType == EVMType.Array )
+                            else
                             {
-                                if( rt.eType == EVMType.Array || rt.eType == EVMType.Class )
+                                // if already a Num-like object, keep it
+                                if (v1.eType == EVMType.Class && v1.sobject is NumObject)
                                 {
-
+                                    // keep existing object
                                 }
-                                else if( rt.eType == EVMType.Object )
+                                else if (IsNumericTypeLocal(v1.eType) || v1.eType == EVMType.Num)
                                 {
+                                    // create a NumObject and store numeric value inside
+                                    var sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
+                                    if (sobj is NumObject numObj)
+                                    {
+                                        try
+                                        {
+                                            double d;
+                                            if (v1.eType == EVMType.Class && v1.sobject is NumObject srcNum)
+                                            {
+                                                d = srcNum.ToDouble();
+                                            }
+                                            else
+                                            {
+                                                var vo = v1.GetValueObject();
+                                                d = Convert.ToDouble(vo);
+                                            }
+                                            numObj.SetValue(d);
+                                            SValue tmp = default;
+                                            tmp.SetSObject(numObj);
+                                            m_ValueStack[m_ValueIndex - 1] = tmp;
+                                        }
+                                        catch
+                                        {
+                                            m_ValueStack[m_ValueIndex - 1].SetNull();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        m_ValueStack[m_ValueIndex - 1].SetNull();
+                                    }
                                 }
                                 else
                                 {
                                     m_ValueStack[m_ValueIndex - 1].SetNull();
                                 }
                             }
+                        }
+                        else
+                        {
+                            if (v1.isNull)
+                            {
+                                m_ValueStack[m_ValueIndex - 1].SetNull();
+                            }
                             else
                             {
-                                if (v1.eType != rt.eType)
+                                // If target is a numeric type, accept numeric sources and convert
+                                bool targetIsNumeric = RuntimeType.IsNumericEType(rt.eType) ||
+                                    (RuntimeTypeManager.numRuntimeType != null && rt.irClass == RuntimeTypeManager.numRuntimeType.irClass);
+
+                                if (targetIsNumeric)
                                 {
-                                    m_ValueStack[m_ValueIndex - 1].SetNull();
+                                    double d;
+                                    bool srcIsNumeric = false;
+                                    if (v1.eType == EVMType.Class && v1.sobject is NumObject srcNumObj)
+                                    {
+                                        d = srcNumObj.ToDouble();
+                                        srcIsNumeric = true;
+                                    }
+                                    else if (v1.eType == EVMType.Num)
+                                    {
+                                        d = v1.doubleValue;
+                                        srcIsNumeric = true;
+                                    }
+                                    else if (IsNumericTypeLocal(v1.eType))
+                                    {
+                                        var vo = v1.GetValueObject();
+                                        try
+                                        {
+                                            d = Convert.ToDouble(vo);
+                                            srcIsNumeric = true;
+                                        }
+                                        catch
+                                        {
+                                            srcIsNumeric = false;
+                                            d = 0;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        srcIsNumeric = false;
+                                        d = 0;
+                                    }
+
+                                    if (srcIsNumeric)
+                                    {
+                                        SValue tmp = default;
+                                        switch (rt.eType)
+                                        {
+                                            case EVMType.Byte: tmp.SetInt8Value((byte)Convert.ToByte(d)); break;
+                                            case EVMType.SByte: tmp.SetSInt8Value((sbyte)Convert.ToSByte(d)); break;
+                                            case EVMType.Int16: tmp.SetInt16Value((short)Convert.ToInt16(d)); break;
+                                            case EVMType.UInt16: tmp.SetUInt16Value((ushort)Convert.ToUInt16(d)); break;
+                                            case EVMType.Int32: tmp.SetInt32Value(Convert.ToInt32(d)); break;
+                                            case EVMType.UInt32: tmp.SetUInt32Value(Convert.ToUInt32(d)); break;
+                                            case EVMType.Int64: tmp.SetInt64Value(Convert.ToInt64(d)); break;
+                                            case EVMType.UInt64: tmp.SetUInt64Value(Convert.ToUInt64(d)); break;
+                                            case EVMType.Float32: tmp.SetFloatValue(Convert.ToSingle(d)); break;
+                                            case EVMType.Float64: tmp.SetDoubleValue(d); break;
+                                            case EVMType.Num: tmp.SetDoubleValue(d); break;
+                                            default:
+                                                m_ValueStack[m_ValueIndex - 1].SetNull();
+                                                goto skip_rest;
+                                        }
+                                        m_ValueStack[m_ValueIndex - 1] = tmp;
+                                    }
+                                    else
+                                    {
+                                        m_ValueStack[m_ValueIndex - 1].SetNull();
+                                    }
+                                }
+                                else if (v1.eType == EVMType.Class)
+                                {
+                                    if (!v1.sobject.runtimeType.IsExtendsRelationWithPrimitiveSupport(rt))
+                                    {
+                                        m_ValueStack[m_ValueIndex - 1].SetNull();
+                                    }
+                                }
+                                else if (v1.eType == EVMType.Array)
+                                {
+                                    if (rt.eType == EVMType.Array || rt.eType == EVMType.Class)
+                                    {
+
+                                    }
+                                    else if (rt.eType == EVMType.Object)
+                                    {
+                                    }
+                                    else
+                                    {
+                                        m_ValueStack[m_ValueIndex - 1].SetNull();
+                                    }
+                                }
+                                else
+                                {
+                                    if (v1.eType != rt.eType)
+                                    {
+                                        m_ValueStack[m_ValueIndex - 1].SetNull();
+                                    }
                                 }
                             }
                         }
+                    skip_rest: ;
                     }
                     break;
                 default:
