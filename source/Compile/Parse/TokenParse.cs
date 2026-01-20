@@ -432,6 +432,7 @@ namespace SimpleLanguage.Compile
                     break;
                 case ETokenType.As:
                 case ETokenType.Is:
+                case ETokenType.IsNot:
                     {   
                         AddAsOrIs(token);
                     }

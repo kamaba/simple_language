@@ -20,6 +20,7 @@ namespace SimpleLanguage.Core
         public MetaVariable convertTargetMetaVariable => m_ConvertTargetMetaVariable;
         public MetaType convertTargetMetaType => m_ConvertTargetMetaType;
         public bool isAs => m_IsAs;
+        public bool isIsNot => m_IsIsNot;
         public FileMetaAsOrIsTerm fileMetaKeyAsIsSyntax => m_FileMetaKeyAsIsSyntax;
 
         private FileMetaAsOrIsTerm m_FileMetaKeyAsIsSyntax = null;
@@ -31,6 +32,7 @@ namespace SimpleLanguage.Core
         private MetaCallLink m_CurrentVariableLink = null;
         private FileMetaSymbolTerm m_FileMetaBaseTerm = null;
         private bool m_IsAs = false;
+        private bool m_IsIsNot = false;
 
         public static MetaAsIsExpressNode CreateMetaExecuteStatementsNode(MetaType mdt, MetaClass ownerMC, MetaBlockStatements mbs, FileMetaAsOrIsTerm asisTerm, MetaVariable retMv )
         {
@@ -53,6 +55,7 @@ namespace SimpleLanguage.Core
                 Debug.Write("Error 没有As语句!!");
             }
             m_IsAs = m_FileMetaKeyAsIsSyntax.isAsTerm;
+            m_IsIsNot = m_FileMetaKeyAsIsSyntax.isIsNotTerm;
 
             if (m_FileMetaKeyAsIsSyntax.variableCallLink == null)
             {

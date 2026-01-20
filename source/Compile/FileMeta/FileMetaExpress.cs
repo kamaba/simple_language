@@ -311,6 +311,7 @@ namespace SimpleLanguage.Compile
     public class FileMetaAsOrIsTerm : FileMetaBaseTerm
     {
         public bool isAsTerm => m_AsOrIsToken?.type == ETokenType.As;
+        public bool isIsNotTerm => m_AsOrIsToken?.type == ETokenType.IsNot;
         public FileMetaCallLink variableCallLink => m_VariableCallLink;
         public FileMetaClassDefine defineType => m_DefineType;
         public Token convertIsTypeNameToken => m_ConvertIsTypeNameToken;
@@ -351,8 +352,8 @@ namespace SimpleLanguage.Compile
                 m_DefineType = new FileMetaClassDefine(fm, typeRoot);
             }
 
-            // is 表达式最后可能还有一个变量名： var1 is Class1 var2
-            if (asOrisToken.type == ETokenType.Is && optionalVarNode != null)
+            // is / isnot 表达式最后可能还有一个变量名： var1 is Class1 var2
+            if ((asOrisToken.type == ETokenType.Is || asOrisToken.type == ETokenType.IsNot) && optionalVarNode != null)
             {
                 m_ConvertIsTypeNameToken = optionalVarNode.token;
             }

@@ -149,6 +149,8 @@ namespace SimpleLanguage.IR
                         var ownerMetaClass = maien.ownerMetaClass;
                         var owirmc = IRManager.instance.GetIRMetaClassById(ownerMetaClass.GetHashCode());
 
+                        // if 'isnot' then invert the boolean result of is-check after evaluation
+                        bool isNot = maien.isIsNot;
                         if ( maien.isAs )
                         {                            
                             IRData irdata = new IRData();
@@ -180,6 +182,13 @@ namespace SimpleLanguage.IR
                             IRData irdata5 = new IRData();
                             irdata5.opCode = EIROpCode.Cne;
                             AddIRData(irdata5);
+                            if (isNot)
+                            {
+                                // invert result: Cne gives boolean; to invert, use Not
+                                IRData notData = new IRData();
+                                notData.opCode = EIROpCode.Not;
+                                AddIRData(notData);
+                            }
                         }
                     }
                     break;

@@ -6,6 +6,8 @@
 //  Description: 
 //****************************************************************************
 
+using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
@@ -115,7 +117,14 @@ namespace SimpleLanguage.Core
 
             System.Type[] types = MetaInputParamCollectionCSharp.GetCSharpParamTypes(mipc);
 
-            MethodInfo mi = m_CSharpType.GetMethod(name, types);
+            MethodInfo mi = null;
+            try
+            {
+                mi = m_CSharpType.GetMethod(name, types);
+            }catch( Exception e )
+            {
+                Debug.Assert(false, e.Message);
+            }
             if (mi == null) return null;
             MetaMemberFunctionCSharp cmmf = new MetaMemberFunctionCSharp(this, mi);
             AddMetaMemberFunction(cmmf);

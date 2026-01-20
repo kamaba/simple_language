@@ -68,6 +68,7 @@ namespace SimpleLanguage.Core
                             st = typeof(Single);
                         }
                         break;
+                    case EType.Num:
                     case EType.Float64:
                         {
                             st = typeof(Double);
@@ -164,6 +165,10 @@ namespace SimpleLanguage.Core
             {
                 //type = typeof(Float32Object);
                 type = typeof(System.Single);
+            }
+            else if( mc == CoreMetaClassManager.numMetaClass )
+            {
+                type = typeof(System.Double);
             }
             else if (mc == CoreMetaClassManager.float64MetaClass)
             {

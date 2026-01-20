@@ -1619,6 +1619,9 @@ namespace SimpleLanguage.Compile
                 case "while":
                     tokenType = ETokenType.While;
                     break;
+                case "isnot":
+                    tokenType = ETokenType.IsNot;
+                    break;
                 case "dowhile":
                     tokenType = ETokenType.DoWhile;
                     break;

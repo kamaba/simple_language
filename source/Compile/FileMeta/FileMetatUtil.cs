@@ -237,7 +237,7 @@ namespace SimpleLanguage.Compile
                 for (int i = 0; i < nodeList.Count; i++)
                 {
                     var t = nodeList[i].token?.type;
-                    if (t == ETokenType.As || t == ETokenType.Is)
+                    if (t == ETokenType.As || t == ETokenType.Is || t == ETokenType.IsNot)
                     {
                         asIsIndex = i;
                         break;
@@ -257,7 +257,7 @@ namespace SimpleLanguage.Compile
                         // var1 as Class1  或  var1 is Class1
                         typeNodes = new List<Node> { nodeList[asIsIndex + 1] };
                     }
-                    else if (rightCount >= 2 && asIsNode.token?.type == ETokenType.Is)
+                    else if (rightCount >= 2 && (asIsNode.token?.type == ETokenType.Is || asIsNode.token?.type == ETokenType.IsNot))
                     {
                         // var1 is Class1 var2
                         typeNodes = nodeList.GetRange(asIsIndex + 1, rightCount - 1);

@@ -190,6 +190,8 @@ namespace SimpleLanguage
         As,
         /// <summary> is </summary>
         Is,
+        /// <summary> isnot </summary>
+        IsNot,
         /// <summary> switch </summary>
         Switch,
         /// <summary> case </summary>
