@@ -571,6 +571,17 @@ namespace SimpleLanguage.Core
                     {
                         return false;
                     }
+                    // If the syntax is a call on a class name like `ClassName(...)` treat as instantiation attempt.
+                    // Disallow instantiation of abstract classes early during parsing.
+                    if (m_FileMetaCallNode != null && m_FileMetaCallNode.fileMetaParTerm != null)
+                    {
+                        if (m_MetaClass != null && m_MetaClass.isAbstractClass)
+                        {
+                            Log.AddInStructMeta(EError.None, "Error 不能实例化抽象类: " + m_MetaClass.name + " " + m_Token.ToLexemeAllString());
+                            Debug.Assert(false);
+                            return false;
+                        }
+                    }
                 }
                 else
                 {

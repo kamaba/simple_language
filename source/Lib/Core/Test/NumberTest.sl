@@ -47,16 +47,16 @@ NumberTest
     static num2Test()
     {        
         #1. int 是 num
-        System.Console.WriteLine(1 is num);
+        System.Console.WriteLine((1 is num).toString() );
         #2. double 是 num
-        System.Console.WriteLine(1.0 is num);
+        System.Console.WriteLine( (1.0 is num).toString() );
         # 3. num 不是 int
         num n = 1.5;
         System.Console.WriteLine( (n isnot int).toString() );
 
         # 4. num 不是 double（静态）
         num m = 1;
-        System.Console.WriteLine(m is int);
+        System.Console.WriteLine( (m is int).toString() );
 
         # 5. 运行时类型区分
         num a = 1;
@@ -65,14 +65,14 @@ NumberTest
         #System.Console.WriteLine(b.runtimeType == double);
 
         # 6. num 不能实例化
-        num x = num(); #❌ 编译错误
+        #num x = num(); #❌ 编译错误
 
         #7. int 不能隐式赋给 double
         double d = 1; # ❌
 
         # 8. double 可以赋给 num
         num x = 3.14;
-        #System.Console.WriteLine(x == 3.14);
+        #System.Console.WriteLine( (x == 3.14).toString());
     }
     static num3Test()
     {

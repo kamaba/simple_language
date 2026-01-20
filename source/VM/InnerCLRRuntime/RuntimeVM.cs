@@ -441,7 +441,7 @@ namespace SimpleLanguage.VM.Runtime
             while (true)
             {
                 if (m_ExecuteIndex >= m_ExecuteCount)
-                {                    
+                {
                     break;
                 }
                 RunInstruction(m_IRDataList[m_ExecuteIndex]);

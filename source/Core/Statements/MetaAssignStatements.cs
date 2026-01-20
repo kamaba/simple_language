@@ -457,7 +457,50 @@ namespace SimpleLanguage.Core
                 }
                 else if (relation == ClassManager.EClassRelation.Similar)
                 {
-                    sb.Append("数字类型相似，可能会有强转会有精度的丢失!");
+                    // Only forbid certain directional implicit conversions, e.g. integer -> float
+                    bool sourceIsInteger = false;
+                    bool targetIsFloat = false;
+                    if (compareClass != null)
+                    {
+                        switch (compareClass.eType)
+                        {
+                            case EType.Byte:
+                            case EType.SByte:
+                            case EType.Int16:
+                            case EType.UInt16:
+                            case EType.Int32:
+                            case EType.UInt32:
+                            case EType.Int64:
+                            case EType.UInt64:
+                                sourceIsInteger = true;
+                                break;
+                        }
+                    }
+                    if (curClass != null)
+                    {
+                        switch (curClass.eType)
+                        {
+                            case EType.Float32:
+                            case EType.Float64:
+                                targetIsFloat = true;
+                                break;
+                        }
+                    }
+
+                    if (sourceIsInteger && targetIsFloat)
+                    {
+                        sb.Append("Error 不允许隐式从整数类型转换到浮点类型，请显式使用 Cast 或转换函数: ");
+                        if (compareClass != null)
+                            sb.Append(compareClass.allClassName + " -> ");
+                        if (curClass != null)
+                            sb.Append(curClass.allClassName);
+                        Log.AddInStructMeta(EError.None, sb.ToString());
+                        m_IsNeedCastState = true;
+                        return;
+                    }
+
+                    // other numeric-similar cases: emit warning and mark cast-needed
+                    sb.Append("数字类型相似，可能会有强转，会有精度的丢失或需要显式转换!");
                     Log.AddInStructMeta(EError.None, sb.ToString());
                     m_IsNeedCastState = true;
                 }
