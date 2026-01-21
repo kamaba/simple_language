@@ -57,6 +57,12 @@ namespace SimpleLanguage.Core
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         //private List<MetaType> m_GenTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中  //慢慢的移除 直接使用gen class中的数据
         private int m_ArrayLength = -1;
+
+        // 新增：可空标记
+        private bool m_IsNullable = false;
+        public bool isNullable => m_IsNullable;
+        public void SetNullable(bool v) { m_IsNullable = v; }
+
         public MetaType()
         {
         }
@@ -129,6 +135,8 @@ namespace SimpleLanguage.Core
             //this.m_FromName = mt.m_FromName;
             this.m_EType = mt.m_EType;
             this.m_ArrayLength = mt.m_ArrayLength;
+            // 复制 nullable 标记
+            this.m_IsNullable = mt.m_IsNullable;
             for (int i = 0; i < mt.m_DefineTemplateMetaTypeList.Count; i++)
             {
                 MetaType mtc = new MetaType(mt.m_DefineTemplateMetaTypeList[i]);
@@ -258,6 +266,7 @@ namespace SimpleLanguage.Core
             this.m_EType = mt.m_EType;
             this.m_DefineTemplateMetaTypeList = mt.m_DefineTemplateMetaTypeList;
             //this.m_GenTemplateMetaTypeList = mt.m_GenTemplateMetaTypeList;
+            this.m_IsNullable = mt.m_IsNullable;
         }
         public List<MetaType> GetGenTemplateMetaTypeList()
         {
@@ -732,11 +741,6 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    //if (m_TemplateMetaClass != null)
-                    //{
-                    //    sb.Append(m_TemplateMetaClass.metaNode.allName);                        
-                    //}
-                    //else 
                 }
             }
 

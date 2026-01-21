@@ -7,6 +7,8 @@
 //****************************************************************************
 
 using SimpleLanguage.VM;
+using SimpleLanguage.VM.Runtime;
+using System.Collections.Generic;
 
 namespace SimpleLanguage.Lib
 {
@@ -27,9 +29,39 @@ namespace SimpleLanguage.Lib
     }
     public static class ObjectClass
     {
+        // cache Type wrapper objects per runtime class id
+        private static readonly Dictionary<int, TypeObject> s_typeObjectCache = new Dictionary<int, TypeObject>();
+
         public static SObject GetObjectType(SObject sobj)
         {
-            return sobj.runtimeType;
+            if (sobj == null)
+                return null;
+
+            try
+            {
+                var rt = sobj.runtimeType;
+                if (rt == null)
+                {
+                    return null;
+                }
+
+                int key = rt.irClass != null ? rt.irClass.id : rt.GetHashCode();
+
+                lock (s_typeObjectCache)
+                {
+                    if (s_typeObjectCache.TryGetValue(key, out var exist))
+                        return exist;
+
+                    // create a public TypeObject and cache it
+                    var to = new TypeObject(rt);
+                    s_typeObjectCache[key] = to;
+                    return to;
+                }
+            }
+            catch
+            {
+                return null;
+            }
         }
         
         public static int GetHashCodeByObject(BaseObjectData obj)
@@ -126,6 +158,38 @@ namespace SimpleLanguage.Lib
                 }
             }
             catch { }
+        }
+
+        // public TypeObject wrapper for runtime types
+        public class TypeObject : ClassObject
+        {
+            public RuntimeType TargetRuntimeType { get; }
+
+            public TypeObject(RuntimeType target) : base(target, false)
+            {
+                TargetRuntimeType = target;
+                // ensure runtimeType is set on base
+                this.SetClassObject(this);
+            }
+
+            public string metaClassName
+            {
+                get
+                {
+                    try { return TargetRuntimeType?.irClass?.irName ?? "no_type"; }
+                    catch { return "no_type"; }
+                }
+            }
+
+            public override string ToFormatString()
+            {
+                return metaClassName;
+            }
+
+            public override string ToString()
+            {
+                return ToFormatString();
+            }
         }
     }
 }

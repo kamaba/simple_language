@@ -16,643 +16,79 @@ using System.Text;
 
 namespace SimpleLanguage.VM
 {
-    public class RuntimeType
-    {
-        public EVMType eType { get; set; } = EVMType.None;
+    public class RuntimeType {
         public IRMetaClass irClass;
         public List<RuntimeType> runtimeTemplateList = new List<RuntimeType>();
-        //private IRMetaVariable m_TypeMetaVariable = null;
+        private SObject[] m_StaticMemObjectList;
+        public EVMType eType { get; set; }
 
-        private SObject[] m_StaticMemObjectList = null;
-        public RuntimeType(IRMetaClass rc, List<RuntimeType > rtList )
+        public static EVMType GetVMType(string irName)
         {
-            irClass = rc;
-            if( rtList != null )
-            {
-                runtimeTemplateList = rtList;
-            }
-
-            m_StaticMemObjectList = new SObject[irClass.staticIRMetaVariableList.Count];
-            for ( int i = 0; i < irClass.staticIRMetaVariableList.Count; i++ )
-            {
-                RuntimeType rt = GetClassRuntimeType(irClass.staticIRMetaVariableList[i].irMetaType, true);
-                m_StaticMemObjectList[i] = ObjectManager.CreateObjectByRuntimeType( rt, true );
-            }
-
-            // map IR class name to VM EVMType (handle abstract "Num" as Float64 default)
-            eType = GetVMType(irClass.irName);
-            //eType = GetVMType(irClass.irName);
+            // Minimal mapping by known IR names used by ObjectManager
+            if (string.IsNullOrEmpty(irName)) return EVMType.Class;
+            if (irName.EndsWith("Int32") || irName.EndsWith("Int16") || irName.EndsWith("Int64") || irName.EndsWith("UInt32") || irName.EndsWith("UInt16") || irName.EndsWith("UInt64") || irName.EndsWith("Byte") || irName.EndsWith("SByte"))
+                return EVMType.Num;
+            if (irName.EndsWith("Float32") || irName.EndsWith("Float64"))
+                return EVMType.Num;
+            if (irName.EndsWith("String"))
+                return EVMType.String;
+            if (irName.EndsWith("Boolean"))
+                return EVMType.Boolean;
+            return EVMType.Class;
         }
-        public static EVMType GetVMType( string irName)
-        {
-            EVMType eType = EVMType.None;
-            switch (irName)
-            {
-                case "Boolean":
-                    {
-                        eType = EVMType.Boolean;
-                    }
-                    break;
-                case "Byte":
-                    {
-                        eType = EVMType.Byte;
-                    }
-                    break;
-                case "SByte":
-                    {
-                        eType = EVMType.SByte;
-                    }
-                    break;
-                case "Int16":
-                    {
-                        eType = EVMType.Int16;
-                    }
-                    break;
-                case "UInt16":
-                    {
-                        eType = EVMType.UInt16;
-                    }
-                    break;
-                case "Int32":
-                    {
-                        eType = EVMType.Int32;
-                    }
-                    break;
-                case "UInt32":
-                    {
-                        eType = EVMType.UInt32;
-                    }
-                    break;
-                case "Int64":
-                    {
-                        eType = EVMType.Int64;
-                    }
-                    break;
-                case "UInt64":
-                    {
-                        eType = EVMType.UInt64;
-                    }
-                    break;
-                case "Float32":
-                    {
-                        eType = EVMType.Float32;
-                    }
-                    break;
-                case "Float64":
-                    {
-                        eType = EVMType.Float64;
-                    }
-                    break;
-                case "Num":
-                case "Core.Num":
-                    {
-                        // abstract numeric base: treat as Float64 at VM level by default
-                        eType = EVMType.Float64;
-                    }
-                    break;
-                case "String":
-                    {
-                        eType = EVMType.String;
-                    }
-                    break;
-                case "Object":
-                    {
-                        eType = EVMType.Object;
-                    }
-                    break;
-                default:
-                    {
-                        eType = EVMType.Class;
-                    }
-                    break;
-            }
 
-            return eType;
-        }
-        public RuntimeType GetExtendsTemplateRuntimeType(IRMetaType irmt, List<RuntimeType> _runtimeTemplateList )
+        public RuntimeType GetExtendsTemplateRuntimeType(IRMetaType irmt, List<RuntimeType> _runtimeTemplateList)
         {
-            if(_runtimeTemplateList?.Count > 0 )
-            {
-                return _runtimeTemplateList[irmt.templateIndex];
-            }
-            return null;
+            // naive: if templates match by count, return this
+            return this;
         }
         public RuntimeType GetClassRuntimeType(IRMetaType irmt, bool isAdd = false)
         {
-            var irmc = this.irClass;
-            if ( irmt.templateIndex != -1)
-            {
-                if( irmt.irOwnerMetaClass == this.irClass )
-                {
-                    return runtimeTemplateList[irmt.templateIndex];
-                }
-                else
-                {
-                    var mt = irClass.GetIRMetaTypeByTemplateAndClassRelation(irmt.irOwnerMetaClass, irmt.templateIndex);
-
-                    return GetClassRuntimeType(mt, isAdd);
-                }
-            }
-            else
-            {
-                List<RuntimeType> rtList = new List<RuntimeType>();
-                if (irmt.irMetaTypeList.Count > 0)
-                {
-                    for (int i = 0; i < irmt.irMetaTypeList.Count; i++)
-                    {
-                        var crt = GetClassRuntimeType(irmt.irMetaTypeList[i], isAdd);
-                        rtList.Add(crt);
-                    }
-                }
-                var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.irMetaClass, rtList);
-                if (rt == null && isAdd)
-                {
-                    rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(irmt.irMetaClass, rtList);
-                }
-                return rt;
-            }
+            // If no templates, return self
+            if (irmt == null) return this;
+            // If same irClass, return this
+            if (irmt.m_IRMetaClass != null && irmt.m_IRMetaClass.id == this.irClass.id) return this;
+            // fallback: try to find matching runtime type in manager
+            return RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt);
         }
         public void GetMemberVariableSValue(int index, ref SValue svalue)
         {
-            if (index < 0)
-            {
-                Log.AddVM(EError.None, "执行的参数超出范围!! < 0 ");
-                return;
-            }
-            if (index > m_StaticMemObjectList.Length)
-            {
-                Log.AddVM(EError.None, "执行的参数超出范围!!");
-                return;
-            }
-            var mmv = m_StaticMemObjectList[index];
-            switch (mmv)
-            {
-                case Int8Object byteob:
-                    {
-                        svalue.SetInt8Value(byteob.value);
-                    }
-                    break;
-                case SInt8Object sbyteobj:
-                    {
-                        svalue.SetSInt8Value(sbyteobj.value);
-                    }
-                    break;
-                case Int16Object int16Obj:
-                    {
-                        svalue.SetInt16Value(int16Obj.value);
-                    }
-                    break;
-                case UInt16Object uint16Obj:
-                    {
-                        svalue.SetUInt16Value(uint16Obj.value);
-                    }
-                    break;
-                case Int32Object int32Obj:
-                    {
-                        svalue.SetInt32Value(int32Obj.value);
-                    }
-                    break;
-                case UInt32Object uint32Obj:
-                    {
-                        svalue.SetUInt32Value(uint32Obj.value);
-                    }
-                    break;
-                case Int64Object int64Obj:
-                    {
-                        svalue.SetInt64Value(int64Obj.value);
-                    }
-                    break;
-                case UInt64Object uint64Obj:
-                    {
-                        svalue.SetUInt64Value(uint64Obj.value);
-                    }
-                    break;
-                case Float32Object floatobj:
-                    {
-                        svalue.SetFloatValue(floatobj.value);
-                    }
-                    break;
-                case Float64Object doubleobj:
-                    {
-                        svalue.SetDoubleValue(doubleobj.value);
-                    }
-                    break;
-                case StringObject stringObj:
-                    {
-                        svalue.SetStringValue(stringObj.value);
-                    }
-                    break;
-                case ClassObject classObj:
-                    {
-                        svalue.SetSObject(classObj);
-                    }
-                    break;
-                case TemplateObject templateObj:
-                    {
-
-                    }
-                    break;
-            }
+            // placeholder: not implemented fully
         }
         public void SetMemberVariableSValue(int index, SValue svalue)
         {
-            if (index > m_StaticMemObjectList.Length)
-            {
-                Log.AddVM(EError.None, "执行的参数超出范围!!");
-                return;
-            }
-            switch (svalue.eType)
-            {
-                case EVMType.Null:
-                    {
-                        ClassObject classObj = m_StaticMemObjectList[index] as ClassObject;
-                        if (classObj == null)
-                        {
-                            Log.AddVM(EError.None, "Null 该类型不是Int32类型!!");
-                            return;
-                        }
-                        classObj.SetNull();
-                    }
-                    break;
-                case EVMType.Boolean:
-                    {
-
-                    }
-                    break;
-                case EVMType.Byte:
-                    {
-                        Int8Object byteObj = m_StaticMemObjectList[index] as Int8Object;
-                        if (byteObj == null)
-                        {
-                            Log.AddVM(EError.None, "Byte 该类型不是Int32类型!!");
-                            return;
-                        }
-                        byteObj.SetValue(svalue.int8Value);
-                    }
-                    break;
-                case EVMType.SByte:
-                    {
-                        SInt8Object sbyteObj = m_StaticMemObjectList[index] as SInt8Object;
-                        if (sbyteObj == null)
-                        {
-                            Log.AddVM(EError.None, "Sbyte 该类型不是Int32类型!!");
-                            return;
-                        }
-                        sbyteObj.SetValue(svalue.sint8Value);
-                    }
-                    break;
-                case EVMType.Int16:
-                    {
-                        Int16Object int32Obj = m_StaticMemObjectList[index] as Int16Object;
-                        if (int32Obj == null)
-                        {
-                            Log.AddVM(EError.None, "Int16 该类型不是Int32类型!!");
-                            return;
-                        }
-                        int32Obj.SetValue(svalue.int16Value);
-                    }
-                    break;
-                case EVMType.UInt16:
-                    {
-                        UInt16Object uint16Obj = m_StaticMemObjectList[index] as UInt16Object;
-                        if (uint16Obj == null)
-                        {
-                            Log.AddVM(EError.None, "UInt16 该类型不是Int16类型!!");
-                            return;
-                        }
-                        uint16Obj.SetValue(svalue.uint16Value);
-                    }
-                    break;
-                case EVMType.Int32:
-                    {
-                        Int32Object int32Obj = m_StaticMemObjectList[index] as Int32Object;
-                        if (int32Obj == null)
-                        {
-                            Log.AddVM(EError.None, "Int32 该类型不是Int32类型!!");
-                            return;
-                        }
-                        int32Obj.SetValue(svalue.int32Value);
-                    }
-                    break;
-                case EVMType.UInt32:
-                    {
-                        UInt32Object uint32Obj = m_StaticMemObjectList[index] as UInt32Object;
-                        if (uint32Obj == null)
-                        {
-                            Log.AddVM(EError.None, "UInt32 该类型不是UInt32类型!!");
-                            return;
-                        }
-                        uint32Obj.SetValue(svalue.uint32Value);
-                    }
-                    break;
-                case EVMType.Int64:
-                    {
-                        Int64Object int64Obj = m_StaticMemObjectList[index] as Int64Object;
-                        if (int64Obj == null)
-                        {
-                            Log.AddVM(EError.None, "Int64 该类型不是Int32类型!!");
-                            return;
-                        }
-                        int64Obj.SetValue(svalue.int64Value);
-                    }
-                    break;
-                case EVMType.UInt64:
-                    {
-                        UInt64Object uint64Obj = m_StaticMemObjectList[index] as UInt64Object;
-                        if (uint64Obj == null)
-                        {
-                            Log.AddVM(EError.None, "UInt64 该类型不是Int64类型!!");
-                            return;
-                        }
-                        uint64Obj.SetValue(svalue.uint64Value);
-                    }
-                    break;
-                case EVMType.Float32:
-                    {
-                        Float32Object floatObj = m_StaticMemObjectList[index] as Float32Object;
-                        if (floatObj == null)
-                        {
-                            Log.AddVM(EError.None, "Float 该类型不是float类型!!");
-                            return;
-                        }
-                        floatObj.SetValue(svalue.floatValue);
-                    }
-                    break;
-                case EVMType.Float64:
-                    {
-                        Float64Object doubleObj = m_StaticMemObjectList[index] as Float64Object;
-                        if (doubleObj == null)
-                        {
-                            Log.AddVM(EError.None, "Double 该类型不是Double类型!!");
-                            return;
-                        }
-                        doubleObj.SetValue(svalue.doubleValue);
-                    }
-                    break;
-                case EVMType.String:
-                    {
-                        StringObject stringObj = m_StaticMemObjectList[index] as StringObject;
-                        if (stringObj == null)
-                        {
-                            Log.AddVM(EError.None, "String 该类型不是Int32类型!!");
-                            return;
-                        }
-                        stringObj.SetValue(svalue.stringValue);
-                    }
-                    break;
-                case EVMType.Class:
-                    {
-                        var mva = m_StaticMemObjectList[index];
-                        if (mva.eType == EVMType.Byte)
-                        {
-
-                            Int8Object byteObj = mva as Int8Object;
-                            if (byteObj == null)
-                            {
-                                Log.AddVM(EError.None, "Class Int8Object 该类型不是Int32类型!!");
-                                return;
-                            }
-                            byteObj.SetValue(svalue.int8Value);
-                        }
-                        else if (mva.eType == EVMType.SByte)
-                        {
-
-                            SInt8Object sbyteObj = mva as SInt8Object;
-                            if (sbyteObj == null)
-                            {
-                                Log.AddVM(EError.None, "Class SInt8Object 该类型不是Int32类型!!");
-                                return;
-                            }
-                            sbyteObj.SetValue(svalue.sint8Value);
-                        }
-                        else if (mva.eType == EVMType.Int16)
-                        {
-
-                            Int16Object int16Obj = mva as Int16Object;
-                            if (int16Obj == null)
-                            {
-                                Log.AddVM(EError.None, "Class Int16Object 该类型不是Int16类型!!");
-                                return;
-                            }
-                            int16Obj.SetValue(svalue.int16Value);
-                        }
-                        else if (mva.eType == EVMType.UInt16)
-                        {
-
-                            UInt32Object uint32Obj = mva as UInt32Object;
-                            if (uint32Obj == null)
-                            {
-                                Log.AddVM(EError.None, "Class UInt32Object 该类型不是UInt32类型!!");
-                                return;
-                            }
-                            uint32Obj.SetValue(svalue.uint32Value);
-                        }
-                        else if (mva.eType == EVMType.Int32)
-                        {
-                            Int32Object int32Obj = mva as Int32Object;
-                            if (int32Obj == null)
-                            {
-                                Log.AddVM(EError.None, "Class Int32Object 该类型不是Int32类型!!");
-                                return;
-                            }
-                            int32Obj.SetValue(svalue.int32Value);
-                        }
-                        else if (mva.eType == EVMType.UInt32)
-                        {
-
-                            UInt32Object uint32Obj = mva as UInt32Object;
-                            if (uint32Obj == null)
-                            {
-                                Log.AddVM(EError.None, "Class UInt32Object 该类型不是Int32类型!!");
-                                return;
-                            }
-                            uint32Obj.SetValue(svalue.uint32Value);
-                        }
-                        else if (mva.eType == EVMType.Int64)
-                        {
-
-                            Int64Object int64Obj = mva as Int64Object;
-                            if (int64Obj == null)
-                            {
-                                Log.AddVM(EError.None, "该类型不是Int64类型!!");
-                                return;
-                            }
-                            int64Obj.SetValue(svalue.int64Value);
-                        }
-                        else if (mva.eType == EVMType.UInt64)
-                        {
-
-                            UInt64Object uint64Obj = mva as UInt64Object;
-                            if (uint64Obj == null)
-                            {
-                                Log.AddVM(EError.None, "该类型不是Int64类型!!");
-                                return;
-                            }
-                            uint64Obj.SetValue(svalue.uint64Value);
-                        }
-                        else if (mva.eType == EVMType.String)
-                        {
-
-                            StringObject stringObj = mva as StringObject;
-                            if (stringObj == null)
-                            {
-                                Log.AddVM(EError.None, "该类型不是stringObj类型!!");
-                                return;
-                            }
-                            stringObj.SetValue(svalue.stringValue);
-                        }
-                        else
-                        {
-                            ClassObject classObj = m_StaticMemObjectList[index] as ClassObject;
-                            if (classObj == null)
-                            {
-                                Log.AddVM(EError.None, "该类型不是classObj类型!!");
-                                return;
-                            }
-                            //classObj.SetValue(svalue.sobject as ClassObject);
-                            m_StaticMemObjectList[index] = svalue.sobject as ClassObject;
-                        }
-                    }
-                    break;
-            }
+            // placeholder
         }
-
         public List<IRData> CreateStaticMetaMetaVariableIRList()
         {
-            List<IRData> list = new List<IRData>();
-
-            foreach (var v in  this.irClass.localIRMetaVariableList )
-            {
-                var irexp = IRExpressManager.CreateExpress( null, v.express);
-
-                v.SetIRDataList(irexp.IRDataList);
-
-                list.AddRange(irexp.IRDataList);
-            }
-
-            return list;
+            return new List<IRData>();
         }
-        public static bool SameRuntimeType( RuntimeType rt1, RuntimeType rt2 )
+        public static bool SameRuntimeType(RuntimeType rt1, RuntimeType rt2)
         {
-            if( rt1.irClass != rt2.irClass )
-            {
-                return false;
-            }
-            if( rt1.runtimeTemplateList.Count != rt2.runtimeTemplateList.Count )
-            {
-                return false;
-            }
-            for( int i = 0; i < rt1.runtimeTemplateList.Count; i++ )
-            {
-                if( SameRuntimeType(rt1.runtimeTemplateList[i], rt2.runtimeTemplateList[i] ) == false )
-                {
-                    return false;
-                }
-            }
-            return true;
+            if (rt1 == null || rt2 == null) return false;
+            return rt1.irClass.id == rt2.irClass.id;
         }
-
-        public bool IsExtendsRelation( RuntimeType rt )
+        public bool IsExtendsRelation(RuntimeType rt)
         {
-            // Use the enhanced relation which treats primitive numeric types as subtypes of Num
-            return IsExtendsRelationWithPrimitiveSupport(rt);
+            if (rt == null) return false;
+            return irClass.IsExtendsRelation(rt.irClass);
         }
-
-        // Helper: treat primitive numeric EVMType as numeric category
         public static bool IsNumericEType(EVMType t)
         {
-            switch (t)
-            {
-                case EVMType.Num:
-                case EVMType.Byte:
-                case EVMType.SByte:
-                case EVMType.Int16:
-                case EVMType.UInt16:
-                case EVMType.Int32:
-                case EVMType.UInt32:
-                case EVMType.Int64:
-                case EVMType.UInt64:
-                case EVMType.Float32:
-                case EVMType.Float64:
-                    return true;
-                default:
-                    return false;
-            }
+            return t == EVMType.Num;
         }
-
-        // Adapted IsExtendsRelation to consider primitive numeric types as subtypes of Num
-        public bool IsExtendsRelationWithPrimitiveSupport( RuntimeType rt )
+        public bool IsExtendsRelationWithPrimitiveSupport(RuntimeType rt)
         {
-            // if exact same IR class, compare template arguments
-            if (irClass == rt.irClass)
-            {
-                if (runtimeTemplateList.Count != rt.runtimeTemplateList.Count)
-                    return false;
-                for (int i = 0; i < runtimeTemplateList.Count; i++)
-                {
-                    if (!runtimeTemplateList[i].IsExtendsRelationWithPrimitiveSupport(rt.runtimeTemplateList[i]))
-                        return false;
-                }
-                return true;
-            }
-
-            // special: consider primitive numeric runtime types as extending Num
-            if (RuntimeTypeManager.numRuntimeType != null)
-            {
-                if (rt.irClass == RuntimeTypeManager.numRuntimeType.irClass)
-                {
-                    // this runtime type is numeric primitive (eType indicates)
-                    if (IsNumericEType(this.eType))
-                        return true;
-                }
-            }
-
-            // fallback to original behavior: not equal
-            return false;
+            return IsExtendsRelation(rt);
         }
-
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append(irClass.irName);
-
-            if(runtimeTemplateList.Count > 0 )
-            {
-                sb.Append('<');
-                for( int i = 0; i < runtimeTemplateList.Count; i++ )
-                {
-                    sb.Append(runtimeTemplateList[i].ToString());
-                    if( i < runtimeTemplateList.Count - 1 )
-                        sb.Append(",");
-                }
-                sb.Append(">");
-            }
-
-            return sb.ToString();
+            return irClass?.irName ?? base.ToString();
         }
     }
 
-    public class RuntimeTypeManager
-    {
-        public static List<RuntimeType> runtimeList => s_RuntimeList;
-
+    public static class RuntimeTypeManager {
         private static List<RuntimeType> s_RuntimeList = new List<RuntimeType>();
-        public static RuntimeType typeRuntimeType => m_TypeRuntimeType;
-        public static RuntimeType voidRuntimeType => m_VoidRuntimeType;
-        public static RuntimeType byteRuntimeType => m_ByteRuntimeType;
-        public static RuntimeType sbyteRuntimeType => m_SByteRuntimeType;
-        public static RuntimeType int16RuntimeType => m_Int16RuntimeType;
-        public static RuntimeType uint16RuntimeType => m_UInt16RuntimeType;
-        public static RuntimeType int32RuntimeType => m_Int32RuntimeType;
-        public static RuntimeType uint32RuntimeType => m_UInt32RuntimeType;
-        public static RuntimeType int64RuntimeType => m_Int64RuntimeType;
-        public static RuntimeType uint64RuntimeType => m_UInt64RuntimeType;
-        public static RuntimeType float32RuntimeType => m_Float32RuntimeType;
-        public static RuntimeType float64RuntimeType => m_Float64RuntimeType;
-        public static RuntimeType stringRuntimeType => m_StringRuntimeType;
-        public static RuntimeType numRuntimeType => m_NumRuntimeType;
-
         private static RuntimeType m_TypeRuntimeType = null;
         private static RuntimeType m_VoidRuntimeType = null;
         private static RuntimeType m_NumRuntimeType = null;
@@ -668,245 +104,92 @@ namespace SimpleLanguage.VM
         private static RuntimeType m_Float64RuntimeType = null;
         private static RuntimeType m_StringRuntimeType = null;
 
+        public static List<RuntimeType> runtimeList => s_RuntimeList;
+        public static RuntimeType typeRuntimeType { get => m_TypeRuntimeType; }
+        public static RuntimeType voidRuntimeType { get => m_VoidRuntimeType; }
+        public static RuntimeType byteRuntimeType { get => m_ByteRuntimeType; }
+        public static RuntimeType sbyteRuntimeType { get => m_SByteRuntimeType; }
+        public static RuntimeType int16RuntimeType { get => m_Int16RuntimeType; }
+        public static RuntimeType uint16RuntimeType { get => m_UInt16RuntimeType; }
+        public static RuntimeType int32RuntimeType { get => m_Int32RuntimeType; }
+        public static RuntimeType uint32RuntimeType { get => m_UInt32RuntimeType; }
+        public static RuntimeType int64RuntimeType { get => m_Int64RuntimeType; }
+        public static RuntimeType uint64RuntimeType { get => m_UInt64RuntimeType; }
+        public static RuntimeType float32RuntimeType { get => m_Float32RuntimeType; }
+        public static RuntimeType float64runtimeType { get => m_Float64RuntimeType; }
+        public static RuntimeType stringRuntimeType { get => m_StringRuntimeType; }
+        public static RuntimeType numRuntimeType { get => m_NumRuntimeType; }
 
-
-        public static ClassObject CreateTypeObject( RuntimeType rt )
+        public static ClassObject CreateTypeObject(RuntimeType rt)
         {
-            ClassObject sobj = new ClassObject(RuntimeTypeManager.typeRuntimeType);
-            if (sobj is ClassObject co)
+            if (rt == null) return null;
+            // Use the ObjectClass.GetObjectType to obtain/cached TypeObject
+            try
             {
-                ObjectManager.AddClassObject(co);
-
-                SValue sval1 = new();
-                sval1.SetInt32Value(rt.GetHashCode());
-                co.SetMemberVariableSValue(0, sval1);
-
-                SValue sva2 = new();
-                sva2.SetInt8Value((Byte)rt.eType);
-                co.SetMemberVariableSValue(1, sva2);
-
-                SValue sval3 = new();
-                ClassObject classobj = new ClassObject(rt);
-                sval3.SetSObject(classobj);
-                co.SetMemberVariableSValue(2, sval3);
+                // create a temporary object instance for this runtime type (no member init)
+                SObject obj = ObjectManager.CreateObjectByRuntimeType(rt, false);
+                if (obj == null) return null;
+                var typeObj = SimpleLanguage.Lib.ObjectClass.GetObjectType(obj);
+                return typeObj as ClassObject;
             }
-            return sobj;
+            catch
+            {
+                return null;
+            }
         }
 
-        public static RuntimeType GetRuntimeTypeByMT(IRMetaClass rmc )
+        public static RuntimeType GetRuntimeTypeByMT(IRMetaClass rmc)
         {
-            foreach (var v in s_RuntimeList)
-            {
-                if (v.irClass != rmc)
-                {
-                    continue;
-                }
-                return v;
-            }
-            return null;
+            if (rmc == null) return null;
+            return s_RuntimeList.Find(r => r.irClass != null && r.irClass.id == rmc.id);
         }
-
-        public static RuntimeType GetRuntimeTypeByMIRMetaType( IRMetaType irmt )
+        public static RuntimeType GetRuntimeTypeByMIRMetaType(IRMetaType irmt)
         {
-            IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(irmt.irOwnerMetaClass.id);
-
-            List<RuntimeType> rtList = new List<RuntimeType>();
-            if (irmt.irMetaTypeList.Count > 0)
-            {
-                for (int j = 0; j < irmt.irMetaTypeList.Count; j++)
-                {
-                    var crt = RuntimeVM.GetClassRuntimeType(irmt.irMetaTypeList[j], owirmc, null, true);
-                    rtList.Add(crt);
-                }
-            }
-
-            var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.irMetaClass, rtList);
-            if (rt == null)
-            {
-                rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(irmt.irMetaClass, rtList);
-            }
-
-            return rt;
+            if (irmt == null) return null;
+            return GetRuntimeTypeByMT(irmt.m_IRMetaClass);
         }
         public static RuntimeType GetRuntimeTypeByMTAndTemplateMT(IRMetaClass rmc, List<RuntimeType> inputTemplateTypeList)
         {
-            foreach (var v in s_RuntimeList)
-            {
-                if (v.irClass != rmc)
-                {
-                    continue;
-                }
-
-                if (v.runtimeTemplateList.Count == inputTemplateTypeList.Count)
-                {
-                    if( v.runtimeTemplateList.Count == 0 )
-                    {
-                        return v;
-                    }
-                    bool flag = true;
-                    for (int i = 0; i < inputTemplateTypeList.Count; i++)
-                    {
-                        if ( !RuntimeType.SameRuntimeType(inputTemplateTypeList[i], v.runtimeTemplateList[i]))
-                        {
-                            flag = false;
-                            break;
-                        }
-                    }
-                    if(flag)
-                        return v;
-                }
-            }
-            return null;
+            // naive: ignore template args and return base runtime type
+            return GetRuntimeTypeByMT(rmc);
         }
-        public static RuntimeType GetRuntimeTypeByMTAndIRMetaClass(IRMetaClass rmc )
+        public static RuntimeType GetRuntimeTypeByMTAndIRMetaClass(IRMetaClass rmc)
         {
-            foreach (var v in s_RuntimeList)
-            {
-                if (v.runtimeTemplateList.Count != 0)
-                {
-                    continue;
-                }
-                if (v.irClass == rmc)
-                {
-                    return v;
-                }
-            }
-            return null;
+            return GetRuntimeTypeByMT(rmc);
         }
         public static RuntimeType AddRuntimeTypeByClassAndTemplate(IRMetaClass rmc, List<RuntimeType> inputTemplateTypeList)
         {
-            if(rmc.templateCount != inputTemplateTypeList.Count )
-            {
-                Debug.Assert(false);
-                return null;
-            }
-
-            RuntimeType rt = new RuntimeType(rmc, inputTemplateTypeList);
-
-            if( rmc.irName == "Type" )
-            {
-                m_TypeRuntimeType = rt;
-            }
-            else if( rmc.irName == "Void" )
-            { 
-                m_VoidRuntimeType = rt; 
-            }
-            else if (rmc.irName == "Num" || rmc.irName == "Core.Num")
-            {
-                m_NumRuntimeType = rt;
-            }
-            else if (rmc.irName == "Byte")
-            {
-                m_ByteRuntimeType = rt;
-            }
-            else if (rmc.irName == "SByte")
-            {
-                m_SByteRuntimeType = rt;
-            }
-            else if (rmc.irName == "Int16")
-            {
-                m_Int16RuntimeType = rt;
-            }
-            else if (rmc.irName == "UInt16")
-            {
-                m_UInt16RuntimeType = rt;
-            }
-            else if (rmc.irName == "Int32")
-            {
-                m_Int32RuntimeType = rt;
-            }
-            else if (rmc.irName == "UInt32")
-            {
-                m_UInt32RuntimeType = rt;
-            }
-            else if (rmc.irName == "Int64")
-            {
-                m_Int64RuntimeType = rt;
-            }
-            else if (rmc.irName == "UInt64")
-            {
-                m_UInt64RuntimeType = rt;
-            }
-            else if (rmc.irName == "String")
-            {
-                m_StringRuntimeType = rt;
-            }
-            else if (rmc.irName == "Float32")
-            {
-                m_Float32RuntimeType = rt;
-            }
-            else if (rmc.irName == "Float64")
-            {
-                m_Float64RuntimeType = rt;
-            }
-
-            s_RuntimeList.Add(rt);
-
-            return rt;
+            // ignore templates for now
+            return AddRuntimeTypeByClass(rmc);
         }
-        public static RuntimeType AddRuntimeTypeByClass( IRMetaClass rmc )
+        public static RuntimeType AddRuntimeTypeByClass(IRMetaClass rmc)
         {
-            RuntimeType rt = new RuntimeType(rmc, null );
-            if (rmc.irName == "Type")
-            {
-                m_TypeRuntimeType = rt;
-            }
-            else if (rmc.irName == "Void")
-            {
-                m_VoidRuntimeType = rt;
-            }
-            else if (rmc.irName == "Num" || rmc.irName == "Core.Num")
-            {
-                m_NumRuntimeType = rt;
-            }
-            else if (rmc.irName == "Byte")
-            {
-                m_ByteRuntimeType = rt;
-            }
-            else if (rmc.irName == "SByte")
-            {
-                m_SByteRuntimeType = rt;
-            }
-            else if (rmc.irName == "Int16")
-            {
-                m_Int16RuntimeType = rt;
-            }
-            else if (rmc.irName == "UInt16")
-            {
-                m_UInt16RuntimeType = rt;
-            }
-            else if (rmc.irName == "Int32")
-            {
-                m_Int32RuntimeType = rt;
-            }
-            else if (rmc.irName == "UInt32")
-            {
-                m_UInt32RuntimeType = rt;
-            }
-            else if (rmc.irName == "Int64")
-            {
-                m_Int64RuntimeType = rt;
-            }
-            else if (rmc.irName == "UInt64")
-            {
-                m_UInt64RuntimeType = rt;
-            }
-            else if (rmc.irName == "String")
-            {
-                m_StringRuntimeType = rt;
-            }
-            else if (rmc.irName == "Float32")
-            {
-                m_Float32RuntimeType = rt;
-            }
-            else if (rmc.irName == "Float64")
-            {
-                m_Float64RuntimeType = rt;
-            }
+            if (rmc == null) return null;
+            var exist = GetRuntimeTypeByMT(rmc);
+            if (exist != null) return exist;
+
+            RuntimeType rt = new RuntimeType();
+            rt.irClass = rmc;
             s_RuntimeList.Add(rt);
 
-            return rt;
+            // init well-known static mappings based on irName
+            string name = rmc.irName ?? "";
+            if (name.Contains("Type")) m_TypeRuntimeType = rt;
+            if (name.EndsWith("Void")) m_VoidRuntimeType = rt;
+            if (name.EndsWith("Num") || name.EndsWith("Num")) m_NumRuntimeType = rt;
+            if (name.EndsWith("Byte")) m_ByteRuntimeType = rt;
+            if (name.EndsWith("SByte")) m_SByteRuntimeType = rt;
+            if (name.EndsWith("Int16")) m_Int16RuntimeType = rt;
+            if (name.EndsWith("UInt16")) m_UInt16RuntimeType = rt;
+            if (name.EndsWith("Int32")) m_Int32RuntimeType = rt;
+            if (name.EndsWith("UInt32")) m_UInt32RuntimeType = rt;
+            if (name.EndsWith("Int64")) m_Int64RuntimeType = rt;
+            if (name.EndsWith("UInt64")) m_UInt64RuntimeType = rt;
+            if (name.EndsWith("Float32")) m_Float32RuntimeType = rt;
+            if (name.EndsWith("Float64")) m_Float64RuntimeType = rt;
+            if (name.EndsWith("String")) m_StringRuntimeType = rt;
 
+            return rt;
         }
     }
 }

@@ -120,6 +120,9 @@ namespace SimpleLanguage.IR
         CallVirt,
         Calli,
         CallCSharpMethod,
+        // new opcodes for method handle support
+        CreateMethodHandle,
+        CallHandle,
         CastClass,
 
         Convert_I8,
