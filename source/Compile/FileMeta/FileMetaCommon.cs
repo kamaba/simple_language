@@ -529,6 +529,8 @@ namespace SimpleLanguage.Compile
 
         public FileMeta fileMeta => m_FileMeta;
         public Token classNameToken => m_ClassNameToken;
+        // nullable marker for type definitions (eg `int?`)
+        public bool isNullable { get; set; } = false;
         public bool isInputTemplateData => m_IsInputTemplateData;
         public bool isArray { get; set; } = false;
         public List<FileInputTemplateNode> inputTemplateNodeList => m_InputTemplateNodeList;
@@ -548,8 +550,41 @@ namespace SimpleLanguage.Compile
         public FileMetaClassDefine( FileMeta fm, Node node )
         {
             m_FileMeta = fm;
+            // collect tokens that form the type reference (including dotted names)
             m_TokenList = node.linkTokenList;
-            m_ClassNameToken = m_TokenList[m_TokenList.Count - 1];
+
+            // support nullable type syntax like `T?` (question mark may be part of link tokens
+            // or a separate token node immediately following this node in the parent's child list)
+            if (m_TokenList.Count > 0 && m_TokenList[m_TokenList.Count - 1].type == ETokenType.QuestionMark)
+            {
+                isNullable = true;
+                // remove trailing '?' token so subsequent logic sees the real type name
+                m_TokenList.RemoveAt(m_TokenList.Count - 1);
+            }
+            else
+            {
+                // check if the parse tree contains an explicit '?' node immediately after this node
+                if (node.parent != null)
+                {
+                    var siblings = node.parent.childList;
+                    int idx = siblings.IndexOf(node);
+                    if (idx >= 0 && idx + 1 < siblings.Count)
+                    {
+                        var next = siblings[idx + 1];
+                        if (next.nodeType == ENodeType.QuestionMark && next.token?.type == ETokenType.QuestionMark)
+                        {
+                            isNullable = true;
+                            // Note: we do not remove token from m_TokenList because it's not part of linkTokenList
+                        }
+                    }
+                }
+            }
+
+            // class name token is the last token remaining in the token list
+            if (m_TokenList.Count > 0)
+                m_ClassNameToken = m_TokenList[m_TokenList.Count - 1];
+            else
+                m_ClassNameToken = null;
 
             if ( node.angleNode != null )
             {

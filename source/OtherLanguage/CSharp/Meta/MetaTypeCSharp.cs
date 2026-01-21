@@ -7,7 +7,33 @@ namespace SimpleLanguage.Core
 {
     public class MetaTypeCSharp
     {
-        public static MetaClass GetMetaClassByCSharpType(System.Type type)
+        public static MetaType GetMetaTypeByCSharpType(System.Type type)
+        {
+            if( type.Name == "Nullable`1" )
+            {
+                if( type.GenericTypeArguments.Length == 1 )
+                {
+                    MetaClass mc = GetMetaClassByCSharpType(type.GenericTypeArguments[0]);
+
+                    var mt = new MetaType(mc);
+                    mt.SetNullable(true);
+                    return mt;
+                }
+                else
+                {
+                    Debug.Assert(false);
+                }
+            }
+            else
+            {
+                MetaClass mc = GetMetaClassByCSharpType(type);
+                var mt = new MetaType(mc);
+                return mt;
+            }
+            Debug.Assert(false);
+            return null;
+        }
+        static MetaClass GetMetaClassByCSharpType(System.Type type)
         {
             string typeName = type.Name;
             switch (typeName)

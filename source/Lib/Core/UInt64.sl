@@ -7,6 +7,10 @@ public class UInt64 extends Num
     const UInt64 MinValue = 0;
 
     UInt32 _value = 0iu;
+
+    
+    override get int size() { ret 32 }
+    override get int byteLength() { ret 4 }
     
     static String UInt64ToString( UInt64 value )
     {
@@ -45,7 +49,7 @@ public class UInt64 extends Num
     {
         ret this
     }
-    public override Int32 compareTo( Num other )
+    public override Int32 compareTo( UInt64 other )
     {
         if (other == null) { ret 1 }
         Float64 ov = other.toFloat64()

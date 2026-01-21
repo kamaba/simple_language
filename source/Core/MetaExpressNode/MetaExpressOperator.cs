@@ -404,6 +404,8 @@ namespace SimpleLanguage.Core
                         if (m_OpLevelSign == ELeftRightOpSign.Add)
                         {
                             m_RealMetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
+                            // ensure numeric left will be converted to string for concatenation
+                            m_LeftConvert = new ConvertType() { oriType = leftMc.eType, targetType = EType.String };
                         }
                         else
                         {
@@ -495,6 +497,11 @@ namespace SimpleLanguage.Core
                     if (m_OpLevelSign == ELeftRightOpSign.Add)
                     {
                         m_RealMetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
+                        // if right side is numeric, convert it to string
+                        if (ClassManager.IsNumberClass(rightMc))
+                        {
+                            m_RightConvert = new ConvertType() { oriType = rightMc.eType, targetType = EType.String };
+                        }
                     }
                     else
                     {

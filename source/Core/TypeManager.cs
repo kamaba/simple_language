@@ -135,6 +135,8 @@ namespace SimpleLanguage.Core
                 else
                 {
                     var retmt = new MetaType(mt, fmcd.stringList[0] );
+                    if (fmcd.isNullable)
+                        retmt.SetNullable(true);
                     return retmt;
                 }
             }
@@ -144,8 +146,12 @@ namespace SimpleLanguage.Core
                 if (fmcd.isArray)
                 {
                     var rarraymt = AddArrayTemplate(ret, fmcd.arrayDimsionLengthList);
+                    if (fmcd.isNullable)
+                        rarraymt.SetNullable(true);
                     return rarraymt;
                 }
+                if (fmcd.isNullable && ret != null)
+                    ret.SetNullable(true);
                 return ret;
             }
             return null;
@@ -264,6 +270,7 @@ namespace SimpleLanguage.Core
                 if (gmtbn != null)
                 {
                     var mt = new MetaType(gmtbn, fmcd.stringList[0] );
+                    if (fmcd.isNullable) mt.SetNullable(true);
                     return mt;
                 }
                 else if (findFun != null)
@@ -273,7 +280,9 @@ namespace SimpleLanguage.Core
                     {
                         return null;
                     }
-                    return new MetaType(mt, fmcd.stringList[0]);
+                    var ret = new MetaType(mt, fmcd.stringList[0]);
+                    if (fmcd.isNullable) ret.SetNullable(true);
+                    return ret;
                 }
                 else
                 {

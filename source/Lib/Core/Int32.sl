@@ -15,20 +15,31 @@ public class Int32 extends Num
         this._value = _val
     }
 
-    // size helpers
+    #size helpers
     override get int size() { ret 32 }
     override get int byteLength() { ret 4 }
     
-    
+    public Int32? parse( string s )
+    {
+        ret SimpleLanguage.Lib.Int32Class.Parse( s )
+    }    
     public static Int32 parseInt(string s)
     {
         ret System.Convert.ToInt32(s);
     }
-    public static Int32 parseInt(string s, Int32 radix)
+    public override Int32 abs()
     {
-        ret 0;
+        ret SimpleLanguage.Lib.Int32Class.Abs(this._value)
+    } 
+    public override Num floor()
+    {
+        ret this
     }
-    public int compareTo(Int32 value)
+    public override Num ceil()
+    {
+        ret this
+    }
+    public override int compareTo(Int32 value)
     {
         if (value == null)
         {
@@ -80,19 +91,8 @@ public class Int32 extends Num
     override Float64 toFloat64()
     {
         ret SimpleLanguage.Lib.Int32Class.Int32ToFloat64(this._value)
-    }    
-    public override Num floor()
-    {
-        ret this
-    }
-    public override Num ceil()
-    {
-        ret this
-    }
-    public Int32 abs()
-    {
-        ret System.Math.Abs(this._value)
-    }
+    }   
+    
     public Int32 sign()
     {
         ret this._value > 0 ? 1 : -1

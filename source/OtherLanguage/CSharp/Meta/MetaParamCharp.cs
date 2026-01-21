@@ -229,8 +229,7 @@ namespace SimpleLanguage.Core
 
             parameterInfo = pi;
 
-            var defineMetaClassType = MetaTypeCSharp.GetMetaClassByCSharpType(pi.ParameterType);
-            MetaType mdt = new MetaType(defineMetaClassType);
+            var mdt = MetaTypeCSharp.GetMetaTypeByCSharpType(pi.ParameterType);
             m_MetaVariable = new MetaVariable( pi.Name, EVariableFrom.Argument, null, mf.ownerMetaClass, mdt );
             m_MetaVariable.SetIsDefineMetaType(true);
         }

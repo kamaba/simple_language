@@ -53,11 +53,60 @@ namespace SimpleLanguage.VM
         }
         public void GetMemberVariableSValue(int index, ref SValue svalue)
         {
-            // placeholder: not implemented fully
+            if (m_StaticMemObjectList == null)
+            {
+                // initialize static array if possible
+                if (irClass?.staticIRMetaVariableList == null)
+                {
+                    svalue.SetNull();
+                    return;
+                }
+                m_StaticMemObjectList = new SObject[irClass.staticIRMetaVariableList.Count];
+                for (int i = 0; i < m_StaticMemObjectList.Length; i++)
+                {
+                    var irmv = irClass.staticIRMetaVariableList[i];
+                    var rt = GetClassRuntimeType(irmv.irMetaType, true);
+                    m_StaticMemObjectList[i] = ObjectManager.CreateObjectByRuntimeType(rt, true);
+                }
+            }
+            if (index < 0 || index >= m_StaticMemObjectList.Length)
+            {
+                svalue.SetNull();
+                return;
+            }
+            var sobj = m_StaticMemObjectList[index];
+            if (sobj == null || sobj.isNull)
+            {
+                svalue.SetNull();
+                return;
+            }
+            svalue.SetSObject(sobj);
         }
         public void SetMemberVariableSValue(int index, SValue svalue)
         {
-            // placeholder
+            if (m_StaticMemObjectList == null)
+            {
+                if (irClass?.staticIRMetaVariableList == null)
+                {
+                    return;
+                }
+                m_StaticMemObjectList = new SObject[irClass.staticIRMetaVariableList.Count];
+                for (int i = 0; i < m_StaticMemObjectList.Length; i++)
+                {
+                    var irmv = irClass.staticIRMetaVariableList[i];
+                    var rt = GetClassRuntimeType(irmv.irMetaType, true);
+                    m_StaticMemObjectList[i] = ObjectManager.CreateObjectByRuntimeType(rt, true);
+                }
+            }
+            if (index < 0 || index >= m_StaticMemObjectList.Length) return;
+            var target = m_StaticMemObjectList[index];
+            if (svalue.isNull)
+            {
+                target.SetNull();
+                return;
+            }
+            // attempt to set by type-aware method on SObject
+            target.SetValueByType(svalue.eType == EVMType.Class ? EVMType.Class : svalue.eType, svalue.eType == EVMType.Class ? (object)svalue.sobject : svalue.GetValueObject());
         }
         public List<IRData> CreateStaticMetaMetaVariableIRList()
         {

@@ -5,8 +5,8 @@ import CSharp.System;
 public class Float32 extends Num
 {
     public const Float32 Epsilen = 4.9123213f;
-    public const Float32 MaxValue = 20f;
-    public const Float32 MinValue = -1f;
+    public const Float32 MaxValue = 20.0f;
+    public const Float32 MinValue = -1.0f;
 
     Float32 _value = 0.0f
 
@@ -14,6 +14,10 @@ public class Float32 extends Num
     {
         this._value = f
     }
+    
+    override get int size() { ret 32 }
+    override get int byteLength() { ret 4 }
+    
     public static bool isFinite( Float32 f )
     {
         #delegate to CLR Math if available

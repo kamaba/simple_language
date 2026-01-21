@@ -169,11 +169,28 @@ namespace SimpleLanguage.Core
             if (param != null)
             {
                 MetaType md = param.metaVariable.defineMetaType;
-                if ( !MetaType.EqualMetaDefineType( md, metaVariable.defineMetaType) )
+                // exact match
+                if (MetaType.EqualMetaDefineType(md, metaVariable.defineMetaType))
                 {
-                    return false;
+                    return true;
                 }
-                return true;
+
+                // allow match when types are in inheritance relationship (e.g., defined: Num, concrete: SByte)
+                MetaClass thisClass = metaVariable.defineMetaType?.GetTemplateMetaClass();
+                MetaClass otherClass = md?.GetTemplateMetaClass();
+                if (thisClass != null && otherClass != null)
+                {
+                    var relation = ClassManager.ValidateClassRelationByMetaClass(thisClass, otherClass);
+                    if (relation == ClassManager.EClassRelation.Same
+                        || relation == ClassManager.EClassRelation.Child
+                        || relation == ClassManager.EClassRelation.Parent
+                        || relation == ClassManager.EClassRelation.Interface
+                        || relation == ClassManager.EClassRelation.Similar)
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
             return false;
         }
@@ -192,9 +209,10 @@ namespace SimpleLanguage.Core
                 }
                 var relation = ClassManager.ValidateClassRelationByMetaClass(m_MetaVariable.GetFinalTemplateMetaClass(), retMC);
 
-                if (relation == ClassManager.EClassRelation.Same 
-                    || relation == ClassManager.EClassRelation.Child 
-                    || relation == ClassManager.EClassRelation.Interface )
+                if (relation == ClassManager.EClassRelation.Same
+                    || relation == ClassManager.EClassRelation.Child
+                    || relation == ClassManager.EClassRelation.Interface
+                    || relation == ClassManager.EClassRelation.Parent)
                 {
                     return true;
                 }

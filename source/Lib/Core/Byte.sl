@@ -19,13 +19,30 @@ public class Byte extends Num
     {
         this._value = _val
     }
-    public int compareTo(Int32 value)
+
+    override get int size() { ret 32 }
+    override get int byteLength() { ret 4 }
+
+    public override Byte abs()
+    {
+        ret 0
+    } 
+    public override Byte floor()
+    {
+        ret this
+    }
+    public override Byte ceil()
+    {
+        ret this
+    }
+    public override int compareTo(Byte value)
     {
         if (value == null)
         {
             ret 1;
         }
-        ret 0
+        if (this._value == value ){ ret 0; }
+        ret this._value > value._value ? 1 : -1
     }
     #!
     Byte toByte()

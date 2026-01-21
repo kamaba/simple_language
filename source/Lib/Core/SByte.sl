@@ -5,7 +5,33 @@ public class SByte extends Num
 {    
     const SByte MaxValue = 0b1111111;
     const SByte MinValue = 0b0000000;
-    SByte _value = 0;    
+    SByte _value = 0; 
+
+    
+    override get int size() { ret 32 }
+    override get int byteLength() { ret 4 }   
+    
+    public override SByte abs()
+    {
+        ret SimpleLanguage.Lib.Int32Class.Abs(this._value)
+    } 
+    public override SByte floor()
+    {
+        ret this
+    }
+    public override SByte ceil()
+    {
+        ret this
+    }
+    public override int compareTo(SByte value)
+    {
+        if (value == null)
+        {
+            ret 1;
+        }
+        if (this._value == value ){ ret 0; }
+        ret this._value > value._value ? 1 : -1
+    }
 
     static String SByteToString( SByte value )
     {
@@ -18,14 +44,6 @@ public class SByte extends Num
     _init_( SByte _val )
     {
         this._value = _val
-    }
-    public int compareTo(Int32 value)
-    {
-        if (value == null)
-        {
-            ret 1;
-        }
-        ret 0
     }
     #!
     Byte toByte()

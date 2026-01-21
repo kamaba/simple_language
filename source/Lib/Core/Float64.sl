@@ -14,6 +14,33 @@ public class Float64 extends Num
     {
         this._value = f
     }
+    
+    override get int size() { ret 32 }
+    override get int byteLength() { ret 4 }
+
+    
+    public override Float64 abs()
+    {
+        ret 0 #SimpleLanguage.Lib.Int32Class.Abs(this._value)
+    } 
+    public override Float64 floor()
+    {
+        ret this
+    }
+    public override Float64 ceil()
+    {
+        ret this
+    }
+    public override int compareTo(Float64 value)
+    {
+        if (value == null)
+        {
+            ret 1;
+        }
+        if (this._value == value ){ ret 0; }
+        ret this._value > value._value ? 1 : -1
+    }
+
     public static bool IsFinite( Float64 f )
     {
         #try {
@@ -45,13 +72,6 @@ public class Float64 extends Num
     public override Num ceil()
     {
         ret Float64( System.Math.Ceiling(this._value) )
-    }
-    public override Int32 compareTo( Num other )
-    {
-        if (other == null) { ret 1 }
-        Float64 ov = other.toFloat64()
-        if (this._value == ov) { ret 0 }
-        ret this._value > ov ? 1 : -1
     }
     !#
 }

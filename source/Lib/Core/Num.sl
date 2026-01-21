@@ -8,12 +8,6 @@ public abstract class Num extends Object
     abstract get int size();
     abstract get int byteLength();
 
-    #convert to 32-bit integer
-    public abstract Int32 toInt32();
-
-    #convert to 64-bit float
-    public abstract Float64 toFloat64();
-
     #absolute value
     public abstract Num abs();
 
@@ -68,29 +62,5 @@ public abstract class Num extends Object
     Float64 toFloat64()
     {
         ret SimpleLanguage.Lib.NumClass.NumToFloat64(this)
-    }    
-
-    #common helpers (non-abstract) can be added if needed
-    # default operator-style methods following Python-like naming (_add_, _sub_, ...)
-    # these are used by the runtime when looking up operator implementations on class objects
-    public Num _add_( Num other )
-    {
-        ret this.toFloat64() + other.toFloat64();
-    }
-    public Num _sub_( Num other )
-    {
-        ret this.toFloat64() - other.toFloat64();
-    }
-    public Num _mul_( Num other )
-    {
-        ret this.toFloat64() * other.toFloat64();
-    }
-    public Num _div_( Num other )
-    {
-        ret this.toFloat64() / other.toFloat64();
-    }
-    public Num _neg_()
-    {
-        ret -this.toFloat64();
     }
 }

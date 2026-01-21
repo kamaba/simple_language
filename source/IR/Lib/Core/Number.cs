@@ -11,96 +11,6 @@ using System;
 
 namespace SimpleLanguage.Lib
 {
-    public static class ByteClass
-    {
-        public static string ByteToString(byte sobj)
-        {
-            return sobj.ToString();
-        }
-        // parse helpers
-        public static int ParseInt(string s)
-        {
-            if (string.IsNullOrEmpty(s)) return 0;
-            try { return Convert.ToInt32(s); } catch { return 0; }
-        }
-        public static int ParseInt(string s, int radix)
-        {
-            if (string.IsNullOrEmpty(s)) return 0;
-            // support common radices using Convert when possible
-            if (radix == 10)
-            {
-                return ParseInt(s);
-            }
-            try { return Convert.ToInt32(s, radix); } catch { /* fallback to manual */ }
-            // manual parse for other radices
-            int r = radix;
-            if (r < 2 || r > 36) return 0;
-            int sign = 1;
-            int idx = 0;
-            if (s.Length > 0 && (s[0] == '+' || s[0] == '-'))
-            {
-                if (s[0] == '-') sign = -1;
-                idx = 1;
-            }
-            long acc = 0;
-            for (int i = idx; i < s.Length; i++)
-            {
-                char c = s[i];
-                int digit = 0;
-                if (c >= '0' && c <= '9') digit = c - '0';
-                else if (c >= 'A' && c <= 'Z') digit = 10 + (c - 'A');
-                else if (c >= 'a' && c <= 'z') digit = 10 + (c - 'a');
-                else break;
-                if (digit >= r) break;
-                acc = acc * r + digit;
-                if (acc > 0x7FFFFFFF) acc = 0x7FFFFFFF;
-            }
-            return (int)(acc * sign);
-        }
-
-        public static string ToRadixString(int value, int radix)
-        {
-            if (radix < 2 || radix > 36) return "";
-            try { return Convert.ToString(value, radix); } catch { }
-            // fallback manual
-            if (value == 0) return "0";
-            bool neg = value < 0;
-            long v = neg ? -(long)value : value;
-            var sb = new System.Text.StringBuilder();
-            while (v != 0)
-            {
-                int d = (int)(v % radix);
-                char c = (d < 10) ? (char)('0' + d) : (char)('a' + (d - 10));
-                sb.Append(c);
-                v = v / radix;
-            }
-            if (neg) sb.Append('-');
-            var arr = sb.ToString().ToCharArray();
-            System.Array.Reverse(arr);
-            return new string(arr);
-        }
-        public static string ToBinaryString(int value) { return ToRadixString(value, 2); }
-        public static string ToHexString(int value) { return ToRadixString(value, 16); }
-        public static string ToOctalString(int value) { return ToRadixString(value, 8); }
-
-        // numeric helpers
-        public static int Abs(int value) { return Math.Abs(value); }
-        public static int Sign(int value) { return Math.Sign(value); }
-        public static bool IsEven(int value) { return (value & 1) == 0; }
-        public static bool IsOdd(int value) { return (value & 1) != 0; }
-        public static int BitLength(int value)
-        {
-            if (value == 0) return 0;
-            uint v = (uint)(value < 0 ? ~value : value);
-            int bits = 0;
-            while (v != 0)
-            {
-                v >>= 1;
-                bits++;
-            }
-            return bits;
-        }
-    }
     public static class NumClass
     {
 
@@ -283,6 +193,96 @@ namespace SimpleLanguage.Lib
             try { return Convert.ToDouble(obj); } catch { return 0.0; }
         }
     }
+    public static class ByteClass
+    {
+        public static string ByteToString(byte sobj)
+        {
+            return sobj.ToString();
+        }
+        // parse helpers
+        public static int Parse(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return 0;
+            try { return Convert.ToInt32(s); } catch { return 0; }
+        }
+        public static int ParseInt(string s, int radix)
+        {
+            if (string.IsNullOrEmpty(s)) return 0;
+            // support common radices using Convert when possible
+            if (radix == 10)
+            {
+                return Parse(s);
+            }
+            try { return Convert.ToInt32(s, radix); } catch { /* fallback to manual */ }
+            // manual parse for other radices
+            int r = radix;
+            if (r < 2 || r > 36) return 0;
+            int sign = 1;
+            int idx = 0;
+            if (s.Length > 0 && (s[0] == '+' || s[0] == '-'))
+            {
+                if (s[0] == '-') sign = -1;
+                idx = 1;
+            }
+            long acc = 0;
+            for (int i = idx; i < s.Length; i++)
+            {
+                char c = s[i];
+                int digit = 0;
+                if (c >= '0' && c <= '9') digit = c - '0';
+                else if (c >= 'A' && c <= 'Z') digit = 10 + (c - 'A');
+                else if (c >= 'a' && c <= 'z') digit = 10 + (c - 'a');
+                else break;
+                if (digit >= r) break;
+                acc = acc * r + digit;
+                if (acc > 0x7FFFFFFF) acc = 0x7FFFFFFF;
+            }
+            return (int)(acc * sign);
+        }
+
+        public static string ToRadixString(int value, int radix)
+        {
+            if (radix < 2 || radix > 36) return "";
+            try { return Convert.ToString(value, radix); } catch { }
+            // fallback manual
+            if (value == 0) return "0";
+            bool neg = value < 0;
+            long v = neg ? -(long)value : value;
+            var sb = new System.Text.StringBuilder();
+            while (v != 0)
+            {
+                int d = (int)(v % radix);
+                char c = (d < 10) ? (char)('0' + d) : (char)('a' + (d - 10));
+                sb.Append(c);
+                v = v / radix;
+            }
+            if (neg) sb.Append('-');
+            var arr = sb.ToString().ToCharArray();
+            System.Array.Reverse(arr);
+            return new string(arr);
+        }
+        public static string ToBinaryString(int value) { return ToRadixString(value, 2); }
+        public static string ToHexString(int value) { return ToRadixString(value, 16); }
+        public static string ToOctalString(int value) { return ToRadixString(value, 8); }
+
+        // numeric helpers
+        public static int Abs(int value) { return Math.Abs(value); }
+        public static int Sign(int value) { return Math.Sign(value); }
+        public static bool IsEven(int value) { return (value & 1) == 0; }
+        public static bool IsOdd(int value) { return (value & 1) != 0; }
+        public static int BitLength(int value)
+        {
+            if (value == 0) return 0;
+            uint v = (uint)(value < 0 ? ~value : value);
+            int bits = 0;
+            while (v != 0)
+            {
+                v >>= 1;
+                bits++;
+            }
+            return bits;
+        }
+    }
     
     public static class SByteClass
     {
@@ -308,6 +308,10 @@ namespace SimpleLanguage.Lib
 
     public static class Int32Class
     {
+        public static int? Parse( string val )
+        {
+            return 0;
+        }
         public static string GetValueToString(Int32Object sobj)
         {
             //if( obj.GetType() == typeof(System.Int32) )
@@ -320,6 +324,10 @@ namespace SimpleLanguage.Lib
                 return sobj.value.ToString();
             }
             return "object is not int32";
+        }
+        public static int Abs(int sobj)
+        {
+            return Math.Abs(sobj);
         }
         public static string Int32ToString(Int32Object sobj)
         {

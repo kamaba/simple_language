@@ -7,6 +7,10 @@ public class UInt32 extends Num
     const uint MinValue = 0;
 
     UInt32 _value = 0iu;
+
+    
+    override get int size() { ret 32 }
+    override get int byteLength() { ret 4 }
     
     static String UInt32ToString( UInt32 value )
     {

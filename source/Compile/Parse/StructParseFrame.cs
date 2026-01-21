@@ -656,7 +656,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error ParseClassNode 不允许在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
+                    Log.AddInStructFileMeta(EError.None, "Error ParseClassNode 不允许2在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
                 }
             }
             pnode.parseIndex = index;

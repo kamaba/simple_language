@@ -157,6 +157,16 @@ namespace SimpleLanguage.Compile
             if (typeNode != null)
             {
                 m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, typeNode );
+                // If the token list contains a following '?' node (nullable marker), mark the class define as nullable
+                int idx = defineNodeList.IndexOf(typeNode);
+                if (idx >= 0 && idx + 1 < defineNodeList.Count)
+                {
+                    var nextNode = defineNodeList[idx + 1];
+                    if (nextNode.nodeType == ENodeType.QuestionMark || (nextNode.token != null && nextNode.token.type == ETokenType.QuestionMark))
+                    {
+                        m_ClassDefineRef.isNullable = true;
+                    }
+                }
                 m_MemberDataType = EMemberDataType.ConstVariable;
             }
 

@@ -1,4 +1,4 @@
-public class Core.Int64 extends Num
+public class Int64 extends Num
 {
     public const int MaxValue = 0x7fffffff;
     public const int MinValue = unchecked((int)0x80000000);
@@ -9,6 +9,10 @@ public class Core.Int64 extends Num
     {
         this._value = _val        
     }
+    
+    override get int size() { ret 32 }
+    override get int byteLength() { ret 4 }
+
     String toString()
     {
         return String.ParseString( m_Value );
@@ -17,15 +21,7 @@ public class Core.Int64 extends Num
     {
         return String.ParseString( value );
     }
-    cast( Type t )
-    {
-        if t == Int16.type 
-        {
-            ret Convert.Int32ConvertToInt16( m_Value )
-        }
-    }
-
-    public int compareTo(object value)
+    public int compareTo(Int64 value)
     {
         if (value == null)
         {
@@ -34,8 +30,7 @@ public class Core.Int64 extends Num
 
         ret 0
     }
-
-    public static int parse( string s )
+    public static Int64 parse( string s )
     {
         ret 0
     }

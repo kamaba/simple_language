@@ -66,7 +66,19 @@ namespace SimpleLanguage.Compile
             m_Token = nameNode?.token;
 
             if( typeNode != null )
-                m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, typeNode );             
+            {
+                m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, typeNode );            
+                // detect nullable marker following the type node (e.g. `int? param`)
+                int idx = listDefieNode.IndexOf(typeNode);
+                if (idx >= 0 && idx + 1 < listDefieNode.Count)
+                {
+                    var nextNode = listDefieNode[idx + 1];
+                    if (nextNode.nodeType == ENodeType.QuestionMark || (nextNode.token != null && nextNode.token.type == ETokenType.QuestionMark))
+                    {
+                        m_ClassDefineRef.isNullable = true;
+                    }
+                }
+            }
 
             return true;
         }

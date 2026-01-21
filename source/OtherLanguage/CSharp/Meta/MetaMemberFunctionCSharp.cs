@@ -1,9 +1,4 @@
-﻿
-using SimpleLanguage.CSharp;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
+﻿using System.Reflection;
 
 namespace SimpleLanguage.Core
 {
@@ -51,8 +46,8 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                var defineMetaClass = MetaTypeCSharp.GetMetaClassByCSharpType(pi.GetType());
-                m_ReturnMetaVariable?.defineMetaType.SetMetaClass(defineMetaClass);
+                var mt = MetaTypeCSharp.GetMetaTypeByCSharpType(pi.GetType());
+                m_ReturnMetaVariable?.SetMetaDefineType( mt );
 
                 m_MetaBlockStatements = new MetaBlockStatements(this, null);
                 m_MetaBlockStatements.isOnFunction = true;
@@ -87,10 +82,9 @@ namespace SimpleLanguage.Core
 
             if( methodInfo.DeclaringType != null )
             {
-                var defineMetaClass = MetaTypeCSharp.GetMetaClassByCSharpType(methodInfo.ReturnType);
-
-                m_ReturnMetaVariable.SetIsDefineMetaType( true );
-                m_ReturnMetaVariable.defineMetaType.SetMetaClass(defineMetaClass);
+                var mt = MetaTypeCSharp.GetMetaTypeByCSharpType(methodInfo.ReturnType);
+                m_ReturnMetaVariable.SetMetaDefineType(mt);
+                m_ReturnMetaVariable.SetIsDefineMetaType(true);
             }
 
 

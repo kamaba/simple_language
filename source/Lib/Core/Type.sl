@@ -1,3 +1,5 @@
+import CSharp.SimpleLanguage.Core
+import CSharp.SimpleLanguage
 
 public class MetaClass
 {
@@ -14,7 +16,7 @@ public class Type extends Object
     MetaClass _metaClass = null
     public Type[] typelist = null
 
-    // runtime accessors filled by RuntimeTypeManager.CreateTypeObject
+    #runtime accessors filled by RuntimeTypeManager.CreateTypeObject
     get MetaClass metaClass() { ret this._metaClass; }
     get int hashCode() { ret this._hashCode; }
     get int eType() { ret this._eType.toInt32(); }

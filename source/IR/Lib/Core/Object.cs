@@ -32,8 +32,9 @@ namespace SimpleLanguage.Lib
         // cache Type wrapper objects per runtime class id
         private static readonly Dictionary<int, TypeObject> s_typeObjectCache = new Dictionary<int, TypeObject>();
 
-        public static SObject GetObjectType(SObject sobj)
+        public static SObject GetObjectType(System.Object obj)
         {
+            SObject sobj = obj as SObject;
             if (sobj == null)
                 return null;
 
