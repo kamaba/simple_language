@@ -7,7 +7,7 @@ public class Object
     {
     }
 
-    final Type get type()
+    final get Type type()
     {
         ret SimpleLanguage.Lib.ObjectClass.GetObjectType(this);
     }

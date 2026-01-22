@@ -65,19 +65,19 @@ namespace SimpleLanguage.Compile
             }
             m_Token = nameNode?.token;
 
-            if( typeNode != null )
+            if (typeNode != null)
             {
-                m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, typeNode );            
-                // detect nullable marker following the type node (e.g. `int? param`)
+                Node qNode = null;
                 int idx = listDefieNode.IndexOf(typeNode);
                 if (idx >= 0 && idx + 1 < listDefieNode.Count)
                 {
                     var nextNode = listDefieNode[idx + 1];
                     if (nextNode.nodeType == ENodeType.QuestionMark || (nextNode.token != null && nextNode.token.type == ETokenType.QuestionMark))
                     {
-                        m_ClassDefineRef.isNullable = true;
+                        qNode = nextNode;
                     }
                 }
+                m_ClassDefineRef = new FileMetaClassDefine(m_FileMeta, typeNode, qNode);
             }
 
             return true;
@@ -350,9 +350,23 @@ namespace SimpleLanguage.Compile
             m_GetToken = getToken;
             m_SetToken = setToken;
             m_FinalToken = finalToken;
-            if (returnClassNameNode != null )
+            if (returnClassNameNode != null)
             {
-                m_DefineMetaClass = new FileMetaClassDefine(m_FileMeta, returnClassNameNode );
+                Node qNode = null;
+                if (returnClassNameNode.parent != null)
+                {
+                    var siblings = returnClassNameNode.parent.childList;
+                    int idx = siblings.IndexOf(returnClassNameNode);
+                    if (idx >= 0 && idx + 1 < siblings.Count)
+                    {
+                        var nextNode = siblings[idx + 1];
+                        if (nextNode.nodeType == ENodeType.QuestionMark || (nextNode.token != null && nextNode.token.type == ETokenType.QuestionMark))
+                        {
+                            qNode = nextNode;
+                        }
+                    }
+                }
+                m_DefineMetaClass = new FileMetaClassDefine(m_FileMeta, returnClassNameNode, qNode);
             }
             return true;
         }

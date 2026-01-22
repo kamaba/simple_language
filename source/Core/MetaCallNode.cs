@@ -585,7 +585,19 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    if (frontCNT == ECallNodeType.MetaNode)
+                        // quick special-case: accessing `.type` on a class/type should always resolve to the Type getter
+                        if (m_Name == "type")
+                        {
+                            MetaType frontMetaType = m_FrontCallNode?.metaType;
+                            if (frontMetaType == null && m_FrontCallNode?.m_MetaClass != null)
+                            {
+                                frontMetaType = new MetaType(m_FrontCallNode.m_MetaClass);
+                            }
+                            HandleGetTypeByMetaType(frontMetaType);
+                            return true;
+                        }
+
+                        if (frontCNT == ECallNodeType.MetaNode)
                     {
                         MetaNode mn = null;
                         if (m_FrontCallNode.m_MetaNode.isMetaNamespace)
@@ -647,6 +659,12 @@ namespace SimpleLanguage.Core
                     else if (frontCNT == ECallNodeType.ClassName
                         || frontCNT == ECallNodeType.MetaType )
                     {
+                        // special-case: a.type() where 'a' is a variable => produce Type for runtime variable
+                        if (m_Name == "type" && m_IsFunction && m_FrontCallNode != null && m_FrontCallNode.callNodeType == ECallNodeType.FunctionInnerVariableName)
+                        {
+                            HandleGetTypeByMetaVariable(m_FrontCallNode.m_MetaVariable);
+                            return true;
+                        }
                         // ClassName 一般使用在 Class1.静态变量，或者是静态方法的调用
                         MetaNode tmb = null;
                         MetaNode curMetaNode = null;
@@ -1382,7 +1400,26 @@ namespace SimpleLanguage.Core
         }
         void HandleGetTypeByMetaVariable( MetaVariable mv )
         {
+            if (mv == null)
+            {
+                Log.AddInStructMeta(EError.None, "Error HandleGetTypeByMetaVariable mv is null");
+                return;
+            }
 
+            // ensure variable meta types are calculated
+            mv.ParseRealMetaType();
+
+            // result of `.type()` is Core.Type
+            m_MetaType = new MetaType(CoreMetaClassManager.typeMetaClass);
+
+            // call meta information: provide the target meta type as the call meta-type
+            // so downstream code knows which runtime type to wrap
+            m_CallMetaType = new MetaType(mv.realMetaType);
+
+            // create a placeholder MetaFunction to mark this as a function-like access
+            m_MetaFunction = new MetaFunction(m_MetaType.metaClass ?? CoreMetaClassManager.typeMetaClass);
+
+            m_CallNodeType = ECallNodeType.FunctionCall;
         }
         public bool GetFirstNode(string inputname, MetaClass mc, int count )
         {
@@ -1623,10 +1660,6 @@ namespace SimpleLanguage.Core
         }
         public bool GetFunctionOrVariableByOwnerClass( MetaClass mc, string inputname )
         {
-            if (inputname == "type")
-            {
-                return HandleTypeFunction(mc);
-            }
             MetaMemberVariable mmv = null;
             MetaMemberFunction mmf = null;
             if (m_IsFunction)

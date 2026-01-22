@@ -376,6 +376,13 @@ namespace SimpleLanguage.Compile
                         m_TokenIndex++;
                     }
                     break;
+                case ETokenType.QuestionMarkDot: // ?.
+                    {
+                        // treat null-conditional operator like a linking token (similar to '.')
+                        currentNode.linkToken = token;
+                        m_TokenIndex++;
+                    }
+                    break;
                 case ETokenType.Comma:   //,
                     {
                         Node node = new Node(token);

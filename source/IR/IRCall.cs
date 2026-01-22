@@ -48,6 +48,26 @@ namespace SimpleLanguage.IR
                 AddIRRangeData(irexpress.IRDataList);
             }
             MetaFunction mf = mfc.GetTemplateMemberFunction();
+            // Special-case: calls that request a Type object for a variable (e.g. `c.type()`)
+            // are represented as a MetaMethodCall where the target function's owner meta-class
+            // is the Type meta-class. In that case call the runtime helper to obtain a TypeObject.
+            if (mf != null && mf.ownerMetaClass == SimpleLanguage.Core.CoreMetaClassManager.typeMetaClass)
+            {
+                // expect the instance (SObject) to be already on the value stack via IRLoadVariable emitted above
+                m_MethodInfo = typeof(SimpleLanguage.Lib.ObjectClass).GetMethod("GetObjectType", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (m_MethodInfo != null)
+                {
+                    // ensure paramCount reflects the single parameter expected by GetObjectType
+                    paramCount = 1;
+
+                    IRData data = new IRData();
+                    data.opCode = EIROpCode.CallCSharpMethod;
+                    data.SetOpValue(this);
+                    data.SetDebugInfoByToken(mf.pingToken);
+                    AddIRData(data);
+                    return;
+                }
+            }
             MetaMemberFunctionCSharp mmfcsharp = mf as MetaMemberFunctionCSharp;
             if (mmfcsharp != null)
             {

@@ -650,9 +650,13 @@ namespace SimpleLanguage.Compile
                     }
                     break;
                 }
-                else if( curNode.nodeType == ENodeType.Bracket )
+                else if( curNode.nodeType == ENodeType.QuestionMark )
                 {
-                    nodeList[nodeList.Count - 1].AddBracketNode( curNode );
+                    nodeList.Add(curNode);
+                }
+                else if (curNode.nodeType == ENodeType.Bracket)
+                {
+                    nodeList[nodeList.Count - 1].AddBracketNode(curNode);
                 }
                 else
                 {

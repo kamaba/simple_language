@@ -82,6 +82,9 @@ namespace SimpleLanguage.Compile
             }
         }
         public List<Token> tokenList => m_TokenList;
+        // nullable marker for type definitions (eg `int?`)
+        // kept here to match previous behavior for FileMetaClassDefine constructor overload
+        // but actual nullable handling is in FileMetaClassDefine.
         //public List<MetaNamespace> metaNamespaceList => m_MetaNamespaceList;
         protected List<Token> m_TokenList = new List<Token>();
 
@@ -240,6 +243,7 @@ namespace SimpleLanguage.Compile
         private bool m_IsTemplate = false;
         private Token m_Token = null;
         private Token m_AtToken = null;
+        private Token m_QuestionMarkDotToken = null;
         private FileMeta m_FileMeta = null;
         private FileMetaParTerm m_FileMetaParTerm = null;
         private FileMetaBraceTerm m_FileMetaBraceTerm = null;
@@ -249,6 +253,12 @@ namespace SimpleLanguage.Compile
         private Token m_EndAngleToken = null;
         private List<FileMetaBracketTerm> m_FileMetaBracketTermList = new List<FileMetaBracketTerm>();
         private List<FileInputTemplateNode> m_InputTemplateNodeList = new List<FileInputTemplateNode>();//< template1,template2 >
+
+        public Token questionMarkDotToken => m_QuestionMarkDotToken;
+        public void SetQuestionMarkDotToken(Token t)
+        {
+            m_QuestionMarkDotToken = t;
+        }
 
         public FileMetaCallNode( FileMeta fm, Node _node )
         {
@@ -306,6 +316,8 @@ namespace SimpleLanguage.Compile
             {
                 m_FileMetaBraceTerm = new FileMetaBraceTerm(m_FileMeta, _node.blockNode);
             }
+            // if this call node was created from a '?.' link, keep the token in m_QuestionMarkDotToken
+            // note: in FileMetaCallLink.AddChildExtendLinkList we set this when constructing the call node
         }
         public string ToFormatString()
         {
@@ -455,8 +467,36 @@ namespace SimpleLanguage.Compile
             for (int i = 0; i < childNodeList.Count; i++)
             {
                 var cnode1 = childNodeList[i];
-                FileMetaCallNode fmcn = new FileMetaCallNode(m_FileMeta, cnode1);
-                m_CallNodeList.Add(fmcn);
+
+                // handle null-conditional link '?.' : represented as a Period node whose token.type == QuestionMarkDot
+                if (cnode1.nodeType == ENodeType.Period && cnode1.token?.type == ETokenType.QuestionMarkDot)
+                {
+                    // next node should be the identifier target
+                    if (i + 1 < childNodeList.Count)
+                    {
+                        var targetNode = childNodeList[i + 1];
+                        FileMetaCallNode fmcn = new FileMetaCallNode(m_FileMeta, targetNode);
+                        fmcn.SetQuestionMarkDotToken(cnode1.token);
+                        m_CallNodeList.Add(fmcn);
+
+                        // handle possible bracket children on target
+                        if (targetNode.bracketNodeList.Count > 0)
+                        {
+                            var cnode2 = targetNode.bracketNodeList[targetNode.bracketNodeList.Count - 1];
+                            if (cnode2.extendLinkNodeList.Count > 0)
+                            {
+                                AddChildExtendLinkList(cnode2, false);
+                            }
+                        }
+
+                        // skip the next node because we've consumed it
+                        i++;
+                        continue;
+                    }
+                }
+
+                FileMetaCallNode fmcn2 = new FileMetaCallNode(m_FileMeta, cnode1);
+                m_CallNodeList.Add(fmcn2);
 
                 if( cnode1.bracketNodeList.Count > 0 )
                 {
@@ -547,7 +587,11 @@ namespace SimpleLanguage.Compile
 
         private List<Token> m_TokenList = new List<Token>();
         private bool m_IsInputTemplateData = false;
-        public FileMetaClassDefine( FileMeta fm, Node node )
+        public FileMetaClassDefine( FileMeta fm, Node node ) : this(fm, node, null)
+        {
+        }
+
+        public FileMetaClassDefine( FileMeta fm, Node node, Node questionMark )
         {
             m_FileMeta = fm;
             // collect tokens that form the type reference (including dotted names)

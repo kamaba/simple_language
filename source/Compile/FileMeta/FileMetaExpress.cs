@@ -342,14 +342,14 @@ namespace SimpleLanguage.Compile
             // 右侧类型（支持简单类型节点列表）
             if (typeNodes.Count == 1)
             {
-                m_DefineType = new FileMetaClassDefine(fm, typeNodes[0]);
+                m_DefineType = new FileMetaClassDefine(fm, typeNodes[0], null);
             }
             else
             {
                 // 多节点类型（例如命名空间前缀），简单合成为一个临时 Node 再交给 FileMetaClassDefine
                 Node typeRoot = new Node(null);
                 typeRoot.SetChildList(typeNodes);
-                m_DefineType = new FileMetaClassDefine(fm, typeRoot);
+                m_DefineType = new FileMetaClassDefine(fm, typeRoot, null);
             }
 
             // is / isnot 表达式最后可能还有一个变量名： var1 is Class1 var2
