@@ -68,7 +68,7 @@ namespace Std
                 {
                     var fmt = sv.ToFormatString();
                     if (!string.IsNullOrEmpty(fmt)) return fmt;
-                    var val = sv.getValue();
+                    var val = sv.value;
                     if (val != null) return val.ToString();
                     return "null";
                 }

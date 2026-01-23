@@ -16,13 +16,13 @@ namespace SimpleLanguage.VM
         }
         public void SetClassObject(ClassObject val)
         {
-            value = val;
+            m_Value = val;
             val.refCount++;
         }
         public void SetValue(EVMType _eType, System.Object val)
         {
             m_Type = _eType;
-            value = val;
+            m_Value = val;
         }
         public override string ToFormatString()
         {

@@ -232,7 +232,7 @@ namespace SimpleLanguage.VM
         public void SetValue(SObject val)
         {
             eType = val.eAnyType;
-            SetTypeValue(eType, val.value);
+            SetTypeValue(eType, val.value );
         }
         public void SetTypeValue( EVMType etype, object tobj )
         {
@@ -344,7 +344,7 @@ namespace SimpleLanguage.VM
                 case Int8Object int8obj:
                     {
                         eType = EVMType.Byte;
-                        int8Value = int8obj.value;
+                        int8Value = (byte)int8obj.value;
                     }
                     break;
                 case SInt8Object sint8obj:
@@ -427,7 +427,7 @@ namespace SimpleLanguage.VM
                             return;
                         }
                         eType = templateobj.eType;
-                        SetTypeValue(eType, templateobj.value);
+                        SetTypeValue(eType, templateobj.value );
                     }
                     break;
                 default:

@@ -229,7 +229,7 @@ namespace SimpleLanguage.VM.Runtime
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
-                            svalue.SetBoolValue((bool)to.value);
+                            svalue.SetBoolValue((bool)to.value );
                             return;
                         }
 
@@ -248,7 +248,7 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             if (obj.eAnyType == EVMType.Byte)
                             {
-                                svalue.SetInt8Value((byte)obj.value);
+                                svalue.SetInt8Value((byte)obj.value );
                             }
                             else
                             {
@@ -260,7 +260,7 @@ namespace SimpleLanguage.VM.Runtime
                         if (to != null)
                         {
                             svalue.SetInt8Value((Byte)to.value);
-                            to.SetValue(EVMType.Byte, obj.value);
+                            to.SetValue(EVMType.Byte, obj.value );
                             return;
                         }
 
@@ -270,7 +270,7 @@ namespace SimpleLanguage.VM.Runtime
                             Debug.Write("该类型不是Byte类型!!");
                             return;
                         }
-                        svalue.SetInt8Value(byteObj.value);
+                        svalue.SetInt8Value((Byte)byteObj.value);
                     }
                     break;
                 case EVMType.SByte:
@@ -300,7 +300,7 @@ namespace SimpleLanguage.VM.Runtime
                             Debug.Write("该类型不是SByte类型!!");
                             return;
                         }
-                        svalue.SetSInt8Value(byteObj.value);
+                        svalue.SetSInt8Value( (SByte)byteObj.value);
                     }
                     break;
                 case EVMType.Int16:
@@ -330,7 +330,7 @@ namespace SimpleLanguage.VM.Runtime
                             Debug.Write("该类型不是Int32类型!!");
                             return;
                         }
-                        svalue.SetInt16Value(int16Obj.value);
+                        svalue.SetInt16Value((short)int16Obj.value);
                     }
                     break;
                 case EVMType.UInt16:
@@ -360,7 +360,7 @@ namespace SimpleLanguage.VM.Runtime
                             Debug.Write("该类型不是Int32类型!!");
                             return;
                         }
-                        svalue.SetUInt16Value(uint16Obj.value);
+                        svalue.SetUInt16Value((ushort)uint16Obj.value);
                     }
                     break;
                 case EVMType.Int32:
@@ -389,7 +389,7 @@ namespace SimpleLanguage.VM.Runtime
                             Debug.Write("该类型不是Int32类型!!");
                             return;
                         }
-                        svalue.SetInt32Value(int32Obj.value);
+                        svalue.SetInt32Value( (int)int32Obj.value);
                     }
                     break;
                 case EVMType.UInt32:
@@ -418,7 +418,7 @@ namespace SimpleLanguage.VM.Runtime
                             Debug.Write("该类型不是Int32类型!!");
                             return;
                         }
-                        svalue.SetUInt32Value(uint32Obj.value);
+                        svalue.SetUInt32Value( (uint)uint32Obj.value);
                     }
                     break;
                 case EVMType.Int64:
@@ -447,7 +447,7 @@ namespace SimpleLanguage.VM.Runtime
                             Debug.Write("该类型不是Int32类型!!");
                             return;
                         }
-                        svalue.SetInt64Value(int64Obj.value);
+                        svalue.SetInt64Value( (Int64)int64Obj.value);
                     }
                     break;
                 case EVMType.UInt64:
@@ -477,7 +477,7 @@ namespace SimpleLanguage.VM.Runtime
                             Debug.Write("该类型不是Int32类型!!");
                             return;
                         }
-                        svalue.SetUInt64Value(uint64Obj.value);
+                        svalue.SetUInt64Value((UInt64)uint64Obj.value);
                     }
                     break;
                 case EVMType.Float32:
@@ -507,7 +507,7 @@ namespace SimpleLanguage.VM.Runtime
                             Debug.Write("该类型不是Int32类型!!");
                             return;
                         }
-                        svalue.SetFloatValue(floatObj.value);
+                        svalue.SetFloatValue( (float)floatObj.value);
                     }
                     break;
                 case EVMType.Float64:
@@ -537,7 +537,7 @@ namespace SimpleLanguage.VM.Runtime
                             Debug.Write("该类型不是Int32类型!!");
                             return;
                         }
-                        svalue.SetDoubleValue(doubleObj.value);
+                        svalue.SetDoubleValue( (double)doubleObj.value);
                     }
                     break;
                 case EVMType.String:
@@ -567,7 +567,7 @@ namespace SimpleLanguage.VM.Runtime
                             Debug.Write("该类型不是Int32类型!!");
                             return;
                         }
-                        svalue.SetStringValue(stringObj.value);
+                        svalue.SetStringValue( (string)stringObj.value);
                     }
                     break;
                 case EVMType.Array:
@@ -651,6 +651,29 @@ namespace SimpleLanguage.VM.Runtime
                                     svalue.SetSObject(obj.value as SObject);
                                 }
                                 break;
+                        }
+                    }
+                    break;
+                case EVMType.Type:
+                    {
+                        if (anyObj)
+                        {
+                            svalue.SetSObject(obj.value as SObject);
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetSObject(to.value as SObject);
+                            return;
+                        }
+                        if (obj is TypeObject co)
+                        {
+                            svalue.SetSObject(co.value as SObject);
+                        }
+                        else
+                        {
+                            Debug.Assert(false);
                         }
                     }
                     break;
@@ -781,13 +804,41 @@ namespace SimpleLanguage.VM.Runtime
         }
         public SValue GetCurrentIndexValue(int index)
         {
-            if (m_ValueStack == null || m_ValueIndex == 0) return default;
-            if (index < 0 || index >= m_ValueIndex) return default;
             return m_ValueStack[index];
         }
-        public RuntimeType GetClassRuntimeType(IRMetaType irmt, IRMetaClass curIRMc, List<RuntimeType> __rtList, bool isAdd = false)
+        public static RuntimeType GetClassRuntimeType(IRMetaType irmt, IRMetaClass curIRMc, List<RuntimeType> __rtList, bool isAdd = false)
         {
-            return RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt);
+            if (irmt.templateIndex != -1)
+            {
+                if (irmt.irOwnerMetaClass == curIRMc || curIRMc.irName == "Object")
+                {
+                    return __rtList[irmt.templateIndex];
+                }
+                else
+                {
+                    var mt = curIRMc.GetIRMetaTypeByTemplateAndClassRelation(irmt.irOwnerMetaClass, irmt.templateIndex);
+
+                    return GetClassRuntimeType(mt, curIRMc, __rtList, isAdd);
+                }
+            }
+            else
+            {
+                List<RuntimeType> rtList = new List<RuntimeType>();
+                if (irmt.irMetaTypeList.Count > 0)
+                {
+                    for (int i = 0; i < irmt.irMetaTypeList.Count; i++)
+                    {
+                        var crt = GetClassRuntimeType(irmt.irMetaTypeList[i], curIRMc, __rtList, isAdd);
+                        rtList.Add(crt);
+                    }
+                }
+                RuntimeType rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.irMetaClass, rtList);
+                if (rt == null && isAdd)
+                {
+                    rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(irmt.irMetaClass, rtList);
+                }
+                return rt;
+            }
         }
         public RuntimeType GetMethodRuntimeType(IRMetaType irmt)
         {

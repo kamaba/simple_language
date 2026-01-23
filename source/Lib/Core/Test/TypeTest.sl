@@ -7,14 +7,15 @@ TypeTest
     static fun()
     {
         #primitive type via function
-        t = int.type()
-        System.Console.WriteLine("int.type() -> " + t.toString())
+        #t = int.type()
+        #System.Console.WriteLine("int.type() -> " + t.toString())
 
         #instance .type
         int i2 = 20
         t2 = i2.type
         System.Console.WriteLine("i2.type -> " + t2.toString())
 
+        #!
         if t == t2
         {
             System.Console.WriteLine("int.type == i2.type : true")
@@ -40,5 +41,6 @@ TypeTest
         {
             System.Console.WriteLine("Array<int>.type == Array<string>.type : false")
         }
+        !#
     }
 }

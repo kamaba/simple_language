@@ -311,7 +311,7 @@ namespace SimpleLanguage.VM
                             Int8Object val = obj as Int8Object;
                             if (val != null)
                             {
-                                sval.SetInt8Value(val.value);
+                                sval.SetInt8Value( (byte)val.value );
                             }
                             else
                             {

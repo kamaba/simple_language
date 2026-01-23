@@ -13,19 +13,14 @@ using System.Text;
 
 namespace SimpleLanguage.VM
 {
-    class TypeObject : SObject
+    class TypeObject : ClassObject
     {
-        public override object getValue() { return value; }
-
-        public TypeObject(RuntimeType rm ) : base(EVMType.Type )
+        RuntimeType m_Rt = null;
+        public TypeObject(RuntimeType rm ) : base(RuntimeTypeManager.typeRuntimeType)
         {
-            value = rm;
-            m_RuntimeType = RuntimeTypeManager.typeRuntimeType;
-        }
-        public void SetValue(RuntimeType _val)
-        {
-            value = _val;
-            m_IsNull = false;
+            m_Rt = rm;
+            m_Type = EVMType.Type;
+            CreateObject();
         }
         public override string ToFormatString()
         {

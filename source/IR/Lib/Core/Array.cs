@@ -48,7 +48,7 @@ namespace SimpleLanguage.Lib
         {
             if (value is SObject sobj)
             {
-                ao.StoreObject(index, sobj.getValue() );
+                ao.StoreObject(index, sobj.value );
             }
             else
             {

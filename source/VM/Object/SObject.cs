@@ -17,8 +17,13 @@ namespace SimpleLanguage.VM
         public EVMType eType => m_Type;
         public EVMType eAnyType => m_AnyType;
 
-        public virtual object getValue() { return value; }
-
+        public virtual object value 
+        {
+            get
+            {
+                return m_Value;
+            } 
+        }
         public IRMetaClass irMetaClass => m_RuntimeType?.irClass;
         public RuntimeType runtimeType => m_RuntimeType;
         public short typeId { get; set; } = 0;
@@ -31,14 +36,14 @@ namespace SimpleLanguage.VM
         protected bool m_IsNull = false;
         protected RuntimeType m_RuntimeType = null;
         protected int m_Length = 0;
-        public object value;
+        protected object m_Value = null;
         public int id { get; set; } = 0;
 
         static int idCount = 0;
         protected SObject()
         {
             id = idCount++;
-            value = this;
+            m_Value = this;
         }
         public SObject( EVMType etype )
         {
@@ -47,13 +52,13 @@ namespace SimpleLanguage.VM
         public void SetValue(System.Object val)
         {
             m_IsNull = false;
-            value = val;
+            m_Value = val;
         }
         public void SetValueByType(EVMType vmType, System.Object val)
         {
             m_AnyType = vmType;
             m_IsNull = false;
-            value = val;
+            m_Value = val;
             refCount++;
         }
         public virtual void SetNull()

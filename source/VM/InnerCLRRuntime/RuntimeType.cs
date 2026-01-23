@@ -22,6 +22,31 @@ namespace SimpleLanguage.VM
         private SObject[] m_StaticMemObjectList;
         public EVMType eType { get; set; }
 
+        public RuntimeType(IRMetaClass rc, List<RuntimeType> rtList)
+        {
+            irClass = rc;
+            if (rtList != null)
+            {
+                runtimeTemplateList = rtList;
+            }
+
+            m_StaticMemObjectList = new SObject[irClass.staticIRMetaVariableList.Count];
+            for (int i = 0; i < irClass.staticIRMetaVariableList.Count; i++)
+            {
+                RuntimeType rt = GetClassRuntimeType(irClass.staticIRMetaVariableList[i].irMetaType, true);
+                m_StaticMemObjectList[i] = ObjectManager.CreateObjectByRuntimeType(rt, true);
+            }
+
+            if (Enum.TryParse<EVMType>(irClass.irName, true, out var eoutType))
+            {
+                eType = eoutType;
+            }
+            else
+            {
+                eType = EVMType.Class;
+            }
+            //eType = GetVMType(irClass.irName);
+        }
         public static EVMType GetVMType(string irName)
         {
             // Minimal mapping by known IR names used by ObjectManager
@@ -39,17 +64,46 @@ namespace SimpleLanguage.VM
 
         public RuntimeType GetExtendsTemplateRuntimeType(IRMetaType irmt, List<RuntimeType> _runtimeTemplateList)
         {
-            // naive: if templates match by count, return this
-            return this;
+            if (_runtimeTemplateList?.Count > 0)
+            {
+                return _runtimeTemplateList[irmt.templateIndex];
+            }
+            return null;
         }
         public RuntimeType GetClassRuntimeType(IRMetaType irmt, bool isAdd = false)
         {
-            // If no templates, return self
-            if (irmt == null) return this;
-            // If same irClass, return this
-            if (irmt.m_IRMetaClass != null && irmt.m_IRMetaClass.id == this.irClass.id) return this;
-            // fallback: try to find matching runtime type in manager
-            return RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt);
+            var irmc = this.irClass;
+            if (irmt.templateIndex != -1)
+            {
+                if (irmt.irOwnerMetaClass == this.irClass)
+                {
+                    return runtimeTemplateList[irmt.templateIndex];
+                }
+                else
+                {
+                    var mt = irClass.GetIRMetaTypeByTemplateAndClassRelation(irmt.irOwnerMetaClass, irmt.templateIndex);
+
+                    return GetClassRuntimeType(mt, isAdd);
+                }
+            }
+            else
+            {
+                List<RuntimeType> rtList = new List<RuntimeType>();
+                if (irmt.irMetaTypeList.Count > 0)
+                {
+                    for (int i = 0; i < irmt.irMetaTypeList.Count; i++)
+                    {
+                        var crt = GetClassRuntimeType(irmt.irMetaTypeList[i], isAdd);
+                        rtList.Add(crt);
+                    }
+                }
+                var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.irMetaClass, rtList);
+                if (rt == null && isAdd)
+                {
+                    rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(irmt.irMetaClass, rtList);
+                }
+                return rt;
+            }
         }
         public void GetMemberVariableSValue(int index, ref SValue svalue)
         {
@@ -199,8 +253,33 @@ namespace SimpleLanguage.VM
         }
         public static RuntimeType GetRuntimeTypeByMTAndTemplateMT(IRMetaClass rmc, List<RuntimeType> inputTemplateTypeList)
         {
-            // naive: ignore template args and return base runtime type
-            return GetRuntimeTypeByMT(rmc);
+            foreach (var v in s_RuntimeList)
+            {
+                if (v.irClass != rmc)
+                {
+                    continue;
+                }
+
+                if (v.runtimeTemplateList.Count == inputTemplateTypeList.Count)
+                {
+                    if (v.runtimeTemplateList.Count == 0)
+                    {
+                        return v;
+                    }
+                    bool flag = true;
+                    for (int i = 0; i < inputTemplateTypeList.Count; i++)
+                    {
+                        if (!RuntimeType.SameRuntimeType(inputTemplateTypeList[i], v.runtimeTemplateList[i]))
+                        {
+                            flag = false;
+                            break;
+                        }
+                    }
+                    if (flag)
+                        return v;
+                }
+            }
+            return null;
         }
         public static RuntimeType GetRuntimeTypeByMTAndIRMetaClass(IRMetaClass rmc)
         {
@@ -208,37 +287,36 @@ namespace SimpleLanguage.VM
         }
         public static RuntimeType AddRuntimeTypeByClassAndTemplate(IRMetaClass rmc, List<RuntimeType> inputTemplateTypeList)
         {
-            // ignore templates for now
-            return AddRuntimeTypeByClass(rmc);
-        }
-        public static RuntimeType AddRuntimeTypeByClass(IRMetaClass rmc)
-        {
             if (rmc == null) return null;
             var exist = GetRuntimeTypeByMT(rmc);
             if (exist != null) return exist;
 
-            RuntimeType rt = new RuntimeType();
+            RuntimeType rt = new RuntimeType(rmc, inputTemplateTypeList);
             rt.irClass = rmc;
             s_RuntimeList.Add(rt);
 
             // init well-known static mappings based on irName
             string name = rmc.irName ?? "";
-            if (name.Contains("Type")) m_TypeRuntimeType = rt;
-            if (name.EndsWith("Void")) m_VoidRuntimeType = rt;
-            if (name.EndsWith("Num") || name.EndsWith("Num")) m_NumRuntimeType = rt;
-            if (name.EndsWith("Byte")) m_ByteRuntimeType = rt;
-            if (name.EndsWith("SByte")) m_SByteRuntimeType = rt;
-            if (name.EndsWith("Int16")) m_Int16RuntimeType = rt;
-            if (name.EndsWith("UInt16")) m_UInt16RuntimeType = rt;
-            if (name.EndsWith("Int32")) m_Int32RuntimeType = rt;
-            if (name.EndsWith("UInt32")) m_UInt32RuntimeType = rt;
-            if (name.EndsWith("Int64")) m_Int64RuntimeType = rt;
-            if (name.EndsWith("UInt64")) m_UInt64RuntimeType = rt;
-            if (name.EndsWith("Float32")) m_Float32RuntimeType = rt;
-            if (name.EndsWith("Float64")) m_Float64RuntimeType = rt;
-            if (name.EndsWith("String")) m_StringRuntimeType = rt;
+            if (name == "Type") m_TypeRuntimeType = rt;
+            if (name == "Void") m_VoidRuntimeType = rt;
+            if (name == "Num") m_NumRuntimeType = rt;
+            if (name == "Byte") m_ByteRuntimeType = rt;
+            if (name == "SByte") m_SByteRuntimeType = rt;
+            if (name == "Int16") m_Int16RuntimeType = rt;
+            if (name == "UInt16") m_UInt16RuntimeType = rt;
+            if (name == "Int32") m_Int32RuntimeType = rt;
+            if (name == "UInt32") m_UInt32RuntimeType = rt;
+            if (name == "Int64") m_Int64RuntimeType = rt;
+            if (name == "UInt64") m_UInt64RuntimeType = rt;
+            if (name == "Float32") m_Float32RuntimeType = rt;
+            if (name == "Float64") m_Float64RuntimeType = rt;
+            if (name == "String") m_StringRuntimeType = rt;
 
             return rt;
+        }
+        public static RuntimeType AddRuntimeTypeByClass(IRMetaClass rmc )
+        {
+            return AddRuntimeTypeByClassAndTemplate(rmc, null);
         }
     }
 }

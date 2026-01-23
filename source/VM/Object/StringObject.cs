@@ -15,17 +15,16 @@ namespace SimpleLanguage.VM
 {
     class StringObject : SObject
     {
-        public override object getValue() { return value; }
-        public string value;
+        public new string value { get { return (string)m_Value; } }
 
         public StringObject(string str) : base(EVMType.String )
         {
-            value = str;
+            m_Value = str;
             m_RuntimeType = RuntimeTypeManager.stringRuntimeType;
         }
         public void SetValue(String _val)
         {
-            value = _val;
+            m_Value = _val;
             m_IsNull = false;
         }
         public static StringObject SetToString( Int32MetaClass mc )
