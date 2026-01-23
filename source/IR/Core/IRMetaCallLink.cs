@@ -123,6 +123,14 @@ namespace SimpleLanguage.Core.IR
                 //ParseNew(cnode, _irMethod, irList );
                 Debug.Assert(false, "New的方法，已经独立于表达式");
             }
+            else if( cnode.visitType == MetaVisitNode.EVisitType.MetaClass )
+            {
+
+            }
+            else
+            {
+                Debug.Assert(false, $"没有找到:{cnode.visitType} ");
+            }
             return irList;
         }
         public string ToIRString()

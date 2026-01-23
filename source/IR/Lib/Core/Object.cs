@@ -166,11 +166,9 @@ namespace SimpleLanguage.Lib
         {
             public RuntimeType TargetRuntimeType { get; }
 
-            public TypeObject(RuntimeType target) : base(target, false)
+            public TypeObject(RuntimeType target) : base(RuntimeTypeManager.typeRuntimeType, false)
             {
                 TargetRuntimeType = target;
-                // ensure runtimeType is set on base
-                this.SetClassObject(this);
             }
 
             public string metaClassName

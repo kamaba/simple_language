@@ -37,6 +37,38 @@ namespace SimpleLanguage.VM
                 rightPrim.SetSObject(right.sobject);
             }
 
+            if (sign == 0)
+            {
+                bool leftIsString = leftPrim.eType == EVMType.String;
+                bool rightIsString = rightPrim.eType == EVMType.String;
+                if (leftIsString || rightIsString)
+                {
+                    string ls;
+                    string rs;
+                    if (leftIsString)
+                    {
+                        ls = leftPrim.stringValue ?? string.Empty;
+                    }
+                    else
+                    {
+                        var obj = left.GetValueObject();
+                        ls = obj != null ? obj.ToString() : string.Empty;
+                    }
+
+                    if (rightIsString)
+                    {
+                        rs = rightPrim.stringValue ?? string.Empty;
+                    }
+                    else
+                    {
+                        var obj = right.GetValueObject();
+                        rs = obj != null ? obj.ToString() : string.Empty;
+                    }
+
+                    left.SetStringValue(ls + rs);
+                    return;
+                }
+            }
             // If either side is a class-wrapped NumObject, prefer NumObject operation methods
             bool leftIsNumObj = left.eType == EVMType.Class && left.sobject is NumObject;
             bool rightIsNumObj = right.eType == EVMType.Class && right.sobject is NumObject;
@@ -75,40 +107,9 @@ namespace SimpleLanguage.VM
                     }
                 }
 
-            // Special-case: string concatenation for '+' when either side is a string
-            // Treat any other type as its string representation (ToString)
-            if (sign == 0)
-            {
-                bool leftIsString = leftPrim.eType == EVMType.String;
-                bool rightIsString = rightPrim.eType == EVMType.String;
-                if (leftIsString || rightIsString)
-                {
-                    string ls;
-                    string rs;
-                    if (leftIsString)
-                    {
-                        ls = leftPrim.stringValue ?? string.Empty;
-                    }
-                    else
-                    {
-                        var obj = left.GetValueObject();
-                        ls = obj != null ? obj.ToString() : string.Empty;
-                    }
-
-                    if (rightIsString)
-                    {
-                        rs = rightPrim.stringValue ?? string.Empty;
-                    }
-                    else
-                    {
-                        var obj = right.GetValueObject();
-                        rs = obj != null ? obj.ToString() : string.Empty;
-                    }
-
-                    left.SetStringValue(ls + rs);
-                    return;
-                }
-            }
+                // Special-case: string concatenation for '+' when either side is a string
+                // Treat any other type as its string representation (ToString)
+                
 
                 // right is NumObject, left is primitive -> compute into left primitive
                 if (rightNum != null)
@@ -301,13 +302,13 @@ namespace SimpleLanguage.VM
             left.Int64 = lr;
         }
 
-        public void AddSValue(ref SValue sval, bool isUnsign, out bool isMethodCall )
+        public void AddSValue(ref SValue sval, bool isUnsign, out bool isMethodCall)
         {
             isMethodCall = false;
             if (sval.eType == EVMType.String)
             {
                 string str = "";
-                if( this.eType == EVMType.Class )
+                if (this.eType == EVMType.Class)
                 {
                     ClassObject co = this.sobject as ClassObject;
                     if (co != null)
@@ -362,13 +363,13 @@ namespace SimpleLanguage.VM
                 }
                 stringValue = this.GetValueObject().ToString() + str;
             }
-            else if( this.eType == EVMType.Array )
+            else if (this.eType == EVMType.Array)
             {
                 // 处理array1 + array2
             }
             else
             {
-                if( this.eType == EVMType.Class )
+                if (this.eType == EVMType.Class)
                 {
                     ClassObject co = sval.sobject as ClassObject;
                     if (co != null)
@@ -430,7 +431,7 @@ namespace SimpleLanguage.VM
                 case EVMType.Byte:
                     {
                         eType = EVMType.Boolean;
-                       int8Value = (int8Value== 0) ? (byte)1: (byte)0;
+                        int8Value = (int8Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.SByte:

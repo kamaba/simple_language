@@ -202,583 +202,42 @@ namespace SimpleLanguage.VM.Runtime
                 }
             }
         }
-        public void SetSValue(SObject obj, EVMType etype, ref SValue svalue)
-        {
-            bool anyObj = svalue.eType == EVMType.Object;
-            switch (etype)
-            {
-                case EVMType.Null:
-                    {
-                        svalue.SetNull();
-                    }
-                    break;
-                case EVMType.Boolean:
-                    {
-                        if (anyObj)
-                        {
-                            if (obj.eAnyType == EVMType.Boolean)
-                            {
-                                svalue.SetBoolValue((bool)obj.value);
-                            }
-                            else
-                            {
-                                Debug.Assert(false, "该类型不是Boolean类型!!");
-                            }
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            svalue.SetBoolValue((bool)to.value );
-                            return;
-                        }
-
-                        BoolObject boolObj = obj as BoolObject;
-                        if (boolObj == null)
-                        {
-                            Debug.Write("该类型不是Boolean类型!!");
-                            return;
-                        }
-                        svalue.SetBoolValue(boolObj.value);
-                    }
-                    break;
-                case EVMType.Byte:
-                    {
-                        if (anyObj)
-                        {
-                            if (obj.eAnyType == EVMType.Byte)
-                            {
-                                svalue.SetInt8Value((byte)obj.value );
-                            }
-                            else
-                            {
-                                Debug.Assert(false, "该类型不是Boolean类型!!");
-                            }
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            svalue.SetInt8Value((Byte)to.value);
-                            to.SetValue(EVMType.Byte, obj.value );
-                            return;
-                        }
-
-                        Int8Object byteObj = obj as Int8Object;
-                        if (byteObj == null)
-                        {
-                            Debug.Write("该类型不是Byte类型!!");
-                            return;
-                        }
-                        svalue.SetInt8Value((Byte)byteObj.value);
-                    }
-                    break;
-                case EVMType.SByte:
-                    {
-                        if (anyObj)
-                        {
-                            if (obj.eAnyType == EVMType.SByte)
-                            {
-                                svalue.SetSInt8Value((sbyte)obj.value);
-                            }
-                            else
-                            {
-                                Debug.Assert(false, "该类型不是Boolean类型!!");
-                            }
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            svalue.SetSInt8Value((SByte)to.value);
-                            return;
-                        }
-
-                        SInt8Object byteObj = obj as SInt8Object;
-                        if (byteObj == null)
-                        {
-                            Debug.Write("该类型不是SByte类型!!");
-                            return;
-                        }
-                        svalue.SetSInt8Value( (SByte)byteObj.value);
-                    }
-                    break;
-                case EVMType.Int16:
-                    {
-                        if (anyObj)
-                        {
-                            if (obj.eAnyType == EVMType.Int16)
-                            {
-                                svalue.SetInt16Value((short)obj.value);
-                            }
-                            else
-                            {
-                                Debug.Assert(false, "该类型不是Boolean类型!!");
-                            }
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            svalue.SetInt16Value((Int16)to.value);
-                            return;
-                        }
-
-                        Int16Object int16Obj = obj as Int16Object;
-                        if (int16Obj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        svalue.SetInt16Value((short)int16Obj.value);
-                    }
-                    break;
-                case EVMType.UInt16:
-                    {
-                        if (anyObj)
-                        {
-                            if (obj.eAnyType == EVMType.UInt16)
-                            {
-                                svalue.SetUInt16Value((ushort)obj.value);
-                            }
-                            else
-                            {
-                                Debug.Assert(false, "该类型不是Boolean类型!!");
-                            }
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            svalue.SetUInt16Value((UInt16)to.value);
-                            return;
-                        }
-
-                        UInt16Object uint16Obj = obj as UInt16Object;
-                        if (uint16Obj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        svalue.SetUInt16Value((ushort)uint16Obj.value);
-                    }
-                    break;
-                case EVMType.Int32:
-                    {
-                        if (anyObj)
-                        {
-                            if (obj.eAnyType == EVMType.Int32)
-                            {
-                                svalue.SetInt32Value((int)obj.value);
-                            }
-                            else
-                            {
-                                Debug.Assert(false, "该类型不是Boolean类型!!");
-                            }
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            svalue.SetInt32Value((int)to.value);
-                            return;
-                        }
-                        Int32Object int32Obj = obj as Int32Object;
-                        if (int32Obj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        svalue.SetInt32Value( (int)int32Obj.value);
-                    }
-                    break;
-                case EVMType.UInt32:
-                    {
-                        if (anyObj)
-                        {
-                            if (obj.eAnyType == EVMType.UInt32)
-                            {
-                                svalue.SetUInt32Value((uint)obj.value);
-                            }
-                            else
-                            {
-                                Debug.Assert(false, "该类型不是Boolean类型!!");
-                            }
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            svalue.SetUInt32Value((UInt32)to.value);
-                            return;
-                        }
-                        UInt32Object uint32Obj = obj as UInt32Object;
-                        if (uint32Obj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        svalue.SetUInt32Value( (uint)uint32Obj.value);
-                    }
-                    break;
-                case EVMType.Int64:
-                    {
-                        if (anyObj)
-                        {
-                            if (obj.eAnyType == EVMType.Int64)
-                            {
-                                svalue.SetInt64Value((long)obj.value);
-                            }
-                            else
-                            {
-                                Debug.Assert(false, "该类型不是Boolean类型!!");
-                            }
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            svalue.SetInt64Value((Int64)to.value);
-                            return;
-                        }
-                        Int64Object int64Obj = obj as Int64Object;
-                        if (int64Obj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        svalue.SetInt64Value( (Int64)int64Obj.value);
-                    }
-                    break;
-                case EVMType.UInt64:
-                    {
-                        if (anyObj)
-                        {
-                            if (obj.eAnyType == EVMType.UInt64)
-                            {
-                                svalue.SetUInt64Value((ulong)obj.value);
-                            }
-                            else
-                            {
-                                Debug.Assert(false, "该类型不是Boolean类型!!");
-                            }
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            svalue.SetUInt64Value((UInt64)to.value);
-                            return;
-                        }
-
-                        UInt64Object uint64Obj = obj as UInt64Object;
-                        if (uint64Obj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        svalue.SetUInt64Value((UInt64)uint64Obj.value);
-                    }
-                    break;
-                case EVMType.Float32:
-                    {
-                        if (anyObj)
-                        {
-                            if (obj.eAnyType == EVMType.Float32)
-                            {
-                                svalue.SetFloatValue((float)obj.value);
-                            }
-                            else
-                            {
-                                Debug.Assert(false, "该类型不是Boolean类型!!");
-                            }
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            svalue.SetFloatValue((Single)to.value);
-                            return;
-                        }
-
-                        Float32Object floatObj = obj as Float32Object;
-                        if (floatObj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        svalue.SetFloatValue( (float)floatObj.value);
-                    }
-                    break;
-                case EVMType.Float64:
-                    {
-                        if (anyObj)
-                        {
-                            if (obj.eAnyType == EVMType.Float64)
-                            {
-                                svalue.SetDoubleValue((double)obj.value);
-                            }
-                            else
-                            {
-                                Debug.Assert(false, "该类型不是Boolean类型!!");
-                            }
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            svalue.SetDoubleValue((Double)to.value);
-                            return;
-                        }
-
-                        Float64Object doubleObj = obj as Float64Object;
-                        if (doubleObj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        svalue.SetDoubleValue( (double)doubleObj.value);
-                    }
-                    break;
-                case EVMType.String:
-                    {
-                        if (anyObj)
-                        {
-                            if (obj.eAnyType == EVMType.String)
-                            {
-                                svalue.SetStringValue((string)obj.value);
-                            }
-                            else
-                            {
-                                Debug.Assert(false, "该类型不是Boolean类型!!");
-                            }
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            svalue.SetStringValue((String)to.value);
-                            return;
-                        }
-
-                        StringObject stringObj = obj as StringObject;
-                        if (stringObj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        svalue.SetStringValue( (string)stringObj.value);
-                    }
-                    break;
-                case EVMType.Array:
-                    {
-                        if (obj is ClassObject co)
-                        {
-                            svalue.SetSObject(co.value);
-                        }
-                        else
-                        {
-                            Debug.Assert(false);
-                        }
-                    }
-                    break;
-                case EVMType.Object:
-                    {
-                        switch (obj.eAnyType)
-                        {
-                            case EVMType.Boolean:
-                                {
-                                    svalue.SetBoolValue((bool)obj.value);
-                                }
-                                break;
-                            case EVMType.Byte:
-                                {
-                                    svalue.SetInt8Value((byte)obj.value);
-                                }
-                                break;
-                            case EVMType.SByte:
-                                {
-                                    svalue.SetSInt8Value((sbyte)obj.value);
-                                }
-                                break;
-                            case EVMType.Int16:
-                                {
-                                    svalue.SetInt16Value((Int16)obj.value);
-                                }
-                                break;
-                            case EVMType.UInt16:
-                                {
-                                    svalue.SetUInt16Value((UInt16)obj.value);
-                                }
-                                break;
-                            case EVMType.Int32:
-                                {
-                                    svalue.SetInt32Value((Int32)obj.value);
-                                }
-                                break;
-                            case EVMType.UInt32:
-                                {
-                                    svalue.SetUInt32Value((UInt32)obj.value);
-                                }
-                                break;
-                            case EVMType.Int64:
-                                {
-                                    svalue.SetInt64Value((Int64)obj.value);
-                                }
-                                break;
-                            case EVMType.UInt64:
-                                {
-                                    svalue.SetUInt64Value((UInt64)obj.value);
-                                }
-                                break;
-                            case EVMType.Float32:
-                                {
-                                    svalue.SetFloatValue((float)obj.value);
-                                }
-                                break;
-                            case EVMType.Float64:
-                                {
-                                    svalue.SetDoubleValue((double)obj.value);
-                                }
-                                break;
-                            case EVMType.String:
-                                {
-                                    svalue.SetStringValue((string)obj.value);
-                                }
-                                break;
-                            default:
-                                {
-                                    svalue.SetSObject(obj.value as SObject);
-                                }
-                                break;
-                        }
-                    }
-                    break;
-                case EVMType.Type:
-                    {
-                        if (anyObj)
-                        {
-                            svalue.SetSObject(obj.value as SObject);
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            svalue.SetSObject(to.value as SObject);
-                            return;
-                        }
-                        if (obj is TypeObject co)
-                        {
-                            svalue.SetSObject(co.value as SObject);
-                        }
-                        else
-                        {
-                            Debug.Assert(false);
-                        }
-                    }
-                    break;
-                case EVMType.Class:
-                    {
-                        if (anyObj)
-                        {
-                            svalue.SetSObject(obj.value as SObject);
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            svalue.SetSObject(to.value as SObject);
-                            return;
-                        }
-                        //AnyObject anyObject = obj as AnyObject;
-                        //if (anyObject != null)
-                        //{
-                        //    if( svalue.sobject is ClassObject co )
-                        //    {
-                        //        anyObject.SetValue(EVMType.Class, co.value );
-                        //    }
-                        //    return;
-                        //}
-                        //4代表的是直接传值 ，所以，原来值啥样就传进去
-                        //if (type == 4)
-                        //{
-                        //    if (obj is ClassObject co)
-                        //    {
-                        //        if (co.value != null)
-                        //        {
-                        //            svalue.SetSObject(co.value as SObject);
-                        //        }
-                        //        else
-                        //        {
-                        //            svalue.SetSObject(co);
-                        //        }
-                        //    }
-                        //    else
-                        //    {
-                        //        Debug.Assert(false);
-                        //    }
-                        //}
-                        //else
-                        //{
-                        if (obj is ClassObject co)
-                        {
-                            svalue.SetSObject(co.value as SObject);
-                        }
-                        else
-                        {
-                            Debug.Assert(false);
-                        }
-                        //}
-                        /*
-                        Int32Object int32Obj = obj as Int32Object;
-                        if (int32Obj != null)
-                        {
-                            int32Obj.SetValue(svalue.int32Value);
-                            return;
-                        }
-                        BoolObject boolObject = obj as BoolObject;
-                        if (boolObject != null)
-                        {
-                            boolObject.SetValue(svalue.int8Value == 1 ? true : false);
-                            return;
-                        }
-                        */
-                    }
-                    break;
-                default:
-                    {
-                        Debug.Assert(false);
-                    }
-                    break;
-            }
-        }
         public void GetArgumentValue(int index, ref SValue svalue)
         {
-            if (m_ArgumentValueArray == null || index < 0 || index >= m_ArgumentValueArray.Length)
+            if (index > m_ArgumentObjectArray.Length)
             {
-                svalue.SetNull();
+                Log.AddVM(EError.None, $"SVM Error FunctionName:{this.id} 执行的参数超出范围!!");
                 return;
             }
-            svalue = m_ArgumentValueArray[index];
+            GetObjectByValue(0, index, ref svalue);
         }
         public void SetArgumentValue(int index, SValue svalue)
         {
-            if (m_ArgumentValueArray == null || index < 0 || index >= m_ArgumentValueArray.Length) return;
-            m_ArgumentValueArray[index] = svalue;
+            if (index > m_ArgumentObjectArray.Length)
+            {
+                Log.AddVM(EError.None, "执行的参数超出范围!!");
+                return;
+            }
+            SetObjectByValue(0, index, ref svalue);
         }
         public void SetLocalVariableSValue(int index, SValue svalue)
         {
-            if (m_LocalValueArray == null || index < 0 || index >= m_LocalValueArray.Length) return;
-            m_LocalValueArray[index] = svalue;
+            if (index > m_LocalVariableObjectArray.Length)
+            {
+                Log.AddVM(EError.None, "执行的栈超出范围!!");
+                return;
+            }
+            SetObjectByValue(1, index, ref svalue);
         }
         public void GetLocalVariableSValue(int index, ref SValue svalue)
         {
-            if (m_LocalValueArray == null || index < 0 || index >= m_LocalValueArray.Length)
+
+            if (index > m_LocalVariableObjectArray.Length)
             {
-                svalue.SetNull();
+                Log.AddVM(EError.None, "执行的栈超出范围!!");
                 return;
             }
-            svalue = m_LocalValueArray[index];
+            GetObjectByValue(1, index, ref svalue);
         }
         public void SetReturnVariableSValue(int index, SValue svalue)
         {
@@ -913,7 +372,7 @@ namespace SimpleLanguage.VM.Runtime
             if (iri == null) return;
             switch (iri.opCode)
             {
-                case EIROpCode.Nop:break;
+                case EIROpCode.Nop: break;
                 case EIROpCode.LoadConstNull:
                     {
                         m_ValueStack[m_ValueIndex].SetNull();
@@ -985,405 +444,458 @@ namespace SimpleLanguage.VM.Runtime
                     }
                     break;
                 case EIROpCode.Convert_I8:
-                        {
-                            m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Byte);
-                        }
-                        break;
-                    case EIROpCode.Convert_SI8:
-                        {
-                            m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.SByte);
-                        }
-                        break;
-                    case EIROpCode.Convert_I16:
-                        {
-                            m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int16);
-                        }
-                        break;
-                    case EIROpCode.Convert_UI16:
-                        {
-                            m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt16);
-                        }
-                        break;
-                    case EIROpCode.Convert_I32:
-                        {
-                            m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int32);
-                        }
-                        break;
-                    case EIROpCode.Convert_UI32:
-                        {
-                            m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt32);
-                        }
-                        break;
-                    case EIROpCode.Convert_I64:
-                        {
-                            m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int64);
-                        }
-                        break;
-                    case EIROpCode.Convert_UI64:
-                        {
-                            m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt64);
-                        }
-                        break;
-                    case EIROpCode.Convert_R4:
-                        {
-                            m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Float32);
-                        }
-                        break;
-                    case EIROpCode.Convert_R8:
-                        {
-                            m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Float64);
-                        }
-                        break;
-                    //case EIROpCode.LoadArgument:
-                    //    {
-                    //        GetArgumentValue(iri.index, ref m_ValueStack[m_ValueIndex++]);
-                    //    }
-                    //    break;
-                    case EIROpCode.LoadArgument:
-                        {
-                            var data = iri.index;
-                            var v = default(SValue);
-                            GetArgumentValue(data, ref v);
-                            PushSValueSynced(v);
-                        }
-                        break;
-                    case EIROpCode.LoadLocal:
-                        {
-                            var data = iri.index;
-                            var v = default(SValue);
-                            GetLocalVariableSValue(data, ref v);
-                            PushSValueSynced(v);
-                        }
-                        break;
-                    case EIROpCode.LocalGlobal:
-                        {
-                            var data = iri.index;
-                            var v = default(SValue);
-                            InnerCLRRuntimeVM.LoadGlobalVariable(data, ref v);
-                            PushSValueSynced(v);
-                        }
-                        break;
-                    case EIROpCode.StoreLocal:
-                        {
-                            var idx = iri.index;
-                            if (m_ValueIndex > 0)
-                            {
-                                var val = m_ValueStack[--m_ValueIndex];
-                                SetLocalVariableSValue(idx, val);
-                            }
-                        }
-                        break;
-                    case EIROpCode.StoreReturn:
-                        {
-                            SetReturnVariableSValue(iri.index, m_ValueStack[--m_ValueIndex]);
-                            m_ExecuteIndex = m_ExecuteCount;
-                        }
-                        break;
-                    case EIROpCode.StoreGlobal:
-                        {
-                            var id = iri.index;
-                            if (m_ValueIndex > 0)
-                            {
-                                var val = m_ValueStack[--m_ValueIndex];
-                                InnerCLRRuntimeVM.StoreGlobalVariable(id, ref val);
-                            }
-                        }
-                        break;
-
-                    case EIROpCode.LoadArrayIndex:
-                        {
-                            var v = m_ValueStack[m_ValueIndex - 1];
-                            if (v.eType == EVMType.Array)
-                            {
-                                (v.sobject as ArrayObject).LoadValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
-                            }
-                            else
-                            {
-                                Log.AddVM(EError.None, "不是数组类型!!");
-                            }
-                        }
-                        break;
-                    case EIROpCode.StoreArrayIndex:
-                        {
-                            int int1 = 1, int2 = 2;
-                            if (iri.opValue is Boolean flag)
-                            {
-                                if (flag)
-                                {
-                                    int1 = 2;
-                                    int2 = 1;
-                                }
-                            }
-                            SValue sStore = m_ValueStack[m_ValueIndex - int1];
-                            SValue sValue = m_ValueStack[m_ValueIndex - int2];
-
-                            if (sStore.eType == EVMType.Array)
-                            {
-                                (sStore.sobject as ArrayObject).StoreValue(iri.index, sValue);
-                            }
-                            else
-                            {
-                                Debug.Assert(false, "不是数组类型!!");
-                                Log.AddVM(EError.None, "不是数组类型!!");
-                            }
-                            m_ValueIndex -= 2;
-                        }
-                        break;
-                    case EIROpCode.LoadArrayIndexField:
-                        {
-                            SValue arrayref = m_ValueStack[m_ValueIndex - 2];
-                            SValue loadindex = m_ValueStack[m_ValueIndex - 1];
-
-                            if (arrayref.eType == EVMType.Array)
-                            {
-                                int index = (int)loadindex.GetValueObject();
-                                (arrayref.sobject as ArrayObject).LoadValue(index, ref m_ValueStack[m_ValueIndex - 2]);
-                            }
-                            else
-                            {
-                                Debug.Assert(false, "不是数组类型!!");
-                                Log.AddVM(EError.None, "不是数组类型!!");
-                            }
-                            m_ValueIndex -= 1;
-                        }
-                        break;
-                    case EIROpCode.StoreArrayIndexField:
-                        {
-                            SValue arrayref = m_ValueStack[m_ValueIndex - 3];
-                            SValue loadindex = m_ValueStack[m_ValueIndex - 2];
-                            SValue storevalue = m_ValueStack[m_ValueIndex - 1];
-
-                            if (arrayref.eType == EVMType.Array)
-                            {
-                                int index = (int)loadindex.GetValueObject();
-                                (arrayref.sobject as ArrayObject).StoreValue(index, storevalue);
-                            }
-                            else
-                            {
-                                Debug.Assert(false, "不是数组类型!!");
-                                Log.AddVM(EError.None, "不是数组类型!!");
-                            }
-                            m_ValueIndex -= 3;
-                        }
-                        break;
-                    case EIROpCode.Dup:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Byte);
+                    }
+                    break;
+                case EIROpCode.Convert_SI8:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.SByte);
+                    }
+                    break;
+                case EIROpCode.Convert_I16:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int16);
+                    }
+                    break;
+                case EIROpCode.Convert_UI16:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt16);
+                    }
+                    break;
+                case EIROpCode.Convert_I32:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int32);
+                    }
+                    break;
+                case EIROpCode.Convert_UI32:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt32);
+                    }
+                    break;
+                case EIROpCode.Convert_I64:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int64);
+                    }
+                    break;
+                case EIROpCode.Convert_UI64:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt64);
+                    }
+                    break;
+                case EIROpCode.Convert_R4:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Float32);
+                    }
+                    break;
+                case EIROpCode.Convert_R8:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Float64);
+                    }
+                    break;
+                //case EIROpCode.LoadArgument:
+                //    {
+                //        GetArgumentValue(iri.index, ref m_ValueStack[m_ValueIndex++]);
+                //    }
+                //    break;
+                case EIROpCode.LoadArgument:
+                    {
+                        var data = iri.index;
+                        var v = default(SValue);
+                        GetArgumentValue(data, ref v);
+                        PushSValueSynced(v);
+                    }
+                    break;
+                case EIROpCode.LoadLocal:
+                    {
+                        var data = iri.index;
+                        var v = default(SValue);
+                        GetLocalVariableSValue(data, ref v);
+                        PushSValueSynced(v);
+                    }
+                    break;
+                case EIROpCode.LocalGlobal:
+                    {
+                        var data = iri.index;
+                        var v = default(SValue);
+                        InnerCLRRuntimeVM.LoadGlobalVariable(data, ref v);
+                        PushSValueSynced(v);
+                    }
+                    break;
+                case EIROpCode.StoreLocal:
+                    {
+                        var idx = iri.index;
                         if (m_ValueIndex > 0)
                         {
-                            var v = m_ValueStack[m_ValueIndex - 1];
-                            PushSValueSynced(v);
+                            var val = m_ValueStack[--m_ValueIndex];
+                            SetLocalVariableSValue(idx, val);
                         }
-                        break;
-                    case EIROpCode.Pop:
-                        if (m_ValueIndex > 0) m_ValueIndex--;
-                        break;
-                    case EIROpCode.LoadNotStaticField:
+                    }
+                    break;
+                case EIROpCode.StoreReturn:
+                    {
+                        SetReturnVariableSValue(iri.index, m_ValueStack[--m_ValueIndex]);
+                        m_ExecuteIndex = m_ExecuteCount;
+                    }
+                    break;
+                case EIROpCode.StoreGlobal:
+                    {
+                        var id = iri.index;
+                        if (m_ValueIndex > 0)
                         {
-                            // expects instance on stack
-                            if (m_ValueIndex > 0)
-                            {
-                                var inst = m_ValueStack[--m_ValueIndex];
-                                if (inst.eType == EVMType.Class || inst.eType == EVMType.Object)
-                                {
-                                    var v = default(SValue);
-                                    if (inst.sobject is ClassObject co)
-                                    {
-                                        co.GetMemberVariableSValue(iri.index, ref v);
-                                        PushSValueSynced(v);
-                                    }
-                                    else
-                                    {
-                                        PushSValueSynced(v);
-                                    }
-                                }
-                            }
+                            var val = m_ValueStack[--m_ValueIndex];
+                            InnerCLRRuntimeVM.StoreGlobalVariable(id, ref val);
                         }
-                        break;
-                    case EIROpCode.StoreNotStaticField2:
-                        {
-                            // expect value then instance on stack (value pushed last)
-                            if (m_ValueIndex >= 2)
-                            {
-                                var val = m_ValueStack[--m_ValueIndex];
-                                var inst = m_ValueStack[--m_ValueIndex];
-                                if (inst.eType == EVMType.Class || inst.eType == EVMType.Object)
-                                {
-                                    if (inst.sobject is ClassObject co)
-                                    {
-                                        co.SetMemberVariableSValue(iri.index, val);
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                    case EIROpCode.NewObject:
-                        {
-                            if (iri.opValue is IRMetaClass irmc)
-                            {
-                                var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irmc);
-                                if (rt == null) rt = RuntimeTypeManager.AddRuntimeTypeByClass(irmc);
-                                var sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
-                                var sv = default(SValue);
-                                sv.SetSObject(sobj);
-                                PushSValueSynced(sv);
-                            }
-                        }
-                        break;
-                    case EIROpCode.NewTemplateObject:
-                        {
-                            if (iri.opValue is IRMetaType irmt)
-                            {
-                                var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt);
-                                if (rt == null && irmt?.m_IRMetaClass != null) rt = RuntimeTypeManager.AddRuntimeTypeByClass(irmt.m_IRMetaClass);
-                                var sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
-                                var sv = default(SValue);
-                                sv.SetSObject(sobj);
-                                PushSValueSynced(sv);
-                            }
-                        }
-                        break;
-                    case EIROpCode.NewArray:
-                        {
-                            // expects length on stack
-                            if (m_ValueIndex > 0 && iri.opValue is IRMetaType irmt)
-                            {
-                                var lenVal = m_ValueStack[--m_ValueIndex];
-                                int len = 0;
-                                if (lenVal.eType == EVMType.Int32) len = lenVal.int32Value;
-                                else if (lenVal.eType == EVMType.Int64) len = (int)lenVal.int64Value;
-                                var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt);
-                                var arr = new ArrayObject(rt, len);
-                                var sv = default(SValue);
-                                sv.SetSObject(arr);
-                                PushSValueSynced(sv);
-                            }
-                        }
-                        break;
-                    case EIROpCode.Br:
-                    case EIROpCode.BrLabel:
-                        {
-                            m_ExecuteIndex = (ushort)iri.index;
-                        }
-                        break;
-                case EIROpCode.Label:break;
-                    case EIROpCode.BrFalse:
-                        {
-                            if (m_ValueIndex > 0)
-                            {
-                                var cond = m_ValueStack[--m_ValueIndex];
-                                bool isTrue = cond.eType == EVMType.Boolean ? cond.int8Value == 1 : cond.GetValueObject() != null;
-                                if (!isTrue)
-                                {
-                                    m_ExecuteIndex = (ushort)(iri.index - 1);
-                                }
-                            }
-                        }
-                        break;
-                    case EIROpCode.BrTrue:
-                        {
-                            if (m_ValueIndex > 0)
-                            {
-                                var cond = m_ValueStack[--m_ValueIndex];
-                                bool isTrue = cond.eType == EVMType.Boolean ? cond.int8Value == 1 : cond.GetValueObject() != null;
-                                if (isTrue)
-                                {
-                                    m_ExecuteIndex = (ushort)(iri.index - 1);
-                                }
-                            }
-                        }
-                        break;
-                    case EIROpCode.Ceq:
-                        {
-                            if (m_ValueIndex >= 2)
-                            {
-                                var right = m_ValueStack[--m_ValueIndex];
-                                var left = m_ValueStack[--m_ValueIndex];
-                                bool methodCall = false;
-                                SValue.CompareEuqalSValue1AndValue2(ref left, ref right, true, out methodCall);
-                                PushSValueSynced(left);
-                            }
-                        }
-                        break;
-                    case EIROpCode.Cne:
-                        {
-                            if (m_ValueIndex >= 2)
-                            {
-                                var right = m_ValueStack[--m_ValueIndex];
-                                var left = m_ValueStack[--m_ValueIndex];
-                                bool methodCall = false;
-                                SValue.CompareEuqalSValue1AndValue2(ref left, ref right, false, out methodCall);
-                                PushSValueSynced(left);
-                            }
-                        }
-                        break;
-                    case EIROpCode.Neg:
-                        {
-                            if (m_ValueIndex - 1 < 0)
-                            {
-                                Log.AddVM(EError.None, "Error Neg运算!!超出的栈范围");
-                                break;
-                            }
-                            m_ValueStack[m_ValueIndex].NegSValue(false);
-                        }
-                        break;
-                    case EIROpCode.Not:
-                        {
-                            if (m_ValueIndex - 1 < 0)
-                            {
-                                Log.AddVM(EError.None, "Error Not运算!!超出的栈范围");
-                                break;
-                            }
-                            m_ValueStack[m_ValueIndex].NotSValue();
-                        }
-                        break;
-                    case EIROpCode.Add:
-                    case EIROpCode.Minus:
-                    case EIROpCode.Multiply:
-                    case EIROpCode.Divide:
-                    case EIROpCode.Modulo:
-                        {
-                            if (m_ValueIndex >= 2)
-                            {
-                                var right = m_ValueStack[--m_ValueIndex];
-                                var left = m_ValueStack[--m_ValueIndex];
-                                int sign = 0;
-                                bool isUn = false;
-                                switch (iri.opCode)
-                                {
-                                    case EIROpCode.Add: sign = 0; break;
-                                    case EIROpCode.Minus: sign = 1; break;
-                                    case EIROpCode.Multiply: sign = 2; break;
-                                    case EIROpCode.Divide: sign = 3; break;
-                                    case EIROpCode.Modulo: sign = 4; break;
-                                }
-                                SValue.ComputeValueInline(ref left, sign, ref right, isUn);
-                                PushSValueSynced(left);
-                            }
-                        }
-                        break;
-                    case EIROpCode.CallCSharpMethod:
-                        {
-                            if (iri.opValue is IRCallFunction ircf)
-                            {
-                                ircf.InvokeCSharp(this);
-                            }
-                        }
-                        break;
-                    case EIROpCode.CallStatic:
-                        {
-                            var mfc = iri.opValue as IRMethodCall;
+                    }
+                    break;
 
-                            List<RuntimeType> classRTList = new List<RuntimeType>();
-                            for (int i = 0; i < mfc.metaType.irMetaTypeList.Count; i++)
+                case EIROpCode.LoadArrayIndex:
+                    {
+                        var v = m_ValueStack[m_ValueIndex - 1];
+                        if (v.eType == EVMType.Array)
+                        {
+                            (v.sobject as ArrayObject).LoadValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
+                        }
+                        else
+                        {
+                            Log.AddVM(EError.None, "不是数组类型!!");
+                        }
+                    }
+                    break;
+                case EIROpCode.StoreArrayIndex:
+                    {
+                        int int1 = 1, int2 = 2;
+                        if (iri.opValue is Boolean flag)
+                        {
+                            if (flag)
                             {
-                                var crt = GetClassRuntimeType(mfc.metaType.irMetaTypeList[i], mfc.metaType.irMetaTypeList[i].irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
+                                int1 = 2;
+                                int2 = 1;
+                            }
+                        }
+                        SValue sStore = m_ValueStack[m_ValueIndex - int1];
+                        SValue sValue = m_ValueStack[m_ValueIndex - int2];
+
+                        if (sStore.eType == EVMType.Array)
+                        {
+                            (sStore.sobject as ArrayObject).StoreValue(iri.index, sValue);
+                        }
+                        else
+                        {
+                            Debug.Assert(false, "不是数组类型!!");
+                            Log.AddVM(EError.None, "不是数组类型!!");
+                        }
+                        m_ValueIndex -= 2;
+                    }
+                    break;
+                case EIROpCode.LoadArrayIndexField:
+                    {
+                        SValue arrayref = m_ValueStack[m_ValueIndex - 2];
+                        SValue loadindex = m_ValueStack[m_ValueIndex - 1];
+
+                        if (arrayref.eType == EVMType.Array)
+                        {
+                            int index = (int)loadindex.GetValueObject();
+                            (arrayref.sobject as ArrayObject).LoadValue(index, ref m_ValueStack[m_ValueIndex - 2]);
+                        }
+                        else
+                        {
+                            Debug.Assert(false, "不是数组类型!!");
+                            Log.AddVM(EError.None, "不是数组类型!!");
+                        }
+                        m_ValueIndex -= 1;
+                    }
+                    break;
+                case EIROpCode.StoreArrayIndexField:
+                    {
+                        SValue arrayref = m_ValueStack[m_ValueIndex - 3];
+                        SValue loadindex = m_ValueStack[m_ValueIndex - 2];
+                        SValue storevalue = m_ValueStack[m_ValueIndex - 1];
+
+                        if (arrayref.eType == EVMType.Array)
+                        {
+                            int index = (int)loadindex.GetValueObject();
+                            (arrayref.sobject as ArrayObject).StoreValue(index, storevalue);
+                        }
+                        else
+                        {
+                            Debug.Assert(false, "不是数组类型!!");
+                            Log.AddVM(EError.None, "不是数组类型!!");
+                        }
+                        m_ValueIndex -= 3;
+                    }
+                    break;
+                case EIROpCode.Dup:
+                    if (m_ValueIndex > 0)
+                    {
+                        var v = m_ValueStack[m_ValueIndex - 1];
+                        PushSValueSynced(v);
+                    }
+                    break;
+                case EIROpCode.Pop:
+                    if (m_ValueIndex > 0) m_ValueIndex--;
+                    break;
+                case EIROpCode.LoadNotStaticField:
+                    {
+                        // expects instance on stack
+                        if (m_ValueIndex > 0)
+                        {
+                            var inst = m_ValueStack[--m_ValueIndex];
+                            if (inst.eType == EVMType.Class || inst.eType == EVMType.Object)
+                            {
+                                var v = default(SValue);
+                                if (inst.sobject is ClassObject co)
+                                {
+                                    co.GetMemberVariableSValue(iri.index, ref v);
+                                    PushSValueSynced(v);
+                                }
+                                else
+                                {
+                                    PushSValueSynced(v);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case EIROpCode.StoreNotStaticField2:
+                    {
+                        // expect value then instance on stack (value pushed last)
+                        if (m_ValueIndex >= 2)
+                        {
+                            var val = m_ValueStack[--m_ValueIndex];
+                            var inst = m_ValueStack[--m_ValueIndex];
+                            if (inst.eType == EVMType.Class || inst.eType == EVMType.Object)
+                            {
+                                if (inst.sobject is ClassObject co)
+                                {
+                                    co.SetMemberVariableSValue(iri.index, val);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case EIROpCode.NewObject:
+                    {
+                        if (iri.opValue is IRMetaClass irmc)
+                        {
+                            var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irmc);
+                            if (rt == null) rt = RuntimeTypeManager.AddRuntimeTypeByClass(irmc);
+                            var sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
+                            var sv = default(SValue);
+                            sv.SetSObject(sobj);
+                            PushSValueSynced(sv);
+                        }
+                    }
+                    break;
+                case EIROpCode.NewTemplateObject:
+                    {
+                        if (iri.opValue is IRMetaType irmt)
+                        {
+                            var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt);
+                            if (rt == null && irmt?.m_IRMetaClass != null) rt = RuntimeTypeManager.AddRuntimeTypeByClass(irmt.m_IRMetaClass);
+                            var sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
+                            var sv = default(SValue);
+                            sv.SetSObject(sobj);
+                            PushSValueSynced(sv);
+                        }
+                    }
+                    break;
+                case EIROpCode.NewArray:
+                    {
+                        // expects length on stack
+                        if (m_ValueIndex > 0 && iri.opValue is IRMetaType irmt)
+                        {
+                            var lenVal = m_ValueStack[--m_ValueIndex];
+                            int len = 0;
+                            if (lenVal.eType == EVMType.Int32) len = lenVal.int32Value;
+                            else if (lenVal.eType == EVMType.Int64) len = (int)lenVal.int64Value;
+                            var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt);
+                            var arr = new ArrayObject(rt, len);
+                            var sv = default(SValue);
+                            sv.SetSObject(arr);
+                            PushSValueSynced(sv);
+                        }
+                    }
+                    break;
+                case EIROpCode.Br:
+                case EIROpCode.BrLabel:
+                    {
+                        m_ExecuteIndex = (ushort)iri.index;
+                    }
+                    break;
+                case EIROpCode.Label: break;
+                case EIROpCode.BrFalse:
+                    {
+                        if (m_ValueIndex > 0)
+                        {
+                            var cond = m_ValueStack[--m_ValueIndex];
+                            bool isTrue = cond.eType == EVMType.Boolean ? cond.int8Value == 1 : cond.GetValueObject() != null;
+                            if (!isTrue)
+                            {
+                                m_ExecuteIndex = (ushort)(iri.index - 1);
+                            }
+                        }
+                    }
+                    break;
+                case EIROpCode.BrTrue:
+                    {
+                        if (m_ValueIndex > 0)
+                        {
+                            var cond = m_ValueStack[--m_ValueIndex];
+                            bool isTrue = cond.eType == EVMType.Boolean ? cond.int8Value == 1 : cond.GetValueObject() != null;
+                            if (isTrue)
+                            {
+                                m_ExecuteIndex = (ushort)(iri.index - 1);
+                            }
+                        }
+                    }
+                    break;
+                case EIROpCode.Ceq:
+                    {
+                        if (m_ValueIndex >= 2)
+                        {
+                            var right = m_ValueStack[--m_ValueIndex];
+                            var left = m_ValueStack[--m_ValueIndex];
+                            bool methodCall = false;
+                            SValue.CompareEuqalSValue1AndValue2(ref left, ref right, true, out methodCall);
+                            PushSValueSynced(left);
+                        }
+                    }
+                    break;
+                case EIROpCode.Cne:
+                    {
+                        if (m_ValueIndex >= 2)
+                        {
+                            var right = m_ValueStack[--m_ValueIndex];
+                            var left = m_ValueStack[--m_ValueIndex];
+                            bool methodCall = false;
+                            SValue.CompareEuqalSValue1AndValue2(ref left, ref right, false, out methodCall);
+                            PushSValueSynced(left);
+                        }
+                    }
+                    break;
+                case EIROpCode.Neg:
+                    {
+                        if (m_ValueIndex - 1 < 0)
+                        {
+                            Log.AddVM(EError.None, "Error Neg运算!!超出的栈范围");
+                            break;
+                        }
+                        m_ValueStack[m_ValueIndex].NegSValue(false);
+                    }
+                    break;
+                case EIROpCode.Not:
+                    {
+                        if (m_ValueIndex - 1 < 0)
+                        {
+                            Log.AddVM(EError.None, "Error Not运算!!超出的栈范围");
+                            break;
+                        }
+                        m_ValueStack[m_ValueIndex].NotSValue();
+                    }
+                    break;
+                case EIROpCode.Add:
+                case EIROpCode.Minus:
+                case EIROpCode.Multiply:
+                case EIROpCode.Divide:
+                case EIROpCode.Modulo:
+                    {
+                        if (m_ValueIndex >= 2)
+                        {
+                            var right = m_ValueStack[--m_ValueIndex];
+                            var left = m_ValueStack[--m_ValueIndex];
+                            int sign = 0;
+                            bool isUn = false;
+                            switch (iri.opCode)
+                            {
+                                case EIROpCode.Add: sign = 0; break;
+                                case EIROpCode.Minus: sign = 1; break;
+                                case EIROpCode.Multiply: sign = 2; break;
+                                case EIROpCode.Divide: sign = 3; break;
+                                case EIROpCode.Modulo: sign = 4; break;
+                            }
+                            SValue.ComputeValueInline(ref left, sign, ref right, isUn);
+                            PushSValueSynced(left);
+                        }
+                    }
+                    break;
+                case EIROpCode.CallCSharpMethod:
+                    {
+                        if (iri.opValue is IRCallFunction ircf)
+                        {
+                            ircf.InvokeCSharp(this);
+                        }
+                    }
+                    break;
+                case EIROpCode.CallStatic:
+                    {
+                        var mfc = iri.opValue as IRMethodCall;
+
+                        List<RuntimeType> classRTList = new List<RuntimeType>();
+                        for (int i = 0; i < mfc.metaType.irMetaTypeList.Count; i++)
+                        {
+                            var crt = GetClassRuntimeType(mfc.metaType.irMetaTypeList[i], mfc.metaType.irMetaTypeList[i].irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
+                            classRTList.Add(crt);
+                        }
+                        var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(mfc.metaType.irMetaClass, classRTList);
+                        if (rt == null)
+                        {
+                            rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(mfc.metaType.irMetaClass, classRTList);
+                        }
+
+                        if (mfc.irMethod.id == "type")
+                        {
+                            var sobj = RuntimeTypeManager.CreateTypeObject(rt);
+                            m_ValueStack[m_ValueIndex++].SetSObject(sobj);
+                        }
+                        else
+                        {
+                            for (int i = 0; i < mfc.irTemplateMetaType.Count; i++)
+                            {
+                                var crt = GetMethodRuntimeType(mfc.irTemplateMetaType[i]);
                                 classRTList.Add(crt);
                             }
-                            var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(mfc.metaType.irMetaClass, classRTList);
-                            if (rt == null)
-                            {
-                                rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(mfc.metaType.irMetaClass, classRTList);
-                            }
+                            InnerCLRRuntimeVM.RunIRMethod(classRTList, mfc.irMethod);
+                        }
+                    }
+                    break;
+                case EIROpCode.CallDynamic:
+                    {
+                        var mfc = iri.opValue as IRMethodCall;
 
+                        RuntimeType rt = null;
+                        IRMetaClass irc = null;
+                        if (iri.index > -1)
+                        {
+                            int stackIndex = m_ValueIndex - iri.index;
+                            if (stackIndex < 0)
+                            {
+                                Log.AddVM(EError.None, "StackIndex 是负数!");
+                                return;
+                            }
+                            var v = m_ValueStack[stackIndex];
+                            if (v.eType == EVMType.Class
+                                || v.eType == EVMType.Array)
+                            {
+                                var co = (v.sobject as ClassObject);
+                                irc = co.irMetaClass;
+                                rt = v.sobject.runtimeType;
+                            }
+                            else
+                            {
+                                irc = IRManager.instance.GetIRMetaClassByName(v.eType.ToString());
+                                rt = RuntimeTypeManager.GetRuntimeTypeByMT(irc);
+                            }
+                            if (irc == null)
+                            {
+                                Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
+                                return;
+                            }
+                            if (mfc.irMethod == null)
+                            {
+                                Debug.Assert(false, "没有找到合适的调用方式");
+                                return;
+                            }
                             if (mfc.irMethod.id == "type")
                             {
                                 var sobj = RuntimeTypeManager.CreateTypeObject(rt);
@@ -1391,213 +903,160 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
+                                List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
                                 for (int i = 0; i < mfc.irTemplateMetaType.Count; i++)
                                 {
-                                    var crt = GetMethodRuntimeType(mfc.irTemplateMetaType[i]);
-                                    classRTList.Add(crt);
+                                    var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], irc, rt.runtimeTemplateList, true);
+                                    rtList.Add(crt);
                                 }
-                                InnerCLRRuntimeVM.RunIRMethod(classRTList, mfc.irMethod);
-                            }
-                        }
-                        break;
-                    case EIROpCode.CallDynamic:
-                        {
-                            var mfc = iri.opValue as IRMethodCall;
-
-                            RuntimeType rt = null;
-                            IRMetaClass irc = null;
-                            if (iri.index > -1)
-                            {
-                                int stackIndex = m_ValueIndex - iri.index;
-                                if (stackIndex < 0)
+                                if (mfc.irMethod.interfaceMethod)
                                 {
-                                    Log.AddVM(EError.None, "StackIndex 是负数!");
-                                    return;
-                                }
-                                var v = m_ValueStack[stackIndex];
-                                if (v.eType == EVMType.Class
-                                    || v.eType == EVMType.Array)
-                                {
-                                    var co = (v.sobject as ClassObject);
-                                    irc = co.irMetaClass;
-                                    rt = v.sobject.runtimeType;
-                                }
-                                else
-                                {
-                                    irc = IRManager.instance.GetIRMetaClassByName(v.eType.ToString());
-                                    rt = RuntimeTypeManager.GetRuntimeTypeByMT(irc);
-                                }
-                                if (irc == null)
-                                {
-                                    Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
-                                    return;
-                                }
-                                if (mfc.irMethod == null)
-                                {
-                                    Debug.Assert(false, "没有找到合适的调用方式");
-                                    return;
-                                }
-                                if (mfc.irMethod.id == "type")
-                                {
-                                    var sobj = RuntimeTypeManager.CreateTypeObject(rt);
-                                    m_ValueStack[m_ValueIndex++].SetSObject(sobj);
-                                }
-                                else
-                                {
-                                    List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
-                                    for (int i = 0; i < mfc.irTemplateMetaType.Count; i++)
+                                    var irmethod = irc.GetIRNonStaticMethodIndexByName(mfc.methodName, out int index);
+                                    if (irmethod != null)
                                     {
-                                        var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], irc, rt.runtimeTemplateList, true);
-                                        rtList.Add(crt);
-                                    }
-                                    if (mfc.irMethod.interfaceMethod)
-                                    {
-                                        var irmethod = irc.GetIRNonStaticMethodIndexByName(mfc.methodName, out int index);
-                                        if (irmethod != null)
-                                        {
-                                            InnerCLRRuntimeVM.RunIRMethod(rtList, irmethod);
-                                        }
-                                        else
-                                        {
-                                            Debug.Assert(false, "没有找到合适的调用方式");
-                                        }
+                                        InnerCLRRuntimeVM.RunIRMethod(rtList, irmethod);
                                     }
                                     else
                                     {
-                                        InnerCLRRuntimeVM.RunIRMethod(rtList, mfc.irMethod);
+                                        Debug.Assert(false, "没有找到合适的调用方式");
                                     }
                                 }
-                            }
-                            else
-                            {
-                                Log.AddVM(EError.None, "调用栈上动态函数");
-                            }
-                        }
-                        break;
-                    case EIROpCode.CallVirt:
-                        {
-                            var mfc = iri.opValue as IRMethodCall;
-
-                            int stackFrontIndex = (int)mfc.paramCount + 1;
-                            int stackIndex = m_ValueIndex - stackFrontIndex;
-                            if (stackIndex < 0)
-                            {
-                                Log.AddVM(EError.None, "StackIndex 是负数!");
-                                return;
-                            }
-                            var v = m_ValueStack[stackIndex];
-
-                            if (v.isNull)
-                            {
-                                Debug.Assert(false, "当前值为空!!");
-                                return;
-                            }
-
-                            RuntimeType rt = null;
-                            IRMetaClass irc = null;
-                            if (v.eType == EVMType.Class || v.eType == EVMType.Array)
-                            {
-                                var co = (v.sobject as ClassObject);
-                                irc = co.irMetaClass;
-                                rt = co.runtimeType;
-                            }
-                            else if (v.eType == EVMType.Object)
-                            {
-                                SObject co = (v.sobject) as SObject;
-                                m_ValueStack[stackIndex].SetValue(co);
-                                var nco = m_ValueStack[stackIndex].GetSObject();
-                                Debug.Assert(nco != null);
-                                irc = nco.irMetaClass;
-                                rt = nco.runtimeType;
-                            }
-                            //else if( v.eType == EVMType.Array )
-                            //{
-                            //    irc = IRManager.instance.GetIRMetaClassByName("Array");
-                            //    rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irc);
-                            //}
-                            else
-                            {
-                                irc = IRManager.instance.GetIRMetaClassByName(v.eType.ToString());
-                                rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irc);
-                            }
-                            if (irc == null)
-                            {
-                                Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
-                                return;
-                            }
-                            IRMethod cfc = irc.GetIRNonStaticMethodByIndex(iri.index);
-
-
-                            if (cfc == null)
-                            {
-                                Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
-                                Debug.Assert(false, "没有找到索引是" + iri.index + "的函数!");
-                                return;
-                            }
-                            List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
-                            for (int i = 0; i < mfc.irTemplateMetaType.Count; i++)
-                            {
-                                var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], irc, rt.runtimeTemplateList, true);
-                                rtList.Add(crt);
-                            }
-                            InnerCLRRuntimeVM.RunIRMethod(rtList, cfc);
-
-                            var a = ObjectManager.classObjectDict;
-                        }
-                        break;
-                    case EIROpCode.Ldc:
-                        {
-                            if (iri.opValue is IRMetaType irmt)
-                            {
-                                var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt);
-                                if (rt == null && irmt?.m_IRMetaClass != null)
+                                else
                                 {
-                                    rt = RuntimeTypeManager.AddRuntimeTypeByClass(irmt.m_IRMetaClass);
-                                }
-
-                                var sobj = new TypeObject(rt);
-                                var sv = default(SValue);
-                                sv.SetSObject(sobj);
-                                PushSValueSynced(sv);
-                            }
-                        }
-                        break;
-                    case EIROpCode.Ret:
-                        // stop execution early
-                        m_ExecuteIndex = m_ExecuteCount;
-                        break;
-                    case EIROpCode.LoadStaticField:
-                        {
-                            if (iri.opValue is IRMetaType mt)
-                            {
-                                var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(mt);
-                                var v = default(SValue);
-                                if (rt != null)
-                                {
-                                    rt.GetMemberVariableSValue(iri.index, ref v);
-                                    PushSValueSynced(v);
+                                    InnerCLRRuntimeVM.RunIRMethod(rtList, mfc.irMethod);
                                 }
                             }
                         }
-                        break;
-                    case EIROpCode.StoreStaticField:
+                        else
                         {
-                            if (iri.opValue is IRMetaType mt)
-                            {
-                                if (m_ValueIndex > 0)
-                                {
-                                    var val = m_ValueStack[--m_ValueIndex];
-                                    var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(mt);
-                                    rt?.SetMemberVariableSValue(iri.index, val);
-                                }
-                            }
+                            Log.AddVM(EError.None, "调用栈上动态函数");
                         }
-                        break;
-                    default:
-                        // unhandled op
-                        Debug.Assert(false, "Function" + this.id +  "IRData" + iri.id + "  " + iri.opCode );
-                        break;
                     }
+                    break;
+                case EIROpCode.CallVirt:
+                    {
+                        var mfc = iri.opValue as IRMethodCall;
+
+                        int stackFrontIndex = (int)mfc.paramCount + 1;
+                        int stackIndex = m_ValueIndex - stackFrontIndex;
+                        if (stackIndex < 0)
+                        {
+                            Log.AddVM(EError.None, "StackIndex 是负数!");
+                            return;
+                        }
+                        var v = m_ValueStack[stackIndex];
+
+                        if (v.isNull)
+                        {
+                            Debug.Assert(false, "当前值为空!!");
+                            return;
+                        }
+
+                        RuntimeType rt = null;
+                        IRMetaClass irc = null;
+                        if (v.eType == EVMType.Class || v.eType == EVMType.Array)
+                        {
+                            var co = (v.sobject as ClassObject);
+                            irc = co.irMetaClass;
+                            rt = co.runtimeType;
+                        }
+                        else if (v.eType == EVMType.Object)
+                        {
+                            SObject co = (v.sobject) as SObject;
+                            m_ValueStack[stackIndex].SetValue(co);
+                            var nco = m_ValueStack[stackIndex].GetSObject();
+                            Debug.Assert(nco != null);
+                            irc = nco.irMetaClass;
+                            rt = nco.runtimeType;
+                        }
+                        //else if( v.eType == EVMType.Array )
+                        //{
+                        //    irc = IRManager.instance.GetIRMetaClassByName("Array");
+                        //    rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irc);
+                        //}
+                        else
+                        {
+                            irc = IRManager.instance.GetIRMetaClassByName(v.eType.ToString());
+                            rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irc);
+                        }
+                        if (irc == null)
+                        {
+                            Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
+                            return;
+                        }
+                        IRMethod cfc = irc.GetIRNonStaticMethodByIndex(iri.index);
+
+
+                        if (cfc == null)
+                        {
+                            Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
+                            Debug.Assert(false, "没有找到索引是" + iri.index + "的函数!");
+                            return;
+                        }
+                        List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
+                        for (int i = 0; i < mfc.irTemplateMetaType.Count; i++)
+                        {
+                            var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], irc, rt.runtimeTemplateList, true);
+                            rtList.Add(crt);
+                        }
+                        InnerCLRRuntimeVM.RunIRMethod(rtList, cfc);
+
+                        var a = ObjectManager.classObjectDict;
+                    }
+                    break;
+                case EIROpCode.Ldc:
+                    {
+                        if (iri.opValue is IRMetaType irmt)
+                        {
+                            var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt);
+                            if (rt == null && irmt?.m_IRMetaClass != null)
+                            {
+                                rt = RuntimeTypeManager.AddRuntimeTypeByClass(irmt.m_IRMetaClass);
+                            }
+
+                            var sobj = new TypeObject(rt);
+                            var sv = default(SValue);
+                            sv.SetSObject(sobj);
+                            PushSValueSynced(sv);
+                        }
+                    }
+                    break;
+                case EIROpCode.Ret:
+                    // stop execution early
+                    m_ExecuteIndex = m_ExecuteCount;
+                    break;
+                case EIROpCode.LoadStaticField:
+                    {
+                        if (iri.opValue is IRMetaType mt)
+                        {
+                            var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(mt);
+                            var v = default(SValue);
+                            if (rt != null)
+                            {
+                                rt.GetMemberVariableSValue(iri.index, ref v);
+                                PushSValueSynced(v);
+                            }
+                        }
+                    }
+                    break;
+                case EIROpCode.StoreStaticField:
+                    {
+                        if (iri.opValue is IRMetaType mt)
+                        {
+                            if (m_ValueIndex > 0)
+                            {
+                                var val = m_ValueStack[--m_ValueIndex];
+                                var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(mt);
+                                rt?.SetMemberVariableSValue(iri.index, val);
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    // unhandled op
+                    Debug.Assert(false, "Function" + this.id + "IRData" + iri.id + "  " + iri.opCode);
+                    break;
+            }
         }
         public void SetObjectByValue(int type, int index, ref SValue svalue)
         {
@@ -2170,6 +1629,581 @@ namespace SimpleLanguage.VM.Runtime
                     break;
             }
 
+        }
+
+        public void GetObjectByValue(int type, int index, ref SValue svalue)
+        {
+            SObject obj = null;
+            if (type == 0)
+            {
+                obj = m_ArgumentObjectArray[index];
+            }
+            else if (type == 1)
+            {
+                obj = m_LocalVariableObjectArray[index];
+            }
+            else if (type == 2)
+            {
+                obj = m_ReturnObjectArray[index];
+            }
+            Debug.Assert(obj != null);
+            if (obj.isNull)
+            {
+                svalue.SetNull();
+                return;
+            }
+            SetSValue(obj, obj.eType, ref svalue);
+        }
+
+        public void SetSValue(SObject obj, EVMType etype, ref SValue svalue)
+        {
+            bool anyObj = svalue.eType == EVMType.Object;
+            switch (etype)
+            {
+                case EVMType.Null:
+                    {
+                        svalue.SetNull();
+                    }
+                    break;
+                case EVMType.Boolean:
+                    {
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.Boolean)
+                            {
+                                svalue.SetBoolValue((bool)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetBoolValue((bool)to.value);
+                            return;
+                        }
+
+                        BoolObject boolObj = obj as BoolObject;
+                        if (boolObj == null)
+                        {
+                            Debug.Write("该类型不是Boolean类型!!");
+                            return;
+                        }
+                        svalue.SetBoolValue(boolObj.value);
+                    }
+                    break;
+                case EVMType.Byte:
+                    {
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.Byte)
+                            {
+                                svalue.SetInt8Value((byte)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetInt8Value((Byte)to.value);
+                            to.SetValue(EVMType.Byte, obj.value);
+                            return;
+                        }
+
+                        Int8Object byteObj = obj as Int8Object;
+                        if (byteObj == null)
+                        {
+                            Debug.Write("该类型不是Byte类型!!");
+                            return;
+                        }
+                        svalue.SetInt8Value((Byte)byteObj.value);
+                    }
+                    break;
+                case EVMType.SByte:
+                    {
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.SByte)
+                            {
+                                svalue.SetSInt8Value((sbyte)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetSInt8Value((SByte)to.value);
+                            return;
+                        }
+
+                        SInt8Object byteObj = obj as SInt8Object;
+                        if (byteObj == null)
+                        {
+                            Debug.Write("该类型不是SByte类型!!");
+                            return;
+                        }
+                        svalue.SetSInt8Value((SByte)byteObj.value);
+                    }
+                    break;
+                case EVMType.Int16:
+                    {
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.Int16)
+                            {
+                                svalue.SetInt16Value((short)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetInt16Value((Int16)to.value);
+                            return;
+                        }
+
+                        Int16Object int16Obj = obj as Int16Object;
+                        if (int16Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetInt16Value((short)int16Obj.value);
+                    }
+                    break;
+                case EVMType.UInt16:
+                    {
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.UInt16)
+                            {
+                                svalue.SetUInt16Value((ushort)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetUInt16Value((UInt16)to.value);
+                            return;
+                        }
+
+                        UInt16Object uint16Obj = obj as UInt16Object;
+                        if (uint16Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetUInt16Value((ushort)uint16Obj.value);
+                    }
+                    break;
+                case EVMType.Int32:
+                    {
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.Int32)
+                            {
+                                svalue.SetInt32Value((int)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetInt32Value((int)to.value);
+                            return;
+                        }
+                        Int32Object int32Obj = obj as Int32Object;
+                        if (int32Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetInt32Value((int)int32Obj.value);
+                    }
+                    break;
+                case EVMType.UInt32:
+                    {
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.UInt32)
+                            {
+                                svalue.SetUInt32Value((uint)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetUInt32Value((UInt32)to.value);
+                            return;
+                        }
+                        UInt32Object uint32Obj = obj as UInt32Object;
+                        if (uint32Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetUInt32Value((uint)uint32Obj.value);
+                    }
+                    break;
+                case EVMType.Int64:
+                    {
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.Int64)
+                            {
+                                svalue.SetInt64Value((long)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetInt64Value((Int64)to.value);
+                            return;
+                        }
+                        Int64Object int64Obj = obj as Int64Object;
+                        if (int64Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetInt64Value((Int64)int64Obj.value);
+                    }
+                    break;
+                case EVMType.UInt64:
+                    {
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.UInt64)
+                            {
+                                svalue.SetUInt64Value((ulong)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetUInt64Value((UInt64)to.value);
+                            return;
+                        }
+
+                        UInt64Object uint64Obj = obj as UInt64Object;
+                        if (uint64Obj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetUInt64Value((UInt64)uint64Obj.value);
+                    }
+                    break;
+                case EVMType.Float32:
+                    {
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.Float32)
+                            {
+                                svalue.SetFloatValue((float)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetFloatValue((Single)to.value);
+                            return;
+                        }
+
+                        Float32Object floatObj = obj as Float32Object;
+                        if (floatObj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetFloatValue((float)floatObj.value);
+                    }
+                    break;
+                case EVMType.Float64:
+                    {
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.Float64)
+                            {
+                                svalue.SetDoubleValue((double)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetDoubleValue((Double)to.value);
+                            return;
+                        }
+
+                        Float64Object doubleObj = obj as Float64Object;
+                        if (doubleObj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetDoubleValue((double)doubleObj.value);
+                    }
+                    break;
+                case EVMType.String:
+                    {
+                        if (anyObj)
+                        {
+                            if (obj.eAnyType == EVMType.String)
+                            {
+                                svalue.SetStringValue((string)obj.value);
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "该类型不是Boolean类型!!");
+                            }
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetStringValue((String)to.value);
+                            return;
+                        }
+
+                        StringObject stringObj = obj as StringObject;
+                        if (stringObj == null)
+                        {
+                            Debug.Write("该类型不是Int32类型!!");
+                            return;
+                        }
+                        svalue.SetStringValue((string)stringObj.value);
+                    }
+                    break;
+                case EVMType.Array:
+                    {
+                        if (obj is ClassObject co)
+                        {
+                            svalue.SetSObject(co.value);
+                        }
+                        else
+                        {
+                            Debug.Assert(false);
+                        }
+                    }
+                    break;
+                case EVMType.Object:
+                    {
+                        switch (obj.eAnyType)
+                        {
+                            case EVMType.Boolean:
+                                {
+                                    svalue.SetBoolValue((bool)obj.value);
+                                }
+                                break;
+                            case EVMType.Byte:
+                                {
+                                    svalue.SetInt8Value((byte)obj.value);
+                                }
+                                break;
+                            case EVMType.SByte:
+                                {
+                                    svalue.SetSInt8Value((sbyte)obj.value);
+                                }
+                                break;
+                            case EVMType.Int16:
+                                {
+                                    svalue.SetInt16Value((Int16)obj.value);
+                                }
+                                break;
+                            case EVMType.UInt16:
+                                {
+                                    svalue.SetUInt16Value((UInt16)obj.value);
+                                }
+                                break;
+                            case EVMType.Int32:
+                                {
+                                    svalue.SetInt32Value((Int32)obj.value);
+                                }
+                                break;
+                            case EVMType.UInt32:
+                                {
+                                    svalue.SetUInt32Value((UInt32)obj.value);
+                                }
+                                break;
+                            case EVMType.Int64:
+                                {
+                                    svalue.SetInt64Value((Int64)obj.value);
+                                }
+                                break;
+                            case EVMType.UInt64:
+                                {
+                                    svalue.SetUInt64Value((UInt64)obj.value);
+                                }
+                                break;
+                            case EVMType.Float32:
+                                {
+                                    svalue.SetFloatValue((float)obj.value);
+                                }
+                                break;
+                            case EVMType.Float64:
+                                {
+                                    svalue.SetDoubleValue((double)obj.value);
+                                }
+                                break;
+                            case EVMType.String:
+                                {
+                                    svalue.SetStringValue((string)obj.value);
+                                }
+                                break;
+                            default:
+                                {
+                                    svalue.SetSObject(obj.value as SObject);
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                case EVMType.Type:
+                    {
+                        if (anyObj)
+                        {
+                            svalue.SetSObject(obj.value as SObject);
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetSObject(to.value as SObject);
+                            return;
+                        }
+                        if (obj is TypeObject co)
+                        {
+                            svalue.SetSObject(co.value as SObject);
+                        }
+                        else
+                        {
+                            Debug.Assert(false);
+                        }
+                    }
+                    break;
+                case EVMType.Class:
+                    {
+                        if (anyObj)
+                        {
+                            svalue.SetSObject(obj.value as SObject);
+                            return;
+                        }
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            svalue.SetSObject(to.value as SObject);
+                            return;
+                        }
+                        //AnyObject anyObject = obj as AnyObject;
+                        //if (anyObject != null)
+                        //{
+                        //    if( svalue.sobject is ClassObject co )
+                        //    {
+                        //        anyObject.SetValue(EVMType.Class, co.value );
+                        //    }
+                        //    return;
+                        //}
+                        //4代表的是直接传值 ，所以，原来值啥样就传进去
+                        //if (type == 4)
+                        //{
+                        //    if (obj is ClassObject co)
+                        //    {
+                        //        if (co.value != null)
+                        //        {
+                        //            svalue.SetSObject(co.value as SObject);
+                        //        }
+                        //        else
+                        //        {
+                        //            svalue.SetSObject(co);
+                        //        }
+                        //    }
+                        //    else
+                        //    {
+                        //        Debug.Assert(false);
+                        //    }
+                        //}
+                        //else
+                        //{
+                        if (obj is ClassObject co)
+                        {
+                            svalue.SetSObject(co.value as SObject);
+                        }
+                        else
+                        {
+                            Debug.Assert(false);
+                        }
+                        //}
+                        /*
+                        Int32Object int32Obj = obj as Int32Object;
+                        if (int32Obj != null)
+                        {
+                            int32Obj.SetValue(svalue.int32Value);
+                            return;
+                        }
+                        BoolObject boolObject = obj as BoolObject;
+                        if (boolObject != null)
+                        {
+                            boolObject.SetValue(svalue.int8Value == 1 ? true : false);
+                            return;
+                        }
+                        */
+                    }
+                    break;
+                default:
+                    {
+                        Debug.Assert(false);
+                    }
+                    break;
+            }
         }
     }
 }
