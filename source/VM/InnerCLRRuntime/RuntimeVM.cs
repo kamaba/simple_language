@@ -661,6 +661,7 @@ namespace SimpleLanguage.VM.Runtime
                             m_ExecuteIndex = (ushort)iri.index;
                         }
                         break;
+                case EIROpCode.Label:break;
                     case EIROpCode.BrFalse:
                         {
                             if (m_ValueIndex > 0)
@@ -991,7 +992,7 @@ namespace SimpleLanguage.VM.Runtime
                         break;
                     default:
                         // unhandled op
-                        Debug.Assert(false);
+                        Debug.Assert(false, "Function" + this.id +  "IRData" + iri.id + "  " + iri.opCode );
                         break;
                     }
         }

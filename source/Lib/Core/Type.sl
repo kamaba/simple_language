@@ -11,22 +11,33 @@ public class MetaClass
 
 public class Type extends Object
 {
-    int _hashCode = 0
     byte _eType = 0
     MetaClass _metaClass = null
     public Type[] typelist = null
-
-    #runtime accessors filled by RuntimeTypeManager.CreateTypeObject
+ 
+    #runtime accessors filled by RuntimeTypeManager.CreateTypeObject    
     get MetaClass metaClass() { ret this._metaClass; }
-    get int hashCode() { ret this._hashCode; }
     get int eType() { ret this._eType.toInt32(); }
 
     override string toString()
     {
+        ret "TTTYYYPPPEEEE"
+        #!
         if( this._metaClass == null )
         {
             ret "no_meta_class"
         }
-        ret this._metaClass.className;
+        string str = this._metaClass.className;
+        if this.typelist != null 
+        {
+            str = str + "<"
+            for i = 0, i < this.typelist.length, i++ 
+            {
+                str = str + this.typelist[i].toString()
+            }
+            str = str + ">"
+        }
+        ret str
+        !#
     }
 }
