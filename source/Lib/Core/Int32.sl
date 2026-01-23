@@ -121,10 +121,6 @@ public class Int32 extends Num
     {
         ret this.toRadixString(8)
     }
-    public override Float64 toFloat64()
-    {
-        ret this._value
-    }
     override String toString()
     {
         ret SimpleLanguage.Lib.Int32Class.Int32ToString( this )

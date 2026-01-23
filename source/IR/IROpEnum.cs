@@ -27,6 +27,7 @@ namespace SimpleLanguage.IR
         LoadConstDouble,
         LoadConstBoolean,
         LoadConstString,
+        LoadConstType,
         
         LoadArgument,
         LoadLocal,  
@@ -120,7 +121,6 @@ namespace SimpleLanguage.IR
         CallVirt,
         Calli,
         CallCSharpMethod,
-        // new opcodes for method handle support
         CreateMethodHandle,
         CallHandle,
         CastClass,
@@ -136,6 +136,7 @@ namespace SimpleLanguage.IR
         Convert_R4,
         Convert_R8,
         Convert_ToString,
+        Ldc,
 
         Ret,          
     }

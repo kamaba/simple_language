@@ -6,9 +6,7 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Core;
 using SimpleLanguage.IR;
-using SimpleLanguage.Lib;
 using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
 using System;

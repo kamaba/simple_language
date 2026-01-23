@@ -531,6 +531,11 @@ namespace SimpleLanguage.Core
                 MetaVisitNode mvn = MetaVisitNode.CreateByEpxress(mcn.metaExpressValue);
                 m_VisitNodeList.Add(mvn);
             }
+            else if( mcn.callNodeType == ECallNodeType.GetType )
+            {
+                MetaVisitNode mvn = MetaVisitNode.CreateByGetType(mcn.ownerMetaClass, mcn.metaType);
+                m_VisitNodeList.Add(mvn);
+            }
         }
 
         public MetaMemberFunction GetInitMemberFunction( MetaClass curmc )

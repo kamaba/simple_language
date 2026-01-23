@@ -118,7 +118,7 @@ namespace SimpleLanguage.Core
             m_LoadMetaVariable = loadMv;
             m_StoreMetaVariable = storeMv;
 
-            if( m_VMCallMetaFunction.returnMetaVariable.defineMetaType.metaClass?.eType == EType.Void )
+            if( m_VMCallMetaFunction?.returnMetaVariable?.defineMetaType?.metaClass?.eType == EType.Void )
             {
                 m_IsRecieveReturnValue = true;
             }
@@ -231,6 +231,7 @@ namespace SimpleLanguage.Core
             MetaClass,
             Express,
             TemplateName,
+            GetTypeValue,
         }
         public MetaConstExpressNode constValueExpress { get; private set; } = null;
         public MetaExpressNode express { get; set; } = null;
@@ -240,11 +241,12 @@ namespace SimpleLanguage.Core
         public MetaMethodCall methodCall { get; private set; } = null;
         //public MetaClass callerMetaClass => m_CallerMetaClass;
         public MetaType callMetaType => m_CallMetaType;
+        public MetaClass ownerMetaClass => m_OwnerMetaClass;
         //public MetaBraceOrBracketStatementsContent metaBraceStatementsContent => m_MetaBraceStatementsContent;
 
         //private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent = null;
         protected MetaType m_ReturnMetaType = null;
-        //protected MetaClass m_CallerMetaClass = null;
+        protected MetaClass m_OwnerMetaClass = null;
         protected MetaTemplate m_MetaTemplate = null;
         protected MetaType m_CallMetaType = null; //该变量，一般是为 T t = new() 这种情况准备的
 
@@ -368,12 +370,22 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CreateByEpxress( MetaExpressNode _express )
+        public static MetaVisitNode CreateByEpxress(MetaExpressNode _express)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.express = _express;
             vn.visitType = EVisitType.Express;
+
+            return vn;
+        }
+        public static MetaVisitNode CreateByGetType( MetaClass mc, MetaType mt )
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.m_CallMetaType = mt;
+            vn.m_OwnerMetaClass = mc;
+            vn.visitType = EVisitType.GetTypeValue;
 
             return vn;
         }

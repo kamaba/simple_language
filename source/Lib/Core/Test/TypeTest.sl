@@ -25,20 +25,20 @@ TypeTest
         }
 
         #generic type
-        tg = List<int>.type
+        tg = Array<int>.type
         System.Console.WriteLine("List<int>.type -> " + tg.toString())
 
         #compare with different instantiation
-        tg2 = List<string>.type
-        System.Console.WriteLine("List<string>.type -> " + tg2.toString())
+        tg2 = Array<string>.type
+        System.Console.WriteLine("Array<string>.type -> " + tg2.toString())
 
         if tg == tg2
         {
-            System.Console.WriteLine("List<int>.type == List<string>.type : true")
+            System.Console.WriteLine("Array<int>.type == Array<string>.type : true")
         }
         else
         {
-            System.Console.WriteLine("List<int>.type == List<string>.type : false")
+            System.Console.WriteLine("Array<int>.type == Array<string>.type : false")
         }
     }
 }

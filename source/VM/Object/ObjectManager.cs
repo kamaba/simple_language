@@ -120,7 +120,7 @@ namespace SimpleLanguage.VM
             }
             else if (name == "Core.Type" || name == "Type")
             {
-                sobj = new ClassObject(rt);
+                sobj = new TypeObject(rt);
                 sobj.typeId = 0;
             }
             else

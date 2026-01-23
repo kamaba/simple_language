@@ -13,7 +13,7 @@ public class SByte extends Num
     
     public override SByte abs()
     {
-        ret SimpleLanguage.Lib.Int32Class.Abs(this._value)
+        ret 0
     } 
     public override SByte floor()
     {

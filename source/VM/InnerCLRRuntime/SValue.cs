@@ -443,6 +443,11 @@ namespace SimpleLanguage.VM
                             eType = EVMType.Class;
                             sobject = val;
                         }
+                        else if( val.eType == EVMType.Type )
+                        {
+                            eType = EVMType.Type;
+                            sobject = val;
+                        }
                         else
                         {
                             SetSObject(val.value as SObject);

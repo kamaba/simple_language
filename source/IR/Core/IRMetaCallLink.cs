@@ -10,6 +10,7 @@ using SimpleLanguage.IR;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Xml.Linq;
 
 
 namespace SimpleLanguage.Core.IR
@@ -42,6 +43,19 @@ namespace SimpleLanguage.Core.IR
                 IRExpressBase ire = IRExpressManager.CreateExpress(_irMethod, cnode.express);
                 irList.Add(ire);
             }
+            else if( cnode.visitType == MetaVisitNode.EVisitType.GetTypeValue )
+            {
+                IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(cnode.ownerMetaClass.GetHashCode());
+                IRMetaType irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
+
+                IRData irdata = new IRData();
+                irdata.opCode = EIROpCode.Ldc;
+                irdata.SetOpValue(irmt);
+                //irdata.SetDebugInfoByToken( mcn.GetToken() );
+
+                IRBase irbase = new IRBase(irdata);
+                irList.Add(irbase);
+            }
             else if (cnode.visitType == MetaVisitNode.EVisitType.Variable)
             {
                 MetaVariable mv = cnode.GetOrgTemplateMetaVariable();
@@ -49,9 +63,9 @@ namespace SimpleLanguage.Core.IR
                 IRMetaType irmt = null;
                 IRMetaClass irmc = null;
                 IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
-                if ( mv.isStatic )
+                if (mv.isStatic)
                 {
-                    if( cnode.callMetaType != null )
+                    if (cnode.callMetaType != null)
                     {
                         irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
                     }
@@ -68,14 +82,14 @@ namespace SimpleLanguage.Core.IR
                 IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);
                 irList.Add(irVar);
             }
-            else if( cnode.visitType == MetaVisitNode.EVisitType.VisitVariable )
+            else if (cnode.visitType == MetaVisitNode.EVisitType.VisitVariable)
             {
                 MetaVisitVariable mv = cnode.visitVariable;
 
                 IRMetaClass irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
                 IRMetaType irmt = new IRMetaType(irmc);
 
-                IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv );
+                IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);
                 irList.Add(irVar);
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MethodCall)
@@ -85,7 +99,7 @@ namespace SimpleLanguage.Core.IR
                 irCallFun.Parse(mfc);
                 irList.Add(irCallFun);
             }
-            else if( cnode.visitType == MetaVisitNode.EVisitType.NewConst)
+            else if (cnode.visitType == MetaVisitNode.EVisitType.NewConst)
             {
                 IRNewExpress ire = new IRNewExpress(_irMethod, cnode.constValueExpress);
                 irList.Add(ire);

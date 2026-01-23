@@ -42,7 +42,6 @@ namespace SimpleLanguage.VM
             return value.ToString();
         }
     }
-
     public class Float64Object : NumObject
     {
         public override object getValue() { return value; }

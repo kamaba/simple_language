@@ -106,6 +106,15 @@ namespace SimpleLanguage.Core
         {
             m_MetaMemberParamCollection = new MetaDefineParamCollection(false, true);
             SetOwnerMetaClass(mc);
+
+            var defaultReturnType = new MetaType(CoreMetaClassManager.objectMetaClass);
+            m_ReturnMetaVariable = new MetaVariable(
+                (mc != null ? mc.allClassName : "Global") + "." + (m_Name ?? "func") + ".return",
+                MetaVariable.EVariableFrom.None,
+                null,
+                mc,
+                defaultReturnType
+            );
         }
         public MetaFunction( MetaFunction mf ):base(mf)
         {

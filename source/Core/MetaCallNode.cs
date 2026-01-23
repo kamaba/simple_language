@@ -48,7 +48,8 @@ namespace SimpleLanguage.Core
         This,
         Base,
         Global,
-        Express
+        Express,
+        GetType,
     }
     public enum EParseFrom
     {
@@ -585,19 +586,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                        // quick special-case: accessing `.type` on a class/type should always resolve to the Type getter
-                        if (m_Name == "type")
-                        {
-                            MetaType frontMetaType = m_FrontCallNode?.metaType;
-                            if (frontMetaType == null && m_FrontCallNode?.m_MetaClass != null)
-                            {
-                                frontMetaType = new MetaType(m_FrontCallNode.m_MetaClass);
-                            }
-                            HandleGetTypeByMetaType(frontMetaType);
-                            return true;
-                        }
-
-                        if (frontCNT == ECallNodeType.MetaNode)
+                    if (frontCNT == ECallNodeType.MetaNode)
                     {
                         MetaNode mn = null;
                         if (m_FrontCallNode.m_MetaNode.isMetaNamespace)
@@ -660,9 +649,18 @@ namespace SimpleLanguage.Core
                         || frontCNT == ECallNodeType.MetaType )
                     {
                         // special-case: a.type() where 'a' is a variable => produce Type for runtime variable
-                        if (m_Name == "type" && m_IsFunction && m_FrontCallNode != null && m_FrontCallNode.callNodeType == ECallNodeType.FunctionInnerVariableName)
+                        if (m_Name == "type" )
                         {
-                            HandleGetTypeByMetaVariable(m_FrontCallNode.m_MetaVariable);
+                            if(m_FrontCallNode.metaType.isTemplate )
+                            {
+                                m_MetaType = new MetaType(m_FrontCallNode.metaType);
+                                m_CallNodeType = ECallNodeType.GetType;
+                            }
+                            else
+                            {
+                                m_MetaType = new MetaType(m_FrontCallNode.metaType);
+                                m_CallNodeType = ECallNodeType.GetType;
+                            }
                             return true;
                         }
                         // ClassName 一般使用在 Class1.静态变量，或者是静态方法的调用

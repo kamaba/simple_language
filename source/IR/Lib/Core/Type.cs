@@ -12,5 +12,6 @@ namespace SimpleLanguage.Lib
 {
     public static class TypeClass
     {
+
     }
 }

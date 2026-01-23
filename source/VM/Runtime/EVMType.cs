@@ -20,6 +20,7 @@ namespace SimpleLanguage.VM.Runtime
         String = 14,
         Object = 15,
         Class = 16,
-        Array = 17,
+        Type = 17,
+        Array,
     }
 }
