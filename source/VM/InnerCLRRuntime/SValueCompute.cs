@@ -75,6 +75,41 @@ namespace SimpleLanguage.VM
                     }
                 }
 
+            // Special-case: string concatenation for '+' when either side is a string
+            // Treat any other type as its string representation (ToString)
+            if (sign == 0)
+            {
+                bool leftIsString = leftPrim.eType == EVMType.String;
+                bool rightIsString = rightPrim.eType == EVMType.String;
+                if (leftIsString || rightIsString)
+                {
+                    string ls;
+                    string rs;
+                    if (leftIsString)
+                    {
+                        ls = leftPrim.stringValue ?? string.Empty;
+                    }
+                    else
+                    {
+                        var obj = left.GetValueObject();
+                        ls = obj != null ? obj.ToString() : string.Empty;
+                    }
+
+                    if (rightIsString)
+                    {
+                        rs = rightPrim.stringValue ?? string.Empty;
+                    }
+                    else
+                    {
+                        var obj = right.GetValueObject();
+                        rs = obj != null ? obj.ToString() : string.Empty;
+                    }
+
+                    left.SetStringValue(ls + rs);
+                    return;
+                }
+            }
+
                 // right is NumObject, left is primitive -> compute into left primitive
                 if (rightNum != null)
                 {
