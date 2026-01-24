@@ -186,6 +186,7 @@ namespace SimpleLanguage.Core
                             flag = false;
                             Log.AddInStructMeta(EError.None, "Parse Statement Error 在使用NewClassName的方式，后边不允许有其它的调用!");
                         }
+                        List<object[]> a = new();
                     }
                     if( flag )
                     {

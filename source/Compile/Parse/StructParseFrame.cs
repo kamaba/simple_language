@@ -1442,6 +1442,7 @@ namespace SimpleLanguage.Compile
                             // end of tentative generic segment; validate content
                             var angleNode = pendingAngleOwner.angleNode;
                             angleNode.endToken = v.token;
+                            pendingAngleOwner.SetLinkNode(v.extendLinkNodeList);
                             bool valid = IsValidGenericContent(angleNode);
                             if (valid)
                             {

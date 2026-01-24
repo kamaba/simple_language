@@ -186,7 +186,18 @@ namespace SimpleLanguage.VM
         }
         public override string ToString()
         {
-            return irClass?.irName ?? base.ToString();
+            StringBuilder sb = new StringBuilder();
+            sb.Append(irClass.irName);
+            if(runtimeTemplateList.Count > 0 )
+            {
+                sb.Append("<");
+                for( int i = 0; i < runtimeTemplateList.Count; i++ )
+                {
+                    sb.Append(runtimeTemplateList[i].ToString());
+                }
+                sb.Append(">");
+            }
+            return sb.ToString();
         }
     }
 
@@ -288,35 +299,69 @@ namespace SimpleLanguage.VM
         public static RuntimeType AddRuntimeTypeByClassAndTemplate(IRMetaClass rmc, List<RuntimeType> inputTemplateTypeList)
         {
             if (rmc == null) return null;
-            var exist = GetRuntimeTypeByMT(rmc);
-            if (exist != null) return exist;
-
             RuntimeType rt = new RuntimeType(rmc, inputTemplateTypeList);
             rt.irClass = rmc;
             s_RuntimeList.Add(rt);
-
-            // init well-known static mappings based on irName
-            string name = rmc.irName ?? "";
-            if (name == "Type") m_TypeRuntimeType = rt;
-            if (name == "Void") m_VoidRuntimeType = rt;
-            if (name == "Num") m_NumRuntimeType = rt;
-            if (name == "Byte") m_ByteRuntimeType = rt;
-            if (name == "SByte") m_SByteRuntimeType = rt;
-            if (name == "Int16") m_Int16RuntimeType = rt;
-            if (name == "UInt16") m_UInt16RuntimeType = rt;
-            if (name == "Int32") m_Int32RuntimeType = rt;
-            if (name == "UInt32") m_UInt32RuntimeType = rt;
-            if (name == "Int64") m_Int64RuntimeType = rt;
-            if (name == "UInt64") m_UInt64RuntimeType = rt;
-            if (name == "Float32") m_Float32RuntimeType = rt;
-            if (name == "Float64") m_Float64RuntimeType = rt;
-            if (name == "String") m_StringRuntimeType = rt;
-
             return rt;
         }
         public static RuntimeType AddRuntimeTypeByClass(IRMetaClass rmc )
         {
-            return AddRuntimeTypeByClassAndTemplate(rmc, null);
+            RuntimeType rt = new RuntimeType(rmc, null);
+            if (rmc.irName == "Type")
+            {
+                m_TypeRuntimeType = rt;
+            }
+            else if (rmc.irName == "Void")
+            {
+                m_VoidRuntimeType = rt;
+            }
+            else if (rmc.irName == "Byte")
+            {
+                m_ByteRuntimeType = rt;
+            }
+            else if (rmc.irName == "SByte")
+            {
+                m_SByteRuntimeType = rt;
+            }
+            else if (rmc.irName == "Int16")
+            {
+                m_Int16RuntimeType = rt;
+            }
+            else if (rmc.irName == "UInt16")
+            {
+                m_UInt16RuntimeType = rt;
+            }
+            else if (rmc.irName == "Int32")
+            {
+                m_Int32RuntimeType = rt;
+            }
+            else if (rmc.irName == "UInt32")
+            {
+                m_UInt32RuntimeType = rt;
+            }
+            else if (rmc.irName == "Int64")
+            {
+                m_Int64RuntimeType = rt;
+            }
+            else if (rmc.irName == "UInt64")
+            {
+                m_UInt64RuntimeType = rt;
+            }
+            else if (rmc.irName == "String")
+            {
+                m_StringRuntimeType = rt;
+            }
+            else if (rmc.irName == "Float32")
+            {
+                m_Float32RuntimeType = rt;
+            }
+            else if (rmc.irName == "Float64")
+            {
+                m_Float64RuntimeType = rt;
+            }
+            s_RuntimeList.Add(rt);
+
+            return rt;
         }
     }
 }

@@ -6,6 +6,7 @@ TypeTest
 {
     static fun()
     {
+        #!
         #primitive type via function
         t = int.type()
         #System.Console.WriteLine("int.type() -> " + t.toString())
@@ -24,15 +25,15 @@ TypeTest
         {
             System.Console.WriteLine("int.type == i2.type : false")
         }
-        #!
+        !#
 
         #generic type
         tg = Array<int>.type
-        System.Console.WriteLine("List<int>.type -> " + tg.toString())
+        #System.Console.WriteLine("List<int>.type -> " + tg.toString())
 
         #compare with different instantiation
-        tg2 = Array<string>.type
-        System.Console.WriteLine("Array<string>.type -> " + tg2.toString())
+        tg2 = Array<Array<int> >.type
+        #System.Console.WriteLine("Array<string>.type -> " + tg2.toString())
 
         if tg == tg2
         {
@@ -42,6 +43,5 @@ TypeTest
         {
             System.Console.WriteLine("Array<int>.type == Array<string>.type : false")
         }
-        !#
     }
 }

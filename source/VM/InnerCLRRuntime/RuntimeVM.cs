@@ -10,10 +10,11 @@ using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using SimpleLanguage.VM;
 using System;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -676,11 +677,21 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.NewObject:
                     {
-                        if (iri.opValue is IRMetaClass irmc)
+                        if (iri.opValue is IRMetaClass mdt)
                         {
-                            var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irmc);
-                            if (rt == null) rt = RuntimeTypeManager.AddRuntimeTypeByClass(irmc);
-                            var sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
+                            var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(mdt);
+                            SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
+                            if (sobj is ClassObject co)
+                            {
+                                ObjectManager.AddClassObject(co);
+                            }
+                            m_ValueStack[m_ValueIndex++].SetSObject(sobj);
+
+                            var irList = rt.irClass.CreateStaticMetaMetaVariableIRList();
+                            if (irList.Count > 0)
+                            {
+                                InnerCLRRuntimeVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
+                            }
                             var sv = default(SValue);
                             sv.SetSObject(sobj);
                             PushSValueSynced(sv);
@@ -689,11 +700,23 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.NewTemplateObject:
                     {
-                        if (iri.opValue is IRMetaType irmt)
+                        if (iri.opValue is IRMetaType mdt)
                         {
-                            var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt);
-                            if (rt == null && irmt?.m_IRMetaClass != null) rt = RuntimeTypeManager.AddRuntimeTypeByClass(irmt.m_IRMetaClass);
-                            var sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
+                            var rt = GetClassRuntimeType(mdt, m_IRMetaClass != null ? m_IRMetaClass : mdt.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
+                            SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
+                            if (sobj is ClassObject co)
+                            {
+                                ObjectManager.AddClassObject(co);
+                            }
+                            m_ValueStack[m_ValueIndex++].SetSObject(sobj);
+                            var irc = rt.irClass;
+
+
+                            var irList = rt.irClass.CreateStaticMetaMetaVariableIRList();
+                            if (irList.Count > 0)
+                            {
+                                InnerCLRRuntimeVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
+                            }
                             var sv = default(SValue);
                             sv.SetSObject(sobj);
                             PushSValueSynced(sv);
@@ -705,12 +728,19 @@ namespace SimpleLanguage.VM.Runtime
                         // expects length on stack
                         if (m_ValueIndex > 0 && iri.opValue is IRMetaType irmt)
                         {
-                            var lenVal = m_ValueStack[--m_ValueIndex];
-                            int len = 0;
-                            if (lenVal.eType == EVMType.Int32) len = lenVal.int32Value;
-                            else if (lenVal.eType == EVMType.Int64) len = (int)lenVal.int64Value;
-                            var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt);
-                            var arr = new ArrayObject(rt, len);
+                            var sval = m_ValueStack[m_ValueIndex - 1];
+                            if (sval.eType != EVMType.Int32)
+                            {
+                                Log.AddVM(EError.None, "创建数组长度不是Int32类型!!");
+                                break;
+                            }
+
+                            IRMetaType mdt = iri.opValue as IRMetaType;
+                            var rt = GetClassRuntimeType(mdt, m_IRMetaClass != null ? m_IRMetaClass : mdt.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
+                            ArrayObject arr = new ArrayObject(rt, sval.int32Value);
+                            ObjectManager.AddClassObject(arr);
+                            m_ValueStack[m_ValueIndex - 1].SetSObject(arr);
+
                             var sv = default(SValue);
                             sv.SetSObject(arr);
                             PushSValueSynced(sv);
@@ -1006,14 +1036,10 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Ldc:
                     {
-                        if (iri.opValue is IRMetaType irmt)
+                        if (iri.opValue is IRMetaType mdt)
                         {
-                            var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt);
-                            if (rt == null && irmt?.m_IRMetaClass != null)
-                            {
-                                rt = RuntimeTypeManager.AddRuntimeTypeByClass(irmt.m_IRMetaClass);
-                            }
-
+                            var rt = GetClassRuntimeType(mdt, m_IRMetaClass != null ? m_IRMetaClass : mdt.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
+                           
                             var sobj = new TypeObject(rt);
                             var sv = default(SValue);
                             sv.SetSObject(sobj);
