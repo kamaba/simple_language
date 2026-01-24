@@ -160,35 +160,5 @@ namespace SimpleLanguage.Lib
             }
             catch { }
         }
-
-        // public TypeObject wrapper for runtime types
-        public class TypeObject : ClassObject
-        {
-            public RuntimeType TargetRuntimeType { get; }
-
-            public TypeObject(RuntimeType target) : base(RuntimeTypeManager.typeRuntimeType, false)
-            {
-                TargetRuntimeType = target;
-            }
-
-            public string metaClassName
-            {
-                get
-                {
-                    try { return TargetRuntimeType?.irClass?.irName ?? "no_type"; }
-                    catch { return "no_type"; }
-                }
-            }
-
-            public override string ToFormatString()
-            {
-                return metaClassName;
-            }
-
-            public override string ToString()
-            {
-                return ToFormatString();
-            }
-        }
     }
 }

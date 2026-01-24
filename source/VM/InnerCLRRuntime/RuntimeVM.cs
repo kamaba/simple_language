@@ -1575,6 +1575,39 @@ namespace SimpleLanguage.VM.Runtime
                         }
                     }
                     break;
+                case EVMType.Type:
+                    {
+                        TemplateObject to = obj as TemplateObject;
+                        if (to != null)
+                        {
+                            to.SetClassObject(svalue.sobject as ClassObject);
+                            return;
+                        }
+                        //AnyObject anyObject = obj as AnyObject;
+                        //if (anyObject != null)
+                        //{
+                        //    if( svalue.sobject is ClassObject co )
+                        //    {
+                        //        anyObject.SetValue(EVMType.Class, co.value );
+                        //    }
+                        //    return;
+                        //}
+
+                        if (anyObj)
+                        {
+                            obj.SetValueByType(EVMType.Type, svalue.sobject);
+                            return;
+                        }
+                        TypeObject classObj = obj as TypeObject;
+                        if (classObj == null)
+                        {
+                            Debug.Assert(false);
+                            Debug.Write("该类型不是Class类型!!");
+                            return;
+                        }
+                        classObj.SetClassObject(svalue.sobject as ClassObject);
+                    }
+                    break;
                 case EVMType.Class:
                     {
                         TemplateObject to = obj as TemplateObject;

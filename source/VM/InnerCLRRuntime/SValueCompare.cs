@@ -10,6 +10,7 @@ using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace SimpleLanguage.VM
 {
@@ -444,11 +445,33 @@ namespace SimpleLanguage.VM
                 case EVMType.Array: { 
                     }
                     break;
+                case EVMType.Type:
+                    {
+                        if (sval1.eType == EVMType.Type)
+                        {
+                            TypeObject bo1 = sval1.sobject as TypeObject;
+                            TypeObject bo2 = sval2.sobject as TypeObject;
+                            if (bo1 != null && bo2 != null)
+                            {
+                                sval1.SetBoolValue(bo1.currentRT == bo2.currentRT);
+                            }
+                            else
+                            {
+                                sval1.SetBoolValue(false);
+                            }
+                            return;
+                        }
+                        else
+                        {
+                            Debug.Assert(false);
+                        }
+                    }
+                    break;
                 case EVMType.Class:
                     {
                         ClassObject co = (sval2.sobject as ClassObject);
-                        RuntimeType rt = co.value.runtimeType;
-                        IRMetaClass irc = co.value.irMetaClass;                        
+                        RuntimeType rt = co.runtimeType;
+                        IRMetaClass irc = co.irMetaClass;                        
                         if (irc == null)
                         {
                             Log.AddVM(EError.None, "IRC是调用虚函数为空!!");

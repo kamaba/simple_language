@@ -15,6 +15,8 @@ namespace SimpleLanguage.VM
 {
     class TypeObject : ClassObject
     {
+        public RuntimeType currentRT => m_Rt;
+
         RuntimeType m_Rt = null;
         public TypeObject(RuntimeType rm ) : base(RuntimeTypeManager.typeRuntimeType)
         {
