@@ -434,6 +434,6 @@ namespace SimpleLanguage.Compile
             sb.Append(" ");
 
             return sb.ToString();
-        }       
+        }
     }
 }

@@ -8,10 +8,13 @@
 
 
 using SimpleLanguage.Logging;
+using System.IO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.ComponentModel.Design;
+using System.Collections.Generic;
 
 namespace SimpleLanguage.Compile
 {
@@ -1022,7 +1025,8 @@ namespace SimpleLanguage.Compile
                         case 't': m_Builder.Append('\t'); break;
                         case 'v': m_Builder.Append('\v'); break;
                         case '0': m_Builder.Append('\0'); break;
-                        case '/': m_Builder.Append("/"); break;
+                        case '/': m_Builder.Append("/"); 
+                            break;
                         case '{': m_Builder.Append("{"); break;
                         case '}': m_Builder.Append("}"); break;
                         case 'u':
@@ -1272,6 +1276,7 @@ namespace SimpleLanguage.Compile
 #pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
             int offsetLine = 0;
 #pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
+            int type = 0;// 0 all line 1 #! !#  ##! !##
             while( true )
             {
                 int index = m_Index + checkBracket;
@@ -1328,6 +1333,10 @@ namespace SimpleLanguage.Compile
                 {
                     offset2 = 1;
                     curTopLevel = topLevel;
+                    if( curTopLevel > type )
+                    {
+                        type = 1;
+                    }
                     while ( true )
                     {
                         schar = m_Buffer[offset + offset2++];
@@ -1352,8 +1361,8 @@ namespace SimpleLanguage.Compile
                         else
                             break;
                     }
-                    if( !isEnd )
-                        m_Builder.Append(m_TempChar);
+                    //if( !isEnd )
+                    //    m_Builder.Append(m_TempChar);
                 }
                 else
                 {
@@ -1371,7 +1380,7 @@ namespace SimpleLanguage.Compile
                 offset++;
             }
 
-            AddToken(ETokenType.Sharp, m_Builder.ToString(), bracketStringBuild.ToString());
+            AddToken(ETokenType.Sharp, m_Builder.ToString(), type.ToString());
         }
         void ReadDollar()
         {
@@ -1423,7 +1432,6 @@ namespace SimpleLanguage.Compile
                 else if (m_TempChar == '#')
                 {
                     topLevel++;
-                    m_Builder.Append(m_TempChar);
                 }
                 else
                 {
@@ -1441,7 +1449,7 @@ namespace SimpleLanguage.Compile
                         if (m_TempChar == END_CHAR)
                             break;
                     } while (true);
-                    AddToken(ETokenType.Sharp, m_Builder.ToString(), "#" );
+                    AddToken(ETokenType.Sharp, m_Builder.ToString(), 0 );
                     m_Index++;
                     m_SourceChar++;
                     m_SourceLine++;
@@ -1807,10 +1815,10 @@ namespace SimpleLanguage.Compile
                         num++;
                     }
 
-                    //var spacetoken = new Token(m_Path, ETokenType.Space, "", bline, bchar);
-                    //spacetoken.SetSrouceEnd(m_SourceLine, m_SourceChar);
-                    //spacetoken.SetExtend(num);
-                    //m_ListTokens.Add(spacetoken);
+                    var spacetoken = new Token(m_Path, ETokenType.Space, "", bline, bchar);
+                    spacetoken.SetSrouceEnd(m_SourceLine, m_SourceChar);
+                    spacetoken.SetExtend(num);
+                    m_ListTokens.Add(spacetoken);
                 }
                 else if( m_CurChar == '\t' || m_CurChar == '\r' )
                 {
@@ -2018,6 +2026,108 @@ namespace SimpleLanguage.Compile
                             break;
                     }
                 }
+            }
+        }
+
+
+
+        // Dump the current token list to a Token.txt file for debugging.
+        // Creates a folder named after the input file (without extension) under a DebugCode
+        // directory in the current running directory and writes tokens in the format:
+        // lexeme[Type][beginLine:beginChar-endLine:endChar]
+        // Four tokens are written per line.
+        public void DumpTokensToFile()
+        {
+            string outFile = "";
+            try
+            {
+                if (string.IsNullOrEmpty(m_Path)) return;
+
+                // 使用当前运行目录，创建 DebugCode 目录，然后在其下以 m_Path 去掉后缀的名字建子目录，最后在该目录下写 Token.txt
+                // 例如: <运行目录>/DebugCode/<m_Path无后缀>/Token.txt
+
+                var outDir = Common.SetDebugCode(m_Path);
+
+                outFile = Path.Combine(outDir, "Token.txt");
+
+                //if (File.Exists(outFile))
+                //{
+                //    File.Delete(outFile);
+                //}
+
+                using (var sw = new StreamWriter(outFile, false))
+                {
+                    int count = 0;
+                    var sb = new System.Text.StringBuilder();
+                    foreach (var t in m_ListTokens)
+                    {
+                        //string lex = t.lexeme != null ? t.lexeme.ToString() : "";
+                        //string typ = t.type.ToString();
+                        //int bLine = t.sourceBeginLine;
+                        //int bChar = t.sourceBeginChar;
+                        //int eLine = t.sourceEndLine;
+                        //int eChar = t.sourceEndChar;
+                        //string tokenStr = $"{lex}[{typ}][{bLine}:{bChar}-{eLine}:{eChar}]";
+                        //if (count > 0) sb.Append("    ");
+                        if( t.type == ETokenType.LineEnd )
+                        {
+                            sb.AppendLine();
+                        }
+                        else if( t.type == ETokenType.Sharp )
+                        {
+                            int extend = 0;
+                            if( !int.TryParse( t.extend.ToString(), out extend ) )
+                            {
+                                Debug.Assert(false, "");
+                            }
+                            if(extend == 0 )
+                            {
+                                sb.Append("#");
+                                sb.Append(t.lexeme.ToString());
+                            }
+                            else if (extend == 1)
+                            {
+                                sb.Append("#!");
+                                sb.Append(t.lexeme.ToString());
+                                sb.Append("!#");
+                            }
+                            else if (extend == 2)
+                            {
+                                sb.Append("##!");
+                                sb.Append(t.lexeme.ToString());
+                                sb.Append("!##");
+                            }
+                        }
+                        else if (t.type == ETokenType.Space)
+                        {
+                            int space = (int)t.extend;
+                            for (int i = 0; i < space; i++)
+                                sb.Append($" ");
+                        }
+                        else
+                        {
+                            //sb.Append("[");
+                            sb.Append(t.lexeme?.ToString());
+                            //sb.Append("]");
+                        }
+                        //count++;
+                        //if (count >= 4)
+                        //{
+                        //    sw.WriteLine(sb.ToString());
+                        //    sb.Clear();
+                        //    count = 0;
+                        //}
+                    }
+                    if (sb.Length > 0)
+                    {
+                        sw.WriteLine(sb.ToString());
+                    }
+                }
+            }
+            catch( Exception e )
+            {
+                // swallow exceptions in debug dump
+                Debug.Assert(false, "File:" + outFile + "DumpFile: " + e.Message );
             }
         }
     }

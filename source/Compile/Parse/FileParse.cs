@@ -86,14 +86,20 @@ namespace SimpleLanguage.Compile
         {
             if( LoadFile() )
             {
+                SaveCodeToFile();
+
                 lexerParse = new LexerParse(filePath, content);
                 content = string.Empty;
 
                 lexerParse.ParseToTokenList();
 
+                lexerParse.DumpTokensToFile();
+
                 tokenParse = new TokenParse( m_File, lexerParse.GetListTokensWidthEnd() );
 
                 tokenParse.BuildStruct();
+
+                tokenParse.DumpNodesToFile();
 
                 structBuild = new StructParse(m_File, tokenParse.rootNode );
 
@@ -126,6 +132,12 @@ namespace SimpleLanguage.Compile
         public void PrintFormatString()
         {
             Log.AddInStructFileMeta(EError.None, m_File.ToFormatString());
+        }
+        public void SaveCodeToFile()
+        {
+            string outDir = Common.SetDebugCode(filePath);
+            string outPath = Path.Combine(outDir, "Code.txt");
+            File.WriteAllText(outPath, content );
         }
     }
 }

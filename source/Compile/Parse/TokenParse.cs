@@ -698,5 +698,90 @@ namespace SimpleLanguage.Compile
             }
             return depth > 0;
         }
+
+        // Dump a Node tree to a file for debugging.
+        // Creates a folder named after the input file (without extension) next to the file
+        // and writes nodes in the format: content[NodeType][beginLine:beginChar-endLine:endChar]
+        // Four nodes are written per line.
+        public void DumpNodesToFile()
+        {
+            Node root = m_RootNode;
+            try
+            {
+                if (root == null) return;
+                var outDir = Common.SetDebugCode(m_FileMeta.path);
+                var outFile = System.IO.Path.Combine(outDir, "Node.txt");
+
+                using (var sw = new System.IO.StreamWriter(outFile, false))
+                {
+                    var list = new System.Collections.Generic.List<Node>();
+                    // preorder traversal
+                    var stack = new System.Collections.Generic.Stack<Node>();
+                    stack.Push(root);
+                    while (stack.Count > 0)
+                    {
+                        var n = stack.Pop();
+                        list.Add(n);
+                        // push children in reverse so they are visited in order
+                        if (n.childList != null && n.childList.Count > 0)
+                        {
+                            for (int i = n.childList.Count - 1; i >= 0; i--)
+                            {
+                                stack.Push(n.childList[i]);
+                            }
+                        }
+                        // also include extendLinkNodeList so linked identifier nodes are visible
+                        if (n.extendLinkNodeList != null && n.extendLinkNodeList.Count > 0)
+                        {
+                            for (int i = n.extendLinkNodeList.Count - 1; i >= 0; i--)
+                            {
+                                stack.Push(n.extendLinkNodeList[i]);
+                            }
+                        }
+                    }
+
+                    int count = 0;
+                    var sb = new System.Text.StringBuilder();
+                    foreach (var n in list)
+                    {
+                        string content;
+                        string typ;
+                        int bLine = 0, bChar = 0, eLine = 0, eChar = 0;
+                        if (n.token != null)
+                        {
+                            content = n.token.lexeme != null ? n.token.lexeme.ToString() : "";
+                            typ = n.token.type.ToString();
+                            bLine = n.token.sourceBeginLine;
+                            bChar = n.token.sourceBeginChar;
+                            eLine = n.token.sourceEndLine;
+                            eChar = n.token.sourceEndChar;
+                        }
+                        else
+                        {
+                            content = n.nodeType.ToString();
+                            typ = n.nodeType.ToString();
+                        }
+                        string nodeStr = $"{content}[{typ}][{bLine}:{bChar}-{eLine}:{eChar}]";
+                        if (count > 0) sb.Append("    ");
+                        sb.Append(nodeStr);
+                        count++;
+                        if (count >= 4)
+                        {
+                            sw.WriteLine(sb.ToString());
+                            sb.Clear();
+                            count = 0;
+                        }
+                    }
+                    if (sb.Length > 0)
+                    {
+                        sw.WriteLine(sb.ToString());
+                    }
+                }
+            }
+            catch
+            {
+                // swallow exceptions for debug dump
+            }
+        }
     }
 }
