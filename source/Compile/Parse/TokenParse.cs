@@ -49,6 +49,10 @@ namespace SimpleLanguage.Compile
             Debug.Write(m_RootNode.ToFormatString());
             Debug.Write($"---------------File:{m_FileMeta.path}  Token节点  结束:-------------------------");
         }
+        public void SaveFile( string path )
+        {
+            System.IO.File.WriteAllText( path, m_RootNode.ToFormatString() );
+        }
         public void AddImportNode( Token token )
         {
             var nnode = new Node(token);

@@ -210,6 +210,8 @@ namespace SimpleLanguage
         Interface,
         /// <summary> extends </summary>
         Extends,
+        /// <summary> bind </summary>
+        Bind,
         /// <summary> virtual </summary>
         //Virtual,
         /// <summary> override </summary>
@@ -258,6 +260,8 @@ namespace SimpleLanguage
         Return,
         /// <summary> operator </summary>
         Operator,
+        /// <summary> local </summary>
+        Local,
         /// <summary> global </summary>
         Global,
         /// <summary> label </summary>
@@ -304,6 +308,10 @@ namespace SimpleLanguage
         Complex,
         /// <summary> 标识符 </summary>
         Identifier,
+        /// <summary> async </summary>
+        Async,
+        /// <summary> await </summary>
+        Await,
 
         Float2, Float3, Float4,
         /// <summary> float extent </summary>

@@ -1670,6 +1670,9 @@ namespace SimpleLanguage.Compile
                 case "extern":
                     tokenType = ETokenType.Extern;
                     break;
+                case "bind":
+                    tokenType = ETokenType.Bind;
+                    break;
                 case "public":
                     tokenType = ETokenType.Public;
                     break;
@@ -1710,6 +1713,9 @@ namespace SimpleLanguage.Compile
                 case "global":
                     tokenType = ETokenType.Global;
                     break;
+                case "local":
+                    tokenType = ETokenType.Local;
+                    break;
                 case "try":
                     tokenType = ETokenType.Try;
                     break;
@@ -1747,12 +1753,12 @@ namespace SimpleLanguage.Compile
                     tokenType = ETokenType.Identifier;
                     extend = EType.Array;
                     break;
-                //case "async":
-                //    tokenType = TokenType.Async;
-                //    break;
-                //case "await":
-                //    tokenType = TokenType.Await;
-                //    break;    
+                case "async":
+                    tokenType = ETokenType.Async;
+                    break;
+                case "await":
+                    tokenType = ETokenType.Await;
+                    break;
                 default:
                     tokenType = ETokenType.Identifier;
                     break;
