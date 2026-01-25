@@ -74,6 +74,10 @@ namespace SimpleLanguage.Compile
                 {
                     Debug.Write("Error 不允许在Else后增加任何代码" + node.token?.ToLexemeAllString() );
                 }
+                else if( tokenType == ETokenType.Sharp )
+                {
+
+                }
                 else
                 {
                     commonContent.Add(node);
@@ -175,6 +179,10 @@ namespace SimpleLanguage.Compile
                 if (curToken == null)
                 {
                     break;
+                }
+                if( curToken.type == ETokenType.Sharp )
+                {
+                    continue;
                 }
 
 
@@ -290,19 +298,19 @@ namespace SimpleLanguage.Compile
                     {
                         keynodeStruct.AddContent(curNode);
                     }
-                    else if (ttt == ETokenType.As )
+                    else if (ttt == ETokenType.As)
                     {
                         //keynodeStruct.SetMainKeyNode(curNode);
                         keynodeStruct.AddContent(curNode);
                     }
-                    else if (ttt == ETokenType.Is )
+                    else if (ttt == ETokenType.Is)
                     {
                         //keynodeStruct.SetMainKeyNode(curNode);
                         keynodeStruct.AddContent(curNode);
                     }
                     else if (ttt == ETokenType.This
                        || ttt == ETokenType.Base
-                       || ttt == ETokenType.New 
+                       || ttt == ETokenType.New
                         )
                     {
                         keynodeStruct.AddContent(curNode);
@@ -349,6 +357,7 @@ namespace SimpleLanguage.Compile
             for (int j = 0; j < pNodeList.Count; j++)
             {
                 var cnode = pNodeList[j];
+
                 if (cnode.nodeType == ENodeType.Assign)
                 {
                     if (assignNode == null && opAssignNode == null)
@@ -596,7 +605,7 @@ namespace SimpleLanguage.Compile
             {
                 if( akss.commonContent.Count > 0 )
                 {
-                    fms = CrateFileMetaSyntaxNoKey(akss.commonContent);
+                    fms = CrateFileMetaSyntaxNoKey(akss.commonContent);                    
                     AddParseSyntaxNodeInfo(fms);
                 }
             }

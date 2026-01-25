@@ -11,6 +11,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.IO;
+using System.Text;
 
 namespace SimpleLanguage.Compile
 {
@@ -42,6 +44,116 @@ namespace SimpleLanguage.Compile
             ParseToken();
 
             //BuildEnd();
+        }
+
+        // Dump the parsed Node tree to a file for debugging.
+        // Creates a folder named after the source file (without extension) next to the file
+        // and writes a tree-structured representation into "Node.txt".
+        public void DumpNodesToFile()
+        {
+            try
+            {
+                if (m_RootNode == null) return;
+                string sourcePath = null;
+                if (m_TokensList != null && m_TokensList.Count > 0)
+                    sourcePath = m_TokensList[0].path as string;
+                if (string.IsNullOrEmpty(sourcePath)) return;
+                var dir = Path.GetDirectoryName(sourcePath);
+                var baseName = Path.GetFileNameWithoutExtension(sourcePath);
+                if (string.IsNullOrEmpty(baseName)) baseName = "Nodes";
+                var outDir = Path.Combine(dir ?? "", baseName);
+                Directory.CreateDirectory(outDir);
+                var outFile = Path.Combine(outDir, "Node.txt");
+
+                using (var sw = new StreamWriter(outFile, false, Encoding.UTF8))
+                {
+                    void DumpNode(Node n, int indent)
+                    {
+                        string indentStr = new string(' ', indent * 2);
+                        string content = n.token?.lexeme?.ToString() ?? n.nodeType.ToString();
+                        string nodetype = n.nodeType.ToString();
+                        int bLine = n.token?.sourceBeginLine ?? 0;
+                        int bChar = n.token?.sourceBeginChar ?? 0;
+                        int eLine = n.token?.sourceEndLine ?? 0;
+                        int eChar = n.token?.sourceEndChar ?? 0;
+                        sw.WriteLine($"{indentStr}{content} [{nodetype}] ({bLine}:{bChar}-{eLine}:{eChar})");
+
+                        // angle (generic) node
+                        if (n.angleNode != null)
+                        {
+                            sw.WriteLine($"{indentStr}  <");
+                            foreach (var ac in n.angleNode.childList)
+                            {
+                                DumpNode(ac, indent + 2);
+                            }
+                            sw.WriteLine($"{indentStr}  >");
+                        }
+
+                        // par node (parentheses)
+                        if (n.parNode != null)
+                        {
+                            sw.WriteLine($"{indentStr}  (");
+                            foreach (var pc in n.parNode.childList)
+                            {
+                                DumpNode(pc, indent + 2);
+                            }
+                            sw.WriteLine($"{indentStr}  )");
+                        }
+
+                        // bracket nodes
+                        if (n.bracketNodeList != null && n.bracketNodeList.Count > 0)
+                        {
+                            for (int i = 0; i < n.bracketNodeList.Count; i++)
+                            {
+                                var bnode = n.bracketNodeList[i];
+                                sw.WriteLine($"{indentStr}  [");
+                                foreach (var bc in bnode.childList)
+                                {
+                                    DumpNode(bc, indent + 2);
+                                }
+                                sw.WriteLine($"{indentStr}  ]");
+                            }
+                        }
+
+                        // block node (curly braces)
+                        if (n.blockNode != null)
+                        {
+                            sw.WriteLine($"{indentStr}  {{");
+                            foreach (var bc in n.blockNode.childList)
+                            {
+                                DumpNode(bc, indent + 2);
+                            }
+                            sw.WriteLine($"{indentStr}  }}");
+                        }
+
+                        // extend link nodes (dotted chain)
+                        if (n.extendLinkNodeList != null && n.extendLinkNodeList.Count > 0)
+                        {
+                            sw.WriteLine($"{indentStr}  .extendLinks:");
+                            foreach (var ln in n.extendLinkNodeList)
+                            {
+                                DumpNode(ln, indent + 2);
+                            }
+                        }
+
+                        // child nodes (excluding angle node which we've handled)
+                        if (n.childList != null && n.childList.Count > 0)
+                        {
+                            foreach (var ch in n.childList)
+                            {
+                                if (ch == n.angleNode) continue;
+                                DumpNode(ch, indent + 1);
+                            }
+                        }
+                    }
+
+                    DumpNode(m_RootNode, 0);
+                }
+            }
+            catch
+            {
+                // ignore debug dump errors
+            }
         }
         public void BuildEnd()
         {
@@ -99,12 +211,10 @@ namespace SimpleLanguage.Compile
         {
             m_TokenIndex++;
 
-            var ntoken = new Token(code);
-            ntoken.SetType( ETokenType.LineEnd );
-            Node node = new Node(ntoken);
-            node.nodeType = ENodeType.LineEnd;
+            //Node node = new Node(code);
+            //node.nodeType = ENodeType.Comment;
 
-            currentNode.AddChild(node);
+            //currentNode.AddChild(node);
         }
         private Node AddKeyNode(Token token )
         {
@@ -744,6 +854,11 @@ namespace SimpleLanguage.Compile
                     var sb = new System.Text.StringBuilder();
                     foreach (var n in list)
                     {
+                        if( n.nodeType == ENodeType.LineEnd )
+                        {
+                            sb.AppendLine();
+                            continue;
+                        }
                         string content;
                         string typ;
                         int bLine = 0, bChar = 0, eLine = 0, eChar = 0;
@@ -761,7 +876,7 @@ namespace SimpleLanguage.Compile
                             content = n.nodeType.ToString();
                             typ = n.nodeType.ToString();
                         }
-                        string nodeStr = $"{content}[{typ}][{bLine}:{bChar}-{eLine}:{eChar}]";
+                        string nodeStr = content;// $"{content}[{typ}][{bLine}:{bChar}-{eLine}:{eChar}]";
                         if (count > 0) sb.Append("    ");
                         sb.Append(nodeStr);
                         count++;
