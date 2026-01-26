@@ -42,6 +42,12 @@ namespace SimpleLanguage.Compile
         public void BuildStruct()
         {
             ParseToken();
+            // dump node tree for debugging (will write Node.txt into a folder named after source file)
+            try
+            {
+                DumpNodesToFile();
+            }
+            catch { }
 
             //BuildEnd();
         }
@@ -49,55 +55,53 @@ namespace SimpleLanguage.Compile
         // Dump the parsed Node tree to a file for debugging.
         // Creates a folder named after the source file (without extension) next to the file
         // and writes a tree-structured representation into "Node.txt".
+        static int sindent = 0;
         public void DumpNodesToFile()
         {
             try
             {
                 if (m_RootNode == null) return;
-                string sourcePath = null;
-                if (m_TokensList != null && m_TokensList.Count > 0)
-                    sourcePath = m_TokensList[0].path as string;
-                if (string.IsNullOrEmpty(sourcePath)) return;
-                var dir = Path.GetDirectoryName(sourcePath);
-                var baseName = Path.GetFileNameWithoutExtension(sourcePath);
-                if (string.IsNullOrEmpty(baseName)) baseName = "Nodes";
-                var outDir = Path.Combine(dir ?? "", baseName);
-                Directory.CreateDirectory(outDir);
+                var outDir = Common.SetDebugCode(m_FileMeta.path);
                 var outFile = Path.Combine(outDir, "Node.txt");
 
                 using (var sw = new StreamWriter(outFile, false, Encoding.UTF8))
                 {
-                    void DumpNode(Node n, int indent)
+                    void DumpNode(Node n, bool isUseIndent )
                     {
-                        string indentStr = new string(' ', indent * 2);
+                        string indentStr = new string(' ', sindent * 4);
                         string content = n.token?.lexeme?.ToString() ?? n.nodeType.ToString();
                         string nodetype = n.nodeType.ToString();
                         int bLine = n.token?.sourceBeginLine ?? 0;
                         int bChar = n.token?.sourceBeginChar ?? 0;
                         int eLine = n.token?.sourceEndLine ?? 0;
                         int eChar = n.token?.sourceEndChar ?? 0;
-                        sw.WriteLine($"{indentStr}{content} [{nodetype}] ({bLine}:{bChar}-{eLine}:{eChar})");
+                        //sw.WriteLine($"{indentStr}{content} [{nodetype}] ({bLine}:{bChar}-{eLine}:{eChar})");
+                        if( isUseIndent || content == "\n" )
+                        {
+                            sw.Write($"{indentStr}");
+                        }
+                        sw.Write($"{content} ");
 
                         // angle (generic) node
                         if (n.angleNode != null)
                         {
-                            sw.WriteLine($"{indentStr}  <");
+                            sw.Write($"{indentStr}<");
                             foreach (var ac in n.angleNode.childList)
                             {
-                                DumpNode(ac, indent + 2);
+                                DumpNode(ac, false);
                             }
-                            sw.WriteLine($"{indentStr}  >");
+                            sw.Write($"{indentStr}>");
                         }
 
                         // par node (parentheses)
                         if (n.parNode != null)
                         {
-                            sw.WriteLine($"{indentStr}  (");
+                            sw.Write($"{indentStr}(");
                             foreach (var pc in n.parNode.childList)
                             {
-                                DumpNode(pc, indent + 2);
+                                DumpNode(pc, false );
                             }
-                            sw.WriteLine($"{indentStr}  )");
+                            sw.Write($"{indentStr})");
                         }
 
                         // bracket nodes
@@ -106,52 +110,55 @@ namespace SimpleLanguage.Compile
                             for (int i = 0; i < n.bracketNodeList.Count; i++)
                             {
                                 var bnode = n.bracketNodeList[i];
-                                sw.WriteLine($"{indentStr}  [");
+                                sw.Write($"{indentStr}[");
                                 foreach (var bc in bnode.childList)
                                 {
-                                    DumpNode(bc, indent + 2);
+                                    DumpNode(bc, false );
                                 }
-                                sw.WriteLine($"{indentStr}  ]");
+                                sw.Write($"{indentStr}]");
                             }
                         }
 
                         // block node (curly braces)
                         if (n.blockNode != null)
                         {
-                            sw.WriteLine($"{indentStr}  {{");
+                            sw.Write($"{indentStr}{{");
                             foreach (var bc in n.blockNode.childList)
                             {
-                                DumpNode(bc, indent + 2);
+                                DumpNode(bc, false );
                             }
-                            sw.WriteLine($"{indentStr}  }}");
+                            sw.Write($"{indentStr}}}");
                         }
 
                         // extend link nodes (dotted chain)
                         if (n.extendLinkNodeList != null && n.extendLinkNodeList.Count > 0)
                         {
-                            sw.WriteLine($"{indentStr}  .extendLinks:");
+                            sw.Write($"[extendLinks]");
                             foreach (var ln in n.extendLinkNodeList)
                             {
-                                DumpNode(ln, indent + 2);
+                                DumpNode(ln, false);
                             }
                         }
 
                         // child nodes (excluding angle node which we've handled)
                         if (n.childList != null && n.childList.Count > 0)
                         {
+                            sw.Write('\n');
                             foreach (var ch in n.childList)
                             {
                                 if (ch == n.angleNode) continue;
-                                DumpNode(ch, indent + 1);
+                                sindent++;
+                                DumpNode(ch, false );
+                                sindent--;
                             }
                         }
                     }
-
-                    DumpNode(m_RootNode, 0);
+                    DumpNode(m_RootNode, true );
                 }
             }
-            catch
+            catch( Exception e )
             {
+                Debug.Assert(false, "" + e.Message );
                 // ignore debug dump errors
             }
         }
@@ -809,94 +816,6 @@ namespace SimpleLanguage.Compile
             return depth > 0;
         }
 
-        // Dump a Node tree to a file for debugging.
-        // Creates a folder named after the input file (without extension) next to the file
-        // and writes nodes in the format: content[NodeType][beginLine:beginChar-endLine:endChar]
-        // Four nodes are written per line.
-        public void DumpNodesToFile()
-        {
-            Node root = m_RootNode;
-            try
-            {
-                if (root == null) return;
-                var outDir = Common.SetDebugCode(m_FileMeta.path);
-                var outFile = System.IO.Path.Combine(outDir, "Node.txt");
-
-                using (var sw = new System.IO.StreamWriter(outFile, false))
-                {
-                    var list = new System.Collections.Generic.List<Node>();
-                    // preorder traversal
-                    var stack = new System.Collections.Generic.Stack<Node>();
-                    stack.Push(root);
-                    while (stack.Count > 0)
-                    {
-                        var n = stack.Pop();
-                        list.Add(n);
-                        // push children in reverse so they are visited in order
-                        if (n.childList != null && n.childList.Count > 0)
-                        {
-                            for (int i = n.childList.Count - 1; i >= 0; i--)
-                            {
-                                stack.Push(n.childList[i]);
-                            }
-                        }
-                        // also include extendLinkNodeList so linked identifier nodes are visible
-                        if (n.extendLinkNodeList != null && n.extendLinkNodeList.Count > 0)
-                        {
-                            for (int i = n.extendLinkNodeList.Count - 1; i >= 0; i--)
-                            {
-                                stack.Push(n.extendLinkNodeList[i]);
-                            }
-                        }
-                    }
-
-                    int count = 0;
-                    var sb = new System.Text.StringBuilder();
-                    foreach (var n in list)
-                    {
-                        if( n.nodeType == ENodeType.LineEnd )
-                        {
-                            sb.AppendLine();
-                            continue;
-                        }
-                        string content;
-                        string typ;
-                        int bLine = 0, bChar = 0, eLine = 0, eChar = 0;
-                        if (n.token != null)
-                        {
-                            content = n.token.lexeme != null ? n.token.lexeme.ToString() : "";
-                            typ = n.token.type.ToString();
-                            bLine = n.token.sourceBeginLine;
-                            bChar = n.token.sourceBeginChar;
-                            eLine = n.token.sourceEndLine;
-                            eChar = n.token.sourceEndChar;
-                        }
-                        else
-                        {
-                            content = n.nodeType.ToString();
-                            typ = n.nodeType.ToString();
-                        }
-                        string nodeStr = content;// $"{content}[{typ}][{bLine}:{bChar}-{eLine}:{eChar}]";
-                        if (count > 0) sb.Append("    ");
-                        sb.Append(nodeStr);
-                        count++;
-                        if (count >= 4)
-                        {
-                            sw.WriteLine(sb.ToString());
-                            sb.Clear();
-                            count = 0;
-                        }
-                    }
-                    if (sb.Length > 0)
-                    {
-                        sw.WriteLine(sb.ToString());
-                    }
-                }
-            }
-            catch
-            {
-                // swallow exceptions for debug dump
-            }
-        }
+        
     }
 }

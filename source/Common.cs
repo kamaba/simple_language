@@ -13,11 +13,13 @@ namespace SimpleLanguage
             // current running directory
             var currentDir = Directory.GetCurrentDirectory();
 
-            var baseName = Path.GetFileNameWithoutExtension(path);
-            if (string.IsNullOrEmpty(baseName)) baseName = "Tokens";
+            path  = path.Substring(0, path.Length - 3);
+            string outDir = Path.Combine(currentDir, "DebugCode", path );
 
-            var outDir = Path.Combine(currentDir, "DebugCode", baseName);
-            Directory.CreateDirectory(outDir);
+            if( !Directory.Exists( outDir ) )
+            {
+                Directory.CreateDirectory(outDir);
+            }
 
             return outDir;
         }

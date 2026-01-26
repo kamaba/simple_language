@@ -1431,13 +1431,28 @@ namespace SimpleLanguage.Compile
                 {
                     if (v.nodeType == ENodeType.LeftAngle)
                     {
-                        angleDepth++;
+                        if (lastAttachable != null)
+                        {
+                            var newPendingAngleOwner = lastAttachable.finalNode;
+                            if( newPendingAngleOwner != null )
+                            {
+                                newPendingAngleOwner.parOwnerNode = pendingAngleOwner;
+                                pendingAngleOwner = newPendingAngleOwner;
+                                pendingAngleOwner.SetAngleNode(v);
+                                angleDepth++;
+                            }
+                            isGenericMode = false; // will be set to true only when we see matching valid '>'
+                        }
+                        else
+                        {
+                            handleBeforeList.Add(v);
+                        }
                         continue;
                     }
                     if (v.nodeType == ENodeType.RightAngle)
                     {
                         angleDepth--;
-                        if (angleDepth == 0)
+                        if (angleDepth >= 0)
                         {
                             // end of tentative generic segment; validate content
                             var angleNode = pendingAngleOwner.angleNode;
@@ -1447,7 +1462,7 @@ namespace SimpleLanguage.Compile
                             if (valid)
                             {
                                 isGenericMode = true;
-                            }
+                                pendingAngleOwner = pendingAngleOwner.parOwnerNode;                            }
                             else
                             {
                                 // rollback: treat '<' and collected nodes as normal tokens
@@ -1463,14 +1478,15 @@ namespace SimpleLanguage.Compile
 
                                 pendingAngleOwner.SetAngleNode(null);
                                 isGenericMode = false;
+                                pendingAngleOwner = null;
                             }
-                            pendingAngleOwner = null;
                         }
                         continue;
                     }
 
                     // Normal element inside '< >' goes to angleNode.childList
                     pendingAngleOwner.angleNode.AddChild(v);
+                    lastAttachable = v;
                     continue;
                 }
 
@@ -1612,6 +1628,7 @@ namespace SimpleLanguage.Compile
                     if (lastAttachable != null)
                     {
                         pendingAngleOwner = lastAttachable.finalNode;
+                        pendingAngleOwner.parOwnerNode = null;
                         pendingAngleOwner.SetAngleNode(v);
                         angleDepth = 1;
                         isGenericMode = false; // will be set to true only when we see matching valid '>'

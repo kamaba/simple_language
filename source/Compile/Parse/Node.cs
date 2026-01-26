@@ -68,6 +68,7 @@ namespace SimpleLanguage.Compile
         public Token endToken { get; set; } = null;
         public Token linkToken { get; set; } = null;         //.节点
         public Token atToken { get; set; } = null;          // $节点
+        public Node parOwnerNode { get; set; } = null;
 
         public int parseIndex = 0;
 
