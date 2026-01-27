@@ -21,8 +21,6 @@ public class Type extends Object
 
     override string toString()
     {
-        ret "TTTYYYPPPEEEE"
-        #!
         if( this._metaClass == null )
         {
             ret "no_meta_class"
@@ -38,6 +36,5 @@ public class Type extends Object
             str = str + ">"
         }
         ret str
-        !#
     }
 }

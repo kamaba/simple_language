@@ -96,12 +96,30 @@ namespace SimpleLanguage.Compile
                         // par node (parentheses)
                         if (n.parNode != null)
                         {
-                            sw.Write($"{indentStr}(");
-                            foreach (var pc in n.parNode.childList)
+                            if (n.nodeType == ENodeType.IdentifierLink)
                             {
-                                DumpNode(pc, false );
+                                // summarize parentheses contents inline for identifier links
+                                var innerSb = new StringBuilder();
+                                for (int j = 0; j < n.parNode.childList.Count; j++)
+                                {
+                                    var pc = n.parNode.childList[j];
+                                    if (pc.token != null)
+                                        innerSb.Append(pc.token.lexeme?.ToString());
+                                    else
+                                        innerSb.Append(pc.nodeType.ToString());
+                                    if (j < n.parNode.childList.Count - 1) innerSb.Append(",");
+                                }
+                                sw.Write($"{indentStr}({innerSb})");
                             }
-                            sw.Write($"{indentStr})");
+                            else
+                            {
+                                sw.Write($"{indentStr}(");
+                                foreach (var pc in n.parNode.childList)
+                                {
+                                    DumpNode(pc, false );
+                                }
+                                sw.Write($"{indentStr})");
+                            }
                         }
 
                         // bracket nodes
@@ -110,12 +128,29 @@ namespace SimpleLanguage.Compile
                             for (int i = 0; i < n.bracketNodeList.Count; i++)
                             {
                                 var bnode = n.bracketNodeList[i];
-                                sw.Write($"{indentStr}[");
-                                foreach (var bc in bnode.childList)
+                                if (n.nodeType == ENodeType.IdentifierLink)
                                 {
-                                    DumpNode(bc, false );
+                                    var innerSb = new StringBuilder();
+                                    for (int j = 0; j < bnode.childList.Count; j++)
+                                    {
+                                        var bc = bnode.childList[j];
+                                        if (bc.token != null)
+                                            innerSb.Append(bc.token.lexeme?.ToString());
+                                        else
+                                            innerSb.Append(bc.nodeType.ToString());
+                                        if (j < bnode.childList.Count - 1) innerSb.Append(",");
+                                    }
+                                    sw.Write($"{indentStr}[{innerSb}]");
                                 }
-                                sw.Write($"{indentStr}]");
+                                else
+                                {
+                                    sw.Write($"{indentStr}[");
+                                    foreach (var bc in bnode.childList)
+                                    {
+                                        DumpNode(bc, false );
+                                    }
+                                    sw.Write($"{indentStr}]");
+                                }
                             }
                         }
 

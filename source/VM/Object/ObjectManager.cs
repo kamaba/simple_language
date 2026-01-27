@@ -113,7 +113,8 @@ namespace SimpleLanguage.VM
                 sobj = new VoidObject();
                 sobj.typeId = 0;
             }
-            else if (name == "Core.Array" || name == "Array")
+            else if (name == "Core.Array" || name == "Array"
+                || name == "Array<T>" )
             {
                 sobj = new ArrayObject( rt, 0);
                 sobj.typeId = 0;

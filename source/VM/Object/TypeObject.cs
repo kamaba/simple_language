@@ -18,11 +18,28 @@ namespace SimpleLanguage.VM
         public RuntimeType currentRT => m_Rt;
 
         RuntimeType m_Rt = null;
+
+        Int8Object eType = null;
+        ClassObject metaClassObject = null;
+
+        TypeObject[] typeObjectsArray = null;
         public TypeObject(RuntimeType rm ) : base(RuntimeTypeManager.typeRuntimeType)
         {
             m_Rt = rm;
             m_Type = EVMType.Type;
-            CreateObject();
+            CreateDefine();
+
+            eType = m_MemberObjectArray[0] as Int8Object;
+            metaClassObject = m_MemberObjectArray[1] as ClassObject;
+            ArrayObject ao = m_MemberObjectArray[2] as ArrayObject;
+            if( ao != null )
+            {
+                typeObjectsArray = new TypeObject[ao.array.Length];
+                for( int i = 0; i < ao.array.Length; i++ )
+                {
+                    typeObjectsArray[i] = ao.array.GetValue(i) as TypeObject;
+                }
+            }
         }
         public override string ToFormatString()
         {

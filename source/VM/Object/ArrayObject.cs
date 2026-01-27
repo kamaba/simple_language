@@ -27,7 +27,10 @@ namespace SimpleLanguage.VM
 
             (m_MemberObjectArray[0] as Int32Object).SetValue(m_Length);
 
-            CreateArray();
+            if(length > 0 )
+            {
+                CreateArray();
+            }
         }
         //public override void SetSValue(ClassObject val)
         //{

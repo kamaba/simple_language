@@ -29,6 +29,7 @@ namespace SimpleLanguage.VM
         protected ClassObject m_Object = null;
         //protected byte[] m_Data = null;   /*  m_Data  结构  bit形，只有运算时要用 1-> byte 2->sbyte   3-> int16  4-> uint16    */
         //protected short[] m_Type = null;
+        protected RuntimeType[] m_MemberRuntimeTypeArray = null;
         protected SObject[] m_MemberObjectArray = null;
         protected List<IRMetaVariable> m_IRMetaVariableList = null;
         protected List<RuntimeType> m_IRTemplateList = new List<RuntimeType>();
@@ -45,6 +46,8 @@ namespace SimpleLanguage.VM
 
             m_IRMetaVariableList = isStatic ? m_RuntimeType.irClass.staticIRMetaVariableList : m_RuntimeType.irClass.localIRMetaVariableList;
             m_MemberObjectArray = new SObject[m_IRMetaVariableList.Count];
+            m_MemberRuntimeTypeArray = new RuntimeType[m_IRMetaVariableList.Count];
+            CreateDefine();
             //m_Type = new short[m_IRMetaVariableList.Count];
         }
         public void SetClassObject( ClassObject co )
@@ -86,13 +89,20 @@ namespace SimpleLanguage.VM
         //        return rt;
         //    }
         //}
-        public virtual void CreateObject()
+        public virtual void CreateDefine()
         {
             for (int i = 0; i < m_IRMetaVariableList.Count; i++)
             {
                 var irmv = m_IRMetaVariableList[i].irMetaType;
-                var rt = m_RuntimeType.GetClassRuntimeType( irmv, true );// GetClassRuntimeType(irmv, true );
-                SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt );
+                m_MemberRuntimeTypeArray[i] = m_RuntimeType.GetClassRuntimeType(irmv, true);
+            }
+            
+        }
+        public virtual void CreateObject()
+        {
+            for (int i = 0; i < m_MemberRuntimeTypeArray.Length; i++)
+            {
+                SObject sobj = ObjectManager.CreateObjectByRuntimeType(m_MemberRuntimeTypeArray[i]);
                 if(sobj == null )
                 {
                     continue;
