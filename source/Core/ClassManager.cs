@@ -41,9 +41,6 @@ namespace SimpleLanguage.Core
                 return s_Instance;
             }
         }
-        public Dictionary<string, MetaClass> allClassDict => m_AllClassDict;
-        public Dictionary<string, MetaData> allDataDict => m_AllDataDict;
-        public List<MetaDynamicClass> dynamicClassList => m_DynamicClassList;
         public List<MetaGenTemplateClass> genTemplateMetaClassList => m_GenTemplateMetaClassList;
         public List<MetaClass> runtimeClassList => m_RuntimeClassList;
 

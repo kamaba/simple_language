@@ -93,9 +93,7 @@ namespace SimpleLanguage.Core
         protected string m_Name = "";
         protected string m_AllName = "";
         // 子节点
-        protected Dictionary<string, MetaNode> m_ChildrenMetaNodeDict = new Dictionary<string, MetaNode>();
-        
-        //protected Dictionary<string, MetaNode> m_MetaTemplateClassNodeDict = new Dictionary<string, MetaNode>();
+        protected Dictionary<string, MetaNode> m_ChildrenMetaNodeDict = new Dictionary<string, MetaNode>();        
         #endregion
 
         public MetaNode()

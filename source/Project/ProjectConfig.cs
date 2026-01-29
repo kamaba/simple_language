@@ -165,6 +165,10 @@ namespace SimpleLanguage.Project
             public bool ExportPublicOnly { get; set; } = false;
             // Include additional metadata like owner class id, visibility flags
             public bool IncludeMetadata { get; set; } = true;
+
+            public int VersionMain { get; set; } = 0;
+            public int VersionSub { get; set; } = 1;
+            public int VersionDetail { get; set; } = 0;
         }
 
         public class ReferenceSection

@@ -15,84 +15,149 @@ namespace SimpleLanguage.Export.SLVM
             using (var bw = new BinaryWriter(fs, Encoding.UTF8))
             {
                 // header
-                bw.Write((int)0x534C564D); // 'SLVM' magic
-                bw.Write((int)1); // version
-                bw.Write(module.name ?? "");
-                // write string pool
-                bw.Write(module.stringPool.Count);
-                if (module.stringPool.Count > 0)
+                WriteHeader(bw, module, cfg);
+                // string pool
+                WriteStringPool(bw, fs, module, cfg);
+                // methods count placeholder (kept for compatibility)
+                bw.Write(module.methods.Count);
+                // globals
+                WriteGlobals(bw, module);
+                // types / irClass
+                WriteTypes(bw, module);
+                // methods
+                // write namespaces before methods
+                WriteNamespaces(bw, module);
+                WriteMethods(bw, module);
+            }
+        }
+
+        static void WriteHeader(BinaryWriter bw, SLVMModule module, SimpleLanguage.Project.ProjectConfig.ExportSection cfg)
+        {
+            bw.Write((int)0x534C564D); // 'SLVM' magic
+            bw.Write((int)(cfg?.VersionMain ?? 0)); // version
+            bw.Write((int)(cfg?.VersionSub ?? 0)); // version
+            bw.Write((int)(cfg?.VersionDetail ?? 0)); // version
+            bw.Write(module.name ?? "");
+        }
+
+        static void WriteStringPool(BinaryWriter bw, FileStream fs, SLVMModule module, SimpleLanguage.Project.ProjectConfig.ExportSection cfg)
+        {
+            bw.Write(module.stringPool.Count);
+            if (module.stringPool.Count == 0) return;
+
+            bool packAsBlob = cfg == null || cfg.StringPoolAsBlob;
+            if (!packAsBlob)
+            {
+                foreach (var s in module.stringPool) bw.Write(s ?? "");
+            }
+            else
+            {
+                for (int i = 0; i < module.stringPool.Count; i++)
                 {
-                    bool packAsBlob = cfg == null || cfg.StringPoolAsBlob;
-                    if (!packAsBlob)
+                    bw.Write(module.stringPool[i] ?? "");
+                }
+                int offsets = 0;
+                for (int i = 0; i < module.stringPool.Count; i++)
+                {
+                    bw.Write(offsets);
+                    bw.Write(module.stringPool[i].Length);
+                    offsets += module.stringPool[i].Length; 
+                }
+            }
+        }
+
+        static void WriteGlobals(BinaryWriter bw, SLVMModule module)
+        {
+            bw.Write(module.globals.Count);
+            foreach (var g in module.globals)
+            {
+                bw.Write(g.name ?? "");
+                bw.Write(g.metaId);
+                bw.Write(g.isStatic);
+                bw.Write(g.isConst);
+                bw.Write(g.initValueIndex);
+                bw.Write(g.initValue ?? "");
+            }
+        }
+
+        static void WriteNamespaces(BinaryWriter bw, SLVMModule module)
+        {
+            bw.Write(module.namespaces.Count);
+            foreach (var ns in module.namespaces)
+            {
+                bw.Write(ns.name ?? "");
+                bw.Write(ns.children.Count);
+                foreach (var c in ns.children) bw.Write(c ?? "");
+            }
+        }
+
+        static void WriteTypes(BinaryWriter bw, SLVMModule module)
+        {
+            bw.Write(module.types.Count);
+            foreach (var t in module.types)
+            {
+                bw.Write(t.name ?? "");
+                bw.Write(t.fields.Count);
+                foreach (var f in t.fields) { bw.Write(f.fieldName ?? ""); bw.Write(f.fieldType ?? ""); }
+            }
+            // write IR meta classes
+            bw.Write(module.irMetaClasses.Count);
+            foreach (var ic in module.irMetaClasses)
+            {
+                bw.Write(ic.id);
+                bw.Write(ic.name ?? "");
+                bw.Write(ic.byteCount);
+                bw.Write(ic.templateCount);
+                bw.Write(ic.needInitMemberVariable);
+                bw.Write(ic.localVariables.Count);
+                foreach (var lv in ic.localVariables)
+                {
+                    bw.Write(lv.id);
+                    bw.Write(lv.name ?? "");
+                    bw.Write(lv.index);
+                    bw.Write(lv.from);
+                    bw.Write(lv.irMetaType ?? "");
+                }
+                bw.Write(ic.staticVariables.Count);
+                foreach (var sv in ic.staticVariables)
+                {
+                    bw.Write(sv.id);
+                    bw.Write(sv.name ?? "");
+                    bw.Write(sv.index);
+                    bw.Write(sv.from);
+                    bw.Write(sv.irMetaType ?? "");
+                }
+            }
+        }
+
+        static void WriteMethods(BinaryWriter bw, SLVMModule module)
+        {
+            foreach (var m in module.methods)
+            {
+                bw.Write(m.id ?? "");
+                bw.Write(m.onlyFunctionName ?? "");
+                // write owner info if available 
+                bw.Write(m.isPublic);
+                bw.Write(m.isStatic);
+                bw.Write(m.argumentCount);
+                bw.Write(m.localCount);
+                bw.Write(m.instructions.Count);
+                foreach (var ins in m.instructions)
+                {
+                    bw.Write(ins.opcode ?? "");
+                    bw.Write(ins.index);
+                    bw.Write(ins.opValueIndex);
+                    bw.Write(ins.opValue ?? "");
+                    // write typed payload: length + bytes
+                    if (ins.payload != null && ins.payload.Length > 0)
                     {
-                        // simple write strings
-                        foreach (var s in module.stringPool) bw.Write(s ?? "");
+                        bw.Write((int)ins.payload.Length);
+                        bw.Write(ins.payload);
+                        bw.Write((byte)ins.payloadType);
                     }
                     else
                     {
-                        // pack strings with offsets (blob)
-                        long basePos = fs.Position;
-                        for (int i = 0; i < module.stringPool.Count; i++) bw.Write((int)0);
-                        var offsets = new List<int>();
-                        for (int i = 0; i < module.stringPool.Count; i++)
-                        {
-                            offsets.Add((int)fs.Position);
-                            bw.Write(module.stringPool[i] ?? "");
-                        }
-                        long cur = fs.Position;
-                        fs.Position = basePos;
-                        foreach (var off in offsets) bw.Write(off);
-                        fs.Position = cur;
-                    }
-                }
-
-                bw.Write(module.methods.Count);
-                // write globals
-                bw.Write(module.globals.Count);
-                foreach (var g in module.globals)
-                {
-                    bw.Write(g.name ?? "");
-                    bw.Write(g.metaId);
-                    bw.Write(g.isStatic);
-                    bw.Write(g.isConst);
-                    bw.Write(g.initValueIndex);
-                    bw.Write(g.initValue ?? "");
-                }
-                // write types
-                bw.Write(module.types.Count);
-                foreach (var t in module.types)
-                {
-                    bw.Write(t.name ?? "");
-                    bw.Write(t.fields.Count);
-                    foreach (var f in t.fields) { bw.Write(f.fieldName ?? ""); bw.Write(f.fieldType ?? ""); }
-                }
-                foreach (var m in module.methods)
-                {
-                    bw.Write(m.id ?? ""); 
-                    bw.Write(m.onlyFunctionName ?? ""); 
-                    // write owner info if available 
-                    bw.Write(m.isPublic); 
-                    bw.Write(m.isStatic); 
-                    bw.Write(m.argumentCount); 
-                    bw.Write(m.localCount); 
-                    bw.Write(m.instructions.Count);
-                    foreach (var ins in m.instructions)
-                    {
-                        bw.Write(ins.opcode ?? "");
-                        bw.Write(ins.index);
-                        bw.Write(ins.opValueIndex);
-                        bw.Write(ins.opValue ?? "");
-                        // write typed payload: length + bytes
-                        if (ins.payload != null && ins.payload.Length > 0)
-                        {
-                            bw.Write((int)ins.payload.Length);
-                            bw.Write(ins.payload);
-                            bw.Write((byte)ins.payloadType);
-                        }
-                        else
-                        {
-                            bw.Write((int)0);
-                        }
+                        bw.Write((int)0);
                     }
                 }
             }
@@ -155,6 +220,50 @@ namespace SimpleLanguage.Export.SLVM
                         t.fields.Add((fname, ftype));
                     }
                     module.types.Add(t);
+                }
+                // read IR meta classes
+                int irCount = br.ReadInt32();
+                for (int ii = 0; ii < irCount; ii++)
+                {
+                    var ic = new SLVMIRMetaClass();
+                    ic.id = br.ReadInt32();
+                    ic.name = br.ReadString();
+                    ic.byteCount = br.ReadInt32();
+                    ic.templateCount = br.ReadInt32();
+                    ic.needInitMemberVariable = br.ReadBoolean();
+                    int lcount = br.ReadInt32();
+                    for (int li = 0; li < lcount; li++)
+                    {
+                        var lv = new SLVMIRMetaVariable();
+                        lv.id = br.ReadInt32();
+                        lv.name = br.ReadString();
+                        lv.index = br.ReadInt32();
+                        lv.from = br.ReadInt32();
+                        lv.irMetaType = br.ReadString();
+                        ic.localVariables.Add(lv);
+                    }
+                    int scount = br.ReadInt32();
+                    for (int si = 0; si < scount; si++)
+                    {
+                        var sv = new SLVMIRMetaVariable();
+                        sv.id = br.ReadInt32();
+                        sv.name = br.ReadString();
+                        sv.index = br.ReadInt32();
+                        sv.from = br.ReadInt32();
+                        sv.irMetaType = br.ReadString();
+                        ic.staticVariables.Add(sv);
+                    }
+                    module.irMetaClasses.Add(ic);
+                }
+                // read namespaces
+                int nsCount = br.ReadInt32();
+                for (int ni = 0; ni < nsCount; ni++)
+                {
+                    var ns = new SLVMNamespace();
+                    ns.name = br.ReadString();
+                    int ccount = br.ReadInt32();
+                    for (int ci = 0; ci < ccount; ci++) ns.children.Add(br.ReadString());
+                    module.namespaces.Add(ns);
                 }
                 for (int i = 0; i < mcount; i++)
                 {
@@ -282,6 +391,62 @@ namespace SimpleLanguage.Export.SLVM
                     sm.instructions.Add(ins);
                 }
                 mod.methods.Add(sm);
+            }
+
+            // export namespace tree (simple flat list of names for now)
+            var root = ModuleManager.instance.selfModule.metaNode;
+            // perform simple traversal to collect namespaces
+            var stack = new Stack<MetaNode>();
+            stack.Push(root);
+            while (stack.Count > 0)
+            {
+                var node = stack.Pop();
+                if (node.metaNamespace != null)
+                {
+                    var ns = new SLVMNamespace();
+                    ns.name = node.allName;
+                    foreach (var child in node.childrenMetaNodeDict)
+                    {
+                        if (child.Value.metaNamespace != null) ns.children.Add(child.Key);
+                    }
+                    mod.namespaces.Add(ns);
+                }
+                foreach (var child in node.childrenMetaNodeDict)
+                {
+                    stack.Push(child.Value);
+                }
+            }
+
+            // export IR meta classes
+            foreach (var irmc in IRManager.instance.irMetaClassList)
+            {
+                var ic = new SLVMIRMetaClass();
+                ic.id = irmc.id;
+                ic.name = irmc.irName;
+                ic.byteCount = irmc.byteCount;
+                ic.templateCount = irmc.templateCount;
+                ic.needInitMemberVariable = irmc.needInitMemberVariable;
+                foreach (var lv in irmc.localIRMetaVariableList)
+                {
+                    var v = new SLVMIRMetaVariable();
+                    v.id = lv.id;
+                    v.name = lv.name;
+                    v.index = lv.index;
+                    v.from = (int)lv.irMetaVariableFrom;
+                    v.irMetaType = lv.irMetaType?.ToString();
+                    ic.localVariables.Add(v);
+                }
+                foreach (var sv in irmc.staticIRMetaVariableList)
+                {
+                    var v = new SLVMIRMetaVariable();
+                    v.id = sv.id;
+                    v.name = sv.name;
+                    v.index = sv.index;
+                    v.from = (int)sv.irMetaVariableFrom;
+                    v.irMetaType = sv.irMetaType?.ToString();
+                    ic.staticVariables.Add(v);
+                }
+                mod.irMetaClasses.Add(ic);
             }
             return mod;
         }
