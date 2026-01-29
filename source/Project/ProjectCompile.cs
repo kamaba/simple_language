@@ -204,8 +204,7 @@ namespace SimpleLanguage.Project
             //    ClassManager.instance.AddClass(fns);
             //}
 
-            ClassManager.instance.ParseInitMetaClassList();
-            
+            ClassManager.instance.ParseInitMetaClassList();            
 
             ClassManager.instance.CheckInterfaces();
             ClassManager.instance.ParseDefineComplete();

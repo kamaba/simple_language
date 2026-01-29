@@ -153,6 +153,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
+                    //解析 string里边的${} $name 这种的提取
                     for (int i = 0; i < cdlist.Count; i++)
                     {
                         Node node = new Node(null);

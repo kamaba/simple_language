@@ -6,12 +6,11 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Compile;
-using SimpleLanguage.Core;
-using SimpleLanguage.Parse;
 using SimpleLanguage.Logging;
+using SimpleLanguage.Parse;
 using System;
 using System.IO;
+using System.Text;
 
 namespace SimpleLanguage.Compile
 {
@@ -30,16 +29,16 @@ namespace SimpleLanguage.Compile
     public class FileParse
 	{
 		public FileMeta file => m_File;
+        public string filePath => m_FilePath;
 
-		LexerParse lexerParse;
-        TokenParse tokenParse;
-        StructParse structBuild;
+        private LexerParse m_LexerParse;
+        private TokenParse m_TokenParse;
+        private StructParse m_StructBuild;
         private FileMeta m_File = null;
 
-        public string filePath;
-        public long fileSize;
-        
-        public string content;
+        private string m_FilePath;
+        private long m_FileSize;
+        private char[] m_ContentBuffer = null;
 
         public Action structParseComplete { get; set; } = null;
         public Action buildParseComplete = null;
@@ -49,24 +48,24 @@ namespace SimpleLanguage.Compile
 
         public FileParse( string path, ParseFileParam param )
         {
-            filePath = path;
-            m_File = new FileMeta(filePath);
+            m_FilePath = path;
+            m_File = new FileMeta(m_FilePath);
         }
         public bool IsExists()
         {
-            string realpath = Path.Combine(ProjectManager.projectPath, filePath);
+            string realpath = Path.Combine(ProjectManager.projectPath, m_FilePath );
             return File.Exists(realpath);
         }
         public bool LoadFile()
         {
             m_FileCompileState.SetLoadState( FileCompileState.ELoadState.LoadStart );
-            string realpath = Path.Combine(ProjectManager.projectPath, filePath);
+            string realpath = Path.Combine(ProjectManager.projectPath, m_FilePath);
             using (var stream = File.OpenRead(realpath))
             {
                 m_FileCompileState.SetLoadState(FileCompileState.ELoadState.Loading );
-                fileSize = stream.Length;
-                int count = (int)fileSize;
-                var buffer = new byte[fileSize];
+                m_FileSize = stream.Length;
+                int count = (int)m_FileSize;
+                var buffer = new byte[m_FileSize];
                 int numRead = 0;
                 while (true)
                 {
@@ -77,7 +76,7 @@ namespace SimpleLanguage.Compile
                     if (count <= 0) break;
                 }
                 stream.Close();
-                content = System.Text.Encoding.Default.GetString(buffer);
+                m_ContentBuffer = Encoding.UTF8.GetChars(buffer);                
             }
             m_FileCompileState.SetLoadState( FileCompileState.ELoadState.LoadEnd );
             return true;
@@ -88,22 +87,21 @@ namespace SimpleLanguage.Compile
             {
                 SaveCodeToFile();
 
-                lexerParse = new LexerParse(filePath, content);
-                content = string.Empty;
+                m_LexerParse = new LexerParse( m_FilePath, m_ContentBuffer );
 
-                lexerParse.ParseToTokenList();
+                m_LexerParse.ParseToTokenList();
 
-                lexerParse.DumpTokensToFile();
+                m_LexerParse.DumpTokensToFile();
 
-                tokenParse = new TokenParse( m_File, lexerParse.GetListTokensWidthEnd() );
+                m_TokenParse = new TokenParse( m_File, m_LexerParse.listTokens );
 
-                tokenParse.BuildStruct();
+                m_TokenParse.BuildStruct();
 
-                tokenParse.DumpNodesToFile();
+                m_TokenParse.WriteNodeString(true);
 
-                structBuild = new StructParse(m_File, tokenParse.rootNode );
+                m_StructBuild = new StructParse(m_File, m_TokenParse.rootNode );
 
-                structBuild.ParseRootNodeToFileMeta();
+                m_StructBuild.ParseRootNodeToFileMeta();
 
                 m_File.SetDeep(0);
 
@@ -135,9 +133,9 @@ namespace SimpleLanguage.Compile
         }
         public void SaveCodeToFile()
         {
-            string outDir = Common.SetDebugCode(filePath);
+            string outDir = Common.SetDebugCode(m_FilePath);
             string outPath = Path.Combine(outDir, "Code.txt");
-            File.WriteAllText(outPath, content );
+            File.WriteAllText(outPath, m_ContentBuffer.ToString() );
         }
     }
 }

@@ -275,10 +275,11 @@ namespace SimpleLanguage.Compile
             Node pnode = m_RootNode;
             while(true)
             {
-                if (CheckEnd(pnode))
+                if (pnode.parseIndex >= pnode.childList.Count)
                 {
                     break;
-                }
+                }               
+                
                 var node = m_RootNode.childList[pnode.parseIndex];
                 if( node.nodeType == ENodeType.LineEnd )
                 {
@@ -1305,7 +1306,6 @@ namespace SimpleLanguage.Compile
                 #endregion
             }
         }
-
         /*
         public void ParseParContrent(Node pnode)
         {
@@ -1741,7 +1741,7 @@ namespace SimpleLanguage.Compile
 
             return handleBeforeList;
         }
-
+        /*
         public static List<Node> HandleBeforeNode(Node node )
         {
             List<Node> handleBeforeList = new List<Node>();
@@ -2165,5 +2165,6 @@ namespace SimpleLanguage.Compile
         //    node.parseIndex++;
         //    _HandleBeforeNodeProcess(node, currentExpressNode);
         //}
+        */
     }
 }

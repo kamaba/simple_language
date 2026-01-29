@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.IO;
-using System.Text;
 
 namespace SimpleLanguage.Compile
 {
@@ -41,171 +40,17 @@ namespace SimpleLanguage.Compile
         }
         public void BuildStruct()
         {
-            ParseToken();
-            // dump node tree for debugging (will write Node.txt into a folder named after source file)
-            try
+            while (true)
             {
-                DumpNodesToFile();
-            }
-            catch { }
-
-            //BuildEnd();
-        }
-
-        // Dump the parsed Node tree to a file for debugging.
-        // Creates a folder named after the source file (without extension) next to the file
-        // and writes a tree-structured representation into "Node.txt".
-        static int sindent = 0;
-        public void DumpNodesToFile()
-        {
-            try
-            {
-                if (m_RootNode == null) return;
-                var outDir = Common.SetDebugCode(m_FileMeta.path);
-                var outFile = Path.Combine(outDir, "Node.txt");
-
-                using (var sw = new StreamWriter(outFile, false, Encoding.UTF8))
+                var tempToken = m_TokensList[m_TokenIndex];
+                if (tempToken.type == ETokenType.Finished) { break; }
+                ParseDetailToken(tempToken);
+                if (m_TokenIndex >= m_TokenCount)
                 {
-                    void DumpNode(Node n, bool isUseIndent )
-                    {
-                        string indentStr = new string(' ', sindent * 4);
-                        string content = n.token?.lexeme?.ToString() ?? n.nodeType.ToString();
-                        string nodetype = n.nodeType.ToString();
-                        int bLine = n.token?.sourceBeginLine ?? 0;
-                        int bChar = n.token?.sourceBeginChar ?? 0;
-                        int eLine = n.token?.sourceEndLine ?? 0;
-                        int eChar = n.token?.sourceEndChar ?? 0;
-                        //sw.WriteLine($"{indentStr}{content} [{nodetype}] ({bLine}:{bChar}-{eLine}:{eChar})");
-                        if( isUseIndent || content == "\n" )
-                        {
-                            sw.Write($"{indentStr}");
-                        }
-                        sw.Write($"{content} ");
-
-                        // angle (generic) node
-                        if (n.angleNode != null)
-                        {
-                            sw.Write($"{indentStr}<");
-                            foreach (var ac in n.angleNode.childList)
-                            {
-                                DumpNode(ac, false);
-                            }
-                            sw.Write($"{indentStr}>");
-                        }
-
-                        // par node (parentheses)
-                        if (n.parNode != null)
-                        {
-                            if (n.nodeType == ENodeType.IdentifierLink)
-                            {
-                                // summarize parentheses contents inline for identifier links
-                                var innerSb = new StringBuilder();
-                                for (int j = 0; j < n.parNode.childList.Count; j++)
-                                {
-                                    var pc = n.parNode.childList[j];
-                                    if (pc.token != null)
-                                        innerSb.Append(pc.token.lexeme?.ToString());
-                                    else
-                                        innerSb.Append(pc.nodeType.ToString());
-                                    if (j < n.parNode.childList.Count - 1) innerSb.Append(",");
-                                }
-                                sw.Write($"{indentStr}({innerSb})");
-                            }
-                            else
-                            {
-                                sw.Write($"{indentStr}(");
-                                foreach (var pc in n.parNode.childList)
-                                {
-                                    DumpNode(pc, false );
-                                }
-                                sw.Write($"{indentStr})");
-                            }
-                        }
-
-                        // bracket nodes
-                        if (n.bracketNodeList != null && n.bracketNodeList.Count > 0)
-                        {
-                            for (int i = 0; i < n.bracketNodeList.Count; i++)
-                            {
-                                var bnode = n.bracketNodeList[i];
-                                if (n.nodeType == ENodeType.IdentifierLink)
-                                {
-                                    var innerSb = new StringBuilder();
-                                    for (int j = 0; j < bnode.childList.Count; j++)
-                                    {
-                                        var bc = bnode.childList[j];
-                                        if (bc.token != null)
-                                            innerSb.Append(bc.token.lexeme?.ToString());
-                                        else
-                                            innerSb.Append(bc.nodeType.ToString());
-                                        if (j < bnode.childList.Count - 1) innerSb.Append(",");
-                                    }
-                                    sw.Write($"{indentStr}[{innerSb}]");
-                                }
-                                else
-                                {
-                                    sw.Write($"{indentStr}[");
-                                    foreach (var bc in bnode.childList)
-                                    {
-                                        DumpNode(bc, false );
-                                    }
-                                    sw.Write($"{indentStr}]");
-                                }
-                            }
-                        }
-
-                        // block node (curly braces)
-                        if (n.blockNode != null)
-                        {
-                            sw.Write($"{indentStr}{{");
-                            foreach (var bc in n.blockNode.childList)
-                            {
-                                DumpNode(bc, false );
-                            }
-                            sw.Write($"{indentStr}}}");
-                        }
-
-                        // extend link nodes (dotted chain)
-                        if (n.extendLinkNodeList != null && n.extendLinkNodeList.Count > 0)
-                        {
-                            sw.Write($"[extendLinks]");
-                            foreach (var ln in n.extendLinkNodeList)
-                            {
-                                DumpNode(ln, false);
-                            }
-                        }
-
-                        // child nodes (excluding angle node which we've handled)
-                        if (n.childList != null && n.childList.Count > 0)
-                        {
-                            sw.Write('\n');
-                            foreach (var ch in n.childList)
-                            {
-                                if (ch == n.angleNode) continue;
-                                sindent++;
-                                DumpNode(ch, false );
-                                sindent--;
-                            }
-                        }
-                    }
-                    DumpNode(m_RootNode, true );
+                    break;
                 }
             }
-            catch( Exception e )
-            {
-                Debug.Assert(false, "" + e.Message );
-                // ignore debug dump errors
-            }
-        }
-        public void BuildEnd()
-        {
-            Debug.Write($"---------------File:{m_FileMeta.path}  Token节点  开始:-------------------------");
-            Debug.Write(m_RootNode.ToFormatString());
-            Debug.Write($"---------------File:{m_FileMeta.path}  Token节点  结束:-------------------------");
-        }
-        public void SaveFile( string path )
-        {
-            System.IO.File.WriteAllText( path, m_RootNode.ToFormatString() );
+            return;
         }
         public void AddImportNode( Token token )
         {
@@ -304,7 +149,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Debug.Write("现在@符必须使用.@方式!!");
+                Debug.Assert(false, "现在@符必须使用.@方式!!");
             }
             m_TokenIndex++;
 
@@ -391,21 +236,6 @@ namespace SimpleLanguage.Compile
             var node = AddSymbol(code);
             node.priority = SignComputePriority.Level9_Or;
         }
-        /// <summary> 解析脚本 </summary>
-        private void ParseToken()
-        {
-            while( true )
-            {
-                var tempToken = m_TokensList[m_TokenIndex];
-                if (tempToken.type == ETokenType.Finished) { break; }
-                ParseDetailToken(tempToken);
-                if( m_TokenIndex >= m_TokenCount )
-                {
-                    break;
-                }
-            }
-            return;
-        }
         /*
          * 
          * 解析  让token解析成  identifer {} [] () <> identifer identfier + - * 20 30.1 s.toString () 的结构
@@ -414,7 +244,7 @@ namespace SimpleLanguage.Compile
         {
             if (currentNode == null)
             {
-                Debug.Write("Error CurrentNode is NULL!!" + token?.ToLexemeAllString());
+                Debug.Assert( false, "Error CurrentNode is NULL!!" + token?.ToLexemeAllString());
                 return;
             }
             switch (token.type)
@@ -758,7 +588,7 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Public:
                 case ETokenType.Projected:
                 case ETokenType.Private:
-                case ETokenType.Operator:
+                //case ETokenType.Operator:
                     {
                         AddKeyNode(token);
                     }
@@ -850,7 +680,31 @@ namespace SimpleLanguage.Compile
             }
             return depth > 0;
         }
+        public void WriteNodeString(bool isWriteFile)
+        {
+            try
+            {
+                if (m_RootNode == null) return;
+                if (isWriteFile)
+                {
+                    var outDir = Common.SetDebugCode(m_FileMeta.path);
+                    var outFile = Path.Combine(outDir, "Node.txt");
+                    string content = m_RootNode.ToFormatString();
+                    File.WriteAllText(outFile, content);
+                }
+                else
+                {
+                    Console.Write($"---------------File:{m_FileMeta.path}  Token节点  开始:-------------------------");
+                    Console.Write(m_RootNode.ToFormatString());
+                    Console.Write($"---------------File:{m_FileMeta.path}  Token节点  结束:-------------------------");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Assert(false, "" + e.Message);
+                // ignore debug dump errors
+            }
+        }
 
-        
     }
 }

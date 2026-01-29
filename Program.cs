@@ -162,7 +162,7 @@ namespace SimpleLanguage
             Console.WriteLine();
             
             // Create lexer parse instance
-            LexerParse lexer = new LexerParse("test.sl", testCode);
+            LexerParse lexer = new LexerParse("test.sl", testCode.ToCharArray() );
             
             // Parse to token list
             lexer.ParseToTokenList();

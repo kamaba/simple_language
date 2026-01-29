@@ -21,14 +21,13 @@ namespace SimpleLanguage.Compile
     //词法解析
     public class LexerParse
     {
-        public Token currentToken => m_CurrentToken;
         public List<Token> listTokens => m_ListTokens;
-        public List<Token> GetListTokensWidthEnd()
-        {
-            List<Token> withEndList = new List<Token>(m_ListTokens);
-            withEndList.Add(new Token(m_Path, ETokenType.Finished, END_CHAR, m_SourceLine, m_SourceChar));
-            return withEndList;
-        }
+        //public List<Token> GetListTokensWidthEnd()
+        //{
+        //    List<Token> withEndList = new List<Token>(m_ListTokens);
+        //    withEndList.Add(new Token(m_Path, ETokenType.Finished, END_CHAR, m_SourceLine, m_SourceChar));
+        //    return withEndList;
+        //}
 
         const char END_CHAR = char.MaxValue;    //结尾字符
 
@@ -37,13 +36,13 @@ namespace SimpleLanguage.Compile
         private StringBuilder m_Builder = new StringBuilder();
         private List<Token> m_ListTokens = new List<Token>();
         private Token m_CurrentToken = null;
-        private string m_Buffer;                    
+        private char[] m_Buffer;                    
         private int m_Length = 0;                      
         private int m_SourceLine = 0;                  //解析到当前的行数
         private int m_SourceChar = 0;                  //解析到当前行中的位置
         private int m_Index = 0;                       
         private string m_Path;
-        public LexerParse( string path, string buffer )
+        public LexerParse( string path, char[] buffer )
         {
             m_Path = path;
             m_Buffer = buffer;
@@ -566,7 +565,7 @@ namespace SimpleLanguage.Compile
                             {
                                 //LexelLogData lld = new LexelLogData() { m_}
                                 Debug.Write("Error 不允许直接使用  number.function的方式，而是必须使用数据识别符才可以使用，例: 2.0f.ToString()");
-                                m_Buffer.Remove(m_Buffer.Length - 1, 1);
+                                //m_Buffer.Remove(m_Buffer.Length - 1, 1);
                                 AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Int32);
                                 AddToken(ETokenType.Period, frontChar );
                                 UndoChar();
@@ -937,7 +936,7 @@ namespace SimpleLanguage.Compile
 
                         if (exprBuilder.Length > 0)
                         {
-                            LexerParse lp = new LexerParse(m_Path, exprBuilder.ToString());
+                            LexerParse lp = new LexerParse(m_Path, exprBuilder.ToString().ToCharArray() );
                             lp.SetSourcePosition(startLine, startChar);
                             lp.ParseToTokenList();
                             if (m_CurrentToken != null)
@@ -995,7 +994,7 @@ namespace SimpleLanguage.Compile
                 m_Builder.Clear();
             }
 
-            currentToken.SetLexeme(stringBuilder.ToString());
+            m_CurrentToken.SetLexeme(stringBuilder.ToString());
         }
 
 
@@ -1063,7 +1062,7 @@ namespace SimpleLanguage.Compile
                         m_Builder.Clear();
                     }
 
-                    currentToken.SetLexeme(stringBuilder.ToString());
+                    m_CurrentToken.SetLexeme(stringBuilder.ToString());
                     m_Index++;
                     m_SourceChar++;
                     break;
@@ -1125,7 +1124,7 @@ namespace SimpleLanguage.Compile
                         // parse expression and add its tokens as children of current string token
                         if (exprBuilder.Length > 0)
                         {
-                            LexerParse lp = new LexerParse(m_Path, exprBuilder.ToString());
+                            LexerParse lp = new LexerParse(m_Path, exprBuilder.ToString().ToCharArray() );
                             lp.SetSourcePosition(startLine, startChar);
                             lp.ParseToTokenList();
 
@@ -1216,7 +1215,7 @@ namespace SimpleLanguage.Compile
                             if (identBuilder.Length > 0)
                             {
                                 // parse the identifier expression (may include dots) and add resulting tokens as one parameter entry
-                                LexerParse lp = new LexerParse(m_Path, identBuilder.ToString());
+                                LexerParse lp = new LexerParse(m_Path, identBuilder.ToString().ToCharArray() );
                                 lp.SetSourcePosition(startLine, startChar);
                                 lp.ParseToTokenList();
                                 if (m_CurrentToken != null)
@@ -1242,7 +1241,7 @@ namespace SimpleLanguage.Compile
 
                             if (identBuilder.Length > 0)
                             {
-                                LexerParse lp = new LexerParse(m_Path, identBuilder.ToString());
+                                LexerParse lp = new LexerParse(m_Path, identBuilder.ToString().ToCharArray() );
                                 lp.SetSourcePosition(startLine, startChar);
                                 lp.ParseToTokenList();
                                 if (m_CurrentToken != null)
@@ -2027,15 +2026,79 @@ namespace SimpleLanguage.Compile
                     }
                 }
             }
+
+            var endToken = new Token(m_Path, ETokenType.Finished, END_CHAR, m_SourceLine, m_SourceChar);
+            m_ListTokens.Add(endToken);
         }
-
-
-
         // Dump the current token list to a Token.txt file for debugging.
         // Creates a folder named after the input file (without extension) under a DebugCode
         // directory in the current running directory and writes tokens in the format:
         // lexeme[Type][beginLine:beginChar-endLine:endChar]
         // Four tokens are written per line.
+        public String ToTokenString()
+        {
+            var sb = new System.Text.StringBuilder();
+            foreach (var t in m_ListTokens)
+            {
+                //string lex = t.lexeme != null ? t.lexeme.ToString() : "";
+                //string typ = t.type.ToString();
+                //int bLine = t.sourceBeginLine;
+                //int bChar = t.sourceBeginChar;
+                //int eLine = t.sourceEndLine;
+                //int eChar = t.sourceEndChar;
+                //string tokenStr = $"{lex}[{typ}][{bLine}:{bChar}-{eLine}:{eChar}]";
+                //if (count > 0) sb.Append("    ");
+                if (t.type == ETokenType.LineEnd)
+                {
+                    sb.AppendLine();
+                }
+                else if (t.type == ETokenType.Sharp)
+                {
+                    int extend = 0;
+                    if (!int.TryParse(t.extend.ToString(), out extend))
+                    {
+                        Debug.Assert(false, "");
+                    }
+                    if (extend == 0)
+                    {
+                        sb.Append("#");
+                        sb.Append(t.lexeme.ToString());
+                    }
+                    else if (extend == 1)
+                    {
+                        sb.Append("#!");
+                        sb.Append(t.lexeme.ToString());
+                        sb.Append("!#");
+                    }
+                    else if (extend == 2)
+                    {
+                        sb.Append("##!");
+                        sb.Append(t.lexeme.ToString());
+                        sb.Append("!##");
+                    }
+                }
+                else if (t.type == ETokenType.Space)
+                {
+                    int space = (int)t.extend;
+                    for (int i = 0; i < space; i++)
+                        sb.Append($" ");
+                }
+                else
+                {
+                    //sb.Append("[");
+                    sb.Append(t.lexeme?.ToString());
+                    //sb.Append("]");
+                }
+                //count++;
+                //if (count >= 4)
+                //{
+                //    sw.WriteLine(sb.ToString());
+                //    sb.Clear();
+                //    count = 0;
+                //}
+            }
+            return sb.ToString();
+        }
         public void DumpTokensToFile()
         {
             string outFile = "";
@@ -2057,67 +2120,7 @@ namespace SimpleLanguage.Compile
 
                 using (var sw = new StreamWriter(outFile, false))
                 {
-                    int count = 0;
-                    var sb = new System.Text.StringBuilder();
-                    foreach (var t in m_ListTokens)
-                    {
-                        //string lex = t.lexeme != null ? t.lexeme.ToString() : "";
-                        //string typ = t.type.ToString();
-                        //int bLine = t.sourceBeginLine;
-                        //int bChar = t.sourceBeginChar;
-                        //int eLine = t.sourceEndLine;
-                        //int eChar = t.sourceEndChar;
-                        //string tokenStr = $"{lex}[{typ}][{bLine}:{bChar}-{eLine}:{eChar}]";
-                        //if (count > 0) sb.Append("    ");
-                        if( t.type == ETokenType.LineEnd )
-                        {
-                            sb.AppendLine();
-                        }
-                        else if( t.type == ETokenType.Sharp )
-                        {
-                            int extend = 0;
-                            if( !int.TryParse( t.extend.ToString(), out extend ) )
-                            {
-                                Debug.Assert(false, "");
-                            }
-                            if(extend == 0 )
-                            {
-                                sb.Append("#");
-                                sb.Append(t.lexeme.ToString());
-                            }
-                            else if (extend == 1)
-                            {
-                                sb.Append("#!");
-                                sb.Append(t.lexeme.ToString());
-                                sb.Append("!#");
-                            }
-                            else if (extend == 2)
-                            {
-                                sb.Append("##!");
-                                sb.Append(t.lexeme.ToString());
-                                sb.Append("!##");
-                            }
-                        }
-                        else if (t.type == ETokenType.Space)
-                        {
-                            int space = (int)t.extend;
-                            for (int i = 0; i < space; i++)
-                                sb.Append($" ");
-                        }
-                        else
-                        {
-                            //sb.Append("[");
-                            sb.Append(t.lexeme?.ToString());
-                            //sb.Append("]");
-                        }
-                        //count++;
-                        //if (count >= 4)
-                        //{
-                        //    sw.WriteLine(sb.ToString());
-                        //    sb.Clear();
-                        //    count = 0;
-                        //}
-                    }
+                    string sb = ToTokenString();
                     if (sb.Length > 0)
                     {
                         sw.WriteLine(sb.ToString());
