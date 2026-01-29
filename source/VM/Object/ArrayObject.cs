@@ -481,6 +481,11 @@ namespace SimpleLanguage.VM
                             sval.SetSObject(arr);
                         }
                         break;
+                    case EVMType.Type:
+                        {
+                            sval.SetSObject(obj as TypeObject);
+                        }
+                        break;
                     case EVMType.Object:
                         {
                             sval.SetSObject(obj as SObject);

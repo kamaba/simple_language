@@ -804,6 +804,30 @@ namespace SimpleLanguage.VM.Runtime
                         }
                     }
                     break;
+                case EIROpCode.Clt:
+                    {
+                        if (m_ValueIndex >= 2)
+                        {
+                            var right = m_ValueStack[--m_ValueIndex];
+                            var left = m_ValueStack[--m_ValueIndex];
+                            // compareSign 2 -> <
+                            SValue.CompareSValue1AndValue2(ref left, ref right, 2);
+                            PushSValueSynced(left);
+                        }
+                    }
+                    break;
+                case EIROpCode.Cle:
+                    {
+                        if (m_ValueIndex >= 2)
+                        {
+                            var right = m_ValueStack[--m_ValueIndex];
+                            var left = m_ValueStack[--m_ValueIndex];
+                            // compareSign 3 -> <=
+                            SValue.CompareSValue1AndValue2(ref left, ref right, 3);
+                            PushSValueSynced(left);
+                        }
+                    }
+                    break;
                 case EIROpCode.Neg:
                     {
                         if (m_ValueIndex - 1 < 0)

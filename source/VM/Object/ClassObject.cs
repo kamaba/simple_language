@@ -145,7 +145,7 @@ namespace SimpleLanguage.VM
                 return;
             }
             var mmv = m_MemberObjectArray[index];
-            if( mmv.isNull )
+            if( mmv == null || mmv?.isNull == true )
             {
                 svalue.SetNull();
                 return;

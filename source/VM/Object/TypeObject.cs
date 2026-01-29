@@ -56,6 +56,7 @@ namespace SimpleLanguage.VM
             for ( int i = 0; i < m_Rt.runtimeTemplateList.Count; i++ )
             {
                 typeObjectsArray[i] = new TypeObject(m_Rt.runtimeTemplateList[i]);
+                typeObjectsArray[i].CreateObject();
             }
             IRMetaClass arrayIRClass = IRManager.instance.GetIRMetaClassByName("Array<T>");
 
@@ -63,14 +64,20 @@ namespace SimpleLanguage.VM
             rtList.Add(RuntimeTypeManager.typeRuntimeType);
             RuntimeType rtmain = new RuntimeType(arrayIRClass, rtList );
 
-
-            ArrayObject ao = new ArrayObject(rtmain, rtmain.runtimeTemplateList.Count);
-            ao.CreateObject();
-            for ( int i = 0; i < ao.length; i++ )
+            if(typeObjectsArray.Length > 0 )
             {
-                ao.array.SetValue(typeObjectsArray[i], i);
+                ArrayObject ao = new ArrayObject(rtmain, typeObjectsArray.Length);
+                ao.CreateObject();
+                for (int i = 0; i < ao.length; i++)
+                {
+                    ao.array.SetValue(typeObjectsArray[i], i);
+                }
+                m_MemberObjectArray[2] = ao;
             }
-            m_MemberObjectArray[2] = ao;
+            else
+            {
+                m_MemberObjectArray[2] = null;
+            }
         }
         public override string ToFormatString()
         {
