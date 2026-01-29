@@ -201,7 +201,8 @@ namespace SimpleLanguage.VM
         }
     }
 
-    public static class RuntimeTypeManager {
+    public static class RuntimeTypeManager 
+    {
         private static List<RuntimeType> s_RuntimeList = new List<RuntimeType>();
         private static RuntimeType m_TypeRuntimeType = null;
         private static RuntimeType m_VoidRuntimeType = null;
@@ -219,7 +220,6 @@ namespace SimpleLanguage.VM
         private static RuntimeType m_StringRuntimeType = null;
 
         public static List<RuntimeType> runtimeList => s_RuntimeList;
-        public static RuntimeType typeRuntimeType { get => m_TypeRuntimeType; }
         public static RuntimeType voidRuntimeType { get => m_VoidRuntimeType; }
         public static RuntimeType byteRuntimeType { get => m_ByteRuntimeType; }
         public static RuntimeType sbyteRuntimeType { get => m_SByteRuntimeType; }
@@ -233,6 +233,7 @@ namespace SimpleLanguage.VM
         public static RuntimeType float64runtimeType { get => m_Float64RuntimeType; }
         public static RuntimeType stringRuntimeType { get => m_StringRuntimeType; }
         public static RuntimeType numRuntimeType { get => m_NumRuntimeType; }
+        public static RuntimeType typeRuntimeType { get => m_TypeRuntimeType; }
 
         public static ClassObject CreateTypeObject(RuntimeType rt)
         {

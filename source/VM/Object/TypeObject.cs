@@ -6,6 +6,7 @@
 //  Description: 
 //****************************************************************************
 using SimpleLanguage.Core;
+using SimpleLanguage.IR;
 using SimpleLanguage.VM.Runtime;
 using System;
 using System.Collections.Generic;
@@ -27,19 +28,49 @@ namespace SimpleLanguage.VM
         {
             m_Rt = rm;
             m_Type = EVMType.Type;
-            CreateDefine();
+        }
+        public override void CreateObject()
+        {
+            base.CreateObject();
 
             eType = m_MemberObjectArray[0] as Int8Object;
+
+            IRMetaClass irmc = IRManager.instance.GetIRMetaClassByName("MetaClass");
+            RuntimeType rt = new RuntimeType(irmc, new List<RuntimeType>());
+
+            ClassObject mco = new ClassObject(rt);
+            mco.CreateObject();
+            m_MemberObjectArray[1] = mco;
             metaClassObject = m_MemberObjectArray[1] as ClassObject;
-            ArrayObject ao = m_MemberObjectArray[2] as ArrayObject;
-            if( ao != null )
+
+            var sv = new SValue();
+            sv.SetStringValue( m_Rt.irClass.irName );
+            mco.SetMemberVariableSValue(0, sv );
+
+
+            var sv2 = new SValue();
+            sv2.SetStringValue( m_Rt.irClass.irName );
+            mco.SetMemberVariableSValue(1, sv2);
+
+            typeObjectsArray = new TypeObject[m_Rt.runtimeTemplateList.Count];
+            for ( int i = 0; i < m_Rt.runtimeTemplateList.Count; i++ )
             {
-                typeObjectsArray = new TypeObject[ao.array.Length];
-                for( int i = 0; i < ao.array.Length; i++ )
-                {
-                    typeObjectsArray[i] = ao.array.GetValue(i) as TypeObject;
-                }
+                typeObjectsArray[i] = new TypeObject(m_Rt.runtimeTemplateList[i]);
             }
+            IRMetaClass arrayIRClass = IRManager.instance.GetIRMetaClassByName("Array<T>");
+
+            List<RuntimeType> rtList = new List<RuntimeType>();
+            rtList.Add(RuntimeTypeManager.typeRuntimeType);
+            RuntimeType rtmain = new RuntimeType(arrayIRClass, rtList );
+
+
+            ArrayObject ao = new ArrayObject(rtmain, rtmain.runtimeTemplateList.Count);
+            ao.CreateObject();
+            for ( int i = 0; i < ao.length; i++ )
+            {
+                ao.array.SetValue(typeObjectsArray[i], i);
+            }
+            m_MemberObjectArray[2] = ao;
         }
         public override string ToFormatString()
         {

@@ -29,11 +29,11 @@ TypeTest
 
         #generic type
         tg = Array<int>.type
-        System.Console.WriteLine("List<int>.type -> " + tg.toString())
+        #System.Console.WriteLine("List<int>.type -> " + tg.toString())
 
         #compare with different instantiation
         tg2 = Array<Array<int> >.type
-        System.Console.WriteLine("Array<string>.type -> " + tg2.toString())
+        System.Console.WriteLine("Array<Array<Array<int> >.type -> " + tg2.toString())
 
         if tg == tg2
         {

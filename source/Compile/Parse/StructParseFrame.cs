@@ -126,6 +126,8 @@ namespace SimpleLanguage.Compile
                 Log.AddInStructFileMeta(EError.None, "´íÎó !!1 AddParseClassNodeInfo");
                 return;
             }
+
+        
             m_FileMeta.AddFileMetaAllClass(fmc);
 
             ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fmc);
@@ -202,6 +204,68 @@ namespace SimpleLanguage.Compile
             { 
                 ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fms);
                 m_CurrentNodeInfoStack.Push(pcni);
+            }
+        }
+
+        // Normalize single-line sequences: attach trailing (), [] to the preceding
+        // IdentifierLink (or its last extend link). When attached, the bracket/par children
+        // are not recursively processed here ¡ª they remain as part of the attached node.
+        private void HandleNodeSingleLine(Node root)
+        {
+            if (root == null) return;
+
+            for (int i = 0; i < root.childList.Count; i++)
+            {
+                var n = root.childList[i];
+                if (n == null) continue;
+
+                if (n.nodeType == ENodeType.IdentifierLink)
+                {
+                    int j = i + 1;
+                    while (j < root.childList.Count)
+                    {
+                        var s = root.childList[j];
+                        if (s == null) { j++; continue; }
+
+                        if (s.nodeType == ENodeType.LineEnd || s.nodeType == ENodeType.SemiColon)
+                            break;
+
+                        // target is identifier or its deepest extend link
+                        Node target = n;
+                        if (n.extendLinkNodeList != null && n.extendLinkNodeList.Count > 0)
+                            target = n.extendLinkNodeList[n.extendLinkNodeList.Count - 1];
+
+                        if (s.nodeType == ENodeType.Par)
+                        {
+                            // bind parentheses to target
+                            target.SetParNode(s);
+                            // remove from root list so it's not processed as sibling
+                            root.childList.RemoveAt(j);
+                            // continue at same index j
+                            continue;
+                        }
+                        else if (s.nodeType == ENodeType.Bracket)
+                        {
+                            // add bracket node to target's bracket list
+                            target.AddBracketNode(s);
+                            root.childList.RemoveAt(j);
+                            continue;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    // recurse into identifier itself (but not into attached par/bracket children)
+                    HandleNodeSingleLine(n);
+                }
+                else
+                {
+                    // skip recursing into Par/Bracket nodes here
+                    if (n.nodeType == ENodeType.Par || n.nodeType == ENodeType.Bracket) continue;
+                    HandleNodeSingleLine(n);
+                }
             }
         }
         public void ParseRootNodeToFileMeta()
@@ -1385,6 +1449,7 @@ namespace SimpleLanguage.Compile
             node.parseIndex = 0;
         }
 
+        public static Stack<Node> lastAttachableStack = new Stack<Node>();
         public static List<Node> HandleNodeSingleLine(List<Node> nodeList)
         {
             List<Node> handleBeforeList = new List<Node>();
@@ -1431,12 +1496,13 @@ namespace SimpleLanguage.Compile
                 {
                     if (v.nodeType == ENodeType.LeftAngle)
                     {
+                        //var lastAttachable = lastAttachableStack.Peek();
                         if (lastAttachable != null)
                         {
                             var newPendingAngleOwner = lastAttachable.finalNode;
                             if( newPendingAngleOwner != null )
                             {
-                                newPendingAngleOwner.parOwnerNode = pendingAngleOwner;
+                                newPendingAngleOwner.angleOwnerNode = pendingAngleOwner;
                                 pendingAngleOwner = newPendingAngleOwner;
                                 pendingAngleOwner.SetAngleNode(v);
                                 angleDepth++;
@@ -1462,7 +1528,8 @@ namespace SimpleLanguage.Compile
                             if (valid)
                             {
                                 isGenericMode = true;
-                                pendingAngleOwner = pendingAngleOwner.parOwnerNode;                            }
+                                pendingAngleOwner = pendingAngleOwner.angleOwnerNode;  
+                            }
                             else
                             {
                                 // rollback: treat '<' and collected nodes as normal tokens
@@ -1504,7 +1571,15 @@ namespace SimpleLanguage.Compile
                 if (v.nodeType == ENodeType.Key)
                 {
                     handleBeforeList.Add(v);
-                    lastAttachable = null;
+                    if ( v.token.type == ETokenType.This 
+                        || v.token.type == ETokenType.Base )
+                    {
+                        lastAttachable = v;
+                    }
+                    else
+                    {
+                        lastAttachable = null;
+                    }
                     isGenericMode = false;
                     continue;
                 }
@@ -1523,7 +1598,7 @@ namespace SimpleLanguage.Compile
                 // Function call: only fold if we are in generic or plain-call mode (not comparison mode)
                 if (v.nodeType == ENodeType.Par)
                 {
-                    HandleNodeSingleLine_Recursive(v);
+                    //HandleNodeSingleLine_Recursive(v);
                     if (lastAttachable != null && (isGenericMode || lastAttachable.angleNode == null))
                     {
                         // if the paren expression begins with an operator, do not treat as a call
@@ -1554,7 +1629,8 @@ namespace SimpleLanguage.Compile
                                             || second.nodeType == ENodeType.Par
                                             || second.nodeType == ENodeType.Bracket
                                             || second.nodeType == ENodeType.Brace
-                                            || (second.nodeType == ENodeType.Key && (second.token?.type == ETokenType.This || second.token?.type == ETokenType.Base || second.token?.type == ETokenType.New));
+                                            || (second.nodeType == ENodeType.Key && (second.token?.type == ETokenType.This 
+                                            || second.token?.type == ETokenType.Base || second.token?.type == ETokenType.New) );
                                         if (!isUnaryStarter)
                                         {
                                             startsWithOperator = true;
@@ -1593,8 +1669,8 @@ namespace SimpleLanguage.Compile
                 // Indexer: same rule as Par
                 if (v.nodeType == ENodeType.Bracket)
                 {
-                    HandleNodeSingleLine_Recursive(v);
-                    if (lastAttachable != null && (isGenericMode || lastAttachable.angleNode == null))
+                    //HandleNodeSingleLine_Recursive(v);
+                    if (lastAttachable != null )
                     {
                         lastAttachable.finalNode.AddBracketNode(v);
                     }
@@ -1608,7 +1684,7 @@ namespace SimpleLanguage.Compile
                 // Object/initializer block: same rule as Par
                 if (v.nodeType == ENodeType.Brace)
                 {
-                    HandleNodeSingleLine_Recursive(v);
+                    //HandleNodeSingleLine_Recursive(v);
                     if (lastAttachable != null && (isGenericMode || lastAttachable.angleNode == null))
                     {
                         lastAttachable.finalNode.SetBlockNode(v);
@@ -1628,7 +1704,7 @@ namespace SimpleLanguage.Compile
                     if (lastAttachable != null)
                     {
                         pendingAngleOwner = lastAttachable.finalNode;
-                        pendingAngleOwner.parOwnerNode = null;
+                        pendingAngleOwner.angleOwnerNode = null;
                         pendingAngleOwner.SetAngleNode(v);
                         angleDepth = 1;
                         isGenericMode = false; // will be set to true only when we see matching valid '>'

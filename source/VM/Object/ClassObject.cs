@@ -34,6 +34,7 @@ namespace SimpleLanguage.VM
         protected List<IRMetaVariable> m_IRMetaVariableList = null;
         protected List<RuntimeType> m_IRTemplateList = new List<RuntimeType>();
 
+        protected ClassObject() { }
 
         public ClassObject( RuntimeType irmt, bool isStatic = false )
         {
@@ -94,7 +95,8 @@ namespace SimpleLanguage.VM
             for (int i = 0; i < m_IRMetaVariableList.Count; i++)
             {
                 var irmv = m_IRMetaVariableList[i].irMetaType;
-                m_MemberRuntimeTypeArray[i] = m_RuntimeType.GetClassRuntimeType(irmv, true);
+                m_MemberRuntimeTypeArray[i] = RuntimeVM.GetClassRuntimeType(irmv, m_RuntimeType.irClass, m_IRTemplateList, true);
+                //m_MemberRuntimeTypeArray[i] = m_RuntimeType.GetClassRuntimeType(irmv, true);
             }
             
         }
@@ -102,7 +104,7 @@ namespace SimpleLanguage.VM
         {
             for (int i = 0; i < m_MemberRuntimeTypeArray.Length; i++)
             {
-                SObject sobj = ObjectManager.CreateObjectByRuntimeType(m_MemberRuntimeTypeArray[i]);
+                SObject sobj = ObjectManager.CreateObjectByRuntimeType(m_MemberRuntimeTypeArray[i], true );
                 if(sobj == null )
                 {
                     continue;
@@ -212,7 +214,7 @@ namespace SimpleLanguage.VM
                     break;
                 case ClassObject classObj:
                     {
-                        svalue.SetSObject(classObj.value);
+                        svalue.SetSObject(classObj);
                     }
                     break;
                 case TemplateObject templateObj:
@@ -286,7 +288,7 @@ namespace SimpleLanguage.VM
                                 break;
                             default:
                                 {
-                                    svalue.SetSObject(mmv.value as SObject);
+                                    svalue.SetSObject(mmv);
                                 }
                                 break;
                         }
@@ -303,22 +305,24 @@ namespace SimpleLanguage.VM
             }
             if( svalue.isNull )
             {
-                m_MemberObjectArray[index].SetNull();
+                m_MemberObjectArray[index] = null;
                 return;
             }
             SObject anyobj = null;
-            if( m_MemberObjectArray[index] != null )
+            bool isAny = false;
+            if(m_MemberRuntimeTypeArray[index] != null )
             {
-                if(m_MemberObjectArray[index].eType == EVMType.Object)
+                if (m_MemberRuntimeTypeArray[index].eType == EVMType.Object)
                 {
-                    anyobj = m_MemberObjectArray[index];
+                    isAny = true;
+                    anyobj = new SObject(EVMType.Object);
                 }
             }
             switch (svalue.eType)
             {
                 case EVMType.Null:
                     {
-                        m_MemberObjectArray[index].SetNull();
+                        m_MemberObjectArray[index] = null;
                     }
                     break;
                 case EVMType.Boolean:
@@ -736,17 +740,18 @@ namespace SimpleLanguage.VM
                             classObj = m_MemberObjectArray[index] as ClassObject;
                             if (classObj == null)
                             {
+                                classObj.SetClassObject(svalue.sobject as ClassObject);
                                 //AnyObject anyObj = m_MemberObjectArray[index] as AnyObject;
                                 //if( anyObj != null )
                                 //{
                                 //    anyObj.SetValue(EVMType.Class, svalue.sobject);
                                 //    return;
                                 //}
-                                Debug.Assert(false);
-                                Log.AddVM(EError.None, "该类型不是classObj类型!!");
+                                //Debug.Assert(false);
+                                //Log.AddVM(EError.None, "该类型不是classObj类型!!");
                                 return;
-                            }
-                            classObj.SetClassObject(svalue.sobject as ClassObject);
+                            };
+                            m_MemberObjectArray[index] = svalue.sobject;
                             //m_MemberObjectArray[index].SetValueByType( EVMType.Class, svalue.sobject );
                         }
                     }

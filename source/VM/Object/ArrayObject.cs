@@ -14,23 +14,38 @@ namespace SimpleLanguage.VM
 {
     public class ArrayObject : ClassObject
     {
+        public int length => m_Length;
         public Array array => m_Array;
 
         private Array m_Array = null;
         private RuntimeType eArrayType = null;
-        public ArrayObject(RuntimeType rt, int length ) : base( rt, false )
+        public ArrayObject(RuntimeType rt, int length )
         {
             m_Type = EVMType.Array;
             eArrayType = rt.runtimeTemplateList[0];
             m_Length = length;
-            CreateObject();
 
-            (m_MemberObjectArray[0] as Int32Object).SetValue(m_Length);
+            m_RuntimeType = rt;
 
-            if(length > 0 )
-            {
-                CreateArray();
-            }
+            int byteCount = irMetaClass.byteCount;
+            //m_Data = new byte[byteCount];
+            typeId = (short)irMetaClass.id;
+            m_IRTemplateList = rt.runtimeTemplateList;
+
+            m_IRMetaVariableList = irMetaClass.localIRMetaVariableList;
+            m_MemberObjectArray = new SObject[m_IRMetaVariableList.Count];
+            m_MemberRuntimeTypeArray = new RuntimeType[m_IRMetaVariableList.Count];
+            CreateDefine();
+        }
+        public override void CreateObject()
+        {
+            base.CreateObject();
+
+            //m_MemberRuntimeTypeArray = m_RuntimeType.GetClassRuntimeType(m_RuntimeType, true);
+
+            (this.m_MemberObjectArray[0] as Int32Object).SetValue(m_Length);
+
+            CreateArray();
         }
         //public override void SetSValue(ClassObject val)
         //{
@@ -232,6 +247,11 @@ namespace SimpleLanguage.VM
                             sobj.SetNull();
                             m_Array.SetValue(sobj, i);
                         }
+                    }
+                    break;
+                case EVMType.Type:
+                    {
+                        m_Array = new TypeObject[length];
                     }
                     break;
                 case EVMType.Class:

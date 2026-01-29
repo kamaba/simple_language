@@ -376,7 +376,7 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.Nop: break;
                 case EIROpCode.LoadConstNull:
                     {
-                        m_ValueStack[m_ValueIndex].SetNull();
+                        m_ValueStack[m_ValueIndex++].SetNull();
                     }
                     break;
                 case EIROpCode.LoadConstBoolean:
@@ -642,7 +642,7 @@ namespace SimpleLanguage.VM.Runtime
                         if (m_ValueIndex > 0)
                         {
                             var inst = m_ValueStack[--m_ValueIndex];
-                            if (inst.eType == EVMType.Class || inst.eType == EVMType.Object)
+                            if (inst.eType == EVMType.Array || inst.eType == EVMType.Class || inst.eType == EVMType.Type || inst.eType == EVMType.Object)
                             {
                                 var v = default(SValue);
                                 if (inst.sobject is ClassObject co)
@@ -1041,6 +1041,7 @@ namespace SimpleLanguage.VM.Runtime
                             var rt = GetClassRuntimeType(mdt, m_IRMetaClass != null ? m_IRMetaClass : mdt.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
                            
                             var sobj = new TypeObject(rt);
+                            sobj.CreateObject();
                             var sv = default(SValue);
                             sv.SetSObject(sobj);
                             PushSValueSynced(sv);
