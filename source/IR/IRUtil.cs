@@ -13,6 +13,32 @@ namespace SimpleLanguage.IR
 {
     public class IRUtil
     {
+        public static EIROpCode GetConstIROpCode(EType etype)
+        {
+            switch (etype)
+            {
+                case EType.Byte: return EIROpCode.LoadConstByte;
+                case EType.SByte: return EIROpCode.LoadConstSByte;
+                case EType.Boolean: return EIROpCode.LoadConstBoolean;
+                //case EType.Char: return EIROpCode.LoadConstChar;
+                case EType.Int16: return EIROpCode.LoadConstInt16;
+                case EType.UInt16: return EIROpCode.LoadConstUInt16;
+                case EType.Int32: return EIROpCode.LoadConstInt32;
+                case EType.UInt32: return EIROpCode.LoadConstUInt32;
+                case EType.Int64: return EIROpCode.LoadConstInt64;
+                case EType.UInt64: return EIROpCode.LoadConstUInt64;
+                case EType.Float32: return EIROpCode.LoadConstFloat32;
+                case EType.Float64: return EIROpCode.LoadConstFloat64;
+                case EType.String: return EIROpCode.LoadConstString;
+                case EType.Null: return EIROpCode.LoadConstNull;
+                default:
+                    {
+                        Debug.Write("Error GetConstIROpCode!!");
+                    }
+                    break;
+            }
+            return EIROpCode.Nop;
+        }
         public static IRData CreateLeftAndRightIRData(ELeftRightOpSign opSign)
         {
             IRData data = new IRData();

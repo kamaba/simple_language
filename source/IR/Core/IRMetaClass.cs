@@ -19,13 +19,13 @@ namespace SimpleLanguage.IR
     {
         public int id { get; set; } = 0;
         public string irName => m_IRName;
-        public int byteCount => m_ByteCount;
-        public int templateCount => m_TemplateCount;
+        //public int byteCount => m_ByteCount;
+        //public int templateCount => m_TemplateCount;
         public bool needInitMemberVariable => m_NeedInitMemberVariable;
 
         public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
         public List<IRMetaVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;
-        public List<IRMetaType> irMetaTypeList => m_IRMetaTypeList;
+        //public List<IRMetaType> irMetaTypeList => m_IRMetaTypeList;
 
 
         Dictionary<int, Dictionary<int, IRMetaType>> m_IRMetaClassMapTemplateDict = new Dictionary<int, Dictionary<int, IRMetaType>>();
@@ -39,12 +39,12 @@ namespace SimpleLanguage.IR
         private MetaClass m_MetaClass = null;
         private int m_TemplateCount = 0;
 
-        private int allocSize = 0;
-        private List<EType> m_MetaTypeList = new List<EType>();
-        private int m_ByteCount = 0;
+        //private int allocSize = 0;
+        //private List<EType> m_MetaTypeList = new List<EType>();
+        //private int m_ByteCount = 0;
         private bool m_NeedInitMemberVariable = false;
 
-        static int s_TypeLength = 1000;
+        //static int s_TypeLength = 1000;
         public IRMetaClass( MetaClass mc )
         {
             m_MetaClass = mc;
@@ -154,7 +154,7 @@ namespace SimpleLanguage.IR
         }
         public void CreateMemberData()
         {
-            m_MetaTypeList.Clear();
+            //m_MetaTypeList.Clear();
 
             if (m_MetaClass is MetaEnum me)
             {
@@ -179,14 +179,14 @@ namespace SimpleLanguage.IR
                     }
                 }
             }
-            int count = 0;
-            int ssize = 0;
-            for (int i = 0; i < m_MetaTypeList.Count; i++)
-            {
-                ssize = IR.IRUtil.GetTypeSize(m_MetaTypeList[i]);
-                count += ssize;
-                m_ByteCount += ssize;
-            }
+            //int count = 0;
+            //int ssize = 0;
+            //for (int i = 0; i < m_MetaTypeList.Count; i++)
+            //{
+            //    ssize = IR.IRUtil.GetTypeSize(m_MetaTypeList[i]);
+            //    count += ssize;
+            //    m_ByteCount += ssize;
+            //}
 
            var staticMetaMemberVariables = m_MetaClass.GetMetaMemberVariableListByFlag(true);
             for (int i = 0; i < staticMetaMemberVariables.Count; i++)

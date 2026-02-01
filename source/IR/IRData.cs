@@ -141,10 +141,10 @@ namespace SimpleLanguage.IR
                 case EIROpCode.LoadConstUInt64:
                     if (TryGetUInt64(out var ui64)) { _opValue = ui64; return; }
                     break;
-                case EIROpCode.LoadConstFloat:
+                case EIROpCode.LoadConstFloat32:
                     if (TryGetSingle(out var f)) { _opValue = f; return; }
                     break;
-                case EIROpCode.LoadConstDouble:
+                case EIROpCode.LoadConstFloat64:
                     if (TryGetDouble(out var d)) { _opValue = d; return; }
                     break;
                 case EIROpCode.LoadConstString:

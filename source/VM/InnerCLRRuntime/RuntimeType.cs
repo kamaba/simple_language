@@ -16,7 +16,8 @@ using System.Text;
 
 namespace SimpleLanguage.VM
 {
-    public class RuntimeType {
+    public class RuntimeType 
+    {
         public IRMetaClass irClass;
         public List<RuntimeType> runtimeTemplateList = new List<RuntimeType>();
         private SObject[] m_StaticMemObjectList;
@@ -201,26 +202,11 @@ namespace SimpleLanguage.VM
         }
     }
 
-    public static class RuntimeTypeManager 
+    public static class RuntimeTypeManager
     {
-        private static List<RuntimeType> s_RuntimeList = new List<RuntimeType>();
-        private static RuntimeType m_TypeRuntimeType = null;
-        private static RuntimeType m_VoidRuntimeType = null;
-        private static RuntimeType m_NumRuntimeType = null;
-        private static RuntimeType m_ByteRuntimeType = null;
-        private static RuntimeType m_SByteRuntimeType = null;
-        private static RuntimeType m_Int16RuntimeType = null;
-        private static RuntimeType m_UInt16RuntimeType = null;
-        private static RuntimeType m_Int32RuntimeType = null;
-        private static RuntimeType m_UInt32RuntimeType = null;
-        private static RuntimeType m_Int64RuntimeType = null;
-        private static RuntimeType m_UInt64RuntimeType = null;
-        private static RuntimeType m_Float32RuntimeType = null;
-        private static RuntimeType m_Float64RuntimeType = null;
-        private static RuntimeType m_StringRuntimeType = null;
-
         public static List<RuntimeType> runtimeList => s_RuntimeList;
         public static RuntimeType voidRuntimeType { get => m_VoidRuntimeType; }
+        public static RuntimeType boolRuntimeType { get => m_BoolRuntimeType; }
         public static RuntimeType byteRuntimeType { get => m_ByteRuntimeType; }
         public static RuntimeType sbyteRuntimeType { get => m_SByteRuntimeType; }
         public static RuntimeType int16RuntimeType { get => m_Int16RuntimeType; }
@@ -234,6 +220,23 @@ namespace SimpleLanguage.VM
         public static RuntimeType stringRuntimeType { get => m_StringRuntimeType; }
         public static RuntimeType numRuntimeType { get => m_NumRuntimeType; }
         public static RuntimeType typeRuntimeType { get => m_TypeRuntimeType; }
+
+        private static List<RuntimeType> s_RuntimeList = new List<RuntimeType>();
+        private static RuntimeType m_TypeRuntimeType = null;
+        private static RuntimeType m_VoidRuntimeType = null;
+        private static RuntimeType m_BoolRuntimeType = null;
+        private static RuntimeType m_NumRuntimeType = null;
+        private static RuntimeType m_ByteRuntimeType = null;
+        private static RuntimeType m_SByteRuntimeType = null;
+        private static RuntimeType m_Int16RuntimeType = null;
+        private static RuntimeType m_UInt16RuntimeType = null;
+        private static RuntimeType m_Int32RuntimeType = null;
+        private static RuntimeType m_UInt32RuntimeType = null;
+        private static RuntimeType m_Int64RuntimeType = null;
+        private static RuntimeType m_UInt64RuntimeType = null;
+        private static RuntimeType m_Float32RuntimeType = null;
+        private static RuntimeType m_Float64RuntimeType = null;
+        private static RuntimeType m_StringRuntimeType = null;
 
         public static ClassObject CreateTypeObject(RuntimeType rt)
         {
@@ -308,13 +311,21 @@ namespace SimpleLanguage.VM
         public static RuntimeType AddRuntimeTypeByClass(IRMetaClass rmc )
         {
             RuntimeType rt = new RuntimeType(rmc, null);
-            if (rmc.irName == "Type")
+             if (rmc.irName == "Void")
+            {
+                m_VoidRuntimeType = rt;
+            }
+            else if(rmc.irName == "Type")
             {
                 m_TypeRuntimeType = rt;
             }
-            else if (rmc.irName == "Void")
+            else if( rmc.irName == "Bool")
             {
-                m_VoidRuntimeType = rt;
+                m_BoolRuntimeType = rt;
+            }
+            else if (rmc.irName == "Num")
+            {
+                m_NumRuntimeType = rt;
             }
             else if (rmc.irName == "Byte")
             {

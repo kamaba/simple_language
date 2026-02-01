@@ -27,7 +27,7 @@ namespace SimpleLanguage.VM
 
             m_RuntimeType = rt;
 
-            int byteCount = irMetaClass.byteCount;
+            //int byteCount = irMetaClass.byteCount;
             //m_Data = new byte[byteCount];
             typeId = (short)irMetaClass.id;
             m_IRTemplateList = rt.runtimeTemplateList;

@@ -40,7 +40,7 @@ namespace SimpleLanguage.VM
         {
             m_RuntimeType = irmt;
 
-            int byteCount = m_RuntimeType.irClass.byteCount;
+            //int byteCount = m_RuntimeType.irClass.byteCount;
             //m_Data = new byte[byteCount];
             typeId = (short)m_RuntimeType.irClass.id;
             m_IRTemplateList = irmt.runtimeTemplateList;

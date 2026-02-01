@@ -34,10 +34,10 @@ namespace SimpleLanguage.Export
                     case EIROpCode.LoadConstInt32:
                         if (d.TryGetInt32(out var iv)) sb.AppendLine($"            stack.Add({iv});");
                         break;
-                    case EIROpCode.LoadConstFloat:
+                    case EIROpCode.LoadConstFloat32:
                         if (d.TryGetSingle(out var fv)) sb.AppendLine($"            stack.Add({fv}f);");
                         break;
-                    case EIROpCode.LoadConstDouble:
+                    case EIROpCode.LoadConstFloat64:
                         if (d.TryGetDouble(out var dv)) sb.AppendLine($"            stack.Add({dv:R});");
                         break;
                     case EIROpCode.Add:

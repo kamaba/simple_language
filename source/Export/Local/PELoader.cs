@@ -1,15 +1,15 @@
-using System;
-using System.Collections.Generic;
+
 using SimpleLanguage.IR;
 
-namespace SimpleLanguage.Export.SLVM
+namespace SimpleLanguage.Export
 {
-    public static class SLVMLoader
+    public static class PELoader
     {
         // Read .slvm file and convert a SLVM method into IRData[] so RuntimeVM can execute it
         public static IRData[] ConvertSLVMMethodToIRDataList(string path, string methodId)
         {
-            var module = SLVMSerializer.ReadModule(path);
+            /*
+            var module = PESerializer.ReadPEModule(path);
             if (module == null) return null;
             var m = module.GetMethodById(methodId);
             if (m == null) return null;
@@ -44,7 +44,7 @@ namespace SimpleLanguage.Export.SLVM
                     d.Payload = ins.payload;
                 }
                 // also set opValue when payload represents a string
-                if (ins.payload != null && ins.payload.Length > 0 && ins.payloadType == SLVMPayloadType.String && (d.opValue == null || d.opValue.ToString() == ""))
+                if (ins.payload != null && ins.payload.Length > 0 && ins.payloadType == PEPayloadType.String && (d.opValue == null || d.opValue.ToString() == ""))
                 {
                     d.opValue = System.Text.Encoding.UTF8.GetString(ins.payload);
                 }
@@ -52,6 +52,8 @@ namespace SimpleLanguage.Export.SLVM
                 list.Add(d);
             }
             return list.ToArray();
+            */
+            return null;
         }
     }
 }

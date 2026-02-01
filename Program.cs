@@ -81,6 +81,7 @@ namespace SimpleLanguage
                 // Export SLVM module to Export/SLVMCode
                 var cfg = ProjectManager.config.Export;
                 var moduleName = string.IsNullOrEmpty(cfg.ModuleName) ? "SimpleLanguageMain" : cfg.ModuleName;
+                /*
                 var slvmModule = SimpleLanguage.Export.SLVM.SLVMSerializer.FromIRMethods(methodList.ToArray(), moduleName);
                 string slvmDir = Path.Combine(Directory.GetCurrentDirectory(), cfg.OutputDir ?? "Export/SLVMCode");
                 if (!Directory.Exists(slvmDir)) Directory.CreateDirectory(slvmDir);
@@ -92,7 +93,6 @@ namespace SimpleLanguage
                     // Direct IR execution path: translate IR and run NumberTest.fun if present
                     try
                     {
-                        IRManager.instance.TranslateIR();
                         // ensure runtime root
                         if (SimpleLanguage.VM.Runtime.InnerCLRRuntimeVM.clrRuntimeStack.Count == 0)
                         {
@@ -138,12 +138,12 @@ namespace SimpleLanguage
                 {
                     Console.WriteLine("SLVM run failed: " + ex2.ToString());
                 }
+                */
             }
             catch (Exception ex)
             {
                 Console.WriteLine("AOT export failed: " + ex.ToString());
             }
-
             if (Environment.UserInteractive)
             {
                 Console.WriteLine("Press any key to exit...");

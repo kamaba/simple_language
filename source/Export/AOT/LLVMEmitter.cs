@@ -400,7 +400,7 @@ namespace SimpleLanguage.Export.AOT
                             sb.AppendLine($"  store i32 {spm}, i32* %sp");
                         }
                         break;
-                    case EIROpCode.LoadConstDouble:
+                    case EIROpCode.LoadConstFloat64:
                         {
                             if (d.TryGetDouble(out var dv))
                             {
@@ -416,7 +416,7 @@ namespace SimpleLanguage.Export.AOT
                             }
                         }
                         break;
-                    case EIROpCode.LoadConstFloat:
+                    case EIROpCode.LoadConstFloat32:
                         {
                             if (d.TryGetSingle(out var fv))
                             {

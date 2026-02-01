@@ -424,12 +424,12 @@ namespace SimpleLanguage.VM.Runtime
                         if (iri.TryGetUInt64(out ulong ul)) { var v = default(SValue); v.SetUInt64Value(ul); PushSValueSynced(v); }
                     }
                     break;
-                case EIROpCode.LoadConstFloat:
+                case EIROpCode.LoadConstFloat32 :
                     {
                         if (iri.TryGetSingle(out float f)) { var v = default(SValue); v.SetFloatValue(f); PushSValueSynced(v); }
                     }
                     break;
-                case EIROpCode.LoadConstDouble:
+                case EIROpCode.LoadConstFloat64:
                     {
                         if (iri.TryGetDouble(out double d)) { var v = default(SValue); v.SetDoubleValue(d); PushSValueSynced(v); }
                     }

@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using SimpleLanguage.Export.SLVM;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -202,7 +201,7 @@ namespace SimpleLanguage.VM.Runtime
         // Execute a single method from a .slvm file
         public static void RunSLVMMethodFile(string slvmPath, string methodId)
         {
-            var irlist = SLVMLoader.ConvertSLVMMethodToIRDataList(slvmPath, methodId);
+            var irlist = SimpleLanguage.Export.PELoader.ConvertSLVMMethodToIRDataList(slvmPath, methodId);
             if (irlist == null) return;
 
             // ensure there is a root runtime on stack
@@ -230,6 +229,7 @@ namespace SimpleLanguage.VM.Runtime
         // Load an entire .slvm module and register its string pool into IRManager
         public static void LoadSLVMModule(string slvmPath)
         {
+            /*
             var module = SLVMSerializer.ReadModule(slvmPath);
             if (module == null) return;
             // register strings
@@ -310,6 +310,7 @@ namespace SimpleLanguage.VM.Runtime
                     RuntimeTypeManager.AddRuntimeTypeByClass(irmc);
                 }
             }
+            */
         }
     }
 }

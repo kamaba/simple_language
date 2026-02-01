@@ -77,7 +77,7 @@ namespace SimpleLanguage.Export
                                 il.EmitCall(System.Reflection.Emit.OpCodes.Callvirt, listAdd, null);
                             }
                             break;
-                        case EIROpCode.LoadConstDouble:
+                        case EIROpCode.LoadConstFloat64:
                             if (d.TryGetDouble(out var dv))
                             {
                                 il.Emit(System.Reflection.Emit.OpCodes.Ldloc, localStack);
@@ -86,7 +86,7 @@ namespace SimpleLanguage.Export
                                 il.EmitCall(System.Reflection.Emit.OpCodes.Callvirt, listAdd, null);
                             }
                             break;
-                        case EIROpCode.LoadConstFloat:
+                        case EIROpCode.LoadConstFloat32:
                             if (d.TryGetSingle(out var fv))
                             {
                                 il.Emit(System.Reflection.Emit.OpCodes.Ldloc, localStack);

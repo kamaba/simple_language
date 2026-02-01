@@ -43,32 +43,6 @@ namespace SimpleLanguage.IR
 
         private List<IRMetaClass> m_IRMetaClassList = new List<IRMetaClass>();
         private List<IRData>  m_IRDataList = new List<IRData>();
-        public static EIROpCode GetConstIROpCode( EType etype )
-        {
-            switch( etype )
-            {
-                case EType.Byte: return EIROpCode.LoadConstByte;
-                case EType.SByte: return EIROpCode.LoadConstSByte;
-                case EType.Boolean:return EIROpCode.LoadConstBoolean;
-                //case EType.Char: return EIROpCode.LoadConstChar;
-                case EType.Int16: return EIROpCode.LoadConstInt16;
-                case EType.UInt16:return EIROpCode.LoadConstUInt16;
-                case EType.Int32: return EIROpCode.LoadConstInt32;
-                case EType.UInt32: return EIROpCode.LoadConstUInt32;
-                case EType.Int64: return EIROpCode.LoadConstInt64;
-                case EType.UInt64: return EIROpCode.LoadConstUInt64;
-                case EType.Float32: return EIROpCode.LoadConstFloat;
-                case EType.Float64: return EIROpCode.LoadConstDouble;
-                case EType.String: return EIROpCode.LoadConstString;
-                case EType.Null:return EIROpCode.LoadConstNull;
-                default:
-                    {
-                        Debug.Write("Error GetConstIROpCode!!");
-                    }
-                    break;
-            }
-            return EIROpCode.Nop;
-        }
         public void TranslateIR()
         {
             ParseClass();

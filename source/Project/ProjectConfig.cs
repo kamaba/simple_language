@@ -1,10 +1,33 @@
+using System;
 using System.Collections.Generic;
 
 namespace SimpleLanguage.Project
 {
+    public class RuntimeEnv
+    {
+        public enum EEnvType
+        {
+            SLVM = 0,
+            CLR = 1,
+            Java = 2
+        }
+        public enum ERunInOS
+        {
+            None = 0,
+            Windows = 1,
+            Linux = 2,
+            MacOS = 3,
+            Android = 4,
+            iOS = 5,
+            Other,
+        }
+        public EEnvType envType { get; set; } = EEnvType.SLVM;
+        public ERunInOS runInOS { get; set; } = ERunInOS.None;
+    }
     // Strongly-typed representation of project <ProjectName>.toml
     public class ProjectConfig
     {
+        public RuntimeEnv RuntimeEnvironment { get; set; } = new RuntimeEnv();
         public ProjectSection Project { get; set; } = new ProjectSection();
         public SourceSection Source { get; set; } = new SourceSection();
         public CompileSection Compile { get; set; } = new CompileSection();
@@ -13,15 +36,13 @@ namespace SimpleLanguage.Project
         public GlobalSection Global { get; set; } = new GlobalSection();
         public StructTreeNode StructTree { get; set; } = new StructTreeNode();
         public List<ReferenceSection> References { get; set; } = new List<ReferenceSection>();
+        public ExportSection Export { get; set; } = new ExportSection();
 
         public class ProjectSection
         {
             public string Name { get; set; } = string.Empty;
+            public Guid guid { get; set; } = Guid.NewGuid();
             public string Desc { get; set; } = string.Empty;
-            public int MainVersion { get; set; } = 0;
-            public int SubVersion { get; set; } = 0;
-            public int BuildVersion { get; set; } = 0;
-            public int BuildSubVersion { get; set; } = 0;
         }
 
         public class SourceSection
@@ -101,7 +122,9 @@ namespace SimpleLanguage.Project
             public string Target { get; set; } = "AnyCPU";
             public bool Debug { get; set; } = true;
             public bool IsUseForceSemiColonInLineEnd { get; set; } = true;
-            public bool IsForceUseClassKey { get; set; }
+            // Force all classes to use class key even if not strictly necessary 强制使用class关键字
+            public bool IsForceUseKeyClass { get; set; }
+            // Support C-style ++/-- operators 支持++/--操作符
             public bool IsSupportDoublePlus { get; set; }
         }
 
@@ -150,9 +173,6 @@ namespace SimpleLanguage.Project
             public Dictionary<string, string> Replace { get; set; } = new Dictionary<string, string>();
         }
 
-        // Export-related configuration
-        public ExportSection Export { get; set; } = new ExportSection();
-
         public class ExportSection
         {
             // Module name to produce (overrides Project.Name when non-empty)
@@ -168,7 +188,7 @@ namespace SimpleLanguage.Project
 
             public int VersionMain { get; set; } = 0;
             public int VersionSub { get; set; } = 1;
-            public int VersionDetail { get; set; } = 0;
+            public int VersionPatch { get; set; } = 0;
         }
 
         public class ReferenceSection

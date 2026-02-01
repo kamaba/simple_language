@@ -19,13 +19,12 @@ namespace SimpleLanguage.Project
                 if (projectTable.TryGetValue("desc", out var descObj) && descObj is string desc)
                     cfg.Project.Desc = desc;
                 if (projectTable.TryGetValue("mainVersion", out var mainVerObj) && mainVerObj is long mainVer)
-                    cfg.Project.MainVersion = (int)mainVer;
+                    cfg.Export.VersionMain = (int)mainVer;
                 if (projectTable.TryGetValue("subVersion", out var subVerObj) && subVerObj is long subVer)
-                    cfg.Project.SubVersion = (int)subVer;
+                    cfg.Export.VersionSub = (int)subVer;
                 if (projectTable.TryGetValue("buildVersion", out var buildVerObj) && buildVerObj is long buildVer)
-                    cfg.Project.BuildVersion = (int)buildVer;
-                if (projectTable.TryGetValue("buildSubVersion", out var buildSubObj) && buildSubObj is long buildSub)
-                    cfg.Project.BuildSubVersion = (int)buildSub;
+                    cfg.Export.VersionPatch = (int)buildVer;
+                // buildSubVersion not mapped currently
             }
 
             // [source]
@@ -49,7 +48,7 @@ namespace SimpleLanguage.Project
                 if (compileTable.TryGetValue("isUseForceSemiColonInLineEnd", out var semiObj) && semiObj is bool semi)
                     cfg.Compile.IsUseForceSemiColonInLineEnd = semi;
                 if (compileTable.TryGetValue("isForceUseClassKey", out var forceClassObj) && forceClassObj is bool forceClass)
-                    cfg.Compile.IsForceUseClassKey = forceClass;
+                    cfg.Compile.IsForceUseKeyClass = forceClass;
                 if (compileTable.TryGetValue("isSupportDoublePlus", out var doublePlusObj) && doublePlusObj is bool doublePlus)
                     cfg.Compile.IsSupportDoublePlus = doublePlus;
             }

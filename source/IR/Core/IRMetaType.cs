@@ -21,11 +21,9 @@ namespace SimpleLanguage.IR
         public List<IRMetaType> irMetaTypeList => m_IRMetaTypeList;
         public int templateIndex => m_TemplateIndex;
 
-        public IRMetaClass m_IRMetaClass = null;
+        private IRMetaClass m_IRMetaClass = null;
         private IRMetaClass m_IROwnerMetaClass = null;
         private List<IRMetaType> m_IRMetaTypeList = new List<IRMetaType>();
-        //private bool m_IsArray = false;
-
         private int m_TemplateIndex = -1;
 
         public IRMetaType()
@@ -36,6 +34,12 @@ namespace SimpleLanguage.IR
         {
             m_IRMetaClass = _irMetaClass;
         }
+        public IRMetaType(IRMetaClass irmc, List<IRMetaType> irlist)
+        {
+            m_IRMetaClass = irmc;
+            m_IRMetaTypeList = irlist;
+        }
+        /*
         public IRMetaType( MetaType type )
         {
             //this.m_IsArray = type.isArray;
@@ -64,11 +68,11 @@ namespace SimpleLanguage.IR
                 m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(type.defineTemplateMetaTypeList[i], m_IROwnerMetaClass));
             }
         }
+        */
         public static IRMetaType CreateIRMetaTypeByGenTemplateMetaTypeList( MetaType type, IRMetaClass ownerIRMc)
         {
             IRMetaType irmt = new();
             irmt.m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id);
-            //irmt.m_IsArray = type.isArray;
 
             var gtmc = type.GetTemplateMetaClass();
             if (type.eType == EMetaTypeType.MetaClass)
@@ -127,11 +131,6 @@ namespace SimpleLanguage.IR
                 Debug.Assert(false, "这个不可以为空!");
             }
             return irmt;
-        }
-        public IRMetaType( IRMetaClass irmc, List<IRMetaType> irlist )
-        {
-            m_IRMetaClass = irmc;
-            m_IRMetaTypeList = irlist;
         }
         public override string ToString()
         {

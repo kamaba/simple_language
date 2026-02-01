@@ -43,7 +43,7 @@ namespace SimpleLanguage.IR
         public IRExpress( IRMethod irMethod, MetaConstExpressNode node ) : base( irMethod )
         {
             IRData irdata = new IRData();
-            irdata.opCode = IRManager.GetConstIROpCode(node.eType);
+            irdata.opCode = IRUtil.GetConstIROpCode(node.eType);
             irdata.SetOpValue(node.value);
             //irdata.SetDebugInfoByToken( mcn.GetToken() );
             AddIRData(irdata);
@@ -60,7 +60,7 @@ namespace SimpleLanguage.IR
                 case MetaConstExpressNode mcn:
                     {
                         IRData irdata = new IRData();
-                        irdata.opCode = IRManager.GetConstIROpCode(mcn.eType);
+                        irdata.opCode = IRUtil.GetConstIROpCode(mcn.eType);
                         irdata.SetOpValue(mcn.value);
                         //irdata.SetDebugInfoByToken( mcn.GetToken() );
                         AddIRData(irdata);
@@ -175,7 +175,7 @@ namespace SimpleLanguage.IR
                             AddIRRangeData(irload3.IRDataList);
 
                             IRData irdata4 = new IRData();
-                            irdata4.opCode = IRManager.GetConstIROpCode( EType.Null );
+                            irdata4.opCode = IRUtil.GetConstIROpCode( EType.Null );
                             irdata4.SetOpValue("null");
                             AddIRData(irdata4);
 
@@ -232,7 +232,7 @@ namespace SimpleLanguage.IR
         public IRNewExpress(IRMethod irMethod, MetaConstExpressNode mnoen ) : base(irMethod)
         {
             IRData irdata = new IRData();
-            irdata.opCode = IRManager.GetConstIROpCode(mnoen.eType);
+            irdata.opCode = IRUtil.GetConstIROpCode(mnoen.eType);
             irdata.opValue = mnoen.value;
             //irdata.SetDebugInfoByToken( mcn.GetToken() );
             AddIRData(irdata);
