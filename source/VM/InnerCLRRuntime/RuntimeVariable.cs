@@ -1,8 +1,4 @@
-﻿using SimpleLanguage.IR;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace SimpleLanguage.VM
 {
     public class RuntimeVariable

@@ -6,7 +6,7 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.IR;
+
 using SimpleLanguage.VM.Runtime;
 using System.Collections.Generic;
 using System.Diagnostics;

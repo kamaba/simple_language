@@ -5,7 +5,7 @@
 //  DateTime: 2022/11/22 12:00:00
 //  Description: 
 //****************************************************************************
-using SimpleLanguage.Core;
+
 using SimpleLanguage.VM.Runtime;
 using System;
 using System.Collections.Generic;
@@ -27,12 +27,12 @@ namespace SimpleLanguage.VM
             m_Value = _val;
             m_IsNull = false;
         }
-        public static StringObject SetToString( Int32MetaClass mc )
-        {
-            StringObject s = new StringObject("");
+        //public static StringObject SetToString( Int32MetaClass mc )
+        //{
+        //    StringObject s = new StringObject("");
 
-            return s;
-        }
+        //    return s;
+        //}
         public override string ToFormatString()
         {
             return value;

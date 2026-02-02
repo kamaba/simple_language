@@ -5,8 +5,6 @@
 //  DateTime: 2022/11/22 12:00:00
 //  Description: 
 //****************************************************************************
-using SimpleLanguage.Core;
-
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -21,13 +19,7 @@ namespace SimpleLanguage.VM
         }
         public void SetValue(String _val)
         {
-        }
-        public static StringObject SetToString( Int32MetaClass mc )
-        {
-            StringObject s = new StringObject("");
-
-            return s;
-        }
+        }       
         public override string ToFormatString()
         {
             return "void";

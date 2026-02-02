@@ -27,3 +27,9 @@
 /source/clang/src/token.c
 /source/clang/src/vm_object.c
 /source/clang/test/test_basic.c
+/source/VM/bin
+/source/VM/obj
+/source/Lib/obj
+/source/Lib/bin
+/source/Log/obj
+/source/Log/bin

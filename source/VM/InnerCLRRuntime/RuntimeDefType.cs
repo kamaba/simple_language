@@ -1,6 +1,4 @@
-﻿using SimpleLanguage.Core;
-using SimpleLanguage.IR;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -33,7 +31,7 @@ namespace SimpleLanguage.VM
             m_RuntimeClass = irmc;
             m_RuntimeDefTypeList = irlist;
         }
-        public static RuntimeDefType CreateIRMetaTypeByGenTemplateMetaTypeList(MetaType type, IRMetaClass ownerIRMc)
+        public static RuntimeDefType CreateIRMetaTypeByGenTemplateMetaTypeList( RuntimeDefType type, RuntimeClass ownerIRMc)
         {
             return null;
             /*
@@ -70,7 +68,7 @@ namespace SimpleLanguage.VM
             return irmt;
             */
         }
-        public static IRMetaType CreateIRMetaTypeByDefineTemplateMetaTypeList(MetaType type, IRMetaClass ownerIRMc)
+        public static RuntimeDefType CreateIRMetaTypeByDefineTemplateMetaTypeList(RuntimeDefType type, RuntimeClass ownerIRMc)
         {
             /*
             IRMetaType irmt = new();

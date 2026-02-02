@@ -1,5 +1,4 @@
 ﻿
-using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
 
@@ -90,6 +89,7 @@ namespace SimpleLanguage.VM.Runtime
         }
         public static void LoadGlobalVariableMapping()
         {
+            /*
             var staticArray = IRManager.instance.globalStaticVariableList;
             m_GlobalVariableValueList = new List<SValue>(staticArray.Count);
 
@@ -97,7 +97,7 @@ namespace SimpleLanguage.VM.Runtime
             for (int i = 0; i < staticArray.Count; i++)
             {
                 m_GlobalVariableId2IndexDict.Add(staticArray[i].id, i);
-                /*
+                
                 var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(staticArray[i].irMetaType);
                 IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(staticArray[i].irMetaType.irOwnerMetaClass.id);
 
@@ -112,13 +112,13 @@ namespace SimpleLanguage.VM.Runtime
 
                 execIRList.AddRange(irexpress.IRDataList);
                 execIRList.AddRange(irsv.IRDataList);
-                */
             }
             RuntimeVM clrRuntime = new RuntimeVM(execIRList);
             clrRuntime.isPersistent = true;
             clrRuntime.id = "InnverCLRRuntimeVM.CLRRuntime.EntryMethod()";
             PushCLRRuntime(clrRuntime);
             clrRuntime.Run(true);
+                */
         }
         public static void StoreGlobalVariable( int id, ref SValue savl )
         {

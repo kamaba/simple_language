@@ -5,7 +5,6 @@
 //  DateTime: 2022/11/22 12:00:00
 //  Description: 
 //****************************************************************************
-using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
 using System;

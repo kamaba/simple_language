@@ -5,8 +5,6 @@
 //  DateTime: 2023/5/12 12:00:00
 //  Description: 
 //****************************************************************************
-
-using SimpleLanguage.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -64,6 +62,18 @@ namespace SimpleLanguage.Logging
         MetaMemberEnumValue,
         MetaMemberEnumValueExpress,
     }
+
+    public class Token
+    {
+        public string path { get; protected set; }               //文件路径
+        public int type { get; protected set; }         //标记类型
+        public object lexeme { get; protected set; }          //标记值
+        public object extend { get; protected set; }            //辅助标记，可为空
+        public int sourceBeginLine { get; protected set; }         //开始所在行
+        public int sourceBeginChar { get; protected set; }         //开始所在列
+        public int sourceEndLine { get; protected set; }            //结束所在行
+        public int sourceEndChar { get; protected set; }            //结束所在行
+    }
     public class LogData
     {
 
@@ -92,7 +102,7 @@ namespace SimpleLanguage.Logging
         public string advan { get; set; }
         public DateTime time { get; set; }
 
-        public Dictionary<EMetaType, MetaBase> valDict = new Dictionary<EMetaType, MetaBase>();
+        //public Dictionary<EMetaType, MetaBase> valDict = new Dictionary<EMetaType, MetaBase>();
 
         public LogData()
         {
@@ -138,20 +148,20 @@ namespace SimpleLanguage.Logging
             Console.WriteLine(data.ToString());
             logDataList.Add(data);
         }
-        public static LogData AddInInitProject(Token token, EError err, string msg)
-        {
-            LogData ld = new LogData()
-            {
-                filePath = token.path,
-                sourceBeginLine = token.sourceBeginLine,
-                sourceEndLine = token.sourceEndLine,
-                errorType = LogData.EErrorType.InitProject
-            };
-            ld.message = msg;
-            ld.error = err;
-            AddCodeFileLog(ld);
-            return ld;
-        }
+        //public static LogData AddInInitProject(Token token, EError err, string msg)
+        //{
+        //    LogData ld = new LogData()
+        //    {
+        //        filePath = token.path,
+        //        sourceBeginLine = token.sourceBeginLine,
+        //        sourceEndLine = token.sourceEndLine,
+        //        errorType = LogData.EErrorType.InitProject
+        //    };
+        //    ld.message = msg;
+        //    ld.error = err;
+        //    AddCodeFileLog(ld);
+        //    return ld;
+        //}
         public static LogData AddProcess(EProcess proc, EError err, string msg)
         {
             LogData ld = new LogData()
@@ -179,21 +189,21 @@ namespace SimpleLanguage.Logging
             AddCodeFileLog(ld);
             return ld;
         }
-        public static LogData AddInHandleNode(Token token, EError err, string msg)
-        {
-            LogData ld = new LogData()
-            {
-                filePath = token.path,
-                sourceBeginLine = token.sourceBeginLine,
-                sourceEndLine = token.sourceEndLine,
-                errorType = LogData.EErrorType.HandleNode,
-                time = DateTime.Now
-            };
-            ld.message = msg;
-            ld.error = err;
-            AddCodeFileLog(ld);
-            return ld;
-        }
+        //public static LogData AddInHandleNode(Token token, EError err, string msg)
+        //{
+        //    LogData ld = new LogData()
+        //    {
+        //        filePath = token.path,
+        //        sourceBeginLine = token.sourceBeginLine,
+        //        sourceEndLine = token.sourceEndLine,
+        //        errorType = LogData.EErrorType.HandleNode,
+        //        time = DateTime.Now
+        //    };
+        //    ld.message = msg;
+        //    ld.error = err;
+        //    AddCodeFileLog(ld);
+        //    return ld;
+        //}
         public static LogData AddInStructFileMeta(EError err, string msg)
         {
             LogData ld = new LogData()

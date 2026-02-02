@@ -51,4 +51,8 @@
     <None Include="tools\ExtractLogs\ExtractLogs.csproj" />
     <None Include="tools\ScanSwiggedApi\ScanSwiggedApi.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Lib\SimpleLanuageLib.csproj" />
+    <ProjectReference Include="..\Log\SimpleLanguageLog.csproj" />
+  </ItemGroup>
 </Project>

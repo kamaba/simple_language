@@ -6,13 +6,19 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Core;
-using SimpleLanguage.IR;
 using System;
 using System.Text;
 
 namespace SimpleLanguage.VM
 {
+    public class DebugInfo
+    {
+        public string path = "";
+        public int beginLine = 0;
+        public int beginChar = 0;
+        public int endLine = 0;
+        public int endChar = 0;
+    }
     public class Instruction
     {
         public int id = 0;
@@ -264,49 +270,49 @@ namespace SimpleLanguage.VM
             if (opValue is string ss) { s = ss; return true; }
             s = null; return false;
         }
-        public void SetDebugInfoByValue(DebugInfo info)
-        {
-            debugInfo = info;
-        }
-        public void SetDebugInfoByToken(Token token)
-        {
-            if (token != null)
-            {
-                debugInfo.path = token.path;
-                debugInfo.name = token.lexeme?.ToString();
-                debugInfo.beginLine = token.sourceBeginLine;
-                debugInfo.beginChar = token.sourceBeginChar;
-                debugInfo.endLine = token.sourceEndLine;
-                debugInfo.endChar = token.sourceEndChar;
-            }
-        }
+        //public void SetDebugInfoByValue(DebugInfo info)
+        //{
+        //    debugInfo = info;
+        //}
+        //public void SetDebugInfoByToken(Token token)
+        //{
+        //    if (token != null)
+        //    {
+        //        debugInfo.path = token.path;
+        //        debugInfo.name = token.lexeme?.ToString();
+        //        debugInfo.beginLine = token.sourceBeginLine;
+        //        debugInfo.beginChar = token.sourceBeginChar;
+        //        debugInfo.endLine = token.sourceEndLine;
+        //        debugInfo.endChar = token.sourceEndChar;
+        //    }
+        //}
         public override string ToString()
         {
             StringBuilder m_StringBuilder = new StringBuilder();
             m_StringBuilder.Append(id + "   [ " + debugInfo.path + ":" + debugInfo.beginLine.ToString() + "]" + " [" + opCode.ToString() + "] index:[" + index.ToString() + "]");
             if (opValue != null)
             {
-                MetaType mt = opValue as MetaType;
-                IRMethod irm = opValue as IRMethod;
-                if (opValue.GetType() == typeof(Int32))
-                {
-                    m_StringBuilder.Append(" val: int32[" + opValue + "] ");
-                }
-                else
-                {
-                    if (mt != null)
-                    {
-                        m_StringBuilder.Append(" val mt:[" + mt.name + "] ");
-                    }
-                    else if (irm != null)
-                    {
-                        m_StringBuilder.Append(" val irm:[" + irm.id + "] ");
-                    }
-                    else
-                    {
-                        m_StringBuilder.Append(" val:[" + opValue.ToString() + "] ");
-                    }
-                }
+                //MetaType mt = opValue as MetaType;
+                //IRMethod irm = opValue as IRMethod;
+                //if (opValue.GetType() == typeof(Int32))
+                //{
+                //    m_StringBuilder.Append(" val: int32[" + opValue + "] ");
+                //}
+                //else
+                //{
+                //    if (mt != null)
+                //    {
+                //        m_StringBuilder.Append(" val mt:[" + mt.name + "] ");
+                //    }
+                //    else if (irm != null)
+                //    {
+                //        m_StringBuilder.Append(" val irm:[" + irm.id + "] ");
+                //    }
+                //    else
+                //    {
+                //        m_StringBuilder.Append(" val:[" + opValue.ToString() + "] ");
+                //    }
+                //}
             }
             return m_StringBuilder.ToString();
         }

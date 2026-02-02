@@ -6,12 +6,9 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.IR;
-using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.VM
@@ -66,7 +63,7 @@ namespace SimpleLanguage.VM
             return EVMType.Class;
         }
 
-        public RuntimeType GetExtendsTemplateRuntimeType(IRMetaType irmt, List<RuntimeType> _runtimeTemplateList)
+        public RuntimeType GetExtendsTemplateRuntimeType( RuntimeDefType irmt, List<RuntimeType> _runtimeTemplateList)
         {
             if (_runtimeTemplateList?.Count > 0)
             {
@@ -166,9 +163,9 @@ namespace SimpleLanguage.VM
             // attempt to set by type-aware method on SObject
             target.SetValueByType(svalue.eType == EVMType.Class ? EVMType.Class : svalue.eType, svalue.eType == EVMType.Class ? (object)svalue.sobject : svalue.GetValueObject());
         }
-        public List<IRData> CreateStaticMetaMetaVariableIRList()
+        public List<Instruction> CreateStaticMetaMetaVariableIRList()
         {
-            return new List<IRData>();
+            return new List<Instruction>();
         }
         public static bool SameRuntimeType(RuntimeType rt1, RuntimeType rt2)
         {

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
-using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.Logging
 {
@@ -130,7 +129,7 @@ namespace SimpleLanguage.Logging
                 }
                 if (def.DisplayType == ErrorDisplayType.TokenDisplay && token != null)
                 {
-                    msg = token.ToLexemeAllString() + " " + msg;
+                    //msg = token.ToLexemeAllString() + " " + msg;
                 }
             }
             catch

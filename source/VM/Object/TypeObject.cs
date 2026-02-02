@@ -5,8 +5,7 @@
 //  DateTime: 2022/11/22 12:00:00
 //  Description: 
 //****************************************************************************
-using SimpleLanguage.Core;
-using SimpleLanguage.IR;
+
 using SimpleLanguage.VM.Runtime;
 using System;
 using System.Collections.Generic;

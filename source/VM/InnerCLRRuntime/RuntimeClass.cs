@@ -1,5 +1,4 @@
-﻿using SimpleLanguage.IR;
-using SimpleLanguage.Logging;
+﻿using SimpleLanguage.Logging;
 using System.Collections.Generic;
 
 namespace SimpleLanguage.VM
@@ -25,10 +24,10 @@ namespace SimpleLanguage.VM
         Dictionary<int, Dictionary<int, RuntimeDefType>> m_IRMetaClassMapTemplateDict = new Dictionary<int, Dictionary<int, RuntimeDefType>>();
 
 
-        public RuntimeClass( IRMetaClass irmc )
-        {
-            //irmc.CreateStaticMetaMetaVariableIRList
-        }
+        //public RuntimeClass( IRMetaClass irmc )
+        //{
+        //    //irmc.CreateStaticMetaMetaVariableIRList
+        //}
         public ClassObject GetStaticMetaMemberVaraible( int index )
         {
             //if( index < 0 || index >= m_StaticMetaMemberVariableArray.Length )
@@ -117,7 +116,7 @@ namespace SimpleLanguage.VM
         }
         Dictionary<int, RuntimeClass> m_RuntimeClassDict = new Dictionary<int, RuntimeClass>();
 
-        public List<IRMetaClass> m_IRMetaClassList = new List<IRMetaClass>();
+        public List<RuntimeClass> m_IRMetaClassList = new List<RuntimeClass>();
 
 
         public void RegisterDymnicClass()

@@ -1,6 +1,4 @@
-﻿using SimpleLanguage.Core;
-using SimpleLanguage.IR;
-using SimpleLanguage.VM.Runtime.Memory;
+﻿using SimpleLanguage.VM.Runtime.Memory;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -23,12 +21,5 @@ namespace SimpleLanguage.VM.Runtime
         }
 
         static Stack<int> stackInt = new Stack<int>();
-
-        public static void RunFunction( IRMethod mmf )
-        {
-        }
-        public static void RunInstruction( IRBase iri )
-        {
-        }
     }
 }
