@@ -6,8 +6,6 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.VM;
-using SimpleLanguage.VM.Runtime;
 using System.Collections.Generic;
 
 namespace SimpleLanguage.Lib
@@ -15,18 +13,18 @@ namespace SimpleLanguage.Lib
     public class MemTable
     {
         public int refCount = 0;
-    }
-    public class BaseObjectData
-    {
-        public int hashCode = 0;
-        public RuntimeType runtimeType = null;
-        public MemTable memTable = null;
-        public EType etype = EType.None;
-    }
-    public class AnyObjectData : BaseObjectData
-    {
-        public BaseObjectData data;
-    }
+    //}
+    //public class BaseObjectData
+    //{
+    //    public int hashCode = 0;
+    //    public RuntimeType runtimeType = null;
+    //    public MemTable memTable = null;
+    //    public EType etype = EType.None;
+    //}
+    //public class AnyObjectData : BaseObjectData
+    //{
+    //    public BaseObjectData data;
+    //}
     public static class ObjectClass
     {
         // cache Type wrapper objects per runtime class id

@@ -27,7 +27,9 @@ namespace SimpleLanguage.VM
         LoadConstFloat64,
         LoadConstBoolean,
         LoadConstString,
-        
+        LoadConstType,
+
+
         LoadArgument,
         LoadLocal,  
         LoadNotStaticField,

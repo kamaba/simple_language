@@ -1,0 +1,6 @@
+E:\project\lang\simple_language\source\Front\obj\Debug\net8.0\SimpleLanguageFront.csproj.AssemblyReference.cache
+E:\project\lang\simple_language\source\Front\obj\Debug\net8.0\SimpleLanguageFront.GeneratedMSBuildEditorConfig.editorconfig
+E:\project\lang\simple_language\source\Front\obj\Debug\net8.0\SimpleLanguageFront.AssemblyInfoInputs.cache
+E:\project\lang\simple_language\source\Front\obj\Debug\net8.0\SimpleLanguageFront.AssemblyInfo.cs
+E:\project\lang\simple_language\source\Front\obj\Debug\net8.0\SimpleLanguageFront.csproj.CoreCompileInputs.cache
+E:\project\lang\simple_language\source\Front\obj\Debug\net8.0\SimpleLanguageFront.sourcelink.json

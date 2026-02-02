@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "dgSpecHash": "zzaNVidmelA=",
-  "success": false,
+  "dgSpecHash": "q7Z50LmH0Fk=",
+  "success": true,
   "projectFilePath": "E:\\project\\lang\\simple_language\\source\\Front\\SimpleLanguageFront.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Administrator\\.nuget\\packages\\libllvm\\15.0.0\\libllvm.15.0.0.nupkg.sha512",
@@ -14,28 +14,5 @@
     "C:\\Users\\Administrator\\.nuget\\packages\\system.runtime\\4.3.0\\system.runtime.4.3.0.nupkg.sha512",
     "C:\\Users\\Administrator\\.nuget\\packages\\tomlyn\\0.19.0\\tomlyn.0.19.0.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1201",
-      "level": "Error",
-      "message": "项目 SimpleLanuageLib 与 net6.0 (.NETCoreApp,Version=v6.0) 不兼容。 项目 SimpleLanuageLib 支持: net8.0 (.NETCoreApp,Version=v8.0)",
-      "projectPath": "E:\\project\\lang\\simple_language\\source\\Front\\SimpleLanguageFront.csproj",
-      "filePath": "E:\\project\\lang\\simple_language\\source\\Front\\SimpleLanguageFront.csproj",
-      "libraryId": "SimpleLanuageLib",
-      "targetGraphs": [
-        "net6.0"
-      ]
-    },
-    {
-      "code": "NU1201",
-      "level": "Error",
-      "message": "项目 SimpleLanguageLog 与 net6.0 (.NETCoreApp,Version=v6.0) 不兼容。 项目 SimpleLanguageLog 支持: net8.0 (.NETCoreApp,Version=v8.0)",
-      "projectPath": "E:\\project\\lang\\simple_language\\source\\Front\\SimpleLanguageFront.csproj",
-      "filePath": "E:\\project\\lang\\simple_language\\source\\Front\\SimpleLanguageFront.csproj",
-      "libraryId": "SimpleLanguageLog",
-      "targetGraphs": [
-        "net6.0"
-      ]
-    }
-  ]
+  "logs": []
 }

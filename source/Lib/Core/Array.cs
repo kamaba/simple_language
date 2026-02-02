@@ -7,8 +7,6 @@
 //****************************************************************************
 
 
-using SimpleLanguage.VM;
-using SimpleLanguage.VM.Runtime;
 using System;
 using System.Runtime.InteropServices;
 

@@ -6,8 +6,6 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.VM;
-
 namespace SimpleLanguage.Lib
 {
     public class StringObjectData : BaseObjectData

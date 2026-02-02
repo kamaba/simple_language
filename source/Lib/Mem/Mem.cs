@@ -7,8 +7,6 @@
 //****************************************************************************
 
 using System.Runtime.InteropServices;
-using System;
-using System.Security.Cryptography;
 
 namespace SimpleLanguage.Lib
 {
@@ -126,7 +124,6 @@ namespace SimpleLanguage.Lib
                         return Marshal.ReadInt32(offsetPtr);
 
                     }
-                    break;
                 case 9:/*string*/
                     {
 
