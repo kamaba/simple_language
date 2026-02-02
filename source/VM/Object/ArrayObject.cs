@@ -29,12 +29,12 @@ namespace SimpleLanguage.VM
 
             //int byteCount = irMetaClass.byteCount;
             //m_Data = new byte[byteCount];
-            typeId = (short)irMetaClass.id;
+            typeId = (short)runtimeClass.id;
             m_IRTemplateList = rt.runtimeTemplateList;
 
-            m_IRMetaVariableList = irMetaClass.localIRMetaVariableList;
-            m_MemberObjectArray = new SObject[m_IRMetaVariableList.Count];
-            m_MemberRuntimeTypeArray = new RuntimeType[m_IRMetaVariableList.Count];
+            m_MetaVariableList = runtimeClass.localIRMetaVariableList;
+            m_MemberObjectArray = new SObject[m_MetaVariableList.Count];
+            m_MemberRuntimeTypeArray = new RuntimeType[m_MetaVariableList.Count];
             CreateDefine();
         }
         public override void CreateObject()

@@ -18,7 +18,7 @@ public class UInt64 extends Num
     }
     public static UInt64 parseString( string s )
     {
-        try { ret (UInt64)System.Convert.ToUInt64(s) } catch { ret 0 }
+        try { ret System.Convert.ToUInt64(s) } catch { ret 0 }
     }
     _init_( UInt64 _val )
     {

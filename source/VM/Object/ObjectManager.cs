@@ -36,7 +36,7 @@ namespace SimpleLanguage.VM
         public static SObject CreateObjectByRuntimeType(RuntimeType rt, bool isCreateMemObject = false)
         {
             SObject sobj = null;
-            string name = rt.irClass.irName;
+            string name = rt.runtimeClass.name;
             if (name == "Core.Boolean" || name == "Boolean")
             {
                 sobj = new BoolObject(false);

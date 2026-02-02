@@ -8,6 +8,7 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.VM;
+using SimpleLanguage.VM.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -65,6 +66,40 @@ namespace SimpleLanguage.IR
 
             ParseIRMethod();
         }
+        public void GlobalVariable()
+        {
+            var staticArray = IRManager.instance.globalStaticVariableList;
+            /*
+            m_GlobalVariableValueList = new List<SValue>(staticArray.Count);
+
+            List<Instruction> execIRList = new List<Instruction>();
+            for (int i = 0; i < staticArray.Count; i++)
+            {
+                m_GlobalVariableId2IndexDict.Add(staticArray[i].id, i);
+
+                var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(staticArray[i].irMetaType);
+                IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(staticArray[i].irMetaType.irOwnerMetaClass.id);
+
+                var obj = ObjectManager.CreateObjectByRuntimeType(rt, true);
+                SValue tmp = default;
+                tmp.SetSObject(obj);
+                m_GlobalVariableValueList.Add(tmp);
+
+                IRExpressBase irexpress = IRExpressManager.CreateExpress(null, staticArray[i].express);
+
+                IRStoreVariable irsv = new IRStoreVariable(staticArray[i].irMetaType, null, staticArray[i].id, IRMetaVariableFrom.Global);
+
+                execIRList.AddRange(irexpress.IRDataList);
+                execIRList.AddRange(irsv.IRDataList);
+
+            }
+            RuntimeVM clrRuntime = new RuntimeVM(execIRList);
+            clrRuntime.isPersistent = true;
+            clrRuntime.id = "InnverCLRRuntimeVM.CLRRuntime.EntryMethod()";
+            PushCLRRuntime(clrRuntime);
+            clrRuntime.Run(true);
+            */
+        }
         public IRMetaClass GetIRMetaClassById( int id )
         {
             return m_IRMetaClassList.Find(a => a.id == id );
@@ -82,10 +117,9 @@ namespace SimpleLanguage.IR
             {
                 IRMetaClass irmc = new IRMetaClass(v);
                 m_IRMetaClassList.Add(irmc);
-                if(!v.isGenTemplate && !v.isTemplateClass )
-                    RuntimeTypeManager.AddRuntimeTypeByClass(irmc);
+                //if(!v.isGenTemplate && !v.isTemplateClass )
+                //    RuntimeTypeManager.AddRuntimeTypeByClass(irmc);
             }
-            var list = RuntimeTypeManager.runtimeList;
             foreach ( var v in m_IRMetaClassList )
             {
                 v.CreateMemberData();

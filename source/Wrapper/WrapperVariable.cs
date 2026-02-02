@@ -5,11 +5,13 @@
 //  DateTime: 2022/11/21 12:00:00
 //  Description: 
 //****************************************************************************
-using System;
-using System.Collections.Generic;
 
 namespace SimpleLanguage.Wrapper
 {
+    public class WrapperDefineType
+    {
+        public WrapperDefineType() { }
+    }
     public class WrapperVariable
     {
         public int id { get; set; }

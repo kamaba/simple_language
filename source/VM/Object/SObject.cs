@@ -24,7 +24,7 @@ namespace SimpleLanguage.VM
                 return m_Value;
             } 
         }
-        public IRMetaClass irMetaClass => m_RuntimeType?.irClass;
+        public RuntimeClass runtimeClass => m_RuntimeType?.runtimeClass;
         public RuntimeType runtimeType => m_RuntimeType;
         public short typeId { get; set; } = 0;
         public int refCount { get; set; } = 0;

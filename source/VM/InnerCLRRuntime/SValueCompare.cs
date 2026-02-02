@@ -358,17 +358,17 @@ namespace SimpleLanguage.VM
                     {
                         ClassObject co = (sval1.sobject as ClassObject);
                         RuntimeType rt = co.value.runtimeType;
-                        IRMetaClass irc = co.value.irMetaClass;                        
+                        RuntimeClass irc = co.value.runtimeClass;                        
                         if (irc == null)
                         {
                             Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
                             return;
                         }
-                        IRMethod cfc = irc.GetIROperatorMethodIndexByMethod(isEqual ? "_eq_" : "_ne_", out int index);
+                        RuntimeMethod cfc = irc.GetOperatorMethodIndexByMethod(isEqual ? "_eq_" : "_ne_", out int index);
                         if (cfc != null)
                         {
                             List<RuntimeType> irmtList = new List<RuntimeType>();
-                            InnerCLRRuntimeVM.RunIRMethod(irmtList, cfc, false );
+                            CLRVM.RunIRMethod(irmtList, cfc, false );
                             methodCall = true;
                         }
                         else
@@ -471,17 +471,17 @@ namespace SimpleLanguage.VM
                     {
                         ClassObject co = (sval2.sobject as ClassObject);
                         RuntimeType rt = co.runtimeType;
-                        IRMetaClass irc = co.irMetaClass;                        
+                        RuntimeClass irc = co.runtimeClass;                        
                         if (irc == null)
                         {
                             Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
                             return;
                         }
-                        IRMethod cfc = irc.GetIROperatorMethodIndexByMethod(isEqual ? "_eq_" : "_ne_", out int index);
+                        RuntimeMethod cfc = irc.GetOperatorMethodIndexByMethod(isEqual ? "_eq_" : "_ne_", out int index);
                         if (cfc != null)
                         {
                             List<RuntimeType> irmtList = new List<RuntimeType>();
-                            InnerCLRRuntimeVM.RunIRMethod(irmtList, cfc);
+                            CLRVM.RunIRMethod(irmtList, cfc);
                             methodCall = true;
                         }
                         else

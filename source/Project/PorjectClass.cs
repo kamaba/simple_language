@@ -88,9 +88,9 @@ namespace SimpleLanguage.Project
                 Debug.Write("Error 没有找到Project.Main函数!!");
                 return;
             }
-            var irmethod = IRManager.instance.GetIRMethod(mmf.functionAllName);
-            InnerCLRRuntimeVM.Init();
-            InnerCLRRuntimeVM.RunIRMethod( null, irmethod);
+            //var irmethod = IRManager.instance.GetIRMethod(mmf.functionAllName);
+            //CLRVM.Init();
+            //CLRVM.RunIRMethod( null, irmethod);
         }
         // Build MetaNode / MetaNamespace tree from StructTreeNode description.
         // parentRoot: existing MetaNode root (通常是 ModuleManager.instance.selfModule.metaNode)

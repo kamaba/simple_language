@@ -35,6 +35,7 @@ namespace SimpleLanguage.VM
 
             eType = m_MemberObjectArray[0] as Int8Object;
 
+            /*
             IRMetaClass irmc = IRManager.instance.GetIRMetaClassByName("MetaClass");
             RuntimeType rt = new RuntimeType(irmc, new List<RuntimeType>());
 
@@ -44,12 +45,12 @@ namespace SimpleLanguage.VM
             metaClassObject = m_MemberObjectArray[1] as ClassObject;
 
             var sv = new SValue();
-            sv.SetStringValue( m_Rt.irClass.irName );
+            sv.SetStringValue( m_Rt.runtimeClass.name );
             mco.SetMemberVariableSValue(0, sv );
 
 
             var sv2 = new SValue();
-            sv2.SetStringValue( m_Rt.irClass.irName );
+            sv2.SetStringValue( m_Rt.runtimeClass.name);
             mco.SetMemberVariableSValue(1, sv2);
 
             typeObjectsArray = new TypeObject[m_Rt.runtimeTemplateList.Count];
@@ -78,6 +79,7 @@ namespace SimpleLanguage.VM
             {
                 m_MemberObjectArray[2] = null;
             }
+            */
         }
         public override string ToFormatString()
         {

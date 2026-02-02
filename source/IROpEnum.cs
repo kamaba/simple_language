@@ -6,7 +6,7 @@
 //  Description: 
 //****************************************************************************
 
-namespace SimpleLanguage.IR
+namespace SimpleLanguage
 {
     public enum EIROpCode : byte
     {

@@ -43,7 +43,7 @@ namespace SimpleLanguage.VM
                 // Full argument marshalling into the runtime is not implemented yet.
                 try
                 {
-                    InnerCLRRuntimeVM.RunIRMethod(IRTemplateRuntimeTypes ?? new List<RuntimeType>(), IRMethod, true);
+                    //ICLRRuntimeVM.RunIRMethod(IRTemplateRuntimeTypes ?? new List<RuntimeType>(), IRMethod, true);
                 }
                 catch (Exception ex)
                 {

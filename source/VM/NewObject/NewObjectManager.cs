@@ -37,7 +37,7 @@ namespace SimpleLanguage.VM
         public static VMObjectHeader CreateObjectByRuntimeType(RuntimeType rt, bool isCreateMemObject = false)
         {
             VMObjectHeader sobj = new VMObjectHeader();
-            string name = rt.irClass.irName;
+            string name = rt.runtimeClass.name;
             //if (name == "Core.Boolean" || name == "Boolean")
             //{
             //    sobj = new VMBooleanObject();

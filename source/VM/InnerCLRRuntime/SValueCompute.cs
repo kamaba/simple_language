@@ -313,11 +313,11 @@ namespace SimpleLanguage.VM
                     ClassObject co = this.sobject as ClassObject;
                     if (co != null)
                     {
-                        var method = co.runtimeType.irClass.GetIRNonStaticMethodIndexByName("toString", out int index);
+                        var method = co.runtimeType.runtimeClass.GetNonStaticMethodIndexByName("toString", out int index);
                         if (method != null)
                         {
-                            InnerCLRRuntimeVM.RunIRMethod(null, method, false);
-                            var clrvm = InnerCLRRuntimeVM.clrRuntimeStack.Peek();
+                            CLRVM.RunIRMethod(null, method, false);
+                            var clrvm = CLRVM.clrRuntimeStack.Peek();
                             SValue curval = clrvm.GetCurrentIndexValue(clrvm.m_ValueIndex - 1);
                             str = curval.stringValue;
                         }
@@ -342,11 +342,11 @@ namespace SimpleLanguage.VM
                     ClassObject co = sval.sobject as ClassObject;
                     if (co != null)
                     {
-                        var method = co.runtimeType.irClass.GetIRNonStaticMethodIndexByName("toString", out int index);
+                        var method = co.runtimeType.runtimeClass.GetNonStaticMethodIndexByName("toString", out int index);
                         if (method != null)
                         {
-                            InnerCLRRuntimeVM.RunIRMethod(null, method, false);
-                            var clrvm = InnerCLRRuntimeVM.clrRuntimeStack.Peek();
+                            CLRVM.RunIRMethod(null, method, false);
+                            var clrvm = CLRVM.clrRuntimeStack.Peek();
                             SValue curval = clrvm.GetCurrentIndexValue(clrvm.m_ValueIndex - 1);
                             str = curval.stringValue;
                             clrvm.m_ValueIndex--;
@@ -374,10 +374,10 @@ namespace SimpleLanguage.VM
                     ClassObject co = sval.sobject as ClassObject;
                     if (co != null)
                     {
-                        var method = co.runtimeType.irClass.GetIROperatorMethodIndexByMethod("_add_", out int index);
+                        var method = co.runtimeType.runtimeClass.GetOperatorMethodIndexByMethod("_add_", out int index);
                         if (method != null)
                         {
-                            InnerCLRRuntimeVM.RunIRMethod(null, method, false);
+                            CLRVM.RunIRMethod(null, method, false);
                             isMethodCall = true;
                         }
                     }

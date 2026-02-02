@@ -1,14 +1,11 @@
 ﻿
 using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace SimpleLanguage.VM.Runtime
 {
-    public class InnerCLRRuntimeVM
+    public class CLRVM
     {
         public static bool isPrint { get; set; } = false;
         public static RuntimeVM currentCLRRuntime = null;
@@ -19,7 +16,7 @@ namespace SimpleLanguage.VM.Runtime
         public static Stack<RuntimeVM> clrRuntimeStack => m_ClrRuntimeStack;
 
         private static Stack<RuntimeVM> m_ClrRuntimeStack = new Stack<RuntimeVM>();
-        public InnerCLRRuntimeVM()
+        public CLRVM()
         {
 
         }
@@ -34,22 +31,22 @@ namespace SimpleLanguage.VM.Runtime
             }
             return null;
         }
-        public static RuntimeVM CreateCLRRuntime( List<RuntimeType> irmtList, IRMethod _irMethod )
+        public static RuntimeVM CreateCLRRuntime( List<RuntimeType> irmtList, RuntimeMethod method )
         {
-            var getrt = GetCLRRuntimeById(_irMethod.id);
+            var getrt = GetCLRRuntimeById(method.id);
             //if( getrt != null )
             //{
             //    return getrt;
             //}
             //else
             {
-                RuntimeVM clrRuntime = new RuntimeVM( irmtList, _irMethod);
-                clrRuntime.id = _irMethod.id;
+                RuntimeVM clrRuntime = new RuntimeVM( irmtList, method);
+                clrRuntime.id = method.id;
                 m_ClrRuntimeStack.Push(clrRuntime);
                 return clrRuntime;
             }
         }
-        public static RuntimeVM CreateExeSplite(List<RuntimeType> irmtList, List<IRData> irlist )
+        public static RuntimeVM CreateExeSplite(List<RuntimeType> irmtList, List<Instruction> irlist )
         {
             RuntimeVM clrRuntime = new RuntimeVM( irmtList, irlist );
             m_ClrRuntimeStack.Push(clrRuntime);
@@ -88,14 +85,19 @@ namespace SimpleLanguage.VM.Runtime
         //}
         public static void Init()
         {
+            //InnverCLRRuntimeVM.RootInnerCLRRuntime 
+            LoadGlobalVariableMapping();
+        }
+        public static void LoadGlobalVariableMapping()
+        {
             var staticArray = IRManager.instance.globalStaticVariableList;
             m_GlobalVariableValueList = new List<SValue>(staticArray.Count);
 
-            List<IRData> execIRList = new List<IRData>();
+            List<Instruction> execIRList = new List<Instruction>();
             for (int i = 0; i < staticArray.Count; i++)
             {
                 m_GlobalVariableId2IndexDict.Add(staticArray[i].id, i);
-
+                /*
                 var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(staticArray[i].irMetaType);
                 IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(staticArray[i].irMetaType.irOwnerMetaClass.id);
 
@@ -110,13 +112,12 @@ namespace SimpleLanguage.VM.Runtime
 
                 execIRList.AddRange(irexpress.IRDataList);
                 execIRList.AddRange(irsv.IRDataList);
-
+                */
             }
-            //InnverCLRRuntimeVM.RootInnerCLRRuntime 
             RuntimeVM clrRuntime = new RuntimeVM(execIRList);
             clrRuntime.isPersistent = true;
             clrRuntime.id = "InnverCLRRuntimeVM.CLRRuntime.EntryMethod()";
-            InnerCLRRuntimeVM.PushCLRRuntime(clrRuntime);
+            PushCLRRuntime(clrRuntime);
             clrRuntime.Run(true);
         }
         public static void StoreGlobalVariable( int id, ref SValue savl )
@@ -175,32 +176,33 @@ namespace SimpleLanguage.VM.Runtime
                 Log.AddVM(EError.None, "没有找到全局变量的映射关系!");
             }
         }
-        public static void RunIRMethod( List<RuntimeType> irmtList, IRMethod _irMethod, bool isDisCountStackCount = true )
+        public static void RunIRMethod( List<RuntimeType> irmtList, RuntimeMethod _irMethod, bool isDisCountStackCount = true )
         {
             topCLRRuntime = m_ClrRuntimeStack.Peek();
-            RuntimeVM clrRuntime = InnerCLRRuntimeVM.CreateCLRRuntime( irmtList, _irMethod );
+            RuntimeVM clrRuntime = CreateCLRRuntime( irmtList, _irMethod );
             clrRuntime.Run(isDisCountStackCount);
-            InnerCLRRuntimeVM.PopCLRRuntime();
+            PopCLRRuntime();
             var topt2 = m_ClrRuntimeStack.Peek();
             topt2.AddReturnObjectArray(clrRuntime.returnObjectArray);
             //if (!clrRuntime.isPersistent)
             {
             }
         }
-        public static void RunIRNewMethod( List<RuntimeType> irmtList, List<IRData> irlist )
+        public static void RunIRNewMethod( List<RuntimeType> irmtList, List<Instruction> irlist )
         {
             topCLRRuntime = m_ClrRuntimeStack.Peek();
-            RuntimeVM clrRuntime = InnerCLRRuntimeVM.CreateExeSplite(irmtList, irlist );
+            RuntimeVM clrRuntime = CreateExeSplite(irmtList, irlist );
             clrRuntime.SetNewObject();
             clrRuntime.Run(true);
             clrRuntime.ClearNewObject();
-            InnerCLRRuntimeVM.PopCLRRuntime();
+            PopCLRRuntime();
             
         }
 
         // Execute a single method from a .slvm file
         public static void RunSLVMMethodFile(string slvmPath, string methodId)
         {
+            /*
             var irlist = SimpleLanguage.Export.PELoader.ConvertSLVMMethodToIRDataList(slvmPath, methodId);
             if (irlist == null) return;
 
@@ -208,22 +210,23 @@ namespace SimpleLanguage.VM.Runtime
             bool pushedRoot = false;
             if (m_ClrRuntimeStack.Count == 0)
             {
-                var root = new RuntimeVM(new List<IRData>());
+                var root = new RuntimeVM(new List<Instruction>());
                 root.id = "__slvm_root__";
                 m_ClrRuntimeStack.Push(root);
                 pushedRoot = true;
             }
 
             topCLRRuntime = m_ClrRuntimeStack.Peek();
-            var exe = InnerCLRRuntimeVM.CreateExeSplite(new List<RuntimeType>(), new List<IRData>(irlist));
+            var exe = CreateExeSplite(new List<RuntimeType>(), new List<Instruction>(irlist));
             exe.Run(true);
-            InnerCLRRuntimeVM.PopCLRRuntime();
+            PopCLRRuntime();
 
             if (pushedRoot)
             {
                 // pop the temporary root
                 m_ClrRuntimeStack.Pop();
             }
+            */
         }
 
         // Load an entire .slvm module and register its string pool into IRManager

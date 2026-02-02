@@ -6,15 +6,11 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
-using SimpleLanguage.VM;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -40,18 +36,18 @@ namespace SimpleLanguage.VM.Runtime
 
         private SObject[] m_ReturnObjectArray;
 
-        private IRMethod m_IRMethod;
-        private IRData[] m_IRDataList;
+        private RuntimeMethod m_Method;
+        private Instruction[] m_InstructionList;
         private ushort m_ExecuteIndex;
         private ushort m_ExecuteCount;
-        private IRMetaClass m_IRMetaClass;
+        private RuntimeClass m_CurrentRuntimeClass;
         public string id { get; set; }
         public int level { get; set; }
         public bool isPersistent { get; set; }
 
-        public RuntimeVM(List<IRData> irlist)
+        public RuntimeVM(List<Instruction> irlist)
         {
-            m_IRDataList = irlist?.ToArray();
+            m_InstructionList = irlist?.ToArray();
             m_ValueStack = new SValue[1024];
             m_ValueIndex = 0;
             m_RawCapacity = 1024;
@@ -60,25 +56,25 @@ namespace SimpleLanguage.VM.Runtime
 
             Init();
         }
-        public RuntimeVM(List<RuntimeType> rtList, IRMethod irMethod)
+        public RuntimeVM(List<RuntimeType> rtList, RuntimeMethod rm )
         {
             m_InputTemplateRuntimeTypeList = rtList ?? new List<RuntimeType>();
-            m_IRMethod = irMethod;
+            m_Method = rm;
             m_ValueStack = new SValue[1024];
             m_ValueIndex = 0;
             m_RawCapacity = 1024;
-            m_IRDataList = irMethod.IRDataList.ToArray();
-            if (m_IRMethod != null)
+            m_InstructionList = rm.InstructionList.ToArray();
+            if (m_Method != null)
             {
-                m_ArgumentValueArray = new SValue[m_IRMethod.methodArgumentList.Count];
-                m_LocalValueArray = new SValue[m_IRMethod.methodLocalVariableList.Count];
+                m_ArgumentValueArray = new SValue[m_Method.methodArgumentList.Count];
+                m_LocalValueArray = new SValue[m_Method.methodLocalVariableList.Count];
             }
             Init();
         }
-        public RuntimeVM(List<RuntimeType> rtList, List<IRData> irlist)
+        public RuntimeVM(List<RuntimeType> rtList, List<Instruction> irlist)
         {
             m_InputTemplateRuntimeTypeList = rtList ?? new List<RuntimeType>();
-            m_IRDataList = irlist?.ToArray();
+            m_InstructionList = irlist?.ToArray();
             m_ValueStack = new SValue[1024];
             m_ValueIndex = 0;
             m_RawCapacity = 1024;
@@ -91,21 +87,21 @@ namespace SimpleLanguage.VM.Runtime
         public void Init()
         {
             //参数列表 argument variable table
-            if (m_IRMethod != null)
+            if (m_Method != null)
             {
-                m_ReturnObjectArray = new SObject[m_IRMethod.methodReturnVariableList.Count];
-                for (int i = 0; i < m_IRMethod.methodReturnVariableList.Count; i++)
+                m_ReturnObjectArray = new SObject[m_Method.methodReturnVariableList.Count];
+                for (int i = 0; i < m_Method.methodReturnVariableList.Count; i++)
                 {
-                    IRMetaType imt = m_IRMethod.methodReturnVariableList[i].irMetaType;
-                    SObject sobj = CreateObjectByIRMetaType(imt, imt.irOwnerMetaClass, true);
+                    RuntimeDefType imt = m_Method.methodReturnVariableList[i].runtimeDefType;
+                    SObject sobj = CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true);
                     m_ReturnObjectArray[i] = sobj;
                 }
 
-                m_ArgumentObjectArray = new SObject[m_IRMethod.methodArgumentList.Count];
-                for (int i = 0; i < m_IRMethod.methodArgumentList.Count; i++)
+                m_ArgumentObjectArray = new SObject[m_Method.methodArgumentList.Count];
+                for (int i = 0; i < m_Method.methodArgumentList.Count; i++)
                 {
-                    IRMetaType imt = m_IRMethod.methodArgumentList[i].irMetaType;
-                    SObject sobj = CreateObjectByIRMetaType(imt, imt.irOwnerMetaClass, true);
+                    RuntimeDefType imt = m_Method.methodArgumentList[i].runtimeDefType;
+                    SObject sobj = CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true);
                     m_ArgumentObjectArray[i] = sobj;
                 }
                 for (int i = 0; i < m_ArgumentObjectArray.Length; i++)
@@ -114,12 +110,12 @@ namespace SimpleLanguage.VM.Runtime
                 }
 
                 //局部变量列表 local variable table
-                m_LocalVariableObjectArray = new SObject[m_IRMethod.methodLocalVariableList.Count];
-                for (int i = 0; i < m_IRMethod.methodLocalVariableList.Count; i++)
+                m_LocalVariableObjectArray = new SObject[m_Method.methodLocalVariableList.Count];
+                for (int i = 0; i < m_Method.methodLocalVariableList.Count; i++)
                 {
-                    var mev = m_IRMethod.methodLocalVariableList[i];
-                    IRMetaType imt = mev.irMetaType;
-                    SObject sobj = CreateObjectByIRMetaType(imt, m_IRMethod.irOwnerMetaClass, true);
+                    var mev = m_Method.methodLocalVariableList[i];
+                    RuntimeDefType imt = mev.runtimeDefType;
+                    SObject sobj = CreateObjectByIRMetaType(imt, m_Method.ownerMetaClass, true);
                     m_LocalVariableObjectArray[i] = sobj;
                 }
                 for (int i = 0; i < m_LocalVariableObjectArray.Length; i++)
@@ -133,7 +129,7 @@ namespace SimpleLanguage.VM.Runtime
                 m_ArgumentObjectArray = new SObject[0];
                 m_LocalVariableObjectArray = new SObject[0];
             }
-            var count = m_IRDataList.Length;
+            var count = m_InstructionList.Length;
             if (count < 48)
             {
                 m_ValueStack = new SValue[128];
@@ -178,7 +174,7 @@ namespace SimpleLanguage.VM.Runtime
             if (m_ValueIndex >= m_ValueStack.Length) return;
             m_ValueStack[m_ValueIndex++] = v;
         }
-        public SObject CreateObjectByIRMetaType(IRMetaType irmt, IRMetaClass curIrMc, bool isAdd = false)
+        public SObject CreateObjectByIRMetaType(RuntimeDefType irmt, RuntimeClass curIrMc, bool isAdd = false)
         {
             return ObjectManager.CreateObjectByRuntimeType(RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt), false);
         }
@@ -266,17 +262,17 @@ namespace SimpleLanguage.VM.Runtime
         {
             return m_ValueStack[index];
         }
-        public static RuntimeType GetClassRuntimeType(IRMetaType irmt, IRMetaClass curIRMc, List<RuntimeType> __rtList, bool isAdd = false)
+        public static RuntimeType GetClassRuntimeType(RuntimeDefType irmt, RuntimeClass curIRMc, List<RuntimeType> __rtList, bool isAdd = false)
         {
             if (irmt.templateIndex != -1)
             {
-                if (irmt.irOwnerMetaClass == curIRMc || curIRMc.irName == "Object")
+                if (irmt.ownerRuntimeClass == curIRMc || curIRMc.name == "Object")
                 {
                     return __rtList[irmt.templateIndex];
                 }
                 else
                 {
-                    var mt = curIRMc.GetIRMetaTypeByTemplateAndClassRelation(irmt.irOwnerMetaClass, irmt.templateIndex);
+                    var mt = curIRMc.GetRuntimeDefTypeByTemplateAndClassRelation(irmt.ownerRuntimeClass, irmt.templateIndex);
 
                     return GetClassRuntimeType(mt, curIRMc, __rtList, isAdd);
                 }
@@ -284,39 +280,39 @@ namespace SimpleLanguage.VM.Runtime
             else
             {
                 List<RuntimeType> rtList = new List<RuntimeType>();
-                if (irmt.irMetaTypeList.Count > 0)
+                if (irmt.runtimeDefTypeList.Count > 0)
                 {
-                    for (int i = 0; i < irmt.irMetaTypeList.Count; i++)
+                    for (int i = 0; i < irmt.runtimeDefTypeList.Count; i++)
                     {
-                        var crt = GetClassRuntimeType(irmt.irMetaTypeList[i], curIRMc, __rtList, isAdd);
+                        var crt = GetClassRuntimeType(irmt.runtimeDefTypeList[i], curIRMc, __rtList, isAdd);
                         rtList.Add(crt);
                     }
                 }
-                RuntimeType rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.irMetaClass, rtList);
+                RuntimeType rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.runtimeClass, rtList);
                 if (rt == null && isAdd)
                 {
-                    rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(irmt.irMetaClass, rtList);
+                    rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(irmt.runtimeClass, rtList);
                 }
                 return rt;
             }
         }
-        public RuntimeType GetMethodRuntimeType(IRMetaType irmt)
+        public RuntimeType GetMethodRuntimeType( RuntimeDefType irmt)
         {
             return RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt);
         }
         public void SetNewObject()
         {
-            SValue sval = InnerCLRRuntimeVM.topCLRRuntime.GetCurrentIndexValue(InnerCLRRuntimeVM.topCLRRuntime.m_ValueIndex - 1);
+            SValue sval = CLRVM.topCLRRuntime.GetCurrentIndexValue(CLRVM.topCLRRuntime.m_ValueIndex - 1);
             m_ValueStack[m_ValueIndex++] = sval;
-            m_IRMetaClass = sval.sobject?.irMetaClass;
+            m_CurrentRuntimeClass = sval.sobject?.runtimeClass;
         }
         public void ClearNewObject()
         {
-            m_IRMetaClass = null;
+            m_CurrentRuntimeClass = null;
         }
         public void Run(bool disStackCount)
         {
-            if (m_IRDataList == null || m_IRDataList.Length == 0) return;
+            if (m_InstructionList == null || m_InstructionList.Length == 0) return;
 
             string funName = id;
 
@@ -328,7 +324,7 @@ namespace SimpleLanguage.VM.Runtime
             Log.AddVM(EError.None, pushChar + "[VMRuntime] [Push] Method: [" + funName + "]");
             level++;
 
-            var topClrRuntime = InnerCLRRuntimeVM.topCLRRuntime;
+            var topClrRuntime = CLRVM.topCLRRuntime;
             for (int i = 0; i < m_ArgumentObjectArray.Length; i++)
             {
                 SValue sval;
@@ -345,10 +341,10 @@ namespace SimpleLanguage.VM.Runtime
             }
 
             m_ExecuteIndex = 0;
-            m_ExecuteCount = (ushort)m_IRDataList.Length;
+            m_ExecuteCount = (ushort)m_InstructionList.Length;
             while (m_ExecuteIndex < m_ExecuteCount)
             {
-                var iri = m_IRDataList[m_ExecuteIndex];
+                var iri = m_InstructionList[m_ExecuteIndex];
                 RunInstruction(iri);
                 m_ExecuteIndex++;
             }
@@ -364,11 +360,11 @@ namespace SimpleLanguage.VM.Runtime
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private string MakeIndent(int count) { return new string(' ', count); }
-        public static void SetValue(ref SValue sValue, ref SValue sStore, IRData iri)
+        public static void SetValue(ref SValue sValue, ref SValue sStore, Instruction iri)
         {
             sStore = sValue;
         }
-        public void RunInstruction(IRData iri)
+        public void RunInstruction(Instruction iri)
         {
             if (iri == null) return;
             switch (iri.opCode)
@@ -519,7 +515,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         var data = iri.index;
                         var v = default(SValue);
-                        InnerCLRRuntimeVM.LoadGlobalVariable(data, ref v);
+                        CLRVM.LoadGlobalVariable(data, ref v);
                         PushSValueSynced(v);
                     }
                     break;
@@ -545,7 +541,7 @@ namespace SimpleLanguage.VM.Runtime
                         if (m_ValueIndex > 0)
                         {
                             var val = m_ValueStack[--m_ValueIndex];
-                            InnerCLRRuntimeVM.StoreGlobalVariable(id, ref val);
+                            CLRVM.StoreGlobalVariable(id, ref val);
                         }
                     }
                     break;
@@ -677,9 +673,9 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.NewObject:
                     {
-                        if (iri.opValue is IRMetaClass mdt)
+                        if (iri.opValue is Int32 runtimeClassId )
                         {
-                            var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(mdt);
+                            var rt = RuntimeTypeManager.GetRuntimeTypeByClassId(runtimeClassId);
                             SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
                             if (sobj is ClassObject co)
                             {
@@ -687,10 +683,10 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             m_ValueStack[m_ValueIndex++].SetSObject(sobj);
 
-                            var irList = rt.irClass.CreateStaticMetaMetaVariableIRList();
+                            var irList = rt.runtimeClass.memberVariableSetValueList;
                             if (irList.Count > 0)
                             {
-                                InnerCLRRuntimeVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
+                                CLRVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
                             }
                             var sv = default(SValue);
                             sv.SetSObject(sobj);
@@ -700,22 +696,22 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.NewTemplateObject:
                     {
-                        if (iri.opValue is IRMetaType mdt)
+                        if (iri.opValue is RuntimeDefType mdt)
                         {
-                            var rt = GetClassRuntimeType(mdt, m_IRMetaClass != null ? m_IRMetaClass : mdt.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
+                            var rt = GetClassRuntimeType(mdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                             SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
                             if (sobj is ClassObject co)
                             {
                                 ObjectManager.AddClassObject(co);
                             }
                             m_ValueStack[m_ValueIndex++].SetSObject(sobj);
-                            var irc = rt.irClass;
+                            var irc = rt.runtimeClass;
 
 
-                            var irList = rt.irClass.CreateStaticMetaMetaVariableIRList();
+                            var irList = rt.runtimeClass.memberVariableSetValueList;
                             if (irList.Count > 0)
                             {
-                                InnerCLRRuntimeVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
+                                CLRVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
                             }
                             var sv = default(SValue);
                             sv.SetSObject(sobj);
@@ -726,7 +722,7 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.NewArray:
                     {
                         // expects length on stack
-                        if (m_ValueIndex > 0 && iri.opValue is IRMetaType irmt)
+                        if (m_ValueIndex > 0 && iri.opValue is RuntimeDefType rdt)
                         {
                             var sval = m_ValueStack[m_ValueIndex - 1];
                             if (sval.eType != EVMType.Int32)
@@ -735,8 +731,7 @@ namespace SimpleLanguage.VM.Runtime
                                 break;
                             }
 
-                            IRMetaType mdt = iri.opValue as IRMetaType;
-                            var rt = GetClassRuntimeType(mdt, m_IRMetaClass != null ? m_IRMetaClass : mdt.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
+                            var rt = GetClassRuntimeType(rdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : rdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                             ArrayObject arr = new ArrayObject(rt, sval.int32Value);
                             ObjectManager.AddClassObject(arr);
                             m_ValueStack[m_ValueIndex - 1].SetSObject(arr);
@@ -875,7 +870,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.CallCSharpMethod:
                     {
-                        if (iri.opValue is IRCallFunction ircf)
+                        if (iri.opValue is RuntimeCLRCall ircf)
                         {
                             ircf.InvokeCSharp(this);
                         }
@@ -883,42 +878,42 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.CallStatic:
                     {
-                        var mfc = iri.opValue as IRMethodCall;
+                        var mfc = iri.opValue as RuntimeCall;
 
                         List<RuntimeType> classRTList = new List<RuntimeType>();
-                        for (int i = 0; i < mfc.metaType.irMetaTypeList.Count; i++)
+                        for (int i = 0; i < mfc.runtimeDefType.runtimeDefTypeList.Count; i++)
                         {
-                            var crt = GetClassRuntimeType(mfc.metaType.irMetaTypeList[i], mfc.metaType.irMetaTypeList[i].irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
+                            var crt = GetClassRuntimeType(mfc.runtimeDefType.runtimeDefTypeList[i], mfc.runtimeDefType.runtimeDefTypeList[i].ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                             classRTList.Add(crt);
                         }
-                        var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(mfc.metaType.irMetaClass, classRTList);
+                        var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(mfc.runtimeDefType.runtimeClass, classRTList);
                         if (rt == null)
                         {
-                            rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(mfc.metaType.irMetaClass, classRTList);
+                            rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(mfc.runtimeDefType.runtimeClass, classRTList);
                         }
 
-                        if (mfc.irMethod.id == "type")
+                        if (mfc.method.id == "type")
                         {
                             var sobj = RuntimeTypeManager.CreateTypeObject(rt);
                             m_ValueStack[m_ValueIndex++].SetSObject(sobj);
                         }
                         else
                         {
-                            for (int i = 0; i < mfc.irTemplateMetaType.Count; i++)
+                            for (int i = 0; i < mfc.templateRuntimeDefTypeList.Count; i++)
                             {
-                                var crt = GetMethodRuntimeType(mfc.irTemplateMetaType[i]);
+                                var crt = GetMethodRuntimeType(mfc.templateRuntimeDefTypeList[i]);
                                 classRTList.Add(crt);
                             }
-                            InnerCLRRuntimeVM.RunIRMethod(classRTList, mfc.irMethod);
+                            CLRVM.RunIRMethod(classRTList, mfc.method );
                         }
                     }
                     break;
                 case EIROpCode.CallDynamic:
                     {
-                        var mfc = iri.opValue as IRMethodCall;
+                        var mfc = iri.opValue as RuntimeCall;
 
                         RuntimeType rt = null;
-                        IRMetaClass irc = null;
+                        RuntimeClass irc = null;
                         if (iri.index > -1)
                         {
                             int stackIndex = m_ValueIndex - iri.index;
@@ -932,12 +927,12 @@ namespace SimpleLanguage.VM.Runtime
                                 || v.eType == EVMType.Array)
                             {
                                 var co = (v.sobject as ClassObject);
-                                irc = co.irMetaClass;
+                                irc = co.runtimeClass;
                                 rt = v.sobject.runtimeType;
                             }
                             else
                             {
-                                irc = IRManager.instance.GetIRMetaClassByName(v.eType.ToString());
+                                irc = RuntimeClassManager.instance.GetRuntimeClassByName(v.eType.ToString());
                                 rt = RuntimeTypeManager.GetRuntimeTypeByMT(irc);
                             }
                             if (irc == null)
@@ -945,12 +940,12 @@ namespace SimpleLanguage.VM.Runtime
                                 Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
                                 return;
                             }
-                            if (mfc.irMethod == null)
+                            if (mfc.method == null)
                             {
                                 Debug.Assert(false, "没有找到合适的调用方式");
                                 return;
                             }
-                            if (mfc.irMethod.id == "type")
+                            if (mfc.method.id == "type")
                             {
                                 var sobj = RuntimeTypeManager.CreateTypeObject(rt);
                                 m_ValueStack[m_ValueIndex++].SetSObject(sobj);
@@ -958,17 +953,17 @@ namespace SimpleLanguage.VM.Runtime
                             else
                             {
                                 List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
-                                for (int i = 0; i < mfc.irTemplateMetaType.Count; i++)
+                                for (int i = 0; i < mfc.templateRuntimeDefTypeList.Count; i++)
                                 {
-                                    var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], irc, rt.runtimeTemplateList, true);
+                                    var crt = GetClassRuntimeType(mfc.templateRuntimeDefTypeList[i], irc, rt.runtimeTemplateList, true);
                                     rtList.Add(crt);
                                 }
-                                if (mfc.irMethod.interfaceMethod)
+                                if (mfc.method.interfaceMethod)
                                 {
-                                    var irmethod = irc.GetIRNonStaticMethodIndexByName(mfc.methodName, out int index);
+                                    var irmethod = irc.GetNonStaticMethodIndexByName(mfc.methodName, out int index);
                                     if (irmethod != null)
                                     {
-                                        InnerCLRRuntimeVM.RunIRMethod(rtList, irmethod);
+                                        CLRVM.RunIRMethod(rtList, irmethod);
                                     }
                                     else
                                     {
@@ -977,7 +972,7 @@ namespace SimpleLanguage.VM.Runtime
                                 }
                                 else
                                 {
-                                    InnerCLRRuntimeVM.RunIRMethod(rtList, mfc.irMethod);
+                                    CLRVM.RunIRMethod(rtList, mfc.method);
                                 }
                             }
                         }
@@ -989,7 +984,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.CallVirt:
                     {
-                        var mfc = iri.opValue as IRMethodCall;
+                        var mfc = iri.opValue as RuntimeCall;
 
                         int stackFrontIndex = (int)mfc.paramCount + 1;
                         int stackIndex = m_ValueIndex - stackFrontIndex;
@@ -1007,11 +1002,11 @@ namespace SimpleLanguage.VM.Runtime
                         }
 
                         RuntimeType rt = null;
-                        IRMetaClass irc = null;
+                        RuntimeClass irc = null;
                         if (v.eType == EVMType.Class || v.eType == EVMType.Array)
                         {
                             var co = (v.sobject as ClassObject);
-                            irc = co.irMetaClass;
+                            irc = co.runtimeClass;
                             rt = co.runtimeType;
                         }
                         else if (v.eType == EVMType.Object)
@@ -1020,7 +1015,7 @@ namespace SimpleLanguage.VM.Runtime
                             m_ValueStack[stackIndex].SetValue(co);
                             var nco = m_ValueStack[stackIndex].GetSObject();
                             Debug.Assert(nco != null);
-                            irc = nco.irMetaClass;
+                            irc = nco.runtimeClass;
                             rt = nco.runtimeType;
                         }
                         //else if( v.eType == EVMType.Array )
@@ -1030,7 +1025,7 @@ namespace SimpleLanguage.VM.Runtime
                         //}
                         else
                         {
-                            irc = IRManager.instance.GetIRMetaClassByName(v.eType.ToString());
+                            irc = RuntimeClassManager.instance.GetRuntimeClassByName(v.eType.ToString());
                             rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irc);
                         }
                         if (irc == null)
@@ -1038,7 +1033,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
                             return;
                         }
-                        IRMethod cfc = irc.GetIRNonStaticMethodByIndex(iri.index);
+                        RuntimeMethod cfc = irc.GetNonStaticMethodByIndex(iri.index);
 
 
                         if (cfc == null)
@@ -1048,21 +1043,21 @@ namespace SimpleLanguage.VM.Runtime
                             return;
                         }
                         List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
-                        for (int i = 0; i < mfc.irTemplateMetaType.Count; i++)
+                        for (int i = 0; i < mfc.templateRuntimeDefTypeList.Count; i++)
                         {
-                            var crt = GetClassRuntimeType(mfc.irTemplateMetaType[i], irc, rt.runtimeTemplateList, true);
+                            var crt = GetClassRuntimeType(mfc.templateRuntimeDefTypeList[i], irc, rt.runtimeTemplateList, true);
                             rtList.Add(crt);
                         }
-                        InnerCLRRuntimeVM.RunIRMethod(rtList, cfc);
+                        CLRVM.RunIRMethod(rtList, cfc);
 
                         var a = ObjectManager.classObjectDict;
                     }
                     break;
                 case EIROpCode.Ldc:
                     {
-                        if (iri.opValue is IRMetaType mdt)
+                        if (iri.opValue is RuntimeDefType mdt)
                         {
-                            var rt = GetClassRuntimeType(mdt, m_IRMetaClass != null ? m_IRMetaClass : mdt.irOwnerMetaClass, m_InputTemplateRuntimeTypeList, true);
+                            var rt = GetClassRuntimeType(mdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                            
                             var sobj = new TypeObject(rt);
                             sobj.CreateObject();
@@ -1078,7 +1073,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadStaticField:
                     {
-                        if (iri.opValue is IRMetaType mt)
+                        if (iri.opValue is RuntimeDefType mt)
                         {
                             var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(mt);
                             var v = default(SValue);
@@ -1092,7 +1087,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.StoreStaticField:
                     {
-                        if (iri.opValue is IRMetaType mt)
+                        if (iri.opValue is RuntimeDefType mt)
                         {
                             if (m_ValueIndex > 0)
                             {

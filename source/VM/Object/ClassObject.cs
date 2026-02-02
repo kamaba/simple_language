@@ -31,7 +31,7 @@ namespace SimpleLanguage.VM
         //protected short[] m_Type = null;
         protected RuntimeType[] m_MemberRuntimeTypeArray = null;
         protected SObject[] m_MemberObjectArray = null;
-        protected List<IRMetaVariable> m_IRMetaVariableList = null;
+        protected List<RuntimeVariable> m_MetaVariableList = null;
         protected List<RuntimeType> m_IRTemplateList = new List<RuntimeType>();
 
         protected ClassObject() { }
@@ -42,12 +42,12 @@ namespace SimpleLanguage.VM
 
             //int byteCount = m_RuntimeType.irClass.byteCount;
             //m_Data = new byte[byteCount];
-            typeId = (short)m_RuntimeType.irClass.id;
+            typeId = (short)m_RuntimeType.runtimeClass.id;
             m_IRTemplateList = irmt.runtimeTemplateList;
 
-            m_IRMetaVariableList = isStatic ? m_RuntimeType.irClass.staticIRMetaVariableList : m_RuntimeType.irClass.localIRMetaVariableList;
-            m_MemberObjectArray = new SObject[m_IRMetaVariableList.Count];
-            m_MemberRuntimeTypeArray = new RuntimeType[m_IRMetaVariableList.Count];
+            m_MetaVariableList = isStatic ? m_RuntimeType.runtimeClass.staticIRMetaVariableList : m_RuntimeType.runtimeClass.localIRMetaVariableList;
+            m_MemberObjectArray = new SObject[m_MetaVariableList.Count];
+            m_MemberRuntimeTypeArray = new RuntimeType[m_MetaVariableList.Count];
             CreateDefine();
             //m_Type = new short[m_IRMetaVariableList.Count];
         }
@@ -92,10 +92,10 @@ namespace SimpleLanguage.VM
         //}
         public virtual void CreateDefine()
         {
-            for (int i = 0; i < m_IRMetaVariableList.Count; i++)
+            for (int i = 0; i < m_MetaVariableList.Count; i++)
             {
-                var irmv = m_IRMetaVariableList[i].irMetaType;
-                m_MemberRuntimeTypeArray[i] = RuntimeVM.GetClassRuntimeType(irmv, m_RuntimeType.irClass, m_IRTemplateList, true);
+                var irmv = m_MetaVariableList[i].runtimeDefType;
+                m_MemberRuntimeTypeArray[i] = RuntimeVM.GetClassRuntimeType(irmv, m_RuntimeType.runtimeClass, m_IRTemplateList, true);
                 //m_MemberRuntimeTypeArray[i] = m_RuntimeType.GetClassRuntimeType(irmv, true);
             }
             
@@ -771,7 +771,7 @@ namespace SimpleLanguage.VM
             {
                 sb.Append(m_Object.ToFormatString());
             }
-            sb.Append(m_RuntimeType.irClass.ToString());
+            sb.Append(m_RuntimeType.runtimeClass.ToString());
             //for( int i = 0; i < m_MemberVariableArray)
 
             return sb.ToString();

@@ -46,7 +46,7 @@ namespace SimpleLanguage.Lib
                     return null;
                 }
 
-                int key = rt.irClass != null ? rt.irClass.id : rt.GetHashCode();
+                int key = rt.runtimeClass != null ? rt.runtimeClass.id : rt.GetHashCode();
 
                 lock (s_typeObjectCache)
                 {
