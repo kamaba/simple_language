@@ -6,8 +6,6 @@
 //  Description: Meta class's ir attribute
 //****************************************************************************
 
-using SimpleLanguage.VM;
-
 namespace SimpleLanguage.IR
 {
     /*

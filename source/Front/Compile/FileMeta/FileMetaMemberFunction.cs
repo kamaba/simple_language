@@ -319,7 +319,7 @@ namespace SimpleLanguage.Compile
                     else
                     {
                         isError = true;
-                        Log.AddInStructFileMeta(EError.None, "Error 有其它未知类型在class中", token );
+                        Log.AddInStructFileMeta(EError.None, "Error 有其它未知类型在class中" );
                         break;
                     }
                 }

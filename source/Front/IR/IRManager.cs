@@ -7,8 +7,6 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
-using SimpleLanguage.VM;
-using SimpleLanguage.VM.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

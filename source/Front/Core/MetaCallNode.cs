@@ -476,7 +476,7 @@ namespace SimpleLanguage.Core
                             MetaMemberFunction mmf = m_FrontDefineMetaType.metaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_MetaInputParamCollection);
                             if (mmf == null)
                             {
-                                Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + m_FrontDefineMetaType.metaClass.allClassName + "的_init_方法!)", m_Token);
+                                //Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + m_FrontDefineMetaType.metaClass.allClassName + "的_init_方法!)", m_Token);
                                 return false;
                             }
                             this.m_MetaFunction = mmf;
@@ -927,7 +927,7 @@ namespace SimpleLanguage.Core
                                 MetaMemberFunction mmf = m_FrontCallNode.m_MetaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_FrontCallNode.m_MetaInputParamCollection );
                                 if (mmf == null)
                                 {
-                                    Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + m_FrontCallNode.m_MetaClass.allClassName + "的_init_方法!)", m_Token);
+                                    Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + m_FrontCallNode.m_MetaClass.allClassName + "的_init_方法!)" );
                                     return false;
                                 }
                                 m_FrontCallNode.m_MetaFunction = mmf;
@@ -1175,7 +1175,7 @@ namespace SimpleLanguage.Core
                         MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_MetaInputParamCollection);
                         if (mmf == null)
                         {
-                            Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + curmc.allClassName + "的_init_方法!)", m_Token);
+                            Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + curmc.allClassName + "的_init_方法!)" );
                             return false;
                         }
                         if (m_DefineMetaVariable == null)
@@ -1697,6 +1697,22 @@ namespace SimpleLanguage.Core
 
             if( mmv == null && mmf == null )
             {
+                // If function not found in MetaClass, allow calling runtime-registered builtins
+                if (m_IsFunction)
+                {
+                    try
+                    {
+                        //if (LocalRuntimeVM.Instance.TryGet(inputname, out var del))
+                        {
+                            // create a lightweight builtin placeholder so later phases treat this as a static function
+                            m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, inputname);
+                            m_MetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                            m_CallNodeType = ECallNodeType.MemberFunctionName;
+                            return true;
+                        }
+                    }
+                    catch { }
+                }
                 Log.AddInStructMeta(EError.None, "Error 设置notStatic时，没有找到相应的变量!" + m_Token?.ToLexemeAllString());
                 return false;
             }

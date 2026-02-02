@@ -239,6 +239,16 @@ namespace SimpleLanguage.Core
         {
 
         }
+
+        // Lightweight builtin wrapper for functions provided by the LocalRuntimeVM (native lib)
+        public class MetaBuiltinFunction : MetaMemberFunction
+        {
+            public MetaBuiltinFunction(MetaClass mc, string name) : base(mc)
+            {
+                this.m_Name = name;
+                this.m_IsStatic = true;
+            }
+        }
         public MetaMemberFunction( MetaClass mc, FileMetaMemberFunction fmmf):base( mc )
         {
             m_MetaMemberParamCollection = new MetaDefineParamCollection(true, false);

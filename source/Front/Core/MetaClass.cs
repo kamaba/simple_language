@@ -344,9 +344,9 @@ namespace SimpleLanguage.Core
                     if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
                     {
                         var ld = Log.AddInStructMeta(EError.None, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.m_AllName} 中已包含:{c.name} ");
-                        ld.valDict.Add(EMetaType.MetaClass, this);
-                        ld.valDict.Add(EMetaType.MetaExtendsClass, m_ExtendClass);
-                        ld.valDict.Add(EMetaType.MetaMemberVariable, c);
+                        //ld.valDict.Add(EMetaType.MetaClass, this);
+                        //ld.valDict.Add(EMetaType.MetaExtendsClass, m_ExtendClass);
+                        //ld.valDict.Add(EMetaType.MetaMemberVariable, c);
                         continue;
                     }
                     this.m_MetaExtendMemeberVariableDict.Add(c.name, c);
@@ -357,9 +357,9 @@ namespace SimpleLanguage.Core
                     if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
                     {
                         var ld = Log.AddInStructMeta(EError.None, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.m_AllName} 中已包含:{c.name} ");
-                        ld.valDict.Add(EMetaType.MetaClass, this);
-                        ld.valDict.Add(EMetaType.MetaExtendsClass, m_ExtendClass);
-                        ld.valDict.Add(EMetaType.MetaMemberVariable, c);
+                        //ld.valDict.Add(EMetaType.MetaClass, this);
+                        //ld.valDict.Add(EMetaType.MetaExtendsClass, m_ExtendClass);
+                        //ld.valDict.Add(EMetaType.MetaMemberVariable, c);
                         continue;
                     }
                     this.m_MetaExtendMemeberVariableDict.Add(c.name, c);

@@ -7,7 +7,6 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
-using SimpleLanguage.VM.Runtime;
 using SimpleLanguage.Parse;
 using SimpleLanguage.IR;
 using System.Diagnostics;

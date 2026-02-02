@@ -12,31 +12,31 @@ namespace SimpleLanguage.Export.AOT
         }
 
         // map VM EVMType to LLVM textual type
-        private string LlvmTypeForEVMType(SimpleLanguage.VM.Runtime.EVMType t)
-        {
-            switch (t)
-            {
-                case SimpleLanguage.VM.Runtime.EVMType.Int32:
-                case SimpleLanguage.VM.Runtime.EVMType.UInt32:
-                    return "i32";
-                case SimpleLanguage.VM.Runtime.EVMType.Int64:
-                case SimpleLanguage.VM.Runtime.EVMType.UInt64:
-                    return "i64";
-                case SimpleLanguage.VM.Runtime.EVMType.Float32:
-                    return "float";
-                case SimpleLanguage.VM.Runtime.EVMType.Float64:
-                case SimpleLanguage.VM.Runtime.EVMType.Num:
-                    return "double";
-                case SimpleLanguage.VM.Runtime.EVMType.Boolean:
-                case SimpleLanguage.VM.Runtime.EVMType.Byte:
-                case SimpleLanguage.VM.Runtime.EVMType.SByte:
-                case SimpleLanguage.VM.Runtime.EVMType.Int16:
-                case SimpleLanguage.VM.Runtime.EVMType.UInt16:
-                    return "i32"; // promote small ints to i32 for simplicity
-                default:
-                    return "i8*"; // opaque object pointer
-            }
-        }
+        //private string LlvmTypeForEVMType(SimpleLanguage.VM.Runtime.EVMType t)
+        //{
+        //    switch (t)
+        //    {
+        //        case SimpleLanguage.VM.Runtime.EVMType.Int32:
+        //        case SimpleLanguage.VM.Runtime.EVMType.UInt32:
+        //            return "i32";
+        //        case SimpleLanguage.VM.Runtime.EVMType.Int64:
+        //        case SimpleLanguage.VM.Runtime.EVMType.UInt64:
+        //            return "i64";
+        //        case SimpleLanguage.VM.Runtime.EVMType.Float32:
+        //            return "float";
+        //        case SimpleLanguage.VM.Runtime.EVMType.Float64:
+        //        case SimpleLanguage.VM.Runtime.EVMType.Num:
+        //            return "double";
+        //        case SimpleLanguage.VM.Runtime.EVMType.Boolean:
+        //        case SimpleLanguage.VM.Runtime.EVMType.Byte:
+        //        case SimpleLanguage.VM.Runtime.EVMType.SByte:
+        //        case SimpleLanguage.VM.Runtime.EVMType.Int16:
+        //        case SimpleLanguage.VM.Runtime.EVMType.UInt16:
+        //            return "i32"; // promote small ints to i32 for simplicity
+        //        default:
+        //            return "i8*"; // opaque object pointer
+        //    }
+        //}
 
         private string SanitizeName(string name)
         {

@@ -327,7 +327,7 @@ namespace SimpleLanguage.Compile
                     //}
                     else
                     {
-                        Log.AddInHandleNode(curNode.token, 0, "Error 解析异常关键字");
+                        //Log.AddInHandleNode(curNode.token, 0, "Error 解析异常关键字");
                     }
                 }
                 else

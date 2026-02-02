@@ -109,16 +109,6 @@
         "runtime": {
           "bin/placeholder/SimpleLanguageLog.dll": {}
         }
-      },
-      "SimpleLanuageLib/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v8.0",
-        "compile": {
-          "bin/placeholder/SimpleLanuageLib.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/SimpleLanuageLib.dll": {}
-        }
       }
     }
   },
@@ -511,17 +501,11 @@
       "type": "project",
       "path": "../Log/SimpleLanguageLog.csproj",
       "msbuildProject": "../Log/SimpleLanguageLog.csproj"
-    },
-    "SimpleLanuageLib/1.0.0": {
-      "type": "project",
-      "path": "../Lib/SimpleLanuageLib.csproj",
-      "msbuildProject": "../Lib/SimpleLanuageLib.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net8.0": [
       "SimpleLanguageLog >= 1.0.0",
-      "SimpleLanuageLib >= 1.0.0",
       "System.Diagnostics.Debug >= 4.3.0",
       "Tomlyn >= 0.19.0",
       "libLLVM >= 15.0.0",
@@ -562,9 +546,6 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "E:\\project\\lang\\simple_language\\source\\Lib\\SimpleLanuageLib.csproj": {
-              "projectPath": "E:\\project\\lang\\simple_language\\source\\Lib\\SimpleLanuageLib.csproj"
-            },
             "E:\\project\\lang\\simple_language\\source\\Log\\SimpleLanguageLog.csproj": {
               "projectPath": "E:\\project\\lang\\simple_language\\source\\Log\\SimpleLanguageLog.csproj"
             }

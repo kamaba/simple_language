@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.2.11415.280 d18.0
+VisualStudioVersion = 18.2.11415.280
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleLanguageFront", "source\Front\SimpleLanguageFront.csproj", "{911B1A40-C5D9-C2BC-6B84-8008A2DD7276}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleLanuageLib", "source\Lib\SimpleLanuageLib.csproj", "{A013C1F1-570B-14B0-4A27-AE934E25394C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleLanuageVM", "source\VM\SimpleLanuageVM.csproj", "{812309B6-38DF-5D8F-95DD-5345FAC2D7CB}"
 EndProject
@@ -21,10 +19,6 @@ Global
 		{911B1A40-C5D9-C2BC-6B84-8008A2DD7276}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{911B1A40-C5D9-C2BC-6B84-8008A2DD7276}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{911B1A40-C5D9-C2BC-6B84-8008A2DD7276}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A013C1F1-570B-14B0-4A27-AE934E25394C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A013C1F1-570B-14B0-4A27-AE934E25394C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A013C1F1-570B-14B0-4A27-AE934E25394C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A013C1F1-570B-14B0-4A27-AE934E25394C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{812309B6-38DF-5D8F-95DD-5345FAC2D7CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{812309B6-38DF-5D8F-95DD-5345FAC2D7CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{812309B6-38DF-5D8F-95DD-5345FAC2D7CB}.Release|Any CPU.ActiveCfg = Release|Any CPU

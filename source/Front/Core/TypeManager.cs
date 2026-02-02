@@ -130,7 +130,7 @@ namespace SimpleLanguage.Core
                 var mt = curMc.GetMetaTemplateByName(fmcd.stringList[0]);
                 if (mt == null)
                 {
-                    Log.AddInStructMeta(EError.None, $"没有找到模板类中，对应的模板，名称为{fmcd.stringList[0]}请仔细检查模板的命名与使用模板命名是否对应", fmcd.classNameToken );
+                    Log.AddInStructMeta(EError.None, $"没有找到模板类中，对应的模板，名称为{fmcd.stringList[0]}请仔细检查模板的命名与使用模板命名是否对应");//, fmcd.classNameToken );
                 }
                 else
                 {
@@ -243,7 +243,7 @@ namespace SimpleLanguage.Core
                     var mt = ownerMc.GetMetaTemplateByName(fmtd.nameList[0]);
                     if (mt == null)
                     {
-                        Log.AddInStructMeta(EError.None, "没有找到模板类中，对应的模板，请仔细检查模板的命名与使用模板命名是否对应", cnode?.token );
+                        Log.AddInStructMeta(EError.None, "没有找到模板类中，对应的模板，请仔细检查模板的命名与使用模板命名是否对应");//, cnode?.token );
                     }
                     else
                     {
