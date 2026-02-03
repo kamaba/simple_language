@@ -6,19 +6,20 @@
 //  Description:  compile configuration in the .sp file. and execute configuration relative logic.
 //****************************************************************************
 
+using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
+using SimpleLanguage.CSharp;
 using SimpleLanguage.IR;
-
+using SimpleLanguage.Lib;
+using SimpleLanguage.Logging;
 using SimpleLanguage.Parse;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Timers;
-using System.Diagnostics;
-using SimpleLanguage.Compile;
 using Tomlyn;
 using Tomlyn.Model;
-using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.Project
 {
@@ -95,6 +96,10 @@ namespace SimpleLanguage.Project
                 // 这里的 path 现在视为 .sp 文件路径
                 LoadProject(path);
             }
+            CSharpManager.InitCanSearchAssemblyList();
+
+            RegisterCallMethodManager.RegisterAllCallMethod();
+
             CoreMetaClassManager.instance.Init();
 
             ProjectClass.ProjectCompileBefore();

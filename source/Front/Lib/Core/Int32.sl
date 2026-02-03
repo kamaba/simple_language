@@ -1,6 +1,6 @@
-import CSharp.SimpleLanguage.Core
-import CSharp.SimpleLanguage
-import CSharp.System
+import CSharpLang.SimpleLanguage.Core
+import CSharpLang.SimpleLanguage
+import CSharpLang.System
 
 public class Int32 extends Num
 {

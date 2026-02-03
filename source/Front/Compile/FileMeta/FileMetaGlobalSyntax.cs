@@ -11,6 +11,7 @@ using SimpleLanguage.CSharp;
 
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Compile
@@ -70,17 +71,25 @@ namespace SimpleLanguage.Compile
 
             MetaNode mb = ModuleManager.instance.selfModule.metaNode;
             List<Token> tokenList = new List<Token>();
-            bool isCSharp = false;
             for (int i = 0; i < m_NamespaceStatement.tokenList.Count; i++)
             {
                 string name = m_NamespaceStatement.tokenList[i].lexeme.ToString();
-                if ( i == 0 && name == "CSharp" )
+                if ( i == 0 )
                 {
-                    isCSharp = true;
+                    var findmodule = ModuleManager.instance.GetMetaModuleByName(name);
+                    if( findmodule != null )
+                    {
+                        mb = findmodule.metaNode;
+                    }
+                    else
+                    {
+                        mb = mb.GetChildrenMetaNodeByName(name);
+                    }
+                    Debug.Assert(mb != null, "查找失败" + name );
                 }
                 else
                 {
-                    if( isCSharp )
+                    if(mb.name == "CSharp")
                     {
                         tokenList.Add(m_NamespaceStatement.tokenList[i]);
                     }
@@ -101,15 +110,13 @@ namespace SimpleLanguage.Compile
                 }
             }
 
-            if( isCSharp )
+            if(mb.name == "CSharp" )
             {
                 if(tokenList.Count < 1 )
                 {
                     Log.AddInStructFileMeta(EError.None, "Error 在使用import引用CSharp库时，至少需要一个命名空间");
                     return;
                 }
-
-                MetaNode curmb = ModuleManager.instance.csharpModule.metaNode;
 
                 string allname = "";
                 for ( int i = 0; i < tokenList.Count; i++ )
@@ -124,15 +131,16 @@ namespace SimpleLanguage.Compile
                     {
                         allname = allname + "." + name;
                     }
-                    if ( CSharpManager.IsFindMetaCSharpNamespace(allname) )
+                    var findname  = allname;
+                    if ( CSharpManager.IsFindMetaCSharpNamespace(findname) )
                     {
-                        var findmb = curmb.GetChildrenMetaNodeByName(name);
+                        var findmb = mb.GetChildrenMetaNodeByName(name);
 
                         if( findmb != null )
                         {
                             if( findmb.metaNamespace is MetaNamespaceCSharp mnc )
                             {
-                                curmb = findmb;
+                                mb = findmb;
                                 m_FileMeta.AddImportMetaNamespace(mnc);
                             }
                             else
@@ -145,7 +153,7 @@ namespace SimpleLanguage.Compile
                         else
                         {
                             MetaNamespaceCSharp mn = new MetaNamespaceCSharp(name);
-                            curmb = curmb.AddMetaNamespace(mn);
+                            mb = mb.AddMetaNamespace(mn);
                             m_FileMeta.AddImportMetaNamespace(mn);
                         }
                             

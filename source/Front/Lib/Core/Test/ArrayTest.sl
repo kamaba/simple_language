@@ -1,5 +1,5 @@
 import CSharp.System
-import CSharp.SimpleLanguage.Core
+import CSharpLang.SimpleLanguage.Core
 
 ArrayTest
 {

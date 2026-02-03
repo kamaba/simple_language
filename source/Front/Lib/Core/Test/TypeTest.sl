@@ -1,5 +1,6 @@
 import CSharp.System
 import Std
+import CSharpLang
 
 #Runtime tests for `type` operator
 TypeTest

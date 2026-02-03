@@ -1,5 +1,5 @@
-import CSharp.SimpleLanguage.Core
-import CSharp.SimpleLanguage
+import CSharpLang.SimpleLanguage.Core
+import CSharpLang.SimpleLanguage
 
 #Abstract numeric base class (Dart-like)
 public abstract class Num extends Object

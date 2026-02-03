@@ -115,6 +115,18 @@ tag      = "ir"
 ignore   = false
 priority = 0
 
+[[importFiles.Module]]
+path = "./Std.dll"
+uuid = "321323-123123-123123-123123"
+name = "Std"
+
+[[importFiles.Module]]
+path = "./test/Math.dll"
+uuid = "321323-123123-123123-123123"
+name = "Math"
+
+
+
 
 
 [compileFilter]

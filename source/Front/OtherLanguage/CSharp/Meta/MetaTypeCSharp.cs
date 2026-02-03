@@ -1,5 +1,6 @@
 ﻿
 using SimpleLanguage.CSharp;
+using System;
 using System.Diagnostics;
 
 namespace SimpleLanguage.Core
@@ -118,72 +119,59 @@ namespace SimpleLanguage.Core
             
             if( mc == CoreMetaClassManager.booleanMetaClass )
             {
-                //type = typeof(BoolObject);
-                //type = typeof(System.Boolean);
+                type = typeof(System.Boolean);
             }
             else if (mc == CoreMetaClassManager.byteMetaClass)
             {
-                //type = typeof(Int8Object);
-                //type = typeof(System.Byte);
+                type = typeof(System.Byte);
             }
             else if (mc == CoreMetaClassManager.sbyteMetaClass)
             {
-                //type = typeof(SInt8Object);
-                //type = typeof(System.SByte);
+                type = typeof(System.SByte);
             }
             else if (mc == CoreMetaClassManager.int16MetaClass)
             {
-                //type = typeof(Int16Object);
-                //type = typeof(System.Int16);
+                type = typeof(System.Int16);
             }
             else if (mc == CoreMetaClassManager.uint16MetaClass)
             {
-                //type = typeof(UInt16Object);
-                //type = typeof(System.UInt16);
+                type = typeof(System.UInt16);
             }
             else if (mc == CoreMetaClassManager.int32MetaClass)
             {
-                //type = typeof(Int32Object);
-                //type = typeof(System.Int32);
+                type = typeof(System.Int32);
             }
             else if(mc == CoreMetaClassManager.uint32MetaClass )
             {
-                //type = typeof(UInt32Object);
-                //type = typeof(System.UInt32);
+                type = typeof(System.UInt32);
             }
             else if (mc == CoreMetaClassManager.int64MetaClass)
             {
-                //type = typeof(Int64Object);
-                //type = typeof(System.Int64);
+                type = typeof(System.Int64);
             }
             else if (mc == CoreMetaClassManager.uint64MetaClass)
             {
-                //type = typeof(UInt64Object);
-                //type = typeof(System.UInt64);
+                type = typeof(System.UInt64);
             }
             else if (mc == CoreMetaClassManager.float32MetaClass)
             {
-                //type = typeof(Float32Object);
-                //type = typeof(System.Single);
+                type = typeof(System.Single);
             }
             else if (mc == CoreMetaClassManager.float64MetaClass)
             {
-                //type = typeof(Float64Object);
-                //type = typeof(System.Double);
+                type = typeof(System.Double);
             }
             else if( mc == CoreMetaClassManager.stringMetaClass )
             {
-                //type = typeof(StringObject);
-                //type = typeof(System.String);
+                type = typeof(System.String);
             }
             else if( mc == CoreMetaClassManager.objectMetaClass )
             {
-                //type = typeof(SObject);
-                //type = typeof(System.Object);
+                type = typeof(System.Object);
             }
             else if( mc == CoreMetaClassManager.arrayMetaClass )
             {
-                //type = typeof(ArrayObject);
+                type = typeof(Array);
             }
             else
             {

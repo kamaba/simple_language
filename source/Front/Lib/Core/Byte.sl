@@ -1,5 +1,5 @@
-import CSharp.SimpleLanguage.Core
-import CSharp.SimpleLanguage
+import CSharpLang.SimpleLanguage.Core
+import CSharpLang.SimpleLanguage
 
 public class Byte extends Num
 {    

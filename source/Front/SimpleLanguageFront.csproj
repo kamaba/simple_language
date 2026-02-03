@@ -24,12 +24,12 @@
     <DebugType>full</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="source\IR\Lib\新文件夹\**" />
-    <Compile Remove="source\MakeBin\**" />
-    <EmbeddedResource Remove="source\IR\Lib\新文件夹\**" />
-    <EmbeddedResource Remove="source\MakeBin\**" />
-    <None Remove="source\IR\Lib\新文件夹\**" />
-    <None Remove="source\MakeBin\**" />
+    <Compile Remove="source\**" />
+    <Compile Remove="tools\**" />
+    <EmbeddedResource Remove="source\**" />
+    <EmbeddedResource Remove="tools\**" />
+    <None Remove="source\**" />
+    <None Remove="tools\**" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="libLLVM" Version="15.0.0" />
@@ -37,19 +37,6 @@
     <PackageReference Include="swigged.llvm" Version="70.0.1" />
     <PackageReference Include="System.Diagnostics.Debug" Version="4.3.0" />
     <PackageReference Include="Tomlyn" Version="0.19.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="source\Export\ExportJavascriptCode\" />
-    <Folder Include="source\Export\ExportTypescriptCode\" />
-    <Folder Include="source\Export\ExportCSharpCode\" />
-    <Folder Include="source\Export\GenerateMonoIL\" />
-    <Folder Include="source\Export\ExportCPlusCode\" />
-    <Folder Include="source\OtherLanguage\CSharp\Statements\" />
-    <Folder Include="source\VM\NewObject\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="tools\ExtractLogs\ExtractLogs.csproj" />
-    <None Include="tools\ScanSwiggedApi\ScanSwiggedApi.csproj" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Log\SimpleLanguageLog.csproj" />

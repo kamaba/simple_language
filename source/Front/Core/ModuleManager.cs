@@ -32,6 +32,9 @@ namespace SimpleLanguage.Core
         public MetaModule selfModule => m_SelfModule;
         public MetaModule coreModule => m_CoreModule;
         public MetaModule csharpModule => m_CSharpModule;
+        public MetaModule csharpLangRegisterModule => m_CSharpLangRegisterModule;
+        public MetaModule clangRegisterModule => m_CLangRegisterModule;
+
         private Dictionary<string, MetaModule> m_ImportMetaModuleDict = new Dictionary<string, MetaModule>();
 
         public Dictionary<string, MetaModule> m_AllMetaModuleDict = new Dictionary<string, MetaModule>();
@@ -40,15 +43,24 @@ namespace SimpleLanguage.Core
         private MetaModule m_SelfModule = null;
         private MetaModule m_CoreModule = null;
         private MetaModule m_CSharpModule = null;
+        private MetaModule m_CSharpLangRegisterModule = null;
+        private MetaModule m_CLangRegisterModule = null;
+        private MetaModule m_JavaLangRegisterModule = null;
         public ModuleManager()
         {
             m_SelfModule = new MetaModule(moduleName);
             m_CoreModule = new MetaModule(coreModuleName);
             m_CSharpModule = new MetaModule(csharpModuleName);
+            m_CSharpLangRegisterModule = new MetaModule("CSharpLang");
+            m_CLangRegisterModule = new MetaModule("CLang");
+            m_JavaLangRegisterModule = new MetaModule("JavaLang");
             m_CSharpModule.SetRefFromType(RefFromType.CSharp);
             m_AllMetaModuleDict.Add(moduleName, m_SelfModule);
             m_AllMetaModuleDict.Add(coreModuleName, m_CoreModule);
             m_AllMetaModuleDict.Add(csharpModuleName, m_CSharpModule);
+            m_AllMetaModuleDict.Add("CSharpLang", m_CSharpLangRegisterModule);
+            m_AllMetaModuleDict.Add("CLang", m_CLangRegisterModule);
+            m_AllMetaModuleDict.Add("JavaLang", m_JavaLangRegisterModule);
             selfModule.SetDeep(0);
             m_CoreModule.SetDeep(0);
         }

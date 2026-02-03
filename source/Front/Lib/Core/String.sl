@@ -1,4 +1,4 @@
-import CSharp.SimpleLanguage.Core
+import CSharpLang.SimpleLanguage.Core
 
 public class String extends Object
 {

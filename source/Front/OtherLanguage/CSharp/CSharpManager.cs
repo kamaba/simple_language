@@ -19,22 +19,18 @@ using System.Text.RegularExpressions;
 
 namespace SimpleLanguage.CSharp
 {
-    class CSharpManager
+    public class CSharpManager
     {
         static System.Reflection.Assembly[] allAssembly = AppDomain.CurrentDomain.GetAssemblies();
 
-        static List<Assembly> canSearchAssemblyList = new List<Assembly>();
-        static CSharpManager()
-        {
-            InitCanSearchAssemblyList();
-        }
+        static List<Assembly> canSearchAssemblyList = new List<Assembly>();       
         public static void InitCanSearchAssemblyList()
         {
             foreach( var am in allAssembly )
             {
                 if (am.FullName != "SimpleLanguage, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
-                        && am.FullName != "System.Console, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"
-                        && am.FullName != "System.Private.CoreLib, Version=6.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e"
+                        && am.FullName != "System.Console, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"
+                        && am.FullName != "System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e"
                         )
                 {
                     continue;
