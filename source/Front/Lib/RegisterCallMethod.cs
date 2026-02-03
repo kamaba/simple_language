@@ -117,6 +117,8 @@ namespace SimpleLanguage.Lib
                   }
             };
             RegisterCallMethod(cm2add);
+
+            ImportFromJson("ImportCSharpLang.json");
         }
         public static void RegisterCallMethod(CallMethod cm)
         {
@@ -125,6 +127,103 @@ namespace SimpleLanguage.Lib
                 callMethodList.Add(cm);
                 RegisterMetaNode(cm);
             }
+        }
+        // Import call methods from JSON file (produced by VM exporter)
+        public static bool ImportFromJson(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !System.IO.File.Exists(path)) return false;
+            try
+            {
+                var json = System.IO.File.ReadAllText(path);
+                var opts = new System.Text.Json.JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                var list = System.Text.Json.JsonSerializer.Deserialize<List<CallMethodModel>>(json, opts);
+                if (list == null) return false;
+                foreach (var m in list)
+                {
+                    CallMethod cm = new CallMethod();
+                    // map language
+                    cm.callMethodLanuage = MapLanguage(m.callMethodLanguage);
+                    if (m.namespaceNameList != null) cm.namespaceNameList = new List<string>(m.namespaceNameList);
+                    if (m.topClassNameList != null) cm.topClassNameList = new List<string>(m.topClassNameList);
+                    cm.className = m.className;
+                    cm.methodName = m.methodName;
+                    if (m.returnType != null)
+                    {
+                        cm.returnType = new CallType();
+                        cm.returnType.typeName = m.returnType.typeName;
+                        cm.returnType.eType = MapEType(m.returnType.eType);
+                    }
+                    if (m.argumentListType != null)
+                    {
+                        foreach (var at in m.argumentListType)
+                        {
+                            var atc = new CallType();
+                            atc.typeName = at.typeName;
+                            atc.eType = MapEType(at.eType);
+                            cm.argumentListType.Add(atc);
+                        }
+                    }
+                    RegisterCallMethod(cm);
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        static RegisterCallMethodLanuage MapLanguage(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return RegisterCallMethodLanuage.None;
+            switch (s.Trim())
+            {
+                case "CSharpLang": return RegisterCallMethodLanuage.CSharpLang;
+                case "JavaLang": return RegisterCallMethodLanuage.JavaLang;
+                case "CLang": return RegisterCallMethodLanuage.CLang;
+                case "CPlusPlusLang": return RegisterCallMethodLanuage.CPlusPlusLang;
+                default: return RegisterCallMethodLanuage.None;
+            }
+        }
+
+        static EType MapEType(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return EType.None;
+            var key = s.Trim().ToLowerInvariant();
+            switch (key)
+            {
+                case "int": case "int32": return EType.Int32;
+                case "string": return EType.String;
+                case "void": return EType.Void;
+                case "float": case "float32": return EType.Float32;
+                case "double": case "float64": return EType.Float64;
+                case "byte": return EType.Byte;
+                case "sbyte": return EType.SByte;
+                case "int16": case "short": return EType.Int16;
+                case "uint16": return EType.UInt16;
+                case "int64": case "long": return EType.Int64;
+                case "uint32": return EType.UInt32;
+                case "uint64": return EType.UInt64;
+                case "boolean": case "bool": return EType.Boolean;
+                default: return EType.None;
+            }
+        }
+
+        // local DTO classes for JSON import
+        public class CallMethodModel
+        {
+            public string callMethodLanguage { get; set; }
+            public string[] namespaceNameList { get; set; }
+            public string[] topClassNameList { get; set; }
+            public string className { get; set; }
+            public string methodName { get; set; }
+            public CallTypeModel returnType { get; set; }
+            public CallTypeModel[] argumentListType { get; set; }
+        }
+        public class CallTypeModel
+        {
+            public string eType { get; set; }
+            public string typeName { get; set; }
         }
         public static void RegisterMetaNode(CallMethod node)
         {

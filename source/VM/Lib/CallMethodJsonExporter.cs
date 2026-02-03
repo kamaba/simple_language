@@ -4,6 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Reflection;
+using System.Text.Json.Serialization;
 
 namespace SimpleLanguage.VM.Lib
 {
@@ -15,68 +16,37 @@ namespace SimpleLanguage.VM.Lib
         {
             try
             {
-                // Try to access the RegisterCallMethodManager from front assembly via reflection
-                var frontAssembly = Assembly.GetEntryAssembly();
-                var cmType = frontAssembly?.GetType("SimpleLanguage.Lib.RegisterCallMethodManager");
-                List<object> frontList = null;
-                if (cmType != null)
+                // enumerate static public methods in this assembly under namespace SimpleLanguage.VM.Lib
+                var asm = Assembly.GetExecutingAssembly();
+                var types = asm.GetTypes().Where(t => t.IsClass && t.Namespace != null && t.Namespace.StartsWith("SimpleLanguage.Lib"));
+                var modelList = new List<CallMethodModel>();
+                foreach (var t in types)
                 {
-                    var field = cmType.GetField("callMethodList", BindingFlags.Public | BindingFlags.Static);
-                    if (field != null)
+                    var methods = t.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
+                    foreach (var m in methods)
                     {
-                        var raw = field.GetValue(null) as System.Collections.IEnumerable;
-                        if (raw != null)
+                        // skip property methods and special names
+                        if (m.IsSpecialName) continue;
+                        var model = new CallMethodModel();
+                        model.callMethodLanguage = RegisterCallMethodLanguage.CSharpLang;
+                        model.namespaceNameList = (t.Namespace ?? string.Empty).Split('.').ToList();
+                        model.topClassNameList = new List<string>();
+                        model.className = t.Name;
+                        model.methodName = m.Name;
+                        // return type
+                        model.returnType = new CallTypeModel { eType = m.ReturnType.FullName ?? m.ReturnType.Name, typeName = m.ReturnType.Name };
+                        // parameters
+                        foreach (var p in m.GetParameters())
                         {
-                            frontList = new List<object>();
-                            foreach (var o in raw) frontList.Add(o);
+                            model.argumentListType.Add(new CallTypeModel { eType = p.ParameterType.FullName ?? p.ParameterType.Name, typeName = p.ParameterType.Name });
                         }
+                        modelList.Add(model);
                     }
-                }
-                if (frontList == null)
-                {
-                    Console.WriteLine("CallMethodJsonExporter: cannot locate RegisterCallMethodManager.callMethodList");
-                    return false;
-                }
-                var dtoList = new List<CallMethodDto>(frontList.Count);
-                foreach (var cm in frontList)
-                {
-                    // reflect into the CallMethod instance
-                    var dto = new CallMethodDto();
-                    var lmField = cm.GetType().GetField("callMethodLanuage");
-                    var nsField = cm.GetType().GetField("namespaceNameList");
-                    var topField = cm.GetType().GetField("topClassNameList");
-                    var clsField = cm.GetType().GetField("className");
-                    var mthField = cm.GetType().GetField("methodName");
-                    var retField = cm.GetType().GetField("returnType");
-                    var argField = cm.GetType().GetField("argumentListType");
-
-                    dto.callMethodLanguage = lmField?.GetValue(cm)?.ToString() ?? string.Empty;
-                    dto.namespaceNameList = (nsField?.GetValue(cm) as IEnumerable<string>)?.ToArray() ?? Array.Empty<string>();
-                    dto.topClassNameList = (topField?.GetValue(cm) as IEnumerable<string>)?.ToArray() ?? Array.Empty<string>();
-                    dto.className = clsField?.GetValue(cm)?.ToString() ?? string.Empty;
-                    dto.methodName = mthField?.GetValue(cm)?.ToString() ?? string.Empty;
-                    var ret = retField?.GetValue(cm);
-                    if (ret != null)
-                    {
-                        var et = ret.GetType().GetField("eType")?.GetValue(ret)?.ToString();
-                        var tn = ret.GetType().GetField("typeName")?.GetValue(ret)?.ToString();
-                        dto.returnType = new CallTypeDto { eType = et, typeName = tn };
-                    }
-                    var args = argField?.GetValue(cm) as System.Collections.IEnumerable;
-                    if (args != null)
-                    {
-                        foreach (var a in args)
-                        {
-                            var et = a.GetType().GetField("eType")?.GetValue(a)?.ToString();
-                            var tn = a.GetType().GetField("typeName")?.GetValue(a)?.ToString();
-                            dto.argumentListType.Add(new CallTypeDto { eType = et, typeName = tn });
-                        }
-                    }
-                    dtoList.Add(dto);
                 }
 
                 var options = new JsonSerializerOptions { WriteIndented = true };
-                var json = JsonSerializer.Serialize(dtoList, options);
+                options.Converters.Add(new JsonStringEnumConverter());
+                var json = JsonSerializer.Serialize(modelList, options);
                 var dir = Path.GetDirectoryName(path);
                 if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
                 File.WriteAllText(path, json);
@@ -90,18 +60,28 @@ namespace SimpleLanguage.VM.Lib
         }
 
         // DTO classes for JSON output
-        public class CallMethodDto
+        // Local model duplicating Front's structures so VM doesn't need compile-time dependency
+        public enum RegisterCallMethodLanguage
         {
-            public string callMethodLanguage { get; set; }
-            public string[] namespaceNameList { get; set; }
-            public string[] topClassNameList { get; set; }
+            None,
+            CSharpLang,
+            JavaLang,
+            CLang,
+            CPlusPlusLang
+        }
+        public class CallMethodModel
+        {
+            public RegisterCallMethodLanguage callMethodLanguage { get; set; }
+            public List<string> namespaceNameList { get; set; } = new List<string>();
+            public List<string> topClassNameList { get; set; } = new List<string>();
             public string className { get; set; }
             public string methodName { get; set; }
-            public CallTypeDto returnType { get; set; }
-            public List<CallTypeDto> argumentListType { get; set; } = new List<CallTypeDto>();
+            public CallTypeModel returnType { get; set; }
+            public List<CallTypeModel> argumentListType { get; set; } = new List<CallTypeModel>();
         }
-        public class CallTypeDto
+        public class CallTypeModel
         {
+            // store eType as string to avoid cross-assembly enum dependency
             public string eType { get; set; }
             public string typeName { get; set; }
         }

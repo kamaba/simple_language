@@ -5,8 +5,9 @@ using System.Reflection;
 
 namespace SimpleLanguage.IR
 {
-    public class IRCSharpCallStatements : IRStatements
+    public class IRCSharpCallStatements 
     {
+        /*
         MethodInfo m_MethodInfo = null;
         MetaMethodCall metaFunctionCall = null;
         public IRCSharpCallStatements(MetaBlockStatements mbs, string _name, System.Type type, MethodInfo methodInfo) 
@@ -36,5 +37,6 @@ namespace SimpleLanguage.IR
 
         //    return sb.ToString();
         //}
+        */
     }
 }
