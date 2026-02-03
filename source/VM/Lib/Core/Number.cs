@@ -7,6 +7,7 @@
 //****************************************************************************
 
 using System;
+using SimpleLanguage.VM;
 
 namespace SimpleLanguage.Lib
 {

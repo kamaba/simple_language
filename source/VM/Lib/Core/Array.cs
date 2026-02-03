@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 
 namespace SimpleLanguage.Lib
 {
+    namespace SimpleLanguage.VM
     public static class ArrayClass
     {
         //public static Int64 CreateArray(Int32Object arrayLength, Int32Object elementSize) => CreateArray(arrayLength.value, elementSize.value);

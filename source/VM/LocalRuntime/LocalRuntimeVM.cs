@@ -19,7 +19,41 @@ namespace SimpleLanguage.VM.Runtime
 
         private LocalRuntimeVM()
         {
+            // do not auto-register to avoid creating direct dependency to Front registry here
+            // caller (VM startup) should call RegisterBuiltinsAndBridge() to also register into Front's registry
+        }
+
+        public void RegisterBuiltinsAndBridge()
+        {
+            // register local implementations
             RegisterBuiltins();
+            // also register into front-side ExternalFunctionRegistry so front can discover them without referencing VM
+            try
+            {
+                // locate the ExternalFunctionRegistry type via reflection from any loaded assembly
+                Type registryType = null;
+                foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    try
+                    {
+                        var t = asm.GetType("SimpleLanguage.Core.ExternalFunctionRegistry");
+                        if (t != null) { registryType = t; break; }
+                    }
+                    catch { }
+                }
+                var mi = registryType?.GetMethod("Register", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (mi != null)
+                {
+                    foreach (var kv in new string[] { "Num.ToInt32", "Num.ToInt64", "Num.ToFloat64", "Num.ToFloat32", "Num.ToBool", "Byte.ParseInt", "Byte.ToRadixString" })
+                    {
+                        if (m_Functions.TryGetValue(kv, out var del))
+                        {
+                            try { mi.Invoke(null, new object[] { kv, del }); } catch { }
+                        }
+                    }
+                }
+            }
+            catch { }
         }
 
         public void Register(string name, Delegate del)
@@ -57,16 +91,12 @@ namespace SimpleLanguage.VM.Runtime
 
         private void RegisterBuiltins()
         {
-            // Numeric helpers
-            //Register("Num.ToInt32", new Func<object, int>(NumClass.NumToInt32));
-            //Register("Num.ToInt64", new Func<object, long>(NumClass.NumToInt64));
-            //Register("Num.ToFloat64", new Func<object, double>(NumClass.NumToFloat64));
-            //Register("Num.ToFloat32", new Func<object, float>(NumClass.NumToFloat32));
-            //Register("Num.ToBool", new Func<object, bool>(NumClass.NumToBool));
-
-            //// Byte helpers
-            //Register("Byte.ParseInt", new Func<string, int>(ByteClass.Parse));
-            //Register("Byte.ToRadixString", new Func<int, int, string>(ByteClass.ToRadixString));
+            // Numeric helpers (use library implementations)
+            Register("Num.ToInt32", new Func<object, int>(SimpleLanguage.Lib.NumClass.NumToInt32));
+            Register("Num.ToInt64", new Func<object, long>(SimpleLanguage.Lib.NumClass.NumToInt64));
+            Register("Num.ToFloat64", new Func<object, double>(SimpleLanguage.Lib.NumClass.NumToFloat64));
+            Register("Num.ToFloat32", new Func<object, float>(SimpleLanguage.Lib.NumClass.NumToFloat32));
+            Register("Num.ToBool", new Func<object, bool>(SimpleLanguage.Lib.NumClass.NumToBool));
         }
     }
 }

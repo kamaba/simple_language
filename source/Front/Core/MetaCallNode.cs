@@ -1562,6 +1562,21 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
+            // Fallback: lookup in external function registry (no compile-time VM dependency)
+            if (m_IsFunction)
+            {
+                try
+                {
+                    if (SimpleLanguage.Core.ExternalFunctionRegistry.TryGet(inputname, out var _))
+                    {
+                        m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, inputname);
+                        m_CallMetaType = new MetaType(mc);
+                        m_CallNodeType = ECallNodeType.MemberFunctionName;
+                        return true;
+                    }
+                }
+                catch { }
+            }
             return true;
         }
         public MetaBase HandleCastFunction(MetaClass mc)
