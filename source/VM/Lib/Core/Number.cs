@@ -510,17 +510,14 @@ namespace SimpleLanguage.Lib
         }
         public static float ToFloat32(float sobj)
         {
-            if (sobj == null) return 0.0f;
             return sobj;
         }
         public static int ToInt32(float sobj)
         {
-            if (sobj == null) return 0;
             return (int)sobj;
         }
         public static float Abs(float sobj)
         {
-            if (sobj == null) return 0.0f;
             return Math.Abs(sobj);
         }
         public static float Floor(float sobj)
@@ -531,7 +528,7 @@ namespace SimpleLanguage.Lib
         public static float Ceil(float sobj)
         {
             if (sobj == null) return 0.0f;
-            return (float)Math.Ceiling(sobj.value);
+            return (float)Math.Ceiling(sobj);
         }
         public static int Compare(float a, float b)
         {

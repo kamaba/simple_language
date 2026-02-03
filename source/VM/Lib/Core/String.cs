@@ -10,7 +10,7 @@ using SimpleLanguage.VM;
 
 namespace SimpleLanguage.Lib
 {
-    public class StringObjectData : BaseObjectData
+    public class StringObjectData //: BaseObjectData
     {
 
     }

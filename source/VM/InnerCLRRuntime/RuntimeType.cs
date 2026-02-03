@@ -247,6 +247,7 @@ namespace SimpleLanguage.VM
                 // create a temporary object instance for this runtime type (no member init)
                 SObject obj = ObjectManager.CreateObjectByRuntimeType(rt, false);
                 if (obj == null) return null;
+                // ObjectClass moved under SimpleLanguage.Lib; use that implementation
                 var typeObj = SimpleLanguage.Lib.ObjectClass.GetObjectType(obj);
                 return typeObj as ClassObject;
             }

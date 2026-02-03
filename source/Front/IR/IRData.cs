@@ -25,7 +25,12 @@ namespace SimpleLanguage.IR
         // 序列化后的原始数据（仅用于值类型或需要内嵌的常量）
         public byte[]    Payload = null;
         // 当前 IRData 的字节长度（包括 Payload 的长度）——用于导出序列化时参考
+        // ByteLength currently holds the payload length. The final serialized
+        // instruction length is computed as (1 + ByteLength) by IRMethod (1 byte for opcode)
+        // The instruction stream offset (start position) is stored in `offset`.
         public int       ByteLength = 0;
+        // byte offset in the serialized instruction stream
+        public int       offset = 0;
         public int       index;                  //索引
         public DebugInfo debugInfo;              //调试信息
 
@@ -104,6 +109,50 @@ namespace SimpleLanguage.IR
             ByteLength = (Payload != null) ? Payload.Length : 0;
         }
 
+        // Finalize packaging for complex opValue types (labels, methods, meta types)
+        // Convert remaining opValue into Payload bytes so IRData is self-contained for serialization.
+        public void FinalizePack()
+        {
+            if (Payload != null) return;
+            if (_opValue == null) return;
+
+            // If opValue is an IRData (label reference), serialize its resolved index
+            if (_opValue is IRData idRef)
+            {
+                int idx = idRef.index;
+                Payload = BitConverter.GetBytes(idx);
+                UpdateByteLength();
+                _opValue = null;
+                return;
+            }
+
+            // IRMethod -> serialize method id string
+            if (_opValue is IRMethod irm)
+            {
+                var b = Encoding.UTF8.GetBytes(irm.id ?? string.Empty);
+                Payload = b;
+                UpdateByteLength();
+                _opValue = null;
+                return;
+            }
+
+            // Fallback: try string form of object
+            try
+            {
+                var s = _opValue.ToString();
+                if (!string.IsNullOrEmpty(s))
+                {
+                    Payload = Encoding.UTF8.GetBytes(s);
+                    UpdateByteLength();
+                    _opValue = null;
+                    return;
+                }
+            }
+            catch { }
+
+            // leave as-is if cannot pack
+        }
+
         // Try to unpack payload back into opValue for debugging/inspection
         public void UnpackOpValueFromPayload()
         {
@@ -158,6 +207,19 @@ namespace SimpleLanguage.IR
             }
             // if still not set, keep raw bytes
             _opValue = Payload;
+        }
+
+        // Get serialized instruction length. If `next` is provided, length is the
+        // distance between this.offset and next.offset (as used by CLR/JVM style
+        // instruction layouts). If `next` is null, fall back to 1 + payload length
+        // (1 byte for opcode + payload bytes).
+        public int GetSerializedLength(IRData next)
+        {
+            if (next != null)
+            {
+                return next.offset - this.offset;
+            }
+            return 1 + (Payload != null ? Payload.Length : 0);
         }
 
         // Helpers to read payload as common types (fall back to opValue if present)

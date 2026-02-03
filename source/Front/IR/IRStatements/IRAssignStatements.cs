@@ -8,7 +8,6 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.IR;
-using SimpleLanguage.Parse;
 using System.Diagnostics;
 
 namespace SimpleLanguage.IR

@@ -9,10 +9,11 @@
 
 using System;
 using System.Runtime.InteropServices;
+using SimpleLanguage.VM;
+using SimpleLanguage.VM.Runtime;
 
 namespace SimpleLanguage.Lib
 {
-    namespace SimpleLanguage.VM
     public static class ArrayClass
     {
         //public static Int64 CreateArray(Int32Object arrayLength, Int32Object elementSize) => CreateArray(arrayLength.value, elementSize.value);
@@ -68,12 +69,11 @@ namespace SimpleLanguage.Lib
         public static object GetArrayValueThis(ArrayObject ao, int index)
         {
             var retobj =  ao.GetValue(index);
-            if( retobj == null )
+                if( retobj == null )
             {
-                var retobj2 = new SObject(EVMType.Object);
-                retobj2.SetNull();
-
-                return retobj2;
+                    var retobj2 = new SimpleLanguage.VM.SObject(EVMType.Object);
+                    retobj2.SetNull();
+                    return retobj2;
             }
             return retobj;
         }

@@ -28,7 +28,6 @@ namespace SimpleLanguage.IR
     {
         public MetaExpressNode express => m_ExpressNode;
         public IRMetaType irMetaType => m_IRMetaType;
-        public IRMetaVariableFrom irMetaVariableFrom => m_IRMetaVariableFrom;
         public int id => m_Id;
         public string name => m_Name;
         public int index => m_Index;
@@ -129,14 +128,6 @@ namespace SimpleLanguage.IR
             IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mmv.GetOwnerClassTemplateClass().GetHashCode());
             m_IRMetaType = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mmv.realMetaType, owirmc);
         }
-        //public void SetExpress( MetaExpressNode men )
-        //{
-        //    this.m_ExpressNode = men;
-        //}
-        //public void SetIRDataList( List<IRData> list )
-        //{
-        //    this.m_IRDataList = list;
-        //}
         public override string ToString()
         {
             return name;

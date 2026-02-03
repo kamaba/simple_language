@@ -67,7 +67,7 @@ namespace SimpleLanguage
             
             // Original code
             CommandInputArgs inputArgs = new CommandInputArgs(args);
-            ProjectManager.Run("../../../source/Lib/Core/Core.sp", inputArgs );
+            ProjectManager.Run("../../../Lib/Core/Core.sp", inputArgs );
 
             // after compilation, try exporting IR methods to LLVM IR using the AOT exporter
             try

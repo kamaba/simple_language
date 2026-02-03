@@ -16,21 +16,9 @@ namespace SimpleLanguage.IR
 {
     public class IRManager
     {
-        public static IRManager s_Instance = null;
-        public static IRManager instance
-        {
-            get
-            {
-                if (s_Instance == null)
-                {
-                    s_Instance = new IRManager();
-                }
-                return s_Instance;
-            }
-        }
-        public List<IRData> irDataList => m_IRDataList;
+        public static IRManager instance = new IRManager();
 
-        public List<IRMetaClass> irMetaClassList => m_IRMetaClassList;
+        public List<IRData> irDataList => m_IRDataList;
         public Dictionary<string, IRMethod> IRMethodDict = new Dictionary<string, IRMethod>();
         public Dictionary<int, string> IRStringDict = new Dictionary<int,string>();
         public List<IRMetaVariable> globalStaticVariableList => m_GlobalStaticVariableList;
@@ -67,21 +55,19 @@ namespace SimpleLanguage.IR
         public void GlobalVariable()
         {
             var staticArray = IRManager.instance.globalStaticVariableList;
-            /*
-            m_GlobalVariableValueList = new List<SValue>(staticArray.Count);
 
-            List<Instruction> execIRList = new List<Instruction>();
+            List<IRData> execIRList = new List<IRData>();
             for (int i = 0; i < staticArray.Count; i++)
             {
-                m_GlobalVariableId2IndexDict.Add(staticArray[i].id, i);
+                //m_GlobalVariableId2IndexDict.Add(staticArray[i].id, i);
 
-                var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(staticArray[i].irMetaType);
-                IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(staticArray[i].irMetaType.irOwnerMetaClass.id);
+                //var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(staticArray[i].irMetaType);
+                //IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(staticArray[i].irMetaType.irOwnerMetaClass.id);
 
-                var obj = ObjectManager.CreateObjectByRuntimeType(rt, true);
-                SValue tmp = default;
-                tmp.SetSObject(obj);
-                m_GlobalVariableValueList.Add(tmp);
+                //var obj = ObjectManager.CreateObjectByRuntimeType(rt, true);
+                //SValue tmp = default;
+                //tmp.SetSObject(obj);
+                //m_GlobalVariableValueList.Add(tmp);
 
                 IRExpressBase irexpress = IRExpressManager.CreateExpress(null, staticArray[i].express);
 
@@ -91,12 +77,6 @@ namespace SimpleLanguage.IR
                 execIRList.AddRange(irsv.IRDataList);
 
             }
-            RuntimeVM clrRuntime = new RuntimeVM(execIRList);
-            clrRuntime.isPersistent = true;
-            clrRuntime.id = "InnverCLRRuntimeVM.CLRRuntime.EntryMethod()";
-            PushCLRRuntime(clrRuntime);
-            clrRuntime.Run(true);
-            */
         }
         public IRMetaClass GetIRMetaClassById( int id )
         {
@@ -115,8 +95,6 @@ namespace SimpleLanguage.IR
             {
                 IRMetaClass irmc = new IRMetaClass(v);
                 m_IRMetaClassList.Add(irmc);
-                //if(!v.isGenTemplate && !v.isTemplateClass )
-                //    RuntimeTypeManager.AddRuntimeTypeByClass(irmc);
             }
             foreach ( var v in m_IRMetaClassList )
             {
@@ -236,95 +214,6 @@ namespace SimpleLanguage.IR
             IRMethod irmethod = new IRMethod(this, hmf);
             return irmethod;
         }
-        public static string GetIRNameByMetaClass(MetaClass mc)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append(mc.metaNode.allName);
-            if (mc is MetaGenTemplateClass mgtc)
-            {
-                sb.Append("<");
-                for (int i = 0; i < mgtc.metaGenTemplateList.Count; i++)
-                {
-                    sb.Append(IRManager.GetIRNameByMetaClass(mgtc.metaGenTemplateList[i].metaType.metaClass));
-                    if (i < mgtc.metaGenTemplateList.Count - 1)
-                    { sb.Append(","); }
-                }
-                sb.Append(">");
-            }
-            else
-            {
-                if (mc.metaTemplateList.Count > 0)
-                {
-                    sb.Append("<");
-                    for (int i = 0; i < mc.metaTemplateList.Count; i++)
-                    {
-                        sb.Append(mc.metaTemplateList[i].name);
-                        if (i < mc.metaTemplateList.Count - 1)
-                        { sb.Append(","); }
-                    }
-                    sb.Append(">");
-                }
-            }
-
-            return sb.ToString();
-        }
-        public static string GetIRNameByMetaType(MetaType mt)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            if (mt.eType == EMetaTypeType.Template )
-            {
-                sb.Append("$");
-                sb.Append(mt.metaTemplate.name);
-                sb.Append("$");
-            }
-            else if (mt.eType == EMetaTypeType.MetaClass)
-            {
-                sb.Append(mt.GetTemplateMetaClass().metaNode.allName);
-                if ( mt.metaClass is MetaGenTemplateClass mgtc )
-                {
-                    sb.Append("<");
-                    for (int i = 0; i < mgtc.metaGenTemplateList.Count; i++)
-                    {
-                        sb.Append(GetIRNameByMetaType(mgtc.metaGenTemplateList[i].metaType ));
-                        if (i < mgtc.metaGenTemplateList.Count - 1)
-                        { sb.Append(","); }
-                    }
-                    sb.Append('>');
-                }
-                else
-                {
-                    if(mt.GetTemplateMetaClass().metaTemplateList.Count > 0 )
-                    {
-                        sb.Append("<");
-                        for (int i = 0; i < mt.GetTemplateMetaClass().metaTemplateList.Count; i++)
-                        {
-                            sb.Append("$");
-                            sb.Append(mt.GetTemplateMetaClass().metaTemplateList[i].name);
-                            sb.Append("$");
-                            if (i < mt.GetTemplateMetaClass().metaTemplateList.Count - 1)
-                            { sb.Append(","); }
-                        }
-                        sb.Append('>');
-                    }
-                }
-            }
-            else
-            {
-                sb.Append(mt.GetTemplateMetaClass().metaNode.allName);
-                sb.Append("<");
-                for (int i = 0; i < mt.defineTemplateMetaTypeList.Count; i++)
-                {
-                    sb.Append(GetIRNameByMetaType(mt.defineTemplateMetaTypeList[i]));
-                    if (i < mt.defineTemplateMetaTypeList.Count - 1)
-                    { sb.Append(","); }
-                }
-                sb.Append('>');
-            }
-
-            return sb.ToString();
-        }
         public void ParseIRMethod()
         {
             foreach( var v in IRMethodDict )
@@ -387,6 +276,99 @@ namespace SimpleLanguage.IR
                 return IRMethodDict[name];
             }
             return null;
+        }
+
+
+
+
+        public static string GetIRNameByMetaClass(MetaClass mc)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(mc.allClassName);
+            if (mc is MetaGenTemplateClass mgtc)
+            {
+                sb.Append("<");
+                for (int i = 0; i < mgtc.metaGenTemplateList.Count; i++)
+                {
+                    sb.Append(IRManager.GetIRNameByMetaClass(mgtc.metaGenTemplateList[i].metaType.metaClass));
+                    if (i < mgtc.metaGenTemplateList.Count - 1)
+                    { sb.Append(","); }
+                }
+                sb.Append(">");
+            }
+            else
+            {
+                if (mc.metaTemplateList.Count > 0)
+                {
+                    sb.Append("<");
+                    for (int i = 0; i < mc.metaTemplateList.Count; i++)
+                    {
+                        sb.Append(mc.metaTemplateList[i].name);
+                        if (i < mc.metaTemplateList.Count - 1)
+                        { sb.Append(","); }
+                    }
+                    sb.Append(">");
+                }
+            }
+
+            return sb.ToString();
+        }
+        public static string GetIRNameByMetaType(MetaType mt)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (mt.eType == EMetaTypeType.Template)
+            {
+                sb.Append("$");
+                sb.Append(mt.metaTemplate.name);
+                sb.Append("$");
+            }
+            else if (mt.eType == EMetaTypeType.MetaClass)
+            {
+                sb.Append(mt.GetTemplateMetaClass().metaNode.allName);
+                if (mt.metaClass is MetaGenTemplateClass mgtc)
+                {
+                    sb.Append("<");
+                    for (int i = 0; i < mgtc.metaGenTemplateList.Count; i++)
+                    {
+                        sb.Append(GetIRNameByMetaType(mgtc.metaGenTemplateList[i].metaType));
+                        if (i < mgtc.metaGenTemplateList.Count - 1)
+                        { sb.Append(","); }
+                    }
+                    sb.Append('>');
+                }
+                else
+                {
+                    if (mt.GetTemplateMetaClass().metaTemplateList.Count > 0)
+                    {
+                        sb.Append("<");
+                        for (int i = 0; i < mt.GetTemplateMetaClass().metaTemplateList.Count; i++)
+                        {
+                            sb.Append("$");
+                            sb.Append(mt.GetTemplateMetaClass().metaTemplateList[i].name);
+                            sb.Append("$");
+                            if (i < mt.GetTemplateMetaClass().metaTemplateList.Count - 1)
+                            { sb.Append(","); }
+                        }
+                        sb.Append('>');
+                    }
+                }
+            }
+            else
+            {
+                sb.Append(mt.GetTemplateMetaClass().metaNode.allName);
+                sb.Append("<");
+                for (int i = 0; i < mt.defineTemplateMetaTypeList.Count; i++)
+                {
+                    sb.Append(GetIRNameByMetaType(mt.defineTemplateMetaTypeList[i]));
+                    if (i < mt.defineTemplateMetaTypeList.Count - 1)
+                    { sb.Append(","); }
+                }
+                sb.Append('>');
+            }
+
+            return sb.ToString();
         }
         public string ToIRString()
         {

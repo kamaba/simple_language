@@ -174,6 +174,16 @@ namespace SimpleLanguage.CSharp
         {
             isAdd = false;
             string allName = frontName + "." + name;
+            // check externally registered classes/namespaces first
+            try
+            {
+                if (SimpleLanguage.Core.ExternalClassRegistry.TryGet(allName, out var regNode))
+                {
+                    isAdd = true;
+                    return regNode;
+                }
+            }
+            catch { }
             for (int k = 0; k < canSearchAssemblyList.Count; k++)
             {
                 Assembly am = canSearchAssemblyList[k];

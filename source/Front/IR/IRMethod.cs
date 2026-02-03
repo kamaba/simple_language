@@ -53,6 +53,21 @@ namespace SimpleLanguage.IR
             {
                 m_InterfaceMethod = mmf.isOverrideInterface;
             }
+            // compute offsets: each instruction's offset = running sum of previous instr lengths
+            int currentOffset = 0;
+            for (int i = 0; i < m_IRDataList.Count; i++)
+            {
+                var d = m_IRDataList[i];
+                d.offset = currentOffset;
+                // instruction length = 1 (opcode byte) + payload length
+                int instrLen = 1 + (d.Payload != null ? d.Payload.Length : 0);
+                currentOffset += instrLen;
+            }
+            // finalize packaging for serialization
+            for (int i = 0; i < m_IRDataList.Count; i++)
+            {
+                try { m_IRDataList[i].FinalizePack(); } catch { }
+            }
             m_FunEndLabelData = new IRData();
             m_FunEndLabelData.opCode = EIROpCode.Label;
         }
