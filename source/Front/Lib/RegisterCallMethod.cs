@@ -209,6 +209,11 @@ namespace SimpleLanguage.Lib
             }
         }
 
+        static EType MapEType(EType e)
+        {
+            return e;
+        }
+
         // local DTO classes for JSON import
         public class CallMethodModel
         {
@@ -321,25 +326,36 @@ namespace SimpleLanguage.Lib
             if (targetClass == null) return;
 
             // create MetaMemberFunction for this method (static)
-            var mmf = new MetaMemberFunction(targetClass, node.methodName);
+            var mmf = new MetaMemberFunction.MetaBuiltinFunction(targetClass, node.methodName);
             mmf.SetIsGet(false);
             mmf.SetIsSet(false);
-            // make it static (registered external functions are static)
-            // using reflection of internal fields is messy; use available API if any
-            // fall back: set permission and mark static via internal property (unsafe cast)
-            var rt = node.returnType?.typeName ?? "void";
+
             // set return type by best-effort mapping
-            var ReturnMetaVariable = new MetaVariable(targetClass.allClassName + "." + node.methodName + ".return", MetaVariable.EVariableFrom.None, null, targetClass, new MetaType(CoreMetaClassManager.objectMetaClass));
+            var retType = MapEType(node.returnType?.eType ?? EType.None);
+            var retMetaClass = CoreMetaClassManager.GetMetaClassByEType(retType) ?? CoreMetaClassManager.objectMetaClass;
+            var retMetaType = new MetaType(retMetaClass);
+            if (mmf.returnMetaVariable != null)
+            {
+                mmf.returnMetaVariable.SetMetaDefineType(retMetaType);
+                mmf.returnMetaVariable.SetRealMetaType(retMetaType);
+                mmf.returnMetaVariable.SetIsDefineMetaType(true);
+            }
 
             // add parameters
             foreach (var at in node.argumentListType)
             {
                 var mdp = new MetaDefineParam(at.typeName, mmf);
-                // set meta variable type best-effort
+                var pType = MapEType(at.eType);
+                var pMetaClass = CoreMetaClassManager.GetMetaClassByEType(pType) ?? CoreMetaClassManager.objectMetaClass;
+                mdp.SetMetaType(new MetaType(pMetaClass));
+                if (mdp.metaVariable != null)
+                {
+                    mdp.metaVariable.SetIsDefineMetaType(true);
+                }
                 mmf.AddMetaDefineParam(mdp);
             }
 
-            //targetClass.AddMetaMemberFunction(mmf);
+            targetClass.AddMetaMemberFunction(mmf);
         }
     }
 }
