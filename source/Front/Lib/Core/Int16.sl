@@ -1,4 +1,3 @@
-import CSharpLang.SimpleLanguage.Core
 import CSharpLang.SimpleLanguage
 
 public class Int16 extends Num
@@ -14,7 +13,7 @@ public class Int16 extends Num
     }
     public static Int16 parseString( string s )
     {
-        ret 0
+        ret 0s
     }
     _init_( Int16 _val )
     {

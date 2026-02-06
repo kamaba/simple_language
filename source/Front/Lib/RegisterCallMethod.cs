@@ -232,6 +232,8 @@ namespace SimpleLanguage.Lib
                 case RegisterCallMethodLanuage.CSharpLang:
                     {
                         var module = ModuleManager.instance.csharpLangRegisterModule;
+                        // register namespace/class/method into module
+                        RegisterToModule(module, node);
                     }
                     break;
                 case RegisterCallMethodLanuage.JavaLang:
@@ -250,6 +252,94 @@ namespace SimpleLanguage.Lib
                     }
                     break;
             }
+        }
+
+
+        static void RegisterToModule(MetaModule module, CallMethod node)
+        {
+            if (module == null || node == null) return;
+
+            // navigate/create namespace chain
+            MetaNode parent = module.metaNode;
+            if (node.namespaceNameList != null && node.namespaceNameList.Count > 0)
+            {
+                foreach (var ns in node.namespaceNameList)
+                {
+                    if (string.IsNullOrEmpty(ns)) continue;
+                    var child = parent.GetChildrenMetaNodeByName(ns);
+                    if (child == null)
+                    {
+                        var mn = new MetaNamespace(ns);
+                        var newNode = parent.AddMetaNamespace(mn);
+                        parent = newNode;
+                    }
+                    else
+                    {
+                        parent = child;
+                    }
+                }
+            }
+
+            // handle topClassNameList (nested classes)
+            MetaNode classParent = parent;
+            if (node.topClassNameList != null && node.topClassNameList.Count > 0)
+            {
+                foreach (var tcn in node.topClassNameList)
+                {
+                    if (string.IsNullOrEmpty(tcn)) continue;
+                    var found = classParent.GetChildrenMetaNodeByName(tcn);
+                    if (found == null)
+                    {
+                        var mc = new MetaClass(tcn, EClassDefineType.InnerDefine);
+                        var newNode = classParent.AddMetaClass(mc);
+                        classParent = newNode;
+                    }
+                    else
+                    {
+                        classParent = found;
+                    }
+                }
+            }
+
+            // finally add/create target class
+            var classNode = classParent.GetChildrenMetaNodeByName(node.className);
+            MetaClass targetClass = null;
+            if (classNode == null)
+            {
+                var mc = new MetaClass(node.className, EClassDefineType.InnerDefine);
+                classNode = classParent.AddMetaClass(mc);
+                targetClass = mc;
+            }
+            else
+            {
+                if (classNode.IsMetaClass())
+                {
+                    targetClass = classNode.GetMetaClassByTemplateCount(0);
+                }
+            }
+
+            if (targetClass == null) return;
+
+            // create MetaMemberFunction for this method (static)
+            var mmf = new MetaMemberFunction(targetClass, node.methodName);
+            mmf.SetIsGet(false);
+            mmf.SetIsSet(false);
+            // make it static (registered external functions are static)
+            // using reflection of internal fields is messy; use available API if any
+            // fall back: set permission and mark static via internal property (unsafe cast)
+            var rt = node.returnType?.typeName ?? "void";
+            // set return type by best-effort mapping
+            var ReturnMetaVariable = new MetaVariable(targetClass.allClassName + "." + node.methodName + ".return", MetaVariable.EVariableFrom.None, null, targetClass, new MetaType(CoreMetaClassManager.objectMetaClass));
+
+            // add parameters
+            foreach (var at in node.argumentListType)
+            {
+                var mdp = new MetaDefineParam(at.typeName, mmf);
+                // set meta variable type best-effort
+                mmf.AddMetaDefineParam(mdp);
+            }
+
+            //targetClass.AddMetaMemberFunction(mmf);
         }
     }
 }

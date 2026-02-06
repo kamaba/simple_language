@@ -1,5 +1,5 @@
 import CSharp.System
-import CSharpLang.SimpleLanguage.Core
+import CSharpLang.SimpleLanguage
 
 BoolTest
 {

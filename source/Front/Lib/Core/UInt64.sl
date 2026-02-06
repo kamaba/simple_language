@@ -1,4 +1,3 @@
-import CSharpLang.SimpleLanguage.Core
 import CSharpLang.SimpleLanguage
 
 public class UInt64 extends Num

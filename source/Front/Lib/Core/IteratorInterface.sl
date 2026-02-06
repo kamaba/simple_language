@@ -1,4 +1,3 @@
-import CSharpLang.SimpleLanguage.Core
 import CSharpLang.SimpleLanguage
 
 public interface IIterator

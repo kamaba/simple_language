@@ -48,7 +48,7 @@ namespace SimpleLanguage.IR
         {
             m_MetaClass = mc;
             m_IRName = IRManager.GetIRNameByMetaClass(mc);
-            id = GetHashCode();
+            id = mc.GetHashCode();
         }        
         public IRMethod GetIRNonStaticMethodByIndex( int index )
         {
@@ -274,6 +274,9 @@ namespace SimpleLanguage.IR
             foreach( var v in this.m_MetaClass.metaTemplateMapDict )
             {
                 IRMetaClass cv = IRManager.instance.GetIRMetaClassById(v.Key.GetHashCode() );
+
+                Debug.Assert(cv != null, "");
+
                 Dictionary<int, IRMetaType> templateMap = new Dictionary<int, IRMetaType >();
 
                 for( int i = 0; i < v.Value.metaTemplateBindDataList.Count; i++ )

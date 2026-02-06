@@ -1,5 +1,5 @@
 ﻿using SimpleLanguage.Logging;
-using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace SimpleLanguage.VM
 {
@@ -23,24 +23,11 @@ namespace SimpleLanguage.VM
 
         Dictionary<int, Dictionary<int, RuntimeDefType>> m_IRMetaClassMapTemplateDict = new Dictionary<int, Dictionary<int, RuntimeDefType>>();
 
-
-        //public RuntimeClass( IRMetaClass irmc )
-        //{
-        //    //irmc.CreateStaticMetaMetaVariableIRList
-        //}
-        public ClassObject GetStaticMetaMemberVaraible( int index )
-        {
-            //if( index < 0 || index >= m_StaticMetaMemberVariableArray.Length )
-            //{
-            //    return null;
-            //}
-            //return m_StaticMetaMemberVariableArray[index];
-            return null;
-        }
         public RuntimeMethod GetNonStaticMethodByIndex(int index)
         {
             if (index >= m_NotStaticMethodList.Count || index < 0)
             {
+                Debug.Assert(false);
                 Log.AddVM(EError.None, "GetIRMethodByIndex is null");
                 return null;
             }
@@ -114,8 +101,6 @@ namespace SimpleLanguage.VM
                 return s_Instance;
             }
         }
-        Dictionary<int, RuntimeClass> m_RuntimeClassDict = new Dictionary<int, RuntimeClass>();
-
         public List<RuntimeClass> m_IRMetaClassList = new List<RuntimeClass>();
 
 
@@ -125,17 +110,12 @@ namespace SimpleLanguage.VM
         }
         public RuntimeClass GetRuntimeClassById( int id )
         {
-            if (m_RuntimeClassDict.ContainsKey(id))
-            {
-                return m_RuntimeClassDict[id];
-            }
-            return null;
+            return m_IRMetaClassList.Find(a => a.id == id);
 
         }
         public RuntimeClass GetRuntimeClassByName(string allname)
         {
-            //return m_RuntimeClassDict.Find(a => a.name == allname);
-            return null;
+            return m_IRMetaClassList.Find(a => a.name == allname);
         }
 
         //public IRMetaType GetIRMetaClass( IRMetaClass metaclass, List<IRMetaClass> templateList, bool isNonIncludeAndRegister = false )
@@ -147,15 +127,14 @@ namespace SimpleLanguage.VM
         //        if( v.irmeta)
         //    }
         //}
+        //public ClassObject GetStaticMetaMemberVariable( int classid, int index )
+        //{
+        //    if(m_RuntimeClassDict.ContainsKey(classid) )
+        //    {
+        //        //m_RuntimeClassDict[classid].GetStaticMetaMemberVaraible(index);
+        //    }
 
-        public ClassObject GetStaticMetaMemberVariable( int classid, int index )
-        {
-            if(m_RuntimeClassDict.ContainsKey(classid) )
-            {
-                //m_RuntimeClassDict[classid].GetStaticMetaMemberVaraible(index);
-            }
-
-            return null;
-        }
+        //    return null;
+        //}
     }
 }

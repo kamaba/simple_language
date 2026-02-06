@@ -1,4 +1,3 @@
-import CSharpLang.SimpleLanguage.Core
 import CSharpLang.SimpleLanguage
 
 public class Array<T> interface IIterable<T>, IIterator<T>

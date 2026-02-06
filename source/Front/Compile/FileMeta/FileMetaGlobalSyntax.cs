@@ -95,7 +95,13 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        mb = mb.GetChildrenMetaNodeByName(name);
+                        var findmb = mb.GetChildrenMetaNodeByName(name);
+                        if(findmb == null )
+                        {
+                            Debug.Assert(false, $"文件:{m_NamespaceStatement.tokenList[i].path } 没有找到:{mb.allName} 下的:{name}");
+                            break;
+                        }
+                        mb = findmb;
                         if (!mb.isMetaNamespace )
                         {
                             Log.AddInStructFileMeta(EError.None, "解析Import语句发生错误，没有找到对应的命名空间路径: " + m_NamespaceStatement.tokenList[i].lexeme.ToString()

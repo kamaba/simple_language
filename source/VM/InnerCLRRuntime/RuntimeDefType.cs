@@ -7,16 +7,17 @@ namespace SimpleLanguage.VM
 {
     public class RuntimeDefType
     {
-
         public RuntimeClass runtimeClass => m_RuntimeClass;
         public RuntimeClass ownerRuntimeClass => m_OwnerRuntimeClass;
         public List<RuntimeDefType> runtimeDefTypeList => m_RuntimeDefTypeList;
         public int templateIndex => m_TemplateIndex;
+        public bool isTemplate => m_IsTemplate;
 
         private RuntimeClass m_RuntimeClass = null;
         private RuntimeClass m_OwnerRuntimeClass = null;
         private List<RuntimeDefType> m_RuntimeDefTypeList = new List<RuntimeDefType>();
         private int m_TemplateIndex = -1;
+        private bool m_IsTemplate = false;
 
         public RuntimeDefType()
         {
@@ -33,25 +34,17 @@ namespace SimpleLanguage.VM
         }
         public static RuntimeDefType CreateIRMetaTypeByGenTemplateMetaTypeList( RuntimeDefType type, RuntimeClass ownerIRMc)
         {
-            return null;
             /*
-            IRMetaType irmt = new();
-            irmt.m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id);
+            RuntimeDefType irmt = new();
+            irmt.m_OwnerRuntimeClass = RuntimeClassManager.instance.GetRuntimeClassById(ownerIRMc.id);
 
-            var gtmc = type.GetTemplateMetaClass();
-            if (type.eType == EMetaTypeType.MetaClass)
+            var gtmc = type.runtimeClass;
+            if (type.isTemplate )
             {
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(gtmc.GetHashCode());
+                irmt.m_TemplateIndex = type.templateIndex;
             }
-            else if (type.eType == EMetaTypeType.Template)
-            {
-                irmt.m_TemplateIndex = type.metaTemplate.index;
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
-            }
-            else
-            {
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
-            }
+            irmt.m_RuntimeClass = RuntimeClassManager.instance.GetRuntimeClassById(type.runtimeClass.id );
+
             var lits = type.GetGenTemplateMetaTypeList();
             for (int i = 0; i < lits.Count; i++)
             {
@@ -67,6 +60,7 @@ namespace SimpleLanguage.VM
             }
             return irmt;
             */
+            return null;
         }
         public static RuntimeDefType CreateIRMetaTypeByDefineTemplateMetaTypeList(RuntimeDefType type, RuntimeClass ownerIRMc)
         {

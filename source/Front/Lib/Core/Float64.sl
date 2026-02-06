@@ -1,6 +1,5 @@
-import CSharpLang.SimpleLanguage.Core
 import CSharpLang.SimpleLanguage
-import CSharpLang.System;
+import CSharp.System;
 
 public class Float64 extends Num
 {
@@ -41,7 +40,7 @@ public class Float64 extends Num
         ret this._value > value._value ? 1 : -1
     }
 
-    public static bool IsFinite( Float64 f )
+    public static bool isFinite( Float64 f )
     {
         #try {
             ret false;  #!double.IsInfinity(f) && !double.IsNaN(f); 
