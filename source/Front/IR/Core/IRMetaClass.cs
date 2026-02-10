@@ -153,8 +153,6 @@ namespace SimpleLanguage.IR
         }
         public void CreateMemberData()
         {
-            //m_MetaTypeList.Clear();
-
             if (m_MetaClass is MetaEnum me)
             {
             }

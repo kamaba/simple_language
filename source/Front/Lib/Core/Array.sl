@@ -1,4 +1,4 @@
-import CSharpLang.SimpleLanguage
+#import CSharpLang.SimpleLanguage
 
 public class Array<T> interface IIterable<T>, IIterator<T>
 {
@@ -26,7 +26,25 @@ public class Array<T> interface IIterable<T>, IIterator<T>
     {
         for i = 0, i < this._length, i++
         {
-            SimpleLanguage.Lib.ArrayClass.SetArrayValueThis(this, i, value)
+            #SimpleLanguage.Lib.ArrayClass.SetArrayValueThis(this, i, value)
+
+            #!
+            var retObj = BridgeObject();
+            Array<BridgeObject> paramObjs = new(3)
+            paramObjs[0] = BridgeObject("this")
+            paramObjs[1] = BridgeObject(i)
+            paramObjs[2] = BridgeObject(value)
+            
+            NativeBridge.Call( BridgeKind.CSharp, "SimpleLanguageVM", "SimpleLanguage.Lib.ArrayClass", 
+            "SetArrayValueThis", retObj, paramObjs );
+
+            IntPtr ptr = clang.call("Cdll", "add", 4, 5)
+            int val = ptr.readInt()
+            int a = csharplang.call("SimpleLanguageVM", "SimpleLanguage.Lib.ClassObject", "NewObject", int, 2, 4 )
+            int j = javalang.call("SimpleLanguageJVM", "SimpleLanguage.Lib.ClassObject", "NewObject", int, 2, 4 )
+            int p = pythonlang.call("test.py", "calladd", 4, 8 )
+            int p2 = jslang.call("jstest.js", "calladd", 2, 10 )
+            !#
         }
     }
 
@@ -40,7 +58,7 @@ public class Array<T> interface IIterable<T>, IIterator<T>
         bool hasNext_var = this._index < this._length 
         if hasNext_var
         {
-            this._current = SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, this._index ) as T
+            this._current = null;# SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, this._index ) as T
         }
         else
         {
@@ -56,7 +74,7 @@ public class Array<T> interface IIterable<T>, IIterator<T>
     }
     override set void current( T val )
     {
-        SimpleLanguage.Lib.ArrayClass.SetArrayValueThis( this, this._index, val )
+        #SimpleLanguage.Lib.ArrayClass.SetArrayValueThis( this, this._index, val )
         this._current = val
     }
     override void release()
@@ -83,19 +101,19 @@ public class Array<T> interface IIterable<T>, IIterator<T>
             ret 
         }
         this._index = ind;
-        this._current = SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, ind )
+        #this._current = SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, ind )
         #retobj = impleLanguage.Lib.ArrayClass.GetArrayValueThis( this, ind )
         #this._current = retobj;
     }
     set setValue( int __index, T val )
     {
         #Lib.Array.SetArrayValue( this._ptr, 5,  index, val )
-        SimpleLanguage.Lib.ArrayClass.SetArrayValueThis( this, __index, val )
+        #SimpleLanguage.Lib.ArrayClass.SetArrayValueThis( this, __index, val )
     }
     get T getValue( int __index )
     {
         #ret Lib.ArrayClass.GetArrayValue( this._ptr, 5,  index )
-        ret SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, __index )
+        ret null #SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, __index )
     }
     setValues( Int64 valPtr, int len )
     {
@@ -106,7 +124,7 @@ public class Array<T> interface IIterable<T>, IIterator<T>
         string showstr = "["
         for i = 0, i < this._length, i++
         {
-            var cur = SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, i )
+            var cur = "" #SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, i )
             showstr = showstr + cur.toString()
             if( i < this._length - 1 )
             {

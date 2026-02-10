@@ -120,7 +120,9 @@ namespace SimpleLanguage.VM
         CallDynamic,
         CallVirt,
         Calli,
-        CallCSharpMethod,
+        CallCLRMethod,
+        CallNativeMethod,
+        CallJVMMethod,
         CastClass,
 
         Convert_I8,

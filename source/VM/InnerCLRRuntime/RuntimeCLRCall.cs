@@ -11,6 +11,7 @@ using SimpleLanguage.VM.Runtime;
 using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace SimpleLanguage.VM
 {
@@ -23,6 +24,92 @@ namespace SimpleLanguage.VM
         private RuntimeMethod m_RuntimeMethod = null;
 
         public RuntimeCLRCall(RuntimeMethod _irMethod)
+        {
+        }
+        public void InvokeCLRMethod(RuntimeVM rvm)
+        {
+            if (m_MethodInfo == null)
+            {
+                Debug.Write("error 执行时发现系统空函数");
+                return;
+            }
+
+            Object[] paramsObj = new Object[paramCount];
+            ParameterInfo[] pis = m_MethodInfo.GetParameters();
+            for (int i = 0; i < pis.Length; i++)
+            {
+                //paramsObj[i] = GetObjectByValue(rvm.m_ValueStack[rvm.m_ValueIndex - paramsObj.Length + i], pis[i].ParameterType);
+            }
+            rvm.m_ValueIndex -= (ushort)(paramsObj.Length - 1);
+
+            var retobj = m_MethodInfo.Invoke(target, paramsObj);
+            if (retobj != null)
+            {
+                //CreateSObjectByCSharpObject(ref rvm.m_ValueStack[rvm.m_ValueIndex++], retobj);
+            }
+        }
+    }
+    public class RuntimeNativeCall
+    {
+        [DllImport("kernel32")]
+        static extern IntPtr LoadLibrary(string lpFileName);
+
+        [DllImport("kernel32")]
+        static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+
+        [DllImport("kernel32")]
+        static extern bool FreeLibrary(IntPtr hModule);
+
+        // 函数签名
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        delegate int Add(int a, int b);
+
+        public string dllPath { get; set; } = "";
+        public string functionName { get; set; } = "";
+
+
+        public void InvokeNativeMethod(RuntimeVM rvm)
+        {
+            rvm.m_ValueIndex -= (ushort)(2);
+
+            var dll = LoadLibrary(dllPath);
+            if (dll == IntPtr.Zero)
+            {
+                //throw new Exception("LoadLibrary failed");
+                Debug.Assert(false, "LoadLibrary failed");
+                return;
+            }
+            
+            IntPtr func = IntPtr.Zero;
+            try
+            {
+                /*
+                unsafe
+                {
+                    delegate* unmanaged[Cdecl]<int, int, int> add;
+                    add = (delegate* unmanaged[Cdecl]<int, int, int>)funcPtr;
+
+                    int r = add(3, 4);
+                }
+                */
+                func = GetProcAddress(dll, functionName );
+                if (func == IntPtr.Zero)
+                {
+                    Debug.Assert(false, "GetProcAddress failed");
+                    //throw new Exception("GetProcAddress failed");
+                    return;
+                }
+
+                var add = Marshal.GetDelegateForFunctionPointer<Add>(func);
+
+                Console.WriteLine(add(2, 3)); // 5
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("------" + e.Message);
+            }
+        }
+        public RuntimeNativeCall(RuntimeMethod _irMethod)
         {
         }
         /*
@@ -203,28 +290,6 @@ namespace SimpleLanguage.VM
             }
         }
         */
-        public void InvokeCSharp( RuntimeVM rvm )
-        {
-            if (m_MethodInfo == null)
-            {
-                Debug.Write("error 执行时发现系统空函数");
-                return;
-            }
-
-            Object[] paramsObj = new Object[paramCount];
-            ParameterInfo[] pis = m_MethodInfo.GetParameters();
-            for (int i = 0; i < pis.Length; i++)
-            {
-                paramsObj[i] = GetObjectByValue(rvm.m_ValueStack[rvm.m_ValueIndex - paramsObj.Length + i], pis[i].ParameterType );
-            }
-            rvm.m_ValueIndex -= (ushort)(paramsObj.Length - 1);
-
-            var retobj = m_MethodInfo.Invoke(target, paramsObj );
-            if (retobj != null)
-            {
-                CreateSObjectByCSharpObject( ref rvm.m_ValueStack[rvm.m_ValueIndex++], retobj );
-            }
-        }
         public System.Object GetObjectByValue( SValue sval, Type type )
         {
            

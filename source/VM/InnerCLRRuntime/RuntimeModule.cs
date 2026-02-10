@@ -1,9 +1,7 @@
 ﻿using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using SimpleLanguage.VM.InnerCLRRuntime.IL;
 
 namespace SimpleLanguage.VM
 {
@@ -79,7 +77,7 @@ namespace SimpleLanguage.VM
         public bool isStatic { get; init; }
         public bool isPublic { get; init; }
         public byte[] ilBytes { get; init; }
-        public IReadOnlyList<ILInstruction> ilInstructionList { get; init; } = Array.Empty<ILInstruction>();
+        public IReadOnlyList<Instruction> ilInstructionList { get; init; } = Array.Empty<Instruction>();
     }
 
     public class RuntimeModuleManager
@@ -104,68 +102,16 @@ namespace SimpleLanguage.VM
             return rm;
         }
 
-        public RuntimeModule BuildMeta(RuntimeModule rm, Func<Type, bool> typeFilter = null)
+        public RuntimeModule BuildMetaFromCLR(RuntimeModule rm)
         {
-            if (rm == null) throw new ArgumentNullException(nameof(rm));
+            throw new NotSupportedException("CLR reflection Type is not used for SimpleLanguage. Use SLModulePackageLoader to import SimpleLanguage module metadata into VM.");
+        }
 
-            Type[] types;
-            try
-            {
-                types = rm.module.GetTypes();
-            }
-            catch (ReflectionTypeLoadException rtle)
-            {
-                types = rtle.Types.Where(t => t != null).ToArray();
-                foreach (var le in rtle.LoaderExceptions)
-                {
-                    if (le != null) Log.AddVM(EError.None, $"Module type load error: {le.Message}");
-                }
-            }
-
-            typeFilter ??= (_ => true);
-
-            foreach (var t in types)
-            {
-                if (t == null) continue;
-                if (!typeFilter(t)) continue;
-                if (t.IsNested) continue;
-
-                var nsName = t.Namespace ?? string.Empty;
-                var ns = rm.GetOrAddNamespace(nsName);
-
-                var tm = new RuntimeTypeMeta
-                {
-                    namespaceName = nsName,
-                    name = t.Name,
-                    fullName = t.FullName ?? t.Name,
-                };
-
-                foreach (var m in t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly))
-                {
-                    if (m == null) continue;
-                    if (m.IsSpecialName) continue;
-
-                    var body = SafeGetMethodBody(m);
-                    var il = body?.GetILAsByteArray();
-                    var ilIns = (il != null && il.Length > 0) ? ILReader.Read(rm.module, il) : new List<ILInstruction>();
-
-                    var mm = new RuntimeMethodMeta
-                    {
-                        name = m.Name,
-                        returnType = m.ReturnType?.FullName ?? m.ReturnType?.Name ?? string.Empty,
-                        parameterTypeList = m.GetParameters().Select(p => p.ParameterType?.FullName ?? p.ParameterType?.Name ?? string.Empty).ToArray(),
-                        isStatic = m.IsStatic,
-                        isPublic = m.IsPublic,
-                        ilBytes = il,
-                        ilInstructionList = ilIns,
-                    };
-                    tm.AddMethod(mm);
-                }
-
-                ns.AddType(tm);
-            }
-
-            return rm;
+        // Build metadata from SimpleLanguage internal type system (not CLR reflection).
+        // Front-end should export module/type/method graph into SLModulePackage and VM imports it.
+        public RuntimeModule BuildMetaFromSimpleLanguage(RuntimeModule rm)
+        {
+            throw new NotSupportedException("Use SLModulePackageLoader to import SimpleLanguage module metadata into VM.");
         }
 
         private static Module ChooseModule(Assembly asm, string moduleName)
@@ -178,16 +124,6 @@ namespace SimpleLanguage.VM
                    ?? asm.ManifestModule;
         }
 
-        private static MethodBody SafeGetMethodBody(MethodInfo mi)
-        {
-            try
-            {
-                return mi.GetMethodBody();
-            }
-            catch
-            {
-                return null;
-            }
-        }
+        private static MethodBody SafeGetMethodBody(MethodInfo mi) => mi?.GetMethodBody();
     }
 }

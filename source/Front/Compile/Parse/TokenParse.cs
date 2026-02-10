@@ -98,10 +98,9 @@ namespace SimpleLanguage.Compile
         {
             m_TokenIndex++;
 
-            //Node node = new Node(code);
-            //node.nodeType = ENodeType.Comment;
-
-            //currentNode.AddChild(node);
+            Node node = new Node(code);
+            node.nodeType = ENodeType.Comment;
+            currentNode.AddChild(node);
         }
         private Node AddKeyNode(Token token )
         {

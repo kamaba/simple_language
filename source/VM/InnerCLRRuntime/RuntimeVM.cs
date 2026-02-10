@@ -11,6 +11,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -868,11 +870,19 @@ namespace SimpleLanguage.VM.Runtime
                         }
                     }
                     break;
-                case EIROpCode.CallCSharpMethod:
+                case EIROpCode.CallCLRMethod:
                     {
                         if (iri.opValue is RuntimeCLRCall ircf)
                         {
-                            ircf.InvokeCSharp(this);
+                            ircf.InvokeCLRMethod(this);
+                        }
+                    }
+                    break;
+                case EIROpCode.CallNativeMethod:
+                    {                         
+                        if (iri.opValue is RuntimeNativeCall irnf)
+                        {
+                            irnf.InvokeNativeMethod(this);
                         }
                     }
                     break;

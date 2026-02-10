@@ -443,7 +443,9 @@ namespace SimpleLanguage.Compile
             for (int i = 0; i < deep; i++)
                 sb.Append(Global.tabChar);
 
-            EPermission permis = CompilerUtil.GetPerMissionByString( m_PermissionToken?.lexeme.ToString());
+            EPermission permis = EPermission.Null;
+            if( m_PermissionToken != null)
+                permis = CompilerUtil.GetPerMissionByType( m_PermissionToken.type );
             if (permis == EPermission.Null)
             {
                 sb.Append("_public");

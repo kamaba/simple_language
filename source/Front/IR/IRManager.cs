@@ -181,17 +181,17 @@ namespace SimpleLanguage.IR
                 v.CreateStaticMetaMetaVariableIRList();
             }
         }
-        public void TranslateIRAutoAdd( MetaFunction mf )
-        {
-            if (IRMethodDict.ContainsKey(mf.functionAllName))
-            {
-                return;
-            }
-            var irm = TranslateIRByFunction(mf);
+        //public void TranslateIRAutoAdd( MetaFunction mf )
+        //{
+        //    if (IRMethodDict.ContainsKey(mf.functionAllName))
+        //    {
+        //        return;
+        //    }
+        //    var irm = TranslateIRByFunction(mf);
 
-            IRMethodDict.Add(mf.functionAllName, irm);
+        //    IRMethodDict.Add(mf.functionAllName, irm);
 
-        }
+        //}
         public IRMethod TranslateIRByFunction( MetaFunction mf )
         {
             var hmf = mf;

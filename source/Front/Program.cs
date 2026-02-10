@@ -10,9 +10,15 @@ using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
 using SimpleLanguage.Export;
+using SimpleLanguage.External.Native;
+using SimpleLanguage.External.Native.DartStyle;
+using System.Runtime.InteropServices;
 
 namespace SimpleLanguage
 {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate int AddDelegate(int a, int b);
+
 //    public class C1
 //    {
 //#pragma warning disable CS0414 // 字段"C1.CV"已被赋值，但从未使用过它的值
@@ -62,6 +68,53 @@ namespace SimpleLanguage
     {
         static void Main(string[] args)
         {
+            // Optional: auto-load a native library export manifest and register callable functions.
+            // Usage: SimpleLanguageFront <nativeLibPath>
+            try
+            {
+                if (args != null && args.Length > 0 && (args[0].EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                    || args[0].EndsWith(".so", StringComparison.OrdinalIgnoreCase)
+                    || args[0].EndsWith(".dylib", StringComparison.OrdinalIgnoreCase)
+                    || args[0].EndsWith(".slffi.json", StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (args[0].EndsWith(".slffi.json", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // sidecar mode: requires second arg to be the native library path
+                        if (args.Length < 2) throw new ArgumentException("Provide native library path after .slffi.json");
+                        //var manifest = NativeExportManifestReader.ReadFromJsonFile(args[0], args[1]);
+                        //NativeBindingManager.RegisterFromManifest(manifest);
+                    }
+                    else
+                    {
+                        //NativeBindingManager.RegisterFromLibrary(args[0]);
+                    }
+
+                    if (ExternalFunctionRegistry.TryGet("Native.add", out var fn))
+                    {
+                        var call = fn as Func<object[], object>;
+                        if (call != null)
+                        {
+                            var r = call(new object[] { 2, 3 });
+                            Console.WriteLine("Native.add(2,3) = " + r);
+                        }
+                    }
+
+                    // Dart-style: typedef + lookup exported symbol -> invoke
+                    // NOTE: this does not require any manifest; it needs the managed signature to be declared up-front.
+                    using (var lib = new DartStyleNativeLibrary(args[0].EndsWith(".slffi.json", StringComparison.OrdinalIgnoreCase) ? args[1] : args[0]))
+                    {
+                        // typedef int Add(int a, int b);
+                        // (matches: int simplelanguage_addtest(int,int))
+                        //var add = DartStyleNative.Lookup<Program.AddDelegate>(lib, "simplelanguage_addtest");
+                        //Console.WriteLine("DartStyle simplelanguage_addtest(2,3) = " + add(2, 3));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Native binding load failed: " + ex.Message);
+            }
+
             // Test ReadString method
             //TestReadString();
             

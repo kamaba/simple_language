@@ -325,6 +325,10 @@ namespace SimpleLanguage.Compile
                 {
                     ParseNamespaceOrTopClass(pnode);
                 }
+                else if( node.nodeType == ENodeType.Comment )
+                {
+                    continue;
+                }
                 else
                 {
                     Log.AddInStructFileMeta(EError.None, "Error 不允许 在File头级目录中出现2 : " + node.token?.lexeme.ToString());
@@ -566,6 +570,10 @@ namespace SimpleLanguage.Compile
                     {
                         isClass = 1;
                     }
+                    break;
+                }
+                else if( curNode.nodeType == ENodeType.Comment )
+                {
                     break;
                 }
                 else

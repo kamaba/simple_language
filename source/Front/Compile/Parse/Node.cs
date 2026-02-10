@@ -52,6 +52,7 @@ namespace SimpleLanguage.Compile
         PrefixDollerSymbol,
         IdentifierLink,
         Key,
+        Comment,
         End,
     }
         

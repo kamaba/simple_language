@@ -129,6 +129,9 @@
   <ItemGroup>
     <ClCompile Include="CLangdll.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="CLangdll.dll.slffi.json" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -98,9 +98,9 @@ namespace SimpleLanguage.Core
                 Log.AddInStructMeta(EError.None, "没有找到定义变量名称!");
                 m_Name = "Error_" + GetHashCode().ToString();
             }
-            if (m_FileMetaMemeberVariable.permissionToken != null)
+            if (m_FileMetaMemeberVariable.permissionToken?.type != null)
             {
-                m_Permission = CompilerUtil.GetPerMissionByString(m_FileMetaMemeberVariable.permissionToken?.lexeme.ToString());
+                m_Permission = CompilerUtil.GetPerMissionByType(m_FileMetaMemeberVariable.permissionToken.type );
             }
             else
             {

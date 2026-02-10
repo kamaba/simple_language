@@ -18,85 +18,6 @@ isUseForceSemiColonInLineEnd = true
 isForceUseClassKey           = false
 isSupportDoublePlus          = false
 
-[compileFiles]
-
-[[compileFiles.files]]
-path     = "Object.sl"
-group    = "core"
-tag      = "ir"
-ignore   = false
-priority = 0
-
-[[compileFiles.files]]
-path     = "Boolean.sl"
-group    = "core"
-tag      = "ir"
-ignore   = false
-priority = 0
-
-[[compileFiles.files]]
-path     = "Num.sl"
-group    = "core"
-tag      = "ir"
-ignore   = false
-priority = 0
-
-[[compileFiles.files]]
-path     = "Type.sl"
-group    = "core"
-tag      = "ir"
-ignore   = false
-priority = 0
-
-[[compileFiles.files]]
-path     = "Byte.sl"
-group    = "core"
-tag      = "ir"
-ignore   = false
-priority = 0
-
-[[compileFiles.files]]
-path     = "SByte.sl"
-group    = "core"
-tag      = "ir"
-ignore   = false
-priority = 0
-
-[[compileFiles.files]]
-path     = "Int32.sl"
-group    = "core"
-tag      = "ir"
-ignore   = false
-priority = 0
-
-
-[[compileFiles.files]]
-path     = "Float32.sl"
-group    = "core"
-tag      = "ir"
-ignore   = false
-priority = 0
-
-[[compileFiles.files]]
-path     = "Float64.sl"
-group    = "core"
-tag      = "ir"
-ignore   = false
-priority = 0
-
-[[compileFiles.files]]
-path     = "String.sl"
-group    = "core"
-tag      = "ir"
-ignore   = false
-priority = 0
-
-[[compileFiles.files]]
-path     = "IteratorInterface.sl"
-group    = "core"
-tag      = "ir"
-ignore   = false
-priority = 0
 
 [[compileFiles.files]]
 path     = "Array.sl"
@@ -106,14 +27,21 @@ ignore   = false
 priority = 0
 
 [[compileFiles.files]]
-#path     = "Test/ObjectTest.sl"
-#path     = "Test/NumberTest.sl"
-#path     = "Test/StringTest.sl"
-path     = "Test/TypeTest.sl"
+path     = "MethodCall/NativeBridge.sl"
 group    = "core"
 tag      = "ir"
 ignore   = false
 priority = 0
+
+#[[compileFiles.files]]
+#path     = "Test/ObjectTest.sl"
+#path     = "Test/NumberTest.sl"
+#path     = "Test/StringTest.sl"
+#path     = "Test/TypeTest.sl"
+#group    = "core"
+#tag      = "ir"
+#ignore   = false
+#priority = 0
 
 [[importFiles.Module]]
 path = "./Std.dll"

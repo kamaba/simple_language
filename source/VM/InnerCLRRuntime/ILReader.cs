@@ -28,7 +28,7 @@ namespace SimpleLanguage.VM.InnerCLRRuntime.IL
             }
         }
 
-        public static List<ILInstruction> Read(MethodBase method)
+        public static List<Instruction> Read(MethodBase method)
         {
             if (method == null) throw new ArgumentNullException(nameof(method));
             var body = method.GetMethodBody();
@@ -37,12 +37,12 @@ namespace SimpleLanguage.VM.InnerCLRRuntime.IL
             return Read(method.Module, il);
         }
 
-        public static List<ILInstruction> Read(Module module, byte[] ilBytes)
+        public static List<Instruction> Read(Module module, byte[] ilBytes)
         {
             if (ilBytes == null || ilBytes.Length == 0) return new();
             module ??= typeof(ILReader).Module;
 
-            var list = new List<ILInstruction>(ilBytes.Length / 2);
+            var list = new List<Instruction>(ilBytes.Length / 2);
             var i = 0;
             while (i < ilBytes.Length)
             {
@@ -50,7 +50,7 @@ namespace SimpleLanguage.VM.InnerCLRRuntime.IL
                 var op = ReadOpCode(ilBytes, ref i);
                 var operand = ReadOperand(module, op, ilBytes, ref i);
 
-                list.Add(new ILInstruction { offset = offset, opCode = op, operand = operand });
+                list.Add(new Instruction {  });
             }
             return list;
         }

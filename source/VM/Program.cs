@@ -42,20 +42,7 @@ try
         return;
     }
 
-    var asmMgr = new RuntimeAssemblyManager();
-    var ra = asmMgr.Load(typeof(CallMethodJsonExporter).Assembly);
-
-    var modMgr = new RuntimeModuleManager();
-    var rm = modMgr.LoadFromAssembly(ra);
-    modMgr.BuildMeta(rm);
-
-    var typeCount = rm.namespaceList.Sum(ns => ns.typeList.Count);
-    var methodCount = rm.namespaceList.Sum(ns => ns.typeList.Sum(t => t.methodList.Count));
-    var ilCount = rm.namespaceList.Sum(ns => ns.typeList.Sum(t => t.methodList.Count(m => m.ilBytes != null && m.ilBytes.Length > 0)));
-
-    Console.WriteLine($"Assembly: {ra.id}");
-    Console.WriteLine($"Module: {rm.id}");
-    Console.WriteLine($"Namespaces: {rm.namespaceList.Count}, Types: {typeCount}, Methods: {methodCount}, MethodsWithIL: {ilCount}");
+    Console.WriteLine("No module package provided. Pass a SimpleLanguage module package JSON to import language Assembly/Module/IR.");
 }
 catch (Exception e)
 {

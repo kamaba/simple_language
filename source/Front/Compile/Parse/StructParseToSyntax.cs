@@ -180,13 +180,13 @@ namespace SimpleLanguage.Compile
                 {
                     break;
                 }
-                if( curToken.type == ETokenType.Sharp )
+
+
+                if (curNode.nodeType == ENodeType.Comment)
                 {
-                    continue;
+                    break;
                 }
-
-
-                if (curNodeType == ENodeType.LineEnd)
+                else if (curNodeType == ENodeType.LineEnd)
                 {
                     if (keynodeStruct.IsLineEndBreak())
                     {

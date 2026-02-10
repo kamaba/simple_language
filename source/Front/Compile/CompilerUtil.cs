@@ -49,21 +49,21 @@ namespace SimpleLanguage.Compile
         {
             switch( permission )
             {
-                case EPermission.Public: return "public";
                 case EPermission.Export: return "export";
+                case EPermission.Public: return "public";
                 case EPermission.Protected: return "protected";
                 case EPermission.Private: return "private";
             }
             return "_public";
         }
-        public static EPermission GetPerMissionByString( string str )
+        public static EPermission GetPerMissionByType( ETokenType type )
         {
-            switch (str)
+            switch (type)
             {
-                case "public": return EPermission.Public;
-                case "export": return EPermission.Export;
-                case "protected": return EPermission.Protected;
-                case "private": return EPermission.Private;
+                case ETokenType.Export: return EPermission.Export;
+                case ETokenType.Public: return EPermission.Public;
+                case ETokenType.Projected: return EPermission.Protected;
+                case ETokenType.Private: return EPermission.Private;
                 default:return EPermission.Null;
             }
         }

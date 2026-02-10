@@ -4,50 +4,6 @@ using System.Runtime.InteropServices;
 
 namespace SimpleLanguage.VM.Runtime
 {
-    class Native
-    {
-        [DllImport("kernel32")]
-        static extern IntPtr LoadLibrary(string lpFileName);
-
-        [DllImport("kernel32")]
-        static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
-
-        [DllImport("kernel32")]
-        static extern bool FreeLibrary(IntPtr hModule);
-
-        // 函数签名
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        delegate int Add(int a, int b);
-
-        public static unsafe void MainTest()
-        {
-            var dll = LoadLibrary("CLangdll.dll");
-            if (dll == IntPtr.Zero) throw new Exception("LoadLibrary failed");
-
-            IntPtr func = IntPtr.Zero;
-            try
-            {
-                /*
-                unsafe
-                {
-                    delegate* unmanaged[Cdecl]<int, int, int> add;
-                    add = (delegate* unmanaged[Cdecl]<int, int, int>)funcPtr;
-
-                    int r = add(3, 4);
-                }
-                */
-                func = GetProcAddress(dll, "simplelanguage_addtest");
-                if (func == IntPtr.Zero) throw new Exception("GetProcAddress failed");
-
-                var add = Marshal.GetDelegateForFunctionPointer<Add>(func);
-
-                Console.WriteLine(add(2, 3)); // 5
-            }catch( Exception e )
-            {
-                Console.WriteLine("------" + e.Message);
-            }
-        }
-    }
     public class CLRVM
     {
         public static bool isPrint { get; set; } = false;
@@ -128,7 +84,6 @@ namespace SimpleLanguage.VM.Runtime
         //}
         public static void Init()
         {
-            Native.MainTest();
             //InnverCLRRuntimeVM.RootInnerCLRRuntime 
             LoadGlobalVariableMapping();
         }

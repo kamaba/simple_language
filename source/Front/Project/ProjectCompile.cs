@@ -98,8 +98,6 @@ namespace SimpleLanguage.Project
             }
             CSharpManager.InitCanSearchAssemblyList();
 
-            RegisterCallMethodManager.RegisterAllCallMethod();
-
             CoreMetaClassManager.instance.Init();
 
             ProjectClass.ProjectCompileBefore();

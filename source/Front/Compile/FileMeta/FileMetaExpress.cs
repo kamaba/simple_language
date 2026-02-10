@@ -467,6 +467,10 @@ namespace SimpleLanguage.Compile
                     nodeListList.Add(tempNodeList);
                     tempNodeList = new List<Node>();
                 }
+                else if( c2node.nodeType == ENodeType.LineEnd )
+                {
+                    continue;
+                }
                 else
                 {
                     tempNodeList.Add(c2node);
@@ -483,6 +487,7 @@ namespace SimpleLanguage.Compile
                 if( nodeList.Count == 0 )
                 {
                     Log.AddInStructFileMeta(EError.None, "Error nodeList.Count == 0 ");
+                    Debug.Assert(false, "");
                     continue;
                 }
                 else if( nodeList.Count == 1 )
