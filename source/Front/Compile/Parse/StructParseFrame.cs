@@ -12,6 +12,7 @@ using SimpleLanguage.Parse;
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
 using System.Xml.Linq;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Compile
 {
@@ -327,6 +328,7 @@ namespace SimpleLanguage.Compile
                 }
                 else if( node.nodeType == ENodeType.Comment )
                 {
+                    pnode.parseIndex++;
                     continue;
                 }
                 else
@@ -522,7 +524,9 @@ namespace SimpleLanguage.Compile
                     {
                         isClass = 2;
                     }
-                    else if (curNode.token.type == ETokenType.Class)
+                    else if (curNode.token.type == ETokenType.Class
+                        || curNode.token.type == ETokenType.Data
+                        || curNode.token.type == ETokenType.Enum )
                     {
                         isClass = 1;
                     }
@@ -576,6 +580,10 @@ namespace SimpleLanguage.Compile
                 {
                     break;
                 }
+                else if( curNode.nodeType == ENodeType.SemiColon )
+                {
+                    break;
+                }    
                 else
                 {
                     Log.AddInStructFileMeta(EError.None, "Error 不允许在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
@@ -731,8 +739,13 @@ namespace SimpleLanguage.Compile
                 {
                     nodeList[nodeList.Count - 1].AddBracketNode(curNode);
                 }
+                else if( curNode.nodeType == ENodeType.Comment )
+                {
+                    break;
+                }
                 else
                 {
+                    Debug.Assert(false, "");
                     Log.AddInStructFileMeta(EError.None, "Error ParseClassNode 不允许2在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
                 }
             }

@@ -1,11 +1,11 @@
 
 enum BridgeKind 
 {
-   SELF,
-   CLR,
-   JVM,
+   SELF = 0
+   CLR
+   JVM
    NATIVE
-};
+}
 
 public class BridgeObject extends Object
 {
