@@ -155,7 +155,7 @@ namespace SimpleLanguage.Compile
             SyntaxNodeStruct keynodeStruct = new SyntaxNodeStruct();
             if (pnode.parseIndex >= pnode.childList.Count)
             {
-                return keynodeStruct;
+                return null;
             }
             int index = 0;
             int tCurIndex = 0;
@@ -212,9 +212,7 @@ namespace SimpleLanguage.Compile
                 }
                 else if (curNodeType == ENodeType.Brace)
                 {
-#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
                     Node nextNode = null;
-#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
                     bool isMustContactBrace = false;
                     ETokenType ttt = keynodeStruct.tokenType;
                     if (ttt == ETokenType.If
@@ -343,6 +341,7 @@ namespace SimpleLanguage.Compile
                     keynodeStruct.AddContent(curNode);
                 }
             }
+            //pnode.parseIndex = tCurIndex;
             keynodeStruct.moveIndex = index;
             return keynodeStruct;
         }
@@ -618,12 +617,13 @@ namespace SimpleLanguage.Compile
                         Condition condition = new Condition(ETokenType.ElseIf);
                         condition.AddTokenTypeList(ETokenType.Else);
                         SyntaxNodeStruct cakss = GetOneSyntax(pnode, condition);
-                        if (cakss.eSyntaxNodeType == ESyntaxNodeStructType.None )
+                        if (cakss == null  )
                         {
-                            if (cakss.moveIndex == 0)
-                                break;
-                            pnode.parseIndex += cakss.moveIndex;
-                            continue;
+                            //if (cakss.moveIndex == 0)
+                            //    break;
+                            //pnode.parseIndex += cakss.moveIndex;
+                            //continue;
+                            break;
                         }
 
                         if (cakss.tokenType == ETokenType.ElseIf)
@@ -674,7 +674,9 @@ namespace SimpleLanguage.Compile
 
                         Condition condition = new Condition(ETokenType.Case);
                         condition.AddTokenTypeList(ETokenType.Default);
+                        
                         SyntaxNodeStruct cakss = GetOneSyntax(akss.blockNode, condition);
+                        akss.blockNode.parseIndex += akss.moveIndex;
                         if (cakss == null)
                             break;
                         akss.childrenKeySyntaxStructList.Add(cakss);
@@ -684,9 +686,9 @@ namespace SimpleLanguage.Compile
                     fms = fmkis;
                     AddParseSyntaxNodeInfo(fmkis);
 
-                    ParseCurrentNodeInfo pcnic = new ParseCurrentNodeInfo(fmkis);
-                    m_CurrentNodeInfoStack.Push(pcnic);
-                    ParseSyntax(akss.keyNode.blockNode);
+                    //ParseCurrentNodeInfo pcnic = new ParseCurrentNodeInfo(fmkis);
+                    //m_CurrentNodeInfoStack.Push(pcnic);
+                    //ParseSyntax(akss.blockNode);
                     for (int i = 0; i < akss.childrenKeySyntaxStructList.Count; i++)
                     {
                         FileMetaBlockSyntax fmbs = null;
@@ -902,7 +904,15 @@ namespace SimpleLanguage.Compile
             {
                 fmcl = new FileMetaCallLink(fm, cnode.parNode.childList[0]);
             }
-            var fms = new FileMetaKeySwitchSyntax(fm, cnode.token, cnode.blockNode.token, cnode.blockNode.endToken, fmcl);
+            if( fmcl == null )
+            {
+                fmcl = new FileMetaCallLink(fm, cnode );
+            }
+            if( fmcl == null )
+            {
+                Debug.Assert(false, "");
+            }
+            var fms = new FileMetaKeySwitchSyntax(fm, cnode.token, sns.blockNode.token, sns.blockNode.endToken, fmcl);
 
             for (int i = 0; i < sns.childrenKeySyntaxStructList.Count; i++)
             {
