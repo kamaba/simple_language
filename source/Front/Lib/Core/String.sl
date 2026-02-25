@@ -1,5 +1,3 @@
-import CSharpLang.SimpleLanguage
-
 public class String extends Object
 {
     private String _value = null
@@ -19,7 +17,7 @@ public class String extends Object
     }
     public string format( params object[] _parmas )
     {
-        ret SimpleLanguage.Lib.StringClass.StringFormat( this, _parmas )
+        #ret SimpleLanguage.Lib.StringClass.StringFormat( this, _parmas )
     }
     #!
     Int32 toInt32()
@@ -57,6 +55,6 @@ public class String extends Object
     }
     public static string toFormat( string _format, params object[] _parmas )
     {
-        ret SimpleLanguage.Lib.StringClass.StringFormat( _format, _parmas )
+        #ret SimpleLanguage.Lib.StringClass.StringFormat( _format, _parmas )
     }
 }

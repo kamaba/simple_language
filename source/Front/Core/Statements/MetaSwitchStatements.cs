@@ -22,8 +22,8 @@ namespace SimpleLanguage.Core
         {
             None,
             ClassType,
-            ClassValue,
             ConstValue,
+            EnumValue
         }
         public class MetaNextStatements : MetaStatements
         {
@@ -49,22 +49,26 @@ namespace SimpleLanguage.Core
             {
                 None,
                 Const,
+                Enum,
                 ClassType
             }
 
-            public SwitchCaseType switchCaseType = SwitchCaseType.None;
+            //public SwitchCaseType switchCaseType = SwitchCaseType.None;
             public List<MetaConstExpressNode> constExpressList = new List<MetaConstExpressNode>(); //常量表达示
             public MetaClass matchTypeClass;                        // 匹配的定义类型
             public MetaVariable matchMetaVariable;                  // 上边关联的匹配变量
             public MetaVariable defineMetaVariable;                 // 如果使用类型匹配，后边可跟一个定义变量
             public MetaBlockStatements thenMetaStatements;          //执行语句
 
+
             public bool isContinueNext { get; set; } = false;
 
             private FileMetaKeySwitchSyntax.FileMetaKeyCaseSyntax m_FileMetaKeyCaseSyntax = null;
+            private MetaSwitchStatements m_OwnerSwitch = null;
 
-            public MetaCaseStatements(FileMetaKeySwitchSyntax.FileMetaKeyCaseSyntax fmkcs, MetaBlockStatements mbs )
+            public MetaCaseStatements(MetaSwitchStatements mss, FileMetaKeySwitchSyntax.FileMetaKeyCaseSyntax fmkcs, MetaBlockStatements mbs )
             {
+                m_OwnerSwitch = mss;
                 m_FileMetaKeyCaseSyntax = fmkcs;
                 m_OwnerMetaBlockStatements = mbs;
                 thenMetaStatements = new MetaBlockStatements(mbs, fmkcs.executeBlockSyntax);
@@ -73,34 +77,38 @@ namespace SimpleLanguage.Core
                     isContinueNext = true;
                 }
 
-                Parse();
-
                 MetaMemberFunction.CreateMetaSyntax(fmkcs.executeBlockSyntax, thenMetaStatements);
             }
-            private void Parse()
+            public void Parse()
             {
-                if ( m_FileMetaKeyCaseSyntax.defineClassCallLink != null )
+                if ( m_FileMetaKeyCaseSyntax.defineClassCallLink  != null )
                 {
-                    MetaCallLinkExpressNode mcen = new MetaCallLinkExpressNode(m_FileMetaKeyCaseSyntax.defineClassCallLink, null, null, null);
+                    MetaCallLinkExpressNode mcen = new MetaCallLinkExpressNode(m_FileMetaKeyCaseSyntax.defineClassCallLink, m_OwnerMetaBlockStatements?.ownerMetaClass,
+                        m_OwnerMetaBlockStatements, null);
                     mcen.Parse(new AllowUseSettings() { });
                     mcen.CalcReturnType();
 
-                    matchTypeClass = mcen.metaCallLink.finalCallNode.callMetaType.metaClass;
+                    matchTypeClass = mcen.metaCallLink.finalCallNode?.callMetaType?.metaClass;
 
-                    if (matchTypeClass != null)
+                    if( m_OwnerSwitch.matchType == SwitchMatchType.EnumValue )
                     {
-                        switchCaseType = SwitchCaseType.ClassType;
                     }
-                    else
-                    {
-                        //EType etype = EType.None;
-                        //string tname = "";
-                        //if (MetaTypeFactory.MatchSystemType(m_FileMetaKeyCaseSyntax.defineClassToken.lexeme.ToString(), ref etype, ref tname))
-                        //{
-                        //    matchTypeClass = ClassManager.instance.GetClassByMetaType(new MetaType(etype, tname));
-                        //    switchCaseType = SwitchCaseType.ClassType;
-                        //}
-                    }
+
+                    //if (matchTypeClass != null)
+                    //{
+                    //    //switchCaseType = SwitchCaseType.ClassType;
+                    //}
+                    //else
+                    //{
+                    //    switchCaseType = SwitchCaseType.Const;
+                    //    //EType etype = EType.None;
+                    //    //string tname = "";
+                    //    //if (MetaTypeFactory.MatchSystemType(m_FileMetaKeyCaseSyntax.defineClassToken.lexeme.ToString(), ref etype, ref tname))
+                    //    //{
+                    //    //    matchTypeClass = ClassManager.instance.GetClassByMetaType(new MetaType(etype, tname));
+                    //    //    switchCaseType = SwitchCaseType.ClassType;
+                    //    //}
+                    //}
 
                     if (m_FileMetaKeyCaseSyntax.variableToken != null)
                     {
@@ -120,7 +128,7 @@ namespace SimpleLanguage.Core
                             m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
                         thenMetaStatements.AddMetaVariable(defineMetaVariable);
 
-                        switchCaseType = SwitchCaseType.ClassType;
+                        //switchCaseType = SwitchCaseType.ClassType;
                     }                                         
                 }
                 else
@@ -128,7 +136,7 @@ namespace SimpleLanguage.Core
                     var list = m_FileMetaKeyCaseSyntax.constValueTokenList;
                     if (list.Count>0)
                     {
-                        switchCaseType = SwitchCaseType.Const;
+                        //switchCaseType = SwitchCaseType.Const;
                         for (int i = 0; i < list.Count; i++)
                         {
                             var constExpress = new MetaConstExpressNode( m_OwnerMetaBlockStatements?.ownerMetaClass, m_OwnerMetaBlockStatements, list[i]);
@@ -141,24 +149,24 @@ namespace SimpleLanguage.Core
                         return;
                     }
                 }
-                if( switchCaseType == SwitchCaseType.None )
-                {
-                    Debug.Write("Error 解析Case失败!!");
-                    return;
-                }
+                //if( switchCaseType == SwitchCaseType.None )
+                //{
+                //    Debug.Assert( false, "Error 解析Case失败!!");
+                //    return;
+                //}
                 thenMetaStatements.SetTRMetaVariable(trMetaVariable);
 
-                if (switchCaseType == SwitchCaseType.Const)
-                {
-                    for (int i = 0; i < constExpressList.Count; i++)
-                    {
-                        constExpressList[i].CalcReturnType();
-                    }
-                }
-                else if (switchCaseType == SwitchCaseType.ClassType)
-                {
+                //if (switchCaseType == SwitchCaseType.Const)
+                //{
+                //    for (int i = 0; i < constExpressList.Count; i++)
+                //    {
+                //        constExpressList[i].CalcReturnType();
+                //    }
+                //}
+                //else if (switchCaseType == SwitchCaseType.ClassType)
+                //{
 
-                }
+                //}
                 return;
             }
             public override void SetDeep(int dp)
@@ -179,24 +187,24 @@ namespace SimpleLanguage.Core
                     sb.Append(Global.tabChar);
                 }
                 sb.Append("case ");
-                if(switchCaseType == SwitchCaseType.Const )
-                {
-                    for( int i = 0; i < constExpressList.Count; i++ )
-                    {
-                        sb.Append(constExpressList[i].ToFormatString());
-                        if( i < constExpressList.Count - 1 )
-                            sb.Append(",");
-                    }
-                }
-                else if(switchCaseType == SwitchCaseType.ClassType)
-                {
-                    sb.Append( matchTypeClass?.allClassName );
-                    sb.Append(" ");
-                    if(defineMetaVariable != null )
-                    {
-                        sb.Append(defineMetaVariable.name);
-                    }
-                }
+                //if(switchCaseType == SwitchCaseType.Const )
+                //{
+                //    for( int i = 0; i < constExpressList.Count; i++ )
+                //    {
+                //        sb.Append(constExpressList[i].ToFormatString());
+                //        if( i < constExpressList.Count - 1 )
+                //            sb.Append(",");
+                //    }
+                //}
+                //else if(switchCaseType == SwitchCaseType.ClassType)
+                //{
+                //    sb.Append( matchTypeClass?.allClassName );
+                //    sb.Append(" ");
+                //    if(defineMetaVariable != null )
+                //    {
+                //        sb.Append(defineMetaVariable.name);
+                //    }
+                //}
                 sb.Append(Environment.NewLine);
                 sb.Append(thenMetaStatements.ToFormatString());
                 if (isContinueNext)
@@ -208,7 +216,8 @@ namespace SimpleLanguage.Core
             }
         }
 
-        public SwitchMatchType m_MatchType;
+
+        public SwitchMatchType matchType => m_MatchType;
 
         List<MetaCaseStatements> metaCaseStatements = new List<MetaCaseStatements>();
         public MetaBlockStatements defaultMetaStatements;
@@ -216,6 +225,7 @@ namespace SimpleLanguage.Core
         public MetaVariable matchMV = null;
         public MetaCallLink m_MetaCallLink = null;
 
+        private SwitchMatchType m_MatchType =  SwitchMatchType.None;
         FileMetaKeySwitchSyntax m_FileMetaKeySwitchSyntax;
         public MetaSwitchStatements(MetaBlockStatements mbs, FileMetaKeySwitchSyntax fmkss, MetaVariable retMv = null) : base(mbs)
         {
@@ -239,7 +249,7 @@ namespace SimpleLanguage.Core
             {
                 var cmcs = m_FileMetaKeySwitchSyntax.fileMetaKeyCaseSyntaxList[i];
 
-                MetaCaseStatements mcs = new MetaCaseStatements(cmcs, m_OwnerMetaBlockStatements);
+                MetaCaseStatements mcs = new MetaCaseStatements( this, cmcs, m_OwnerMetaBlockStatements);
 
                 metaCaseStatements.Add(mcs);
             }
@@ -268,11 +278,28 @@ namespace SimpleLanguage.Core
                 var mv = m_OwnerMetaBlockStatements.GetMetaVariableByName(matchMV.name);
                 if (mv == matchMV)//如果直接调用其它地方的metavariable，需要生成一个临时的metavariable 
                 {
-                    m_MatchType = SwitchMatchType.ConstValue;
+                    var fmt = mv.GetFinalMetaType();
+                    if( fmt ==  null )
+                    {
+                        Debug.Assert(false, "");
+                    }
+                    if (fmt.metaClass is MetaEnum )
+                    {
+                        m_MatchType = SwitchMatchType.EnumValue;
+                    }
+                    else if( ClassManager.IsNumberClass(fmt.metaClass) )
+                    {
+                        m_MatchType = SwitchMatchType.ConstValue;
+                    }
+                    else
+                    {
+                        m_MatchType = SwitchMatchType.ClassType;
+                    }
                 }
             }
             for (int i = 0; i < metaCaseStatements.Count; i++)
             {
+                metaCaseStatements[i].Parse();
                 metaCaseStatements[i].SetMatchMetaVariable(matchMV);
             }
         }

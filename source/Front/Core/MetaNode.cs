@@ -8,6 +8,7 @@
 
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -266,6 +267,22 @@ namespace SimpleLanguage.Core
         }
         public MetaClass GetMetaClassByTemplateCount(int count )
         {
+            if( m_MetaEnum != null )
+            {
+                if( count > 0 )
+                {
+                    Debug.Assert(false, "enum没有扩展<T>和形式");
+                }
+                return m_MetaEnum;
+            }
+            if( m_MetaData != null )
+            {
+                if (count > 0)
+                {
+                    Debug.Assert(false, "data没有扩展<T>和形式");
+                }
+                return m_MetaData;
+            }
             if (m_MetaTemplateClassDict.ContainsKey(count))
             {
                 return m_MetaTemplateClassDict[count];

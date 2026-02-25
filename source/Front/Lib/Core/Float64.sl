@@ -1,4 +1,3 @@
-import CSharpLang.SimpleLanguage
 import CSharp.System;
 
 public class Float64 extends Num

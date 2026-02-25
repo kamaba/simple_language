@@ -1,5 +1,3 @@
-import CSharpLang.SimpleLanguage
-
 public class Boolean extends Object
 {
     bool _value = false

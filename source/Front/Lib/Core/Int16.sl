@@ -1,5 +1,3 @@
-import CSharpLang.SimpleLanguage
-
 public class Int16 extends Num
 {
     const int MaxValue = 0x7fffffff;
@@ -9,7 +7,8 @@ public class Int16 extends Num
     
     static String Int16ToString( Int16 value )
     {
-        ret SimpleLanguage.Lib.Int32Class.Int16ToString( value )
+        #ret SimpleLanguage.Lib.Int32Class.Int16ToString( value )
+        ret ""
     }
     public static Int16 parseString( string s )
     {
@@ -29,6 +28,7 @@ public class Int16 extends Num
     }
     override String toString()
     {
-        ret SimpleLanguage.Lib.Int32Class.Int32ToString( this )
+        #ret SimpleLanguage.Lib.Int32Class.Int32ToString( this )
+        ret ""
     }
 }

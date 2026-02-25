@@ -1,5 +1,3 @@
-import CSharpLang.SimpleLanguage
-
 public class MetaClass
 {
     string _namespaceName = "";

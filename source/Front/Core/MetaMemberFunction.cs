@@ -603,10 +603,11 @@ namespace SimpleLanguage.Core
             if(m_MetaMemberParamCollection.maxParamCount > 0 )
             {
                 sb.Append("_");
-                for (int i = 0; i < m_MetaMemberParamCollection.maxParamCount; i++)
+                for (int i = 0; i < this.m_MetaMemberParamCollection.maxParamCount; i++)
                 {
                     var mdp = m_MetaMemberParamCollection.metaDefineParamList[i];
-                    sb.Append(mdp.metaVariable.defineMetaType.ToString());
+                   
+                    sb.Append(mdp.metaVariable.defineMetaType?.ToString());
                     if (i < m_MetaMemberParamCollection.maxParamCount - 1)
                     {
                         sb.Append("_");

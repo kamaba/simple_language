@@ -7,6 +7,7 @@ Project
         #StringTest.fun()
         #TypeTest.fun()
 
+        #!
         var retObj = BridgeObject();
         Array<BridgeObject> paramObjs = new(3)
         paramObjs[0] = BridgeObject("this")
@@ -15,6 +16,7 @@ Project
 
         NativeBridge.Call( BridgeKind.CSharp, "SimpleLanguageVM", "SimpleLanguage.Lib.ArrayClass", 
         "SetArrayValueThis", retObj, paramObjs );
+        !#
     }
     static Test()
     {

@@ -1,5 +1,3 @@
-import CSharpLang.SimpleLanguage
-
 public class SByte extends Num
 {    
     const SByte MaxValue = 0b1111111;
@@ -34,7 +32,7 @@ public class SByte extends Num
 
     static String SByteToString( SByte value )
     {
-        ret SimpleLanguage.Lib.SByteClass.SByteToString( value )
+        #ret SimpleLanguage.Lib.SByteClass.SByteToString( value )
     }
     public static SByte parseString( string s )
     {
@@ -76,6 +74,6 @@ public class SByte extends Num
     !#
     override String toString()
     {
-        ret SimpleLanguage.Lib.SByteClass.SByteToString( this )
+        #ret SimpleLanguage.Lib.SByteClass.SByteToString( this )
     }
 }

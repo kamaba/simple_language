@@ -771,7 +771,7 @@ namespace SimpleLanguage.Core
         //解析 自动构建函数  
         public virtual void ParseDefineComplete()
         {
-            if(m_IsInterfaceClass )
+            if( this.m_IsInterfaceClass )
             {
                 return;
             }
@@ -779,7 +779,7 @@ namespace SimpleLanguage.Core
             if (m_DefaultExpressNode == null )
             {
                 MetaType mdt = new MetaType(this);
-                if( eType == EType.Data )
+                if( eType == EType.Data || eType == EType.Enum )
                 {
                     return;
                 }

@@ -1,4 +1,3 @@
-import CSharpLang.SimpleLanguage
 import CSharp.System
 
 public class Int32 extends Num
@@ -20,7 +19,8 @@ public class Int32 extends Num
     
     public Int32? parse( string s )
     {
-        ret SimpleLanguage.Lib.Int32Class.Parse( s )
+        #ret SimpleLanguage.Lib.Int32Class.Parse( s )
+        ret 0
     }    
     public static Int32 parseInt(string s)
     {
@@ -28,7 +28,8 @@ public class Int32 extends Num
     }
     public override Int32 abs()
     {
-        ret SimpleLanguage.Lib.Int32Class.Abs(this._value)
+        #ret SimpleLanguage.Lib.Int32Class.Abs(this._value)
+        ret 0;
     } 
     public override Num floor()
     {
@@ -49,23 +50,23 @@ public class Int32 extends Num
     }
     override bool toBool()
     {
-        ret SimpleLanguage.Lib.Int32Class.Int32ToBool(this._value )
+        #ret SimpleLanguage.Lib.Int32Class.Int32ToBool(this._value )
     }
     override Byte toByte( byte index = 0 )
     {
-        ret SimpleLanguage.Lib.Int32Class.Int32ToByte(this._value, index )
+        #ret SimpleLanguage.Lib.Int32Class.Int32ToByte(this._value, index )
     }
     override Byte toSByte( byte index = 0 )
     {
-        ret SimpleLanguage.Lib.Int32Class.Int32ToSByte(this._value, index )
+        #ret SimpleLanguage.Lib.Int32Class.Int32ToSByte(this._value, index )
     }
     override Int16 toInt16()
     {
-        ret SimpleLanguage.Lib.Int32Class.Int32ToInt16(this._value )
+        #ret SimpleLanguage.Lib.Int32Class.Int32ToInt16(this._value )
     }
     override UInt16 toUInt16()
     {
-        ret SimpleLanguage.Lib.Int32Class.Int32ToUInt16(this._value )
+        #ret SimpleLanguage.Lib.Int32Class.Int32ToUInt16(this._value )
     }
     override Int32 toInt32()
     {
@@ -73,23 +74,23 @@ public class Int32 extends Num
     }
     override UInt32 toUInt32()
     {
-        ret SimpleLanguage.Lib.Int32Class.Int32ToUInt32(this._value )
+        #ret SimpleLanguage.Lib.Int32Class.Int32ToUInt32(this._value )
     }
     override Int64 toInt64()
     {
-        ret SimpleLanguage.Lib.Int32Class.Int32ToInt64(this._value )
+        #ret SimpleLanguage.Lib.Int32Class.Int32ToInt64(this._value )
     }
     override Int64 toUInt64()
     {
-        ret SimpleLanguage.Lib.Int32Class.Int32ToUInt64(this._value )
+        #ret SimpleLanguage.Lib.Int32Class.Int32ToUInt64(this._value )
     }
     override Float32 toFloat32()
     {
-        ret SimpleLanguage.Lib.Int32Class.Int32ToFloat32(this._value)
+        #ret SimpleLanguage.Lib.Int32Class.Int32ToFloat32(this._value)
     }
     override Float64 toFloat64()
     {
-        ret SimpleLanguage.Lib.Int32Class.Int32ToFloat64(this._value)
+        #ret SimpleLanguage.Lib.Int32Class.Int32ToFloat64(this._value)
     }   
     
     public Int32 sign()
@@ -122,6 +123,7 @@ public class Int32 extends Num
     }
     override String toString()
     {
-        ret SimpleLanguage.Lib.Int32Class.Int32ToString( this )
+        #ret SimpleLanguage.Lib.Int32Class.Int32ToString( this )
+        ret ""
     }
 }

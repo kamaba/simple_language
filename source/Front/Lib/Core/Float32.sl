@@ -1,4 +1,3 @@
-import CSharpLang.SimpleLanguage
 import CSharp.System;
 
 public class Float32 extends Num
@@ -30,7 +29,8 @@ public class Float32 extends Num
     !#
     public override Int32 toInt32()
     {
-        ret SimpleLanguage.Lib.Float32Class.ToInt32(this)
+        #ret SimpleLanguage.Lib.Float32Class.ToInt32(this)
+        ret 0
     }
     public override Float64 toFloat64()
     {
@@ -39,15 +39,18 @@ public class Float32 extends Num
     }
     public override Num abs()
     {
-        ret SimpleLanguage.Lib.Float32Class.Abs(this)
+        #ret SimpleLanguage.Lib.Float32Class.Abs(this)
+        ret 0
     }
     public override Num floor()
     {
-        ret SimpleLanguage.Lib.Float32Class.Floor(this)
+        #ret SimpleLanguage.Lib.Float32Class.Floor(this)
+        ret 0
     }
     public override Num ceil()
     {
-        ret SimpleLanguage.Lib.Float32Class.Ceil(this)
+        #ret SimpleLanguage.Lib.Float32Class.Ceil(this)
+        ret 0
     }
     public override Int32 compareTo( Num other )
     {

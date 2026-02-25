@@ -195,6 +195,33 @@ namespace SimpleLanguage.Compile
                             Debug.Write("warning 使用的是强制封号结束语句方式，注意这个节点会继承往下查找语句"
                                 + curToken?.ToLexemeAllString());
                         }
+
+                        if(keynodeStruct.keyNode?.token?.type == ETokenType.Case
+                            || keynodeStruct.keyNode?.token?.type == ETokenType.Default
+                            || keynodeStruct.keyNode?.token?.type == ETokenType.ElseIf
+                            || keynodeStruct.keyNode?.token?.type == ETokenType.If )
+                        {
+                            int tcurindex = 0;
+                            int addIndex = 0;
+                            while (true)
+                            {
+                                tcurindex = tCurIndex + 1;
+                                addIndex++;
+                                if (tcurindex < pnode.childList.Count)
+                                {
+                                    var tTurNode = pnode.childList[tcurindex];
+                                    if (tTurNode != null)
+                                    {
+                                        if (tTurNode.nodeType == ENodeType.Brace)
+                                        {
+                                            keynodeStruct.SetBraceNode( tTurNode );
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            index += addIndex;
+                        }
                         break;
                     }
                 }
@@ -223,7 +250,8 @@ namespace SimpleLanguage.Compile
                                 || ttt == ETokenType.DoWhile
                                 || ttt == ETokenType.Switch
                                 || ttt == ETokenType.Case
-                                || ttt == ETokenType.Label) // ClassName(){}
+                                || ttt == ETokenType.Label
+                                || ttt == ETokenType.Default ) // ClassName(){}
                     {
 
                         isMustContactBrace = true;
@@ -258,6 +286,14 @@ namespace SimpleLanguage.Compile
                         }
                         condition.isCheck = false;
                     }
+                    //else if (condition != null && !condition.isCheck)
+                    //{
+                    //    // When parsing a child syntax (e.g., switch body), once we already consumed the first key
+                    //    // (case/default), the next key token should terminate this syntax node.
+                    //    // Otherwise it would be treated as content and tokenType would be incorrect.
+                    //    index--;
+                    //    break;
+                    //}
 
                     ETokenType ttt = curNode.token.type;
                     if (ttt == ETokenType.If
@@ -281,8 +317,7 @@ namespace SimpleLanguage.Compile
                     }
                     else if (ttt == ETokenType.Data)
                     {
-                        keynodeStruct.AddContent
-                            (curNode);
+                        keynodeStruct.AddContent(curNode);
                     }
                     else if (ttt == ETokenType.Var)
                     {
@@ -341,7 +376,6 @@ namespace SimpleLanguage.Compile
                     keynodeStruct.AddContent(curNode);
                 }
             }
-            //pnode.parseIndex = tCurIndex;
             keynodeStruct.moveIndex = index;
             return keynodeStruct;
         }
@@ -669,43 +703,16 @@ namespace SimpleLanguage.Compile
                 }
                 else if (akss.tokenType == ETokenType.Switch)
                 {
-                    while (true)
-                    {
+                    var children = ParseSwitchChildren(akss.blockNode);
 
-                        Condition condition = new Condition(ETokenType.Case);
-                        condition.AddTokenTypeList(ETokenType.Default);
-                        
-                        SyntaxNodeStruct cakss = GetOneSyntax(akss.blockNode, condition);
-                        akss.blockNode.parseIndex += akss.moveIndex;
-                        if (cakss == null)
-                            break;
-                        akss.childrenKeySyntaxStructList.Add(cakss);
-                    }
-
-                    FileMetaKeySwitchSyntax fmkis = ParseSwitchSyntax(m_FileMeta, akss);
+                    FileMetaKeySwitchSyntax fmkis = ParseSwitchSyntax(m_FileMeta, akss, children);
                     fms = fmkis;
                     AddParseSyntaxNodeInfo(fmkis);
 
                     //ParseCurrentNodeInfo pcnic = new ParseCurrentNodeInfo(fmkis);
                     //m_CurrentNodeInfoStack.Push(pcnic);
                     //ParseSyntax(akss.blockNode);
-                    for (int i = 0; i < akss.childrenKeySyntaxStructList.Count; i++)
-                    {
-                        FileMetaBlockSyntax fmbs = null;
-                        if (i >= fmkis.fileMetaKeyCaseSyntaxList.Count)
-                        {
-                            fmbs = fmkis.fileMetaKeyCaseSyntaxList[i].executeBlockSyntax;
-                        }
-                        else
-                        {
-                            fmbs = fmkis.defaultExecuteBlockSyntax;
-                        }
-                        ParseCurrentNodeInfo pcnic2 = new ParseCurrentNodeInfo(fmbs);
-                        m_CurrentNodeInfoStack.Push(pcnic2);
-                        ParseSyntax(akss.followKeySyntaxStructList[i].blockNode);
-                        m_CurrentNodeInfoStack.Pop();
-                    }
-                    m_CurrentNodeInfoStack.Pop();
+                    ParseSwitchChildrenBlocks(fmkis, children);
                 }
                 else if (akss.tokenType == ETokenType.For)
                 {
@@ -898,6 +905,72 @@ namespace SimpleLanguage.Compile
 
         public FileMetaKeySwitchSyntax ParseSwitchSyntax(FileMeta fm, SyntaxNodeStruct sns)
         {
+            return ParseSwitchSyntax(fm, sns, sns.childrenKeySyntaxStructList);
+        }
+
+        private List<SyntaxNodeStruct> ParseSwitchChildren(Node switchBodyNode)
+        {
+            var list = new List<SyntaxNodeStruct>();
+            if (switchBodyNode == null) return list;
+
+            // The body is a Brace node; parse its children sequentially.
+            switchBodyNode.parseIndex = 0;
+
+            while (true)
+            {
+                var condition = new Condition(ETokenType.Case);
+                condition.isCheck = false;
+                var one = GetOneSyntax(switchBodyNode, condition);
+                if (one == null) break;
+                if (one.moveIndex <= 0) break;
+
+                switchBodyNode.parseIndex += one.moveIndex;
+
+                // Only accept case/default. Anything else inside switch body is ignored here.
+                if (one.tokenType == ETokenType.Case || one.tokenType == ETokenType.Default)
+                    list.Add(one);
+            }
+
+            return list;
+        }
+
+        private void ParseSwitchChildrenBlocks(FileMetaKeySwitchSyntax fmkis, List<SyntaxNodeStruct> children)
+        {
+            if (fmkis == null || children == null) return;
+
+            int caseIndex = 0;
+            for (int i = 0; i < children.Count; i++)
+            {
+                var child = children[i];
+                if (child?.blockNode == null) continue;
+
+                FileMetaBlockSyntax fmbs = null;
+                if (child.tokenType == ETokenType.Case)
+                {
+                    if (caseIndex < 0 || caseIndex >= fmkis.fileMetaKeyCaseSyntaxList.Count) continue;
+                    fmbs = fmkis.fileMetaKeyCaseSyntaxList[caseIndex].executeBlockSyntax;
+                    caseIndex++;
+                }
+                else if (child.tokenType == ETokenType.Default)
+                {
+                    fmbs = fmkis.defaultExecuteBlockSyntax;
+                }
+                else
+                {
+                    continue;
+                }
+
+                if (fmbs == null) continue;
+
+                var pcnic2 = new ParseCurrentNodeInfo(fmbs);
+                m_CurrentNodeInfoStack.Push(pcnic2);
+                ParseSyntax(child.blockNode);
+                m_CurrentNodeInfoStack.Pop();
+            }
+        }
+
+        public FileMetaKeySwitchSyntax ParseSwitchSyntax(FileMeta fm, SyntaxNodeStruct sns, List<SyntaxNodeStruct> children)
+        {
             var cnode = sns.keyNode;
             FileMetaCallLink fmcl = null;
             if (cnode.parNode != null && cnode.parNode.childList?.Count > 0)
@@ -906,7 +979,7 @@ namespace SimpleLanguage.Compile
             }
             if( fmcl == null )
             {
-                fmcl = new FileMetaCallLink(fm, cnode );
+                fmcl = new FileMetaCallLink(fm, sns.keyContent[0] );
             }
             if( fmcl == null )
             {
@@ -914,17 +987,20 @@ namespace SimpleLanguage.Compile
             }
             var fms = new FileMetaKeySwitchSyntax(fm, cnode.token, sns.blockNode.token, sns.blockNode.endToken, fmcl);
 
-            for (int i = 0; i < sns.childrenKeySyntaxStructList.Count; i++)
+            children ??= sns.childrenKeySyntaxStructList;
+            for (int i = 0; i < children.Count; i++)
             {
-                var caseMS = sns.childrenKeySyntaxStructList[i];
+                var caseMS = children[i];
                 if (caseMS.tokenType == ETokenType.Case)
                 {
                     var fcase = new FileMetaKeySwitchSyntax.FileMetaKeyCaseSyntax(fm, caseMS.keyNode.token);
+                    ParseCaseHeader(fm, fcase, caseMS);
+                    fcase.SetExecuteBlockSyntax(new FileMetaBlockSyntax(fm, caseMS.blockNode.token, caseMS.blockNode.endToken));
                     fms.AddFileMetaKeyCaseSyntaxList(fcase);
                 }
                 else if (caseMS.tokenType == ETokenType.Default)
                 {
-                    var fdefault = new FileMetaBlockSyntax(fm, caseMS.keyNode.token, caseMS.keyNode.endToken);
+                    var fdefault = new FileMetaBlockSyntax(fm, caseMS.blockNode.token, caseMS.blockNode.endToken);
                     fms.SetDefaultExecuteBlockSyntax(fdefault);
                 }
                 else
@@ -934,6 +1010,88 @@ namespace SimpleLanguage.Compile
             }
 
             return fms;
+        }
+
+        private static void ParseCaseHeader(FileMeta fm, FileMetaKeySwitchSyntax.FileMetaKeyCaseSyntax fcase, SyntaxNodeStruct caseMS)
+        {
+            if (fm == null || fcase == null || caseMS == null) return;
+
+            // case header tokens are stored in keyContent (see SyntaxNodeStruct.AddContent)
+            var parlist = caseMS.keyContent;
+            if (parlist == null || parlist.Count == 0)
+            {
+                Debug.Write("Error Case语句不允许没有检查值!!");
+                return;
+            }
+
+            var childList = new List<Node>();
+            bool isComma = false;
+            for (int i = 0; i < parlist.Count; i++)
+            {
+                if (parlist[i].token?.type == ETokenType.Comma)
+                {
+                    isComma = true;
+                    continue;
+                }
+                childList.Add(parlist[i]);
+            }
+
+            if (isComma)
+            {
+                bool isSame = true;
+                for (int i = 0; i < childList.Count - 1; i++)
+                {
+                    var curNode = childList[i];
+                    var nextNode = childList[i + 1];
+                    var type = curNode.token.type;
+                    if (type != ETokenType.Number && type != ETokenType.String)
+                    {
+                        Debug.Write("Error 逗号分割只允许number,string");
+                        isSame = false;
+                        break;
+                    }
+                    if (type != nextNode.token.type)
+                    {
+                        isSame = false;
+                        break;
+                    }
+                }
+                if (!isSame)
+                {
+                    Debug.Write("Error 使用逗号切割开后，类型不相同!!");
+                }
+
+                for (int i = 0; i < childList.Count; i++)
+                {
+                    fcase.AddConstValueTokenList(new FileMetaConstValueTerm(fm, childList[i].token));
+                }
+            }
+            else
+            {
+                if (parlist.Count == 2)
+                {
+                    if (parlist[0].token?.type == ETokenType.Identifier
+                        || parlist[1].token?.type == ETokenType.Identifier)
+                    {
+                        fcase.SetDefineClassNode(parlist[0]);
+                        fcase.SetVariableToken(parlist[1].token);
+                    }
+                }
+                else if (parlist.Count == 1)
+                {
+                    var ttype = parlist[0].token?.type;
+                    if (ttype == ETokenType.Type
+                        || ttype == ETokenType.Identifier)
+                    {
+                        fcase.SetDefineClassNode(parlist[0]);
+                    }
+                    else if (ttype == ETokenType.Number
+                        || ttype == ETokenType.String)
+                    {
+                        fcase.AddConstValueTokenList(new FileMetaConstValueTerm(fm, parlist[0].token));
+                    }
+                }
+            }
         }
 
         public FileMetaConditionExpressSyntax ParseConditionSyntax(FileMeta fm, SyntaxNodeStruct sns)

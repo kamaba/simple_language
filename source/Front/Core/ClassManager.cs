@@ -752,7 +752,7 @@ namespace SimpleLanguage.Core
                 firstName = stringList[0];
             }
             MetaNode findMB = CoreMetaClassManager.GetCoreMetaClass(firstName);
-            if (findMB?.IsMetaClass() == true )
+            if (findMB?.IsMetaClass() == true || findMB?.isMetaEnum == true  || findMB?.isMetaData == true)
             {
                 return findMB;
             }

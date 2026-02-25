@@ -1,4 +1,3 @@
-import CSharpLang.SimpleLanguage
 
 public class Byte extends Num
 {    
@@ -8,7 +7,7 @@ public class Byte extends Num
 
     static String ByteToString( Byte value )
     {
-        ret SimpleLanguage.Lib.ByteClass.ByteToString( value )
+        #ret SimpleLanguage.Lib.ByteClass.ByteToString( value )
     }
     public static Byte parseString( string s )
     {
@@ -75,6 +74,6 @@ public class Byte extends Num
     !#
     override String toString()
     {
-        ret SimpleLanguage.Lib.ByteClass.ByteToString( this )
+        #ret SimpleLanguage.Lib.ByteClass.ByteToString( this )
     }
 }

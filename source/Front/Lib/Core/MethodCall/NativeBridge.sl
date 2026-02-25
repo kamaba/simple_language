@@ -22,7 +22,7 @@ public class BridgeObject extends Object
 
 public class NativeBridge extends Object
 {
-    BridgeKind kind = BridgeKind.SELF
+    BridgeKind _kind = BridgeKind.SELF
 
     bool static Call( BridgeKind kind, string dllName, string namespaceName, string className, string method,  BridgeObject retObj, Array<BridgeObject> arrParams )
     {
@@ -43,7 +43,10 @@ public class NativeBridge extends Object
             case BridgeKind.NATIVE
             {
 
-            }            
+            }     
+            default{
+                
+            }       
         }
         ret true
     }
