@@ -409,10 +409,11 @@ namespace SimpleLanguage.Core
                 {
                     MetaEnum newme = new MetaEnum(fmc.name);
                     finalTopMetaNode.AddMetaEnum(newme);
+                    fmc.SetMetaClass(newme);
+                    newme.SetClassDefineType(EClassDefineType.CodeDefine);
                     newme.BindFileMetaClass(fmc);
                     newme.ParseFileMetaEnumMemeberEnum(fmc);
-                   
-
+                    newme.UpdateClassAllName();
                     AddInitHandleMetaClassList(newme);
 
                     return newme;

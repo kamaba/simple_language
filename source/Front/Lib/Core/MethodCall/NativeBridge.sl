@@ -26,6 +26,11 @@ public class NativeBridge extends Object
 
     bool static Call( BridgeKind kind, string dllName, string namespaceName, string className, string method,  BridgeObject retObj, Array<BridgeObject> arrParams )
     {
+        if this._kind == kind 
+        {
+
+        }
+
         switch kind
         {
             case BridgeKind.SELF
@@ -49,5 +54,19 @@ public class NativeBridge extends Object
             }       
         }
         ret true
+
+        switch(dllName.type)
+        {
+            case String str{
+
+            }
+            case Int32 it32
+            {
+
+            }
+            default{
+                
+            }
+        }
     }
 }

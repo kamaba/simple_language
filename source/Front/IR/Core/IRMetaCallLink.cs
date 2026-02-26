@@ -70,7 +70,7 @@ namespace SimpleLanguage.Core.IR
                     }
                     else
                     {
-                        irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.defineMetaType, owirmc);
+                        irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.isDefineMetaType ? mv.defineMetaType : mv.realMetaType, owirmc);
                     }
                     irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
                 }
