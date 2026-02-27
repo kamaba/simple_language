@@ -156,7 +156,7 @@ switch book
 
 ---
 
-## Switch 表达式（返回值）
+## Switch 表达式（返回值）  该部分的暂不实现
 
 switch 可以作为表达式使用，返回一个值：
 
@@ -365,7 +365,7 @@ ProjectEnter
         }
         
         
-        # 示例 4: 更复杂的值匹配
+        # 示例 4: 更复杂的值匹配 后边的暂不实现
         score = 85;
         grade = switch score
         {

@@ -6,6 +6,7 @@
 //  Description:  this's a statement in function! same link table model!
 //****************************************************************************
 using SimpleLanguage.Compile;
+using SimpleLanguage.Logging;
 
 using System;
 using System.Collections.Generic;
@@ -89,6 +90,48 @@ namespace SimpleLanguage.Core
         {
             m_Deep = dp;
             nextMetaStatements?.SetDeep(deep + 1);
+        }
+
+        public bool IsLastStatement<TStatement>(out TStatement last) where TStatement : MetaStatements
+        {
+            last = null;
+            MetaStatements cur = nextMetaStatements;
+            if (cur == null) return false;
+
+            while (cur.nextMetaStatements != null)
+            {
+                cur = cur.nextMetaStatements;
+            }
+
+            if (cur is TStatement t)
+            {
+                last = t;
+                return true;
+            }
+            return false;
+        }
+
+        public bool ContainsStatement<TStatement>() where TStatement : MetaStatements
+        {
+            MetaStatements cur = nextMetaStatements;
+            while (cur != null)
+            {
+                if (cur is TStatement) return true;
+                cur = cur.nextMetaStatements;
+            }
+            return false;
+        }
+
+        public bool ValidateStatementMustBeLast<TStatement>(Token errorToken, string errorMessage) where TStatement : MetaStatements
+        {
+            if (!ContainsStatement<TStatement>()) return true;
+
+            if (!IsLastStatement<TStatement>(out _))
+            {
+                Log.AddInStructMeta(EError.None, errorMessage + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                return false;
+            }
+            return true;
         }
         public MetaVariable GetMetaVariable( string name )
         {

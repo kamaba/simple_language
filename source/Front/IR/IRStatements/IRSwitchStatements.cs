@@ -23,6 +23,9 @@ namespace SimpleLanguage.IR
         {
             public List<IRCaseStatements> irCaseStatementsList => m_IRCaseStatementsList;
 
+            // branches emitted in the condition part that should jump to the next case test (or default)
+            public List<IRBranch> caseFalseBranchList = new List<IRBranch>();
+
             public List<IRBase> conditionStatList = new List<IRBase>();
             public List<IRBase> thenStatList = new List<IRBase>();
 
@@ -30,9 +33,12 @@ namespace SimpleLanguage.IR
             public IRNop startNop = null;
             public IRNop thenNop = null;
 
+            public bool isContinueNext = false;
+
             private List<IRCaseStatements> m_IRCaseStatementsList = new List<IRCaseStatements>();
             public void ParseIRStatements(IRMethod _irMethod, MetaSwitchStatements.MetaCaseStatements mires)
             {
+                isContinueNext = mires.isContinueNext;
                
 
                 //startNop.data.SetDebugInfoByToken(mires.finalExpress.GetToken());
@@ -60,21 +66,40 @@ namespace SimpleLanguage.IR
                         IRCaseStatements iRCaseStatements = new IRCaseStatements();
                         m_IRCaseStatementsList.Add(iRCaseStatements);
 
-                        startNop = new IRNop(_irMethod);
-                        thenNop = new IRNop(_irMethod);
-                        conditionStatList.Add(startNop);
+                        iRCaseStatements.isContinueNext = mires.isContinueNext;
+
+                        iRCaseStatements.startNop = new IRNop(_irMethod);
+                        iRCaseStatements.thenNop = new IRNop(_irMethod);
+                        iRCaseStatements.conditionStatList.Add(iRCaseStatements.startNop);
 
                         //mires.constExpressList[i].SetDebugInfoByToken(mires.finalExpress.GetToken());
                         var express = IRExpressManager.CreateExpress(_irMethod, mires.constExpressList[i] );
-                        conditionStatList.Add(express);
+                        iRCaseStatements.conditionStatList.Add(express);
 
                         var caseFalseBreach = new IRBranch(_irMethod, EIROpCode.Switch, null);                     
                         //ifFalseBreach.SetDebugInfoByToken(mires.m_IfOrElseIfKeySyntax.token);
-                        conditionStatList.Add(caseFalseBreach);
+                        iRCaseStatements.conditionStatList.Add(caseFalseBreach);
+
+                        // record for patching to next test / default
+                        iRCaseStatements.caseFalseBranchList.Add(caseFalseBreach);
+
+                        iRCaseStatements.conditionStatList.Add(iRCaseStatements.thenNop);
+
+                        IRBlockStatements irbs2 = new IRBlockStatements(_irMethod);
+                        irbs2.ParseAllIRStatements(mires.thenMetaStatements);
+                        iRCaseStatements.thenStatList.AddRange(irbs2.irStatements);
+
+                        iRCaseStatements.caseEndBrach = new IRBranch(_irMethod, EIROpCode.Br, null);
+                        iRCaseStatements.thenStatList.Add(iRCaseStatements.caseEndBrach);
                     }
+                    return;
                 }
                 else if (mires.matchType == MetaSwitchStatements.SwitchMatchType.EnumValue)
                 {
+                    startNop = new IRNop(_irMethod);
+                    thenNop = new IRNop(_irMethod);
+                    conditionStatList.Add(startNop);
+
                     var ownerMetaClass = mires.matchMetaVariable.GetFinalTemplateMetaClass();
                     var owirmc = IRManager.instance.GetIRMetaClassById(ownerMetaClass.GetHashCode());
 
@@ -86,6 +111,8 @@ namespace SimpleLanguage.IR
                     var caseFalseBreach = new IRBranch(_irMethod, EIROpCode.Switch, thenNop.data );
                     //ifFalseBreach.SetDebugInfoByToken(mires.m_IfOrElseIfKeySyntax.token);
                     conditionStatList.Add(caseFalseBreach);
+
+                    caseFalseBranchList.Add(caseFalseBreach);
 
                     m_IRCaseStatementsList.Add(this);
                 }
@@ -151,12 +178,23 @@ namespace SimpleLanguage.IR
                 IRCaseStatements mire = new IRCaseStatements();
                 mire.ParseIRStatements(irMethod, meis);
 
-                for( int j = 0; i < mire.irCaseStatementsList.Count; j++)
+                // Flatten possible multi-const cases into separate tests (irCaseStatementsList)
+                for (int j = 0; j < mire.irCaseStatementsList.Count; j++)
                 {
-                    var cmire = mire.irCaseStatementsList[j];
+                    mirList.Add(mire.irCaseStatementsList[j]);
+                }
+            }
 
-                    m_IRStatements.AddRange(cmire.conditionStatList);
-                    m_IRStatements.AddRange(cmire.thenStatList);
+            // emit all case tests and blocks
+            for (int i = 0; i < mirList.Count; i++)
+            {
+                var cmire = mirList[i];
+                m_IRStatements.AddRange(cmire.conditionStatList);
+                m_IRStatements.AddRange(cmire.thenStatList);
+
+                // by default, a matched case ends the switch
+                if (cmire.caseEndBrach != null)
+                {
                     cmire.caseEndBrach.data.opValue = endIRNop.data;
                 }
             }
@@ -187,19 +225,22 @@ namespace SimpleLanguage.IR
                 }
             }
 
+            // patch failed-case branches to jump to next case test or default
             for (int i = 0; i < mirList.Count; i++)
             {
                 var mire = mirList[i];
-                for (int j = 0; j < mire.caseFalseBreachList.Count; j++)
+                var nextTarget = (i < mirList.Count - 1) ? mirList[i + 1].startNop?.data : defaultNop.data;
+                if (nextTarget == null) nextTarget = defaultNop.data;
+
+                for (int j = 0; j < mire.caseFalseBranchList.Count; j++)
                 {
-                    if (i < mirList.Count - 1)
-                    {
-                        mire.caseFalseBreachList[j].data.opValue = mirList[i + 1].startNop.data;
-                    }
-                    else if (i == mirList.Count - 1)
-                    {
-                        mire.caseFalseBreachList[j].data.opValue = defaultNop.data;
-                    }
+                    mire.caseFalseBranchList[j].data.opValue = nextTarget;
+                }
+
+                // `next` means: continue matching the next case
+                if (mire.isContinueNext && mire.caseEndBrach != null)
+                {
+                    mire.caseEndBrach.data.opValue = nextTarget;
                 }
             }
 

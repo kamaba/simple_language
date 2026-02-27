@@ -780,7 +780,9 @@ namespace SimpleLanguage.Compile
                     ParseSyntax(akss.keyNode.blockNode);
                     m_CurrentNodeInfoStack.Pop();
                 }
-                else if(akss.tokenType == ETokenType.Break || akss.tokenType == ETokenType.Continue )
+                else if(akss.tokenType == ETokenType.Break 
+                    || akss.tokenType == ETokenType.Continue 
+                    || akss.tokenType == ETokenType.Next )
                 {
                     FileMetaKeyOnlySyntax fmkis = new FileMetaKeyOnlySyntax(m_FileMeta, akss.keyNode.token, null);
                     AddParseSyntaxNodeInfo(fmkis);
