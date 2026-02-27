@@ -76,9 +76,6 @@ namespace SimpleLanguage.Core
             }
             public void Parse()
             {
-                m_ThenMetaStatements.DetectAndValidateTerminator(m_FileMetaKeyCaseSyntax?.executeBlockSyntax?.endBlock);
-                m_IsContinueNext = m_ThenMetaStatements.terminatorType == MetaBlockStatements.ETerminatorType.Next;
-
                 if ( m_FileMetaKeyCaseSyntax.defineClassCallLink  != null )
                 {
                     MetaCallLinkExpressNode mcen = new MetaCallLinkExpressNode(m_FileMetaKeyCaseSyntax.defineClassCallLink, m_OwnerMetaBlockStatements?.ownerMetaClass,
