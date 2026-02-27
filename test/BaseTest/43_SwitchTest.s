@@ -17,7 +17,7 @@ SwitchTest
     {
         #!  等丰富类型后，加入类型匹配
         t = Class3();
-        switch t.type
+        switch t
         {
             case int a{ idok = 20; }
             case float{}

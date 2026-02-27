@@ -777,6 +777,37 @@ namespace SimpleLanguage.VM.Runtime
                         }
                     }
                     break;
+                case EIROpCode.Switch:
+                    {
+                        if (m_ValueIndex >= 2)
+                        {
+                            var right = m_ValueStack[--m_ValueIndex];
+                            var left = m_ValueStack[m_ValueIndex];
+                            //bool methodCall = false;
+                            //SValue.CompareEuqalSValue1AndValue2(ref left, ref right, true, out methodCall);
+                            //PushSValueSynced(left);
+                            if (left.eType == EVMType.Int32 && right.eType == EVMType.Int32)
+                            {
+                                int switchValue = left.int32Value;
+                                int caseCount = iri.opValue is int[] arr ? arr.Length : 0;
+                                bool matched = false;
+                                for (int i = 0; i < caseCount; i++)
+                                {
+                                    if (switchValue == (iri.opValue as int[])[i])
+                                    {
+                                        m_ExecuteIndex = (ushort)(iri.index + i - 1);
+                                        matched = true;
+                                        break;
+                                    }
+                                }
+                                if (!matched)
+                                {
+                                    m_ExecuteIndex = (ushort)(iri.index + caseCount - 1);
+                                }
+                            }
+                        }
+                    }
+                    break;
                 case EIROpCode.Ceq:
                     {
                         if (m_ValueIndex >= 2)

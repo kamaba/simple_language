@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
 using static SimpleLanguage.Core.MetaVariable;
 
 namespace SimpleLanguage.Core
@@ -184,7 +185,7 @@ namespace SimpleLanguage.Core
         public SwitchMatchType matchType => m_MatchType;
         public MetaBlockStatements defaultMetaStatements => m_DefaultMetaStatements;
         public List<MetaCaseStatements> metaCaseStatements => m_MetaCaseStatements;
-        public MetaVariable matchMV => m_MatchMV;
+        public MetaVariable matchSourceMv => m_MatchSourceMv;
         public MetaVariable boolConditionVariable => m_BoolConditionVariable;
         public MetaCallLink metaCallLink => m_MetaCallLink;
 
@@ -192,7 +193,7 @@ namespace SimpleLanguage.Core
         private FileMetaKeySwitchSyntax m_FileMetaKeySwitchSyntax = null;
         private List<MetaCaseStatements> m_MetaCaseStatements = new List<MetaCaseStatements>();
         private MetaBlockStatements m_DefaultMetaStatements = null;
-        private MetaVariable m_MatchMV = null;
+        private MetaVariable m_MatchSourceMv = null;
         private MetaCallLink m_MetaCallLink = null;
         private MetaVariable m_BoolConditionVariable = null;
         public MetaSwitchStatements(MetaBlockStatements mbs, FileMetaKeySwitchSyntax fmkss, MetaVariable retMv = null) : base(mbs)
@@ -203,19 +204,48 @@ namespace SimpleLanguage.Core
             m_BoolConditionVariable = new MetaVariable("boolCondition", EVariableFrom.LocalStatement, mbs, mbs.ownerMetaClass, new MetaType(EType.Boolean));
             mbs.AddMetaVariable(m_BoolConditionVariable);
 
+            if (m_FileMetaKeySwitchSyntax.fileMetaVariableRef != null)
+            {
+                m_MetaCallLink = new MetaCallLink(m_FileMetaKeySwitchSyntax.fileMetaVariableRef, ownerMetaClass, m_OwnerMetaBlockStatements, null, null);
+            }
+
             Parse();
         }
         private void Parse()
         {
-            if(m_FileMetaKeySwitchSyntax.fileMetaVariableRef != null )
+            
+
+            if (m_MetaCallLink != null)
             {
-                m_MetaCallLink = new MetaCallLink(m_FileMetaKeySwitchSyntax.fileMetaVariableRef, ownerMetaClass, m_OwnerMetaBlockStatements, null, null );               
+                AllowUseSettings auc = new AllowUseSettings();
+                auc.callConstructFunction = false;
+                m_MetaCallLink.Parse(auc);
+                m_MetaCallLink.CalcReturnType();
+                m_MatchSourceMv = m_MetaCallLink.ExecuteGetMetaVariable();
+                var mv = m_OwnerMetaBlockStatements.GetMetaVariableByName(m_MatchSourceMv.name);
+                if (mv == m_MatchSourceMv)//如果直接调用其它地方的metavariable，需要生成一个临时的metavariable 
+                {
+                    var fmt = mv.GetFinalMetaType();
+                    if (fmt == null)
+                    {
+                        Debug.Assert(false, "");
+                    }
+                    if (fmt.metaClass is MetaEnum)
+                    {
+                        m_MatchType = SwitchMatchType.EnumValue;
+                    }
+                    else if (ClassManager.IsNumberClass(fmt.metaClass))
+                    {
+                        m_MatchType = SwitchMatchType.ConstValue;
+                    }
+                    else
+                    {
+                        m_MatchType = SwitchMatchType.ClassType;
+                    }
+                }
             }
-            else
-            {
-                m_MatchType = SwitchMatchType.ClassType;
-                m_MatchMV = null;
-            }
+
+            Debug.Assert(m_MatchSourceMv != null, "原变量为空!");
 
             for (int i = 0; i < m_FileMetaKeySwitchSyntax.fileMetaKeyCaseSyntaxList.Count; i++)
             {
@@ -240,39 +270,10 @@ namespace SimpleLanguage.Core
             {
                 defaultMetaStatements.SetTRMetaVariable(trMetaVariable);
             }
-            if (m_MetaCallLink != null)
-            {
-                AllowUseSettings auc = new AllowUseSettings();
-                auc.callConstructFunction = false;
-                m_MetaCallLink.Parse(auc);
-                m_MetaCallLink.CalcReturnType();
-                m_MatchMV = m_MetaCallLink.ExecuteGetMetaVariable();
-                var mv = m_OwnerMetaBlockStatements.GetMetaVariableByName(matchMV.name);
-                if (mv == matchMV)//如果直接调用其它地方的metavariable，需要生成一个临时的metavariable 
-                {
-                    var fmt = mv.GetFinalMetaType();
-                    if( fmt ==  null )
-                    {
-                        Debug.Assert(false, "");
-                    }
-                    if (fmt.metaClass is MetaEnum )
-                    {
-                        m_MatchType = SwitchMatchType.EnumValue;
-                    }
-                    else if( ClassManager.IsNumberClass(fmt.metaClass) )
-                    {
-                        m_MatchType = SwitchMatchType.ConstValue;
-                    }
-                    else
-                    {
-                        m_MatchType = SwitchMatchType.ClassType;
-                    }
-                }
-            }
             for (int i = 0; i < metaCaseStatements.Count; i++)
             {
                 metaCaseStatements[i].Parse();
-                metaCaseStatements[i].SetMatchMetaVariable(matchMV);
+                metaCaseStatements[i].SetMatchMetaVariable(m_MatchSourceMv);
             }
         }
         public override void SetDeep(int dp)
@@ -309,17 +310,17 @@ namespace SimpleLanguage.Core
             }
             else if (m_MatchType == SwitchMatchType.ConstValue)
             {
-                sb.Append(matchMV?.name);
+                sb.Append(m_MatchSourceMv?.name);
             }
             else if (m_MatchType == SwitchMatchType.ClassType)
             {
-                sb.Append(matchMV?.name);
+                sb.Append(m_MatchSourceMv?.name);
                 sb.Append(" ");
                 sb.Append(m_MetaCallLink?.ToFormatString());
             }
             else if (m_MatchType == SwitchMatchType.ClassType)
             {
-                sb.Append(matchMV?.name);
+                sb.Append(m_MatchSourceMv?.name);
                 sb.Append(" ");
                 sb.Append(m_MetaCallLink?.ToFormatString());
             }

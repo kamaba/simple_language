@@ -21,20 +21,27 @@ namespace SimpleLanguage.IR
         }
         public class IRCaseStatements
         {
+            public List<IRCaseStatements> irCaseStatementsList => m_IRCaseStatementsList;
+
             public List<IRBase> conditionStatList = new List<IRBase>();
             public List<IRBase> thenStatList = new List<IRBase>();
 
             public IRBranch caseEndBrach = null;
-            public IRBranch caseFalseBreach = null;
             public IRNop startNop = null;
+            public IRNop thenNop = null;
+
+            private List<IRCaseStatements> m_IRCaseStatementsList = new List<IRCaseStatements>();
             public void ParseIRStatements(IRMethod _irMethod, MetaSwitchStatements.MetaCaseStatements mires)
             {
-                startNop = new IRNop(_irMethod);
-                conditionStatList.Add(startNop);
+               
 
                 //startNop.data.SetDebugInfoByToken(mires.finalExpress.GetToken());
                 if( mires.matchType == MetaSwitchStatements.SwitchMatchType.ClassType)
                 {
+                    startNop = new IRNop(_irMethod);
+                    thenNop = new IRNop(_irMethod);
+                    conditionStatList.Add(startNop);
+
                     IRMetaClass irmc = _irMethod.irManager.GetIRMetaClassByName("S.Core.Type");
                     IRStoreVariable storeLocal = IRStoreVariable.CreateIRStoreVariable(new IRMetaType(irmc, null), irmc, _irMethod, mires.defineMetaVariable);
                     //storeLocal.data.SetDebugInfoByToken(mires.defineMetaVariable.pingToken);
@@ -43,19 +50,27 @@ namespace SimpleLanguage.IR
                     IRLoadVariable loadLocal = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mires.defineMetaVariable);
                     //loadLocal.data.SetDebugInfoByToken(mires.defineMetaVariable.pingToken);
                     conditionStatList.Add(loadLocal);
+
+                    m_IRCaseStatementsList.Add(this);
                 }
                 else if( mires.matchType == MetaSwitchStatements.SwitchMatchType.ConstValue )
                 {
                     for( int i = 0; i < mires.constExpressList.Count; i++ )
                     {
+                        IRCaseStatements iRCaseStatements = new IRCaseStatements();
+                        m_IRCaseStatementsList.Add(iRCaseStatements);
+
+                        startNop = new IRNop(_irMethod);
+                        thenNop = new IRNop(_irMethod);
+                        conditionStatList.Add(startNop);
+
                         //mires.constExpressList[i].SetDebugInfoByToken(mires.finalExpress.GetToken());
                         var express = IRExpressManager.CreateExpress(_irMethod, mires.constExpressList[i] );
                         conditionStatList.Add(express);
 
-                        var switchBreach = new IRBranch(_irMethod, EIROpCode.Switch, null);
+                        var caseFalseBreach = new IRBranch(_irMethod, EIROpCode.Switch, null);                     
                         //ifFalseBreach.SetDebugInfoByToken(mires.m_IfOrElseIfKeySyntax.token);
-                        conditionStatList.Add(switchBreach);
-
+                        conditionStatList.Add(caseFalseBreach);
                     }
                 }
                 else if (mires.matchType == MetaSwitchStatements.SwitchMatchType.EnumValue)
@@ -66,18 +81,22 @@ namespace SimpleLanguage.IR
                     var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mires.matchMetaVariable.GetFinalMetaType(), owirmc);
                     var irmc = IRManager.instance.GetIRMetaClassById(mires.matchMetaVariable.GetOwnerClassTemplateClass().GetHashCode());                   
                     IRLoadVariable loadLocal = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mires.matchMetaVariable );
+                    conditionStatList.Add(loadLocal);
 
-                    var switchBreach = new IRBranch(_irMethod, EIROpCode.Switch, null);
+                    var caseFalseBreach = new IRBranch(_irMethod, EIROpCode.Switch, thenNop.data );
                     //ifFalseBreach.SetDebugInfoByToken(mires.m_IfOrElseIfKeySyntax.token);
-                    conditionStatList.Add(switchBreach);
+                    conditionStatList.Add(caseFalseBreach);
+
+                    m_IRCaseStatementsList.Add(this);
                 }
+                conditionStatList.Add(thenNop);
 
                 IRBlockStatements irbs = new IRBlockStatements(_irMethod);
                 irbs.ParseAllIRStatements(mires.thenMetaStatements);
                 thenStatList.AddRange(irbs.irStatements);
 
-                var ifEndBrach = new IRBranch(_irMethod, EIROpCode.Br, null);
-                thenStatList.Add(ifEndBrach);
+                caseEndBrach = new IRBranch(_irMethod, EIROpCode.Br, null);
+                thenStatList.Add(caseEndBrach);
 
                 //if (m_IfOrElseIfKeySyntax != null)
                 //{
@@ -113,8 +132,16 @@ namespace SimpleLanguage.IR
             IRBase irbase = new IRBase(insNode);
             m_IRStatements.Add(irbase);
 
-            IRNop endIRNop = new IRNop(irMethod);
+            var ownerMetaClass = ms.matchSourceMv.GetFinalTemplateMetaClass();
+            var owirmc = IRManager.instance.GetIRMetaClassById(ownerMetaClass.GetHashCode());
 
+            var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(ms.matchSourceMv.GetFinalMetaType(), owirmc);
+            var irmc = IRManager.instance.GetIRMetaClassById(ms.matchSourceMv.GetOwnerClassTemplateClass().GetHashCode());
+            IRLoadVariable loadLocal = IRLoadVariable.CreateLoadVariable(irmt, irmc, irMethod, ms.matchSourceMv );
+            m_IRStatements.Add(loadLocal);
+
+
+            IRNop endIRNop = new IRNop(irMethod);
             List<IRCaseStatements> mirList = new List<IRCaseStatements>();
 
             for (int i = 0; i < ms.metaCaseStatements.Count; i++)
@@ -122,23 +149,34 @@ namespace SimpleLanguage.IR
                 var meis = ms.metaCaseStatements[i];
 
                 IRCaseStatements mire = new IRCaseStatements();
-                mirList.Add(mire);
-
                 mire.ParseIRStatements(irMethod, meis);
-                m_IRStatements.AddRange(mire.conditionStatList);
-                m_IRStatements.AddRange(mire.thenStatList);
-                mire.caseEndBrach.data.opValue = endIRNop.data;
+
+                for( int j = 0; i < mire.irCaseStatementsList.Count; j++)
+                {
+                    var cmire = mire.irCaseStatementsList[j];
+
+                    m_IRStatements.AddRange(cmire.conditionStatList);
+                    m_IRStatements.AddRange(cmire.thenStatList);
+                    cmire.caseEndBrach.data.opValue = endIRNop.data;
+                }
             }
 
+            IRNop defaultNop = null;
             if ( ms.defaultMetaStatements != null )
             {
+                defaultNop = new IRNop(irMethod);
+                m_IRStatements.Add(defaultNop);
                 IRBlockStatements irbs = new IRBlockStatements(irMethod);
                 irbs.ParseIRStatements(ms.defaultMetaStatements);
                 m_IRStatements.AddRange(irbs.irStatements);
             }
+            else
+            {
+                defaultNop = endIRNop;
+            }
 
+            
             m_IRStatements.Add(endIRNop);
-
             List<IRData> irdataList = new List<IRData>();
             for (int i = 0; i < m_IRStatements.Count; i++)
             {
@@ -152,17 +190,17 @@ namespace SimpleLanguage.IR
             for (int i = 0; i < mirList.Count; i++)
             {
                 var mire = mirList[i];
-                //if (mire.ifFalseBreach != null)
-                //{
-                //    if (i < mirList.Count - 1)
-                //    {
-                //        mire.ifFalseBreach.data.opValue = mirList[i + 1].startNop.data;
-                //    }
-                //    else if (i == mirList.Count - 1)
-                //    {
-                //        //mire.ifFalseBreach.data.opValue = ifEndIRNop.data;
-                //    }
-                //}
+                for (int j = 0; j < mire.caseFalseBreachList.Count; j++)
+                {
+                    if (i < mirList.Count - 1)
+                    {
+                        mire.caseFalseBreachList[j].data.opValue = mirList[i + 1].startNop.data;
+                    }
+                    else if (i == mirList.Count - 1)
+                    {
+                        mire.caseFalseBreachList[j].data.opValue = defaultNop.data;
+                    }
+                }
             }
 
             return m_IRStatements;

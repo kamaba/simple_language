@@ -26,6 +26,8 @@ namespace SimpleLanguage.IR
         }
         public void ParseIRStatements(MetaBlockStatements ms)
         {
+            MetaStatements nextmbs = ms.nextMetaStatements;
+            ParseAnyIRStatements(nextmbs);
         }
         public void ParseAllIRStatements(MetaBlockStatements ms)
         {

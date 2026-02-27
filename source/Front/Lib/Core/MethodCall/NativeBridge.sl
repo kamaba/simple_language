@@ -22,20 +22,17 @@ public class BridgeObject extends Object
 
 public class NativeBridge extends Object
 {
-    BridgeKind _kind = BridgeKind.SELF
+    static BridgeKind _kind = BridgeKind.SELF
 
     bool static Call( BridgeKind kind, string dllName, string namespaceName, string className, string method,  BridgeObject retObj, Array<BridgeObject> arrParams )
     {
-        if this._kind == kind 
-        {
-
-        }
-
+        a = 200;
         switch kind
         {
             case BridgeKind.SELF
             {
-                
+                a = 1
+                next
             }
             case BridgeKind.CLR
             {
@@ -50,23 +47,9 @@ public class NativeBridge extends Object
 
             }     
             default{
-                
+                a = 20;
             }       
         }
-        ret true
-
-        switch(dllName.type)
-        {
-            case String str{
-
-            }
-            case Int32 it32
-            {
-
-            }
-            default{
-                
-            }
-        }
+        ret true        
     }
 }
