@@ -790,6 +790,12 @@ namespace SimpleLanguage.Core
                             beforeStatements.SetNextStatements(metaContinueStatements);
                             beforeStatements = metaContinueStatements;
                         }
+                        else if (fmoks.token.type == ETokenType.Next)
+                        {
+                            var metaNextStatements = new MetaNextStatements(currentBlockStatements, fmoks);
+                            beforeStatements.SetNextStatements(metaNextStatements);
+                            beforeStatements = metaNextStatements;
+                        }
                     }
                     break;
                 case FileMetaOpAssignSyntax fmos:

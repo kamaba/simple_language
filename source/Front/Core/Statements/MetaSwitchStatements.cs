@@ -54,7 +54,7 @@ namespace SimpleLanguage.Core
             public SwitchMatchType matchType => m_OwnerSwitch?.matchType ?? SwitchMatchType.None;
 
 
-            public bool isContinueNext { get; set; } = false;
+            public bool isContinueNext => m_IsContinueNext;
 
             private FileMetaKeySwitchSyntax.FileMetaKeyCaseSyntax m_FileMetaKeyCaseSyntax = null;
             public List<MetaConstExpressNode> m_ConstExpressList = new List<MetaConstExpressNode>(); //常量表达示
@@ -63,6 +63,7 @@ namespace SimpleLanguage.Core
             private MetaClass m_MatchTypeClass = null;
             private MetaBlockStatements m_ThenMetaStatements;
             private MetaVariable m_DefineMetaVariable = null;
+            private bool m_IsContinueNext = false;
 
             public MetaCaseStatements(MetaSwitchStatements mss, FileMetaKeySwitchSyntax.FileMetaKeyCaseSyntax fmkcs, MetaBlockStatements mbs )
             {
@@ -70,15 +71,14 @@ namespace SimpleLanguage.Core
                 m_FileMetaKeyCaseSyntax = fmkcs;
                 m_OwnerMetaBlockStatements = mbs;
                 m_ThenMetaStatements = new MetaBlockStatements(mbs, fmkcs.executeBlockSyntax);
-                if( fmkcs.isContinueNextCastSyntax )
-                {
-                    isContinueNext = true;
-                }
 
                 MetaMemberFunction.CreateMetaSyntax(fmkcs.executeBlockSyntax, m_ThenMetaStatements);
             }
             public void Parse()
             {
+                m_ThenMetaStatements.DetectAndValidateTerminator(m_FileMetaKeyCaseSyntax?.executeBlockSyntax?.endBlock);
+                m_IsContinueNext = m_ThenMetaStatements.terminatorType == MetaBlockStatements.ETerminatorType.Next;
+
                 if ( m_FileMetaKeyCaseSyntax.defineClassCallLink  != null )
                 {
                     MetaCallLinkExpressNode mcen = new MetaCallLinkExpressNode(m_FileMetaKeyCaseSyntax.defineClassCallLink, m_OwnerMetaBlockStatements?.ownerMetaClass,
@@ -213,8 +213,6 @@ namespace SimpleLanguage.Core
         }
         private void Parse()
         {
-            
-
             if (m_MetaCallLink != null)
             {
                 AllowUseSettings auc = new AllowUseSettings();

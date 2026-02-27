@@ -212,7 +212,6 @@ namespace SimpleLanguage.Compile
         public class FileMetaKeyCaseSyntax
         {
             public FileMeta fileMeta => m_FileMeta;
-            public bool isContinueNextCastSyntax { get; set; } = false;
             public Token variableToken => m_VariableToken;
             public FileMetaCallLink defineClassCallLink => m_DefineClassToken;
             public FileMetaBlockSyntax executeBlockSyntax => m_ExecuteBlockSyntax;
@@ -373,12 +372,10 @@ namespace SimpleLanguage.Compile
                     sb.Append(Environment.NewLine);
                     sb.Append(m_ExecuteBlockSyntax.ToFormatString());
                 }
-                if (isContinueNextCastSyntax)
-                {
-                    sb.Append("next;");
-                }
-
-
+                //if (isContinueNextCastSyntax)
+                //{
+                //    sb.Append("next;");
+                //}
                 return sb.ToString();
             }
         }

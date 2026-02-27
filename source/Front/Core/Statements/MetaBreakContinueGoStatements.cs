@@ -20,16 +20,48 @@ namespace SimpleLanguage.Core
         private MetaForStatements m_ForStatements = null;
         private MetaWhileDoWhileStatements m_WhileStatements = null;
 
-        public MetaBreakStatements( MetaBlockStatements mbs, FileMetaKeyOnlySyntax fmkos) : base(mbs)
+        public MetaBreakStatements(MetaBlockStatements mbs, FileMetaKeyOnlySyntax fmkos) : base(mbs)
         {
             m_FileMetaKeyOnlySyntax = fmkos;
 
             var fwd = mbs.FindNearestMetaForStatementsOrMetaWhileOrDoWhileStatements();
-            if( fwd is MetaForStatements )
+            if (fwd is MetaForStatements)
             {
                 m_ForStatements = fwd as MetaForStatements;
             }
-            else if( fwd is MetaWhileDoWhileStatements )
+            else if (fwd is MetaWhileDoWhileStatements)
+            {
+                m_WhileStatements = fwd as MetaWhileDoWhileStatements;
+            }
+        }
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < deep; i++)
+            {
+                sb.Append(Global.tabChar);
+            }
+            sb.Append("break;");
+            return sb.ToString();
+        }
+    }
+    public partial class MetaNextStatements : MetaStatements
+    {
+        private FileMetaKeyOnlySyntax m_FileMetaKeyOnlySyntax;
+
+        private MetaForStatements m_ForStatements = null;
+        private MetaWhileDoWhileStatements m_WhileStatements = null;
+
+        public MetaNextStatements(MetaBlockStatements mbs, FileMetaKeyOnlySyntax fmkos) : base(mbs)
+        {
+            m_FileMetaKeyOnlySyntax = fmkos;
+
+            var fwd = mbs.FindNearestMetaForStatementsOrMetaWhileOrDoWhileStatements();
+            if (fwd is MetaForStatements)
+            {
+                m_ForStatements = fwd as MetaForStatements;
+            }
+            else if (fwd is MetaWhileDoWhileStatements)
             {
                 m_WhileStatements = fwd as MetaWhileDoWhileStatements;
             }

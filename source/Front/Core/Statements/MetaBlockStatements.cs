@@ -6,6 +6,7 @@
 //  Description:  this's a statement in function! same link table model!
 //****************************************************************************
 using SimpleLanguage.Compile;
+using SimpleLanguage.Logging;
 
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,20 @@ namespace SimpleLanguage.Core
 {
     public class MetaBlockStatements : MetaStatements
     {
+        public enum ETerminatorType
+        {
+            None,
+            Next,
+            Break,
+            Continue,
+            Return,
+        }
+
+        public ETerminatorType terminatorType => m_TerminatorType;
+        public MetaStatements terminatorStatement => m_TerminatorStatement;
+
+        private ETerminatorType m_TerminatorType = ETerminatorType.None;
+        private MetaStatements m_TerminatorStatement = null;
         public override MetaFunction ownerMetaFunction => m_OwnerMetaFunction;
         public MetaStatements ownerMetaStatements => m_OwnerMetaStatements;
         public FileMetaBlockSyntax fileMetaBlockSyntax => m_FileMetaBlockSyntax;
@@ -33,6 +48,93 @@ namespace SimpleLanguage.Core
         {
             this.m_OwnerMetaFunction = mbs.ownerMetaFunction;
             this.m_OwnerMetaBlockStatements = mbs.m_OwnerMetaBlockStatements;
+        }
+
+        public void DetectAndValidateTerminator(Token errorToken)
+        {
+            m_TerminatorType = ETerminatorType.None;
+            m_TerminatorStatement = null;
+
+            // Only check the top-level linked list. (Nested blocks have their own rules.)
+            MetaStatements last = nextMetaStatements;
+            if (last == null) return;
+            while (last.nextMetaStatements != null)
+            {
+                last = last.nextMetaStatements;
+            }
+
+            if (last is MetaBreakStatements)
+            {
+                m_TerminatorType = ETerminatorType.Break;
+                m_TerminatorStatement = last;
+            }
+            else if (last is MetaContinueStatements)
+            {
+                m_TerminatorType = ETerminatorType.Continue;
+                m_TerminatorStatement = last;
+            }
+            else if (last is MetaReturnStatements)
+            {
+                m_TerminatorType = ETerminatorType.Return;
+                m_TerminatorStatement = last;
+            }
+            else if (last is SimpleLanguage.Core.MetaNextStatements)
+            {
+                m_TerminatorType = ETerminatorType.Next;
+                m_TerminatorStatement = last;
+            }
+
+            // Mutual exclusivity & must-be-last validation.
+            bool hasBreak = ContainsStatement<MetaBreakStatements>();
+            bool hasContinue = ContainsStatement<MetaContinueStatements>();
+            bool hasReturn = ContainsStatement<MetaReturnStatements>();
+            bool hasNext = ContainsStatement<SimpleLanguage.Core.MetaNextStatements>();
+
+            int count = 0;
+            if (hasBreak) count++;
+            if (hasContinue) count++;
+            if (hasReturn) count++;
+            if (hasNext) count++;
+
+            if (count == 0) return;
+
+            if (count > 1)
+            {
+                Log.AddInStructMeta(EError.None, "Error 终结语句 next/break/continue/return 互斥" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                m_TerminatorType = ETerminatorType.None;
+                m_TerminatorStatement = null;
+                return;
+            }
+
+            // if exists, must be the last statement
+            if (hasBreak && !IsLastStatement<MetaBreakStatements>(out _))
+            {
+                Log.AddInStructMeta(EError.None, "Error break 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                m_TerminatorType = ETerminatorType.None;
+                m_TerminatorStatement = null;
+                return;
+            }
+            if (hasContinue && !IsLastStatement<MetaContinueStatements>(out _))
+            {
+                Log.AddInStructMeta(EError.None, "Error continue 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                m_TerminatorType = ETerminatorType.None;
+                m_TerminatorStatement = null;
+                return;
+            }
+            if (hasReturn && !IsLastStatement<MetaReturnStatements>(out _))
+            {
+                Log.AddInStructMeta(EError.None, "Error return 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                m_TerminatorType = ETerminatorType.None;
+                m_TerminatorStatement = null;
+                return;
+            }
+            if (hasNext && !IsLastStatement<SimpleLanguage.Core.MetaNextStatements>(out _))
+            {
+                Log.AddInStructMeta(EError.None, "Error next 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                m_TerminatorType = ETerminatorType.None;
+                m_TerminatorStatement = null;
+                return;
+            }
         }
         public MetaBlockStatements( MetaFunction mf )
         {
@@ -89,6 +191,48 @@ namespace SimpleLanguage.Core
         {
             m_Deep = dp;
             nextMetaStatements?.SetDeep(deep + 1);
+        }
+
+        public bool IsLastStatement<TStatement>(out TStatement last) where TStatement : MetaStatements
+        {
+            last = null;
+            MetaStatements cur = nextMetaStatements;
+            if (cur == null) return false;
+
+            while (cur.nextMetaStatements != null)
+            {
+                cur = cur.nextMetaStatements;
+            }
+
+            if (cur is TStatement t)
+            {
+                last = t;
+                return true;
+            }
+            return false;
+        }
+
+        public bool ContainsStatement<TStatement>() where TStatement : MetaStatements
+        {
+            MetaStatements cur = nextMetaStatements;
+            while (cur != null)
+            {
+                if (cur is TStatement) return true;
+                cur = cur.nextMetaStatements;
+            }
+            return false;
+        }
+
+        public bool ValidateStatementMustBeLast<TStatement>(Token errorToken, string errorMessage) where TStatement : MetaStatements
+        {
+            if (!ContainsStatement<TStatement>()) return true;
+
+            if (!IsLastStatement<TStatement>(out _))
+            {
+                Log.AddInStructMeta(EError.None, errorMessage + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                return false;
+            }
+            return true;
         }
         public MetaVariable GetMetaVariable( string name )
         {
