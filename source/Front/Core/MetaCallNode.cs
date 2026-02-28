@@ -25,6 +25,7 @@ namespace SimpleLanguage.Core
         Null,
         MetaNode,
         MetaType,
+        Local,
         ClassName,
         //GenClassName,
         TypeName,
@@ -573,10 +574,47 @@ namespace SimpleLanguage.Core
                 }
             }
             //else if (etype == ETokenType.Type)
-            else if (etype == ETokenType.Identifier || etype == ETokenType.Type)
+            else if (etype == ETokenType.Local || etype == ETokenType.Identifier || etype == ETokenType.Type)
             {
                 if (isFirst)
                 {
+                    if (etype == ETokenType.Local)
+                    {
+                        var fm = m_FileMetaCallNode?.fileMeta;
+                        if (fm == null)
+                        {
+                            Log.AddInStructMeta(EError.None, "Error local 解析失败: fileMeta 为空");
+                            return false;
+                        }
+
+                        if (fm.GetFileMetaLocalSyntax() == null)
+                        {
+                            Log.AddInStructMeta(EError.None, "Error 当前文件未定义 local{}，不允许使用 local.xxx" + m_Token.ToLexemeAllString());
+                            return false;
+                        }
+
+                        var global = ProjectManager.globalData;
+                        if (global == null)
+                        {
+                            Log.AddInStructMeta(EError.None, "Error local 解析失败: globalData 为空");
+                            return false;
+                        }
+
+                        var varName = "local_" + fm.path.GetHashCode();
+                        var mv = global.GetMetaMemberVariableByName(varName);
+                        if (mv == null)
+                        {
+                            Log.AddInStructMeta(EError.None, "Error local 解析失败: 没有找到 local instance 变量: " + varName);
+                            return false;
+                        }
+
+                        m_MetaVariable = mv;
+                        m_CallNodeType = ECallNodeType.Local;
+                        m_MetaType = mv.realMetaType;
+                        m_CallMetaType = new MetaType(global);
+                        return true;
+                    }
+
                     // Class1. ns. Int32[]
                     if (GetFirstNode(m_Name, m_OwnerMetaClass, this.m_FileMetaCallNode.inputTemplateNodeList.Count) == false)
                     {
@@ -904,6 +942,26 @@ namespace SimpleLanguage.Core
                                     }
                                 }
                             }
+                        }
+                    }
+                    else if (frontCNT == ECallNodeType.Local)
+                    {
+                        var mv = m_FrontCallNode.m_MetaVariable;
+                        if (mv == null)
+                        {
+                            Log.AddInStructMeta(EError.None, "Error local instance 为空");
+                            return false;
+                        }
+                        mv.ParseRealMetaType();
+                        var mc2 = mv.realMetaType?.metaClass;
+                        if (mc2 == null)
+                        {
+                            Log.AddInStructMeta(EError.None, "Error local instance 类型为空");
+                            return false;
+                        }
+                        if (GetFunctionOrVariableByOwnerClass(mc2, m_Name) == false)
+                        {
+                            return false;
                         }
                     }
                     else if (frontCNT == ECallNodeType.This

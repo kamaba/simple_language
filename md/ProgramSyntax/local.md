@@ -1,141 +1,188 @@
-﻿# local (文件级全局初始化块)
+﻿# local（文件级初始化 + 文件私有成员）
 
 ## 概述
 
-`local{ ... }` 用于在 **单个源文件** 内声明“文件级全局代码”。它类似于“模块初始化/文件初始化”的概念：
+`local { ... }` 用于在**单个源文件**内声明“文件级初始化逻辑”和“文件私有成员（变量/函数）”。
 
-- `local{}` 中可以直接写执行语句（赋值、调用等）
-- 也可以在 `local{}` 中定义函数
-- `local{}` 中定义的变量与函数，均通过 `local.xxx` 的方式在该文件内引用
-- `local{}` 的执行顺序由编译器按 **编译文件列表顺序** 依次执行（先执行前面的文件的 `local{}`，再执行后面的文件）
+核心特性：
 
-该机制适用于：
+- `local{}` 内的成员通过 `local.xxx` 在**当前文件**内访问。
+- 多个文件都可以写 `local{}`，且可以**重复定义同名成员**，互不冲突。
+- `local{}` 的执行顺序按照工程的**编译文件列表顺序**执行（先编译列表前面的文件，再执行后面的文件）。
 
-- 文件级资源初始化（如数据库连接、缓存、配置读取）
-- 给该文件提供可复用的“内部工具函数”
+常见用途：
 
----
-
-## 语法
-
-```sl
-import A.B;
-import C.D;
-
-local
-{
-    # 直接执行语句
-    db = Mysql("127.0.0.1:3306", "user", "password")
-
-    # 定义函数
-    func PrintDbInfo()
-    {
-        Debug.Write(local.db)
-    }
-}
-```
-
-- `local` 后必须紧跟 `{}` 块
-- `local{}` 只能出现一次（建议），如需多段初始化应写在同一个块内
+- 本文件内的资源初始化（配置、缓存、db 连接等）
+- 本文件内可复用的工具函数（仅该文件可见）
 
 ---
 
-## 位置约束（非常重要）
+## 位置约束
 
-`local{}` 仅允许写在：
+`local{}` 只能写在：
 
 - **所有 `import` 之后**
-- **任何 `namespace` / `class` / `data` / `enum` 定义之前**
+- **任何 `namespace` / `class` / `data` / `enum` 之前**
 
-正确示例：
+正确：
 
 ```sl
 import Core.Debug;
 
-local { x = 1 }
+local { a = 1 }
 
 class A { }
 ```
 
-错误示例：
-
-```sl
-namespace N;
-local { x = 1 }   # 不允许：local 不能在 namespace 之后
-```
+错误：
 
 ```sl
 class A { }
-local { x = 1 }   # 不允许：local 不能在类定义之后
+local { a = 1 }  # 不允许
 ```
 
 ---
 
-## 访问规则
+## 语法与规则
 
-### 访问 local 变量
+### 基本语法
 
 ```sl
+import Core.Debug;
+
 local
 {
-    db = Mysql("127.0.0.1:3306", "user", "password")
-}
-
-ClassDef
-{
-    Test()
+    a = 1
+    int Add(x)
     {
-        local.db.Query("select 1")
+        return x + local.a
     }
 }
 ```
 
-### 访问 local 函数
+约束：
+
+- `local` 后必须跟 `{}`。
+- 同一文件只允许出现一个 `local{}`。
+
+### 语句与函数混排规则（重要）
+
+当前实现约束为：
+
+1. 在 `local{}` 内，**在出现第一个函数定义之前**，允许写“初始化语句”。
+2. 一旦出现函数定义，则**后续只能继续定义函数**（不允许再写初始化语句）。
+3. `local{}` 中定义的函数**不允许**带 `static`。
+
+---
+
+## 访问规则（文件私有）
+
+### local 成员只在当前文件可见
+
+- 在 `LocalTest1.sl` 里：`local.xxx` 只能访问 `LocalTest1.sl` 自己的 `local{}`。
+- 在 `LocalTest2.sl` 里：`local.xxx` 只能访问 `LocalTest2.sl` 自己的 `local{}`。
+
+不同文件即使成员同名，也互不影响。
+
+---
+
+## 执行顺序（按编译文件顺序）
+
+当工程编译列表为：
+
+1. `LocalTest1.sl`
+2. `LocalTest2.sl`
+
+则执行顺序为：
+
+1. `LocalTest1.sl` 的 `local{}` 初始化（`__local_init__`）
+2. `LocalTest2.sl` 的 `local{}` 初始化（`__local_init__`）
+
+---
+
+## 示例：LocalTest1 / LocalTest2（测试顺序与隔离）
+
+> 对应测试文件：`test/BaseTest/LocalTest1.sl` 与 `test/BaseTest/LocalTest2.sl`
+
+### `LocalTest1.sl`
 
 ```sl
+import Core.Debug;
+
 local
 {
-    func Init()
+    a = 1
+    order = "L1"
+
+    int Add(x)
     {
-        Debug.Write("init")
+        return x + local.a
+    }
+
+    PrintLocal()
+    {
+        Debug.Write("LocalTest1 local.a=" + local.a)
+        Debug.Write("LocalTest1 local.order=" + local.order)
     }
 }
 
-ClassDef
+class LocalTest1
 {
-    Main()
+    static Test()
     {
-        local.Init()
+        local.a = local.a + 10
+        v = local.Add(5)
+        Debug.Write("LocalTest1 v=" + v)
+        local.PrintLocal()
     }
 }
 ```
 
+### `LocalTest2.sl`
+
+```sl
+import Core.Debug;
+
+local
+{
+    # 与 LocalTest1 重复定义同名 a，不冲突
+    a = 100
+    order = "L2"
+
+    func Add(x)
+    {
+        return x + local.a
+    }
+
+    func PrintLocal()
+    {
+        Debug.Write("LocalTest2 local.a=" + local.a)
+        Debug.Write("LocalTest2 local.order=" + local.order)
+    }
+}
+
+class LocalTest2
+{
+    static Test()
+    {
+        local.a = local.a + 1
+        v = local.Add(5)
+        Debug.Write("LocalTest2 v=" + v)
+        local.PrintLocal()
+    }
+}
+```
+
+观察点：
+
+- 如果编译文件顺序是 `LocalTest1.sl` → `LocalTest2.sl`，则初始化顺序也是这个顺序。
+- `LocalTest1.sl` 的 `local.a` 和 `LocalTest2.sl` 的 `local.a` 相互独立。
+
 ---
 
-## 执行顺序
+## 常见错误
 
-当工程包含多个源文件时：
-
-- 编译器按工程的编译文件顺序（配置中的文件列表顺序）
-- 逐个执行每个文件的 `local{}` 初始化块
-
-因此：
-
-- 若文件 A 在文件 B 之前，A 的 `local{}` 会先执行
-- `local{}` 为文件局部作用域，不建议跨文件依赖另一个文件的 `local` 变量
-
----
-
-## 作用域与限制
-
-- `local{}` 的成员（变量/函数）仅在 **当前文件内** 可见
-- 不推荐在 `local{}` 内定义类/命名空间；如需定义结构，应使用普通 `class/data/enum`
-
----
-
-## 错误提示（建议）
-
-- 位置错误：
-  - `Error local{} 只能写在 import 后、namespace/class/data/enum 前`
-- 重复定义：
-  - `Error local{} 在同一文件中只允许定义一次`
+- 位置错误：`Error local{} 只能写在 import 后、namespace/class/data/enum 前`
+- 重复定义：`Error local{} 在同一文件中只允许定义一次`
+- 函数后出现语句：`Error local{} 中出现函数定义后，后边只允许继续定义函数`
+- local 函数使用 static：`Error local{} 中定义的函数不允许使用 static`
