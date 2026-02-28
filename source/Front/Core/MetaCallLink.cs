@@ -30,10 +30,51 @@ namespace SimpleLanguage.Core
         private List<MetaVisitNode> m_VisitNodeList = new List<MetaVisitNode>();
         public MetaCallLink(FileMetaCallLink fmcl, MetaClass metaClass, MetaBlockStatements mbs, MetaType frontDefineMt, MetaVariable mv )
         {
-            m_FileMetaCallLink = fmcl;
+            m_FileMetaCallLink = RewriteLocalCallLinkIfNeed(fmcl, metaClass);
             m_OwnerMetaClass = metaClass;
             m_OwnerMetaBlockStatements = mbs;
             CreateCallLinkNode(frontDefineMt, mv );
+        }
+
+        private static FileMetaCallLink RewriteLocalCallLinkIfNeed(FileMetaCallLink fmcl, MetaClass ownerMc)
+        {
+            if (fmcl == null || ownerMc == null) return fmcl;
+            if (fmcl.callNodeList == null || fmcl.callNodeList.Count == 0) return fmcl;
+
+            // local.xxx => local_<fileHash>.xxx (instance stored on globalData)
+            var first = fmcl.callNodeList[0];
+            if (first == null) return fmcl;
+            if (first.name != "local") return fmcl;
+
+            var fileMeta = first.fileMeta;
+            if (fileMeta == null) return fmcl;
+
+            // Only allow local usage in the file that defines local{}.
+            if (fileMeta.GetFileMetaLocalSyntax() == null)
+            {
+                Log.AddInStructMeta(EError.None, "Error 当前文件未定义 local{}，不允许使用 local.xxx" + (first.token != null ? (" " + first.token.ToLexemeAllString()) : ""));
+                return fmcl;
+            }
+
+            var localVarName = "local_" + fileMeta.path.GetHashCode();
+
+            // Create a new call link based on a synthetic Node chain: localVarName + original suffix
+            var baseToken = new Token(fileMeta.path, ETokenType.Identifier, localVarName, first.token?.sourceBeginLine ?? 0, first.token?.sourceBeginChar ?? 0);
+            var baseNode = new Node(baseToken) { nodeType = ENodeType.IdentifierLink };
+
+            // Copy original chain tokens except the leading 'local'
+            for (int i = 1; i < fmcl.callNodeList.Count; i++)
+            {
+                var cn = fmcl.callNodeList[i];
+                if (cn == null) continue;
+                var t = cn.token;
+                if (t == null) continue;
+                var n = new Node(t);
+                n.nodeType = t.type == ETokenType.Period ? ENodeType.Period : ENodeType.IdentifierLink;
+                baseNode.AddLinkNode(n);
+            }
+
+            return new FileMetaCallLink(fileMeta, baseNode, true);
         }
         public MetaCallLink(MetaVisitNode mvn )
         {

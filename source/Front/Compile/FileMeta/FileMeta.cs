@@ -24,6 +24,7 @@ namespace SimpleLanguage.Compile
         private string m_Path;
         // for example: import namespace1.namespace2;
         private List<FileMetaImportSyntax> m_FileImportSyntax = new List<FileMetaImportSyntax>();
+        private FileMetaLocalSyntax m_FileMetaLocalSyntax = null;
         // for example: namespace a.b.c;
         private List<FileMetaNamespace> m_FileDefineNamespaceList = new List<FileMetaNamespace>();
         private List<FileMetaNamespace> m_FileSearchNamespaceList = new List<FileMetaNamespace>();
@@ -44,6 +45,16 @@ namespace SimpleLanguage.Compile
         {
             iss.SetFileMeta(this);
             m_FileImportSyntax.Add(iss);
+        }
+
+        public void SetFileMetaLocalSyntax(FileMetaLocalSyntax local)
+        {
+            m_FileMetaLocalSyntax = local;
+        }
+
+        public FileMetaLocalSyntax GetFileMetaLocalSyntax()
+        {
+            return m_FileMetaLocalSyntax;
         }
         public void AddFileDefineNamespace(FileMetaNamespace fdn )
         {

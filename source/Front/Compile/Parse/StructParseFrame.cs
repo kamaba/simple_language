@@ -274,6 +274,8 @@ namespace SimpleLanguage.Compile
             AddParseFileNodeInfo();
 
             Node pnode = m_RootNode;
+            bool hasImport = false;
+            bool hasNamespaceOrClass = false;
             while(true)
             {
                 if (pnode.parseIndex >= pnode.childList.Count)
@@ -294,11 +296,26 @@ namespace SimpleLanguage.Compile
                     {
                         case ETokenType.Import:
                             {
+                                hasImport = true;
                                 ParseImport(pnode);
+                            }
+                            break;
+                        case ETokenType.Local:
+                            {
+                                // local{} must be after imports and before any namespace/class definitions.
+                                if (hasNamespaceOrClass)
+                                {
+                                    Log.AddInStructFileMeta(EError.None, "Error local{} 只能写在 import 后、namespace/class/data/enum 前");
+                                    pnode.parseIndex++;
+                                    break;
+                                }
+
+                                ParseLocal(pnode);
                             }
                             break;
                         case ETokenType.Namespace:
                             {
+                                hasNamespaceOrClass = true;
                                 ParseNamespace(pnode);
                             }
                             break;
@@ -312,6 +329,7 @@ namespace SimpleLanguage.Compile
                         case ETokenType.Projected:
                         case ETokenType.Partial:
                             {
+                                hasNamespaceOrClass = true;
                                 ParseNamespaceOrTopClass(pnode);
                             }
                             break;
@@ -411,6 +429,166 @@ namespace SimpleLanguage.Compile
             List<Node> nodeList = GetAllNodeToSemiColon(pnode);
             FileMetaImportSyntax ist = new FileMetaImportSyntax(nodeList);
             m_FileMeta.AddFileImportSyntax(ist);
+        }
+
+        public void ParseLocal(Node pnode)
+        {
+            Node localNode = pnode.GetParseNode(); // consume 'local'
+            if (localNode == null || localNode.token?.type != ETokenType.Local)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error local 解析失败");
+                return;
+            }
+
+            if (m_FileMeta.GetFileMetaLocalSyntax() != null)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error local{} 在同一文件中只允许定义一次");
+                return;
+            }
+
+            Node blockNode = null;
+            if (pnode.parseIndex < pnode.childList.Count)
+            {
+                var next = pnode.childList[pnode.parseIndex];
+                if (next != null && next.nodeType == ENodeType.Brace)
+                {
+                    blockNode = next;
+                    pnode.parseIndex++;
+                }
+                else if (next != null && next.nodeType == ENodeType.LineEnd)
+                {
+                    if (pnode.parseIndex + 1 < pnode.childList.Count)
+                    {
+                        var next2 = pnode.childList[pnode.parseIndex + 1];
+                        if (next2 != null && next2.nodeType == ENodeType.Brace)
+                        {
+                            blockNode = next2;
+                            pnode.parseIndex += 2;
+                        }
+                    }
+                }
+            }
+
+            if (blockNode == null)
+            {
+                Log.AddInStructFileMeta(EError.None, "Error local 后必须跟 {} 块");
+                return;
+            }
+
+            var fls = new FileMetaLocalSyntax(m_FileMeta, localNode.token, blockNode);
+            m_FileMeta.SetFileMetaLocalSyntax(fls);
+
+            ParseLocalContent(fls, blockNode);
+        }
+
+        private void ParseLocalContent(FileMetaLocalSyntax fls, Node blockNode)
+        {
+            if (fls == null || blockNode == null) return;
+
+            bool hasFunction = false;
+            List<Node> lineNodes = new List<Node>();
+
+            for (int i = 0; i < blockNode.childList.Count; i++)
+            {
+                var n = blockNode.childList[i];
+                if (n == null) continue;
+
+                if (n.nodeType == ENodeType.LineEnd || n.nodeType == ENodeType.SemiColon)
+                {
+                    if (lineNodes.Count == 0) continue;
+
+                    // try parse as function definition: ... IdentifierLink(with par) { ... }
+                    if (TryParseLocalFunction(blockNode, fls, lineNodes, ref hasFunction))
+                    {
+                        lineNodes.Clear();
+                        continue;
+                    }
+
+                    if (hasFunction)
+                    {
+                        Log.AddInStructFileMeta(EError.None, "Error local{} 中出现函数定义后，后边只允许继续定义函数");
+                        lineNodes.Clear();
+                        continue;
+                    }
+
+                    // parse as normal statement syntax by reusing brace-term parsing
+                    var tempBrace = new Node(new Token(m_FileMeta.path, ETokenType.LeftBrace, "{", 0, 0)) { nodeType = ENodeType.Brace };
+                    tempBrace.SetChildList(new List<Node>(lineNodes));
+                    var tempVar = new FileMetaMemberVariable(m_FileMeta, tempBrace);
+                    // FileMetaMemberVariable will split by line-end/semi and create variable -> syntax.
+                    // We need FileMetaSyntax objects; simplest is to treat it as a block and parse later in Meta.
+                    // Here we store the raw nodes as a call syntax if possible.
+                    // Fallback: build a call link from first node.
+                    if (lineNodes.Count > 0)
+                    {
+                        var firstNode = lineNodes[0];
+                        if (firstNode != null && firstNode.nodeType == ENodeType.IdentifierLink)
+                        {
+                            var link = new FileMetaCallLink(m_FileMeta, firstNode, true);
+                            var call = new FileMetaCallSyntax(link);
+                            fls.AddLocalInitSyntax(call);
+                        }
+                    }
+                    lineNodes.Clear();
+                    continue;
+                }
+
+                lineNodes.Add(n);
+            }
+
+            if (lineNodes.Count > 0)
+            {
+                if (!hasFunction)
+                {
+                    if (lineNodes.Count > 0)
+                    {
+                        var firstNode = lineNodes[0];
+                        if (firstNode != null && firstNode.nodeType == ENodeType.IdentifierLink)
+                        {
+                            var link = new FileMetaCallLink(m_FileMeta, firstNode, true);
+                            var call = new FileMetaCallSyntax(link);
+                            fls.AddLocalInitSyntax(call);
+                        }
+                    }
+                }
+                else
+                {
+                    Log.AddInStructFileMeta(EError.None, "Error local{} 中出现函数定义后，后边只允许继续定义函数");
+                }
+            }
+        }
+
+        private bool TryParseLocalFunction(Node ownerBlock, FileMetaLocalSyntax fls, List<Node> lineNodes, ref bool hasFunction)
+        {
+            if (lineNodes == null || lineNodes.Count == 0) return false;
+
+            // detect a function signature by the existence of an IdentifierLink with parNode.
+            bool isFunc = false;
+            for (int i = 0; i < lineNodes.Count; i++)
+            {
+                var n = lineNodes[i];
+                if (n?.nodeType == ENodeType.IdentifierLink && n.parNode != null)
+                {
+                    isFunc = true;
+                    break;
+                }
+            }
+            if (!isFunc) return false;
+
+            // static not allowed in local-defined functions
+            for (int i = 0; i < lineNodes.Count; i++)
+            {
+                if (lineNodes[i]?.nodeType == ENodeType.Key && lineNodes[i].token?.type == ETokenType.Static)
+                {
+                    Log.AddInStructFileMeta(EError.None, "Error local{} 中定义的函数不允许使用 static");
+                    return true;
+                }
+            }
+
+            hasFunction = true;
+            var f = new FileMetaMemberFunction(m_FileMeta, ownerBlock, new List<Node>(lineNodes));
+            fls.AddLocalFunction(f);
+            return true;
         }
         public void ParseNamespace(Node pnode)
         {

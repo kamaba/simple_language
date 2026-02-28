@@ -570,6 +570,11 @@ namespace SimpleLanguage.Compile
                         AddImportNode(token);
                     }
                     break;
+                case ETokenType.Local:
+                    {
+                        AddKeyNode(token);
+                    }
+                    break;
                 case ETokenType.Namespace:
                     {
                         AddNamespaceNode(token);

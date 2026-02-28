@@ -216,7 +216,13 @@ namespace SimpleLanguage.Project
             MetaVariableManager.instance.ParseMetaDataMemberExpress();
             MetaVariableManager.instance.ParseMetaClassMemberExpress();
 
+            // Build per-file local{} classes after member express parsed but before statements parsing.
+            LocalManager.instance.BuildFileLocalClasses(fileParseList);
+
             MethodManager.instance.ParseStatements();
+
+            // After all methods parsed, inject local{} initialization calls in compile-file order.
+            LocalManager.instance.InjectLocalInitCalls(fileParseList);
 
             //ClassManager.instance.UpdateMetaGenTemplateClassHandle();
 
