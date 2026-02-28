@@ -27,6 +27,7 @@ namespace SimpleLanguage.Core
         private FileMetaMemberVariable m_FileMetaMemeberVariable;
         private MetaExpressNode m_Express = null;
         private bool m_IsInnerDefine = false;
+        private bool m_IsExplicitAssign = false;
 
         private bool m_IsSupportConstructionFunctionOnlyBraceType = false;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
         private bool m_IsSupportConstructionFunctionConnectBraceType = true;  //是否支持构造函数名称后边加{}形式    Class1{ a = Class2(){} } 不支持
@@ -41,14 +42,27 @@ namespace SimpleLanguage.Core
         private bool m_IsSupportInExpressUseCurrentClassNotStaticMemberMetaVariable = true;  //是否支持在表达式中使用本类或父类中的非静态变量
 #pragma warning restore CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseCurrentClassNotStaticMemberMetaVariable”已被赋值，但从未使用过它的
 
-        public MetaMemberEnum(MetaClass mc, FileMetaMemberVariable fmmv)
+        public MetaMemberEnum(MetaClass mc, FileMetaMemberVariable fmmv, MetaClass extendClass )
         {
             m_FileMetaMemeberVariable = fmmv;
             m_Name = fmmv.name;
             AddPingToken(fmmv.nameToken);
             m_Index = mc.metaMemberVariableDict.Count;
             m_FromType = EFromType.Code;
-            m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+            m_DefineMetaType = new MetaType(extendClass);
+            
+            if (extendClass == CoreMetaClassManager.byteMetaClass
+                  || extendClass == CoreMetaClassManager.sbyteMetaClass
+                  || extendClass == CoreMetaClassManager.int16MetaClass
+                  || extendClass == CoreMetaClassManager.uint16MetaClass
+                  || extendClass == CoreMetaClassManager.int32MetaClass
+                  || extendClass == CoreMetaClassManager.uint32MetaClass
+                  || extendClass == CoreMetaClassManager.int64MetaClass
+                  || extendClass == CoreMetaClassManager.uint64MetaClass
+                  || extendClass == CoreMetaClassManager.stringMetaClass)
+            {
+                SetIsDefineMetaType(true);
+            }
             m_IsStatic = true;// enum 成员全部为static
             m_VariableFrom = EVariableFrom.Member;
             if (fmmv.staticToken != null)
@@ -82,6 +96,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_FileMetaMemeberVariable.express != null)
                 {
+                    m_IsExplicitAssign = true;
                     CreateExpressParam cep = new CreateExpressParam()
                     {
                         fme = m_FileMetaMemeberVariable.express,
@@ -97,7 +112,23 @@ namespace SimpleLanguage.Core
                     {
                         Log.AddInStructMeta(EError.None, "Error 没有解析到Express的内容 在MetaMemberData 里边 372");
                     }
+                else
+                {
+                    m_IsExplicitAssign = false;
                 }
+                }
+
+                // enum member always has a define type; default real type follows define type until expression parsed.
+                if (m_DefineMetaType == null)
+                {
+                    m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                }
+                if (m_RealMetaType == null)
+                {
+                    m_RealMetaType = new MetaType(m_DefineMetaType.metaClass);
+                }
+
+                SetIsDefineMetaType(m_IsExplicitAssign);
             }
         }
         public override bool ParseMetaExpress()
@@ -118,7 +149,13 @@ namespace SimpleLanguage.Core
         }
         public void SetExpress(MetaConstExpressNode mcen)
         {
+            // Auto-filled const is not considered an explicit '=' from source, but it is a valid express for later stages.
             m_Express = mcen;
+            m_IsExplicitAssign = false;
+            if (m_RealMetaType == null)
+            {
+                m_RealMetaType = new MetaType(m_DefineMetaType?.metaClass ?? CoreMetaClassManager.objectMetaClass);
+            }
         }
         public override string ToFormatString()
         {

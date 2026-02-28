@@ -1,5 +1,5 @@
 
-enum BridgeKind 
+enum BridgeKind extends Byte
 {
    SELF = 0
    CLR
@@ -26,6 +26,20 @@ public class NativeBridge extends Object
 
     bool static Call( BridgeKind kind, string dllName, string namespaceName, string className, string method,  BridgeObject retObj, Array<BridgeObject> arrParams )
     {
+        for v in BridgeKind
+        {
+            #int index = v.index;
+            #name = v.name
+            if v == BridgeKind.SELF
+            {
+
+            }
+        }
+        for v in BridgeKind.values
+        {
+
+        }
+        #!
         a = 200;
         switch kind
         {
@@ -50,6 +64,7 @@ public class NativeBridge extends Object
                 a = 20;
             }       
         }
+        !#
         ret true        
     }
 }

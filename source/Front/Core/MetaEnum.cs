@@ -41,15 +41,26 @@ namespace SimpleLanguage.Core
             //创建一个Enum 里边的静态元素列表，用来遍历 比如enum { a = 1; b = 2} 则 enum { values = [a,b]
             if(m_ValuesMetaVariable == null )
             {
-                MetaInputTemplateCollection mitc = new MetaInputTemplateCollection();
-                mitc.AddMetaTemplateParamsList(new MetaType(this.extendClass));
-                var mt = new MetaType(CoreMetaClassManager.arrayMetaClass, null, mitc);
+                List<MetaType> mtList = new List<MetaType>();
+                mtList.Add(new MetaType(this.extendClass));
+                var mt = new MetaType(CoreMetaClassManager.arrayMetaClass, mtList);
                 m_ValuesMetaVariable = new MetaVariable( "values", MetaVariable.EVariableFrom.Member, null, this, mt);
                 m_ValuesMetaVariable.SetIsStatic( true );
+
+
+                MetaArrayExpressNode maen = new MetaArrayExpressNode( this, null, mt, m_ValuesMetaVariable );
+
                 foreach ( var v in m_MetaMemberEnumDict )
                 {
-                    m_ValuesMetaVariable.AddMetaVariable(v.Value);
+                    maen.metaCallArray.Add(v.Value.express);
+                    //m_ValuesMetaVariable.AddMetaVariable(v.Value);
                 }
+                MetaBlockStatements mbs = new MetaBlockStatements();
+                var menNew = new MetaNewObjectExpressNode(maen, this, mbs, m_ValuesMetaVariable);
+                menNew.Parse(new AllowUseSettings());
+                menNew.SetStoreMetaVariable(m_ValuesMetaVariable);
+                menNew.CalcReturnType();
+
             }
         }
         public MetaMemberEnum GetMemberEnumByName(string name)
@@ -102,7 +113,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                     isHave = false;
-                MetaMemberEnum mmv = new MetaMemberEnum(this, v);
+                MetaMemberEnum mmv = new MetaMemberEnum(this, v, this.extendClass);
                 if (isHave)
                 {
                     mmv.SetName(mmv.name + "__repeat__");
@@ -165,6 +176,13 @@ namespace SimpleLanguage.Core
                || m_ExtendClass == CoreMetaClassManager.uint64MetaClass)
             {
 
+                // For numeric underlying types, all members' define/real type must be the underlying type.
+                var underlyingMt = new MetaType(m_ExtendClass);
+                foreach (var m in m_MetaMemberEnumDict)
+                {
+                    m.Value.SetMetaDefineType(underlyingMt);
+                }
+
                 int i = 0;
                 dynamic indexdynamic = 0;
                 foreach (var v in m_MetaMemberEnumDict)
@@ -175,7 +193,7 @@ namespace SimpleLanguage.Core
                     {
                         if (v.Value.express == null)
                         {
-                            Log.AddInStructMeta( EError.None, "Warning Enum Member Enum 成员第一位必须有=号");
+                            Log.AddInStructMeta(EError.None, "Warning Enum Member Enum 成员第一位必须有=号");
                             continue;
                         }
                     }
@@ -277,8 +295,15 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        v.Value.SetExpress(new MetaConstExpressNode(m_ExtendClass.eType, indexdynamic++));
+                        // auto increment when missing '='
+                        var autoConst = new MetaConstExpressNode(m_ExtendClass.eType, indexdynamic++);
+                        v.Value.SetExpress(autoConst);
+                        v.Value.ParseMetaExpress();
                     }
+
+                    // Always pin real type to underlying type for numeric enums.
+                    // MetaMemberEnum.ParseMetaExpress sets real type based on expression; ensure it remains the underlying type.
+                    v.Value.SetMetaDefineType(underlyingMt);
                 }
             }
             else if (m_ExtendClass == CoreMetaClassManager.stringMetaClass)
@@ -338,7 +363,7 @@ namespace SimpleLanguage.Core
                     v.Value.ParseDefineMetaType();
                     if (v.Value.express == null)
                     {
-                        Log.AddInStructMeta(EError.None, "Error Enum Member Enum 成员第一位必须有=号");
+                        Log.AddInStructMeta(EError.None, "Error Enum Member Enum 成员必须有=号");
                         continue;
                     }
                     v.Value.ParseMetaExpress();

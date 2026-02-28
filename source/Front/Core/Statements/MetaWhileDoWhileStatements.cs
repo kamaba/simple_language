@@ -105,7 +105,7 @@ namespace SimpleLanguage.Core
                     // Support: for v in EnumType
                     // When the in-expression resolves to an enum type (MetaClass visit), iterate over EnumType.values.
                     if (mcallEn.metaCallLink?.finalCallNode != null
-                        && mcallEn.metaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.MetaClass
+                        && mcallEn.metaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.Enum
                         && mcallEn.metaCallLink.finalCallNode.callMetaType?.metaClass is MetaEnum men)
                     {
                         m_ForInContent = men.GetOrCreateValuesVariable();

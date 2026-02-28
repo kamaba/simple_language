@@ -17,6 +17,11 @@ namespace SimpleLanguage.Core
 
         List<FileMetaBaseTerm>  m_FileMetaBaseTermList = new List<FileMetaBaseTerm>();
         List<MetaExpressNode>   m_MetaCallArray = new List<MetaExpressNode>();
+        public MetaArrayExpressNode(MetaClass mc, MetaBlockStatements mbs, MetaType defineMT, MetaVariable mv)
+        {
+            m_OwnerMetaClass = mc;
+            m_OwnerMetaBlockStatements = mbs;
+        }
         public MetaArrayExpressNode( List<FileMetaBaseTerm> fmcl, MetaClass mc, MetaBlockStatements mbs, MetaType defineMT, MetaVariable mv  )
         {
             m_OwnerMetaClass = mc;

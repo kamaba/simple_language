@@ -1071,15 +1071,15 @@ namespace SimpleLanguage.Core
         //}
         public void SetInputParams(MetaInputParamCollection _paramCollection)
         {
-            if(m_MetaMemberFunction == null )
-            {
-                return;
-            }
-            int defineCount = m_MetaMemberFunction.metaMemberParamCollection.maxParamCount;
+            int defineCount = 0;
             List<MetaDefineParam> mpList = new();
-            if (m_MetaMemberFunction.metaMemberParamCollection != null)
+            if (m_MetaMemberFunction != null )
             {
-                mpList = m_MetaMemberFunction.metaMemberParamCollection.metaDefineParamList;
+                defineCount = m_MetaMemberFunction.metaMemberParamCollection.maxParamCount;
+                if (m_MetaMemberFunction.metaMemberParamCollection != null)
+                {
+                    mpList = m_MetaMemberFunction.metaMemberParamCollection.metaDefineParamList;
+                }
             }
 
             int inputCount = _paramCollection != null ? _paramCollection.metaInputParamList.Count : 0;

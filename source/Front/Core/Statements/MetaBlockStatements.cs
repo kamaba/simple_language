@@ -44,10 +44,13 @@ namespace SimpleLanguage.Core
         protected List<MetaBlockStatements> m_ChildrenMetaBlockStatementsList = new List<MetaBlockStatements>();
         protected MetaStatements m_OwnerMetaStatements = null;        
         protected FileMetaBlockSyntax m_FileMetaBlockSyntax = null;
-        public MetaBlockStatements( MetaBlockStatements mbs )
+        public MetaBlockStatements(MetaBlockStatements mbs)
         {
             this.m_OwnerMetaFunction = mbs.ownerMetaFunction;
             this.m_OwnerMetaBlockStatements = mbs.m_OwnerMetaBlockStatements;
+        }
+        public MetaBlockStatements()
+        {
         }
 
         public void DetectAndValidateTerminator(Token errorToken)
