@@ -6,8 +6,8 @@
 //  Description:  this's a calllink's node handle
 //****************************************************************************
 using SimpleLanguage.Compile;
-using SimpleLanguage.Parse;
 using SimpleLanguage.Logging;
+using SimpleLanguage.Parse;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -636,6 +636,7 @@ namespace SimpleLanguage.Core
                                 else if (mn.isMetaEnum)
                                 {
                                     m_MetaEnum = mn.metaEnum;
+                                    m_MetaType = new MetaType(m_MetaEnum);
                                     m_CallNodeType = ECallNodeType.EnumName;
                                 }
                                 else if (mn.IsMetaClass())
@@ -781,42 +782,42 @@ namespace SimpleLanguage.Core
                     }
                     else if (frontCNT == ECallNodeType.EnumName)
                     {
-                        //if(m_Name == "values")
-                        //{
-                        //    m_MetaVariable = m_FrontCallNode.m_MetaEnum.metaVariable;
-                        //    if( m_MetaVariable == null )
-                        //    {
-                        //        m_FrontCallNode.m_MetaEnum.CreateValues();
-                        //        m_MetaVariable = m_FrontCallNode.m_MetaEnum.metaVariable;
-                        //        if (m_MetaVariable == null)
-                        //        {
-                        //            return false;
-                        //        }
-                        //    }
-                        //    m_CallNodeType = ECallNodeType.EnumValueArray;
-                        //}
-                        //else
-                        //{
-                        MetaMemberEnum mme = m_FrontCallNode.m_MetaEnum.GetMemberEnumByName(m_Name);
-                        if (mme != null)
+                        if (m_Name == "values")
                         {
-                            if (m_IsFunction)// Enum e = Enum.MetaVaraible( 2 )
+                            m_MetaVariable = m_FrontCallNode.m_MetaEnum.GetOrCreateValuesVariable();
+                            if (m_MetaVariable == null)
                             {
-                                Log.AddInStructMeta(EError.None, "不能使用Enum.metaVariable(2) 这样的格式!");
-                                return false;
+                                m_FrontCallNode.m_MetaEnum.CreateValues();
+                                m_MetaVariable = m_FrontCallNode.m_MetaEnum.GetOrCreateValuesVariable();
+                                if (m_MetaVariable == null)
+                                {
+                                    return false;
+                                }
                             }
-                            else
-                            {
-                                m_MetaVariable = mme;
-                                m_CallNodeType = ECallNodeType.EnumDefaultValue;
-                            }
+                            m_CallNodeType = ECallNodeType.EnumValueArray;
                         }
                         else
                         {
-                            Log.AddInStructMeta(EError.None, "Error 不能使用Enum.xxxx未发现后续!");
-                            return false;
+                            MetaMemberEnum mme = m_FrontCallNode.m_MetaEnum.GetMemberEnumByName(m_Name);
+                            if (mme != null)
+                            {
+                                if (m_IsFunction)// Enum e = Enum.MetaVaraible( 2 )
+                                {
+                                    Log.AddInStructMeta(EError.None, "不能使用Enum.metaVariable(2) 这样的格式!");
+                                    return false;
+                                }
+                                else
+                                {
+                                    m_MetaVariable = mme;
+                                    m_CallNodeType = ECallNodeType.EnumDefaultValue;
+                                }
+                            }
+                            else
+                            {
+                                Log.AddInStructMeta(EError.None, "Error 不能使用Enum.xxxx未发现后续!");
+                                return false;
+                            }
                         }
-                        //}
                     }
                     else if (frontCNT == ECallNodeType.FunctionInnerVariableName
                         || frontCNT == ECallNodeType.MemberVariableName
@@ -1488,8 +1489,9 @@ namespace SimpleLanguage.Core
                 else if (retMC.isMetaEnum)
                 {
                     m_MetaEnum = retMC.metaEnum;
-                    m_MetaVariable = m_MetaEnum.metaVariable;
+                    m_MetaVariable = m_MetaEnum.GetOrCreateValuesVariable();
                     m_CallNodeType = ECallNodeType.EnumName;
+                    m_MetaType = new MetaType(m_MetaEnum);
                 }
                 else if (retMC.IsMetaClass())
                 {

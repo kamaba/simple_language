@@ -10,6 +10,7 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -101,7 +102,18 @@ namespace SimpleLanguage.Core
                 }
                 if( mcallEn != null )
                 {
-                    m_ForInContent = mcallEn.GetMetaVariable();
+                    // Support: for v in EnumType
+                    // When the in-expression resolves to an enum type (MetaClass visit), iterate over EnumType.values.
+                    if (mcallEn.metaCallLink?.finalCallNode != null
+                        && mcallEn.metaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.MetaClass
+                        && mcallEn.metaCallLink.finalCallNode.callMetaType?.metaClass is MetaEnum men)
+                    {
+                        m_ForInContent = men.GetOrCreateValuesVariable();
+                    }
+                    else
+                    {
+                        m_ForInContent = mcallEn.GetMetaVariable();
+                    }
                 }
                 else
                 {

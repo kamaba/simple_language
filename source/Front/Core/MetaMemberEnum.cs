@@ -8,6 +8,7 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -105,8 +106,15 @@ namespace SimpleLanguage.Core
             {
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
                 m_Express.CalcReturnType();
+
+                m_RealMetaType = new MetaType(m_Express.GetReturnMetaClass());
+                return true;
             }
-            return true;
+            else
+            {
+                Debug.Assert(false, "必须给出定义");
+                return false;
+            }
         }
         public void SetExpress(MetaConstExpressNode mcen)
         {

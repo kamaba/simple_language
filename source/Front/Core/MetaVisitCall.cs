@@ -255,6 +255,10 @@ namespace SimpleLanguage.Core
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.visitType = EVisitType.MetaClass;
+            if (mt?.metaClass is MetaEnum me)
+            {
+                me.CreateValues();
+            }
             vn.m_ReturnMetaType = mt;
 
             return vn;
@@ -350,13 +354,22 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CraeteByNewData(MetaType mt )
+        public static MetaVisitNode CraeteByNewData(MetaType mt)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.m_CallMetaType = mt;
             //vn.m_MetaBraceStatementsContent = mb;
             vn.visitType = EVisitType.New;
+
+            return vn;
+        }
+        public static MetaVisitNode CraeteByEnum(MetaType mv)
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.m_CallMetaType = mv;
+            vn.visitType = EVisitType.Enum;
 
             return vn;
         }
@@ -520,6 +533,10 @@ namespace SimpleLanguage.Core
                 case EVisitType.Express:
                     {
                         return this.express.metaType;
+                    }
+                case EVisitType.Enum:
+                    {
+                        return this.m_CallMetaType;
                     }
                 default:
                     {

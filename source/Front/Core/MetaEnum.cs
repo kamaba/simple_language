@@ -14,9 +14,13 @@ namespace SimpleLanguage.Core
 {
     public class MetaEnum : MetaClass
     {
-        public MetaVariable metaVariable => m_MetaVariable;
+        public MetaVariable GetOrCreateValuesVariable()
+        {
+            CreateValues();
+            return m_ValuesMetaVariable;
+        }
 
-        protected MetaVariable m_MetaVariable = null;
+        protected MetaVariable m_ValuesMetaVariable = null;
         public Dictionary<string, MetaMemberEnum> metaMemberEnumDict => m_MetaMemberEnumDict;
 
         protected Dictionary<string, MetaMemberEnum> m_MetaMemberEnumDict = new Dictionary<string, MetaMemberEnum>();
@@ -34,16 +38,17 @@ namespace SimpleLanguage.Core
         }
         public void CreateValues()
         {
-            if( m_MetaVariable == null )
+            //创建一个Enum 里边的静态元素列表，用来遍历 比如enum { a = 1; b = 2} 则 enum { values = [a,b]
+            if(m_ValuesMetaVariable == null )
             {
                 MetaInputTemplateCollection mitc = new MetaInputTemplateCollection();
                 mitc.AddMetaTemplateParamsList(new MetaType(this.extendClass));
                 var mt = new MetaType(CoreMetaClassManager.arrayMetaClass, null, mitc);
-                m_MetaVariable = new MetaVariable( "values", MetaVariable.EVariableFrom.Member, null, this, mt);
-                m_MetaVariable.SetIsStatic( true );
+                m_ValuesMetaVariable = new MetaVariable( "values", MetaVariable.EVariableFrom.Member, null, this, mt);
+                m_ValuesMetaVariable.SetIsStatic( true );
                 foreach ( var v in m_MetaMemberEnumDict )
                 {
-                    m_MetaVariable.AddMetaVariable(v.Value);
+                    m_ValuesMetaVariable.AddMetaVariable(v.Value);
                 }
             }
         }

@@ -478,6 +478,8 @@ namespace SimpleLanguage.Core
             else if (mcn.callNodeType == ECallNodeType.EnumName)
             {
                 //Debug.Write("Meta Common Parse IteratorVariable----------------------------------------------------");
+                MetaVisitNode mvn = MetaVisitNode.CraeteByEnum(mcn.metaType);
+                m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.EnumValueArray)
             {
