@@ -1479,6 +1479,9 @@ namespace SimpleLanguage.Compile
             object extend = null;
             switch (m_Builder.ToString())
             {
+                case "typealias":
+                    tokenType = ETokenType.TypeAlias;
+                    break;
                 case "import":
                     tokenType = ETokenType.Import;
                     break;

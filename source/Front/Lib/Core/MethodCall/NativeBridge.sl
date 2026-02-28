@@ -26,6 +26,7 @@ public class NativeBridge extends Object
 
     bool static Call( BridgeKind kind, string dllName, string namespaceName, string className, string method,  BridgeObject retObj, Array<BridgeObject> arrParams )
     {
+        #!
         for v in BridgeKind
         {
             #int index = v.index;

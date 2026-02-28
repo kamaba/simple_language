@@ -315,6 +315,9 @@ namespace SimpleLanguage
         /// <summary> await </summary>
         Await,
 
+        /// <summary> typealias </summary>
+        TypeAlias,
+
         Float2, Float3, Float4,
         /// <summary> float extent </summary>
         Float2x2, 

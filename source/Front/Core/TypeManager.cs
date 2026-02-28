@@ -18,6 +18,25 @@ namespace SimpleLanguage.Core
     {
         public static TypeManager instance = new TypeManager();
 
+        private readonly Dictionary<string, MetaType> m_GlobalTypeAliasDict = new Dictionary<string, MetaType>();
+
+        public bool AddGlobalTypeAlias(string aliasName, MetaType targetType)
+        {
+            if (string.IsNullOrEmpty(aliasName) || targetType == null)
+                return false;
+
+            if (m_GlobalTypeAliasDict.ContainsKey(aliasName))
+                return false;
+
+            m_GlobalTypeAliasDict.Add(aliasName, targetType);
+            return true;
+        }
+
+        public bool TryGetGlobalTypeAlias(string aliasName, out MetaType targetType)
+        {
+            return m_GlobalTypeAliasDict.TryGetValue(aliasName, out targetType);
+        }
+
         // 比较两个MetaType的内容， 主要通过 MetaClass 和里边的MetaType的遍历 都相同 
 
         public static bool IsCoreMetaType( MetaType mt )
@@ -262,6 +281,24 @@ namespace SimpleLanguage.Core
         public MetaType GetMetaTypeByTemplateFunction(MetaClass curMc, MetaMemberFunction findFun, FileMetaClassDefine fmcd)
         {
             if (fmcd == null) return null;
+
+            // Global typealias expansion (defined in .sp Project::Global()).
+            // Only applies to simple alias name (no namespace segments).
+            if (fmcd.stringList != null && fmcd.stringList.Count == 1)
+            {
+                if (TryGetGlobalTypeAlias(fmcd.stringList[0], out MetaType aliasTarget) && aliasTarget != null)
+                {
+                    var retAlias = new MetaType(aliasTarget);
+                    if (fmcd.isNullable)
+                        retAlias.SetNullable(true);
+                    if (fmcd.isArray)
+                    {
+                        var list = fmcd.arrayDimsionLengthList;
+                        retAlias = AddArrayTemplate(retAlias, list);
+                    }
+                    return retAlias;
+                }
+            }
 
             MetaNode getmc = ClassManager.instance.GetMetaClassByRef(curMc, fmcd);
             if (getmc == null)
