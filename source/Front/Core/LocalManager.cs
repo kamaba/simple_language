@@ -101,6 +101,12 @@ namespace SimpleLanguage.Core
 
                 // create init function on local class (statements only)
                 var initFun = CreateLocalInitFunction(localMc, localSyntax);
+                if (initFun != null)
+                {
+                    // ensure meta statements are created so we can discover variable definitions
+                    initFun.ParseStatements();
+                    RegisterLocalInitDefinedMemberVariables(localMc, initFun);
+                }
 
                 m_FileLocalClassDict.Add(fm.path, localMc);
                 if (initFun != null)
@@ -152,6 +158,36 @@ namespace SimpleLanguage.Core
 
             localMc.AddMetaMemberFunction(fn);
             return fn;
+        }
+
+        private void RegisterLocalInitDefinedMemberVariables(MetaClass localMc, MetaMemberFunction initFun)
+        {
+            if (localMc == null || initFun == null) return;
+            var mbs = initFun.metaBlockStatements;
+            if (mbs == null) return;
+
+            // local{} init statements run on the local instance; variables defined there should be treated as member variables
+            // of the generated <FileName>_Local class so `local.xxx` resolves like normal instance member access.
+            for (MetaStatements cur = mbs.nextMetaStatements; cur != null; cur = cur.nextMetaStatements)
+            {
+                if (cur is not MetaDefineVarStatements mdvs)
+                    continue;
+
+                var mv = mdvs.defineVarMetaVariable;
+                if (mv == null) continue;
+                var name = mv.name;
+                if (string.IsNullOrEmpty(name)) continue;
+
+                if (localMc.GetMetaMemberVariableByName(name) != null)
+                    continue;
+
+                var mmv = new MetaMemberVariable(localMc, name);
+                mmv.SetIsStatic(false);
+                mmv.SetMetaDefineType(mv.defineMetaType);
+                mmv.SetRealMetaType(mv.realMetaType);
+                localMc.AddMetaMemberVariable(mmv, false);
+                MetaVariableManager.instance.AddMetaMemberVariable(mmv);
+            }
         }
 
         public void InjectLocalInitCalls(List<FileParse> fileParses)
