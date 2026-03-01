@@ -167,6 +167,7 @@ namespace SimpleLanguage.Core
     }
     public class MetaMemberFunction : MetaFunction
     {
+        public List<MetaAttribute> attributeList => m_AttributeList;
         public override string functionAllName
         {
             get
@@ -227,6 +228,8 @@ namespace SimpleLanguage.Core
         protected bool m_IsWithInterface = false;
         protected MetaMemberFunction m_SourceMetaMemberFunction = null;
         protected FileMetaMemberFunction m_FileMetaMemberFunction = null;
+
+        private readonly List<MetaAttribute> m_AttributeList = new List<MetaAttribute>();
         //绑定构建 元类型  
         protected List<MetaType> m_BindStructTemplateFunctionMtList = new List<MetaType>();
         protected List<MetaType> m_BindStructTemplateFunctionAndClassMtList = new List<MetaType>();
@@ -315,6 +318,14 @@ namespace SimpleLanguage.Core
             if(mc.isInterfaceClass )
             {
                 m_IsOverrideInterface = true;
+            }
+
+            if (fmmf.attributeList != null && fmmf.attributeList.Count > 0)
+            {
+                for (int i = 0; i < fmmf.attributeList.Count; i++)
+                {
+                    m_AttributeList.Add(new MetaAttribute(fmmf.attributeList[i]));
+                }
             }
 
             Init();

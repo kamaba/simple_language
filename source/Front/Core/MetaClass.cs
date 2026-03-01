@@ -25,6 +25,7 @@ namespace SimpleLanguage.Core
     }
     public partial class MetaClass : MetaBase
     {
+        public List<MetaAttribute> attributeList => m_AttributeList;
         public virtual string allClassName=> this.m_AllName;
 
         public EType eType => m_Type;
@@ -72,6 +73,14 @@ namespace SimpleLanguage.Core
         public Dictionary<Token, FileMetaClass> fileMetaClassDict => m_FileMetaClassDict;
         public bool isHandleExtendVariableDirty { get; set; } = false;
 
+        public MetaMemberVariable GetMetaMemberVariableByIndex(int index)
+        {
+            if (index < 0) return null;
+            var list = allMetaMemberVariableList;
+            if (index >= list.Count) return null;
+            return list[index];
+        }
+
 
         protected int m_ExtendLevel = 0;
         protected EType m_Type = EType.None;
@@ -98,6 +107,17 @@ namespace SimpleLanguage.Core
         protected bool m_IsAbstractClass = false;
         public bool isAbstractClass => m_IsAbstractClass;
         public void SetAbstractClass(bool v) { m_IsAbstractClass = v; }
+
+        protected readonly List<MetaAttribute> m_AttributeList = new List<MetaAttribute>();
+
+        public void AddAttributes(List<FileMetaAttributeSyntax> list)
+        {
+            if (list == null || list.Count == 0) return;
+            for (int i = 0; i < list.Count; i++)
+            {
+                m_AttributeList.Add(new MetaAttribute(list[i]));
+            }
+        }
 
         protected MetaClass()
         {
@@ -713,6 +733,11 @@ namespace SimpleLanguage.Core
             }
             fmc.SetMetaClass(this);
             m_FileMetaClassDict.Add(fmc.token, fmc);
+
+            if (fmc.attributeList != null && fmc.attributeList.Count > 0)
+            {
+                AddAttributes(fmc.attributeList);
+            }
 
             if(m_IsInterfaceClass == false )
             {

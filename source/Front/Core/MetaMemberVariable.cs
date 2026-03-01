@@ -27,6 +27,7 @@ namespace SimpleLanguage.Core
     }
     public class MetaMemberVariable : MetaVariable, IComparable<MetaMemberVariable>
     {
+        public List<MetaAttribute> attributeList => m_AttributeList;
         public MetaMemberVariable sourceMetaMemberVariable => m_SourceMetaVariable as MetaMemberVariable;
         public MetaClass sourceMetaClass => m_SourceMetaClass;
         public EFromType fromType => m_FromType;
@@ -42,6 +43,8 @@ namespace SimpleLanguage.Core
         private bool m_IsInnerDefine = false;
         protected List<MetaMemberVariable> m_TemplateChildMetaMemberVariableList = new List<MetaMemberVariable>();
         protected MetaClass m_SourceMetaClass = null;
+
+        private readonly List<MetaAttribute> m_AttributeList = new List<MetaAttribute>();
         //private Dictionary< string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
         
         public static int s_ConstLevel = 10000000;
@@ -111,6 +114,14 @@ namespace SimpleLanguage.Core
             }
             m_SourceMetaClass = mc;
             SetOwnerMetaClass(mc);
+
+            if (fmmv?.attributeList != null && fmmv.attributeList.Count > 0)
+            {
+                for (int i = 0; i < fmmv.attributeList.Count; i++)
+                {
+                    m_AttributeList.Add(new MetaAttribute(fmmv.attributeList[i]));
+                }
+            }
         }
         //public MetaMemberVariable(MetaGenTemplateClass mtc, MetaMemberVariable mmv, Dictionary<string,MetaGenTemplate> mgt) : base(mmv)
         //{

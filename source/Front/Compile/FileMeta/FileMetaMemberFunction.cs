@@ -169,6 +169,8 @@ namespace SimpleLanguage.Compile
     }
     public class FileMetaMemberFunction : FileMetaFunction
     {
+        public List<FileMetaAttributeSyntax> attributeList => m_AttributeList;
+
         public Token interfaceToken => m_InterfaceToken;
         public Token staticToken => m_StaticToken;
         public Token overrideToken => m_OverrideToken;
@@ -189,6 +191,21 @@ namespace SimpleLanguage.Compile
         private Token m_LeftBraceToken = null;
         private Token m_RightBraceToken = null;
         private Node m_BlockNode;
+
+        private readonly List<FileMetaAttributeSyntax> m_AttributeList = new List<FileMetaAttributeSyntax>();
+
+        public void AddAttributes(List<FileMetaAttributeSyntax> list)
+        {
+            if (list == null || list.Count == 0) return;
+            m_AttributeList.AddRange(list);
+        }
+
+        public void AddAttribute(FileMetaAttributeSyntax attr)
+        {
+            if (attr == null) return;
+            m_AttributeList.Add(attr);
+        }
+
         public FileMetaMemberFunction( FileMeta fm, Node block, List<Node> nodeList)
         {
             m_FileMeta = fm;

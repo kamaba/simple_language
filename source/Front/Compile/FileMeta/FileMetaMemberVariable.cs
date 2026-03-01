@@ -16,6 +16,22 @@ namespace SimpleLanguage.Compile
 {
     public sealed class FileMetaMemberVariable : FileMetaBase
     {
+        public List<FileMetaAttributeSyntax> attributeList => m_AttributeList;
+
+        private readonly List<FileMetaAttributeSyntax> m_AttributeList = new List<FileMetaAttributeSyntax>();
+
+        public void AddAttributes(List<FileMetaAttributeSyntax> list)
+        {
+            if (list == null || list.Count == 0) return;
+            m_AttributeList.AddRange(list);
+        }
+
+        public void AddAttribute(FileMetaAttributeSyntax attr)
+        {
+            if (attr == null) return;
+            m_AttributeList.Add(attr);
+        }
+
         public enum EMemberDataType
         {
             None,

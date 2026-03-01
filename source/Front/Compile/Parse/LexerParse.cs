@@ -701,9 +701,23 @@ namespace SimpleLanguage.Compile
             //    AddToken( ETokenType.LeftBrace);
             //}
             //else 
-            if( Char.IsNumber( ch ) || Char.IsLetter( ch ) )
+            if (Char.IsLetter(ch) || ch == '_')
             {
-                AddToken(ETokenType.At, '@' );
+                var ident = new StringBuilder();
+                ident.Append(ch);
+                while (true)
+                {
+                    var n = ReadChar();
+                    if (IsIdentifier2(n))
+                    {
+                        ident.Append(n);
+                        continue;
+                    }
+                    UndoChar();
+                    break;
+                }
+                // For attribute syntax: store attribute name in extend.
+                AddToken(ETokenType.At, '@', ident.ToString());
             }
             else
             {

@@ -15,6 +15,8 @@ namespace SimpleLanguage.Compile
 {
     public partial class FileMetaClass : FileMetaBase
     {
+        public List<FileMetaAttributeSyntax> attributeList => m_AttributeList;
+
         public bool innerClass { get; set; } = false;
         public bool isConst { get { return m_ConstToken != null; } }
         public bool isStatic { get { return m_StaticToken != null; } }
@@ -56,6 +58,19 @@ namespace SimpleLanguage.Compile
         private List<FileMetaMemberVariable> m_MemberVariableList = new List<FileMetaMemberVariable>();
         private List<FileMetaMemberFunction> m_MemberFunctionList = new List<FileMetaMemberFunction>();
         private List<FileMetaMemberData> m_MemberDataList = new List<FileMetaMemberData>();
+        private readonly List<FileMetaAttributeSyntax> m_AttributeList = new List<FileMetaAttributeSyntax>();
+
+        public void AddAttributes(List<FileMetaAttributeSyntax> list)
+        {
+            if (list == null || list.Count == 0) return;
+            m_AttributeList.AddRange(list);
+        }
+
+        public void AddAttribute(FileMetaAttributeSyntax attr)
+        {
+            if (attr == null) return;
+            m_AttributeList.Add(attr);
+        }
 
 
         private NamespaceStatementBlock m_NamespaceBlock = null;

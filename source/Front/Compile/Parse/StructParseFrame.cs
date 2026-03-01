@@ -18,6 +18,82 @@ namespace SimpleLanguage.Compile
 {
     public partial class StructParse
     {
+        private List<FileMetaAttributeSyntax> ParseLeadingAttributes(Node pnode)
+        {
+            var list = new List<FileMetaAttributeSyntax>();
+            if (pnode == null) return list;
+
+            while (pnode.parseIndex < pnode.childList.Count)
+            {
+                var n = pnode.childList[pnode.parseIndex];
+                if (n == null) { pnode.parseIndex++; continue; }
+
+                // skip blank lines
+                if (n.nodeType == ENodeType.LineEnd)
+                {
+                    pnode.parseIndex++;
+                    continue;
+                }
+
+                if (n.token?.type != ETokenType.At)
+                    break;
+
+                // only allow in namespace/class blocks
+                if (currentNodeInfo == null || (currentNodeInfo.parseType != EParseNodeType.Namespace && currentNodeInfo.parseType != EParseNodeType.Class))
+                {
+                    Log.AddInStructFileMeta(EError.None, "Error @Attribute 只允许写在 namespace{} / class{} 内");
+                    pnode.parseIndex++;
+                    continue;
+                }
+
+                var atToken = n.token;
+                var attrName = atToken.extend != null ? atToken.extend.ToString() : null;
+                if (string.IsNullOrEmpty(attrName))
+                {
+                    Log.AddInStructFileMeta(EError.None, "Error @Attribute 名称为空");
+                    pnode.parseIndex++;
+                    continue;
+                }
+
+                // optional () param list
+                FileMetaParTerm parTerm = null;
+                Node parNode = null;
+                if (pnode.parseIndex + 1 < pnode.childList.Count)
+                {
+                    var next = pnode.childList[pnode.parseIndex + 1];
+                    if (next != null && next.nodeType == ENodeType.Par)
+                    {
+                        parNode = next;
+                    }
+                    else if (next != null && next.nodeType == ENodeType.LineEnd && pnode.parseIndex + 2 < pnode.childList.Count)
+                    {
+                        var next2 = pnode.childList[pnode.parseIndex + 2];
+                        if (next2 != null && next2.nodeType == ENodeType.Par)
+                            parNode = next2;
+                    }
+                }
+                if (parNode != null)
+                {
+                    parTerm = new FileMetaParTerm(m_FileMeta, parNode, FileMetaTermExpress.EExpressType.Common);
+                    if (parNode == pnode.childList[pnode.parseIndex + 1])
+                        pnode.parseIndex += 2;
+                    else
+                        pnode.parseIndex += 3;
+                }
+                else
+                {
+                    pnode.parseIndex++;
+                }
+
+                list.Add(new FileMetaAttributeSyntax(m_FileMeta, atToken, attrName, parTerm));
+
+                // allow repeated attributes, including separated by LineEnd
+                while (pnode.parseIndex < pnode.childList.Count && pnode.childList[pnode.parseIndex]?.nodeType == ENodeType.LineEnd)
+                    pnode.parseIndex++;
+            }
+
+            return list;
+        }
         public enum EParseNodeType
         {
             Null,
@@ -696,6 +772,13 @@ namespace SimpleLanguage.Compile
             {
                 curNode = pnode.childList[index++];
 
+                if (curNode.token?.type == ETokenType.At)
+                {
+                    // attributes at file root are not allowed
+                    Log.AddInStructFileMeta(EError.None, "Error @Attribute 不允许出现在文件头级(只能在 namespace{} / class{} 内)");
+                    continue;
+                }
+
                 if (curNode.nodeType == ENodeType.Key)
                 {
                     if (curNode.token.type == ETokenType.Namespace)
@@ -816,10 +899,16 @@ namespace SimpleLanguage.Compile
             Node nextNode = null;
             int index = pnode.parseIndex;
 
+            List<FileMetaAttributeSyntax> attrs = null;
+
             int parseType = 0;      // 1->是类class\n{}  2->函数 init()\n{}      3->变量  int a;  int a=20; a = 20; a = {}\n a = {};
             Node block = null;
             for (index = pnode.parseIndex; index < pnode.childList.Count;)
             {
+                // parse and stash leading attributes (only valid in class/namespace blocks)
+                attrs = ParseLeadingAttributes(pnode);
+                index = pnode.parseIndex;
+
                 var curNode = pnode.childList[index++];
                 if (curNode.nodeType == ENodeType.Key)
                 {
@@ -937,16 +1026,44 @@ namespace SimpleLanguage.Compile
             {
                 if (nodeList.Count > 0 && block != null)
                 {
-                    AddFileMetaClasss(block, nodeList);
+                    // attach attributes to class
+                    var cpc = new FileMetaClass(m_FileMeta, nodeList);
+                    cpc.AddAttributes(attrs);
+                    AddParseClassNodeInfo(cpc);
+
+                    if (cpc.isEnum)
+                    {
+                        ParseEnumNode(block);
+                    }
+                    else if (cpc.isData)
+                    {
+                        ParseDataNode(block);
+                    }
+                    else
+                    {
+                        ParseClassNode(block);
+                    }
+
+                    m_CurrentNodeInfoStack.Pop();
                 }
             }
             else if (parseType == 2)
             {
-                AddFileMetaFunctionVariable(pnode, block, nodeList);
+                var cpf = new FileMetaMemberFunction(m_FileMeta, block, nodeList);
+                cpf.AddAttributes(attrs);
+                AddParseFunctionNodeInfo(cpf);
+
+                if (block != null)
+                {
+                    ParseSyntax(block);
+                }
+
+                m_CurrentNodeInfoStack.Pop();
             }
             else if (parseType == 3)
             {
                 FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, nodeList);
+                fmmd.AddAttributes(attrs);
 
                 if (currentNodeInfo.parseType == EParseNodeType.Class)
                 {

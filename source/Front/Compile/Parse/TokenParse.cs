@@ -114,6 +114,15 @@ namespace SimpleLanguage.Compile
         {
             if (currentNode.linkToken != null)
             {
+                if (token.type == ETokenType.At)
+                {
+                    // `.@` is no longer supported; reserve '@' for attribute syntax.
+                    Debug.Assert(false, "不再支持 a.@b 语法，请使用 a.$b / a.$0 形式");
+                    currentNode.linkToken = null;
+                    m_TokenIndex++;
+                    return null;
+                }
+
                 var ntoken = new Token(token);
                 string nvar = token.extend.ToString();                
 
@@ -148,7 +157,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Debug.Assert(false, "现在@符必须使用.@方式!!");
+                Debug.Assert(false, "现在$符必须使用.$方式!!");
             }
             m_TokenIndex++;
 
