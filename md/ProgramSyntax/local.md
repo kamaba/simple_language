@@ -116,7 +116,7 @@ local
 
     int Add(x)
     {
-        return x + local.a
+        ret x + local.a
     }
 
     PrintLocal()
@@ -149,12 +149,12 @@ local
     a = 100
     order = "L2"
 
-    func Add(x)
+    int Add(x)
     {
         return x + local.a
     }
 
-    func PrintLocal()
+    PrintLocal()
     {
         Debug.Write("LocalTest2 local.a=" + local.a)
         Debug.Write("LocalTest2 local.order=" + local.order)
