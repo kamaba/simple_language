@@ -7,7 +7,6 @@
 //****************************************************************************
 
 using SimpleLanguage.Logging;
-using SimpleLanguage.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -646,7 +645,6 @@ namespace SimpleLanguage.VM.Runtime
                                 var v = default(SValue);
                                 if (inst.sobject is ClassObject co)
                                 {
-                                    AttributeManager.ExecuteByName(SimpleLanguage.Core.EAttributeHook.BeforeGet, $"{co.runtimeClass?.name}.field[{iri.index}]", null);
                                     co.GetMemberVariableSValue(iri.index, ref v);
                                     PushSValueSynced(v);
                                 }
@@ -669,7 +667,6 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 if (inst.sobject is ClassObject co)
                                 {
-                                    AttributeManager.ExecuteByName(SimpleLanguage.Core.EAttributeHook.BeforeSet, $"{co.runtimeClass?.name}.field[{iri.index}]", null);
                                     co.SetMemberVariableSValue(iri.index, val);
                                 }
                             }
@@ -681,7 +678,6 @@ namespace SimpleLanguage.VM.Runtime
                         if (iri.opValue is Int32 runtimeClassId )
                         {
                             var rt = RuntimeTypeManager.GetRuntimeTypeByClassId(runtimeClassId);
-                            AttributeManager.ExecuteByName(SimpleLanguage.Core.EAttributeHook.BeforeNew, rt?.runtimeClass?.name, null);
                             SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
                             if (sobj is ClassObject co)
                             {
@@ -705,7 +701,6 @@ namespace SimpleLanguage.VM.Runtime
                         if (iri.opValue is RuntimeDefType mdt)
                         {
                             var rt = GetClassRuntimeType(mdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
-                            AttributeManager.ExecuteByName(SimpleLanguage.Core.EAttributeHook.BeforeNew, rt?.runtimeClass?.name, null);
                             SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
                             if (sobj is ClassObject co)
                             {
@@ -925,11 +920,7 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.CallStatic:
                     {
                         var mfc = iri.opValue as RuntimeCall;
-                        if (mfc?.method != null)
-                        {
-                            // runtime method currently doesn't carry meta-member-function reference
-                            SimpleLanguage.Logging.Log.AddVM(EError.None, $"AttributeHook {SimpleLanguage.Core.EAttributeHook.BeforeCall} runtimeMethod:{mfc.method.id}");
-                        }
+                        // attribute hooks are handled in Front/Core; VM does not reference Front.
 
                         List<RuntimeType> classRTList = new List<RuntimeType>();
                         for (int i = 0; i < mfc.runtimeDefType.runtimeDefTypeList.Count; i++)
@@ -1003,10 +994,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
-                                if (mfc?.method != null)
-                                {
-                                    SimpleLanguage.Logging.Log.AddVM(EError.None, $"AttributeHook {SimpleLanguage.Core.EAttributeHook.BeforeCall} runtimeMethod:{mfc.method.id}");
-                                }
+                                // attribute hooks are handled in Front/Core; VM does not reference Front.
                                 List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
                                 for (int i = 0; i < mfc.templateRuntimeDefTypeList.Count; i++)
                                 {
@@ -1040,10 +1028,7 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.CallVirt:
                     {
                         var mfc = iri.opValue as RuntimeCall;
-                        if (mfc?.method != null)
-                        {
-                            SimpleLanguage.Logging.Log.AddVM(EError.None, $"AttributeHook {SimpleLanguage.Core.EAttributeHook.BeforeCall} runtimeMethod:{mfc.method.id}");
-                        }
+                        // attribute hooks are handled in Front/Core; VM does not reference Front.
 
                         int stackFrontIndex = (int)mfc.paramCount + 1;
                         int stackIndex = m_ValueIndex - stackFrontIndex;

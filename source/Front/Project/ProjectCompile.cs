@@ -13,6 +13,7 @@ using SimpleLanguage.IR;
 using SimpleLanguage.Lib;
 using SimpleLanguage.Logging;
 using SimpleLanguage.Parse;
+using SimpleLanguage.Export;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -120,6 +121,8 @@ namespace SimpleLanguage.Project
             Console.WriteLine(ModuleManager.instance.selfModule.metaNode.ToFormatString());
 
             IRManager.instance.TranslateIR();
+
+            ExportDriver.Run(IRManager.instance);
         }
 
         public static void AddFileParse( string path )
@@ -238,6 +241,8 @@ namespace SimpleLanguage.Project
             //Debug.WriteLine(ModuleManager.instance.ToFormatString());
             Debug.WriteLine(ModuleManager.instance.selfModule.metaNode.ToFormatString());
             Debug.WriteLine("-------------------------解析完成后的格式输出 结束--------------------------");
+
+            // (reserved) Export steps are invoked explicitly by Export pipeline.
         }
     }
 }
