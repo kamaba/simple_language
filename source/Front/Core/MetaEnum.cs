@@ -39,7 +39,8 @@ namespace SimpleLanguage.Core
             if(m_ValuesMetaVariable == null )
             {
                 List<MetaType> mtList = new List<MetaType>();
-                mtList.Add(new MetaType(this.extendClass));
+                var nmt = new MetaType(this.extendClass);
+                mtList.Add(nmt);
                 var mt = new MetaType(CoreMetaClassManager.arrayMetaClass, mtList);
                 m_ValuesMetaVariable = new MetaMemberVariable(this, "values" );
                 m_ValuesMetaVariable.SetIsStatic( true );
@@ -53,14 +54,13 @@ namespace SimpleLanguage.Core
 
                 foreach ( var v in m_MetaMemberVariableDict )
                 {
-                    maen.metaCallArray.Add(v.Value.express);
-                    //m_ValuesMetaVariable.AddMetaVariable(v.Value);
+                    MetaCallLink mcl = new MetaCallLink( this, nmt);
+                    MetaVisitNode mvn = MetaVisitNode.CreateByVariable(v.Value);
+                    mcl.AddVisitNodeList(mvn);
+                    MetaCallLinkExpressNode mclen = new MetaCallLinkExpressNode(mcl);
+                    maen.metaCallArray.Add(mclen);
                 }
-                MetaBlockStatements mbs = new MetaBlockStatements();
-                var menNew = new MetaNewObjectExpressNode(maen, this, mbs, m_ValuesMetaVariable);
-                menNew.Parse(new AllowUseSettings());
-                menNew.SetStoreMetaVariable(m_ValuesMetaVariable);
-                menNew.CalcReturnType();
+                m_ValuesMetaVariable.SetExpress(maen);
 
             }
         }
@@ -302,6 +302,7 @@ namespace SimpleLanguage.Core
                         // auto increment when missing '='
                         var autoConst = new MetaConstExpressNode(m_ExtendClass.eType, indexdynamic++);
                         mme.SetExpress(autoConst);
+                        mme.SetIsExplicitAssign( false );
                         mme.ParseMetaExpress();
                     }
 

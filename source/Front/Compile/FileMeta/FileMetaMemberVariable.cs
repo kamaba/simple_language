@@ -47,6 +47,7 @@ namespace SimpleLanguage.Compile
         public Token staticToken => m_StaticToken;
         public Token constToken => m_ConstToken;
         public Token nameToken => m_Token;
+        public Token mutToken => m_MutToken;
         public FileMetaBaseTerm express => m_Express;
         public Token assignToken => m_AssignToken;
 

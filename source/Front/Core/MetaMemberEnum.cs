@@ -15,23 +15,8 @@ namespace SimpleLanguage.Core
 {
     public sealed class MetaMemberEnum : MetaMemberVariable
     {
-        public MetaConstExpressNode constExpressNode => m_Express as MetaConstExpressNode;
-        public int index => m_Index;
-
+        private bool isExplicitAssign => m_IsExplicitAssign;
         private bool m_IsExplicitAssign = false;
-
-        private bool m_IsSupportConstructionFunctionOnlyBraceType = false;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
-        private bool m_IsSupportConstructionFunctionConnectBraceType = true;  //是否支持构造函数名称后边加{}形式    Class1{ a = Class2(){} } 不支持
-        private bool m_IsSupportConstructionFunctionOnlyParType = false; //是否支持构造函数使用 仅()形式    Class1{ a = () } 不支持
-#pragma warning disable CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseStaticMetaMemeberFunction”已被赋值，但从未使用过它的值
-        private bool m_IsSupportInExpressUseStaticMetaMemeberFunction = true;   //是否在成员支持静态函数的
-#pragma warning restore CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseStaticMetaMemeberFunction”已被赋值，但从未使用过它的值
-#pragma warning disable CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseStaticMetaVariable”已被赋值，但从未使用过它的值
-        private bool m_IsSupportInExpressUseStaticMetaVariable = true;     //是否在成员中支持静态变量
-#pragma warning restore CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseStaticMetaVariable”已被赋值，但从未使用过它的值
-#pragma warning disable CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseCurrentClassNotStaticMemberMetaVariable”已被赋值，但从未使用过它的值
-        private bool m_IsSupportInExpressUseCurrentClassNotStaticMemberMetaVariable = true;  //是否支持在表达式中使用本类或父类中的非静态变量
-#pragma warning restore CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseCurrentClassNotStaticMemberMetaVariable”已被赋值，但从未使用过它的
 
         public MetaMemberEnum(MetaClass mc, FileMetaMemberVariable fmmv, MetaClass extendClass ) : base()
         {
@@ -54,7 +39,11 @@ namespace SimpleLanguage.Core
             {
                 SetIsDefineMetaType(true);
             }
-            m_IsStatic = true;// enum 成员全部为static
+            m_IsConst = fmmv.mutToken == null;
+            if (m_IsConst == false)
+                m_IsStatic = true;// enum 成员全部为static
+            else
+                m_IsStatic = false;
             m_VariableFrom = EVariableFrom.Member;
             if (fmmv.staticToken != null)
             {
@@ -122,6 +111,10 @@ namespace SimpleLanguage.Core
                 SetIsDefineMetaType(m_IsExplicitAssign);
             }
         }
+        public void SetIsExplicitAssign(bool value)
+        {
+            m_IsExplicitAssign = value;
+        }
         public override bool ParseMetaExpress()
         {
             if (m_Express != null)
@@ -136,16 +129,6 @@ namespace SimpleLanguage.Core
             {
                 Debug.Assert(false, "必须给出定义");
                 return false;
-            }
-        }
-        public void SetExpress(MetaConstExpressNode mcen)
-        {
-            // Auto-filled const is not considered an explicit '=' from source, but it is a valid express for later stages.
-            m_Express = mcen;
-            m_IsExplicitAssign = false;
-            if (m_RealMetaType == null)
-            {
-                m_RealMetaType = new MetaType(m_DefineMetaType?.metaClass ?? CoreMetaClassManager.objectMetaClass);
             }
         }
         public override string ToFormatString()

@@ -35,6 +35,7 @@ namespace SimpleLanguage.Core
         public MetaConstExpressNode constExpressNode => m_Express as MetaConstExpressNode;  
         public int parseLevel { get; set; } = -1;
         public bool isInnerDefine => m_IsInnerDefine;
+        public int index => m_Index;
         public FileMetaMemberVariable fileMetaMemeberVariable => m_FileMetaMemeberVariable;
 
         protected EFromType m_FromType = EFromType.Code;
@@ -222,6 +223,15 @@ namespace SimpleLanguage.Core
                 var ld = Log.AddInStructMeta( EError.MemberNeedExpress, $"Error [{this.ownerMetaClass.allClassName + "." + this.m_Name} ]配置成员变量时，必须需要有等号及后续的表达式!!");
                 ld.demo = "T t";
                 ld.advan = "T t = null";
+            }
+        }
+        public void SetExpress( MetaExpressNode mcen)
+        {
+            // Auto-filled const is not considered an explicit '=' from source, but it is a valid express for later stages.
+            m_Express = mcen;
+            if (m_RealMetaType == null)
+            {
+                m_RealMetaType = new MetaType(m_DefineMetaType?.metaClass ?? CoreMetaClassManager.objectMetaClass);
             }
         }
         public override bool ParseMetaExpress()
