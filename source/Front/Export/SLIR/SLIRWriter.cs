@@ -15,6 +15,55 @@ namespace SimpleLanguage.Export.SLIR
         private const uint Magic = 0x52494C53; // 'SLIR'
         private const ushort Version = 2;
 
+        private sealed class IRTypeSigTable
+        {
+            private readonly Dictionary<IRMetaType, int> _index = new();
+            private readonly List<IRMetaType> _items = new();
+
+            public int Add(IRMetaType? t)
+            {
+                if (t == null) return -1;
+                if (_index.TryGetValue(t, out var id)) return id;
+
+                id = _items.Count;
+                _items.Add(t);
+                _index.Add(t, id);
+
+                var args = t.irMetaTypeList;
+                if (args != null)
+                {
+                    for (int i = 0; i < args.Count; i++)
+                    {
+                        Add(args[i]);
+                    }
+                }
+
+                return id;
+            }
+
+            public void Write(BinaryWriter bw)
+            {
+                bw.Write(_items.Count);
+                for (int i = 0; i < _items.Count; i++)
+                {
+                    var t = _items[i];
+                    bw.Write(t?.irMetaClass?.id ?? 0);
+                    bw.Write(t?.irOwnerMetaClass?.id ?? 0);
+                    bw.Write(t?.templateIndex ?? -1);
+                    bw.Write(t?.templateIndex != -1 ? 1 : 0); // isTemplate
+                    var args = t?.irMetaTypeList;
+                    bw.Write(args?.Count ?? 0);
+                    if (args != null)
+                    {
+                        for (int ai = 0; ai < args.Count; ai++)
+                        {
+                            bw.Write(Add(args[ai]));
+                        }
+                    }
+                }
+            }
+        }
+
         private sealed class StringPool
         {
             private readonly Dictionary<string, int> _index = new(StringComparer.Ordinal);
@@ -90,7 +139,11 @@ namespace SimpleLanguage.Export.SLIR
             // Build pools first for compact/stable references
             var sp = new StringPool();
             var tt = new TypeTable();
+            var ts = new IRTypeSigTable();
             BuildPools(ir, sp, tt);
+
+            // Build IR type signatures table
+            BuildIRTypeSigs(ir, ts);
 
             // String pool section
             sp.Write(bw);
@@ -98,8 +151,11 @@ namespace SimpleLanguage.Export.SLIR
             // Type table section (typeName -> stringId)
             tt.Write(bw, sp);
 
+            // IR TypeSig table section
+            ts.Write(bw);
+
             // Class metadata section
-            WriteClassSection(bw, sp, tt);
+            WriteClassSection(bw, sp, tt, ts);
 
             // Method count
             var methods = ir.IRMethodDict;
@@ -115,52 +171,51 @@ namespace SimpleLanguage.Export.SLIR
 
         }
 
-        private static void BuildPools(IRManager ir, StringPool sp, TypeTable tt)
+        private static void BuildIRTypeSigs(IRManager ir, IRTypeSigTable ts)
         {
-            var classes = ClassManager.instance.runtimeClassList;
+            var classes = ir.GetIRMetaClassList();
             for (int i = 0; i < classes.Count; i++)
             {
                 var c = classes[i];
                 if (c == null) continue;
-                sp.Add(c.allClassName);
-                sp.Add(c.name);
-                sp.Add(c.extendClass?.allClassName);
 
-                var vars = c.allMetaMemberVariableList;
-                if (vars != null)
+                var locals = c.localIRMetaVariableList;
+                if (locals != null)
                 {
-                    for (int vi = 0; vi < vars.Count; vi++)
+                    for (int vi = 0; vi < locals.Count; vi++)
                     {
-                        var mv = vars[vi];
-                        sp.Add(mv?.name);
-                        var tname = mv?.defineMetaType?.ToString();
-                        tt.Add(tname);
-                        sp.Add(tname);
+                        ts.Add(locals[vi]?.irMetaType);
                     }
                 }
 
-                var staticFuns = c.staticMetaMemberFunctionList;
-                var nonStaticFuns = c.nonStaticVirtualMetaMemberFunctionList;
-                if (staticFuns != null)
+                var statics = c.staticIRMetaVariableList;
+                if (statics != null)
                 {
-                    for (int fi = 0; fi < staticFuns.Count; fi++)
+                    for (int vi = 0; vi < statics.Count; vi++)
                     {
-                        var mf = staticFuns[fi];
-                        sp.Add(mf?.name);
-                        sp.Add(mf?.functionAllName);
-                    }
-                }
-                if (nonStaticFuns != null)
-                {
-                    for (int fi = 0; fi < nonStaticFuns.Count; fi++)
-                    {
-                        var mf = nonStaticFuns[fi];
-                        sp.Add(mf?.name);
-                        sp.Add(mf?.functionAllName);
+                        ts.Add(statics[vi]?.irMetaType);
                     }
                 }
             }
 
+            foreach (var kv in ir.IRMethodDict)
+            {
+                var m = kv.Value;
+                if (m == null) continue;
+                var args = m.methodArgumentList;
+                if (args != null)
+                    for (int i = 0; i < args.Count; i++) ts.Add(args[i]?.irMetaType);
+                var locals = m.methodLocalVariableList;
+                if (locals != null)
+                    for (int i = 0; i < locals.Count; i++) ts.Add(locals[i]?.irMetaType);
+                var rets = m.methodReturnVariableList;
+                if (rets != null)
+                    for (int i = 0; i < rets.Count; i++) ts.Add(rets[i]?.irMetaType);
+            }
+        }
+
+        private static void BuildPools(IRManager ir, StringPool sp, TypeTable tt)
+        {
             var methods = ir.IRMethodDict;
             foreach (var kv in methods)
             {
@@ -169,14 +224,50 @@ namespace SimpleLanguage.Export.SLIR
                 sp.Add(m.id);
                 sp.Add(m.onlyFunctionName);
             }
+
+            // IRMetaClass/IRMetaVariable pools (IR is the source of truth for export)
+            var classes = ir.GetIRMetaClassList();
+            for (int i = 0; i < classes.Count; i++)
+            {
+                var c = classes[i];
+                if (c == null) continue;
+
+                sp.Add(c.irName);
+                sp.Add(c.sourcePath);
+
+                var locals = c.localIRMetaVariableList;
+                if (locals != null)
+                {
+                    for (int vi = 0; vi < locals.Count; vi++)
+                    {
+                        var v = locals[vi];
+                        sp.Add(v?.name);
+                        var tname = v?.irMetaType?.ToString();
+                        tt.Add(tname);
+                        sp.Add(tname);
+                    }
+                }
+
+                var statics = c.staticIRMetaVariableList;
+                if (statics != null)
+                {
+                    for (int vi = 0; vi < statics.Count; vi++)
+                    {
+                        var v = statics[vi];
+                        sp.Add(v?.name);
+                        var tname = v?.irMetaType?.ToString();
+                        tt.Add(tname);
+                        sp.Add(tname);
+                    }
+                }
+            }
         }
 
-        private static void WriteClassSection(BinaryWriter bw, StringPool sp, TypeTable tt)
+        private static void WriteClassSection(BinaryWriter bw, StringPool sp, TypeTable tt, IRTypeSigTable ts)
         {
-            // Runtime class list is the current authoritative class graph.
-            // IRMetaClass list inside IRManager is private; exporting runtime classes
-            // still allows reconstructing CLR/Dart-like metadata at load time.
-            var classes = ClassManager.instance.runtimeClassList;
+            // Export from IR layer (IRMetaClass/IRMetaVariable). If IR lacks data,
+            // it must be populated into IR before export.
+            var classes = IRManager.instance.GetIRMetaClassList();
 
             bw.Write(classes.Count);
 
@@ -188,72 +279,65 @@ namespace SimpleLanguage.Export.SLIR
                     bw.Write(sp.Add(string.Empty));
                     bw.Write(sp.Add(string.Empty));
                     bw.Write(sp.Add(string.Empty));
+                    bw.Write(0); // class kind
                     bw.Write(0);
                     bw.Write(0);
                     bw.Write(0);
                     continue;
                 }
 
-                // Use stable names/relations available on MetaClass.
-                bw.Write(sp.Add(c.allClassName ?? string.Empty));
-                bw.Write(sp.Add(c.name ?? string.Empty));
-                bw.Write(sp.Add(c.extendClass?.allClassName ?? string.Empty));
+                // names (IR level)
+                bw.Write(sp.Add(c.irName ?? string.Empty));
+                bw.Write(sp.Add(c.sourcePath ?? string.Empty));
+                bw.Write(sp.Add(string.Empty)); // short name not available at IR layer currently
+                bw.Write(sp.Add(string.Empty)); // base name not available at IR layer currently
 
-                // Template / relationship flags
-                bw.Write(c.isTemplateClass ? 1 : 0);
-                bw.Write(c.isInterfaceClass ? 1 : 0);
-                bw.Write(c.isAbstractClass ? 1 : 0);
+                // class kind/flags are not represented in IRMetaClass today
+                bw.Write(0);
+                bw.Write(0);
+                bw.Write(0);
+                bw.Write(0);
 
-                // Member variables
-                var vars = c.allMetaMemberVariableList;
-                bw.Write(vars?.Count ?? 0);
+                // Member variables (IR)
+                var vars = c.localIRMetaVariableList;
+                var svars = c.staticIRMetaVariableList;
+                int fieldCount = (vars?.Count ?? 0) + (svars?.Count ?? 0);
+                bw.Write(fieldCount);
+
                 if (vars != null)
                 {
                     for (int vi = 0; vi < vars.Count; vi++)
                     {
                         var mv = vars[vi];
                         bw.Write(sp.Add(mv?.name ?? string.Empty));
-                        // store type id (string form table for now)
-                        var tn = mv?.defineMetaType?.ToString() ?? string.Empty;
+                        var tn = mv?.irMetaType?.ToString() ?? string.Empty;
                         bw.Write(tt.Add(tn));
-                        bw.Write(mv?.isStatic == true ? 1 : 0);
-                        bw.Write(mv?.isConst == true ? 1 : 0);
+                        bw.Write(ts.Add(mv?.irMetaType));
+                        bw.Write(0); // isStatic
+                        bw.Write(0); // isConst
+                        bw.Write(0); // permission
+                        bw.Write(mv?.index ?? -1);
                     }
                 }
 
-                // Member functions
-                var staticFuns = c.staticMetaMemberFunctionList;
-                var nonStaticFuns = c.nonStaticVirtualMetaMemberFunctionList;
-                int funCount = (staticFuns?.Count ?? 0) + (nonStaticFuns?.Count ?? 0);
-                bw.Write(funCount);
-
-                if (staticFuns != null)
+                if (svars != null)
                 {
-                    for (int fi = 0; fi < staticFuns.Count; fi++)
+                    for (int vi = 0; vi < svars.Count; vi++)
                     {
-                        var mf = staticFuns[fi];
-                        bw.Write(sp.Add(mf?.name ?? string.Empty));
-                        bw.Write(sp.Add(mf?.functionAllName ?? string.Empty));
-                        bw.Write(mf?.isStatic == true ? 1 : 0);
-                        bw.Write(mf?.isOverrideFunction == true ? 1 : 0);
-                        bw.Write(mf?.isOverrideInterface == true ? 1 : 0);
-                        bw.Write(mf?.isAbstract == true ? 1 : 0);
+                        var mv = svars[vi];
+                        bw.Write(sp.Add(mv?.name ?? string.Empty));
+                        var tn = mv?.irMetaType?.ToString() ?? string.Empty;
+                        bw.Write(tt.Add(tn));
+                        bw.Write(ts.Add(mv?.irMetaType));
+                        bw.Write(1); // isStatic
+                        bw.Write(0); // isConst
+                        bw.Write(0); // permission
+                        bw.Write(mv?.index ?? -1);
                     }
                 }
 
-                if (nonStaticFuns != null)
-                {
-                    for (int fi = 0; fi < nonStaticFuns.Count; fi++)
-                    {
-                        var mf = nonStaticFuns[fi];
-                        bw.Write(sp.Add(mf?.name ?? string.Empty));
-                        bw.Write(sp.Add(mf?.functionAllName ?? string.Empty));
-                        bw.Write(mf?.isStatic == true ? 1 : 0);
-                        bw.Write(mf?.isOverrideFunction == true ? 1 : 0);
-                        bw.Write(mf?.isOverrideInterface == true ? 1 : 0);
-                        bw.Write(mf?.isAbstract == true ? 1 : 0);
-                    }
-                }
+                // Member functions are exported via IRMethod section; class->method binding is not yet in IRMetaClass.
+                bw.Write(0);
             }
         }
 

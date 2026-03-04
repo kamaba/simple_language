@@ -20,7 +20,10 @@ namespace SimpleLanguage.Export
             if (irManager == null) throw new ArgumentNullException(nameof(irManager));
 
             var kind = Environment.GetEnvironmentVariable("SIMPLELANG_EXPORT_KIND");
-            if (string.IsNullOrWhiteSpace(kind)) return;
+            if (string.IsNullOrWhiteSpace(kind))
+            {
+                kind = "slir";
+            }
 
             var outDir = Environment.GetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR");
             if (string.IsNullOrWhiteSpace(outDir))

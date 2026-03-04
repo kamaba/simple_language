@@ -29,6 +29,11 @@ namespace SimpleLanguage.IR
         #endregion
 
         private List<IRMetaClass> m_IRMetaClassList = new List<IRMetaClass>();
+
+        public List<IRMetaClass> GetIRMetaClassList()
+        {
+            return m_IRMetaClassList;
+        }
         private List<IRData>  m_IRDataList = new List<IRData>();
         public void TranslateIR()
         {

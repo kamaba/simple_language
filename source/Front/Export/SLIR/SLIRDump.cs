@@ -24,16 +24,20 @@ namespace SimpleLanguage.Export.SLIR
             foreach (var c in m.Classes)
             {
                 sb.AppendLine($"class {c.AllName} extends {c.BaseAllName}");
+                if (!string.IsNullOrEmpty(c.SourcePath))
+                    sb.AppendLine($"  path: {c.SourcePath}");
+                if (c.Kind != 0)
+                    sb.AppendLine($"  kind: {c.Kind}");
                 sb.AppendLine($"  flags: template={c.IsTemplate} interface={c.IsInterface} abstract={c.IsAbstract}");
                 sb.AppendLine($"  fields({c.Fields.Count}):");
                 foreach (var f in c.Fields)
                 {
-                    sb.AppendLine($"    {(f.IsStatic ? "static " : "")}{f.TypeName} {f.Name} {(f.IsConst ? "const" : "")}");
+                    sb.AppendLine($"    {(f.IsStatic ? "static " : "")}{f.TypeName} {f.Name} {(f.IsConst ? "const" : "")} perm={f.Permission} idx={f.Index}");
                 }
                 sb.AppendLine($"  functions({c.Functions.Count}):");
                 foreach (var fn in c.Functions)
                 {
-                    sb.AppendLine($"    {(fn.IsStatic ? "static " : "")} {fn.AllName}");
+                    sb.AppendLine($"    {(fn.IsStatic ? "static " : "")} {fn.AllName} perm={fn.Permission}");
                 }
                 sb.AppendLine();
             }

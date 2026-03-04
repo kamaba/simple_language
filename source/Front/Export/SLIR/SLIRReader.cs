@@ -21,13 +21,26 @@ namespace SimpleLanguage.Export.SLIR
 
             public List<string> StringPool { get; } = new();
             public List<string> TypeTable { get; } = new();
+
+            public List<TypeSigInfo> TypeSigs { get; } = new();
+        }
+
+        public sealed class TypeSigInfo
+        {
+            public int ClassId { get; set; }
+            public int OwnerClassId { get; set; }
+            public int TemplateIndex { get; set; }
+            public bool IsTemplate { get; set; }
+            public List<int> Args { get; } = new();
         }
 
         public sealed class ClassInfo
         {
             public string AllName { get; set; } = string.Empty;
+            public string SourcePath { get; set; } = string.Empty;
             public string Name { get; set; } = string.Empty;
             public string BaseAllName { get; set; } = string.Empty;
+            public int Kind { get; set; }
             public bool IsTemplate { get; set; }
             public bool IsInterface { get; set; }
             public bool IsAbstract { get; set; }
@@ -41,6 +54,8 @@ namespace SimpleLanguage.Export.SLIR
             public string TypeName { get; set; } = string.Empty;
             public bool IsStatic { get; set; }
             public bool IsConst { get; set; }
+            public int Permission { get; set; }
+            public int Index { get; set; }
         }
 
         public sealed class FunctionInfo
@@ -51,6 +66,7 @@ namespace SimpleLanguage.Export.SLIR
             public bool IsOverride { get; set; }
             public bool IsOverrideInterface { get; set; }
             public bool IsAbstract { get; set; }
+            public int Permission { get; set; }
         }
 
         public sealed class MethodInfo
@@ -96,6 +112,7 @@ namespace SimpleLanguage.Export.SLIR
             {
                 ReadStringPoolV2(br, module);
                 ReadTypeTableV2(br, module);
+                ReadIRTypeSigTableV2(br, module);
                 ReadClassSectionV2(br, module);
                 ReadMethodSectionV2(br, module);
             }
@@ -204,6 +221,31 @@ namespace SimpleLanguage.Export.SLIR
             }
         }
 
+        private static void ReadIRTypeSigTableV2(BinaryReader br, Module module)
+        {
+            int count = br.ReadInt32();
+            if (count < 0) throw new InvalidDataException("Negative type sig table count");
+            for (int i = 0; i < count; i++)
+            {
+                var ts = new TypeSigInfo
+                {
+                    ClassId = br.ReadInt32(),
+                    OwnerClassId = br.ReadInt32(),
+                    TemplateIndex = br.ReadInt32(),
+                    IsTemplate = br.ReadInt32() != 0,
+                };
+
+                int ac = br.ReadInt32();
+                if (ac < 0) throw new InvalidDataException("Negative type sig arg count");
+                for (int ai = 0; ai < ac; ai++)
+                {
+                    ts.Args.Add(br.ReadInt32());
+                }
+
+                module.TypeSigs.Add(ts);
+            }
+        }
+
         private static void ReadClassSectionV2(BinaryReader br, Module module)
         {
             int classCount = br.ReadInt32();
@@ -212,8 +254,10 @@ namespace SimpleLanguage.Export.SLIR
                 var c = new ClassInfo
                 {
                     AllName = GetString(module, br.ReadInt32()),
+                    SourcePath = GetString(module, br.ReadInt32()),
                     Name = GetString(module, br.ReadInt32()),
                     BaseAllName = GetString(module, br.ReadInt32()),
+                    Kind = br.ReadInt32(),
                     IsTemplate = br.ReadInt32() != 0,
                     IsInterface = br.ReadInt32() != 0,
                     IsAbstract = br.ReadInt32() != 0,
@@ -222,14 +266,17 @@ namespace SimpleLanguage.Export.SLIR
                 int fieldCount = br.ReadInt32();
                 for (int f = 0; f < fieldCount; f++)
                 {
-                    int nameId = br.ReadInt32();
+                    int nameId = br.ReadInt32(); // Read nameId
                     int typeId = br.ReadInt32();
+                    int typeSigId = br.ReadInt32(); // Read typeSigId
                     c.Fields.Add(new FieldInfo
                     {
                         Name = GetString(module, nameId),
                         TypeName = GetType(module, typeId),
                         IsStatic = br.ReadInt32() != 0,
                         IsConst = br.ReadInt32() != 0,
+                        Permission = br.ReadInt32(),
+                        Index = br.ReadInt32(),
                     });
                 }
 
@@ -244,6 +291,7 @@ namespace SimpleLanguage.Export.SLIR
                         IsOverride = br.ReadInt32() != 0,
                         IsOverrideInterface = br.ReadInt32() != 0,
                         IsAbstract = br.ReadInt32() != 0,
+                        Permission = br.ReadInt32(),
                     });
                 }
 

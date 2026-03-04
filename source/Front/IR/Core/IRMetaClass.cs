@@ -19,6 +19,7 @@ namespace SimpleLanguage.IR
     {
         public int id { get; set; } = 0;
         public string irName => m_IRName;
+        public string sourcePath => m_SourcePath;
         public bool needInitMemberVariable => m_NeedInitMemberVariable;
 
         public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
@@ -32,6 +33,7 @@ namespace SimpleLanguage.IR
         private List<IRMethod> m_IROperatorMethodList = new List<IRMethod>();
         private List<IRMetaType> m_IRMetaTypeList = new List<IRMetaType>();
         private string m_IRName = "";
+        private string m_SourcePath = "";
         private MetaClass m_MetaClass = null;
         private int m_TemplateCount = 0;
         private bool m_NeedInitMemberVariable = false;
@@ -49,6 +51,24 @@ namespace SimpleLanguage.IR
             m_MetaClass = mc;
             m_IRName = IRManager.GetIRNameByMetaClass(mc);
             id = mc.GetHashCode();
+
+            try
+            {
+                // Best-effort: class may have multiple file definitions; pick the first.
+                foreach (var kv in mc.fileMetaClassDict)
+                {
+                    var fmc = kv.Value;
+                    if (fmc != null && !string.IsNullOrEmpty(fmc.fileMeta?.path))
+                    {
+                        m_SourcePath = fmc.fileMeta.path;
+                        break;
+                    }
+                }
+            }
+            catch
+            {
+                m_SourcePath = "";
+            }
         }        
         public IRMethod GetIRNonStaticMethodByIndex( int index )
         {
