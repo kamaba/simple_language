@@ -20,10 +20,7 @@ namespace SimpleLanguage.Core
             return m_ValuesMetaVariable;
         }
 
-        protected MetaVariable m_ValuesMetaVariable = null;
-        public Dictionary<string, MetaMemberEnum> metaMemberEnumDict => m_MetaMemberEnumDict;
-
-        protected Dictionary<string, MetaMemberEnum> m_MetaMemberEnumDict = new Dictionary<string, MetaMemberEnum>();
+        protected MetaMemberVariable m_ValuesMetaVariable = null;
         public MetaEnum(string _name) : base(_name)
         {
             m_Type = EType.Enum;
@@ -44,13 +41,17 @@ namespace SimpleLanguage.Core
                 List<MetaType> mtList = new List<MetaType>();
                 mtList.Add(new MetaType(this.extendClass));
                 var mt = new MetaType(CoreMetaClassManager.arrayMetaClass, mtList);
-                m_ValuesMetaVariable = new MetaVariable( "values", MetaVariable.EVariableFrom.Member, null, this, mt);
+                m_ValuesMetaVariable = new MetaMemberVariable(this, "values" );
                 m_ValuesMetaVariable.SetIsStatic( true );
+                m_ValuesMetaVariable.SetIsDefineMetaType(true);
+                m_ValuesMetaVariable.SetMetaDefineType(mt);
+                m_ValuesMetaVariable.SetRealMetaType(mt);
+                m_MetaMemberVariableDict.Add(m_ValuesMetaVariable.name, m_ValuesMetaVariable );
 
 
                 MetaArrayExpressNode maen = new MetaArrayExpressNode( this, null, mt, m_ValuesMetaVariable );
 
-                foreach ( var v in m_MetaMemberEnumDict )
+                foreach ( var v in m_MetaMemberVariableDict )
                 {
                     maen.metaCallArray.Add(v.Value.express);
                     //m_ValuesMetaVariable.AddMetaVariable(v.Value);
@@ -65,19 +66,19 @@ namespace SimpleLanguage.Core
         }
         public MetaMemberEnum GetMemberEnumByName(string name)
         {
-            if (m_MetaMemberEnumDict.ContainsKey(name))
+            if (m_MetaMemberVariableDict.ContainsKey(name))
             {
-                return m_MetaMemberEnumDict[name];
+                return m_MetaMemberVariableDict[name] as MetaMemberEnum;
             }
             return null;
         }
         public void AddMetaMemberEnum(MetaMemberEnum mmd)
         {
-            if (m_MetaMemberEnumDict.ContainsKey(mmd.name))
+            if (m_MetaMemberVariableDict.ContainsKey(mmd.name))
             {
                 return;
             }
-            m_MetaMemberEnumDict.Add(mmd.name, mmd);
+            m_MetaMemberVariableDict.Add(mmd.name, mmd);
         }
         public void ParseFileMetaEnumMemeberEnum(FileMetaClass fmc)
         {
@@ -139,7 +140,7 @@ namespace SimpleLanguage.Core
                || m_ExtendClass == CoreMetaClassManager.stringMetaClass)
             {
                 var mt = new MetaType(m_ExtendClass);
-                foreach (var v in m_MetaMemberEnumDict)
+                foreach (var v in m_MetaMemberVariableDict )
                 {
                     v.Value.SetMetaDefineType(mt);
                 }
@@ -148,7 +149,7 @@ namespace SimpleLanguage.Core
             {
                 //仅限data数据类型
                 var mt = new MetaType(m_ExtendClass);
-                foreach (var v in m_MetaMemberEnumDict)
+                foreach (var v in m_MetaMemberVariableDict )
                 {
                     v.Value.SetMetaDefineType(mt);
                 }
@@ -160,7 +161,7 @@ namespace SimpleLanguage.Core
         }
         public void ParseMemberMetaEnumExpress()
         {
-            if (m_MetaMemberEnumDict.Count == 0)
+            if (m_MetaMemberVariableDict.Count == 0)
             {
                 Log.AddInStructMeta(EError.None, "Warning 在enum : " + name + " 没有发现有任何成员");
                 return;
@@ -178,28 +179,31 @@ namespace SimpleLanguage.Core
 
                 // For numeric underlying types, all members' define/real type must be the underlying type.
                 var underlyingMt = new MetaType(m_ExtendClass);
-                foreach (var m in m_MetaMemberEnumDict)
+                foreach (var m in m_MetaMemberVariableDict )
                 {
                     m.Value.SetMetaDefineType(underlyingMt);
                 }
 
                 int i = 0;
                 dynamic indexdynamic = 0;
-                foreach (var v in m_MetaMemberEnumDict)
+                foreach (var v in m_MetaMemberVariableDict )
                 {
-                    v.Value.ParseDefineMetaType();
+                    MetaMemberEnum mme = v.Value as MetaMemberEnum;
+                    if (mme == null) continue;
+
+                    mme.ParseDefineMetaType();
 
                     if (i++ == 0)
                     {
-                        if (v.Value.express == null)
+                        if (mme.express == null)
                         {
                             Log.AddInStructMeta(EError.None, "Warning Enum Member Enum 成员第一位必须有=号");
                             continue;
                         }
                     }
-                    if (v.Value.express != null)
+                    if (mme.express != null)
                     {
-                        if (v.Value.constExpressNode == null)
+                        if (mme.constExpressNode == null)
                         {
                             Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内允许使用const值类变量");
                             continue;
@@ -297,8 +301,8 @@ namespace SimpleLanguage.Core
                     {
                         // auto increment when missing '='
                         var autoConst = new MetaConstExpressNode(m_ExtendClass.eType, indexdynamic++);
-                        v.Value.SetExpress(autoConst);
-                        v.Value.ParseMetaExpress();
+                        mme.SetExpress(autoConst);
+                        mme.ParseMetaExpress();
                     }
 
                     // Always pin real type to underlying type for numeric enums.
@@ -308,7 +312,7 @@ namespace SimpleLanguage.Core
             }
             else if (m_ExtendClass == CoreMetaClassManager.stringMetaClass)
             {
-                foreach (var v in m_MetaMemberEnumDict)
+                foreach (var v in m_MetaMemberVariableDict)
                 {
                     v.Value.ParseDefineMetaType();
                     if (v.Value.express == null)
@@ -330,7 +334,7 @@ namespace SimpleLanguage.Core
             }
             else if (m_ExtendClass == CoreMetaClassManager.dynamicMetaData)
             {
-                foreach (var v in m_MetaMemberEnumDict)
+                foreach (var v in m_MetaMemberVariableDict)
                 {
                     v.Value.ParseDefineMetaType();
                     if (v.Value.express == null)
@@ -358,7 +362,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                foreach (var v in m_MetaMemberEnumDict)
+                foreach (var v in m_MetaMemberVariableDict )
                 {
                     v.Value.ParseDefineMetaType();
                     if (v.Value.express == null)

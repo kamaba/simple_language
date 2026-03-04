@@ -13,20 +13,11 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public sealed class MetaMemberEnum : MetaVariable
+    public sealed class MetaMemberEnum : MetaMemberVariable
     {
         public MetaConstExpressNode constExpressNode => m_Express as MetaConstExpressNode;
-        public EFromType fromType => m_FromType;
         public int index => m_Index;
-        public MetaExpressNode express => m_Express;
-        public int parseLevel { get; set; } = -1;
-        public bool isInnerDefine => m_IsInnerDefine;
 
-        private EFromType m_FromType = EFromType.Code;
-        private int m_Index = -1;
-        private FileMetaMemberVariable m_FileMetaMemeberVariable;
-        private MetaExpressNode m_Express = null;
-        private bool m_IsInnerDefine = false;
         private bool m_IsExplicitAssign = false;
 
         private bool m_IsSupportConstructionFunctionOnlyBraceType = false;  //是否支持构造函数使用 仅{}形式    Class1{ a = {} } 不支持
@@ -42,7 +33,7 @@ namespace SimpleLanguage.Core
         private bool m_IsSupportInExpressUseCurrentClassNotStaticMemberMetaVariable = true;  //是否支持在表达式中使用本类或父类中的非静态变量
 #pragma warning restore CS0414 // 字段“MetaMemberVariable.m_IsSupportInExpressUseCurrentClassNotStaticMemberMetaVariable”已被赋值，但从未使用过它的
 
-        public MetaMemberEnum(MetaClass mc, FileMetaMemberVariable fmmv, MetaClass extendClass )
+        public MetaMemberEnum(MetaClass mc, FileMetaMemberVariable fmmv, MetaClass extendClass ) : base()
         {
             m_FileMetaMemeberVariable = fmmv;
             m_Name = fmmv.name;

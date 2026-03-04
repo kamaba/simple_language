@@ -124,7 +124,7 @@ namespace SimpleLanguage.IR
 
                 if ( v is MetaEnum me )
                 {
-                    var mmvd = me.metaMemberEnumDict;
+                    var mmvd = me.metaMemberVariableDict;
                     //foreach (var v2 in mmvd)
                     //{
                     //    if (v2.Value.isStatic)

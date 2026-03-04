@@ -605,10 +605,10 @@ namespace SimpleLanguage.Compile
     }
     public class FileMetaBraceTerm : FileMetaBaseTerm
     {
-        //public List<FileMetaSyntax> fileMetaAssignSyntaxList => m_FileMetaAssignSyntaxList;
-        //public List<FileMetaCallLink> fileMetaCallLinkList => m_FileMetaCallLinkList;
-        //private List<FileMetaSyntax> m_FileMetaAssignSyntaxList = new List<FileMetaSyntax>();
-        //private List<FileMetaCallLink> m_FileMetaCallLinkList = new List<FileMetaCallLink>();
+        public List<FileMetaSyntax> fileMetaAssignSyntaxList => m_FileMetaAssignSyntaxList;
+        public List<FileMetaCallLink> fileMetaCallLinkList => m_FileMetaCallLinkList;
+        private List<FileMetaSyntax> m_FileMetaAssignSyntaxList = new List<FileMetaSyntax>();
+        private List<FileMetaCallLink> m_FileMetaCallLinkList = new List<FileMetaCallLink>();
         private Token m_BraceEndToken = null;
         private Node m_Node = null;
         // { a = 10, b = 20, c = Class1(), 10, [1,2,3], [[1,2],[3,4],100], Class1():100, (1,2,3) }
@@ -736,9 +736,9 @@ namespace SimpleLanguage.Compile
                 }
                 else if( assignToken != null && defineNodeList.Count > 0 && valueNodeList.Count > 0 )
                 {
-                    /*
                     if ( (defineNodeList.Count != 1 && defineNodeList.Count != 2 ) || valueNodeList.Count < 1)
                     {
+                        Debug.Assert(false, "");
                         Log.AddInStructFileMeta(EError.None, "Error 在解析为{}中，赋值= 解析有问题!!");
                         continue;
                     }
@@ -759,11 +759,10 @@ namespace SimpleLanguage.Compile
                         fmoas.isAppendSemiColon = false;
                         m_FileMetaAssignSyntaxList.Add(fmoas);
                     }
-                    */
-                    FileMetaBaseTerm defineNodeTerm = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, defineNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
-                    FileMetaBaseTerm valueNodeTerm = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
-                    FileMetaSymbolTerm fst = new FileMetaSymbolTerm(m_FileMeta, assignToken) {  left = defineNodeTerm, right = valueNodeTerm };
-                    AddFileMetaTerm (fst);
+                    //FileMetaBaseTerm defineNodeTerm = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, defineNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
+                    //FileMetaBaseTerm valueNodeTerm = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
+                    //FileMetaSymbolTerm fst = new FileMetaSymbolTerm(m_FileMeta, assignToken) {  left = defineNodeTerm, right = valueNodeTerm };
+                    //AddFileMetaTerm (fst);
                 }
                 else
                 {

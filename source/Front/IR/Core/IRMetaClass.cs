@@ -155,7 +155,7 @@ namespace SimpleLanguage.IR
         {
             if (m_MetaClass is MetaEnum me)
             {
-                foreach( var v in me.metaMemberEnumDict )
+                foreach( var v in me.metaMemberVariableDict )
                 {
                     IRMetaVariable irmv = new IRMetaVariable(this, v.Value );
                     IRManager.instance.AddGlobalMetaMemberVariable(irmv);

@@ -18,23 +18,23 @@ namespace SimpleLanguage.Compile
 {
     public partial class StructParse
     {
-        private List<FileMetaAttributeSyntax> ParseLeadingAttributes(Node pnode)
+        private void ParseLeadingAttributes(Node pnode, ref int index, List<FileMetaAttributeSyntax> list)
         {
-            var list = new List<FileMetaAttributeSyntax>();
-            if (pnode == null) return list;
+            if (pnode == null) return;
 
-            while (pnode.parseIndex < pnode.childList.Count)
+            while (index < pnode.childList.Count)
             {
-                var n = pnode.childList[pnode.parseIndex];
-                if (n == null) { pnode.parseIndex++; continue; }
+                // do not consume anything unless we actually parse an attribute
+                int start = index;
 
-                // skip blank lines
-                if (n.nodeType == ENodeType.LineEnd)
+                var n = pnode.childList[index];
+                if (n == null)
                 {
-                    pnode.parseIndex++;
+                    index++;
                     continue;
                 }
 
+                // attributes are prefixes; if current token isn't '@', stop and keep cursor
                 if (n.token?.type != ETokenType.At)
                     break;
 
@@ -42,8 +42,8 @@ namespace SimpleLanguage.Compile
                 if (currentNodeInfo == null || (currentNodeInfo.parseType != EParseNodeType.Namespace && currentNodeInfo.parseType != EParseNodeType.Class))
                 {
                     Log.AddInStructFileMeta(EError.None, "Error @Attribute 只允许写在 namespace{} / class{} 内");
-                    pnode.parseIndex++;
-                    continue;
+                    // do not consume; let outer parser handle as error or normal token
+                    break;
                 }
 
                 var atToken = n.token;
@@ -51,48 +51,55 @@ namespace SimpleLanguage.Compile
                 if (string.IsNullOrEmpty(attrName))
                 {
                     Log.AddInStructFileMeta(EError.None, "Error @Attribute 名称为空");
-                    pnode.parseIndex++;
-                    continue;
+                    // invalid attribute; do not consume to avoid breaking outer logic
+                    break;
                 }
 
-                // optional () param list
+                int tmp = index + 1; // consume '@'
+
+                // optional () param list (can be on next line)
                 FileMetaParTerm parTerm = null;
                 Node parNode = null;
-                if (pnode.parseIndex + 1 < pnode.childList.Count)
+
+                if (tmp < pnode.childList.Count)
                 {
-                    var next = pnode.childList[pnode.parseIndex + 1];
+                    var next = pnode.childList[tmp];
                     if (next != null && next.nodeType == ENodeType.Par)
                     {
                         parNode = next;
+                        tmp += 1;
                     }
-                    else if (next != null && next.nodeType == ENodeType.LineEnd && pnode.parseIndex + 2 < pnode.childList.Count)
+                    else if (next != null && next.nodeType == ENodeType.LineEnd && tmp + 1 < pnode.childList.Count)
                     {
-                        var next2 = pnode.childList[pnode.parseIndex + 2];
+                        var next2 = pnode.childList[tmp + 1];
                         if (next2 != null && next2.nodeType == ENodeType.Par)
+                        {
                             parNode = next2;
+                            tmp += 2; // LineEnd + Par
+                        }
                     }
                 }
+
                 if (parNode != null)
                 {
                     parTerm = new FileMetaParTerm(m_FileMeta, parNode, FileMetaTermExpress.EExpressType.Common);
-                    if (parNode == pnode.childList[pnode.parseIndex + 1])
-                        pnode.parseIndex += 2;
-                    else
-                        pnode.parseIndex += 3;
                 }
-                else
-                {
-                    pnode.parseIndex++;
-                }
-
-                list.Add(new FileMetaAttributeSyntax(m_FileMeta, atToken, attrName, parTerm));
 
                 // allow repeated attributes, including separated by LineEnd
-                while (pnode.parseIndex < pnode.childList.Count && pnode.childList[pnode.parseIndex]?.nodeType == ENodeType.LineEnd)
-                    pnode.parseIndex++;
-            }
+                while (tmp < pnode.childList.Count && pnode.childList[tmp]?.nodeType == ENodeType.LineEnd)
+                    tmp++;
 
-            return list;
+                // commit
+                list.Add(new FileMetaAttributeSyntax(m_FileMeta, atToken, attrName, parTerm));
+                index = tmp;
+
+                if (index <= start)
+                {
+                    // safety net: never loop without advancing
+                    index = start;
+                    break;
+                }
+            }
         }
         public enum EParseNodeType
         {
@@ -899,15 +906,19 @@ namespace SimpleLanguage.Compile
             Node nextNode = null;
             int index = pnode.parseIndex;
 
-            List<FileMetaAttributeSyntax> attrs = null;
+            List<FileMetaAttributeSyntax> attrs = new List<FileMetaAttributeSyntax>();
 
             int parseType = 0;      // 1->是类class\n{}  2->函数 init()\n{}      3->变量  int a;  int a=20; a = 20; a = {}\n a = {};
             Node block = null;
             for (index = pnode.parseIndex; index < pnode.childList.Count;)
             {
                 // parse and stash leading attributes (only valid in class/namespace blocks)
-                attrs = ParseLeadingAttributes(pnode);
-                index = pnode.parseIndex;
+                ParseLeadingAttributes(pnode, ref index, attrs);
+
+                if( index >= pnode.childList.Count )
+                {
+                    break;
+                }
 
                 var curNode = pnode.childList[index++];
                 if (curNode.nodeType == ENodeType.Key)

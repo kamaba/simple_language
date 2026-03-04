@@ -32,15 +32,16 @@ namespace SimpleLanguage.Core
         public MetaClass sourceMetaClass => m_SourceMetaClass;
         public EFromType fromType => m_FromType;
         public MetaExpressNode express => m_Express;
+        public MetaConstExpressNode constExpressNode => m_Express as MetaConstExpressNode;  
         public int parseLevel { get; set; } = -1;
         public bool isInnerDefine => m_IsInnerDefine;
         public FileMetaMemberVariable fileMetaMemeberVariable => m_FileMetaMemeberVariable;
 
         protected EFromType m_FromType = EFromType.Code;
-        private int m_Index = -1;
-        private FileMetaMemberVariable m_FileMetaMemeberVariable;
-        private MetaExpressNode m_Express = null;
-        private bool m_IsInnerDefine = false;
+        protected int m_Index = -1;
+        protected FileMetaMemberVariable m_FileMetaMemeberVariable;
+        protected MetaExpressNode m_Express = null;
+        protected bool m_IsInnerDefine = false;
         protected List<MetaMemberVariable> m_TemplateChildMetaMemberVariableList = new List<MetaMemberVariable>();
         protected MetaClass m_SourceMetaClass = null;
 
@@ -73,6 +74,9 @@ namespace SimpleLanguage.Core
             m_IsStatic = mmv.m_IsStatic;
             m_Permission = mmv.m_Permission;
             mmv.m_TemplateChildMetaMemberVariableList.Add(this);
+        }
+        protected MetaMemberVariable()
+        {
         }
         public MetaMemberVariable(MetaClass mc, string _name)
         {

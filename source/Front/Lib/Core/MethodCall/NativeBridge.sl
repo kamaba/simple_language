@@ -40,7 +40,7 @@ public class NativeBridge extends Object
         {
 
         }
-        #!
+        
         a = 200;
         switch kind
         {
@@ -66,6 +66,6 @@ public class NativeBridge extends Object
             }       
         }
         !#
-        ret true        
+        ret true
     }
 }
