@@ -434,7 +434,19 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadConstString:
                     {
-                        if (iri.TryGetString(out string s)) { var v = default(SValue); v.SetStringValue(s); PushSValueSynced(v); }
+                        if (iri.TryGetString(out string s))
+                        {
+                            var v = default(SValue);
+                            v.SetStringValue(s);
+                            PushSValueSynced(v);
+                        }
+                        else
+                        {
+                            var resolved = SLIRModuleLoader.TryGetConstString(iri.index) ?? string.Empty;
+                            var v = default(SValue);
+                            v.SetStringValue(resolved);
+                            PushSValueSynced(v);
+                        }
                     }
                     break;
                 case EIROpCode.LoadConstType:

@@ -19,6 +19,8 @@ namespace SimpleLanguage.Export.SLIR
             public List<ClassInfo> Classes { get; } = new();
             public List<MethodInfo> Methods { get; } = new();
 
+            public Dictionary<int, string> IRStringDict { get; } = new();
+
             public List<string> StringPool { get; } = new();
             public List<string> TypeTable { get; } = new();
 
@@ -110,6 +112,7 @@ namespace SimpleLanguage.Export.SLIR
             }
             else
             {
+                ReadIRStringDictV2(br, module);
                 ReadStringPoolV2(br, module);
                 ReadTypeTableV2(br, module);
                 ReadIRTypeSigTableV2(br, module);
@@ -207,6 +210,18 @@ namespace SimpleLanguage.Export.SLIR
             for (int i = 0; i < count; i++)
             {
                 module.StringPool.Add(ReadString(br));
+            }
+        }
+
+        private static void ReadIRStringDictV2(BinaryReader br, Module module)
+        {
+            int count = br.ReadInt32();
+            if (count < 0) throw new InvalidDataException("Negative IRStringDict count");
+            for (int i = 0; i < count; i++)
+            {
+                int key = br.ReadInt32();
+                int sid = br.ReadInt32();
+                module.IRStringDict[key] = GetString(module, sid);
             }
         }
 

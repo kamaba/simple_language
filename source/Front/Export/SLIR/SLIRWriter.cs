@@ -15,112 +15,6 @@ namespace SimpleLanguage.Export.SLIR
         private const uint Magic = 0x52494C53; // 'SLIR'
         private const ushort Version = 2;
 
-        private sealed class IRTypeSigTable
-        {
-            private readonly Dictionary<IRMetaType, int> _index = new();
-            private readonly List<IRMetaType> _items = new();
-
-            public int Add(IRMetaType? t)
-            {
-                if (t == null) return -1;
-                if (_index.TryGetValue(t, out var id)) return id;
-
-                id = _items.Count;
-                _items.Add(t);
-                _index.Add(t, id);
-
-                var args = t.irMetaTypeList;
-                if (args != null)
-                {
-                    for (int i = 0; i < args.Count; i++)
-                    {
-                        Add(args[i]);
-                    }
-                }
-
-                return id;
-            }
-
-            public void Write(BinaryWriter bw)
-            {
-                bw.Write(_items.Count);
-                for (int i = 0; i < _items.Count; i++)
-                {
-                    var t = _items[i];
-                    bw.Write(t?.irMetaClass?.id ?? 0);
-                    bw.Write(t?.irOwnerMetaClass?.id ?? 0);
-                    bw.Write(t?.templateIndex ?? -1);
-                    bw.Write(t?.templateIndex != -1 ? 1 : 0); // isTemplate
-                    var args = t?.irMetaTypeList;
-                    bw.Write(args?.Count ?? 0);
-                    if (args != null)
-                    {
-                        for (int ai = 0; ai < args.Count; ai++)
-                        {
-                            bw.Write(Add(args[ai]));
-                        }
-                    }
-                }
-            }
-        }
-
-        private sealed class StringPool
-        {
-            private readonly Dictionary<string, int> _index = new(StringComparer.Ordinal);
-            private readonly List<string> _items = new();
-
-            public int Add(string? s)
-            {
-                s ??= string.Empty;
-                if (_index.TryGetValue(s, out var id)) return id;
-                id = _items.Count;
-                _items.Add(s);
-                _index.Add(s, id);
-                return id;
-            }
-
-            public void Write(BinaryWriter bw)
-            {
-                bw.Write(_items.Count);
-                for (int i = 0; i < _items.Count; i++)
-                {
-                    WriteStringRaw(bw, _items[i]);
-                }
-            }
-
-            private static void WriteStringRaw(BinaryWriter bw, string s)
-            {
-                var bytes = Encoding.UTF8.GetBytes(s ?? string.Empty);
-                bw.Write(bytes.Length);
-                bw.Write(bytes);
-            }
-        }
-
-        private sealed class TypeTable
-        {
-            private readonly Dictionary<string, int> _index = new(StringComparer.Ordinal);
-            private readonly List<string> _items = new();
-
-            public int Add(string? typeName)
-            {
-                typeName ??= string.Empty;
-                if (_index.TryGetValue(typeName, out var id)) return id;
-                id = _items.Count;
-                _items.Add(typeName);
-                _index.Add(typeName, id);
-                return id;
-            }
-
-            public void Write(BinaryWriter bw, StringPool sp)
-            {
-                bw.Write(_items.Count);
-                for (int i = 0; i < _items.Count; i++)
-                {
-                    bw.Write(sp.Add(_items[i]));
-                }
-            }
-        }
-
         public static void WriteModule(IRManager ir, string outputPath)
         {
             if (ir == null) throw new ArgumentNullException(nameof(ir));
@@ -134,136 +28,38 @@ namespace SimpleLanguage.Export.SLIR
             // Header
             bw.Write(Magic);
             bw.Write(Version);
-            bw.Write((ushort)0); // flags
+            bw.Write((ushort)0); // flags            
 
-            // Build pools first for compact/stable references
-            var sp = new StringPool();
-            var tt = new TypeTable();
-            var ts = new IRTypeSigTable();
-            BuildPools(ir, sp, tt);
+            // 1) IR string dict section (id->stringId)
+            WriteIRStringDict(bw, ir);
 
-            // Build IR type signatures table
-            BuildIRTypeSigs(ir, ts);
+            // 5) IR meta classes section
+            WriteClassSection(bw);
 
-            // String pool section
-            sp.Write(bw);
-
-            // Type table section (typeName -> stringId)
-            tt.Write(bw, sp);
-
-            // IR TypeSig table section
-            ts.Write(bw);
-
-            // Class metadata section
-            WriteClassSection(bw, sp, tt, ts);
-
-            // Method count
+            // 6) IR methods section
             var methods = ir.IRMethodDict;
             bw.Write(methods.Count);
-
-            // Methods
             foreach (var kv in methods)
             {
                 var m = kv.Value;
                 if (m == null) continue;
-                WriteMethod(bw, m, sp);
+                WriteMethod(bw, m);
             }
-
         }
-
-        private static void BuildIRTypeSigs(IRManager ir, IRTypeSigTable ts)
+        private static void WriteIRStringDict(BinaryWriter bw, IRManager ir )
         {
-            var classes = ir.GetIRMetaClassList();
-            for (int i = 0; i < classes.Count; i++)
+            var dict = ir.IRStringDict;
+            bw.Write(dict?.Count ?? 0);
+            if (dict == null) return;
+
+            foreach (var kv in dict)
             {
-                var c = classes[i];
-                if (c == null) continue;
-
-                var locals = c.localIRMetaVariableList;
-                if (locals != null)
-                {
-                    for (int vi = 0; vi < locals.Count; vi++)
-                    {
-                        ts.Add(locals[vi]?.irMetaType);
-                    }
-                }
-
-                var statics = c.staticIRMetaVariableList;
-                if (statics != null)
-                {
-                    for (int vi = 0; vi < statics.Count; vi++)
-                    {
-                        ts.Add(statics[vi]?.irMetaType);
-                    }
-                }
-            }
-
-            foreach (var kv in ir.IRMethodDict)
-            {
-                var m = kv.Value;
-                if (m == null) continue;
-                var args = m.methodArgumentList;
-                if (args != null)
-                    for (int i = 0; i < args.Count; i++) ts.Add(args[i]?.irMetaType);
-                var locals = m.methodLocalVariableList;
-                if (locals != null)
-                    for (int i = 0; i < locals.Count; i++) ts.Add(locals[i]?.irMetaType);
-                var rets = m.methodReturnVariableList;
-                if (rets != null)
-                    for (int i = 0; i < rets.Count; i++) ts.Add(rets[i]?.irMetaType);
+                bw.Write(kv.Key);
+                bw.Write(kv.Value ?? string.Empty);
             }
         }
 
-        private static void BuildPools(IRManager ir, StringPool sp, TypeTable tt)
-        {
-            var methods = ir.IRMethodDict;
-            foreach (var kv in methods)
-            {
-                var m = kv.Value;
-                if (m == null) continue;
-                sp.Add(m.id);
-                sp.Add(m.onlyFunctionName);
-            }
-
-            // IRMetaClass/IRMetaVariable pools (IR is the source of truth for export)
-            var classes = ir.GetIRMetaClassList();
-            for (int i = 0; i < classes.Count; i++)
-            {
-                var c = classes[i];
-                if (c == null) continue;
-
-                sp.Add(c.irName);
-                sp.Add(c.sourcePath);
-
-                var locals = c.localIRMetaVariableList;
-                if (locals != null)
-                {
-                    for (int vi = 0; vi < locals.Count; vi++)
-                    {
-                        var v = locals[vi];
-                        sp.Add(v?.name);
-                        var tname = v?.irMetaType?.ToString();
-                        tt.Add(tname);
-                        sp.Add(tname);
-                    }
-                }
-
-                var statics = c.staticIRMetaVariableList;
-                if (statics != null)
-                {
-                    for (int vi = 0; vi < statics.Count; vi++)
-                    {
-                        var v = statics[vi];
-                        sp.Add(v?.name);
-                        var tname = v?.irMetaType?.ToString();
-                        tt.Add(tname);
-                        sp.Add(tname);
-                    }
-                }
-            }
-        }
-
-        private static void WriteClassSection(BinaryWriter bw, StringPool sp, TypeTable tt, IRTypeSigTable ts)
+        private static void WriteClassSection(BinaryWriter bw )
         {
             // Export from IR layer (IRMetaClass/IRMetaVariable). If IR lacks data,
             // it must be populated into IR before export.
@@ -276,9 +72,9 @@ namespace SimpleLanguage.Export.SLIR
                 var c = classes[i];
                 if (c == null)
                 {
-                    bw.Write(sp.Add(string.Empty));
-                    bw.Write(sp.Add(string.Empty));
-                    bw.Write(sp.Add(string.Empty));
+                    bw.Write(string.Empty);
+                    bw.Write(string.Empty);
+                    bw.Write(string.Empty);
                     bw.Write(0); // class kind
                     bw.Write(0);
                     bw.Write(0);
@@ -287,10 +83,10 @@ namespace SimpleLanguage.Export.SLIR
                 }
 
                 // names (IR level)
-                bw.Write(sp.Add(c.irName ?? string.Empty));
-                bw.Write(sp.Add(c.sourcePath ?? string.Empty));
-                bw.Write(sp.Add(string.Empty)); // short name not available at IR layer currently
-                bw.Write(sp.Add(string.Empty)); // base name not available at IR layer currently
+                bw.Write(c.irName ?? string.Empty);
+                bw.Write(c.sourcePath ?? string.Empty);
+                bw.Write(string.Empty); // short name not available at IR layer currently
+                bw.Write(string.Empty); // base name not available at IR layer currently
 
                 // class kind/flags are not represented in IRMetaClass today
                 bw.Write(0);
@@ -309,10 +105,10 @@ namespace SimpleLanguage.Export.SLIR
                     for (int vi = 0; vi < vars.Count; vi++)
                     {
                         var mv = vars[vi];
-                        bw.Write(sp.Add(mv?.name ?? string.Empty));
+                        bw.Write(mv?.name ?? string.Empty);
                         var tn = mv?.irMetaType?.ToString() ?? string.Empty;
-                        bw.Write(tt.Add(tn));
-                        bw.Write(ts.Add(mv?.irMetaType));
+                        //bw.Write(tt.Add(tn));
+                        //bw.Write(ts.Add(mv?.irMetaType));
                         bw.Write(0); // isStatic
                         bw.Write(0); // isConst
                         bw.Write(0); // permission
@@ -325,10 +121,10 @@ namespace SimpleLanguage.Export.SLIR
                     for (int vi = 0; vi < svars.Count; vi++)
                     {
                         var mv = svars[vi];
-                        bw.Write(sp.Add(mv?.name ?? string.Empty));
+                        bw.Write(mv?.name ?? string.Empty);
                         var tn = mv?.irMetaType?.ToString() ?? string.Empty;
-                        bw.Write(tt.Add(tn));
-                        bw.Write(ts.Add(mv?.irMetaType));
+                        //bw.Write(tt.Add(tn));
+                        //bw.Write(ts.Add(mv?.irMetaType));
                         bw.Write(1); // isStatic
                         bw.Write(0); // isConst
                         bw.Write(0); // permission
@@ -341,11 +137,11 @@ namespace SimpleLanguage.Export.SLIR
             }
         }
 
-        private static void WriteMethod(BinaryWriter bw, IRMethod m, StringPool sp)
+        private static void WriteMethod(BinaryWriter bw, IRMethod m )
         {
             // id/name
-            bw.Write(sp.Add(m.id ?? string.Empty));
-            bw.Write(sp.Add(m.onlyFunctionName ?? string.Empty));
+            bw.Write(m.id ?? string.Empty);
+            bw.Write(m.onlyFunctionName ?? string.Empty);
 
             // signature (minimal)
             bw.Write(m.methodArgumentList?.Count ?? 0);
@@ -388,7 +184,5 @@ namespace SimpleLanguage.Export.SLIR
                 }
             }
         }
-
-        // v2 uses StringPool; no raw string writes in payload.
     }
 }

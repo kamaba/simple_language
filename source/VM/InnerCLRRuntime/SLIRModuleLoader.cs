@@ -12,10 +12,20 @@ namespace SimpleLanguage.VM
 
         private sealed class SlirModule
         {
+            public Dictionary<int, string> IRStringDict { get; } = new();
             public List<string> StringPool { get; } = new();
             public List<string> TypeTable { get; } = new();
             public List<TypeSigInfo> TypeSigs { get; } = new();
             public List<ClassInfo> Classes { get; } = new();
+        }
+
+        private static Dictionary<int, string> s_LastIRStringDict = new();
+
+        public static string? TryGetConstString(int stringId)
+        {
+            if (s_LastIRStringDict != null && s_LastIRStringDict.TryGetValue(stringId, out var s))
+                return s;
+            return null;
         }
 
         private sealed class TypeSigInfo
@@ -46,6 +56,8 @@ namespace SimpleLanguage.VM
         {
             if (string.IsNullOrWhiteSpace(slirPath)) throw new ArgumentNullException(nameof(slirPath));
             var m = ReadSlir(slirPath);
+
+            s_LastIRStringDict = m.IRStringDict;
 
             var rcm = RuntimeClassManager.instance;
             rcm.m_IRMetaClassList.Clear();
@@ -118,9 +130,28 @@ namespace SimpleLanguage.VM
 
             var m = new SlirModule();
 
+            // IRStringDict (id->stringId)
+            int irStrCount = br.ReadInt32();
+            for (int i = 0; i < irStrCount; i++)
+            {
+                int key = br.ReadInt32();
+                int sid = br.ReadInt32();
+                // string pool not yet loaded; keep sid encoded as placeholder, remap after pool read
+                m.IRStringDict[key] = sid.ToString();
+            }
+
             // string pool
             int spCount = br.ReadInt32();
             for (int i = 0; i < spCount; i++) m.StringPool.Add(ReadString(br));
+
+            // remap IRStringDict sids -> strings
+            var keys = new List<int>(m.IRStringDict.Keys);
+            for (int i = 0; i < keys.Count; i++)
+            {
+                var k = keys[i];
+                if (int.TryParse(m.IRStringDict[k], out var sid))
+                    m.IRStringDict[k] = GetString(m, sid);
+            }
 
             // type table
             int ttCount = br.ReadInt32();

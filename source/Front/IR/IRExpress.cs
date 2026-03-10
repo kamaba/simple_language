@@ -233,7 +233,16 @@ namespace SimpleLanguage.IR
         {
             IRData irdata = new IRData();
             irdata.opCode = IRUtil.GetConstIROpCode(mnoen.eType);
-            irdata.opValue = mnoen.value;
+            if (mnoen.eType == EType.String)
+            {
+                var s = mnoen.value?.ToString() ?? string.Empty;
+                irdata.index = IRManager.instance.AddStringIRStack(s);
+                irdata.opValue = null;
+            }
+            else
+            {
+                irdata.opValue = mnoen.value;
+            }
             //irdata.SetDebugInfoByToken( mcn.GetToken() );
             AddIRData(irdata);
 
