@@ -28,7 +28,7 @@ namespace SimpleLanguage.Export.SLIR
             // Header
             bw.Write(Magic);
             bw.Write(Version);
-            bw.Write((ushort)0); // flags            
+            bw.Write((ushort)0); // flags
 
             // 1) IR string dict section (id->stringId)
             WriteIRStringDict(bw, ir);
@@ -61,79 +61,103 @@ namespace SimpleLanguage.Export.SLIR
 
         private static void WriteClassSection(BinaryWriter bw )
         {
-            // Export from IR layer (IRMetaClass/IRMetaVariable). If IR lacks data,
-            // it must be populated into IR before export.
             var classes = IRManager.instance.GetIRMetaClassList();
-
             bw.Write(classes.Count);
-
             for (int i = 0; i < classes.Count; i++)
             {
                 var c = classes[i];
-                if (c == null)
+                WriteIRMetaClass( bw, c);
+            }
+        }
+        public static void WriteIRMetaClass(BinaryWriter bw, IRMetaClass c )
+        {
+            if (c == null)
+            {
+                bw.Write(string.Empty);
+                bw.Write(string.Empty);
+                bw.Write(string.Empty);
+                bw.Write(0); // class kind
+                bw.Write(0);
+                bw.Write(0);
+                bw.Write(0);
+                return;
+            }
+
+            // names (IR level)
+            bw.Write(c.irName ?? string.Empty);
+            bw.Write(c.sourcePath ?? string.Empty);
+            bw.Write(string.Empty); // short name not available at IR layer currently
+            bw.Write(string.Empty); // base name not available at IR layer currently
+
+            // class kind/flags are not represented in IRMetaClass today
+            bw.Write(0);
+            bw.Write(0);
+            bw.Write(0);
+            bw.Write(0);
+
+            // Member variables (IR)
+            var vars = c.localIRMetaVariableList;
+            var svars = c.staticIRMetaVariableList;
+            int fieldCount = (vars?.Count ?? 0) + (svars?.Count ?? 0);
+            bw.Write(fieldCount);
+
+            if (vars != null)
+            {
+                for (int vi = 0; vi < vars.Count; vi++)
                 {
-                    bw.Write(string.Empty);
-                    bw.Write(string.Empty);
-                    bw.Write(string.Empty);
-                    bw.Write(0); // class kind
-                    bw.Write(0);
-                    bw.Write(0);
-                    bw.Write(0);
-                    continue;
+                    var mv = vars[vi];
+                    WriteDefIRMetaVariable( bw, mv);
                 }
+            }
 
-                // names (IR level)
-                bw.Write(c.irName ?? string.Empty);
-                bw.Write(c.sourcePath ?? string.Empty);
-                bw.Write(string.Empty); // short name not available at IR layer currently
-                bw.Write(string.Empty); // base name not available at IR layer currently
-
-                // class kind/flags are not represented in IRMetaClass today
-                bw.Write(0);
-                bw.Write(0);
-                bw.Write(0);
-                bw.Write(0);
-
-                // Member variables (IR)
-                var vars = c.localIRMetaVariableList;
-                var svars = c.staticIRMetaVariableList;
-                int fieldCount = (vars?.Count ?? 0) + (svars?.Count ?? 0);
-                bw.Write(fieldCount);
-
-                if (vars != null)
+            if (svars != null)
+            {
+                for (int vi = 0; vi < svars.Count; vi++)
                 {
-                    for (int vi = 0; vi < vars.Count; vi++)
-                    {
-                        var mv = vars[vi];
-                        bw.Write(mv?.name ?? string.Empty);
-                        var tn = mv?.irMetaType?.ToString() ?? string.Empty;
-                        //bw.Write(tt.Add(tn));
-                        //bw.Write(ts.Add(mv?.irMetaType));
-                        bw.Write(0); // isStatic
-                        bw.Write(0); // isConst
-                        bw.Write(0); // permission
-                        bw.Write(mv?.index ?? -1);
-                    }
+                    var mv = svars[vi];
+                    WriteDefIRMetaVariable(bw, mv);
                 }
+            }
+            // Member functions are exported via IRMethod section; class->method binding is not yet in IRMetaClass.
+            bw.Write(0);
+        }
+        public static void WriteDefIRMetaVariable(BinaryWriter bw, IRMetaVariable v )
+        {
+            if (v == null)
+            {
+                bw.Write(string.Empty);
+                bw.Write(string.Empty);
+                //bw.Write(0); // isStatic
+                //bw.Write(0); // isConst
+                //bw.Write(0); // permission
+                bw.Write(0); // index
+                return;
+            }
+            bw.Write(v.id);
+            bw.Write(v.name ?? string.Empty);
+            bw.Write(v.index);
+            WriteIRMetaType(bw, v.irMetaType);
+            //bw.Write(tt.Add(tn));
+            //bw.Write(ts.Add(v.irMetaType));
+            //bw.Write(v.isStatic ? 1 : 0);
+            //bw.Write(v.isConst ? 1 : 0);
+            //bw.Write(0); // permission (not in IRMetaVariable currently)
+        }  
+        static void WriteIRMetaType( BinaryWriter bw, IRMetaType t)
+        {
+            if (t == null)
+            {
+                bw.Write(string.Empty);
+                return;
+            }
+            bw.Write(t.templateIndex);
+            bw.Write(t.irOwnerMetaClass.id);
+            bw.Write(t.irMetaClass.id);
 
-                if (svars != null)
-                {
-                    for (int vi = 0; vi < svars.Count; vi++)
-                    {
-                        var mv = svars[vi];
-                        bw.Write(mv?.name ?? string.Empty);
-                        var tn = mv?.irMetaType?.ToString() ?? string.Empty;
-                        //bw.Write(tt.Add(tn));
-                        //bw.Write(ts.Add(mv?.irMetaType));
-                        bw.Write(1); // isStatic
-                        bw.Write(0); // isConst
-                        bw.Write(0); // permission
-                        bw.Write(mv?.index ?? -1);
-                    }
-                }
-
-                // Member functions are exported via IRMethod section; class->method binding is not yet in IRMetaClass.
-                bw.Write(0);
+            bw.Write(t.irMetaTypeList.Count);
+            for( int i = 0; i < t.irMetaTypeList.Count; i++ )
+            {
+                WriteIRMetaType(bw, t.irMetaTypeList[i]);
             }
         }
 
@@ -142,11 +166,26 @@ namespace SimpleLanguage.Export.SLIR
             // id/name
             bw.Write(m.id ?? string.Empty);
             bw.Write(m.onlyFunctionName ?? string.Empty);
+            bw.Write(m.virtualFunctionName ?? string.Empty);
 
             // signature (minimal)
             bw.Write(m.methodArgumentList?.Count ?? 0);
+            for( int i = 0; i < m.methodArgumentList.Count; i++ )
+            {
+                WriteIRMetaVariable(bw, m.methodArgumentList[i]);
+            }
+
             bw.Write(m.methodLocalVariableList?.Count ?? 0);
+            for (int i = 0; i < m.methodLocalVariableList.Count; i++)
+            {
+                WriteIRMetaVariable(bw, m.methodLocalVariableList[i]);
+            }
+
             bw.Write(m.methodReturnVariableList?.Count ?? 0);
+            for (int i = 0; i < m.methodReturnVariableList.Count; i++)
+            {
+                WriteIRMetaVariable(bw, m.methodReturnVariableList[i]);
+            }
 
             // code
             var code = m.IRDataList ?? new List<IRData>();
@@ -183,6 +222,29 @@ namespace SimpleLanguage.Export.SLIR
                     bw.Write(payload);
                 }
             }
+        }
+        static void WriteIRMetaVariable(BinaryWriter bw, IRMetaVariable v )
+        {
+
+            if (v == null)
+            {
+                bw.Write(string.Empty);
+                bw.Write(string.Empty);
+                //bw.Write(0); // isStatic
+                //bw.Write(0); // isConst
+                //bw.Write(0); // permission
+                bw.Write(0); // index
+                return;
+            }
+            bw.Write(v.id);
+            bw.Write(v.name ?? string.Empty);
+            bw.Write(v.index);
+            WriteIRMetaType(bw, v.irMetaType);
+            //bw.Write(tt.Add(tn));
+            //bw.Write(ts.Add(v.irMetaType));
+            //bw.Write(v.isStatic ? 1 : 0);
+            //bw.Write(v.isConst ? 1 : 0);
+            //bw.Write(0); // permission (not in IRMetaVariable currently)
         }
     }
 }

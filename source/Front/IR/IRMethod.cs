@@ -21,7 +21,7 @@ namespace SimpleLanguage.IR
         public string virtualFunctionName { get; set; } = "";
         public string onlyFunctionName { get; set; } = "";
         public bool interfaceMethod => m_InterfaceMethod;
-        public IRManager irManager { get; private set; } = null;
+        public IRManager irManager => m_IRManager;
         public IRData funEndLabelData => m_FunEndLabelData;
         public IRMetaClass irOwnerMetaClass => m_IROwnerMetaClass;
         //private List<IRMetaVariable> methodInputTemplateObject => m_MethodInputTemplateObject;
@@ -40,9 +40,11 @@ namespace SimpleLanguage.IR
         private IRMetaClass m_IROwnerMetaClass = null;
         private bool m_InterfaceMethod = false;
         private IRData m_FunEndLabelData = null;
+        private IRManager m_IRManager = null;
+
         public IRMethod(IRManager irma, MetaFunction func )
         {
-            irManager = irma;
+            m_IRManager = irma;
             m_BindMetaFunction = func;
             this.id = func.functionAllName;
             this.virtualFunctionName = func.virtualFunctionName;
