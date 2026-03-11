@@ -6,14 +6,40 @@ namespace SimpleLanguage.VM.LanguageRuntime
     public sealed class SLModulePackage
     {
         public string moduleName { get; set; } = string.Empty;
+        public string? entryMethodId { get; set; }
+        public List<IRStringItem> irStringDict { get; set; } = new();
         public List<SLNamespacePackage> namespaceList { get; set; } = new();
+        public List<SLClassPackage> classList { get; set; } = new();
         public List<SLMethodPackage> methodList { get; set; } = new();
+    }
+
+    public sealed class IRStringItem
+    {
+        public int id { get; set; }
+        public string value { get; set; } = string.Empty;
     }
 
     public sealed class SLNamespacePackage
     {
         public string fullName { get; set; } = string.Empty;
         public List<SLTypePackage> typeList { get; set; } = new();
+    }
+
+    public sealed class SLClassPackage
+    {
+        public int id { get; set; }
+        public string fullName { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
+        public string sourcePath { get; set; } = string.Empty;
+        public List<SLFieldPackage> fieldList { get; set; } = new();
+    }
+
+    public sealed class SLFieldPackage
+    {
+        public string name { get; set; } = string.Empty;
+        public string typeName { get; set; } = string.Empty;
+        public bool isStatic { get; set; }
+        public int index { get; set; }
     }
 
     public sealed class SLTypePackage

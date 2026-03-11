@@ -38,7 +38,14 @@ namespace SimpleLanguage.ExportLanguage
             }
             Directory.CreateDirectory(outDir);
 
-            SLIRWriter.WriteModule(IRManager.instance, Path.Combine(outDir, "module.slir"));
+            // Unified JSON export (VM symmetric)
+            SLModulePackageWriter.Write(IRManager.instance, Path.Combine(outDir, "module.package.json"));
+
+            // Optional: keep binary writer for debugging/back-compat
+            if (Environment.GetEnvironmentVariable("SIMPLELANG_SLIR_BINARY") == "1")
+            {
+                SLIRWriter.WriteModule(IRManager.instance, Path.Combine(outDir, "module.slir"));
+            }
 
             /*
             foreach (var kv in irManager.IRMethodDict)

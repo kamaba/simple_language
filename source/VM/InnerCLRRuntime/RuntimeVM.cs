@@ -442,7 +442,9 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            var resolved = SLIRModuleLoader.TryGetConstString(iri.index) ?? string.Empty;
+                            var resolved = SLIRJsonModuleLoaderBootstrap.TryGetConstString(iri.index)
+                                ?? SLIRModuleLoader.TryGetConstString(iri.index)
+                                ?? string.Empty;
                             var v = default(SValue);
                             v.SetStringValue(resolved);
                             PushSValueSynced(v);

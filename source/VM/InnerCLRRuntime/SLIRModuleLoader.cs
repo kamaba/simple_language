@@ -17,6 +17,7 @@ namespace SimpleLanguage.VM
             public List<string> TypeTable { get; } = new();
             public List<TypeSigInfo> TypeSigs { get; } = new();
             public List<ClassInfo> Classes { get; } = new();
+            public List<MethodInfo> Methods { get; } = new();
         }
 
         private static Dictionary<int, string> s_LastIRStringDict = new();
@@ -26,6 +27,21 @@ namespace SimpleLanguage.VM
             if (s_LastIRStringDict != null && s_LastIRStringDict.TryGetValue(stringId, out var s))
                 return s;
             return null;
+        }
+
+        private sealed class MethodInfo
+        {
+            public string Id = string.Empty;
+            public string OnlyName = string.Empty;
+            public int ArgCount;
+            public int LocalCount;
+            public int RetCount;
+            public List<Instruction> Instructions = new();
+        }
+
+        public static object ReadModule(string slirPath)
+        {
+            return ReadSlir(slirPath);
         }
 
         private sealed class TypeSigInfo
@@ -220,6 +236,33 @@ namespace SimpleLanguage.VM
             }
 
             // methods are currently ignored by this loader (VM still executes from in-memory IRMethod)
+            int methodCount = br.ReadInt32();
+            for (int i = 0; i < methodCount; i++)
+            {
+                var mi = new MethodInfo();
+                mi.Id = GetString(m, br.ReadInt32());
+                mi.OnlyName = GetString(m, br.ReadInt32());
+                mi.ArgCount = br.ReadInt32();
+                mi.LocalCount = br.ReadInt32();
+                mi.RetCount = br.ReadInt32();
+
+                int insCount = br.ReadInt32();
+                for (int j = 0; j < insCount; j++)
+                {
+                    var ins = new Instruction
+                    {
+                        opCode = (EIROpCode)br.ReadByte(),
+                        index = br.ReadInt32(),
+                    };
+                    _ = br.ReadInt32(); // offset
+                    int payloadLen = br.ReadInt32();
+                    ins.Payload = payloadLen == 0 ? Array.Empty<byte>() : br.ReadBytes(payloadLen);
+                    mi.Instructions.Add(ins);
+                }
+
+                m.Methods.Add(mi);
+            }
+
             return m;
         }
 

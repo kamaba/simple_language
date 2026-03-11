@@ -38,8 +38,16 @@ namespace SimpleLanguage.VM.LanguageRuntime
                 var ns = module.GetOrAddNamespace(nsPkg.fullName);
                 foreach (var t in nsPkg.typeList ?? Enumerable.Empty<SLTypePackage>())
                 {
-                    ns.AddType(new SLTypeMeta { name = t.name, fullName = t.fullName });
+                    var full = NormalizeTypeName(t.fullName);
+                    ns.AddType(new SLTypeMeta { name = GetTypeShortName(full), fullName = full });
                 }
+            }
+
+            // Keep VM global const string table in sync for LoadConstString(index=stringId)
+            if (pkg.irStringDict != null && pkg.irStringDict.Count > 0)
+            {
+                var map = pkg.irStringDict.ToDictionary(a => a.id, a => a.value ?? string.Empty);
+                SimpleLanguage.VM.SLIRJsonModuleLoaderBootstrap.SetConstStringDict(map);
             }
 
             var typeMap = module.namespaceList
@@ -49,14 +57,15 @@ namespace SimpleLanguage.VM.LanguageRuntime
 
             foreach (var m in pkg.methodList ?? Enumerable.Empty<SLMethodPackage>())
             {
-                if (!typeMap.TryGetValue(m.declaringTypeFullName ?? string.Empty, out var tm))
+                var declType = NormalizeTypeName(m.declaringTypeFullName);
+                if (!typeMap.TryGetValue(declType ?? string.Empty, out var tm))
                 {
-                    var nsName = GetNamespaceFromFullTypeName(m.declaringTypeFullName);
+                    var nsName = GetNamespaceFromFullTypeName(declType);
                     var ns = module.GetOrAddNamespace(nsName);
                     tm = new SLTypeMeta
                     {
-                        name = GetTypeShortName(m.declaringTypeFullName),
-                        fullName = m.declaringTypeFullName ?? string.Empty,
+                        name = GetTypeShortName(declType),
+                        fullName = declType ?? string.Empty,
                     };
                     ns.AddType(tm);
                     typeMap[tm.fullName] = tm;
@@ -75,7 +84,39 @@ namespace SimpleLanguage.VM.LanguageRuntime
             return asm;
         }
 
-        private static List<SimpleLanguage.VM.Instruction> ConvertToVMInstructionList(List<SLIRInstructionPackage> list)
+        private static string NormalizeTypeName(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return string.Empty;
+            int i = 0;
+            while (true)
+            {
+                int lt = name.IndexOf('<', i);
+                if (lt < 0) break;
+                int gt = name.IndexOf('>', lt + 1);
+                if (gt < 0) break;
+                var seg = name.Substring(lt, gt - lt + 1);
+
+                int nextLt = name.IndexOf('<', gt + 1);
+                if (nextLt == gt + 1)
+                {
+                    int nextGt = name.IndexOf('>', nextLt + 1);
+                    if (nextGt > nextLt)
+                    {
+                        var seg2 = name.Substring(nextLt, nextGt - nextLt + 1);
+                        if (string.Equals(seg, seg2, StringComparison.Ordinal))
+                        {
+                            name = name.Remove(nextLt, seg2.Length);
+                            i = lt + seg.Length;
+                            continue;
+                        }
+                    }
+                }
+                i = gt + 1;
+            }
+            return name;
+        }
+
+        internal static List<SimpleLanguage.VM.Instruction> ConvertToVMInstructionList(List<SLIRInstructionPackage> list)
         {
             var result = new List<SimpleLanguage.VM.Instruction>(list?.Count ?? 0);
             if (list == null) return result;

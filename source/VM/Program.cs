@@ -9,12 +9,28 @@ Console.WriteLine("SimpleLanguage VM");
 
 try
 {
-    CallMethodJsonExporter.Export("../../../../Front/bin/Debug/net8.0/ImportCSharpLang.json");
+    //CallMethodJsonExporter.Export("../../../../Front/bin/Debug/net8.0/ImportCSharpLang.json");
 
-    // If first arg is a JSON module package, load it as SimpleLanguage Assembly/Module model.
+    // If first arg is a JSON module package, load it. Otherwise try default exported path.
+    string? pkgPath = null;
     if (args.Length > 0 && args[0].EndsWith(".json", StringComparison.OrdinalIgnoreCase))
     {
-        var pkg = SLModulePackageLoader.LoadFromJson(args[0]);
+        pkgPath = args[0];
+    }
+    else
+    {
+        var outDir = "E:\\project\\lang\\simple_language\\source\\Front\\bin\\Debug\\net8.0\\out\\export";// Environment.GetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR");
+        if (string.IsNullOrWhiteSpace(outDir))
+            outDir = System.IO.Path.Combine(Environment.CurrentDirectory, "out", "export");
+        var defaultPath = System.IO.Path.Combine(outDir, "module.package.json");
+        if (System.IO.File.Exists(defaultPath))
+            pkgPath = defaultPath;
+    }
+
+    if (!string.IsNullOrEmpty(pkgPath))
+    {
+        var pkg = SLModulePackageLoader.LoadFromJson(pkgPath);
+        SLRuntimeModuleRegistry.LoadFromPackage(pkg);
         var slAsm = SLModulePackageLoader.BuildRuntimeModel(pkg);
 
         var moduleCount = slAsm.moduleList.Count;
@@ -39,10 +55,43 @@ try
                 Console.WriteLine($"{ins.id} {ins.opCode} {ins.opValue}");
             }
         }
+        // Optional execution: SIMPLELANG_ENTRY_METHOD=<methodId>
+        var entryId = Environment.GetEnvironmentVariable("SIMPLELANG_ENTRY_METHOD");
+        if (string.IsNullOrWhiteSpace(entryId))
+        {
+            entryId = pkg.entryMethodId;
+        }
+        if (!string.IsNullOrWhiteSpace(entryId))
+        {
+            var entry = slAsm.moduleList
+                .SelectMany(m => m.namespaceList)
+                .SelectMany(n => n.typeList)
+                .SelectMany(t => t.methodList)
+                .FirstOrDefault(m => string.Equals(m.id, entryId, StringComparison.Ordinal));
+
+            if (entry != null)
+            {
+                var rm = SLRuntimeModuleRegistry.GetMethod(entry.id);
+                if (rm == null)
+                {
+                    Console.WriteLine($"Runtime method not found: {entry.id}");
+                }
+                else
+                {
+                    var vm = SimpleLanguage.VM.Runtime.CLRVM.CreateCLRRuntime(new System.Collections.Generic.List<RuntimeType>(), rm);
+                    vm.Run(true);
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Entry method not found: {entryId}");
+            }
+        }
+
         return;
     }
 
-    Console.WriteLine("No module package provided. Pass a SimpleLanguage module package JSON to import language Assembly/Module/IR.");
+    Console.WriteLine("No module package found. Pass a module package JSON or export one to out/export/module.package.json.");
 }
 catch (Exception e)
 {
