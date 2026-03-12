@@ -125,6 +125,7 @@ namespace SimpleLanguage.VM.Runtime
                     Log.AddVM(EError.None, "Variable_" + i.ToString() + m_LocalVariableObjectArray[i].ToString());
                 }
             }
+
             else
             {
                 m_ReturnObjectArray = new SObject[0];
@@ -667,6 +668,7 @@ namespace SimpleLanguage.VM.Runtime
                                     PushSValueSynced(v);
                                 }
                             }
+
                         }
                     }
                     break;
@@ -920,6 +922,51 @@ namespace SimpleLanguage.VM.Runtime
                         if (iri.opValue is RuntimeCLRCall ircf)
                         {
                             ircf.InvokeCLRMethod(this);
+                        }
+                        else
+                        {
+                            // JSON-imported IR does not carry opValue; use bridge method id from const-string table.
+                            var methodId = SLIRJsonModuleLoaderBootstrap.TryGetConstString(iri.index);
+                            if (string.IsNullOrWhiteSpace(methodId))
+                            {
+                                Debug.Assert(false, "CallCLRMethod missing bridge method id");
+                                break;
+                            }
+
+                            if (!CSharpBridgeRegistry.TryResolve(methodId, out var model))
+                            {
+                                Debug.Assert(false, "CallCLRMethod bridge method not registered: " + methodId);
+                                break;
+                            }
+
+                            var mi = CSharpBridgeRegistry.ResolveMethod(model);
+                            if (mi == null)
+                            {
+                                Debug.Assert(false, "CallCLRMethod reflection resolve failed: " + methodId);
+                                break;
+                            }
+
+                            var pis = mi.GetParameters();
+                            var args = new object?[pis.Length];
+
+                            // Pop args in reverse order
+                            for (int pi = pis.Length - 1; pi >= 0; pi--)
+                            {
+                                if (m_ValueIndex == 0)
+                                {
+                                    Debug.Assert(false, "CallCLRMethod stack underflow");
+                                    break;
+                                }
+                                var sv = m_ValueStack[--m_ValueIndex];
+                                args[pi] = sv.ToClrObject(pis[pi].ParameterType);
+                            }
+
+                            var ret = mi.Invoke(null, args);
+                            if (mi.ReturnType != typeof(void))
+                            {
+                                var sv = SValue.FromClrObject(ret);
+                                PushSValueSynced(sv);
+                            }
                         }
                     }
                     break;

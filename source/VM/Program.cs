@@ -33,6 +33,22 @@ try
         SLRuntimeModuleRegistry.LoadFromPackage(pkg);
         var slAsm = SLModulePackageLoader.BuildRuntimeModel(pkg);
 
+        // Load C# bridge metadata (optional)
+        var bridgePath = Environment.GetEnvironmentVariable("SIMPLELANG_BRIDGE_JSON");
+        if (string.IsNullOrWhiteSpace(bridgePath))
+        {
+            var dir = System.IO.Path.GetDirectoryName(pkgPath);
+            if (!string.IsNullOrEmpty(dir))
+            {
+                var guess = System.IO.Path.Combine(dir, "ImportCSharpLang.json");
+                if (System.IO.File.Exists(guess)) bridgePath = guess;
+            }
+        }
+        if (!string.IsNullOrWhiteSpace(bridgePath) && System.IO.File.Exists(bridgePath))
+        {
+            SimpleLanguage.VM.Runtime.CSharpBridgeRegistry.LoadFromJson(bridgePath);
+        }
+
         var moduleCount = slAsm.moduleList.Count;
         var nsCount = slAsm.moduleList.Sum(m => m.namespaceList.Count);
         var slTypeCount = slAsm.moduleList.Sum(m => m.namespaceList.Sum(n => n.typeList.Count));

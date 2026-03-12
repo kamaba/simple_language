@@ -32,6 +32,47 @@ namespace SimpleLanguage.VM
             [FieldOffset(0)] public sbyte si8;
         }
 
+        public object? ToClrObject(Type targetType)
+        {
+            if (isNull) return null;
+            if (targetType == typeof(object)) return GetValueObject();
+            if (targetType == typeof(string)) return eType == EVMType.String ? stringValue : GetValueObject()?.ToString();
+            if (targetType == typeof(bool)) return eType == EVMType.Boolean ? (int8Value == 1) : Convert.ToBoolean(GetValueObject());
+            if (targetType == typeof(int)) return eType == EVMType.Int32 ? int32Value : Convert.ToInt32(GetValueObject());
+            if (targetType == typeof(long)) return eType == EVMType.Int64 ? int64Value : Convert.ToInt64(GetValueObject());
+            if (targetType == typeof(float)) return eType == EVMType.Float32 ? floatValue : Convert.ToSingle(GetValueObject());
+            if (targetType == typeof(double)) return eType == EVMType.Float64 ? doubleValue : Convert.ToDouble(GetValueObject());
+            return Convert.ChangeType(GetValueObject(), targetType);
+        }
+
+        public static SValue FromClrObject(object? o)
+        {
+            var v = default(SValue);
+            if (o == null)
+            {
+                v.SetNull();
+                return v;
+            }
+
+            switch (o)
+            {
+                case bool b: v.SetBoolValue(b); break;
+                case byte b8: v.SetInt8Value(b8); break;
+                case sbyte sb8: v.SetSInt8Value(sb8); break;
+                case short i16: v.SetInt16Value(i16); break;
+                case ushort u16: v.SetUInt16Value(u16); break;
+                case int i32: v.SetInt32Value(i32); break;
+                case uint u32: v.SetUInt32Value(u32); break;
+                case long i64: v.SetInt64Value(i64); break;
+                case ulong u64: v.SetUInt64Value(u64); break;
+                case float f: v.SetFloatValue(f); break;
+                case double d: v.SetDoubleValue(d); break;
+                case string s: v.SetStringValue(s); break;
+                default: v.SetNull(); break;
+            }
+            return v;
+        }
+
         private NumericUnion nv;
 
         public byte int8Value { get => nv.i8; set => nv.i8 = value; }
