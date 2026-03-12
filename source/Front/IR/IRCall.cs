@@ -51,7 +51,7 @@ namespace SimpleLanguage.IR
             {
                 m_MethodInfo = mmfcsharp.methodInfo;
                 IRData data = new IRData();
-                data.opCode = EIROpCode.CallCSharpMethod;
+                data.opCode = EIROpCode.CallCLRMethod;
                 data.opValue = this;
                 data.SetDebugInfoByToken(mmfcsharp.GetToken());
                 AddIRData(data);

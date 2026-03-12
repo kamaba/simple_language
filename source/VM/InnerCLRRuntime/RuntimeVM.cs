@@ -1156,6 +1156,39 @@ namespace SimpleLanguage.VM.Runtime
                         }
                     }
                     break;
+                case EIROpCode.Beq:
+                    {
+                        if (m_ValueIndex >= 2)
+                        {
+                            var right = m_ValueStack[--m_ValueIndex];
+                            var left = m_ValueStack[--m_ValueIndex];
+                            bool methodCall = false;
+                            SValue.CompareEuqalSValue1AndValue2(ref left, ref right, true, out methodCall);
+                            bool isTrue = left.eType == EVMType.Boolean ? left.int8Value == 1 : left.GetValueObject() != null;
+                            if (isTrue)
+                            {
+                                m_ExecuteIndex = (ushort)(iri.index - 1);
+                            }
+                        }
+                    }
+                    break;
+                case EIROpCode.Beq_Un:
+                    {
+                        // TODO: implement unsigned compare; for now follow Beq semantics.
+                        if (m_ValueIndex >= 2)
+                        {
+                            var right = m_ValueStack[--m_ValueIndex];
+                            var left = m_ValueStack[--m_ValueIndex];
+                            bool methodCall = false;
+                            SValue.CompareEuqalSValue1AndValue2(ref left, ref right, true, out methodCall);
+                            bool isTrue = left.eType == EVMType.Boolean ? left.int8Value == 1 : left.GetValueObject() != null;
+                            if (isTrue)
+                            {
+                                m_ExecuteIndex = (ushort)(iri.index - 1);
+                            }
+                        }
+                    }
+                    break;
                 default:
                     // unhandled op
                     Debug.Assert(false, "Function" + this.id + "IRData" + iri.id + "  " + iri.opCode);

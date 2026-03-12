@@ -38,7 +38,6 @@ namespace SimpleLanguage
         LocalGlobal,
 
         NewObject,
-        NewConstObject,
         NewTemplateObject,
         NewArray,
         Dup,
@@ -120,9 +119,9 @@ namespace SimpleLanguage
         CallDynamic,
         CallVirt,
         Calli,
-        CallCSharpMethod,
-        CreateMethodHandle,
-        CallHandle,
+        CallCLRMethod,
+        CallNativeMethod,
+        CallJVMMethod,
         CastClass,
 
         Convert_I8,

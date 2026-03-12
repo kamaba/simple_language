@@ -17,6 +17,7 @@ Project
         NativeBridge.Call( BridgeKind.CSharp, "SimpleLanguageVM", "SimpleLanguage.Lib.ArrayClass", 
         "SetArrayValueThis", retObj, paramObjs );
         !#
+        a = 2 + 4
     }
     static Test()
     {
