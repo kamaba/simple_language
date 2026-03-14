@@ -232,6 +232,7 @@ namespace SimpleLanguage.Core
             Express,
             TemplateName,
             GetTypeValue,
+            SystemCall,
         }
         public MetaConstExpressNode constValueExpress { get; private set; } = null;
         public MetaExpressNode express { get; set; } = null;
@@ -419,6 +420,15 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
+        public static MetaVisitNode CreateBySystemCall(MetaMethodCall _methodCall)
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.visitType = EVisitType.SystemCall;
+            vn.methodCall = _methodCall;
+
+            return vn;
+        }
         public static MetaVisitNode CreateByVisitVariable(MetaVisitVariable _variale)
         {
             MetaVisitNode vn = new MetaVisitNode();
@@ -495,6 +505,7 @@ namespace SimpleLanguage.Core
             switch(visitType)
             {
                 case EVisitType.MethodCall:
+                case EVisitType.SystemCall:
                     {
                         if( methodCall.metaMemberFunction != null )
                         {
@@ -565,6 +576,7 @@ namespace SimpleLanguage.Core
                         return variable;
                     }
                 case EVisitType.MethodCall:
+                case EVisitType.SystemCall:
                     {
                         return methodCall.function.returnMetaVariable;
                     }
@@ -610,6 +622,7 @@ namespace SimpleLanguage.Core
             switch (visitType)
             {
                 case EVisitType.MethodCall:
+                case EVisitType.SystemCall:
                     {
                         sb.Append(this.methodCall.ToFormatString());
                     }
@@ -655,6 +668,7 @@ namespace SimpleLanguage.Core
             switch (visitType)
             {
                 case EVisitType.MethodCall:
+                case EVisitType.SystemCall:
                     {
                         sb.Append(this.methodCall.ToFormatString());
                     }

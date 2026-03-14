@@ -11,6 +11,7 @@ namespace SimpleLanguage.VM.Runtime
     internal static class CSharpBridgeRegistry
     {
         private static readonly Dictionary<string, CallMethodModel> s_MethodMap = new(StringComparer.Ordinal);
+        private static readonly List<CallMethodModel> s_MethodList = new();
 
         public static void LoadFromJson(string path)
         {
@@ -28,17 +29,53 @@ namespace SimpleLanguage.VM.Runtime
 
             var list = JsonSerializer.Deserialize<List<CallMethodModel>>(json, options) ?? new();
             s_MethodMap.Clear();
+            s_MethodList.Clear();
             foreach (var m in list)
             {
                 var id = m?.GetMethodId();
                 if (string.IsNullOrEmpty(id)) continue;
                 s_MethodMap[id] = m;
+                s_MethodList.Add(m);
             }
+        }
+
+        public static bool TryResolve(int index, out CallMethodModel model)
+        {
+            model = null!;
+            if (index < 0 || index >= s_MethodList.Count) return false;
+            model = s_MethodList[index];
+            return model != null;
         }
 
         public static bool TryResolve(string id, out CallMethodModel model)
         {
             return s_MethodMap.TryGetValue(id, out model!);
+        }
+
+        public static bool TryBindMethod(CallMethodModel model, out MethodInfo methodInfo)
+        {
+            methodInfo = null!;
+            if (model == null) return false;
+
+            if (model.boundMethodInfo != null)
+            {
+                methodInfo = model.boundMethodInfo;
+                return true;
+            }
+
+            var mi = ResolveMethod(model);
+            if (mi == null) return false;
+            model.boundMethodInfo = mi;
+            methodInfo = mi;
+            return true;
+        }
+
+        public static string BuildMethodId(string namespaceName, string className, string methodName)
+        {
+            var typeFullName = string.IsNullOrWhiteSpace(namespaceName)
+                ? (className ?? string.Empty)
+                : namespaceName + "." + (className ?? string.Empty);
+            return typeFullName + "." + (methodName ?? string.Empty);
         }
 
         public static MethodInfo? ResolveMethod(CallMethodModel model)
@@ -112,6 +149,8 @@ namespace SimpleLanguage.VM.Runtime
             public string methodName { get; set; } = string.Empty;
             public CallTypeModel returnType { get; set; } = new();
             public List<CallTypeModel> argumentListType { get; set; } = new();
+            [JsonIgnore]
+            public MethodInfo? boundMethodInfo { get; set; }
 
             public string GetMethodId()
             {

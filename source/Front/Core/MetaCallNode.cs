@@ -45,6 +45,7 @@ namespace SimpleLanguage.Core
         NewData,
         MemberFunctionName,
         FunctionCall,
+        SystemFunctionCall,
         ConstValue,
         This,
         Base,
@@ -1501,6 +1502,16 @@ namespace SimpleLanguage.Core
                 m_CallNodeType = ECallNodeType.FunctionInnerVariableName;
                 return true;
             }
+
+            if (m_IsFunction
+                && (inputname == "CallCLRMethod" || inputname == "CallNativeMethod" || inputname == "CallJVMMethod"))
+            {
+                m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, inputname);
+                m_CallMetaType = new MetaType(mc);
+                m_CallNodeType = ECallNodeType.SystemFunctionCall;
+                return true;
+            }
+
             MetaNode retMC = null;
             // 查找定义关键字的class => range   array
             if (m_Token.extend != null)

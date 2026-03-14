@@ -456,6 +456,27 @@ namespace SimpleLanguage.Core
                 MetaVisitNode mvn2 = MetaVisitNode.CreateByMethodCall(mmc);
                 m_VisitNodeList.Add(mvn2);
             }
+            else if (mcn.callNodeType == ECallNodeType.SystemFunctionCall)
+            {
+                MetaMethodCall mmc;
+                var retmv = frontNode?.metaVariable;
+                if (m_VisitNodeList.Count > 0 && retmv != null)
+                {
+                    m_VisitNodeList.RemoveAt(m_VisitNodeList.Count - 1);
+                }
+
+                mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock,
+                    mcn.callMetaType?.metaClass,
+                    mcn.callMetaType?.defineTemplateMetaTypeList,
+                    mcn.metaFunction,
+                    mcn.metaTemplateParamsList,
+                    mcn.metaInputParamCollection,
+                    retmv,
+                    mcn.storeMetaVariable);
+
+                MetaVisitNode mvn2 = MetaVisitNode.CreateBySystemCall(mmc);
+                m_VisitNodeList.Add(mvn2);
+            }
             else if (mcn.callNodeType == ECallNodeType.ConstValue)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByConstExpress(mcn.metaExpressValue as MetaConstExpressNode, mcn.metaVariable);

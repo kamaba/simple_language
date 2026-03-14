@@ -368,6 +368,166 @@ namespace SimpleLanguage.VM.Runtime
         {
             sStore = sValue;
         }
+
+        private static object? ConvertInvokeArg(object? source, Type targetType)
+        {
+            if (source == null) return null;
+            if (targetType == typeof(object) || targetType.IsInstanceOfType(source)) return source;
+            if (targetType.IsEnum) return Enum.ToObject(targetType, source);
+            return Convert.ChangeType(source, targetType);
+        }
+
+        private bool TryInvokeRegisteredBridgeByIndex(Instruction iri)
+        {
+            int bridgeIndex;
+            if (iri.TryGetInt32(out var payloadIndex)) bridgeIndex = payloadIndex;
+            else bridgeIndex = iri.index;
+
+            if (!CSharpBridgeRegistry.TryResolve(bridgeIndex, out var model)) return false;
+            if (!CSharpBridgeRegistry.TryBindMethod(model, out var methodInfo))
+            {
+                Debug.Assert(false, $"Bridge method bind failed, index={bridgeIndex}");
+                return true;
+            }
+
+            var pars = methodInfo.GetParameters();
+            if (m_ValueIndex < pars.Length)
+            {
+                Debug.Assert(false, $"Bridge stack underflow, need={pars.Length}, has={m_ValueIndex}");
+                return true;
+            }
+
+            var invokeArgs = new object?[pars.Length];
+            for (int i = pars.Length - 1; i >= 0; i--)
+            {
+                var sv = m_ValueStack[--m_ValueIndex];
+                var raw = sv.ToClrObject(pars[i].ParameterType);
+                invokeArgs[i] = ConvertInvokeArg(raw, pars[i].ParameterType);
+            }
+
+            if (!methodInfo.IsStatic)
+            {
+                Debug.Assert(false, "Bridge instance methods are not supported");
+                return true;
+            }
+
+            var ret = methodInfo.Invoke(null, invokeArgs);
+            if (methodInfo.ReturnType != typeof(void))
+            {
+                var sv = SValue.FromClrObject(ret);
+                PushSValueSynced(sv);
+            }
+
+            return true;
+        }
+
+        private bool TryInvokeLegacyBridgeSignature(Instruction iri, string callName)
+        {
+            int paramCountLocal = iri.index;
+            if (paramCountLocal <= 0) return false;
+
+            var values = new SValue[paramCountLocal];
+            for (int i = paramCountLocal - 1; i >= 0; i--)
+            {
+                if (m_ValueIndex == 0)
+                {
+                    Debug.Assert(false, $"{callName} stack underflow");
+                    return true;
+                }
+                values[i] = m_ValueStack[--m_ValueIndex];
+            }
+
+            string namespaceName = values.Length > 1 ? values[1].GetValueObject()?.ToString() ?? string.Empty : string.Empty;
+            string className = values.Length > 2 ? values[2].GetValueObject()?.ToString() ?? string.Empty : string.Empty;
+            string methodName = values.Length > 3 ? values[3].GetValueObject()?.ToString() ?? string.Empty : string.Empty;
+
+            object[] argsClr = Array.Empty<object>();
+            if (values.Length > 5)
+            {
+                var arr = values[5];
+                if (arr.eType == EVMType.Array && arr.sobject is ArrayObject aobj)
+                {
+                    int len = aobj.length;
+                    argsClr = new object[len];
+                    for (int j = 0; j < len; j++)
+                    {
+                        var temp = default(SValue);
+                        aobj.LoadValue(j, ref temp);
+                        argsClr[j] = temp.GetValueObject();
+                    }
+                }
+                else
+                {
+                    argsClr = new object[] { values[5].GetValueObject() };
+                }
+            }
+
+            MethodInfo? miFound = null;
+            var methodId = CSharpBridgeRegistry.BuildMethodId(namespaceName, className, methodName);
+            if (CSharpBridgeRegistry.TryResolve(methodId, out var model)
+                && CSharpBridgeRegistry.TryBindMethod(model, out var regMi))
+            {
+                miFound = regMi;
+            }
+
+            if (miFound == null)
+            {
+                string typeFull = string.IsNullOrEmpty(namespaceName) ? className : (namespaceName + "." + className);
+                Type t = Type.GetType(typeFull, throwOnError: false);
+                if (t == null)
+                {
+                    foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
+                    {
+                        t = a.GetType(typeFull, throwOnError: false);
+                        if (t != null) break;
+                    }
+                }
+                if (t == null)
+                {
+                    Debug.Assert(false, $"{callName}: type not found " + typeFull);
+                    return true;
+                }
+
+                foreach (var mi2 in t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance))
+                {
+                    if (mi2.Name != methodName) continue;
+                    var pis = mi2.GetParameters();
+                    if (pis.Length != argsClr.Length) continue;
+                    miFound = mi2;
+                    break;
+                }
+            }
+
+            if (miFound == null)
+            {
+                Debug.Assert(false, $"{callName}: method not found " + methodName);
+                return true;
+            }
+
+            var pars = miFound.GetParameters();
+            object?[] invokeArgs = new object?[pars.Length];
+            for (int k = 0; k < pars.Length; k++)
+            {
+                var raw = k < argsClr.Length ? argsClr[k] : null;
+                invokeArgs[k] = ConvertInvokeArg(raw, pars[k].ParameterType);
+            }
+
+            if (!miFound.IsStatic)
+            {
+                Debug.Assert(false, $"{callName}: instance methods not supported in bridge");
+                return true;
+            }
+
+            var ret = miFound.Invoke(null, invokeArgs);
+            if (miFound.ReturnType != typeof(void))
+            {
+                var sv = SValue.FromClrObject(ret);
+                PushSValueSynced(sv);
+            }
+
+            return true;
+        }
+
         public void RunInstruction(Instruction iri)
         {
             if (iri == null) return;
@@ -924,121 +1084,32 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ircf.InvokeCLRMethod(this);
                         }
-                        else
+                        else if (!TryInvokeRegisteredBridgeByIndex(iri))
                         {
-                            int paramCountLocal = iri.index;
-                            if (paramCountLocal <= 0)
-                            {
-                                Debug.Assert(false, "CallCLRMethod missing param count");
-                                break;
-                            }
-
-                            // Pop parameters in reverse (last pushed on top)
-                            var values = new SValue[paramCountLocal];
-                            for (int i = paramCountLocal - 1; i >= 0; i--)
-                            {
-                                if (m_ValueIndex == 0)
-                                {
-                                    Debug.Assert(false, "CallCLRMethod stack underflow");
-                                    break;
-                                }
-                                values[i] = m_ValueStack[--m_ValueIndex];
-                            }
-
-                            // expected signature: (dllName, namespaceName, className, method, retObj, arrParams)
-                            string dllName = values.Length > 0 ? values[0].GetValueObject()?.ToString() ?? string.Empty : string.Empty;
-                            string namespaceName = values.Length > 1 ? values[1].GetValueObject()?.ToString() ?? string.Empty : string.Empty;
-                            string className = values.Length > 2 ? values[2].GetValueObject()?.ToString() ?? string.Empty : string.Empty;
-                            string methodName = values.Length > 3 ? values[3].GetValueObject()?.ToString() ?? string.Empty : string.Empty;
-                            // retObj at index 4 (optional)
-                            // params array at index 5 (optional)
-
-                            object[] argsClr = Array.Empty<object>();
-                            if (values.Length > 5)
-                            {
-                                var arr = values[5];
-                                // try to extract as ArrayObject
-                                if (arr.eType == EVMType.Array && arr.sobject is ArrayObject aobj)
-                                {
-                                    int len = aobj.length;
-                                    argsClr = new object[len];
-                                    for (int j = 0; j < len; j++)
-                                    {
-                                        var temp = default(SValue);
-                                        aobj.LoadValue(j, ref temp);
-                                        argsClr[j] = temp.GetValueObject();
-                                    }
-                                }
-                                else
-                                {
-                                    // single param
-                                    argsClr = new object[] { values[5].GetValueObject() };
-                                }
-                            }
-
-                            // Resolve type
-                            string typeFull = string.IsNullOrEmpty(namespaceName) ? className : (namespaceName + "." + className);
-                            Type t = Type.GetType(typeFull, throwOnError: false);
-                            if (t == null)
-                            {
-                                foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
-                                {
-                                    t = a.GetType(typeFull, throwOnError: false);
-                                    if (t != null) break;
-                                }
-                            }
-                            if (t == null)
-                            {
-                                Debug.Assert(false, "CallCLRMethod: type not found " + typeFull);
-                                break;
-                            }
-
-                            // find method by name and arg count
-                            MethodInfo miFound = null;
-                            foreach (var mi2 in t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance))
-                            {
-                                if (mi2.Name != methodName) continue;
-                                var pis = mi2.GetParameters();
-                                if (pis.Length != argsClr.Length) continue;
-                                miFound = mi2; break;
-                            }
-                            if (miFound == null)
-                            {
-                                Debug.Assert(false, "CallCLRMethod: method not found " + methodName + " on " + typeFull);
-                                break;
-                            }
-
-                            // convert args to parameter types
-                            var pars = miFound.GetParameters();
-                            object[] invokeArgs = new object[pars.Length];
-                            for (int k = 0; k < pars.Length; k++)
-                            {
-                                var want = pars[k].ParameterType;
-                                invokeArgs[k] = argsClr[k] == null ? null : Convert.ChangeType(argsClr[k], want);
-                            }
-
-                            object instance = null;
-                            if (!miFound.IsStatic)
-                            {
-                                // no instance support yet: fail
-                                Debug.Assert(false, "CallCLRMethod: instance (non-static) methods not supported in bridge yet");
-                                break;
-                            }
-
-                            var ret = miFound.Invoke(instance, invokeArgs);
-                            if (miFound.ReturnType != typeof(void))
-                            {
-                                var sv = SValue.FromClrObject(ret);
-                                PushSValueSynced(sv);
-                            }
+                            TryInvokeLegacyBridgeSignature(iri, "CallCLRMethod");
                         }
                     }
                     break;
                 case EIROpCode.CallNativeMethod:
-                    {                         
+                    {
                         if (iri.opValue is RuntimeNativeCall irnf)
                         {
                             irnf.InvokeNativeMethod(this);
+                        }
+                        else if (!TryInvokeRegisteredBridgeByIndex(iri))
+                        {
+                            TryInvokeLegacyBridgeSignature(iri, "CallNativeMethod");
+                        }
+                    }
+                    break;
+                case EIROpCode.CallJVMMethod:
+                    {
+                        if (!TryInvokeRegisteredBridgeByIndex(iri))
+                        {
+                            if (!TryInvokeLegacyBridgeSignature(iri, "CallJVMMethod"))
+                            {
+                                Debug.Assert(false, "CallJVMMethod is not configured");
+                            }
                         }
                     }
                     break;

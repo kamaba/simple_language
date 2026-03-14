@@ -24,7 +24,7 @@ public class NativeBridge extends Object
 {
     static BridgeKind _kind = BridgeKind.SELF
 
-    bool static Call( BridgeKind kind, string dllName, string namespaceName, string className, string method,  BridgeObject retObj, Array<BridgeObject> arrParams )
+    bool static Call( BridgeKind kind, string dllName, string className, string method,  BridgeObject retObj, Array<BridgeObject> arrParams )
     {
         if kind == BridgeKind.CLR
         {

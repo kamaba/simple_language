@@ -42,5 +42,47 @@ TypeTest
         {
             System.Console.WriteLine("Array<int>.type == Array<string>.type : false")
         }
+
+        
+        #!
+        for v in BridgeKind
+        {
+            #int index = v.index;
+            #name = v.name
+            if v == BridgeKind.SELF
+            {
+
+            }
+        }
+        for v in BridgeKind.values
+        {
+
+        }
+        
+        a = 200;
+        switch kind
+        {
+            case BridgeKind.SELF
+            {
+                a = 1
+                next
+            }
+            case BridgeKind.CLR
+            {
+
+            }
+            case BridgeKind.JVM
+            {
+
+            }
+            case BridgeKind.NATIVE
+            {
+
+            }     
+            default{
+                a = 20;
+            }       
+        }
+        !#
     }
 }
