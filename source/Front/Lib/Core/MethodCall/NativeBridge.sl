@@ -26,6 +26,18 @@ public class NativeBridge extends Object
 
     bool static Call( BridgeKind kind, string dllName, string namespaceName, string className, string method,  BridgeObject retObj, Array<BridgeObject> arrParams )
     {
+        if kind == BridgeKind.CLR
+        {
+            CallCLRMethod( dllName, namespaceName, className, method, retObj, arrParams);
+        }
+        elif kind == BridgeKind.NATIVE
+        {
+            CallNativeMethod( dllName, namespaceName, className, method, retObj, arrParams );
+        }
+        elif kind == BridgeKind.JVM
+        {
+            CallJVMMethod( dllName, namespaceName, className, method, retObj, arrParams );
+        }
         #!
         for v in BridgeKind
         {

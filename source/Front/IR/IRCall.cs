@@ -46,6 +46,21 @@ namespace SimpleLanguage.IR
                 AddIRRangeData(irexpress.IRDataList);
             }
             MetaFunction mf = mfc.GetTemplateMemberFunction();
+            // Special-case intrinsic bridge calls defined in Front library: CallCLRMethod/CallNativeMethod/CallJVMMethod
+            if (mf != null && (mf.name == "CallCLRMethod" || mf.name == "CallNativeMethod" || mf.name == "CallJVMMethod"))
+            {
+                // arguments already emitted above (paramCount)
+                IRData datacall = new IRData();
+                if (mf.name == "CallCLRMethod") datacall.opCode = EIROpCode.CallCLRMethod;
+                else if (mf.name == "CallNativeMethod") datacall.opCode = EIROpCode.CallNativeMethod;
+                else datacall.opCode = EIROpCode.CallJVMMethod;
+
+                // store param count in index so VM knows how many values to pop
+                datacall.index = paramCount;
+                datacall.SetDebugInfoByToken(mf.pingToken);
+                AddIRData(datacall);
+                return;
+            }
             MetaMemberFunctionCSharp mmfcsharp = mf as MetaMemberFunctionCSharp;
             if (mmfcsharp != null)
             {
