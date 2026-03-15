@@ -443,6 +443,13 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
+                        m_MetaVariable = GlobalManager.instance.GetGlobalInstanceVariable();
+                        if (m_MetaVariable != null)
+                        {
+                            m_MetaVariable.ParseRealMetaType();
+                            m_MetaType = m_MetaVariable.realMetaType;
+                            m_CallMetaType = new MetaType(ProjectManager.globalData);
+                        }
                         m_MetaData = ProjectManager.globalData;
                         m_CallNodeType = ECallNodeType.Global;
                     }
@@ -782,7 +789,27 @@ namespace SimpleLanguage.Core
                             m_CallNodeType = ECallNodeType.ClassName;
                         }
                     }
-                    else if (frontCNT == ECallNodeType.Global || frontCNT == ECallNodeType.DataName)
+                    else if (frontCNT == ECallNodeType.Global)
+                    {
+                        var gmv = m_FrontCallNode.m_MetaVariable;
+                        if (gmv != null)
+                        {
+                            gmv.ParseRealMetaType();
+                            var gmc = gmv.realMetaType?.metaClass;
+                            if (gmc != null)
+                            {
+                                if (GetFunctionOrVariableByOwnerClass(gmc, m_Name) == false)
+                                {
+                                    return false;
+                                }
+                                return true;
+                            }
+                        }
+
+                        m_MetaVariable = GetDataValueByMetaData(m_FrontCallNode.m_MetaData, m_Name);
+                        m_CallNodeType = ECallNodeType.MemberDataName;
+                    }
+                    else if (frontCNT == ECallNodeType.DataName)
                     {
                         m_MetaVariable = GetDataValueByMetaData(m_FrontCallNode.m_MetaData, m_Name);
                         m_CallNodeType = ECallNodeType.MemberDataName;

@@ -212,6 +212,18 @@ namespace SimpleLanguage.Compile
             m_BlockNode = block;
             ParseFunction(nodeList);
         }
+
+        public FileMetaMemberFunction(FileMeta fm, string functionName, Token ownerToken, Token leftBraceToken, Token rightBraceToken)
+        {
+            m_FileMeta = fm;
+            m_Token = new Token(ownerToken?.path ?? fm?.path ?? string.Empty, ETokenType.Identifier, functionName, 0, 0);
+            m_LeftBraceToken = leftBraceToken ?? ownerToken;
+            m_RightBraceToken = rightBraceToken ?? ownerToken;
+            if (m_LeftBraceToken != null && m_RightBraceToken != null)
+            {
+                m_FileMetaBlockSyntax = new FileMetaBlockSyntax(m_FileMeta, m_LeftBraceToken, m_RightBraceToken);
+            }
+        }
         public bool ParseFunction(List<Node> nodeList)
         {
             Token permissionToken = null;

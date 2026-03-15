@@ -77,6 +77,24 @@ try
         {
             entryId = pkg.entryMethodId;
         }
+
+        var globalMethods = slAsm.moduleList
+            .SelectMany(m => m.namespaceList)
+            .SelectMany(n => n.typeList)
+            .SelectMany(t => t.methodList)
+            .Where(m => string.Equals(m.name, "Global", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        for (int i = 0; i < globalMethods.Count; i++)
+        {
+            var gm = SLRuntimeModuleRegistry.GetMethod(globalMethods[i].id);
+            if (gm == null) continue;
+
+            var gvm = SimpleLanguage.VM.Runtime.CLRVM.CreateCLRRuntime(new System.Collections.Generic.List<RuntimeType>(), gm);
+            gvm.Run(true);
+            SimpleLanguage.VM.Runtime.CLRVM.PopCLRRuntime();
+        }
+
         if (!string.IsNullOrWhiteSpace(entryId))
         {
             var entry = slAsm.moduleList
@@ -96,6 +114,7 @@ try
                 {
                     var vm = SimpleLanguage.VM.Runtime.CLRVM.CreateCLRRuntime(new System.Collections.Generic.List<RuntimeType>(), rm);
                     vm.Run(true);
+                    SimpleLanguage.VM.Runtime.CLRVM.PopCLRRuntime();
                 }
             }
             else

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using SimpleLanguage.VM.Runtime;
 
 namespace SimpleLanguage.VM
 {
@@ -131,6 +132,57 @@ namespace SimpleLanguage.VM
                         rc.localIRMetaVariableList.Add(rv);
                 }
             }
+
+            // global init must run before Main/entry logic
+            RunGlobalInitializers(m);
+        }
+
+        private static void RunGlobalInitializers(SlirModule m)
+        {
+            if (m == null || m.Methods.Count == 0) return;
+
+            bool pushedRoot = false;
+            if (CLRVM.clrRuntimeStack.Count == 0)
+            {
+                var root = new RuntimeVM(new List<Instruction>());
+                root.id = "__slir_root__";
+                CLRVM.PushCLRRuntime(root);
+                pushedRoot = true;
+            }
+
+            try
+            {
+                for (int i = 0; i < m.Methods.Count; i++)
+                {
+                    var method = m.Methods[i];
+                    if (!IsGlobalInitializer(method)) continue;
+                    if (method.Instructions == null || method.Instructions.Count == 0) continue;
+
+                    var vm = CLRVM.CreateExeSplite(new List<RuntimeType>(), method.Instructions);
+                    vm.id = method.Id;
+                    vm.Run(true);
+                    CLRVM.PopCLRRuntime();
+                }
+            }
+            finally
+            {
+                if (pushedRoot && CLRVM.clrRuntimeStack.Count > 0)
+                {
+                    CLRVM.PopCLRRuntime();
+                }
+            }
+        }
+
+        private static bool IsGlobalInitializer(MethodInfo method)
+        {
+            if (method == null) return false;
+
+            if (string.Equals(method.OnlyName, "Global", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            var id = method.Id ?? string.Empty;
+            return id.EndsWith(".Global", StringComparison.OrdinalIgnoreCase)
+                || id.EndsWith(".Global()", StringComparison.OrdinalIgnoreCase);
         }
 
         private static SlirModule ReadSlir(string path)

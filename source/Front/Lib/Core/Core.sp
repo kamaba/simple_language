@@ -1,17 +1,19 @@
+
+global
+{
+    Pi = 3.14
+    data LD = { a = 10, b = 20 }
+    print( string text )
+    {
+        Array<BridgeObject> paramObjs = new(1)
+        paramObjs[0] = BridgeObject(text)
+        NativeBridge.Call( BridgeKind.CSharp, "System.Console", 
+        "WriteLine", null, paramObjs );
+    }
+}
+
 Project
 {
-    global
-    {
-        Pi = 3.14
-        data LD = { a = 10; b = 20 }
-        print( string text )
-        {
-            Array<BridgeObject> paramObjs = new(1)
-            paramObjs[0] = BridgeObject(text)
-            NativeBridge.Call( BridgeKind.CSharp, "System.Console", 
-            "WriteLine", null, paramObjs );
-        }
-    }
     static Main()
     {
         #ObjectTest.fun()

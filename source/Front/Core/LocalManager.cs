@@ -83,11 +83,11 @@ namespace SimpleLanguage.Core
                 var instVar = CreateOrGetFileLocalInstanceVariable(fm, localMc);
 
                 // add local-defined functions as instance member functions
-                if (localSyntax.localFunctionList != null)
+                if (localSyntax.functionList != null)
                 {
-                    for (int j = 0; j < localSyntax.localFunctionList.Count; j++)
+                    for (int j = 0; j < localSyntax.functionList.Count; j++)
                     {
-                        var fmmf = localSyntax.localFunctionList[j];
+                        var fmmf = localSyntax.functionList[j];
                         if (fmmf == null) continue;
                         if (fmmf.staticToken != null)
                         {
@@ -140,7 +140,7 @@ namespace SimpleLanguage.Core
             return mv;
         }
 
-        private MetaMemberFunction CreateLocalInitFunction(MetaClass localMc, FileMetaLocalSyntax localSyntax)
+        private MetaMemberFunction CreateLocalInitFunction(MetaClass localMc, FileMetaGlobalOrLocalSyntax localSyntax)
         {
             if (localMc == null || localSyntax == null) return null;
 
@@ -152,7 +152,7 @@ namespace SimpleLanguage.Core
             // mark as static: there isn't a setter, so keep it non-static but we will invoke it via instance anyway.
             // local{} semantics in this phase: new LocalClass(); instance.__local_init__();
 
-            var block = localSyntax.initBlockSyntax ?? localSyntax.executeBlockSyntax;
+            var block = localSyntax.blockSyntax;
             fn.metaBlockStatements.SetFileMetaBlockSyntax(block);
             MetaMemberFunction.CreateMetaSyntax(block, fn.metaBlockStatements);
 

@@ -24,7 +24,8 @@ namespace SimpleLanguage.Compile
         private string m_Path;
         // for example: import namespace1.namespace2;
         private List<FileMetaImportSyntax> m_FileImportSyntax = new List<FileMetaImportSyntax>();
-        private FileMetaLocalSyntax m_FileMetaLocalSyntax = null;
+        private FileMetaGlobalOrLocalSyntax m_FileMetaLocalSyntax = null;
+        private FileMetaGlobalOrLocalSyntax m_FileMetaGlobalSyntax = null;
         // for example: namespace a.b.c;
         private List<FileMetaNamespace> m_FileDefineNamespaceList = new List<FileMetaNamespace>();
         private List<FileMetaNamespace> m_FileSearchNamespaceList = new List<FileMetaNamespace>();
@@ -47,14 +48,24 @@ namespace SimpleLanguage.Compile
             m_FileImportSyntax.Add(iss);
         }
 
-        public void SetFileMetaLocalSyntax(FileMetaLocalSyntax local)
+        public void SetFileMetaLocalSyntax(FileMetaGlobalOrLocalSyntax local)
         {
             m_FileMetaLocalSyntax = local;
         }
 
-        public FileMetaLocalSyntax GetFileMetaLocalSyntax()
+        public FileMetaGlobalOrLocalSyntax GetFileMetaLocalSyntax()
         {
             return m_FileMetaLocalSyntax;
+        }
+
+        public void SetFileMetaGlobalSyntax(FileMetaGlobalOrLocalSyntax global)
+        {
+            m_FileMetaGlobalSyntax = global;
+        }
+
+        public FileMetaGlobalOrLocalSyntax GetFileMetaGlobalSyntax()
+        {
+            return m_FileMetaGlobalSyntax;
         }
         public void AddFileDefineNamespace(FileMetaNamespace fdn )
         {
@@ -304,6 +315,7 @@ namespace SimpleLanguage.Compile
             {
                 m_FileSearchNamespaceList[i].SetDeep(m_Deep);
             }
+            m_FileMetaGlobalSyntax?.SetDeep(m_Deep);
             for (int i = 0; i < m_FileMetaClassList.Count; i++)
             {
                 m_FileMetaClassList[i].SetDeep(m_Deep);
@@ -325,6 +337,10 @@ namespace SimpleLanguage.Compile
             for (int i = 0; i < m_FileSearchNamespaceList.Count; i++)
             {
                 sb.Append(m_FileSearchNamespaceList[i].ToFormatString() + Environment.NewLine);
+            }
+            if (m_FileMetaGlobalSyntax != null)
+            {
+                sb.Append(m_FileMetaGlobalSyntax.ToFormatString() + Environment.NewLine);
             }
             for (int i = 0; i < m_FileMetaClassList.Count; i++)
             {
