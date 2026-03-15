@@ -11,20 +11,7 @@ compare的验证
 int x1 = 10 + (1-20) * 33~/20 + 10~/20 - 22 * 2~/1; 有报错处理
 
 
-
-5. String的扩展  Type的技高一扩展
-6. Array的设计 
-7. 使用typealias
-8. 使用llvm导出
-9. 导出代码module块
-10. 增加cast<T>() 的方法
-11. 增加Action的类型
-12. 增加内联函数
-13. 增加Ptr指针 Std空间
-14. 增加IntPtr指针 Std空间
-15. 遍历enum
-16. 增加快速执行c/c++ 的通道
-17. 使用vm的流程， 变成模块化加载
-19. 把debug/asset等功能点写一下
+1. 比较enumValue的验证
+2. 调用nativeBridge的调用验证
 
 可挑着做
