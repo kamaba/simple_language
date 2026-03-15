@@ -700,8 +700,7 @@ namespace SimpleLanguage.Compile
                 if (m_RootNode == null) return;
                 if (isWriteFile)
                 {
-                    var outDir = Common.SetDebugCode(m_FileMeta.path);
-                    var outFile = Path.Combine(outDir, "Node.txt");
+                    var outFile = Common.GetDebugCodeFilePath(m_FileMeta.path, "Node.txt");
                     string content = m_RootNode.ToFormatString();
                     File.WriteAllText(outFile, content);
                 }

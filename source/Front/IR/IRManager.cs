@@ -10,6 +10,7 @@ using SimpleLanguage.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 
 namespace SimpleLanguage.IR
@@ -56,6 +57,70 @@ namespace SimpleLanguage.IR
             }
 
             ParseIRMethod();
+            ExportIRDebugData();
+        }
+
+        public void ExportIRDebugData()
+        {
+            try
+            {
+                var fileClassMap = new Dictionary<string, List<IRMetaClass>>();
+                for (int i = 0; i < m_IRMetaClassList.Count; i++)
+                {
+                    var irClass = m_IRMetaClassList[i];
+                    if (irClass == null || string.IsNullOrEmpty(irClass.sourcePath))
+                    {
+                        continue;
+                    }
+
+                    if (!fileClassMap.ContainsKey(irClass.sourcePath))
+                    {
+                        fileClassMap.Add(irClass.sourcePath, new List<IRMetaClass>());
+                    }
+                    fileClassMap[irClass.sourcePath].Add(irClass);
+                }
+
+                foreach (var kv in fileClassMap)
+                {
+                    string filePath = kv.Key;
+                    var classList = kv.Value;
+                    StringBuilder sb = new StringBuilder();
+
+                    sb.AppendLine("-------------------IR 文件显示 开始 : Path: " + filePath + "-----------------------");
+
+                    for (int i = 0; i < classList.Count; i++)
+                    {
+                        var irClass = classList[i];
+                        sb.AppendLine("Class: " + irClass.irName);
+
+                        foreach (var methodKv in IRMethodDict)
+                        {
+                            var irMethod = methodKv.Value;
+                            if (irMethod == null || irMethod.irOwnerMetaClass == null)
+                            {
+                                continue;
+                            }
+                            if (irMethod.irOwnerMetaClass != irClass)
+                            {
+                                continue;
+                            }
+
+                            sb.AppendLine("  Method: " + irMethod.id);
+                            sb.Append(irMethod.ToIRString());
+                            sb.AppendLine();
+                        }
+                    }
+
+                    sb.AppendLine("-------------------IR 文件显示 结束 : -----------------------");
+
+                    string outPath = Common.GetDebugCodeFilePath(filePath, "IR.txt");
+                    File.WriteAllText(outPath, sb.ToString());
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Assert(false, "Export IR debug data failed: " + e.Message);
+            }
         }
         public void GlobalVariable()
         {

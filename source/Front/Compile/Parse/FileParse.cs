@@ -9,6 +9,7 @@
 using SimpleLanguage.Logging;
 using SimpleLanguage.Parse;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -105,6 +106,8 @@ namespace SimpleLanguage.Compile
 
                 m_File.SetDeep(0);
 
+                ExportFileMetaDebugData();
+
                 if (structParseComplete != null )
                 {
                     structParseComplete();
@@ -133,9 +136,49 @@ namespace SimpleLanguage.Compile
         }
         public void SaveCodeToFile()
         {
-            string outDir = Common.SetDebugCode(m_FilePath);
-            string outPath = Path.Combine(outDir, "Code.txt");
-            File.WriteAllText(outPath, m_ContentBuffer.ToString() );
+            string outPath = Common.GetDebugCodeFilePath(m_FilePath, "Code.txt");
+            File.WriteAllText(outPath, new string(m_ContentBuffer));
+        }
+
+        public void ExportFileMetaDebugData()
+        {
+            try
+            {
+                string outPath = Common.GetDebugCodeFilePath(m_FilePath, "File.txt");
+                File.WriteAllText(outPath, m_File?.ToFormatString() ?? string.Empty);
+            }
+            catch (Exception e)
+            {
+                Debug.Assert(false, "Export FileMeta debug data failed: " + e.Message);
+            }
+        }
+
+        public void ExportMetaDebugData()
+        {
+            try
+            {
+                string outPath = Common.GetDebugCodeFilePath(m_FilePath, "Meta.txt");
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine("-------------------Meta 文件显示 开始 : Path: " + m_FilePath + "-----------------------");
+
+                var classList = m_File?.fileMetaClassList;
+                if (classList != null)
+                {
+                    for (int i = 0; i < classList.Count; i++)
+                    {
+                        var metaClass = classList[i]?.metaClass;
+                        if (metaClass == null) continue;
+                        sb.AppendLine(metaClass.ToFormatString());
+                    }
+                }
+
+                sb.AppendLine("-------------------Meta 文件显示 结束 : -----------------------");
+                File.WriteAllText(outPath, sb.ToString());
+            }
+            catch (Exception e)
+            {
+                Debug.Assert(false, "Export Meta debug data failed: " + e.Message);
+            }
         }
     }
 }

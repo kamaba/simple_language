@@ -2,7 +2,6 @@
 global
 {
     Pi = 3.14
-    data LD = { a = 10, b = 20 }
     print( string text )
     {
         Array<BridgeObject> paramObjs = new(1)

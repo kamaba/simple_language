@@ -57,9 +57,8 @@ namespace SimpleLanguage.Core
             MetaType mdt = null;
             var metaFunction = m_OwnerMetaBlockStatements?.ownerMetaFunction;
 
-#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
             bool isDynamicClass = false;
-#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
+            bool isSynamicData = false;
             FileMetaBaseTerm fileExpress = null;
             if ( m_FileMetaDefineVariableSyntax != null )
             {
@@ -85,9 +84,14 @@ namespace SimpleLanguage.Core
                     isDynamicClass = true;
                     mdt = new MetaType(CoreMetaClassManager.dynamicMetaClass);
                 }
-                if(m_FileMetaOpAssignSyntax.variableRef != null )
+                else if( m_FileMetaOpAssignSyntax.dataToken != null )
                 {
-                    foreach( var v in  m_FileMetaOpAssignSyntax.variableRef.callNodeList)
+                    isSynamicData = true;
+                    mdt = new MetaType(CoreMetaClassManager.dynamicMetaData );
+                }
+                if (m_FileMetaOpAssignSyntax.variableRef != null)
+                {
+                    foreach (var v in m_FileMetaOpAssignSyntax.variableRef.callNodeList)
                     {
                         m_DefineVarMetaVariable.AddPingToken(v.token);
                     }

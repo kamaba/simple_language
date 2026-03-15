@@ -391,6 +391,14 @@ namespace SimpleLanguage.Core
                 bool isFindDefineFunction = false;
                 MetaClass leftMc = left.GetReturnMetaClass();
                 MetaClass rightMc = right.GetReturnMetaClass();
+                bool isCompareOp = m_OpLevelSign == ELeftRightOpSign.Equal
+                    || m_OpLevelSign == ELeftRightOpSign.NotEqual
+                    || m_OpLevelSign == ELeftRightOpSign.Greater
+                    || m_OpLevelSign == ELeftRightOpSign.GreaterOrEqual
+                    || m_OpLevelSign == ELeftRightOpSign.Less
+                    || m_OpLevelSign == ELeftRightOpSign.LessOrEqual
+                    || m_OpLevelSign == ELeftRightOpSign.Or
+                    || m_OpLevelSign == ELeftRightOpSign.And;
 
                 if (leftMc.eType == EType.Boolean)
                 {
@@ -485,6 +493,18 @@ namespace SimpleLanguage.Core
                         else
                         {
                             Debug.Assert(false, "Error 字符串类型只能参与加法运算!!");
+                        }
+                    }
+                    else if (rightMc.eType == EType.Enum)
+                    {
+                        if (isCompareOp)
+                        {
+                            // support number-backed enum comparisons, e.g. BridgeKind param vs BridgeKind.CLR member value
+                            m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                        }
+                        else
+                        {
+                            isFindDefineFunction = true;
                         }
                     }
                     else

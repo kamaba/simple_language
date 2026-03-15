@@ -973,6 +973,7 @@ namespace SimpleLanguage.Compile
         public FileMetaBaseTerm express => m_Express;
         public Token assignToken => m_AssignToken;
         public Token dynamicToken => m_DynamicToken;
+        public Token dataToken => m_DataToken;
         public Token constToken => m_ConstToken;
         public Token staticToken => m_StaticToken;
         public bool hasDefine => m_DynamicToken != null || m_DataToken != null || m_VarToken != null;

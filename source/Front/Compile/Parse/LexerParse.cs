@@ -2126,9 +2126,7 @@ namespace SimpleLanguage.Compile
                 // 使用当前运行目录，创建 DebugCode 目录，然后在其下以 m_Path 去掉后缀的名字建子目录，最后在该目录下写 Token.txt
                 // 例如: <运行目录>/DebugCode/<m_Path无后缀>/Token.txt
 
-                var outDir = Common.SetDebugCode(m_Path);
-
-                outFile = Path.Combine(outDir, "Token.txt");
+                outFile = Common.GetDebugCodeFilePath(m_Path, "Token.txt");
 
                 //if (File.Exists(outFile))
                 //{
