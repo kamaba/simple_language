@@ -98,6 +98,63 @@ namespace SimpleLanguage.Export.SLIR
                 pkg.classList.Add(cm);
             }
 
+            if (ir.globalStaticVariableList != null)
+            {
+                foreach (var gv in ir.globalStaticVariableList)
+                {
+                    if (gv == null) continue;
+                    pkg.globalStaticVariableList.Add(new SLGlobalStaticVariablePackage
+                    {
+                        id = gv.id,
+                        name = gv.name ?? string.Empty,
+                        ownerClassId = gv.irMetaType?.irOwnerMetaClass?.id ?? 0,
+                        index = gv.index,
+                        typeName = NormalizeTypeName(gv.irMetaType?.ToString() ?? string.Empty),
+                    });
+                }
+            }
+
+            var globalInitIR = new List<IRData>();
+            if (ir.globalStaticVariableList != null)
+            {
+                for (int i = 0; i < ir.globalStaticVariableList.Count; i++)
+                {
+                    var gv = ir.globalStaticVariableList[i];
+                    if (gv?.express == null) continue;
+
+                    try
+                    {
+                        var expr = IRExpressManager.CreateExpress(null, gv.express);
+                        var store = new IRStoreVariable(gv.irMetaType, null, gv.id, IRMetaVariableFrom.Global);
+
+                        if (expr?.IRDataList != null) globalInitIR.AddRange(expr.IRDataList);
+                        if (store?.IRDataList != null) globalInitIR.AddRange(store.IRDataList);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+
+            for (int i = 0; i < globalInitIR.Count; i++)
+            {
+                var d = globalInitIR[i];
+                if (d == null) continue;
+                d.id = i;
+                try { d.FinalizePack(); } catch { }
+
+                pkg.globalInitInstructionList.Add(new SLIRInstructionPackage
+                {
+                    id = d.id,
+                    opCode = (byte)d.opCode,
+                    opValue = null,
+                    payload = d.Payload,
+                    index = d.index,
+                    byteLength = d.ByteLength,
+                    offset = d.offset,
+                });
+            }
+
             // methods
             string? bestEntry = null;
             foreach (var kv in ir.IRMethodDict)
@@ -210,7 +267,18 @@ namespace SimpleLanguage.Export.SLIR
         public List<IRStringItem> irStringDict { get; set; } = new();
         public List<SLNamespacePackage> namespaceList { get; set; } = new();
         public List<SLClassPackage> classList { get; set; } = new();
+        public List<SLGlobalStaticVariablePackage> globalStaticVariableList { get; set; } = new();
+        public List<SLIRInstructionPackage> globalInitInstructionList { get; set; } = new();
         public List<SLMethodPackage> methodList { get; set; } = new();
+    }
+
+    internal sealed class SLGlobalStaticVariablePackage
+    {
+        public int id { get; set; }
+        public string name { get; set; } = string.Empty;
+        public int ownerClassId { get; set; }
+        public int index { get; set; }
+        public string typeName { get; set; } = string.Empty;
     }
 
     internal sealed class IRStringItem

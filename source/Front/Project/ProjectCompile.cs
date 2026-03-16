@@ -121,14 +121,6 @@ namespace SimpleLanguage.Project
             Console.WriteLine(ModuleManager.instance.selfModule.metaNode.ToFormatString());
 
             IRManager.instance.TranslateIR();
-
-            // Export is opt-in via environment variables; keep compilation pipeline independent.
-            // (Export driver lives under ExportLangManager in this workspace.)
-            var kind = Environment.GetEnvironmentVariable("SIMPLELANG_EXPORT_KIND");
-            //if (string.Equals(kind, "slir", StringComparison.OrdinalIgnoreCase))
-            {
-                SimpleLanguage.ExportLanguage.ExportLangManager.Export(SimpleLanguage.ExportLanguage.ExportKind.SLIR);
-            }
         }
 
         public static void AddFileParse( string path )

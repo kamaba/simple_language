@@ -120,6 +120,26 @@ namespace SimpleLanguage.VM.Runtime
             clrRuntime.Run(true);
                 */
         }
+
+        public static void ResetGlobalVariableMapping()
+        {
+            m_GlobalVariableId2IndexDict.Clear();
+            m_GlobalVariableValueList.Clear();
+        }
+
+        public static void RegisterGlobalVariable(int id)
+        {
+            if (m_GlobalVariableId2IndexDict.ContainsKey(id))
+            {
+                return;
+            }
+
+            int index = m_GlobalVariableValueList.Count;
+            m_GlobalVariableId2IndexDict[id] = index;
+            var v = default(SValue);
+            v.SetNull();
+            m_GlobalVariableValueList.Add(v);
+        }
         public static void StoreGlobalVariable( int id, ref SValue savl )
         {
             if(m_GlobalVariableId2IndexDict.ContainsKey( id ) )

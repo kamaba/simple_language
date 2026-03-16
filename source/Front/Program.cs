@@ -133,6 +133,16 @@ namespace SimpleLanguage
                 // Export SLVM module to Export/SLVMCode
                 var cfg = ProjectManager.config.Export;
                 var moduleName = string.IsNullOrEmpty(cfg.ModuleName) ? "SimpleLanguageMain" : cfg.ModuleName;
+
+
+
+                // Export is opt-in via environment variables; keep compilation pipeline independent.
+                // (Export driver lives under ExportLangManager in this workspace.)
+                var kind = Environment.GetEnvironmentVariable("SIMPLELANG_EXPORT_KIND");
+                //if (string.Equals(kind, "slir", StringComparison.OrdinalIgnoreCase))
+                {
+                    SimpleLanguage.ExportLanguage.ExportLangManager.Export(SimpleLanguage.ExportLanguage.ExportKind.SLIR);
+                }
                 /*
                 var slvmModule = SimpleLanguage.Export.SLVM.SLVMSerializer.FromIRMethods(methodList.ToArray(), moduleName);
                 string slvmDir = Path.Combine(Directory.GetCurrentDirectory(), cfg.OutputDir ?? "Export/SLVMCode");
