@@ -1,5 +1,5 @@
 
-global
+Project
 {
     Pi = 3.14
     print( string text )
@@ -9,11 +9,8 @@ global
         NativeBridge.Call( BridgeKind.CSharp, "System.Console", 
         "WriteLine", null, paramObjs );
     }
-}
 
-Project
-{
-    static Main()
+    _main_()
     {
         #ObjectTest.fun()
         #NumberTest.fun()
@@ -34,7 +31,7 @@ Project
 
         global.print(a)
     }
-    static Test()
+    _test_()
     {
        #TempTest.Fun();
     }

@@ -33,6 +33,22 @@ namespace SimpleLanguage.Export.SLIR
             File.WriteAllText(outputPath, JsonSerializer.Serialize(pkg, options));
         }
 
+        internal static SLModulePackage Read(string inputPath)
+        {
+            if (string.IsNullOrWhiteSpace(inputPath)) throw new ArgumentNullException(nameof(inputPath));
+
+            var json = File.ReadAllText(inputPath);
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                ReadCommentHandling = JsonCommentHandling.Skip,
+                AllowTrailingCommas = true,
+            };
+            options.Converters.Add(new JsonStringEnumConverter());
+
+            return JsonSerializer.Deserialize<SLModulePackage>(json, options) ?? new SLModulePackage();
+        }
+
         internal static SLModulePackage Build(IRManager ir, string moduleName)
         {
             var pkg = new SLModulePackage { moduleName = moduleName ?? string.Empty };
@@ -264,6 +280,7 @@ namespace SimpleLanguage.Export.SLIR
     {
         public string moduleName { get; set; } = string.Empty;
         public string? entryMethodId { get; set; }
+        public List<string> moduleReferences { get; set; } = new();
         public List<IRStringItem> irStringDict { get; set; } = new();
         public List<SLNamespacePackage> namespaceList { get; set; } = new();
         public List<SLClassPackage> classList { get; set; } = new();

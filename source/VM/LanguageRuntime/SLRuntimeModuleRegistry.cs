@@ -16,7 +16,23 @@ namespace SimpleLanguage.VM.LanguageRuntime
         {
             if (pkg == null) throw new ArgumentNullException(nameof(pkg));
             Clear();
+            AddFromPackage(pkg);
+        }
 
+        public static void LoadFromPackages(IEnumerable<SLModulePackage> packages)
+        {
+            if (packages == null) throw new ArgumentNullException(nameof(packages));
+            Clear();
+
+            foreach (var pkg in packages)
+            {
+                if (pkg == null) continue;
+                AddFromPackage(pkg);
+            }
+        }
+
+        private static void AddFromPackage(SLModulePackage pkg)
+        {
             foreach (var m in pkg.methodList)
             {
                 if (m == null || string.IsNullOrEmpty(m.id)) continue;

@@ -7,10 +7,23 @@ namespace SimpleLanguage.VM.LanguageRuntime
     {
         public string moduleName { get; set; } = string.Empty;
         public string? entryMethodId { get; set; }
+        public List<string> moduleReferences { get; set; } = new();
         public List<IRStringItem> irStringDict { get; set; } = new();
         public List<SLNamespacePackage> namespaceList { get; set; } = new();
         public List<SLClassPackage> classList { get; set; } = new();
+        public List<SLGlobalStaticVariablePackage> globalStaticVariableList { get; set; } = new();
+        public List<SLIRInstructionPackage> globalInitInstructionList { get; set; } = new();
+        public List<SLIRInstructionPackage> globalInitInstructions { get; set; } = new();
         public List<SLMethodPackage> methodList { get; set; } = new();
+    }
+
+    public sealed class SLGlobalStaticVariablePackage
+    {
+        public int id { get; set; }
+        public string name { get; set; } = string.Empty;
+        public int ownerClassId { get; set; }
+        public int index { get; set; }
+        public string typeName { get; set; } = string.Empty;
     }
 
     public sealed class IRStringItem

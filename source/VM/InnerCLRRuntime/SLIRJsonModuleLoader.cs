@@ -15,6 +15,7 @@ namespace SimpleLanguage.VM
             public List<MethodModel> methods { get; set; } = new();
             public List<GlobalStaticVariableModel> globalStaticVariableList { get; set; } = new();
             public List<InstructionModel> globalInitInstructions { get; set; } = new();
+            public List<InstructionModel> globalInitInstructionList { get; set; } = new();
         }
 
         public sealed class IRStringItem
@@ -108,6 +109,9 @@ namespace SimpleLanguage.VM
         {
             var m = ReadModule(jsonPath);
 
+            // 1) Init VM runtime state
+            CLRVM.Init();
+
             var rcm = RuntimeClassManager.instance;
             rcm.m_IRMetaClassList.Clear();
 
@@ -121,6 +125,17 @@ namespace SimpleLanguage.VM
                     name = c.name ?? string.Empty,
                 };
                 rcm.m_IRMetaClassList.Add(rc);
+            }
+
+            // 2) Parse IR classes into runtime types first
+            for (int i = 0; i < rcm.m_IRMetaClassList.Count; i++)
+            {
+                var rc = rcm.m_IRMetaClassList[i];
+                if (rc == null) continue;
+                if (RuntimeTypeManager.GetRuntimeTypeByClassId(rc.id) == null)
+                {
+                    RuntimeTypeManager.AddRuntimeTypeByClass(rc);
+                }
             }
 
             // Fields: JSON currently stores type as string only; RuntimeDefType cannot be reconstructed without TypeSig.
@@ -143,6 +158,7 @@ namespace SimpleLanguage.VM
 
             // Methods: consumer can interpret instructions and run via existing VM pipeline once method binding is added.
 
+            // 3) Parse and initialize globalVariableValueList after classes/types are ready
             InitializeGlobalStaticVariablesAndRunInit(m);
         }
 
@@ -154,41 +170,23 @@ namespace SimpleLanguage.VM
             {
                 for (int i = 0; i < m.globalStaticVariableList.Count; i++)
                 {
-                    CLRVM.RegisterGlobalVariable(m.globalStaticVariableList[i].id);
+                    var gv = m.globalStaticVariableList[i];
+                    CLRVM.RegisterGlobalVariable(gv.id, gv.type, gv.ownerClassId, gv.index);
                 }
             }
 
-            if (m?.globalInitInstructions == null || m.globalInitInstructions.Count == 0)
+            var initList = (m?.globalInitInstructionList != null && m.globalInitInstructionList.Count > 0)
+                ? m.globalInitInstructionList
+                : m?.globalInitInstructions;
+
+            if (initList == null || initList.Count == 0)
             {
                 return;
             }
 
-            var irList = ConvertToInstructions(m.globalInitInstructions);
-            if (irList.Count == 0) return;
-
-            bool pushedRoot = false;
-            if (CLRVM.clrRuntimeStack.Count == 0)
-            {
-                var root = new RuntimeVM(new List<Instruction>());
-                root.id = "__slir_json_root__";
-                CLRVM.PushCLRRuntime(root);
-                pushedRoot = true;
-            }
-
-            try
-            {
-                var initVm = CLRVM.CreateExeSplite(new List<RuntimeType>(), irList);
-                initVm.id = "__slir_global_init__";
-                initVm.Run(true);
-                CLRVM.PopCLRRuntime();
-            }
-            finally
-            {
-                if (pushedRoot && CLRVM.clrRuntimeStack.Count > 0)
-                {
-                    CLRVM.PopCLRRuntime();
-                }
-            }
+            var irList = ConvertToInstructions(initList);
+            CLRVM.SetGlobalInitInstructions(irList);
+            CLRVM.LoadGlobalVariableMapping();
         }
 
         private static List<Instruction> ConvertToInstructions(List<InstructionModel> models)

@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using SimpleLanguage.VM;
 using SimpleLanguage.VM.Lib;
 using SimpleLanguage.VM.LanguageRuntime;
@@ -29,9 +30,18 @@ try
 
     if (!string.IsNullOrEmpty(pkgPath))
     {
-        var pkg = SLModulePackageLoader.LoadFromJson(pkgPath);
-        SLRuntimeModuleRegistry.LoadFromPackage(pkg);
-        var slAsm = SLModulePackageLoader.BuildRuntimeModel(pkg);
+        var packageList = LoadPackagesInExecutionOrder(pkgPath);
+        if (packageList.Count == 0)
+        {
+            Console.WriteLine("No valid module package loaded.");
+            return;
+        }
+
+        var currentPkg = packageList[packageList.Count - 1];
+
+        SLRuntimeModuleRegistry.LoadFromPackages(packageList);
+        var asmList = packageList.Select(SLModulePackageLoader.BuildRuntimeModel).ToList();
+        var slAsm = asmList[asmList.Count - 1];
 
         // Load C# bridge metadata (optional)
         var bridgePath = Environment.GetEnvironmentVariable("SIMPLELANG_BRIDGE_JSON");
@@ -49,10 +59,10 @@ try
             SimpleLanguage.VM.Runtime.CSharpBridgeRegistry.LoadFromJson(bridgePath);
         }
 
-        var moduleCount = slAsm.moduleList.Count;
-        var nsCount = slAsm.moduleList.Sum(m => m.namespaceList.Count);
-        var slTypeCount = slAsm.moduleList.Sum(m => m.namespaceList.Sum(n => n.typeList.Count));
-        var slMethodCount = slAsm.moduleList.Sum(m => m.namespaceList.Sum(n => n.typeList.Sum(t => t.methodList.Count)));
+        var moduleCount = asmList.Sum(a => a.moduleList.Count);
+        var nsCount = asmList.Sum(a => a.moduleList.Sum(m => m.namespaceList.Count));
+        var slTypeCount = asmList.Sum(a => a.moduleList.Sum(m => m.namespaceList.Sum(n => n.typeList.Count)));
+        var slMethodCount = asmList.Sum(a => a.moduleList.Sum(m => m.namespaceList.Sum(n => n.typeList.Sum(t => t.methodList.Count))));
 
         Console.WriteLine($"SLAssembly: {slAsm.id}");
         Console.WriteLine($"Modules: {moduleCount}, Namespaces: {nsCount}, Types: {slTypeCount}, Methods: {slMethodCount}");
@@ -71,60 +81,108 @@ try
                 Console.WriteLine($"{ins.id} {ins.opCode} {ins.opValue}");
             }
         }
+
+        // 1) init globalStaticVariableList from all loaded modules (dependency -> current)
+        SimpleLanguage.VM.Runtime.CLRVM.ResetGlobalVariableMapping();
+        var allGlobalInitInstructions = new List<Instruction>();
+        for (int i = 0; i < packageList.Count; i++)
+        {
+            var p = packageList[i];
+            if (p.globalStaticVariableList != null)
+            {
+                for (int g = 0; g < p.globalStaticVariableList.Count; g++)
+                {
+                    var gv = p.globalStaticVariableList[g];
+                    SimpleLanguage.VM.Runtime.CLRVM.RegisterGlobalVariable(gv.id, gv.typeName, gv.ownerClassId, gv.index);
+                }
+            }
+
+            if (p.globalInitInstructionList != null && p.globalInitInstructionList.Count > 0)
+            {
+                allGlobalInitInstructions.AddRange(SLModulePackageLoader.ConvertToVMInstructionList(p.globalInitInstructionList));
+            }
+            else if (p.globalInitInstructions != null && p.globalInitInstructions.Count > 0)
+            {
+                allGlobalInitInstructions.AddRange(SLModulePackageLoader.ConvertToVMInstructionList(p.globalInitInstructions));
+            }
+        }
+        SimpleLanguage.VM.Runtime.CLRVM.SetGlobalInitInstructions(allGlobalInitInstructions);
+        SimpleLanguage.VM.Runtime.CLRVM.LoadGlobalVariableMapping();
+
         // Optional execution: SIMPLELANG_ENTRY_METHOD=<methodId>
         var entryId = Environment.GetEnvironmentVariable("SIMPLELANG_ENTRY_METHOD");
         if (string.IsNullOrWhiteSpace(entryId))
         {
-            entryId = pkg.entryMethodId;
+            entryId = currentPkg.entryMethodId;
         }
 
-        var globalMethods = slAsm.moduleList
-            .SelectMany(m => m.namespaceList)
-            .SelectMany(n => n.typeList)
-            .SelectMany(t => t.methodList)
-            .Where(m => string.Equals(m.name, "Global", StringComparison.OrdinalIgnoreCase))
-            .ToList();
-
-        for (int i = 0; i < globalMethods.Count; i++)
-        {
-            var gm = SLRuntimeModuleRegistry.GetMethod(globalMethods[i].id);
-            if (gm == null) continue;
-
-            var gvm = SimpleLanguage.VM.Runtime.CLRVM.CreateCLRRuntime(new System.Collections.Generic.List<RuntimeType>(), gm);
-            gvm.Run(true);
-            SimpleLanguage.VM.Runtime.CLRVM.PopCLRRuntime();
-        }
-
+        // 2) run Main/entry of current module
         if (!string.IsNullOrWhiteSpace(entryId))
         {
-            var entry = slAsm.moduleList
-                .SelectMany(m => m.namespaceList)
-                .SelectMany(n => n.typeList)
-                .SelectMany(t => t.methodList)
-                .FirstOrDefault(m => string.Equals(m.id, entryId, StringComparison.Ordinal));
-
-            if (entry != null)
+            var rm = SLRuntimeModuleRegistry.GetMethod(entryId);
+            if (rm == null)
             {
-                var rm = SLRuntimeModuleRegistry.GetMethod(entry.id);
-                if (rm == null)
-                {
-                    Console.WriteLine($"Runtime method not found: {entry.id}");
-                }
-                else
-                {
-                    var vm = SimpleLanguage.VM.Runtime.CLRVM.CreateCLRRuntime(new System.Collections.Generic.List<RuntimeType>(), rm);
-                    vm.Run(true);
-                    SimpleLanguage.VM.Runtime.CLRVM.PopCLRRuntime();
-                }
+                Console.WriteLine($"Runtime method not found: {entryId}");
             }
             else
             {
-                Console.WriteLine($"Entry method not found: {entryId}");
+                var vm = SimpleLanguage.VM.Runtime.CLRVM.CreateCLRRuntime(new List<RuntimeType>(), rm);
+                vm.Run(true);
+                SimpleLanguage.VM.Runtime.CLRVM.PopCLRRuntime();
             }
         }
 
         return;
     }
+
+static List<SLModulePackage> LoadPackagesInExecutionOrder(string rootPackagePath)
+{
+    var result = new List<SLModulePackage>();
+    var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+    void LoadRecursive(string path)
+    {
+        var fullPath = System.IO.Path.GetFullPath(path);
+        if (!System.IO.File.Exists(fullPath)) return;
+        if (!visited.Add(fullPath)) return;
+
+        var pkg = SLModulePackageLoader.LoadFromJson(fullPath);
+        var dir = System.IO.Path.GetDirectoryName(fullPath) ?? string.Empty;
+
+        var refs = pkg.moduleReferences ?? new List<string>();
+        for (int i = 0; i < refs.Count; i++)
+        {
+            var rp = refs[i];
+            if (string.IsNullOrWhiteSpace(rp)) continue;
+            var refPath = System.IO.Path.IsPathRooted(rp) ? rp : System.IO.Path.Combine(dir, rp);
+            LoadRecursive(refPath);
+        }
+
+        result.Add(pkg);
+    }
+
+    LoadRecursive(rootPackagePath);
+
+    if (result.Count == 1)
+    {
+        var rootFullPath = System.IO.Path.GetFullPath(rootPackagePath);
+        var dir = System.IO.Path.GetDirectoryName(rootFullPath) ?? string.Empty;
+        var siblings = System.IO.Directory.Exists(dir)
+            ? System.IO.Directory.GetFiles(dir, "*.package.json")
+            : Array.Empty<string>();
+
+        Array.Sort(siblings, StringComparer.OrdinalIgnoreCase);
+        for (int i = 0; i < siblings.Length; i++)
+        {
+            var sp = System.IO.Path.GetFullPath(siblings[i]);
+            if (string.Equals(sp, rootFullPath, StringComparison.OrdinalIgnoreCase)) continue;
+            if (!visited.Add(sp)) continue;
+            result.Insert(result.Count - 1, SLModulePackageLoader.LoadFromJson(sp));
+        }
+    }
+
+    return result;
+}
 
     Console.WriteLine("No module package found. Pass a module package JSON or export one to out/export/module.package.json.");
 }
