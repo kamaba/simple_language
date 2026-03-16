@@ -39,15 +39,17 @@ namespace SimpleLanguage.Core
             {
                 SetIsDefineMetaType(true);
             }
-            m_IsConst = fmmv.mutToken == null;
-            if (m_IsConst == false)
-                m_IsStatic = true;// enum 成员全部为static
-            else
-                m_IsStatic = false;
+            // enum value 强制为 const（即使写了 mut）
+            m_IsConst = true;
+            m_IsStatic = false;
             m_VariableFrom = EVariableFrom.Member;
+            if (fmmv.mutToken != null)
+            {
+                Log.AddInStructMeta(EError.None, "Error Enum中，不允许使用mut关键字，枚举值会被强制为const!!");
+            }
             if (fmmv.staticToken != null)
             {
-                Log.AddInStructMeta(EError.None, "Error ENum中，不允许有静态关键字，而是全部是静态关键字!!");
+                Log.AddInStructMeta(EError.None, "Error Enum中，不允许使用static关键字，枚举值的静态语义由系统处理!!");
             }
 
             if (string.IsNullOrEmpty(m_Name))

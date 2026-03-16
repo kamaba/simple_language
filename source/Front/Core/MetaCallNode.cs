@@ -1585,7 +1585,6 @@ namespace SimpleLanguage.Core
                 else if (retMC.isMetaEnum)
                 {
                     m_MetaEnum = retMC.metaEnum;
-                    m_MetaVariable = m_MetaEnum.GetOrCreateValuesVariable();
                     m_CallNodeType = ECallNodeType.EnumName;
                     m_MetaType = new MetaType(m_MetaEnum);
                 }

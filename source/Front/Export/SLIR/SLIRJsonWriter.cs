@@ -114,6 +114,59 @@ namespace SimpleLanguage.Export.SLIR
                 m.methods.Add(mm);
             }
 
+            if (ir.globalStaticVariableList != null)
+            {
+                foreach (var gv in ir.globalStaticVariableList)
+                {
+                    if (gv == null) continue;
+                    m.globalStaticVariableList.Add(new GlobalStaticVariableModel
+                    {
+                        id = gv.id,
+                        name = gv.name ?? string.Empty,
+                        ownerClassId = gv.irMetaType?.irOwnerMetaClass?.id ?? 0,
+                        index = gv.index,
+                        type = gv.irMetaType?.ToString() ?? string.Empty,
+                    });
+                }
+            }
+
+            var initIRList = new List<IRData>();
+            if (ir.globalStaticVariableList != null)
+            {
+                for (int i = 0; i < ir.globalStaticVariableList.Count; i++)
+                {
+                    var gv = ir.globalStaticVariableList[i];
+                    if (gv?.express == null) continue;
+
+                    try
+                    {
+                        var expr = IRExpressManager.CreateExpress(null, gv.express);
+                        var store = new IRStoreVariable(gv.irMetaType, null, gv.id, IRMetaVariableFrom.Global);
+
+                        if (expr?.IRDataList != null) initIRList.AddRange(expr.IRDataList);
+                        if (store?.IRDataList != null) initIRList.AddRange(store.IRDataList);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+
+            for (int i = 0; i < initIRList.Count; i++)
+            {
+                var ins = initIRList[i];
+                if (ins == null) continue;
+                ins.id = i;
+                try { ins.FinalizePack(); } catch { }
+                m.globalInitInstructions.Add(new InstructionModel
+                {
+                    opCode = ins.opCode.ToString(),
+                    index = ins.index,
+                    offset = ins.offset,
+                    payloadBase64 = ins.Payload != null && ins.Payload.Length > 0 ? Convert.ToBase64String(ins.Payload) : null,
+                });
+            }
+
             return m;
         }
 
@@ -122,6 +175,17 @@ namespace SimpleLanguage.Export.SLIR
             public List<IRStringItem> irStringDict { get; set; } = new();
             public List<ClassModel> classes { get; set; } = new();
             public List<MethodModel> methods { get; set; } = new();
+            public List<GlobalStaticVariableModel> globalStaticVariableList { get; set; } = new();
+            public List<InstructionModel> globalInitInstructions { get; set; } = new();
+        }
+
+        private sealed class GlobalStaticVariableModel
+        {
+            public int id { get; set; }
+            public string name { get; set; } = string.Empty;
+            public int ownerClassId { get; set; }
+            public int index { get; set; }
+            public string type { get; set; } = string.Empty;
         }
 
         private sealed class IRStringItem

@@ -62,7 +62,7 @@ namespace SimpleLanguage.Core.IR
                 IRMetaType irmt = null;
                 IRMetaClass irmc = null;
                 IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
-                if (mv.isStatic)
+                if (mv.isStatic || mv.isConst )
                 {
                     if (cnode.callMetaType != null)
                     {

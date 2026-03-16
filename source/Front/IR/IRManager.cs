@@ -106,6 +106,13 @@ namespace SimpleLanguage.IR
                             }
 
                             sb.AppendLine("  Method: " + irMethod.id);
+                            sb.AppendLine("    VirtualName: " + irMethod.virtualFunctionName);
+                            sb.AppendLine("    Name: " + irMethod.onlyFunctionName);
+                            sb.AppendLine("    InterfaceMethod: " + irMethod.interfaceMethod);
+                            AppendIRVariableList(sb, "    Return", irMethod.methodReturnVariableList);
+                            AppendIRVariableList(sb, "    Arguments", irMethod.methodArgumentList);
+                            AppendIRVariableList(sb, "    Locals", irMethod.methodLocalVariableList);
+                            sb.AppendLine("    Instructions:");
                             sb.Append(irMethod.ToIRString());
                             sb.AppendLine();
                         }
@@ -121,6 +128,68 @@ namespace SimpleLanguage.IR
             {
                 Debug.Assert(false, "Export IR debug data failed: " + e.Message);
             }
+        }
+
+        private static void AppendIRVariableList(StringBuilder sb, string title, List<IRMetaVariable> list)
+        {
+            if (list == null || list.Count == 0)
+            {
+                sb.AppendLine(title + ": []");
+                return;
+            }
+
+            sb.AppendLine(title + ":");
+            for (int i = 0; i < list.Count; i++)
+            {
+                var v = list[i];
+                if (v == null)
+                {
+                    continue;
+                }
+
+                sb.Append("      - #");
+                sb.Append(i);
+                sb.Append(" id=");
+                sb.Append(v.id);
+                sb.Append(" idx=");
+                sb.Append(v.index);
+                sb.Append(" name=");
+                sb.Append(v.name);
+                sb.Append(" type=");
+                sb.AppendLine(FormatIRMetaType(v.irMetaType));
+            }
+        }
+
+        private static string FormatIRMetaType(IRMetaType irType)
+        {
+            if (irType == null)
+            {
+                return "<null>";
+            }
+
+            var sb = new StringBuilder();
+            sb.Append(irType.irMetaClass?.irName ?? "<null>");
+
+            var genericList = irType.irMetaTypeList;
+            if (genericList != null && genericList.Count > 0)
+            {
+                sb.Append("<");
+                for (int i = 0; i < genericList.Count; i++)
+                {
+                    if (i > 0) sb.Append(", ");
+                    sb.Append(FormatIRMetaType(genericList[i]));
+                }
+                sb.Append(">");
+            }
+
+            if (irType.templateIndex >= 0)
+            {
+                sb.Append("[T:");
+                sb.Append(irType.templateIndex);
+                sb.Append("]");
+            }
+
+            return sb.ToString();
         }
         public void GlobalVariable()
         {
