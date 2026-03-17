@@ -6,10 +6,9 @@ Project
     {
         Array<BridgeObject> paramObjs = new(1)
         paramObjs[0] = BridgeObject(text)
-        NativeBridge.Call( BridgeKind.CSharp, "System.Console", 
+        NativeBridge.Call( BridgeKind.CLR, "System.Console",
         "WriteLine", null, paramObjs );
     }
-
     _main_()
     {
         #ObjectTest.fun()

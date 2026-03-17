@@ -213,7 +213,7 @@ namespace SimpleLanguage.Export.SLIR
 
                 pkg.methodList.Add(mp);
 
-                if (bestEntry == null && string.Equals(m.onlyFunctionName, "Main", StringComparison.OrdinalIgnoreCase))
+                if (bestEntry == null && string.Equals(m.onlyFunctionName, "_main_", StringComparison.OrdinalIgnoreCase))
                 {
                     if (m.IRDataList != null && m.IRDataList.Count > 0)
                         bestEntry = m.id;

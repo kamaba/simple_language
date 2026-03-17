@@ -140,7 +140,7 @@ namespace SimpleLanguage.Core
             return mv;
         }
 
-        private MetaMemberFunction CreateLocalInitFunction(MetaClass localMc, FileMetaGlobalOrLocalSyntax localSyntax)
+        private MetaMemberFunction CreateLocalInitFunction(MetaClass localMc, FileMetaLocalSyntax localSyntax)
         {
             if (localMc == null || localSyntax == null) return null;
 
@@ -204,10 +204,10 @@ namespace SimpleLanguage.Core
                 init.ParseStatements();
             }
 
-            // Inject init calls into Project.Main() if present.
+            // Inject init calls into Project._main_() if present.
             var project = ClassManager.instance.GetClassByName("S.Project", 0) ?? ClassManager.instance.GetClassByName("Core.Project", 0);
             if (project == null) return;
-            var main = project.GetFirstMetaMemberFunctionByName("Main");
+            var main = project.GetFirstMetaMemberFunctionByName("_main_");
             if (main == null) return;
 
             var mbs = main.metaBlockStatements;

@@ -114,6 +114,10 @@ namespace SimpleLanguage.Core
         {
             this.m_IsStatic = iss;
         }
+        public void SetIsConst(bool isc)
+        {
+            this.m_IsConst = isc;
+        }
         public void SetVariableNameToken( Token token )
         {
             m_VariableNameToken = token;

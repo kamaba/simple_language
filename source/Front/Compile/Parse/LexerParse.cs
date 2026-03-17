@@ -1021,6 +1021,11 @@ namespace SimpleLanguage.Compile
             do
             {
                 m_TempChar = ReadChar();
+                if( m_TempChar == END_CHAR)
+                {
+                    Debug.Write("Error 字符串没有找到结束的 \" ");
+                    break;
+                }
                 if (m_TempChar == '\\')
                 {
                     m_TempChar = ReadChar();

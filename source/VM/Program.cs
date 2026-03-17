@@ -82,41 +82,22 @@ try
             }
         }
 
-        // 1) init globalStaticVariableList from all loaded modules (dependency -> current)
-        SimpleLanguage.VM.Runtime.CLRVM.ResetGlobalVariableMapping();
-        var allGlobalInitInstructions = new List<Instruction>();
-        for (int i = 0; i < packageList.Count; i++)
-        {
-            var p = packageList[i];
-            if (p.globalStaticVariableList != null)
-            {
-                for (int g = 0; g < p.globalStaticVariableList.Count; g++)
-                {
-                    var gv = p.globalStaticVariableList[g];
-                    SimpleLanguage.VM.Runtime.CLRVM.RegisterGlobalVariable(gv.id, gv.typeName, gv.ownerClassId, gv.index);
-                }
-            }
-
-            if (p.globalInitInstructionList != null && p.globalInitInstructionList.Count > 0)
-            {
-                allGlobalInitInstructions.AddRange(SLModulePackageLoader.ConvertToVMInstructionList(p.globalInitInstructionList));
-            }
-            else if (p.globalInitInstructions != null && p.globalInitInstructions.Count > 0)
-            {
-                allGlobalInitInstructions.AddRange(SLModulePackageLoader.ConvertToVMInstructionList(p.globalInitInstructions));
-            }
-        }
-        SimpleLanguage.VM.Runtime.CLRVM.SetGlobalInitInstructions(allGlobalInitInstructions);
-        SimpleLanguage.VM.Runtime.CLRVM.LoadGlobalVariableMapping();
-
         // Optional execution: SIMPLELANG_ENTRY_METHOD=<methodId>
         var entryId = Environment.GetEnvironmentVariable("SIMPLELANG_ENTRY_METHOD");
+        bool runTest = args.Any(a => string.Equals(a, "-test", StringComparison.OrdinalIgnoreCase));
         if (string.IsNullOrWhiteSpace(entryId))
         {
-            entryId = currentPkg.entryMethodId;
+            if (runTest)
+            {
+                entryId = currentPkg.methodList?.FirstOrDefault(m => string.Equals(m.name, "_test_", StringComparison.OrdinalIgnoreCase))?.id;
+            }
+            else
+            {
+                entryId = currentPkg.entryMethodId;
+            }
         }
 
-        // 2) run Main/entry of current module
+        // 1) run Main/entry of current module
         if (!string.IsNullOrWhiteSpace(entryId))
         {
             var rm = SLRuntimeModuleRegistry.GetMethod(entryId);

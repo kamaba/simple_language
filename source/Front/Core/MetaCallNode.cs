@@ -802,6 +802,17 @@ namespace SimpleLanguage.Core
                                 {
                                     return false;
                                 }
+
+                                if (m_MetaVariable != null && m_MetaVariable.permission == EPermission.Private)
+                                {
+                                    Log.AddInStructMeta(EError.None, "Error global." + m_Name + " 不允许访问 private 成员");
+                                    return false;
+                                }
+                                if (m_MetaFunction != null && m_MetaFunction.permission == EPermission.Private)
+                                {
+                                    Log.AddInStructMeta(EError.None, "Error global." + m_Name + " 不允许访问 private 函数");
+                                    return false;
+                                }
                                 return true;
                             }
                         }

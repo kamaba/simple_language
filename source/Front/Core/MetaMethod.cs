@@ -116,6 +116,10 @@ namespace SimpleLanguage.Core
                 defaultReturnType
             );
         }
+        public void SetIsStatic(bool isStatic)
+        {
+            m_IsStatic = isStatic;
+        }
         public MetaFunction( MetaFunction mf ):base(mf)
         {
             m_IsParsed = mf.m_IsParsed;

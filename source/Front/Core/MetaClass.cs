@@ -746,6 +746,9 @@ namespace SimpleLanguage.Core
         }
         public void ParseFileMetaClassMemeberVarAndFunc( FileMetaClass fmc )
         {
+            bool isProjectSpecialClass = string.Equals(this.name, "Project", StringComparison.OrdinalIgnoreCase)
+                && fmc?.fileMeta?.path?.EndsWith(".sp", StringComparison.OrdinalIgnoreCase) == true;
+
             bool isHave = false;
             foreach (var v2 in fmc.memberVariableList)
             {
@@ -772,6 +775,15 @@ namespace SimpleLanguage.Core
                 else
                     isHave = false;
                 MetaMemberVariable mmv = new MetaMemberVariable(this, v2);
+                if (isProjectSpecialClass)
+                {
+                    if (v2.staticToken != null || v2.constToken != null)
+                    {
+                        Log.AddInStructMeta(EError.None, "Error Project类成员变量不允许显式定义 static/const，系统会按全局语义处理: " + v2.token?.ToLexemeAllString());
+                    }
+                    mmv.SetIsStatic(true);
+                    mmv.SetIsConst(true);
+                }
                 if (isHave)
                 {
                     mmv.SetName(mmv.name + "__repeat__");
@@ -789,6 +801,14 @@ namespace SimpleLanguage.Core
                 }
 
                 MetaMemberFunction mmf = new MetaMemberFunction( this, v2 );
+                if (isProjectSpecialClass)
+                {
+                    if (v2.staticToken != null)
+                    {
+                        Log.AddInStructMeta(EError.None, "Info Project类成员函数默认按 static 处理: " + v2.token?.ToLexemeAllString());
+                    }
+                    mmf.SetIsStatic(true);
+                }
                 m_FileCollectMetaMemberFunctionList.Add(mmf);
                 MethodManager.instance.AddOriginalMemeberFunction(mmf);
             }            

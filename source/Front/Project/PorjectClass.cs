@@ -61,7 +61,11 @@ namespace SimpleLanguage.Project
             MetaMemberFunction mmf = project.GetFirstMetaMemberFunctionByName("Test");
             if (mmf == null)
             {
-                Debug.Write("Error project.Main函数!!");
+                mmf = project.GetFirstMetaMemberFunctionByName("_test_");
+            }
+            if (mmf == null)
+            {
+                Debug.Write("Error project._test_函数!!");
                 return;
             }
             //var irmethod = IRManager.instance.GetIRMethod(mmf.allName);
@@ -81,10 +85,10 @@ namespace SimpleLanguage.Project
                     return;
                 }
             }
-            MetaMemberFunction mmf = projectEnter.GetFirstMetaMemberFunctionByName("Main");
+            MetaMemberFunction mmf = projectEnter.GetFirstMetaMemberFunctionByName("_main_");
             if (mmf == null)
             {
-                Debug.Write("Error 没有找到Project.Main函数!!");
+                Debug.Write("Error 没有找到Project._main_函数!!");
                 return;
             }
             //var irmethod = IRManager.instance.GetIRMethod(mmf.functionAllName);

@@ -13,26 +13,23 @@ using System.Text;
 
 namespace SimpleLanguage.Compile
 {
-    public sealed class FileMetaGlobalOrLocalSyntax : FileMetaBase
+    public sealed class FileMetaLocalSyntax : FileMetaBase
     {
-        public bool isLocal => m_IsLocal;
         public FileMetaBlockSyntax blockSyntax => m_BlockSyntax;
         public List<FileMetaMemberFunction> functionList => m_FunctionList;
 
-        private readonly bool m_IsLocal;
         private readonly FileMetaBlockSyntax m_BlockSyntax;
         private readonly List<FileMetaMemberFunction> m_FunctionList = new List<FileMetaMemberFunction>();
         private readonly FileMetaMemberFunction m_InitFileMetaMemberFunction = null;
 
-        public FileMetaGlobalOrLocalSyntax(FileMeta fm, Token token, Node blockNode, bool isLocal)
+        public FileMetaLocalSyntax(FileMeta fm, Token token, Node blockNode)
         {
-            m_IsLocal = isLocal;
             m_FileMeta = fm;
             m_Token = token;
 
             if (blockNode == null || blockNode.nodeType != ENodeType.Brace)
             {
-                Log.AddInStructFileMeta(EError.None, "Error " + (m_IsLocal ? "local" : "global") + " 后必须跟 {} 块");
+                Log.AddInStructFileMeta(EError.None, "Error local 后必须跟 {} 块");
                 return;
             }
 
@@ -40,11 +37,20 @@ namespace SimpleLanguage.Compile
             var right = blockNode.endToken;
             if (left == null || right == null)
             {
-                Debug.Assert(false, (m_IsLocal ? "local" : "global") + " block token missing");
+                Debug.Assert(false, "local block token missing");
                 return;
             }
 
             m_BlockSyntax = new FileMetaBlockSyntax(fm, left, right);
+        }
+
+        public FileMetaLocalSyntax(FileMeta fm, Token token, Node blockNode, bool isLocal)
+            : this(fm, token, blockNode)
+        {
+            if (!isLocal)
+            {
+                Log.AddInStructFileMeta(EError.None, "Info global{} 解析已禁用，当前仅保留 local{} 逻辑");
+            }
         }
 
         public void AddInitSyntax(FileMetaSyntax syntax)
@@ -60,8 +66,8 @@ namespace SimpleLanguage.Compile
 
         public void AddLocalInitSyntax(FileMetaSyntax syntax) => AddInitSyntax(syntax);
         public void AddLocalFunction(FileMetaMemberFunction fn) => AddFunction(fn);
-        public void AddGlobalInitSyntax(FileMetaSyntax syntax) => AddInitSyntax(syntax);
-        public void AddGlobalFunction(FileMetaMemberFunction fn) => AddFunction(fn);
+        public void AddGlobalInitSyntax(FileMetaSyntax syntax) { }
+        public void AddGlobalFunction(FileMetaMemberFunction fn) { }
 
         public override void SetDeep(int _deep)
         {
@@ -73,7 +79,7 @@ namespace SimpleLanguage.Compile
         {
             var sb = new StringBuilder();
             for (int i = 0; i < deep; i++) sb.Append(Global.tabChar);
-            sb.Append(m_IsLocal ? "local" : "global");
+            sb.Append("local");
             if (m_BlockSyntax != null)
             {
                 sb.Append(Environment.NewLine);

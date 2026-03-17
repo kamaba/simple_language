@@ -578,18 +578,18 @@ namespace SimpleLanguage.Compile
                 return;
             }
 
-            var fls = new FileMetaGlobalOrLocalSyntax(m_FileMeta, localNode.token, blockNode, true);
+            var fls = new FileMetaLocalSyntax(m_FileMeta, localNode.token, blockNode, true);
             m_FileMeta.SetFileMetaLocalSyntax(fls);
 
             ParseLocalContent(fls, blockNode);
         }
 
-        private void ParseLocalContent(FileMetaGlobalOrLocalSyntax fls, Node blockNode)
+        private void ParseLocalContent(FileMetaLocalSyntax fls, Node blockNode)
         {
             ParseGlobalOrLocalContent(fls, blockNode, true);
         }
 
-        private bool TryParseLocalFunction(Node ownerBlock, FileMetaGlobalOrLocalSyntax fls, List<Node> lineNodes, ref bool hasFunction)
+        private bool TryParseLocalFunction(Node ownerBlock, FileMetaLocalSyntax fls, List<Node> lineNodes, ref bool hasFunction)
         {
             int dummy = -1;
             return TryParseGlobalOrLocalFunction(ownerBlock, fls, lineNodes, ref hasFunction, ref dummy, true);
@@ -635,22 +635,19 @@ namespace SimpleLanguage.Compile
 
             if (blockNode == null)
             {
-                Log.AddInStructFileMeta(EError.None, "Error global 后必须跟 {} 块");
+                Log.AddInStructFileMeta(EError.None, "Info global{} 解析已禁用");
                 return;
             }
 
-            var fgs = new FileMetaGlobalOrLocalSyntax(m_FileMeta, globalNode.token, blockNode, false);
-            m_FileMeta.SetFileMetaGlobalSyntax(fgs);
-
-            ParseGlobalOrLocalContent(fgs, blockNode, false );
+            Log.AddInStructFileMeta(EError.None, "Info global{} 解析已禁用，已跳过该块");
         }
-        private bool TryParseGlobalFunction(Node ownerBlock, FileMetaGlobalOrLocalSyntax fgs, List<Node> lineNodes, ref bool hasFunction)
+        private bool TryParseGlobalFunction(Node ownerBlock, FileMetaLocalSyntax fgs, List<Node> lineNodes, ref bool hasFunction)
         {
             int dummy = -1;
             return TryParseGlobalOrLocalFunction(ownerBlock, fgs, lineNodes, ref hasFunction, ref dummy, false);
         }
 
-        private void ParseGlobalOrLocalContent(FileMetaGlobalOrLocalSyntax syntax, Node blockNode, bool isLocal)
+        private void ParseGlobalOrLocalContent(FileMetaLocalSyntax syntax, Node blockNode, bool isLocal)
         {
             if (syntax == null || blockNode == null) return;
 
@@ -713,7 +710,7 @@ namespace SimpleLanguage.Compile
             }
         }
 
-        private bool TryParseGlobalOrLocalFunction(Node ownerBlock, FileMetaGlobalOrLocalSyntax syntax, List<Node> lineNodes, ref bool hasFunction, ref int contentIndex, bool isLocal)
+        private bool TryParseGlobalOrLocalFunction(Node ownerBlock, FileMetaLocalSyntax syntax, List<Node> lineNodes, ref bool hasFunction, ref int contentIndex, bool isLocal)
         {
             if (lineNodes == null || lineNodes.Count == 0) return false;
 

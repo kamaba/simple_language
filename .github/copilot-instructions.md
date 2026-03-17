@@ -11,6 +11,8 @@
 
 ## Project-Specific Rules
 - VM execution order: after reading SLIR, first initialize VM, then parse IRClass, and finally parse and initialize globalVariableValueList.
+- Users have decided to cancel the global processing flow during the VM startup phase, shifting this responsibility to the Project{} entry point itself.
+- Users have decided to remove `global{}` parsing at the Front layer, retaining only `local{}`; `FileMetaGlobalOrLocalSyntax` must be changed to `FileMetaLocalSyntax` and all global-related logic removed.
 - VM ???????????????????????????? Front ???/??????
 - ????? Assembly/Module/IR ???????????/?????????????? JSON/?????????????????? VM ?? ProjectReference ?? Front??
 - Export custom bytecode/IR container (SLIR) from Front IR, including class metadata (member vars/functions/relations) plus reader and dump tooling; export should be opt-in via env vars and not add VM->Front dependencies.

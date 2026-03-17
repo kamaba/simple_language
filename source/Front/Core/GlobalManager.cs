@@ -31,7 +31,7 @@ namespace SimpleLanguage.Core
             if (fileParses == null) return;
             if (m_GlobalClass != null) return;
 
-            var globalSyntaxList = new List<FileMetaGlobalOrLocalSyntax>();
+            var globalSyntaxList = new List<FileMetaLocalSyntax>();
             for (int i = 0; i < fileParses.Count; i++)
             {
                 var fm = fileParses[i]?.file;
@@ -119,7 +119,7 @@ namespace SimpleLanguage.Core
 
             var project = ClassManager.instance.GetClassByName("S.Project", 0) ?? ClassManager.instance.GetClassByName("Core.Project", 0);
             if (project == null) return;
-            var main = project.GetFirstMetaMemberFunctionByName("Main");
+            var main = project.GetFirstMetaMemberFunctionByName("_main_");
             if (main == null) return;
 
             var mbs = main.metaBlockStatements;
