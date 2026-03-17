@@ -7,20 +7,12 @@ namespace SimpleLanguage.VM.Runtime
 {
     public class CLRVM
     {
-        private sealed class GlobalVariableMeta
-        {
-            public string typeName = string.Empty;
-            public int ownerClassId;
-            public int index;
-        }
-
         public static bool isPrint { get; set; } = false;
         public static RuntimeVM currentCLRRuntime = null;
         public static RuntimeVM topCLRRuntime = null;
 
         private static List<SValue> m_GlobalVariableValueList = new List<SValue>();
         private static Dictionary<int, int> m_GlobalVariableId2IndexDict = new Dictionary<int, int>();
-        private static Dictionary<int, GlobalVariableMeta> m_GlobalVariableMetaDict = new Dictionary<int, GlobalVariableMeta>();
         private static List<Instruction> m_GlobalInitInstructionList = new List<Instruction>();
         public static Stack<RuntimeVM> clrRuntimeStack => m_ClrRuntimeStack;
 
@@ -99,26 +91,6 @@ namespace SimpleLanguage.VM.Runtime
         }
         public static void LoadGlobalVariableMapping()
         {
-            for (int i = 0; i < m_GlobalVariableValueList.Count; i++)
-            {
-                int globalId = -1;
-                foreach (var kv in m_GlobalVariableId2IndexDict)
-                {
-                    if (kv.Value == i)
-                    {
-                        globalId = kv.Key;
-                        break;
-                    }
-                }
-
-                var v = default(SValue);
-                if (!TryCreateGlobalDefaultValue(globalId, ref v))
-                {
-                    v.SetNull();
-                }
-                m_GlobalVariableValueList[i] = v;
-            }
-
             if (m_GlobalInitInstructionList == null || m_GlobalInitInstructionList.Count == 0)
             {
                 return;
@@ -154,7 +126,6 @@ namespace SimpleLanguage.VM.Runtime
         {
             m_GlobalVariableId2IndexDict.Clear();
             m_GlobalVariableValueList.Clear();
-            m_GlobalVariableMetaDict.Clear();
             m_GlobalInitInstructionList.Clear();
         }
 
@@ -167,12 +138,6 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (m_GlobalVariableId2IndexDict.ContainsKey(id))
             {
-                m_GlobalVariableMetaDict[id] = new GlobalVariableMeta
-                {
-                    typeName = typeName ?? string.Empty,
-                    ownerClassId = ownerClassId,
-                    index = index,
-                };
                 return;
             }
 
@@ -181,107 +146,11 @@ namespace SimpleLanguage.VM.Runtime
             var v = default(SValue);
             v.SetNull();
             m_GlobalVariableValueList.Add(v);
-
-            m_GlobalVariableMetaDict[id] = new GlobalVariableMeta
-            {
-                typeName = typeName ?? string.Empty,
-                ownerClassId = ownerClassId,
-                index = index,
-            };
         }
 
         public static void SetGlobalInitInstructions(List<Instruction> instructionList)
         {
             m_GlobalInitInstructionList = instructionList ?? new List<Instruction>();
-        }
-
-        private static bool TryCreateGlobalDefaultValue(int globalId, ref SValue value)
-        {
-            if (globalId == -1) return false;
-
-            if (m_GlobalVariableMetaDict.TryGetValue(globalId, out var meta))
-            {
-                var typeName = meta.typeName ?? string.Empty;
-
-                if (typeName.EndsWith("Boolean", StringComparison.OrdinalIgnoreCase) || typeName.EndsWith("Bool", StringComparison.OrdinalIgnoreCase))
-                {
-                    value.SetBoolValue(false);
-                    return true;
-                }
-                if (typeName.EndsWith("String", StringComparison.OrdinalIgnoreCase))
-                {
-                    value.SetStringValue(string.Empty);
-                    return true;
-                }
-                if (typeName.EndsWith("Float32", StringComparison.OrdinalIgnoreCase))
-                {
-                    value.SetFloatValue(0f);
-                    return true;
-                }
-                if (typeName.EndsWith("Float64", StringComparison.OrdinalIgnoreCase))
-                {
-                    value.SetDoubleValue(0d);
-                    return true;
-                }
-                if (typeName.EndsWith("UInt64", StringComparison.OrdinalIgnoreCase))
-                {
-                    value.SetUInt64Value(0UL);
-                    return true;
-                }
-                if (typeName.EndsWith("Int64", StringComparison.OrdinalIgnoreCase))
-                {
-                    value.SetInt64Value(0L);
-                    return true;
-                }
-                if (typeName.EndsWith("UInt32", StringComparison.OrdinalIgnoreCase))
-                {
-                    value.SetUInt32Value(0U);
-                    return true;
-                }
-                if (typeName.EndsWith("Int32", StringComparison.OrdinalIgnoreCase))
-                {
-                    value.SetInt32Value(0);
-                    return true;
-                }
-                if (typeName.EndsWith("UInt16", StringComparison.OrdinalIgnoreCase))
-                {
-                    value.SetUInt16Value(0);
-                    return true;
-                }
-                if (typeName.EndsWith("Int16", StringComparison.OrdinalIgnoreCase))
-                {
-                    value.SetInt16Value(0);
-                    return true;
-                }
-                if (typeName.EndsWith("Byte", StringComparison.OrdinalIgnoreCase))
-                {
-                    value.SetInt8Value(0);
-                    return true;
-                }
-
-                RuntimeClass rc = null;
-                if (meta.ownerClassId != 0)
-                {
-                    rc = RuntimeClassManager.instance.GetRuntimeClassById(meta.ownerClassId);
-                }
-                if (rc == null && !string.IsNullOrEmpty(typeName))
-                {
-                    rc = RuntimeClassManager.instance.GetRuntimeClassByName(typeName);
-                }
-
-                if (rc != null)
-                {
-                    var rt = RuntimeTypeManager.GetRuntimeTypeByClassId(rc.id) ?? RuntimeTypeManager.AddRuntimeTypeByClass(rc);
-                    if (rt != null)
-                    {
-                        var sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
-                        value.SetSObject(sobj);
-                        return true;
-                    }
-                }
-            }
-
-            return false;
         }
         public static void StoreGlobalVariable( int id, ref SValue savl )
         {

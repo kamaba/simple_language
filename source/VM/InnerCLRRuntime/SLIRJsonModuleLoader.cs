@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using SimpleLanguage.VM.Runtime;
 
 namespace SimpleLanguage.VM
 {
@@ -13,9 +12,6 @@ namespace SimpleLanguage.VM
             public List<IRStringItem> irStringDict { get; set; } = new();
             public List<ClassModel> classes { get; set; } = new();
             public List<MethodModel> methods { get; set; } = new();
-            public List<GlobalStaticVariableModel> globalStaticVariableList { get; set; } = new();
-            public List<InstructionModel> globalInitInstructions { get; set; } = new();
-            public List<InstructionModel> globalInitInstructionList { get; set; } = new();
         }
 
         public sealed class IRStringItem
@@ -49,15 +45,6 @@ namespace SimpleLanguage.VM
             public int localCount { get; set; }
             public int returnCount { get; set; }
             public List<InstructionModel> instructions { get; set; } = new();
-        }
-
-        public sealed class GlobalStaticVariableModel
-        {
-            public int id { get; set; }
-            public string name { get; set; } = string.Empty;
-            public int ownerClassId { get; set; }
-            public int index { get; set; }
-            public string type { get; set; } = string.Empty;
         }
 
         public sealed class InstructionModel
@@ -109,9 +96,6 @@ namespace SimpleLanguage.VM
         {
             var m = ReadModule(jsonPath);
 
-            // 1) Init VM runtime state
-            CLRVM.Init();
-
             var rcm = RuntimeClassManager.instance;
             rcm.m_IRMetaClassList.Clear();
 
@@ -127,7 +111,6 @@ namespace SimpleLanguage.VM
                 rcm.m_IRMetaClassList.Add(rc);
             }
 
-            // 2) Parse IR classes into runtime types first
             for (int i = 0; i < rcm.m_IRMetaClassList.Count; i++)
             {
                 var rc = rcm.m_IRMetaClassList[i];
@@ -157,61 +140,6 @@ namespace SimpleLanguage.VM
             }
 
             // Methods: consumer can interpret instructions and run via existing VM pipeline once method binding is added.
-
-            // 3) Parse and initialize globalVariableValueList after classes/types are ready
-            InitializeGlobalStaticVariablesAndRunInit(m);
-        }
-
-        private static void InitializeGlobalStaticVariablesAndRunInit(Module m)
-        {
-            CLRVM.ResetGlobalVariableMapping();
-
-            if (m?.globalStaticVariableList != null)
-            {
-                for (int i = 0; i < m.globalStaticVariableList.Count; i++)
-                {
-                    var gv = m.globalStaticVariableList[i];
-                    CLRVM.RegisterGlobalVariable(gv.id, gv.type, gv.ownerClassId, gv.index);
-                }
-            }
-
-            var initList = (m?.globalInitInstructionList != null && m.globalInitInstructionList.Count > 0)
-                ? m.globalInitInstructionList
-                : m?.globalInitInstructions;
-
-            if (initList == null || initList.Count == 0)
-            {
-                return;
-            }
-
-            var irList = ConvertToInstructions(initList);
-            CLRVM.SetGlobalInitInstructions(irList);
-            CLRVM.LoadGlobalVariableMapping();
-        }
-
-        private static List<Instruction> ConvertToInstructions(List<InstructionModel> models)
-        {
-            var list = new List<Instruction>();
-            if (models == null) return list;
-
-            foreach (var m in models)
-            {
-                if (m == null) continue;
-                if (!Enum.TryParse<EIROpCode>(m.opCode, out var op))
-                {
-                    continue;
-                }
-
-                var ins = new Instruction
-                {
-                    opCode = op,
-                    index = m.index,
-                    Payload = string.IsNullOrEmpty(m.payloadBase64) ? Array.Empty<byte>() : Convert.FromBase64String(m.payloadBase64),
-                };
-                list.Add(ins);
-            }
-
-            return list;
         }
 
         private static int StableId32(string s)

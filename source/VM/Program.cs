@@ -82,6 +82,37 @@ try
             }
         }
 
+        // 1) init globalStaticVariableList and execute global init expressions before entry
+        SimpleLanguage.VM.Runtime.CLRVM.ResetGlobalVariableMapping();
+        var allGlobalInitInstructions = new List<Instruction>();
+        int globalVarCount = 0;
+        for (int i = 0; i < packageList.Count; i++)
+        {
+            var p = packageList[i];
+            if (p.globalStaticVariableList != null)
+            {
+                globalVarCount += p.globalStaticVariableList.Count;
+                for (int g = 0; g < p.globalStaticVariableList.Count; g++)
+                {
+                    var gv = p.globalStaticVariableList[g];
+                    SimpleLanguage.VM.Runtime.CLRVM.RegisterGlobalVariable(gv.id, gv.typeName, gv.ownerClassId, gv.index);
+                }
+            }
+
+            if (p.globalStaticInstructionList != null && p.globalStaticInstructionList.Count > 0)
+            {
+                for (int gs = 0; gs < p.globalStaticInstructionList.Count; gs++)
+                {
+                    var gsi = p.globalStaticInstructionList[gs];
+                    if (gsi?.instructionList == null || gsi.instructionList.Count == 0) continue;
+                    allGlobalInitInstructions.AddRange(SLModulePackageLoader.ConvertToVMInstructionList(gsi.instructionList));
+                }
+            }
+        }
+        Console.WriteLine($"GlobalStaticVariableList: {globalVarCount}, GlobalInitInstructions: {allGlobalInitInstructions.Count}");
+        SimpleLanguage.VM.Runtime.CLRVM.SetGlobalInitInstructions(allGlobalInitInstructions);
+        SimpleLanguage.VM.Runtime.CLRVM.LoadGlobalVariableMapping();
+
         // Optional execution: SIMPLELANG_ENTRY_METHOD=<methodId>
         var entryId = Environment.GetEnvironmentVariable("SIMPLELANG_ENTRY_METHOD");
         bool runTest = args.Any(a => string.Equals(a, "-test", StringComparison.OrdinalIgnoreCase));
@@ -97,7 +128,7 @@ try
             }
         }
 
-        // 1) run Main/entry of current module
+        // 2) run Main/entry of current module
         if (!string.IsNullOrWhiteSpace(entryId))
         {
             var rm = SLRuntimeModuleRegistry.GetMethod(entryId);

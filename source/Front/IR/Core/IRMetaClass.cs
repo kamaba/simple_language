@@ -207,7 +207,12 @@ namespace SimpleLanguage.IR
                     var v = staticMetaMemberVariables[i];
 
                     IRMetaVariable irmv = new IRMetaVariable(this, v, i);
-                    if (v.realMetaType.GenTemplateIsIncludeTemplate())
+                    bool isProjectLikeClass = m_MetaClass != null
+                        && m_MetaClass.name == "Project"
+                        && !string.IsNullOrEmpty(this.m_SourcePath)
+                        && this.m_SourcePath.EndsWith(".sp", System.StringComparison.OrdinalIgnoreCase);
+
+                    if (isProjectLikeClass || v.realMetaType.GenTemplateIsIncludeTemplate())
                     {
                         m_StaticIRMetaVariableList.Add(irmv);
                         AddMetaMemberVariableIndexBindHashCode(v.GetHashCode(), i);

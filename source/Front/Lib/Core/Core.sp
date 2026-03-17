@@ -1,7 +1,7 @@
 
 Project
 {
-    Pi = 3.14
+    float Pi = 3.14f
     print( string text )
     {
         Array<BridgeObject> paramObjs = new(1)

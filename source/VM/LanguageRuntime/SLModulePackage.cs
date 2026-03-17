@@ -12,8 +12,8 @@ namespace SimpleLanguage.VM.LanguageRuntime
         public List<SLNamespacePackage> namespaceList { get; set; } = new();
         public List<SLClassPackage> classList { get; set; } = new();
         public List<SLGlobalStaticVariablePackage> globalStaticVariableList { get; set; } = new();
+        public List<SLGlobalStaticInstructionPackage> globalStaticInstructionList { get; set; } = new();
         public List<SLIRInstructionPackage> globalInitInstructionList { get; set; } = new();
-        public List<SLIRInstructionPackage> globalInitInstructions { get; set; } = new();
         public List<SLMethodPackage> methodList { get; set; } = new();
     }
 
@@ -24,6 +24,12 @@ namespace SimpleLanguage.VM.LanguageRuntime
         public int ownerClassId { get; set; }
         public int index { get; set; }
         public string typeName { get; set; } = string.Empty;
+    }
+
+    public sealed class SLGlobalStaticInstructionPackage
+    {
+        public int id { get; set; }
+        public List<SLIRInstructionPackage> instructionList { get; set; } = new();
     }
 
     public sealed class IRStringItem

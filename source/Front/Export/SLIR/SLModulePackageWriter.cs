@@ -114,22 +114,6 @@ namespace SimpleLanguage.Export.SLIR
                 pkg.classList.Add(cm);
             }
 
-            if (ir.globalStaticVariableList != null)
-            {
-                foreach (var gv in ir.globalStaticVariableList)
-                {
-                    if (gv == null) continue;
-                    pkg.globalStaticVariableList.Add(new SLGlobalStaticVariablePackage
-                    {
-                        id = gv.id,
-                        name = gv.name ?? string.Empty,
-                        ownerClassId = gv.irMetaType?.irOwnerMetaClass?.id ?? 0,
-                        index = gv.index,
-                        typeName = NormalizeTypeName(gv.irMetaType?.ToString() ?? string.Empty),
-                    });
-                }
-            }
-
             var globalInitIR = new List<IRData>();
             if (ir.globalStaticVariableList != null)
             {
@@ -142,6 +126,36 @@ namespace SimpleLanguage.Export.SLIR
                     {
                         var expr = IRExpressManager.CreateExpress(null, gv.express);
                         var store = new IRStoreVariable(gv.irMetaType, null, gv.id, IRMetaVariableFrom.Global);
+
+                        var one = new List<IRData>();
+                        if (expr?.IRDataList != null) one.AddRange(expr.IRDataList);
+                        if (store?.IRDataList != null) one.AddRange(store.IRDataList);
+
+                        var onePack = new SLGlobalStaticInstructionPackage
+                        {
+                            id = gv.id,
+                            instructionList = new List<SLIRInstructionPackage>(),
+                        };
+
+                        for (int j = 0; j < one.Count; j++)
+                        {
+                            var d2 = one[j];
+                            if (d2 == null) continue;
+                            d2.id = j;
+                            try { d2.FinalizePack(); } catch { }
+
+                            onePack.instructionList.Add(new SLIRInstructionPackage
+                            {
+                                id = d2.id,
+                                opCode = (byte)d2.opCode,
+                                opValue = null,
+                                payload = d2.Payload,
+                                index = d2.index,
+                                byteLength = d2.ByteLength,
+                                offset = d2.offset,
+                            });
+                        }
+                        pkg.globalStaticInstructionList.Add(onePack);
 
                         if (expr?.IRDataList != null) globalInitIR.AddRange(expr.IRDataList);
                         if (store?.IRDataList != null) globalInitIR.AddRange(store.IRDataList);
@@ -169,6 +183,22 @@ namespace SimpleLanguage.Export.SLIR
                     byteLength = d.ByteLength,
                     offset = d.offset,
                 });
+            }
+
+            if (ir.globalStaticVariableList != null)
+            {
+                foreach (var gv in ir.globalStaticVariableList)
+                {
+                    if (gv == null) continue;
+                    pkg.globalStaticVariableList.Add(new SLGlobalStaticVariablePackage
+                    {
+                        id = gv.id,
+                        name = gv.name ?? string.Empty,
+                        ownerClassId = gv.irMetaType?.irOwnerMetaClass?.id ?? 0,
+                        index = gv.index,
+                        typeName = NormalizeTypeName(gv.irMetaType?.ToString() ?? string.Empty),
+                    });
+                }
             }
 
             // methods
@@ -285,8 +315,15 @@ namespace SimpleLanguage.Export.SLIR
         public List<SLNamespacePackage> namespaceList { get; set; } = new();
         public List<SLClassPackage> classList { get; set; } = new();
         public List<SLGlobalStaticVariablePackage> globalStaticVariableList { get; set; } = new();
+        public List<SLGlobalStaticInstructionPackage> globalStaticInstructionList { get; set; } = new();
         public List<SLIRInstructionPackage> globalInitInstructionList { get; set; } = new();
         public List<SLMethodPackage> methodList { get; set; } = new();
+    }
+
+    internal sealed class SLGlobalStaticInstructionPackage
+    {
+        public int id { get; set; }
+        public List<SLIRInstructionPackage> instructionList { get; set; } = new();
     }
 
     internal sealed class SLGlobalStaticVariablePackage

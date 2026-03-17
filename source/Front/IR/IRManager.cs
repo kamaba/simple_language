@@ -92,6 +92,10 @@ namespace SimpleLanguage.IR
                     {
                         var irClass = classList[i];
                         sb.AppendLine("Class: " + irClass.irName);
+                        AppendIRVariableList(sb, "  ClassLocals", irClass.localIRMetaVariableList);
+                        AppendIRVariableList(sb, "  ClassStatics", irClass.staticIRMetaVariableList);
+                        AppendGlobalBindingList(sb, "  GlobalBindings", irClass, m_GlobalStaticVariableList);
+                        sb.AppendLine();
 
                         foreach (var methodKv in IRMethodDict)
                         {
@@ -190,6 +194,46 @@ namespace SimpleLanguage.IR
             }
 
             return sb.ToString();
+        }
+
+        private static void AppendGlobalBindingList(StringBuilder sb, string title, IRMetaClass irClass, List<IRMetaVariable> globalList)
+        {
+            if (irClass == null || globalList == null || globalList.Count == 0)
+            {
+                sb.AppendLine(title + ": []");
+                return;
+            }
+
+            int hit = 0;
+            for (int i = 0; i < globalList.Count; i++)
+            {
+                var g = globalList[i];
+                if (g?.irMetaType?.irOwnerMetaClass != irClass) continue;
+
+                if (hit == 0)
+                {
+                    sb.AppendLine(title + ":");
+                }
+
+                sb.Append("      - #");
+                sb.Append(i);
+                sb.Append(" id=");
+                sb.Append(g.id);
+                sb.Append(" owner=");
+                sb.Append(irClass.irName);
+                sb.Append(" ownerFieldIndex=");
+                sb.Append(g.index);
+                sb.Append(" name=");
+                sb.Append(g.name);
+                sb.Append(" type=");
+                sb.AppendLine(FormatIRMetaType(g.irMetaType));
+                hit++;
+            }
+
+            if (hit == 0)
+            {
+                sb.AppendLine(title + ": []");
+            }
         }
         public void GlobalVariable()
         {
