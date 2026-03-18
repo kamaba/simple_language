@@ -433,7 +433,7 @@ namespace SimpleLanguage.Core
                     m_MetaType = new MetaType(m_MetaClass);
                 }
             }
-            else if (etype == ETokenType.Global)
+            else if ( etype == ETokenType.Global)
             {
                 if (isFirst)
                 {
@@ -443,6 +443,21 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
+                        // New behavior: global.xxx reads from Project{} static members in .sp.
+                        var projectMc = ClassManager.instance.GetClassByName("S.Project", 0)
+                            ?? ClassManager.instance.GetClassByName("Core.Project", 0)
+                            ?? ClassManager.instance.GetClassByName("Project", 0);
+
+                        if (projectMc != null)
+                        {
+                            m_MetaClass = projectMc;
+                            m_MetaType = new MetaType(projectMc);
+                            m_CallMetaType = new MetaType(projectMc);
+                            m_CallNodeType = ECallNodeType.Global;
+                            return true;
+                        }
+
+                        // legacy fallback
                         m_MetaVariable = GlobalManager.instance.GetGlobalInstanceVariable();
                         if (m_MetaVariable != null)
                         {
@@ -581,48 +596,54 @@ namespace SimpleLanguage.Core
                     Log.AddInStructMeta(EError.None, "Error 只有第一位置可以使用base关键字" + m_Token.ToLexemeAllString());
                 }
             }
-            //else if (etype == ETokenType.Type)
-            else if (etype == ETokenType.Local || etype == ETokenType.Identifier || etype == ETokenType.Type)
+            else if (etype == ETokenType.Local)
+            {
+                if( isFirst )
+                {
+                    var fm = m_FileMetaCallNode?.fileMeta;
+                    if (fm == null)
+                    {
+                        Log.AddInStructMeta(EError.None, "Error local 解析失败: fileMeta 为空");
+                        return false;
+                    }
+
+                    if (fm.GetFileMetaLocalSyntax() == null)
+                    {
+                        Log.AddInStructMeta(EError.None, "Error 当前文件未定义 local{}，不允许使用 local.xxx" + m_Token.ToLexemeAllString());
+                        return false;
+                    }
+
+                    var global = ProjectManager.globalData;
+                    if (global == null)
+                    {
+                        Log.AddInStructMeta(EError.None, "Error local 解析失败: globalData 为空");
+                        return false;
+                    }
+
+                    var varName = "local_" + fm.path.GetHashCode();
+                    var mv = global.GetMetaMemberVariableByName(varName);
+                    if (mv == null)
+                    {
+                        Log.AddInStructMeta(EError.None, "Error local 解析失败: 没有找到 local instance 变量: " + varName);
+                        return false;
+                    }
+
+                    m_MetaVariable = mv;
+                    m_CallNodeType = ECallNodeType.Local;
+                    m_MetaType = mv.realMetaType;
+                    m_CallMetaType = new MetaType(global);
+                    return true;                    
+                }
+                else
+                {
+                    Debug.Assert(false, "local.只能在首位!");
+                    return false;
+                }
+            }
+            else if ( etype == ETokenType.Identifier || etype == ETokenType.Type)
             {
                 if (isFirst)
                 {
-                    if (etype == ETokenType.Local)
-                    {
-                        var fm = m_FileMetaCallNode?.fileMeta;
-                        if (fm == null)
-                        {
-                            Log.AddInStructMeta(EError.None, "Error local 解析失败: fileMeta 为空");
-                            return false;
-                        }
-
-                        if (fm.GetFileMetaLocalSyntax() == null)
-                        {
-                            Log.AddInStructMeta(EError.None, "Error 当前文件未定义 local{}，不允许使用 local.xxx" + m_Token.ToLexemeAllString());
-                            return false;
-                        }
-
-                        var global = ProjectManager.globalData;
-                        if (global == null)
-                        {
-                            Log.AddInStructMeta(EError.None, "Error local 解析失败: globalData 为空");
-                            return false;
-                        }
-
-                        var varName = "local_" + fm.path.GetHashCode();
-                        var mv = global.GetMetaMemberVariableByName(varName);
-                        if (mv == null)
-                        {
-                            Log.AddInStructMeta(EError.None, "Error local 解析失败: 没有找到 local instance 变量: " + varName);
-                            return false;
-                        }
-
-                        m_MetaVariable = mv;
-                        m_CallNodeType = ECallNodeType.Local;
-                        m_MetaType = mv.realMetaType;
-                        m_CallMetaType = new MetaType(global);
-                        return true;
-                    }
-
                     // Class1. ns. Int32[]
                     if (GetFirstNode(m_Name, m_OwnerMetaClass, this.m_FileMetaCallNode.inputTemplateNodeList.Count) == false)
                     {
@@ -791,6 +812,25 @@ namespace SimpleLanguage.Core
                     }
                     else if (frontCNT == ECallNodeType.Global)
                     {
+                        if (m_FrontCallNode.m_MetaClass != null)
+                        {
+                            if (GetFunctionOrVariableByOwnerClass(m_FrontCallNode.m_MetaClass, m_Name) == false)
+                            {
+                                return false;
+                            }
+                            if (m_MetaVariable != null && m_MetaVariable.permission == EPermission.Private)
+                            {
+                                Log.AddInStructMeta(EError.None, "Error global." + m_Name + " 不允许访问 private 成员");
+                                return false;
+                            }
+                            if (m_MetaFunction != null && m_MetaFunction.permission == EPermission.Private)
+                            {
+                                Log.AddInStructMeta(EError.None, "Error global." + m_Name + " 不允许访问 private 函数");
+                                return false;
+                            }
+                            return true;
+                        }
+
                         var gmv = m_FrontCallNode.m_MetaVariable;
                         if (gmv != null)
                         {

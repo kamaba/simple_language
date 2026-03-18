@@ -579,11 +579,6 @@ namespace SimpleLanguage.Compile
                         AddImportNode(token);
                     }
                     break;
-                case ETokenType.Local:
-                    {
-                        AddKeyNode(token);
-                    }
-                    break;
                 case ETokenType.Namespace:
                     {
                         AddNamespaceNode(token);
@@ -610,6 +605,7 @@ namespace SimpleLanguage.Compile
                 case ETokenType.This:           //this
                 case ETokenType.Object:
                 case ETokenType.Boolean:
+                case ETokenType.Local:
                 case ETokenType.Global:
                 case ETokenType.Range:
                 case ETokenType.Const:

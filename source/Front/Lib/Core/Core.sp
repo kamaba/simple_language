@@ -2,10 +2,10 @@
 Project
 {
     float Pi = 3.14f
-    print( string text )
+    print( text )
     {
         Array<BridgeObject> paramObjs = new(1)
-        paramObjs[0] = BridgeObject(text)
+        paramObjs[0] = BridgeObject(text.toString())
         NativeBridge.Call( BridgeKind.CLR, "System.Console",
         "WriteLine", null, paramObjs );
     }
@@ -27,6 +27,7 @@ Project
         "SetArrayValueThis", retObj, paramObjs );
         !#
         a = 2 + 4
+        b = a + a
 
         global.print(a)
     }

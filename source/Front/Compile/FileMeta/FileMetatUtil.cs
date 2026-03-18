@@ -113,7 +113,9 @@ namespace SimpleLanguage.Compile
             FileMetaBaseTerm fmbt = null;
             if (node.nodeType == ENodeType.IdentifierLink
                 || (node.nodeType == ENodeType.Key && 
-                        (node.token?.type == ETokenType.This|| node.token?.type == ETokenType.Base ) ) 
+                        (node.token?.type == ETokenType.This
+                        || node.token?.type == ETokenType.Base
+                        || node.token?.type == ETokenType.Global ) ) 
                 )
             {
                 fmbt = new FileMetaCallTerm(fm, node);

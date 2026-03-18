@@ -344,6 +344,8 @@ namespace SimpleLanguage.Compile
                     else if (ttt == ETokenType.This
                        || ttt == ETokenType.Base
                        || ttt == ETokenType.New
+                       || ttt == ETokenType.Global
+                       || ttt == ETokenType.Local
                         )
                     {
                         keynodeStruct.AddContent(curNode);
@@ -458,7 +460,10 @@ namespace SimpleLanguage.Compile
                 else
                 {
                     Token token = cnode.token;
-                    if( token.type == ETokenType.This || token.type == ETokenType.Base )
+                    if (token.type == ETokenType.Global
+                        || token.type == ETokenType.Local
+                        ||  token.type == ETokenType.This
+                        || token.type == ETokenType.Base )
                     {
                         defineNodeList.Add(cnode);
                     }

@@ -130,6 +130,10 @@ namespace SimpleLanguage.Core
                 mdt = TypeManager.instance.GetMetaTypeByTemplateFunction(m_OwnerMetaFunction.ownerMetaClass, m_OwnerMetaFunction as MetaMemberFunction, m_FileMetaParamter.classDefineRef);
                 m_MetaVariable.SetIsDefineMetaType(true);
             }
+            else
+            {
+                m_MetaVariable.SetRealMetaType(mdt);
+            }
             m_MetaVariable.SetMetaDefineType(mdt);
 
             {

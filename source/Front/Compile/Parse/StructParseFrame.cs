@@ -396,26 +396,26 @@ namespace SimpleLanguage.Compile
                                 ParseLocal(pnode);
                             }
                             break;
-                        case ETokenType.Global:
-                            {
-                                if (hasNamespaceOrClass)
-                                {
-                                    Log.AddInStructFileMeta(EError.None, "Error global{} 只能写在 import 后、namespace/class/data/enum 前");
-                                    Debug.Assert(false, "");
-                                    pnode.parseIndex++;
-                                    break;
-                                }
+                        //case ETokenType.Global:
+                        //    {
+                        //        if (hasNamespaceOrClass)
+                        //        {
+                        //            Log.AddInStructFileMeta(EError.None, "Error global{} 只能写在 import 后、namespace/class/data/enum 前");
+                        //            Debug.Assert(false, "");
+                        //            pnode.parseIndex++;
+                        //            break;
+                        //        }
 
-                                if (!m_FileMeta.path.EndsWith(".sp", System.StringComparison.OrdinalIgnoreCase))
-                                {
-                                    Log.AddInStructFileMeta(EError.None, "Error global{} 只能出现在 .sp 文件中");
-                                    pnode.parseIndex++;
-                                    break;
-                                }
+                        //        if (!m_FileMeta.path.EndsWith(".sp", System.StringComparison.OrdinalIgnoreCase))
+                        //        {
+                        //            Log.AddInStructFileMeta(EError.None, "Error global{} 只能出现在 .sp 文件中");
+                        //            pnode.parseIndex++;
+                        //            break;
+                        //        }
 
-                                ParseGlobal(pnode);
-                            }
-                            break;
+                        //        ParseGlobal(pnode);
+                        //    }
+                        //    break;
                         case ETokenType.Namespace:
                             {
                                 hasNamespaceOrClass = true;
@@ -595,52 +595,52 @@ namespace SimpleLanguage.Compile
             return TryParseGlobalOrLocalFunction(ownerBlock, fls, lineNodes, ref hasFunction, ref dummy, true);
         }
 
-        public void ParseGlobal(Node pnode)
-        {
-            Node globalNode = pnode.GetParseNode(); // consume 'global'
-            if (globalNode == null || globalNode.token?.type != ETokenType.Global)
-            {
-                Log.AddInStructFileMeta(EError.None, "Error global 解析失败");
-                return;
-            }
+        //public void ParseGlobal(Node pnode)
+        //{
+        //    Node globalNode = pnode.GetParseNode(); // consume 'global'
+        //    if (globalNode == null || globalNode.token?.type != ETokenType.Global)
+        //    {
+        //        Log.AddInStructFileMeta(EError.None, "Error global 解析失败");
+        //        return;
+        //    }
 
-            if (m_FileMeta.GetFileMetaGlobalSyntax() != null)
-            {
-                Log.AddInStructFileMeta(EError.None, "Error global{} 在同一文件中只允许定义一次");
-                return;
-            }
+        //    if (m_FileMeta.GetFileMetaGlobalSyntax() != null)
+        //    {
+        //        Log.AddInStructFileMeta(EError.None, "Error global{} 在同一文件中只允许定义一次");
+        //        return;
+        //    }
 
-            Node blockNode = null;
-            if (pnode.parseIndex < pnode.childList.Count)
-            {
-                var next = pnode.childList[pnode.parseIndex];
-                if (next != null && next.nodeType == ENodeType.Brace)
-                {
-                    blockNode = next;
-                    pnode.parseIndex++;
-                }
-                else if (next != null && next.nodeType == ENodeType.LineEnd)
-                {
-                    if (pnode.parseIndex + 1 < pnode.childList.Count)
-                    {
-                        var next2 = pnode.childList[pnode.parseIndex + 1];
-                        if (next2 != null && next2.nodeType == ENodeType.Brace)
-                        {
-                            blockNode = next2;
-                            pnode.parseIndex += 2;
-                        }
-                    }
-                }
-            }
+        //    Node blockNode = null;
+        //    if (pnode.parseIndex < pnode.childList.Count)
+        //    {
+        //        var next = pnode.childList[pnode.parseIndex];
+        //        if (next != null && next.nodeType == ENodeType.Brace)
+        //        {
+        //            blockNode = next;
+        //            pnode.parseIndex++;
+        //        }
+        //        else if (next != null && next.nodeType == ENodeType.LineEnd)
+        //        {
+        //            if (pnode.parseIndex + 1 < pnode.childList.Count)
+        //            {
+        //                var next2 = pnode.childList[pnode.parseIndex + 1];
+        //                if (next2 != null && next2.nodeType == ENodeType.Brace)
+        //                {
+        //                    blockNode = next2;
+        //                    pnode.parseIndex += 2;
+        //                }
+        //            }
+        //        }
+        //    }
 
-            if (blockNode == null)
-            {
-                Log.AddInStructFileMeta(EError.None, "Info global{} 解析已禁用");
-                return;
-            }
+        //    if (blockNode == null)
+        //    {
+        //        Log.AddInStructFileMeta(EError.None, "Info global{} 解析已禁用");
+        //        return;
+        //    }
 
-            Log.AddInStructFileMeta(EError.None, "Info global{} 解析已禁用，已跳过该块");
-        }
+        //    Log.AddInStructFileMeta(EError.None, "Info global{} 解析已禁用，已跳过该块");
+        //}
         private bool TryParseGlobalFunction(Node ownerBlock, FileMetaLocalSyntax fgs, List<Node> lineNodes, ref bool hasFunction)
         {
             int dummy = -1;
