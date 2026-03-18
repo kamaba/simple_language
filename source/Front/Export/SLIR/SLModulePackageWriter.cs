@@ -279,6 +279,54 @@ namespace SimpleLanguage.Export.SLIR
                     name = m.onlyFunctionName ?? string.Empty,
                 };
 
+                if (m.methodReturnVariableList != null)
+                {
+                    for (int i = 0; i < m.methodReturnVariableList.Count; i++)
+                    {
+                        var v = m.methodReturnVariableList[i];
+                        if (v == null) continue;
+                        mp.returnList.Add(new SLVariablePackage
+                        {
+                            id = v.id,
+                            index = v.index,
+                            name = v.name ?? string.Empty,
+                            typeName = NormalizeTypeName(v.irMetaType?.ToString() ?? string.Empty),
+                        });
+                    }
+                }
+
+                if (m.methodArgumentList != null)
+                {
+                    for (int i = 0; i < m.methodArgumentList.Count; i++)
+                    {
+                        var v = m.methodArgumentList[i];
+                        if (v == null) continue;
+                        mp.argumentList.Add(new SLVariablePackage
+                        {
+                            id = v.id,
+                            index = v.index,
+                            name = v.name ?? string.Empty,
+                            typeName = NormalizeTypeName(v.irMetaType?.ToString() ?? string.Empty),
+                        });
+                    }
+                }
+
+                if (m.methodLocalVariableList != null)
+                {
+                    for (int i = 0; i < m.methodLocalVariableList.Count; i++)
+                    {
+                        var v = m.methodLocalVariableList[i];
+                        if (v == null) continue;
+                        mp.localList.Add(new SLVariablePackage
+                        {
+                            id = v.id,
+                            index = v.index,
+                            name = v.name ?? string.Empty,
+                            typeName = NormalizeTypeName(v.irMetaType?.ToString() ?? string.Empty),
+                        });
+                    }
+                }
+
                 var code = m.IRDataList;
                 if (code != null)
                 {
@@ -434,7 +482,18 @@ namespace SimpleLanguage.Export.SLIR
         public string id { get; set; } = string.Empty;
         public string declaringTypeFullName { get; set; } = string.Empty;
         public string name { get; set; } = string.Empty;
+        public List<SLVariablePackage> returnList { get; set; } = new();
+        public List<SLVariablePackage> argumentList { get; set; } = new();
+        public List<SLVariablePackage> localList { get; set; } = new();
         public List<SLIRInstructionPackage> instructionList { get; set; } = new();
+    }
+
+    internal sealed class SLVariablePackage
+    {
+        public int id { get; set; }
+        public int index { get; set; }
+        public string name { get; set; } = string.Empty;
+        public string typeName { get; set; } = string.Empty;
     }
 
     internal sealed class SLClassPackage

@@ -96,7 +96,9 @@ namespace SimpleLanguage.VM.Runtime
                 for (int i = 0; i < m_Method.methodReturnVariableList.Count; i++)
                 {
                     RuntimeDefType imt = m_Method.methodReturnVariableList[i].runtimeDefType;
-                    SObject sobj = CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true);
+                    SObject sobj = imt != null
+                        ? CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true)
+                        : new SObject(EVMType.Object);
                     m_ReturnObjectArray[i] = sobj;
                 }
 
@@ -104,7 +106,9 @@ namespace SimpleLanguage.VM.Runtime
                 for (int i = 0; i < m_Method.methodArgumentList.Count; i++)
                 {
                     RuntimeDefType imt = m_Method.methodArgumentList[i].runtimeDefType;
-                    SObject sobj = CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true);
+                    SObject sobj = imt != null
+                        ? CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true)
+                        : new SObject(EVMType.Object);
                     m_ArgumentObjectArray[i] = sobj;
                 }
                 for (int i = 0; i < m_ArgumentObjectArray.Length; i++)
@@ -118,7 +122,9 @@ namespace SimpleLanguage.VM.Runtime
                 {
                     var mev = m_Method.methodLocalVariableList[i];
                     RuntimeDefType imt = mev.runtimeDefType;
-                    SObject sobj = CreateObjectByIRMetaType(imt, m_Method.ownerMetaClass, true);
+                    SObject sobj = imt != null
+                        ? CreateObjectByIRMetaType(imt, m_Method.ownerMetaClass, true)
+                        : new SObject(EVMType.Object);
                     m_LocalVariableObjectArray[i] = sobj;
                 }
                 for (int i = 0; i < m_LocalVariableObjectArray.Length; i++)
@@ -180,7 +186,10 @@ namespace SimpleLanguage.VM.Runtime
         }
         public SObject CreateObjectByIRMetaType(RuntimeDefType irmt, RuntimeClass curIrMc, bool isAdd = false)
         {
-            return ObjectManager.CreateObjectByRuntimeType(RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt), false);
+            if (irmt == null) return new SObject(EVMType.Object);
+            var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt);
+            if (rt == null) return new SObject(EVMType.Object);
+            return ObjectManager.CreateObjectByRuntimeType(rt, false);
         }
         public void AddReturnObjectArray(SObject[] sobjs)
         {

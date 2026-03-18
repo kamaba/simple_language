@@ -49,8 +49,50 @@ namespace SimpleLanguage.VM.LanguageRuntime
                     rm.InstructionList.AddRange(SLModulePackageLoader.ConvertToVMInstructionList(m.instructionList));
                 }
 
+                if (m.returnList != null)
+                {
+                    foreach (var v in m.returnList)
+                    {
+                        if (v == null) continue;
+                        rm.methodReturnVariableList.Add(new RuntimeVariable(ResolveRuntimeDefType(v.typeName), v.id, v.index, v.name));
+                    }
+                }
+                if (m.argumentList != null)
+                {
+                    foreach (var v in m.argumentList)
+                    {
+                        if (v == null) continue;
+                        rm.methodArgumentList.Add(new RuntimeVariable(ResolveRuntimeDefType(v.typeName), v.id, v.index, v.name));
+                    }
+                }
+                if (m.localList != null)
+                {
+                    foreach (var v in m.localList)
+                    {
+                        if (v == null) continue;
+                        rm.methodLocalVariableList.Add(new RuntimeVariable(ResolveRuntimeDefType(v.typeName), v.id, v.index, v.name));
+                    }
+                }
+
                 s_MethodById[rm.id] = rm;
             }
+        }
+
+        private static RuntimeDefType? ResolveRuntimeDefType(string? typeName)
+        {
+            if (string.IsNullOrWhiteSpace(typeName)) return null;
+
+            var rc = RuntimeClassManager.instance.GetRuntimeClassByName(typeName)
+                ?? RuntimeClassManager.instance.GetRuntimeClassByName(GetShortName(typeName));
+
+            return rc != null ? new RuntimeDefType(rc) : null;
+        }
+
+        private static string GetShortName(string full)
+        {
+            if (string.IsNullOrEmpty(full)) return string.Empty;
+            var idx = full.LastIndexOf('.');
+            return idx >= 0 && idx + 1 < full.Length ? full[(idx + 1)..] : full;
         }
 
         public static RuntimeMethod? GetMethod(string id)

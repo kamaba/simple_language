@@ -259,6 +259,13 @@ namespace SimpleLanguage.Core
             this.m_Name = fmmf.name;
 
             m_IsStatic = fmmf.staticToken != null;
+            bool isProjectSpecialClass = string.Equals(mc?.name, "Project", StringComparison.OrdinalIgnoreCase)
+                && fmmf?.fileMeta?.path?.EndsWith(".sp", StringComparison.OrdinalIgnoreCase) == true;
+            if (isProjectSpecialClass)
+            {
+                // Project{}.sp methods are treated as static by default.
+                m_IsStatic = true;
+            }
             m_IsGet = fmmf.getToken != null;
             m_IsSet = fmmf.setToken != null;
             m_IsFinal = fmmf.finalToken != null;

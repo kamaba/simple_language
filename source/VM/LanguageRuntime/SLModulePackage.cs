@@ -75,7 +75,18 @@ namespace SimpleLanguage.VM.LanguageRuntime
         public string id { get; set; } = string.Empty;
         public string declaringTypeFullName { get; set; } = string.Empty;
         public string name { get; set; } = string.Empty;
+        public List<SLVariablePackage> returnList { get; set; } = new();
+        public List<SLVariablePackage> argumentList { get; set; } = new();
+        public List<SLVariablePackage> localList { get; set; } = new();
         public List<SLIRInstructionPackage> instructionList { get; set; } = new();
+    }
+
+    public sealed class SLVariablePackage
+    {
+        public int id { get; set; }
+        public int index { get; set; }
+        public string name { get; set; } = string.Empty;
+        public string typeName { get; set; } = string.Empty;
     }
 
     public sealed class SLIRInstructionPackage
