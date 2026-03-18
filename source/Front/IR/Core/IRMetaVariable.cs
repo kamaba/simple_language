@@ -31,6 +31,7 @@ namespace SimpleLanguage.IR
         public int id => m_Id;
         public string name => m_Name;
         public int index => m_Index;
+        public bool isConst => m_IsConst;
         public List<IRData> irDataList => m_IRDataList;
 
 
@@ -42,6 +43,7 @@ namespace SimpleLanguage.IR
         private int m_Id = -1;
         private int m_Index = -1;
         private string m_Name = "";
+        private bool m_IsConst = false;
         //private MetaVariable m_MetaVariable = null;
 
         public IRMetaVariable( MetaVariable mv, int index = -1 )
@@ -50,6 +52,7 @@ namespace SimpleLanguage.IR
             m_Id = mv.GetHashCode();
             m_Index = index;
             m_Name = mv.ownerMetaBlockStatements?.ownerMetaFunction.name + (mv.isStatic?"_static":"_local") + "[" + mv.name + "]";
+            m_IsConst = mv.isConst;
             if( mv.variableFrom == MetaVariable.EVariableFrom.Member )
             {
                 if( mv.isStatic )
@@ -120,6 +123,7 @@ namespace SimpleLanguage.IR
             m_Index = index;
             m_Name = mmv.ownerMetaClass.allClassName + "." + mmv.name;
             m_ExpressNode = mmv.express;
+            m_IsConst = mmv.isConst;
             if (mmv.isStatic || mmv.isConst )
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
             else

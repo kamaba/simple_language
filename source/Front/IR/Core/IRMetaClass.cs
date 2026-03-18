@@ -10,6 +10,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Linq;
 using SimpleLanguage.Core;
 using SimpleLanguage.Logging;
 
@@ -175,9 +176,18 @@ namespace SimpleLanguage.IR
         {
             if (m_MetaClass is MetaEnum me)
             {
-                foreach( var v in me.metaMemberVariableDict )
+                var enumMembers = me.metaMemberVariableDict
+                    .Values
+                    .OfType<MetaMemberEnum>()
+                    .OrderBy(v => v.index)
+                    .ToList();
+
+                for (int i = 0; i < enumMembers.Count; i++)
                 {
-                    IRMetaVariable irmv = new IRMetaVariable(this, v.Value );
+                    var mv = enumMembers[i];
+                    IRMetaVariable irmv = new IRMetaVariable(this, mv, mv.index);
+                    m_StaticIRMetaVariableList.Add(irmv);
+                    AddMetaMemberVariableIndexBindHashCode(mv.GetHashCode(), mv.index);
                     IRManager.instance.AddGlobalMetaMemberVariable(irmv);
                 }
             }

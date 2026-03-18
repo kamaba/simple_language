@@ -45,7 +45,9 @@ namespace SimpleLanguage.Core
             m_VariableFrom = EVariableFrom.Member;
             if (fmmv.mutToken != null)
             {
-                Log.AddInStructMeta(EError.None, "Error Enum中，不允许使用mut关键字，枚举值会被强制为const!!");
+                //Log.AddInStructMeta(EError.None, "Error Enum中，不允许使用mut关键字，枚举值会被强制为const!!");
+                m_IsConst = false;
+                m_IsStatic = true;
             }
             if (fmmv.staticToken != null)
             {

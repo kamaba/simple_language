@@ -88,13 +88,67 @@ namespace SimpleLanguage.Export.SLIR
                     foreach (var v in c.localIRMetaVariableList)
                     {
                         if (v == null) continue;
-                        cm.fieldList.Add(new SLFieldPackage
+                        var fieldPkgLocal = new SLFieldPackage
                         {
                             name = v.name ?? string.Empty,
                             typeName = NormalizeTypeName(v.irMetaType?.ToString() ?? string.Empty),
                             isStatic = false,
                             index = v.index,
-                        });
+                        };
+                        // fill express from IRMetaVariable.irDataList if present
+                        if (v.irDataList != null && v.irDataList.Count > 0)
+                        {
+                            foreach (var d in v.irDataList)
+                            {
+                                if (d == null) continue;
+                                try { d.FinalizePack(); } catch { }
+                                fieldPkgLocal.express.Add(new SLIRInstructionPackage
+                                {
+                                    id = d.id,
+                                    opCode = (byte)d.opCode,
+                                    opValue = null,
+                                    payload = d.Payload,
+                                    index = d.index,
+                                    byteLength = d.ByteLength,
+                                    offset = d.offset,
+                                });
+                            }
+                        }
+                        else
+                        {
+                            // try to synthesize from matching global static variable (for enums/static defined as global)
+                            if (ir.globalStaticVariableList != null)
+                            {
+                                var match = ir.globalStaticVariableList.Find(g => g != null && g.id == v.id);
+                                if (match != null && match.express != null)
+                                {
+                                    try
+                                    {
+                                        var iex = IRExpressManager.CreateExpress(null, match.express);
+                                        if (iex?.IRDataList != null)
+                                        {
+                                            foreach (var d in iex.IRDataList)
+                                            {
+                                                if (d == null) continue;
+                                                try { d.FinalizePack(); } catch { }
+                                                fieldPkgLocal.express.Add(new SLIRInstructionPackage
+                                                {
+                                                    id = d.id,
+                                                    opCode = (byte)d.opCode,
+                                                    opValue = null,
+                                                    payload = d.Payload,
+                                                    index = d.index,
+                                                    byteLength = d.ByteLength,
+                                                    offset = d.offset,
+                                                });
+                                            }
+                                        }
+                                    }
+                                    catch { }
+                                }
+                            }
+                        }
+                        cm.fieldList.Add(fieldPkgLocal);
                     }
                 }
                 if (c.staticIRMetaVariableList != null)
@@ -102,87 +156,69 @@ namespace SimpleLanguage.Export.SLIR
                     foreach (var v in c.staticIRMetaVariableList)
                     {
                         if (v == null) continue;
-                        cm.fieldList.Add(new SLFieldPackage
+                        var fieldPkgStatic = new SLFieldPackage
                         {
                             name = v.name ?? string.Empty,
                             typeName = NormalizeTypeName(v.irMetaType?.ToString() ?? string.Empty),
                             isStatic = true,
                             index = v.index,
-                        });
+                        };
+                        if (v.irDataList != null && v.irDataList.Count > 0)
+                        {
+                            foreach (var d in v.irDataList)
+                            {
+                                if (d == null) continue;
+                                try { d.FinalizePack(); } catch { }
+                                fieldPkgStatic.express.Add(new SLIRInstructionPackage
+                                {
+                                    id = d.id,
+                                    opCode = (byte)d.opCode,
+                                    opValue = null,
+                                    payload = d.Payload,
+                                    index = d.index,
+                                    byteLength = d.ByteLength,
+                                    offset = d.offset,
+                                });
+                            }
+                        }
+                        else
+                        {
+                            // try to synthesize from globalStaticVariableList entry
+                            if (ir.globalStaticVariableList != null)
+                            {
+                                var match = ir.globalStaticVariableList.Find(g => g != null && g.id == v.id);
+                                if (match != null && match.express != null)
+                                {
+                                    try
+                                    {
+                                        var iex = IRExpressManager.CreateExpress(null, match.express);
+                                        if (iex?.IRDataList != null)
+                                        {
+                                            foreach (var d in iex.IRDataList)
+                                            {
+                                                if (d == null) continue;
+                                                try { d.FinalizePack(); } catch { }
+                                                fieldPkgStatic.express.Add(new SLIRInstructionPackage
+                                                {
+                                                    id = d.id,
+                                                    opCode = (byte)d.opCode,
+                                                    opValue = null,
+                                                    payload = d.Payload,
+                                                    index = d.index,
+                                                    byteLength = d.ByteLength,
+                                                    offset = d.offset,
+                                                });
+                                            }
+                                        }
+                                    }
+                                    catch { }
+                                }
+                            }
+                        }
+                        cm.fieldList.Add(fieldPkgStatic);
                     }
                 }
                 pkg.classList.Add(cm);
-            }
-
-            var globalInitIR = new List<IRData>();
-            if (ir.globalStaticVariableList != null)
-            {
-                for (int i = 0; i < ir.globalStaticVariableList.Count; i++)
-                {
-                    var gv = ir.globalStaticVariableList[i];
-                    if (gv?.express == null) continue;
-
-                    try
-                    {
-                        var expr = IRExpressManager.CreateExpress(null, gv.express);
-                        var store = new IRStoreVariable(gv.irMetaType, null, gv.id, IRMetaVariableFrom.Global);
-
-                        var one = new List<IRData>();
-                        if (expr?.IRDataList != null) one.AddRange(expr.IRDataList);
-                        if (store?.IRDataList != null) one.AddRange(store.IRDataList);
-
-                        var onePack = new SLGlobalStaticInstructionPackage
-                        {
-                            id = gv.id,
-                            instructionList = new List<SLIRInstructionPackage>(),
-                        };
-
-                        for (int j = 0; j < one.Count; j++)
-                        {
-                            var d2 = one[j];
-                            if (d2 == null) continue;
-                            d2.id = j;
-                            try { d2.FinalizePack(); } catch { }
-
-                            onePack.instructionList.Add(new SLIRInstructionPackage
-                            {
-                                id = d2.id,
-                                opCode = (byte)d2.opCode,
-                                opValue = null,
-                                payload = d2.Payload,
-                                index = d2.index,
-                                byteLength = d2.ByteLength,
-                                offset = d2.offset,
-                            });
-                        }
-                        pkg.globalStaticInstructionList.Add(onePack);
-
-                        if (expr?.IRDataList != null) globalInitIR.AddRange(expr.IRDataList);
-                        if (store?.IRDataList != null) globalInitIR.AddRange(store.IRDataList);
-                    }
-                    catch
-                    {
-                    }
-                }
-            }
-
-            for (int i = 0; i < globalInitIR.Count; i++)
-            {
-                var d = globalInitIR[i];
-                if (d == null) continue;
-                d.id = i;
-                try { d.FinalizePack(); } catch { }
-
-                pkg.globalInitInstructionList.Add(new SLIRInstructionPackage
-                {
-                    id = d.id,
-                    opCode = (byte)d.opCode,
-                    opValue = null,
-                    payload = d.Payload,
-                    index = d.index,
-                    byteLength = d.ByteLength,
-                    offset = d.offset,
-                });
             }
 
             if (ir.globalStaticVariableList != null)
@@ -315,15 +351,7 @@ namespace SimpleLanguage.Export.SLIR
         public List<SLNamespacePackage> namespaceList { get; set; } = new();
         public List<SLClassPackage> classList { get; set; } = new();
         public List<SLGlobalStaticVariablePackage> globalStaticVariableList { get; set; } = new();
-        public List<SLGlobalStaticInstructionPackage> globalStaticInstructionList { get; set; } = new();
-        public List<SLIRInstructionPackage> globalInitInstructionList { get; set; } = new();
         public List<SLMethodPackage> methodList { get; set; } = new();
-    }
-
-    internal sealed class SLGlobalStaticInstructionPackage
-    {
-        public int id { get; set; }
-        public List<SLIRInstructionPackage> instructionList { get; set; } = new();
     }
 
     internal sealed class SLGlobalStaticVariablePackage
@@ -376,6 +404,7 @@ namespace SimpleLanguage.Export.SLIR
         public string typeName { get; set; } = string.Empty;
         public bool isStatic { get; set; }
         public int index { get; set; }
+        public List<SLIRInstructionPackage> express { get; set; } = new();
     }
 
     internal sealed class SLIRInstructionPackage
