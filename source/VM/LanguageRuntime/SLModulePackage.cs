@@ -94,9 +94,30 @@ namespace SimpleLanguage.VM.LanguageRuntime
         public int id { get; set; }
         public byte opCode { get; set; }
         public object opValue { get; set; }
+        public SLRuntimeCallPackage? runtimeCall { get; set; }
         public byte[] payload { get; set; }
         public int index { get; set; }
         public int byteLength { get; set; }
         public int offset { get; set; }
+    }
+
+    public sealed class SLRuntimeCallPackage
+    {
+        public SLRuntimeDefTypePackage? runtimeDefType { get; set; }
+        public List<SLRuntimeDefTypePackage> templateRuntimeDefTypeList { get; set; } = new();
+        public string methodId { get; set; } = string.Empty;
+        public string methodName { get; set; } = string.Empty;
+        public int paramCount { get; set; }
+    }
+
+    public sealed class SLRuntimeDefTypePackage
+    {
+        public int classId { get; set; }
+        public string className { get; set; } = string.Empty;
+        public int ownerClassId { get; set; }
+        public string ownerClassName { get; set; } = string.Empty;
+        public int templateIndex { get; set; } = -1;
+        public bool isTemplate { get; set; }
+        public List<SLRuntimeDefTypePackage> runtimeDefTypeList { get; set; } = new();
     }
 }

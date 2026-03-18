@@ -126,16 +126,7 @@ namespace SimpleLanguage.Export.SLIR
                             {
                                 if (d == null) continue;
                                 try { d.FinalizePack(); } catch { }
-                                fieldPkgLocal.express.Add(new SLIRInstructionPackage
-                                {
-                                    id = d.id,
-                                    opCode = (byte)d.opCode,
-                                    opValue = null,
-                                    payload = d.Payload,
-                                    index = d.index,
-                                    byteLength = d.ByteLength,
-                                    offset = d.offset,
-                                });
+                                fieldPkgLocal.express.Add(CreateInstructionPackage(d));
                             }
                         }
                         else
@@ -155,16 +146,7 @@ namespace SimpleLanguage.Export.SLIR
                                             {
                                                 if (d == null) continue;
                                                 try { d.FinalizePack(); } catch { }
-                                                fieldPkgLocal.express.Add(new SLIRInstructionPackage
-                                                {
-                                                    id = d.id,
-                                                    opCode = (byte)d.opCode,
-                                                    opValue = null,
-                                                    payload = d.Payload,
-                                                    index = d.index,
-                                                    byteLength = d.ByteLength,
-                                                    offset = d.offset,
-                                                });
+                                                fieldPkgLocal.express.Add(CreateInstructionPackage(d));
                                             }
                                         }
                                     }
@@ -195,16 +177,7 @@ namespace SimpleLanguage.Export.SLIR
                             {
                                 if (d == null) continue;
                                 try { d.FinalizePack(); } catch { }
-                                fieldPkgStatic.express.Add(new SLIRInstructionPackage
-                                {
-                                    id = d.id,
-                                    opCode = (byte)d.opCode,
-                                    opValue = null,
-                                    payload = d.Payload,
-                                    index = d.index,
-                                    byteLength = d.ByteLength,
-                                    offset = d.offset,
-                                });
+                                fieldPkgStatic.express.Add(CreateInstructionPackage(d));
                             }
                         }
                         else
@@ -224,16 +197,7 @@ namespace SimpleLanguage.Export.SLIR
                                             {
                                                 if (d == null) continue;
                                                 try { d.FinalizePack(); } catch { }
-                                                fieldPkgStatic.express.Add(new SLIRInstructionPackage
-                                                {
-                                                    id = d.id,
-                                                    opCode = (byte)d.opCode,
-                                                    opValue = null,
-                                                    payload = d.Payload,
-                                                    index = d.index,
-                                                    byteLength = d.ByteLength,
-                                                    offset = d.offset,
-                                                });
+                                                fieldPkgStatic.express.Add(CreateInstructionPackage(d));
                                             }
                                         }
                                     }
@@ -338,16 +302,7 @@ namespace SimpleLanguage.Export.SLIR
                         // Ensure payload is ready.
                         try { d.FinalizePack(); } catch { }
 
-                        mp.instructionList.Add(new SLIRInstructionPackage
-                        {
-                            id = d.id,
-                            opCode = (byte)d.opCode,
-                            opValue = null,
-                            payload = d.Payload,
-                            index = d.index,
-                            byteLength = d.ByteLength,
-                            offset = d.offset,
-                        });
+                        mp.instructionList.Add(CreateInstructionPackage(d));
                     }
                 }
 
@@ -435,6 +390,81 @@ namespace SimpleLanguage.Export.SLIR
 
             return flags;
         }
+
+        private static SLIRInstructionPackage CreateInstructionPackage(IRData d)
+        {
+            var pkg = new SLIRInstructionPackage
+            {
+                id = d.id,
+                opCode = (byte)d.opCode,
+                opValue = null,
+                payload = d.Payload,
+                index = d.index,
+                byteLength = d.ByteLength,
+                offset = d.offset,
+            };
+
+            if (d.opValue is IRMethodCall mc)
+            {
+                pkg.runtimeCall = CreateRuntimeCallPackage(mc);
+
+                // backward compatible: VM registry can still bind by methodId string
+                if (!string.IsNullOrWhiteSpace(mc.irMethod?.id))
+                {
+                    pkg.opValue = mc.irMethod.id;
+                }
+            }
+
+            return pkg;
+        }
+
+        private static SLRuntimeCallPackage CreateRuntimeCallPackage(IRMethodCall mc)
+        {
+            var ret = new SLRuntimeCallPackage
+            {
+                methodId = mc.irMethod?.id ?? string.Empty,
+                methodName = mc.methodName ?? string.Empty,
+                paramCount = mc.paramCount,
+                runtimeDefType = CreateRuntimeDefTypePackage(mc.metaType),
+            };
+
+            if (mc.irTemplateMetaType != null)
+            {
+                for (int i = 0; i < mc.irTemplateMetaType.Count; i++)
+                {
+                    var t = CreateRuntimeDefTypePackage(mc.irTemplateMetaType[i]);
+                    if (t != null) ret.templateRuntimeDefTypeList.Add(t);
+                }
+            }
+
+            return ret;
+        }
+
+        private static SLRuntimeDefTypePackage? CreateRuntimeDefTypePackage(IRMetaType? mt)
+        {
+            if (mt == null) return null;
+
+            var ret = new SLRuntimeDefTypePackage
+            {
+                classId = mt.irMetaClass?.id ?? 0,
+                className = NormalizeTypeName(mt.irMetaClass?.irName ?? string.Empty),
+                ownerClassId = mt.irOwnerMetaClass?.id ?? 0,
+                ownerClassName = NormalizeTypeName(mt.irOwnerMetaClass?.irName ?? string.Empty),
+                templateIndex = mt.templateIndex,
+                isTemplate = mt.templateIndex >= 0,
+            };
+
+            if (mt.irMetaTypeList != null)
+            {
+                for (int i = 0; i < mt.irMetaTypeList.Count; i++)
+                {
+                    var child = CreateRuntimeDefTypePackage(mt.irMetaTypeList[i]);
+                    if (child != null) ret.runtimeDefTypeList.Add(child);
+                }
+            }
+
+            return ret;
+        }
     }
 
     // Local copies of VM schema ensure Front/VM symmetry without references.
@@ -521,9 +551,30 @@ namespace SimpleLanguage.Export.SLIR
         public int id { get; set; }
         public byte opCode { get; set; }
         public object? opValue { get; set; }
+        public SLRuntimeCallPackage? runtimeCall { get; set; }
         public byte[]? payload { get; set; }
         public int index { get; set; }
         public int byteLength { get; set; }
         public int offset { get; set; }
+    }
+
+    internal sealed class SLRuntimeCallPackage
+    {
+        public SLRuntimeDefTypePackage? runtimeDefType { get; set; }
+        public List<SLRuntimeDefTypePackage> templateRuntimeDefTypeList { get; set; } = new();
+        public string methodId { get; set; } = string.Empty;
+        public string methodName { get; set; } = string.Empty;
+        public int paramCount { get; set; }
+    }
+
+    internal sealed class SLRuntimeDefTypePackage
+    {
+        public int classId { get; set; }
+        public string className { get; set; } = string.Empty;
+        public int ownerClassId { get; set; }
+        public string ownerClassName { get; set; } = string.Empty;
+        public int templateIndex { get; set; } = -1;
+        public bool isTemplate { get; set; }
+        public List<SLRuntimeDefTypePackage> runtimeDefTypeList { get; set; } = new();
     }
 }

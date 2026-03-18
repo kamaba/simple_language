@@ -34,43 +34,70 @@ namespace SimpleLanguage.IR
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
+            sb.Append("RuntimeCall{");
 
-            if(m_MetaType != null )
+            sb.Append("StaticRuntimeType=");
+            sb.Append(FormatIRMetaType(m_MetaType));
+
+            sb.Append(", StaticRuntimeTypeList=");
+            sb.Append("[");
+            if (m_MetaType?.irMetaTypeList != null)
             {
-                sb.Append( "[" + m_MetaType.irMetaClass?.irName);
-
-                if(m_MetaType.irMetaTypeList.Count > 0)
+                for (int i = 0; i < m_MetaType.irMetaTypeList.Count; i++)
                 {
-                    sb.Append("<");
-                    for( int i = 0; i <  m_MetaType.irMetaTypeList.Count; i++ )
-                    {
-                        sb.Append(m_MetaType.irMetaTypeList[i].ToString());
-                        if( i < m_MetaType.irMetaTypeList.Count - 1 )
-                        {
-                            sb.Append(",");
-                        }
-                    }
-                    sb.Append(">");
+                    if (i > 0) sb.Append(", ");
+                    sb.Append(FormatIRMetaType(m_MetaType.irMetaTypeList[i]));
                 }
-                sb.Append("] ");
             }
-            if (m_IRMethod != null)
-            {
-                sb.Append(m_IRMethod.id.ToString());
-            }
+            sb.Append("]");
 
-            if (m_IrTemplateMetaType?.Count > 0)
+            sb.Append(", Method=");
+            sb.Append(m_IRMethod?.id ?? "<null>");
+
+            sb.Append(", MethodRuntimeTypeList=");
+            sb.Append("[");
+            if (m_IrTemplateMetaType != null)
             {
-                sb.Append("<");
                 for (int i = 0; i < m_IrTemplateMetaType.Count; i++)
                 {
-                    sb.Append(m_IrTemplateMetaType[i].ToString());
-                    if (i < m_IrTemplateMetaType.Count - 1)
-                    {
-                        sb.Append(",");
-                    }
+                    if (i > 0) sb.Append(", ");
+                    sb.Append(FormatIRMetaType(m_IrTemplateMetaType[i]));
+                }
+            }
+            sb.Append("]");
+
+            sb.Append(", ParamCount=");
+            sb.Append(m_ParamCount);
+            sb.Append("}");
+            return sb.ToString();
+        }
+
+        private static string FormatIRMetaType(IRMetaType mt)
+        {
+            if (mt == null)
+            {
+                return "<null>";
+            }
+
+            var sb = new StringBuilder();
+            sb.Append(mt.irMetaClass?.irName ?? "<null>");
+
+            if (mt.irMetaTypeList != null && mt.irMetaTypeList.Count > 0)
+            {
+                sb.Append("<");
+                for (int i = 0; i < mt.irMetaTypeList.Count; i++)
+                {
+                    if (i > 0) sb.Append(", ");
+                    sb.Append(FormatIRMetaType(mt.irMetaTypeList[i]));
                 }
                 sb.Append(">");
+            }
+
+            if (mt.templateIndex >= 0)
+            {
+                sb.Append("[T:");
+                sb.Append(mt.templateIndex);
+                sb.Append("]");
             }
 
             return sb.ToString();

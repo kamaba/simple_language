@@ -152,11 +152,13 @@ namespace SimpleLanguage.VM.LanguageRuntime
                 {
                     id = d.id,
                     opCode = (SimpleLanguage.VM.EIROpCode)d.opCode,
-                    opValue = d.opValue,
+                    opValue = (object?)d.runtimeCall ?? d.opValue,
                     Payload = d.payload,
                     ByteLength = d.byteLength,
                     index = d.index,
                 };
+
+                SLRuntimeModuleRegistry.TryBindInstructionCall(ins);
                 result.Add(ins);
             }
 

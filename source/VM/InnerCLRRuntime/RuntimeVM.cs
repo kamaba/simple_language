@@ -1127,6 +1127,12 @@ namespace SimpleLanguage.VM.Runtime
                         var mfc = iri.opValue as RuntimeCall;
                         // attribute hooks are handled in Front/Core; VM does not reference Front.
 
+                        if (mfc == null)
+                        {
+                            Debug.Assert(false, "执行静态函数，没有发现相关函数体!");
+                            return;
+                        }
+
                         List<RuntimeType> classRTList = new List<RuntimeType>();
                         for (int i = 0; i < mfc.runtimeDefType.runtimeDefTypeList.Count; i++)
                         {
