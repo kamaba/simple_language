@@ -46,7 +46,29 @@ namespace SimpleLanguage.Export.SLIR
             };
             options.Converters.Add(new JsonStringEnumConverter());
 
-            return JsonSerializer.Deserialize<SLModulePackage>(json, options) ?? new SLModulePackage();
+            var pkg = JsonSerializer.Deserialize<SLModulePackage>(json, options) ?? new SLModulePackage();
+            NormalizeFieldFlags(pkg);
+            return pkg;
+        }
+
+        private static void NormalizeFieldFlags(SLModulePackage pkg)
+        {
+            if (pkg?.classList == null) return;
+            for (int c = 0; c < pkg.classList.Count; c++)
+            {
+                var cls = pkg.classList[c];
+                if (cls?.fieldList == null) continue;
+                for (int f = 0; f < cls.fieldList.Count; f++)
+                {
+                    var field = cls.fieldList[f];
+                    if (field == null) continue;
+
+                    if (field.isConst) field.flags |= 16;
+                    if (field.isStatic) field.flags |= 32;
+                    if (!field.isConst && (field.flags & 16) == 16) field.isConst = true;
+                    if (!field.isStatic && (field.flags & 32) == 32) field.isStatic = true;
+                }
+            }
         }
 
         internal static SLModulePackage Build(IRManager ir, string moduleName)
@@ -93,6 +115,8 @@ namespace SimpleLanguage.Export.SLIR
                             name = v.name ?? string.Empty,
                             typeName = NormalizeTypeName(v.irMetaType?.ToString() ?? string.Empty),
                             isStatic = false,
+                            isConst = v.isConst,
+                            flags = BuildFieldFlags(v),
                             index = v.index,
                         };
                         // fill express from IRMetaVariable.irDataList if present
@@ -161,6 +185,8 @@ namespace SimpleLanguage.Export.SLIR
                             name = v.name ?? string.Empty,
                             typeName = NormalizeTypeName(v.irMetaType?.ToString() ?? string.Empty),
                             isStatic = true,
+                            isConst = v.isConst,
+                            flags = BuildFieldFlags(v),
                             index = v.index,
                         };
                         if (v.irDataList != null && v.irDataList.Count > 0)
@@ -339,6 +365,28 @@ namespace SimpleLanguage.Export.SLIR
             }
             return name;
         }
+
+        private static int BuildFieldFlags(IRMetaVariable v)
+        {
+            if (v == null) return 0;
+            int flags = 0;
+
+            // permission bits
+            // 1: private, 2: public, 4: export, 8: protected
+            switch (v.permission)
+            {
+                case EPermission.Private: flags |= 1; break;
+                case EPermission.Public: flags |= 2; break;
+                case EPermission.Export: flags |= 4; break;
+                case EPermission.Protected: flags |= 8; break;
+            }
+
+            // 16: const, 32: static
+            if (v.isConst) flags |= 16;
+            if (v.isStatic) flags |= 32;
+
+            return flags;
+        }
     }
 
     // Local copies of VM schema ensure Front/VM symmetry without references.
@@ -403,6 +451,8 @@ namespace SimpleLanguage.Export.SLIR
         public string name { get; set; } = string.Empty;
         public string typeName { get; set; } = string.Empty;
         public bool isStatic { get; set; }
+        public bool isConst { get; set; }
+        public int flags { get; set; }
         public int index { get; set; }
         public List<SLIRInstructionPackage> express { get; set; } = new();
     }

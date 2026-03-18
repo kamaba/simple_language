@@ -58,6 +58,8 @@ namespace SimpleLanguage.VM.LanguageRuntime
         public string name { get; set; } = string.Empty;
         public string typeName { get; set; } = string.Empty;
         public bool isStatic { get; set; }
+        public bool isConst { get; set; }
+        public int flags { get; set; }
         public int index { get; set; }
         public List<SLIRInstructionPackage> express { get; set; } = new();
     }

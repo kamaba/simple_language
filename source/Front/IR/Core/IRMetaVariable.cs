@@ -32,6 +32,8 @@ namespace SimpleLanguage.IR
         public string name => m_Name;
         public int index => m_Index;
         public bool isConst => m_IsConst;
+        public bool isStatic => m_IsStatic;
+        public EPermission permission => m_Permission;
         public List<IRData> irDataList => m_IRDataList;
 
 
@@ -44,6 +46,8 @@ namespace SimpleLanguage.IR
         private int m_Index = -1;
         private string m_Name = "";
         private bool m_IsConst = false;
+        private bool m_IsStatic = false;
+        private EPermission m_Permission = EPermission.Public;
         //private MetaVariable m_MetaVariable = null;
 
         public IRMetaVariable( MetaVariable mv, int index = -1 )
@@ -53,6 +57,8 @@ namespace SimpleLanguage.IR
             m_Index = index;
             m_Name = mv.ownerMetaBlockStatements?.ownerMetaFunction.name + (mv.isStatic?"_static":"_local") + "[" + mv.name + "]";
             m_IsConst = mv.isConst;
+            m_IsStatic = mv.isStatic;
+            m_Permission = mv.permission;
             if( mv.variableFrom == MetaVariable.EVariableFrom.Member )
             {
                 if( mv.isStatic )
@@ -106,6 +112,8 @@ namespace SimpleLanguage.IR
             m_Name = mme.ownerMetaClass.allClassName + "." + mme.name;
             m_ExpressNode = mme.express;
             m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
+            m_IsStatic = true;
+            m_Permission = mme.permission;
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberData mmd)
         {
@@ -114,6 +122,8 @@ namespace SimpleLanguage.IR
             m_Name = mmd.ownerMetaClass.allClassName + "." + mmd.name;
             m_ExpressNode = mmd.expressNode;
             m_IRMetaVariableFrom = mmd.isStatic ? IRMetaVariableFrom.Static : IRMetaVariableFrom.Member;
+            m_IsStatic = mmd.isStatic;
+            m_Permission = mmd.permission;
             //m_IRMetaClass = irmc;
         }
         public IRMetaVariable( IRMetaClass irmc, MetaMemberVariable mmv, int index = -1 )
@@ -124,6 +134,8 @@ namespace SimpleLanguage.IR
             m_Name = mmv.ownerMetaClass.allClassName + "." + mmv.name;
             m_ExpressNode = mmv.express;
             m_IsConst = mmv.isConst;
+            m_IsStatic = mmv.isStatic;
+            m_Permission = mmv.permission;
             if (mmv.isStatic || mmv.isConst )
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
             else

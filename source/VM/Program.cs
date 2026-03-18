@@ -86,6 +86,7 @@ try
         SimpleLanguage.VM.Runtime.CLRVM.ResetGlobalVariableMapping();
         var allGlobalInitInstructions = new List<Instruction>();
         int globalVarCount = 0;
+        var globalFieldIdMap = new Dictionary<string, int>(StringComparer.Ordinal);
         for (int i = 0; i < packageList.Count; i++)
         {
             var p = packageList[i];
@@ -96,16 +97,43 @@ try
                 {
                     var gv = p.globalStaticVariableList[g];
                     SimpleLanguage.VM.Runtime.CLRVM.RegisterGlobalVariable(gv.id, gv.typeName, gv.ownerClassId, gv.index);
+                    globalFieldIdMap[$"{gv.ownerClassId}:{gv.index}"] = gv.id;
                 }
             }
 
-            if (p.globalStaticInstructionList != null && p.globalStaticInstructionList.Count > 0)
+            // Rebuild global const init instructions from class field metadata:
+            // only const fields participate in startup init.
+            if (p.classList != null && p.classList.Count > 0)
             {
-                for (int gs = 0; gs < p.globalStaticInstructionList.Count; gs++)
+                for (int c = 0; c < p.classList.Count; c++)
                 {
-                    var gsi = p.globalStaticInstructionList[gs];
-                    if (gsi?.instructionList == null || gsi.instructionList.Count == 0) continue;
-                    allGlobalInitInstructions.AddRange(SLModulePackageLoader.ConvertToVMInstructionList(gsi.instructionList));
+                    var cls = p.classList[c];
+                    if (cls?.fieldList == null) continue;
+
+                    for (int f = 0; f < cls.fieldList.Count; f++)
+                    {
+                        var field = cls.fieldList[f];
+                        if (field == null) continue;
+                        // harden compat: always project flags -> bool markers at use-site
+                        if (!field.isConst && (field.flags & 16) == 16) field.isConst = true;
+                        if (!field.isStatic && (field.flags & 32) == 32) field.isStatic = true;
+                        bool isConstField = field.isConst || ((field.flags & 16) == 16);
+                        if (!isConstField) continue;
+                        if (field.express == null || field.express.Count == 0) continue;
+
+                        allGlobalInitInstructions.AddRange(SLModulePackageLoader.ConvertToVMInstructionList(field.express));
+
+                        if (globalFieldIdMap.TryGetValue($"{cls.id}:{field.index}", out var gid))
+                        {
+                            allGlobalInitInstructions.Add(new Instruction
+                            {
+                                opCode = EIROpCode.StoreGlobal,
+                                index = gid,
+                                opValue = null,
+                                Payload = Array.Empty<byte>(),
+                            });
+                        }
+                    }
                 }
             }
         }

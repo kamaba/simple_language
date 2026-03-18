@@ -22,7 +22,32 @@ namespace SimpleLanguage.VM.LanguageRuntime
             };
             options.Converters.Add(new JsonStringEnumConverter());
 
-            return JsonSerializer.Deserialize<SLModulePackage>(json, options);
+            var pkg = JsonSerializer.Deserialize<SLModulePackage>(json, options);
+            NormalizeFieldFlags(pkg);
+            return pkg;
+        }
+
+        private static void NormalizeFieldFlags(SLModulePackage? pkg)
+        {
+            if (pkg?.classList == null) return;
+            for (int c = 0; c < pkg.classList.Count; c++)
+            {
+                var cls = pkg.classList[c];
+                if (cls?.fieldList == null) continue;
+                for (int f = 0; f < cls.fieldList.Count; f++)
+                {
+                    var field = cls.fieldList[f];
+                    if (field == null) continue;
+
+                    // bool -> flags
+                    if (field.isConst) field.flags |= 16;
+                    if (field.isStatic) field.flags |= 32;
+
+                    // flags -> bool (compat for payloads writing flags only)
+                    if (!field.isConst && (field.flags & 16) == 16) field.isConst = true;
+                    if (!field.isStatic && (field.flags & 32) == 32) field.isStatic = true;
+                }
+            }
         }
 
         public static SLAssembly BuildRuntimeModel(SLModulePackage pkg)
