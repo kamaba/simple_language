@@ -20,7 +20,6 @@ namespace SimpleLanguage.VM.LanguageRuntime
             if (pkg == null) throw new ArgumentNullException(nameof(pkg));
             Clear();
             AddFromPackage(pkg);
-            BindStaticCallRuntimeCall();
         }
 
         public static void LoadFromPackages(IEnumerable<SLModulePackage> packages)
@@ -33,8 +32,6 @@ namespace SimpleLanguage.VM.LanguageRuntime
                 if (pkg == null) continue;
                 AddFromPackage(pkg);
             }
-
-            BindStaticCallRuntimeCall();
         }
 
         private static void AddFromPackage(SLModulePackage pkg)
@@ -85,47 +82,18 @@ namespace SimpleLanguage.VM.LanguageRuntime
             }
         }
 
-        private static void BindStaticCallRuntimeCall()
-        {
-            foreach (var kv in s_MethodById)
-            {
-                var caller = kv.Value;
-                if (caller?.InstructionList == null) continue;
-
-                for (int i = 0; i < caller.InstructionList.Count; i++)
-                {
-                    var ins = caller.InstructionList[i];
-                    TryBindInstructionCall(ins);
-                }
-            }
-        }
+        // Note: binding of instruction call payloads to runtime call objects
+        // moved to the dynamic runtime layer. Runtime should invoke
+        // TryCreateRuntimeCallForInstruction when it needs to resolve an
+        // instruction's opValue into a RuntimeCall. Keeping the helper
+        // here for on-demand use is still possible via TryCreateRuntimeCallForInstruction.
 
         public static bool TryBindInstructionCall(Instruction? ins)
         {
-            if (ins == null || !IsCallOp(ins.opCode)) return false;
-
-            var callPkg = ins.opValue as SLRuntimeCallPackage;
-            if (callPkg == null && ins.TryGetRuntimeCallPackage(out var parsedCallPkg))
-            {
-                callPkg = parsedCallPkg;
-            }
-
-            object? legacyOpValue = ins.opValue;
-            if (legacyOpValue == null && ins.TryGetString(out var methodIdFromPayload) && !string.IsNullOrWhiteSpace(methodIdFromPayload))
-            {
-                legacyOpValue = methodIdFromPayload;
-            }
-
-            if (legacyOpValue == null && callPkg != null && !string.IsNullOrWhiteSpace(callPkg.methodId))
-            {
-                legacyOpValue = callPkg.methodId;
-            }
-
-            var runtimeCall = TryCreateRuntimeCallForInstruction(callPkg, legacyOpValue, ins.index);
-            if (runtimeCall == null) return false;
-
-            ins.opValue = runtimeCall;
-            return true;
+            // Binding logic intentionally moved to the runtime layer.
+            // Runtime code should call TryCreateRuntimeCallForInstruction when
+            // it needs to resolve an instruction's opValue into a RuntimeCall.
+            return false;
         }
 
         public static RuntimeDefType? TryResolveRuntimeDefTypeFromInstruction(object? opValue, byte[]? payload = null)

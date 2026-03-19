@@ -363,10 +363,41 @@ namespace SimpleLanguage.IR
                 IRData irdata = new IRData();
                 irdata.id = list.Count;
                 irdata.opValue = v.irMetaType;
+                // for instance member default init we use StoreNotStaticField1
                 irdata.opCode = EIROpCode.StoreNotStaticField1;
                 irdata.index = v.index;
 
                 list.Add(irdata);
+            }
+
+            // Also process static member variables so their initialization expressions are
+            // converted to IR (this ensures string constants and other consts are collected
+            // by AddStringIRStack when IRExpress is created). Static variables that belong
+            // to Project-like classes are kept in m_StaticIRMetaVariableList and need
+            // to be handled here as well.
+            foreach (var v in m_StaticIRMetaVariableList)
+            {
+                if (v.express == null)
+                    continue;
+
+                if (v.express is MetaNewObjectExpressNode mnoe2)
+                {
+                    IRNewExpress irexp2 = new IRNewExpress(null, mnoe2);
+                    list.AddRange(irexp2.IRDataList);
+                }
+                else
+                {
+                    var irexp2 = IRExpressManager.CreateExpress(null, v.express);
+                    list.AddRange(irexp2.IRDataList);
+                }
+
+                IRData irdata2 = new IRData();
+                irdata2.id = list.Count;
+                // store static field: opValue carries the field type
+                irdata2.opValue = v.irMetaType;
+                irdata2.opCode = EIROpCode.StoreStaticField;
+                irdata2.index = v.index;
+                list.Add(irdata2);
             }
 
             return list;

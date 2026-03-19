@@ -1,6 +1,7 @@
 
 Project
 {
+    string cpk = "cpkkk"
     float Pi = 3.14f
     print( text )
     {

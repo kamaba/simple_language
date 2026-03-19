@@ -18,6 +18,19 @@ namespace SimpleLanguage.VM.LanguageRuntime
 
     public static class SLIRModuleParse
     {
+        private static Dictionary<int, string> s_ConstStringDict = new();
+
+        public static void SetConstStringDict(Dictionary<int, string>? dict)
+        {
+            s_ConstStringDict = dict ?? new Dictionary<int, string>();
+        }
+
+        public static string? TryGetConstString(int id)
+        {
+            if (s_ConstStringDict != null && s_ConstStringDict.TryGetValue(id, out var s)) return s;
+            return null;
+        }
+
         public static string? ResolvePackagePath(string[] args)
         {
             var path = SLIRJsonModuleLoader.ResolveJsonPath(args);
@@ -27,16 +40,25 @@ namespace SimpleLanguage.VM.LanguageRuntime
 
         public static SLIRModuleParseResult? Parse(string packagePath, string[] args)
         {
-            var rootPackage = SLIRJsonModuleLoader.ReadPackage(packagePath);
-            return Parse(packagePath, rootPackage, args);
+            var graph = SLIRJsonModuleLoader.ReadPackagesInExecutionOrder(packagePath);
+            return Parse(graph, args);
         }
 
         public static SLIRModuleParseResult? Parse(string packagePath, SLModulePackage rootPackage, string[] args)
         {
             if (rootPackage == null) return null;
+            var graph = SLIRJsonModuleLoader.ReadPackagesInExecutionOrder(packagePath);
+            return Parse(graph, args);
+        }
 
-            var packageList = LoadPackagesInExecutionOrder(packagePath, rootPackage);
+        public static SLIRModuleParseResult? Parse(SLIRJsonModuleLoader.PackageGraph graph, string[] args)
+        {
+            if (graph == null) return null;
+
+            var packageList = graph.packageList ?? new List<SLModulePackage>();
             if (packageList.Count == 0) return null;
+
+            IntegrateConstStringDict(packageList);
 
             var currentPkg = packageList[packageList.Count - 1];
 
@@ -44,7 +66,7 @@ namespace SimpleLanguage.VM.LanguageRuntime
             var asmList = packageList.Select(SLModulePackageLoader.BuildRuntimeModel).ToList();
             var slAsm = asmList[asmList.Count - 1];
 
-            LoadBridgeMetadata(packagePath);
+            LoadBridgeMetadata(graph.rootDirectory);
 
             var (globalVarCount, globalInitCount) = InitializeGlobalVariables(packageList);
 
@@ -62,15 +84,39 @@ namespace SimpleLanguage.VM.LanguageRuntime
             };
         }
 
-        private static void LoadBridgeMetadata(string packagePath)
+        private static void IntegrateConstStringDict(List<SLModulePackage> packageList)
+        {
+            var dict = new Dictionary<int, string>();
+            if (packageList == null)
+            {
+                SetConstStringDict(dict);
+                return;
+            }
+
+            for (int i = 0; i < packageList.Count; i++)
+            {
+                var pkg = packageList[i];
+                if (pkg?.irStringDict == null) continue;
+
+                for (int j = 0; j < pkg.irStringDict.Count; j++)
+                {
+                    var item = pkg.irStringDict[j];
+                    if (item == null) continue;
+                    dict[item.id] = item.value ?? string.Empty;
+                }
+            }
+
+            SetConstStringDict(dict);
+        }
+
+        private static void LoadBridgeMetadata(string packageDirectory)
         {
             var bridgePath = Environment.GetEnvironmentVariable("SIMPLELANG_BRIDGE_JSON");
             if (string.IsNullOrWhiteSpace(bridgePath))
             {
-                var dir = Path.GetDirectoryName(packagePath);
-                if (!string.IsNullOrEmpty(dir))
+                if (!string.IsNullOrEmpty(packageDirectory))
                 {
-                    var guess = Path.Combine(dir, "ImportCSharpLang.json");
+                    var guess = Path.Combine(packageDirectory, "ImportCSharpLang.json");
                     if (File.Exists(guess)) bridgePath = guess;
                 }
             }
@@ -161,61 +207,6 @@ namespace SimpleLanguage.VM.LanguageRuntime
             return entryId;
         }
 
-        private static List<SLModulePackage> LoadPackagesInExecutionOrder(string rootPackagePath, SLModulePackage? rootPackage = null)
-        {
-            var result = new List<SLModulePackage>();
-            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            void LoadRecursive(string path)
-            {
-                var fullPath = Path.GetFullPath(path);
-                if (!File.Exists(fullPath)) return;
-                if (!visited.Add(fullPath)) return;
-
-                SLModulePackage pkg;
-                if (rootPackage != null && string.Equals(fullPath, Path.GetFullPath(rootPackagePath), StringComparison.OrdinalIgnoreCase))
-                {
-                    pkg = rootPackage;
-                }
-                else
-                {
-                    pkg = SLIRJsonModuleLoader.ReadPackage(fullPath);
-                }
-                var dir = Path.GetDirectoryName(fullPath) ?? string.Empty;
-
-                var refs = pkg.moduleReferences ?? new List<string>();
-                for (int i = 0; i < refs.Count; i++)
-                {
-                    var rp = refs[i];
-                    if (string.IsNullOrWhiteSpace(rp)) continue;
-                    var refPath = Path.IsPathRooted(rp) ? rp : Path.Combine(dir, rp);
-                    LoadRecursive(refPath);
-                }
-
-                result.Add(pkg);
-            }
-
-            LoadRecursive(rootPackagePath);
-
-            if (result.Count == 1)
-            {
-                var rootFullPath = Path.GetFullPath(rootPackagePath);
-                var dir = Path.GetDirectoryName(rootFullPath) ?? string.Empty;
-                var siblings = Directory.Exists(dir)
-                    ? Directory.GetFiles(dir, "*.package.json")
-                    : Array.Empty<string>();
-
-                Array.Sort(siblings, StringComparer.OrdinalIgnoreCase);
-                for (int i = 0; i < siblings.Length; i++)
-                {
-                    var sp = Path.GetFullPath(siblings[i]);
-                    if (string.Equals(sp, rootFullPath, StringComparison.OrdinalIgnoreCase)) continue;
-                    if (!visited.Add(sp)) continue;
-                    result.Insert(result.Count - 1, SLIRJsonModuleLoader.ReadPackage(sp));
-                }
-            }
-
-            return result;
-        }
     }
 }

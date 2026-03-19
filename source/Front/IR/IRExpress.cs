@@ -44,7 +44,16 @@ namespace SimpleLanguage.IR
         {
             IRData irdata = new IRData();
             irdata.opCode = IRUtil.GetConstIROpCode(node.eType);
-            irdata.SetOpValue(node.value);
+            if (node.eType == EType.String)
+            {
+                var s = node.value?.ToString() ?? string.Empty;
+                irdata.index = IRManager.instance.AddStringIRStack(s);
+                irdata.opValue = null;
+            }
+            else
+            {
+                irdata.SetOpValue(node.value);
+            }
             //irdata.SetDebugInfoByToken( mcn.GetToken() );
             AddIRData(irdata);
         }
@@ -61,7 +70,16 @@ namespace SimpleLanguage.IR
                     {
                         IRData irdata = new IRData();
                         irdata.opCode = IRUtil.GetConstIROpCode(mcn.eType);
-                        irdata.SetOpValue(mcn.value);
+                        if (mcn.eType == EType.String)
+                        {
+                            var s = mcn.value?.ToString() ?? string.Empty;
+                            irdata.index = IRManager.instance.AddStringIRStack(s);
+                            irdata.opValue = null;
+                        }
+                        else
+                        {
+                            irdata.SetOpValue(mcn.value);
+                        }
                         //irdata.SetDebugInfoByToken( mcn.GetToken() );
                         AddIRData(irdata);
                     }

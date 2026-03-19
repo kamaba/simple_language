@@ -9,6 +9,13 @@ namespace SimpleLanguage.VM
 {
     public static class SLIRJsonModuleLoader
     {
+        public sealed class PackageGraph
+        {
+            public string rootPackagePath { get; init; } = string.Empty;
+            public string rootDirectory { get; init; } = string.Empty;
+            public List<SLModulePackage> packageList { get; init; } = new();
+        }
+
         public static string? ResolveJsonPath(string[] args)
         {
             if (args != null && args.Length > 0 && args[0].EndsWith(".json", StringComparison.OrdinalIgnoreCase))
@@ -68,16 +75,9 @@ namespace SimpleLanguage.VM
             public string? payloadBase64 { get; set; }
         }
 
-        private static Dictionary<int, string> s_LastIRStringDict = new();
-
         public static string? TryGetConstString(int stringId)
         {
-            var fromBootstrap = SLIRJsonModuleLoaderBootstrap.TryGetConstString(stringId);
-            if (fromBootstrap != null) return fromBootstrap;
-
-            if (s_LastIRStringDict != null && s_LastIRStringDict.TryGetValue(stringId, out var s))
-                return s;
-            return null;
+            return SLIRModuleParse.TryGetConstString(stringId);
         }
 
         public static Module ReadModule(string jsonPath)
@@ -90,12 +90,6 @@ namespace SimpleLanguage.VM
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var m = JsonSerializer.Deserialize<Module>(json, options) ?? new Module();
 
-            s_LastIRStringDict = new Dictionary<int, string>();
-            foreach (var it in m.irStringDict)
-            {
-                s_LastIRStringDict[it.id] = it.value ?? string.Empty;
-            }
-            SLIRJsonModuleLoaderBootstrap.SetConstStringDict(s_LastIRStringDict);
             return m;
         }
 
@@ -112,20 +106,66 @@ namespace SimpleLanguage.VM
             }
 
             var pkg = SLModulePackageLoader.LoadFromJson(jsonPath);
-            var dict = new Dictionary<int, string>();
-            if (pkg?.irStringDict != null)
+            return pkg;
+        }
+
+        public static PackageGraph ReadPackagesInExecutionOrder(string rootPackagePath)
+        {
+            if (string.IsNullOrWhiteSpace(rootPackagePath))
             {
-                for (int i = 0; i < pkg.irStringDict.Count; i++)
+                throw new ArgumentNullException(nameof(rootPackagePath));
+            }
+
+            var rootFullPath = Path.GetFullPath(rootPackagePath);
+            var result = new List<SLModulePackage>();
+            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            void LoadRecursive(string path)
+            {
+                var fullPath = Path.GetFullPath(path);
+                if (!File.Exists(fullPath)) return;
+                if (!visited.Add(fullPath)) return;
+
+                var pkg = ReadPackage(fullPath);
+                var dir = Path.GetDirectoryName(fullPath) ?? string.Empty;
+
+                var refs = pkg.moduleReferences ?? new List<string>();
+                for (int i = 0; i < refs.Count; i++)
                 {
-                    var item = pkg.irStringDict[i];
-                    if (item == null) continue;
-                    dict[item.id] = item.value ?? string.Empty;
+                    var rp = refs[i];
+                    if (string.IsNullOrWhiteSpace(rp)) continue;
+                    var refPath = Path.IsPathRooted(rp) ? rp : Path.Combine(dir, rp);
+                    LoadRecursive(refPath);
+                }
+
+                result.Add(pkg);
+            }
+
+            LoadRecursive(rootFullPath);
+
+            if (result.Count == 1)
+            {
+                var dir = Path.GetDirectoryName(rootFullPath) ?? string.Empty;
+                var siblings = Directory.Exists(dir)
+                    ? Directory.GetFiles(dir, "*.package.json")
+                    : Array.Empty<string>();
+
+                Array.Sort(siblings, StringComparer.OrdinalIgnoreCase);
+                for (int i = 0; i < siblings.Length; i++)
+                {
+                    var sp = Path.GetFullPath(siblings[i]);
+                    if (string.Equals(sp, rootFullPath, StringComparison.OrdinalIgnoreCase)) continue;
+                    if (!visited.Add(sp)) continue;
+                    result.Insert(result.Count - 1, ReadPackage(sp));
                 }
             }
 
-            s_LastIRStringDict = dict;
-            SLIRJsonModuleLoaderBootstrap.SetConstStringDict(dict);
-            return pkg;
+            return new PackageGraph
+            {
+                rootPackagePath = rootFullPath,
+                rootDirectory = Path.GetDirectoryName(rootFullPath) ?? string.Empty,
+                packageList = result,
+            };
         }
 
         public static string GetDefaultJsonPath()

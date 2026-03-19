@@ -23,8 +23,8 @@ try
             return;
         }
 
-        var rootPackage = SLIRJsonModuleLoader.ReadPackage(pkgPath);
-        var parseResult = SLIRModuleParse.Parse(pkgPath, rootPackage, args);
+        var graph = SLIRJsonModuleLoader.ReadPackagesInExecutionOrder(pkgPath);
+        var parseResult = SLIRModuleParse.Parse(graph, args);
         if (parseResult == null)
         {
             Console.WriteLine("No valid module package loaded.");

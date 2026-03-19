@@ -68,13 +68,6 @@ namespace SimpleLanguage.VM.LanguageRuntime
                 }
             }
 
-            // Keep VM global const string table in sync for LoadConstString(index=stringId)
-            if (pkg.irStringDict != null && pkg.irStringDict.Count > 0)
-            {
-                var map = pkg.irStringDict.ToDictionary(a => a.id, a => a.value ?? string.Empty);
-                SimpleLanguage.VM.SLIRJsonModuleLoaderBootstrap.SetConstStringDict(map);
-            }
-
             var typeMap = module.namespaceList
                 .SelectMany(n => n.typeList)
                 .GroupBy(t => t.fullName, StringComparer.Ordinal)
@@ -149,15 +142,11 @@ namespace SimpleLanguage.VM.LanguageRuntime
             foreach (var d in list)
             {
                 var opCode = (SimpleLanguage.VM.EIROpCode)d.opCode;
+                // Note: resolution of runtime-def-type payloads has been moved to the
+                // dynamic runtime layer. We keep the original opValue/payload here and
+                // let the runtime resolve/convert them on demand (e.g. before executing
+                // NewArray/NewTemplateObject/Ldc/LoadStaticField/StoreStaticField).
                 object? opValue = (object?)d.runtimeCall ?? d.opValue;
-                if (IsRuntimeDefTypeInstruction(opCode))
-                {
-                    var resolvedDefType = SLRuntimeModuleRegistry.TryResolveRuntimeDefTypeFromInstruction(opValue, d.payload);
-                    if (resolvedDefType != null)
-                    {
-                        opValue = resolvedDefType;
-                    }
-                }
 
                 var ins = new SimpleLanguage.VM.Instruction
                 {
@@ -168,8 +157,6 @@ namespace SimpleLanguage.VM.LanguageRuntime
                     ByteLength = d.byteLength,
                     index = d.index,
                 };
-
-                SLRuntimeModuleRegistry.TryBindInstructionCall(ins);
                 result.Add(ins);
             }
 
