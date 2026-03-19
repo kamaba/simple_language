@@ -148,11 +148,22 @@ namespace SimpleLanguage.VM.LanguageRuntime
 
             foreach (var d in list)
             {
+                var opCode = (SimpleLanguage.VM.EIROpCode)d.opCode;
+                object? opValue = (object?)d.runtimeCall ?? d.opValue;
+                if (IsRuntimeDefTypeInstruction(opCode))
+                {
+                    var resolvedDefType = SLRuntimeModuleRegistry.TryResolveRuntimeDefTypeFromInstruction(opValue, d.payload);
+                    if (resolvedDefType != null)
+                    {
+                        opValue = resolvedDefType;
+                    }
+                }
+
                 var ins = new SimpleLanguage.VM.Instruction
                 {
                     id = d.id,
-                    opCode = (SimpleLanguage.VM.EIROpCode)d.opCode,
-                    opValue = (object?)d.runtimeCall ?? d.opValue,
+                    opCode = opCode,
+                    opValue = opValue,
                     Payload = d.payload,
                     ByteLength = d.byteLength,
                     index = d.index,
@@ -163,6 +174,15 @@ namespace SimpleLanguage.VM.LanguageRuntime
             }
 
             return result;
+        }
+
+        private static bool IsRuntimeDefTypeInstruction(SimpleLanguage.VM.EIROpCode opCode)
+        {
+            return opCode == SimpleLanguage.VM.EIROpCode.NewArray
+                || opCode == SimpleLanguage.VM.EIROpCode.NewTemplateObject
+                || opCode == SimpleLanguage.VM.EIROpCode.Ldc
+                || opCode == SimpleLanguage.VM.EIROpCode.LoadStaticField
+                || opCode == SimpleLanguage.VM.EIROpCode.StoreStaticField;
         }
 
         private static string GetNamespaceFromFullTypeName(string fullType)

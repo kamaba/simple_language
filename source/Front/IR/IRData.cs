@@ -56,6 +56,14 @@ namespace SimpleLanguage.IR
             Payload = null;
             if (opValue == null) return;
 
+            // runtime def type payload: write full IRMetaType tree at SetOpValue stage
+            if (opValue is IRMetaType imt)
+            {
+                var exportType = CreateRuntimeDefTypeExport(imt);
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(exportType));
+                return;
+            }
+
             // call payload fallback: write method id at SetOpValue stage
             if (opValue is IRMethodCall imc)
             {
@@ -149,7 +157,6 @@ namespace SimpleLanguage.IR
                 ownerClassId = mt.irOwnerMetaClass?.id ?? 0,
                 ownerClassName = mt.irOwnerMetaClass?.irName ?? string.Empty,
                 templateIndex = mt.templateIndex,
-                isTemplate = mt.templateIndex >= 0,
                 runtimeDefTypeList = CreateRuntimeDefTypeExportList(mt.irMetaTypeList),
             };
         }
@@ -170,7 +177,7 @@ namespace SimpleLanguage.IR
             public int ownerClassId { get; set; }
             public string ownerClassName { get; set; } = string.Empty;
             public int templateIndex { get; set; } = -1;
-            public bool isTemplate { get; set; }
+            //public bool isTemplate { get; set; }
             public List<RuntimeDefTypeExport> runtimeDefTypeList { get; set; } = new();
         }
 

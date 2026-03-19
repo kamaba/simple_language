@@ -13,61 +13,37 @@ try
     //CallMethodJsonExporter.Export("../../../../Front/bin/Debug/net8.0/ImportCSharpLang.json");
 
     // If first arg is a JSON module package, load it. Otherwise try default exported path.
-    string? pkgPath = null;
-    if (args.Length > 0 && args[0].EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-    {
-        pkgPath = args[0];
-    }
-    else
-    {
-        var outDir = "E:\\project\\lang\\simple_language\\source\\Front\\bin\\Debug\\net8.0\\out\\export";// Environment.GetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR");
-        if (string.IsNullOrWhiteSpace(outDir))
-            outDir = System.IO.Path.Combine(Environment.CurrentDirectory, "out", "export");
-        var defaultPath = System.IO.Path.Combine(outDir, "module.package.json");
-        if (System.IO.File.Exists(defaultPath))
-            pkgPath = defaultPath;
-    }
+    string? pkgPath = SLIRJsonModuleLoader.ResolveJsonPath(args);
 
     if (!string.IsNullOrEmpty(pkgPath))
     {
-        var packageList = LoadPackagesInExecutionOrder(pkgPath);
-        if (packageList.Count == 0)
+        if (!pkgPath.EndsWith(".package.json", StringComparison.OrdinalIgnoreCase))
+        {
+            Console.WriteLine($"Unsupported json slir input for runtime parse: {pkgPath}");
+            return;
+        }
+
+        var rootPackage = SLIRJsonModuleLoader.ReadPackage(pkgPath);
+        var parseResult = SLIRModuleParse.Parse(pkgPath, rootPackage, args);
+        if (parseResult == null)
         {
             Console.WriteLine("No valid module package loaded.");
             return;
         }
 
-        var currentPkg = packageList[packageList.Count - 1];
-
-        SLRuntimeModuleRegistry.LoadFromPackages(packageList);
-        var asmList = packageList.Select(SLModulePackageLoader.BuildRuntimeModel).ToList();
-        var slAsm = asmList[asmList.Count - 1];
-
-        // Load C# bridge metadata (optional)
-        var bridgePath = Environment.GetEnvironmentVariable("SIMPLELANG_BRIDGE_JSON");
-        if (string.IsNullOrWhiteSpace(bridgePath))
-        {
-            var dir = System.IO.Path.GetDirectoryName(pkgPath);
-            if (!string.IsNullOrEmpty(dir))
-            {
-                var guess = System.IO.Path.Combine(dir, "ImportCSharpLang.json");
-                if (System.IO.File.Exists(guess)) bridgePath = guess;
-            }
-        }
-        if (!string.IsNullOrWhiteSpace(bridgePath) && System.IO.File.Exists(bridgePath))
-        {
-            SimpleLanguage.VM.Runtime.CSharpBridgeRegistry.LoadFromJson(bridgePath);
-        }
+        var currentPkg = parseResult.currentPackage;
+        var asmList = parseResult.assemblyList;
+        var slAsm = parseResult.assembly;
 
         var moduleCount = asmList.Sum(a => a.moduleList.Count);
         var nsCount = asmList.Sum(a => a.moduleList.Sum(m => m.namespaceList.Count));
         var slTypeCount = asmList.Sum(a => a.moduleList.Sum(m => m.namespaceList.Sum(n => n.typeList.Count)));
         var slMethodCount = asmList.Sum(a => a.moduleList.Sum(m => m.namespaceList.Sum(n => n.typeList.Sum(t => t.methodList.Count))));
 
-        Console.WriteLine($"SLAssembly: {slAsm.id}");
+        Console.WriteLine($"SLAssembly: {slAsm?.id}");
         Console.WriteLine($"Modules: {moduleCount}, Namespaces: {nsCount}, Types: {slTypeCount}, Methods: {slMethodCount}");
 
-        var sampleMethod = slAsm.moduleList
+        var sampleMethod = slAsm?.moduleList
             .SelectMany(m => m.namespaceList)
             .SelectMany(n => n.typeList)
             .SelectMany(t => t.methodList)
@@ -82,79 +58,9 @@ try
             }
         }
 
-        // 1) init globalStaticVariableList and execute global init expressions before entry
-        SimpleLanguage.VM.Runtime.CLRVM.ResetGlobalVariableMapping();
-        var allGlobalInitInstructions = new List<Instruction>();
-        int globalVarCount = 0;
-        var globalFieldIdMap = new Dictionary<string, int>(StringComparer.Ordinal);
-        for (int i = 0; i < packageList.Count; i++)
-        {
-            var p = packageList[i];
-            if (p.globalStaticVariableList != null)
-            {
-                globalVarCount += p.globalStaticVariableList.Count;
-                for (int g = 0; g < p.globalStaticVariableList.Count; g++)
-                {
-                    var gv = p.globalStaticVariableList[g];
-                    SimpleLanguage.VM.Runtime.CLRVM.RegisterGlobalVariable(gv.id, gv.typeName, gv.ownerClassId, gv.index);
-                    globalFieldIdMap[$"{gv.ownerClassId}:{gv.index}"] = gv.id;
-                }
-            }
+        Console.WriteLine($"GlobalStaticVariableList: {parseResult.globalVariableCount}, GlobalInitInstructions: {parseResult.globalInitInstructionCount}");
 
-            // Rebuild global const init instructions from class field metadata:
-            // only const fields participate in startup init.
-            if (p.classList != null && p.classList.Count > 0)
-            {
-                for (int c = 0; c < p.classList.Count; c++)
-                {
-                    var cls = p.classList[c];
-                    if (cls?.fieldList == null) continue;
-
-                    for (int f = 0; f < cls.fieldList.Count; f++)
-                    {
-                        var field = cls.fieldList[f];
-                        if (field == null) continue;
-                        // harden compat: always project flags -> bool markers at use-site
-                        if (!field.isConst && (field.flags & 16) == 16) field.isConst = true;
-                        if (!field.isStatic && (field.flags & 32) == 32) field.isStatic = true;
-                        bool isConstField = field.isConst || ((field.flags & 16) == 16);
-                        if (!isConstField) continue;
-                        if (field.express == null || field.express.Count == 0) continue;
-
-                        allGlobalInitInstructions.AddRange(SLModulePackageLoader.ConvertToVMInstructionList(field.express));
-
-                        if (globalFieldIdMap.TryGetValue($"{cls.id}:{field.index}", out var gid))
-                        {
-                            allGlobalInitInstructions.Add(new Instruction
-                            {
-                                opCode = EIROpCode.StoreGlobal,
-                                index = gid,
-                                opValue = null,
-                                Payload = Array.Empty<byte>(),
-                            });
-                        }
-                    }
-                }
-            }
-        }
-        Console.WriteLine($"GlobalStaticVariableList: {globalVarCount}, GlobalInitInstructions: {allGlobalInitInstructions.Count}");
-        SimpleLanguage.VM.Runtime.CLRVM.SetGlobalInitInstructions(allGlobalInitInstructions);
-        SimpleLanguage.VM.Runtime.CLRVM.LoadGlobalVariableMapping();
-
-        // Optional execution: SIMPLELANG_ENTRY_METHOD=<methodId>
-        var entryId = Environment.GetEnvironmentVariable("SIMPLELANG_ENTRY_METHOD");
-        bool runTest = args.Any(a => string.Equals(a, "-test", StringComparison.OrdinalIgnoreCase));
-        if (string.IsNullOrWhiteSpace(entryId))
-        {
-            if (runTest)
-            {
-                entryId = currentPkg.methodList?.FirstOrDefault(m => string.Equals(m.name, "_test_", StringComparison.OrdinalIgnoreCase))?.id;
-            }
-            else
-            {
-                entryId = currentPkg.entryMethodId;
-            }
-        }
+        var entryId = parseResult.entryMethodId;
 
         // 2) run Main/entry of current module
         if (!string.IsNullOrWhiteSpace(entryId))
@@ -174,55 +80,6 @@ try
 
         return;
     }
-
-static List<SLModulePackage> LoadPackagesInExecutionOrder(string rootPackagePath)
-{
-    var result = new List<SLModulePackage>();
-    var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-    void LoadRecursive(string path)
-    {
-        var fullPath = System.IO.Path.GetFullPath(path);
-        if (!System.IO.File.Exists(fullPath)) return;
-        if (!visited.Add(fullPath)) return;
-
-        var pkg = SLModulePackageLoader.LoadFromJson(fullPath);
-        var dir = System.IO.Path.GetDirectoryName(fullPath) ?? string.Empty;
-
-        var refs = pkg.moduleReferences ?? new List<string>();
-        for (int i = 0; i < refs.Count; i++)
-        {
-            var rp = refs[i];
-            if (string.IsNullOrWhiteSpace(rp)) continue;
-            var refPath = System.IO.Path.IsPathRooted(rp) ? rp : System.IO.Path.Combine(dir, rp);
-            LoadRecursive(refPath);
-        }
-
-        result.Add(pkg);
-    }
-
-    LoadRecursive(rootPackagePath);
-
-    if (result.Count == 1)
-    {
-        var rootFullPath = System.IO.Path.GetFullPath(rootPackagePath);
-        var dir = System.IO.Path.GetDirectoryName(rootFullPath) ?? string.Empty;
-        var siblings = System.IO.Directory.Exists(dir)
-            ? System.IO.Directory.GetFiles(dir, "*.package.json")
-            : Array.Empty<string>();
-
-        Array.Sort(siblings, StringComparer.OrdinalIgnoreCase);
-        for (int i = 0; i < siblings.Length; i++)
-        {
-            var sp = System.IO.Path.GetFullPath(siblings[i]);
-            if (string.Equals(sp, rootFullPath, StringComparison.OrdinalIgnoreCase)) continue;
-            if (!visited.Add(sp)) continue;
-            result.Insert(result.Count - 1, SLModulePackageLoader.LoadFromJson(sp));
-        }
-    }
-
-    return result;
-}
 
     Console.WriteLine("No module package found. Pass a module package JSON or export one to out/export/module.package.json.");
 }

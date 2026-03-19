@@ -387,6 +387,19 @@ namespace SimpleLanguage.VM.Runtime
             return Convert.ChangeType(source, targetType);
         }
 
+        private static RuntimeDefType? TryGetInstructionRuntimeDefType(Instruction iri)
+        {
+            if (iri == null) return null;
+            if (iri.opValue is RuntimeDefType direct) return direct;
+
+            var resolved = SLRuntimeModuleRegistry.TryResolveRuntimeDefTypeFromInstruction(iri.opValue, iri.Payload);
+            if (resolved != null)
+            {
+                iri.opValue = resolved;
+            }
+            return resolved;
+        }
+
         private bool TryInvokeRegisteredBridgeByIndex(Instruction iri)
         {
             int bridgeIndex;
@@ -862,9 +875,9 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.NewObject:
                     {
-                        if (iri.opValue is Int32 runtimeClassId )
+                        if( iri.TryGetInt32(out int i32) )
                         {
-                            var rt = RuntimeTypeManager.GetRuntimeTypeByClassId(runtimeClassId);
+                            var rt = RuntimeTypeManager.GetRuntimeTypeByClassId(i32);
                             SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
                             if (sobj is ClassObject co)
                             {
@@ -885,7 +898,8 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.NewTemplateObject:
                     {
-                        if (iri.opValue is RuntimeDefType mdt)
+                        var mdt = TryGetInstructionRuntimeDefType(iri);
+                        if (mdt != null)
                         {
                             var rt = GetClassRuntimeType(mdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                             SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
@@ -911,7 +925,8 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.NewArray:
                     {
                         // expects length on stack
-                        if (m_ValueIndex > 0 && iri.opValue is RuntimeDefType rdt)
+                        var rdt = TryGetInstructionRuntimeDefType(iri);
+                        if (m_ValueIndex > 0 && rdt != null)
                         {
                             var sval = m_ValueStack[m_ValueIndex - 1];
                             if (sval.eType != EVMType.Int32)
@@ -1336,7 +1351,8 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Ldc:
                     {
-                        if (iri.opValue is RuntimeDefType mdt)
+                        var mdt = TryGetInstructionRuntimeDefType(iri);
+                        if (mdt != null)
                         {
                             var rt = GetClassRuntimeType(mdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                            
@@ -1354,7 +1370,8 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadStaticField:
                     {
-                        if (iri.opValue is RuntimeDefType mt)
+                        var mt = TryGetInstructionRuntimeDefType(iri);
+                        if (mt != null)
                         {
                             var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(mt);
                             var v = default(SValue);
@@ -1368,7 +1385,8 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.StoreStaticField:
                     {
-                        if (iri.opValue is RuntimeDefType mt)
+                        var mt = TryGetInstructionRuntimeDefType(iri);
+                        if (mt != null)
                         {
                             if (m_ValueIndex > 0)
                             {

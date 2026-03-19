@@ -8,6 +8,8 @@
 
 using System;
 using System.Text;
+using System.Text.Json;
+using SimpleLanguage.VM.LanguageRuntime;
 
 namespace SimpleLanguage.VM
 {
@@ -269,6 +271,97 @@ namespace SimpleLanguage.VM
             }
             if (opValue is string ss) { s = ss; return true; }
             s = null; return false;
+        }
+
+        public bool TryGetRuntimeCallPackage(out SLRuntimeCallPackage pkg)
+        {
+            return TryGetJsonObject(out pkg);
+        }
+
+        public bool TryGetRuntimeDefTypePackage(out SLRuntimeDefTypePackage pkg)
+        {
+            return TryGetJsonObject(out pkg);
+        }
+
+        private bool TryGetJsonObject<T>(out T value) where T : class
+        {
+            value = null;
+
+            if (opValue is T direct)
+            {
+                value = direct;
+                return true;
+            }
+
+            if (opValue is JsonElement je)
+            {
+                try
+                {
+                    if (je.ValueKind == JsonValueKind.Object)
+                    {
+                        var fromElement = je.Deserialize<T>();
+                        if (fromElement != null)
+                        {
+                            value = fromElement;
+                            return true;
+                        }
+                    }
+                    else if (je.ValueKind == JsonValueKind.String)
+                    {
+                        var text = je.GetString();
+                        if (!string.IsNullOrWhiteSpace(text) && text[0] == '{')
+                        {
+                            var fromStringElement = JsonSerializer.Deserialize<T>(text);
+                            if (fromStringElement != null)
+                            {
+                                value = fromStringElement;
+                                return true;
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            if (opValue is string s && !string.IsNullOrWhiteSpace(s) && s[0] == '{')
+            {
+                try
+                {
+                    var fromString = JsonSerializer.Deserialize<T>(s);
+                    if (fromString != null)
+                    {
+                        value = fromString;
+                        return true;
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            if (Payload != null && Payload.Length > 0)
+            {
+                try
+                {
+                    var text = Encoding.UTF8.GetString(Payload);
+                    if (!string.IsNullOrWhiteSpace(text) && text[0] == '{')
+                    {
+                        var fromPayload = JsonSerializer.Deserialize<T>(text);
+                        if (fromPayload != null)
+                        {
+                            value = fromPayload;
+                            return true;
+                        }
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            return false;
         }
         //public void SetDebugInfoByValue(DebugInfo info)
         //{

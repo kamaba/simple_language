@@ -22,3 +22,4 @@
 - In MetaCallNode.GetFirstNode, classify CallCLRMethod/CallNativeMethod/CallJVMMethod as SystemFunctionCall; MetaCallLink should create MetaVisitNode with EVisitType.SystemCall and bind MetaMethodCall; IR conversion should continue through IRCallFunction into bridge opcodes.
 - Debug export semantics must distinguish layers: `File.txt` exports FileMeta layer data, while `Meta.txt` exports MetaCore layer data, and must include complete logic (e.g., method statements) rather than just an incomplete summary of core nodes.
 - Export `IR.txt`, aggregating all IR methods under each class for unified export.
+- `SLIRJsonModuleLoader` is the JSON SLIR reader, and `SLIRBinModuleLoader` is the binary SLIR reader.

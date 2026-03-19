@@ -105,9 +105,9 @@ namespace SimpleLanguage.VM.LanguageRuntime
             if (ins == null || !IsCallOp(ins.opCode)) return false;
 
             var callPkg = ins.opValue as SLRuntimeCallPackage;
-            if (callPkg == null)
+            if (callPkg == null && ins.TryGetRuntimeCallPackage(out var parsedCallPkg))
             {
-                TryReadRuntimeCallFromPayload(ins.Payload, out callPkg);
+                callPkg = parsedCallPkg;
             }
 
             object? legacyOpValue = ins.opValue;
@@ -126,6 +126,40 @@ namespace SimpleLanguage.VM.LanguageRuntime
 
             ins.opValue = runtimeCall;
             return true;
+        }
+
+        public static RuntimeDefType? TryResolveRuntimeDefTypeFromInstruction(object? opValue, byte[]? payload = null)
+        {
+            if (opValue is Instruction ins && ins.TryGetRuntimeDefTypePackage(out var pkgFromInstruction))
+            {
+                return ResolveRuntimeDefType(pkgFromInstruction);
+            }
+
+            if (TryReadRuntimeDefTypePackage(opValue, out var pkg))
+            {
+                return ResolveRuntimeDefType(pkg);
+            }
+
+            if (payload != null && payload.Length > 0)
+            {
+                try
+                {
+                    var text = System.Text.Encoding.UTF8.GetString(payload);
+                    if (!string.IsNullOrWhiteSpace(text) && text[0] == '{')
+                    {
+                        var parsed = JsonSerializer.Deserialize<SLRuntimeDefTypePackage>(text);
+                        if (parsed != null)
+                        {
+                            return ResolveRuntimeDefType(parsed);
+                        }
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            return null;
         }
 
         public static RuntimeCall? TryCreateRuntimeCallForInstruction(SLRuntimeCallPackage? callPkg, object? legacyOpValue, int fallbackParamCount)
@@ -169,7 +203,6 @@ namespace SimpleLanguage.VM.LanguageRuntime
             {
                 try
                 {
-                    // compat: some payloads put runtime call object directly into opValue
                     var embedded = jo.Deserialize<SLRuntimeCallPackage>();
                     if (embedded != null)
                     {
@@ -195,24 +228,52 @@ namespace SimpleLanguage.VM.LanguageRuntime
             return null;
         }
 
-        private static bool TryReadRuntimeCallFromPayload(byte[]? payload, out SLRuntimeCallPackage? callPkg)
+        private static bool TryReadRuntimeDefTypePackage(object? opValue, out SLRuntimeDefTypePackage? pkg)
         {
-            callPkg = null;
-            if (payload == null || payload.Length == 0) return false;
+            pkg = null;
+            if (opValue == null) return false;
 
-            try
+            if (opValue is SLRuntimeDefTypePackage direct)
             {
-                var text = System.Text.Encoding.UTF8.GetString(payload);
-                if (string.IsNullOrWhiteSpace(text) || text[0] != '{') return false;
-                var parsed = JsonSerializer.Deserialize<SLRuntimeCallPackage>(text);
-                if (parsed == null) return false;
-                callPkg = parsed;
+                pkg = direct;
                 return true;
             }
-            catch
+
+            if (opValue is JsonElement je)
             {
-                return false;
+                if (je.ValueKind == JsonValueKind.Object)
+                {
+                    try
+                    {
+                        pkg = je.Deserialize<SLRuntimeDefTypePackage>();
+                        return pkg != null;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                }
+
+                if (je.ValueKind == JsonValueKind.String)
+                {
+                    opValue = je.GetString();
+                }
             }
+
+            if (opValue is string s && !string.IsNullOrWhiteSpace(s) && s[0] == '{')
+            {
+                try
+                {
+                    pkg = JsonSerializer.Deserialize<SLRuntimeDefTypePackage>(s);
+                    return pkg != null;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
+            return false;
         }
 
         private static bool IsCallOp(EIROpCode opCode)
@@ -347,6 +408,8 @@ namespace SimpleLanguage.VM.LanguageRuntime
         {
             if (string.IsNullOrWhiteSpace(typeName)) return null;
 
+            typeName = GetGenericRootName(typeName);
+
             var rc = RuntimeClassManager.instance.GetRuntimeClassByName(typeName)
                 ?? RuntimeClassManager.instance.GetRuntimeClassByName(GetShortName(typeName));
             if (rc != null) return rc;
@@ -363,11 +426,127 @@ namespace SimpleLanguage.VM.LanguageRuntime
         private static RuntimeDefType? ResolveRuntimeDefType(string? typeName)
         {
             if (string.IsNullOrWhiteSpace(typeName)) return null;
+            return BuildRuntimeDefTypeFromTypeName(typeName);
+        }
 
-            var rc = RuntimeClassManager.instance.GetRuntimeClassByName(typeName)
-                ?? RuntimeClassManager.instance.GetRuntimeClassByName(GetShortName(typeName));
+        private static RuntimeDefType? BuildRuntimeDefTypeFromTypeName(string? typeName)
+        {
+            if (string.IsNullOrWhiteSpace(typeName)) return null;
 
-            return rc != null ? new RuntimeDefType(rc) : null;
+            var text = typeName.Trim();
+            int lt = text.IndexOf('<');
+            if (lt < 0)
+            {
+                var rc = ResolveOrCreateRuntimeClass(GetGenericRootName(text));
+                if (rc == null) return null;
+
+                EnsureRuntimeTypeRegistered(rc, new List<RuntimeType>());
+                return new RuntimeDefType(rc);
+            }
+
+            int gt = text.LastIndexOf('>');
+            if (gt <= lt)
+            {
+                var rc = ResolveOrCreateRuntimeClass(GetGenericRootName(text));
+                if (rc == null) return null;
+
+                EnsureRuntimeTypeRegistered(rc, new List<RuntimeType>());
+                return new RuntimeDefType(rc);
+            }
+
+            var rootName = text.Substring(0, lt).Trim();
+            var rcRoot = ResolveOrCreateRuntimeClass(rootName);
+            if (rcRoot == null) return null;
+
+            var argsText = text.Substring(lt + 1, gt - lt - 1);
+            var argNames = SplitGenericArguments(argsText);
+            var rdtArgs = new List<RuntimeDefType>();
+            var rtArgs = new List<RuntimeType>();
+
+            for (int i = 0; i < argNames.Count; i++)
+            {
+                var childRdt = BuildRuntimeDefTypeFromTypeName(argNames[i]);
+                if (childRdt == null) continue;
+                rdtArgs.Add(childRdt);
+
+                var childRt = EnsureRuntimeTypeRegistered(childRdt.runtimeClass, GetTemplateRuntimeTypes(childRdt));
+                if (childRt != null)
+                {
+                    rtArgs.Add(childRt);
+                }
+            }
+
+            EnsureRuntimeTypeRegistered(rcRoot, rtArgs);
+            return new RuntimeDefType(rcRoot, rdtArgs);
+        }
+
+        private static List<string> SplitGenericArguments(string argsText)
+        {
+            var result = new List<string>();
+            if (string.IsNullOrWhiteSpace(argsText)) return result;
+
+            int depth = 0;
+            int start = 0;
+            for (int i = 0; i < argsText.Length; i++)
+            {
+                var ch = argsText[i];
+                if (ch == '<') depth++;
+                else if (ch == '>') depth--;
+                else if (ch == ',' && depth == 0)
+                {
+                    var item = argsText.Substring(start, i - start).Trim();
+                    if (!string.IsNullOrWhiteSpace(item)) result.Add(item);
+                    start = i + 1;
+                }
+            }
+
+            if (start < argsText.Length)
+            {
+                var last = argsText.Substring(start).Trim();
+                if (!string.IsNullOrWhiteSpace(last)) result.Add(last);
+            }
+
+            return result;
+        }
+
+        private static List<RuntimeType> GetTemplateRuntimeTypes(RuntimeDefType rdt)
+        {
+            var list = new List<RuntimeType>();
+            if (rdt?.runtimeDefTypeList == null) return list;
+
+            for (int i = 0; i < rdt.runtimeDefTypeList.Count; i++)
+            {
+                var child = rdt.runtimeDefTypeList[i];
+                if (child == null || child.runtimeClass == null) continue;
+
+                var childRt = EnsureRuntimeTypeRegistered(child.runtimeClass, GetTemplateRuntimeTypes(child));
+                if (childRt != null) list.Add(childRt);
+            }
+
+            return list;
+        }
+
+        private static RuntimeType? EnsureRuntimeTypeRegistered(RuntimeClass rc, List<RuntimeType> templateArgs)
+        {
+            if (rc == null) return null;
+
+            var args = templateArgs ?? new List<RuntimeType>();
+            var existed = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(rc, args);
+            if (existed != null) return existed;
+
+            if (args.Count == 0)
+            {
+                return RuntimeTypeManager.AddRuntimeTypeByClass(rc);
+            }
+
+            return RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(rc, args);
+        }
+
+        private static string GetGenericRootName(string fullTypeName)
+        {
+            if (string.IsNullOrWhiteSpace(fullTypeName)) return string.Empty;
+            int lt = fullTypeName.IndexOf('<');
+            return lt < 0 ? fullTypeName.Trim() : fullTypeName.Substring(0, lt).Trim();
         }
 
         private static string GetShortName(string full)

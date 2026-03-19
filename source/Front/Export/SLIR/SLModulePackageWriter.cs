@@ -410,6 +410,11 @@ namespace SimpleLanguage.Export.SLIR
                 offset = d.offset,
             };
 
+            if (sourceOpValue is IRMetaType mt && IsRuntimeDefTypeInstruction((EIROpCode)d.opCode))
+            {
+                pkg.opValue = CreateRuntimeDefTypePackage(mt);
+            }
+
             if (sourceOpValue is IRMethodCall mc)
             {
                 pkg.runtimeCall = CreateRuntimeCallPackage(mc);
@@ -461,6 +466,15 @@ namespace SimpleLanguage.Export.SLIR
             return opCode == EIROpCode.CallStatic
                 || opCode == EIROpCode.CallDynamic
                 || opCode == EIROpCode.CallVirt;
+        }
+
+        private static bool IsRuntimeDefTypeInstruction(EIROpCode opCode)
+        {
+            return opCode == EIROpCode.NewArray
+                || opCode == EIROpCode.NewTemplateObject
+                || opCode == EIROpCode.Ldc
+                || opCode == EIROpCode.LoadStaticField
+                || opCode == EIROpCode.StoreStaticField;
         }
 
         private static SLRuntimeCallPackage CreateRuntimeCallPackage(IRMethodCall mc)

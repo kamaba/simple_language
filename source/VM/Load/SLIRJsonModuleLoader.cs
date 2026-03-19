@@ -2,11 +2,24 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Linq;
+using SimpleLanguage.VM.LanguageRuntime;
 
 namespace SimpleLanguage.VM
 {
     public static class SLIRJsonModuleLoader
     {
+        public static string? ResolveJsonPath(string[] args)
+        {
+            if (args != null && args.Length > 0 && args[0].EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                return args[0];
+            }
+
+            var defaultPath = GetDefaultJsonPath();
+            return File.Exists(defaultPath) ? defaultPath : null;
+        }
+
         public sealed class Module
         {
             public List<IRStringItem> irStringDict { get; set; } = new();
@@ -59,6 +72,9 @@ namespace SimpleLanguage.VM
 
         public static string? TryGetConstString(int stringId)
         {
+            var fromBootstrap = SLIRJsonModuleLoaderBootstrap.TryGetConstString(stringId);
+            if (fromBootstrap != null) return fromBootstrap;
+
             if (s_LastIRStringDict != null && s_LastIRStringDict.TryGetValue(stringId, out var s))
                 return s;
             return null;
@@ -79,21 +95,69 @@ namespace SimpleLanguage.VM
             {
                 s_LastIRStringDict[it.id] = it.value ?? string.Empty;
             }
+            SLIRJsonModuleLoaderBootstrap.SetConstStringDict(s_LastIRStringDict);
             return m;
+        }
+
+        public static SLModulePackage ReadPackage(string jsonPath)
+        {
+            if (string.IsNullOrWhiteSpace(jsonPath))
+            {
+                jsonPath = GetDefaultJsonPath();
+            }
+
+            if (!jsonPath.EndsWith(".package.json", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("SLIRJsonModuleLoader.ReadPackage only supports module.package.json");
+            }
+
+            var pkg = SLModulePackageLoader.LoadFromJson(jsonPath);
+            var dict = new Dictionary<int, string>();
+            if (pkg?.irStringDict != null)
+            {
+                for (int i = 0; i < pkg.irStringDict.Count; i++)
+                {
+                    var item = pkg.irStringDict[i];
+                    if (item == null) continue;
+                    dict[item.id] = item.value ?? string.Empty;
+                }
+            }
+
+            s_LastIRStringDict = dict;
+            SLIRJsonModuleLoaderBootstrap.SetConstStringDict(dict);
+            return pkg;
         }
 
         public static string GetDefaultJsonPath()
         {
-            var outDir = Environment.GetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR");
+            var outDir = "E:\\project\\lang\\simple_language\\source\\Front\\bin\\Debug\\net8.0\\out\\export";// Environment.GetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR");
             if (string.IsNullOrWhiteSpace(outDir))
             {
                 outDir = Path.Combine(Environment.CurrentDirectory, "out", "export");
             }
+
+            var packageJson = Path.Combine(outDir, "module.package.json");
+            if (File.Exists(packageJson)) return packageJson;
+
             return Path.Combine(outDir, "module.slir.json");
         }
 
         public static void LoadIntoRuntime(string jsonPath)
         {
+            if (string.IsNullOrWhiteSpace(jsonPath))
+            {
+                jsonPath = GetDefaultJsonPath();
+            }
+
+            // Keep currently running runtime path first: package.json + registry binding.
+            if (jsonPath.EndsWith(".package.json", StringComparison.OrdinalIgnoreCase))
+            {
+                var pkg = ReadPackage(jsonPath);
+
+                SLRuntimeModuleRegistry.LoadFromPackage(pkg);
+                return;
+            }
+
             var m = ReadModule(jsonPath);
 
             var rcm = RuntimeClassManager.instance;

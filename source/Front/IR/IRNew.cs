@@ -14,7 +14,8 @@ namespace SimpleLanguage.IR
         {
             IRData data = new IRData();
             data.opCode = EIROpCode.NewObject;
-            data.SetOpValue(irmc);
+            // VM side reads NewObject payload as Int32 classId.
+            data.SetOpValue(irmc != null ? irmc.id : 0);
             data.debugInfo = new DebugInfo() { name = irmc.irName, info = "IRNew" };
             AddIRData(data);
         }
