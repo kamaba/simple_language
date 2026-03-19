@@ -9,7 +9,9 @@
 using SimpleLanguage.Core;
 
 using System;
+using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 
 namespace SimpleLanguage.IR
 {
@@ -53,6 +55,14 @@ namespace SimpleLanguage.IR
         {
             Payload = null;
             if (opValue == null) return;
+
+            // call payload fallback: write method id at SetOpValue stage
+            if (opValue is IRMethodCall imc)
+            {
+                var export = CreateRuntimeCallExport(imc);
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(export));
+                return;
+            }
 
             switch (Type.GetTypeCode(opValue.GetType()))
             {
@@ -103,6 +113,67 @@ namespace SimpleLanguage.IR
             }
         }
 
+        private static RuntimeCallExport CreateRuntimeCallExport(IRMethodCall call)
+        {
+            if (call == null) return null;
+            return new RuntimeCallExport
+            {
+                methodId = call.irMethod?.id ?? string.Empty,
+                methodName = call.methodName ?? string.Empty,
+                paramCount = call.paramCount,
+                runtimeDefType = CreateRuntimeDefTypeExport(call.metaType),
+                templateRuntimeDefTypeList = CreateRuntimeDefTypeExportList(call.irTemplateMetaType),
+            };
+        }
+
+        private static List<RuntimeDefTypeExport> CreateRuntimeDefTypeExportList(List<IRMetaType> list)
+        {
+            var ret = new List<RuntimeDefTypeExport>();
+            if (list == null) return ret;
+            for (int i = 0; i < list.Count; i++)
+            {
+                var item = CreateRuntimeDefTypeExport(list[i]);
+                if (item != null) ret.Add(item);
+            }
+            return ret;
+        }
+
+        private static RuntimeDefTypeExport CreateRuntimeDefTypeExport(IRMetaType mt)
+        {
+            if (mt == null) return null;
+
+            return new RuntimeDefTypeExport
+            {
+                classId = mt.irMetaClass?.id ?? 0,
+                className = mt.irMetaClass?.irName ?? string.Empty,
+                ownerClassId = mt.irOwnerMetaClass?.id ?? 0,
+                ownerClassName = mt.irOwnerMetaClass?.irName ?? string.Empty,
+                templateIndex = mt.templateIndex,
+                isTemplate = mt.templateIndex >= 0,
+                runtimeDefTypeList = CreateRuntimeDefTypeExportList(mt.irMetaTypeList),
+            };
+        }
+
+        private sealed class RuntimeCallExport
+        {
+            public RuntimeDefTypeExport runtimeDefType { get; set; }
+            public List<RuntimeDefTypeExport> templateRuntimeDefTypeList { get; set; } = new();
+            public string methodId { get; set; } = string.Empty;
+            public string methodName { get; set; } = string.Empty;
+            public int paramCount { get; set; }
+        }
+
+        private sealed class RuntimeDefTypeExport
+        {
+            public int classId { get; set; }
+            public string className { get; set; } = string.Empty;
+            public int ownerClassId { get; set; }
+            public string ownerClassName { get; set; } = string.Empty;
+            public int templateIndex { get; set; } = -1;
+            public bool isTemplate { get; set; }
+            public List<RuntimeDefTypeExport> runtimeDefTypeList { get; set; } = new();
+        }
+
         // 更新 ByteLength（仅计算 Payload 长度，未来可扩展为包含头部字段）
         public void UpdateByteLength()
         {
@@ -133,6 +204,17 @@ namespace SimpleLanguage.IR
                 Payload = b;
                 UpdateByteLength();
                 _opValue = null;
+                return;
+            }
+
+            // IRMethodCall -> serialize callee method id string for cross-layer fallback
+            if (_opValue is IRMethodCall imc)
+            {
+                var methodId = imc.irMethod?.id ?? string.Empty;
+                Payload = Encoding.UTF8.GetBytes(methodId);
+                UpdateByteLength();
+                // keep methodId in opValue so exporters can still bind runtimeCall metadata
+                _opValue = methodId;
                 return;
             }
 

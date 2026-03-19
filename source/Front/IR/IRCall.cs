@@ -160,7 +160,9 @@ namespace SimpleLanguage.IR
                     IRData datacall = new IRData();
                     datacall.opCode = EIROpCode.CallStatic;
                     datacall.SetOpValue(irmethodcall);
-                    datacall.index = 0;
+                    // Keep arg count in index for loader/runtime fallback paths
+                    // when RuntimeCall metadata is missing or downgraded.
+                    datacall.index = paramCount;
                     datacall.SetDebugInfoByToken(mf.pingToken);
                     AddIRData(datacall);
                 }

@@ -14,6 +14,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Reflection;
+using SimpleLanguage.VM.LanguageRuntime;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -1125,6 +1126,11 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.CallStatic:
                     {
                         var mfc = iri.opValue as RuntimeCall;
+                        if (mfc == null)
+                        {
+                            SLRuntimeModuleRegistry.TryBindInstructionCall(iri);
+                            mfc = iri.opValue as RuntimeCall;
+                        }
                         // attribute hooks are handled in Front/Core; VM does not reference Front.
 
                         if (mfc == null)
@@ -1164,6 +1170,16 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.CallDynamic:
                     {
                         var mfc = iri.opValue as RuntimeCall;
+                        if (mfc == null)
+                        {
+                            SLRuntimeModuleRegistry.TryBindInstructionCall(iri);
+                            mfc = iri.opValue as RuntimeCall;
+                        }
+                        if (mfc == null)
+                        {
+                            Debug.Assert(false, "执行动态函数，没有发现相关函数体!");
+                            return;
+                        }
 
                         RuntimeType rt = null;
                         RuntimeClass irc = null;
@@ -1239,6 +1255,16 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.CallVirt:
                     {
                         var mfc = iri.opValue as RuntimeCall;
+                        if (mfc == null)
+                        {
+                            SLRuntimeModuleRegistry.TryBindInstructionCall(iri);
+                            mfc = iri.opValue as RuntimeCall;
+                        }
+                        if (mfc == null)
+                        {
+                            Debug.Assert(false, "执行虚函数，没有发现相关函数体!");
+                            return;
+                        }
                         // attribute hooks are handled in Front/Core; VM does not reference Front.
 
                         int stackFrontIndex = (int)mfc.paramCount + 1;

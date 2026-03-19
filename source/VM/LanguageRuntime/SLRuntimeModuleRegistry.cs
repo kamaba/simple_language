@@ -104,7 +104,24 @@ namespace SimpleLanguage.VM.LanguageRuntime
         {
             if (ins == null || !IsCallOp(ins.opCode)) return false;
 
-            var runtimeCall = TryCreateRuntimeCallForInstruction(ins.opValue as SLRuntimeCallPackage, ins.opValue, ins.index);
+            var callPkg = ins.opValue as SLRuntimeCallPackage;
+            if (callPkg == null)
+            {
+                TryReadRuntimeCallFromPayload(ins.Payload, out callPkg);
+            }
+
+            object? legacyOpValue = ins.opValue;
+            if (legacyOpValue == null && ins.TryGetString(out var methodIdFromPayload) && !string.IsNullOrWhiteSpace(methodIdFromPayload))
+            {
+                legacyOpValue = methodIdFromPayload;
+            }
+
+            if (legacyOpValue == null && callPkg != null && !string.IsNullOrWhiteSpace(callPkg.methodId))
+            {
+                legacyOpValue = callPkg.methodId;
+            }
+
+            var runtimeCall = TryCreateRuntimeCallForInstruction(callPkg, legacyOpValue, ins.index);
             if (runtimeCall == null) return false;
 
             ins.opValue = runtimeCall;
@@ -121,6 +138,21 @@ namespace SimpleLanguage.VM.LanguageRuntime
 
             if (legacyOpValue is string methodId && !string.IsNullOrWhiteSpace(methodId))
             {
+                if (methodId.Length > 0 && methodId[0] == '{')
+                {
+                    try
+                    {
+                        var embeddedFromString = JsonSerializer.Deserialize<SLRuntimeCallPackage>(methodId);
+                        if (embeddedFromString != null)
+                        {
+                            var fromEmbeddedString = CreateRuntimeCall(embeddedFromString, fallbackParamCount);
+                            if (fromEmbeddedString != null) return fromEmbeddedString;
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
                 return CreateRuntimeCallByMethodId(methodId, fallbackParamCount);
             }
 
@@ -133,7 +165,54 @@ namespace SimpleLanguage.VM.LanguageRuntime
                 }
             }
 
+            if (legacyOpValue is JsonElement jo && jo.ValueKind == JsonValueKind.Object)
+            {
+                try
+                {
+                    // compat: some payloads put runtime call object directly into opValue
+                    var embedded = jo.Deserialize<SLRuntimeCallPackage>();
+                    if (embedded != null)
+                    {
+                        var fromEmbedded = CreateRuntimeCall(embedded, fallbackParamCount);
+                        if (fromEmbedded != null) return fromEmbedded;
+                    }
+
+                    if (jo.TryGetProperty("methodId", out var methodIdProp)
+                        && methodIdProp.ValueKind == JsonValueKind.String)
+                    {
+                        var methodIdFromObj = methodIdProp.GetString();
+                        if (!string.IsNullOrWhiteSpace(methodIdFromObj))
+                        {
+                            return CreateRuntimeCallByMethodId(methodIdFromObj, fallbackParamCount);
+                        }
+                    }
+                }
+                catch
+                {
+                }
+            }
+
             return null;
+        }
+
+        private static bool TryReadRuntimeCallFromPayload(byte[]? payload, out SLRuntimeCallPackage? callPkg)
+        {
+            callPkg = null;
+            if (payload == null || payload.Length == 0) return false;
+
+            try
+            {
+                var text = System.Text.Encoding.UTF8.GetString(payload);
+                if (string.IsNullOrWhiteSpace(text) || text[0] != '{') return false;
+                var parsed = JsonSerializer.Deserialize<SLRuntimeCallPackage>(text);
+                if (parsed == null) return false;
+                callPkg = parsed;
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private static bool IsCallOp(EIROpCode opCode)

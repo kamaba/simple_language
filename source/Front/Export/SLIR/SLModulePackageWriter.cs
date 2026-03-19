@@ -125,8 +125,9 @@ namespace SimpleLanguage.Export.SLIR
                             foreach (var d in v.irDataList)
                             {
                                 if (d == null) continue;
+                                var rawOpValue = d.opValue;
                                 try { d.FinalizePack(); } catch { }
-                                fieldPkgLocal.express.Add(CreateInstructionPackage(d));
+                                fieldPkgLocal.express.Add(CreateInstructionPackage(d, rawOpValue));
                             }
                         }
                         else
@@ -145,8 +146,9 @@ namespace SimpleLanguage.Export.SLIR
                                             foreach (var d in iex.IRDataList)
                                             {
                                                 if (d == null) continue;
+                                                var rawOpValue = d.opValue;
                                                 try { d.FinalizePack(); } catch { }
-                                                fieldPkgLocal.express.Add(CreateInstructionPackage(d));
+                                                fieldPkgLocal.express.Add(CreateInstructionPackage(d, rawOpValue));
                                             }
                                         }
                                     }
@@ -176,8 +178,9 @@ namespace SimpleLanguage.Export.SLIR
                             foreach (var d in v.irDataList)
                             {
                                 if (d == null) continue;
+                                var rawOpValue = d.opValue;
                                 try { d.FinalizePack(); } catch { }
-                                fieldPkgStatic.express.Add(CreateInstructionPackage(d));
+                                fieldPkgStatic.express.Add(CreateInstructionPackage(d, rawOpValue));
                             }
                         }
                         else
@@ -196,8 +199,9 @@ namespace SimpleLanguage.Export.SLIR
                                             foreach (var d in iex.IRDataList)
                                             {
                                                 if (d == null) continue;
+                                                var rawOpValue = d.opValue;
                                                 try { d.FinalizePack(); } catch { }
-                                                fieldPkgStatic.express.Add(CreateInstructionPackage(d));
+                                                fieldPkgStatic.express.Add(CreateInstructionPackage(d, rawOpValue));
                                             }
                                         }
                                     }
@@ -300,9 +304,10 @@ namespace SimpleLanguage.Export.SLIR
                         if (d == null) continue;
 
                         // Ensure payload is ready.
+                        var rawOpValue = d.opValue;
                         try { d.FinalizePack(); } catch { }
 
-                        mp.instructionList.Add(CreateInstructionPackage(d));
+                        mp.instructionList.Add(CreateInstructionPackage(d, rawOpValue));
                     }
                 }
 
@@ -391,20 +396,21 @@ namespace SimpleLanguage.Export.SLIR
             return flags;
         }
 
-        private static SLIRInstructionPackage CreateInstructionPackage(IRData d)
+        private static SLIRInstructionPackage CreateInstructionPackage(IRData d, object? rawOpValue = null)
         {
+            var sourceOpValue = rawOpValue ?? d.opValue;
             var pkg = new SLIRInstructionPackage
             {
                 id = d.id,
                 opCode = (byte)d.opCode,
-                opValue = null,
+                opValue = sourceOpValue is string s ? s : null,
                 payload = d.Payload,
                 index = d.index,
                 byteLength = d.ByteLength,
                 offset = d.offset,
             };
 
-            if (d.opValue is IRMethodCall mc)
+            if (sourceOpValue is IRMethodCall mc)
             {
                 pkg.runtimeCall = CreateRuntimeCallPackage(mc);
 
@@ -414,8 +420,47 @@ namespace SimpleLanguage.Export.SLIR
                     pkg.opValue = mc.irMethod.id;
                 }
             }
+            else if (IsCallInstruction((EIROpCode)d.opCode) && sourceOpValue is string methodId && !string.IsNullOrWhiteSpace(methodId))
+            {
+                // legacy/fallback: keep method id for VM-side RuntimeCall binding
+                pkg.opValue = methodId;
+            }
+
+            if (pkg.runtimeCall == null && IsCallInstruction((EIROpCode)d.opCode) && TryReadRuntimeCallFromPayload(d.Payload, out var callFromPayload))
+            {
+                pkg.runtimeCall = callFromPayload;
+                if (string.IsNullOrWhiteSpace(pkg.opValue as string) && !string.IsNullOrWhiteSpace(callFromPayload?.methodId))
+                {
+                    pkg.opValue = callFromPayload.methodId;
+                }
+            }
 
             return pkg;
+        }
+
+        private static bool TryReadRuntimeCallFromPayload(byte[]? payload, out SLRuntimeCallPackage? call)
+        {
+            call = null;
+            if (payload == null || payload.Length == 0) return false;
+
+            try
+            {
+                var text = Encoding.UTF8.GetString(payload);
+                if (string.IsNullOrWhiteSpace(text) || text[0] != '{') return false;
+                call = JsonSerializer.Deserialize<SLRuntimeCallPackage>(text);
+                return call != null && !string.IsNullOrWhiteSpace(call.methodId);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool IsCallInstruction(EIROpCode opCode)
+        {
+            return opCode == EIROpCode.CallStatic
+                || opCode == EIROpCode.CallDynamic
+                || opCode == EIROpCode.CallVirt;
         }
 
         private static SLRuntimeCallPackage CreateRuntimeCallPackage(IRMethodCall mc)
