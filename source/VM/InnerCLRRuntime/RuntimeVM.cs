@@ -1156,62 +1156,54 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.CallStatic:
                     {
-                        var mfc = iri.opValue as RuntimeCall;
-                        if (mfc == null)
+                        // try to create runtime call on demand from instruction payload
+                        SLRuntimeCallPackage callPkg = null;
+                        if (iri.TryGetRuntimeCallPackage(out var parsedCallPkg)) callPkg = parsedCallPkg;
+
+                        object legacyOpValue = iri.opValue;
+                        if (legacyOpValue == null && iri.TryGetString(out var methodIdFromPayload) && !string.IsNullOrWhiteSpace(methodIdFromPayload))
                         {
-                            // try to create runtime call on demand from instruction payload
-                            SLRuntimeCallPackage callPkg = null;
-                            if (iri.TryGetRuntimeCallPackage(out var parsedCallPkg)) callPkg = parsedCallPkg;
-
-                            object legacyOpValue = iri.opValue;
-                            if (legacyOpValue == null && iri.TryGetString(out var methodIdFromPayload) && !string.IsNullOrWhiteSpace(methodIdFromPayload))
-                            {
-                                legacyOpValue = methodIdFromPayload;
-                            }
-                            if (legacyOpValue == null && callPkg != null && !string.IsNullOrWhiteSpace(callPkg.methodId))
-                            {
-                                legacyOpValue = callPkg.methodId;
-                            }
-
-                            var runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, legacyOpValue, iri.index);
-                            if (runtimeCall != null)
-                            {
-                                mfc = runtimeCall;
-                            }
+                            legacyOpValue = methodIdFromPayload;
                         }
+                        if (legacyOpValue == null && callPkg != null && !string.IsNullOrWhiteSpace(callPkg.methodId))
+                        {
+                            legacyOpValue = callPkg.methodId;
+                        }
+
+                        RuntimeCall runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, iri.index);
                         // attribute hooks are handled in Front/Core; VM does not reference Front.
 
-                        if (mfc == null)
+                        if (runtimeCall == null)
                         {
                             Debug.Assert(false, "执行静态函数，没有发现相关函数体!");
                             return;
                         }
 
                         List<RuntimeType> classRTList = new List<RuntimeType>();
-                        for (int i = 0; i < mfc.runtimeDefType.runtimeDefTypeList.Count; i++)
+                        for (int i = 0; i < runtimeCall.runtimeDefType.runtimeDefTypeList.Count; i++)
                         {
-                            var crt = GetClassRuntimeType(mfc.runtimeDefType.runtimeDefTypeList[i], mfc.runtimeDefType.runtimeDefTypeList[i].ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
+                            var crt = GetClassRuntimeType(runtimeCall.runtimeDefType.runtimeDefTypeList[i], runtimeCall.runtimeDefType.runtimeDefTypeList[i].ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                             classRTList.Add(crt);
                         }
-                        var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(mfc.runtimeDefType.runtimeClass, classRTList);
+                        var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(runtimeCall.runtimeDefType.runtimeClass, classRTList);
                         if (rt == null)
                         {
-                            rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(mfc.runtimeDefType.runtimeClass, classRTList);
+                            rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(runtimeCall.runtimeDefType.runtimeClass, classRTList);
                         }
 
-                        if (mfc.method.id == "type")
+                        if (runtimeCall.method.id == "type")
                         {
                             var sobj = RuntimeTypeManager.CreateTypeObject(rt);
                             m_ValueStack[m_ValueIndex++].SetSObject(sobj);
                         }
                         else
                         {
-                            for (int i = 0; i < mfc.templateRuntimeDefTypeList.Count; i++)
+                            for (int i = 0; i < runtimeCall.templateRuntimeDefTypeList.Count; i++)
                             {
-                                var crt = GetMethodRuntimeType(mfc.templateRuntimeDefTypeList[i]);
+                                var crt = GetMethodRuntimeType(runtimeCall.templateRuntimeDefTypeList[i]);
                                 classRTList.Add(crt);
                             }
-                            CLRVM.RunIRMethod(classRTList, mfc.method );
+                            CLRVM.RunIRMethod(classRTList, runtimeCall.method );
                         }
                     }
                     break;
@@ -1233,7 +1225,7 @@ namespace SimpleLanguage.VM.Runtime
                                 legacyOpValue = callPkg.methodId;
                             }
 
-                            var runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, legacyOpValue, iri.index);
+                            var runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, iri.index);
                             if (runtimeCall != null)
                             {
                                 iri.opValue = runtimeCall;
@@ -1319,37 +1311,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.CallVirt:
                     {
-                        var mfc = iri.opValue as RuntimeCall;
-                        if (mfc == null)
-                        {
-                            SLRuntimeCallPackage callPkg = null;
-                            if (iri.TryGetRuntimeCallPackage(out var parsedCallPkg)) callPkg = parsedCallPkg;
+                        SLRuntimeCallPackage callPkg = null;
+                        if (iri.TryGetRuntimeCallPackage(out var parsedCallPkg)) callPkg = parsedCallPkg;
 
-                            object legacyOpValue = iri.opValue;
-                            if (legacyOpValue == null && iri.TryGetString(out var methodIdFromPayload) && !string.IsNullOrWhiteSpace(methodIdFromPayload))
-                            {
-                                legacyOpValue = methodIdFromPayload;
-                            }
-                            if (legacyOpValue == null && callPkg != null && !string.IsNullOrWhiteSpace(callPkg.methodId))
-                            {
-                                legacyOpValue = callPkg.methodId;
-                            }
-
-                            var runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, legacyOpValue, iri.index);
-                            if (runtimeCall != null)
-                            {
-                                iri.opValue = runtimeCall;
-                                mfc = runtimeCall;
-                            }
-                        }
-                        if (mfc == null)
+                        RuntimeCall runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, 0 );
+                        if (runtimeCall == null)
                         {
                             Debug.Assert(false, "执行虚函数，没有发现相关函数体!");
                             return;
                         }
                         // attribute hooks are handled in Front/Core; VM does not reference Front.
 
-                        int stackFrontIndex = (int)mfc.paramCount + 1;
+                        int stackFrontIndex = (int)runtimeCall.paramCount + 1;
                         int stackIndex = m_ValueIndex - stackFrontIndex;
                         if (stackIndex < 0)
                         {
@@ -1388,7 +1361,7 @@ namespace SimpleLanguage.VM.Runtime
                         //}
                         else
                         {
-                            irc = RuntimeClassManager.instance.GetRuntimeClassByName(v.eType.ToString());
+                            irc = RuntimeClassManager.instance.GetRuntimeClassByName( "Core." + v.eType.ToString());
                             rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irc);
                         }
                         if (irc == null)
@@ -1406,9 +1379,9 @@ namespace SimpleLanguage.VM.Runtime
                             return;
                         }
                         List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
-                        for (int i = 0; i < mfc.templateRuntimeDefTypeList.Count; i++)
+                        for (int i = 0; i < runtimeCall.templateRuntimeDefTypeList.Count; i++)
                         {
-                            var crt = GetClassRuntimeType(mfc.templateRuntimeDefTypeList[i], irc, rt.runtimeTemplateList, true);
+                            var crt = GetClassRuntimeType(runtimeCall.templateRuntimeDefTypeList[i], irc, rt.runtimeTemplateList, true);
                             rtList.Add(crt);
                         }
                         CLRVM.RunIRMethod(rtList, cfc);

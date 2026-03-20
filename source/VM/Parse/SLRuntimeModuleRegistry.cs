@@ -145,7 +145,7 @@ namespace SimpleLanguage.VM.LanguageRuntime
             return null;
         }
 
-        public static RuntimeCall? TryCreateRuntimeCallForInstruction(SLRuntimeCallPackage? callPkg, object? legacyOpValue, int fallbackParamCount)
+        public static RuntimeCall? TryCreateRuntimeCallForInstruction(SLRuntimeCallPackage? callPkg, int fallbackParamCount)
         {
             if (callPkg != null)
             {
@@ -153,60 +153,60 @@ namespace SimpleLanguage.VM.LanguageRuntime
                 if (fromPkg != null) return fromPkg;
             }
 
-            if (legacyOpValue is string methodId && !string.IsNullOrWhiteSpace(methodId))
-            {
-                if (methodId.Length > 0 && methodId[0] == '{')
-                {
-                    try
-                    {
-                        var embeddedFromString = JsonSerializer.Deserialize<SLRuntimeCallPackage>(methodId);
-                        if (embeddedFromString != null)
-                        {
-                            var fromEmbeddedString = CreateRuntimeCall(embeddedFromString, fallbackParamCount);
-                            if (fromEmbeddedString != null) return fromEmbeddedString;
-                        }
-                    }
-                    catch
-                    {
-                    }
-                }
-                return CreateRuntimeCallByMethodId(methodId, fallbackParamCount);
-            }
+            //if (legacyOpValue is string methodId && !string.IsNullOrWhiteSpace(methodId))
+            //{
+            //    if (methodId.Length > 0 && methodId[0] == '{')
+            //    {
+            //        try
+            //        {
+            //            var embeddedFromString = JsonSerializer.Deserialize<SLRuntimeCallPackage>(methodId);
+            //            if (embeddedFromString != null)
+            //            {
+            //                var fromEmbeddedString = CreateRuntimeCall(embeddedFromString, fallbackParamCount);
+            //                if (fromEmbeddedString != null) return fromEmbeddedString;
+            //            }
+            //        }
+            //        catch
+            //        {
+            //        }
+            //    }
+            //    return CreateRuntimeCallByMethodId(methodId, fallbackParamCount);
+            //}
 
-            if (legacyOpValue is JsonElement je && je.ValueKind == JsonValueKind.String)
-            {
-                var methodIdFromJson = je.GetString();
-                if (!string.IsNullOrWhiteSpace(methodIdFromJson))
-                {
-                    return CreateRuntimeCallByMethodId(methodIdFromJson, fallbackParamCount);
-                }
-            }
+            //if (legacyOpValue is JsonElement je && je.ValueKind == JsonValueKind.String)
+            //{
+            //    var methodIdFromJson = je.GetString();
+            //    if (!string.IsNullOrWhiteSpace(methodIdFromJson))
+            //    {
+            //        return CreateRuntimeCallByMethodId(methodIdFromJson, fallbackParamCount);
+            //    }
+            //}
 
-            if (legacyOpValue is JsonElement jo && jo.ValueKind == JsonValueKind.Object)
-            {
-                try
-                {
-                    var embedded = jo.Deserialize<SLRuntimeCallPackage>();
-                    if (embedded != null)
-                    {
-                        var fromEmbedded = CreateRuntimeCall(embedded, fallbackParamCount);
-                        if (fromEmbedded != null) return fromEmbedded;
-                    }
+            //if (legacyOpValue is JsonElement jo && jo.ValueKind == JsonValueKind.Object)
+            //{
+            //    try
+            //    {
+            //        var embedded = jo.Deserialize<SLRuntimeCallPackage>();
+            //        if (embedded != null)
+            //        {
+            //            var fromEmbedded = CreateRuntimeCall(embedded, fallbackParamCount);
+            //            if (fromEmbedded != null) return fromEmbedded;
+            //        }
 
-                    if (jo.TryGetProperty("methodId", out var methodIdProp)
-                        && methodIdProp.ValueKind == JsonValueKind.String)
-                    {
-                        var methodIdFromObj = methodIdProp.GetString();
-                        if (!string.IsNullOrWhiteSpace(methodIdFromObj))
-                        {
-                            return CreateRuntimeCallByMethodId(methodIdFromObj, fallbackParamCount);
-                        }
-                    }
-                }
-                catch
-                {
-                }
-            }
+            //        if (jo.TryGetProperty("methodId", out var methodIdProp)
+            //            && methodIdProp.ValueKind == JsonValueKind.String)
+            //        {
+            //            var methodIdFromObj = methodIdProp.GetString();
+            //            if (!string.IsNullOrWhiteSpace(methodIdFromObj))
+            //            {
+            //                return CreateRuntimeCallByMethodId(methodIdFromObj, fallbackParamCount);
+            //            }
+            //        }
+            //    }
+            //    catch
+            //    {
+            //    }
+            //}
 
             return null;
         }
