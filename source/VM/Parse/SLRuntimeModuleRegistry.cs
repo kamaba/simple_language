@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 
 namespace SimpleLanguage.VM.LanguageRuntime
@@ -8,6 +9,9 @@ namespace SimpleLanguage.VM.LanguageRuntime
     {
         private static readonly Dictionary<string, RuntimeMethod> s_MethodById = new(StringComparer.Ordinal);
         private static readonly Dictionary<string, string> s_MethodDeclaringTypeById = new(StringComparer.Ordinal);
+        // Preserve package-level class info so runtime can lookup original exported
+        // class metadata on demand (used to register RuntimeClass when missing).
+        private static readonly Dictionary<int, SLClassPackage> s_ClassPackageById = new();
 
         public static void Clear()
         {
@@ -36,6 +40,17 @@ namespace SimpleLanguage.VM.LanguageRuntime
 
         private static void AddFromPackage(SLModulePackage pkg)
         {
+            // cache class packages for runtime lookup
+            if (pkg?.classList != null)
+            {
+                foreach (var c in pkg.classList)
+                {
+                    if (c == null) continue;
+                    if (!s_ClassPackageById.ContainsKey(c.id))
+                        s_ClassPackageById[c.id] = c;
+                }
+            }
+
             foreach (var m in pkg.methodList)
             {
                 if (m == null || string.IsNullOrEmpty(m.id)) continue;
@@ -244,13 +259,6 @@ namespace SimpleLanguage.VM.LanguageRuntime
             return false;
         }
 
-        private static bool IsCallOp(EIROpCode opCode)
-        {
-            return opCode == EIROpCode.CallStatic
-                || opCode == EIROpCode.CallDynamic
-                || opCode == EIROpCode.CallVirt;
-        }
-
         private static RuntimeCall? CreateRuntimeCall(SLRuntimeCallPackage callPkg, int fallbackParamCount)
         {
             if (callPkg == null) return null;
@@ -352,6 +360,14 @@ namespace SimpleLanguage.VM.LanguageRuntime
             if (classId != 0)
             {
                 rc = RuntimeClassManager.instance.GetRuntimeClassById(classId);
+                if (rc == null)
+                {
+                    // try to build from cached package metadata if available
+                    if (s_ClassPackageById.TryGetValue(classId, out var pkg) && pkg != null)
+                    {
+                        rc = CreateRuntimeClassFromPackage(pkg);
+                    }
+                }
             }
 
             if (rc == null && !string.IsNullOrWhiteSpace(className))
@@ -389,6 +405,79 @@ namespace SimpleLanguage.VM.LanguageRuntime
             };
             RuntimeClassManager.instance.m_IRMetaClassList.Add(rc);
             return rc;
+        }
+
+        private static RuntimeClass? CreateRuntimeClassFromPackage(SLClassPackage pkg)
+        {
+            if (pkg == null) return null;
+
+            // If already registered, return it
+            var existed = RuntimeClassManager.instance.GetRuntimeClassById(pkg.id);
+            if (existed != null) return existed;
+
+            var rc = new RuntimeClass
+            {
+                id = pkg.id,
+                name = string.IsNullOrWhiteSpace(pkg.fullName) ? pkg.name : pkg.fullName,
+            };
+
+            // register early to allow recursive type resolutions
+            RuntimeClassManager.instance.m_IRMetaClassList.Add(rc);
+
+            if (pkg.fieldList != null)
+            {
+                foreach (var f in pkg.fieldList)
+                {
+                    if (f == null) continue;
+
+                    // create a RuntimeDefType placeholder for the field's declared type
+                    RuntimeDefType? rdt = null;
+                    try
+                    {
+                        // attempt to create a minimal runtime def type by parsing typeName
+                        var temp = TryBuildRuntimeDefTypeFromTypeName(f.typeName);
+                        if (temp != null) rdt = temp;
+                    }
+                    catch { }
+
+                    var rv = new RuntimeVariable(rdt, 0, f.index, f.name ?? string.Empty);
+                    if (f.isStatic)
+                    {
+                        rc.staticIRMetaVariableList.Add(rv);
+                    }
+                    else
+                    {
+                        rc.localIRMetaVariableList.Add(rv);
+                    }
+
+                    // convert initializer expression instruction packages into runtime Instructions
+                    if (f.express != null && f.express.Count > 0)
+                    {
+                        var insList = SLModulePackageLoader.ConvertToVMInstructionList(f.express);
+                        if (insList != null && insList.Count > 0)
+                        {
+                            // append as member variable set value sequence (flattening)
+                            foreach (var ins in insList)
+                            {
+                                rc.memberVariableSetValueList.Add(ins);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // cache in class package map for future lookups
+            if (!s_ClassPackageById.ContainsKey(rc.id))
+                s_ClassPackageById[rc.id] = pkg;
+
+            return rc;
+        }
+
+        private static RuntimeDefType? TryBuildRuntimeDefTypeFromTypeName(string? typeName)
+        {
+            if (string.IsNullOrWhiteSpace(typeName)) return null;
+            // reuse existing builder path by using BuildRuntimeDefTypeFromTypeName via string parsing
+            return BuildRuntimeDefTypeFromTypeName(typeName);
         }
 
         private static RuntimeDefType? ResolveRuntimeDefType(string? typeName)
@@ -528,6 +617,24 @@ namespace SimpleLanguage.VM.LanguageRuntime
         {
             if (string.IsNullOrEmpty(id)) return null;
             return s_MethodById.TryGetValue(id, out var m) ? m : null;
+        }
+
+        // Public helper used by runtime to ensure a RuntimeClass is registered
+        // from cached package metadata when only a class id is available.
+        public static RuntimeClass? ResolveOrCreateRuntimeClassById(int classId)
+        {
+            if (classId == 0) return null;
+
+            var rc = RuntimeClassManager.instance.GetRuntimeClassById(classId);
+            if (rc != null) return rc;
+
+            if (s_ClassPackageById.TryGetValue(classId, out var pkg) && pkg != null)
+            {
+                // CreateRuntimeClassFromPackage will register the new RuntimeClass
+                return CreateRuntimeClassFromPackage(pkg);
+            }
+
+            return null;
         }
     }
 }

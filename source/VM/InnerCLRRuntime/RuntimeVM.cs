@@ -878,6 +878,22 @@ namespace SimpleLanguage.VM.Runtime
                         if( iri.TryGetInt32(out int i32) )
                         {
                             var rt = RuntimeTypeManager.GetRuntimeTypeByClassId(i32);
+                            // If runtime type not yet created, try to find corresponding RuntimeClass
+                            // (possibly registered from package metadata) and dynamically register a RuntimeType for it.
+                            if (rt == null)
+                            {
+                                // first try existing runtime class
+                                var rc = RuntimeClassManager.instance.GetRuntimeClassById(i32);
+                                // if not found, attempt to resolve/create from loaded package metadata
+                                if (rc == null)
+                                {
+                                    rc = SLRuntimeModuleRegistry.ResolveOrCreateRuntimeClassById(i32);
+                                }
+                                if (rc != null)
+                                {
+                                    rt = RuntimeTypeManager.AddRuntimeTypeByClass(rc);
+                                }
+                            }
                             SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
                             if (sobj is ClassObject co)
                             {
@@ -1143,8 +1159,25 @@ namespace SimpleLanguage.VM.Runtime
                         var mfc = iri.opValue as RuntimeCall;
                         if (mfc == null)
                         {
-                            SLRuntimeModuleRegistry.TryBindInstructionCall(iri);
-                            mfc = iri.opValue as RuntimeCall;
+                            // try to create runtime call on demand from instruction payload
+                            SLRuntimeCallPackage callPkg = null;
+                            if (iri.TryGetRuntimeCallPackage(out var parsedCallPkg)) callPkg = parsedCallPkg;
+
+                            object legacyOpValue = iri.opValue;
+                            if (legacyOpValue == null && iri.TryGetString(out var methodIdFromPayload) && !string.IsNullOrWhiteSpace(methodIdFromPayload))
+                            {
+                                legacyOpValue = methodIdFromPayload;
+                            }
+                            if (legacyOpValue == null && callPkg != null && !string.IsNullOrWhiteSpace(callPkg.methodId))
+                            {
+                                legacyOpValue = callPkg.methodId;
+                            }
+
+                            var runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, legacyOpValue, iri.index);
+                            if (runtimeCall != null)
+                            {
+                                mfc = runtimeCall;
+                            }
                         }
                         // attribute hooks are handled in Front/Core; VM does not reference Front.
 
@@ -1187,8 +1220,25 @@ namespace SimpleLanguage.VM.Runtime
                         var mfc = iri.opValue as RuntimeCall;
                         if (mfc == null)
                         {
-                            SLRuntimeModuleRegistry.TryBindInstructionCall(iri);
-                            mfc = iri.opValue as RuntimeCall;
+                            SLRuntimeCallPackage callPkg = null;
+                            if (iri.TryGetRuntimeCallPackage(out var parsedCallPkg)) callPkg = parsedCallPkg;
+
+                            object legacyOpValue = iri.opValue;
+                            if (legacyOpValue == null && iri.TryGetString(out var methodIdFromPayload) && !string.IsNullOrWhiteSpace(methodIdFromPayload))
+                            {
+                                legacyOpValue = methodIdFromPayload;
+                            }
+                            if (legacyOpValue == null && callPkg != null && !string.IsNullOrWhiteSpace(callPkg.methodId))
+                            {
+                                legacyOpValue = callPkg.methodId;
+                            }
+
+                            var runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, legacyOpValue, iri.index);
+                            if (runtimeCall != null)
+                            {
+                                iri.opValue = runtimeCall;
+                                mfc = runtimeCall;
+                            }
                         }
                         if (mfc == null)
                         {
@@ -1272,8 +1322,25 @@ namespace SimpleLanguage.VM.Runtime
                         var mfc = iri.opValue as RuntimeCall;
                         if (mfc == null)
                         {
-                            SLRuntimeModuleRegistry.TryBindInstructionCall(iri);
-                            mfc = iri.opValue as RuntimeCall;
+                            SLRuntimeCallPackage callPkg = null;
+                            if (iri.TryGetRuntimeCallPackage(out var parsedCallPkg)) callPkg = parsedCallPkg;
+
+                            object legacyOpValue = iri.opValue;
+                            if (legacyOpValue == null && iri.TryGetString(out var methodIdFromPayload) && !string.IsNullOrWhiteSpace(methodIdFromPayload))
+                            {
+                                legacyOpValue = methodIdFromPayload;
+                            }
+                            if (legacyOpValue == null && callPkg != null && !string.IsNullOrWhiteSpace(callPkg.methodId))
+                            {
+                                legacyOpValue = callPkg.methodId;
+                            }
+
+                            var runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, legacyOpValue, iri.index);
+                            if (runtimeCall != null)
+                            {
+                                iri.opValue = runtimeCall;
+                                mfc = runtimeCall;
+                            }
                         }
                         if (mfc == null)
                         {
