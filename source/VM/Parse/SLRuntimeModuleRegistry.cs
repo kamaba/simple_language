@@ -1,9 +1,11 @@
+using SimpleLanguage.VM;
+using SimpleLanuageVM.Load;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 
-namespace SimpleLanguage.VM.LanguageRuntime
+namespace SimpleLanguage.Parse
 {
     public static class SLRuntimeModuleRegistry
     {

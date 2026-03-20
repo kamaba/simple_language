@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using SimpleLanguage.VM.LanguageRuntime;
+using SimpleLanguage.Parse;
+using SimpleLanuageVM.Load;
 
 namespace SimpleLanguage.VM
 {
@@ -19,18 +20,6 @@ namespace SimpleLanguage.VM
 
     public static class SLIRModuleParse
     {
-        private static Dictionary<int, string> s_ConstStringDict = new();
-
-        public static void SetConstStringDict(Dictionary<int, string>? dict)
-        {
-            s_ConstStringDict = dict ?? new Dictionary<int, string>();
-        }
-
-        public static string? TryGetConstString(int id)
-        {
-            if (s_ConstStringDict != null && s_ConstStringDict.TryGetValue(id, out var s)) return s;
-            return null;
-        }
 
         public static string? ResolvePackagePath(string[] args)
         {
@@ -52,7 +41,7 @@ namespace SimpleLanguage.VM
             return Parse(graph, args);
         }
 
-        public static SLIRModuleParseResult? Parse(SLIRJsonModuleLoader.PackageGraph graph, string[] args)
+        public static SLIRModuleParseResult? Parse( SLPackageGraph graph, string[] args)
         {
             if (graph == null) return null;
 
@@ -90,7 +79,7 @@ namespace SimpleLanguage.VM
             var dict = new Dictionary<int, string>();
             if (packageList == null)
             {
-                SetConstStringDict(dict);
+                SLAssembly.SetConstStringDict(dict);
                 return;
             }
 
@@ -107,7 +96,7 @@ namespace SimpleLanguage.VM
                 }
             }
 
-            SetConstStringDict(dict);
+            SLAssembly.SetConstStringDict(dict);
         }
 
         private static void LoadBridgeMetadata(string packageDirectory)

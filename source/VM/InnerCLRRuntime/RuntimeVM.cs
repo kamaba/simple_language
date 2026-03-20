@@ -7,14 +7,11 @@
 //****************************************************************************
 
 using SimpleLanguage.Logging;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
 using System.Reflection;
-using SimpleLanguage.VM.LanguageRuntime;
+using SimpleLanuageVM.Load;
+using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -627,7 +624,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            var resolved = SLIRModuleParse.TryGetConstString(iri.index)
+                            var resolved = SLAssembly.TryGetConstString(iri.index)
                                 ?? SLIRModuleLoader.TryGetConstString(iri.index)
                                 ?? string.Empty;
                             var v = default(SValue);

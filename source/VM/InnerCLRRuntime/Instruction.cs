@@ -9,7 +9,7 @@
 using System;
 using System.Text;
 using System.Text.Json;
-using SimpleLanguage.VM.LanguageRuntime;
+using SimpleLanuageVM.Load;
 
 namespace SimpleLanguage.VM
 {

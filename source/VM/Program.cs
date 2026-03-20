@@ -1,10 +1,8 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using System;
-using System.Linq;
-using System.Collections.Generic;
+
+
+using SimpleLanguage.Parse;
 using SimpleLanguage.VM;
-using SimpleLanguage.VM.Lib;
-using SimpleLanguage.VM.LanguageRuntime;
 
 Console.WriteLine("SimpleLanguage VM");
 

@@ -4,19 +4,13 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Linq;
-using SimpleLanguage.VM.LanguageRuntime;
+using SimpleLanuageVM.Load;
+using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.VM
 {
     public static class SLIRJsonModuleLoader
     {
-        public sealed class PackageGraph
-        {
-            public string rootPackagePath { get; init; } = string.Empty;
-            public string rootDirectory { get; init; } = string.Empty;
-            public List<SLModulePackage> packageList { get; init; } = new();
-        }
-
         public static string? ResolveJsonPath(string[] args)
         {
             if (args != null && args.Length > 0 && args[0].EndsWith(".json", StringComparison.OrdinalIgnoreCase))
@@ -28,27 +22,12 @@ namespace SimpleLanguage.VM
             return File.Exists(defaultPath) ? defaultPath : null;
         }
 
-        public sealed class Module
-        {
-            public List<IRStringItem> irStringDict { get; set; } = new();
-            public List<ClassModel> classes { get; set; } = new();
-            public List<MethodModel> methods { get; set; } = new();
-        }
-
-        public sealed class IRStringItem { public int id { get; set; } public string value { get; set; } = string.Empty; }
-        public sealed class ClassModel { public int id { get; set; } public string name { get; set; } = string.Empty; public string sourcePath { get; set; } = string.Empty; public List<FieldModel> fields { get; set; } = new(); }
-        public sealed class FieldModel { public string name { get; set; } = string.Empty; public string type { get; set; } = string.Empty; public bool isStatic { get; set; } public int index { get; set; } }
-        public sealed class MethodModel { public string id { get; set; } = string.Empty; public string onlyName { get; set; } = string.Empty; public int ownerClassId { get; set; } public int argumentCount { get; set; } public int localCount { get; set; } public int returnCount { get; set; } public List<InstructionModel> instructions { get; set; } = new(); }
-        public sealed class InstructionModel { public string opCode { get; set; } = string.Empty; public int index { get; set; } public int offset { get; set; } public string? payloadBase64 { get; set; } }
-
-        public static string? TryGetConstString(int stringId) => SLIRModuleParse.TryGetConstString(stringId);
-
-        public static Module ReadModule(string jsonPath)
+        public static SLModulePackage ReadModule(string jsonPath)
         {
             if (string.IsNullOrWhiteSpace(jsonPath)) jsonPath = GetDefaultJsonPath();
             var json = File.ReadAllText(jsonPath);
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            return JsonSerializer.Deserialize<Module>(json, options) ?? new Module();
+            return JsonSerializer.Deserialize<SLModulePackage>(json, options) ?? new SLModulePackage();
         }
 
         // Merged helpers from SLModulePackageLoader
@@ -90,7 +69,7 @@ namespace SimpleLanguage.VM
         {
             if (pkg == null) throw new ArgumentNullException(nameof(pkg));
             var asm = new SLAssembly("SimpleLanguage");
-            var module = new SLModule(pkg.moduleName);
+            var module = new SLModulePackage(pkg.moduleName);
             asm.AddModule(module);
             foreach (var nsPkg in pkg.namespaceList ?? Enumerable.Empty<SLNamespacePackage>())
             {
@@ -98,7 +77,7 @@ namespace SimpleLanguage.VM
                 foreach (var t in nsPkg.typeList ?? Enumerable.Empty<SLTypePackage>())
                 {
                     var full = NormalizeTypeName(t.fullName);
-                    ns.AddType(new SLTypeMeta { name = GetTypeShortName(full), fullName = full });
+                    ns.AddType(new SLTypePackage { name = GetTypeShortName(full), fullName = full });
                 }
             }
             var typeMap = module.namespaceList
@@ -112,7 +91,7 @@ namespace SimpleLanguage.VM
                 {
                     var nsName = GetNamespaceFromFullTypeName(declType);
                     var ns = module.GetOrAddNamespace(nsName);
-                    tm = new SLTypeMeta { name = GetTypeShortName(declType), fullName = declType ?? string.Empty };
+                    tm = new SLTypePackage { name = GetTypeShortName(declType), fullName = declType ?? string.Empty };
                     ns.AddType(tm);
                     typeMap[tm.fullName] = tm;
                 }
@@ -129,7 +108,7 @@ namespace SimpleLanguage.VM
             return LoadFromJson(jsonPath);
         }
 
-        public static PackageGraph ReadPackagesInExecutionOrder(string rootPackagePath)
+        public static SLPackageGraph ReadPackagesInExecutionOrder(string rootPackagePath)
         {
             if (string.IsNullOrWhiteSpace(rootPackagePath)) throw new ArgumentNullException(nameof(rootPackagePath));
             var rootFullPath = Path.GetFullPath(rootPackagePath);
@@ -166,26 +145,8 @@ namespace SimpleLanguage.VM
                     result.Insert(result.Count - 1, ReadPackage(sp));
                 }
             }
-            return new PackageGraph { rootPackagePath = rootFullPath, rootDirectory = Path.GetDirectoryName(rootFullPath) ?? string.Empty, packageList = result };
+            return new SLPackageGraph { rootPackagePath = rootFullPath, rootDirectory = Path.GetDirectoryName(rootFullPath) ?? string.Empty, packageList = result };
         }
-
-        /*
-        public static List<SimpleLanguage.VM.Instruction> ConvertToVMInstructionList(List<SLIRInstructionPackage> list)
-        {
-            return SLIRJsonModuleLoader.ConvertToVMInstructionList(list);
-        }
-
-        public static SLAssembly BuildRuntimeModel(SLModulePackage pkg)
-        {
-            return SLIRJsonModuleLoader.BuildRuntimeModel(pkg);
-        }
-
-        public static void NormalizeFieldFlags(SLModulePackage? pkg)
-        {
-            // forward: SLIRJsonModuleLoader's NormalizeFieldFlags is private, so nothing to do here
-            // Keep as placeholder in case other code calls it.
-        }
-        */
         public static string GetDefaultJsonPath()
         {
             var outDir = "E:\\project\\lang\\simple_language\\source\\Front\\bin\\Debug\\net8.0\\out\\export"; // Environment.GetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR");
@@ -231,7 +192,6 @@ namespace SimpleLanguage.VM
                 }
             }
         }
-
         private static int StableId32(string s)
         {
             unchecked
@@ -243,7 +203,6 @@ namespace SimpleLanguage.VM
                 return (int)hash;
             }
         }
-
         private static string NormalizeTypeName(string name)
         {
             if (string.IsNullOrEmpty(name)) return string.Empty;
