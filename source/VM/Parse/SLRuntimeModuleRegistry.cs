@@ -64,7 +64,7 @@ namespace SimpleLanguage.VM.LanguageRuntime
                 // instructions
                 if (m.instructionList != null)
                 {
-                    rm.InstructionList.AddRange(SLModulePackageLoader.ConvertToVMInstructionList(m.instructionList));
+                    rm.InstructionList.AddRange(SLIRModuleParse.ConvertToVMInstructionList(m.instructionList));
                 }
 
                 if (m.returnList != null)
@@ -453,7 +453,7 @@ namespace SimpleLanguage.VM.LanguageRuntime
                     // convert initializer expression instruction packages into runtime Instructions
                     if (f.express != null && f.express.Count > 0)
                     {
-                        var insList = SLModulePackageLoader.ConvertToVMInstructionList(f.express);
+                        var insList = SLIRModuleParse.ConvertToVMInstructionList(f.express);
                         if (insList != null && insList.Count > 0)
                         {
                             // append as member variable set value sequence (flattening)

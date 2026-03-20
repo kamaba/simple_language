@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using SimpleLanguage.VM.LanguageRuntime;
 
-namespace SimpleLanguage.VM.LanguageRuntime
+namespace SimpleLanguage.VM
 {
     public sealed class SLIRModuleParseResult
     {
@@ -55,7 +56,7 @@ namespace SimpleLanguage.VM.LanguageRuntime
         {
             if (graph == null) return null;
 
-            var packageList = graph.packageList ?? new List<SLModulePackage>();
+            var packageList = graph.packageList;
             if (packageList.Count == 0) return null;
 
             IntegrateConstStringDict(packageList);
@@ -63,7 +64,7 @@ namespace SimpleLanguage.VM.LanguageRuntime
             var currentPkg = packageList[packageList.Count - 1];
 
             SLRuntimeModuleRegistry.LoadFromPackages(packageList);
-            var asmList = packageList.Select(SLModulePackageLoader.BuildRuntimeModel).ToList();
+            var asmList = packageList.Select(SLIRJsonModuleLoader.BuildRuntimeModel).ToList();
             var slAsm = asmList[asmList.Count - 1];
 
             LoadBridgeMetadata(graph.rootDirectory);
@@ -165,7 +166,7 @@ namespace SimpleLanguage.VM.LanguageRuntime
                             if (!isConstField) continue;
                             if (field.express == null || field.express.Count == 0) continue;
 
-                            allGlobalInitInstructions.AddRange(SLModulePackageLoader.ConvertToVMInstructionList(field.express));
+                            allGlobalInitInstructions.AddRange(ConvertToVMInstructionList(field.express));
 
                             if (globalFieldIdMap.TryGetValue($"{cls.id}:{field.index}", out var gid))
                             {
@@ -188,6 +189,27 @@ namespace SimpleLanguage.VM.LanguageRuntime
             return (globalVarCount, allGlobalInitInstructions.Count);
         }
 
+        internal static List<SimpleLanguage.VM.Instruction> ConvertToVMInstructionList(List<SLIRInstructionPackage> list)
+        {
+            var result = new List<SimpleLanguage.VM.Instruction>(list?.Count ?? 0);
+            if (list == null) return result;
+            foreach (var d in list)
+            {
+                var opCode = (SimpleLanguage.VM.EIROpCode)d.opCode;
+                object? opValue = (object?)d.runtimeCall ?? d.opValue;
+                var ins = new SimpleLanguage.VM.Instruction
+                {
+                    id = d.id,
+                    opCode = opCode,
+                    opValue = opValue,
+                    Payload = d.payload,
+                    ByteLength = d.byteLength,
+                    index = d.index,
+                };
+                result.Add(ins);
+            }
+            return result;
+        }
         private static string? ResolveEntryMethodId(SLModulePackage currentPkg, string[] args)
         {
             var entryId = Environment.GetEnvironmentVariable("SIMPLELANG_ENTRY_METHOD");

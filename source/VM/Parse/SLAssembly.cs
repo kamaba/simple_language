@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SimpleLanguage.VM.LanguageRuntime
+namespace SimpleLanguage.VM
 {
     public sealed class SLAssembly
     {
