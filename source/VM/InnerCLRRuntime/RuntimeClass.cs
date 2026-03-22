@@ -21,6 +21,34 @@ namespace SimpleLanguage.VM
         private List<RuntimeMethod> m_NotStaticMethodList = new List<RuntimeMethod>();
         private List<RuntimeMethod> m_OperatorMethodList = new List<RuntimeMethod>();
 
+        internal void AddNonStaticMethod(RuntimeMethod m)
+        {
+            if (m == null) return;
+            m_NotStaticMethodList.Add(m);
+        }
+
+        internal void AddNonStaticMethodAt(int index, RuntimeMethod m)
+        {
+            if (m == null) return;
+            if (index < 0) { m_NotStaticMethodList.Add(m); return; }
+            while (m_NotStaticMethodList.Count <= index) m_NotStaticMethodList.Add(null);
+            m_NotStaticMethodList[index] = m;
+        }
+
+        internal void AddOperatorMethod(RuntimeMethod m)
+        {
+            if (m == null) return;
+            m_OperatorMethodList.Add(m);
+        }
+
+        internal void AddOperatorMethodAt(int index, RuntimeMethod m)
+        {
+            if (m == null) return;
+            if (index < 0) { m_OperatorMethodList.Add(m); return; }
+            while (m_OperatorMethodList.Count <= index) m_OperatorMethodList.Add(null);
+            m_OperatorMethodList[index] = m;
+        }
+
         Dictionary<int, Dictionary<int, RuntimeDefType>> m_IRMetaClassMapTemplateDict = new Dictionary<int, Dictionary<int, RuntimeDefType>>();
 
         public RuntimeMethod GetNonStaticMethodByIndex(int index)

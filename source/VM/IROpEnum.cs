@@ -38,6 +38,8 @@ namespace SimpleLanguage.VM
         LoadStaticField,
         LocalGlobal,
 
+        ClassInit,
+
         NewObject,
         NewTemplateObject,
         NewArray,

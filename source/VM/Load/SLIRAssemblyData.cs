@@ -2,13 +2,12 @@ using SimpleLanguage.VM;
 
 namespace SimpleLanuageVM.Load
 {
-
     public sealed class SLAssembly
     {
         public string id { get; }
-        public IReadOnlyList<SLModulePackage> moduleList => m_ModuleList;
+        public IReadOnlyList<SLAssemblyPackage> moduleList => m_ModuleList;
 
-        private readonly List<SLModulePackage> m_ModuleList = new();
+        private readonly List<SLAssemblyPackage> m_ModuleList = new();
 
         private static Dictionary<int, string> s_ConstStringDict = new();
 
@@ -17,7 +16,7 @@ namespace SimpleLanuageVM.Load
             this.id = id ?? string.Empty;
         }
 
-        internal void AddModule(SLModulePackage m)
+        internal void AddModule(SLAssemblyPackage m)
         {
             if (m == null) return;
             m_ModuleList.Add(m);
@@ -33,13 +32,13 @@ namespace SimpleLanuageVM.Load
             return null;
         }
     }
-    public sealed class IRStringItem
+    public sealed class StringItem
     { 
         public int id { get; set; } 
         public string value { get; set; } = string.Empty; 
     }
 
-    public sealed class SLModulePackage
+    public sealed class SLAssemblyPackage
     {
         public string name { get; }
 
@@ -57,11 +56,11 @@ namespace SimpleLanuageVM.Load
         public List<SLGlobalStaticInstructionPackage> globalStaticInstructionList { get; set; } = new();
         public List<SLIRInstructionPackage> globalInitInstructionList { get; set; } = new();
         public List<SLMethodPackage> methodList { get; set; } = new();
-        public SLModulePackage()
+        public SLAssemblyPackage()
         {
 
         }
-        public SLModulePackage(string name)
+        public SLAssemblyPackage(string name)
         {
             this.name = name ?? string.Empty;
         }
@@ -83,7 +82,7 @@ namespace SimpleLanuageVM.Load
         public string name { get; set; } = string.Empty;
         public int ownerClassId { get; set; }
         public int index { get; set; }
-        public string typeName { get; set; } = string.Empty;
+        public SLRuntimeDefTypePackage? typeDef { get; set; }
     }
     public sealed class SLGlobalStaticInstructionPackage
     {
@@ -116,6 +115,10 @@ namespace SimpleLanuageVM.Load
         public string name { get; set; } = string.Empty;
         public string sourcePath { get; set; } = string.Empty;
         public List<SLFieldPackage> fieldList { get; set; } = new();
+        // per-class method references separated by category
+        public List<SLMethodMeta> nonStaticMethodList { get; set; } = new();
+        public List<SLMethodMeta> operatorMethodList { get; set; } = new();
+        public List<SLMethodMeta> staticMethodList { get; set; } = new();
     }
 
     public sealed class SLClassModel 
@@ -162,13 +165,12 @@ namespace SimpleLanuageVM.Load
         public string fullName { get; set; } = string.Empty;
         public string name { get; set; } = string.Empty;
 
-        public IReadOnlyList<SLMethodMeta> methodList => m_MethodList;
-        private readonly List<SLMethodMeta> m_MethodList = new();
-
+        // per-type method references (refer to global methodList by id)
+        public List<SLMethodMeta> methodList { get; set; } = new();
         internal void AddMethod(SLMethodMeta m)
         {
             if (m == null) return;
-            m_MethodList.Add(m);
+            methodList.Add(m);
         }
     }
 
@@ -177,17 +179,21 @@ namespace SimpleLanuageVM.Load
     {
         public string id { get; init; } = string.Empty;
         public string name { get; init; } = string.Empty;
-        public IReadOnlyList<object> irList { get; init; } = Array.Empty<object>();
-        public IReadOnlyList<Instruction> vmInstructionList { get; init; } = Array.Empty<Instruction>();
+        // index marks ordering within the specific per-class list
+        public int index { get; init; } = 0;
+        // reserved for IR-level per-type representation if needed
+        public List<object> irList { get; init; } = new();
+        // vm instruction list produced by JSON loader for convenience
+        public List<Instruction> vmInstructionList { get; init; } = new();
     }
 
 
     public sealed class SLFieldPackage
     {
         public string name { get; set; } = string.Empty;
-        public string typeName { get; set; } = string.Empty;
-        public bool isStatic { get; set; }
-        public bool isConst { get; set; }
+        // structured type definition
+        public SLRuntimeDefTypePackage? typeDef { get; set; }
+        // flags: 1(private),2(public),4(export),8(protected),16(const),32(static)
         public int flags { get; set; }
         public int index { get; set; }
         public List<SLIRInstructionPackage> express { get; set; } = new();
@@ -209,7 +215,7 @@ namespace SimpleLanuageVM.Load
         public int id { get; set; }
         public int index { get; set; }
         public string name { get; set; } = string.Empty;
-        public string typeName { get; set; } = string.Empty;
+        public SLRuntimeDefTypePackage? typeDef { get; set; }
     }
 
     public sealed class SLIRInstructionPackage
@@ -242,5 +248,18 @@ namespace SimpleLanuageVM.Load
         public int templateIndex { get; set; } = -1;
         public bool isTemplate { get; set; }
         public List<SLRuntimeDefTypePackage> runtimeDefTypeList { get; set; } = new();
+    }
+
+    // VM-side module package schema used by SLIR loader and parser.
+    public sealed class SLModulePackage
+    {
+        public string moduleName { get; set; } = string.Empty;
+        public string? entryMethodId { get; set; }
+        public List<string> moduleReferences { get; set; } = new();
+        public List<StringItem> irStringDict { get; set; } = new();
+        public List<SLNamespacePackage> namespaceList { get; set; } = new();
+        public List<SLClassPackage> classList { get; set; } = new();
+        public List<SLGlobalStaticVariablePackage> globalStaticVariableList { get; set; } = new();
+        public List<SLMethodPackage> methodList { get; set; } = new();
     }
 }

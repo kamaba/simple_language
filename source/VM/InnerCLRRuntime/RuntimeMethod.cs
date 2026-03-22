@@ -28,5 +28,15 @@ namespace SimpleLanguage.VM
         private RuntimeClass m_OwnerMetaClass = null;
         private bool m_InterfaceMethod = false;
         private Instruction m_FunEndLabelData = null;
+
+        internal void SetOwner(RuntimeClass rc)
+        {
+            m_OwnerMetaClass = rc;
+        }
+
+        internal void SetInterfaceMethodFlag(bool v)
+        {
+            m_InterfaceMethod = v;
+        }
     }
 }

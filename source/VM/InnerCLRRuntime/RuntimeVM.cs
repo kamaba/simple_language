@@ -387,7 +387,7 @@ namespace SimpleLanguage.VM.Runtime
         private static RuntimeDefType? TryGetInstructionRuntimeDefType(Instruction iri)
         {
             if (iri == null) return null;
-            if (iri.opValue is RuntimeDefType direct) return direct;
+            //if (iri.opValue is RuntimeDefType direct) return direct;
 
             var resolved = SLRuntimeModuleRegistry.TryResolveRuntimeDefTypeFromInstruction(iri.opValue, iri.Payload);
             if (resolved != null)
@@ -867,6 +867,15 @@ namespace SimpleLanguage.VM.Runtime
                                     co.SetMemberVariableSValue(iri.index, val);
                                 }
                             }
+                        }
+                    }
+                    break;
+                case EIROpCode.ClassInit:
+                    {
+                        var mdt = TryGetInstructionRuntimeDefType(iri);
+                        if (mdt != null)
+                        {
+                            var rt = GetClassRuntimeType(mdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                         }
                     }
                     break;

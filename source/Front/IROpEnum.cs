@@ -36,6 +36,8 @@ namespace SimpleLanguage
         LoadArrayIndexField,
         LoadStaticField,
         LocalGlobal,
+        
+        ClassInit,
 
         NewObject,
         NewTemplateObject,

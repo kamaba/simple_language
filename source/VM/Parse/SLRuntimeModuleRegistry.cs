@@ -21,6 +21,27 @@ namespace SimpleLanguage.Parse
             s_MethodDeclaringTypeById.Clear();
         }
 
+        private static RuntimeDefType? ResolveRuntimeDefType(SLRuntimeDefTypePackage? pkg)
+        {
+            if (pkg == null) return null;
+
+            var rc = ResolveOrCreateRuntimeClassByIdOrName(pkg.classId, pkg.className);
+            if (rc == null) return null;
+
+            var args = new List<RuntimeDefType>();
+            if (pkg.runtimeDefTypeList != null)
+            {
+                for (int i = 0; i < pkg.runtimeDefTypeList.Count; i++)
+                {
+                    var t = ResolveRuntimeDefType(pkg.runtimeDefTypeList[i]);
+                    if (t != null) args.Add(t);
+                }
+            }
+
+            var rdt = new RuntimeDefType(rc, args);
+            return rdt;
+        }
+
         public static void LoadFromPackage(SLModulePackage pkg)
         {
             if (pkg == null) throw new ArgumentNullException(nameof(pkg));
@@ -74,7 +95,8 @@ namespace SimpleLanguage.Parse
                     foreach (var v in m.returnList)
                     {
                         if (v == null) continue;
-                        rm.methodReturnVariableList.Add(new RuntimeVariable(ResolveRuntimeDefType(v.typeName), v.id, v.index, v.name));
+                        var rdt = v.typeDef != null ? ResolveRuntimeDefType(v.typeDef) : null;
+                        rm.methodReturnVariableList.Add(new RuntimeVariable(rdt, v.id, v.index, v.name));
                     }
                 }
                 if (m.argumentList != null)
@@ -82,7 +104,8 @@ namespace SimpleLanguage.Parse
                     foreach (var v in m.argumentList)
                     {
                         if (v == null) continue;
-                        rm.methodArgumentList.Add(new RuntimeVariable(ResolveRuntimeDefType(v.typeName), v.id, v.index, v.name));
+                        var rdt = v.typeDef != null ? ResolveRuntimeDefType(v.typeDef) : null;
+                        rm.methodArgumentList.Add(new RuntimeVariable(rdt, v.id, v.index, v.name));
                     }
                 }
                 if (m.localList != null)
@@ -90,12 +113,73 @@ namespace SimpleLanguage.Parse
                     foreach (var v in m.localList)
                     {
                         if (v == null) continue;
-                        rm.methodLocalVariableList.Add(new RuntimeVariable(ResolveRuntimeDefType(v.typeName), v.id, v.index, v.name));
+                        var rdt = v.typeDef != null ? ResolveRuntimeDefType(v.typeDef) : null;
+                        rm.methodLocalVariableList.Add(new RuntimeVariable(rdt, v.id, v.index, v.name));
                     }
                 }
 
                 s_MethodById[rm.id] = rm;
                 s_MethodDeclaringTypeById[rm.id] = m.declaringTypeFullName ?? string.Empty;
+            }
+
+            // Additionally populate RuntimeClass method lists using per-class method references
+            if (pkg.classList != null)
+            {
+                foreach (var c in pkg.classList)
+                {
+                    if (c == null) continue;
+                    var rc = RuntimeClassManager.instance.GetRuntimeClassById(c.id);
+                    if (rc == null)
+                    {
+                        // create lightweight runtime class entry for method mapping
+                        rc = new RuntimeClass { id = c.id, name = string.IsNullOrWhiteSpace(c.fullName) ? c.name : c.fullName };
+                        RuntimeClassManager.instance.m_IRMetaClassList.Add(rc);
+                    }
+
+                    // non-static methods: place by index when provided
+                    if (c.nonStaticMethodList != null)
+                    {
+                        foreach (var mm in c.nonStaticMethodList)
+                        {
+                            if (mm == null || string.IsNullOrWhiteSpace(mm.id)) continue;
+                            if (!s_MethodById.TryGetValue(mm.id, out var runtimeMethod) || runtimeMethod == null) continue;
+                            runtimeMethod.SetOwner(rc);
+                            int idx = mm.index;
+                            if (idx < 0)
+                            {
+                                rc.AddNonStaticMethod(runtimeMethod);
+                            }
+                            else
+                            {
+                                rc.AddNonStaticMethodAt(idx, runtimeMethod);
+                            }
+                        }
+                    }
+
+                    // operator methods: treat specially and keep in operator list
+                    // operator methods: these are special system methods (e.g. _add_, _sub_);
+                    // ensure they are placed by index so lookup by position matches expectations
+                    if (c.operatorMethodList != null)
+                    {
+                        foreach (var mm in c.operatorMethodList)
+                        {
+                            if (mm == null || string.IsNullOrWhiteSpace(mm.id)) continue;
+                            if (!s_MethodById.TryGetValue(mm.id, out var runtimeMethod) || runtimeMethod == null) continue;
+                            runtimeMethod.SetOwner(rc);
+                            int idx = mm.index;
+                            if (idx < 0)
+                            {
+                                rc.AddOperatorMethod(runtimeMethod);
+                            }
+                            else
+                            {
+                                rc.AddOperatorMethodAt(idx, runtimeMethod);
+                            }
+                        }
+                    }
+
+                    // static methods are not added to instance lists here; they remain in registry
+                }
             }
         }
 
@@ -334,26 +418,9 @@ namespace SimpleLanguage.Parse
             return ownerType;
         }
 
-        private static RuntimeDefType? ResolveRuntimeDefType(SLRuntimeDefTypePackage? pkg)
-        {
-            if (pkg == null) return null;
-
-            var rc = ResolveOrCreateRuntimeClassByIdOrName(pkg.classId, pkg.className);
-            if (rc == null) return null;
-
-            var args = new List<RuntimeDefType>();
-            if (pkg.runtimeDefTypeList != null)
-            {
-                for (int i = 0; i < pkg.runtimeDefTypeList.Count; i++)
-                {
-                    var t = ResolveRuntimeDefType(pkg.runtimeDefTypeList[i]);
-                    if (t != null) args.Add(t);
-                }
-            }
-
-            var rdt = new RuntimeDefType(rc, args);
-            return rdt;
-        }
+        // ResolveRuntimeDefType(SLRuntimeDefTypePackage) is implemented above to prefer
+        // resolution by class id/name via cached package metadata. The overload that
+        // accepts string type names is handled separately.
 
         private static RuntimeClass? ResolveOrCreateRuntimeClassByIdOrName(int classId, string? className)
         {
@@ -432,18 +499,19 @@ namespace SimpleLanguage.Parse
                 {
                     if (f == null) continue;
 
-                    // create a RuntimeDefType placeholder for the field's declared type
                     RuntimeDefType? rdt = null;
                     try
                     {
-                        // attempt to create a minimal runtime def type by parsing typeName
-                        var temp = TryBuildRuntimeDefTypeFromTypeName(f.typeName);
-                        if (temp != null) rdt = temp;
+                        if (f.typeDef != null)
+                        {
+                            rdt = ResolveRuntimeDefType(f.typeDef);
+                        }
                     }
                     catch { }
 
                     var rv = new RuntimeVariable(rdt, 0, f.index, f.name ?? string.Empty);
-                    if (f.isStatic)
+                    // flags bit 32 indicates static
+                    if ((f.flags & 32) == 32)
                     {
                         rc.staticIRMetaVariableList.Add(rv);
                     }
@@ -452,13 +520,11 @@ namespace SimpleLanguage.Parse
                         rc.localIRMetaVariableList.Add(rv);
                     }
 
-                    // convert initializer expression instruction packages into runtime Instructions
                     if (f.express != null && f.express.Count > 0)
                     {
                         var insList = SLIRModuleParse.ConvertToVMInstructionList(f.express);
                         if (insList != null && insList.Count > 0)
                         {
-                            // append as member variable set value sequence (flattening)
                             foreach (var ins in insList)
                             {
                                 rc.memberVariableSetValueList.Add(ins);
@@ -481,6 +547,8 @@ namespace SimpleLanguage.Parse
             // reuse existing builder path by using BuildRuntimeDefTypeFromTypeName via string parsing
             return BuildRuntimeDefTypeFromTypeName(typeName);
         }
+
+
 
         private static RuntimeDefType? ResolveRuntimeDefType(string? typeName)
         {

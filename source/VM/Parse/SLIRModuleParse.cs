@@ -1,45 +1,31 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+
 using SimpleLanguage.Parse;
 using SimpleLanuageVM.Load;
 
 namespace SimpleLanguage.VM
 {
-    public sealed class SLIRModuleParseResult
-    {
-        public List<SLModulePackage> packageList { get; init; } = new();
-        public List<SLAssembly> assemblyList { get; init; } = new();
-        public SLAssembly? assembly { get; init; }
-        public SLModulePackage? currentPackage { get; init; }
-        public string? entryMethodId { get; init; }
-        public int globalVariableCount { get; init; }
-        public int globalInitInstructionCount { get; init; }
-    }
-
     public static class SLIRModuleParse
     {
 
-        public static string? ResolvePackagePath(string[] args)
-        {
-            var path = SLIRJsonModuleLoader.ResolveJsonPath(args);
-            if (string.IsNullOrWhiteSpace(path)) return null;
-            return path.EndsWith(".package.json", StringComparison.OrdinalIgnoreCase) ? path : null;
-        }
+        //public static string? ResolvePackagePath(string[] args)
+        //{
+        //    var path = SLIRJsonModuleLoader.ResolveJsonPath(args);
+        //    if (string.IsNullOrWhiteSpace(path)) return null;
+        //    return path.EndsWith(".package.json", StringComparison.OrdinalIgnoreCase) ? path : null;
+        //}
 
-        public static SLIRModuleParseResult? Parse(string packagePath, string[] args)
-        {
-            var graph = SLIRJsonModuleLoader.ReadPackagesInExecutionOrder(packagePath);
-            return Parse(graph, args);
-        }
+        //public static SLIRModuleParseResult? Parse(string packagePath, string[] args)
+        //{
+        //    var graph = SLIRJsonModuleLoader.ReadPackagesInExecutionOrder(packagePath);
+        //    return Parse(graph, args);
+        //}
 
-        public static SLIRModuleParseResult? Parse(string packagePath, SLModulePackage rootPackage, string[] args)
-        {
-            if (rootPackage == null) return null;
-            var graph = SLIRJsonModuleLoader.ReadPackagesInExecutionOrder(packagePath);
-            return Parse(graph, args);
-        }
+        //public static SLIRModuleParseResult? Parse(string packagePath, SLModulePackage rootPackage, string[] args)
+        //{
+        //    if (rootPackage == null) return null;
+        //    var graph = SLIRJsonModuleLoader.ReadPackagesInExecutionOrder(packagePath);
+        //    return Parse(graph, args);
+        //}
 
         public static SLIRModuleParseResult? Parse( SLPackageGraph graph, string[] args)
         {
@@ -53,7 +39,7 @@ namespace SimpleLanguage.VM
             var currentPkg = packageList[packageList.Count - 1];
 
             SLRuntimeModuleRegistry.LoadFromPackages(packageList);
-            var asmList = packageList.Select(SLIRJsonModuleLoader.BuildRuntimeModel).ToList();
+            var asmList = packageList.Select(p => SLIRJsonModuleLoader.BuildRuntimeModel(p)).ToList();
             var slAsm = asmList[asmList.Count - 1];
 
             LoadBridgeMetadata(graph.rootDirectory);
@@ -133,7 +119,8 @@ namespace SimpleLanguage.VM
                     for (int g = 0; g < p.globalStaticVariableList.Count; g++)
                     {
                         var gv = p.globalStaticVariableList[g];
-                        SimpleLanguage.VM.Runtime.CLRVM.RegisterGlobalVariable(gv.id, gv.typeName, gv.ownerClassId, gv.index);
+                        var typeName = gv.typeDef != null ? gv.typeDef.className : string.Empty;
+                        SimpleLanguage.VM.Runtime.CLRVM.RegisterGlobalVariable(gv.id, typeName, gv.ownerClassId, gv.index);
                         globalFieldIdMap[$"{gv.ownerClassId}:{gv.index}"] = gv.id;
                     }
                 }
@@ -149,9 +136,7 @@ namespace SimpleLanguage.VM
                         {
                             var field = cls.fieldList[f];
                             if (field == null) continue;
-                            if (!field.isConst && (field.flags & 16) == 16) field.isConst = true;
-                            if (!field.isStatic && (field.flags & 32) == 32) field.isStatic = true;
-                            bool isConstField = field.isConst || ((field.flags & 16) == 16);
+                            bool isConstField = ((field.flags & 16) == 16);
                             if (!isConstField) continue;
                             if (field.express == null || field.express.Count == 0) continue;
 

@@ -63,10 +63,9 @@ namespace SimpleLanguage.Export.SLIR
                     var field = cls.fieldList[f];
                     if (field == null) continue;
 
-                    if (field.isConst) field.flags |= 16;
-                    if (field.isStatic) field.flags |= 32;
-                    if (!field.isConst && (field.flags & 16) == 16) field.isConst = true;
-                    if (!field.isStatic && (field.flags & 32) == 32) field.isStatic = true;
+                    // Normalize flags to allowed bits: 1(private),2(public),4(export),8(protected),16(const),32(static)
+                    const int allowed = 1 | 2 | 4 | 8 | 16 | 32;
+                    field.flags &= allowed;
                 }
             }
         }
@@ -105,17 +104,73 @@ namespace SimpleLanguage.Export.SLIR
                     name = typeName,
                     sourcePath = c.sourcePath ?? string.Empty,
                 };
-                if (c.localIRMetaVariableList != null)
+                // export template count
+                cm.templateCount = c.templateCount;
+                // export template (generated) meta types for the class
+                if (c.templateTypeList != null)
+                {
+                    for (int ti = 0; ti < c.templateTypeList.Count; ti++)
+                    {
+                        var tt = c.templateTypeList[ti];
+                        if (tt == null) continue;
+                        // represent template meta type as SLRuntimeDefTypePackage to preserve templateIndex and nested args
+                        cm.templateTypeList.Add(CreateRuntimeDefTypePackage(tt));
+                    }
+                }
+                // export template relations mapping
+                if (c.templateRelation != null)
+                {
+                    foreach (var kv in c.templateRelation)
+                    {
+                        var relatedClassId = kv.Key;
+                        var map = kv.Value;
+                        if (map == null) continue;
+                        var relPkg = new SLTemplateRelationPackage { relatedClassId = relatedClassId };
+                        foreach (var inner in map)
+                        {
+                            var entry = new SLTemplateRelationEntry { index = inner.Key, type = CreateRuntimeDefTypePackage(inner.Value) };
+                            relPkg.mapping.Add(entry);
+                        }
+                        cm.templateRelationList.Add(relPkg);
+                    }
+                }
+                // export per-class method references: static, non-static and operator methods
+                if (c.nonStaticMethodList != null)
+                {
+                    for (int mi = 0; mi < c.nonStaticMethodList.Count; mi++)
+                    {
+                        var m = c.nonStaticMethodList[mi];
+                        if (m == null) continue;
+                        cm.nonStaticMethodList.Add(new SLMethodMeta { id = m.id ?? string.Empty, name = m.onlyFunctionName ?? string.Empty, index = mi });
+                    }
+                }
+                if (c.operatorMethodList != null)
+                {
+                    for (int mi = 0; mi < c.operatorMethodList.Count; mi++)
+                    {
+                        var m = c.operatorMethodList[mi];
+                        if (m == null) continue;
+                        cm.operatorMethodList.Add(new SLMethodMeta { id = m.id ?? string.Empty, name = m.onlyFunctionName ?? string.Empty, index = mi });
+                    }
+                }
+                if (c.staticMethodList != null)
+                {
+                    for (int mi = 0; mi < c.staticMethodList.Count; mi++)
+                    {
+                        var m = c.staticMethodList[mi];
+                        if (m == null) continue;
+                        cm.staticMethodList.Add(new SLMethodMeta { id = m.id ?? string.Empty, name = m.onlyFunctionName ?? string.Empty, index = mi });
+                    }
+                }
+            if (c.localIRMetaVariableList != null)
                 {
                     foreach (var v in c.localIRMetaVariableList)
                     {
                         if (v == null) continue;
                         var fieldPkgLocal = new SLFieldPackage
                         {
-                            name = v.name ?? string.Empty,
-                            typeName = NormalizeTypeName(v.irMetaType?.ToString() ?? string.Empty),
-                            isStatic = false,
-                            isConst = v.isConst,
+                            name = GetShortName(v.name ?? string.Empty),
+                            typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
                             flags = BuildFieldFlags(v),
                             index = v.index,
                         };
@@ -166,11 +221,9 @@ namespace SimpleLanguage.Export.SLIR
                         if (v == null) continue;
                         var fieldPkgStatic = new SLFieldPackage
                         {
-                            name = v.name ?? string.Empty,
-                            typeName = NormalizeTypeName(v.irMetaType?.ToString() ?? string.Empty),
-                            isStatic = true,
-                            isConst = v.isConst,
-                            flags = BuildFieldFlags(v),
+                            name = GetShortName(v.name ?? string.Empty),
+                            typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
+                            flags = BuildFieldFlags(v) | 32,
                             index = v.index,
                         };
                         if (v.irDataList != null && v.irDataList.Count > 0)
@@ -223,10 +276,10 @@ namespace SimpleLanguage.Export.SLIR
                     pkg.globalStaticVariableList.Add(new SLGlobalStaticVariablePackage
                     {
                         id = gv.id,
-                        name = gv.name ?? string.Empty,
+                        name = GetShortName(gv.name ?? string.Empty),
                         ownerClassId = gv.irMetaType?.irOwnerMetaClass?.id ?? 0,
                         index = gv.index,
-                        typeName = NormalizeTypeName(gv.irMetaType?.ToString() ?? string.Empty),
+                        typeDef = CreateRuntimeDefTypePackage(gv.irMetaType),
                     });
                 }
             }
@@ -257,8 +310,8 @@ namespace SimpleLanguage.Export.SLIR
                         {
                             id = v.id,
                             index = v.index,
-                            name = v.name ?? string.Empty,
-                            typeName = NormalizeTypeName(v.irMetaType?.ToString() ?? string.Empty),
+                            name = GetShortName(v.name ?? string.Empty),
+                            typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
                         });
                     }
                 }
@@ -273,8 +326,8 @@ namespace SimpleLanguage.Export.SLIR
                         {
                             id = v.id,
                             index = v.index,
-                            name = v.name ?? string.Empty,
-                            typeName = NormalizeTypeName(v.irMetaType?.ToString() ?? string.Empty),
+                            name = GetShortName(v.name ?? string.Empty),
+                            typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
                         });
                     }
                 }
@@ -289,8 +342,8 @@ namespace SimpleLanguage.Export.SLIR
                         {
                             id = v.id,
                             index = v.index,
-                            name = v.name ?? string.Empty,
-                            typeName = NormalizeTypeName(v.irMetaType?.ToString() ?? string.Empty),
+                            name = GetShortName(v.name ?? string.Empty),
+                            typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
                         });
                     }
                 }
@@ -545,7 +598,8 @@ namespace SimpleLanguage.Export.SLIR
         public string name { get; set; } = string.Empty;
         public int ownerClassId { get; set; }
         public int index { get; set; }
-        public string typeName { get; set; } = string.Empty;
+        // structured type definition (DefineIRTypeMeta style)
+        public SLRuntimeDefTypePackage? typeDef { get; set; }
     }
 
     internal sealed class IRStringItem
@@ -564,6 +618,20 @@ namespace SimpleLanguage.Export.SLIR
     {
         public string fullName { get; set; } = string.Empty;
         public string name { get; set; } = string.Empty;
+
+        // per-type method references (refer to global methodList by id/name)
+        public List<SLMethodMeta> methodList { get; set; } = new();
+    }
+
+    internal sealed class SLMethodMeta
+    {
+        // id refers to the global methodList entry's id
+        public string id { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
+        // index marks ordering within the specific per-class list
+        public int index { get; set; }
+        // reserved for IR-level per-type representation if needed
+        public List<object> irList { get; set; } = new();
     }
 
     internal sealed class SLMethodPackage
@@ -582,7 +650,8 @@ namespace SimpleLanguage.Export.SLIR
         public int id { get; set; }
         public int index { get; set; }
         public string name { get; set; } = string.Empty;
-        public string typeName { get; set; } = string.Empty;
+        // structured type definition (DefineIRTypeMeta style)
+        public SLRuntimeDefTypePackage? typeDef { get; set; }
     }
 
     internal sealed class SLClassPackage
@@ -590,16 +659,37 @@ namespace SimpleLanguage.Export.SLIR
         public int id { get; set; }
         public string fullName { get; set; } = string.Empty;
         public string name { get; set; } = string.Empty;
-        public string sourcePath { get; set; } = string.Empty;
+        public string sourcePath { get; set; } = string.Empty;// count of template types
+        public int templateCount { get; set; }
+        public List<SLRuntimeDefTypePackage> templateTypeList { get; set; } = new();
+        
+        // template relations: list of per-related-class mappings
+        public List<SLTemplateRelationPackage> templateRelationList { get; set; } = new();
         public List<SLFieldPackage> fieldList { get; set; } = new();
+        // per-class method references separated by category
+        public List<SLMethodMeta> nonStaticMethodList { get; set; } = new();
+        public List<SLMethodMeta> operatorMethodList { get; set; } = new();
+        public List<SLMethodMeta> staticMethodList { get; set; } = new();
+        // generated/template meta types for this class
+       }
+
+    internal sealed class SLTemplateRelationPackage
+    {
+        public int relatedClassId { get; set; }
+        public List<SLTemplateRelationEntry> mapping { get; set; } = new();
+    }
+    internal sealed class SLTemplateRelationEntry
+    {
+        public int index { get; set; }
+        public SLRuntimeDefTypePackage? type { get; set; }
     }
 
     internal sealed class SLFieldPackage
     {
         public string name { get; set; } = string.Empty;
-        public string typeName { get; set; } = string.Empty;
-        public bool isStatic { get; set; }
-        public bool isConst { get; set; }
+        // structured type definition (DefineIRTypeMeta style)
+        public SLRuntimeDefTypePackage? typeDef { get; set; }
+        // flags encode visibility and attributes: 1(private),2(public),4(export),8(protected),16(const),32(static)
         public int flags { get; set; }
         public int index { get; set; }
         public List<SLIRInstructionPackage> express { get; set; } = new();

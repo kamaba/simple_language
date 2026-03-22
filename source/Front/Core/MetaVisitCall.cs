@@ -251,7 +251,33 @@ namespace SimpleLanguage.Core
         protected MetaTemplate m_MetaTemplate = null;
         protected MetaType m_CallMetaType = null; //该变量，一般是为 T t = new() 这种情况准备的
 
-        public static MetaVisitNode CreateByVisitMetaClass( MetaType mt )
+        public static MetaVisitNode CreateByVisitMetaClass(MetaType mt)
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.visitType = EVisitType.MetaClass;
+            if (mt?.metaClass is MetaEnum me)
+            {
+                me.CreateValues();
+            }
+            vn.m_ReturnMetaType = mt;
+
+            return vn;
+        }
+        public static MetaVisitNode CreateByVisitMetaData(MetaType mt)
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.visitType = EVisitType.MetaClass;
+            if (mt?.metaClass is MetaEnum me)
+            {
+                me.CreateValues();
+            }
+            vn.m_ReturnMetaType = mt;
+
+            return vn;
+        }
+        public static MetaVisitNode CreateByVisitMetaEnum(MetaType mt)
         {
             MetaVisitNode vn = new MetaVisitNode();
 

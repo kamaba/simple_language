@@ -26,12 +26,24 @@ namespace SimpleLanguage.IR
         public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
         public List<IRMetaVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;
 
+        // expose method lists for exporter
+        public List<IRMethod> nonStaticMethodList => m_IRNotStaticMethodList;
+        public List<IRMethod> operatorMethodList => m_IROperatorMethodList;
+        public List<IRMethod> staticMethodList => m_IRStaticMethodList;
+        // expose generated/template meta types for exporter
+        public List<IRMetaType> templateTypeList => m_IRMetaTypeList;
+        // number of generated/template meta types
+        public int templateCount => m_TemplateCount;
+        // template relations mapping: key is related class id, value maps template index -> IRMetaType
+        public Dictionary<int, Dictionary<int, IRMetaType>> templateRelation => m_IRMetaClassMapTemplateDict;
+
         Dictionary<int, Dictionary<int, IRMetaType>> m_IRMetaClassMapTemplateDict = new Dictionary<int, Dictionary<int, IRMetaType>>();
         private Dictionary<int, int> m_MetaMemberVariableHashCodeDict = new Dictionary<int, int>();
         private List<IRMetaVariable> m_LocalIRMetaVariableList = new List<IRMetaVariable>();
         private List<IRMetaVariable> m_StaticIRMetaVariableList = new List<IRMetaVariable>();
         private List<IRMethod> m_IRNotStaticMethodList = new List<IRMethod>();
         private List<IRMethod> m_IROperatorMethodList = new List<IRMethod>();
+        private List<IRMethod> m_IRStaticMethodList = new List<IRMethod>();
         private List<IRMetaType> m_IRMetaTypeList = new List<IRMetaType>();
         private string m_IRName = "";
         private string m_SourcePath = "";
@@ -255,7 +267,7 @@ namespace SimpleLanguage.IR
                 var mf = smflist[i];
                 mf.UpdateFunctionName();
                 var gmf = IRManager.instance.TranslateIRByFunction(mf);
-                
+                m_IRStaticMethodList.Add(gmf);
                 IRManager.instance.AddIRMethod(gmf);
             }
 

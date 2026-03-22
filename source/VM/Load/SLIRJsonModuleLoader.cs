@@ -22,12 +22,12 @@ namespace SimpleLanguage.VM
             return File.Exists(defaultPath) ? defaultPath : null;
         }
 
-        public static SLModulePackage ReadModule(string jsonPath)
+        public static SLAssemblyPackage ReadModule(string jsonPath)
         {
             if (string.IsNullOrWhiteSpace(jsonPath)) jsonPath = GetDefaultJsonPath();
             var json = File.ReadAllText(jsonPath);
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            return JsonSerializer.Deserialize<SLModulePackage>(json, options) ?? new SLModulePackage();
+            return JsonSerializer.Deserialize<SLAssemblyPackage>(json, options) ?? new SLAssemblyPackage();
         }
 
         // Merged helpers from SLModulePackageLoader
@@ -42,7 +42,7 @@ namespace SimpleLanguage.VM
                 AllowTrailingCommas = true,
             };
             options.Converters.Add(new JsonStringEnumConverter());
-            var pkg = JsonSerializer.Deserialize<SLModulePackage>(json, options);
+            var pkg = JsonSerializer.Deserialize<SLModulePackage>(json, options) ?? new SLModulePackage();
             NormalizeFieldFlags(pkg);
             return pkg;
         }
@@ -58,46 +58,117 @@ namespace SimpleLanguage.VM
                 {
                     var field = cls.fieldList[f];
                     if (field == null) continue;
-                    if (field.isConst) field.flags |= 16;
-                    if (field.isStatic) field.flags |= 32;
-                    if (!field.isConst && (field.flags & 16) == 16) field.isConst = true;
-                    if (!field.isStatic && (field.flags & 32) == 32) field.isStatic = true;
+                    // Ensure flags only contain expected bits: 1(private),2(public),4(export),8(protected),16(const),32(static)
+                    const int allowed = 1 | 2 | 4 | 8 | 16 | 32;
+                    field.flags &= allowed;
                 }
             }
         }
         public static SLAssembly BuildRuntimeModel(SLModulePackage pkg)
         {
             if (pkg == null) throw new ArgumentNullException(nameof(pkg));
+
+            // Build VM assembly that contains an assembly package built from SLModulePackage
             var asm = new SLAssembly("SimpleLanguage");
-            var module = new SLModulePackage(pkg.moduleName);
+            var module = new SLAssemblyPackage(pkg.moduleName);
             asm.AddModule(module);
-            foreach (var nsPkg in pkg.namespaceList ?? Enumerable.Empty<SLNamespacePackage>())
+
+            // build namespace map and populate types
+            var nsMap = new Dictionary<string, SLNamespacePackage>(StringComparer.Ordinal);
+            if (pkg.namespaceList != null)
             {
-                var ns = module.GetOrAddNamespace(nsPkg.fullName);
-                foreach (var t in nsPkg.typeList ?? Enumerable.Empty<SLTypePackage>())
+                foreach (var nsPkg in pkg.namespaceList)
                 {
-                    var full = NormalizeTypeName(t.fullName);
-                    ns.AddType(new SLTypePackage { name = GetTypeShortName(full), fullName = full });
+                    if (nsPkg == null) continue;
+                    var fullNs = nsPkg.fullName ?? string.Empty;
+                    if (!nsMap.TryGetValue(fullNs, out var ns))
+                    {
+                        ns = new SLNamespacePackage(fullNs);
+                        nsMap[fullNs] = ns;
+                        module.namespaceList.Add(ns);
+                    }
+                    if (nsPkg.typeList != null)
+                    {
+                        foreach (var t in nsPkg.typeList)
+                        {
+                            if (t == null) continue;
+                            var full = NormalizeTypeName(t.fullName);
+                            ns.typeList.Add(new SLTypePackage { name = GetTypeShortName(full), fullName = full });
+                        }
+                    }
                 }
             }
+
             var typeMap = module.namespaceList
                 .SelectMany(n => n.typeList)
                 .GroupBy(t => t.fullName, StringComparer.Ordinal)
                 .ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
-            foreach (var m in pkg.methodList ?? Enumerable.Empty<SLMethodPackage>())
+
+            if (pkg.methodList != null)
             {
-                var declType = NormalizeTypeName(m.declaringTypeFullName);
-                if (!typeMap.TryGetValue(declType ?? string.Empty, out var tm))
+                foreach (var m in pkg.methodList)
                 {
-                    var nsName = GetNamespaceFromFullTypeName(declType);
-                    var ns = module.GetOrAddNamespace(nsName);
-                    tm = new SLTypePackage { name = GetTypeShortName(declType), fullName = declType ?? string.Empty };
-                    ns.AddType(tm);
-                    typeMap[tm.fullName] = tm;
+                    if (m == null) continue;
+                    var declType = NormalizeTypeName(m.declaringTypeFullName);
+                    if (!typeMap.TryGetValue(declType ?? string.Empty, out var tm))
+                    {
+                        var nsName = GetNamespaceFromFullTypeName(declType);
+                        if (!nsMap.TryGetValue(nsName, out var ns))
+                        {
+                            ns = new SLNamespacePackage(nsName);
+                            nsMap[nsName] = ns;
+                            module.namespaceList.Add(ns);
+                        }
+                        tm = new SLTypePackage { name = GetTypeShortName(declType), fullName = declType ?? string.Empty };
+                        ns.typeList.Add(tm);
+                        typeMap[tm.fullName] = tm;
+                    }
+                    var vmIns = SLIRModuleParse.ConvertToVMInstructionList(m.instructionList);
+                    tm.AddMethod(new SLMethodMeta { id = m.id ?? string.Empty, name = m.name ?? string.Empty, irList = new List<object>(), vmInstructionList = vmIns });
                 }
-                var vmIns = SLIRModuleParse.ConvertToVMInstructionList(m.instructionList);
-                tm.AddMethod(new SLMethodMeta { id = m.id ?? string.Empty, name = m.name ?? string.Empty, irList = Array.Empty<object>(), vmInstructionList = vmIns });
             }
+
+            // also consider per-class method references declared on class packages (separated lists)
+            if (pkg.classList != null)
+            {
+                foreach (var c in pkg.classList)
+                {
+                    if (c == null) continue;
+                    var cfull = NormalizeTypeName(c.fullName);
+                    if (!typeMap.TryGetValue(cfull ?? string.Empty, out var tm)) continue;
+
+                    if (c.nonStaticMethodList != null)
+                    {
+                        for (int i = 0; i < c.nonStaticMethodList.Count; i++)
+                        {
+                            var mm = c.nonStaticMethodList[i];
+                            if (mm == null) continue;
+                            tm.AddMethod(new SLMethodMeta { id = mm.id ?? string.Empty, name = mm.name ?? string.Empty, index = mm.index, irList = new List<object>(), vmInstructionList = new List<Instruction>() });
+                        }
+                    }
+
+                    if (c.operatorMethodList != null)
+                    {
+                        for (int i = 0; i < c.operatorMethodList.Count; i++)
+                        {
+                            var mm = c.operatorMethodList[i];
+                            if (mm == null) continue;
+                            tm.AddMethod(new SLMethodMeta { id = mm.id ?? string.Empty, name = mm.name ?? string.Empty, index = mm.index, irList = new List<object>(), vmInstructionList = new List<Instruction>() });
+                        }
+                    }
+
+                    if (c.staticMethodList != null)
+                    {
+                        for (int i = 0; i < c.staticMethodList.Count; i++)
+                        {
+                            var mm = c.staticMethodList[i];
+                            if (mm == null) continue;
+                            tm.AddMethod(new SLMethodMeta { id = mm.id ?? string.Empty, name = mm.name ?? string.Empty, index = mm.index, irList = new List<object>(), vmInstructionList = new List<Instruction>() });
+                        }
+                    }
+                }
+            }
+
             return asm;
         }
 
