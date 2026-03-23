@@ -1,11 +1,14 @@
 
 using SimpleLanguage.Parse;
 using SimpleLanuageVM.Load;
+using System.Collections.Generic;
 
 namespace SimpleLanguage.VM
 {
     public static class SLIRModuleParse
     {
+        // Multi-module data is normalized into SimpleLanguage.VM.SLAssembly.moduleList by SLIRJsonModuleLoader.BuildRuntimeModel.
+        // Use SLAssembly.EnumerateGlobalStaticVariables / EnumerateClasses for globals and classes.
 
         //public static string? ResolvePackagePath(string[] args)
         //{
@@ -44,7 +47,7 @@ namespace SimpleLanguage.VM
 
             LoadBridgeMetadata(graph.rootDirectory);
 
-            var (globalVarCount, globalInitCount) = InitializeGlobalVariables(packageList);
+            var (globalVarCount, globalInitCount) = InitializeGlobalVariables(asmList);
 
             var entryId = ResolveEntryMethodId(currentPkg, args);
 
@@ -72,13 +75,26 @@ namespace SimpleLanguage.VM
             for (int i = 0; i < packageList.Count; i++)
             {
                 var pkg = packageList[i];
-                if (pkg?.irStringDict == null) continue;
+                if (pkg == null) continue;
 
-                for (int j = 0; j < pkg.irStringDict.Count; j++)
+                void MergeIrStrings(IReadOnlyList<SimpleLanuageVM.Load.IRStringItem>? list)
                 {
-                    var item = pkg.irStringDict[j];
-                    if (item == null) continue;
-                    dict[item.id] = item.value ?? string.Empty;
+                    if (list == null) return;
+                    for (int j = 0; j < list.Count; j++)
+                    {
+                        var item = list[j];
+                        if (item == null) continue;
+                        dict[item.id] = item.value ?? string.Empty;
+                    }
+                }
+
+                MergeIrStrings(pkg.irStringDict);
+                if (pkg.moduleList != null)
+                {
+                    for (int m = 0; m < pkg.moduleList.Count; m++)
+                    {
+                        MergeIrStrings(pkg.moduleList[m]?.irStringDict);
+                    }
                 }
             }
 
@@ -102,7 +118,7 @@ namespace SimpleLanguage.VM
             }
         }
 
-        private static (int globalVariableCount, int globalInitInstructionCount) InitializeGlobalVariables(List<SLModulePackage> packageList)
+        private static (int globalVariableCount, int globalInitInstructionCount) InitializeGlobalVariables(List<SLAssembly> assemblyList)
         {
             SimpleLanguage.VM.Runtime.CLRVM.ResetGlobalVariableMapping();
 
@@ -110,49 +126,70 @@ namespace SimpleLanguage.VM
             int globalVarCount = 0;
             var globalFieldIdMap = new Dictionary<string, int>(StringComparer.Ordinal);
 
-            for (int i = 0; i < packageList.Count; i++)
+            // 1) Register every global static variable and build ownerClassId:index -> gv.id map (data from SLAssembly.moduleList).
+            for (int i = 0; i < assemblyList.Count; i++)
             {
-                var p = packageList[i];
-                if (p.globalStaticVariableList != null)
+                var asm = assemblyList[i];
+                if (asm == null) continue;
+                foreach (var gv in asm.EnumerateGlobalStaticVariables())
                 {
-                    globalVarCount += p.globalStaticVariableList.Count;
-                    for (int g = 0; g < p.globalStaticVariableList.Count; g++)
+                    globalVarCount++;
+                    var typeName = gv.typeDef != null ? gv.typeDef.className : string.Empty;
+                    SimpleLanguage.VM.Runtime.CLRVM.RegisterGlobalVariable(gv.id, typeName, gv.ownerClassId, gv.index);
+                    globalFieldIdMap[$"{gv.ownerClassId}:{gv.index}"] = gv.id;
+                }
+            }
+
+            // 2) After registration, one merged init sequence: gv.express then StoreGlobal per global.
+            var initializedGlobalIds = new HashSet<int>();
+            for (int i = 0; i < assemblyList.Count; i++)
+            {
+                var asm = assemblyList[i];
+                if (asm == null) continue;
+                foreach (var gv in asm.EnumerateGlobalStaticVariables())
+                {
+                    if (gv.express != null && gv.express.Count > 0)
                     {
-                        var gv = p.globalStaticVariableList[g];
-                        var typeName = gv.typeDef != null ? gv.typeDef.className : string.Empty;
-                        SimpleLanguage.VM.Runtime.CLRVM.RegisterGlobalVariable(gv.id, typeName, gv.ownerClassId, gv.index);
-                        globalFieldIdMap[$"{gv.ownerClassId}:{gv.index}"] = gv.id;
+                        allGlobalInitInstructions.AddRange(ConvertToVMInstructionList(gv.express));
+                        allGlobalInitInstructions.Add(new Instruction
+                        {
+                            opCode = EIROpCode.StoreGlobal,
+                            index = gv.id,
+                            opValue = null,
+                            Payload = Array.Empty<byte>(),
+                        });
+                        initializedGlobalIds.Add(gv.id);
                     }
                 }
+            }
 
-                if (p.classList != null && p.classList.Count > 0)
+            // 3) Fallback: const fields with express only on class (matches global id via map).
+            for (int i = 0; i < assemblyList.Count; i++)
+            {
+                var asm = assemblyList[i];
+                if (asm == null) continue;
+                foreach (var cls in asm.EnumerateClasses())
                 {
-                    for (int c = 0; c < p.classList.Count; c++)
+                    if (cls.fieldList == null) continue;
+                    for (int f = 0; f < cls.fieldList.Count; f++)
                     {
-                        var cls = p.classList[c];
-                        if (cls?.fieldList == null) continue;
+                        var field = cls.fieldList[f];
+                        if (field == null) continue;
+                        bool isConstField = ((field.flags & 16) == 16);
+                        if (!isConstField) continue;
+                        if (field.express == null || field.express.Count == 0) continue;
+                        if (!globalFieldIdMap.TryGetValue($"{cls.id}:{field.index}", out var gid)) continue;
+                        if (initializedGlobalIds.Contains(gid)) continue;
 
-                        for (int f = 0; f < cls.fieldList.Count; f++)
+                        allGlobalInitInstructions.AddRange(ConvertToVMInstructionList(field.express));
+                        allGlobalInitInstructions.Add(new Instruction
                         {
-                            var field = cls.fieldList[f];
-                            if (field == null) continue;
-                            bool isConstField = ((field.flags & 16) == 16);
-                            if (!isConstField) continue;
-                            if (field.express == null || field.express.Count == 0) continue;
-
-                            allGlobalInitInstructions.AddRange(ConvertToVMInstructionList(field.express));
-
-                            if (globalFieldIdMap.TryGetValue($"{cls.id}:{field.index}", out var gid))
-                            {
-                                allGlobalInitInstructions.Add(new Instruction
-                                {
-                                    opCode = EIROpCode.StoreGlobal,
-                                    index = gid,
-                                    opValue = null,
-                                    Payload = Array.Empty<byte>(),
-                                });
-                            }
-                        }
+                            opCode = EIROpCode.StoreGlobal,
+                            index = gid,
+                            opValue = null,
+                            Payload = Array.Empty<byte>(),
+                        });
+                        initializedGlobalIds.Add(gid);
                     }
                 }
             }
@@ -170,7 +207,8 @@ namespace SimpleLanguage.VM
             foreach (var d in list)
             {
                 var opCode = (SimpleLanguage.VM.EIROpCode)d.opCode;
-                object? opValue = d.opValue;
+                // Keep read/write symmetry with Front JSON: prefer explicit runtimeCall when present.
+                object? opValue = d.runtimeCall ?? d.opValue;
                 var ins = new SimpleLanguage.VM.Instruction
                 {
                     id = d.id,
@@ -187,20 +225,64 @@ namespace SimpleLanguage.VM
         private static string? ResolveEntryMethodId(SLModulePackage currentPkg, string[] args)
         {
             var entryId = Environment.GetEnvironmentVariable("SIMPLELANG_ENTRY_METHOD");
+            if (!string.IsNullOrWhiteSpace(entryId))
+                return entryId;
+
             bool runTest = args != null && args.Any(a => string.Equals(a, "-test", StringComparison.OrdinalIgnoreCase));
-            if (string.IsNullOrWhiteSpace(entryId))
+            if (runTest)
             {
-                if (runTest)
+                return FindMethodIdByName(currentPkg, "_test_");
+            }
+
+            if (!string.IsNullOrWhiteSpace(currentPkg.entryMethodId))
+                return currentPkg.entryMethodId;
+
+            return GetEntryAssemblyModule(currentPkg)?.entryMethodId;
+        }
+
+        /// <summary>Entry module: <see cref="SLModulePackage.entryModule"/> name match, else first module in <see cref="SLModulePackage.moduleList"/>.</summary>
+        private static SLAssemblyPackage? GetEntryAssemblyModule(SLModulePackage pkg)
+        {
+            if (pkg?.moduleList == null || pkg.moduleList.Count == 0) return null;
+            if (!string.IsNullOrWhiteSpace(pkg.entryModule))
+            {
+                for (int i = 0; i < pkg.moduleList.Count; i++)
                 {
-                    entryId = currentPkg.methodList?.FirstOrDefault(m => string.Equals(m.name, "_test_", StringComparison.OrdinalIgnoreCase))?.id;
-                }
-                else
-                {
-                    entryId = currentPkg.entryMethodId;
+                    var m = pkg.moduleList[i];
+                    if (m != null && string.Equals(m.moduleName, pkg.entryModule, StringComparison.Ordinal))
+                        return m;
                 }
             }
 
-            return entryId;
+            return pkg.moduleList[0];
+        }
+
+        /// <summary>Legacy root <see cref="SLModulePackage.methodList"/> first, then every module's method list.</summary>
+        private static string? FindMethodIdByName(SLModulePackage pkg, string methodName)
+        {
+            if (pkg.methodList != null)
+            {
+                foreach (var m in pkg.methodList)
+                {
+                    if (m != null && string.Equals(m.name, methodName, StringComparison.OrdinalIgnoreCase))
+                        return m.id;
+                }
+            }
+
+            if (pkg.moduleList != null)
+            {
+                foreach (var mod in pkg.moduleList)
+                {
+                    if (mod?.methodList == null) continue;
+                    foreach (var m in mod.methodList)
+                    {
+                        if (m != null && string.Equals(m.name, methodName, StringComparison.OrdinalIgnoreCase))
+                            return m.id;
+                    }
+                }
+            }
+
+            return null;
         }
 
 

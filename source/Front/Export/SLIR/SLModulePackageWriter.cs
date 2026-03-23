@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,11 +8,12 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Encodings.Web;
 using SimpleLanguage.IR;
+using SimpleLanguage.Export.SLIR.Types;
 
 namespace SimpleLanguage.Export.SLIR
 {
-    // Exports a VM-friendly JSON package matching VM's SLModulePackage schema.
-    // This keeps Front/VM symmetric and avoids VM->Front dependencies.
+    // Physical package: root shell (entryModule, moduleList) + per-module SLAssemblyPackage payload.
+    // Full IR payload lives only under moduleList[]; VM merges strings and flattens modules at load time.
     public static class SLModulePackageWriter
     {
         public static void Write(IRManager ir, string outputPath, string moduleName = "SimpleLanguage")
@@ -29,8 +31,14 @@ namespace SimpleLanguage.Export.SLIR
             };
             options.Converters.Add(new JsonStringEnumConverter());
 
+            var root = new SLPackageRootJson
+            {
+                entryModule = pkg.entryModule ?? pkg.moduleList.FirstOrDefault()?.moduleName ?? moduleName ?? string.Empty,
+                moduleList = pkg.moduleList,
+            };
+
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? ".");
-            File.WriteAllText(outputPath, JsonSerializer.Serialize(pkg, options));
+            File.WriteAllText(outputPath, JsonSerializer.Serialize(root, options));
         }
 
         internal static SLModulePackage Read(string inputPath)
@@ -53,17 +61,29 @@ namespace SimpleLanguage.Export.SLIR
 
         private static void NormalizeFieldFlags(SLModulePackage pkg)
         {
-            if (pkg?.classList == null) return;
-            for (int c = 0; c < pkg.classList.Count; c++)
+            if (pkg == null) return;
+            NormalizeFieldFlagsForClassList(pkg.classList);
+            if (pkg.moduleList != null)
             {
-                var cls = pkg.classList[c];
+                for (int mi = 0; mi < pkg.moduleList.Count; mi++)
+                {
+                    NormalizeFieldFlagsForClassList(pkg.moduleList[mi]?.classList);
+                }
+            }
+        }
+
+        private static void NormalizeFieldFlagsForClassList(List<SLClassPackage>? classList)
+        {
+            if (classList == null) return;
+            for (int c = 0; c < classList.Count; c++)
+            {
+                var cls = classList[c];
                 if (cls?.fieldList == null) continue;
                 for (int f = 0; f < cls.fieldList.Count; f++)
                 {
                     var field = cls.fieldList[f];
                     if (field == null) continue;
 
-                    // Normalize flags to allowed bits: 1(private),2(public),4(export),8(protected),16(const),32(static)
                     const int allowed = 1 | 2 | 4 | 8 | 16 | 32;
                     field.flags &= allowed;
                 }
@@ -72,12 +92,13 @@ namespace SimpleLanguage.Export.SLIR
 
         internal static SLModulePackage Build(IRManager ir, string moduleName)
         {
-            var pkg = new SLModulePackage { moduleName = moduleName ?? string.Empty };
+            var pkg = new SLModulePackage();
+            var module = new SLAssemblyPackage(moduleName ?? string.Empty);
 
             // const strings (IRManager.AddStringIRStack)
             foreach (var kv in ir.IRStringDict)
             {
-                pkg.irStringDict.Add(new IRStringItem { id = kv.Key, value = kv.Value ?? string.Empty });
+                module.irStringDict.Add(new IRStringItem { id = kv.Key, value = kv.Value ?? string.Empty });
             }
 
             // types
@@ -93,7 +114,7 @@ namespace SimpleLanguage.Export.SLIR
                 {
                     nsPkg = new SLNamespacePackage { fullName = nsName };
                     nsMap[nsName] = nsPkg;
-                    pkg.namespaceList.Add(nsPkg);
+                    module.namespaceList.Add(nsPkg);
                 }
                 nsPkg.typeList.Add(new SLTypePackage { fullName = full, name = typeName });
 
@@ -114,7 +135,8 @@ namespace SimpleLanguage.Export.SLIR
                         var tt = c.templateTypeList[ti];
                         if (tt == null) continue;
                         // represent template meta type as SLRuntimeDefTypePackage to preserve templateIndex and nested args
-                        cm.templateTypeList.Add(CreateRuntimeDefTypePackage(tt));
+                        var rtp = CreateRuntimeDefTypePackage(tt);
+                        if (rtp != null) cm.templateTypeList.Add(rtp);
                     }
                 }
                 // export template relations mapping
@@ -265,7 +287,7 @@ namespace SimpleLanguage.Export.SLIR
                         cm.fieldList.Add(fieldPkgStatic);
                     }
                 }
-                pkg.classList.Add(cm);
+                module.classList.Add(cm);
             }
 
             if (ir.globalStaticVariableList != null)
@@ -312,7 +334,7 @@ namespace SimpleLanguage.Export.SLIR
                         }
                     }
 
-                    pkg.globalStaticVariableList.Add(gsp);
+                    module.globalStaticVariableList.Add(gsp);
                 }
             }
 
@@ -396,7 +418,7 @@ namespace SimpleLanguage.Export.SLIR
                     }
                 }
 
-                pkg.methodList.Add(mp);
+                module.methodList.Add(mp);
 
                 if (bestEntry == null && string.Equals(m.onlyFunctionName, "_main_", StringComparison.OrdinalIgnoreCase))
                 {
@@ -405,7 +427,11 @@ namespace SimpleLanguage.Export.SLIR
                 }
             }
 
-            pkg.entryMethodId = bestEntry;
+            module.entryMethodId = bestEntry;
+
+            // In-memory model; Write() serializes SLPackageRootJson (entryModule + moduleList only).
+            pkg.entryModule = module.moduleName;
+            pkg.moduleList.Add(module);
 
             return pkg;
         }
@@ -609,155 +635,5 @@ namespace SimpleLanguage.Export.SLIR
 
             return ret;
         }
-    }
-
-    // Local copies of VM schema ensure Front/VM symmetry without references.
-    internal sealed class SLModulePackage
-    {
-        public string moduleName { get; set; } = string.Empty;
-        public string? entryMethodId { get; set; }
-        public List<string> moduleReferences { get; set; } = new();
-        public List<IRStringItem> irStringDict { get; set; } = new();
-        public List<SLNamespacePackage> namespaceList { get; set; } = new();
-        public List<SLClassPackage> classList { get; set; } = new();
-        public List<SLGlobalStaticVariablePackage> globalStaticVariableList { get; set; } = new();
-        public List<SLMethodPackage> methodList { get; set; } = new();
-    }
-
-    internal sealed class SLGlobalStaticVariablePackage
-    {
-        public int id { get; set; }
-        public string name { get; set; } = string.Empty;
-        public int ownerClassId { get; set; }
-        public int index { get; set; }
-        // structured type definition (DefineIRTypeMeta style)
-        public SLRuntimeDefTypePackage? typeDef { get; set; }
-        // initialization expression as instruction packages
-        public List<SLIRInstructionPackage> express { get; set; } = new();
-    }
-
-    internal sealed class IRStringItem
-    {
-        public int id { get; set; }
-        public string value { get; set; } = string.Empty;
-    }
-
-    internal sealed class SLNamespacePackage
-    {
-        public string fullName { get; set; } = string.Empty;
-        public List<SLTypePackage> typeList { get; set; } = new();
-    }
-
-    internal sealed class SLTypePackage
-    {
-        public string fullName { get; set; } = string.Empty;
-        public string name { get; set; } = string.Empty;
-
-        // per-type method references (refer to global methodList by id/name)
-        public List<SLMethodMeta> methodList { get; set; } = new();
-    }
-
-    internal sealed class SLMethodMeta
-    {
-        // id refers to the global methodList entry's id
-        public string id { get; set; } = string.Empty;
-        public string name { get; set; } = string.Empty;
-        // index marks ordering within the specific per-class list
-        public int index { get; set; }
-        // reserved for IR-level per-type representation if needed
-        public List<object> irList { get; set; } = new();
-    }
-
-    internal sealed class SLMethodPackage
-    {
-        public string id { get; set; } = string.Empty;
-        public string declaringTypeFullName { get; set; } = string.Empty;
-        public string name { get; set; } = string.Empty;
-        public List<SLVariablePackage> returnList { get; set; } = new();
-        public List<SLVariablePackage> argumentList { get; set; } = new();
-        public List<SLVariablePackage> localList { get; set; } = new();
-        public List<SLIRInstructionPackage> instructionList { get; set; } = new();
-    }
-
-    internal sealed class SLVariablePackage
-    {
-        public int id { get; set; }
-        public int index { get; set; }
-        public string name { get; set; } = string.Empty;
-        // structured type definition (DefineIRTypeMeta style)
-        public SLRuntimeDefTypePackage? typeDef { get; set; }
-    }
-
-    internal sealed class SLClassPackage
-    {
-        public int id { get; set; }
-        public string fullName { get; set; } = string.Empty;
-        public string name { get; set; } = string.Empty;
-        public string sourcePath { get; set; } = string.Empty;// count of template types
-        public int templateCount { get; set; }
-        public List<SLRuntimeDefTypePackage> templateTypeList { get; set; } = new();
-        
-        // template relations: list of per-related-class mappings
-        public List<SLTemplateRelationPackage> templateRelationList { get; set; } = new();
-        public List<SLFieldPackage> fieldList { get; set; } = new();
-        // per-class method references separated by category
-        public List<SLMethodMeta> nonStaticMethodList { get; set; } = new();
-        public List<SLMethodMeta> operatorMethodList { get; set; } = new();
-        public List<SLMethodMeta> staticMethodList { get; set; } = new();
-        // generated/template meta types for this class
-       }
-
-    internal sealed class SLTemplateRelationPackage
-    {
-        public int relatedClassId { get; set; }
-        public List<SLTemplateRelationEntry> mapping { get; set; } = new();
-    }
-    internal sealed class SLTemplateRelationEntry
-    {
-        public int index { get; set; }
-        public SLRuntimeDefTypePackage? type { get; set; }
-    }
-
-    internal sealed class SLFieldPackage
-    {
-        public string name { get; set; } = string.Empty;
-        // structured type definition (DefineIRTypeMeta style)
-        public SLRuntimeDefTypePackage? typeDef { get; set; }
-        // flags encode visibility and attributes: 1(private),2(public),4(export),8(protected),16(const),32(static)
-        public int flags { get; set; }
-        public int index { get; set; }
-        public List<SLIRInstructionPackage> express { get; set; } = new();
-    }
-
-    internal sealed class SLIRInstructionPackage
-    {
-        public int id { get; set; }
-        public byte opCode { get; set; }
-        public object? opValue { get; set; }
-        public SLRuntimeCallPackage? runtimeCall { get; set; }
-        public byte[]? payload { get; set; }
-        public int index { get; set; }
-        public int byteLength { get; set; }
-        public int offset { get; set; }
-    }
-
-    internal sealed class SLRuntimeCallPackage
-    {
-        public SLRuntimeDefTypePackage? runtimeDefType { get; set; }
-        public List<SLRuntimeDefTypePackage> templateRuntimeDefTypeList { get; set; } = new();
-        public string methodId { get; set; } = string.Empty;
-        public string methodName { get; set; } = string.Empty;
-        public int paramCount { get; set; }
-    }
-
-    internal sealed class SLRuntimeDefTypePackage
-    {
-        public int classId { get; set; }
-        public string className { get; set; } = string.Empty;
-        public int ownerClassId { get; set; }
-        public string ownerClassName { get; set; } = string.Empty;
-        public int templateIndex { get; set; } = -1;
-        public bool isTemplate { get; set; }
-        public List<SLRuntimeDefTypePackage> runtimeDefTypeList { get; set; } = new();
     }
 }

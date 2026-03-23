@@ -1,4 +1,5 @@
 using System;
+using SimpleLanguage.Export.SLIR.Types;
 
 namespace SimpleLanguage.Export.SLIR
 {

@@ -7,6 +7,10 @@ using SimpleLanuageVM.Load;
 
 namespace SimpleLanguage.VM
 {
+    /// <summary>
+    /// Runtime view of one loaded package graph node: one or more <see cref="SLAssemblyPackage"/>
+    /// (see <see cref="SLIRJsonModuleLoader.BuildRuntimeModel"/>). Multi-module JSON is flattened into <see cref="moduleList"/>.
+    /// </summary>
     public sealed class SLAssembly
     {
         public string id { get; }
@@ -25,6 +29,32 @@ namespace SimpleLanguage.VM
         {
             if (m == null) return;
             m_ModuleList.Add(m);
+        }
+
+        /// <summary>All <see cref="SLGlobalStaticVariablePackage"/> entries from every module, in module order.</summary>
+        public IEnumerable<SLGlobalStaticVariablePackage> EnumerateGlobalStaticVariables()
+        {
+            foreach (var mod in m_ModuleList)
+            {
+                if (mod?.globalStaticVariableList == null) continue;
+                foreach (var gv in mod.globalStaticVariableList)
+                {
+                    if (gv != null) yield return gv;
+                }
+            }
+        }
+
+        /// <summary>All <see cref="SLClassPackage"/> entries from every module, in module order.</summary>
+        public IEnumerable<SLClassPackage> EnumerateClasses()
+        {
+            foreach (var mod in m_ModuleList)
+            {
+                if (mod?.classList == null) continue;
+                foreach (var c in mod.classList)
+                {
+                    if (c != null) yield return c;
+                }
+            }
         }
         public static void SetConstStringDict(Dictionary<int, string>? dict)
         {

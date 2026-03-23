@@ -6,6 +6,8 @@ using SimpleLanguage.VM;
 
 Console.WriteLine("SimpleLanguage VM");
 
+Environment.SetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR", "E:\\project\\lang\\simple_language\\source\\Front\\bin\\Debug\\net8.0\\out\\export");
+
 try
 {
     //CallMethodJsonExporter.Export("../../../../Front/bin/Debug/net8.0/ImportCSharpLang.json");

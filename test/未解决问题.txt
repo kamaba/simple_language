@@ -11,7 +11,6 @@ compare的验证
 int x1 = 10 + (1-20) * 33~/20 + 10~/20 - 22 * 2~/1; 有报错处理
 
 
-1.1.  导出const 的数据，只允许在非template里边可以使用  然后在globalStaticVariableList 也要导出express里边，在读取的时候，把他们整合到前边的逻辑里边
 1. 在运行类的时候或者创建类的时候，先要进行静态元素的初始化
 2. 静态加载runtimeClass的，创建过程
 2.1. 统一创建runtimeClass的创建过程

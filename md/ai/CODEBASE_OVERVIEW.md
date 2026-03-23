@@ -2,39 +2,40 @@
 
 This document gives a concise map of the repository and the responsibilities of main folders and files.
 
-Top-level source areas
+**Note:** Paths below reflect the current layout (`source/Front`, `source/VM`). For a fuller index (solution projects, pipeline, bookmarks), see **`PROJECT_MAP.md`** in this folder.
 
-- `source/Compile` ！ lexer, token parser, file-level parsing, compile phases
-  - `Parse/LexerParse.cs` ！ lexer/tokenizer
-  - `Parse/TokenParse.cs` ！ token -> node tree
-  - `FileMeta/*` ！ file-level syntactic constructs
-  - `Process/*` ！ compile-state machinery
+## Top-level source areas
 
-- `source/Core` ！ language meta-model, semantic analysis and expression management
-  - `MetaClass.cs`, `MetaMemberFunction.cs`, `MetaVariable.cs` ！ meta objects for types, functions, variables
-  - `ExpressManager.cs` ！ create typed expression nodes, perform simple optimizations
-  - `MetaExpressNode/*` ！ expression AST nodes and related parsing
-  - `MethodManager.cs`, `ClassManager.cs` ！ function/class registries
+- **`source/Front`** ? compiler frontend: lexer/parser, file meta, semantic core, IR, exports, stdlib sources
+  - `Compile/Parse/` ? lexer/tokenizer (`LexerParse.cs`), token/node parsing (`TokenParse.cs` / `FileParse.cs`), structural parsing
+  - `Compile/FileMeta/*` ? file-level syntactic constructs
+  - `Compile/Process/*` ? compile pipeline and state (`ProcessController`, etc.)
+  - `Core/` ? language meta-model: types, functions, variables (`MetaClass`, `MetaMemberFunction`, `MetaVariable`, …), `ExpressManager`, `MetaExpressNode/*`, `MethodManager`, `ClassManager`, `Statements/*`
+  - `IR/` ? intermediate representation (`IRData`, `IROpEnum`, `IR*Statements`, `IR/Core/*`, `IR/Lib/*`)
+  - `Export/` ? code generation and backends: **`SLIR/`**, C#, Java, AOT, MLIR, Local PE, etc.
+  - `External/Native/` ? native library loading and FFI manifests
+  - `OtherLanguage/CSharp/` ? C# interop metadata/IR hooks
+  - `Lib/` ? standard library **source** (`.sl` files): `Lib/Core`, `Lib/Std`, …
+  - `Project/` ? project configuration
+  - `Wrapper/` ? CLR wrappers for expressions/calls
 
-- `source/IR` ！ intermediate representation and helpers
-  - `IRData.cs`, `IROpEnum.cs`, `IR*Statements` ！ IR representation and helpers
-  - `IR/Lib/*` ！ runtime helpers used by stdlib
+- **`source/VM`** ? runtime: SLIR load/parse, module registry, VM execution, objects, native bridges
+  - `Load/` ? `SLIRAssemblyData`, `SLIRJsonModuleLoader`
+  - `Parse/` ? `SLIRModuleParse`, `SLModulePackage`, `SLRuntimeModuleRegistry`
+  - `Object/*` ? `SObject` and runtime wrappers
+  - `InnerCLRRuntime/*` ? instructions, `SValue`, CLR bridge (`CLRRRuntimeVM`, …)
+  - `NewObject/*`, `LocalRuntime/*` ? allocation and local VM
+  - `NativeBridge/*` ? dynamic libraries and language bridges
+  - `Runtime/` ? VM facades and types (`CLRVM`, `EVMType`, …)
 
-- `source/VM` ！ runtime value types and VM layers
-  - `Object/*` ！ `SObject` and runtime wrappers for primitives
-  - `InnerCLRRuntime/*` ！ bridge to .NET CLR, runtime type/registration
-  - `NewObject/*`, `LocalRuntime/*` ！ object allocation and local VM
+- **`source/Log`** ? logging and diagnostics (`Log`, `Diagnostic`, `ErrorDefinition`, …)
 
-- `source/Lib` ！ standard library written in the language (core primitives, collections)
-  - `Lib/Core/*` ！ `Object.sl`, `Array.sl`, `List.sl`, `Map.sl`, `Num.sl`, etc.
+- **`source/CLangdll`** ? C++ native project (Visual Studio), used with native/FFI tooling
 
-- `source/Export` ！ code generation and AOT hooks (LLVM, AOT metadata)
+## Key observations
 
-- `source/OtherLanguage/CSharp` ！ integration tools to map language constructs to C# metadata
+- The repo implements an end-to-end toolchain: lexer → file-meta → meta model → expression nodes → IR → export (e.g. SLIR JSON) → VM/runtime.
+- Standard library lives under `source/Front/Lib` and compiles with the frontend; runtime support spans `Front/IR/Lib` and `VM`.
+- Abstract/override is modeled in meta layers (`MetaMemberFunction` and related).
 
-Key observations
-- The repo implements an end-to-end toolchain: lexer -> file-meta -> meta model -> expression nodes -> IR -> VM/runtime.
-- Standard library is implemented in-project `source/Lib/Core` and calls into `IR/Lib` and `VM` layers.
-- Abstract/override mechanics are implemented in meta layers (lexer produces `abstract` token; `MetaMemberFunction` supports `m_IsAbstract` and skipping of function bodies).
-
-If you need a per-module file list or a map for a subdirectory, request the directory name and I will produce a focused listing.
+If you need a per-module file list or a map for a subdirectory, see **`PROJECT_MAP.md`** or request a focused listing for that directory name.

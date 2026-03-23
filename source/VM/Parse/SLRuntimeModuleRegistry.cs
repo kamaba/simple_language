@@ -63,10 +63,11 @@ namespace SimpleLanguage.Parse
 
         private static void AddFromPackage(SLModulePackage pkg)
         {
-            // cache class packages for runtime lookup
-            if (pkg?.classList != null)
+            // cache class packages from legacy root and/or each module node
+            void CacheClassList(List<SLClassPackage>? classList)
             {
-                foreach (var c in pkg.classList)
+                if (classList == null) return;
+                foreach (var c in classList)
                 {
                     if (c == null) continue;
                     if (!s_ClassPackageById.ContainsKey(c.id))
@@ -74,58 +75,89 @@ namespace SimpleLanguage.Parse
                 }
             }
 
-            foreach (var m in pkg.methodList)
+            CacheClassList(pkg?.classList);
+            if (pkg?.moduleList != null)
             {
-                if (m == null || string.IsNullOrEmpty(m.id)) continue;
-
-                var rm = new RuntimeMethod
+                for (int mi = 0; mi < pkg.moduleList.Count; mi++)
                 {
-                    id = m.id,
-                    onlyFunctionName = m.name ?? string.Empty,
-                };
-
-                // instructions
-                if (m.instructionList != null)
-                {
-                    rm.InstructionList.AddRange(SLIRModuleParse.ConvertToVMInstructionList(m.instructionList));
+                    CacheClassList(pkg.moduleList[mi]?.classList);
                 }
-
-                if (m.returnList != null)
-                {
-                    foreach (var v in m.returnList)
-                    {
-                        if (v == null) continue;
-                        var rdt = v.typeDef != null ? ResolveRuntimeDefType(v.typeDef) : null;
-                        rm.methodReturnVariableList.Add(new RuntimeVariable(rdt, v.id, v.index, v.name));
-                    }
-                }
-                if (m.argumentList != null)
-                {
-                    foreach (var v in m.argumentList)
-                    {
-                        if (v == null) continue;
-                        var rdt = v.typeDef != null ? ResolveRuntimeDefType(v.typeDef) : null;
-                        rm.methodArgumentList.Add(new RuntimeVariable(rdt, v.id, v.index, v.name));
-                    }
-                }
-                if (m.localList != null)
-                {
-                    foreach (var v in m.localList)
-                    {
-                        if (v == null) continue;
-                        var rdt = v.typeDef != null ? ResolveRuntimeDefType(v.typeDef) : null;
-                        rm.methodLocalVariableList.Add(new RuntimeVariable(rdt, v.id, v.index, v.name));
-                    }
-                }
-
-                s_MethodById[rm.id] = rm;
-                s_MethodDeclaringTypeById[rm.id] = m.declaringTypeFullName ?? string.Empty;
             }
 
-            // Additionally populate RuntimeClass method lists using per-class method references
-            if (pkg.classList != null)
+            // Support moduleList outer shape: flatten modules to process methods and class lists
+            var modulesToProcess = new List<SLAssemblyPackage>();
+            if (pkg.moduleList != null && pkg.moduleList.Count > 0)
             {
-                foreach (var c in pkg.classList)
+                modulesToProcess.AddRange(pkg.moduleList);
+            }
+            else
+            {
+                // legacy: build an assembly package from top-level fields
+                var legacy = new SLAssemblyPackage(pkg.moduleName);
+                if (pkg.methodList != null) legacy.methodList.AddRange(pkg.methodList);
+                if (pkg.classList != null) legacy.classList.AddRange(pkg.classList);
+                if (pkg.globalStaticVariableList != null) legacy.globalStaticVariableList.AddRange(pkg.globalStaticVariableList);
+                modulesToProcess.Add(legacy);
+            }
+
+            // first pass: register all methods
+            foreach (var module in modulesToProcess)
+            {
+                if (module.methodList == null) continue;
+                foreach (var m in module.methodList)
+                {
+                    if (m == null || string.IsNullOrEmpty(m.id)) continue;
+
+                    var rm = new RuntimeMethod
+                    {
+                        id = m.id,
+                        onlyFunctionName = m.name ?? string.Empty,
+                    };
+
+                    // instructions
+                    if (m.instructionList != null)
+                    {
+                        rm.InstructionList.AddRange(SLIRModuleParse.ConvertToVMInstructionList(m.instructionList));
+                    }
+
+                    if (m.returnList != null)
+                    {
+                        foreach (var v in m.returnList)
+                        {
+                            if (v == null) continue;
+                            var rdt = v.typeDef != null ? ResolveRuntimeDefType(v.typeDef) : null;
+                            rm.methodReturnVariableList.Add(new RuntimeVariable(rdt, v.id, v.index, v.name));
+                        }
+                    }
+                    if (m.argumentList != null)
+                    {
+                        foreach (var v in m.argumentList)
+                        {
+                            if (v == null) continue;
+                            var rdt = v.typeDef != null ? ResolveRuntimeDefType(v.typeDef) : null;
+                            rm.methodArgumentList.Add(new RuntimeVariable(rdt, v.id, v.index, v.name));
+                        }
+                    }
+                    if (m.localList != null)
+                    {
+                        foreach (var v in m.localList)
+                        {
+                            if (v == null) continue;
+                            var rdt = v.typeDef != null ? ResolveRuntimeDefType(v.typeDef) : null;
+                            rm.methodLocalVariableList.Add(new RuntimeVariable(rdt, v.id, v.index, v.name));
+                        }
+                    }
+
+                    s_MethodById[rm.id] = rm;
+                    s_MethodDeclaringTypeById[rm.id] = m.declaringTypeFullName ?? string.Empty;
+                }
+            }
+
+            // second pass: populate RuntimeClass method lists using per-class method references
+            foreach (var module in modulesToProcess)
+            {
+                if (module.classList == null) continue;
+                foreach (var c in module.classList)
                 {
                     if (c == null) continue;
                     var rc = RuntimeClassManager.instance.GetRuntimeClassById(c.id);
@@ -157,8 +189,6 @@ namespace SimpleLanguage.Parse
                     }
 
                     // operator methods: treat specially and keep in operator list
-                    // operator methods: these are special system methods (e.g. _add_, _sub_);
-                    // ensure they are placed by index so lookup by position matches expectations
                     if (c.operatorMethodList != null)
                     {
                         foreach (var mm in c.operatorMethodList)

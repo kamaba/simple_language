@@ -42,23 +42,90 @@ namespace SimpleLanguage.VM
                 AllowTrailingCommas = true,
             };
             options.Converters.Add(new JsonStringEnumConverter());
-            var pkg = JsonSerializer.Deserialize<SLModulePackage>(json, options) ?? new SLModulePackage();
+
+            SLModulePackage pkg;
+            using (var doc = JsonDocument.Parse(json))
+            {
+                if (TryGetJsonArrayLength(doc.RootElement, "moduleList", out _))
+                {
+                    // Front export root: SLPackageRootJson (entryModule + moduleList only).
+                    var root = JsonSerializer.Deserialize<SLPackageRootJson>(json, options) ?? new SLPackageRootJson();
+                    pkg = SLPackageRootMapping.ToModulePackage(root);
+                }
+                else
+                {
+                    pkg = JsonSerializer.Deserialize<SLModulePackage>(json, options) ?? new SLModulePackage();
+                }
+            }
+
+            NormalizeModulePackageModel(pkg);
             NormalizeFieldFlags(pkg);
             return pkg;
         }
 
+        /// <summary>Case-insensitive property lookup for JSON root inspection.</summary>
+        private static bool TryGetJsonArrayLength(JsonElement root, string name, out int length)
+        {
+            length = 0;
+            if (root.ValueKind != JsonValueKind.Object) return false;
+            foreach (var p in root.EnumerateObject())
+            {
+                if (!string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)) continue;
+                if (p.Value.ValueKind != JsonValueKind.Array) return false;
+                length = p.Value.GetArrayLength();
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Root JSON may be only <c>entryModule</c> + <c>moduleList</c>. Fill <see cref="SLModulePackage.moduleName"/> for legacy code
+        /// and keep <see cref="SLModulePackage.entryModule"/> in sync when missing.
+        /// </summary>
+        private static void NormalizeModulePackageModel(SLModulePackage? pkg)
+        {
+            if (pkg == null) return;
+            if (pkg.moduleList == null || pkg.moduleList.Count == 0) return;
+
+            if (string.IsNullOrEmpty(pkg.entryModule))
+            {
+                var first = pkg.moduleList[0];
+                if (first != null && !string.IsNullOrEmpty(first.moduleName))
+                    pkg.entryModule = first.moduleName;
+            }
+
+            if (string.IsNullOrEmpty(pkg.moduleName))
+            {
+                pkg.moduleName = !string.IsNullOrEmpty(pkg.entryModule)
+                    ? pkg.entryModule!
+                    : (pkg.moduleList[0]?.moduleName ?? string.Empty);
+            }
+        }
+
         private static void NormalizeFieldFlags(SLModulePackage? pkg)
         {
-            if (pkg?.classList == null) return;
-            for (int c = 0; c < pkg.classList.Count; c++)
+            if (pkg == null) return;
+            NormalizeFieldFlagsForClassList(pkg.classList);
+            if (pkg.moduleList != null)
             {
-                var cls = pkg.classList[c];
+                for (int mi = 0; mi < pkg.moduleList.Count; mi++)
+                {
+                    NormalizeFieldFlagsForClassList(pkg.moduleList[mi]?.classList);
+                }
+            }
+        }
+
+        private static void NormalizeFieldFlagsForClassList(List<SLClassPackage>? classList)
+        {
+            if (classList == null) return;
+            for (int c = 0; c < classList.Count; c++)
+            {
+                var cls = classList[c];
                 if (cls?.fieldList == null) continue;
                 for (int f = 0; f < cls.fieldList.Count; f++)
                 {
                     var field = cls.fieldList[f];
                     if (field == null) continue;
-                    // Ensure flags only contain expected bits: 1(private),2(public),4(export),8(protected),16(const),32(static)
                     const int allowed = 1 | 2 | 4 | 8 | 16 | 32;
                     field.flags &= allowed;
                 }
@@ -68,16 +135,37 @@ namespace SimpleLanguage.VM
         {
             if (pkg == null) throw new ArgumentNullException(nameof(pkg));
 
-            // Build VM assembly that contains an assembly package built from SLModulePackage
+            // Build VM assembly that contains one or more assembly packages built from SLModulePackage
             var asm = new SLAssembly("SimpleLanguage");
-            var module = new SLAssemblyPackage(pkg.moduleName);
-            asm.AddModule(module);
 
-            // build namespace map and populate types
-            var nsMap = new Dictionary<string, SLNamespacePackage>(StringComparer.Ordinal);
-            if (pkg.namespaceList != null)
+            // If front exported multiple physical modules, pkg.moduleList will contain SLAssemblyPackage entries.
+            if (pkg.moduleList != null && pkg.moduleList.Count > 0)
             {
-                foreach (var nsPkg in pkg.namespaceList)
+                foreach (var m in pkg.moduleList)
+                {
+                    if (m == null) continue;
+                    asm.AddModule(m);
+                }
+            }
+            else
+            {
+                // legacy single-module shape: construct an assembly package from top-level fields
+                var module = new SLAssemblyPackage(pkg.moduleName);
+                if (pkg.namespaceList != null) module.namespaceList.AddRange(pkg.namespaceList);
+                if (pkg.classList != null) module.classList.AddRange(pkg.classList);
+                if (pkg.globalStaticVariableList != null) module.globalStaticVariableList.AddRange(pkg.globalStaticVariableList);
+                if (pkg.methodList != null) module.methodList.AddRange(pkg.methodList);
+                asm.AddModule(module);
+            }
+
+            // Build a global namespace/type map across all modules to place global methods and per-class refs
+            var nsMap = new Dictionary<string, SLNamespacePackage>(StringComparer.Ordinal);
+            var typeMap = new Dictionary<string, SLTypePackage>(StringComparer.Ordinal);
+
+            foreach (var module in asm.moduleList)
+            {
+                if (module.namespaceList == null) continue;
+                foreach (var nsPkg in module.namespaceList)
                 {
                     if (nsPkg == null) continue;
                     var fullNs = nsPkg.fullName ?? string.Empty;
@@ -85,7 +173,6 @@ namespace SimpleLanguage.VM
                     {
                         ns = new SLNamespacePackage(fullNs);
                         nsMap[fullNs] = ns;
-                        module.namespaceList.Add(ns);
                     }
                     if (nsPkg.typeList != null)
                     {
@@ -93,20 +180,21 @@ namespace SimpleLanguage.VM
                         {
                             if (t == null) continue;
                             var full = NormalizeTypeName(t.fullName);
-                            ns.typeList.Add(new SLTypePackage { name = GetTypeShortName(full), fullName = full });
+                            var tp = new SLTypePackage { name = GetTypeShortName(full), fullName = full };
+                            ns.typeList.Add(tp);
+                            if (!typeMap.ContainsKey(tp.fullName)) typeMap[tp.fullName] = tp;
                         }
                     }
+                    // ensure the module keeps its namespace objects as well
+                    // (we don't remove existing module.namespaceList entries)
                 }
             }
 
-            var typeMap = module.namespaceList
-                .SelectMany(n => n.typeList)
-                .GroupBy(t => t.fullName, StringComparer.Ordinal)
-                .ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
-
-            if (pkg.methodList != null)
+            // Place global method bodies into the corresponding types
+            foreach (var module in asm.moduleList)
             {
-                foreach (var m in pkg.methodList)
+                if (module.methodList == null) continue;
+                foreach (var m in module.methodList)
                 {
                     if (m == null) continue;
                     var declType = NormalizeTypeName(m.declaringTypeFullName);
@@ -117,7 +205,6 @@ namespace SimpleLanguage.VM
                         {
                             ns = new SLNamespacePackage(nsName);
                             nsMap[nsName] = ns;
-                            module.namespaceList.Add(ns);
                         }
                         tm = new SLTypePackage { name = GetTypeShortName(declType), fullName = declType ?? string.Empty };
                         ns.typeList.Add(tm);
@@ -128,10 +215,11 @@ namespace SimpleLanguage.VM
                 }
             }
 
-            // also consider per-class method references declared on class packages (separated lists)
-            if (pkg.classList != null)
+            // Process per-class method reference lists on each module's class packages
+            foreach (var module in asm.moduleList)
             {
-                foreach (var c in pkg.classList)
+                if (module.classList == null) continue;
+                foreach (var c in module.classList)
                 {
                     if (c == null) continue;
                     var cfull = NormalizeTypeName(c.fullName);
@@ -192,14 +280,28 @@ namespace SimpleLanguage.VM
                 if (!visited.Add(fullPath)) return;
                 var pkg = ReadPackage(fullPath);
                 var dir = Path.GetDirectoryName(fullPath) ?? string.Empty;
-                var refs = pkg.moduleReferences ?? new List<string>();
-                for (int i = 0; i < refs.Count; i++)
+                // Legacy: root moduleReferences. New format: references may live on each SLAssemblyPackage in moduleList.
+                void LoadRefList(List<string>? list)
                 {
-                    var rp = refs[i];
-                    if (string.IsNullOrWhiteSpace(rp)) continue;
-                    var refPath = Path.IsPathRooted(rp) ? rp : Path.Combine(dir, rp);
-                    LoadRecursive(refPath);
+                    if (list == null) return;
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        var rp = list[i];
+                        if (string.IsNullOrWhiteSpace(rp)) continue;
+                        var refPath = Path.IsPathRooted(rp) ? rp : Path.Combine(dir, rp);
+                        LoadRecursive(refPath);
+                    }
                 }
+
+                LoadRefList(pkg.moduleReferences);
+                if (pkg.moduleList != null)
+                {
+                    for (int mi = 0; mi < pkg.moduleList.Count; mi++)
+                    {
+                        LoadRefList(pkg.moduleList[mi]?.moduleReferences);
+                    }
+                }
+
                 result.Add(pkg);
             }
             LoadRecursive(rootFullPath);
@@ -220,8 +322,9 @@ namespace SimpleLanguage.VM
         }
         public static string GetDefaultJsonPath()
         {
-            var outDir = "E:\\project\\lang\\simple_language\\source\\Front\\bin\\Debug\\net8.0\\out\\export"; // Environment.GetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR");
-            if (string.IsNullOrWhiteSpace(outDir)) outDir = Path.Combine(Environment.CurrentDirectory, "out", "export");
+            var outDir = Environment.GetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR");
+            if (string.IsNullOrWhiteSpace(outDir))
+                outDir = Path.Combine(Environment.CurrentDirectory, "out", "export");
             var packageJson = Path.Combine(outDir, "module.package.json");
             if (File.Exists(packageJson)) return packageJson;
             return Path.Combine(outDir, "module.slir.json");
