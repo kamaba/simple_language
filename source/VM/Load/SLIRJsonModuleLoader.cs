@@ -124,7 +124,7 @@ namespace SimpleLanguage.VM
                         typeMap[tm.fullName] = tm;
                     }
                     var vmIns = SLIRModuleParse.ConvertToVMInstructionList(m.instructionList);
-                    tm.AddMethod(new SLMethodMeta { id = m.id ?? string.Empty, name = m.name ?? string.Empty, irList = new List<object>(), vmInstructionList = vmIns });
+                    tm.AddMethod(new SLMethodMetaPackage { id = m.id ?? string.Empty, name = m.name ?? string.Empty, irList = new List<object>(), vmInstructionList = vmIns });
                 }
             }
 
@@ -143,7 +143,7 @@ namespace SimpleLanguage.VM
                         {
                             var mm = c.nonStaticMethodList[i];
                             if (mm == null) continue;
-                            tm.AddMethod(new SLMethodMeta { id = mm.id ?? string.Empty, name = mm.name ?? string.Empty, index = mm.index, irList = new List<object>(), vmInstructionList = new List<Instruction>() });
+                            tm.AddMethod(new SLMethodMetaPackage { id = mm.id ?? string.Empty, name = mm.name ?? string.Empty, index = mm.index, irList = new List<object>(), vmInstructionList = new List<Instruction>() });
                         }
                     }
 
@@ -153,7 +153,7 @@ namespace SimpleLanguage.VM
                         {
                             var mm = c.operatorMethodList[i];
                             if (mm == null) continue;
-                            tm.AddMethod(new SLMethodMeta { id = mm.id ?? string.Empty, name = mm.name ?? string.Empty, index = mm.index, irList = new List<object>(), vmInstructionList = new List<Instruction>() });
+                            tm.AddMethod(new SLMethodMetaPackage { id = mm.id ?? string.Empty, name = mm.name ?? string.Empty, index = mm.index, irList = new List<object>(), vmInstructionList = new List<Instruction>() });
                         }
                     }
 
@@ -163,7 +163,7 @@ namespace SimpleLanguage.VM
                         {
                             var mm = c.staticMethodList[i];
                             if (mm == null) continue;
-                            tm.AddMethod(new SLMethodMeta { id = mm.id ?? string.Empty, name = mm.name ?? string.Empty, index = mm.index, irList = new List<object>(), vmInstructionList = new List<Instruction>() });
+                            tm.AddMethod(new SLMethodMetaPackage { id = mm.id ?? string.Empty, name = mm.name ?? string.Empty, index = mm.index, irList = new List<object>(), vmInstructionList = new List<Instruction>() });
                         }
                     }
                 }
@@ -239,9 +239,9 @@ namespace SimpleLanguage.VM
             var m = ReadModule(jsonPath);
             var rcm = RuntimeClassManager.instance;
             rcm.m_IRMetaClassList.Clear();
-            for (int i = 0; i < m.classes.Count; i++)
+            for (int i = 0; i < m.classList.Count; i++)
             {
-                var c = m.classes[i];
+                var c = m.classList[i];
                 var rc = new RuntimeClass { id = StableId32(c.name), name = c.name ?? string.Empty };
                 rcm.m_IRMetaClassList.Add(rc);
             }
@@ -251,15 +251,15 @@ namespace SimpleLanguage.VM
                 if (rc == null) continue;
                 if (RuntimeTypeManager.GetRuntimeTypeByClassId(rc.id) == null) RuntimeTypeManager.AddRuntimeTypeByClass(rc);
             }
-            for (int i = 0; i < m.classes.Count; i++)
+            for (int i = 0; i < m.classList.Count; i++)
             {
-                var c = m.classes[i];
+                var c = m.classList[i];
                 var rc = rcm.GetRuntimeClassByName(c.name);
                 if (rc == null) continue;
-                foreach (var f in c.fields)
+                foreach (var f in c.fieldList )
                 {
                     var rv = new RuntimeVariable();
-                    if (f.isStatic) rc.staticIRMetaVariableList.Add(rv); else rc.localIRMetaVariableList.Add(rv);
+                    //if (f.isStatic) rc.staticIRMetaVariableList.Add(rv); else rc.localIRMetaVariableList.Add(rv);
                 }
             }
         }

@@ -170,7 +170,7 @@ namespace SimpleLanguage.VM
             foreach (var d in list)
             {
                 var opCode = (SimpleLanguage.VM.EIROpCode)d.opCode;
-                object? opValue = (object?)d.runtimeCall ?? d.opValue;
+                object? opValue = d.opValue;
                 var ins = new SimpleLanguage.VM.Instruction
                 {
                     id = d.id,
