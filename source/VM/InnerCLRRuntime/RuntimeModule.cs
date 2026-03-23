@@ -1,7 +1,4 @@
-﻿using SimpleLanguage.Logging;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace SimpleLanguage.VM
 {

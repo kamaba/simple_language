@@ -119,6 +119,12 @@ namespace SimpleLanuageVM.Load
         public List<SLMethodMeta> nonStaticMethodList { get; set; } = new();
         public List<SLMethodMeta> operatorMethodList { get; set; } = new();
         public List<SLMethodMeta> staticMethodList { get; set; } = new();
+        // generated/template meta types for this class (exported from front)
+        public List<SLRuntimeDefTypePackage> templateTypeList { get; set; } = new();
+        // number of template types
+        public int templateCount { get; set; }
+        // template relations mapping exported from front
+        public List<SLTemplateRelationPackage> templateRelationList { get; set; } = new();
     }
 
     public sealed class SLClassModel 
@@ -248,6 +254,17 @@ namespace SimpleLanuageVM.Load
         public int templateIndex { get; set; } = -1;
         public bool isTemplate { get; set; }
         public List<SLRuntimeDefTypePackage> runtimeDefTypeList { get; set; } = new();
+    }
+
+    public sealed class SLTemplateRelationPackage
+    {
+        public int relatedClassId { get; set; }
+        public List<SLTemplateRelationEntry> mapping { get; set; } = new();
+    }
+    public sealed class SLTemplateRelationEntry
+    {
+        public int index { get; set; }
+        public SLRuntimeDefTypePackage? type { get; set; }
     }
 
     // VM-side module package schema used by SLIR loader and parser.
