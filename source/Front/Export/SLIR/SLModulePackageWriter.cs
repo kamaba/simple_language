@@ -273,14 +273,46 @@ namespace SimpleLanguage.Export.SLIR
                 foreach (var gv in ir.globalStaticVariableList)
                 {
                     if (gv == null) continue;
-                    pkg.globalStaticVariableList.Add(new SLGlobalStaticVariablePackage
+                    var gsp = new SLGlobalStaticVariablePackage
                     {
                         id = gv.id,
                         name = GetShortName(gv.name ?? string.Empty),
                         ownerClassId = gv.irMetaType?.irOwnerMetaClass?.id ?? 0,
                         index = gv.index,
                         typeDef = CreateRuntimeDefTypePackage(gv.irMetaType),
-                    });
+                    };
+
+                    // export initialization expression instructions if available
+                    List<IRData> irListForExpr = new List<IRData>();
+                    if (gv.irDataList != null && gv.irDataList.Count > 0)
+                    {
+                        irListForExpr.AddRange(gv.irDataList);
+                    }
+                    else if (gv.express != null)
+                    {
+                        try
+                        {
+                            var iex = IRExpressManager.CreateExpress(null, gv.express);
+                            if (iex?.IRDataList != null)
+                            {
+                                irListForExpr.AddRange(iex.IRDataList);
+                            }
+                        }
+                        catch { }
+                    }
+
+                    if (irListForExpr.Count > 0)
+                    {
+                        foreach (var d in irListForExpr)
+                        {
+                            if (d == null) continue;
+                            var rawOpValue = d.opValue;
+                            try { d.FinalizePack(); } catch { }
+                            gsp.express.Add(CreateInstructionPackage(d, rawOpValue));
+                        }
+                    }
+
+                    pkg.globalStaticVariableList.Add(gsp);
                 }
             }
 
@@ -600,6 +632,8 @@ namespace SimpleLanguage.Export.SLIR
         public int index { get; set; }
         // structured type definition (DefineIRTypeMeta style)
         public SLRuntimeDefTypePackage? typeDef { get; set; }
+        // initialization expression as instruction packages
+        public List<SLIRInstructionPackage> express { get; set; } = new();
     }
 
     internal sealed class IRStringItem
