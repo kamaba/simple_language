@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      ClassManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -593,6 +593,21 @@ namespace SimpleLanguage.Core
         }
         public static EClassRelation ValidateClassRelationByMetaClass( MetaClass curClass, MetaClass compareClass )
         {
+            // null can be assigned to any non-primitive/reference type parameter.
+            // This is required for call-site overload resolution, e.g.:
+            // NativeBridge.Call(..., null, paramObjs)
+            if (compareClass == CoreMetaClassManager.nullMetaClass)
+            {
+                // numeric primitives and bool are treated as value types and do not accept null
+                if (IsNumberClass(curClass) || curClass == CoreMetaClassManager.booleanMetaClass)
+                    return EClassRelation.No;
+
+                // any other class (including Object/String/BridgeObject/arrays) accepts null
+                if (curClass == CoreMetaClassManager.objectMetaClass)
+                    return EClassRelation.Same;
+                return EClassRelation.Parent;
+            }
+
             if ( curClass == CoreMetaClassManager.objectMetaClass )
             {
                 if (curClass == compareClass)

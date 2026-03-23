@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaCallNode.cs
 // ------------------------------------------------
 //  Copyright (c) author: Like Cheng kamaba233@gmail.com
@@ -101,6 +101,7 @@ namespace SimpleLanguage.Core
         public MetaBlockStatements ownerMetaFunctionBlock => m_OwnerMetaFunctionBlock;
         public MetaVariable storeMetaVariable => m_StoreMetaVariable;
         public FileMetaBraceTerm fileMetaBraceTerm => m_FileMetaCallNode != null ? m_FileMetaCallNode.fileMetaBraceTerm : null;
+        public FileMetaParTerm fileMetaParTerm => m_FileMetaCallNode != null ? m_FileMetaCallNode.fileMetaParTerm : null;
         public MetaType callMetaType => m_CallMetaType;
         //public MetaGenTemplateClass genMetaClass => m_GenMetaClass;
         //public MetaData metaData => m_MetaData;
@@ -167,7 +168,11 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = mc;
             m_OwnerMetaFunctionBlock = mbs;
             m_FrontDefineMetaType = fdmt;
-            m_IsFunction = m_FileMetaCallNode.isCallFunction;
+            // Sometimes the parser keeps the argument parTerm but doesn't set isCallFunction.
+            // If this node is an identifier and has parTerm, treat it as a function-call node
+            // so we can build MetaInputParamCollection for argument resolution.
+            m_IsFunction = m_FileMetaCallNode.isCallFunction
+                           || (m_FileMetaCallNode.fileMetaParTerm != null && m_Token?.type == ETokenType.Identifier);
 
             m_IsArray = m_FileMetaCallNode.isArray;
             /*

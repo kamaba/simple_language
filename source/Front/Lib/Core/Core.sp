@@ -6,9 +6,8 @@ Project
     print( text )
     {
         Array<BridgeObject> paramObjs = new(1)
-        paramObjs[0] = BridgeObject(text.toString())
-        NativeBridge.Call( BridgeKind.CLR, "System.Console",
-        "WriteLine", null, paramObjs );
+        paramObjs[0] = BridgeObject("---------")
+        NativeBridge.Call( BridgeKind.CLR, "System", "Console", "WriteLine", null, paramObjs );
     }
     _main_()
     {

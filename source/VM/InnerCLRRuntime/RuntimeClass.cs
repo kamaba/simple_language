@@ -7,19 +7,19 @@ namespace SimpleLanguage.VM
     {
         public int id { get; set; } = 0;
         public string name { get; set; } = "";
-        public List<RuntimeVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
+        public List<RuntimeVariable> nonStaticIRMetaVariableList => m_NonStaticIRMetaVariableList;
         public List<RuntimeVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;
         public List<RuntimeDefType> runtimeDefTypeList => m_RuntimeDefTypeList;
-        public List<Instruction> memberVariableSetValueList=> m_MemberVariableSetValueList;
+        public List<Instruction> nonStaticMemberVariableSetValueList => m_NonStaticMemberVariableSetValueList;
 
-        private List<RuntimeVariable> m_LocalIRMetaVariableList = new List<RuntimeVariable>();
+        private List<RuntimeVariable> m_NonStaticIRMetaVariableList = new List<RuntimeVariable>();
         private List<RuntimeVariable> m_StaticIRMetaVariableList = new List<RuntimeVariable>();
         private List<RuntimeDefType> m_RuntimeDefTypeList = new List<RuntimeDefType>();
-        private List<Instruction> m_MemberVariableSetValueList = new List<Instruction>();
-
+        private List<Instruction> m_NonStaticMemberVariableSetValueList = new List<Instruction>();
 
         private List<RuntimeMethod> m_NotStaticMethodList = new List<RuntimeMethod>();
         private List<RuntimeMethod> m_OperatorMethodList = new List<RuntimeMethod>();
+        private Dictionary<int, Dictionary<int, RuntimeDefType>> m_IRMetaClassMapTemplateDict = new Dictionary<int, Dictionary<int, RuntimeDefType>>();
 
         internal void AddNonStaticMethod(RuntimeMethod m)
         {
@@ -49,7 +49,6 @@ namespace SimpleLanguage.VM
             m_OperatorMethodList[index] = m;
         }
 
-        Dictionary<int, Dictionary<int, RuntimeDefType>> m_IRMetaClassMapTemplateDict = new Dictionary<int, Dictionary<int, RuntimeDefType>>();
 
         public RuntimeMethod GetNonStaticMethodByIndex(int index)
         {

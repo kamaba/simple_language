@@ -9,14 +9,39 @@ enum BridgeKind extends Byte
 
 public class BridgeObject extends Object
 {
-    const BridgeObject voidObject = new("void")
-    const BridgeObject int32Object = new("Int32")
-    const BridgeObject float32Object = new("Float32")
-    const BridgeObject stringObject = new("string")
+    public bool boolvalue = false;
+    public Int32 int32value = 0;
+    public Int64 int64value = 0L;
+    public Float64 float64value = 0.0d;
+    public string stringvalue = "";
 
-    _init_( string type )
+    public int valuetype = 0;
+
+    
+    _init_( bool _value )
     {
-        
+        this.boolvalue = _value
+        this.valuetype = 0
+    }
+    _init_( Int32 _value )
+    {
+        this.int32value = _value
+        this.valuetype = 1
+    }
+    _init_( Int64 _value )
+    {
+        this.int64value = _value
+        this.valuetype = 1
+    }
+    _init_( Float64 _value )
+    {
+        this.float64value = _value
+        this.valuetype = 2
+    }
+    _init_( string _value )
+    {
+        this.stringvalue = _value
+        this.valuetype = 3
     }
 }
 

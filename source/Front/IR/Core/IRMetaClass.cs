@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRMetaClass.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -272,13 +272,40 @@ namespace SimpleLanguage.IR
             }
 
             var nonsmflist = m_MetaClass.nonStaticVirtualMetaMemberFunctionList;
-            //int index = 0;
-            for (int i = 0; i < nonsmflist.Count; i++)
+            // Inheritance handling can skip instance methods that are declared in the file but are not
+            // considered "virtual overrides" by MetaClass's override-matching rules. For DebugCode/IR
+            // we still want those same-level methods to show up.
+            // So: translate both:
+            // 1) nonStaticVirtualMetaMemberFunctionList (virtual/inherited)
+            // 2) fileCollectMetaMemberFunctionList (child-declared instance functions)
+            List<MetaMemberFunction> merged = new List<MetaMemberFunction>();
+            if (nonsmflist != null)
             {
-                var mf = nonsmflist[i];
+                merged.AddRange(nonsmflist);
+            }
+            var fileFuncs = m_MetaClass.fileCollectMetaMemberFunctionList;
+            if (fileFuncs != null)
+            {
+                for (int i = 0; i < fileFuncs.Count; i++)
+                {
+                    var mf = fileFuncs[i];
+                    if (mf == null) continue;
+                    if (mf.isStatic) continue;
+                    merged.Add(mf);
+                }
+            }
+
+            //int index = 0;
+            for (int i = 0; i < merged.Count; i++)
+            {
+                var mf = merged[i];
+                if (mf == null) continue;
+                // Ensure functionAllName/id is recomputed with the latest parsed param types.
+                // Otherwise id may be cached early as Core.Object and overloads may still collide.
+                mf.UpdateFunctionName();
                 mf.UpdateVritualFunctionName();
                 var gmf = IRManager.instance.TranslateIRByFunction(mf);
-                if( mf.name == "_add_"
+                if (mf.name == "_add_"
                     || mf.name == "_sub_"
                     || mf.name == "_mul_"
                     || mf.name == "_truediv_"

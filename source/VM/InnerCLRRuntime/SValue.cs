@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      SValue.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -11,6 +11,7 @@ using SimpleLanguage.VM.Runtime;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Globalization;
 namespace SimpleLanguage.VM
 {
     public partial struct SValue
@@ -35,6 +36,48 @@ namespace SimpleLanguage.VM
         public object? ToClrObject(Type targetType)
         {
             if (isNull) return null;
+
+            // NativeBridge/BridgeObject 参数落地：VM 侧将 BridgeObject 实例解析成目标 CLR 类型。
+            // BridgeObject 在 Front 里通过 _init_(string type) 作为“参数描述符”传入，
+            // 在 VM 运行时通常会被写入某个可读成员变量（常见为 `type`），因此这里做对称转换。
+            if (sobject is ClassObject co && IsBridgeObjectRuntime(co.runtimeClass))
+            {
+                if (TryExtractBridgeObjectPayload(co, out var payloadObj))
+                {
+                    if (payloadObj == null) return null;
+                    if (targetType == typeof(object)) return payloadObj;
+                    if (targetType == typeof(string))
+                        return payloadObj is string s ? s : payloadObj.ToString();
+
+                    if (targetType.IsInstanceOfType(payloadObj)) return payloadObj;
+
+                    // BridgeObject 里的值常常是字符串形式（例如 BridgeObject(123) 会落为 "123"）
+                    if (payloadObj is string payloadStr)
+                    {
+                        if (targetType == typeof(int) && int.TryParse(payloadStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i))
+                            return i;
+                        if (targetType == typeof(long) && long.TryParse(payloadStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var l))
+                            return l;
+                        if (targetType == typeof(float) && float.TryParse(payloadStr, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var f))
+                            return f;
+                        if (targetType == typeof(double) && double.TryParse(payloadStr, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var d))
+                            return d;
+                        if (targetType == typeof(bool))
+                        {
+                            if (bool.TryParse(payloadStr, out var b)) return b;
+                            if (int.TryParse(payloadStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var bi)) return bi != 0;
+                        }
+                    }
+
+                    // 最后兜底：尝试系统转换（对部分数值/枚举可能有效）
+                    if (targetType.IsEnum)
+                    {
+                        try { return Enum.ToObject(targetType, payloadObj); } catch { /* ignore */ }
+                    }
+                    try { return Convert.ChangeType(payloadObj, targetType); } catch { /* ignore */ }
+                }
+            }
+
             if (targetType == typeof(object)) return GetValueObject();
             if (targetType == typeof(string)) return eType == EVMType.String ? stringValue : GetValueObject()?.ToString();
             if (targetType == typeof(bool)) return eType == EVMType.Boolean ? (int8Value == 1) : Convert.ToBoolean(GetValueObject());
@@ -43,6 +86,42 @@ namespace SimpleLanguage.VM
             if (targetType == typeof(float)) return eType == EVMType.Float32 ? floatValue : Convert.ToSingle(GetValueObject());
             if (targetType == typeof(double)) return eType == EVMType.Float64 ? doubleValue : Convert.ToDouble(GetValueObject());
             return Convert.ChangeType(GetValueObject(), targetType);
+        }
+
+        private static bool IsBridgeObjectRuntime(RuntimeClass? runtimeClass)
+        {
+            if (runtimeClass == null) return false;
+            var n = runtimeClass.name ?? string.Empty;
+            return n.EndsWith("BridgeObject", StringComparison.Ordinal) || n.Contains(".BridgeObject", StringComparison.Ordinal);
+        }
+
+        private static bool TryExtractBridgeObjectPayload(ClassObject co, out object? payloadObj)
+        {
+            payloadObj = null;
+            var rc = co.runtimeClass;
+            if (rc == null) return false;
+
+            var vars = rc.nonStaticIRMetaVariableList;
+            if (vars == null || vars.Count == 0) return false;
+
+            // _init_ 参数名是 `type`，因此优先读这个成员变量；如果不存在，则退化为读取第一个成员变量。
+            int index = -1;
+            for (int i = 0; i < vars.Count; i++)
+            {
+                var vn = vars[i]?.name ?? string.Empty;
+                if (string.Equals(vn, "type", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(vn, "_type", StringComparison.OrdinalIgnoreCase))
+                {
+                    index = i;
+                    break;
+                }
+            }
+            if (index < 0) index = 0;
+
+            var sv = default(SValue);
+            co.GetMemberVariableSValue(index, ref sv);
+            payloadObj = sv.GetValueObject();
+            return true;
         }
 
         public static SValue FromClrObject(object? o)

@@ -129,7 +129,7 @@ namespace SimpleLanguage.VM
                     if (fi.IsStatic)
                         rc.staticIRMetaVariableList.Add(rv);
                     else
-                        rc.localIRMetaVariableList.Add(rv);
+                        rc.nonStaticIRMetaVariableList.Add(rv);
                 }
             }
 

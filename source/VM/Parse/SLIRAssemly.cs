@@ -8,15 +8,15 @@ using SimpleLanuageVM.Load;
 namespace SimpleLanguage.VM
 {
     /// <summary>
-    /// Runtime view of one loaded package graph node: one or more <see cref="SLAssemblyPackage"/>
-    /// (see <see cref="SLIRJsonModuleLoader.BuildRuntimeModel"/>). Multi-module JSON is flattened into <see cref="moduleList"/>.
+    /// Runtime view of one loaded package graph node.
+    /// Multi-module JSON is flattened into <see cref="moduleList"/>.
     /// </summary>
     public sealed class SLAssembly
     {
         public string id { get; }
-        public IReadOnlyList<SLAssemblyPackage> moduleList => m_ModuleList;
+        public IReadOnlyList<SLModulePackage> moduleList => m_ModuleList;
 
-        private readonly List<SLAssemblyPackage> m_ModuleList = new();
+        private readonly List<SLModulePackage> m_ModuleList = new();
 
         private static Dictionary<int, string> s_ConstStringDict = new();
 
@@ -25,7 +25,7 @@ namespace SimpleLanguage.VM
             this.id = id ?? string.Empty;
         }
 
-        internal void AddModule(SLAssemblyPackage m)
+        internal void AddModule(SLModulePackage m)
         {
             if (m == null) return;
             m_ModuleList.Add(m);
@@ -74,10 +74,10 @@ namespace SimpleLanguage.VM
     }
     public sealed class SLIRModuleParseResult
     {
-        public List<SLModulePackage> packageList { get; init; } = new();
+        public List<SLPackageRootJson> packageList { get; init; } = new();
         public List<SLAssembly> assemblyList { get; init; } = new();
         public SLAssembly? assembly { get; init; }
-        public SLModulePackage? currentPackage { get; init; }
+        public SLPackageRootJson? currentPackage { get; init; }
         public string? entryMethodId { get; init; }
         public int globalVariableCount { get; init; }
         public int globalInitInstructionCount { get; init; }

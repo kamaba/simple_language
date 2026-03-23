@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaCallLink.cs
 // ------------------------------------------------
 //  Copyright (c) author: Like Cheng kamaba233@gmail.com
@@ -375,6 +375,16 @@ namespace SimpleLanguage.Core
                 {
                     MetaVariable newmv = null;
                     MetaMethodCall mmc = null;
+                    // Some call shapes attach "parTerm" (the call arg list) to the receiver node,
+                    // not to the function-name node. If the current node has no input param collection,
+                    // fall back to the previous node's collection to keep debug/IR symmetric.
+                    var paramCollection = mcn.metaInputParamCollection;
+                    if (paramCollection == null)
+                        paramCollection = frontNode?.metaInputParamCollection;
+
+                    var debugParTermText = mcn.fileMetaParTerm?.ToFormatString();
+                    if (string.IsNullOrEmpty(debugParTermText))
+                        debugParTermText = frontNode?.fileMetaParTerm?.ToFormatString();
                     if (frontNode?.callNodeType == ECallNodeType.ConstValue)
                     {
                         MetaVisitNode fvn = m_VisitNodeList[m_VisitNodeList.Count - 1];
@@ -404,7 +414,8 @@ namespace SimpleLanguage.Core
                             frontNode.metaInputParamCollection, newmv);
                         m_VisitNodeList.Add(mvn1);
 
-                        mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType.metaClass, mcn.callMetaType.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, mcn.metaInputParamCollection, null, null);
+                        mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType.metaClass, mcn.callMetaType.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, null, null);
+                        mmc.SetDebugInputParTermText(debugParTermText);
                     }
                     else
                     {
@@ -413,7 +424,8 @@ namespace SimpleLanguage.Core
                         {
                             m_VisitNodeList.RemoveAt(m_VisitNodeList.Count - 1);
                         }
-                        mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType.metaClass, mcn.callMetaType.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, mcn.metaInputParamCollection, retmv, mcn.storeMetaVariable);
+                        mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType.metaClass, mcn.callMetaType.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, retmv, mcn.storeMetaVariable);
+                        mmc.SetDebugInputParTermText(debugParTermText);
                     }
 
                     MetaVisitNode mvn2 = MetaVisitNode.CreateByMethodCall(mmc);
@@ -424,6 +436,13 @@ namespace SimpleLanguage.Core
                     // function-like call that isn't a named member function (e.g. type() getter)
                     MetaVariable newmv = null;
                     MetaMethodCall mmc = null;
+                    var paramCollection = mcn.metaInputParamCollection;
+                    if (paramCollection == null)
+                        paramCollection = frontNode?.metaInputParamCollection;
+
+                    var debugParTermText = mcn.fileMetaParTerm?.ToFormatString();
+                    if (string.IsNullOrEmpty(debugParTermText))
+                        debugParTermText = frontNode?.fileMetaParTerm?.ToFormatString();
                     if (frontNode?.callNodeType == ECallNodeType.ConstValue)
                     {
                         MetaVisitNode fvn = m_VisitNodeList[m_VisitNodeList.Count - 1];
@@ -441,7 +460,8 @@ namespace SimpleLanguage.Core
                             frontNode.metaInputParamCollection, newmv);
                         m_VisitNodeList.Add(mvn1);
 
-                        mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType?.metaClass, mcn.callMetaType?.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, mcn.metaInputParamCollection, null, null);
+                        mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType?.metaClass, mcn.callMetaType?.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, null, null);
+                        mmc.SetDebugInputParTermText(debugParTermText);
                     }
                     else
                     {
@@ -450,7 +470,8 @@ namespace SimpleLanguage.Core
                         {
                             m_VisitNodeList.RemoveAt(m_VisitNodeList.Count - 1);
                         }
-                        mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType?.metaClass, mcn.callMetaType?.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, mcn.metaInputParamCollection, retmv, mcn.storeMetaVariable);
+                        mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType?.metaClass, mcn.callMetaType?.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, retmv, mcn.storeMetaVariable);
+                        mmc.SetDebugInputParTermText(debugParTermText);
                     }
 
                     MetaVisitNode mvn2 = MetaVisitNode.CreateByMethodCall(mmc);
@@ -464,15 +485,22 @@ namespace SimpleLanguage.Core
                     {
                         m_VisitNodeList.RemoveAt(m_VisitNodeList.Count - 1);
                     }
+                    var paramCollection = mcn.metaInputParamCollection;
+                    if (paramCollection == null)
+                        paramCollection = frontNode?.metaInputParamCollection;
 
+                    var debugParTermText = mcn.fileMetaParTerm?.ToFormatString();
+                    if (string.IsNullOrEmpty(debugParTermText))
+                        debugParTermText = frontNode?.fileMetaParTerm?.ToFormatString();
                     mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock,
                         mcn.callMetaType?.metaClass,
                         mcn.callMetaType?.defineTemplateMetaTypeList,
                         mcn.metaFunction,
                         mcn.metaTemplateParamsList,
-                        mcn.metaInputParamCollection,
+                        paramCollection,
                         retmv,
                         mcn.storeMetaVariable);
+                    mmc.SetDebugInputParTermText(debugParTermText);
 
                     MetaVisitNode mvn2 = MetaVisitNode.CreateBySystemCall(mmc);
                     m_VisitNodeList.Add(mvn2);

@@ -9,46 +9,28 @@ namespace SimpleLanuageVM.Load
         public int id { get; set; } 
         public string value { get; set; } = string.Empty; 
     }
+    /// <summary>
+    /// One physical JSON package: optional root lists for legacy; canonical payload is in <see cref="moduleList"/> (each item is a full module).
+    /// </summary>
+    public sealed class SLPackageRootJson
+    {
+        public string? entryModule { get; set; } = string.Empty;
+        public List<SLModulePackage> moduleList { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Loaded package-graph wrapper: one root directory contains one or more
+    /// <see cref="SLPackageRootJson"/> nodes in execution/load order.
+    /// </summary>
     public sealed class SLPackageGraph
     {
         public string rootPackagePath { get; init; } = string.Empty;
         public string rootDirectory { get; init; } = string.Empty;
-        /// <summary>Package graph nodes in load order (root last or as resolved by loader).</summary>
-        public List<SLModulePackage> packageList { get; set; } = new();
-    }
-
-    /// <summary>
-    /// JSON root for <c>module.package.json</c>, same shape as Front <c>SimpleLanguage.Export.SLIR.Types.SLPackageRootJson</c>:
-    /// only <see cref="entryModule"/> and <see cref="moduleList"/>; each item is a full module (<see cref="SLAssemblyPackage"/>).
-    /// </summary>
-    public sealed class SLPackageRootJson
-    {
-        public string entryModule { get; set; } = string.Empty;
-        public List<SLAssemblyPackage> moduleList { get; set; } = new();
-    }
-
-    /// <summary>Maps Front-export root JSON to the in-memory <see cref="SLModulePackage"/> used by the VM pipeline.</summary>
-    public static class SLPackageRootMapping
-    {
-        public static SLModulePackage ToModulePackage(SLPackageRootJson root)
-        {
-            if (root == null) throw new ArgumentNullException(nameof(root));
-            var list = root.moduleList ?? new List<SLAssemblyPackage>();
-            var entry = root.entryModule ?? string.Empty;
-            var name = !string.IsNullOrEmpty(entry)
-                ? entry
-                : (list.Count > 0 ? list[0]?.moduleName ?? string.Empty : string.Empty);
-            return new SLModulePackage
-            {
-                entryModule = string.IsNullOrEmpty(entry) ? null : entry,
-                moduleList = list,
-                moduleName = name,
-            };
-        }
+        public List<SLPackageRootJson> packageList { get; init; } = new();
     }
 
     /// <summary>One physical module inside a package (matches Front <c>SLAssemblyPackage</c> JSON).</summary>
-    public sealed class SLAssemblyPackage
+    public sealed class SLModulePackage
     {
         public string moduleName { get; set; } = string.Empty;
         public string? entryMethodId { get; set; }
@@ -59,30 +41,14 @@ namespace SimpleLanuageVM.Load
         public List<SLGlobalStaticVariablePackage> globalStaticVariableList { get; set; } = new();
         public List<SLMethodPackage> methodList { get; set; } = new();
 
-        public SLAssemblyPackage() { }
+        public SLModulePackage() { }
 
-        public SLAssemblyPackage(string moduleName)
+        public SLModulePackage(string moduleName)
         {
             this.moduleName = moduleName ?? string.Empty;
         }
     }
 
-    /// <summary>
-    /// One physical JSON package: optional root lists for legacy; canonical payload is in <see cref="moduleList"/> (each item is a full module).
-    /// </summary>
-    public sealed class SLModulePackage
-    {
-        public string moduleName { get; set; } = string.Empty;
-        public string? entryModule { get; set; }
-        public string? entryMethodId { get; set; }
-        public List<string> moduleReferences { get; set; } = new();
-        public List<IRStringItem> irStringDict { get; set; } = new();
-        public List<SLNamespacePackage> namespaceList { get; set; } = new();
-        public List<SLClassPackage> classList { get; set; } = new();
-        public List<SLGlobalStaticVariablePackage> globalStaticVariableList { get; set; } = new();
-        public List<SLMethodPackage> methodList { get; set; } = new();
-        public List<SLAssemblyPackage> moduleList { get; set; } = new();
-    }
 
     public sealed class SLGlobalStaticVariablePackage
     {

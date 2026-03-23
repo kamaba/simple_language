@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaVisitCall.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -32,6 +32,10 @@ namespace SimpleLanguage.Core
         protected MetaClass m_StaticCallerMetaClass = null;
         protected bool m_IsRecieveReturnValue = true;
         protected List<MetaType> m_StaticMetaClassInputTemplateList = new List<MetaType>();
+        // Debug-only: in some call-site shapes, meta member param count may resolve to 0,
+        // which results in empty m_MetaInputParamList and missing args in Meta.txt.
+        // Keep the parsed input param collection so we can still print args.
+        private MetaInputParamCollection? m_InputParamCollectionForDebug = null;
         //模板或者是调用时的函数
         protected MetaFunction m_VMCallMetaFunction = null;
         //真实的成员函数
@@ -40,6 +44,9 @@ namespace SimpleLanguage.Core
         protected List<MetaType> m_MetaFunctionInputTemplateList = new List<MetaType>();
         protected MetaClass m_OwnerMetaClass = null;
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
+        // Debug-only: keep raw "(...)" text from call-site to avoid empty args in Meta.txt.
+        // This is independent from overload resolution / typed param list building.
+        private string? m_DebugInputParTermText = null;
         
         public MetaMethodCall( MetaClass ownerClass, MetaBlockStatements ownerMBS, MetaClass staticMc,
             List<MetaType> staticMmitList,  MetaFunction _fun, List<MetaType> mpipList, MetaInputParamCollection _paramCollection, MetaVariable loadMv, MetaVariable storeMv )
@@ -47,6 +54,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = ownerClass;
             m_OwnerMetaBlockStatements = ownerMBS;
             m_StaticCallerMetaClass = staticMc;
+            m_InputParamCollectionForDebug = _paramCollection;
             if( staticMmitList != null )
             {
                 this.m_StaticMetaClassInputTemplateList = staticMmitList;
@@ -127,6 +135,10 @@ namespace SimpleLanguage.Core
                 m_IsRecieveReturnValue = m_StoreMetaVariable != null;
             }
         }
+        public void SetDebugInputParTermText(string? text)
+        {
+            m_DebugInputParTermText = text;
+        }
         public void SetStoreMetaVariable( MetaVariable mv )
         {
             this.m_StoreMetaVariable = mv;
@@ -160,17 +172,32 @@ namespace SimpleLanguage.Core
             StringBuilder sb = new StringBuilder();
             if (m_VMCallMetaFunction != null)
             {
-                sb.Append(m_VMCallMetaFunction.name + "(");
-                int inputCount = m_MetaInputParamList.Count;
-                for (int i = 0; i < inputCount; i++)
+                if (!string.IsNullOrEmpty(m_DebugInputParTermText))
                 {
-                    sb.Append(m_MetaInputParamList[i].ToFormatString());
-                    if (i < inputCount - 1)
-                    {
-                        sb.Append(",");
-                    }
+                    sb.Append(m_VMCallMetaFunction.name);
+                    sb.Append(m_DebugInputParTermText);
                 }
-                sb.Append(")");
+                else
+                {
+                    sb.Append(m_VMCallMetaFunction.name + "(");
+                    if (m_InputParamCollectionForDebug != null && m_InputParamCollectionForDebug.count > 0)
+                    {
+                        sb.Append(m_InputParamCollectionForDebug.ToFormatString());
+                    }
+                    else
+                    {
+                        int inputCount = m_MetaInputParamList.Count;
+                        for (int i = 0; i < inputCount; i++)
+                        {
+                            sb.Append(m_MetaInputParamList[i].ToFormatString());
+                            if (i < inputCount - 1)
+                            {
+                                sb.Append(",");
+                            }
+                        }
+                    }
+                    sb.Append(")");
+                }
             }
             return sb.ToString();
 
@@ -195,17 +222,32 @@ namespace SimpleLanguage.Core
             }
             if (m_VMCallMetaFunction != null)
             {
-                sb.Append(m_VMCallMetaFunction.name + "(");
-                int inputCount = m_MetaInputParamList.Count;
-                for (int i = 0; i < inputCount; i++)
+                if (!string.IsNullOrEmpty(m_DebugInputParTermText))
                 {
-                    sb.Append(m_MetaInputParamList[i].ToFormatString());
-                    if (i < inputCount - 1)
-                    {
-                        sb.Append(",");
-                    }
+                    sb.Append(m_VMCallMetaFunction.name);
+                    sb.Append(m_DebugInputParTermText);
                 }
-                sb.Append(")");
+                else
+                {
+                    sb.Append(m_VMCallMetaFunction.name + "(");
+                    if (m_InputParamCollectionForDebug != null && m_InputParamCollectionForDebug.count > 0)
+                    {
+                        sb.Append(m_InputParamCollectionForDebug.ToFormatString());
+                    }
+                    else
+                    {
+                        int inputCount = m_MetaInputParamList.Count;
+                        for (int i = 0; i < inputCount; i++)
+                        {
+                            sb.Append(m_MetaInputParamList[i].ToFormatString());
+                            if (i < inputCount - 1)
+                            {
+                                sb.Append(",");
+                            }
+                        }
+                    }
+                    sb.Append(")");
+                }
             }
 
             return sb.ToString();

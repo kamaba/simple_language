@@ -206,7 +206,8 @@ namespace SimpleLanguage
             {
                 Console.WriteLine("AOT export failed: " + ex.ToString());
             }
-            if (Environment.UserInteractive)
+            // Avoid blocking/crashing in non-interactive runners (e.g. CI, redirected stdin).
+            if (Environment.UserInteractive && !Console.IsInputRedirected)
             {
                 Console.WriteLine("Press any key to exit...");
                 Console.ReadKey();

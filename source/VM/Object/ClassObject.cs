@@ -44,7 +44,7 @@ namespace SimpleLanguage.VM
             typeId = (short)m_RuntimeType.runtimeClass.id;
             m_IRTemplateList = irmt.runtimeTemplateList;
 
-            m_MetaVariableList = isStatic ? m_RuntimeType.runtimeClass.staticIRMetaVariableList : m_RuntimeType.runtimeClass.localIRMetaVariableList;
+            m_MetaVariableList = isStatic ? m_RuntimeType.runtimeClass.staticIRMetaVariableList : m_RuntimeType.runtimeClass.nonStaticIRMetaVariableList;
             m_MemberObjectArray = new SObject[m_MetaVariableList.Count];
             m_MemberRuntimeTypeArray = new RuntimeType[m_MetaVariableList.Count];
             CreateDefine();

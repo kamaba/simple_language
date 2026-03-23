@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      RuntimeVM.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Reflection;
 using SimpleLanuageVM.Load;
 using SimpleLanguage.Parse;
+using System.Globalization;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -379,9 +380,81 @@ namespace SimpleLanguage.VM.Runtime
         private static object? ConvertInvokeArg(object? source, Type targetType)
         {
             if (source == null) return null;
+
+            // BridgeObject 参数落地（legacy bridge 路径也需要）
+            if (source is ClassObject co && IsBridgeObjectRuntime(co.runtimeClass))
+            {
+                if (TryExtractBridgeObjectPayload(co, out var payloadObj))
+                {
+                    if (payloadObj == null) return null;
+                    if (targetType == typeof(object)) return payloadObj;
+                    if (targetType == typeof(string))
+                        return payloadObj is string s ? s : payloadObj.ToString();
+                    if (targetType.IsInstanceOfType(payloadObj)) return payloadObj;
+
+                    if (payloadObj is string payloadStr)
+                    {
+                        if (targetType == typeof(int) && int.TryParse(payloadStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i))
+                            return i;
+                        if (targetType == typeof(long) && long.TryParse(payloadStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var l))
+                            return l;
+                        if (targetType == typeof(float) && float.TryParse(payloadStr, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var f))
+                            return f;
+                        if (targetType == typeof(double) && double.TryParse(payloadStr, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var d))
+                            return d;
+                        if (targetType == typeof(bool))
+                        {
+                            if (bool.TryParse(payloadStr, out var b)) return b;
+                            if (int.TryParse(payloadStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var bi)) return bi != 0;
+                        }
+                    }
+
+                    if (targetType.IsEnum)
+                    {
+                        try { return Enum.ToObject(targetType, payloadObj); } catch { /* ignore */ }
+                    }
+                    try { return Convert.ChangeType(payloadObj, targetType); } catch { /* ignore */ }
+                }
+            }
+
             if (targetType == typeof(object) || targetType.IsInstanceOfType(source)) return source;
             if (targetType.IsEnum) return Enum.ToObject(targetType, source);
             return Convert.ChangeType(source, targetType);
+        }
+
+        private static bool IsBridgeObjectRuntime(RuntimeClass? runtimeClass)
+        {
+            if (runtimeClass == null) return false;
+            var n = runtimeClass.name ?? string.Empty;
+            return n.EndsWith("BridgeObject", StringComparison.Ordinal) || n.Contains(".BridgeObject", StringComparison.Ordinal);
+        }
+
+        private static bool TryExtractBridgeObjectPayload(ClassObject co, out object? payloadObj)
+        {
+            payloadObj = null;
+            var rc = co.runtimeClass;
+            if (rc == null) return false;
+
+            var vars = rc.nonStaticIRMetaVariableList;
+            if (vars == null || vars.Count == 0) return false;
+
+            int index = -1;
+            for (int i = 0; i < vars.Count; i++)
+            {
+                var vn = vars[i]?.name ?? string.Empty;
+                if (string.Equals(vn, "type", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(vn, "_type", StringComparison.OrdinalIgnoreCase))
+                {
+                    index = i;
+                    break;
+                }
+            }
+            if (index < 0) index = 0;
+
+            var sv = default(SValue);
+            co.GetMemberVariableSValue(index, ref sv);
+            payloadObj = sv.GetValueObject();
+            return true;
         }
 
         private static RuntimeDefType? TryGetInstructionRuntimeDefType(Instruction iri)
@@ -907,7 +980,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             m_ValueStack[m_ValueIndex++].SetSObject(sobj);
 
-                            var irList = rt.runtimeClass.memberVariableSetValueList;
+                            var irList = rt.runtimeClass.nonStaticMemberVariableSetValueList;
                             if (irList.Count > 0)
                             {
                                 CLRVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
@@ -933,7 +1006,7 @@ namespace SimpleLanguage.VM.Runtime
                             var irc = rt.runtimeClass;
 
 
-                            var irList = rt.runtimeClass.memberVariableSetValueList;
+                            var irList = rt.runtimeClass.nonStaticMemberVariableSetValueList;
                             if (irList.Count > 0)
                             {
                                 CLRVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
@@ -959,6 +1032,9 @@ namespace SimpleLanguage.VM.Runtime
 
                             var rt = GetClassRuntimeType(rdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : rdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                             ArrayObject arr = new ArrayObject(rt, sval.int32Value);
+                            // NewArray opcode path should initialize only the backing storage.
+                            // Full CreateObject() may require runtime member types that are not guaranteed ready.
+                            arr.EnsureArrayStorageInitialized();
                             ObjectManager.AddClassObject(arr);
                             m_ValueStack[m_ValueIndex - 1].SetSObject(arr);
 

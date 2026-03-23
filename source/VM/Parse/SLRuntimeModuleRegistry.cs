@@ -42,14 +42,14 @@ namespace SimpleLanguage.Parse
             return rdt;
         }
 
-        public static void LoadFromPackage(SLModulePackage pkg)
+        public static void LoadFromPackage(SLPackageRootJson pkg)
         {
             if (pkg == null) throw new ArgumentNullException(nameof(pkg));
             Clear();
             AddFromPackage(pkg);
         }
 
-        public static void LoadFromPackages(IEnumerable<SLModulePackage> packages)
+        public static void LoadFromPackages(IEnumerable<SLPackageRootJson> packages)
         {
             if (packages == null) throw new ArgumentNullException(nameof(packages));
             Clear();
@@ -61,9 +61,9 @@ namespace SimpleLanguage.Parse
             }
         }
 
-        private static void AddFromPackage(SLModulePackage pkg)
+        private static void AddFromPackage(SLPackageRootJson pkg)
         {
-            // cache class packages from legacy root and/or each module node
+            // cache class packages from each module node
             void CacheClassList(List<SLClassPackage>? classList)
             {
                 if (classList == null) return;
@@ -75,7 +75,6 @@ namespace SimpleLanguage.Parse
                 }
             }
 
-            CacheClassList(pkg?.classList);
             if (pkg?.moduleList != null)
             {
                 for (int mi = 0; mi < pkg.moduleList.Count; mi++)
@@ -85,20 +84,9 @@ namespace SimpleLanguage.Parse
             }
 
             // Support moduleList outer shape: flatten modules to process methods and class lists
-            var modulesToProcess = new List<SLAssemblyPackage>();
-            if (pkg.moduleList != null && pkg.moduleList.Count > 0)
-            {
-                modulesToProcess.AddRange(pkg.moduleList);
-            }
-            else
-            {
-                // legacy: build an assembly package from top-level fields
-                var legacy = new SLAssemblyPackage(pkg.moduleName);
-                if (pkg.methodList != null) legacy.methodList.AddRange(pkg.methodList);
-                if (pkg.classList != null) legacy.classList.AddRange(pkg.classList);
-                if (pkg.globalStaticVariableList != null) legacy.globalStaticVariableList.AddRange(pkg.globalStaticVariableList);
-                modulesToProcess.Add(legacy);
-            }
+            var modulesToProcess = pkg?.moduleList != null
+                ? new List<SLModulePackage>(pkg.moduleList)
+                : new List<SLModulePackage>();
 
             // first pass: register all methods
             foreach (var module in modulesToProcess)
@@ -547,7 +535,7 @@ namespace SimpleLanguage.Parse
                     }
                     else
                     {
-                        rc.localIRMetaVariableList.Add(rv);
+                        rc.nonStaticIRMetaVariableList.Add(rv);
                     }
 
                     if (f.express != null && f.express.Count > 0)
@@ -557,7 +545,7 @@ namespace SimpleLanguage.Parse
                         {
                             foreach (var ins in insList)
                             {
-                                rc.memberVariableSetValueList.Add(ins);
+                                rc.nonStaticMemberVariableSetValueList.Add(ins);
                             }
                         }
                     }

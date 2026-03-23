@@ -480,6 +480,10 @@ namespace SimpleLanguage.Compile
                 typeNode = nodeList[0];
                 m_Token = nodeList[1].token;
             }
+            else
+            {
+                Debug.Assert(false);
+            }
 
             return !isError;
         }

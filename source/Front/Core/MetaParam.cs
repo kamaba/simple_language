@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      ClassManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -188,8 +188,7 @@ namespace SimpleLanguage.Core
                     if (relation == ClassManager.EClassRelation.Same
                         || relation == ClassManager.EClassRelation.Child
                         || relation == ClassManager.EClassRelation.Parent
-                        || relation == ClassManager.EClassRelation.Interface
-                        || relation == ClassManager.EClassRelation.Similar)
+                        || relation == ClassManager.EClassRelation.Interface )
                     {
                         return true;
                     }
@@ -464,7 +463,16 @@ namespace SimpleLanguage.Core
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < m_MetaDefineParamList.Count; i++)
             {
-                sb.Append(m_MetaDefineParamList[i].name );
+                // functionAllName/id generation must distinguish overloads.
+                // Previously we appended parameter *variable name* (often `_value` for many overloads),
+                // which caused different overloads to collide and only one IRMethod to survive.
+                // Use parameter *declared type* instead; fallback to variable name when type is unavailable.
+                var param = m_MetaDefineParamList[i];
+                var dt = param?.metaVariable?.defineMetaType;
+                if (dt != null)
+                    sb.Append(dt.ToString());
+                else
+                    sb.Append(param?.name ?? string.Empty);
                 if (i < m_MetaDefineParamList.Count - 1)
                     sb.Append("_");
             }

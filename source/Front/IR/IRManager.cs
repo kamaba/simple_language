@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -41,13 +41,17 @@ namespace SimpleLanguage.IR
             ParseClass();
 
             //代码定义的成员函数
-            //var mmfDict = MethodManager.instance.metaOriginalFunctionList;
-            //foreach (var v in mmfDict)
-            //{
-            //    v.UpdateFunctionName();
-            //    IRMethod irm = this.TranslateIRByFunction(v);
-            //    AddIRMethod(irm);
-            //}
+            // NOTE:
+            // DebugCode 的 IR 导出需要同时包含“源码定义的成员函数”和“动态解析出来的函数”。
+            // 之前仅翻译 metaDynamicFunctionList，导致 NativeBridge / BridgeKind 等类的同级函数缺失。
+            var mmfDict = MethodManager.instance.metaOriginalFunctionList;
+            foreach (var v in mmfDict)
+            {
+                // functionAllName / owner 等可能依赖解析后的状态
+                // v.UpdateFunctionName(); // 若当前版本无需更新，可保持注释
+                IRMethod irm = this.TranslateIRByFunction(v);
+                AddIRMethod(irm);
+            }
             //动态解析出来的函数
             var dynamicMmfDict4 = MethodManager.instance.metaDynamicFunctionList;
             foreach (var v in dynamicMmfDict4)
@@ -97,29 +101,44 @@ namespace SimpleLanguage.IR
                         AppendGlobalBindingList(sb, "  GlobalBindings", irClass, m_GlobalStaticVariableList);
                         sb.AppendLine();
 
-                        foreach (var methodKv in IRMethodDict)
-                        {
-                            var irMethod = methodKv.Value;
-                            if (irMethod == null || irMethod.irOwnerMetaClass == null)
+                            // Export methods based on the class's own resolved method lists.
+                            // This ensures derived classes show inherited/virtual methods correctly (e.g. BridgeKind should
+                            // show Byte's virtuals even when IR ownerMetaClass points to the base).
+                            var exported = new HashSet<string>(StringComparer.Ordinal);
+
+                            void ExportOneMethod(IRMethod irMethod)
                             {
-                                continue;
-                            }
-                            if (irMethod.irOwnerMetaClass != irClass)
-                            {
-                                continue;
+                                if (irMethod == null) return;
+                                if (string.IsNullOrEmpty(irMethod.id)) return;
+                                if (!exported.Add(irMethod.id)) return;
+
+                                sb.AppendLine("  Method: " + irMethod.id);
+                                sb.AppendLine("    VirtualName: " + irMethod.virtualFunctionName);
+                                sb.AppendLine("    Name: " + irMethod.onlyFunctionName);
+                                sb.AppendLine("    InterfaceMethod: " + irMethod.interfaceMethod);
+                                AppendIRVariableList(sb, "    Return", irMethod.methodReturnVariableList);
+                                AppendIRVariableList(sb, "    Arguments", irMethod.methodArgumentList);
+                                AppendIRVariableList(sb, "    Locals", irMethod.methodLocalVariableList);
+                                sb.AppendLine("    Instructions:");
+                                sb.Append(irMethod.ToIRString());
+                                sb.AppendLine();
                             }
 
-                            sb.AppendLine("  Method: " + irMethod.id);
-                            sb.AppendLine("    VirtualName: " + irMethod.virtualFunctionName);
-                            sb.AppendLine("    Name: " + irMethod.onlyFunctionName);
-                            sb.AppendLine("    InterfaceMethod: " + irMethod.interfaceMethod);
-                            AppendIRVariableList(sb, "    Return", irMethod.methodReturnVariableList);
-                            AppendIRVariableList(sb, "    Arguments", irMethod.methodArgumentList);
-                            AppendIRVariableList(sb, "    Locals", irMethod.methodLocalVariableList);
-                            sb.AppendLine("    Instructions:");
-                            sb.Append(irMethod.ToIRString());
-                            sb.AppendLine();
-                        }
+                            if (irClass.staticMethodList != null)
+                            {
+                                for (int m = 0; m < irClass.staticMethodList.Count; m++)
+                                    ExportOneMethod(irClass.staticMethodList[m]);
+                            }
+                            if (irClass.nonStaticMethodList != null)
+                            {
+                                for (int m = 0; m < irClass.nonStaticMethodList.Count; m++)
+                                    ExportOneMethod(irClass.nonStaticMethodList[m]);
+                            }
+                            if (irClass.operatorMethodList != null)
+                            {
+                                for (int m = 0; m < irClass.operatorMethodList.Count; m++)
+                                    ExportOneMethod(irClass.operatorMethodList[m]);
+                            }
                     }
 
                     sb.AppendLine("-------------------IR 文件显示 结束 : -----------------------");
@@ -208,7 +227,8 @@ namespace SimpleLanguage.IR
             for (int i = 0; i < globalList.Count; i++)
             {
                 var g = globalList[i];
-                if (g?.irMetaType?.irOwnerMetaClass != irClass) continue;
+                if (g?.irMetaType?.irOwnerMetaClass == null) continue;
+                if (!string.Equals(g.irMetaType.irOwnerMetaClass.irName, irClass.irName, StringComparison.Ordinal)) continue;
 
                 if (hit == 0)
                 {

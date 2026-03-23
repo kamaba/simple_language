@@ -30,7 +30,7 @@ namespace SimpleLanguage.VM
         //    return Parse(graph, args);
         //}
 
-        public static SLIRModuleParseResult? Parse( SLPackageGraph graph, string[] args)
+        public static SLIRModuleParseResult? Parse(SLPackageGraph graph, string[] args)
         {
             if (graph == null) return null;
 
@@ -45,7 +45,7 @@ namespace SimpleLanguage.VM
             var asmList = packageList.Select(p => SLIRJsonModuleLoader.BuildRuntimeModel(p)).ToList();
             var slAsm = asmList[asmList.Count - 1];
 
-            LoadBridgeMetadata(graph.rootDirectory);
+            //LoadBridgeMetadata(graph.rootDirectory);
 
             var (globalVarCount, globalInitCount) = InitializeGlobalVariables(asmList);
 
@@ -63,7 +63,7 @@ namespace SimpleLanguage.VM
             };
         }
 
-        private static void IntegrateConstStringDict(List<SLModulePackage> packageList)
+        private static void IntegrateConstStringDict(List<SLPackageRootJson> packageList)
         {
             var dict = new Dictionary<int, string>();
             if (packageList == null)
@@ -88,7 +88,6 @@ namespace SimpleLanguage.VM
                     }
                 }
 
-                MergeIrStrings(pkg.irStringDict);
                 if (pkg.moduleList != null)
                 {
                     for (int m = 0; m < pkg.moduleList.Count; m++)
@@ -101,22 +100,22 @@ namespace SimpleLanguage.VM
             SLAssembly.SetConstStringDict(dict);
         }
 
-        private static void LoadBridgeMetadata(string packageDirectory)
-        {
-            var bridgePath = Environment.GetEnvironmentVariable("SIMPLELANG_BRIDGE_JSON");
-            if (string.IsNullOrWhiteSpace(bridgePath))
-            {
-                if (!string.IsNullOrEmpty(packageDirectory))
-                {
-                    var guess = Path.Combine(packageDirectory, "ImportCSharpLang.json");
-                    if (File.Exists(guess)) bridgePath = guess;
-                }
-            }
-            if (!string.IsNullOrWhiteSpace(bridgePath) && File.Exists(bridgePath))
-            {
-                SimpleLanguage.VM.Runtime.CSharpBridgeRegistry.LoadFromJson(bridgePath);
-            }
-        }
+        //private static void LoadBridgeMetadata(string packageDirectory)
+        //{
+        //    var bridgePath = Environment.GetEnvironmentVariable("SIMPLELANG_BRIDGE_JSON");
+        //    if (string.IsNullOrWhiteSpace(bridgePath))
+        //    {
+        //        if (!string.IsNullOrEmpty(packageDirectory))
+        //        {
+        //            var guess = Path.Combine(packageDirectory, "ImportCSharpLang.json");
+        //            if (File.Exists(guess)) bridgePath = guess;
+        //        }
+        //    }
+        //    if (!string.IsNullOrWhiteSpace(bridgePath) && File.Exists(bridgePath))
+        //    {
+        //        SimpleLanguage.VM.Runtime.CSharpBridgeRegistry.LoadFromJson(bridgePath);
+        //    }
+        //}
 
         private static (int globalVariableCount, int globalInitInstructionCount) InitializeGlobalVariables(List<SLAssembly> assemblyList)
         {
@@ -222,7 +221,7 @@ namespace SimpleLanguage.VM
             }
             return result;
         }
-        private static string? ResolveEntryMethodId(SLModulePackage currentPkg, string[] args)
+        private static string? ResolveEntryMethodId(SLPackageRootJson currentRoot, string[] args)
         {
             var entryId = Environment.GetEnvironmentVariable("SIMPLELANG_ENTRY_METHOD");
             if (!string.IsNullOrWhiteSpace(entryId))
@@ -231,53 +230,41 @@ namespace SimpleLanguage.VM
             bool runTest = args != null && args.Any(a => string.Equals(a, "-test", StringComparison.OrdinalIgnoreCase));
             if (runTest)
             {
-                return FindMethodIdByName(currentPkg, "_test_");
+                return FindMethodIdByName(currentRoot, "_test_");
             }
 
-            if (!string.IsNullOrWhiteSpace(currentPkg.entryMethodId))
-                return currentPkg.entryMethodId;
-
-            return GetEntryAssemblyModule(currentPkg)?.entryMethodId;
-        }
-
-        /// <summary>Entry module: <see cref="SLModulePackage.entryModule"/> name match, else first module in <see cref="SLModulePackage.moduleList"/>.</summary>
-        private static SLAssemblyPackage? GetEntryAssemblyModule(SLModulePackage pkg)
-        {
-            if (pkg?.moduleList == null || pkg.moduleList.Count == 0) return null;
-            if (!string.IsNullOrWhiteSpace(pkg.entryModule))
+            // Canonical: select module by entryModule -> its entryMethodId.
+            if (!string.IsNullOrWhiteSpace(currentRoot.entryModule))
             {
-                for (int i = 0; i < pkg.moduleList.Count; i++)
+                for (int i = 0; i < currentRoot.moduleList.Count; i++)
                 {
-                    var m = pkg.moduleList[i];
-                    if (m != null && string.Equals(m.moduleName, pkg.entryModule, StringComparison.Ordinal))
-                        return m;
-                }
-            }
-
-            return pkg.moduleList[0];
-        }
-
-        /// <summary>Legacy root <see cref="SLModulePackage.methodList"/> first, then every module's method list.</summary>
-        private static string? FindMethodIdByName(SLModulePackage pkg, string methodName)
-        {
-            if (pkg.methodList != null)
-            {
-                foreach (var m in pkg.methodList)
-                {
-                    if (m != null && string.Equals(m.name, methodName, StringComparison.OrdinalIgnoreCase))
-                        return m.id;
-                }
-            }
-
-            if (pkg.moduleList != null)
-            {
-                foreach (var mod in pkg.moduleList)
-                {
-                    if (mod?.methodList == null) continue;
-                    foreach (var m in mod.methodList)
+                    var m = currentRoot.moduleList[i];
+                    if (m == null) continue;
+                    if (string.Equals(m.moduleName, currentRoot.entryModule, StringComparison.Ordinal))
                     {
-                        if (m != null && string.Equals(m.name, methodName, StringComparison.OrdinalIgnoreCase))
-                            return m.id;
+                        if (!string.IsNullOrWhiteSpace(m.entryMethodId))
+                            return m.entryMethodId;
+                    }
+                }
+            }
+
+            // Fallback: first module's entryMethodId.
+            return currentRoot.moduleList.Count > 0 ? currentRoot.moduleList[0]?.entryMethodId : null;
+        }
+
+        private static string? FindMethodIdByName(SLPackageRootJson root, string methodName)
+        {
+            if (root?.moduleList == null) return null;
+            for (int mi = 0; mi < root.moduleList.Count; mi++)
+            {
+                var mod = root.moduleList[mi];
+                if (mod?.methodList == null) continue;
+                for (int m = 0; m < mod.methodList.Count; m++)
+                {
+                    var mm = mod.methodList[m];
+                    if (mm != null && string.Equals(mm.name, methodName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return mm.id;
                     }
                 }
             }

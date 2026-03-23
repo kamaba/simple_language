@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      ArrayObject.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -31,7 +31,7 @@ namespace SimpleLanguage.VM
             typeId = (short)runtimeClass.id;
             m_IRTemplateList = rt.runtimeTemplateList;
 
-            m_MetaVariableList = runtimeClass.localIRMetaVariableList;
+            m_MetaVariableList = runtimeClass.nonStaticIRMetaVariableList;
             m_MemberObjectArray = new SObject[m_MetaVariableList.Count];
             m_MemberRuntimeTypeArray = new RuntimeType[m_MetaVariableList.Count];
             CreateDefine();
@@ -44,6 +44,17 @@ namespace SimpleLanguage.VM
 
             (this.m_MemberObjectArray[0] as Int32Object).SetValue(m_Length);
 
+            CreateArray();
+        }
+
+        /// <summary>
+        /// NewArray opcode path needs only the backing storage for StoreValue/GetValue.
+        /// Creating full object members (via CreateObject) may require runtime types
+        /// that are not guaranteed to be initialized yet.
+        /// </summary>
+        public void EnsureArrayStorageInitialized()
+        {
+            if (m_Array != null) return;
             CreateArray();
         }
         //public override void SetSValue(ClassObject val)
