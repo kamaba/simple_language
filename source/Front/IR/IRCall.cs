@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRCall.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -27,6 +27,54 @@ namespace SimpleLanguage.IR
         public IRCallFunction(IRMethod _irMethod) : base(_irMethod)
         {
         }
+        public void ParseSystemCall(MetaMethodCall mfc)
+        {
+            // Keep the same argument emission pipeline as regular calls.
+            IRMetaType irmt = null;
+            IRMetaClass owirmc = null;
+            if (mfc.loadMetaVariable != null)
+            {
+                owirmc = IRManager.instance.GetIRMetaClassById(mfc.loadMetaVariable.GetOwnerClassTemplateClass().GetHashCode());
+                irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mfc.loadMetaVariable.defineMetaType, owirmc);
+                IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, mfc.loadMetaVariable);
+                AddIRRangeData(irload.IRDataList);
+            }
+
+            paramCount = mfc.metaInputParamList.Count;
+            for (int j = 0; j < paramCount; j++)
+            {
+                IRExpressBase irexpress = IRExpressManager.CreateExpress(m_IRMethod, mfc.metaInputParamList[j]);
+                AddIRRangeData(irexpress.IRDataList);
+            }
+
+            var mf = mfc.GetTemplateMemberFunction();
+            if (mf != null && 
+                (mf.name == "CallCLRMethod" || mf.name == "CallNativeMethod" || mf.name == "CallJVMMethod") )
+            {
+                // arguments already emitted above (paramCount)
+                IRData datacall = new IRData();
+                if (mf.name == "CallCLRMethod") datacall.opCode = EIROpCode.CallCLRMethod;
+                else if (mf.name == "CallNativeMethod") datacall.opCode = EIROpCode.CallNativeMethod;
+                else datacall.opCode = EIROpCode.CallJVMMethod;
+
+                // store param count in index so VM knows how many values to pop
+                datacall.index = paramCount;
+                datacall.SetDebugInfoByToken(mf.pingToken);
+                AddIRData(datacall);
+                return;
+            }
+            string systemName = mf?.name ?? string.Empty;
+
+            IRData datacall2 = new IRData();
+            datacall2.opCode = EIROpCode.CallSystemMethod;
+            datacall2.index = paramCount;
+            datacall2.opValue = systemName;
+            if (mf != null)
+            {
+                datacall2.SetDebugInfoByToken(mf.pingToken);
+            }
+            AddIRData(datacall2);
+        }
         public void Parse(MetaMethodCall mfc)
         {
             IRMetaType irmt = null;
@@ -46,21 +94,7 @@ namespace SimpleLanguage.IR
                 AddIRRangeData(irexpress.IRDataList);
             }
             MetaFunction mf = mfc.GetTemplateMemberFunction();
-            // Special-case intrinsic bridge calls defined in Front library: CallCLRMethod/CallNativeMethod/CallJVMMethod
-            if (mf != null && (mf.name == "CallCLRMethod" || mf.name == "CallNativeMethod" || mf.name == "CallJVMMethod"))
-            {
-                // arguments already emitted above (paramCount)
-                IRData datacall = new IRData();
-                if (mf.name == "CallCLRMethod") datacall.opCode = EIROpCode.CallCLRMethod;
-                else if (mf.name == "CallNativeMethod") datacall.opCode = EIROpCode.CallNativeMethod;
-                else datacall.opCode = EIROpCode.CallJVMMethod;
-
-                // store param count in index so VM knows how many values to pop
-                datacall.index = paramCount;
-                datacall.SetDebugInfoByToken(mf.pingToken);
-                AddIRData(datacall);
-                return;
-            }
+            
             MetaMemberFunctionCSharp mmfcsharp = mf as MetaMemberFunctionCSharp;
             if (mmfcsharp != null)
             {

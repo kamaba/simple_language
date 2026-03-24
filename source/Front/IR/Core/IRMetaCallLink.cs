@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRMetaCallLink.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -102,7 +102,7 @@ namespace SimpleLanguage.Core.IR
             {
                 var mfc = cnode.methodCall;
                 IRCallFunction irCallFun = new IRCallFunction(_irMethod);
-                irCallFun.Parse(mfc);
+                irCallFun.ParseSystemCall(mfc);
                 irList.Add(irCallFun);
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.NewConst)

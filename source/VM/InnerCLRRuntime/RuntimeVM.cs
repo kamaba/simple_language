@@ -442,8 +442,8 @@ namespace SimpleLanguage.VM.Runtime
             for (int i = 0; i < vars.Count; i++)
             {
                 var vn = vars[i]?.name ?? string.Empty;
-                if (string.Equals(vn, "type", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(vn, "_type", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(vn, "valuetype", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(vn, "_valuetype", StringComparison.OrdinalIgnoreCase))
                 {
                     index = i;
                     break;
@@ -454,6 +454,78 @@ namespace SimpleLanguage.VM.Runtime
             var sv = default(SValue);
             co.GetMemberVariableSValue(index, ref sv);
             payloadObj = sv.GetValueObject();
+            return true;
+        }
+
+        private static object? NormalizeLegacyBridgeArg(ref SValue sv)
+        {
+            var raw = sv.GetValueObject();
+            // Use object-target conversion so BridgeObject payload is extracted to CLR-friendly value.
+            return ConvertInvokeArg(raw, typeof(object));
+        }
+
+        private static bool TryBuildInvokeArgsForMethod(MethodInfo mi, object[] argsClr, out object?[] invokeArgs, out int score)
+        {
+            score = 0;
+            var pars = mi.GetParameters();
+            invokeArgs = new object?[pars.Length];
+            if (pars.Length != argsClr.Length) return false;
+
+            for (int i = 0; i < pars.Length; i++)
+            {
+                var pType = pars[i].ParameterType;
+                var raw = argsClr[i];
+
+                if (raw == null)
+                {
+                    bool canNull = !pType.IsValueType || Nullable.GetUnderlyingType(pType) != null;
+                    if (!canNull) return false;
+                    invokeArgs[i] = null;
+                    score += 1;
+                    continue;
+                }
+
+                var rawType = raw.GetType();
+                if (rawType == pType)
+                {
+                    invokeArgs[i] = raw;
+                    score += 4;
+                    continue;
+                }
+                if (pType.IsAssignableFrom(rawType))
+                {
+                    invokeArgs[i] = raw;
+                    score += 3;
+                    continue;
+                }
+
+                try
+                {
+                    var converted = ConvertInvokeArg(raw, pType);
+                    if (converted == null)
+                    {
+                        bool canNull = !pType.IsValueType || Nullable.GetUnderlyingType(pType) != null;
+                        if (!canNull) return false;
+                        invokeArgs[i] = null;
+                        score += 1;
+                        continue;
+                    }
+
+                    if (pType.IsInstanceOfType(converted) || converted.GetType() == pType)
+                    {
+                        invokeArgs[i] = converted;
+                        score += 2;
+                        continue;
+                    }
+
+                    return false;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
 
@@ -530,14 +602,14 @@ namespace SimpleLanguage.VM.Runtime
                 values[i] = m_ValueStack[--m_ValueIndex];
             }
 
-            string namespaceName = values.Length > 1 ? values[1].GetValueObject()?.ToString() ?? string.Empty : string.Empty;
-            string className = values.Length > 2 ? values[2].GetValueObject()?.ToString() ?? string.Empty : string.Empty;
-            string methodName = values.Length > 3 ? values[3].GetValueObject()?.ToString() ?? string.Empty : string.Empty;
+            string namespaceName = values.Length > 1 ? values[0].GetValueObject()?.ToString() ?? string.Empty : string.Empty;
+            string className = values.Length > 2 ? values[1].GetValueObject()?.ToString() ?? string.Empty : string.Empty;
+            string methodName = values.Length > 3 ? values[2].GetValueObject()?.ToString() ?? string.Empty : string.Empty;
 
             object[] argsClr = Array.Empty<object>();
-            if (values.Length > 5)
+            if (values.Length == 5)
             {
-                var arr = values[5];
+                var arr = values[4];
                 if (arr.eType == EVMType.Array && arr.sobject is ArrayObject aobj)
                 {
                     int len = aobj.length;
@@ -546,12 +618,13 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         var temp = default(SValue);
                         aobj.LoadValue(j, ref temp);
-                        argsClr[j] = temp.GetValueObject();
+                        argsClr[j] = NormalizeLegacyBridgeArg(ref temp);
                     }
                 }
                 else
                 {
-                    argsClr = new object[] { values[5].GetValueObject() };
+                    var single = values[5];
+                    argsClr = new object[] { NormalizeLegacyBridgeArg(ref single) };
                 }
             }
 
@@ -581,13 +654,36 @@ namespace SimpleLanguage.VM.Runtime
                     return true;
                 }
 
+                int bestScore = int.MinValue;
+                object?[]? bestInvokeArgs = null;
                 foreach (var mi2 in t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance))
                 {
                     if (mi2.Name != methodName) continue;
-                    var pis = mi2.GetParameters();
-                    if (pis.Length != argsClr.Length) continue;
-                    miFound = mi2;
-                    break;
+                    if (TryBuildInvokeArgsForMethod(mi2, argsClr, out var candidateArgs, out var score))
+                    {
+                        if (score > bestScore)
+                        {
+                            bestScore = score;
+                            miFound = mi2;
+                            bestInvokeArgs = candidateArgs;
+                        }
+                    }
+                }
+
+                if (miFound != null && bestInvokeArgs != null)
+                {
+                    if (!miFound.IsStatic)
+                    {
+                        Debug.Assert(false, $"{callName}: instance methods not supported in bridge");
+                        return true;
+                    }
+                    var ret2 = miFound.Invoke(null, bestInvokeArgs);
+                    if (miFound.ReturnType != typeof(void))
+                    {
+                        var sv2 = SValue.FromClrObject(ret2);
+                        PushSValueSynced(sv2);
+                    }
+                    return true;
                 }
             }
 
@@ -597,12 +693,10 @@ namespace SimpleLanguage.VM.Runtime
                 return true;
             }
 
-            var pars = miFound.GetParameters();
-            object?[] invokeArgs = new object?[pars.Length];
-            for (int k = 0; k < pars.Length; k++)
+            if (!TryBuildInvokeArgsForMethod(miFound, argsClr, out var invokeArgs, out _))
             {
-                var raw = k < argsClr.Length ? argsClr[k] : null;
-                invokeArgs[k] = ConvertInvokeArg(raw, pars[k].ParameterType);
+                Debug.Assert(false, $"{callName}: method signature mismatch " + methodName);
+                return true;
             }
 
             if (!miFound.IsStatic)
@@ -619,6 +713,39 @@ namespace SimpleLanguage.VM.Runtime
             }
 
             return true;
+        }
+
+        private bool TryInvokeSystemCallByName(Instruction iri)
+        {
+            string callName = string.Empty;
+            if (!iri.TryGetString(out callName) || string.IsNullOrWhiteSpace(callName))
+            {
+                callName = iri.opValue?.ToString() ?? string.Empty;
+            }
+
+            if (string.IsNullOrWhiteSpace(callName))
+            {
+                Debug.Assert(false, "CallSystemMethod missing function name");
+                return false;
+            }
+
+            // Each system function can have unique VM logic.
+            // Keep existing bridge handlers as the default implementation.
+            switch (callName)
+            {
+                case "CallCLRMethod":
+                    if (TryInvokeRegisteredBridgeByIndex(iri)) return true;
+                    return TryInvokeLegacyBridgeSignature(iri, callName);
+                case "CallNativeMethod":
+                    if (TryInvokeRegisteredBridgeByIndex(iri)) return true;
+                    return TryInvokeLegacyBridgeSignature(iri, callName);
+                case "CallJVMMethod":
+                    if (TryInvokeRegisteredBridgeByIndex(iri)) return true;
+                    return TryInvokeLegacyBridgeSignature(iri, callName);
+                default:
+                    Debug.Assert(false, "Unknown system function: " + callName);
+                    return false;
+            }
         }
 
         public void RunInstruction(Instruction iri)
@@ -1203,11 +1330,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.CallCLRMethod:
                     {
-                        if (iri.opValue is RuntimeCLRCall ircf)
-                        {
-                            ircf.InvokeCLRMethod(this);
-                        }
-                        else if (!TryInvokeRegisteredBridgeByIndex(iri))
+                        if (!TryInvokeRegisteredBridgeByIndex(iri))
                         {
                             TryInvokeLegacyBridgeSignature(iri, "CallCLRMethod");
                         }
@@ -1234,6 +1357,11 @@ namespace SimpleLanguage.VM.Runtime
                                 Debug.Assert(false, "CallJVMMethod is not configured");
                             }
                         }
+                    }
+                    break;
+                case EIROpCode.CallSystemMethod:
+                    {
+                        TryInvokeSystemCallByName(iri);
                     }
                     break;
                 case EIROpCode.CallStatic:

@@ -135,6 +135,52 @@ namespace SimpleLanguage.Core
                 m_IsRecieveReturnValue = m_StoreMetaVariable != null;
             }
         }
+
+        public MetaMethodCall(MetaClass ownerClass, MetaBlockStatements ownerMBS, MetaFunction _fun, List<MetaType> mpipList, MetaInputParamCollection _paramCollection )
+        {
+            m_OwnerMetaClass = ownerClass;
+            m_OwnerMetaBlockStatements = ownerMBS;
+            m_InputParamCollectionForDebug = _paramCollection;
+            m_VMCallMetaFunction = _fun;
+            MetaMemberFunction mmf = _fun as MetaMemberFunction;
+            //m_MetaInputParamList = _param;
+            if (mpipList != null)
+            {
+                this.m_MetaFunctionInputTemplateList = mpipList;
+            }
+
+            List<MetaDefineParam> mpList = new();
+            if (m_VMCallMetaFunction?.metaMemberParamCollection != null)
+            {
+                mpList = m_VMCallMetaFunction.metaMemberParamCollection.metaDefineParamList;
+            }
+            int inputCount = _paramCollection != null ? _paramCollection.metaInputParamList.Count : 0;
+
+            for (int i = 0; i < inputCount; i++)
+            {
+                if (i < inputCount)
+                {
+                    MetaInputParam mip = _paramCollection.metaInputParamList[i];
+                    m_MetaInputParamList.Add(mip.express);
+                }
+                else
+                {
+                    MetaDefineParam mdp = mpList[i];
+                    if (mdp != null)
+                    {
+                        m_MetaInputParamList.Add(mdp.expressNode);
+                    }
+                }
+            }
+            if (m_VMCallMetaFunction?.returnMetaVariable?.defineMetaType?.metaClass?.eType == EType.Void)
+            {
+                m_IsRecieveReturnValue = true;
+            }
+            else
+            {
+                m_IsRecieveReturnValue = m_StoreMetaVariable != null;
+            }
+        }
         public void SetDebugInputParTermText(string? text)
         {
             m_DebugInputParTermText = text;

@@ -493,13 +493,9 @@ namespace SimpleLanguage.Core
                     if (string.IsNullOrEmpty(debugParTermText))
                         debugParTermText = frontNode?.fileMetaParTerm?.ToFormatString();
                     mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock,
-                        mcn.callMetaType?.metaClass,
-                        mcn.callMetaType?.defineTemplateMetaTypeList,
                         mcn.metaFunction,
                         mcn.metaTemplateParamsList,
-                        paramCollection,
-                        retmv,
-                        mcn.storeMetaVariable);
+                        paramCollection );
                     mmc.SetDebugInputParTermText(debugParTermText);
 
                     MetaVisitNode mvn2 = MetaVisitNode.CreateBySystemCall(mmc);

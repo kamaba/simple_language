@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IROpEnum.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -125,6 +125,7 @@ namespace SimpleLanguage.VM
         CallCLRMethod,
         CallNativeMethod,
         CallJVMMethod,
+        CallSystemMethod,
         CastClass,
 
         Convert_I8,
