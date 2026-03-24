@@ -1583,6 +1583,10 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             irc = RuntimeClassManager.instance.GetRuntimeClassByName( "Core." + v.eType.ToString());
                             rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irc);
+                            if( rt == null )
+                            {
+                                rt = RuntimeTypeManager.AddRuntimeTypeByClass(irc);
+                            }
                         }
                         if (irc == null)
                         {

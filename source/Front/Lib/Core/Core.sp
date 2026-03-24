@@ -27,7 +27,6 @@ Project
         "SetArrayValueThis", retObj, paramObjs );
         !#
         a = 2 + 4
-        b = a + a
 
         global.print(a.toString())
     }
