@@ -782,7 +782,7 @@ namespace SimpleLanguage.VM.Runtime
                         PushSValueSynced(v);
                     }
                     break;
-                case EIROpCode.LocalGlobal:
+                case EIROpCode.LoadGlobal:
                     {
                         var data = iri.index;
                         var v = default(SValue);

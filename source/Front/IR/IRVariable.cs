@@ -134,7 +134,7 @@ namespace SimpleLanguage.IR
         {
             if( irmvf == IRMetaVariableFrom.Global )
             {
-                m_LoadVarData.opCode = EIROpCode.LocalGlobal;
+                m_LoadVarData.opCode = EIROpCode.LoadGlobal;
                 m_LoadVarData.index = id;
                 m_IRDataList.Add(m_LoadVarData);
             }

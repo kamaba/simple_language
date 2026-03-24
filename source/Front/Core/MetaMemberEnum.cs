@@ -18,7 +18,7 @@ namespace SimpleLanguage.Core
         private bool isExplicitAssign => m_IsExplicitAssign;
         private bool m_IsExplicitAssign = false;
 
-        public MetaMemberEnum(MetaClass mc, FileMetaMemberVariable fmmv, MetaClass extendClass ) : base()
+        public MetaMemberEnum(MetaClass mc, FileMetaMemberVariable fmmv, MetaClass extendClass, bool parentIsConst ) : base()
         {
             m_FileMetaMemeberVariable = fmmv;
             m_Name = fmmv.name;
@@ -39,19 +39,32 @@ namespace SimpleLanguage.Core
             {
                 SetIsDefineMetaType(true);
             }
-            // enum value 强制为 const（即使写了 mut）
-            m_IsConst = true;
-            m_IsStatic = false;
-            m_VariableFrom = EVariableFrom.Member;
-            if (fmmv.mutToken != null)
+            // 成员语义：如果枚举本身声明为 const，则成员均视为 const；否则成员视为 static
+            if (parentIsConst)
             {
-                //Log.AddInStructMeta(EError.None, "Error Enum中，不允许使用mut关键字，枚举值会被强制为const!!");
+                m_IsConst = true;
+                m_IsStatic = false;
+            }
+            else
+            {
                 m_IsConst = false;
                 m_IsStatic = true;
             }
+            m_VariableFrom = EVariableFrom.Member;
+            if (fmmv.mutToken != null)
+            {
+                if (parentIsConst)
+                {
+                    Log.AddInStructMeta(EError.None, "Warning Enum 中声明为 const 时，成员不能使用 mut，成员仍视为 const");
+                }
+                else
+                {
+                    Log.AddInStructMeta(EError.None, "Warning Enum 成员使用 mut，枚举成员语义仍由枚举定义决定（默认为 static）");
+                }
+            }
             if (fmmv.staticToken != null)
             {
-                Log.AddInStructMeta(EError.None, "Error Enum中，不允许使用static关键字，枚举值的静态语义由系统处理!!");
+                Log.AddInStructMeta(EError.None, "Error Enum 中不允许使用 static 关键字，枚举值的静态语义由系统处理!!");
             }
 
             if (string.IsNullOrEmpty(m_Name))

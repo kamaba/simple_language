@@ -234,7 +234,13 @@ namespace SimpleLanguage.IR
                         && !string.IsNullOrEmpty(this.m_SourcePath)
                         && this.m_SourcePath.EndsWith(".sp", System.StringComparison.OrdinalIgnoreCase);
 
-                    if (isProjectLikeClass || v.realMetaType.GenTemplateIsIncludeTemplate())
+                    // const 成员需要进入 globalStaticVariableList，由 VM 在全局阶段初始化（与「非 Project/非模板静态」路径一致）。
+                    // 若同时放进 staticIRMetaVariableList，会与全局初始化重复。
+                    if (v.isConst)
+                    {
+                        IRManager.instance.AddGlobalMetaMemberVariable(irmv);
+                    }
+                    else if (isProjectLikeClass || v.realMetaType.GenTemplateIsIncludeTemplate())
                     {
                         m_StaticIRMetaVariableList.Add(irmv);
                         AddMetaMemberVariableIndexBindHashCode(v.GetHashCode(), i);

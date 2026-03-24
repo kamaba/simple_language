@@ -35,7 +35,7 @@ namespace SimpleLanguage
         LoadArrayIndex,          //数组类成员获取
         LoadArrayIndexField,
         LoadStaticField,
-        LocalGlobal,
+        LoadGlobal,
         
         ClassInit,
 

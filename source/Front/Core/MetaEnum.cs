@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaEnum.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -114,7 +114,9 @@ namespace SimpleLanguage.Core
                 }
                 else
                     isHave = false;
-                MetaMemberEnum mmv = new MetaMemberEnum(this, v, this.extendClass);
+                // 如果类定义前带有 const，则传递父级 const 标志，使内部成员默认视为 const
+                bool parentIsConst = fmc.isConst;
+                MetaMemberEnum mmv = new MetaMemberEnum(this, v, this.extendClass, parentIsConst);
                 if (isHave)
                 {
                     mmv.SetName(mmv.name + "__repeat__");
@@ -203,16 +205,19 @@ namespace SimpleLanguage.Core
                     }
                     if (mme.express != null)
                     {
+                        // explicit assignment must be parsed first, so constExpressNode can be used
+                        mme.ParseMetaExpress();
                         if (mme.constExpressNode == null)
                         {
                             Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内允许使用const值类变量");
                             continue;
                         }
-                        else if (m_ExtendClass == CoreMetaClassManager.byteMetaClass)
+                        dynamic explicitValue = 0;
+                        if (m_ExtendClass == CoreMetaClassManager.byteMetaClass)
                         {
                             try
                             {
-                                indexdynamic = Convert.ToByte(v.Value.constExpressNode.value);
+                                explicitValue = Convert.ToByte(v.Value.constExpressNode.value);
                             }
                             catch (Exception ex)
                             {
@@ -225,7 +230,20 @@ namespace SimpleLanguage.Core
                         {
                             try
                             {
-                                indexdynamic = (sbyte)Convert.ToByte(v.Value.constExpressNode.value);
+                                explicitValue = (sbyte)Convert.ToByte(v.Value.constExpressNode.value);
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内部int转byte出错");
+                                continue;
+                            }
+                        }
+                        else
+                        if (m_ExtendClass == CoreMetaClassManager.int16MetaClass)
+                        {
+                            try
+                            {
+                                explicitValue = (short)Convert.ToInt16(v.Value.constExpressNode.value);
                             }
                             catch (Exception ex)
                             {
@@ -238,20 +256,7 @@ namespace SimpleLanguage.Core
                         {
                             try
                             {
-                                indexdynamic = (short)Convert.ToInt16(v.Value.constExpressNode.value);
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内部int转byte出错");
-                                continue;
-                            }
-                        }
-                        else
-                        if (m_ExtendClass == CoreMetaClassManager.uint16MetaClass)
-                        {
-                            try
-                            {
-                                indexdynamic = (ushort)Convert.ToInt16(v.Value.constExpressNode.value);
+                                explicitValue = (ushort)Convert.ToUInt16(v.Value.constExpressNode.value);
                             }
                             catch (Exception ex)
                             {
@@ -264,7 +269,7 @@ namespace SimpleLanguage.Core
                         {
                             try
                             {
-                                indexdynamic = (int)Convert.ToInt32(v.Value.constExpressNode.value);
+                                explicitValue = (int)Convert.ToInt32(v.Value.constExpressNode.value);
                             }
                             catch (Exception ex)
                             {
@@ -277,7 +282,7 @@ namespace SimpleLanguage.Core
                         {
                             try
                             {
-                                indexdynamic = (uint)Convert.ToInt32(v.Value.constExpressNode.value);
+                                explicitValue = (uint)Convert.ToUInt32(v.Value.constExpressNode.value);
                             }
                             catch (Exception ex)
                             {
@@ -288,14 +293,16 @@ namespace SimpleLanguage.Core
                         else
                         if (m_ExtendClass == CoreMetaClassManager.int64MetaClass)
                         {
-                            indexdynamic = (long)v.Value.constExpressNode.value;
+                            explicitValue = (long)Convert.ToInt64(v.Value.constExpressNode.value);
                         }
                         else
                         if (m_ExtendClass == CoreMetaClassManager.uint64MetaClass)
                         {
-                            indexdynamic = (ulong)v.Value.constExpressNode.value;
+                            explicitValue = (ulong)Convert.ToUInt64(v.Value.constExpressNode.value);
                         }
 
+                        // prepare next implicit enum value
+                        indexdynamic = explicitValue + 1;
                     }
                     else
                     {
