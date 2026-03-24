@@ -149,7 +149,8 @@ namespace SimpleLanguage.VM
                 {
                     if (gv.express != null && gv.express.Count > 0)
                     {
-                        allGlobalInitInstructions.AddRange(ConvertToVMInstructionList(gv.express));
+                        Instruction.UnpackPayloadsFromJson(gv.express);
+                        allGlobalInitInstructions.AddRange(gv.express);
                         allGlobalInitInstructions.Add(new Instruction
                         {
                             opCode = EIROpCode.StoreGlobal,
@@ -180,7 +181,8 @@ namespace SimpleLanguage.VM
                         if (!globalFieldIdMap.TryGetValue($"{cls.id}:{field.index}", out var gid)) continue;
                         if (initializedGlobalIds.Contains(gid)) continue;
 
-                        allGlobalInitInstructions.AddRange(ConvertToVMInstructionList(field.express));
+                        Instruction.UnpackPayloadsFromJson(field.express);
+                        allGlobalInitInstructions.AddRange(field.express);
                         allGlobalInitInstructions.Add(new Instruction
                         {
                             opCode = EIROpCode.StoreGlobal,
@@ -199,28 +201,6 @@ namespace SimpleLanguage.VM
             return (globalVarCount, allGlobalInitInstructions.Count);
         }
 
-        internal static List<SimpleLanguage.VM.Instruction> ConvertToVMInstructionList(List<SLIRInstructionPackage> list)
-        {
-            var result = new List<SimpleLanguage.VM.Instruction>(list?.Count ?? 0);
-            if (list == null) return result;
-            foreach (var d in list)
-            {
-                var opCode = (SimpleLanguage.VM.EIROpCode)d.opCode;
-                // Keep read/write symmetry with Front JSON: prefer explicit runtimeCall when present.
-                object? opValue = d.runtimeCall ?? d.opValue;
-                var ins = new SimpleLanguage.VM.Instruction
-                {
-                    id = d.id,
-                    opCode = opCode,
-                    opValue = opValue,
-                    Payload = d.payload,
-                    ByteLength = d.byteLength,
-                    index = d.index,
-                };
-                result.Add(ins);
-            }
-            return result;
-        }
         private static string? ResolveEntryMethodId(SLPackageRootJson currentRoot, string[] args)
         {
             var entryId = Environment.GetEnvironmentVariable("SIMPLELANG_ENTRY_METHOD");

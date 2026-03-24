@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRMethod.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -8,83 +8,111 @@
 
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using SimpleLanuageVM.Load;
 
 namespace SimpleLanguage.VM
 {
     public class DebugInfo
     {
-        public string path = "";
-        public int beginLine = 0;
-        public int beginChar = 0;
-        public int endLine = 0;
-        public int endChar = 0;
+        [JsonInclude] public string path = "";
+        [JsonInclude] public int beginLine = 0;
+        [JsonInclude] public int beginChar = 0;
+        [JsonInclude] public int endLine = 0;
+        [JsonInclude] public int endChar = 0;
     }
     public class Instruction
     {
-        public int id = 0;
-        public EIROpCode opCode;                 //指令类型
-        // 指令原始对象值（兼容旧代码）
-        // 注释掉直接使用 opValue，优先使用 Payload 以便导出/打包。保留字段以便调试。
-        //public object    opValue;                //指令值
+        [JsonInclude] public int id = 0;
+        [JsonInclude] public EIROpCode opCode;                 //指令类型
+        // 与 Front 的 IRData 一致：单一存储 _opValue，经 SetOpValue 同步到 Payload。
         private object _opValue;
-        public object opValue;
+        public object opValue { get => _opValue; set => SetOpValue(value); }
+
         // 序列化后的原始数据（仅用于值类型或需要内嵌的常量）
-        public byte[] Payload = null;
+        [JsonInclude] public byte[] Payload = null;
         // 当前 IRData 的字节长度（包括 Payload 的长度）——用于导出序列化时参考
-        public int ByteLength = 0;
-        public int index;                  //索引
-        public DebugInfo debugInfo;              //调试信息
+        [JsonInclude] public int ByteLength = 0;
+        /// <summary>Byte offset in the serialized instruction stream (IR/export).</summary>
+        [JsonInclude] public int offset = 0;
+        [JsonInclude] public int index;                  //索引
+        [JsonInclude] public DebugInfo debugInfo;              //调试信息
 
         public Instruction()
         {
 
         }
 
+        /// <summary>设置 opValue 并同步写入 Payload / ByteLength（与 IRData.SetOpValue 对称）。</summary>
+        public void SetOpValue(object? v)
+        {
+            _opValue = v;
+            PackOpValue();
+            UpdateByteLength();
+        }
+
         // 将基础值类型序列化到 Payload（仅支持常见原始类型和字符串）
         private void PackOpValue()
         {
             Payload = null;
-            if (opValue == null) return;
+            if (_opValue == null) return;
 
-            switch (Type.GetTypeCode(opValue.GetType()))
+            if (_opValue is JsonElement je)
+            {
+                Payload = Encoding.UTF8.GetBytes(je.GetRawText());
+                return;
+            }
+
+            if (_opValue is SLRuntimeCallPackage callPkg)
+            {
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(callPkg));
+                return;
+            }
+
+            if (_opValue is SLRuntimeDefTypePackage typePkg)
+            {
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(typePkg));
+                return;
+            }
+
+            switch (Type.GetTypeCode(_opValue.GetType()))
             {
                 case TypeCode.Boolean:
-                    Payload = BitConverter.GetBytes((bool)opValue);
+                    Payload = BitConverter.GetBytes((bool)_opValue);
                     break;
                 case TypeCode.Byte:
-                    Payload = new byte[] { (byte)opValue };
+                    Payload = new byte[] { (byte)_opValue };
                     break;
                 case TypeCode.SByte:
-                    Payload = new byte[] { (byte)((sbyte)opValue) };
+                    Payload = new byte[] { (byte)((sbyte)_opValue) };
                     break;
                 case TypeCode.Int16:
-                    Payload = BitConverter.GetBytes((short)opValue);
+                    Payload = BitConverter.GetBytes((short)_opValue);
                     break;
                 case TypeCode.UInt16:
-                    Payload = BitConverter.GetBytes((ushort)opValue);
+                    Payload = BitConverter.GetBytes((ushort)_opValue);
                     break;
                 case TypeCode.Int32:
-                    Payload = BitConverter.GetBytes((int)opValue);
+                    Payload = BitConverter.GetBytes((int)_opValue);
                     break;
                 case TypeCode.UInt32:
-                    Payload = BitConverter.GetBytes((uint)opValue);
+                    Payload = BitConverter.GetBytes((uint)_opValue);
                     break;
                 case TypeCode.Int64:
-                    Payload = BitConverter.GetBytes((long)opValue);
+                    Payload = BitConverter.GetBytes((long)_opValue);
                     break;
                 case TypeCode.UInt64:
-                    Payload = BitConverter.GetBytes((ulong)opValue);
+                    Payload = BitConverter.GetBytes((ulong)_opValue);
                     break;
                 case TypeCode.Single:
-                    Payload = BitConverter.GetBytes((float)opValue);
+                    Payload = BitConverter.GetBytes((float)_opValue);
                     break;
                 case TypeCode.Double:
-                    Payload = BitConverter.GetBytes((double)opValue);
+                    Payload = BitConverter.GetBytes((double)_opValue);
                     break;
                 case TypeCode.String:
                     {
-                        var b = Encoding.UTF8.GetBytes((string)opValue);
+                        var b = Encoding.UTF8.GetBytes((string)_opValue);
                         // store raw bytes (no length prefix here; exporter can add metadata)
                         Payload = b;
                     }
@@ -362,6 +390,15 @@ namespace SimpleLanguage.VM
 
             return false;
         }
+
+        /// <summary>JSON 只写入 Payload 时，将常量等从 Payload 还原到 opValue（与 IRData.UnpackOpValueFromPayload 对称）。</summary>
+        public static void UnpackPayloadsFromJson(IEnumerable<Instruction?>? list)
+        {
+            if (list == null) return;
+            foreach (var ins in list)
+                ins?.UnpackOpValueFromPayload();
+        }
+
         //public void SetDebugInfoByValue(DebugInfo info)
         //{
         //    debugInfo = info;

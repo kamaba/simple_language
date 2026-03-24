@@ -202,9 +202,7 @@ namespace SimpleLanguage.Export.SLIR
                             foreach (var d in v.irDataList)
                             {
                                 if (d == null) continue;
-                                var rawOpValue = d.opValue;
-                                try { d.FinalizePack(); } catch { }
-                                fieldPkgLocal.express.Add(CreateInstructionPackage(d, rawOpValue));
+                                fieldPkgLocal.express.Add(CreateInstructionPackage(d));
                             }
                         }
                         else
@@ -223,9 +221,7 @@ namespace SimpleLanguage.Export.SLIR
                                             foreach (var d in iex.IRDataList)
                                             {
                                                 if (d == null) continue;
-                                                var rawOpValue = d.opValue;
-                                                try { d.FinalizePack(); } catch { }
-                                                fieldPkgLocal.express.Add(CreateInstructionPackage(d, rawOpValue));
+                                                fieldPkgLocal.express.Add(CreateInstructionPackage(d));
                                             }
                                         }
                                     }
@@ -253,9 +249,7 @@ namespace SimpleLanguage.Export.SLIR
                             foreach (var d in v.irDataList)
                             {
                                 if (d == null) continue;
-                                var rawOpValue = d.opValue;
-                                try { d.FinalizePack(); } catch { }
-                                fieldPkgStatic.express.Add(CreateInstructionPackage(d, rawOpValue));
+                                fieldPkgStatic.express.Add(CreateInstructionPackage(d));
                             }
                         }
                         else
@@ -274,9 +268,7 @@ namespace SimpleLanguage.Export.SLIR
                                             foreach (var d in iex.IRDataList)
                                             {
                                                 if (d == null) continue;
-                                                var rawOpValue = d.opValue;
-                                                try { d.FinalizePack(); } catch { }
-                                                fieldPkgStatic.express.Add(CreateInstructionPackage(d, rawOpValue));
+                                                fieldPkgStatic.express.Add(CreateInstructionPackage(d));
                                             }
                                         }
                                     }
@@ -328,9 +320,7 @@ namespace SimpleLanguage.Export.SLIR
                         foreach (var d in irListForExpr)
                         {
                             if (d == null) continue;
-                            var rawOpValue = d.opValue;
-                            try { d.FinalizePack(); } catch { }
-                            gsp.express.Add(CreateInstructionPackage(d, rawOpValue));
+                            gsp.express.Add(CreateInstructionPackage(d));
                         }
                     }
 
@@ -410,11 +400,7 @@ namespace SimpleLanguage.Export.SLIR
                         var d = code[i];
                         if (d == null) continue;
 
-                        // Ensure payload is ready.
-                        var rawOpValue = d.opValue;
-                        try { d.FinalizePack(); } catch { }
-
-                        mp.instructionList.Add(CreateInstructionPackage(d, rawOpValue));
+                        mp.instructionList.Add(CreateInstructionPackage(d));
                     }
                 }
 
@@ -507,107 +493,23 @@ namespace SimpleLanguage.Export.SLIR
             return flags;
         }
 
-        private static SLIRInstructionPackage CreateInstructionPackage(IRData d, object? rawOpValue = null)
+        /// <summary>
+        /// Copies packed <see cref="IRData"/> to the JSON wire DTO (VM loads the same JSON into <c>Instruction</c>).
+        /// </summary>
+        private static SLIRInstructionPackage CreateInstructionPackage(IRData d)
         {
-            var sourceOpValue = rawOpValue ?? d.opValue;
-            var pkg = new SLIRInstructionPackage
+            if (d == null) throw new ArgumentNullException(nameof(d));
+            try { d.FinalizePack(); } catch { /* best-effort */ }
+
+            return new SLIRInstructionPackage
             {
                 id = d.id,
                 opCode = (byte)d.opCode,
-                opValue = sourceOpValue is string s ? s : null,
-                payload = d.Payload,
                 index = d.index,
-                byteLength = d.ByteLength,
                 offset = d.offset,
+                byteLength = d.ByteLength,
+                payload = d.Payload,
             };
-
-            if (sourceOpValue is IRMetaType mt && IsRuntimeDefTypeInstruction((EIROpCode)d.opCode))
-            {
-                pkg.opValue = CreateRuntimeDefTypePackage(mt);
-            }
-
-            if (sourceOpValue is IRMethodCall mc)
-            {
-                pkg.runtimeCall = CreateRuntimeCallPackage(mc);
-
-                // backward compatible: VM registry can still bind by methodId string
-                if (!string.IsNullOrWhiteSpace(mc.irMethod?.id))
-                {
-                    pkg.opValue = mc.irMethod.id;
-                }
-            }
-            else if (IsCallInstruction((EIROpCode)d.opCode) && sourceOpValue is string methodId && !string.IsNullOrWhiteSpace(methodId))
-            {
-                // legacy/fallback: keep method id for VM-side RuntimeCall binding
-                pkg.opValue = methodId;
-            }
-
-            if (pkg.runtimeCall == null && IsCallInstruction((EIROpCode)d.opCode) && TryReadRuntimeCallFromPayload(d.Payload, out var callFromPayload))
-            {
-                pkg.runtimeCall = callFromPayload;
-                if (string.IsNullOrWhiteSpace(pkg.opValue as string) && !string.IsNullOrWhiteSpace(callFromPayload?.methodId))
-                {
-                    pkg.opValue = callFromPayload.methodId;
-                }
-            }
-
-            return pkg;
-        }
-
-        private static bool TryReadRuntimeCallFromPayload(byte[]? payload, out SLRuntimeCallPackage? call)
-        {
-            call = null;
-            if (payload == null || payload.Length == 0) return false;
-
-            try
-            {
-                var text = Encoding.UTF8.GetString(payload);
-                if (string.IsNullOrWhiteSpace(text) || text[0] != '{') return false;
-                call = JsonSerializer.Deserialize<SLRuntimeCallPackage>(text);
-                return call != null && !string.IsNullOrWhiteSpace(call.methodId);
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private static bool IsCallInstruction(EIROpCode opCode)
-        {
-            return opCode == EIROpCode.CallStatic
-                || opCode == EIROpCode.CallDynamic
-                || opCode == EIROpCode.CallVirt;
-        }
-
-        private static bool IsRuntimeDefTypeInstruction(EIROpCode opCode)
-        {
-            return opCode == EIROpCode.NewArray
-                || opCode == EIROpCode.NewTemplateObject
-                || opCode == EIROpCode.Ldc
-                || opCode == EIROpCode.LoadStaticField
-                || opCode == EIROpCode.StoreStaticField;
-        }
-
-        private static SLRuntimeCallPackage CreateRuntimeCallPackage(IRMethodCall mc)
-        {
-            var ret = new SLRuntimeCallPackage
-            {
-                methodId = mc.irMethod?.id ?? string.Empty,
-                methodName = mc.methodName ?? string.Empty,
-                paramCount = mc.paramCount,
-                runtimeDefType = CreateRuntimeDefTypePackage(mc.metaType),
-            };
-
-            if (mc.irTemplateMetaType != null)
-            {
-                for (int i = 0; i < mc.irTemplateMetaType.Count; i++)
-                {
-                    var t = CreateRuntimeDefTypePackage(mc.irTemplateMetaType[i]);
-                    if (t != null) ret.templateRuntimeDefTypeList.Add(t);
-                }
-            }
-
-            return ret;
         }
 
         private static SLRuntimeDefTypePackage? CreateRuntimeDefTypePackage(IRMetaType? mt)

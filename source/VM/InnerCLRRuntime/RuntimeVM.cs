@@ -985,9 +985,9 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 CLRVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
                             }
-                            var sv = default(SValue);
-                            sv.SetSObject(sobj);
-                            PushSValueSynced(sv);
+                            //var sv = default(SValue);
+                            //sv.SetSObject(sobj);
+                            //PushSValueSynced(sv);
                         }
                     }
                     break;
@@ -1038,9 +1038,9 @@ namespace SimpleLanguage.VM.Runtime
                             ObjectManager.AddClassObject(arr);
                             m_ValueStack[m_ValueIndex - 1].SetSObject(arr);
 
-                            var sv = default(SValue);
-                            sv.SetSObject(arr);
-                            PushSValueSynced(sv);
+                            //var sv = default(SValue);
+                            //sv.SetSObject(arr);
+                            //PushSValueSynced(sv);
                         }
                     }
                     break;

@@ -309,6 +309,8 @@ namespace SimpleLanguage.VM
                     _ = br.ReadInt32(); // offset
                     int payloadLen = br.ReadInt32();
                     ins.Payload = payloadLen == 0 ? Array.Empty<byte>() : br.ReadBytes(payloadLen);
+                    ins.UpdateByteLength();
+                    ins.UnpackOpValueFromPayload();
                     mi.Instructions.Add(ins);
                 }
 

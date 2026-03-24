@@ -37,3 +37,5 @@
 /source/Front/bin
 /source/CLangdll/x64
 /x64
+/out/export/module.package.json
+/source/Front/out/export/module.package.json

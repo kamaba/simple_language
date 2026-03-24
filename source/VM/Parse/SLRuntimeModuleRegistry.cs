@@ -102,10 +102,11 @@ namespace SimpleLanguage.Parse
                         onlyFunctionName = m.name ?? string.Empty,
                     };
 
-                    // instructions
+                    // instructions（JSON 仅带 Payload；与 IRData 解包对称）
                     if (m.instructionList != null)
                     {
-                        rm.InstructionList.AddRange(SLIRModuleParse.ConvertToVMInstructionList(m.instructionList));
+                        Instruction.UnpackPayloadsFromJson(m.instructionList);
+                        rm.InstructionList.AddRange(m.instructionList);
                     }
 
                     if (m.returnList != null)
@@ -540,13 +541,10 @@ namespace SimpleLanguage.Parse
 
                     if (f.express != null && f.express.Count > 0)
                     {
-                        var insList = SLIRModuleParse.ConvertToVMInstructionList(f.express);
-                        if (insList != null && insList.Count > 0)
+                        Instruction.UnpackPayloadsFromJson(f.express);
+                        foreach (var ins in f.express)
                         {
-                            foreach (var ins in insList)
-                            {
-                                rc.nonStaticMemberVariableSetValueList.Add(ins);
-                            }
+                            rc.nonStaticMemberVariableSetValueList.Add(ins);
                         }
                     }
                 }

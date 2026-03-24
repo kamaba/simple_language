@@ -19,17 +19,17 @@ namespace SimpleLanguage.Export.SLIR.Types
         public int paramCount { get; set; }
     }
 
+    /// <summary>
+    /// Wire shape for one <see cref="SimpleLanguage.IR.IRData"/> in JSON (same field contract VM deserializes into <c>Instruction</c>).
+    /// </summary>
     public sealed class SLIRInstructionPackage
     {
         public int id { get; set; }
         public byte opCode { get; set; }
-        public object? opValue { get; set; }
         public byte[]? payload { get; set; }
         public int index { get; set; }
         public int byteLength { get; set; }
         public int offset { get; set; }
-        // optional runtimeCall used by writer
-        public SLRuntimeCallPackage? runtimeCall { get; set; }
     }
 
     public sealed class SLVariablePackage { public int id { get; set; } public int index { get; set; } public string name { get; set; } = string.Empty; public SLRuntimeDefTypePackage? typeDef { get; set; } }

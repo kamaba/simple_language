@@ -11,6 +11,24 @@ namespace SimpleLanguage.VM
 {
     public static class SLIRJsonModuleLoader
     {
+        /// <summary>
+        /// SLIR JSON 中每条指令反序列化为 <see cref="Instruction"/>：其可序列化成员多为 public 字段（Payload、opCode 等），
+        /// System.Text.Json 默认不写 public 字段，必须开启 <see cref="JsonSerializerOptions.IncludeFields"/>，
+        /// 否则读入内存的指令会保持默认值（空 Payload、opCode=0）。
+        /// </summary>
+        public static JsonSerializerOptions CreateSlirPackageReadOptions()
+        {
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                ReadCommentHandling = JsonCommentHandling.Skip,
+                AllowTrailingCommas = true,
+                IncludeFields = true,
+            };
+            options.Converters.Add(new JsonStringEnumConverter());
+            return options;
+        }
+
         public static string? ResolveJsonPath(string[] args)
         {
             if (args != null && args.Length > 0 && args[0].EndsWith(".json", StringComparison.OrdinalIgnoreCase))
@@ -26,7 +44,7 @@ namespace SimpleLanguage.VM
         {
             if (string.IsNullOrWhiteSpace(jsonPath)) jsonPath = GetDefaultJsonPath();
             var json = File.ReadAllText(jsonPath);
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var options = CreateSlirPackageReadOptions();
             return JsonSerializer.Deserialize<SLPackageRootJson>(json, options) ?? new SLPackageRootJson();
         }
 
@@ -35,13 +53,7 @@ namespace SimpleLanguage.VM
         {
             if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException(nameof(path));
             var json = File.ReadAllText(path);
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                ReadCommentHandling = JsonCommentHandling.Skip,
-                AllowTrailingCommas = true,
-            };
-            options.Converters.Add(new JsonStringEnumConverter());
+            var options = CreateSlirPackageReadOptions();
             using (var doc = JsonDocument.Parse(json))
             {
                 if (TryGetJsonArrayLength(doc.RootElement, "moduleList", out _))
@@ -193,13 +205,12 @@ namespace SimpleLanguage.VM
 
                     if (tm == null) continue;
 
-                    var vmIns = SLIRModuleParse.ConvertToVMInstructionList(m.instructionList);
-                    tm.AddMethod(new SLMethodMetaPackage
+                    tm.AddMethod(new SLMethodPackage
                     {
                         id = m.id ?? string.Empty,
                         name = m.name ?? string.Empty,
                         irList = new List<object>(),
-                        vmInstructionList = vmIns
+                        instructionList = m.instructionList ?? new List<Instruction>(),
                     });
                 }
             }
@@ -222,13 +233,13 @@ namespace SimpleLanguage.VM
                         {
                             var mm = c.nonStaticMethodList[i];
                             if (mm == null) continue;
-                            tm.AddMethod(new SLMethodMetaPackage
+                            tm.AddMethod(new SLMethodPackage
                             {
                                 id = mm.id ?? string.Empty,
                                 name = mm.name ?? string.Empty,
                                 index = mm.index,
                                 irList = new List<object>(),
-                                vmInstructionList = new List<Instruction>()
+                                instructionList = new List<Instruction>(),
                             });
                         }
                     }
@@ -239,13 +250,13 @@ namespace SimpleLanguage.VM
                         {
                             var mm = c.operatorMethodList[i];
                             if (mm == null) continue;
-                            tm.AddMethod(new SLMethodMetaPackage
+                            tm.AddMethod(new SLMethodPackage
                             {
                                 id = mm.id ?? string.Empty,
                                 name = mm.name ?? string.Empty,
                                 index = mm.index,
                                 irList = new List<object>(),
-                                vmInstructionList = new List<Instruction>()
+                                instructionList = new List<Instruction>(),
                             });
                         }
                     }
@@ -256,13 +267,13 @@ namespace SimpleLanguage.VM
                         {
                             var mm = c.staticMethodList[i];
                             if (mm == null) continue;
-                            tm.AddMethod(new SLMethodMetaPackage
+                            tm.AddMethod(new SLMethodPackage
                             {
                                 id = mm.id ?? string.Empty,
                                 name = mm.name ?? string.Empty,
                                 index = mm.index,
                                 irList = new List<object>(),
-                                vmInstructionList = new List<Instruction>()
+                                instructionList = new List<Instruction>(),
                             });
                         }
                     }

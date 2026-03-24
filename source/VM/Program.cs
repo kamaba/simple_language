@@ -1,4 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
+// See https://aka.ms/new-console-template for more information
 
 
 using SimpleLanguage.Parse;
@@ -47,14 +47,14 @@ try
             .SelectMany(m => m.namespaceList)
             .SelectMany(n => n.typeList)
             .SelectMany(t => t.methodList)
-            .FirstOrDefault(m => m.vmInstructionList.Count > 0);
+            .FirstOrDefault(m => m.instructionList != null && m.instructionList.Count > 0);
 
         if (sampleMethod != null)
         {
-            Console.WriteLine($"IR Sample (VM Instruction): {sampleMethod.id}");
-            foreach (var ins in sampleMethod.vmInstructionList.Take(40))
+            Console.WriteLine($"IR Sample (SLIR package instruction): {sampleMethod.id}");
+            foreach (var ins in sampleMethod.instructionList.Take(40))
             {
-                Console.WriteLine($"{ins.id} {ins.opCode} {ins.opValue}");
+                Console.WriteLine($"{ins.id} {ins.opCode} payloadLen={ins.Payload?.Length ?? 0}");
             }
         }
 
