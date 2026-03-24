@@ -453,8 +453,18 @@ namespace SimpleLanguage.VM.Runtime
 
             var sv = default(SValue);
             co.GetMemberVariableSValue(index, ref sv);
-            payloadObj = sv.GetValueObject();
-            return true;
+            if(sv.int32Value >= 0 && sv.int32Value <= 5 )
+            {
+                var realval = default(SValue);
+                co.GetMemberVariableSValue(sv.int32Value, ref realval);
+                payloadObj = realval.GetValueObject();
+                return true;
+            }
+            else
+            {
+                Debug.Assert(false);
+                return false;
+            }
         }
 
         private static object? NormalizeLegacyBridgeArg(ref SValue sv)
@@ -671,7 +681,7 @@ namespace SimpleLanguage.VM.Runtime
                 }
 
                 if (miFound != null && bestInvokeArgs != null)
-                {
+                {                    
                     if (!miFound.IsStatic)
                     {
                         Debug.Assert(false, $"{callName}: instance methods not supported in bridge");

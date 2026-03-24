@@ -31,17 +31,17 @@ public class BridgeObject extends Object
     _init_( Int64 _value )
     {
         this.int64value = _value
-        this.valuetype = 1
+        this.valuetype = 2
     }
     _init_( Float64 _value )
     {
         this.float64value = _value
-        this.valuetype = 2
+        this.valuetype = 3
     }
     _init_( string _value )
     {
         this.stringvalue = _value
-        this.valuetype = 3
+        this.valuetype = 4
     }
 }
 

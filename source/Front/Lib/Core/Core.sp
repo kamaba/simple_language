@@ -3,10 +3,10 @@ Project
 {
     string cpk = "cpkkk"
     float Pi = 3.14f
-    print( text )
+    print( string text )
     {
         Array<BridgeObject> paramObjs = new(1)
-        paramObjs[0] = BridgeObject("---------")
+        paramObjs[0] = BridgeObject(text)
         NativeBridge.Call( BridgeKind.CLR, "System", "Console", "WriteLine", null, paramObjs );
     }
     _main_()
@@ -29,7 +29,7 @@ Project
         a = 2 + 4
         b = a + a
 
-        global.print(a)
+        global.print(a.toString())
     }
     _test_()
     {
