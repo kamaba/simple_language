@@ -120,10 +120,6 @@ namespace SimpleLanguage
         CallStatic,
         CallDynamic,
         CallVirt,
-        Calli,
-        CallCLRMethod,
-        CallNativeMethod,
-        CallJVMMethod,
         CallSystemMethod,
         CastClass,
 

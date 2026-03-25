@@ -7,7 +7,9 @@
 //****************************************************************************
 
 
+using SimpleLanguage;
 using SimpleLanguage.Core;
+using SimpleLanguage.Export.SLIR.Types;
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
@@ -48,27 +50,26 @@ namespace SimpleLanguage.IR
             }
 
             var mf = mfc.GetTemplateMemberFunction();
-            if (mf != null && 
-                (mf.name == "CallCLRMethod" || mf.name == "CallNativeMethod" || mf.name == "CallJVMMethod") )
-            {
-                // arguments already emitted above (paramCount)
-                IRData datacall = new IRData();
-                if (mf.name == "CallCLRMethod") datacall.opCode = EIROpCode.CallCLRMethod;
-                else if (mf.name == "CallNativeMethod") datacall.opCode = EIROpCode.CallNativeMethod;
-                else datacall.opCode = EIROpCode.CallJVMMethod;
-
-                // store param count in index so VM knows how many values to pop
-                datacall.index = paramCount;
-                datacall.SetDebugInfoByToken(mf.pingToken);
-                AddIRData(datacall);
-                return;
-            }
             string systemName = mf?.name ?? string.Empty;
+            int systemKind = -1;
+            if (!string.IsNullOrEmpty(systemName)
+                && Enum.TryParse<ESystemMethodCall>(systemName, ignoreCase: true, out var sysEnum))
+            {
+                systemKind = (int)sysEnum;
+            }
+
+            var sysPkg = new SLSystemMethodCallPackage
+            {
+                name = systemName,
+                paramCount = paramCount,
+                systemMethodKind = systemKind,
+            };
 
             IRData datacall2 = new IRData();
             datacall2.opCode = EIROpCode.CallSystemMethod;
+            // Legacy bridge pops this many stack slots (args only); payload carries full metadata.
             datacall2.index = paramCount;
-            datacall2.opValue = systemName;
+            datacall2.SetOpValue(sysPkg);
             if (mf != null)
             {
                 datacall2.SetDebugInfoByToken(mf.pingToken);
@@ -95,17 +96,17 @@ namespace SimpleLanguage.IR
             }
             MetaFunction mf = mfc.GetTemplateMemberFunction();
             
-            MetaMemberFunctionCSharp mmfcsharp = mf as MetaMemberFunctionCSharp;
-            if (mmfcsharp != null)
-            {
-                m_MethodInfo = mmfcsharp.methodInfo;
-                IRData data = new IRData();
-                data.opCode = EIROpCode.CallCLRMethod;
-                data.opValue = this;
-                data.SetDebugInfoByToken(mmfcsharp.GetToken());
-                AddIRData(data);
-                return;
-            }
+            //MetaMemberFunctionCSharp mmfcsharp = mf as MetaMemberFunctionCSharp;
+            //if (mmfcsharp != null)
+            //{
+            //    m_MethodInfo = mmfcsharp.methodInfo;
+            //    IRData data = new IRData();
+            //    data.opCode = EIROpCode.Ca;
+            //    data.opValue = this;
+            //    data.SetDebugInfoByToken(mmfcsharp.GetToken());
+            //    AddIRData(data);
+            //    return;
+            //}
 
 
             int callMethodIndex = -1;

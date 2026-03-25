@@ -16,6 +16,13 @@ using System.Globalization;
 
 namespace SimpleLanguage.VM.Runtime
 {
+    // System-level builtin method calls handled by the runtime/native bridge
+    public enum ESystemMethodCall
+    {
+        CallCLRMethod,
+        CallNativeMethod,
+        CallJVMMethod,
+    }
     public unsafe class RuntimeVM
     {
         public SObject[] returnObjectArray { get => m_ReturnObjectArray; }
@@ -187,7 +194,10 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (irmt == null) return new SObject(EVMType.Object);
             var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt);
-            if (rt == null) return new SObject(EVMType.Object);
+            if (rt == null)
+            {
+                rt = RuntimeTypeManager.AddRuntimeTypeByClass(irmt.runtimeClass);
+            }
             return ObjectManager.CreateObjectByRuntimeType(rt, false);
         }
         public void AddReturnObjectArray(SObject[] sobjs)
@@ -474,6 +484,118 @@ namespace SimpleLanguage.VM.Runtime
             return ConvertInvokeArg(raw, typeof(object));
         }
 
+        private static int FindBridgeMemberIndexByName(RuntimeClass? rc, string memberName)
+        {
+            var list = rc?.nonStaticIRMetaVariableList;
+            if (list == null) return -1;
+            for (int i = 0; i < list.Count; i++)
+            {
+                var n = list[i]?.name ?? string.Empty;
+                if (string.Equals(n, memberName, StringComparison.OrdinalIgnoreCase)
+                    || n.EndsWith("." + memberName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        private static bool TryStoreLegacyReturnToBridgeObject(SValue[] values, object? retObjValue)
+        {
+            if (values == null || values.Length < 4 || retObjValue == null) return false;
+
+            var retObjSv = values[3];
+            if (retObjSv.eType != EVMType.Class || retObjSv.sobject is not ClassObject retBridge) return false;
+            if (!IsBridgeObjectRuntime(retBridge.runtimeClass)) return false;
+
+            int idxBool = FindBridgeMemberIndexByName(retBridge.runtimeClass, "boolvalue");
+            int idxI32 = FindBridgeMemberIndexByName(retBridge.runtimeClass, "int32value");
+            int idxI64 = FindBridgeMemberIndexByName(retBridge.runtimeClass, "int64value");
+            int idxF64 = FindBridgeMemberIndexByName(retBridge.runtimeClass, "float64value");
+            int idxStr = FindBridgeMemberIndexByName(retBridge.runtimeClass, "stringvalue");
+            int idxType = FindBridgeMemberIndexByName(retBridge.runtimeClass, "valuetype");
+
+            var outSv = default(SValue);
+            int outTypeCode = -1;
+            switch (retObjValue)
+            {
+                case bool b:
+                    outSv.SetBoolValue(b);
+                    outTypeCode = 0;
+                    if (idxBool >= 0) retBridge.SetMemberVariableSValue(idxBool, outSv);
+                    break;
+                case byte v:
+                    outSv.SetInt32Value(v);
+                    outTypeCode = 1;
+                    if (idxI32 >= 0) retBridge.SetMemberVariableSValue(idxI32, outSv);
+                    break;
+                case sbyte v:
+                    outSv.SetInt32Value(v);
+                    outTypeCode = 1;
+                    if (idxI32 >= 0) retBridge.SetMemberVariableSValue(idxI32, outSv);
+                    break;
+                case short v:
+                    outSv.SetInt32Value(v);
+                    outTypeCode = 1;
+                    if (idxI32 >= 0) retBridge.SetMemberVariableSValue(idxI32, outSv);
+                    break;
+                case ushort v:
+                    outSv.SetInt32Value(v);
+                    outTypeCode = 1;
+                    if (idxI32 >= 0) retBridge.SetMemberVariableSValue(idxI32, outSv);
+                    break;
+                case int v:
+                    outSv.SetInt32Value(v);
+                    outTypeCode = 1;
+                    if (idxI32 >= 0) retBridge.SetMemberVariableSValue(idxI32, outSv);
+                    break;
+                case uint v:
+                    outSv.SetInt64Value(v);
+                    outTypeCode = 1;
+                    if (idxI64 >= 0) retBridge.SetMemberVariableSValue(idxI64, outSv);
+                    break;
+                case long v:
+                    outSv.SetInt64Value(v);
+                    outTypeCode = 1;
+                    if (idxI64 >= 0) retBridge.SetMemberVariableSValue(idxI64, outSv);
+                    break;
+                case ulong v:
+                    outSv.SetInt64Value(unchecked((long)v));
+                    outTypeCode = 1;
+                    if (idxI64 >= 0) retBridge.SetMemberVariableSValue(idxI64, outSv);
+                    break;
+                case float v:
+                    outSv.SetDoubleValue(v);
+                    outTypeCode = 2;
+                    if (idxF64 >= 0) retBridge.SetMemberVariableSValue(idxF64, outSv);
+                    break;
+                case double v:
+                    outSv.SetDoubleValue(v);
+                    outTypeCode = 2;
+                    if (idxF64 >= 0) retBridge.SetMemberVariableSValue(idxF64, outSv);
+                    break;
+                case string s:
+                    outSv.SetStringValue(s);
+                    outTypeCode = 3;
+                    if (idxStr >= 0) retBridge.SetMemberVariableSValue(idxStr, outSv);
+                    break;
+                default:
+                    outSv.SetStringValue(retObjValue.ToString() ?? string.Empty);
+                    outTypeCode = 3;
+                    if (idxStr >= 0) retBridge.SetMemberVariableSValue(idxStr, outSv);
+                    break;
+            }
+
+            if (idxType >= 0 && outTypeCode >= 0)
+            {
+                var typeSv = default(SValue);
+                typeSv.SetInt32Value(outTypeCode);
+                retBridge.SetMemberVariableSValue(idxType, typeSv);
+            }
+
+            return true;
+        }
+
         private static bool TryBuildInvokeArgsForMethod(MethodInfo mi, object[] argsClr, out object?[] invokeArgs, out int score)
         {
             score = 0;
@@ -617,7 +739,8 @@ namespace SimpleLanguage.VM.Runtime
             string methodName = values.Length > 3 ? values[2].GetValueObject()?.ToString() ?? string.Empty : string.Empty;
 
             object[] argsClr = Array.Empty<object>();
-            if (values.Length == 5)
+            SValue paramArr ;
+            if (values.Length >= 5)
             {
                 var arr = values[4];
                 if (arr.eType == EVMType.Array && arr.sobject is ArrayObject aobj)
@@ -633,7 +756,7 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 else
                 {
-                    var single = values[5];
+                    var single = values[4];
                     argsClr = new object[] { NormalizeLegacyBridgeArg(ref single) };
                 }
             }
@@ -688,10 +811,11 @@ namespace SimpleLanguage.VM.Runtime
                         return true;
                     }
                     var ret2 = miFound.Invoke(null, bestInvokeArgs);
+                    _ = TryStoreLegacyReturnToBridgeObject(values, ret2);
                     if (miFound.ReturnType != typeof(void))
                     {
                         var sv2 = SValue.FromClrObject(ret2);
-                        PushSValueSynced(sv2);
+                        //PushSValueSynced(sv2);
                     }
                     return true;
                 }
@@ -716,6 +840,7 @@ namespace SimpleLanguage.VM.Runtime
             }
 
             var ret = miFound.Invoke(null, invokeArgs);
+            _ = TryStoreLegacyReturnToBridgeObject(values, ret);
             if (miFound.ReturnType != typeof(void))
             {
                 var sv = SValue.FromClrObject(ret);
@@ -723,39 +848,6 @@ namespace SimpleLanguage.VM.Runtime
             }
 
             return true;
-        }
-
-        private bool TryInvokeSystemCallByName(Instruction iri)
-        {
-            string callName = string.Empty;
-            if (!iri.TryGetString(out callName) || string.IsNullOrWhiteSpace(callName))
-            {
-                callName = iri.opValue?.ToString() ?? string.Empty;
-            }
-
-            if (string.IsNullOrWhiteSpace(callName))
-            {
-                Debug.Assert(false, "CallSystemMethod missing function name");
-                return false;
-            }
-
-            // Each system function can have unique VM logic.
-            // Keep existing bridge handlers as the default implementation.
-            switch (callName)
-            {
-                case "CallCLRMethod":
-                    if (TryInvokeRegisteredBridgeByIndex(iri)) return true;
-                    return TryInvokeLegacyBridgeSignature(iri, callName);
-                case "CallNativeMethod":
-                    if (TryInvokeRegisteredBridgeByIndex(iri)) return true;
-                    return TryInvokeLegacyBridgeSignature(iri, callName);
-                case "CallJVMMethod":
-                    if (TryInvokeRegisteredBridgeByIndex(iri)) return true;
-                    return TryInvokeLegacyBridgeSignature(iri, callName);
-                default:
-                    Debug.Assert(false, "Unknown system function: " + callName);
-                    return false;
-            }
         }
 
         public void RunInstruction(Instruction iri)
@@ -1338,40 +1430,88 @@ namespace SimpleLanguage.VM.Runtime
                         }
                     }
                     break;
-                case EIROpCode.CallCLRMethod:
-                    {
-                        if (!TryInvokeRegisteredBridgeByIndex(iri))
-                        {
-                            TryInvokeLegacyBridgeSignature(iri, "CallCLRMethod");
-                        }
-                    }
-                    break;
-                case EIROpCode.CallNativeMethod:
-                    {
-                        if (iri.opValue is RuntimeNativeCall irnf)
-                        {
-                            irnf.InvokeNativeMethod(this);
-                        }
-                        else if (!TryInvokeRegisteredBridgeByIndex(iri))
-                        {
-                            TryInvokeLegacyBridgeSignature(iri, "CallNativeMethod");
-                        }
-                    }
-                    break;
-                case EIROpCode.CallJVMMethod:
-                    {
-                        if (!TryInvokeRegisteredBridgeByIndex(iri))
-                        {
-                            if (!TryInvokeLegacyBridgeSignature(iri, "CallJVMMethod"))
-                            {
-                                Debug.Assert(false, "CallJVMMethod is not configured");
-                            }
-                        }
-                    }
-                    break;
                 case EIROpCode.CallSystemMethod:
                     {
-                        TryInvokeSystemCallByName(iri);
+                        if (!iri.TryGetSystemMethodCallPackage(out var sysPkg) || sysPkg == null)
+                        {
+                            Debug.Assert(false, "CallSystemMethod: expected JSON payload with name/paramCount/systemMethodKind");
+                            break;
+                        }
+
+                        int kind = sysPkg.systemMethodKind;
+                        switch (kind)
+                        {
+                            case (int)ESystemMethodCall.CallCLRMethod:
+                                {
+                                    if (!TryInvokeRegisteredBridgeByIndex(iri))
+                                    {
+                                        TryInvokeLegacyBridgeSignature(iri, "CallCLRMethod");
+                                    }
+                                }
+                                break;
+                            case (int)ESystemMethodCall.CallNativeMethod:
+                                {
+                                    if (!TryInvokeRegisteredBridgeByIndex(iri))
+                                    {
+                                        TryInvokeLegacyBridgeSignature(iri, "CallNativeMethod");
+                                    }
+                                }
+                                break;
+                            case (int)ESystemMethodCall.CallJVMMethod:
+                                {
+                                    if (!TryInvokeLegacyBridgeSignature(iri, "CallJVMMethod"))
+                                    {
+                                        Debug.Assert(false, "CallJVMMethod is not configured");
+                                    }
+                                }
+                                break;
+                            default:
+                                Debug.Assert(false, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + sysPkg.name);
+                                break;
+                        }
+
+                        //string callName = string.Empty;
+                        //if (!iri.TryGetString(out callName) || string.IsNullOrWhiteSpace(callName))
+                        //{
+                        //    callName = iri.opValue?.ToString() ?? string.Empty;
+                        //}
+
+                        //if (string.IsNullOrWhiteSpace(callName))
+                        //{
+                        //    Debug.Assert(false, "CallSystemMethod missing function name");
+                        //    break;
+                        //}
+
+                        //// Each system function can have unique VM logic.
+                        //// Keep existing bridge handlers as the default implementation.
+                        //switch (callName)
+                        //{
+                        //    case "CallCLRMethod":
+                        //        {
+                        //            if (TryInvokeRegisteredBridgeByIndex(iri))
+                        //                break;
+                        //            TryInvokeLegacyBridgeSignature(iri, callName);
+                        //        }
+                        //        break;
+                        //    case "CallNativeMethod":
+                        //        {
+                        //            if (TryInvokeRegisteredBridgeByIndex(iri))
+                        //                break;
+                        //            TryInvokeLegacyBridgeSignature(iri, callName);
+                        //        }
+                        //        break;
+                        //    case "CallJVMMethod":
+                        //        {
+                        //            if (TryInvokeRegisteredBridgeByIndex(iri)) break; ;
+                        //            TryInvokeLegacyBridgeSignature(iri, callName);
+                        //        }
+                        //        break;
+                        //    default:
+                        //        {
+                        //            Debug.Assert(false, "Unknown system function: " + callName);
+                        //        }
+                        //        break;
+                        //}
                     }
                     break;
                 case EIROpCode.CallStatic:

@@ -93,6 +93,10 @@ namespace SimpleLanguage.VM
                 rcm.m_IRMetaClassList.Add(rc);
             }
 
+            // Core primitive runtime types (String/Int32/Float32/...) must be ready
+            // before any global initialization instructions can create objects.
+            RuntimeTypeManager.EnsureCoreRuntimeTypesRegistered();
+
             // 2) Build RuntimeDefType table from TypeSig table.
             var rdtCache = new Dictionary<int, RuntimeDefType>();
             RuntimeDefType ResolveDefType(int typeSigId)

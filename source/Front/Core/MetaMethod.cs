@@ -79,6 +79,7 @@ namespace SimpleLanguage.Core
         public MetaDefineParamCollection metaMemberParamCollection => m_MetaMemberParamCollection;
         public MetaBlockStatements metaBlockStatements => m_MetaBlockStatements;
         public MetaDefineTemplateCollection metaMemberTemplateCollection => m_MetaMemberTemplateCollection;
+        public int index => m_Index;
 
 
         #region 属性
@@ -92,6 +93,7 @@ namespace SimpleLanguage.Core
         private List<LabelData> m_LabelDataList = new List<LabelData>();
         protected bool m_IsStatic = false;
         protected bool m_IsDefineMetaType = false;
+        protected int m_Index = -1;
         protected MetaType m_DefineMetaType = null;
         protected MetaType m_RealMetaType = null;
         #endregion
@@ -115,10 +117,6 @@ namespace SimpleLanguage.Core
                 mc,
                 defaultReturnType
             );
-        }
-        public void SetIsStatic(bool isStatic)
-        {
-            m_IsStatic = isStatic;
         }
         public MetaFunction( MetaFunction mf ):base(mf)
         {
@@ -178,6 +176,14 @@ namespace SimpleLanguage.Core
             {
                 m_MetaMemberParamCollection.SetOwnerMetaClass(ownerclass);
             }
+        }
+        public void SetIsStatic(bool isStatic)
+        {
+            m_IsStatic = isStatic;
+        }
+        public void SetIndex(int index)
+        {
+            m_Index = index;
         }
         public void AddFrontMetaStatements(MetaStatements state)
         {

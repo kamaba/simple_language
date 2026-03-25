@@ -705,6 +705,40 @@ namespace SimpleLanguage.Parse
             return s_MethodById.TryGetValue(id, out var m) ? m : null;
         }
 
+        // Resolve runtime class by type name by scanning cached SLClassPackage metadata.
+        // Prefer package-driven creation so RuntimeClass gets fully populated (fields/methods/templates).
+        public static RuntimeClass? ResolveOrCreateRuntimeClassByName(string? typeName)
+        {
+            if (string.IsNullOrWhiteSpace(typeName)) return null;
+
+            typeName = GetGenericRootName(typeName.Trim());
+
+            // Fast path: runtime class already registered by some prior resolution.
+            var rcExisting = RuntimeClassManager.instance.GetRuntimeClassByName(typeName)
+                ?? RuntimeClassManager.instance.GetRuntimeClassByName(GetShortName(typeName));
+            if (rcExisting != null) return rcExisting;
+
+            // Slow path: try to find matching SLClassPackage by name/fullName.
+            foreach (var pkg in s_ClassPackageById.Values)
+            {
+                if (pkg == null) continue;
+                if (string.IsNullOrWhiteSpace(pkg.name) && string.IsNullOrWhiteSpace(pkg.fullName)) continue;
+
+                var pkgRootName = GetGenericRootName(pkg.name ?? string.Empty);
+                if (string.Equals(pkgRootName, typeName, StringComparison.Ordinal)) return CreateRuntimeClassFromPackage(pkg);
+
+                var pkgFull = pkg.fullName ?? string.Empty;
+                var pkgFullRoot = GetGenericRootName(pkgFull);
+                if (string.Equals(pkgFullRoot, typeName, StringComparison.Ordinal)) return CreateRuntimeClassFromPackage(pkg);
+
+                var pkgShortFull = GetShortName(pkgFullRoot);
+                if (!string.IsNullOrWhiteSpace(pkgShortFull) && string.Equals(pkgShortFull, typeName, StringComparison.Ordinal))
+                    return CreateRuntimeClassFromPackage(pkg);
+            }
+
+            return null;
+        }
+
         // Public helper used by runtime to ensure a RuntimeClass is registered
         // from cached package metadata when only a class id is available.
         public static RuntimeClass? ResolveOrCreateRuntimeClassById(int classId)

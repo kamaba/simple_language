@@ -75,6 +75,12 @@ namespace SimpleLanguage.VM
                 return;
             }
 
+            if (_opValue is SLSystemMethodCallPackage sysPkg)
+            {
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(sysPkg));
+                return;
+            }
+
             switch (Type.GetTypeCode(_opValue.GetType()))
             {
                 case TypeCode.Boolean:
@@ -175,6 +181,14 @@ namespace SimpleLanguage.VM
                     break;
                 case EIROpCode.LoadConstString:
                     if (TryGetString(out var s)) { _opValue = s; return; }
+                    break;
+                case EIROpCode.CallSystemMethod:
+                    // Symmetric with Front IRData.PackOpValue(SLSystemMethodCallPackage): JSON in Payload.
+                    if (TryGetSystemMethodCallPackage(out var sysPkg) && sysPkg != null)
+                    {
+                        _opValue = sysPkg;
+                        return;
+                    }
                     break;
                 default:
                     // fallback: try string then numeric interpretations
@@ -306,6 +320,11 @@ namespace SimpleLanguage.VM
         }
 
         public bool TryGetRuntimeDefTypePackage(out SLRuntimeDefTypePackage pkg)
+        {
+            return TryGetJsonObject(out pkg);
+        }
+
+        public bool TryGetSystemMethodCallPackage(out SLSystemMethodCallPackage pkg)
         {
             return TryGetJsonObject(out pkg);
         }

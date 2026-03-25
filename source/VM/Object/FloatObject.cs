@@ -22,6 +22,7 @@ namespace SimpleLanguage.VM
         public Float32Object( Single _val ) : base(EVMType.Float32)
         {
             m_Value = _val;
+            m_RuntimeType = RuntimeTypeManager.float32RuntimeType;
         }
     }
     public class Float64Object : NumObject
@@ -36,6 +37,7 @@ namespace SimpleLanguage.VM
         public Float64Object(Double _val) : base(EVMType.Float64)
         {
             m_Value = _val;
+            m_RuntimeType = RuntimeTypeManager.float64runtimeType;
         }
     }
 }

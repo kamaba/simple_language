@@ -382,6 +382,14 @@ namespace SimpleLanguage
         public const int Level12_Split = 130;                //,
     }
 
+    // System-level builtin method calls handled by the runtime/native bridge
+    public enum ESystemMethodCall
+    {
+        CallCLRMethod,
+        CallNativeMethod,
+        CallJVMMethod,
+    }
+
     class Define
     {
 

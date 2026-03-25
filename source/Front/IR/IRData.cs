@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRData.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -7,6 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
+using SimpleLanguage.Export.SLIR.Types;
 
 using System;
 using System.Collections.Generic;
@@ -55,6 +56,12 @@ namespace SimpleLanguage.IR
         {
             Payload = null;
             if (opValue == null) return;
+
+            if (opValue is SLSystemMethodCallPackage smcp)
+            {
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(smcp));
+                return;
+            }
 
             // runtime def type payload: write full IRMetaType tree at SetOpValue stage
             if (opValue is IRMetaType imt)
@@ -288,6 +295,14 @@ namespace SimpleLanguage.IR
                 case EIROpCode.LoadConstString:
                     if (TryGetString(out var s)) { _opValue = s; return; }
                     break;
+                case EIROpCode.CallSystemMethod:
+                    // Symmetric with PackOpValue(SLSystemMethodCallPackage): JSON object in Payload.
+                    if (TryUnpackSystemMethodCallPackage(out var sysPkg) && sysPkg != null)
+                    {
+                        _opValue = sysPkg;
+                        return;
+                    }
+                    break;
                 default:
                     // fallback: try string then numeric interpretations
                     if (TryGetString(out var ss)) { _opValue = ss; return; }
@@ -296,6 +311,23 @@ namespace SimpleLanguage.IR
             }
             // if still not set, keep raw bytes
             _opValue = Payload;
+        }
+
+        private bool TryUnpackSystemMethodCallPackage(out SLSystemMethodCallPackage pkg)
+        {
+            pkg = null;
+            try
+            {
+                if (Payload == null || Payload.Length == 0) return false;
+                var text = Encoding.UTF8.GetString(Payload);
+                if (string.IsNullOrWhiteSpace(text) || text[0] != '{') return false;
+                pkg = JsonSerializer.Deserialize<SLSystemMethodCallPackage>(text);
+                return pkg != null;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         // Get serialized instruction length. If `next` is provided, length is the

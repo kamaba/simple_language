@@ -20,6 +20,17 @@ namespace SimpleLanguage.Export.SLIR.Types
     }
 
     /// <summary>
+    /// Wire payload for <see cref="SimpleLanguage.EIROpCode.CallSystemMethod"/> (system bridge builtins).
+    /// </summary>
+    public sealed class SLSystemMethodCallPackage
+    {
+        public string name { get; set; } = string.Empty;
+        public int paramCount { get; set; }
+        /// <summary>Matches <see cref="SimpleLanguage.ESystemMethodCall"/>; -1 if unknown.</summary>
+        public int systemMethodKind { get; set; } = -1;
+    }
+
+    /// <summary>
     /// Wire shape for one <see cref="SimpleLanguage.IR.IRData"/> in JSON (same field contract VM deserializes into <c>Instruction</c>).
     /// </summary>
     public sealed class SLIRInstructionPackage

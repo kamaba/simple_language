@@ -363,6 +363,8 @@ namespace SimpleLanguage.VM
             {
                 var pkg = ReadPackage(jsonPath);
                 SLRuntimeModuleRegistry.LoadFromPackage(pkg);
+                // package.json path doesn't eagerly build RuntimeTypeManager primitive types
+                // so VM global initialization might access uninitialized core runtime types.
                 return;
             }
             // module.slir.json / legacy root: normalize into canonical wrapper first.
@@ -390,6 +392,7 @@ namespace SimpleLanguage.VM
                 if (rc == null) continue;
                 if (RuntimeTypeManager.GetRuntimeTypeByClassId(rc.id) == null) RuntimeTypeManager.AddRuntimeTypeByClass(rc);
             }
+            RuntimeTypeManager.EnsureCoreRuntimeTypesRegistered();
             for (int i = 0; i < allClasses.Count; i++)
             {
                 var c = allClasses[i];

@@ -1,7 +1,5 @@
 ﻿
 using SimpleLanguage.Logging;
-using System;
-using System.Runtime.InteropServices;
 
 namespace SimpleLanguage.VM.Runtime
 {

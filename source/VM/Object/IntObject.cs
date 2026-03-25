@@ -22,6 +22,7 @@ namespace SimpleLanguage.VM
         public BoolObject(bool flag) : base(EVMType.Boolean)
         {
             m_Value = flag;
+            m_RuntimeType = RuntimeTypeManager.boolRuntimeType;
         }
 
         public void SetValue(bool _val)
@@ -46,6 +47,7 @@ namespace SimpleLanguage.VM
         public Int8Object(Byte _val) : base(EVMType.Byte)
         {
             m_Value = _val;
+            m_RuntimeType = RuntimeTypeManager.byteRuntimeType;
         }
     }
     public class SInt8Object : NumObject
@@ -60,6 +62,7 @@ namespace SimpleLanguage.VM
         public SInt8Object(SByte _val) : base(EVMType.SByte)
         {
             m_Value = _val;
+            m_RuntimeType = RuntimeTypeManager.sbyteRuntimeType;
         }
     }
     class Int16Object : NumObject
@@ -74,6 +77,7 @@ namespace SimpleLanguage.VM
         public Int16Object(Int16 val) : base(EVMType.Int16)
         {
             m_Value = val;
+            m_RuntimeType = RuntimeTypeManager.int16RuntimeType;
         }
     }
     public class UInt16Object : NumObject
@@ -88,6 +92,7 @@ namespace SimpleLanguage.VM
         public UInt16Object(UInt16 val) : base(EVMType.UInt16)
         {
             m_Value = val;
+            m_RuntimeType = RuntimeTypeManager.uint16RuntimeType;
         }
     }
     public class Int32Object : NumObject
@@ -118,6 +123,7 @@ namespace SimpleLanguage.VM
         {
             m_Value = obj;
             m_Type = EVMType.UInt32;
+            m_RuntimeType = RuntimeTypeManager.uint32RuntimeType;
         }
     }
 
@@ -134,6 +140,7 @@ namespace SimpleLanguage.VM
         public Int64Object(Int64 val) : base(EVMType.Int64)
         {
             m_Value = val;
+            m_RuntimeType = RuntimeTypeManager.int64RuntimeType;
         }
     }
     public class UInt64Object : NumObject
@@ -148,6 +155,7 @@ namespace SimpleLanguage.VM
         public UInt64Object(UInt64 val) : base(EVMType.UInt64)
         {
             m_Value = val;
+            m_RuntimeType = RuntimeTypeManager.uint64RuntimeType;
         }
     }
 }

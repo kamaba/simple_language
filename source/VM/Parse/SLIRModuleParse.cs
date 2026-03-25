@@ -42,6 +42,11 @@ namespace SimpleLanguage.VM
             var currentPkg = packageList[packageList.Count - 1];
 
             SLRuntimeModuleRegistry.LoadFromPackages(packageList);
+
+            // Ensure core primitive runtime types (String/Int32/Float32/...) are registered
+            // before any global initializer instructions can create objects.
+            RuntimeTypeManager.EnsureCoreRuntimeTypesRegistered();
+
             var asmList = packageList.Select(p => SLIRJsonModuleLoader.BuildRuntimeModel(p)).ToList();
             var slAsm = asmList[asmList.Count - 1];
 

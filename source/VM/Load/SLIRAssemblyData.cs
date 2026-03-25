@@ -153,6 +153,16 @@ namespace SimpleLanuageVM.Load
         public int paramCount { get; set; }
     }
 
+    /// <summary>
+    /// Wire payload for <see cref="EIROpCode.CallSystemMethod"/> (must match Front export JSON).
+    /// </summary>
+    public sealed class SLSystemMethodCallPackage
+    {
+        public string name { get; set; } = string.Empty;
+        public int paramCount { get; set; }
+        public int systemMethodKind { get; set; } = -1;
+    }
+
     public sealed class SLRuntimeDefTypePackage
     {
         public int classId { get; set; }

@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRMethod.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -7,6 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.VM.Runtime;
+using SimpleLanguage.Parse;
 using System.Text;
 
 namespace SimpleLanguage.VM
@@ -236,6 +237,118 @@ namespace SimpleLanguage.VM
         private static RuntimeType m_Float64RuntimeType = null;
         private static RuntimeType m_StringRuntimeType = null;
 
+        // Ensure core primitive runtime types are registered (and their static fields populated)
+        // before VM global initialization and object creation.
+        public static void EnsureCoreRuntimeTypesRegistered()
+        {
+            EnsureByClassName("Void", ref m_VoidRuntimeType);
+            EnsureByClassName("Type", ref m_TypeRuntimeType);
+            EnsureByClassName("Bool", ref m_BoolRuntimeType);
+            EnsureByClassName("Num", ref m_NumRuntimeType);
+            EnsureByClassName("Byte", ref m_ByteRuntimeType);
+            EnsureByClassName("SByte", ref m_SByteRuntimeType);
+            EnsureByClassName("Int16", ref m_Int16RuntimeType);
+            EnsureByClassName("UInt16", ref m_UInt16RuntimeType);
+            EnsureByClassName("Int32", ref m_Int32RuntimeType);
+            EnsureByClassName("UInt32", ref m_UInt32RuntimeType);
+            EnsureByClassName("Int64", ref m_Int64RuntimeType);
+            EnsureByClassName("UInt64", ref m_UInt64RuntimeType);
+            EnsureByClassName("String", ref m_StringRuntimeType);
+            EnsureByClassName("Float32", ref m_Float32RuntimeType);
+            EnsureByClassName("Float64", ref m_Float64RuntimeType);
+
+            // Ensure non-primitive system core runtime types are also registered.
+            // VM may create them during global init / allocation (e.g., ArrayObject).
+            EnsureRuntimeTypeRegisteredByClassName("Core.Object");
+            EnsureRuntimeTypeRegisteredByClassName("Object");
+            EnsureRuntimeTypeRegisteredByClassName("Core.Array");
+            EnsureRuntimeTypeRegisteredByClassName("Array");
+        }
+
+        private static void EnsureRuntimeTypeRegisteredByClassName(string runtimeClassName)
+        {
+            if (string.IsNullOrWhiteSpace(runtimeClassName)) return;
+
+            var rc = RuntimeClassManager.instance.GetRuntimeClassByName(runtimeClassName);
+            if (rc == null)
+            {
+                // Prefer package-driven creation so RuntimeClass contains the full metadata.
+                rc = SLRuntimeModuleRegistry.ResolveOrCreateRuntimeClassByName(runtimeClassName);
+            }
+
+            if (rc == null)
+            {
+                // Fallback to minimal RuntimeClass while keeping id stable to reduce duplicates.
+                var stableId = StableId32(runtimeClassName);
+                rc = RuntimeClassManager.instance.GetRuntimeClassById(stableId)
+                     ?? new RuntimeClass { id = stableId, name = runtimeClassName };
+                if (RuntimeClassManager.instance.GetRuntimeClassById(stableId) == null)
+                {
+                    RuntimeClassManager.instance.m_IRMetaClassList.Add(rc);
+                }
+            }
+
+            if (rc == null) return;
+            if (GetRuntimeTypeByClassId(rc.id) == null)
+            {
+                AddRuntimeTypeByClass(rc);
+            }
+        }
+
+        private static void EnsureByClassName(string runtimeClassName, ref RuntimeType targetField)
+        {
+            if (targetField != null) return;
+
+            var rc = RuntimeClassManager.instance.GetRuntimeClassByName(runtimeClassName);
+            if (rc == null)
+            {
+                // Prefer package-driven creation so RuntimeClass has full field/method/template data.
+                rc = SLRuntimeModuleRegistry.ResolveOrCreateRuntimeClassByName(runtimeClassName);
+                if (rc == null)
+                {
+                    // Fallback: try by stable id (if exported ids match the stable hash).
+                    rc = SLRuntimeModuleRegistry.ResolveOrCreateRuntimeClassById(StableId32(runtimeClassName));
+                }
+                if (rc == null)
+                {
+                    // Last resort: create minimal RuntimeClass so ObjectManager can still build primitive objects.
+                    rc = new RuntimeClass
+                    {
+                        id = StableId32(runtimeClassName),
+                        name = runtimeClassName,
+                    };
+                    RuntimeClassManager.instance.m_IRMetaClassList.Add(rc);
+                }
+            }
+
+            // If a runtime type already exists (possibly created via template-based path),
+            // reuse it to avoid duplicate RuntimeType instances.
+            var existed = GetRuntimeTypeByClassId(rc.id);
+            if (existed != null)
+            {
+                targetField = existed;
+                return;
+            }
+
+            targetField = AddRuntimeTypeByClass(rc);
+        }
+
+        private static int StableId32(string s)
+        {
+            unchecked
+            {
+                const uint fnvOffset = 2166136261;
+                const uint fnvPrime = 16777619;
+                uint hash = fnvOffset;
+                for (int i = 0; i < s.Length; i++)
+                {
+                    hash ^= s[i];
+                    hash *= fnvPrime;
+                }
+                return (int)hash;
+            }
+        }
+
         public static ClassObject CreateTypeObject(RuntimeType rt)
         {
             if (rt == null) return null;
@@ -315,63 +428,63 @@ namespace SimpleLanguage.VM
             RuntimeType rt = new RuntimeType(rmc, null);
 
             string name = rmc.name;
-            if (name == "Void")
+            if (name == "Void" || name == "Core.Void" )
             {
                 m_VoidRuntimeType = rt;
             }
-            else if(name == "Type")
+            else if(name == "Type" || name == "Core.Type")
             {
                 m_TypeRuntimeType = rt;
             }
-            else if( name == "Bool")
+            else if (name == "Bool" || name == "Core.Bool")
             {
                 m_BoolRuntimeType = rt;
             }
-            else if (name == "Num")
+            else if (name == "Num" || name == "Core.Num")
             {
                 m_NumRuntimeType = rt;
             }
-            else if (name == "Byte")
+            else if (name == "Byte" || name == "Core.Byte" )
             {
                 m_ByteRuntimeType = rt;
             }
-            else if (name == "SByte")
+            else if (name == "SByte" || name == "Core.SByte")
             {
                 m_SByteRuntimeType = rt;
             }
-            else if (name == "Int16")
+            else if (name == "Int16" || name == "Core.Int16")
             {
                 m_Int16RuntimeType = rt;
             }
-            else if (name == "UInt16")
+            else if (name == "UInt16" || name == "Core.UInt16")
             {
                 m_UInt16RuntimeType = rt;
             }
-            else if (name == "Int32")
+            else if (name == "Int32" || name == "Core.Int32")
             {
                 m_Int32RuntimeType = rt;
             }
-            else if (name == "UInt32")
+            else if (name == "UInt32" || name == "Core.UInt32")
             {
                 m_UInt32RuntimeType = rt;
             }
-            else if (name == "Int64")
+            else if (name == "Int64" || name == "Core.Int64")
             {
                 m_Int64RuntimeType = rt;
             }
-            else if (name == "UInt64")
+            else if (name == "UInt64" || name == "Core.UInt64")
             {
                 m_UInt64RuntimeType = rt;
             }
-            else if (name == "String")
+            else if (name == "String" || name == "Core.String")
             {
                 m_StringRuntimeType = rt;
             }
-            else if (name == "Float32")
+            else if (name == "Float32" || name == "Core.Float32")
             {
                 m_Float32RuntimeType = rt;
             }
-            else if (name == "Float64")
+            else if (name == "Float64" || name == "Core.Float64")
             {
                 m_Float64RuntimeType = rt;
             }

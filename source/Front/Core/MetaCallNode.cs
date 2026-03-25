@@ -8,6 +8,7 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
 using SimpleLanguage.Parse;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -1586,13 +1587,18 @@ namespace SimpleLanguage.Core
                 return true;
             }
 
-            if (m_IsFunction
-                && (inputname == "CallCLRMethod" || inputname == "CallNativeMethod" || inputname == "CallJVMMethod"))
+            if (m_IsFunction)
             {
-                m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, inputname);
-                m_CallMetaType = new MetaType(mc);
-                m_CallNodeType = ECallNodeType.SystemFunctionCall;
-                return true;
+                // Treat runtime/native bridge calls as system functions.
+                // Accept either exact enum name or literal string.
+                if (Enum.TryParse<ESystemMethodCall>(inputname, true, out var inputindex ) )
+                {
+                    m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, inputname);
+                    m_MetaFunction.SetIndex((int)inputindex);
+                    m_CallMetaType = new MetaType(mc);
+                    m_CallNodeType = ECallNodeType.SystemFunctionCall;
+                    return true;
+                }
             }
 
             MetaNode retMC = null;

@@ -15,6 +15,7 @@ namespace SimpleLanguage.VM
     {
         public NumObject() : base(EVMType.Num)
         {
+            m_RuntimeType = RuntimeTypeManager.numRuntimeType;
         }
 
         public NumObject(EVMType etype) : base(etype)
