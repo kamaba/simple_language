@@ -210,7 +210,18 @@ namespace SimpleLanguage.Core
                 {
                     retMC = mgtc.metaTemplateClass;
                 }
-                var relation = ClassManager.ValidateClassRelationByMetaClass(m_MetaVariable.GetFinalTemplateMetaClass(), retMC);
+                var declaredMC = m_MetaVariable.GetFinalTemplateMetaClass();
+
+                // Special rule for enum parameters:
+                // If function parameter is declared as `enum`, the argument must be an enum value
+                // (MetaEnum) of the same enum type, not the underlying primitive type.
+                if (declaredMC is MetaEnum declaredEnum)
+                {
+                    return retMC is MetaEnum inputEnum
+                        && (inputEnum == declaredEnum || inputEnum.allClassName == declaredEnum.allClassName);
+                }
+
+                var relation = ClassManager.ValidateClassRelationByMetaClass(declaredMC, retMC);
 
                 if (relation == ClassManager.EClassRelation.Same
                     || relation == ClassManager.EClassRelation.Child

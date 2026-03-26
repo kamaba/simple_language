@@ -81,6 +81,47 @@ namespace SimpleLanguage.Core.IR
                 IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);
                 irList.Add(irVar);
             }
+            else if (cnode.visitType == MetaVisitNode.EVisitType.EnumMember)
+            {
+                // Enum member is represented as a static/global MetaMemberEnum,
+                // but when it is passed into a function whose parameter type is `enum`,
+                // the IR typing must use the *declared enum type* (cnode.callMetaType),
+                // not the underlying primitive type of the member.
+                MetaVariable mv = cnode.variable;
+
+                IRMetaType irmt = null;
+                IRMetaClass irmc = null;
+                IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
+
+                if (mv.isStatic || mv.isConst)
+                {
+                    if (cnode.callMetaType != null)
+                    {
+                        irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
+                    }
+                    else
+                    {
+                        irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.isDefineMetaType ? mv.defineMetaType : mv.realMetaType, owirmc);
+                    }
+                    irmc = owirmc;
+                }
+                else
+                {
+                    Debug.Assert(false, "enum类型，不允许使用非const类型!");
+                    //irmc = owirmc;
+                    //if (cnode.callMetaType != null)
+                    //{
+                    //    irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
+                    //}
+                    //else
+                    //{
+                    //    irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.isDefineMetaType ? mv.defineMetaType : mv.realMetaType, owirmc);
+                    //}
+                }
+
+                IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);
+                irList.Add(irVar);
+            }
             else if (cnode.visitType == MetaVisitNode.EVisitType.VisitVariable)
             {
                 MetaVisitVariable mv = cnode.visitVariable;

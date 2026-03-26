@@ -316,6 +316,7 @@ namespace SimpleLanguage.Core
             New,
             NewConst,
             Enum,
+            EnumMember,
             MetaClass,
             Express,
             TemplateName,
@@ -479,11 +480,11 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CraeteByEnum(MetaType mv)
+        public static MetaVisitNode CraeteByEnum(MetaType mt)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.m_CallMetaType = mv;
+            vn.m_CallMetaType = mt;
             vn.visitType = EVisitType.Enum;
 
             return vn;
@@ -521,7 +522,10 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
             vn.variable = _variable;
-            vn.visitType = EVisitType.Variable;
+            // Important: the enum member argument must be treated as an enum value when
+            // matching against a function parameter declared as enum.
+            vn.m_CallMetaType = mt;
+            vn.visitType = EVisitType.EnumMember;
 
             return vn;
         }
@@ -647,6 +651,13 @@ namespace SimpleLanguage.Core
                         }
                         return this.variable.realMetaType;
                     }
+                case EVisitType.EnumMember:
+                    {
+                        // When enum member is passed into a function context,
+                        // we must expose its type as the *declared enum* (m_CallMetaType),
+                        // not the underlying primitive enum storage type.
+                        return m_CallMetaType ?? (variable?.isDefineMetaType == true ? variable.defineMetaType : variable?.realMetaType);
+                    }
                 case EVisitType.New:
                     {
                         return m_CallMetaType;
@@ -703,6 +714,10 @@ namespace SimpleLanguage.Core
                         return variable;
                     }
                 case EVisitType.Enum:
+                    {
+                        return variable;
+                    }
+                case EVisitType.EnumMember:
                     {
                         return variable;
                     }
@@ -810,6 +825,11 @@ namespace SimpleLanguage.Core
                 case EVisitType.New:
                     {
                         sb.Append(this.m_CallMetaType.ToString());
+                    }
+                    break;
+                case MetaVisitNode.EVisitType.EnumMember:
+                    {
+                        sb.Append(this.visitVariable.ToFormatString());
                     }
                     break;
                 default:
