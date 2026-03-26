@@ -19,9 +19,25 @@ namespace SimpleLanguage.VM.Runtime
     // System-level builtin method calls handled by the runtime/native bridge
     public enum ESystemMethodCall
     {
-        CallCLRMethod,
-        CallNativeMethod,
-        CallJVMMethod,
+        SystemCallCLRMethod,
+        SystemCallNativeMethod,
+        SystemCallJVMMethod,
+        SystemPrint,
+        SystemReadLine,
+        SystemReadKey,
+        SystemGetType,
+        SystemGetTypeByName,
+        SystemGetTypeFullName,
+        SystemGetTypeHashCode,
+        SystemGetTypeIsClass,
+        SystemGetTypeIsEnum,
+        SystemGetTypeIsInterface,
+        SystemGetTypeIsValueType,
+        SystemGetTypeIsArray,
+        SystemGetTypeIsGenericType,
+        SystemGetTypeIsGenericTypeDefinition,
+        SystemGetTypeGenericArgumentsCount,
+        SystemGetTypeGenericArguments,
     }
     public unsafe class RuntimeVM
     {
@@ -1441,7 +1457,7 @@ namespace SimpleLanguage.VM.Runtime
                         int kind = sysPkg.systemMethodKind;
                         switch (kind)
                         {
-                            case (int)ESystemMethodCall.CallCLRMethod:
+                            case (int)ESystemMethodCall.SystemCallCLRMethod:
                                 {
                                     if (!TryInvokeRegisteredBridgeByIndex(iri))
                                     {
@@ -1449,7 +1465,7 @@ namespace SimpleLanguage.VM.Runtime
                                     }
                                 }
                                 break;
-                            case (int)ESystemMethodCall.CallNativeMethod:
+                            case (int)ESystemMethodCall.SystemCallNativeMethod:
                                 {
                                     if (!TryInvokeRegisteredBridgeByIndex(iri))
                                     {
@@ -1457,7 +1473,7 @@ namespace SimpleLanguage.VM.Runtime
                                     }
                                 }
                                 break;
-                            case (int)ESystemMethodCall.CallJVMMethod:
+                            case (int)ESystemMethodCall.SystemCallJVMMethod:
                                 {
                                     if (!TryInvokeLegacyBridgeSignature(iri, "CallJVMMethod"))
                                     {
@@ -1939,7 +1955,7 @@ namespace SimpleLanguage.VM.Runtime
                         Int8Object byteObj = obj as Int8Object;
                         if (byteObj == null)
                         {
-                            Debug.Write("该类型不是Byte类型!!");
+                            Debug.Assert( false, "该类型不是Byte类型!!");
                             return;
                         }
                         byteObj.SetValue(svalue.int8Value);

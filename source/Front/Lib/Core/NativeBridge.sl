@@ -53,15 +53,15 @@ public class NativeBridge extends Object
     {
         if kind == BridgeKind.CLR
         {
-            CallCLRMethod( dllName,  className, method, retObj, arrParams);
+            SystemCallCLRMethod( dllName,  className, method, retObj, arrParams);
         }
         elif kind == BridgeKind.NATIVE
         {
-            CallNativeMethod( dllName,  className, method, retObj, arrParams );
+            SystemCallNativeMethod( dllName,  className, method, retObj, arrParams );
         }
         elif kind == BridgeKind.JVM
         {
-            CallJVMMethod( dllName,  className, method, retObj, arrParams );
+            SystemCallJVMMethod( dllName,  className, method, retObj, arrParams );
         }
         ret true
     }

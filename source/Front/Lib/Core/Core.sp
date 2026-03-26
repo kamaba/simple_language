@@ -16,19 +16,9 @@ Project
         #StringTest.fun()
         #TypeTest.fun()
 
-        #!
-        var retObj = BridgeObject();
-        Array<BridgeObject> paramObjs = new(3)
-        paramObjs[0] = BridgeObject("this")
-        paramObjs[1] = BridgeObject(i)
-        paramObjs[2] = BridgeObject(value)
-
-        NativeBridge.Call( BridgeKind.CSharp, "SimpleLanguageVM", "SimpleLanguage.Lib.ArrayClass", 
-        "SetArrayValueThis", retObj, paramObjs );
-        !#
         a = 2 + 4
-
-        global.print(a.toString())
+        //global.print(a.toString())
+        //SystemPrint(a.toString())
     }
     _test_()
     {

@@ -385,9 +385,25 @@ namespace SimpleLanguage
     // System-level builtin method calls handled by the runtime/native bridge
     public enum ESystemMethodCall
     {
-        CallCLRMethod,
-        CallNativeMethod,
-        CallJVMMethod,
+        SystemCallCLRMethod,
+        SystemCallNativeMethod,
+        SystemCallJVMMethod,
+        SystemPrint,
+        SystemReadLine,
+        SystemReadKey,
+        SystemGetType,
+        SystemGetTypeByName,
+        SystemGetTypeFullName,
+        SystemGetTypeHashCode,
+        SystemGetTypeIsClass,
+        SystemGetTypeIsEnum,
+        SystemGetTypeIsInterface,
+        SystemGetTypeIsValueType,
+        SystemGetTypeIsArray,
+        SystemGetTypeIsGenericType,
+        SystemGetTypeIsGenericTypeDefinition,
+        SystemGetTypeGenericArgumentsCount,
+        SystemGetTypeGenericArguments,
     }
 
     class Define
