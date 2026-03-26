@@ -215,10 +215,18 @@ namespace SimpleLanguage.Core
                 // Special rule for enum parameters:
                 // If function parameter is declared as `enum`, the argument must be an enum value
                 // (MetaEnum) of the same enum type, not the underlying primitive type.
-                if (declaredMC is MetaEnum declaredEnum)
+                if (declaredMC is MetaEnum declaredEnum && mip.express is MetaCallLinkExpressNode mcle)
                 {
-                    return retMC is MetaEnum inputEnum
-                        && (inputEnum == declaredEnum || inputEnum.allClassName == declaredEnum.allClassName);
+                    var gmv = mcle.metaCallLink.finalCallNode.variable.GetOwnerClassTemplateClass();
+
+                    if(gmv is MetaEnum )
+                    {
+                        if (gmv == declaredMC)
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
                 }
 
                 var relation = ClassManager.ValidateClassRelationByMetaClass(declaredMC, retMC);

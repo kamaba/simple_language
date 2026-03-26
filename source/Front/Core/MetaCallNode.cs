@@ -1885,7 +1885,7 @@ namespace SimpleLanguage.Core
                 {
                     try
                     {
-                        //if (LocalRuntimeVM.Instance.TryGet(inputname, out var del))
+                        if ( Enum.TryParse<ESystemMethodCall>(inputname, out var del))
                         {
                             // create a lightweight builtin placeholder so later phases treat this as a static function
                             m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, inputname);

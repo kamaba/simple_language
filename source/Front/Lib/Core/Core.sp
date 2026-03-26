@@ -16,9 +16,17 @@ Project
         #StringTest.fun()
         #TypeTest.fun()
 
-        a = 2 + 4
-        //global.print(a.toString())
-        //SystemPrint(a.toString())
+        #a = 2 + 4
+        #global.print(a.toString())
+        #SystemPrint(a.toString())
+        Call( BridgeKind.CLR )
+    }
+    Call( BridgeKind kind )
+    {
+        if kind == BridgeKind.CLR
+        {
+            SystemPrint("----")
+        }
     }
     _test_()
     {

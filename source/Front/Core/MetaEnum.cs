@@ -212,6 +212,8 @@ namespace SimpleLanguage.Core
                             Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内允许使用const值类变量");
                             continue;
                         }
+                        // VM enum comparison uses member index (0..n-1) rather than explicit numeric value.
+                        // Keep explicitValue conversion as a validation step, but force the stored enum member constant to mme.index.
                         dynamic explicitValue = 0;
                         if (m_ExtendClass == CoreMetaClassManager.byteMetaClass)
                         {
@@ -301,8 +303,16 @@ namespace SimpleLanguage.Core
                             explicitValue = (ulong)Convert.ToUInt64(v.Value.constExpressNode.value);
                         }
 
-                        // prepare next implicit enum value
+                        // prepare next implicit enum value (keep original conversion for validation)
                         indexdynamic = explicitValue + 1;
+
+                        // Force stored enum member value to its member index, for VM comparisons.
+                        var indexConst = new MetaConstExpressNode(m_ExtendClass.eType, mme.index);
+                        mme.SetExpress(indexConst);
+                        mme.ParseMetaExpress();
+
+                        // Next member should follow sequential member index, not explicit numeric value.
+                        indexdynamic = mme.index + 1;
                     }
                     else
                     {

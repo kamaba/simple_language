@@ -1457,6 +1457,33 @@ namespace SimpleLanguage.VM.Runtime
                         int kind = sysPkg.systemMethodKind;
                         switch (kind)
                         {
+                            case (int)ESystemMethodCall.SystemPrint:
+                                {
+                                    int paramCount = sysPkg.paramCount;
+                                    if (paramCount <= 0)
+                                    {
+                                        Console.Write(string.Empty);
+                                        break;
+                                    }
+                                    if (m_ValueIndex < paramCount)
+                                    {
+                                        Debug.Assert(false, $"SystemPrint stack underflow, need={paramCount}, has={m_ValueIndex}");
+                                        break;
+                                    }
+
+                                    var args = new SValue[paramCount];
+                                    for (int i = paramCount - 1; i >= 0; i--)
+                                    {
+                                        args[i] = m_ValueStack[--m_ValueIndex];
+                                    }
+
+                                    // Builtin contract: SystemPrint(string text)
+                                    // Use ToString fallback so non-string input still prints readable text.
+                                    var textObj = args[0].GetValueObject();
+                                    var text = textObj?.ToString() ?? string.Empty;
+                                    Console.Write(text);
+                                }
+                                break;
                             case (int)ESystemMethodCall.SystemCallCLRMethod:
                                 {
                                     if (!TryInvokeRegisteredBridgeByIndex(iri))

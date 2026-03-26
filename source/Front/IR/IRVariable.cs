@@ -33,6 +33,14 @@ namespace SimpleLanguage.IR
                 IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, irmv.index, IRMetaVariableFrom.Argument);
                 return irVar;
             }
+            else if( mv.variableFrom == MetaVariable.EVariableFrom.EnumMember )
+            {
+                int id = mv.GetHashCode();
+                irmv = _irMethod.GetIRLocalVariableById(id);
+                System.Diagnostics.Debug.Assert(irmv != null);
+                IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, irmv.index, IRMetaVariableFrom.LocalStatement);
+                return irVar;
+            }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
             {
                 int index = -1;
