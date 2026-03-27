@@ -1,4 +1,4 @@
-﻿
+
 using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.VM.Runtime
@@ -9,9 +9,20 @@ namespace SimpleLanguage.VM.Runtime
         public static RuntimeVM currentCLRRuntime = null;
         public static RuntimeVM topCLRRuntime = null;
 
-        private static List<SValue> m_GlobalVariableValueList = new List<SValue>();
+        private sealed class GlobalStaticSlot
+        {
+            public int ownerClassId;
+            public int staticIndex;
+            public RuntimeType? runtimeType;
+        }
+
+        // Fast lookup list for global ids. It only stores slot mapping metadata,
+        // actual values are always stored on RuntimeType static fields.
+        private static List<GlobalStaticSlot> m_GlobalVariableSlotList = new List<GlobalStaticSlot>();
         private static Dictionary<int, int> m_GlobalVariableId2IndexDict = new Dictionary<int, int>();
         private static List<Instruction> m_GlobalInitInstructionList = new List<Instruction>();
+        private static bool m_IsGlobalInitApplied = false;
+        private static bool m_IsGlobalInitApplying = false;
         public static Stack<RuntimeVM> clrRuntimeStack => m_ClrRuntimeStack;
 
         private static Stack<RuntimeVM> m_ClrRuntimeStack = new Stack<RuntimeVM>();
@@ -89,12 +100,18 @@ namespace SimpleLanguage.VM.Runtime
         }
         public static void LoadGlobalVariableMapping()
         {
+            if (m_IsGlobalInitApplied || m_IsGlobalInitApplying)
+            {
+                return;
+            }
             if (m_GlobalInitInstructionList == null || m_GlobalInitInstructionList.Count == 0)
             {
+                m_IsGlobalInitApplied = true;
                 return;
             }
 
             bool pushedRoot = false;
+            m_IsGlobalInitApplying = true;
             if (m_ClrRuntimeStack.Count == 0)
             {
                 var root = new RuntimeVM(new List<Instruction>());
@@ -110,21 +127,29 @@ namespace SimpleLanguage.VM.Runtime
                 clrRuntime.isPersistent = true;
                 clrRuntime.Run(true);
                 PopCLRRuntime();
+                m_IsGlobalInitApplied = true;
             }
             finally
             {
+                m_IsGlobalInitApplying = false;
                 if (pushedRoot && m_ClrRuntimeStack.Count > 0)
                 {
                     PopCLRRuntime();
                 }
             }
         }
+        public static void EnsureGlobalVariableMappingInitialized()
+        {
+            LoadGlobalVariableMapping();
+        }
 
         public static void ResetGlobalVariableMapping()
         {
             m_GlobalVariableId2IndexDict.Clear();
-            m_GlobalVariableValueList.Clear();
+            m_GlobalVariableSlotList.Clear();
             m_GlobalInitInstructionList.Clear();
+            m_IsGlobalInitApplied = false;
+            m_IsGlobalInitApplying = false;
         }
 
         public static void RegisterGlobalVariable(int id)
@@ -139,22 +164,35 @@ namespace SimpleLanguage.VM.Runtime
                 return;
             }
 
-            int mapIndex = m_GlobalVariableValueList.Count;
+            int mapIndex = m_GlobalVariableSlotList.Count;
             m_GlobalVariableId2IndexDict[id] = mapIndex;
-            var v = default(SValue);
-            v.SetNull();
-            m_GlobalVariableValueList.Add(v);
+            m_GlobalVariableSlotList.Add(new GlobalStaticSlot
+            {
+                ownerClassId = ownerClassId,
+                staticIndex = index,
+                runtimeType = null,
+            });
         }
 
         public static void SetGlobalInitInstructions(List<Instruction> instructionList)
         {
             m_GlobalInitInstructionList = instructionList ?? new List<Instruction>();
+            m_IsGlobalInitApplied = false;
         }
         public static void StoreGlobalVariable( int id, ref SValue savl )
         {
-            if(m_GlobalVariableId2IndexDict.ContainsKey( id ) )
+            if (m_GlobalVariableId2IndexDict.ContainsKey(id))
             {
-                m_GlobalVariableValueList[m_GlobalVariableId2IndexDict[id]] = savl;
+                var slot = m_GlobalVariableSlotList[m_GlobalVariableId2IndexDict[id]];
+                var rt = ResolveGlobalSlotRuntimeType(slot);
+                if (rt != null)
+                {
+                    rt.SetMemberVariableSValue(slot.staticIndex, savl);
+                }
+                else
+                {
+                    Log.AddVM(EError.None, $"没有找到全局变量所属的RuntimeType映射! globalId={id}, ownerClassId={slot.ownerClassId}");
+                }
             }
             else
             {
@@ -199,12 +237,44 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (m_GlobalVariableId2IndexDict.ContainsKey(id))
             {
-                sval = m_GlobalVariableValueList[m_GlobalVariableId2IndexDict[id]];
+                var slot = m_GlobalVariableSlotList[m_GlobalVariableId2IndexDict[id]];
+                var rt = ResolveGlobalSlotRuntimeType(slot);
+                if (rt != null)
+                {
+                    rt.GetMemberVariableSValue(slot.staticIndex, ref sval);
+                }
+                else
+                {
+                    sval.SetNull();
+                    Log.AddVM(EError.None, $"没有找到全局变量所属的RuntimeType映射! globalId={id}, ownerClassId={slot.ownerClassId}");
+                }
             }
             else
             {
                 Log.AddVM(EError.None, "没有找到全局变量的映射关系!");
             }
+        }
+
+        private static RuntimeType? ResolveGlobalSlotRuntimeType(GlobalStaticSlot slot)
+        {
+            if (slot.runtimeType != null)
+            {
+                return slot.runtimeType;
+            }
+
+            var rc = RuntimeClassManager.instance.GetRuntimeClassById(slot.ownerClassId);
+            if (rc == null)
+            {
+                return null;
+            }
+
+            var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(rc);
+            if (rt == null)
+            {
+                rt = RuntimeTypeManager.AddRuntimeTypeByClass(rc);
+            }
+            slot.runtimeType = rt;
+            return rt;
         }
         public static void RunIRMethod( List<RuntimeType> irmtList, RuntimeMethod _irMethod, bool isDisCountStackCount = true )
         {

@@ -7,6 +7,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Encodings.Web;
+using SimpleLanguage;
+using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.Export.SLIR.Types;
 
@@ -185,53 +187,93 @@ namespace SimpleLanguage.Export.SLIR
                     }
                 }
             if (c.localIRMetaVariableList != null)
+            {
+                foreach (var v in c.localIRMetaVariableList)
                 {
-                    foreach (var v in c.localIRMetaVariableList)
+                    if (v == null) continue;
+                    var fieldPkgLocal = new SLFieldPackage
                     {
-                        if (v == null) continue;
-                        var fieldPkgLocal = new SLFieldPackage
+                        name = GetShortName(v.name ?? string.Empty),
+                        typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
+                        flags = BuildFieldFlags(v),
+                        index = v.index,
+                    };
+                    var irBufLocal = new List<IRData>();
+                    // fill express from IRMetaVariable.irDataList if present
+                    if (v.irDataList != null && v.irDataList.Count > 0)
+                    {
+                        foreach (var d in v.irDataList)
                         {
-                            name = GetShortName(v.name ?? string.Empty),
-                            typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
-                            flags = BuildFieldFlags(v),
-                            index = v.index,
-                        };
-                        // fill express from IRMetaVariable.irDataList if present
-                        if (v.irDataList != null && v.irDataList.Count > 0)
-                        {
-                            foreach (var d in v.irDataList)
-                            {
-                                if (d == null) continue;
-                                fieldPkgLocal.express.Add(CreateInstructionPackage(d));
-                            }
+                            if (d == null) continue;
+                            irBufLocal.Add(d);
                         }
-                        else
+                    }
+                    else
+                    {
+                        // try to synthesize from matching global static variable (for enums/static defined as global)
+                        bool enumExpressExported = false;
+                        // enum类型特殊处理
+                        if (v.irMetaType != null && v.irMetaType.irMetaClass != null && v.irMetaType.irMetaClass.GetType().Name == "MetaEnum")
                         {
-                            // try to synthesize from matching global static variable (for enums/static defined as global)
-                            if (ir.globalStaticVariableList != null)
+                            // 尝试从MetaEnum成员导出express
+                            var metaEnum = v.irMetaType.irMetaClass;
+                            var member = metaEnum.GetType().GetMethod("GetMemberEnumByName")?.Invoke(metaEnum, new object[] { v.name });
+                            if (member != null)
                             {
-                                var match = ir.globalStaticVariableList.Find(g => g != null && g.id == v.id);
-                                if (match != null && match.express != null)
+                                var expressProp = member.GetType().GetProperty("express");
+                                var express = expressProp?.GetValue(member);
+                                if (express is MetaExpressNode enumMemberExpress)
                                 {
                                     try
                                     {
-                                        var iex = IRExpressManager.CreateExpress(null, match.express);
+                                        var iex = IRExpressManager.CreateExpress(null, enumMemberExpress);
                                         if (iex?.IRDataList != null)
                                         {
                                             foreach (var d in iex.IRDataList)
                                             {
                                                 if (d == null) continue;
-                                                fieldPkgLocal.express.Add(CreateInstructionPackage(d));
+                                                irBufLocal.Add(d);
                                             }
+                                            enumExpressExported = true;
                                         }
                                     }
                                     catch { }
                                 }
                             }
                         }
-                        cm.fieldList.Add(fieldPkgLocal);
+                        if (!enumExpressExported && ir.globalStaticVariableList != null)
+                        {
+                            var match = ir.globalStaticVariableList.Find(g => g != null && g.id == v.id);
+                            if (match != null && match.express != null)
+                            {
+                                try
+                                {
+                                    var iex = IRExpressManager.CreateExpress(null, match.express);
+                                    if (iex?.IRDataList != null)
+                                    {
+                                        foreach (var d in iex.IRDataList)
+                                        {
+                                            if (d == null) continue;
+                                            irBufLocal.Add(d);
+                                        }
+                                    }
+                                }
+                                catch { }
+                            }
+                        }
                     }
+                    // Match IRMetaClass.CreateStaticMetaMetaVariableIRList: expr IR then StoreNotStaticField1 for instance fields.
+                    if (irBufLocal.Count > 0)
+                    {
+                        AppendClassInstanceFieldStoreIfNeeded(v, irBufLocal);
+                    }
+                    foreach (var d in irBufLocal)
+                    {
+                        fieldPkgLocal.express.Add(CreateInstructionPackage(d));
+                    }
+                    cm.fieldList.Add(fieldPkgLocal);
                 }
+            }
                 if (c.staticIRMetaVariableList != null)
                 {
                     foreach (var v in c.staticIRMetaVariableList)
@@ -244,12 +286,13 @@ namespace SimpleLanguage.Export.SLIR
                             flags = BuildFieldFlags(v) | 32,
                             index = v.index,
                         };
+                        var irBufStatic = new List<IRData>();
                         if (v.irDataList != null && v.irDataList.Count > 0)
                         {
                             foreach (var d in v.irDataList)
                             {
                                 if (d == null) continue;
-                                fieldPkgStatic.express.Add(CreateInstructionPackage(d));
+                                irBufStatic.Add(d);
                             }
                         }
                         else
@@ -268,13 +311,41 @@ namespace SimpleLanguage.Export.SLIR
                                             foreach (var d in iex.IRDataList)
                                             {
                                                 if (d == null) continue;
-                                                fieldPkgStatic.express.Add(CreateInstructionPackage(d));
+                                                irBufStatic.Add(d);
                                             }
                                         }
                                     }
                                     catch { }
                                 }
                             }
+
+                            // Fallback: compile directly from field expression when
+                            // globalStaticVariableList matching by id is unavailable.
+                            if (irBufStatic.Count == 0 && v.express != null)
+                            {
+                                try
+                                {
+                                    var iexField = IRExpressManager.CreateExpress(null, v.express);
+                                    if (iexField?.IRDataList != null)
+                                    {
+                                        foreach (var d in iexField.IRDataList)
+                                        {
+                                            if (d == null) continue;
+                                            irBufStatic.Add(d);
+                                        }
+                                    }
+                                }
+                                catch { }
+                            }
+                        }
+                        // Match IRMetaClass.CreateStaticMetaMetaVariableIRList: expr IR then StoreStaticField for class statics.
+                        if (irBufStatic.Count > 0)
+                        {
+                            AppendClassStaticFieldStoreIfNeeded(v, irBufStatic);
+                        }
+                        foreach (var d in irBufStatic)
+                        {
+                            fieldPkgStatic.express.Add(CreateInstructionPackage(d));
                         }
                         cm.fieldList.Add(fieldPkgStatic);
                     }
@@ -317,6 +388,8 @@ namespace SimpleLanguage.Export.SLIR
 
                     if (irListForExpr.Count > 0)
                     {
+                        // Match IRManager.GlobalVariable: expr IR then StoreGlobal.
+                        AppendGlobalStoreIfNeeded(gv, irListForExpr);
                         foreach (var d in irListForExpr)
                         {
                             if (d == null) continue;
@@ -469,6 +542,62 @@ namespace SimpleLanguage.Export.SLIR
                 i = gt + 1;
             }
             return name;
+        }
+
+        /// <summary>
+        /// After expression IR for a class static field, append <see cref="EIROpCode.StoreStaticField"/>
+        /// when missing — same order as <see cref="IRMetaClass.CreateStaticMetaMetaVariableIRList"/>.
+        /// </summary>
+        private static void AppendClassStaticFieldStoreIfNeeded(IRMetaVariable v, List<IRData> irBuf)
+        {
+            if (v == null || irBuf == null || irBuf.Count == 0) return;
+            var last = irBuf[irBuf.Count - 1];
+            if (last != null && last.opCode == EIROpCode.StoreStaticField) return;
+            if (v.irMetaType == null) return;
+            var irdata = new IRData
+            {
+                id = irBuf.Count,
+                opValue = v.irMetaType,
+                opCode = EIROpCode.StoreStaticField,
+                index = v.index,
+            };
+            irBuf.Add(irdata);
+        }
+
+        /// <summary>
+        /// After expression IR for an instance field default init, append <see cref="EIROpCode.StoreNotStaticField1"/>.
+        /// </summary>
+        private static void AppendClassInstanceFieldStoreIfNeeded(IRMetaVariable v, List<IRData> irBuf)
+        {
+            if (v == null || irBuf == null || irBuf.Count == 0) return;
+            var last = irBuf[irBuf.Count - 1];
+            if (last != null && last.opCode == EIROpCode.StoreNotStaticField1) return;
+            if (v.irMetaType == null) return;
+            var irdata = new IRData
+            {
+                id = irBuf.Count,
+                opValue = v.irMetaType,
+                opCode = EIROpCode.StoreNotStaticField1,
+                index = v.index,
+            };
+            irBuf.Add(irdata);
+        }
+
+        /// <summary>
+        /// After expression IR for a global static variable init, append <see cref="EIROpCode.StoreGlobal"/>.
+        /// </summary>
+        private static void AppendGlobalStoreIfNeeded(IRMetaVariable gv, List<IRData> irBuf)
+        {
+            if (gv == null || irBuf == null || irBuf.Count == 0) return;
+            var last = irBuf[irBuf.Count - 1];
+            if (last != null && last.opCode == EIROpCode.StoreGlobal) return;
+            var irdata = new IRData
+            {
+                id = irBuf.Count,
+                opCode = EIROpCode.StoreGlobal,
+                index = gv.id,
+            };
+            irBuf.Add(irdata);
         }
 
         private static int BuildFieldFlags(IRMetaVariable v)

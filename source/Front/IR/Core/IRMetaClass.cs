@@ -200,7 +200,7 @@ namespace SimpleLanguage.IR
                     IRMetaVariable irmv = new IRMetaVariable(this, mv, mv.index);
                     m_StaticIRMetaVariableList.Add(irmv);
                     AddMetaMemberVariableIndexBindHashCode(mv.GetHashCode(), mv.index);
-                    IRManager.instance.AddGlobalMetaMemberVariable(irmv);
+                    //IRManager.instance.AddGlobalMetaMemberVariable(irmv);
                 }
             }
             else if (m_MetaClass is MetaData md)
@@ -229,26 +229,23 @@ namespace SimpleLanguage.IR
                     var v = staticMetaMemberVariables[i];
 
                     IRMetaVariable irmv = new IRMetaVariable(this, v, i);
-                    bool isProjectLikeClass = m_MetaClass != null
-                        && m_MetaClass.name == "Project"
-                        && !string.IsNullOrEmpty(this.m_SourcePath)
-                        && this.m_SourcePath.EndsWith(".sp", System.StringComparison.OrdinalIgnoreCase);
+                    //bool isProjectLikeClass = m_MetaClass != null
+                    //    && m_MetaClass.name == "Project"
+                    //    && !string.IsNullOrEmpty(this.m_SourcePath)
+                    //    && this.m_SourcePath.EndsWith(".sp", System.StringComparison.OrdinalIgnoreCase);
 
                     // const 成员需要进入 globalStaticVariableList，由 VM 在全局阶段初始化（与「非 Project/非模板静态」路径一致）。
                     // 若同时放进 staticIRMetaVariableList，会与全局初始化重复。
-                    if (v.isConst)
-                    {
-                        IRManager.instance.AddGlobalMetaMemberVariable(irmv);
-                    }
-                    else if (isProjectLikeClass || v.realMetaType.GenTemplateIsIncludeTemplate())
-                    {
-                        m_StaticIRMetaVariableList.Add(irmv);
-                        AddMetaMemberVariableIndexBindHashCode(v.GetHashCode(), i);
-                    }
-                    else
-                    {
-                        IRManager.instance.AddGlobalMetaMemberVariable(irmv);
-                    }
+                    //if (v.isConst || isProjectLikeClass )
+                    //{
+                    //    IRManager.instance.AddGlobalMetaMemberVariable(irmv);
+                    //}
+                    //else// if ( v.realMetaType.GenTemplateIsIncludeTemplate())
+                    //{
+                    //}
+
+                    m_StaticIRMetaVariableList.Add(irmv);
+                    AddMetaMemberVariableIndexBindHashCode(v.GetHashCode(), i);
                 }
             }
             //int count = 0;

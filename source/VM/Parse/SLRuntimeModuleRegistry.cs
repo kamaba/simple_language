@@ -756,5 +756,28 @@ namespace SimpleLanguage.Parse
 
             return null;
         }
+
+        // Returns a copy of static field initializer instructions for one class field.
+        // Caller can execute it in a dedicated RuntimeVM and assign the top stack value.
+        public static List<Instruction> GetStaticFieldInitializerExpressions(int classId, int fieldIndex)
+        {
+            if (classId == 0 || fieldIndex < 0) return new List<Instruction>();
+            if (!s_ClassPackageById.TryGetValue(classId, out var pkg) || pkg == null) return new List<Instruction>();
+            if (pkg.fieldList == null || pkg.fieldList.Count == 0) return new List<Instruction>();
+
+            for (int i = 0; i < pkg.fieldList.Count; i++)
+            {
+                var f = pkg.fieldList[i];
+                if (f == null) continue;
+                if (f.index != fieldIndex) continue;
+                if ((f.flags & 32) != 32) return new List<Instruction>();
+                if (f.express == null || f.express.Count == 0) return new List<Instruction>();
+
+                Instruction.UnpackPayloadsFromJson(f.express);
+                return new List<Instruction>(f.express);
+            }
+
+            return new List<Instruction>();
+        }
     }
 }

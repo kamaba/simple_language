@@ -62,7 +62,7 @@ namespace SimpleLanguage.IR
                     }
                     index = irmc.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode());
                 }
-                if ( mv.isStatic || mv.isConst )
+                if ( mv.isConst )
                 {
                     if (mv.realMetaType.GenTemplateIsIncludeTemplate())
                     {
