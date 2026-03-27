@@ -377,10 +377,21 @@ namespace SimpleLanguage.VM
         {
             return s_RuntimeTypeList.Find(r => r.runtimeClass != null && r.runtimeClass.id == id );
         }
-        public static RuntimeType GetRuntimeTypeByMIRMetaType(RuntimeDefType irmt)
+        public static RuntimeType GetRuntimeTypeByMIRMetaType(RuntimeDefType irmt, bool isAdd = true )
         {
             if (irmt == null) return null;
-            return GetRuntimeTypeByMT(irmt.runtimeClass);
+            RuntimeType t =  GetRuntimeTypeByMT(irmt.runtimeClass);
+            if( t == null && isAdd )
+            {
+                List<RuntimeType> rtlist = new List<RuntimeType>();
+                for( int i = 0; i < irmt.runtimeDefTypeList.Count; i++ )
+                {
+                    var tc = GetRuntimeTypeByMIRMetaType(irmt.runtimeDefTypeList[i]);
+                }
+
+                t = AddRuntimeTypeByClassAndTemplate(irmt.runtimeClass, rtlist );
+            }
+            return t;
         }
         public static RuntimeType GetRuntimeTypeByMTAndTemplateMT( RuntimeClass rmc, List<RuntimeType> inputTemplateTypeList)
         {

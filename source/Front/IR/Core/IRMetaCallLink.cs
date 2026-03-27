@@ -95,15 +95,9 @@ namespace SimpleLanguage.Core.IR
 
                 if (mv.isStatic || mv.isConst)
                 {
-                    if (cnode.callMetaType != null)
-                    {
-                        irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
-                    }
-                    else
-                    {
-                        irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.isDefineMetaType ? mv.defineMetaType : mv.realMetaType, owirmc);
-                    }
-                    irmc = owirmc;
+                    irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.isDefineMetaType ? mv.defineMetaType : mv.realMetaType, owirmc);
+
+                    irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
                 }
                 else
                 {

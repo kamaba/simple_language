@@ -50,7 +50,7 @@ namespace SimpleLanguage.Core
                 m_IsConst = false;
                 m_IsStatic = true;
             }
-            m_VariableFrom = EVariableFrom.Member;
+            m_VariableFrom = MetaVariable.EVariableFrom.EnumMember;
             if (fmmv.mutToken != null)
             {
                 if (parentIsConst)

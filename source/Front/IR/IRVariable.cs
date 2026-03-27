@@ -9,6 +9,7 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.Logging;
+using System;
 using System.Diagnostics;
 using System.Text;
 
@@ -35,10 +36,18 @@ namespace SimpleLanguage.IR
             }
             else if( mv.variableFrom == MetaVariable.EVariableFrom.EnumMember )
             {
-                int id = mv.GetHashCode();
-                irmv = _irMethod.GetIRLocalVariableById(id);
-                System.Diagnostics.Debug.Assert(irmv != null);
-                IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, irmv.index, IRMetaVariableFrom.LocalStatement);
+                int index = -1;
+                if (irmc != null)
+                {
+                    MetaVariable gmv = mv;
+                    if (mv.sourceMetaVariable != null)
+                    {
+                        gmv = mv.sourceMetaVariable;
+                    }
+                    index = irmc.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode());
+                }
+                IRMetaType irmt2 = new IRMetaType(irmc);
+                IRLoadVariable irVar = new IRLoadVariable(irmt2, _irMethod, index, IRMetaVariableFrom.Static);
                 return irVar;
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
