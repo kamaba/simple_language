@@ -1,4 +1,4 @@
-﻿using SimpleLanguage.Logging;
+using SimpleLanguage.Logging;
 using System.Diagnostics;
 
 namespace SimpleLanguage.VM
@@ -7,6 +7,8 @@ namespace SimpleLanguage.VM
     {
         public int id { get; set; } = 0;
         public string name { get; set; } = "";
+        /// <summary>0=Class, 1=Enum, 2=Data — from exported SLIR class metadata.</summary>
+        public int metaClassKind { get; set; }
         public List<RuntimeVariable> nonStaticIRMetaVariableList => m_NonStaticIRMetaVariableList;
         public List<RuntimeVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;
         public List<RuntimeDefType> runtimeDefTypeList => m_RuntimeDefTypeList;

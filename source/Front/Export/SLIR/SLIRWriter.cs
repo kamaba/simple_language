@@ -89,8 +89,7 @@ namespace SimpleLanguage.Export.SLIR
             bw.Write(string.Empty); // short name not available at IR layer currently
             bw.Write(string.Empty); // base name not available at IR layer currently
 
-            // class kind/flags are not represented in IRMetaClass today
-            bw.Write(0);
+            bw.Write((int)c.metaClassKind);
             bw.Write(0);
             bw.Write(0);
             bw.Write(0);

@@ -88,7 +88,9 @@ namespace SimpleLanuageVM.Load
         public int id { get; set; }
         public string name { get; set; } = string.Empty;
         public string fullName { get; set; } = string.Empty;
-        public string sourcePath { get; set; } = string.Empty; 
+        public string sourcePath { get; set; } = string.Empty;
+        /// <summary>0=Class, 1=Enum, 2=Data — matches Front <c>IRMetaClassKind</c>.</summary>
+        public int metaClassKind { get; set; }
         public List<SLFieldPackage> fieldList { get; set; } = new();
         // per-class method references separated by category
         public List<SLMethodPackage> nonStaticMethodList { get; set; } = new();

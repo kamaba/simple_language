@@ -58,6 +58,7 @@ namespace SimpleLanguage.VM
         {
             public string AllName = string.Empty;
             public string SourcePath = string.Empty;
+            public int MetaClassKind;
             public List<FieldInfo> Fields = new();
         }
 
@@ -89,6 +90,7 @@ namespace SimpleLanguage.VM
                     // For SLIR loading we use a stable hash on class name.
                     id = StableId32(c.AllName),
                     name = c.AllName ?? string.Empty,
+                    metaClassKind = c.MetaClassKind,
                 };
                 rcm.m_IRMetaClassList.Add(rc);
             }
@@ -257,7 +259,7 @@ namespace SimpleLanguage.VM
                 _ = br.ReadInt32(); // short name (unused)
                 _ = br.ReadInt32(); // base name (unused)
 
-                _ = br.ReadInt32(); // kind
+                ci.MetaClassKind = br.ReadInt32();
                 _ = br.ReadInt32(); // flags1
                 _ = br.ReadInt32(); // flags2
                 _ = br.ReadInt32(); // flags3

@@ -126,6 +126,7 @@ namespace SimpleLanguage.Export.SLIR
                     fullName = full,
                     name = typeName,
                     sourcePath = c.sourcePath ?? string.Empty,
+                    metaClassKind = (int)c.metaClassKind,
                 };
                 // export template count
                 cm.templateCount = c.templateCount;
@@ -141,6 +142,9 @@ namespace SimpleLanguage.Export.SLIR
                         if (rtp != null) cm.templateTypeList.Add(rtp);
                     }
                 }
+
+                IRMetaType curirmt = new IRMetaType(c, c.templateTypeList);
+
                 // export template relations mapping
                 if (c.templateRelation != null)
                 {
@@ -194,7 +198,7 @@ namespace SimpleLanguage.Export.SLIR
                     var fieldPkgLocal = new SLFieldPackage
                     {
                         name = GetShortName(v.name ?? string.Empty),
-                        typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
+                        typeDef = CreateRuntimeDefTypePackage(curirmt),
                         flags = BuildFieldFlags(v),
                         index = v.index,
                     };
@@ -341,7 +345,7 @@ namespace SimpleLanguage.Export.SLIR
                         // Match IRMetaClass.CreateStaticMetaMetaVariableIRList: expr IR then StoreStaticField for class statics.
                         if (irBufStatic.Count > 0)
                         {
-                            AppendClassStaticFieldStoreIfNeeded(v, irBufStatic);
+                            AppendClassStaticFieldStoreIfNeeded(v, curirmt, irBufStatic);
                         }
                         foreach (var d in irBufStatic)
                         {
@@ -548,16 +552,17 @@ namespace SimpleLanguage.Export.SLIR
         /// After expression IR for a class static field, append <see cref="EIROpCode.StoreStaticField"/>
         /// when missing — same order as <see cref="IRMetaClass.CreateStaticMetaMetaVariableIRList"/>.
         /// </summary>
-        private static void AppendClassStaticFieldStoreIfNeeded(IRMetaVariable v, List<IRData> irBuf)
+        private static void AppendClassStaticFieldStoreIfNeeded(IRMetaVariable v, IRMetaType curirmt, List<IRData> irBuf)
         {
             if (v == null || irBuf == null || irBuf.Count == 0) return;
             var last = irBuf[irBuf.Count - 1];
             if (last != null && last.opCode == EIROpCode.StoreStaticField) return;
             if (v.irMetaType == null) return;
+
             var irdata = new IRData
             {
                 id = irBuf.Count,
-                opValue = v.irMetaType,
+                opValue = curirmt,
                 opCode = EIROpCode.StoreStaticField,
                 index = v.index,
             };

@@ -5,9 +5,15 @@ Project
     float Pi = 3.14f
     print( string text )
     {
-        Array<BridgeObject> paramObjs = new(1)
-        paramObjs[0] = BridgeObject(text)
-        NativeBridge.Call( BridgeKind.CLR, "System", "Console", "WriteLine", null, paramObjs );
+        #Array<BridgeObject> paramObjs = new(1)
+        #paramObjs[0] = BridgeObject(text)
+        #NativeBridge.Call( BridgeKind.CLR, "System", "Console", "WriteLine", null, paramObjs );
+        SystemPrint(text)
+    }
+    println( string str )
+    {
+        string newstr = str + "\n";
+        SystemPrint(newstr)
     }
     _main_()
     {
@@ -16,17 +22,11 @@ Project
         #StringTest.fun()
         #TypeTest.fun()
 
-        #a = 2 + 4
+        a = 2 + 4
         #global.print(a.toString())
         #SystemPrint(a.toString())
-        Call( BridgeKind.CLR )
-    }
-    Call( BridgeKind kind )
-    {
-        if kind == BridgeKind.CLR
-        {
-            SystemPrint("----")
-        }
+        #Call( BridgeKind.CLR )
+        println( a.toString() )
     }
     _test_()
     {

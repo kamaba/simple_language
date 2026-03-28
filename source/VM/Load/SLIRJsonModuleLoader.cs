@@ -383,7 +383,7 @@ namespace SimpleLanguage.VM
             for (int i = 0; i < allClasses.Count; i++)
             {
                 var c = allClasses[i];
-                var rc = new RuntimeClass { id = StableId32(c.name), name = c.name ?? string.Empty };
+                var rc = new RuntimeClass { id = StableId32(c.name), name = c.name ?? string.Empty, metaClassKind = c.metaClassKind };
                 rcm.m_IRMetaClassList.Add(rc);
             }
             for (int i = 0; i < rcm.m_IRMetaClassList.Count; i++)

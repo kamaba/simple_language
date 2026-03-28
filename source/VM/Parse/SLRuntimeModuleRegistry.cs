@@ -153,7 +153,12 @@ namespace SimpleLanguage.Parse
                     if (rc == null)
                     {
                         // create lightweight runtime class entry for method mapping
-                        rc = new RuntimeClass { id = c.id, name = string.IsNullOrWhiteSpace(c.fullName) ? c.name : c.fullName };
+                        rc = new RuntimeClass
+                        {
+                            id = c.id,
+                            name = string.IsNullOrWhiteSpace(c.fullName) ? c.name : c.fullName,
+                            metaClassKind = c.metaClassKind,
+                        };
                         RuntimeClassManager.instance.m_IRMetaClassList.Add(rc);
                     }
 
@@ -507,6 +512,7 @@ namespace SimpleLanguage.Parse
             {
                 id = pkg.id,
                 name = string.IsNullOrWhiteSpace(pkg.fullName) ? pkg.name : pkg.fullName,
+                metaClassKind = pkg.metaClassKind,
             };
 
             // register early to allow recursive type resolutions

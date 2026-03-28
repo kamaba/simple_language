@@ -547,6 +547,7 @@ namespace SimpleLanguage.VM
                 }
 
                 t = AddRuntimeTypeByClassAndTemplate(irmt.runtimeClass, rtlist );
+                t.EnsureStaticMemberObjectsInitialized();
             }
             return t;
         }

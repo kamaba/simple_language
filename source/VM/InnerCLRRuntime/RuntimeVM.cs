@@ -128,9 +128,18 @@ namespace SimpleLanguage.VM.Runtime
                 for (int i = 0; i < m_Method.methodArgumentList.Count; i++)
                 {
                     RuntimeDefType imt = m_Method.methodArgumentList[i].runtimeDefType;
-                    SObject sobj = imt != null
-                        ? CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true)
-                        : new SObject(EVMType.Object);
+                    // Enum-typed parameters use a generic any-object slot (not ClassObject for the enum type).
+                    SObject sobj;
+                    if (IsEnumDeclaredParameterType(imt))
+                    {
+                        sobj = new SObject(EVMType.Object);
+                    }
+                    else
+                    {
+                        sobj = imt != null
+                            ? CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true)
+                            : new SObject(EVMType.Object);
+                    }
                     m_ArgumentObjectArray[i] = sobj;
                 }
                 for (int i = 0; i < m_ArgumentObjectArray.Length; i++)
@@ -206,6 +215,12 @@ namespace SimpleLanguage.VM.Runtime
             if (m_ValueIndex >= m_ValueStack.Length) return;
             m_ValueStack[m_ValueIndex++] = v;
         }
+        /// <summary>Exported <c>metaClassKind</c> 1 = enum (see Front IRMetaClassKind.Enum).</summary>
+        private static bool IsEnumDeclaredParameterType(RuntimeDefType imt)
+        {
+            return imt?.runtimeClass != null && imt.runtimeClass.metaClassKind == 1;
+        }
+
         public SObject CreateObjectByIRMetaType(RuntimeDefType irmt, RuntimeClass curIrMc, bool isAdd = false)
         {
             if (irmt == null) return new SObject(EVMType.Object);

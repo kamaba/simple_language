@@ -257,6 +257,22 @@ namespace SimpleLanguage.IR
                     return irsv;
                 }
             }
+            else if (mv.variableFrom == MetaVariable.EVariableFrom.EnumMember)
+            {
+                int index = -1;
+                if (irmc != null)
+                {
+                    MetaVariable gmv = mv;
+                    if (mv.sourceMetaVariable != null)
+                    {
+                        gmv = mv.sourceMetaVariable;
+                    }
+                    index = irmc.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode());
+                }
+                IRMetaType irmt2 = new IRMetaType(irmc);
+                IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, index, IRMetaVariableFrom.Member);
+                return irsv;
+            }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.ArrayValue)
             {
                 IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Array );

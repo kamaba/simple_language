@@ -22,6 +22,8 @@ namespace SimpleLanguage.IR
         public string irName => m_IRName;
         public string sourcePath => m_SourcePath;
         public bool needInitMemberVariable => m_NeedInitMemberVariable;
+        /// <summary>Whether this IR type is a normal class, <c>enum</c>, or <c>data</c> block (from MetaClass).</summary>
+        public IRMetaClassKind metaClassKind => m_MetaClassKind;
 
         public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
         public List<IRMetaVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;
@@ -48,6 +50,7 @@ namespace SimpleLanguage.IR
         private string m_IRName = "";
         private string m_SourcePath = "";
         private MetaClass m_MetaClass = null;
+        private IRMetaClassKind m_MetaClassKind = IRMetaClassKind.Class;
         private int m_TemplateCount = 0;
         private bool m_NeedInitMemberVariable = false;
 
@@ -62,6 +65,9 @@ namespace SimpleLanguage.IR
         public IRMetaClass( MetaClass mc )
         {
             m_MetaClass = mc;
+            m_MetaClassKind = mc is MetaEnum ? IRMetaClassKind.Enum
+                : mc is MetaData ? IRMetaClassKind.Data
+                : IRMetaClassKind.Class;
             m_IRName = IRManager.GetIRNameByMetaClass(mc);
             id = mc.GetHashCode();
 
