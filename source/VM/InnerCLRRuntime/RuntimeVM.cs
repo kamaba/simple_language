@@ -7,6 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Logging;
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Reflection;
@@ -16,7 +17,7 @@ using System.Globalization;
 
 namespace SimpleLanguage.VM.Runtime
 {
-    // System-level builtin method calls handled by the runtime/native bridge
+    // System-level builtin method calls — must stay in sync with <see cref="SimpleLanguage.ESystemMethodCall"/> (Front Define.cs).
     public enum ESystemMethodCall
     {
         SystemCallCLRMethod,
@@ -25,19 +26,17 @@ namespace SimpleLanguage.VM.Runtime
         SystemPrint,
         SystemReadLine,
         SystemReadKey,
-        SystemGetType,
-        SystemGetTypeByName,
-        SystemGetTypeFullName,
-        SystemGetTypeHashCode,
-        SystemGetTypeIsClass,
-        SystemGetTypeIsEnum,
-        SystemGetTypeIsInterface,
-        SystemGetTypeIsValueType,
-        SystemGetTypeIsArray,
-        SystemGetTypeIsGenericType,
-        SystemGetTypeIsGenericTypeDefinition,
-        SystemGetTypeGenericArgumentsCount,
-        SystemGetTypeGenericArguments,
+        SystemConvertInt8,
+        SystemConvertSInt8,
+        SystemConvertInt16,
+        SystemConvertUInt16,
+        SystemConvertInt32,
+        SystemConvertUInt32,
+        SystemConvertInt64,
+        SystemConvertUInt64,
+        SystemConvertFloat32,
+        SystemConvertFloat64,
+        SystemConvertString,
     }
     public unsafe class RuntimeVM
     {
@@ -1523,7 +1522,65 @@ namespace SimpleLanguage.VM.Runtime
                                     }
                                 }
                                 break;
+                            case (int)ESystemMethodCall.SystemReadLine:
+                                {
+                                    int pc = sysPkg.paramCount;
+                                    if (m_ValueIndex < pc)
+                                    {
+                                        Debug.Assert(false, $"SystemReadLine stack underflow, need={pc}, has={m_ValueIndex}");
+                                        break;
+                                    }
+                                    for (int pi = pc - 1; pi >= 0; pi--)
+                                        _ = m_ValueStack[--m_ValueIndex];
+                                    string line = Console.ReadLine() ?? string.Empty;
+                                    var sv = default(SValue);
+                                    sv.SetStringValue(line);
+                                    PushSValueSynced(sv);
+                                }
+                                break;
+                            case (int)ESystemMethodCall.SystemReadKey:
+                                {
+                                    int pc = sysPkg.paramCount;
+                                    if (m_ValueIndex < pc)
+                                    {
+                                        Debug.Assert(false, $"SystemReadKey stack underflow, need={pc}, has={m_ValueIndex}");
+                                        break;
+                                    }
+                                    for (int pi = pc - 1; pi >= 0; pi--)
+                                        _ = m_ValueStack[--m_ValueIndex];
+                                    var k = Console.ReadKey(intercept: true);
+                                    var svk = default(SValue);
+                                    svk.SetStringValue(k.KeyChar.ToString());
+                                    PushSValueSynced(svk);
+                                }
+                                break;
+                            case (int)ESystemMethodCall.SystemConvertInt8:
+                            case (int)ESystemMethodCall.SystemConvertSInt8:
+                            case (int)ESystemMethodCall.SystemConvertInt16:
+                            case (int)ESystemMethodCall.SystemConvertUInt16:
+                            case (int)ESystemMethodCall.SystemConvertInt32:
+                            case (int)ESystemMethodCall.SystemConvertUInt32:
+                            case (int)ESystemMethodCall.SystemConvertInt64:
+                            case (int)ESystemMethodCall.SystemConvertUInt64:
+                            case (int)ESystemMethodCall.SystemConvertFloat32:
+                            case (int)ESystemMethodCall.SystemConvertFloat64:
+                            case (int)ESystemMethodCall.SystemConvertString:
+                                {
+                                    int pc = sysPkg.paramCount;
+                                    if (m_ValueIndex < pc)
+                                    {
+                                        Debug.Assert(false, $"SystemConvert stack underflow, need={pc}, has={m_ValueIndex}");
+                                        break;
+                                    }
+                                    var args = new SValue[pc];
+                                    for (int pi = pc - 1; pi >= 0; pi--)
+                                        args[pi] = m_ValueStack[--m_ValueIndex];
+                                    var outv = SystemBuiltinConvertValue(ref args[0], (ESystemMethodCall)kind);
+                                    PushSValueSynced(outv);
+                                }
+                                break;
                             default:
+                                Log.AddVM(EError.None, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + (sysPkg.name ?? string.Empty));
                                 Debug.Assert(false, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + sysPkg.name);
                                 break;
                         }
@@ -3077,6 +3134,86 @@ namespace SimpleLanguage.VM.Runtime
                     }
                     break;
             }
+        }
+
+        /// <summary>Pops one stack operand and converts it to the target primitive/string per <see cref="ESystemMethodCall"/>.</summary>
+        private static SValue SystemBuiltinConvertValue(ref SValue arg, ESystemMethodCall kind)
+        {
+            if (arg.isNull)
+            {
+                var z = default(SValue);
+                z.SetNull();
+                return z;
+            }
+            object raw = UnwrapStackValueForSystemConvert(ref arg);
+            try
+            {
+                object conv = kind switch
+                {
+                    ESystemMethodCall.SystemConvertInt8 => Convert.ToByte(raw, CultureInfo.InvariantCulture),
+                    ESystemMethodCall.SystemConvertSInt8 => Convert.ToSByte(raw, CultureInfo.InvariantCulture),
+                    ESystemMethodCall.SystemConvertInt16 => Convert.ToInt16(raw, CultureInfo.InvariantCulture),
+                    ESystemMethodCall.SystemConvertUInt16 => Convert.ToUInt16(raw, CultureInfo.InvariantCulture),
+                    ESystemMethodCall.SystemConvertInt32 => Convert.ToInt32(raw, CultureInfo.InvariantCulture),
+                    ESystemMethodCall.SystemConvertUInt32 => Convert.ToUInt32(raw, CultureInfo.InvariantCulture),
+                    ESystemMethodCall.SystemConvertInt64 => Convert.ToInt64(raw, CultureInfo.InvariantCulture),
+                    ESystemMethodCall.SystemConvertUInt64 => Convert.ToUInt64(raw, CultureInfo.InvariantCulture),
+                    ESystemMethodCall.SystemConvertFloat32 => Convert.ToSingle(raw, CultureInfo.InvariantCulture),
+                    ESystemMethodCall.SystemConvertFloat64 => Convert.ToDouble(raw, CultureInfo.InvariantCulture),
+                    ESystemMethodCall.SystemConvertString => raw?.ToString() ?? string.Empty,
+                    _ => raw,
+                };
+                return SValue.FromClrObject(conv);
+            }
+            catch
+            {
+                var z = default(SValue);
+                z.SetNull();
+                return z;
+            }
+        }
+
+        private static object UnwrapStackValueForSystemConvert(ref SValue v)
+        {
+            if (v.isNull) return 0;
+            switch (v.eType)
+            {
+                case EVMType.Boolean: return v.int8Value != 0;
+                case EVMType.Byte: return v.int8Value;
+                case EVMType.SByte: return v.sint8Value;
+                case EVMType.Int16: return v.int16Value;
+                case EVMType.UInt16: return v.uint16Value;
+                case EVMType.Int32: return v.int32Value;
+                case EVMType.UInt32: return v.uint32Value;
+                case EVMType.Int64: return v.int64Value;
+                case EVMType.UInt64: return v.uint64Value;
+                case EVMType.Float32: return v.floatValue;
+                case EVMType.Float64: return v.doubleValue;
+                case EVMType.Num: return v.doubleValue;
+                case EVMType.String: return v.stringValue ?? string.Empty;
+                default: break;
+            }
+            if (v.sobject != null)
+            {
+                switch (v.sobject)
+                {
+                    case BoolObject o: return o.value;
+                    case Int8Object o: return o.value;
+                    case SInt8Object o: return o.value;
+                    case Int16Object o: return o.value;
+                    case UInt16Object o: return o.value;
+                    case Int32Object o: return o.value;
+                    case UInt32Object o: return o.value;
+                    case Int64Object o: return o.value;
+                    case UInt64Object o: return o.value;
+                    case Float32Object o: return o.value;
+                    case Float64Object o: return o.value;
+                    case StringObject o: return o.value ?? string.Empty;
+                    case NumObject o: return o.ToDouble();
+                }
+                return v.sobject.value ?? v.sobject.ToString() ?? string.Empty;
+            }
+            return v.GetValueObject() ?? string.Empty;
         }
     }
 }

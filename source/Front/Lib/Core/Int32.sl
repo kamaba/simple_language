@@ -123,11 +123,6 @@ public class Int32 extends Num
     }
     override String toString()
     {        
-        Array<BridgeObject> paramObjs = new(1)
-        paramObjs[0] = BridgeObject(this)
-        BridgeObject retObj = BridgeObject("")
-        NativeBridge.Call( BridgeKind.CLR, "System", "Convert", "ToString", retObj, paramObjs );
-        #ret SimpleLanguage.Lib.Int32Class.Int32ToString( this )
-        ret retObj.stringvalue;
+        ret SystemConvertString( this )
     }
 }

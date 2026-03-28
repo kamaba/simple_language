@@ -74,6 +74,6 @@ public class SByte extends Num
     !#
     override String toString()
     {
-        #ret SimpleLanguage.Lib.SByteClass.SByteToString( this )
+        ret SystemConvertString( this )
     }
 }

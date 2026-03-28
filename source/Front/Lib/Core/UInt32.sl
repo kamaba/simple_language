@@ -82,7 +82,7 @@ public class UInt32 extends Num
     !#
     override String toString()
     {
-        ret SimpleLanguage.Lib.Int32Class.Int32ToString( this )
+        ret SystemConvertString( this )
     }
 
     public override Int32 toInt32()

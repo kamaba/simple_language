@@ -28,7 +28,6 @@ public class Int16 extends Num
     }
     override String toString()
     {
-        #ret SimpleLanguage.Lib.Int32Class.Int32ToString( this )
-        ret ""
+        ret SystemConvertString( this )
     }
 }
