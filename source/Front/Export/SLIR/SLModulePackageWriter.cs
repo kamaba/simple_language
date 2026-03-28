@@ -198,7 +198,7 @@ namespace SimpleLanguage.Export.SLIR
                     var fieldPkgLocal = new SLFieldPackage
                     {
                         name = GetShortName(v.name ?? string.Empty),
-                        typeDef = CreateRuntimeDefTypePackage(curirmt),
+                        typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
                         flags = BuildFieldFlags(v),
                         index = v.index,
                     };
