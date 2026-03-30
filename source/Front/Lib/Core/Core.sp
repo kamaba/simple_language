@@ -25,7 +25,7 @@ Project
         #SystemPrint(a.toString())
         #Call( BridgeKind.CLR )
         global.println( "--------------------for enum-------------------" )
-        global.println( global.Pi )
+        global.println( "Pi=$global.Pi }" )
 
         #!
         for v in BridgeKind

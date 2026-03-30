@@ -143,7 +143,6 @@ namespace SimpleLanguage.VM
             if (m_StaticMemObjectList == null) return;
             //var slotIndex = ResolveStaticSlotIndex(index);
             //if (slotIndex < 0 || slotIndex >= m_StaticMemObjectList.Length) return;
-            EnsureStaticMemberObjectAt(index);
             var target = m_StaticMemObjectList[index];
             if (target == null) return;
             if (svalue.isNull)
@@ -188,32 +187,10 @@ namespace SimpleLanguage.VM
                         //}
                     }
                 }
-                for (int i = 0; i < m_StaticMemObjectList.Length; i++)
-                {
-                    EnsureStaticMemberObjectAt(i);
-                }
 
-                // After all static member objects are created, run class-level
-                // static expressions once (batch). This avoids recursive init
-                // when static fields reference each other.
-                //if (!m_IsStaticExprBatchApplied)
-                {
-                    ApplyStaticMemberExpressionsBatch();
-                }
+                ApplyStaticMemberExpressionsBatch();
             }
             catch (Exception e) { }
-        }
-        private void EnsureStaticMemberObjectAt(int index)
-        {
-            if (m_StaticMemObjectList == null) return;
-            if (index < 0 || index >= m_StaticMemObjectList.Length) return;
-
-            var irmv = m_RuntimeClass.staticIRMetaVariableList[index];
-            var rt = GetClassRuntimeType(irmv.runtimeDefType, true);
-            if (rt == null) return;
-
-            // Not initialized yet: prioritize initializing the missing slot.
-            m_StaticMemObjectList[index] = ObjectManager.CreateObjectByRuntimeType(rt, true);
         }
         private void ApplyStaticMemberExpressionsBatch()
         {
@@ -295,19 +272,6 @@ namespace SimpleLanguage.VM
                 s_StaticExprApplyingByKey.Remove(key);
             }
         }
-        //private int ResolveStaticSlotIndex(int fieldIndex)
-        //{
-        //    if (fieldIndex < 0) return -1;
-        //    if (m_RuntimeClass?.staticIRMetaVariableList == null) return -1;
-        //    if (m_StaticFieldIndexToSlot != null && m_StaticFieldIndexToSlot.TryGetValue(fieldIndex, out var slot))
-        //    {
-        //        return slot;
-        //    }
-        //    // Fallback for old data where field index is already compact slot index.
-        //    if (fieldIndex < m_RuntimeClass.staticIRMetaVariableList.Count) return fieldIndex;
-        //    return -1;
-        //}
-
         private string BuildStaticExprInitKey()
         {
             // runtime class id + template runtime class ids.
