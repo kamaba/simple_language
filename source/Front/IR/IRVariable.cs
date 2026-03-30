@@ -64,21 +64,29 @@ namespace SimpleLanguage.IR
                 }
                 if ( mv.isConst )
                 {
-                    if (mv.realMetaType.GenTemplateIsIncludeTemplate())
+                    //if (mv.realMetaType.GenTemplateIsIncludeTemplate())
+                    //{
+                    //    if (index == -1)
+                    //    {
+                    //        Log.AddGenIR(EError.None, "没有找到对应成员变量的Index");
+                    //        return null;
+                    //    }
+                    //    IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
+                    //    return irVar;
+                    //}
+                    //else
+                    //{
+                    //    IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global );
+                    //    return irVar;
+                    //}
+                    //
+                    if (index == -1)
                     {
-                        if (index == -1)
-                        {
-                            Log.AddGenIR(EError.None, "没有找到对应成员变量的Index");
-                            return null;
-                        }
-                        IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
-                        return irVar;
+                        Log.AddGenIR(EError.None, "没有找到对应成员变量的Index");
+                        return null;
                     }
-                    else
-                    {
-                        IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global );
-                        return irVar;
-                    }               
+                    IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
+                    return irVar;
                 }
                 else
                 {
@@ -240,16 +248,19 @@ namespace SimpleLanguage.IR
                 }
                 if (gmv.isStatic)
                 {
-                    if( mv.realMetaType.GenTemplateIsIncludeTemplate() )
-                    {
-                        IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
-                        return irsv;
-                    }
-                    else
-                    {
-                        IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global);
-                        return irsv;
-                    }
+                    IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
+                    return irsv;
+
+                    //if ( mv.realMetaType.GenTemplateIsIncludeTemplate() )
+                    //{
+                    //    IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
+                    //    return irsv;
+                    //}
+                    //else
+                    //{
+                    //    IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global);
+                    //    return irsv;
+                    //}
                 }
                 else
                 {

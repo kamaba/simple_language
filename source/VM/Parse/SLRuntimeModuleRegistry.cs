@@ -1,8 +1,6 @@
 using SimpleLanguage.VM;
 using SimpleLanuageVM.Load;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Text.Json;
 
 namespace SimpleLanguage.Parse
@@ -21,7 +19,7 @@ namespace SimpleLanguage.Parse
             s_MethodDeclaringTypeById.Clear();
         }
 
-        private static RuntimeDefType? ResolveRuntimeDefType(SLRuntimeDefTypePackage? pkg)
+        private static RuntimeDefType ResolveRuntimeDefType(SLRuntimeDefTypePackage? pkg)
         {
             if (pkg == null) return null;
 
@@ -38,16 +36,31 @@ namespace SimpleLanguage.Parse
                 }
             }
 
-            var rdt = new RuntimeDefType(rc, args);
-            return rdt;
+            // Match Front IRMetaType / SLModulePackageWriter wire: owner + template slot for inheritance / template refs.
+            bool hasOwnerOrTemplate = pkg.ownerClassId != 0
+                || !string.IsNullOrWhiteSpace(pkg.ownerClassName)
+                || pkg.templateIndex >= 0
+                || pkg.isTemplate;
+
+            if (hasOwnerOrTemplate)
+            {
+                RuntimeClass? ownerRc = null;
+                if (pkg.ownerClassId != 0 || !string.IsNullOrWhiteSpace(pkg.ownerClassName))
+                    ownerRc = ResolveOrCreateRuntimeClassByIdOrName(pkg.ownerClassId, pkg.ownerClassName);
+
+                bool isTemplate = pkg.isTemplate || pkg.templateIndex >= 0;
+                return new RuntimeDefType(rc, args, ownerRc, pkg.templateIndex, isTemplate);
+            }
+
+            return new RuntimeDefType(rc, args);
         }
 
-        public static void LoadFromPackage(SLPackageRootJson pkg)
-        {
-            if (pkg == null) throw new ArgumentNullException(nameof(pkg));
-            Clear();
-            AddFromPackage(pkg);
-        }
+        //public static void LoadFromPackage(SLPackageRootJson pkg)
+        //{
+        //    if (pkg == null) throw new ArgumentNullException(nameof(pkg));
+        //    Clear();
+        //    AddFromPackage(pkg);
+        //}
 
         public static void LoadFromPackages(IEnumerable<SLPackageRootJson> packages)
         {
@@ -88,7 +101,55 @@ namespace SimpleLanguage.Parse
                 ? new List<SLModulePackage>(pkg.moduleList)
                 : new List<SLModulePackage>();
 
-            // first pass: register all methods
+            // Phase A: register every exported RuntimeClass shell (id/name/metaClassKind only) so
+            // ResolveRuntimeDefType during field & method setup can always find RuntimeClass by id.
+            foreach (var module in modulesToProcess)
+            {
+                if (module.classList == null) continue;
+                foreach (var c in module.classList)
+                {
+                    if (c == null) continue;
+                    RegisterRuntimeClassShellFromPackage(c);
+                }
+            }
+
+            // Phase A.5: template class relations (m_IRMetaClassMapTemplateDict) — must run after all shells, before field type resolution uses GetClassRuntimeType.
+            foreach (var module in modulesToProcess)
+            {
+                if (module.classList == null) continue;
+                foreach (var c in module.classList)
+                {
+                    if (c?.templateRelationList == null || c.templateRelationList.Count == 0) continue;
+                    var rc = RuntimeClassManager.GetRuntimeClassById(c.id);
+                    if (rc == null) continue;
+                    foreach (var rel in c.templateRelationList)
+                    {
+                        if (rel?.mapping == null) continue;
+                        foreach (var ent in rel.mapping)
+                        {
+                            if (ent == null) continue;
+                            var rdt = ResolveRuntimeDefType(ent.type);
+                            if (rdt != null)
+                                rc.SetTemplateRelation(rel.relatedClassId, ent.index, rdt);
+                        }
+                    }
+                }
+            }
+
+            // Phase B: populate fieldList / static init IR for each class (all shells exist).
+            foreach (var module in modulesToProcess)
+            {
+                if (module.classList == null) continue;
+                foreach (var c in module.classList)
+                {
+                    if (c == null) continue;
+                    var rc = RuntimeClassManager.GetRuntimeClassById(c.id);
+                    if (rc != null)
+                        PopulateRuntimeClassFieldsFromPackage(c, rc);
+                }
+            }
+
+            // Phase C: register all method bodies and variable types (ResolveRuntimeDefType sees full shells + fields).
             foreach (var module in modulesToProcess)
             {
                 if (module.methodList == null) continue;
@@ -105,7 +166,7 @@ namespace SimpleLanguage.Parse
                     // instructions（JSON 仅带 Payload；与 IRData 解包对称）
                     if (m.instructionList != null)
                     {
-                        Instruction.UnpackPayloadsFromJson(m.instructionList);
+                        //Instruction.UnpackPayloadsFromJson(m.instructionList);
                         rm.InstructionList.AddRange(m.instructionList);
                     }
 
@@ -142,69 +203,128 @@ namespace SimpleLanguage.Parse
                 }
             }
 
-            // second pass: populate RuntimeClass method lists using per-class method references
+            // Phase D: bind instance / operator method references. Requires s_MethodById from phase C.
             foreach (var module in modulesToProcess)
             {
                 if (module.classList == null) continue;
                 foreach (var c in module.classList)
                 {
                     if (c == null) continue;
-                    var rc = RuntimeClassManager.instance.GetRuntimeClassById(c.id);
+                    var rc = RuntimeClassManager.GetRuntimeClassById(c.id);
                     if (rc == null)
-                    {
-                        // create lightweight runtime class entry for method mapping
-                        rc = new RuntimeClass
-                        {
-                            id = c.id,
-                            name = string.IsNullOrWhiteSpace(c.fullName) ? c.name : c.fullName,
-                            metaClassKind = c.metaClassKind,
-                        };
-                        RuntimeClassManager.instance.m_IRMetaClassList.Add(rc);
-                    }
-
-                    // non-static methods: place by index when provided
-                    if (c.nonStaticMethodList != null)
-                    {
-                        foreach (var mm in c.nonStaticMethodList)
-                        {
-                            if (mm == null || string.IsNullOrWhiteSpace(mm.id)) continue;
-                            if (!s_MethodById.TryGetValue(mm.id, out var runtimeMethod) || runtimeMethod == null) continue;
-                            runtimeMethod.SetOwner(rc);
-                            int idx = mm.index;
-                            if (idx < 0)
-                            {
-                                rc.AddNonStaticMethod(runtimeMethod);
-                            }
-                            else
-                            {
-                                rc.AddNonStaticMethodAt(idx, runtimeMethod);
-                            }
-                        }
-                    }
-
-                    // operator methods: treat specially and keep in operator list
-                    if (c.operatorMethodList != null)
-                    {
-                        foreach (var mm in c.operatorMethodList)
-                        {
-                            if (mm == null || string.IsNullOrWhiteSpace(mm.id)) continue;
-                            if (!s_MethodById.TryGetValue(mm.id, out var runtimeMethod) || runtimeMethod == null) continue;
-                            runtimeMethod.SetOwner(rc);
-                            int idx = mm.index;
-                            if (idx < 0)
-                            {
-                                rc.AddOperatorMethod(runtimeMethod);
-                            }
-                            else
-                            {
-                                rc.AddOperatorMethodAt(idx, runtimeMethod);
-                            }
-                        }
-                    }
-
-                    // static methods are not added to instance lists here; they remain in registry
+                        rc = RegisterRuntimeClassShellFromPackage(c);
+                    if (rc != null)
+                        BindRuntimeClassMethodsFromClassPackage(c, rc);
                 }
             }
+        }
+
+        /// <summary>Creates and registers a minimal <see cref="RuntimeClass"/> if missing. Does not touch fields.</summary>
+        private static RuntimeClass? RegisterRuntimeClassShellFromPackage(SLClassPackage pkg)
+        {
+            if (pkg == null) return null;
+
+            var existed = RuntimeClassManager.GetRuntimeClassById(pkg.id);
+            if (existed != null)
+                return existed;
+
+            var rc = new RuntimeClass
+            {
+                id = pkg.id,
+                name = string.IsNullOrWhiteSpace(pkg.fullName) ? pkg.name : pkg.fullName,
+                metaClassKind = pkg.metaClassKind,
+                fieldsFromPackageApplied = false,
+            };
+            RuntimeClassManager.AddRuntimeClass(rc);
+
+            if (!s_ClassPackageById.ContainsKey(pkg.id))
+                s_ClassPackageById[pkg.id] = pkg;
+
+            return rc;
+        }
+
+        /// <summary>Fills <paramref name="rc"/> from <paramref name="pkg"/>.<c>fieldList</c> once per class.</summary>
+        private static void PopulateRuntimeClassFieldsFromPackage(SLClassPackage pkg, RuntimeClass rc)
+        {
+            if (pkg == null || rc == null) return;
+            if (rc.fieldsFromPackageApplied) return;
+
+            if (pkg.fieldList != null)
+            {
+                foreach (var f in pkg.fieldList)
+                {
+                    if (f == null) continue;
+
+                    RuntimeDefType rdt = null;
+                    try
+                    {
+                        if (f.typeDef != null)
+                            rdt = ResolveRuntimeDefType(f.typeDef);
+                    }
+                    catch {
+                        Debug.Assert(false, "解析定义类型出错!");
+                    }
+
+                    var rv = new RuntimeVariable(rdt, f.GetHashCode(), f.index, f.name ?? string.Empty);
+                    if ((f.flags & 32) == 32)
+                    {
+                        rc.staticIRMetaVariableList.Add(rv);
+                        if (f.express != null && f.express.Count > 0)
+                        {
+                            //Instruction.UnpackPayloadsFromJson(f.express);
+                            foreach (var ins in f.express)
+                                rc.staticMemberVariableSetValueList.Add(ins);
+                        }
+                    }
+                    else
+                    {
+                        rc.nonStaticIRMetaVariableList.Add(rv);
+                        if (f.express != null && f.express.Count > 0)
+                        {
+                            //Instruction.UnpackPayloadsFromJson(f.express);
+                            foreach (var ins in f.express)
+                                rc.nonStaticMemberVariableSetValueList.Add(ins);
+                        }
+                    }
+                }
+            }
+
+            rc.fieldsFromPackageApplied = true;
+        }
+
+        /// <summary>
+        /// Attaches non-static and operator <see cref="RuntimeMethod"/> entries from the package to <paramref name="rc"/>.
+        /// Call only after the global method registry pass has populated <see cref="s_MethodById"/>.
+        /// </summary>
+        private static void BindRuntimeClassMethodsFromClassPackage(SLClassPackage c, RuntimeClass rc)
+        {
+            if (c == null || rc == null) return;
+
+            if (c.nonStaticMethodList != null)
+            {
+                foreach (var mm in c.nonStaticMethodList)
+                {
+                    if (mm == null || string.IsNullOrWhiteSpace(mm.id)) continue;
+                    if (!s_MethodById.TryGetValue(mm.id, out var runtimeMethod) || runtimeMethod == null) continue;
+                    runtimeMethod.SetOwner(rc);
+                    int idx = mm.index;
+                    rc.AddNonStaticMethod(runtimeMethod);
+                }
+            }
+
+            if (c.operatorMethodList != null)
+            {
+                foreach (var mm in c.operatorMethodList)
+                {
+                    if (mm == null || string.IsNullOrWhiteSpace(mm.id)) continue;
+                    if (!s_MethodById.TryGetValue(mm.id, out var runtimeMethod) || runtimeMethod == null) continue;
+                    runtimeMethod.SetOwner(rc);
+                    int idx = mm.index;
+                    rc.AddOperatorMethod(runtimeMethod);
+                }
+            }
+
+            // static methods are not added to instance lists here; they remain in registry
         }
 
         // Note: binding of instruction call payloads to runtime call objects
@@ -452,7 +572,7 @@ namespace SimpleLanguage.Parse
 
             if (classId != 0)
             {
-                rc = RuntimeClassManager.instance.GetRuntimeClassById(classId);
+                rc = RuntimeClassManager.GetRuntimeClassById(classId);
                 if (rc == null)
                 {
                     // try to build from cached package metadata if available
@@ -475,7 +595,7 @@ namespace SimpleLanguage.Parse
                     id = classId,
                     name = string.IsNullOrWhiteSpace(className) ? $"Class_{classId}" : className,
                 };
-                RuntimeClassManager.instance.m_IRMetaClassList.Add(rc);
+                RuntimeClassManager.AddRuntimeClass(rc);
             }
 
             return rc;
@@ -487,8 +607,8 @@ namespace SimpleLanguage.Parse
 
             typeName = GetGenericRootName(typeName);
 
-            var rc = RuntimeClassManager.instance.GetRuntimeClassByName(typeName)
-                ?? RuntimeClassManager.instance.GetRuntimeClassByName(GetShortName(typeName));
+            var rc = RuntimeClassManager.GetRuntimeClassByName(typeName)
+                ?? RuntimeClassManager.GetRuntimeClassByName(GetShortName(typeName));
             if (rc != null) return rc;
 
             rc = new RuntimeClass
@@ -496,70 +616,30 @@ namespace SimpleLanguage.Parse
                 id = typeName.GetHashCode(),
                 name = typeName,
             };
-            RuntimeClassManager.instance.m_IRMetaClassList.Add(rc);
+            RuntimeClassManager.AddRuntimeClass(rc);
             return rc;
         }
 
+        /// <summary>
+        /// On-demand: ensure shell + field list from package. Used when resolving types outside the main multi-phase load.
+        /// </summary>
         private static RuntimeClass? CreateRuntimeClassFromPackage(SLClassPackage pkg)
         {
             if (pkg == null) return null;
 
-            // If already registered, return it
-            var existed = RuntimeClassManager.instance.GetRuntimeClassById(pkg.id);
-            if (existed != null) return existed;
-
-            var rc = new RuntimeClass
+            var existed = RuntimeClassManager.GetRuntimeClassById(pkg.id);
+            if (existed != null)
             {
-                id = pkg.id,
-                name = string.IsNullOrWhiteSpace(pkg.fullName) ? pkg.name : pkg.fullName,
-                metaClassKind = pkg.metaClassKind,
-            };
-
-            // register early to allow recursive type resolutions
-            RuntimeClassManager.instance.m_IRMetaClassList.Add(rc);
-
-            if (pkg.fieldList != null)
-            {
-                foreach (var f in pkg.fieldList)
-                {
-                    if (f == null) continue;
-
-                    RuntimeDefType? rdt = null;
-                    try
-                    {
-                        if (f.typeDef != null)
-                        {
-                            rdt = ResolveRuntimeDefType(f.typeDef);
-                        }
-                    }
-                    catch { }
-
-                    var rv = new RuntimeVariable(rdt, 0, f.index, f.name ?? string.Empty);
-                    // flags bit 32 indicates static
-                    if ((f.flags & 32) == 32)
-                    {
-                        rc.staticIRMetaVariableList.Add(rv);
-                    }
-                    else
-                    {
-                        rc.nonStaticIRMetaVariableList.Add(rv);
-                    }
-
-                    if (f.express != null && f.express.Count > 0)
-                    {
-                        Instruction.UnpackPayloadsFromJson(f.express);
-                        foreach (var ins in f.express)
-                        {
-                            rc.nonStaticMemberVariableSetValueList.Add(ins);
-                        }
-                    }
-                }
+                if (!existed.fieldsFromPackageApplied)
+                    PopulateRuntimeClassFieldsFromPackage(pkg, existed);
+                if (!s_ClassPackageById.ContainsKey(pkg.id))
+                    s_ClassPackageById[pkg.id] = pkg;
+                return existed;
             }
 
-            // cache in class package map for future lookups
-            if (!s_ClassPackageById.ContainsKey(rc.id))
-                s_ClassPackageById[rc.id] = pkg;
-
+            var rc = RegisterRuntimeClassShellFromPackage(pkg);
+            if (rc == null) return null;
+            PopulateRuntimeClassFieldsFromPackage(pkg, rc);
             return rc;
         }
 
@@ -720,8 +800,8 @@ namespace SimpleLanguage.Parse
             typeName = GetGenericRootName(typeName.Trim());
 
             // Fast path: runtime class already registered by some prior resolution.
-            var rcExisting = RuntimeClassManager.instance.GetRuntimeClassByName(typeName)
-                ?? RuntimeClassManager.instance.GetRuntimeClassByName(GetShortName(typeName));
+            var rcExisting = RuntimeClassManager.GetRuntimeClassByName(typeName)
+                ?? RuntimeClassManager.GetRuntimeClassByName(GetShortName(typeName));
             if (rcExisting != null) return rcExisting;
 
             // Slow path: try to find matching SLClassPackage by name/fullName.
@@ -751,7 +831,7 @@ namespace SimpleLanguage.Parse
         {
             if (classId == 0) return null;
 
-            var rc = RuntimeClassManager.instance.GetRuntimeClassById(classId);
+            var rc = RuntimeClassManager.GetRuntimeClassById(classId);
             if (rc != null) return rc;
 
             if (s_ClassPackageById.TryGetValue(classId, out var pkg) && pkg != null)
@@ -779,7 +859,7 @@ namespace SimpleLanguage.Parse
                 if ((f.flags & 32) != 32) return new List<Instruction>();
                 if (f.express == null || f.express.Count == 0) return new List<Instruction>();
 
-                Instruction.UnpackPayloadsFromJson(f.express);
+                //Instruction.UnpackPayloadsFromJson(f.express);
                 return new List<Instruction>(f.express);
             }
 

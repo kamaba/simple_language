@@ -118,7 +118,7 @@ namespace SimpleLanguage.Export.SLIR
                     nsMap[nsName] = nsPkg;
                     module.namespaceList.Add(nsPkg);
                 }
-                nsPkg.typeList.Add(new SLTypePackage { fullName = full, name = typeName });
+                nsPkg.typeList.Add(new SLTypePackage { fullName = full, name = typeName, templateParameterCount = c.templateParameterCount });
 
                 var cm = new SLClassPackage
                 {
@@ -130,6 +130,7 @@ namespace SimpleLanguage.Export.SLIR
                 };
                 // export template count
                 cm.templateCount = c.templateCount;
+                cm.templateParameterCount = c.templateParameterCount;
                 // export template (generated) meta types for the class
                 if (c.templateTypeList != null)
                 {

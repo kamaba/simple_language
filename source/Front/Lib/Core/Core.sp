@@ -3,16 +3,14 @@ Project
 {
     string cpk = "cpkkk"
     float Pi = 3.14f
-    print( string text )
-    {
-        #Array<BridgeObject> paramObjs = new(1)
-        #paramObjs[0] = BridgeObject(text)
-        #NativeBridge.Call( BridgeKind.CLR, "System", "Console", "WriteLine", null, paramObjs );
-        SystemPrint(text)
+    print( object str )
+    {        
+        var pt = SystemConvertString(str)
+        SystemPrint(pt)
     }
-    println( string str )
+    println( object str )
     {
-        string newstr = str + "\n";
+        string newstr = SystemConvertString(str) + "\n";
         SystemPrint(newstr)
     }
     _main_()
@@ -26,7 +24,15 @@ Project
         #global.print(a.toString())
         #SystemPrint(a.toString())
         #Call( BridgeKind.CLR )
-        println( a.toString() )
+        global.println( "--------------------for enum-------------------" )
+        global.println( global.Pi )
+
+        #!
+        for v in BridgeKind
+        {
+            println( v.toString() )
+        }
+        !#
     }
     _test_()
     {

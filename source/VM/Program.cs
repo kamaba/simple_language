@@ -1,7 +1,6 @@
 // See https://aka.ms/new-console-template for more information
 
 
-using SimpleLanguage.Parse;
 using SimpleLanguage.VM;
 
 Console.WriteLine("SimpleLanguage VM");
@@ -30,6 +29,7 @@ try
             Console.WriteLine("No valid module package loaded.");
             return;
         }
+        SLIRModuleParse.EntryPoint( parseResult );
 
         var currentPkg = parseResult.currentPackage;
         var asmList = parseResult.assemblyList;
@@ -60,23 +60,6 @@ try
 
         Console.WriteLine($"GlobalStaticVariableList: {parseResult.globalVariableCount}, GlobalInitInstructions: {parseResult.globalInitInstructionCount}");
 
-        var entryId = parseResult.entryMethodId;
-
-        // 2) run Main/entry of current module
-        if (!string.IsNullOrWhiteSpace(entryId))
-        {
-            var rm = SLRuntimeModuleRegistry.GetMethod(entryId);
-            if (rm == null)
-            {
-                Console.WriteLine($"Runtime method not found: {entryId}");
-            }
-            else
-            {
-                var vm = SimpleLanguage.VM.Runtime.CLRVM.CreateCLRRuntime(new List<RuntimeType>(), rm);
-                vm.Run(true);
-                SimpleLanguage.VM.Runtime.CLRVM.PopCLRRuntime();
-            }
-        }
 
         return;
     }

@@ -137,68 +137,68 @@ namespace SimpleLanguage.VM
         }
 
         // Try to unpack payload back into opValue for debugging/inspection
-        public void UnpackOpValueFromPayload()
-        {
-            if (Payload == null || Payload.Length == 0)
-            {
-                _opValue = null;
-                return;
-            }
-            switch (opCode)
-            {
-                case EIROpCode.LoadConstBoolean:
-                    if (TryGetBoolean(out var bv)) { _opValue = bv; return; }
-                    break;
-                case EIROpCode.LoadConstByte:
-                    if (TryGetByte(out var bb)) { _opValue = bb; return; }
-                    break;
-                case EIROpCode.LoadConstSByte:
-                    if (TryGetSByte(out var sb)) { _opValue = sb; return; }
-                    break;
-                case EIROpCode.LoadConstInt16:
-                    if (TryGetInt16(out var s16)) { _opValue = s16; return; }
-                    break;
-                case EIROpCode.LoadConstUInt16:
-                    if (TryGetUInt16(out var u16)) { _opValue = u16; return; }
-                    break;
-                case EIROpCode.LoadConstInt32:
-                    if (TryGetInt32(out var i32)) { _opValue = i32; return; }
-                    break;
-                case EIROpCode.LoadConstUInt32:
-                    if (TryGetUInt32(out var ui32)) { _opValue = ui32; return; }
-                    break;
-                case EIROpCode.LoadConstInt64:
-                    if (TryGetInt64(out var i64)) { _opValue = i64; return; }
-                    break;
-                case EIROpCode.LoadConstUInt64:
-                    if (TryGetUInt64(out var ui64)) { _opValue = ui64; return; }
-                    break;
-                case EIROpCode.LoadConstFloat32:
-                    if (TryGetSingle(out var f)) { _opValue = f; return; }
-                    break;
-                case EIROpCode.LoadConstFloat64:
-                    if (TryGetDouble(out var d)) { _opValue = d; return; }
-                    break;
-                case EIROpCode.LoadConstString:
-                    if (TryGetString(out var s)) { _opValue = s; return; }
-                    break;
-                case EIROpCode.CallSystemMethod:
-                    // Symmetric with Front IRData.PackOpValue(SLSystemMethodCallPackage): JSON in Payload.
-                    if (TryGetSystemMethodCallPackage(out var sysPkg) && sysPkg != null)
-                    {
-                        _opValue = sysPkg;
-                        return;
-                    }
-                    break;
-                default:
-                    // fallback: try string then numeric interpretations
-                    if (TryGetString(out var ss)) { _opValue = ss; return; }
-                    if (TryGetInt32(out var ii)) { _opValue = ii; return; }
-                    break;
-            }
-            // if still not set, keep raw bytes
-            _opValue = Payload;
-        }
+        //public void UnpackOpValueFromPayload()
+        //{
+        //    if (Payload == null || Payload.Length == 0)
+        //    {
+        //        _opValue = null;
+        //        return;
+        //    }
+        //    switch (opCode)
+        //    {
+        //        case EIROpCode.LoadConstBoolean:
+        //            if (TryGetBoolean(out var bv)) { _opValue = bv; return; }
+        //            break;
+        //        case EIROpCode.LoadConstByte:
+        //            if (TryGetByte(out var bb)) { _opValue = bb; return; }
+        //            break;
+        //        case EIROpCode.LoadConstSByte:
+        //            if (TryGetSByte(out var sb)) { _opValue = sb; return; }
+        //            break;
+        //        case EIROpCode.LoadConstInt16:
+        //            if (TryGetInt16(out var s16)) { _opValue = s16; return; }
+        //            break;
+        //        case EIROpCode.LoadConstUInt16:
+        //            if (TryGetUInt16(out var u16)) { _opValue = u16; return; }
+        //            break;
+        //        case EIROpCode.LoadConstInt32:
+        //            if (TryGetInt32(out var i32)) { _opValue = i32; return; }
+        //            break;
+        //        case EIROpCode.LoadConstUInt32:
+        //            if (TryGetUInt32(out var ui32)) { _opValue = ui32; return; }
+        //            break;
+        //        case EIROpCode.LoadConstInt64:
+        //            if (TryGetInt64(out var i64)) { _opValue = i64; return; }
+        //            break;
+        //        case EIROpCode.LoadConstUInt64:
+        //            if (TryGetUInt64(out var ui64)) { _opValue = ui64; return; }
+        //            break;
+        //        case EIROpCode.LoadConstFloat32:
+        //            if (TryGetSingle(out var f)) { _opValue = f; return; }
+        //            break;
+        //        case EIROpCode.LoadConstFloat64:
+        //            if (TryGetDouble(out var d)) { _opValue = d; return; }
+        //            break;
+        //        case EIROpCode.LoadConstString:
+        //            if (TryGetString(out var s)) { _opValue = s; return; }
+        //            break;
+        //        case EIROpCode.CallSystemMethod:
+        //            // Symmetric with Front IRData.PackOpValue(SLSystemMethodCallPackage): JSON in Payload.
+        //            if (TryGetSystemMethodCallPackage(out var sysPkg) && sysPkg != null)
+        //            {
+        //                _opValue = sysPkg;
+        //                return;
+        //            }
+        //            break;
+        //        default:
+        //            // fallback: try string then numeric interpretations
+        //            if (TryGetString(out var ss)) { _opValue = ss; return; }
+        //            if (TryGetInt32(out var ii)) { _opValue = ii; return; }
+        //            break;
+        //    }
+        //    // if still not set, keep raw bytes
+        //    _opValue = Payload;
+        //}
 
         // Helpers to read payload as common types (fall back to opValue if present)
         public bool TryGetBoolean(out bool v)
@@ -411,12 +411,12 @@ namespace SimpleLanguage.VM
         }
 
         /// <summary>JSON 只写入 Payload 时，将常量等从 Payload 还原到 opValue（与 IRData.UnpackOpValueFromPayload 对称）。</summary>
-        public static void UnpackPayloadsFromJson(IEnumerable<Instruction?>? list)
-        {
-            if (list == null) return;
-            foreach (var ins in list)
-                ins?.UnpackOpValueFromPayload();
-        }
+        //public static void UnpackPayloadsFromJson(IEnumerable<Instruction?>? list)
+        //{
+        //    if (list == null) return;
+        //    foreach (var ins in list)
+        //        ins?.UnpackOpValueFromPayload();
+        //}
 
         //public void SetDebugInfoByValue(DebugInfo info)
         //{

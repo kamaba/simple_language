@@ -9,18 +9,10 @@ namespace SimpleLanguage.VM.Runtime
         public static RuntimeVM currentCLRRuntime = null;
         public static RuntimeVM topCLRRuntime = null;
 
-        private sealed class GlobalStaticSlot
-        {
-            public int ownerClassId;
-            public int staticIndex;
-            public RuntimeType? runtimeType;
-        }
-
         // Fast lookup list for global ids. It only stores slot mapping metadata,
         // actual values are always stored on RuntimeType static fields.
-        private static List<GlobalStaticSlot> m_GlobalVariableSlotList = new List<GlobalStaticSlot>();
-        private static Dictionary<int, int> m_GlobalVariableId2IndexDict = new Dictionary<int, int>();
         private static List<Instruction> m_GlobalInitInstructionList = new List<Instruction>();
+        private static Dictionary<int, RuntimeVariable> m_GlobalVariableDict = new Dictionary<int, RuntimeVariable>();
         private static bool m_IsGlobalInitApplied = false;
         private static bool m_IsGlobalInitApplying = false;
         public static Stack<RuntimeVM> clrRuntimeStack => m_ClrRuntimeStack;
@@ -145,33 +137,18 @@ namespace SimpleLanguage.VM.Runtime
 
         public static void ResetGlobalVariableMapping()
         {
-            m_GlobalVariableId2IndexDict.Clear();
-            m_GlobalVariableSlotList.Clear();
+            m_GlobalVariableDict.Clear();
             m_GlobalInitInstructionList.Clear();
             m_IsGlobalInitApplied = false;
             m_IsGlobalInitApplying = false;
         }
-
-        public static void RegisterGlobalVariable(int id)
+        public static void RegisterGlobalVariable(int id, RuntimeVariable rv )
         {
-            RegisterGlobalVariable(id, string.Empty, 0, -1);
-        }
-
-        public static void RegisterGlobalVariable(int id, string typeName, int ownerClassId, int index)
-        {
-            if (m_GlobalVariableId2IndexDict.ContainsKey(id))
+            if (m_GlobalVariableDict.ContainsKey(id))
             {
                 return;
             }
-
-            int mapIndex = m_GlobalVariableSlotList.Count;
-            m_GlobalVariableId2IndexDict[id] = mapIndex;
-            m_GlobalVariableSlotList.Add(new GlobalStaticSlot
-            {
-                ownerClassId = ownerClassId,
-                staticIndex = index,
-                runtimeType = null,
-            });
+            m_GlobalVariableDict[id] = rv;  
         }
 
         public static void SetGlobalInitInstructions(List<Instruction> instructionList)
@@ -181,17 +158,17 @@ namespace SimpleLanguage.VM.Runtime
         }
         public static void StoreGlobalVariable( int id, ref SValue savl )
         {
-            if (m_GlobalVariableId2IndexDict.ContainsKey(id))
+            if (m_GlobalVariableDict.ContainsKey(id))
             {
-                var slot = m_GlobalVariableSlotList[m_GlobalVariableId2IndexDict[id]];
-                var rt = ResolveGlobalSlotRuntimeType(slot);
+                var slot = m_GlobalVariableDict[id];
+                var rt = RuntimeTypeManager.GetRuntimeTypeByDefType(slot.runtimeDefType, true);
                 if (rt != null)
                 {
-                    rt.SetMemberVariableSValue(slot.staticIndex, savl);
+                    rt.SetStaticMemberVariableSValue(id, savl);
                 }
                 else
                 {
-                    Log.AddVM(EError.None, $"没有找到全局变量所属的RuntimeType映射! globalId={id}, ownerClassId={slot.ownerClassId}");
+                    Log.AddVM(EError.None, $"没有找到全局变量所属的RuntimeType映射! globalId={id}");
                 }
             }
             else
@@ -235,46 +212,24 @@ namespace SimpleLanguage.VM.Runtime
         }
         public static void LoadGlobalVariable( int id, ref SValue sval )
         {
-            if (m_GlobalVariableId2IndexDict.ContainsKey(id))
+            if (m_GlobalVariableDict.ContainsKey(id))
             {
-                var slot = m_GlobalVariableSlotList[m_GlobalVariableId2IndexDict[id]];
-                var rt = ResolveGlobalSlotRuntimeType(slot);
+                var slot = m_GlobalVariableDict[id];
+                var rt = RuntimeTypeManager.GetRuntimeTypeByDefType(slot.runtimeDefType, true);
                 if (rt != null)
                 {
-                    rt.GetMemberVariableSValue(slot.staticIndex, ref sval);
+                    rt.GetStaticMemberVariableSValue( id, ref sval);
                 }
                 else
                 {
                     sval.SetNull();
-                    Log.AddVM(EError.None, $"没有找到全局变量所属的RuntimeType映射! globalId={id}, ownerClassId={slot.ownerClassId}");
+                    Log.AddVM(EError.None, $"没有找到全局变量所属的RuntimeType映射! globalId={id} ");
                 }
             }
             else
             {
                 Log.AddVM(EError.None, "没有找到全局变量的映射关系!");
             }
-        }
-
-        private static RuntimeType? ResolveGlobalSlotRuntimeType(GlobalStaticSlot slot)
-        {
-            if (slot.runtimeType != null)
-            {
-                return slot.runtimeType;
-            }
-
-            var rc = RuntimeClassManager.instance.GetRuntimeClassById(slot.ownerClassId);
-            if (rc == null)
-            {
-                return null;
-            }
-
-            var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(rc);
-            if (rt == null)
-            {
-                rt = RuntimeTypeManager.AddRuntimeTypeByClass(rc);
-            }
-            slot.runtimeType = rt;
-            return rt;
         }
         public static void RunIRMethod( List<RuntimeType> irmtList, RuntimeMethod _irMethod, bool isDisCountStackCount = true )
         {

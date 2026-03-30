@@ -64,12 +64,21 @@ namespace SimpleLanguage.Export.SLIR.Types
 
         // template export fields used by writer
         public int templateCount { get; set; }
+        /// <summary>Declared template arity in source (e.g. <c>Foo&lt;T,U&gt;</c> → 2). <see cref="templateCount"/> is IR-generated template meta type count.</summary>
+        public int templateParameterCount { get; set; }
         public List<SLRuntimeDefTypePackage> templateTypeList { get; set; } = new();
         public List<SLTemplateRelationPackage> templateRelationList { get; set; } = new();
 
     }
 
-    public sealed class SLTypePackage { public string fullName { get; set; } = string.Empty; public string name { get; set; } = string.Empty; public List<SLMethodMeta> methodList { get; set; } = new(); }
+    public sealed class SLTypePackage
+    {
+        public string fullName { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
+        public List<SLMethodMeta> methodList { get; set; } = new();
+        /// <summary>Same as <see cref="SLClassPackage.templateParameterCount"/> for this type.</summary>
+        public int templateParameterCount { get; set; }
+    }
 
     public sealed class SLNamespacePackage { public string fullName { get; set; } = string.Empty; public List<SLTypePackage> typeList { get; set; } = new(); }
 

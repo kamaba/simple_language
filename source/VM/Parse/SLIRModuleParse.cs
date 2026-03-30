@@ -122,6 +122,27 @@ namespace SimpleLanguage.VM
         //    }
         //}
 
+        public static void EntryPoint( SLIRModuleParseResult parseResult)
+        {
+            var entryId = parseResult.entryMethodId;
+
+            // 2) run Main/entry of current module
+            if (!string.IsNullOrWhiteSpace(entryId))
+            {
+                var rm = SLRuntimeModuleRegistry.GetMethod(entryId);
+                if (rm == null)
+                {
+                    Console.WriteLine($"Runtime method not found: {entryId}");
+                }
+                else
+                {
+                    var vm = SimpleLanguage.VM.Runtime.CLRVM.CreateCLRRuntime(new List<RuntimeType>(), rm);
+                    vm.Run(true);
+                    SimpleLanguage.VM.Runtime.CLRVM.PopCLRRuntime();
+                }
+            }
+        }
+
         private static (int globalVariableCount, int globalInitInstructionCount) InitializeGlobalVariables(List<SLAssembly> assemblyList)
         {
             SimpleLanguage.VM.Runtime.CLRVM.ResetGlobalVariableMapping();
@@ -139,7 +160,7 @@ namespace SimpleLanguage.VM
                 {
                     globalVarCount++;
                     var typeName = gv.typeDef != null ? gv.typeDef.className : string.Empty;
-                    SimpleLanguage.VM.Runtime.CLRVM.RegisterGlobalVariable(gv.id, typeName, gv.ownerClassId, gv.index);
+                    //SimpleLanguage.VM.Runtime.CLRVM.RegisterGlobalVariable(gv.id, typeName, gv.ownerClassId, gv.index);
                     globalFieldIdMap[$"{gv.ownerClassId}:{gv.index}"] = gv.id;
                 }
             }
@@ -154,7 +175,7 @@ namespace SimpleLanguage.VM
                 {
                     if (gv.express != null && gv.express.Count > 0)
                     {
-                        Instruction.UnpackPayloadsFromJson(gv.express);
+                        //Instruction.UnpackPayloadsFromJson(gv.express);
                         allGlobalInitInstructions.AddRange(gv.express);
                         allGlobalInitInstructions.Add(new Instruction
                         {
@@ -186,7 +207,7 @@ namespace SimpleLanguage.VM
                         if (!globalFieldIdMap.TryGetValue($"{cls.id}:{field.index}", out var gid)) continue;
                         if (initializedGlobalIds.Contains(gid)) continue;
 
-                        Instruction.UnpackPayloadsFromJson(field.express);
+                        //Instruction.UnpackPayloadsFromJson(field.express);
                         allGlobalInitInstructions.AddRange(field.express);
                         allGlobalInitInstructions.Add(new Instruction
                         {

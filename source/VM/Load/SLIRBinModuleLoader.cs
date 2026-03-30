@@ -77,9 +77,6 @@ namespace SimpleLanguage.VM
 
             s_LastIRStringDict = m.IRStringDict;
 
-            var rcm = RuntimeClassManager.instance;
-            rcm.m_IRMetaClassList.Clear();
-
             // 1) Create runtime classes first.
             for (int i = 0; i < m.Classes.Count; i++)
             {
@@ -92,12 +89,12 @@ namespace SimpleLanguage.VM
                     name = c.AllName ?? string.Empty,
                     metaClassKind = c.MetaClassKind,
                 };
-                rcm.m_IRMetaClassList.Add(rc);
+                RuntimeClassManager.AddRuntimeClass(rc);
             }
 
             // Core primitive runtime types (String/Int32/Float32/...) must be ready
             // before any global initialization instructions can create objects.
-            RuntimeTypeManager.EnsureCoreRuntimeTypesRegistered();
+            //RuntimeTypeManager.EnsureCoreRuntimeTypesRegistered();
 
             // 2) Build RuntimeDefType table from TypeSig table.
             var rdtCache = new Dictionary<int, RuntimeDefType>();
@@ -107,14 +104,14 @@ namespace SimpleLanguage.VM
                 if (rdtCache.TryGetValue(typeSigId, out var cached)) return cached;
 
                 var ts = m.TypeSigs[typeSigId];
-                var rc = rcm.GetRuntimeClassById(ts.ClassId);
+                var rc = RuntimeClassManager.GetRuntimeClassById(ts.ClassId);
                 if (rc == null)
                 {
                     // Fallback: resolve by stable name-hash if writer exported unstable ids.
-                    rc = rcm.GetRuntimeClassById(ts.ClassId);
+                    rc = RuntimeClassManager.GetRuntimeClassById(ts.ClassId);
                 }
 
-                var owner = rcm.GetRuntimeClassById(ts.OwnerClassId);
+                var owner = RuntimeClassManager.GetRuntimeClassById(ts.OwnerClassId);
                 var rdt = RuntimeDefTypeBuilder.Build(rc, owner, ts.TemplateIndex, ts.IsTemplate, ts.Args, ResolveDefType);
                 rdtCache[typeSigId] = rdt;
                 return rdt;
@@ -124,7 +121,7 @@ namespace SimpleLanguage.VM
             for (int i = 0; i < m.Classes.Count; i++)
             {
                 var c = m.Classes[i];
-                var rc = rcm.GetRuntimeClassByName(c.AllName);
+                var rc = RuntimeClassManager.GetRuntimeClassByName(c.AllName);
                 if (rc == null) continue;
 
                 for (int f = 0; f < c.Fields.Count; f++)
@@ -316,7 +313,7 @@ namespace SimpleLanguage.VM
                     int payloadLen = br.ReadInt32();
                     ins.Payload = payloadLen == 0 ? Array.Empty<byte>() : br.ReadBytes(payloadLen);
                     ins.UpdateByteLength();
-                    ins.UnpackOpValueFromPayload();
+                    //ins.UnpackOpValueFromPayload();
                     mi.Instructions.Add(ins);
                 }
 

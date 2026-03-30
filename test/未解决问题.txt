@@ -11,6 +11,8 @@ compare的验证
 int x1 = 10 + (1-20) * 33~/20 + 10~/20 - 22 * 2~/1; 有报错处理
 
 
+1. 全局的global.pi 没有初始化
+
 2.1. 统一创建runtimeClass的创建过程
 2.3 需要创建 更多的系统类 Int32ToString/Int8ToString/
 3. 需要导出类之间的关系的一个结构

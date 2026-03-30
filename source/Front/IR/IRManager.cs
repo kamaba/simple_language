@@ -255,32 +255,32 @@ namespace SimpleLanguage.IR
                 sb.AppendLine(title + ": []");
             }
         }
-        public void GlobalVariable()
-        {
-            var staticArray = IRManager.instance.globalStaticVariableList;
+        //public void GlobalVariable()
+        //{
+        //    var staticArray = IRManager.instance.globalStaticVariableList;
 
-            List<IRData> execIRList = new List<IRData>();
-            for (int i = 0; i < staticArray.Count; i++)
-            {
-                //m_GlobalVariableId2IndexDict.Add(staticArray[i].id, i);
+        //    List<IRData> execIRList = new List<IRData>();
+        //    for (int i = 0; i < staticArray.Count; i++)
+        //    {
+        //        //m_GlobalVariableId2IndexDict.Add(staticArray[i].id, i);
 
-                //var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(staticArray[i].irMetaType);
-                //IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(staticArray[i].irMetaType.irOwnerMetaClass.id);
+        //        //var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(staticArray[i].irMetaType);
+        //        //IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(staticArray[i].irMetaType.irOwnerMetaClass.id);
 
-                //var obj = ObjectManager.CreateObjectByRuntimeType(rt, true);
-                //SValue tmp = default;
-                //tmp.SetSObject(obj);
-                //m_GlobalVariableValueList.Add(tmp);
+        //        //var obj = ObjectManager.CreateObjectByRuntimeType(rt, true);
+        //        //SValue tmp = default;
+        //        //tmp.SetSObject(obj);
+        //        //m_GlobalVariableValueList.Add(tmp);
 
-                IRExpressBase irexpress = IRExpressManager.CreateExpress(null, staticArray[i].express);
+        //        IRExpressBase irexpress = IRExpressManager.CreateExpress(null, staticArray[i].express);
 
-                IRStoreVariable irsv = new IRStoreVariable(staticArray[i].irMetaType, null, staticArray[i].id, IRMetaVariableFrom.Global);
+        //        IRStoreVariable irsv = new IRStoreVariable(staticArray[i].irMetaType, null, staticArray[i].id, IRMetaVariableFrom.Global);
 
-                execIRList.AddRange(irexpress.IRDataList);
-                execIRList.AddRange(irsv.IRDataList);
+        //        execIRList.AddRange(irexpress.IRDataList);
+        //        execIRList.AddRange(irsv.IRDataList);
 
-            }
-        }
+        //    }
+        //}
         public IRMetaClass GetIRMetaClassById( int id )
         {
             return m_IRMetaClassList.Find(a => a.id == id );

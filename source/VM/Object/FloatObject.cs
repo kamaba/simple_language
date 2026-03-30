@@ -37,7 +37,7 @@ namespace SimpleLanguage.VM
         public Float64Object(Double _val) : base(EVMType.Float64)
         {
             m_Value = _val;
-            m_RuntimeType = RuntimeTypeManager.float64runtimeType;
+            m_RuntimeType = RuntimeTypeManager.float64RuntimeType;
         }
     }
 }

@@ -83,6 +83,19 @@ namespace SimpleLanuageVM.Load
         }
     }
 
+    /// <summary>One related class id + template index → bound type (matches Front <c>SLTemplateRelationPackage</c>).</summary>
+    public sealed class SLTemplateRelationEntry
+    {
+        public int index { get; set; }
+        public SLRuntimeDefTypePackage? type { get; set; }
+    }
+
+    public sealed class SLTemplateRelationPackage
+    {
+        public int relatedClassId { get; set; }
+        public List<SLTemplateRelationEntry> mapping { get; set; } = new();
+    }
+
     public sealed class SLClassPackage
     { 
         public int id { get; set; }
@@ -91,6 +104,10 @@ namespace SimpleLanuageVM.Load
         public string sourcePath { get; set; } = string.Empty;
         /// <summary>0=Class, 1=Enum, 2=Data — matches Front <c>IRMetaClassKind</c>.</summary>
         public int metaClassKind { get; set; }
+        /// <summary>Declared template arity in source; matches Front <c>SLClassPackage.templateParameterCount</c>.</summary>
+        public int templateParameterCount { get; set; }
+        /// <summary>Child class template bindings: related class id → (source template index → bound type). Matches Front export.</summary>
+        public List<SLTemplateRelationPackage> templateRelationList { get; set; } = new();
         public List<SLFieldPackage> fieldList { get; set; } = new();
         // per-class method references separated by category
         public List<SLMethodPackage> nonStaticMethodList { get; set; } = new();
@@ -128,6 +145,8 @@ namespace SimpleLanuageVM.Load
     {
         public string fullName { get; set; } = string.Empty;
         public string name { get; set; } = string.Empty;
+        /// <summary>Declared template arity in source; matches Front <c>SLTypePackage.templateParameterCount</c>.</summary>
+        public int templateParameterCount { get; set; }
 
         // per-type method references (refer to global methodList by id)
         public List<SLMethodPackage> methodList { get; set; } = new();

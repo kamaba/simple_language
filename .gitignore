@@ -40,3 +40,13 @@
 /out/export/module.package.json
 /source/Front/out/export/module.package.json
 /source/Front/SimpleLanguageFront.csproj.Backup.tmp
+/artifacts/vmbuild/SimpleLanguageLog.deps.json
+/artifacts/vmbuild/SimpleLanguageLog.dll
+/artifacts/vmbuild/SimpleLanguageLog.exe
+/artifacts/vmbuild/SimpleLanguageLog.pdb
+/artifacts/vmbuild/SimpleLanguageLog.runtimeconfig.json
+/artifacts/vmbuild/SimpleLanuageVM.deps.json
+/artifacts/vmbuild/SimpleLanuageVM.dll
+/artifacts/vmbuild/SimpleLanuageVM.exe
+/artifacts/vmbuild/SimpleLanuageVM.pdb
+/artifacts/vmbuild/SimpleLanuageVM.runtimeconfig.json

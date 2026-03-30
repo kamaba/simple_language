@@ -223,7 +223,7 @@ namespace SimpleLanguage.VM.Runtime
         public SObject CreateObjectByIRMetaType(RuntimeDefType irmt, RuntimeClass curIrMc, bool isAdd = false)
         {
             if (irmt == null) return new SObject(EVMType.Object);
-            var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt);
+            var rt = RuntimeTypeManager.GetRuntimeTypeByDefType(irmt);
             if (rt == null)
             {
                 rt = RuntimeTypeManager.AddRuntimeTypeByClass(irmt.runtimeClass);
@@ -325,6 +325,7 @@ namespace SimpleLanguage.VM.Runtime
                 else
                 {
                     var mt = curIRMc.GetRuntimeDefTypeByTemplateAndClassRelation(irmt.ownerRuntimeClass, irmt.templateIndex);
+                    if (mt == null) return null;
 
                     return GetClassRuntimeType(mt, curIRMc, __rtList, isAdd);
                 }
@@ -347,10 +348,6 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 return rt;
             }
-        }
-        public RuntimeType GetMethodRuntimeType( RuntimeDefType irmt)
-        {
-            return RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(irmt);
         }
         public void SetNewObject()
         {
@@ -1221,7 +1218,7 @@ namespace SimpleLanguage.VM.Runtime
                             if (rt == null)
                             {
                                 // first try existing runtime class
-                                var rc = RuntimeClassManager.instance.GetRuntimeClassById(i32);
+                                var rc = RuntimeClassManager.GetRuntimeClassById(i32);
                                 // if not found, attempt to resolve/create from loaded package metadata
                                 if (rc == null)
                                 {
@@ -1675,7 +1672,7 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             for (int i = 0; i < runtimeCall.templateRuntimeDefTypeList.Count; i++)
                             {
-                                var crt = GetMethodRuntimeType(runtimeCall.templateRuntimeDefTypeList[i]);
+                                var crt = RuntimeTypeManager.GetRuntimeTypeByDefType(runtimeCall.templateRuntimeDefTypeList[i]);
                                 classRTList.Add(crt);
                             }
                             CLRVM.RunIRMethod(classRTList, runtimeCall.method );
@@ -1733,7 +1730,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
-                                irc = RuntimeClassManager.instance.GetRuntimeClassByName(v.eType.ToString());
+                                irc = RuntimeClassManager.GetRuntimeClassByName(v.eType.ToString());
                                 rt = RuntimeTypeManager.GetRuntimeTypeByMT(irc);
                             }
                             if (irc == null)
@@ -1836,8 +1833,8 @@ namespace SimpleLanguage.VM.Runtime
                         //}
                         else
                         {
-                            irc = RuntimeClassManager.instance.GetRuntimeClassByName( "Core." + v.eType.ToString());
-                            rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irc);
+                            irc = RuntimeClassManager.GetRuntimeClassByName( "Core." + v.eType.ToString());
+                            rt = RuntimeTypeManager.GetRuntimeTypeByMT(irc);
                             if( rt == null )
                             {
                                 rt = RuntimeTypeManager.AddRuntimeTypeByClass(irc);
@@ -1892,11 +1889,11 @@ namespace SimpleLanguage.VM.Runtime
                         var mt = TryGetInstructionRuntimeDefType(iri);
                         if (mt != null)
                         {
-                            var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(mt);
+                            var rt = RuntimeTypeManager.GetRuntimeTypeByDefType(mt);
                             var v = default(SValue);
                             if (rt != null)
                             {
-                                rt.GetMemberVariableSValue(iri.index, ref v);
+                                rt.GetStaticMemberVariableSValue(iri.index, ref v);
                                 PushSValueSynced(v);
                             }
                         }
@@ -1910,8 +1907,8 @@ namespace SimpleLanguage.VM.Runtime
                             if (m_ValueIndex > 0)
                             {
                                 var val = m_ValueStack[--m_ValueIndex];
-                                var rt = RuntimeTypeManager.GetRuntimeTypeByMIRMetaType(mt);
-                                rt?.SetMemberVariableSValue(iri.index, val);
+                                var rt = RuntimeTypeManager.GetRuntimeTypeByDefType(mt);
+                                rt?.SetStaticMemberVariableSValue(iri.index, val);
                             }
                         }
                     }

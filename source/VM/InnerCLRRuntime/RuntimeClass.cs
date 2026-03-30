@@ -9,15 +9,19 @@ namespace SimpleLanguage.VM
         public string name { get; set; } = "";
         /// <summary>0=Class, 1=Enum, 2=Data — from exported SLIR class metadata.</summary>
         public int metaClassKind { get; set; }
+        /// <summary>Set after <c>fieldList</c> from SLIR package is applied to this class (see SLRuntimeModuleRegistry).</summary>
+        internal bool fieldsFromPackageApplied { get; set; }
         public List<RuntimeVariable> nonStaticIRMetaVariableList => m_NonStaticIRMetaVariableList;
         public List<RuntimeVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;
-        public List<RuntimeDefType> runtimeDefTypeList => m_RuntimeDefTypeList;
+        //public List<RuntimeDefType> runtimeDefTypeList => m_RuntimeDefTypeList;
         public List<Instruction> nonStaticMemberVariableSetValueList => m_NonStaticMemberVariableSetValueList;
+        public List<Instruction> staticMemberVariableSetValueList => m_StaticMemberVariableSetValueList; 
 
         private List<RuntimeVariable> m_NonStaticIRMetaVariableList = new List<RuntimeVariable>();
         private List<RuntimeVariable> m_StaticIRMetaVariableList = new List<RuntimeVariable>();
-        private List<RuntimeDefType> m_RuntimeDefTypeList = new List<RuntimeDefType>();
+        //private List<RuntimeDefType> m_RuntimeDefTypeList = new List<RuntimeDefType>();
         private List<Instruction> m_NonStaticMemberVariableSetValueList = new List<Instruction>();
+        private List<Instruction> m_StaticMemberVariableSetValueList = new List<Instruction>();
 
         private List<RuntimeMethod> m_NotStaticMethodList = new List<RuntimeMethod>();
         private List<RuntimeMethod> m_OperatorMethodList = new List<RuntimeMethod>();
@@ -28,30 +32,11 @@ namespace SimpleLanguage.VM
             if (m == null) return;
             m_NotStaticMethodList.Add(m);
         }
-
-        internal void AddNonStaticMethodAt(int index, RuntimeMethod m)
-        {
-            if (m == null) return;
-            if (index < 0) { m_NotStaticMethodList.Add(m); return; }
-            while (m_NotStaticMethodList.Count <= index) m_NotStaticMethodList.Add(null);
-            m_NotStaticMethodList[index] = m;
-        }
-
         internal void AddOperatorMethod(RuntimeMethod m)
         {
             if (m == null) return;
             m_OperatorMethodList.Add(m);
         }
-
-        internal void AddOperatorMethodAt(int index, RuntimeMethod m)
-        {
-            if (m == null) return;
-            if (index < 0) { m_OperatorMethodList.Add(m); return; }
-            while (m_OperatorMethodList.Count <= index) m_OperatorMethodList.Add(null);
-            m_OperatorMethodList[index] = m;
-        }
-
-
         public RuntimeMethod GetNonStaticMethodByIndex(int index)
         {
             if (index >= m_NotStaticMethodList.Count || index < 0)
@@ -88,8 +73,10 @@ namespace SimpleLanguage.VM
             }
             return null;
         }
-        public RuntimeDefType GetRuntimeDefTypeByTemplateAndClassRelation( RuntimeClass irmc, int index)
+        public RuntimeDefType? GetRuntimeDefTypeByTemplateAndClassRelation( RuntimeClass? irmc, int index)
         {
+            if (irmc == null)
+                return null;
             if (m_IRMetaClassMapTemplateDict.ContainsKey(irmc.id))
             {
                 var irmcmap = m_IRMetaClassMapTemplateDict[irmc.id];
@@ -103,6 +90,20 @@ namespace SimpleLanguage.VM
             }
             return null;
         }
+        /// <summary>
+        /// Installs template bindings from exported <c>templateRelationList</c> (related class → template index → bound type).
+        /// </summary>
+        public void SetTemplateRelation(int relatedClassId, int templateIndex, RuntimeDefType? binding)
+        {
+            if (binding == null) return;
+            if (!m_IRMetaClassMapTemplateDict.TryGetValue(relatedClassId, out var map) || map == null)
+            {
+                map = new Dictionary<int, RuntimeDefType>();
+                m_IRMetaClassMapTemplateDict[relatedClassId] = map;
+            }
+            map[templateIndex] = binding;
+        }
+
         public bool IsExtendsRelation(RuntimeClass rc)
         {
             if (this == rc )
@@ -118,52 +119,22 @@ namespace SimpleLanguage.VM
     }
     public class RuntimeClassManager
     {
-        public static RuntimeClassManager s_Instance = null;
-        public static RuntimeClassManager instance
+        private static List<RuntimeClass> m_IRMetaClassList = new List<RuntimeClass>();
+        public static void RegisterDymnicClass()
         {
-            get
-            {
-                if (s_Instance == null)
-                {
-                    s_Instance = new RuntimeClassManager();
-                }
-                return s_Instance;
-            }
         }
-        public List<RuntimeClass> m_IRMetaClassList = new List<RuntimeClass>();
-
-
-        public void RegisterDymnicClass()
-        {
-
-        }
-        public RuntimeClass GetRuntimeClassById( int id )
+        public static RuntimeClass GetRuntimeClassById( int id )
         {
             return m_IRMetaClassList.Find(a => a.id == id);
-
         }
-        public RuntimeClass GetRuntimeClassByName(string allname)
+        public static RuntimeClass GetRuntimeClassByName(string allname)
         {
             return m_IRMetaClassList.Find(a => a.name == allname);
         }
-
-        //public IRMetaType GetIRMetaClass( IRMetaClass metaclass, List<IRMetaClass> templateList, bool isNonIncludeAndRegister = false )
-        //{
-        //    IRMetaClass irmc = null;
-
-        //    foreach( var v in m_IRMetaClassList )
-        //    {
-        //        if( v.irmeta)
-        //    }
-        //}
-        //public ClassObject GetStaticMetaMemberVariable( int classid, int index )
-        //{
-        //    if(m_RuntimeClassDict.ContainsKey(classid) )
-        //    {
-        //        //m_RuntimeClassDict[classid].GetStaticMetaMemberVaraible(index);
-        //    }
-
-        //    return null;
-        //}
+        public static RuntimeClass AddRuntimeClass( RuntimeClass rc )
+        {
+            m_IRMetaClassList.Add(rc);
+            return rc;
+        }
     }
 }

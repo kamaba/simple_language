@@ -36,6 +36,8 @@ namespace SimpleLanguage.IR
         public List<IRMetaType> templateTypeList => m_IRMetaTypeList;
         // number of generated/template meta types
         public int templateCount => m_TemplateCount;
+        /// <summary>Number of template parameters declared in source (e.g. <c>class Foo&lt;T,U&gt;</c> → 2). Not the same as <see cref="templateCount"/>.</summary>
+        public int templateParameterCount => m_MetaClass?.metaTemplateList?.Count ?? 0;
         // template relations mapping: key is related class id, value maps template index -> IRMetaType
         public Dictionary<int, Dictionary<int, IRMetaType>> templateRelation => m_IRMetaClassMapTemplateDict;
 
@@ -388,6 +390,8 @@ namespace SimpleLanguage.IR
         }
         public List<IRData> CreateStaticMetaMetaVariableIRList()
         {
+            IRMetaType irmt = new IRMetaType(this, this.m_IRMetaTypeList);
+
             List<IRData> list = new List<IRData>();
 
             foreach( var v in m_LocalIRMetaVariableList )
@@ -410,7 +414,7 @@ namespace SimpleLanguage.IR
 
                 IRData irdata = new IRData();
                 irdata.id = list.Count;
-                irdata.opValue = v.irMetaType;
+                irdata.opValue = irmt;
                 // for instance member default init we use StoreNotStaticField1
                 irdata.opCode = EIROpCode.StoreNotStaticField1;
                 irdata.index = v.index;
@@ -442,7 +446,7 @@ namespace SimpleLanguage.IR
                 IRData irdata2 = new IRData();
                 irdata2.id = list.Count;
                 // store static field: opValue carries the field type
-                irdata2.opValue = v.irMetaType;
+                irdata2.opValue = irmt;
                 irdata2.opCode = EIROpCode.StoreStaticField;
                 irdata2.index = v.index;
                 list.Add(irdata2);

@@ -7,6 +7,7 @@ namespace SimpleLanguage.VM
         public int id { get; set; }
         public int index { get; set; }
         public string name { get; set; } = string.Empty;
+        public bool isConst { get; set; } = false;
 
         private RuntimeDefType m_RuntimeDefType = null;
         public RuntimeVariable() { }
@@ -16,6 +17,7 @@ namespace SimpleLanguage.VM
             this.id = id;
             this.index = index;
             this.name = name ?? string.Empty;
+            this.isConst = false;
         }
     }
 }

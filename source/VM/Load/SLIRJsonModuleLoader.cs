@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Linq;
 using SimpleLanuageVM.Load;
-using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.VM
 {
@@ -356,55 +351,55 @@ namespace SimpleLanguage.VM
             return Path.Combine(outDir, "module.slir.json");
         }
 
-        public static void LoadIntoRuntime(string jsonPath)
-        {
-            if (string.IsNullOrWhiteSpace(jsonPath)) jsonPath = GetDefaultJsonPath();
-            if (jsonPath.EndsWith(".package.json", StringComparison.OrdinalIgnoreCase))
-            {
-                var pkg = ReadPackage(jsonPath);
-                SLRuntimeModuleRegistry.LoadFromPackage(pkg);
-                // package.json path doesn't eagerly build RuntimeTypeManager primitive types
-                // so VM global initialization might access uninitialized core runtime types.
-                return;
-            }
-            // module.slir.json / legacy root: normalize into canonical wrapper first.
-            var m = LoadFromJson(jsonPath);
-            var allClasses = new List<SLClassPackage>();
-            if (m?.moduleList != null)
-            {
-                for (int mi = 0; mi < m.moduleList.Count; mi++)
-                {
-                    var mod = m.moduleList[mi];
-                    if (mod?.classList != null) allClasses.AddRange(mod.classList);
-                }
-            }
-            var rcm = RuntimeClassManager.instance;
-            rcm.m_IRMetaClassList.Clear();
-            for (int i = 0; i < allClasses.Count; i++)
-            {
-                var c = allClasses[i];
-                var rc = new RuntimeClass { id = StableId32(c.name), name = c.name ?? string.Empty, metaClassKind = c.metaClassKind };
-                rcm.m_IRMetaClassList.Add(rc);
-            }
-            for (int i = 0; i < rcm.m_IRMetaClassList.Count; i++)
-            {
-                var rc = rcm.m_IRMetaClassList[i];
-                if (rc == null) continue;
-                if (RuntimeTypeManager.GetRuntimeTypeByClassId(rc.id) == null) RuntimeTypeManager.AddRuntimeTypeByClass(rc);
-            }
-            RuntimeTypeManager.EnsureCoreRuntimeTypesRegistered();
-            for (int i = 0; i < allClasses.Count; i++)
-            {
-                var c = allClasses[i];
-                var rc = rcm.GetRuntimeClassByName(c.name);
-                if (rc == null) continue;
-                foreach (var f in c.fieldList )
-                {
-                    var rv = new RuntimeVariable();
-                    //if (f.isStatic) rc.staticIRMetaVariableList.Add(rv); else rc.localIRMetaVariableList.Add(rv);
-                }
-            }
-        }
+        //public static void LoadIntoRuntime(string jsonPath)
+        //{
+        //    if (string.IsNullOrWhiteSpace(jsonPath)) jsonPath = GetDefaultJsonPath();
+        //    if (jsonPath.EndsWith(".package.json", StringComparison.OrdinalIgnoreCase))
+        //    {
+        //        var pkg = ReadPackage(jsonPath);
+        //        SLRuntimeModuleRegistry.LoadFromPackage(pkg);
+        //        // package.json path doesn't eagerly build RuntimeTypeManager primitive types
+        //        // so VM global initialization might access uninitialized core runtime types.
+        //        return;
+        //    }
+        //    // module.slir.json / legacy root: normalize into canonical wrapper first.
+        //    var m = LoadFromJson(jsonPath);
+        //    var allClasses = new List<SLClassPackage>();
+        //    if (m?.moduleList != null)
+        //    {
+        //        for (int mi = 0; mi < m.moduleList.Count; mi++)
+        //        {
+        //            var mod = m.moduleList[mi];
+        //            if (mod?.classList != null) allClasses.AddRange(mod.classList);
+        //        }
+        //    }
+        //    var rcm = RuntimeClassManager.instance;
+        //    rcm.m_IRMetaClassList.Clear();
+        //    for (int i = 0; i < allClasses.Count; i++)
+        //    {
+        //        var c = allClasses[i];
+        //        var rc = new RuntimeClass { id = StableId32(c.name), name = c.name ?? string.Empty, metaClassKind = c.metaClassKind };
+        //        rcm.m_IRMetaClassList.Add(rc);
+        //    }
+        //    for (int i = 0; i < rcm.m_IRMetaClassList.Count; i++)
+        //    {
+        //        var rc = rcm.m_IRMetaClassList[i];
+        //        if (rc == null) continue;
+        //        if (RuntimeTypeManager.GetRuntimeTypeByClassId(rc.id) == null) RuntimeTypeManager.AddRuntimeTypeByClass(rc);
+        //    }
+        //    RuntimeTypeManager.EnsureCoreRuntimeTypesRegistered();
+        //    for (int i = 0; i < allClasses.Count; i++)
+        //    {
+        //        var c = allClasses[i];
+        //        var rc = rcm.GetRuntimeClassByName(c.name);
+        //        if (rc == null) continue;
+        //        foreach (var f in c.fieldList )
+        //        {
+        //            var rv = new RuntimeVariable();
+        //            //if (f.isStatic) rc.staticIRMetaVariableList.Add(rv); else rc.localIRMetaVariableList.Add(rv);
+        //        }
+        //    }
+        //}
         private static int StableId32(string s)
         {
             unchecked
