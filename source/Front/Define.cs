@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      Define.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -402,6 +402,8 @@ namespace SimpleLanguage
         SystemConvertFloat32,
         SystemConvertFloat64,
         SystemConvertString,
+        SystemArrayGetValueThis,
+        SystemArraySetValueThis,
     }
 
     class Define

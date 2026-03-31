@@ -37,6 +37,8 @@ namespace SimpleLanguage.VM.Runtime
         SystemConvertFloat32,
         SystemConvertFloat64,
         SystemConvertString,
+        SystemArrayGetValueThis,
+        SystemArraySetValueThis,
     }
     public unsafe class RuntimeVM
     {
@@ -1199,7 +1201,7 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             var val = m_ValueStack[--m_ValueIndex];
                             var inst = m_ValueStack[--m_ValueIndex];
-                            if (inst.eType == EVMType.Class || inst.eType == EVMType.Object)
+                            if (inst.eType == EVMType.Class || inst.eType == EVMType.Array  || inst.eType == EVMType.Object)
                             {
                                 if (inst.sobject is ClassObject co)
                                 {
@@ -1300,7 +1302,7 @@ namespace SimpleLanguage.VM.Runtime
                             ArrayObject arr = new ArrayObject(rt, sval.int32Value);
                             // NewArray opcode path should initialize only the backing storage.
                             // Full CreateObject() may require runtime member types that are not guaranteed ready.
-                            arr.EnsureArrayStorageInitialized();
+                            arr.CreateObject();
                             ObjectManager.AddClassObject(arr);
                             m_ValueStack[m_ValueIndex - 1].SetSObject(arr);
 
@@ -1584,6 +1586,66 @@ namespace SimpleLanguage.VM.Runtime
                                         args[pi] = m_ValueStack[--m_ValueIndex];
                                     var outv = SystemBuiltinConvertValue(ref args[0], (ESystemMethodCall)kind);
                                     PushSValueSynced(outv);
+                                }
+                                break;
+                            case (int)ESystemMethodCall.SystemArrayGetValueThis:
+                                {
+                                    int pc = sysPkg.paramCount;
+                                    if (pc < 2 || m_ValueIndex < pc)
+                                    {
+                                        Debug.Assert(false, $"SystemArrayGetValueThis stack underflow, need={pc}, has={m_ValueIndex}");
+                                        break;
+                                    }
+                                    var args = new SValue[pc];
+                                    for (int pi = pc - 1; pi >= 0; pi--)
+                                        args[pi] = m_ValueStack[--m_ValueIndex];
+
+                                    var arrObj = args[0].sobject as ArrayObject;
+                                    if (arrObj == null)
+                                    {
+                                        var nz = default(SValue);
+                                        nz.SetNull();
+                                        PushSValueSynced(nz);
+                                        break;
+                                    }
+
+                                    int index = 0;
+                                    try { index = Convert.ToInt32(args[1].GetValueObject(), CultureInfo.InvariantCulture); }
+                                    catch { index = 0; }
+
+                                    var got = arrObj.GetValue(index);
+                                    if (got is SObject so)
+                                    {
+                                        var sv = default(SValue);
+                                        sv.SetSObject(so);
+                                        PushSValueSynced(sv);
+                                    }
+                                    else
+                                    {
+                                        PushSValueSynced(SValue.FromClrObject(got));
+                                    }
+                                }
+                                break;
+                            case (int)ESystemMethodCall.SystemArraySetValueThis:
+                                {
+                                    int pc = sysPkg.paramCount;
+                                    if (pc < 3 || m_ValueIndex < pc)
+                                    {
+                                        Debug.Assert(false, $"SystemArraySetValueThis stack underflow, need={pc}, has={m_ValueIndex}");
+                                        break;
+                                    }
+                                    var args = new SValue[pc];
+                                    for (int pi = pc - 1; pi >= 0; pi--)
+                                        args[pi] = m_ValueStack[--m_ValueIndex];
+
+                                    var arrObj = args[0].sobject as ArrayObject;
+                                    if (arrObj == null) break;
+
+                                    int index = 0;
+                                    try { index = Convert.ToInt32(args[1].GetValueObject(), CultureInfo.InvariantCulture); }
+                                    catch { index = 0; }
+
+                                    arrObj.StoreValue(index, args[2]);
                                 }
                                 break;
                             default:

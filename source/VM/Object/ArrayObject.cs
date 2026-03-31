@@ -46,17 +46,6 @@ namespace SimpleLanguage.VM
 
             CreateArray();
         }
-
-        /// <summary>
-        /// NewArray opcode path needs only the backing storage for StoreValue/GetValue.
-        /// Creating full object members (via CreateObject) may require runtime types
-        /// that are not guaranteed to be initialized yet.
-        /// </summary>
-        public void EnsureArrayStorageInitialized()
-        {
-            if (m_Array != null) return;
-            CreateArray();
-        }
         //public override void SetSValue(ClassObject val)
         //{
         //    base.SetValue(val);

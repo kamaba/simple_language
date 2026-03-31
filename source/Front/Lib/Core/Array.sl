@@ -25,7 +25,7 @@ public class Array<T> interface IIterable<T>, IIterator<T>
     {
         for i = 0, i < this._length, i++
         {
-            #SimpleLanguage.Lib.ArrayClass.SetArrayValueThis(this, i, value)
+            SystemArraySetValueThis(this, i, value)
 
             #!
             var retObj = BridgeObject();
@@ -57,14 +57,14 @@ public class Array<T> interface IIterable<T>, IIterator<T>
         bool hasNext_var = this._index < this._length 
         if hasNext_var
         {
-            this._current = null;# SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, this._index ) as T
+            this._current = SystemArrayGetValueThis(this, this._index) as T
         }
         else
         {
             this._current = null
         }
         this._index++;
-        #System.Console.WriteLine(" Array.moveNext-----" + this._index )
+        SystemPrint(" Array.moveNext-----" + this._index )
         ret hasNext_var
     }
     override T current()
@@ -73,7 +73,7 @@ public class Array<T> interface IIterable<T>, IIterator<T>
     }
     override set void current( T val )
     {
-        #SimpleLanguage.Lib.ArrayClass.SetArrayValueThis( this, this._index, val )
+        SystemArraySetValueThis(this, this._index, val)
         this._current = val
     }
     override void release()
@@ -100,19 +100,15 @@ public class Array<T> interface IIterable<T>, IIterator<T>
             ret 
         }
         this._index = ind;
-        #this._current = SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, ind )
-        #retobj = impleLanguage.Lib.ArrayClass.GetArrayValueThis( this, ind )
-        #this._current = retobj;
+        this._current = SystemArrayGetValueThis(this, ind) as T
     }
     set setValue( int __index, T val )
     {
-        #Lib.Array.SetArrayValue( this._ptr, 5,  index, val )
-        #SimpleLanguage.Lib.ArrayClass.SetArrayValueThis( this, __index, val )
+        SystemArraySetValueThis(this, __index, val)
     }
     get T getValue( int __index )
     {
-        #ret Lib.ArrayClass.GetArrayValue( this._ptr, 5,  index )
-        ret null #SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, __index )
+        ret SystemArrayGetValueThis(this, __index) as T
     }
     setValues( Int64 valPtr, int len )
     {
@@ -123,7 +119,7 @@ public class Array<T> interface IIterable<T>, IIterator<T>
         string showstr = "["
         for i = 0, i < this._length, i++
         {
-            var cur = "" #SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, i )
+            var cur = SystemArrayGetValueThis(this, i)
             showstr = showstr + cur.toString()
             if( i < this._length - 1 )
             {
