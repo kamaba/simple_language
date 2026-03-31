@@ -20,19 +20,17 @@ Project
         #StringTest.fun()
         #TypeTest.fun()
 
-        a = 2 + 4
+        #a = 2 + 4
         #global.print(a.toString())
         #SystemPrint(a.toString())
         #Call( BridgeKind.CLR )
-        global.println( "--------------------for enum-------------------" )
-        global.println( "Pi=$global.Pi }" )
+        #global.println( "--------------------for enum-------------------" )
+        #global.println( "Pi=$global.Pi }" )
 
-        #!
         for v in BridgeKind
         {
             println( v.toString() )
-        }
-        !#
+        }        
     }
     _test_()
     {

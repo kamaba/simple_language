@@ -23,8 +23,8 @@ namespace SimpleLanguage.Core
         public MetaVariable forInContentIterator => m_ForInContentIterator;
         public MetaVariable ifCeqVariable => m_IfCeqVariable;
         //public MetaVariable indexVariable => m_IndexVariable;
-        public MetaMemberFunction hasNextFunction => m_HasNextFunction;
-        public MetaMemberFunction nextValueFunction => m_NextValueFunction;
+        //public MetaMemberFunction hasNextFunction => m_HasNextFunction;
+        //public MetaMemberFunction nextValueFunction => m_NextValueFunction;
         public MetaBlockStatements thenMetaStatements => m_ThenMetaStatements;
         public MetaDefineVarStatements defineVarStatements => m_DefineVarStatements;
         public MetaAssignStatements assignStatements => m_AssignStatements;
@@ -42,8 +42,8 @@ namespace SimpleLanguage.Core
         private MetaAssignStatements m_AssignStatements = null;
         private MetaExpressNode m_ConditionExpress = null;
         private MetaAssignStatements m_StepStatements = null;
-        private MetaMemberFunction m_HasNextFunction = null;
-        private MetaMemberFunction m_NextValueFunction = null;
+        //private MetaMemberFunction m_HasNextFunction = null;
+        //private MetaMemberFunction m_NextValueFunction = null;
 
         private FileMetaKeyForSyntax m_FileMetaKeyForSyntax = null;
         public MetaForStatements(MetaBlockStatements mbs, FileMetaKeyForSyntax fmkfs ) : base(mbs)
@@ -102,18 +102,7 @@ namespace SimpleLanguage.Core
                 }
                 if( mcallEn != null )
                 {
-                    // Support: for v in EnumType
-                    // When the in-expression resolves to an enum type (MetaClass visit), iterate over EnumType.values.
-                    if (mcallEn.metaCallLink?.finalCallNode != null
-                        && mcallEn.metaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.Enum
-                        && mcallEn.metaCallLink.finalCallNode.callMetaType?.metaClass is MetaEnum men)
-                    {
-                        m_ForInContent = men.GetOrCreateValuesVariable();
-                    }
-                    else
-                    {
-                        m_ForInContent = mcallEn.GetMetaVariable();
-                    }
+                    m_ForInContent = mcallEn.GetMetaVariable();
                 }
                 else
                 {
@@ -174,8 +163,8 @@ namespace SimpleLanguage.Core
                 }
                 m_ForIterateVariable.Parse();
 
-                m_HasNextFunction = m_ForIterateVariable.realMetaType.metaClass.GetFirstMetaMemberFunctionByName("hasNext");
-                m_NextValueFunction = m_ForIterateVariable.realMetaType.metaClass.GetFirstMetaMemberFunctionByName("current");
+                //m_HasNextFunction = m_ForIterateVariable.realMetaType.metaClass.GetFirstMetaMemberFunctionByName("hasNext");
+                //m_NextValueFunction = m_ForIterateVariable.realMetaType.metaClass.GetFirstMetaMemberFunctionByName("current");
 
                 //if( m_ForInContent.realMetaType.isArray )
                 //{

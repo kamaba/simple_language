@@ -142,6 +142,10 @@ namespace SimpleLanguage.Core
 
         //    SetOwnerMetaClass(mtc);
         //}
+        public void SetVariableFrom(EVariableFrom vfrom )
+        {
+            m_VariableFrom = vfrom;
+        }
         public override void ParseDefineMetaType()
         {
             if (m_FileMetaMemeberVariable?.classDefineRef != null)
@@ -298,6 +302,10 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
+        }
+        public void SetIndex( int index )
+        {
+            this.m_Index = index;
         }
         public void CalcReturnType()
         {

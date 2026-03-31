@@ -29,6 +29,7 @@ namespace SimpleLanguage.IR
         public IRMetaType(){ }
         public IRMetaType( IRMetaClass _irMetaClass)
         {
+            Debug.Assert(_irMetaClass != null, "");
             m_IRMetaClass = _irMetaClass;
         }
         public IRMetaType(IRMetaClass irmc, List<IRMetaType> irlist)

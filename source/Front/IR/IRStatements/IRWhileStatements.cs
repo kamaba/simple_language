@@ -73,7 +73,7 @@ namespace SimpleLanguage.IR
 
                 // 1. 创建迭代器对象，并赋值给循环变量
 
-                IRLoadVariable loadContentVar = IRLoadVariable.CreateLoadVariable(content_irmt, null, irMethod, ms.forInContent );
+                IRLoadVariable loadContentVar = IRLoadVariable.CreateLoadVariable(content_irmt, itv_irmt.irMetaClass, irMethod, ms.forInContent );
                 m_IRStatements.Add(loadContentVar);
 
                 var resetMethodInst = content_irmt.irMetaClass.GetIRNonStaticMethodIndexByName("reset", out int restIndex);

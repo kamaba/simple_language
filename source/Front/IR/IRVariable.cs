@@ -93,6 +93,7 @@ namespace SimpleLanguage.IR
                     if (index == -1)
                     {
                         Log.AddGenIR(EError.None, "没有找到对应成员变量的Index");
+                        Debug.Assert(false);
                         return null;
                     }
                     IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Member);

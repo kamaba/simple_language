@@ -30,7 +30,7 @@ public class Float32 extends Num
     public override Int32 toInt32()
     {
         #ret SimpleLanguage.Lib.Float32Class.ToInt32(this)
-        ret 0
+        ret SystemConvertInt32(this)
     }
     public override Float64 toFloat64()
     {

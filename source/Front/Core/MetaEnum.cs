@@ -39,15 +39,17 @@ namespace SimpleLanguage.Core
             if(m_ValuesMetaVariable == null )
             {
                 List<MetaType> mtList = new List<MetaType>();
-                var nmt = new MetaType(this.extendClass);
+                var nmt = new MetaType(CoreMetaClassManager.objectMetaClass);
                 mtList.Add(nmt);
                 var mt = new MetaType(CoreMetaClassManager.arrayMetaClass, mtList);
                 m_ValuesMetaVariable = new MetaMemberVariable(this, "values" );
+                m_ValuesMetaVariable.SetVariableFrom(MetaVariable.EVariableFrom.EnumMember);
                 m_ValuesMetaVariable.SetIsStatic( true );
                 m_ValuesMetaVariable.SetIsDefineMetaType(true);
                 m_ValuesMetaVariable.SetMetaDefineType(mt);
                 m_ValuesMetaVariable.SetRealMetaType(mt);
                 m_MetaMemberVariableDict.Add(m_ValuesMetaVariable.name, m_ValuesMetaVariable );
+                m_ValuesMetaVariable.SetIndex(m_MetaMemberVariableDict.Count);
 
 
                 MetaArrayExpressNode maen = new MetaArrayExpressNode( this, null, mt, m_ValuesMetaVariable );

@@ -370,10 +370,10 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.visitType = EVisitType.MetaClass;
+            vn.visitType = EVisitType.Enum;
             if (mt?.metaClass is MetaEnum me)
             {
-                me.CreateValues();
+                vn.variable = me.GetOrCreateValuesVariable();
             }
             vn.m_ReturnMetaType = mt;
 
