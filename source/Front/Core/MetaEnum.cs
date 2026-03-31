@@ -9,6 +9,7 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SimpleLanguage.Core
 {
@@ -53,11 +54,16 @@ namespace SimpleLanguage.Core
 
 
                 MetaArrayExpressNode maen = new MetaArrayExpressNode( this, null, mt, m_ValuesMetaVariable );
-
-                foreach ( var v in m_MetaMemberVariableDict )
+                // values 数组只应包含真实枚举成员，不应把 values 自己也放进去；
+                // 否则 for-in 枚举遍历会出现额外项并导致导出的 IR 逻辑异常。
+                var enumMembers = m_MetaMemberVariableDict.Values
+                    .OfType<MetaMemberEnum>()
+                    .OrderBy(v => v.index)
+                    .ToList();
+                foreach ( var v in enumMembers )
                 {
                     MetaCallLink mcl = new MetaCallLink( this, nmt);
-                    MetaVisitNode mvn = MetaVisitNode.CreateByVariable(v.Value);
+                    MetaVisitNode mvn = MetaVisitNode.CreateByVariable(v);
                     mcl.AddVisitNodeList(mvn);
                     MetaCallLinkExpressNode mclen = new MetaCallLinkExpressNode(mcl);
                     maen.metaCallArray.Add(mclen);

@@ -138,4 +138,15 @@ namespace SimpleLanguage
 
         Ret,          
     }
+
+    /// <summary>
+    /// Operand-order flag for StoreArrayIndex.
+    /// </summary>
+    public enum EStoreArrayIndexFlag : byte
+    {
+        // stack: [..., value, array]
+        StoreTopMinus1_ValueTopMinus2 = 0,
+        // stack: [..., array, value]
+        StoreTopMinus2_ValueTopMinus1 = 1,
+    }
 }

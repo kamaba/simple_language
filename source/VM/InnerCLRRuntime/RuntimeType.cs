@@ -31,7 +31,7 @@ namespace SimpleLanguage.VM
         //private bool m_IsStaticMemInitializing = false;
         //private bool m_IsStaticExprBatchApplied = false;
         private bool m_IsStaticExprBatchApplying = false;
-        public EVMType eType { get; set; }
+        public EVMType eType { get; protected set; } = EVMType.Void;
 
         public RuntimeType( RuntimeClass rc, List<RuntimeType> rtList)
         {
@@ -55,6 +55,10 @@ namespace SimpleLanguage.VM
                 eType = EVMType.Class;
             }
             //eType = GetVMType(irClass.irName);
+        }
+        public void SetEVMType( EVMType evmtype )
+        {
+            eType = evmtype;
         }
         //public static EVMType GetVMType(string irName)
         //{
@@ -567,66 +571,82 @@ namespace SimpleLanguage.VM
             if( name == "Object" || name == "Core.Object" )
             {
                 m_ObjectRuntimeType = rt;
+                m_ObjectRuntimeType.SetEVMType(EVMType.Object);
             }
             if (name == "Void" || name == "Core.Void")
             {
                 m_VoidRuntimeType = rt;
+                m_VoidRuntimeType.SetEVMType(EVMType.Void);
             }
             else if (name == "Type" || name == "Core.Type")
             {
                 m_TypeRuntimeType = rt;
+                m_TypeRuntimeType.SetEVMType(EVMType.Type);
             }
             else if (name == "Bool" || name == "Core.Bool")
             {
                 m_BoolRuntimeType = rt;
+                m_BoolRuntimeType.SetEVMType(EVMType.Boolean);
             }
             else if (name == "Num" || name == "Core.Num")
             {
                 m_NumRuntimeType = rt;
+                m_NumRuntimeType.SetEVMType(EVMType.Num);
             }
             else if (name == "Byte" || name == "Core.Byte")
             {
                 m_ByteRuntimeType = rt;
+                m_ByteRuntimeType.SetEVMType(EVMType.Byte);
             }
             else if (name == "SByte" || name == "Core.SByte")
             {
                 m_SByteRuntimeType = rt;
+                m_SByteRuntimeType.SetEVMType(EVMType.SByte);
             }
             else if (name == "Int16" || name == "Core.Int16")
             {
                 m_Int16RuntimeType = rt;
+                m_Int16RuntimeType.SetEVMType(EVMType.Int16);
             }
             else if (name == "UInt16" || name == "Core.UInt16")
             {
                 m_UInt16RuntimeType = rt;
+                m_UInt16RuntimeType.SetEVMType(EVMType.UInt16);
             }
             else if (name == "Int32" || name == "Core.Int32")
             {
                 m_Int32RuntimeType = rt;
+                m_Int32RuntimeType.SetEVMType(EVMType.Int32);
             }
             else if (name == "UInt32" || name == "Core.UInt32")
             {
                 m_UInt32RuntimeType = rt;
+                m_UInt32RuntimeType.SetEVMType(EVMType.UInt32);
             }
             else if (name == "Int64" || name == "Core.Int64")
             {
                 m_Int64RuntimeType = rt;
+                m_Int64RuntimeType.SetEVMType(EVMType.Int64);
             }
             else if (name == "UInt64" || name == "Core.UInt64")
             {
                 m_UInt64RuntimeType = rt;
+                m_UInt64RuntimeType.SetEVMType(EVMType.UInt64);
             }
             else if (name == "String" || name == "Core.String")
             {
                 m_StringRuntimeType = rt;
+                m_StringRuntimeType.SetEVMType(EVMType.String);
             }
             else if (name == "Float32" || name == "Core.Float32")
             {
                 m_Float32RuntimeType = rt;
+                m_Float32RuntimeType.SetEVMType(EVMType.Float32);
             }
             else if (name == "Float64" || name == "Core.Float64")
             {
                 m_Float64RuntimeType = rt;
+                m_Float64RuntimeType.SetEVMType(EVMType.Float64);
             }
             s_RuntimeTypeList.Add(rt);
             rt.EnsureStaticMemberObjectsInitialized();

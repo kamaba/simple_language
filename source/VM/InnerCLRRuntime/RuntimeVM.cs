@@ -1089,13 +1089,23 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.StoreArrayIndex:
                     {
                         int int1 = 1, int2 = 2;
-                        if (iri.opValue is Boolean flag)
+                        byte flagByte = (byte)EStoreArrayIndexFlag.StoreTopMinus1_ValueTopMinus2;
+                        if (iri.TryGetByte(out var bflag))
                         {
-                            if (flag)
-                            {
-                                int1 = 2;
-                                int2 = 1;
-                            }
+                            flagByte = bflag;
+                        }
+                        else if (iri.TryGetBoolean(out var oldFlag))
+                        {
+                            // backward-compat with old Front emitter: true means swapped order.
+                            flagByte = oldFlag
+                                ? (byte)EStoreArrayIndexFlag.StoreTopMinus2_ValueTopMinus1
+                                : (byte)EStoreArrayIndexFlag.StoreTopMinus1_ValueTopMinus2;
+                        }
+
+                        if (flagByte == (byte)EStoreArrayIndexFlag.StoreTopMinus2_ValueTopMinus1)
+                        {
+                            int1 = 2;
+                            int2 = 1;
                         }
                         SValue sStore = m_ValueStack[m_ValueIndex - int1];
                         SValue sValue = m_ValueStack[m_ValueIndex - int2];
@@ -1700,7 +1710,6 @@ namespace SimpleLanguage.VM.Runtime
                             var runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, iri.index);
                             if (runtimeCall != null)
                             {
-                                iri.opValue = runtimeCall;
                                 mfc = runtimeCall;
                             }
                         }

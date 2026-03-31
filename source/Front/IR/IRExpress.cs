@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRExpress.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -339,7 +339,9 @@ namespace SimpleLanguage.IR
 
                         IRData irdatastore = new IRData();
                         irdatastore.index = y;
-                        irdatastore.SetOpValue(true);
+                        // object-initializer assignment path pushes: [..., array, value]
+                        // mark StoreArrayIndex to read store target at top-2, value at top-1.
+                        irdatastore.SetOpValue((byte)EStoreArrayIndexFlag.StoreTopMinus2_ValueTopMinus1);
                         irdatastore.opCode = EIROpCode.StoreArrayIndex;
                         m_IRDataList.Add(irdatastore);
                     }

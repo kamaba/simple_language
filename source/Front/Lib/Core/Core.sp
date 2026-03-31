@@ -27,10 +27,18 @@ Project
         #global.println( "--------------------for enum-------------------" )
         #global.println( "Pi=$global.Pi }" )
 
+        a = [1,2,3,4]
+        for v in a
+        {
+            println(v)
+        }
+
+        #!
         for v in BridgeKind
         {
             println( v.toString() )
-        }        
+        } 
+        !#       
     }
     _test_()
     {
