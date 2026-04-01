@@ -106,6 +106,10 @@ namespace SimpleLanuageVM.Load
         public int metaClassKind { get; set; }
         /// <summary>Declared template arity in source; matches Front <c>SLClassPackage.templateParameterCount</c>.</summary>
         public int templateParameterCount { get; set; }
+        /// <summary>IR generated template meta type count; matches Front <c>SLClassPackage.templateCount</c>.</summary>
+        public int templateCount { get; set; }
+        /// <summary>Generated class template type list; matches Front <c>SLClassPackage.templateTypeList</c>.</summary>
+        public List<SLRuntimeDefTypePackage> templateTypeList { get; set; } = new();
         /// <summary>Child class template bindings: related class id → (source template index → bound type). Matches Front export.</summary>
         public List<SLTemplateRelationPackage> templateRelationList { get; set; } = new();
         public List<SLFieldPackage> fieldList { get; set; } = new();
@@ -130,6 +134,7 @@ namespace SimpleLanuageVM.Load
         public string name { get; init; } = string.Empty;
         // index marks ordering within the specific per-class list
         public int index { get; init; } = 0;
+        public bool interfaceMethod { get; set; }
         public string onlyName { get; set; } = string.Empty;
         public string declaringTypeFullName { get; set; } = string.Empty;
         public int ownerClassId { get; set; }

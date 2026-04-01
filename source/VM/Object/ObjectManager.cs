@@ -121,7 +121,7 @@ namespace SimpleLanguage.VM
                 sobj.typeId = 0;
             }
             else if (name == "Core.Array" || name == "Array"
-                || name == "Array<T>" )
+                || name == "Core.Array<T>")
             {
                 var ao = new ArrayObject( rt, 0);
                 ao.typeId = 0;

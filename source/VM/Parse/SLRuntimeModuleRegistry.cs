@@ -162,6 +162,7 @@ namespace SimpleLanguage.Parse
                         id = m.id,
                         onlyFunctionName = m.name ?? string.Empty,
                     };
+                    rm.SetInterfaceMethodFlag(m.interfaceMethod);
 
                     // instructions（JSON 仅带 Payload；与 IRData 解包对称）
                     if (m.instructionList != null)
@@ -248,6 +249,20 @@ namespace SimpleLanguage.Parse
         {
             if (pkg == null || rc == null) return;
             if (rc.fieldsFromPackageApplied) return;
+
+            // class-level template metadata
+            rc.templateCount = pkg.templateCount;
+            rc.templateParameterCount = pkg.templateParameterCount;
+            rc.templateDefTypeList.Clear();
+            if (pkg.templateTypeList != null)
+            {
+                for (int i = 0; i < pkg.templateTypeList.Count; i++)
+                {
+                    var t = ResolveRuntimeDefType(pkg.templateTypeList[i]);
+                    if (t != null)
+                        rc.templateDefTypeList.Add(t);
+                }
+            }
 
             if (pkg.fieldList != null)
             {
@@ -760,7 +775,7 @@ namespace SimpleLanguage.Parse
             if (rc == null) return null;
 
             var args = templateArgs ?? new List<RuntimeType>();
-            var existed = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(rc, args);
+            var existed = RuntimeTypeManager.GetRuntimeTypeByRuntimeClassAndRuntimeTypeList(rc, args);
             if (existed != null) return existed;
 
             if (args.Count == 0)
@@ -768,7 +783,7 @@ namespace SimpleLanguage.Parse
                 return RuntimeTypeManager.AddRuntimeTypeByClass(rc);
             }
 
-            return RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(rc, args);
+            return RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(rc, args);
         }
 
         private static string GetGenericRootName(string fullTypeName)

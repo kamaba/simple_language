@@ -23,3 +23,6 @@
 - Debug export semantics must distinguish layers: `File.txt` exports FileMeta layer data, while `Meta.txt` exports MetaCore layer data, and must include complete logic (e.g., method statements) rather than just an incomplete summary of core nodes.
 - Export `IR.txt`, aggregating all IR methods under each class for unified export.
 - `SLIRJsonModuleLoader` is the JSON SLIR reader, and `SLIRBinModuleLoader` is the binary SLIR reader.
+- When debugging parse or compile pipeline issues, first check debug outputs under `source/Front/bin/Debug/net8.0/DebugCode` and follow the strict order: `IR.txt` -> `Meta.txt` -> `File.txt` -> `Node.txt` -> `Token.txt` -> `Code.txt`; if a layer is wrong, trace to the previous upstream layer immediately.
+- Required troubleshooting chain: start from `IR.txt`, then verify `Meta.txt`, then `File.txt`, then `Node.txt`, then `Token.txt`, and finally `Code.txt`.
+- If one layer is incorrect, immediately trace to the previous upstream layer to find where the incorrect output was introduced.

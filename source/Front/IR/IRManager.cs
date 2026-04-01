@@ -96,6 +96,44 @@ namespace SimpleLanguage.IR
                     {
                         var irClass = classList[i];
                         sb.AppendLine("Class: " + irClass.irName);
+                        sb.AppendLine("  TemplateCount: " + irClass.templateCount);
+                        sb.AppendLine("  TemplateParameterCount: " + irClass.templateParameterCount);
+                        if (irClass.templateTypeList == null || irClass.templateTypeList.Count == 0)
+                        {
+                            sb.AppendLine("  TemplateTypes: []");
+                        }
+                        else
+                        {
+                            sb.AppendLine("  TemplateTypes:");
+                            for (int ti = 0; ti < irClass.templateTypeList.Count; ti++)
+                            {
+                                var tt = irClass.templateTypeList[ti];
+                                if (tt == null) continue;
+                                sb.AppendLine("    - #" + ti + " " + tt.ToString());
+                            }
+                        }
+                        if (irClass.templateRelation == null || irClass.templateRelation.Count == 0)
+                        {
+                            sb.AppendLine("  TemplateRelations: []");
+                        }
+                        else
+                        {
+                            sb.AppendLine("  TemplateRelations:");
+                            foreach (var rel in irClass.templateRelation)
+                            {
+                                sb.AppendLine("    RelatedClassId: " + rel.Key);
+                                var map = rel.Value;
+                                if (map == null || map.Count == 0)
+                                {
+                                    sb.AppendLine("      Mapping: []");
+                                    continue;
+                                }
+                                foreach (var kvp in map)
+                                {
+                                    sb.AppendLine("      - TIndex " + kvp.Key + " => " + (kvp.Value?.ToString() ?? "null"));
+                                }
+                            }
+                        }
                         AppendIRVariableList(sb, "  ClassLocals", irClass.localIRMetaVariableList);
                         AppendIRVariableList(sb, "  ClassStatics", irClass.staticIRMetaVariableList);
                         AppendGlobalBindingList(sb, "  GlobalBindings", irClass, m_GlobalStaticVariableList);

@@ -111,10 +111,10 @@ namespace SimpleLanguage.VM
                         rtList.Add(crt);
                     }
                 }
-                var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(rdt.runtimeClass, rtList);
+                var rt = RuntimeTypeManager.GetRuntimeTypeByRuntimeClassAndRuntimeTypeList(rdt.runtimeClass, rtList);
                 if (rt == null && isAdd)
                 {
-                    rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(rdt.runtimeClass, rtList);
+                    rt = RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(rdt.runtimeClass, rtList);
                 }
                 return rt;
             }
@@ -374,7 +374,7 @@ namespace SimpleLanguage.VM
             EnsureByClassName("Core.Object", ref m_ObjectRuntimeType, true );
             EnsureByClassName("Core.Void", ref m_VoidRuntimeType, true);
             EnsureByClassName("Core.Type", ref m_TypeRuntimeType, true);
-            EnsureByClassName("Core.Bool", ref m_BoolRuntimeType, true);
+            EnsureByClassName("Core.Boolean", ref m_BoolRuntimeType, true);
             EnsureByClassName("Core.Num", ref m_NumRuntimeType, true);
             EnsureByClassName("Core.Byte", ref m_ByteRuntimeType, true);
             EnsureByClassName("Core.SByte", ref m_SByteRuntimeType, true);
@@ -414,7 +414,7 @@ namespace SimpleLanguage.VM
             }
 
             if (rc == null) return;
-            if (GetRuntimeTypeByClassId(rc.id) == null)
+            if (GetRuntimeTypeById(rc.id) == null)
             {
                 AddRuntimeTypeByClass(rc);
             }
@@ -448,7 +448,7 @@ namespace SimpleLanguage.VM
 
             // If a runtime type already exists (possibly created via template-based path),
             // reuse it to avoid duplicate RuntimeType instances.
-            var existed = GetRuntimeTypeByClassId(rc.id);
+            var existed = GetRuntimeTypeById(rc.id);
             if (existed != null)
             {
                 targetField = existed;
@@ -500,32 +500,66 @@ namespace SimpleLanguage.VM
             }
         }
 
-        public static RuntimeType GetRuntimeTypeByMT(RuntimeClass rmc)
+        public static RuntimeType GetRuntimeTypeByRuntimeClass(RuntimeClass rmc)
         {
             if (rmc == null) return null;
             return s_RuntimeTypeList.Find(r => r.runtimeClass != null && r.runtimeClass.id == rmc.id);
         }
-        public static RuntimeType GetRuntimeTypeByClassId( int id )
+        public static RuntimeType GetRuntimeTypeById( int id )
         {
             return s_RuntimeTypeList.Find(r => r.runtimeClass != null && r.runtimeClass.id == id );
         }
-        public static RuntimeType GetRuntimeTypeByDefType(RuntimeDefType irmt, bool isAdd = true )
+        public static RuntimeType GetRuntimeTypeByDefTypeAndAdd(RuntimeDefType irmt )
+        {
+            var rt = GetRuntimeTypeByDefType(irmt);
+            if( rt == null )
+            {
+                List<RuntimeType> rtList = new List<RuntimeType>();
+                if (irmt.runtimeDefTypeList.Count > 0)
+                {
+                    for (int i = 0; i < irmt.runtimeDefTypeList.Count; i++)
+                    {
+                        var crt = GetRuntimeTypeByDefTypeAndAdd(irmt.runtimeDefTypeList[i]);
+                        rtList.Add(crt);
+                    }
+                }
+                rt = RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(irmt.runtimeClass, rtList);
+            }
+            return rt;
+        }
+        public static RuntimeType GetRuntimeTypeByDefType(RuntimeDefType irmt )
         {
             if (irmt == null) return null;
-            RuntimeType t =  GetRuntimeTypeByMT(irmt.runtimeClass);
-            if( t == null && isAdd )
+            foreach (var v in s_RuntimeTypeList)
             {
-                List<RuntimeType> rtlist = new List<RuntimeType>();
-                for( int i = 0; i < irmt.runtimeDefTypeList.Count; i++ )
+                if (v.runtimeClass != irmt.runtimeClass)
                 {
-                    var tc = GetRuntimeTypeByDefType(irmt.runtimeDefTypeList[i], isAdd);
+                    continue;
                 }
 
-                t = AddRuntimeTypeByClassAndTemplate(irmt.runtimeClass, rtlist );
+                if (v.runtimeTemplateList.Count == irmt.runtimeDefTypeList.Count )
+                {
+                    if (v.runtimeTemplateList.Count == 0)
+                    {
+                        return v;
+                    }
+                    bool flag = true;
+                    for (int i = 0; i < irmt.runtimeDefTypeList.Count; i++)
+                    {
+                        var ft = GetRuntimeTypeByDefType(irmt.runtimeDefTypeList[i]);
+                        if (!RuntimeType.SameRuntimeType(ft, v.runtimeTemplateList[i]))
+                        {
+                            flag = false;
+                            break;
+                        }
+                    }
+                    if (flag)
+                        return v;
+                }
             }
-            return t;
+            return null;
         }
-        public static RuntimeType GetRuntimeTypeByMTAndTemplateMT( RuntimeClass rmc, List<RuntimeType> inputTemplateTypeList)
+        public static RuntimeType GetRuntimeTypeByRuntimeClassAndRuntimeTypeList( RuntimeClass rmc, List<RuntimeType> inputTemplateTypeList)
         {
             foreach (var v in s_RuntimeTypeList)
             {
@@ -555,7 +589,7 @@ namespace SimpleLanguage.VM
             }
             return null;
         }
-        public static RuntimeType AddRuntimeTypeByClassAndTemplate(RuntimeClass rmc, List<RuntimeType> inputTemplateTypeList)
+        public static RuntimeType AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(RuntimeClass rmc, List<RuntimeType> inputTemplateTypeList)
         {
             if (rmc == null) return null;
             RuntimeType rt = new RuntimeType(rmc, inputTemplateTypeList);
@@ -583,7 +617,7 @@ namespace SimpleLanguage.VM
                 m_TypeRuntimeType = rt;
                 m_TypeRuntimeType.SetEVMType(EVMType.Type);
             }
-            else if (name == "Bool" || name == "Core.Bool")
+            else if (name == "Boolean" || name == "Core.Boolean")
             {
                 m_BoolRuntimeType = rt;
                 m_BoolRuntimeType.SetEVMType(EVMType.Boolean);
@@ -633,11 +667,6 @@ namespace SimpleLanguage.VM
                 m_UInt64RuntimeType = rt;
                 m_UInt64RuntimeType.SetEVMType(EVMType.UInt64);
             }
-            else if (name == "String" || name == "Core.String")
-            {
-                m_StringRuntimeType = rt;
-                m_StringRuntimeType.SetEVMType(EVMType.String);
-            }
             else if (name == "Float32" || name == "Core.Float32")
             {
                 m_Float32RuntimeType = rt;
@@ -648,12 +677,16 @@ namespace SimpleLanguage.VM
                 m_Float64RuntimeType = rt;
                 m_Float64RuntimeType.SetEVMType(EVMType.Float64);
             }
+            else if (name == "String" || name == "Core.String")
+            {
+                m_StringRuntimeType = rt;
+                m_StringRuntimeType.SetEVMType(EVMType.String);
+            }
             s_RuntimeTypeList.Add(rt);
             rt.EnsureStaticMemberObjectsInitialized();
 
             return rt;
         }
-
         public static RuntimeType AddRuntimeTypeByClass(RuntimeClass rmc )
         {
             RuntimeType rt = new RuntimeType(rmc, null);

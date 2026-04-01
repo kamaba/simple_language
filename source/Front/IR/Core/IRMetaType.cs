@@ -135,7 +135,28 @@ namespace SimpleLanguage.IR
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(this.m_IRMetaClass.irName);           
+            sb.Append(this.m_IRMetaClass?.irName ?? "null");
+
+            if (m_IRMetaTypeList != null && m_IRMetaTypeList.Count > 0)
+            {
+                sb.Append("<");
+                for (int i = 0; i < m_IRMetaTypeList.Count; i++)
+                {
+                    sb.Append(m_IRMetaTypeList[i]?.ToString());
+                    if (i < m_IRMetaTypeList.Count - 1)
+                    {
+                        sb.Append(",");
+                    }
+                }
+                sb.Append(">");
+            }
+
+            if (m_TemplateIndex >= 0)
+            {
+                sb.Append("[T:");
+                sb.Append(m_TemplateIndex);
+                sb.Append("]");
+            }
 
             return sb.ToString();
         }

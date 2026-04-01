@@ -161,7 +161,7 @@ namespace SimpleLanguage.VM.Runtime
             if (m_GlobalVariableDict.ContainsKey(id))
             {
                 var slot = m_GlobalVariableDict[id];
-                var rt = RuntimeTypeManager.GetRuntimeTypeByDefType(slot.runtimeDefType, true);
+                var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(slot.runtimeDefType);
                 if (rt != null)
                 {
                     rt.SetStaticMemberVariableSValue(id, savl);
@@ -215,7 +215,7 @@ namespace SimpleLanguage.VM.Runtime
             if (m_GlobalVariableDict.ContainsKey(id))
             {
                 var slot = m_GlobalVariableDict[id];
-                var rt = RuntimeTypeManager.GetRuntimeTypeByDefType(slot.runtimeDefType, true);
+                var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(slot.runtimeDefType);
                 if (rt != null)
                 {
                     rt.GetStaticMemberVariableSValue( id, ref sval);

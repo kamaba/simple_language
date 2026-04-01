@@ -42,12 +42,31 @@ namespace SimpleLanguage.Export.SLIR.Types
         public int byteLength { get; set; }
         public int offset { get; set; }
     }
-
-    public sealed class SLVariablePackage { public int id { get; set; } public int index { get; set; } public string name { get; set; } = string.Empty; public SLRuntimeDefTypePackage? typeDef { get; set; } }
-
-    public sealed class SLMethodPackage { public string id { get; set; } = string.Empty; public string name { get; set; } = string.Empty; public string declaringTypeFullName { get; set; } = string.Empty; public List<SLVariablePackage> returnList { get; set; } = new(); public List<SLVariablePackage> argumentList { get; set; } = new(); public List<SLVariablePackage> localList { get; set; } = new(); public List<SLIRInstructionPackage> instructionList { get; set; } = new(); }
-
-    public sealed class SLFieldPackage { public string name { get; set; } = string.Empty; public SLRuntimeDefTypePackage? typeDef { get; set; } public int flags { get; set; } public int index { get; set; } public List<SLIRInstructionPackage> express { get; set; } = new(); }
+    public sealed class SLVariablePackage 
+    { 
+        public int id { get; set; } 
+        public int index { get; set; } 
+        public string name { get; set; } = string.Empty; 
+        public SLRuntimeDefTypePackage? typeDef { get; set; }
+    }
+    public sealed class SLMethodPackage 
+    {
+        public string id { get; set; } = string.Empty; 
+        public string name { get; set; } = string.Empty; 
+        public string declaringTypeFullName { get; set; } = string.Empty; 
+        public bool interfaceMethod { get; set; } 
+        public List<SLVariablePackage> returnList { get; set; } = new(); 
+        public List<SLVariablePackage> argumentList { get; set; } = new();
+        public List<SLVariablePackage> localList { get; set; } = new();
+        public List<SLIRInstructionPackage> instructionList { get; set; } = new();
+    }
+    public sealed class SLFieldPackage
+    { 
+        public string name { get; set; } = string.Empty;
+        public SLRuntimeDefTypePackage? typeDef { get; set; } 
+        public int flags { get; set; } public int index { get; set; }
+        public List<SLIRInstructionPackage> express { get; set; } = new(); 
+    }
 
     public sealed class SLClassPackage
     {

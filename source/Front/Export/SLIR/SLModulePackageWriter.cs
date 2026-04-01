@@ -420,6 +420,7 @@ namespace SimpleLanguage.Export.SLIR
                     id = m.id ?? string.Empty,
                     declaringTypeFullName = declaringTypeFullName,
                     name = m.onlyFunctionName ?? string.Empty,
+                    interfaceMethod = m.interfaceMethod,
                 };
 
                 if (m.methodReturnVariableList != null)

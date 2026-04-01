@@ -130,22 +130,25 @@ namespace SimpleLanguage.VM.Runtime
                 {
                     RuntimeDefType imt = m_Method.methodArgumentList[i].runtimeDefType;
                     // Enum-typed parameters use a generic any-object slot (not ClassObject for the enum type).
-                    SObject sobj;
+                    SObject sobj = null;
                     if (IsEnumDeclaredParameterType(imt))
                     {
                         sobj = new SObject(EVMType.Object);
                     }
                     else
                     {
-                        sobj = imt != null
-                            ? CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true)
-                            : new SObject(EVMType.Object);
+                        if( imt.isTemplate == false )
+                        {
+                            sobj = imt != null
+                                ? CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true)
+                                : new SObject(EVMType.Object);
+                        }
                     }
                     m_ArgumentObjectArray[i] = sobj;
                 }
                 for (int i = 0; i < m_ArgumentObjectArray.Length; i++)
                 {
-                    Log.AddVM(EError.None, "Argu_" + i.ToString() + "_Value: [" + m_ArgumentObjectArray[i].ToString() + "]");
+                    Log.AddVM(EError.None, "Argu_" + i.ToString() + "_Value: [" + m_ArgumentObjectArray[i]?.ToString() + "]");
                 }
 
                 //局部变量列表 local variable table
@@ -154,6 +157,7 @@ namespace SimpleLanguage.VM.Runtime
                 {
                     var mev = m_Method.methodLocalVariableList[i];
                     RuntimeDefType imt = mev.runtimeDefType;
+                    //这块，需要，如果是模板类，先检查是否有输入的模板类型列表，如果有，直接用输入的模板类型列表创建对象，如果没有，再用imt创建对象
                     SObject sobj = imt != null
                         ? CreateObjectByIRMetaType(imt, m_Method.ownerMetaClass, true)
                         : new SObject(EVMType.Object);
@@ -225,11 +229,7 @@ namespace SimpleLanguage.VM.Runtime
         public SObject CreateObjectByIRMetaType(RuntimeDefType irmt, RuntimeClass curIrMc, bool isAdd = false)
         {
             if (irmt == null) return new SObject(EVMType.Object);
-            var rt = RuntimeTypeManager.GetRuntimeTypeByDefType(irmt);
-            if (rt == null)
-            {
-                rt = RuntimeTypeManager.AddRuntimeTypeByClass(irmt.runtimeClass);
-            }
+            var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(irmt);
             return ObjectManager.CreateObjectByRuntimeType(rt, false);
         }
         public void AddReturnObjectArray(SObject[] sobjs)
@@ -343,10 +343,10 @@ namespace SimpleLanguage.VM.Runtime
                         rtList.Add(crt);
                     }
                 }
-                RuntimeType rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.runtimeClass, rtList);
+                RuntimeType rt = RuntimeTypeManager.GetRuntimeTypeByRuntimeClassAndRuntimeTypeList(irmt.runtimeClass, rtList);
                 if (rt == null && isAdd)
                 {
-                    rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(irmt.runtimeClass, rtList);
+                    rt = RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(irmt.runtimeClass, rtList);
                 }
                 return rt;
             }
@@ -1224,7 +1224,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if( iri.TryGetInt32(out int i32) )
                         {
-                            var rt = RuntimeTypeManager.GetRuntimeTypeByClassId(i32);
+                            var rt = RuntimeTypeManager.GetRuntimeTypeById(i32);
                             // If runtime type not yet created, try to find corresponding RuntimeClass
                             // (possibly registered from package metadata) and dynamically register a RuntimeType for it.
                             if (rt == null)
@@ -1729,10 +1729,10 @@ namespace SimpleLanguage.VM.Runtime
                             var crt = GetClassRuntimeType(runtimeCall.runtimeDefType.runtimeDefTypeList[i], runtimeCall.runtimeDefType.runtimeDefTypeList[i].ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                             classRTList.Add(crt);
                         }
-                        var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(runtimeCall.runtimeDefType.runtimeClass, classRTList);
+                        var rt = RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(runtimeCall.runtimeDefType.runtimeClass, classRTList);
                         if (rt == null)
                         {
-                            rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(runtimeCall.runtimeDefType.runtimeClass, classRTList);
+                            rt = RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(runtimeCall.runtimeDefType.runtimeClass, classRTList);
                         }
 
                         if (runtimeCall.method.id == "type")
@@ -1753,28 +1753,13 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.CallDynamic:
                     {
-                        var mfc = iri.opValue as RuntimeCall;
-                        if (mfc == null)
+                        SLRuntimeCallPackage callPkg = null;
+                        if (!iri.TryGetRuntimeCallPackage(out callPkg))
                         {
-                            SLRuntimeCallPackage callPkg = null;
-                            if (iri.TryGetRuntimeCallPackage(out var parsedCallPkg)) callPkg = parsedCallPkg;
-
-                            object legacyOpValue = iri.opValue;
-                            if (legacyOpValue == null && iri.TryGetString(out var methodIdFromPayload) && !string.IsNullOrWhiteSpace(methodIdFromPayload))
-                            {
-                                legacyOpValue = methodIdFromPayload;
-                            }
-                            if (legacyOpValue == null && callPkg != null && !string.IsNullOrWhiteSpace(callPkg.methodId))
-                            {
-                                legacyOpValue = callPkg.methodId;
-                            }
-
-                            var runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, iri.index);
-                            if (runtimeCall != null)
-                            {
-                                mfc = runtimeCall;
-                            }
+                            Debug.Assert(false, "");
+                            return;
                         }
+                        RuntimeCall mfc = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, iri.index);                        
                         if (mfc == null)
                         {
                             Debug.Assert(false, "执行动态函数，没有发现相关函数体!");
@@ -1802,7 +1787,7 @@ namespace SimpleLanguage.VM.Runtime
                             else
                             {
                                 irc = RuntimeClassManager.GetRuntimeClassByName(v.eType.ToString());
-                                rt = RuntimeTypeManager.GetRuntimeTypeByMT(irc);
+                                rt = RuntimeTypeManager.GetRuntimeTypeByRuntimeClass(irc);
                             }
                             if (irc == null)
                             {
@@ -1905,7 +1890,7 @@ namespace SimpleLanguage.VM.Runtime
                         else
                         {
                             irc = RuntimeClassManager.GetRuntimeClassByName( "Core." + v.eType.ToString());
-                            rt = RuntimeTypeManager.GetRuntimeTypeByMT(irc);
+                            rt = RuntimeTypeManager.GetRuntimeTypeByRuntimeClass(irc);
                             if( rt == null )
                             {
                                 rt = RuntimeTypeManager.AddRuntimeTypeByClass(irc);
@@ -2015,6 +2000,64 @@ namespace SimpleLanguage.VM.Runtime
                                 m_ExecuteIndex = (ushort)(iri.index - 1);
                             }
                         }
+                    }
+                    break;
+
+                case EIROpCode.CastClass:
+                    {
+                        if (m_ValueIndex - 1 < 0)
+                        {
+                            Log.AddVM(EError.None, "Error 比较符超出一当前的数据栈!!");
+                            break;
+                        }
+                        var mt = TryGetInstructionRuntimeDefType(iri);
+                        if (mt != null)
+                        {
+                            var rt = RuntimeTypeManager.GetRuntimeTypeByDefType(mt);
+                            Debug.Assert(rt != null);
+                            if (rt.eType == EVMType.Object)
+                            {
+                                break;
+                            }
+                            var v1 = m_ValueStack[m_ValueIndex - 1];
+
+                            if (v1.isNull)
+                            {
+                                m_ValueStack[m_ValueIndex - 1].SetNull();
+                            }
+                            else
+                            {
+                                if (v1.eType == EVMType.Class)
+                                {
+                                    if (!v1.sobject.runtimeType.IsExtendsRelation(rt))
+                                    {
+                                        m_ValueStack[m_ValueIndex - 1].SetNull();
+                                    }
+                                }
+                                else if (v1.eType == EVMType.Array)
+                                {
+                                    if (rt.eType == EVMType.Array || rt.eType == EVMType.Class)
+                                    {
+
+                                    }
+                                    else if (rt.eType == EVMType.Object)
+                                    {
+                                    }
+                                    else
+                                    {
+                                        m_ValueStack[m_ValueIndex - 1].SetNull();
+                                    }
+                                }
+                                else
+                                {
+                                    if (v1.eType != rt.eType)
+                                    {
+                                        m_ValueStack[m_ValueIndex - 1].SetNull();
+                                    }
+                                }
+                            }
+                        }
+
                     }
                     break;
                 default:

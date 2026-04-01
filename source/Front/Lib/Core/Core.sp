@@ -30,7 +30,7 @@ Project
         a = [1,2,3,4]
         for v in a
         {
-            println(v)
+            println("------------------{$v}")
         }
 
         #!

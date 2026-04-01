@@ -9,16 +9,23 @@ namespace SimpleLanguage.VM
         public string name { get; set; } = "";
         /// <summary>0=Class, 1=Enum, 2=Data — from exported SLIR class metadata.</summary>
         public int metaClassKind { get; set; }
+        /// <summary>IR generated template meta type count exported from Front <c>IRMetaClass.templateCount</c>.</summary>
+        public int templateCount { get; set; }
+        /// <summary>Declared template parameter count in source (e.g. <c>Foo&lt;T,U&gt;</c> => 2).</summary>
+        public int templateParameterCount { get; set; }
         /// <summary>Set after <c>fieldList</c> from SLIR package is applied to this class (see SLRuntimeModuleRegistry).</summary>
         internal bool fieldsFromPackageApplied { get; set; }
         public List<RuntimeVariable> nonStaticIRMetaVariableList => m_NonStaticIRMetaVariableList;
         public List<RuntimeVariable> staticIRMetaVariableList => m_StaticIRMetaVariableList;
+        /// <summary>Exported class-level generated template type list from SLIR <c>templateTypeList</c>.</summary>
+        public List<RuntimeDefType> templateDefTypeList => m_TemplateDefTypeList;
         //public List<RuntimeDefType> runtimeDefTypeList => m_RuntimeDefTypeList;
         public List<Instruction> nonStaticMemberVariableSetValueList => m_NonStaticMemberVariableSetValueList;
         public List<Instruction> staticMemberVariableSetValueList => m_StaticMemberVariableSetValueList; 
 
         private List<RuntimeVariable> m_NonStaticIRMetaVariableList = new List<RuntimeVariable>();
         private List<RuntimeVariable> m_StaticIRMetaVariableList = new List<RuntimeVariable>();
+        private List<RuntimeDefType> m_TemplateDefTypeList = new List<RuntimeDefType>();
         //private List<RuntimeDefType> m_RuntimeDefTypeList = new List<RuntimeDefType>();
         private List<Instruction> m_NonStaticMemberVariableSetValueList = new List<Instruction>();
         private List<Instruction> m_StaticMemberVariableSetValueList = new List<Instruction>();

@@ -318,6 +318,7 @@ namespace SimpleLanguage.Compile
         public Token asOrIsToken => m_AsOrIsToken;
 
         private FileMetaCallLink m_VariableCallLink = null;
+        private List<Node> m_LeftNodes = null;
         private Token m_AsOrIsToken = null;
         private FileMetaClassDefine m_DefineType = null;
         private Token m_ConvertIsTypeNameToken = null;
@@ -335,9 +336,25 @@ namespace SimpleLanguage.Compile
             }
 
             m_AsOrIsToken = asOrisToken;
+            m_LeftNodes = leftNodes;
 
             // 左侧变量调用链
-            m_VariableCallLink = new FileMetaCallLink(fm, leftNodes[0]);
+            // as/is 左侧在某些语法形态会被拆成 [IdentifierNode, ParNode, ...]，
+            // 这里把 Par 节点回挂到首节点，保证后续 Meta 解析也能识别为函数调用。
+            var leftRoot = leftNodes[0];
+            if (leftRoot != null && leftRoot.parNode == null && leftNodes.Count > 1)
+            {
+                for (int i = 1; i < leftNodes.Count; i++)
+                {
+                    var ln = leftNodes[i];
+                    if (ln?.nodeType == ENodeType.Par)
+                    {
+                        leftRoot.SetParNode(ln);
+                        break;
+                    }
+                }
+            }
+            m_VariableCallLink = new FileMetaCallLink(fm, leftRoot);
 
             // 右侧类型（支持简单类型节点列表）
             if (typeNodes.Count == 1)
@@ -360,13 +377,92 @@ namespace SimpleLanguage.Compile
         }
         public override string ToFormatString()
         {
-            return m_AsOrIsToken?.ToConstString();
+            StringBuilder sb = new StringBuilder();
+
+            if (m_VariableCallLink != null)
+            {
+                var leftText = m_VariableCallLink.ToFormatString();
+                sb.Append(leftText);
+
+                // 当 as 左侧是函数调用时，某些解析路径把 par 节点单独放在 leftNodes 中，
+                // 这里补回参数显示，避免导出为 `Func as T`。
+                if (!string.IsNullOrEmpty(leftText)
+                    && leftText.IndexOf('(') < 0
+                    && m_LeftNodes != null)
+                {
+                    for (int i = 0; i < m_LeftNodes.Count; i++)
+                    {
+                        var ln = m_LeftNodes[i];
+                        if (ln?.nodeType == ENodeType.Par)
+                        {
+                            var p = new FileMetaParTerm(m_FileMeta, ln, FileMetaTermExpress.EExpressType.Common);
+                            p.ClearDirty();
+                            p.BuildAST();
+                            sb.Append(p.ToFormatString());
+                            break;
+                        }
+                    }
+                }
+                sb.Append(" ");
+            }
+
+            sb.Append(m_AsOrIsToken?.ToConstString());
+
+            if (m_DefineType != null)
+            {
+                sb.Append(" ");
+                sb.Append(m_DefineType.ToFormatString());
+            }
+
+            if (m_ConvertIsTypeNameToken != null)
+            {
+                sb.Append(" ");
+                sb.Append(m_ConvertIsTypeNameToken.ToConstString());
+            }
+
+            return sb.ToString();
         }
         public override string ToTokenString()
         {
             StringBuilder sb = new StringBuilder();
 
+            if (m_VariableCallLink != null)
+            {
+                var leftText = m_VariableCallLink.ToTokenString();
+                sb.Append(leftText);
+                if (!string.IsNullOrEmpty(leftText)
+                    && leftText.IndexOf('(') < 0
+                    && m_LeftNodes != null)
+                {
+                    for (int i = 0; i < m_LeftNodes.Count; i++)
+                    {
+                        var ln = m_LeftNodes[i];
+                        if (ln?.nodeType == ENodeType.Par)
+                        {
+                            var p = new FileMetaParTerm(m_FileMeta, ln, FileMetaTermExpress.EExpressType.Common);
+                            p.ClearDirty();
+                            p.BuildAST();
+                            sb.Append(p.ToTokenString());
+                            break;
+                        }
+                    }
+                }
+                sb.Append(" ");
+            }
+
             sb.Append(m_AsOrIsToken?.ToLexemeAllString());
+
+            if (m_DefineType != null)
+            {
+                sb.Append(" ");
+                sb.Append(m_DefineType.ToTokenString());
+            }
+
+            if (m_ConvertIsTypeNameToken != null)
+            {
+                sb.Append(" ");
+                sb.Append(m_ConvertIsTypeNameToken.ToLexemeAllString());
+            }
 
             return sb.ToString();
         }

@@ -204,6 +204,7 @@ namespace SimpleLanguage.VM
                     {
                         id = m.id ?? string.Empty,
                         name = m.name ?? string.Empty,
+                        interfaceMethod = m.interfaceMethod,
                         irList = new List<object>(),
                         instructionList = m.instructionList ?? new List<Instruction>(),
                     });
@@ -233,6 +234,7 @@ namespace SimpleLanguage.VM
                                 id = mm.id ?? string.Empty,
                                 name = mm.name ?? string.Empty,
                                 index = mm.index,
+                                interfaceMethod = false,
                                 irList = new List<object>(),
                                 instructionList = new List<Instruction>(),
                             });
@@ -250,6 +252,7 @@ namespace SimpleLanguage.VM
                                 id = mm.id ?? string.Empty,
                                 name = mm.name ?? string.Empty,
                                 index = mm.index,
+                                interfaceMethod = false,
                                 irList = new List<object>(),
                                 instructionList = new List<Instruction>(),
                             });
@@ -267,6 +270,7 @@ namespace SimpleLanguage.VM
                                 id = mm.id ?? string.Empty,
                                 name = mm.name ?? string.Empty,
                                 index = mm.index,
+                                interfaceMethod = false,
                                 irList = new List<object>(),
                                 instructionList = new List<Instruction>(),
                             });
