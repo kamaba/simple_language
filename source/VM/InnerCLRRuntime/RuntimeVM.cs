@@ -1454,7 +1454,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error Neg运算!!超出的栈范围");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex].NegSValue(false);
+                        m_ValueStack[m_ValueIndex - 1].NegSValue(false);
                     }
                     break;
                 case EIROpCode.Not:
@@ -1464,7 +1464,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddVM(EError.None, "Error Not运算!!超出的栈范围");
                             break;
                         }
-                        m_ValueStack[m_ValueIndex].NotSValue();
+                        m_ValueStack[m_ValueIndex - 1].NotSValue();
                     }
                     break;
                 case EIROpCode.Add:
@@ -1724,22 +1724,10 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.CallStatic:
                     {
                         // try to create runtime call on demand from instruction payload
-                        SLRuntimeCallPackage callPkg = null;
+                        SLRuntimeCallPackage? callPkg = null;
                         if (iri.TryGetRuntimeCallPackage(out var parsedCallPkg)) callPkg = parsedCallPkg;
 
-                        object legacyOpValue = iri.opValue;
-                        if (legacyOpValue == null && iri.TryGetString(out var methodIdFromPayload) && !string.IsNullOrWhiteSpace(methodIdFromPayload))
-                        {
-                            legacyOpValue = methodIdFromPayload;
-                        }
-                        if (legacyOpValue == null && callPkg != null && !string.IsNullOrWhiteSpace(callPkg.methodId))
-                        {
-                            legacyOpValue = callPkg.methodId;
-                        }
-
-                        RuntimeCall runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, iri.index);
-                        // attribute hooks are handled in Front/Core; VM does not reference Front.
-
+                        RuntimeCall? runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, iri.index);
                         if (runtimeCall == null)
                         {
                             Debug.Assert(false, "执行静态函数，没有发现相关函数体!");
@@ -1862,10 +1850,10 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.CallVirt:
                     {
-                        SLRuntimeCallPackage callPkg = null;
+                        SLRuntimeCallPackage? callPkg = null;
                         if (iri.TryGetRuntimeCallPackage(out var parsedCallPkg)) callPkg = parsedCallPkg;
 
-                        RuntimeCall runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, 0 );
+                        RuntimeCall? runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, 0 );
                         if (runtimeCall == null)
                         {
                             Debug.Assert(false, "执行虚函数，没有发现相关函数体!");
@@ -1888,8 +1876,8 @@ namespace SimpleLanguage.VM.Runtime
                             return;
                         }
 
-                        RuntimeType rt = null;
-                        RuntimeClass irc = null;
+                        RuntimeType? rt = null;
+                        RuntimeClass? irc = null;
                         if (v.eType == EVMType.Class || v.eType == EVMType.Array)
                         {
                             var co = (v.sobject as ClassObject);

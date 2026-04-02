@@ -27,10 +27,10 @@ Project
         #global.println( "--------------------for enum-------------------" )
         #global.println( "Pi=$global.Pi }" )
 
-        a = [1,2,3,4]
+        a = [1,2,"222",1000L,[1,2,3,4]]
         for v in a
         {
-            println("------------------{$v}")
+            println("------------------{$v.toString()}")
         }
 
         #!

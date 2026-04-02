@@ -26,27 +26,8 @@ public class Array<T> interface IIterable<T>, IIterator<T>
         for i = 0, i < this._length, i++
         {
             SystemArraySetValueThis(this, i, value)
-
-            #!
-            var retObj = BridgeObject();
-            Array<BridgeObject> paramObjs = new(3)
-            paramObjs[0] = BridgeObject("this")
-            paramObjs[1] = BridgeObject(i)
-            paramObjs[2] = BridgeObject(value)
-            
-            NativeBridge.Call( BridgeKind.CSharp, "SimpleLanguageVM", "SimpleLanguage.Lib.ArrayClass", 
-            "SetArrayValueThis", retObj, paramObjs );
-
-            IntPtr ptr = clang.call("Cdll", "add", 4, 5)
-            int val = ptr.readInt()
-            int a = csharplang.call("SimpleLanguageVM", "SimpleLanguage.Lib.ClassObject", "NewObject", int, 2, 4 )
-            int j = javalang.call("SimpleLanguageJVM", "SimpleLanguage.Lib.ClassObject", "NewObject", int, 2, 4 )
-            int p = pythonlang.call("test.py", "calladd", 4, 8 )
-            int p2 = jslang.call("jstest.js", "calladd", 2, 10 )
-            !#
         }
     }
-
     #接口层
     override void reset()
     {
@@ -64,7 +45,7 @@ public class Array<T> interface IIterable<T>, IIterator<T>
             this._current = null
         }
         this._index++;
-        SystemPrint(" Array.moveNext-----" + this._index )
+        global.println(" Array.moveNext-----" + this._index )
         ret hasNext_var
     }
     override T current()

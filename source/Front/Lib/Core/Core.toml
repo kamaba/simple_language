@@ -70,6 +70,14 @@ priority = 0
 
 
 [[compileFiles.files]]
+path     = "Int64.sl"
+group    = "core"
+tag      = "ir"
+ignore   = false
+priority = 0
+
+
+[[compileFiles.files]]
 path     = "Float32.sl"
 group    = "core"
 tag      = "ir"
