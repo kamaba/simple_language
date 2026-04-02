@@ -50,7 +50,15 @@ namespace SimpleLanguage.IR
             else if (type.eType == EMetaTypeType.Template)
             {
                 irmt.m_TemplateIndex = type.metaTemplate.index;
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+                var gtmc2 = type.GetTemplateMetaClass();
+                if(gtmc2 != null )
+                {
+                    irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(gtmc2.GetHashCode());
+                }
+                else
+                {
+                    irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassByName("Core.Object");
+                }
             }
             else
             {

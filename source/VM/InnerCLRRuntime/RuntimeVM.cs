@@ -55,11 +55,7 @@ namespace SimpleLanguage.VM.Runtime
         private List<RuntimeType> m_InputTemplateRuntimeTypeList;
 
         private SObject[] m_LocalVariableObjectArray;
-        private SValue[] m_LocalValueArray;
-
         private SObject[] m_ArgumentObjectArray;
-        private SValue[] m_ArgumentValueArray;
-
         private SObject[] m_ReturnObjectArray;
 
         private RuntimeMethod m_Method;
@@ -77,8 +73,6 @@ namespace SimpleLanguage.VM.Runtime
             m_ValueStack = new SValue[1024];
             m_ValueIndex = 0;
             m_RawCapacity = 1024;
-            m_LocalValueArray = null;
-            m_ArgumentValueArray = null;
 
             Init();
         }
@@ -90,11 +84,6 @@ namespace SimpleLanguage.VM.Runtime
             m_ValueIndex = 0;
             m_RawCapacity = 1024;
             m_InstructionList = rm.InstructionList.ToArray();
-            if (m_Method != null)
-            {
-                m_ArgumentValueArray = new SValue[m_Method.methodArgumentList.Count];
-                m_LocalValueArray = new SValue[m_Method.methodLocalVariableList.Count];
-            }
             Init();
         }
         public RuntimeVM(List<RuntimeType> rtList, List<Instruction> irlist)
@@ -104,8 +93,6 @@ namespace SimpleLanguage.VM.Runtime
             m_ValueStack = new SValue[1024];
             m_ValueIndex = 0;
             m_RawCapacity = 1024;
-            m_LocalValueArray = null;
-            m_ArgumentValueArray = null;
 
             Init();
         }
@@ -137,12 +124,10 @@ namespace SimpleLanguage.VM.Runtime
                     }
                     else
                     {
-                        if( imt.isTemplate == false )
-                        {
-                            sobj = imt != null
-                                ? CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true)
-                                : new SObject(EVMType.Object);
-                        }
+
+                        sobj = imt != null
+                            ? CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true)
+                            : new SObject(EVMType.Object);
                     }
                     m_ArgumentObjectArray[i] = sobj;
                 }
@@ -226,11 +211,84 @@ namespace SimpleLanguage.VM.Runtime
             return imt?.runtimeClass != null && imt.runtimeClass.metaClassKind == 1;
         }
 
+        public static RuntimeType GetRuntimeTypeByDefType(RuntimeDefType irmt, RuntimeClass curIRMc, List<RuntimeType> __rtList, bool isAdd = false)
+        {
+            if (irmt.templateIndex != -1)
+            {
+                if (irmt.ownerRuntimeClass == curIRMc || curIRMc.name == "Core.Object")
+                {
+                    return __rtList[irmt.templateIndex];
+                }
+                else
+                {
+                    var mt = curIRMc.GetRuntimeDefTypeByTemplateAndClassRelation(irmt.ownerRuntimeClass, irmt.templateIndex);
+                    if (mt == null) return null;
+
+                    return GetRuntimeTypeByDefType(mt, curIRMc, __rtList, isAdd);
+                }
+            }
+            else
+            {
+                List<RuntimeType> rtList = new List<RuntimeType>();
+                if (irmt.runtimeDefTypeList.Count > 0)
+                {
+                    for (int i = 0; i < irmt.runtimeDefTypeList.Count; i++)
+                    {
+                        var crt = GetRuntimeTypeByDefType(irmt.runtimeDefTypeList[i], curIRMc, __rtList, isAdd);
+                        rtList.Add(crt);
+                    }
+                }
+                RuntimeType rt = RuntimeTypeManager.GetRuntimeTypeByRuntimeClassAndRuntimeTypeList(irmt.runtimeClass, rtList);
+                if (rt == null && isAdd)
+                {
+                    rt = RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(irmt.runtimeClass, rtList);
+                }
+                return rt;
+            }
+        }
+        //public RuntimeType GetRuntimeTypeByDefType(RuntimeDefType irmt, RuntimeClass curIrMc, bool isAdd = false)
+        //{
+        //    RuntimeClass rc = null;
+        //    RuntimeType curMT = null;
+        //    if (irmt.isTemplate)
+        //    {
+        //        if (irmt.templateIndex != -1)
+        //        {
+        //            if (irmt.ownerRuntimeClass == curIrMc || curIrMc.name == "Core.Object")
+        //            {
+        //                curMT = m_InputTemplateRuntimeTypeList[irmt.templateIndex];
+        //                return curMT;
+        //            }
+        //            else
+        //            {
+        //                Debug.Assert(false);
+        //                //var mt = curIrMc.GetRuntimeDefTypeByTemplateAndClassRelation(irmt.ownerRuntimeClass, irmt.templateIndex);
+        //                //if (mt == null) return new SObject(EVMType.Object);
+
+        //                //return CreateObjectByIRMetaType(mt, curIrMc, isAdd);
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        if(irmt.runtimeDefTypeList.Count == 0 )
+        //        {
+        //            return RuntimeTypeManager.GetRuntimeTypeByDefType(irmt);
+        //        }
+        //        rc = irmt.runtimeClass;
+        //    }
+        //    List<RuntimeType> rtList = new List<RuntimeType>();
+        //    for (int i = 0; i < irmt.runtimeDefTypeList.Count; i++)
+        //    {
+        //        rtList.Add(GetRuntimeTypeByDefType(irmt.runtimeDefTypeList[i], curIrMc, m_InputTemplateRuntimeTypeList, isAdd));
+        //    }
+        //    return RuntimeTypeManager.GetRuntimeTypeByRuntimeClassAndRuntimeTypeList(rc, rtList);
+        //}
         public SObject CreateObjectByIRMetaType(RuntimeDefType irmt, RuntimeClass curIrMc, bool isAdd = false)
         {
             if (irmt == null) return new SObject(EVMType.Object);
-            var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(irmt);
-            return ObjectManager.CreateObjectByRuntimeType(rt, false);
+            var rtbd = GetRuntimeTypeByDefType( irmt, curIrMc, m_InputTemplateRuntimeTypeList, isAdd );
+            return ObjectManager.CreateObjectByRuntimeType(rtbd, false);
         }
         public void AddReturnObjectArray(SObject[] sobjs)
         {
@@ -315,41 +373,6 @@ namespace SimpleLanguage.VM.Runtime
         public SValue GetCurrentIndexValue(int index)
         {
             return m_ValueStack[index];
-        }
-        public static RuntimeType GetClassRuntimeType(RuntimeDefType irmt, RuntimeClass curIRMc, List<RuntimeType> __rtList, bool isAdd = false)
-        {
-            if (irmt.templateIndex != -1)
-            {
-                if (irmt.ownerRuntimeClass == curIRMc || curIRMc.name == "Object")
-                {
-                    return __rtList[irmt.templateIndex];
-                }
-                else
-                {
-                    var mt = curIRMc.GetRuntimeDefTypeByTemplateAndClassRelation(irmt.ownerRuntimeClass, irmt.templateIndex);
-                    if (mt == null) return null;
-
-                    return GetClassRuntimeType(mt, curIRMc, __rtList, isAdd);
-                }
-            }
-            else
-            {
-                List<RuntimeType> rtList = new List<RuntimeType>();
-                if (irmt.runtimeDefTypeList.Count > 0)
-                {
-                    for (int i = 0; i < irmt.runtimeDefTypeList.Count; i++)
-                    {
-                        var crt = GetClassRuntimeType(irmt.runtimeDefTypeList[i], curIRMc, __rtList, isAdd);
-                        rtList.Add(crt);
-                    }
-                }
-                RuntimeType rt = RuntimeTypeManager.GetRuntimeTypeByRuntimeClassAndRuntimeTypeList(irmt.runtimeClass, rtList);
-                if (rt == null && isAdd)
-                {
-                    rt = RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(irmt.runtimeClass, rtList);
-                }
-                return rt;
-            }
         }
         public void SetNewObject()
         {
@@ -1216,7 +1239,7 @@ namespace SimpleLanguage.VM.Runtime
                         var mdt = TryGetInstructionRuntimeDefType(iri);
                         if (mdt != null)
                         {
-                            var rt = GetClassRuntimeType(mdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
+                            var rt = GetRuntimeTypeByDefType(mdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                         }
                     }
                     break;
@@ -1264,7 +1287,7 @@ namespace SimpleLanguage.VM.Runtime
                         var mdt = TryGetInstructionRuntimeDefType(iri);
                         if (mdt != null)
                         {
-                            var rt = GetClassRuntimeType(mdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
+                            var rt = GetRuntimeTypeByDefType(mdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                             SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
                             if (sobj is ClassObject co)
                             {
@@ -1298,7 +1321,7 @@ namespace SimpleLanguage.VM.Runtime
                                 break;
                             }
 
-                            var rt = GetClassRuntimeType(rdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : rdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
+                            var rt = GetRuntimeTypeByDefType(rdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : rdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                             ArrayObject arr = new ArrayObject(rt, sval.int32Value);
                             // NewArray opcode path should initialize only the backing storage.
                             // Full CreateObject() may require runtime member types that are not guaranteed ready.
@@ -1726,7 +1749,7 @@ namespace SimpleLanguage.VM.Runtime
                         List<RuntimeType> classRTList = new List<RuntimeType>();
                         for (int i = 0; i < runtimeCall.runtimeDefType.runtimeDefTypeList.Count; i++)
                         {
-                            var crt = GetClassRuntimeType(runtimeCall.runtimeDefType.runtimeDefTypeList[i], runtimeCall.runtimeDefType.runtimeDefTypeList[i].ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
+                            var crt = GetRuntimeTypeByDefType(runtimeCall.runtimeDefType.runtimeDefTypeList[i], runtimeCall.runtimeDefType.runtimeDefTypeList[i].ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                             classRTList.Add(crt);
                         }
                         var rt = RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(runtimeCall.runtimeDefType.runtimeClass, classRTList);
@@ -1810,7 +1833,7 @@ namespace SimpleLanguage.VM.Runtime
                                 List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
                                 for (int i = 0; i < mfc.templateRuntimeDefTypeList.Count; i++)
                                 {
-                                    var crt = GetClassRuntimeType(mfc.templateRuntimeDefTypeList[i], irc, rt.runtimeTemplateList, true);
+                                    var crt = GetRuntimeTypeByDefType(mfc.templateRuntimeDefTypeList[i], irc, rt.runtimeTemplateList, true);
                                     rtList.Add(crt);
                                 }
                                 if (mfc.method.interfaceMethod)
@@ -1913,7 +1936,7 @@ namespace SimpleLanguage.VM.Runtime
                         List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
                         for (int i = 0; i < runtimeCall.templateRuntimeDefTypeList.Count; i++)
                         {
-                            var crt = GetClassRuntimeType(runtimeCall.templateRuntimeDefTypeList[i], irc, rt.runtimeTemplateList, true);
+                            var crt = GetRuntimeTypeByDefType(runtimeCall.templateRuntimeDefTypeList[i], irc, rt.runtimeTemplateList, true);
                             rtList.Add(crt);
                         }
                         CLRVM.RunIRMethod(rtList, cfc);
@@ -1926,7 +1949,7 @@ namespace SimpleLanguage.VM.Runtime
                         var mdt = TryGetInstructionRuntimeDefType(iri);
                         if (mdt != null)
                         {
-                            var rt = GetClassRuntimeType(mdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
+                            var rt = GetRuntimeTypeByDefType(mdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                            
                             var sobj = new TypeObject(rt);
                             sobj.CreateObject();
@@ -2013,7 +2036,7 @@ namespace SimpleLanguage.VM.Runtime
                         var mt = TryGetInstructionRuntimeDefType(iri);
                         if (mt != null)
                         {
-                            var rt = RuntimeTypeManager.GetRuntimeTypeByDefType(mt);
+                            var rt = GetRuntimeTypeByDefType(mt, mt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList );
                             Debug.Assert(rt != null);
                             if (rt.eType == EVMType.Object)
                             {

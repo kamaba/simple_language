@@ -94,7 +94,7 @@ namespace SimpleLanguage.VM
             for (int i = 0; i < m_MetaVariableList.Count; i++)
             {
                 var irmv = m_MetaVariableList[i].runtimeDefType;
-                m_MemberRuntimeTypeArray[i] = RuntimeVM.GetClassRuntimeType(irmv, m_RuntimeType.runtimeClass, m_IRTemplateList, true);
+                m_MemberRuntimeTypeArray[i] = RuntimeVM.GetRuntimeTypeByDefType(irmv, m_RuntimeType.runtimeClass, m_IRTemplateList, true);
                 //m_MemberRuntimeTypeArray[i] = m_RuntimeType.GetClassRuntimeType(irmv, true);
             }
             

@@ -433,7 +433,7 @@ namespace SimpleLanguage.Export.SLIR
                         {
                             id = v.id,
                             index = v.index,
-                            name = GetShortName(v.name ?? string.Empty),
+                            name = NormalizeVariableName(v.name ?? string.Empty),
                             typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
                         });
                     }
@@ -449,7 +449,7 @@ namespace SimpleLanguage.Export.SLIR
                         {
                             id = v.id,
                             index = v.index,
-                            name = GetShortName(v.name ?? string.Empty),
+                            name = NormalizeVariableName(v.name ?? string.Empty),
                             typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
                         });
                     }
@@ -465,7 +465,7 @@ namespace SimpleLanguage.Export.SLIR
                         {
                             id = v.id,
                             index = v.index,
-                            name = GetShortName(v.name ?? string.Empty),
+                            name = NormalizeVariableName(v.name ?? string.Empty),
                             typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
                         });
                     }
@@ -513,6 +513,17 @@ namespace SimpleLanguage.Export.SLIR
             if (string.IsNullOrEmpty(fullType)) return string.Empty;
             var idx = fullType.LastIndexOf('.');
             return idx >= 0 && idx + 1 < fullType.Length ? fullType.Substring(idx + 1) : fullType;
+        }
+
+        private static string NormalizeVariableName(string rawName)
+        {
+            var name = GetShortName(rawName);
+            var lb = name.LastIndexOf('[');
+            if (lb >= 0 && name.EndsWith("]", StringComparison.Ordinal) && lb + 1 < name.Length - 1)
+            {
+                return name.Substring(lb + 1, name.Length - lb - 2);
+            }
+            return name;
         }
 
         private static string NormalizeTypeName(string name)

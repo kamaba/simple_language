@@ -377,12 +377,16 @@ namespace SimpleLanguage.Core
             if (!isStatic)
             {
                 var mt = new MetaType(m_OwnerMetaClass);
-                if( m_OwnerMetaClass.isTemplateClass )
+                if (m_OwnerMetaClass.isTemplateClass)
                 {
-                    var tt = new MetaTemplate(m_OwnerMetaClass, "this", CoreMetaClassManager.objectMetaClass );
-                    tt.SetIndex(0);
-                    tt.SetInConstraintMetaClass(m_OwnerMetaClass);
-                    mt = new MetaType(tt, "this" );
+                    var thisTemplateArgs = new List<MetaType>();
+                    for (int i = 0; i < m_OwnerMetaClass.metaTemplateList.Count; i++)
+                    {
+                        var ct = m_OwnerMetaClass.metaTemplateList[i];
+                        if (ct == null) continue;
+                        thisTemplateArgs.Add(new MetaType(ct, ct.name));
+                    }
+                    mt = new MetaType(m_OwnerMetaClass, thisTemplateArgs);
                 }
                 m_ThisMetaVariable = new MetaVariable(m_OwnerMetaClass.allClassName + "." + m_Name + ".this", MetaVariable.EVariableFrom.Argument, null, m_OwnerMetaClass, mt );
             }

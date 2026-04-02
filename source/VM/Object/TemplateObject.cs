@@ -14,6 +14,9 @@ namespace SimpleLanguage.VM
         public TemplateObject() :base(  )
         {
         }
+        public TemplateObject(RuntimeDefType val)
+        {
+        }
         public void SetClassObject(ClassObject val)
         {
             m_Value = val;
