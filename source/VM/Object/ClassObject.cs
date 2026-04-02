@@ -50,45 +50,6 @@ namespace SimpleLanguage.VM
             CreateDefine();
             //m_Type = new short[m_IRMetaVariableList.Count];
         }
-        public void SetClassObject( ClassObject co )
-        {
-            this.m_Object = co;
-            m_IsNull = co == null;
-        }
-        //public RuntimeType GetClassRuntimeType(IRMetaType irmt, IRMetaClass ownerMC, bool isAdd = false)
-        //{
-        //    if (irmt.templateIndex != -1)
-        //    {
-        //        if( irmt.irOwnerMetaClass == irMetaClass )
-        //        {
-        //            return m_IRTemplateList[irmt.templateIndex];
-        //        }
-        //        else
-        //        {
-        //            var mt = irMetaClass.GetIRMetaTypeByTemplateAndClassRelation(irmt.irOwnerMetaClass, irmt.templateIndex);
-
-        //            return GetClassRuntimeType(mt, isAdd);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        List<RuntimeType> rtList = new List<RuntimeType>();
-        //        if (irmt.irMetaTypeList.Count > 0)
-        //        {
-        //            for (int i = 0; i < irmt.irMetaTypeList.Count; i++)
-        //            {
-        //                var crt = GetClassRuntimeType(irmt.irMetaTypeList[i], isAdd);
-        //                rtList.Add(crt);
-        //            }
-        //        }
-        //        var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.irMetaClass, rtList);
-        //        if (rt == null && isAdd)
-        //        {
-        //            rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(irmt.irMetaClass, rtList);
-        //        }
-        //        return rt;
-        //    }
-        //}
         public virtual void CreateDefine()
         {
             for (int i = 0; i < m_MetaVariableList.Count; i++)
@@ -116,18 +77,9 @@ namespace SimpleLanguage.VM
                 m_MemberObjectArray[i] = sobj;
             }
         }
-        //public SObject GetMemberVariable(int index)
-        //{
-        //    if (index > m_MemberObjectArray.Length)
-        //    {
-        //        Log.AddVM(EError.None, "执行的参数超出范围!!");
-        //        return null;
-        //    }
-        //    return m_MemberObjectArray[index];
-        //}
         public virtual void SetSValue(ClassObject val )
         {
-            m_Object = val.m_Object;
+            m_Object = val;
             m_IsNull = m_Object == null;
             val.refCount++;
         }
@@ -314,7 +266,7 @@ namespace SimpleLanguage.VM
                 if (m_MemberRuntimeTypeArray[index].eType == EVMType.Object)
                 {
                     isAny = true;
-                    anyobj = new SObject(EVMType.Object);
+                    anyobj = m_MemberObjectArray[index];
                 }
             }
             switch (svalue.eType)
@@ -739,7 +691,7 @@ namespace SimpleLanguage.VM
                             classObj = m_MemberObjectArray[index] as ClassObject;
                             if (classObj == null)
                             {
-                                classObj.SetClassObject(svalue.sobject as ClassObject);
+                                classObj.SetSValue(svalue.sobject as ClassObject);
                                 //AnyObject anyObj = m_MemberObjectArray[index] as AnyObject;
                                 //if( anyObj != null )
                                 //{

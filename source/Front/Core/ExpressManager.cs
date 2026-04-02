@@ -396,7 +396,7 @@ namespace SimpleLanguage.Core
                     }
                     menNew = acc;
                     // make sure the newly created tree is parsed and typed
-                    //menNew.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                    menNew.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
                     menNew.CalcReturnType();
                 }
             }

@@ -704,8 +704,8 @@ namespace SimpleLanguage.VM
                     {
                         if (anyobj != null)
                         {
-                            //anyobj.SetValue(EVMType.Array, svalue.sobject);
-                            m_Array.SetValue(svalue.sobject, index);
+                            anyobj.SetValueByType(EVMType.Array, svalue.sobject);
+                            //m_Array.SetValue(svalue.sobject, index);
                             return;
                         }
                         //ArrayObject arrayobj = m_Array.GetValue(index) as ArrayObject;

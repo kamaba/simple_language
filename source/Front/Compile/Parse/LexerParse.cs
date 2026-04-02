@@ -1016,7 +1016,6 @@ namespace SimpleLanguage.Compile
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.Append(m_Builder.ToString());
-            int plainBraceIndex = 0;
             AddToken(ETokenType.String, "");
             do
             {

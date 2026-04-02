@@ -425,7 +425,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Class:
                     {
-                        sobject = (tobj as ClassObject).value;
+                        sobject = tobj as SObject;
                     }
                     break;
                 default:

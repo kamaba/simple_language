@@ -1640,7 +1640,7 @@ namespace SimpleLanguage.VM.Runtime
                                     if (got is SObject so)
                                     {
                                         var sv = default(SValue);
-                                        sv.SetSObject(so);
+                                        SetSValue(so, so.eType, ref sv );
                                         PushSValueSynced(sv);
                                     }
                                     else
@@ -1770,7 +1770,7 @@ namespace SimpleLanguage.VM.Runtime
                             Debug.Assert(false, "");
                             return;
                         }
-                        RuntimeCall mfc = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, iri.index);                        
+                        RuntimeCall? mfc = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, iri.index);                        
                         if (mfc == null)
                         {
                             Debug.Assert(false, "执行动态函数，没有发现相关函数体!");
@@ -2560,7 +2560,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (anyObj)
                         {
-                            obj.SetValueByType(EVMType.Class, svalue.sobject);
+                            obj.SetValueByType(svalue.eType, svalue.sobject);
                             return;
                         }
                         TemplateObject to = obj as TemplateObject;
@@ -2574,7 +2574,7 @@ namespace SimpleLanguage.VM.Runtime
                             var ao = svalue.sobject as ClassObject;
                             Debug.Assert(ao != null);
                             //co.SetClassObject(ao);                            
-                            (obj as ClassObject).SetClassObject(ao);
+                            (obj as ClassObject).SetSValue(ao);
                         }
                         else
                         {
@@ -2624,7 +2624,7 @@ namespace SimpleLanguage.VM.Runtime
                             Debug.Write("该类型不是Class类型!!");
                             return;
                         }
-                        classObj.SetClassObject(svalue.sobject as ClassObject);
+                        classObj.SetSValue(svalue.sobject as ClassObject);
                     }
                     break;
                 case EVMType.Class:
@@ -2657,7 +2657,7 @@ namespace SimpleLanguage.VM.Runtime
                             Debug.Write("该类型不是Class类型!!");
                             return;
                         }
-                        classObj.SetClassObject(svalue.sobject as ClassObject);
+                        classObj.SetSValue(svalue.sobject as ClassObject);
                         /*
                         Int32Object int32Obj = obj as Int32Object;
                         if (int32Obj != null)
