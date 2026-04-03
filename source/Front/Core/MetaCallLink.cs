@@ -305,6 +305,7 @@ namespace SimpleLanguage.Core
             else
             {
                 Log.AddInStructMeta(EError.None, "Error 解析执行链出错");
+                Debug.Assert(false, "解析执行链出错");
                 flag = false;
             }
 
@@ -583,7 +584,7 @@ namespace SimpleLanguage.Core
                 }
                 else if (mcn.callNodeType == ECallNodeType.EnumValueArray)
                 {
-                    MetaVisitNode mvn = MetaVisitNode.CreateByEnumDefaultValue(mcn.metaType, mcn.metaVariable);
+                    MetaVisitNode mvn = MetaVisitNode.CreateByEnumMember(mcn.metaType, mcn.metaVariable);
                     m_VisitNodeList.Add(mvn);
                 }
                 else if (mcn.callNodeType == ECallNodeType.VisitVariable)
@@ -612,9 +613,9 @@ namespace SimpleLanguage.Core
                     MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable);
                     m_VisitNodeList.Add(mvn);
                 }
-                else if (mcn.callNodeType == ECallNodeType.EnumDefaultValue)
+                else if (mcn.callNodeType == ECallNodeType.EnumMember )
                 {
-                    MetaVisitNode mvn = MetaVisitNode.CreateByEnumDefaultValue(mcn.metaType, mcn.metaVariable);
+                    MetaVisitNode mvn = MetaVisitNode.CreateByEnumMember(mcn.metaType, mcn.metaVariable);
                     m_VisitNodeList.Add(mvn);
                 }
                 else if (mcn.callNodeType == ECallNodeType.MemberDataName)

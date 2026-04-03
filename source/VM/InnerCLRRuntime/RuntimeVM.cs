@@ -1956,7 +1956,7 @@ namespace SimpleLanguage.VM.Runtime
                         var mt = TryGetInstructionRuntimeDefType(iri);
                         if (mt != null)
                         {
-                            var rt = RuntimeTypeManager.GetRuntimeTypeByDefType(mt);
+                            var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(mt);
                             var v = default(SValue);
                             if (rt != null)
                             {
@@ -1974,7 +1974,8 @@ namespace SimpleLanguage.VM.Runtime
                             if (m_ValueIndex > 0)
                             {
                                 var val = m_ValueStack[--m_ValueIndex];
-                                var rt = RuntimeTypeManager.GetRuntimeTypeByDefType(mt);
+                                var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(mt);
+                                Debug.Assert(rt != null, "");
                                 rt?.SetStaticMemberVariableSValue(iri.index, val);
                             }
                         }

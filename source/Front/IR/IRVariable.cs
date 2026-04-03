@@ -37,15 +37,9 @@ namespace SimpleLanguage.IR
             else if( mv.variableFrom == MetaVariable.EVariableFrom.EnumMember )
             {
                 int index = -1;
-                if (irmc != null)
-                {
-                    MetaVariable gmv = mv;
-                    if (mv.sourceMetaVariable != null)
-                    {
-                        gmv = mv.sourceMetaVariable;
-                    }
-                    index = irmc.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode());
-                }
+                irmc = IRManager.instance.GetIRMetaClassById(mv.ownerMetaClass.GetHashCode());
+                index = irmc.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+
                 IRMetaType irmt2 = new IRMetaType(irmc);
                 IRLoadVariable irVar = new IRLoadVariable(irmt2, _irMethod, index, IRMetaVariableFrom.Static);
                 return irVar;
@@ -195,6 +189,7 @@ namespace SimpleLanguage.IR
                 m_LoadVarData.opValue = irmt;
                 m_LoadVarData.opCode = EIROpCode.LoadStaticField;
                 m_LoadVarData.index = id;
+                Debug.Assert(id >= 0 , "索引号应该>=0 ");
                 m_IRDataList.Add(m_LoadVarData);
             }
             else

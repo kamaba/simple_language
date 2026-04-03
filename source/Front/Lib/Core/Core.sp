@@ -28,18 +28,33 @@ Project
         #global.println( "Pi=$global.Pi }" )
 
         #a = [1,2,"222",1000L,[1,2,3,4]]
-        a = [1981,[1988,2045]]
+        #!
+        a = [1981,"mmmmm", 0xef, 33333L,[1988,2045]]
         for v in a
         {
             #vs = v.toString()
-            println("------------------${v.toString()}")
+            println("------------------$v.toString() ")
+        }
+        !#
+
+        
+        for v in BridgeKind
+        {
+            println( "BridgeKind= $v.name.toString() " )
         }
 
         #!
-        for v in BridgeKind
+        sum = 0
+        for i in range(1,100)
         {
-            println( v.toString() )
-        } 
+            sum += i
+            #!
+            for n in range( 3, 50 )
+            {
+                sum += n
+            }
+        }
+        println(sum)
         !#       
     }
     _test_()

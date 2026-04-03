@@ -38,4 +38,30 @@ namespace SimpleLanguage.Core
             return mc;
         }
     }
+
+    public class MemberMetaClass : MetaClass
+    {
+        public MemberMetaClass() : base(DefaultObject.Member.ToString())
+        {
+            SetExtendClass(CoreMetaClassManager.objectMetaClass);
+            m_Type = EType.Member;
+            m_ClassDefineType = EClassDefineType.InnerDefine;
+        }
+        //public override void ParseInnerFunction()
+        //{
+        //    //AddCoreFunction();
+        //}
+        //public void AddCoreFunction()
+        //{
+        //    MetaMemberFunction values = new MetaMemberFunction(this, "_values_");
+        //    values.SetIsGet( true );
+        //    values.SetReturnMetaClass(CoreMetaClassManager.arrayMetaClass);
+        //    AddMetaMemberFunction(values);
+        //}
+        public static MetaClass CreateMetaClass()
+        {
+            MemberMetaClass mc = new MemberMetaClass();
+            return mc;
+        }
+    }
 }

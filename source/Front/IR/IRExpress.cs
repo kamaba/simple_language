@@ -130,6 +130,15 @@ namespace SimpleLanguage.IR
                         }
                     }
                     break;
+                case MetaArrayExpressNode maen:
+                    {
+                        foreach( var v in maen.metaCallArray )
+                        {
+                            var exp1 = new IRExpress(this.m_IRMethod, v);
+                            m_IRDataList.AddRange(exp1.IRDataList);
+                        }
+                    }
+                    break;
                 case MetaThreeItemExpressNode mtien:
                     {
                         IRExpressBase iexress = IRExpressManager.CreateExpress(this.m_IRMethod, mtien.conditionExpress );

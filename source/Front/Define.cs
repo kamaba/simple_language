@@ -50,6 +50,7 @@ namespace SimpleLanguage
         Object,
         Type,
         Float2,
+        Member,
     }
     //token类型
     public enum ETokenType

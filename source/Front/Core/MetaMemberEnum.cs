@@ -7,8 +7,8 @@
 //****************************************************************************
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Security;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -18,6 +18,9 @@ namespace SimpleLanguage.Core
         private bool isExplicitAssign => m_IsExplicitAssign;
         private bool m_IsExplicitAssign = false;
 
+        public MetaMemberEnum(MetaClass mc, string name, MetaClass extendClass) : base(mc, name)
+        {
+        }
         public MetaMemberEnum(MetaClass mc, FileMetaMemberVariable fmmv, MetaClass extendClass, bool parentIsConst ) : base()
         {
             m_FileMetaMemeberVariable = fmmv;
@@ -25,8 +28,35 @@ namespace SimpleLanguage.Core
             AddPingToken(fmmv.nameToken);
             m_Index = mc.metaMemberVariableDict.Count;
             m_FromType = EFromType.Code;
-            m_DefineMetaType = new MetaType(extendClass);
-            
+            m_VariableFrom = EVariableFrom.EnumMember;
+            m_Permission = EPermission.Public;
+
+            m_DefineMetaType = new MetaType(CoreMetaClassManager.memberMetaClass);
+            m_RealMetaType = new MetaType(CoreMetaClassManager.memberMetaClass);
+            SetIsDefineMetaType(true);
+
+            if (extendClass == CoreMetaClassManager.byteMetaClass
+                  || extendClass == CoreMetaClassManager.sbyteMetaClass
+                  || extendClass == CoreMetaClassManager.int16MetaClass
+                  || extendClass == CoreMetaClassManager.uint16MetaClass
+                  || extendClass == CoreMetaClassManager.int32MetaClass
+                  || extendClass == CoreMetaClassManager.uint32MetaClass
+                  || extendClass == CoreMetaClassManager.int64MetaClass
+                  || extendClass == CoreMetaClassManager.uint64MetaClass
+                  || extendClass == CoreMetaClassManager.stringMetaClass)
+            {
+
+            }
+
+
+
+            if (string.IsNullOrEmpty(m_Name))
+            {
+                Log.AddInStructMeta(EError.None, "没有找到定义变量名称!");
+                m_Name = "Error_" + GetHashCode().ToString();
+            }
+            SetOwnerMetaClass(mc);
+
             if (extendClass == CoreMetaClassManager.byteMetaClass
                   || extendClass == CoreMetaClassManager.sbyteMetaClass
                   || extendClass == CoreMetaClassManager.int16MetaClass
@@ -75,13 +105,10 @@ namespace SimpleLanguage.Core
             if (m_FileMetaMemeberVariable.permissionToken?.type != null)
             {
                 Log.AddInStructMeta(EError.None, "Error Enum中，不允许使用public/private等权限关键字!!");
-                m_Permission = CompilerUtil.GetPerMissionByType(m_FileMetaMemeberVariable.permissionToken.type);
-            }
-            else
-            {
-                if (m_Name[0] == '_')
+                var permission = CompilerUtil.GetPerMissionByType(m_FileMetaMemeberVariable.permissionToken.type);
+                if( permission == EPermission.Private || permission == EPermission.Protected )
                 {
-                    m_Permission = EPermission.Private;
+                    Debug.Assert(false);
                 }
             }
 
@@ -138,8 +165,6 @@ namespace SimpleLanguage.Core
             {
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
                 m_Express.CalcReturnType();
-
-                m_RealMetaType = new MetaType(m_Express.GetReturnMetaClass());
                 return true;
             }
             else
@@ -183,124 +208,5 @@ namespace SimpleLanguage.Core
 
             return sb.ToString();
         }
-        //public MetaMemberEnum(MetaClass mc, string _name)
-        //{
-        //    m_Name = _name;
-        //    m_FromType = EFromType.Manual;
-        //    m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-        //    m_IsInnerDefine = true;
-        //    m_VariableFrom = EVariableFrom.Static;
-
-        //    SetOwnerMetaClass(mc);
-        //} 
-        //public MetaMemberEnum( MetaClass ownerMc, string _name, MetaTemplate mt )
-        //{
-        //    m_Name = _name;
-        //    m_FromType = EFromType.Manual;
-        //    m_DefineMetaType = new MetaType( mt );
-        //    m_IsInnerDefine = true;
-        //    m_VariableFrom = EVariableFrom.Static;
-
-        //    SetOwnerMetaClass(ownerMc);
-        //}
-        //public MetaMemberEnum(MetaClass mc, string _name, MetaClass _defineTypeClass )
-        //{
-        //    m_Name = _name;
-        //    m_IsInnerDefine = true;
-        //    m_FromType = EFromType.Manual;
-        //    m_DefineMetaType = new MetaType(_defineTypeClass);
-        //    m_DefineMetaType.SetMetaClass(_defineTypeClass);
-        //    m_VariableFrom = EVariableFrom.Static;
-
-        //    SetOwnerMetaClass(mc);
-        //}
-        //public MetaMemberEnum(MetaGenTemplateClass mtc, MetaMemberEnum mmv, List<MetaGenTemplate> mgt) : base(mmv)
-        //{
-        //    m_MetaGenTemplateList = mgt;
-        //    m_Name = mmv.m_Name;
-        //    m_IsInnerDefine = mmv.m_IsInnerDefine;
-        //    m_FromType = mmv.m_FromType;
-        //    m_DefineMetaType = mmv.m_DefineMetaType;
-        //    m_VariableFrom = EVariableFrom.Static;
-        //    m_PintTokenList = mmv.m_PintTokenList;
-
-        //    SetOwnerMetaClass(mtc);
-        //}
-
-        //public override string ToFormatString()
-        //{
-        //    StringBuilder sb = new StringBuilder();
-        //    switch (m_FileMetaMemeberData.DataType)
-        //    {
-        //        case FileMetaMemberData.EMemberDataType.NameClass:
-        //            {
-        //                for (int i = 0; i < realDeep; i++)
-        //                    sb.Append(Global.tabChar);
-        //                sb.AppendLine(m_Name);
-        //                for (int i = 0; i < realDeep; i++)
-        //                    sb.Append(Global.tabChar);
-        //                sb.AppendLine("{");
-        //                foreach (var v in m_MetaMemberDataDict)
-        //                {
-        //                    sb.AppendLine(v.Value.ToFormatString());
-        //                }
-        //                for (int i = 0; i < realDeep; i++)
-        //                    sb.Append(Global.tabChar);
-        //                sb.Append("}");
-
-        //            }
-        //            break;
-        //        case FileMetaMemberData.EMemberDataType.Array:
-        //            {
-        //                int i = 0;
-        //                for (i = 0; i < realDeep; i++)
-        //                    sb.Append(Global.tabChar);
-        //                sb.Append(m_Name + " = [");
-        //                i = 0;
-        //                foreach (var v in m_MetaMemberDataDict)
-        //                {
-        //                    sb.Append(v.Value.ToFormatString());
-        //                    if (i < m_MetaMemberDataDict.Count - 1)
-        //                        sb.Append(",");
-        //                    i++;
-        //                }
-        //                sb.Append("]");
-        //            }
-        //            break;
-        //        case FileMetaMemberData.EMemberDataType.NoNameClass:
-        //            {
-        //                sb.AppendLine();
-        //                for (int i = 0; i < realDeep; i++)
-        //                    sb.Append(Global.tabChar);
-        //                sb.AppendLine("{");
-        //                foreach (var v in m_MetaMemberDataDict)
-        //                {
-        //                    sb.AppendLine(v.Value.ToFormatString());
-        //                }
-        //                for (int i = 0; i < realDeep; i++)
-        //                    sb.Append(Global.tabChar);
-        //                sb.Append("}");
-        //                //if( m_End )
-        //                //{
-        //                //    sb.AppendLine();
-        //                //}
-        //            }
-        //            break;
-        //        case FileMetaMemberData.EMemberDataType.KeyValue:
-        //            {
-        //                for (int i = 0; i < realDeep; i++)
-        //                    sb.Append(Global.tabChar);
-        //                sb.Append(m_Name + " = " + m_Express.ToFormatString() + ";");
-        //            }
-        //            break;
-        //        case FileMetaMemberData.EMemberDataType.Value:
-        //            {
-        //                sb.Append(m_Express.ToFormatString());
-        //            }
-        //            break;
-        //    }
-        //    return sb.ToString();
-        //}
-        //------------------------------------end-----------------------------------------------//
     }
 }

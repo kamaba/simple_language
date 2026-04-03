@@ -40,18 +40,14 @@ namespace SimpleLanguage.Core
             if(m_ValuesMetaVariable == null )
             {
                 List<MetaType> mtList = new List<MetaType>();
-                var nmt = new MetaType(CoreMetaClassManager.objectMetaClass);
+                var nmt = new MetaType(CoreMetaClassManager.memberMetaClass);
                 mtList.Add(nmt);
                 var mt = new MetaType(CoreMetaClassManager.arrayMetaClass, mtList);
                 m_ValuesMetaVariable = new MetaMemberVariable(this, "values" );
-                m_ValuesMetaVariable.SetVariableFrom(MetaVariable.EVariableFrom.EnumMember);
-                m_ValuesMetaVariable.SetIsStatic( true );
                 m_ValuesMetaVariable.SetIsDefineMetaType(true);
                 m_ValuesMetaVariable.SetMetaDefineType(mt);
                 m_ValuesMetaVariable.SetRealMetaType(mt);
-                m_MetaMemberVariableDict.Add(m_ValuesMetaVariable.name, m_ValuesMetaVariable );
                 m_ValuesMetaVariable.SetIndex(m_MetaMemberVariableDict.Count);
-
 
                 MetaArrayExpressNode maen = new MetaArrayExpressNode( this, null, mt, m_ValuesMetaVariable );
                 // values 数组只应包含真实枚举成员，不应把 values 自己也放进去；
@@ -68,7 +64,12 @@ namespace SimpleLanguage.Core
                     MetaCallLinkExpressNode mclen = new MetaCallLinkExpressNode(mcl);
                     maen.metaCallArray.Add(mclen);
                 }
+
+                //MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(maen, this, null, m_ValuesMetaVariable);
+                //mnoen.Parse( new AllowUseSettings() );
+
                 m_ValuesMetaVariable.SetExpress(maen);
+                m_MetaMemberVariableDict.Add(m_ValuesMetaVariable.name, m_ValuesMetaVariable);
 
             }
         }

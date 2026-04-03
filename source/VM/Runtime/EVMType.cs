@@ -22,5 +22,6 @@ namespace SimpleLanguage.VM.Runtime
         Class = 16,
         Type = 17,
         Array,
+        Member,
     }
 }

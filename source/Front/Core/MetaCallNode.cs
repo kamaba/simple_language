@@ -32,7 +32,7 @@ namespace SimpleLanguage.Core
         TypeName,
         TemplateName,
         EnumName,
-        EnumDefaultValue,
+        EnumMember,
         EnumValueArray,
         DataName,
         DataValue,
@@ -932,7 +932,7 @@ namespace SimpleLanguage.Core
                                 else
                                 {
                                     m_MetaVariable = mme;
-                                    m_CallNodeType = ECallNodeType.EnumDefaultValue;
+                                    m_CallNodeType = ECallNodeType.EnumMember;
                                 }
                             }
                             else
@@ -1981,7 +1981,7 @@ namespace SimpleLanguage.Core
                 {
                     sb.Append(m_MetaEnum.allClassName);
                 }
-                else if (m_CallNodeType == ECallNodeType.EnumDefaultValue)
+                else if (m_CallNodeType == ECallNodeType.EnumMember )
                 {
                     sb.Append(m_MetaVariable?.name);
                 }

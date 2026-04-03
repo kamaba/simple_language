@@ -198,7 +198,6 @@ namespace SimpleLanguage.IR
             {
                 var enumMembers = me.metaMemberVariableDict
                     .Values
-                    .OfType<MetaMemberEnum>()
                     .OrderBy(v => v.index)
                     .ToList();
 

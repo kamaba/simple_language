@@ -41,6 +41,7 @@ namespace SimpleLanguage.Core
         Dynamic,
         Data,
         Enum,
+        Member,
     }
     class CoreMetaClassManager
     {
@@ -58,6 +59,7 @@ namespace SimpleLanguage.Core
         }
         public static MetaClass nullMetaClass { get; private set; } = null;
         public static MetaClass objectMetaClass { get; private set; } = null;
+        public static MetaClass memberMetaClass { get; private set; } = null;
         public static MetaClass numMetaClass { get; private set; } = null;
         public static MetaClass stringMetaClass { get; private set; } = null;
         public static MetaClass voidMetaClass { get; set; } = null;
@@ -111,6 +113,7 @@ namespace SimpleLanguage.Core
             dynamicMetaClass = DynamicMetaClass.CreateMetaClass();
             dynamicMetaData = DynamicMetaData.CreateMetaClass();
             enumMetaData = EnumMetaClass.CreateMetaClass();
+            memberMetaClass = MemberMetaClass.CreateMetaClass();
             typeMetaClass = TypeMetaClass.CreateMetaClass();
 
             s_InnerDefineMetaClassList.Add(objectMetaClass);
@@ -135,7 +138,8 @@ namespace SimpleLanguage.Core
             s_InnerDefineMetaClassList.Add(dynamicMetaClass);
             s_InnerDefineMetaClassList.Add(dynamicMetaData);
             s_InnerDefineMetaClassList.Add(enumMetaData);
-            s_InnerDefineMetaClassList.Add(typeMetaClass); 
+            s_InnerDefineMetaClassList.Add(typeMetaClass);
+            s_InnerDefineMetaClassList.Add(memberMetaClass);
         }
         public void Init()
         {

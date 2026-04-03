@@ -348,6 +348,7 @@ namespace SimpleLanguage.VM
         public static RuntimeType stringRuntimeType { get => m_StringRuntimeType; }
         public static RuntimeType numRuntimeType { get => m_NumRuntimeType; }
         public static RuntimeType typeRuntimeType { get => m_TypeRuntimeType; }
+        public static RuntimeType memberRuntimeType { get => m_MemberRuntimeType; }
 
         private static List<RuntimeType> s_RuntimeTypeList = new List<RuntimeType>();
         private static RuntimeType m_ObjectRuntimeType = null;
@@ -366,6 +367,7 @@ namespace SimpleLanguage.VM
         private static RuntimeType m_Float32RuntimeType = null;
         private static RuntimeType m_Float64RuntimeType = null;
         private static RuntimeType m_StringRuntimeType = null;
+        private static RuntimeType m_MemberRuntimeType = null;
 
         // Ensure core primitive runtime types are registered (and their static fields populated)
         // before VM global initialization and object creation.
@@ -389,37 +391,6 @@ namespace SimpleLanguage.VM
             EnsureByClassName("Core.Float64", ref m_Float64RuntimeType, true);
             //EnsureRuntimeTypeRegisteredByClassName("Core.Array");
         }
-
-        private static void EnsureRuntimeTypeRegisteredByClassName(string runtimeClassName)
-        {
-            if (string.IsNullOrWhiteSpace(runtimeClassName)) return;
-
-            var rc = RuntimeClassManager.GetRuntimeClassByName(runtimeClassName);
-            if (rc == null)
-            {
-                // Prefer package-driven creation so RuntimeClass contains the full metadata.
-                rc = SLRuntimeModuleRegistry.ResolveOrCreateRuntimeClassByName(runtimeClassName);
-            }
-
-            if (rc == null)
-            {
-                // Fallback to minimal RuntimeClass while keeping id stable to reduce duplicates.
-                var stableId = StableId32(runtimeClassName);
-                rc = RuntimeClassManager.GetRuntimeClassById(stableId)
-                     ?? new RuntimeClass { id = stableId, name = runtimeClassName };
-                if (RuntimeClassManager.GetRuntimeClassById(stableId) == null)
-                {
-                    RuntimeClassManager.AddRuntimeClass(rc);
-                }
-            }
-
-            if (rc == null) return;
-            if (GetRuntimeTypeById(rc.id) == null)
-            {
-                AddRuntimeTypeByClass(rc);
-            }
-        }
-
         private static void EnsureByClassName(string runtimeClassName, ref RuntimeType targetField, bool isCore = false )
         {
             if (targetField != null) return;
