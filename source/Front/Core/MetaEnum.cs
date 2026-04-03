@@ -44,6 +44,7 @@ namespace SimpleLanguage.Core
                 mtList.Add(nmt);
                 var mt = new MetaType(CoreMetaClassManager.arrayMetaClass, mtList);
                 m_ValuesMetaVariable = new MetaMemberVariable(this, "values" );
+                m_ValuesMetaVariable.SetVariableFrom(MetaVariable.EVariableFrom.EnumMember);
                 m_ValuesMetaVariable.SetIsDefineMetaType(true);
                 m_ValuesMetaVariable.SetMetaDefineType(mt);
                 m_ValuesMetaVariable.SetRealMetaType(mt);
