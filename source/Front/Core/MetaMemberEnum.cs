@@ -8,7 +8,6 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
 using System.Diagnostics;
-using System.Security;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -17,6 +16,10 @@ namespace SimpleLanguage.Core
     {
         private bool isExplicitAssign => m_IsExplicitAssign;
         private bool m_IsExplicitAssign = false;
+        private MetaExpressNode m_EnumValueExpress = null;
+
+        public MetaExpressNode enumValueExpress => m_EnumValueExpress;
+        public MetaConstExpressNode enumValueConstExpressNode => m_EnumValueExpress as MetaConstExpressNode;
 
         public MetaMemberEnum(MetaClass mc, string name, MetaClass extendClass) : base(mc, name)
         {
@@ -165,6 +168,7 @@ namespace SimpleLanguage.Core
             {
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
                 m_Express.CalcReturnType();
+                m_EnumValueExpress = m_Express;
                 return true;
             }
             else
@@ -172,6 +176,68 @@ namespace SimpleLanguage.Core
                 Debug.Assert(false, "必须给出定义");
                 return false;
             }
+        }
+
+        public void WrapAsMemberObjectExpress()
+        {
+            if (m_EnumValueExpress == null) return;
+
+            var memberClass = CoreMetaClassManager.memberMetaClass;
+            if (memberClass == null) return;
+
+            var rmdt = m_EnumValueExpress.GetReturnMetaDefineType();
+            var nameMember = CreateBuiltInMemberAssignTarget(memberClass, "name", null);
+            var valueMember = CreateBuiltInMemberAssignTarget(memberClass, "value", rmdt);
+            var indexMember = CreateBuiltInMemberAssignTarget(memberClass, "index", null);
+            if (nameMember == null || valueMember == null || indexMember == null)
+            {
+                Log.AddInStructMeta(EError.None, "Error Core.Member 缺少 name/value/index 字段，无法包装 enum member");
+                return;
+            }
+
+            var memberType = new MetaType(memberClass);
+            var newMember = new MetaNewObjectExpressNode(memberType, m_OwnerMetaClass, m_OwnerMetaBlockStatements);
+            newMember.metaContent.SetMetaType(memberType);
+
+            var nameExpr = new MetaConstExpressNode(EType.String, m_Name ?? string.Empty);
+            nameExpr.CalcReturnType();
+            indexMember.SetExpress(nameExpr);
+
+            var indexExpr = new MetaConstExpressNode(EType.Int32, m_Index);
+            indexExpr.CalcReturnType();
+            indexMember.SetExpress(indexExpr);
+
+            valueMember.SetExpress(m_EnumValueExpress);
+            valueMember.SetRealMetaType(m_EnumValueExpress.GetReturnMetaDefineType());
+
+            //newMember.metaContent.assignStatementsList.Add(
+            //    new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, 
+            //    nameExpr, nameMember));
+            //newMember.metaContent.assignStatementsList.Add(
+            //    new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, m_EnumValueExpress, valueMember));
+            //newMember.metaContent.assignStatementsList.Add(
+            //    new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, 
+            //    indexExpr, indexMember));
+
+            m_Express = newMember;
+            m_DefineMetaType = memberType;
+            m_RealMetaType = new MetaType(memberClass);
+            SetIsDefineMetaType(true);
+        }
+
+        private MetaMemberVariable CreateBuiltInMemberAssignTarget(MetaClass memberClass, string fieldName, MetaType? valueType)
+        {
+            var template = memberClass.GetMetaMemberVariableByName(fieldName);
+            if (template == null) return null;
+
+            var target = new MetaMemberVariable(template);
+            if (valueType != null)
+            {
+                target.SetMetaDefineType(new MetaType(valueType));
+                target.SetRealMetaType(new MetaType(valueType));
+                target.SetIsDefineMetaType(true);
+            }
+            return target;
         }
         public override string ToFormatString()
         {

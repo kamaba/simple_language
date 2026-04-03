@@ -188,13 +188,6 @@ namespace SimpleLanguage.Core
                || m_ExtendClass == CoreMetaClassManager.uint64MetaClass)
             {
 
-                // For numeric underlying types, all members' define/real type must be the underlying type.
-                var underlyingMt = new MetaType(m_ExtendClass);
-                foreach (var m in m_MetaMemberVariableDict )
-                {
-                    m.Value.SetMetaDefineType(underlyingMt);
-                }
-
                 int i = 0;
                 dynamic indexdynamic = 0;
                 foreach (var v in m_MetaMemberVariableDict )
@@ -216,19 +209,18 @@ namespace SimpleLanguage.Core
                     {
                         // explicit assignment must be parsed first, so constExpressNode can be used
                         mme.ParseMetaExpress();
-                        if (mme.constExpressNode == null)
+                        if (mme.enumValueConstExpressNode == null)
                         {
                             Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内允许使用const值类变量");
                             continue;
                         }
-                        // VM enum comparison uses member index (0..n-1) rather than explicit numeric value.
-                        // Keep explicitValue conversion as a validation step, but force the stored enum member constant to mme.index.
+
                         dynamic explicitValue = 0;
                         if (m_ExtendClass == CoreMetaClassManager.byteMetaClass)
                         {
                             try
                             {
-                                explicitValue = Convert.ToByte(v.Value.constExpressNode.value);
+                                explicitValue = Convert.ToByte(mme.enumValueConstExpressNode?.value);
                             }
                             catch (Exception ex)
                             {
@@ -241,7 +233,7 @@ namespace SimpleLanguage.Core
                         {
                             try
                             {
-                                explicitValue = (sbyte)Convert.ToByte(v.Value.constExpressNode.value);
+                                explicitValue = (sbyte)Convert.ToByte(mme.enumValueConstExpressNode?.value);
                             }
                             catch (Exception ex)
                             {
@@ -254,7 +246,7 @@ namespace SimpleLanguage.Core
                         {
                             try
                             {
-                                explicitValue = (short)Convert.ToInt16(v.Value.constExpressNode.value);
+                                explicitValue = (short)Convert.ToInt16(mme.enumValueConstExpressNode?.value);
                             }
                             catch (Exception ex)
                             {
@@ -267,7 +259,7 @@ namespace SimpleLanguage.Core
                         {
                             try
                             {
-                                explicitValue = (ushort)Convert.ToUInt16(v.Value.constExpressNode.value);
+                                explicitValue = (ushort)Convert.ToUInt16(mme.enumValueConstExpressNode?.value);
                             }
                             catch (Exception ex)
                             {
@@ -280,7 +272,7 @@ namespace SimpleLanguage.Core
                         {
                             try
                             {
-                                explicitValue = (int)Convert.ToInt32(v.Value.constExpressNode.value);
+                                explicitValue = (int)Convert.ToInt32(mme.enumValueConstExpressNode?.value);
                             }
                             catch (Exception ex)
                             {
@@ -293,7 +285,7 @@ namespace SimpleLanguage.Core
                         {
                             try
                             {
-                                explicitValue = (uint)Convert.ToUInt32(v.Value.constExpressNode.value);
+                                explicitValue = (uint)Convert.ToUInt32(mme.enumValueConstExpressNode?.value);
                             }
                             catch (Exception ex)
                             {
@@ -304,24 +296,16 @@ namespace SimpleLanguage.Core
                         else
                         if (m_ExtendClass == CoreMetaClassManager.int64MetaClass)
                         {
-                            explicitValue = (long)Convert.ToInt64(v.Value.constExpressNode.value);
+                            explicitValue = (long)Convert.ToInt64(mme.enumValueConstExpressNode?.value);
                         }
                         else
                         if (m_ExtendClass == CoreMetaClassManager.uint64MetaClass)
                         {
-                            explicitValue = (ulong)Convert.ToUInt64(v.Value.constExpressNode.value);
+                            explicitValue = (ulong)Convert.ToUInt64(mme.enumValueConstExpressNode?.value);
                         }
 
-                        // prepare next implicit enum value (keep original conversion for validation)
+                        // Next implicit member follows explicit value.
                         indexdynamic = explicitValue + 1;
-
-                        // Force stored enum member value to its member index, for VM comparisons.
-                        var indexConst = new MetaConstExpressNode(m_ExtendClass.eType, mme.index);
-                        mme.SetExpress(indexConst);
-                        mme.ParseMetaExpress();
-
-                        // Next member should follow sequential member index, not explicit numeric value.
-                        indexdynamic = mme.index + 1;
                     }
                     else
                     {
@@ -332,45 +316,51 @@ namespace SimpleLanguage.Core
                         mme.ParseMetaExpress();
                     }
 
-                    // Always pin real type to underlying type for numeric enums.
-                    // MetaMemberEnum.ParseMetaExpress sets real type based on expression; ensure it remains the underlying type.
-                    v.Value.SetMetaDefineType(underlyingMt);
+                    // Wrap enum member to Core.Member instance: { name, value, index }.
+                    mme.WrapAsMemberObjectExpress();
                 }
             }
             else if (m_ExtendClass == CoreMetaClassManager.stringMetaClass)
             {
                 foreach (var v in m_MetaMemberVariableDict)
                 {
-                    v.Value.ParseDefineMetaType();
-                    if (v.Value.express == null)
+                    if (v.Value is not MetaMemberEnum mme) continue;
+
+                    mme.ParseDefineMetaType();
+                    if (mme.express == null)
                     {
                         Log.AddInStructMeta(EError.None, "Error Enum Member Enum String成员必须有=号" + v.Key);
                         continue;
                     }
-                    if (v.Value.constExpressNode == null)
+                    mme.ParseMetaExpress();
+                    if (mme.enumValueConstExpressNode == null)
                     {
                         Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内允许使用const值类变量");
                         continue;
                     }
-                    if (v.Value.constExpressNode.eType != EType.String)
+                    if (mme.enumValueConstExpressNode.eType != EType.String)
                     {
                         Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内允许使用string值类变量");
                         continue;
                     }
+
+                    mme.WrapAsMemberObjectExpress();
                 }
             }
             else if (m_ExtendClass == CoreMetaClassManager.dynamicMetaData)
             {
                 foreach (var v in m_MetaMemberVariableDict)
                 {
-                    v.Value.ParseDefineMetaType();
-                    if (v.Value.express == null)
+                    if (v.Value is not MetaMemberEnum mme) continue;
+
+                    mme.ParseDefineMetaType();
+                    if (mme.express == null)
                     {
                         Log.AddInStructMeta(EError.None, "Error Enum Member Enum 动态成员第一位必须有=号");
                         continue;
                     }
-                    v.Value.ParseMetaExpress();
-                    if (v.Value.express is MetaNewObjectExpressNode mnoe)
+                    mme.ParseMetaExpress();
+                    if (mme.express is MetaNewObjectExpressNode mnoe)
                     {
                         if (mnoe.GetReturnMetaDefineType().isData)
                         {

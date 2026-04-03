@@ -904,12 +904,19 @@ namespace SimpleLanguage.Core
         {
             m_OwnerMetaClass = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
+            m_DefineMetaType = new MetaType(mt);
+            m_NewMetaType = new MetaType(mt);
             m_MetaType = new MetaType(mt);
             if( m_MetaType.IsArray() )
             {
                 m_NewType = ENewType.ArrayClass;
             }
+            else
+            {
+                m_NewType = ENewType.CommomClass;
+            }
             m_MetaContent = new MetaNewObjectStatementsContent( ownerMC, mbs );
+            m_MetaContent.SetMetaType(m_NewMetaType);
             //m_MetaConstructFunctionCall = new MetaMethodCall(mt.metaClass, mt.defineTemplateMetaTypeList, m_OwnerMetaBlockStatements.ownerMetaFunction,
             //    null, null, null, null );
         }

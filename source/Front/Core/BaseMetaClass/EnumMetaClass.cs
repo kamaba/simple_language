@@ -47,10 +47,29 @@ namespace SimpleLanguage.Core
             m_Type = EType.Member;
             m_ClassDefineType = EClassDefineType.InnerDefine;
         }
-        //public override void ParseInnerFunction()
-        //{
-        //    //AddCoreFunction();
-        //}
+        public override void ParseInnerFunction()
+        {
+            MetaMemberVariable value = new MetaMemberVariable(this, "value");            
+            AddMetaMemberVariable(value,false);
+            value.SetMetaDefineType(new MetaType(CoreMetaClassManager.objectMetaClass));
+            value.SetIsDefineMetaType(false);
+            var mcen = new MetaConstExpressNode( EType.Null, null );
+            value.SetExpress(mcen);
+
+            MetaMemberVariable name = new MetaMemberVariable(this, "name");
+            AddMetaMemberVariable(name,false);
+            name.SetMetaDefineType( new MetaType( CoreMetaClassManager.stringMetaClass));
+            name.SetIsDefineMetaType( true );
+            var namecexp = new MetaConstExpressNode(EType.String, "");
+            name.SetExpress(namecexp);
+
+            MetaMemberVariable index = new MetaMemberVariable(this, "index");
+            AddMetaMemberVariable(index, false);
+            index.SetMetaDefineType(new MetaType(CoreMetaClassManager.int32MetaClass));
+            index.SetIsDefineMetaType(true);
+            var indexcexp = new MetaConstExpressNode(EType.Int32, 0);
+            index.SetExpress(indexcexp);
+        }
         //public void AddCoreFunction()
         //{
         //    MetaMemberFunction values = new MetaMemberFunction(this, "_values_");
