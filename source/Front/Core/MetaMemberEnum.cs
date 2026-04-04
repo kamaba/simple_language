@@ -185,39 +185,10 @@ namespace SimpleLanguage.Core
             var memberClass = CoreMetaClassManager.memberMetaClass;
             if (memberClass == null) return;
 
-            var rmdt = m_EnumValueExpress.GetReturnMetaDefineType();
-            var nameMember = CreateBuiltInMemberAssignTarget(memberClass, "name", null);
-            var valueMember = CreateBuiltInMemberAssignTarget(memberClass, "value", rmdt);
-            var indexMember = CreateBuiltInMemberAssignTarget(memberClass, "index", null);
-            if (nameMember == null || valueMember == null || indexMember == null)
-            {
-                Log.AddInStructMeta(EError.None, "Error Core.Member 缺少 name/value/index 字段，无法包装 enum member");
-                return;
-            }
-
             var memberType = new MetaType(memberClass);
             var newMember = new MetaNewObjectExpressNode(memberType, m_OwnerMetaClass, m_OwnerMetaBlockStatements);
             newMember.metaContent.SetMetaType(memberType);
-
-            var nameExpr = new MetaConstExpressNode(EType.String, m_Name ?? string.Empty);
-            nameExpr.CalcReturnType();
-            indexMember.SetExpress(nameExpr);
-
-            var indexExpr = new MetaConstExpressNode(EType.Int32, m_Index);
-            indexExpr.CalcReturnType();
-            indexMember.SetExpress(indexExpr);
-
-            valueMember.SetExpress(m_EnumValueExpress);
-            valueMember.SetRealMetaType(m_EnumValueExpress.GetReturnMetaDefineType());
-
-            //newMember.metaContent.assignStatementsList.Add(
-            //    new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, 
-            //    nameExpr, nameMember));
-            //newMember.metaContent.assignStatementsList.Add(
-            //    new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, m_EnumValueExpress, valueMember));
-            //newMember.metaContent.assignStatementsList.Add(
-            //    new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, 
-            //    indexExpr, indexMember));
+            FillMemberNewObjectAssignList(newMember, m_OwnerMetaBlockStatements, m_EnumValueExpress, m_Name, m_Index);
 
             m_Express = newMember;
             m_DefineMetaType = memberType;
@@ -225,19 +196,62 @@ namespace SimpleLanguage.Core
             SetIsDefineMetaType(true);
         }
 
-        private MetaMemberVariable CreateBuiltInMemberAssignTarget(MetaClass memberClass, string fieldName, MetaType? valueType)
+        /// <summary>
+        /// 为 enum.values 数组生成一项：new Core.Member() 后按 name、value、index 顺序赋值（与 IRNewExpress 对象初始化一致）。
+        /// 使用 Member 类模板上的 MetaMemberVariable，保证 IR 里按 hash 能匹配到字段。
+        /// </summary>
+        public MetaExpressNode CreateValuesArrayElementExpress()
         {
-            var template = memberClass.GetMetaMemberVariableByName(fieldName);
-            if (template == null) return null;
-
-            var target = new MetaMemberVariable(template);
-            if (valueType != null)
+            var valueExpr = m_EnumValueExpress ?? m_Express;
+            if (valueExpr == null)
+                return null;
+            // 已包装成 Member 时，m_EnumValueExpress 仍为原始值表达式；若仅有包装节点则无法再拆值
+            if (m_EnumValueExpress == null && valueExpr is MetaNewObjectExpressNode mnoe
+                && mnoe.GetReturnMetaDefineType()?.metaClass == CoreMetaClassManager.memberMetaClass)
             {
-                target.SetMetaDefineType(new MetaType(valueType));
-                target.SetRealMetaType(new MetaType(valueType));
-                target.SetIsDefineMetaType(true);
+                return null;
             }
-            return target;
+
+            var memberClass = CoreMetaClassManager.memberMetaClass;
+            if (memberClass == null)
+                return null;
+
+            var memberType = new MetaType(memberClass);
+            var newMember = new MetaNewObjectExpressNode(memberType, m_OwnerMetaClass, m_OwnerMetaBlockStatements);
+            newMember.metaContent.SetMetaType(memberType);
+            FillMemberNewObjectAssignList(newMember, m_OwnerMetaBlockStatements, valueExpr, m_Name, m_Index);
+            return newMember;
+        }
+
+        private static void FillMemberNewObjectAssignList(
+            MetaNewObjectExpressNode newMember,
+            MetaBlockStatements mbs,
+            MetaExpressNode valueExpr,
+            string memberName,
+            int memberIndex)
+        {
+            var memberClass = CoreMetaClassManager.memberMetaClass;
+            if (newMember?.metaContent == null || valueExpr == null || memberClass == null)
+                return;
+
+            var nameMv = memberClass.GetMetaMemberVariableByName("name");
+            var valueMv = memberClass.GetMetaMemberVariableByName("value");
+            var indexMv = memberClass.GetMetaMemberVariableByName("index");
+            if (nameMv == null || valueMv == null || indexMv == null)
+            {
+                Log.AddInStructMeta(EError.None, "Error Core.Member 缺少 name/value/index 字段，无法构造 Member 初始化");
+                return;
+            }
+
+            var nameExpr = new MetaConstExpressNode(EType.String, memberName ?? string.Empty);
+            nameExpr.CalcReturnType();
+            var indexExpr = new MetaConstExpressNode(EType.Int32, memberIndex);
+            indexExpr.CalcReturnType();
+
+            var list = newMember.metaContent.assignStatementsList;
+            list.Add(new MetaBraceAssignStatements(mbs, nameExpr, nameMv));
+            list.Add(new MetaBraceAssignStatements(mbs, valueExpr, valueMv));
+            list.Add(new MetaBraceAssignStatements(mbs, indexExpr, indexMv));
         }
         public override string ToFormatString()
         {

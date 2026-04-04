@@ -1234,6 +1234,26 @@ namespace SimpleLanguage.VM.Runtime
                         }
                     }
                     break;
+
+                case EIROpCode.StoreNotStaticField1:
+                    {
+                        // -2在存储的值 -1表示要存储的对象 存储完成，直接变成位置0
+                        // expect value then instance on stack (value pushed last)
+                        if (m_ValueIndex >= 2)
+                        {
+                            SValue val = m_ValueStack[m_ValueIndex - 1];
+                            SValue inst = m_ValueStack[m_ValueIndex - 2];
+                            if (inst.eType == EVMType.Class || inst.eType == EVMType.Array || inst.eType == EVMType.Object)
+                            {
+                                if (inst.sobject is ClassObject co)
+                                {
+                                    co.SetMemberVariableSValue(iri.index, val);
+                                }
+                            }
+                            m_ValueIndex -= 1;
+                        }
+                    }
+                    break;
                 case EIROpCode.ClassInit:
                     {
                         var mdt = TryGetInstructionRuntimeDefType(iri);

@@ -58,13 +58,11 @@ namespace SimpleLanguage.Core
                     .OrderBy(v => v.index)
                     .ToList();
 
-                foreach ( var v in enumMembers )
+                foreach (var mme in enumMembers)
                 {
-                    MetaCallLink mcl = new MetaCallLink( this, nmt);
-                    MetaVisitNode mvn = MetaVisitNode.CreateByVariable(v);
-                    mcl.AddVisitNodeList(mvn);
-                    MetaCallLinkExpressNode mclen = new MetaCallLinkExpressNode(mcl);
-                    maen.metaCallArray.Add(mclen);
+                    var elem = mme.CreateValuesArrayElementExpress();
+                    if (elem != null)
+                        maen.metaCallArray.Add(elem);
                 }
 
 

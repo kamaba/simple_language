@@ -143,7 +143,11 @@ namespace SimpleLanguage.VM
             //var slotIndex = ResolveStaticSlotIndex(index);
             //if (slotIndex < 0 || slotIndex >= m_StaticMemObjectList.Length) return;
             var target = m_StaticMemberObjectArray[index];
-            if (target == null) return;
+            if (target == null)
+            {
+                m_StaticMemberObjectArray[index] = svalue.GetSObject();
+                return;
+            }
             if (svalue.isNull)
             {
                 target.SetNull();
@@ -166,7 +170,8 @@ namespace SimpleLanguage.VM
             {
                 if (m_StaticMemberRuntimeTypeArray == null && m_RuntimeClass.staticIRMetaVariableList.Count > 0)
                 {
-                    m_StaticMemberRuntimeTypeArray = new RuntimeType[m_RuntimeClass.staticIRMetaVariableList.Count];                 
+                    m_StaticMemberRuntimeTypeArray = new RuntimeType[m_RuntimeClass.staticIRMetaVariableList.Count];
+                    m_StaticMemberObjectArray = new SObject[m_StaticMemberRuntimeTypeArray.Length];
                     //m_StaticFieldIndexToSlot.Clear();
                     for (int i = 0; i < m_RuntimeClass.staticIRMetaVariableList.Count; i++)
                     {
@@ -205,10 +210,6 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            if (m_StaticMemberObjectArray == null && m_StaticMemberRuntimeTypeArray?.Length > 0 )
-            {
-                m_StaticMemberObjectArray = new SObject[m_StaticMemberRuntimeTypeArray.Length];
-            }
             s_StaticExprApplyingByKey.Add(key);
             m_IsStaticExprBatchApplying = true;
             try

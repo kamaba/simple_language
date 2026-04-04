@@ -47,8 +47,8 @@ namespace SimpleLanguage.VM
         Pop,
 
         StoreLocal,
-        StoreNotStaticField1,
-        StoreNotStaticField2,
+        StoreNotStaticField1,           //存储非静态成员 然后栈-1，这样可以重复赋值，不能加载那个类，相当于在存储多个该类里边的值的时候，有优化作用
+        StoreNotStaticField2,           // 存储非静态成员，然后栈-2 相当于消耗掉了当前的2个栈数据
         StoreArrayIndex,             //数组类成员操作
         StoreArrayIndexField,
         StoreStaticField,
