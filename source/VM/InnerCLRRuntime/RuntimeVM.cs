@@ -1803,6 +1803,7 @@ namespace SimpleLanguage.VM.Runtime
                             if (irc == null)
                             {
                                 Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
+                                Debug.Assert(false, "");
                                 return;
                             }
                             if (mfc.method == null)

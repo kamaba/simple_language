@@ -57,6 +57,7 @@ namespace SimpleLanguage.Core
                     .OfType<MetaMemberEnum>()
                     .OrderBy(v => v.index)
                     .ToList();
+
                 foreach ( var v in enumMembers )
                 {
                     MetaCallLink mcl = new MetaCallLink( this, nmt);
@@ -66,10 +67,23 @@ namespace SimpleLanguage.Core
                     maen.metaCallArray.Add(mclen);
                 }
 
-                //MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(maen, this, null, m_ValuesMetaVariable);
-                //mnoen.Parse( new AllowUseSettings() );
 
-                m_ValuesMetaVariable.SetExpress(maen);
+
+                //newRMT.AddGenTemplateMetaType(m_RealMetaType);
+
+                var valuesNewExpress = new MetaNewObjectExpressNode(maen, this, null, m_ValuesMetaVariable);
+                MetaType inputType = valuesNewExpress.metaContent.GetMaxLevelMetaType();
+
+                MetaType newRMT = new MetaType();
+                newRMT.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
+                newRMT.AddDefineTemplateMetaType(inputType);
+                newRMT = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out bool isIGM);
+                newRMT.SetArrayLength(valuesNewExpress.metaContent.assignStatementsList.Count);
+
+                //valuesNewExpress.Parse(new AllowUseSettings());
+                valuesNewExpress.SetRealMetaType(newRMT);
+                valuesNewExpress.CalcReturnType();
+                m_ValuesMetaVariable.SetExpress(valuesNewExpress);
                 m_MetaMemberVariableDict.Add(m_ValuesMetaVariable.name, m_ValuesMetaVariable);
 
             }

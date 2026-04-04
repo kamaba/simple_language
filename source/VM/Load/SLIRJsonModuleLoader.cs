@@ -1,9 +1,54 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using SimpleLanuageVM.Load;
+using System.Text;
 
 namespace SimpleLanguage.VM
 {
+    internal sealed class InstructionPayloadByteArrayJsonConverter : JsonConverter<byte[]>
+    {
+        public override byte[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.Null)
+                return null;
+
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                var text = reader.GetString() ?? string.Empty;
+                return Encoding.Latin1.GetBytes(text);
+            }
+
+            if (reader.TokenType == JsonTokenType.StartArray)
+            {
+                var buffer = new List<byte>();
+                while (reader.Read())
+                {
+                    if (reader.TokenType == JsonTokenType.EndArray)
+                        return buffer.ToArray();
+                    if (reader.TokenType == JsonTokenType.Number && reader.TryGetByte(out var b))
+                    {
+                        buffer.Add(b);
+                        continue;
+                    }
+                    throw new JsonException("Invalid byte[] payload token in instruction payload.");
+                }
+            }
+
+            throw new JsonException("Invalid token for instruction payload byte[] field.");
+        }
+
+        public override void Write(Utf8JsonWriter writer, byte[] value, JsonSerializerOptions options)
+        {
+            if (value == null)
+            {
+                writer.WriteNullValue();
+                return;
+            }
+
+            writer.WriteStringValue(Encoding.Latin1.GetString(value));
+        }
+    }
+
     public static class SLIRJsonModuleLoader
     {
         /// <summary>
@@ -21,6 +66,7 @@ namespace SimpleLanguage.VM
                 IncludeFields = true,
             };
             options.Converters.Add(new JsonStringEnumConverter());
+            options.Converters.Add(new InstructionPayloadByteArrayJsonConverter());
             return options;
         }
 

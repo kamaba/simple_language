@@ -14,6 +14,50 @@ using SimpleLanguage.Export.SLIR.Types;
 
 namespace SimpleLanguage.Export.SLIR
 {
+    internal sealed class InstructionPayloadByteArrayJsonConverter : JsonConverter<byte[]>
+    {
+        public override byte[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.Null)
+                return null;
+
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                var text = reader.GetString() ?? string.Empty;
+                return Encoding.Latin1.GetBytes(text);
+            }
+
+            if (reader.TokenType == JsonTokenType.StartArray)
+            {
+                var buffer = new List<byte>();
+                while (reader.Read())
+                {
+                    if (reader.TokenType == JsonTokenType.EndArray)
+                        return buffer.ToArray();
+                    if (reader.TokenType == JsonTokenType.Number && reader.TryGetByte(out var b))
+                    {
+                        buffer.Add(b);
+                        continue;
+                    }
+                    throw new JsonException("Invalid byte[] payload token in instruction payload.");
+                }
+            }
+
+            throw new JsonException("Invalid token for instruction payload byte[] field.");
+        }
+
+        public override void Write(Utf8JsonWriter writer, byte[] value, JsonSerializerOptions options)
+        {
+            if (value == null)
+            {
+                writer.WriteNullValue();
+                return;
+            }
+
+            writer.WriteStringValue(Encoding.Latin1.GetString(value));
+        }
+    }
+
     // Physical package: root shell (entryModule, moduleList) + per-module SLAssemblyPackage payload.
     // Full IR payload lives only under moduleList[]; VM merges strings and flattens modules at load time.
     public static class SLModulePackageWriter
@@ -32,6 +76,7 @@ namespace SimpleLanguage.Export.SLIR
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             };
             options.Converters.Add(new JsonStringEnumConverter());
+            options.Converters.Add(new InstructionPayloadByteArrayJsonConverter());
 
             var root = new SLPackageRootJson
             {
@@ -55,6 +100,7 @@ namespace SimpleLanguage.Export.SLIR
                 AllowTrailingCommas = true,
             };
             options.Converters.Add(new JsonStringEnumConverter());
+            options.Converters.Add(new InstructionPayloadByteArrayJsonConverter());
 
             var pkg = JsonSerializer.Deserialize<SLModulePackage>(json, options) ?? new SLModulePackage();
             NormalizeFieldFlags(pkg);

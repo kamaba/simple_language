@@ -1331,6 +1331,10 @@ namespace SimpleLanguage.Core
             }
             CheckDefineVariableMetaTypeAndContentMetaType();
         }
+        public void SetRealMetaType( MetaType realType )
+        {
+            m_RealMetaType = realType;
+        }
 
         public void CheckDefineVariableMetaTypeAndContentMetaType()
         {

@@ -26,7 +26,8 @@ namespace SimpleLanguage.VM
 
         private RuntimeClass m_RuntimeClass = null;
         private List<RuntimeType> m_RuntimeTemplateList = new List<RuntimeType>();
-        private SObject[] m_StaticMemObjectList;
+        private SObject[] m_StaticMemberObjectArray = null;
+        protected RuntimeType[] m_StaticMemberRuntimeTypeArray = null;
         //private Dictionary<int, int> m_StaticFieldIndexToSlot = new Dictionary<int, int>();
         //private bool m_IsStaticMemInitializing = false;
         //private bool m_IsStaticExprBatchApplied = false;
@@ -40,12 +41,6 @@ namespace SimpleLanguage.VM
             {
                 m_RuntimeTemplateList = rtList;
             }
-
-            // Delay static member object creation to first access.
-            // This avoids recursive RuntimeType construction when static fields
-            // reference types that are still being initialized.
-            m_StaticMemObjectList = null;
-
             if (Enum.TryParse<EVMType>(m_RuntimeClass.name, true, out var eoutType))
             {
                 eType = eoutType;
@@ -121,7 +116,7 @@ namespace SimpleLanguage.VM
         }
         public void GetStaticMemberVariableSValue(int index, ref SValue svalue)
         {
-            if (m_StaticMemObjectList == null)
+            if (m_StaticMemberObjectArray == null)
             {
                 svalue.SetNull();
                 Debug.Assert(false, $"Static member object list is not initialized for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
@@ -134,7 +129,7 @@ namespace SimpleLanguage.VM
             //    return;
             //}
             //EnsureStaticMemberObjectAt(index);
-            var sobj = m_StaticMemObjectList[index];
+            var sobj = m_StaticMemberObjectArray[index];
             if (sobj == null || sobj.isNull)
             {
                 svalue.SetNull();
@@ -144,10 +139,10 @@ namespace SimpleLanguage.VM
         }
         public void SetStaticMemberVariableSValue(int index, SValue svalue)
         {
-            if (m_StaticMemObjectList == null) return;
+            if (m_StaticMemberObjectArray == null) return;
             //var slotIndex = ResolveStaticSlotIndex(index);
             //if (slotIndex < 0 || slotIndex >= m_StaticMemObjectList.Length) return;
-            var target = m_StaticMemObjectList[index];
+            var target = m_StaticMemberObjectArray[index];
             if (target == null) return;
             if (svalue.isNull)
             {
@@ -169,11 +164,9 @@ namespace SimpleLanguage.VM
             //m_IsStaticMemInitializing = true;
             try
             {
-                if (m_StaticMemObjectList == null)
+                if (m_StaticMemberRuntimeTypeArray == null && m_RuntimeClass.staticIRMetaVariableList.Count > 0)
                 {
-                    m_StaticMemObjectList = new SObject[m_RuntimeClass.staticIRMetaVariableList.Count];
-
-                    
+                    m_StaticMemberRuntimeTypeArray = new RuntimeType[m_RuntimeClass.staticIRMetaVariableList.Count];                 
                     //m_StaticFieldIndexToSlot.Clear();
                     for (int i = 0; i < m_RuntimeClass.staticIRMetaVariableList.Count; i++)
                     {
@@ -182,8 +175,7 @@ namespace SimpleLanguage.VM
                         var rt = GetClassRuntimeType(field.runtimeDefType, true);
                         if (rt == null) return;
 
-                        // Not initialized yet: prioritize initializing the missing slot.
-                        m_StaticMemObjectList[i] = ObjectManager.CreateObjectByRuntimeType(rt, true);
+                        m_StaticMemberRuntimeTypeArray[i] = rt;
 
                         //if (!m_StaticFieldIndexToSlot.ContainsKey(field.index))
                         //{
@@ -213,9 +205,10 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            if (m_StaticMemObjectList == null) return;
-            if (m_RuntimeClass?.staticIRMetaVariableList == null) return;
-
+            if (m_StaticMemberObjectArray == null && m_StaticMemberRuntimeTypeArray?.Length > 0 )
+            {
+                m_StaticMemberObjectArray = new SObject[m_StaticMemberRuntimeTypeArray.Length];
+            }
             s_StaticExprApplyingByKey.Add(key);
             m_IsStaticExprBatchApplying = true;
             try
