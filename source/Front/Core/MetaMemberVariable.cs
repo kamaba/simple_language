@@ -320,7 +320,40 @@ namespace SimpleLanguage.Core
                     m_Express = enode;
                     m_Express.CalcReturnType();
                 }
-                CalcDefineClassType();
+                if( m_Express is MetaConstExpressNode mcen )
+                {
+                    var curEType = CoreMetaClassManager.GetETypeByMetaClass(m_DefineMetaType.metaClass);
+                    var expEType = mcen.eType;
+
+                    // Define 类型是 object 时，直接沿用表达式常量的真实类型。
+                    if (curEType == EType.Object)
+                    {
+                        curEType = expEType;
+                    }
+
+                    if (mcen.eType != curEType )
+                    {
+                        // 数字类型优先走范围检查+强转；其它类型按可转换性处理。
+                        if (TryConvertConstValueByEType(curEType, mcen.value, out var convertedValue))
+                        {
+                            mcen.SetConstValue(curEType, convertedValue);
+                        }
+                        else
+                        {
+                            Log.AddInStructMeta(EError.None,
+                                "Error 定义类型与表达式类型不匹配，且常量值超出目标类型范围: "
+                                + "define=" + curEType + ", express=" + expEType + ", value=" + (mcen.value?.ToString() ?? "null"));
+                        }
+                    }
+                    else
+                    {
+                        CalcDefineClassType();
+                    }
+                }
+                else
+                {
+                    CalcDefineClassType();
+                }
             }
             else
             {
@@ -338,6 +371,81 @@ namespace SimpleLanguage.Core
             else
                 return -1;
         }
+
+        private static bool IsNumericEType(EType t)
+        {
+            return t == EType.Byte
+                || t == EType.SByte
+                || t == EType.Int16
+                || t == EType.UInt16
+                || t == EType.Int32
+                || t == EType.UInt32
+                || t == EType.Int64
+                || t == EType.UInt64
+                || t == EType.Float16
+                || t == EType.Float32
+                || t == EType.Float64
+                || t == EType.Num;
+        }
+
+        private static bool TryConvertConstValueByEType(EType targetType, object input, out object converted)
+        {
+            converted = null;
+            try
+            {
+                switch (targetType)
+                {
+                    case EType.Boolean:
+                        converted = Convert.ToBoolean(input);
+                        return true;
+                    case EType.Byte:
+                        converted = Convert.ToByte(input);
+                        return true;
+                    case EType.SByte:
+                        converted = Convert.ToSByte(input);
+                        return true;
+                    case EType.Int16:
+                        converted = Convert.ToInt16(input);
+                        return true;
+                    case EType.UInt16:
+                        converted = Convert.ToUInt16(input);
+                        return true;
+                    case EType.Int32:
+                        converted = Convert.ToInt32(input);
+                        return true;
+                    case EType.UInt32:
+                        converted = Convert.ToUInt32(input);
+                        return true;
+                    case EType.Int64:
+                        converted = Convert.ToInt64(input);
+                        return true;
+                    case EType.UInt64:
+                        converted = Convert.ToUInt64(input);
+                        return true;
+                    case EType.Float16:
+                        converted = (Half)Convert.ToSingle(input);
+                        return true;
+                    case EType.Float32:
+                        converted = Convert.ToSingle(input);
+                        return true;
+                    case EType.Float64:
+                    case EType.Num:
+                        converted = Convert.ToDouble(input);
+                        return true;
+                    case EType.String:
+                        converted = Convert.ToString(input) ?? string.Empty;
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+            catch
+            {
+                converted = null;
+                return false;
+            }
+        }
+
         void CalcDefineClassType()
         {
             //var metaFunction = m_OwnerMetaBlockStatements?.ownerMetaFunction;

@@ -356,8 +356,8 @@ namespace SimpleLanguage.VM
                 case EVMType.Class:
                     {
                         ClassObject co = (sval1.sobject as ClassObject);
-                        RuntimeType rt = co.value.runtimeType;
-                        RuntimeClass irc = co.value.runtimeClass;                        
+                        RuntimeType rt = co.runtimeType;
+                        RuntimeClass irc = co.runtimeClass;                        
                         if (irc == null)
                         {
                             Log.AddVM(EError.None, "IRC是调用虚函数为空!!");

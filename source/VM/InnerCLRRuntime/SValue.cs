@@ -351,7 +351,7 @@ namespace SimpleLanguage.VM
 
         public void SetValue(SObject val)
         {
-            eType = val.eAnyType;
+            eType = val.eType;
             SetTypeValue(eType, val.value );
         }
         public void SetTypeValue( EVMType etype, object tobj )
@@ -442,7 +442,7 @@ namespace SimpleLanguage.VM
                 isNull = true;
                 return;
             }
-            isNull = val.isNull;
+            isNull = val == null;
             if (isNull)
             {
                 return;
@@ -541,7 +541,7 @@ namespace SimpleLanguage.VM
                     break;
                 case TemplateObject templateobj:
                     {
-                        if (templateobj.isNull)
+                        if (templateobj == null )
                         {
                             this.SetNull();
                             return;

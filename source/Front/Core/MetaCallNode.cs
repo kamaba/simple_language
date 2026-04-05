@@ -497,7 +497,7 @@ namespace SimpleLanguage.Core
                         }
                         m_MetaType = m_FrontDefineMetaType;
                         m_StoreMetaVariable = m_DefineMetaVariable;
-                        if (m_FrontDefineMetaType.eType == EMetaTypeType.Template)
+                        if (m_FrontDefineMetaType.eMetaTypeType == EMetaTypeType.Template)
                         {
                             m_MetaTemplate = m_FrontDefineMetaType.metaTemplate;
                             m_MetaType = new MetaType(m_MetaTemplate, "");
@@ -511,7 +511,7 @@ namespace SimpleLanguage.Core
                             }
                             this.m_MetaFunction = mmf;
                         }
-                        else if (m_FrontDefineMetaType.eType == EMetaTypeType.MetaClass)
+                        else if (m_FrontDefineMetaType.eMetaTypeType == EMetaTypeType.MetaClass)
                         {
                             m_MetaClass = m_FrontDefineMetaType.metaClass;
                             m_CallNodeType = ECallNodeType.NewClass;
@@ -971,11 +971,11 @@ namespace SimpleLanguage.Core
                             MetaClass mc = null;
                             if (mv.isDefineMetaType)
                             {
-                                mc = mv.defineMetaType.eType == EMetaTypeType.TemplateClassWithTemplate ? mv.defineMetaType.metaClass : mv.defineMetaType.metaClass;
+                                mc = mv.defineMetaType.eMetaTypeType == EMetaTypeType.TemplateClassWithTemplate ? mv.defineMetaType.metaClass : mv.defineMetaType.metaClass;
                             }
                             else
                             {
-                                mc = mv.realMetaType.eType == EMetaTypeType.TemplateClassWithTemplate ? mv.realMetaType.metaClass : mv.realMetaType.metaClass;
+                                mc = mv.realMetaType.eMetaTypeType == EMetaTypeType.TemplateClassWithTemplate ? mv.realMetaType.metaClass : mv.realMetaType.metaClass;
                             }
                             if (mc is MetaData)
                             {

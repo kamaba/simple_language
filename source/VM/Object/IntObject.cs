@@ -28,7 +28,6 @@ namespace SimpleLanguage.VM
         public void SetValue(bool _val)
         {
             m_Value = _val;
-            m_IsNull = false;
         }
         public override string ToFormatString()
         {

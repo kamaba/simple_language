@@ -139,6 +139,11 @@ namespace SimpleLanguage.Core
         {
             Parse1(eType, val);
         }
+        public void SetConstValue(EType etype, object val)
+        {
+            eType = etype;
+            Parse1(etype, val);
+        }
         public override void Parse(AllowUseSettings auc)
         {
             if (m_FileMetaConstValueTerm?.token?.type == ETokenType.String)

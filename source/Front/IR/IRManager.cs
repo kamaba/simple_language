@@ -559,13 +559,13 @@ namespace SimpleLanguage.IR
         {
             StringBuilder sb = new StringBuilder();
 
-            if (mt.eType == EMetaTypeType.Template)
+            if (mt.eMetaTypeType == EMetaTypeType.Template)
             {
                 sb.Append("$");
                 sb.Append(mt.metaTemplate.name);
                 sb.Append("$");
             }
-            else if (mt.eType == EMetaTypeType.MetaClass)
+            else if (mt.eMetaTypeType == EMetaTypeType.MetaClass)
             {
                 sb.Append(mt.GetTemplateMetaClass().metaNode.allName);
                 if (mt.metaClass is MetaGenTemplateClass mgtc)

@@ -31,22 +31,23 @@ namespace SimpleLanguage.Core
                 return m_MetaClass?.allClassName;
             }
         }
+        public bool isNullable => m_IsNullable;
         public bool isEnum => m_MetaClass is MetaEnum;
         public bool isData => m_MetaClass is MetaData;
         public bool isNull => m_MetaClass == CoreMetaClassManager.nullMetaClass;
         public bool isMap => m_MetaClass == CoreMetaClassManager.mapMetaClass;
-        public bool isTemplate => m_EType == EMetaTypeType.Template;
+        public bool isTemplate => m_EMetaTypeType == EMetaTypeType.Template;
         public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
         public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData;
         public int arrayLength => m_ArrayLength;
-        public EMetaTypeType eType => m_EType;
+        public EMetaTypeType eMetaTypeType => m_EMetaTypeType;
         public MetaClass metaClass => m_MetaClass;
         public MetaTemplate metaTemplate => m_MetaTemplate;
         public MetaMemberEnum enumValue => m_EnumValue;
         public List<MetaType> defineTemplateMetaTypeList => m_DefineTemplateMetaTypeList;
         //public List<MetaType> genTemplateMetaTypeList => m_GenTemplateMetaTypeList;
 
-        private EMetaTypeType m_EType = EMetaTypeType.None;
+        private EMetaTypeType m_EMetaTypeType = EMetaTypeType.None;
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
         private MetaType m_ParentMetaType = null;
         private MetaTemplate m_MetaTemplate = null;
@@ -55,30 +56,26 @@ namespace SimpleLanguage.Core
         private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         //private List<MetaType> m_GenTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中  //慢慢的移除 直接使用gen class中的数据
-        private int m_ArrayLength = -1;
-
-        // 新增：可空标记
-        private bool m_IsNullable = false;
-        public bool isNullable => m_IsNullable;
-        public void SetNullable(bool v) { m_IsNullable = v; }
+        private int m_ArrayLength = -1;       
+        private bool m_IsNullable = false;   // 新增：可空标记
 
         public MetaType()
         {
         }
         public MetaType( EType etype )
         {
-            m_EType = EMetaTypeType.MetaClass;
+            m_EMetaTypeType = EMetaTypeType.MetaClass;
             m_MetaClass = CoreMetaClassManager.GetMetaClassByEType(etype);
         }
         public MetaType(MetaTemplate mt, string fromName = "" )
         {
-            m_EType = EMetaTypeType.Template;
+            m_EMetaTypeType = EMetaTypeType.Template;
             m_MetaTemplate = mt;
             m_MetaClass = mt.extendsMetaClass;
         }
         public MetaType( MetaGenTemplateClass mgtc, List<MetaType> defineMTList, List<MetaType> genMTList )
         {
-            m_EType = EMetaTypeType.MetaGenClass;
+            m_EMetaTypeType = EMetaTypeType.MetaGenClass;
             m_MetaClass = mgtc;
             m_DefineTemplateMetaTypeList = defineMTList;
             //m_GenTemplateMetaTypeList = genMTList;
@@ -90,7 +87,7 @@ namespace SimpleLanguage.Core
                 Log.AddInStructMeta(EError.None, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
             m_MetaClass = mc;
-            m_EType = EMetaTypeType.MetaClass;
+            m_EMetaTypeType = EMetaTypeType.MetaClass;
         }
         public MetaType( MetaClass mc, List<MetaType> mtList )
         {
@@ -102,7 +99,7 @@ namespace SimpleLanguage.Core
             m_MetaClass = mc;
             m_DefineTemplateMetaTypeList = mtList;
             //m_GenTemplateMetaTypeList = mtList;
-            m_EType = EMetaTypeType.TemplateClassWithTemplate;
+            m_EMetaTypeType = EMetaTypeType.TemplateClassWithTemplate;
         }
         public MetaType( MetaClass mc, MetaClass templatemc, MetaInputTemplateCollection mitc )
         {
@@ -132,7 +129,7 @@ namespace SimpleLanguage.Core
             this.m_MetaTemplate = mt.m_MetaTemplate;
             this.m_EnumValue = mt.m_EnumValue;
             //this.m_FromName = mt.m_FromName;
-            this.m_EType = mt.m_EType;
+            this.m_EMetaTypeType = mt.m_EMetaTypeType;
             this.m_ArrayLength = mt.m_ArrayLength;
             // 复制 nullable 标记
             this.m_IsNullable = mt.m_IsNullable;
@@ -149,7 +146,7 @@ namespace SimpleLanguage.Core
         }
         public bool IsArray()
         {
-            if( m_EType == EMetaTypeType.MetaGenClass )
+            if(m_EMetaTypeType == EMetaTypeType.MetaGenClass )
             {
                 if( m_MetaClass is MetaGenTemplateClass mgtc )
                 {
@@ -159,7 +156,7 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
-            else if( m_EType == EMetaTypeType.MetaClass )
+            else if(m_EMetaTypeType == EMetaTypeType.MetaClass )
             {
                 MetaClass cmc = m_MetaClass;
                 while ( true )
@@ -183,7 +180,7 @@ namespace SimpleLanguage.Core
                     int a = 10;
                 }
             }
-            else if( m_EType == EMetaTypeType.TemplateClassWithTemplate )
+            else if(m_EMetaTypeType == EMetaTypeType.TemplateClassWithTemplate )
             {
                 if (m_MetaClass == CoreMetaClassManager.arrayMetaClass)
                 {
@@ -192,6 +189,7 @@ namespace SimpleLanguage.Core
             }
                 return false;
         }
+        public void SetNullable(bool v) { m_IsNullable = v; }
         public bool IsNum()
         {
             return ClassManager.IsNumberClass(this.m_MetaClass);
@@ -262,14 +260,14 @@ namespace SimpleLanguage.Core
             this.m_MetaTemplate = mt.m_MetaTemplate;
             this.m_EnumValue = mt.m_EnumValue;
             //this.m_FromName = mt.m_FromName;
-            this.m_EType = mt.m_EType;
+            this.m_EMetaTypeType = mt.m_EMetaTypeType;
             this.m_DefineTemplateMetaTypeList = mt.m_DefineTemplateMetaTypeList;
             //this.m_GenTemplateMetaTypeList = mt.m_GenTemplateMetaTypeList;
             this.m_IsNullable = mt.m_IsNullable;
         }
         public List<MetaType> GetGenTemplateMetaTypeList()
         {
-            if( eType == EMetaTypeType.MetaClass || eType == EMetaTypeType.MetaGenClass )
+            if( eMetaTypeType == EMetaTypeType.MetaClass || eMetaTypeType == EMetaTypeType.MetaGenClass )
             {
                 return this.m_MetaClass.genMetaTypeTemplateList;
             }
@@ -278,12 +276,12 @@ namespace SimpleLanguage.Core
         public MetaType GetMetaTypeByIndex( int index = 0)
         {
             //Debug.Assert(false, "");
-            if (this.eType == EMetaTypeType.MetaClass
-                || this.eType == EMetaTypeType.MetaGenClass )
+            if (this.eMetaTypeType == EMetaTypeType.MetaClass
+                || this.eMetaTypeType == EMetaTypeType.MetaGenClass )
             {
                 return this.metaClass.GetGenMetaTypeTemplateByIndex(index);
             }
-            else if (this.eType == EMetaTypeType.TemplateClassWithTemplate )
+            else if (this.eMetaTypeType == EMetaTypeType.TemplateClassWithTemplate )
             {
                 return this.m_DefineTemplateMetaTypeList[index];
             }
@@ -355,14 +353,14 @@ namespace SimpleLanguage.Core
         }
         public bool IsIncludeFunctionTemplate( MetaMemberFunction mmf )
         {
-            if( eType == EMetaTypeType.Template )
+            if( eMetaTypeType == EMetaTypeType.Template )
             {
                 if (m_MetaTemplate != null && mmf.isTemplateFunction)
                 {
                     return mmf.metaMemberTemplateCollection.metaTemplateList.IndexOf(m_MetaTemplate) != -1;
                 }
             }
-            else if( eType == EMetaTypeType .TemplateClassWithTemplate )
+            else if( eMetaTypeType == EMetaTypeType .TemplateClassWithTemplate )
             {
                 for (int i = 0; i < m_DefineTemplateMetaTypeList.Count; i++)
                 {
@@ -379,7 +377,7 @@ namespace SimpleLanguage.Core
         //是否包含 模板函数模板  意思就是是否在 templateMetaTypeList 中，有模板函数定义的T
         public MetaMemberFunction FindTemplateFunctionTemplate( MetaMemberFunction mmf )
         {
-            if( eType == EMetaTypeType.TemplateClassWithTemplate )
+            if( eMetaTypeType == EMetaTypeType.TemplateClassWithTemplate )
             {
                 if (m_DefineTemplateMetaTypeList.Count == 0) return null;
                 for (int i = 0; i < m_DefineTemplateMetaTypeList.Count; i++)
@@ -427,7 +425,7 @@ namespace SimpleLanguage.Core
             if (mdtL == null || mdtR == null)
                 return false;
 
-            if (mdtL.eType != mdtR.eType)
+            if (mdtL.eMetaTypeType != mdtR.eMetaTypeType)
             {
                 if( mdtR.metaClass is MetaGenTemplateClass mgtc )
                 {
@@ -439,25 +437,25 @@ namespace SimpleLanguage.Core
                 return false;
             }
 
-            if (mdtL.eType == EMetaTypeType.Template)
+            if (mdtL.eMetaTypeType == EMetaTypeType.Template)
             {
                 if (mdtL.metaTemplate == mdtR.metaTemplate)
                 {
                     return true;
                 }
             }
-            else if (mdtL.eType == EMetaTypeType.MetaClass)
+            else if (mdtL.eMetaTypeType == EMetaTypeType.MetaClass)
             {
                 if (mdtR.metaClass.IsContainMetaClass( mdtL.metaClass ) )
                 {
                     return true;
                 }
             }
-            else if( mdtL.eType == EMetaTypeType.MetaGenClass )
+            else if( mdtL.eMetaTypeType == EMetaTypeType.MetaGenClass )
             {
                 if( mdtL.metaClass is MetaGenTemplateClass mgtc )
                 {
-                    if( mdtR.eType == EMetaTypeType.MetaGenClass )
+                    if( mdtR.eMetaTypeType == EMetaTypeType.MetaGenClass )
                     {
                         if( mgtc.metaTemplateClass == (mdtR.metaClass as MetaGenTemplateClass).metaTemplateClass )
                         {
@@ -502,19 +500,19 @@ namespace SimpleLanguage.Core
             if (mdtL == null || mdtR == null)
                 return false;
 
-            if( mdtL.eType != mdtR.eType )
+            if( mdtL.eMetaTypeType != mdtR.eMetaTypeType )
             {
                 return false;
             }
 
-            if( mdtL.eType == EMetaTypeType.Template )
+            if( mdtL.eMetaTypeType == EMetaTypeType.Template )
             {
                 //if( mdtL.metaTemplate ==  mdtR.metaTemplate )
                 {
                     return true;
                 }
             }
-            else if( mdtL.eType == EMetaTypeType.MetaClass )
+            else if( mdtL.eMetaTypeType == EMetaTypeType.MetaClass )
             {
                 if( mdtL.metaClass == mdtR.metaClass )
                 {
@@ -549,19 +547,19 @@ namespace SimpleLanguage.Core
         public void SetMetaClass(MetaClass mc)
         {
             m_MetaClass = mc;
-            m_EType = EMetaTypeType.MetaClass;
+            m_EMetaTypeType = EMetaTypeType.MetaClass;
         }
         public void SetGenMetaClass( MetaGenTemplateClass mgtc )
         {
             m_MetaClass = mgtc;
-            m_EType = EMetaTypeType.MetaGenClass;
+            m_EMetaTypeType = EMetaTypeType.MetaGenClass;
         }
         public void SetMetaTemplate(MetaTemplate mt)
         {
             m_MetaTemplate = mt;
             if (mt != null)
             {
-                m_EType = EMetaTypeType.Template;
+                m_EMetaTypeType = EMetaTypeType.Template;
             }
         }
         //public void SetGenMetaTemplate(MetaGenTemplate mt)
@@ -572,12 +570,12 @@ namespace SimpleLanguage.Core
         {
             //m_TemplateMetaClass = mc;
             m_MetaClass = mc;
-            m_EType = EMetaTypeType.TemplateClassWithTemplate;
+            m_EMetaTypeType = EMetaTypeType.TemplateClassWithTemplate;
         }
         //生成注册后的 模板类的实例类
         public MetaClass UpdateMetaGenTemplate( List<MetaGenTemplate> metaGenTemplateList)
         {
-            if( eType == EMetaTypeType.Template )
+            if( eMetaTypeType == EMetaTypeType.Template )
             {
                 if (m_MetaTemplate != null)
                 {
@@ -591,13 +589,13 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
-            else if( eType == EMetaTypeType.TemplateClassWithTemplate )
+            else if( eMetaTypeType == EMetaTypeType.TemplateClassWithTemplate )
             {
                 List<MetaClass> mcList = new List<MetaClass>();
                 for (int i = 0; i < m_DefineTemplateMetaTypeList.Count; i++)
                 {
                     var mgt = m_DefineTemplateMetaTypeList[i];
-                    if (mgt.eType == EMetaTypeType.MetaClass)
+                    if (mgt.eMetaTypeType == EMetaTypeType.MetaClass)
                     {
                         mcList.Add(mgt.metaClass);
                     }
@@ -647,14 +645,14 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            if( eType == EMetaTypeType.Template )
+            if( eMetaTypeType == EMetaTypeType.Template )
             {
                 if (m_MetaTemplate != null)
                 {
                     sb.Append(m_MetaTemplate.name);
                 }
             }
-            else if( eType == EMetaTypeType.TemplateClassWithTemplate )
+            else if( eMetaTypeType == EMetaTypeType.TemplateClassWithTemplate )
             {
                 if (m_MetaClass != null)
                 {
@@ -677,7 +675,7 @@ namespace SimpleLanguage.Core
                 if(m_MetaClass == CoreMetaClassManager.arrayMetaClass )
                     sb.Append("[" + this.m_ArrayLength + "]");
             }
-            else if (eType == EMetaTypeType.MetaClass)
+            else if (eMetaTypeType == EMetaTypeType.MetaClass)
             {
                 if (m_MetaClass != null)
                 {
@@ -702,7 +700,7 @@ namespace SimpleLanguage.Core
                     Debug.Assert(false);
                 }
             }
-            else if (eType == EMetaTypeType.MetaGenClass )
+            else if (eMetaTypeType == EMetaTypeType.MetaGenClass )
             {
                 if (m_MetaClass is MetaGenTemplateClass mgtc)
                 {

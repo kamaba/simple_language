@@ -42,7 +42,7 @@ namespace SimpleLanguage.VM.Runtime
     }
     public unsafe class RuntimeVM
     {
-        public SObject[] returnObjectArray { get => m_ReturnObjectArray; }
+        public RuntimeObject[] returnRuntimeObjectArray { get => m_ReturnRuntimeObjectArray; }
 
 
         public SValue[] m_ValueStack;
@@ -54,9 +54,9 @@ namespace SimpleLanguage.VM.Runtime
 
         private List<RuntimeType> m_InputTemplateRuntimeTypeList;
 
-        private SObject[] m_LocalVariableObjectArray;
-        private SObject[] m_ArgumentObjectArray;
-        private SObject[] m_ReturnObjectArray;
+        private RuntimeObject[] m_LocalVariableRuntimeObjectArray;
+        private RuntimeObject[] m_ArgumentRuntimeObjectArray;
+        private RuntimeObject[] m_ReturnRuntimeObjectArray;
 
         private RuntimeMethod m_Method;
         private Instruction[] m_InstructionList;
@@ -102,63 +102,66 @@ namespace SimpleLanguage.VM.Runtime
             //参数列表 argument variable table
             if (m_Method != null)
             {
-                m_ReturnObjectArray = new SObject[m_Method.methodReturnVariableList.Count];
+                m_ReturnRuntimeObjectArray = new RuntimeObject[m_Method.methodReturnVariableList.Count];
                 for (int i = 0; i < m_Method.methodReturnVariableList.Count; i++)
                 {
                     RuntimeDefType imt = m_Method.methodReturnVariableList[i].runtimeDefType;
-                    SObject sobj = imt != null
-                        ? CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true)
-                        : new SObject(EVMType.Object);
-                    m_ReturnObjectArray[i] = sobj;
+                    //SObject sobj = imt != null
+                    //    ? CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true)
+                    //    : new SObject(EVMType.Object);
+                    RuntimeType rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(imt);
+                    m_ReturnRuntimeObjectArray[i] = new RuntimeObject(rt, m_Method.methodReturnVariableList[i], null);
                 }
 
-                m_ArgumentObjectArray = new SObject[m_Method.methodArgumentList.Count];
+                m_ArgumentRuntimeObjectArray = new RuntimeObject[m_Method.methodArgumentList.Count];
                 for (int i = 0; i < m_Method.methodArgumentList.Count; i++)
                 {
                     RuntimeDefType imt = m_Method.methodArgumentList[i].runtimeDefType;
-                    // Enum-typed parameters use a generic any-object slot (not ClassObject for the enum type).
-                    SObject sobj = null;
-                    if (IsEnumDeclaredParameterType(imt))
-                    {
-                        sobj = new SObject(EVMType.Object);
-                    }
-                    else
-                    {
+                    //// Enum-typed parameters use a generic any-object slot (not ClassObject for the enum type).
+                    //SObject sobj = null;
+                    //if (IsEnumDeclaredParameterType(imt))
+                    //{
+                    //    sobj = new SObject(EVMType.Object);
+                    //}
+                    //else
+                    //{
 
-                        sobj = imt != null
-                            ? CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true)
-                            : new SObject(EVMType.Object);
-                    }
-                    m_ArgumentObjectArray[i] = sobj;
+                    //    sobj = imt != null
+                    //        ? CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true)
+                    //        : new SObject(EVMType.Object);
+                    //}
+                    RuntimeType rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(imt);
+                    m_ArgumentRuntimeObjectArray[i] = new RuntimeObject(rt, m_Method.methodArgumentList[i], null);
                 }
-                for (int i = 0; i < m_ArgumentObjectArray.Length; i++)
+                for (int i = 0; i < m_ArgumentRuntimeObjectArray.Length; i++)
                 {
-                    Log.AddVM(EError.None, "Argu_" + i.ToString() + "_Value: [" + m_ArgumentObjectArray[i]?.ToString() + "]");
+                    Log.AddVM(EError.None, "Argu_" + i.ToString() + "_Value: [" + m_ArgumentRuntimeObjectArray[i]?.ToString() + "]");
                 }
 
                 //局部变量列表 local variable table
-                m_LocalVariableObjectArray = new SObject[m_Method.methodLocalVariableList.Count];
+                m_LocalVariableRuntimeObjectArray = new RuntimeObject[m_Method.methodLocalVariableList.Count];
                 for (int i = 0; i < m_Method.methodLocalVariableList.Count; i++)
                 {
                     var mev = m_Method.methodLocalVariableList[i];
                     RuntimeDefType imt = mev.runtimeDefType;
                     //这块，需要，如果是模板类，先检查是否有输入的模板类型列表，如果有，直接用输入的模板类型列表创建对象，如果没有，再用imt创建对象
-                    SObject sobj = imt != null
-                        ? CreateObjectByIRMetaType(imt, m_Method.ownerMetaClass, true)
-                        : new SObject(EVMType.Object);
-                    m_LocalVariableObjectArray[i] = sobj;
+                    //SObject sobj = imt != null
+                    //    ? CreateObjectByIRMetaType(imt, m_Method.ownerMetaClass, true)
+                    //    : new SObject(EVMType.Object);
+                    RuntimeType rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(imt);
+                    m_LocalVariableRuntimeObjectArray[i] = new RuntimeObject(rt, m_Method.methodLocalVariableList[i], null); ;
                 }
-                for (int i = 0; i < m_LocalVariableObjectArray.Length; i++)
+                for (int i = 0; i < m_LocalVariableRuntimeObjectArray.Length; i++)
                 {
-                    Log.AddVM(EError.None, "Variable_" + i.ToString() + m_LocalVariableObjectArray[i].ToString());
+                    Log.AddVM(EError.None, "Variable_" + i.ToString() + m_LocalVariableRuntimeObjectArray[i].ToString());
                 }
             }
 
             else
             {
-                m_ReturnObjectArray = new SObject[0];
-                m_ArgumentObjectArray = new SObject[0];
-                m_LocalVariableObjectArray = new SObject[0];
+                m_ReturnRuntimeObjectArray = new RuntimeObject[0];
+                m_ArgumentRuntimeObjectArray = new RuntimeObject[0];
+                m_LocalVariableRuntimeObjectArray = new RuntimeObject[0];
             }
             var count = m_InstructionList.Length;
             if (count < 48)
@@ -290,7 +293,7 @@ namespace SimpleLanguage.VM.Runtime
             var rtbd = GetRuntimeTypeByDefType( irmt, curIrMc, m_InputTemplateRuntimeTypeList, isAdd );
             return ObjectManager.CreateObjectByRuntimeType(rtbd, false);
         }
-        public void AddReturnObjectArray(SObject[] sobjs)
+        public void AddReturnObjectArray(RuntimeObject[] sobjs)
         {
             //m_ReturnObjectArray = sobjs;
 
@@ -301,19 +304,19 @@ namespace SimpleLanguage.VM.Runtime
                     //GetObjectByValue(4, i, sobjs, ref m_ValueStack[m_ValueIndex++] );
                     var obj = sobjs[i];
                     Debug.Assert(obj != null);
-                    if (obj.isNull)
+                    if (obj.eType == EVMType.Null )
                     {
                         m_ValueStack[m_ValueIndex++].SetNull();
                         return;
                     }
-                    SetSValue(obj, obj.eType, ref m_ValueStack[m_ValueIndex]);
+                    SetSValue(obj.sobject, obj.eType, ref m_ValueStack[m_ValueIndex]);
                     m_ValueIndex++;
                 }
             }
         }
         public void GetArgumentValue(int index, ref SValue svalue)
         {
-            if (index > m_ArgumentObjectArray.Length)
+            if (index > m_ArgumentRuntimeObjectArray.Length)
             {
                 Log.AddVM(EError.None, $"SVM Error FunctionName:{this.id} 执行的参数超出范围!!");
                 return;
@@ -322,7 +325,7 @@ namespace SimpleLanguage.VM.Runtime
         }
         public void SetArgumentValue(int index, SValue svalue)
         {
-            if (index > m_ArgumentObjectArray.Length)
+            if (index > m_ArgumentRuntimeObjectArray.Length)
             {
                 Log.AddVM(EError.None, "执行的参数超出范围!!");
                 return;
@@ -331,7 +334,7 @@ namespace SimpleLanguage.VM.Runtime
         }
         public void SetLocalVariableSValue(int index, SValue svalue)
         {
-            if (index > m_LocalVariableObjectArray.Length)
+            if (index > m_LocalVariableRuntimeObjectArray.Length)
             {
                 Log.AddVM(EError.None, "执行的栈超出范围!!");
                 return;
@@ -341,7 +344,7 @@ namespace SimpleLanguage.VM.Runtime
         public void GetLocalVariableSValue(int index, ref SValue svalue)
         {
 
-            if (index > m_LocalVariableObjectArray.Length)
+            if (index > m_LocalVariableRuntimeObjectArray.Length)
             {
                 Log.AddVM(EError.None, "执行的栈超出范围!!");
                 return;
@@ -350,7 +353,7 @@ namespace SimpleLanguage.VM.Runtime
         }
         public void SetReturnVariableSValue(int index, SValue svalue)
         {
-            if (index > m_ReturnObjectArray.Length)
+            if (index > m_ReturnRuntimeObjectArray.Length)
             {
                 Log.AddVM(EError.None, "执行的栈超出范围!!");
                 return;
@@ -399,7 +402,7 @@ namespace SimpleLanguage.VM.Runtime
             level++;
 
             var topClrRuntime = CLRVM.topCLRRuntime;
-            for (int i = 0; i < m_ArgumentObjectArray.Length; i++)
+            for (int i = 0; i < m_ArgumentRuntimeObjectArray.Length; i++)
             {
                 SValue sval;
                 if (disStackCount)
@@ -411,7 +414,7 @@ namespace SimpleLanguage.VM.Runtime
                 {
                     sval = topClrRuntime.GetCurrentIndexValue(topClrRuntime.m_ValueIndex - 1 - i);
                 }
-                SetArgumentValue(m_ArgumentObjectArray.Length - i - 1, sval);
+                SetArgumentValue(m_ArgumentRuntimeObjectArray.Length - i - 1, sval);
             }
 
             m_ExecuteIndex = 0;
@@ -2101,31 +2104,32 @@ namespace SimpleLanguage.VM.Runtime
         }
         public void SetObjectByValue(int type, int index, ref SValue svalue)
         {
-            SObject obj = null;
+            RuntimeObject robj = null;
             if (type == 0)
             {
-                obj = m_ArgumentObjectArray[index];
+                robj = m_ArgumentRuntimeObjectArray[index];
             }
             else if (type == 1)
             {
-                obj = m_LocalVariableObjectArray[index];
+                robj = m_LocalVariableRuntimeObjectArray[index];
             }
             else if (type == 2)
             {
-                obj = m_ReturnObjectArray[index];
+                robj = m_ReturnRuntimeObjectArray[index];
             }
-            Debug.Assert(obj != null);
+            Debug.Assert(robj != null);
             if (svalue.isNull)
             {
-                obj.SetNull();
+                robj.SetNull();
                 return;
             }
-            bool anyObj = obj.eType == EVMType.Object;
+            var obj = robj.sobject;
+            bool anyObj = robj.eType == EVMType.Object;
             switch (svalue.eType)
             {
                 case EVMType.Null:
                     {
-                        obj.SetNull();
+                        robj.SetNull();
                     }
                     break;
                 //case EVMType.RawBoolean:
@@ -2600,7 +2604,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Debug.Assert(false);
+                            robj.SetSObject(svalue.sobject);
                         }
                     }
                     break;
@@ -2707,26 +2711,26 @@ namespace SimpleLanguage.VM.Runtime
 
         public void GetObjectByValue(int type, int index, ref SValue svalue)
         {
-            SObject obj = null;
+            RuntimeObject robj = null;
             if (type == 0)
             {
-                obj = m_ArgumentObjectArray[index];
+                robj = m_ArgumentRuntimeObjectArray[index];
             }
             else if (type == 1)
             {
-                obj = m_LocalVariableObjectArray[index];
+                robj = m_LocalVariableRuntimeObjectArray[index];
             }
             else if (type == 2)
             {
-                obj = m_ReturnObjectArray[index];
+                robj = m_ReturnRuntimeObjectArray[index];
             }
-            Debug.Assert(obj != null);
-            if (obj.isNull)
+            Debug.Assert(robj != null);
+            if (robj.isNull)
             {
                 svalue.SetNull();
                 return;
             }
-            SetSValue(obj, obj.eType, ref svalue);
+            SetSValue(robj.sobject, robj.eType, ref svalue);
         }
 
         public void SetSValue(SObject obj, EVMType etype, ref SValue svalue)
@@ -2743,7 +2747,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (anyObj)
                         {
-                            if (obj.eAnyType == EVMType.Boolean)
+                            if (obj.eType == EVMType.Boolean)
                             {
                                 svalue.SetBoolValue((bool)obj.value);
                             }
@@ -2773,7 +2777,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (anyObj)
                         {
-                            if (obj.eAnyType == EVMType.Byte)
+                            if (obj.eType == EVMType.Byte)
                             {
                                 svalue.SetInt8Value((byte)obj.value);
                             }
@@ -2804,7 +2808,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (anyObj)
                         {
-                            if (obj.eAnyType == EVMType.SByte)
+                            if (obj.eType == EVMType.SByte)
                             {
                                 svalue.SetSInt8Value((sbyte)obj.value);
                             }
@@ -2834,7 +2838,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (anyObj)
                         {
-                            if (obj.eAnyType == EVMType.Int16)
+                            if (obj.eType == EVMType.Int16)
                             {
                                 svalue.SetInt16Value((short)obj.value);
                             }
@@ -2864,7 +2868,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (anyObj)
                         {
-                            if (obj.eAnyType == EVMType.UInt16)
+                            if (obj.eType == EVMType.UInt16)
                             {
                                 svalue.SetUInt16Value((ushort)obj.value);
                             }
@@ -2894,7 +2898,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (anyObj)
                         {
-                            if (obj.eAnyType == EVMType.Int32)
+                            if (obj.eType == EVMType.Int32)
                             {
                                 svalue.SetInt32Value((int)obj.value);
                             }
@@ -2923,7 +2927,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (anyObj)
                         {
-                            if (obj.eAnyType == EVMType.UInt32)
+                            if (obj.eType == EVMType.UInt32)
                             {
                                 svalue.SetUInt32Value((uint)obj.value);
                             }
@@ -2952,7 +2956,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (anyObj)
                         {
-                            if (obj.eAnyType == EVMType.Int64)
+                            if (obj.eType == EVMType.Int64)
                             {
                                 svalue.SetInt64Value((long)obj.value);
                             }
@@ -2981,7 +2985,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (anyObj)
                         {
-                            if (obj.eAnyType == EVMType.UInt64)
+                            if (obj.eType == EVMType.UInt64)
                             {
                                 svalue.SetUInt64Value((ulong)obj.value);
                             }
@@ -3011,7 +3015,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (anyObj)
                         {
-                            if (obj.eAnyType == EVMType.Float32)
+                            if (obj.eType == EVMType.Float32)
                             {
                                 svalue.SetFloatValue((float)obj.value);
                             }
@@ -3041,7 +3045,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (anyObj)
                         {
-                            if (obj.eAnyType == EVMType.Float64)
+                            if (obj.eType == EVMType.Float64)
                             {
                                 svalue.SetDoubleValue((double)obj.value);
                             }
@@ -3071,7 +3075,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (anyObj)
                         {
-                            if (obj.eAnyType == EVMType.String)
+                            if (obj.eType == EVMType.String)
                             {
                                 svalue.SetStringValue((string)obj.value);
                             }
@@ -3101,7 +3105,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (obj is ClassObject co)
                         {
-                            svalue.SetSObject(co.value);
+                            svalue.SetSObject(co);
                         }
                         else
                         {
@@ -3111,7 +3115,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EVMType.Object:
                     {
-                        switch (obj.eAnyType)
+                        switch (obj.eType)
                         {
                             case EVMType.Boolean:
                                 {
@@ -3249,7 +3253,7 @@ namespace SimpleLanguage.VM.Runtime
                         //{
                         if (obj is ClassObject co)
                         {
-                            svalue.SetSObject(co.value as SObject);
+                            svalue.SetSObject(co as SObject);
                         }
                         else
                         {

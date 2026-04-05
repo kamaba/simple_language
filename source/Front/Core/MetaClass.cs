@@ -700,8 +700,8 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < templateMetaTypeList.Count; i++)
             {
                 var mtc = templateMetaTypeList[i];
-                if (mtc.eType == EMetaTypeType.MetaClass
-                    || mtc.eType == EMetaTypeType.MetaGenClass )
+                if (mtc.eMetaTypeType == EMetaTypeType.MetaClass
+                    || mtc.eMetaTypeType == EMetaTypeType.MetaGenClass )
                 {
                     mcList.Add(mtc.metaClass);
                 }

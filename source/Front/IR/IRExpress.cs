@@ -358,7 +358,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                if (mnoen.metaType.eType == EMetaTypeType.MetaGenClass)
+                if (mnoen.metaType.eMetaTypeType == EMetaTypeType.MetaGenClass)
                 {
                     if (mnoen.ownerMetaClass is MetaGenTemplateClass mgtc)
                     {
@@ -370,7 +370,7 @@ namespace SimpleLanguage.IR
                     AddIRRangeData(irNew.IRDataList);
 
                 }
-                else if (mnoen.metaType.eType == EMetaTypeType.MetaClass)
+                else if (mnoen.metaType.eMetaTypeType == EMetaTypeType.MetaClass)
                 {
                     owirmc = IRManager.instance.GetIRMetaClassById(mnoen.ownerMetaClass.GetHashCode());
                     IRMetaClass newObjIRMC = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());

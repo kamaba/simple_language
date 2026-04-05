@@ -12,10 +12,7 @@ namespace SimpleLanguage.VM
 {
     public class SObject
     {
-        public bool isNull => m_IsNull;
         public EVMType eType => m_Type;
-        public EVMType eAnyType => m_AnyType;
-
         public virtual object value 
         {
             get
@@ -30,13 +27,10 @@ namespace SimpleLanguage.VM
 
 
         protected EVMType m_Type = EVMType.Class;
-        protected EVMType m_AnyType = EVMType.Class;
-
-        protected bool m_IsNull = false;
         protected RuntimeType m_RuntimeType = null;
         protected int m_Length = 0;
         protected object m_Value = null;
-        public int id { get; set; } = 0;
+        protected int id = 0;
 
         static int idCount = 0;
         protected SObject()
@@ -50,19 +44,15 @@ namespace SimpleLanguage.VM
         }
         public void SetValue(System.Object val)
         {
-            m_IsNull = false;
+            //m_IsNull = false;
             m_Value = val;
         }
         public void SetValueByType(EVMType vmType, System.Object val)
         {
-            m_AnyType = vmType;
-            m_IsNull = false;
+            m_Type = vmType;
+            //m_IsNull = false;
             m_Value = val;
             refCount++;
-        }
-        public virtual void SetNull()
-        {
-            m_IsNull = true;
         }
         public virtual string ToFormatString()
         {

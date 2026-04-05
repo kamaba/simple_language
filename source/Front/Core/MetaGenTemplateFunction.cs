@@ -104,7 +104,7 @@ namespace SimpleLanguage.Core
         {
             if ( m_ReturnMetaVariable?.defineMetaType != null)
             {
-                if (!(m_ReturnMetaVariable.defineMetaType.eType == EMetaTypeType.MetaClass
+                if (!(m_ReturnMetaVariable.defineMetaType.eMetaTypeType == EMetaTypeType.MetaClass
                     && m_ReturnMetaVariable.defineMetaType.metaClass.isTemplateClass == false))
                 {
                     TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(m_ReturnMetaVariable.defineMetaType, m_OwnerMetaClass as MetaGenTemplateClass, this );
@@ -113,7 +113,7 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
             {
                 var mdp = m_MetaMemberParamCollection.metaDefineParamList[i];
-                if (!(mdp.metaVariable.defineMetaType.eType == EMetaTypeType.MetaClass
+                if (!(mdp.metaVariable.defineMetaType.eMetaTypeType == EMetaTypeType.MetaClass
                     && mdp.metaVariable.defineMetaType.metaClass.isTemplateClass == false))
                 {
                     TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mdp.metaVariable.defineMetaType, m_OwnerMetaClass as MetaGenTemplateClass, this );

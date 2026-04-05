@@ -151,13 +151,13 @@ namespace SimpleLanguage.Core
             var ecmt = this.m_MetaTemplateClass.extendClassMetaType;
             if (ecmt != null )
             {
-                if( ecmt.eType == EMetaTypeType.TemplateClassWithTemplate )
+                if( ecmt.eMetaTypeType == EMetaTypeType.TemplateClassWithTemplate )
                 {
                     m_ExtendClassMetaType = this.m_MetaTemplateClass.extendClassMetaType;
                     TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(m_ExtendClassMetaType, this, null);
                     m_ExtendClass = m_ExtendClassMetaType.metaClass;
                 }
-                else if( ecmt.eType == EMetaTypeType.MetaClass )
+                else if( ecmt.eMetaTypeType == EMetaTypeType.MetaClass )
                 {
                     m_ExtendClassMetaType = this.m_MetaTemplateClass.extendClassMetaType;
                     m_ExtendClass = m_ExtendClassMetaType.metaClass;
@@ -377,7 +377,7 @@ namespace SimpleLanguage.Core
             {
                 if (mgmf.returnMetaVariable?.defineMetaType != null)
                 {
-                    if (!(mgmf.returnMetaVariable.defineMetaType.eType == EMetaTypeType.MetaClass
+                    if (!(mgmf.returnMetaVariable.defineMetaType.eMetaTypeType == EMetaTypeType.MetaClass
                         && mgmf.returnMetaVariable.defineMetaType.metaClass.isTemplateClass == false))
                     {
                         TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mgmf.returnMetaVariable.realMetaType, this, null);
@@ -386,7 +386,7 @@ namespace SimpleLanguage.Core
                 for (int i = 0; i < mgmf.metaMemberParamCollection.metaDefineParamList.Count; i++)
                 {
                     var mdp = mgmf.metaMemberParamCollection.metaDefineParamList[i];
-                    if (!(mdp.metaVariable.defineMetaType.eType == EMetaTypeType.MetaClass
+                    if (!(mdp.metaVariable.defineMetaType.eMetaTypeType == EMetaTypeType.MetaClass
                         && mdp.metaVariable.defineMetaType.metaClass.isTemplateClass == false))
                     {
                         var realMetaType = new MetaType(mdp.metaVariable.defineMetaType);

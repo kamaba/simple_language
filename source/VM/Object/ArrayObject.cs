@@ -31,9 +31,21 @@ namespace SimpleLanguage.VM
             typeId = (short)runtimeClass.id;
             m_IRTemplateList = rt.runtimeTemplateList;
 
-            m_MetaVariableList = runtimeClass.nonStaticIRMetaVariableList;
-            m_MemberObjectArray = new SObject[m_MetaVariableList.Count];
-            m_MemberRuntimeTypeArray = new RuntimeType[m_MetaVariableList.Count];
+            var metaVariableList = m_RuntimeType.runtimeClass.nonStaticIRMetaVariableList;
+            m_MemberRuntimeObjectArray = new RuntimeObject[metaVariableList.Count];
+            for (int i = 0; i < m_MemberRuntimeObjectArray.Length; i++)
+            {
+                var rt2 = RuntimeVM.GetRuntimeTypeByDefType(metaVariableList[i].runtimeDefType, m_RuntimeType.runtimeClass, m_IRTemplateList, true);
+
+                SObject sobj = null;
+                if( RuntimeTypeManager.IsCoreRuntimeType(rt2) )
+                {
+                    sobj = ObjectManager.CreateObjectByRuntimeType(rt2, false);
+                }
+
+                m_MemberRuntimeObjectArray[i] = new RuntimeObject(rt2, metaVariableList[i], sobj );
+            }
+
             CreateDefine();
         }
         public override void CreateObject()
@@ -42,22 +54,10 @@ namespace SimpleLanguage.VM
 
             //m_MemberRuntimeTypeArray = m_RuntimeType.GetClassRuntimeType(m_RuntimeType, true);
 
-            (this.m_MemberObjectArray[0] as Int32Object).SetValue(m_Length);
+            (this.m_MemberRuntimeObjectArray[0].sobject as Int32Object).SetValue(m_Length);
 
             CreateArray();
         }
-        //public override void SetSValue(ClassObject val)
-        //{
-        //    base.SetValue(val);
-
-        //    var ao  = m_Object as ArrayObject;
-
-        //    Debug.Assert( ao != null );
-
-        //    eArrayType = ao.eArrayType;
-        //    m_Length = ao.m_Length;
-        //    m_Array = ao.m_Array;
-        //}
         void CreateArray()
         {
             int length = m_Length;
@@ -243,7 +243,7 @@ namespace SimpleLanguage.VM
                         for( int i = 0; i < length; i++ )
                         {
                             SObject sobj = new SObject(EVMType.Object);
-                            sobj.SetNull();
+                            //sobj.SetNull();
                             m_Array.SetValue(sobj, i);
                         }
                     }
@@ -536,7 +536,8 @@ namespace SimpleLanguage.VM
             {
                 if( svalue.isNull )
                 {
-                    anyobj.SetNull();
+                    //anyobj.SetNull();
+                    m_Array.SetValue( null, index );
                     return;
                 }
                 //var valobj = svalue.GetSObject();
@@ -549,7 +550,7 @@ namespace SimpleLanguage.VM
                     {
                         if (anyobj != null)
                         {
-                            anyobj.SetNull();
+                            m_Array.SetValue(null, index);
                             return;
                         }
                         m_Array.SetValue(null, index);

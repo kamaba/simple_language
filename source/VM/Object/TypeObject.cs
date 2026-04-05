@@ -32,7 +32,7 @@ namespace SimpleLanguage.VM
         {
             base.CreateObject();
 
-            eType = m_MemberObjectArray[0] as Int8Object;
+            eType =  m_MemberRuntimeObjectArray[0].sobject as Int8Object;
 
             /*
             IRMetaClass irmc = IRManager.instance.GetIRMetaClassByName("MetaClass");

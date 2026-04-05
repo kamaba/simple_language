@@ -21,17 +21,18 @@ namespace SimpleLanguage.VM
         private static readonly Dictionary<string, bool> s_StaticExprAppliedByKey = new Dictionary<string, bool>();
         private static readonly HashSet<string> s_StaticExprApplyingByKey = new HashSet<string>();
 
+        public int id => m_Id;
         public RuntimeClass runtimeClass => m_RuntimeClass;
         public List<RuntimeType> runtimeTemplateList => m_RuntimeTemplateList;
 
         private RuntimeClass m_RuntimeClass = null;
         private List<RuntimeType> m_RuntimeTemplateList = new List<RuntimeType>();
-        private SObject[] m_StaticMemberObjectArray = null;
-        protected RuntimeType[] m_StaticMemberRuntimeTypeArray = null;
+        private RuntimeObject[] m_StaticMemberRuntimeObjectArray = null;
         //private Dictionary<int, int> m_StaticFieldIndexToSlot = new Dictionary<int, int>();
         //private bool m_IsStaticMemInitializing = false;
         //private bool m_IsStaticExprBatchApplied = false;
         private bool m_IsStaticExprBatchApplying = false;
+        private int m_Id = 0;
         public EVMType eType { get; protected set; } = EVMType.Void;
 
         public RuntimeType( RuntimeClass rc, List<RuntimeType> rtList)
@@ -116,7 +117,7 @@ namespace SimpleLanguage.VM
         }
         public void GetStaticMemberVariableSValue(int index, ref SValue svalue)
         {
-            if (m_StaticMemberObjectArray == null)
+            if (m_StaticMemberRuntimeObjectArray == null)
             {
                 svalue.SetNull();
                 Debug.Assert(false, $"Static member object list is not initialized for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
@@ -129,36 +130,33 @@ namespace SimpleLanguage.VM
             //    return;
             //}
             //EnsureStaticMemberObjectAt(index);
-            var sobj = m_StaticMemberObjectArray[index];
-            if (sobj == null || sobj.isNull)
+            var sobj = m_StaticMemberRuntimeObjectArray[index];
+            if (sobj == null || sobj.isNull )
             {
                 svalue.SetNull();
                 return;
             }
-            svalue.SetSObject(sobj);
+            svalue.SetSObject(sobj.sobject);
         }
         public void SetStaticMemberVariableSValue(int index, SValue svalue)
         {
-            if (m_StaticMemberObjectArray == null) return;
+            if (m_StaticMemberRuntimeObjectArray == null) return;
             //var slotIndex = ResolveStaticSlotIndex(index);
             //if (slotIndex < 0 || slotIndex >= m_StaticMemObjectList.Length) return;
-            var target = m_StaticMemberObjectArray[index];
-            if (target == null)
-            {
-                m_StaticMemberObjectArray[index] = svalue.GetSObject();
-                return;
-            }
+            var target = m_StaticMemberRuntimeObjectArray[index];
+            //if (target == null)
+            //{
+            //    m_StaticMemberRuntimeObjectArray[index].SetSObject( svalue.GetSObject() );
+            //    return;
+            //}
             if (svalue.isNull)
             {
                 target.SetNull();
                 return;
             }
             // attempt to set by type-aware method on SObject
-            target.SetValueByType(svalue.eType == EVMType.Class ? EVMType.Class : svalue.eType, svalue.eType == EVMType.Class ? (object)svalue.sobject : svalue.GetValueObject());
-        }
-        public List<Instruction> CreateStaticMetaMetaVariableIRList()
-        {
-            return new List<Instruction>();
+            //target.SetValueByType(svalue.eType == EVMType.Class ? EVMType.Class : svalue.eType, svalue.eType == EVMType.Class ? (object)svalue.sobject : svalue.GetValueObject());
+            m_StaticMemberRuntimeObjectArray[index].SetSObjectBySValue(ref svalue);
         }
         public void EnsureStaticMemberObjectsInitialized()
         {
@@ -168,11 +166,9 @@ namespace SimpleLanguage.VM
             //m_IsStaticMemInitializing = true;
             try
             {
-                if (m_StaticMemberRuntimeTypeArray == null && m_RuntimeClass.staticIRMetaVariableList.Count > 0)
+                if (m_StaticMemberRuntimeObjectArray == null && m_RuntimeClass.staticIRMetaVariableList.Count > 0)
                 {
-                    m_StaticMemberRuntimeTypeArray = new RuntimeType[m_RuntimeClass.staticIRMetaVariableList.Count];
-                    m_StaticMemberObjectArray = new SObject[m_StaticMemberRuntimeTypeArray.Length];
-                    //m_StaticFieldIndexToSlot.Clear();
+                    m_StaticMemberRuntimeObjectArray = new RuntimeObject[m_RuntimeClass.staticIRMetaVariableList.Count];
                     for (int i = 0; i < m_RuntimeClass.staticIRMetaVariableList.Count; i++)
                     {
                         var field = m_RuntimeClass.staticIRMetaVariableList[i];
@@ -180,7 +176,7 @@ namespace SimpleLanguage.VM
                         var rt = GetClassRuntimeType(field.runtimeDefType, true);
                         if (rt == null) return;
 
-                        m_StaticMemberRuntimeTypeArray[i] = rt;
+                        m_StaticMemberRuntimeObjectArray[i] = new RuntimeObject(rt, field, null);
 
                         //if (!m_StaticFieldIndexToSlot.ContainsKey(field.index))
                         //{
@@ -251,7 +247,7 @@ namespace SimpleLanguage.VM
                 try
                 {
                     var vm = CLRVM.CreateExeSplite(new List<RuntimeType>(), initIR);
-                    vm.id = $"__static_field_init__{m_RuntimeClass.id}";
+                    vm.id = $"__static_field_init__{m_RuntimeClass.name}";
                     vm.isPersistent = true;
                     vm.Run(true);
                     CLRVM.PopCLRRuntime();
@@ -345,6 +341,7 @@ namespace SimpleLanguage.VM
         public static RuntimeType memberRuntimeType { get => m_MemberRuntimeType; }
 
         private static List<RuntimeType> s_RuntimeTypeList = new List<RuntimeType>();
+        private static List<RuntimeType> s_CoreRuntimeTypeList = new List<RuntimeType>();
         private static RuntimeType m_ObjectRuntimeType = null;
         private static RuntimeType m_TypeRuntimeType = null;
         private static RuntimeType m_VoidRuntimeType = null;
@@ -384,6 +381,14 @@ namespace SimpleLanguage.VM
             EnsureByClassName("Core.Float32", ref m_Float32RuntimeType, true);
             EnsureByClassName("Core.Float64", ref m_Float64RuntimeType, true);
             //EnsureRuntimeTypeRegisteredByClassName("Core.Array");
+        }
+        public static bool IsCoreRuntimeType(RuntimeType rt )
+        {
+            if(s_CoreRuntimeTypeList.Find( a=> a == rt  ) != null)
+            {
+                return true;
+            }
+            return false;
         }
         private static void EnsureByClassName(string runtimeClassName, ref RuntimeType targetField, bool isCore = false )
         {
@@ -456,13 +461,14 @@ namespace SimpleLanguage.VM
                 SObject obj = ObjectManager.CreateObjectByRuntimeType(rt, false);
                 if (obj == null) return null;
                 // ObjectClass moved under SimpleLanguage.Lib; use that implementation
-                var typeObj = SimpleLanguage.Lib.ObjectClass.GetObjectType(obj);
-                return typeObj as ClassObject;
+                //var typeObj = SimpleLanguage.Lib.ObjectClass.GetObjectType(obj);
+                //return typeObj as ClassObject;
             }
             catch
             {
                 return null;
             }
+            return null;
         }
 
         public static RuntimeType GetRuntimeTypeByRuntimeClass(RuntimeClass rmc)
@@ -648,6 +654,7 @@ namespace SimpleLanguage.VM
                 m_StringRuntimeType.SetEVMType(EVMType.String);
             }
             s_RuntimeTypeList.Add(rt);
+            s_CoreRuntimeTypeList.Add(rt);
             rt.EnsureStaticMemberObjectsInitialized();
 
             return rt;

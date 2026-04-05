@@ -43,11 +43,11 @@ namespace SimpleLanguage.IR
             irmt.m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id);
 
             var gtmc = type.GetTemplateMetaClass();
-            if (type.eType == EMetaTypeType.MetaClass)
+            if (type.eMetaTypeType == EMetaTypeType.MetaClass)
             {
                 irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(gtmc.GetHashCode());
             }
-            else if (type.eType == EMetaTypeType.Template)
+            else if (type.eMetaTypeType == EMetaTypeType.Template)
             {
                 irmt.m_TemplateIndex = type.metaTemplate.index;
                 var gtmc2 = type.GetTemplateMetaClass();
@@ -83,11 +83,11 @@ namespace SimpleLanguage.IR
         {
             IRMetaType irmt = new();
             irmt.m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id );
-            if (type.eType == EMetaTypeType.MetaClass)
+            if (type.eMetaTypeType == EMetaTypeType.MetaClass)
             {
                 irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
             }
-            else if (type.eType == EMetaTypeType.Template)
+            else if (type.eMetaTypeType == EMetaTypeType.Template)
             {
                 irmt.m_TemplateIndex = type.metaTemplate.index;
                 irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
@@ -113,12 +113,12 @@ namespace SimpleLanguage.IR
         public IRMetaType( MetaType type )
         {
             //this.m_IsArray = type.isArray;
-            if (type.eType == EMetaTypeType.MetaClass)
+            if (type.eMetaTypeType == EMetaTypeType.MetaClass)
             {
                 m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
                 m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
             }
-            else if (type.eType == EMetaTypeType.Template)
+            else if (type.eMetaTypeType == EMetaTypeType.Template)
             {
                 m_TemplateIndex = type.metaTemplate.index;
                 m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(type.metaTemplate.ownerClass.GetHashCode());

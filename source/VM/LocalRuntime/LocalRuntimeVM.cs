@@ -26,7 +26,7 @@ namespace SimpleLanguage.VM.Runtime
         public void RegisterBuiltinsAndBridge()
         {
             // register local implementations
-            RegisterBuiltins();
+            //RegisterBuiltins();
             // also register into front-side ExternalFunctionRegistry so front can discover them without referencing VM
             try
             {
@@ -89,14 +89,14 @@ namespace SimpleLanguage.VM.Runtime
             }
         }
 
-        private void RegisterBuiltins()
-        {
-            // Numeric helpers (use library implementations)
-            Register("Num.ToInt32", new Func<object, int>(SimpleLanguage.Lib.NumClass.NumToInt32));
-            Register("Num.ToInt64", new Func<object, long>(SimpleLanguage.Lib.NumClass.NumToInt64));
-            Register("Num.ToFloat64", new Func<object, double>(SimpleLanguage.Lib.NumClass.NumToFloat64));
-            Register("Num.ToFloat32", new Func<object, float>(SimpleLanguage.Lib.NumClass.NumToFloat32));
-            Register("Num.ToBool", new Func<object, bool>(SimpleLanguage.Lib.NumClass.NumToBool));
-        }
+        //private void RegisterBuiltins()
+        //{
+        //    // Numeric helpers (use library implementations)
+        //    Register("Num.ToInt32", new Func<object, int>(SimpleLanguage.Lib.NumClass.NumToInt32));
+        //    Register("Num.ToInt64", new Func<object, long>(SimpleLanguage.Lib.NumClass.NumToInt64));
+        //    Register("Num.ToFloat64", new Func<object, double>(SimpleLanguage.Lib.NumClass.NumToFloat64));
+        //    Register("Num.ToFloat32", new Func<object, float>(SimpleLanguage.Lib.NumClass.NumToFloat32));
+        //    Register("Num.ToBool", new Func<object, bool>(SimpleLanguage.Lib.NumClass.NumToBool));
+        //}
     }
 }

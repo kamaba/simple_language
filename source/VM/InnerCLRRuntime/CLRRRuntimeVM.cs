@@ -238,7 +238,7 @@ namespace SimpleLanguage.VM.Runtime
             clrRuntime.Run(isDisCountStackCount);
             PopCLRRuntime();
             var topt2 = m_ClrRuntimeStack.Peek();
-            topt2.AddReturnObjectArray(clrRuntime.returnObjectArray);
+            topt2.AddReturnObjectArray(clrRuntime.returnRuntimeObjectArray);
             //if (!clrRuntime.isPersistent)
             {
             }

@@ -459,8 +459,8 @@ namespace SimpleLanguage.Core
 
             foreach (var v in list)
             {
-                if (v.eType == EMetaTypeType.MetaClass
-                    || v.eType == EMetaTypeType.MetaGenClass )
+                if (v.eMetaTypeType == EMetaTypeType.MetaClass
+                    || v.eMetaTypeType == EMetaTypeType.MetaGenClass )
                 {
                     mcList.Add(v.metaClass);
                 }
@@ -650,7 +650,7 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < mt.templateMetaTypeList.Count; i++)
             {
                 var mtc = mt.templateMetaTypeList[i];
-                if (mtc.eType == EMetaTypeType.MetaClass)
+                if (mtc.eMetaTypeType == EMetaTypeType.MetaClass)
                 {
                     mcList.Add(mtc.metaClass);
                 }
@@ -684,7 +684,7 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < mt.defineTemplateMetaTypeList.Count; i++)
             {
                 var mtc = mt.defineTemplateMetaTypeList[i];
-                if (mtc.eType == EMetaTypeType.MetaClass)
+                if (mtc.eMetaTypeType == EMetaTypeType.MetaClass)
                 {
                     mcList.Add(mtc.metaClass);
                 }

@@ -62,11 +62,21 @@ namespace SimpleLanguage.VM
         {
             SetValueByType(EVMType.UInt16, v);
         }
+        public virtual void SetValue(byte v)
+        {
+            SetValueByType(EVMType.Byte, v);
+        }
+
+        public virtual void SetValue(sbyte v)
+        {
+            SetValueByType(EVMType.SByte, v);
+        }
+
 
         public virtual double ToDouble()
         {
             if (value == null) return 0.0;
-            switch (eAnyType)
+            switch (eType)
             {
                 case EVMType.Float64: return (double)value;
                 case EVMType.Float32: return Convert.ToDouble((float)value);
@@ -85,7 +95,7 @@ namespace SimpleLanguage.VM
         public virtual long ToInt64()
         {
             if (value == null) return 0;
-            switch (eAnyType)
+            switch (eType)
             {
                 case EVMType.Float64: return Convert.ToInt64((double)value);
                 case EVMType.Float32: return Convert.ToInt64((float)value);

@@ -41,7 +41,7 @@ namespace SimpleLanguage.Core
 
         public static bool IsCoreMetaType( MetaType mt )
         {
-            if( mt.eType == EMetaTypeType.MetaClass )
+            if( mt.eMetaTypeType == EMetaTypeType.MetaClass )
             {
                 var curClass = mt.metaClass;
                 if (curClass == CoreMetaClassManager.byteMetaClass
