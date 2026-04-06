@@ -47,6 +47,7 @@ namespace SimpleLanguage.VM
             }
 
             CreateDefine();
+            BuildMemberDataLayout();
         }
         public override void CreateObject()
         {

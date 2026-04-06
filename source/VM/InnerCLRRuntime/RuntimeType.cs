@@ -24,10 +24,14 @@ namespace SimpleLanguage.VM
         public int id => m_Id;
         public RuntimeClass runtimeClass => m_RuntimeClass;
         public List<RuntimeType> runtimeTemplateList => m_RuntimeTemplateList;
+        /// <summary>本类型静态成员的紧凑字节块（与实例 <see cref="ClassObject"/> 上逻辑一致）。</summary>
+        public byte[]? memberData => m_MemberData;
 
         private RuntimeClass m_RuntimeClass = null;
         private List<RuntimeType> m_RuntimeTemplateList = new List<RuntimeType>();
         private RuntimeObject[] m_StaticMemberRuntimeObjectArray = null;
+        /// <summary>静态字段紧凑布局缓冲区，与 <see cref="m_StaticMemberRuntimeObjectArray"/> 下标一一对应（空槽不占字节）。</summary>
+        private byte[] m_MemberData = null;
         //private Dictionary<int, int> m_StaticFieldIndexToSlot = new Dictionary<int, int>();
         //private bool m_IsStaticMemInitializing = false;
         //private bool m_IsStaticExprBatchApplied = false;
@@ -158,6 +162,20 @@ namespace SimpleLanguage.VM
             //target.SetValueByType(svalue.eType == EVMType.Class ? EVMType.Class : svalue.eType, svalue.eType == EVMType.Class ? (object)svalue.sobject : svalue.GetValueObject());
             m_StaticMemberRuntimeObjectArray[index].SetSObjectBySValue(ref svalue);
         }
+
+        /// <summary>按静态成员下标从 <see cref="memberData"/> 解析（引用槽为 HashCode，与 <see cref="RuntimeObject"/> 约定一致）。</summary>
+        public bool TryReadStaticMemberDataAsSValue(int staticMemberIndex, ref SValue svalue)
+        {
+            if (m_StaticMemberRuntimeObjectArray == null
+                || staticMemberIndex < 0
+                || staticMemberIndex >= m_StaticMemberRuntimeObjectArray.Length)
+                return false;
+            var ro = m_StaticMemberRuntimeObjectArray[staticMemberIndex];
+            if (ro == null)
+                return false;
+            return ro.TryReadMemberDataToSValue(ref svalue);
+        }
+
         public void EnsureStaticMemberObjectsInitialized()
         {
             //if (m_IsStaticMemInitializing) return;
@@ -185,9 +203,45 @@ namespace SimpleLanguage.VM
                     }
                 }
 
+                BuildStaticMemberDataLayout();
                 ApplyStaticMemberExpressionsBatch();
             }
             catch (Exception e) { }
+        }
+
+        /// <summary>为 <see cref="m_StaticMemberRuntimeObjectArray"/> 分配 <see cref="m_MemberData"/> 并绑定各 <see cref="RuntimeObject"/> 切片（仅首次分配，避免覆盖已写入的静态初值）。</summary>
+        private void BuildStaticMemberDataLayout()
+        {
+            if (m_StaticMemberRuntimeObjectArray == null || m_StaticMemberRuntimeObjectArray.Length == 0)
+            {
+                m_MemberData = null;
+                return;
+            }
+
+            if (m_MemberData != null)
+                return;
+
+            int n = m_StaticMemberRuntimeObjectArray.Length;
+            int totalBytes = 0;
+            for (int i = 0; i < n; i++)
+            {
+                var ro = m_StaticMemberRuntimeObjectArray[i];
+                if (ro == null)
+                    continue;
+                totalBytes += MemberDataLayout.GetSlotByteLength(ro.runtimeType);
+            }
+
+            m_MemberData = totalBytes > 0 ? new byte[totalBytes] : null;
+            int offset = 0;
+            for (int i = 0; i < n; i++)
+            {
+                var ro = m_StaticMemberRuntimeObjectArray[i];
+                if (ro == null)
+                    continue;
+                int len = MemberDataLayout.GetSlotByteLength(ro.runtimeType);
+                ro.AttachMemberDataSlice(m_MemberData, offset, len, i);
+                offset += len;
+            }
         }
         private void ApplyStaticMemberExpressionsBatch()
         {

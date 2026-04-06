@@ -13,17 +13,14 @@ using System.Text;
 
 namespace SimpleLanguage.VM
 {
-    public class MemberVariableData
-    {
-        public int index { get; set; } = 0;
-        public int start { get; set; } = 0;
-        public int length { get; set; } = 0;
-    }
     public class ClassObject : SObject
     {
         protected RuntimeObject[] m_MemberRuntimeObjectArray = null;
         protected List<RuntimeType> m_IRTemplateList = new List<RuntimeType>();
         protected byte[] m_MemberData = null;
+
+        /// <summary>实例字段紧凑布局（静态字段见 <see cref="RuntimeType.memberData"/>）。</summary>
+        public byte[]? memberData => m_MemberData;
 
         protected ClassObject() { }
 
@@ -44,7 +41,50 @@ namespace SimpleLanguage.VM
                 m_MemberRuntimeObjectArray[i] = new RuntimeObject( rt, metaVariableList[i], null);
             }
             CreateDefine();
+            BuildMemberDataLayout();
             //m_Type = new short[m_IRMetaVariableList.Count];
+        }
+
+        /// <summary>实例成员与 IR 非静态字段顺序一致，使用与 <see cref="RuntimeClass.nonStaticIRMetaVariableList"/> 相同的下标。</summary>
+        public RuntimeObject? GetMemberRuntimeObject(int memberIndex)
+        {
+            if (memberIndex < 0 || memberIndex >= m_MemberRuntimeObjectArray.Length)
+                return null;
+            return m_MemberRuntimeObjectArray[memberIndex];
+        }
+
+        /// <summary>按成员下标从 <see cref="memberData"/> 解析到 <paramref name="svalue"/>（引用型槽位为 HashCode，见 RuntimeObject）。</summary>
+        public bool TryReadMemberDataAsSValue(int memberIndex, ref SValue svalue)
+        {
+            if (memberIndex < 0 || memberIndex >= m_MemberRuntimeObjectArray.Length)
+                return false;
+            return m_MemberRuntimeObjectArray[memberIndex].TryReadMemberDataToSValue(ref svalue);
+        }
+
+        protected void BuildMemberDataLayout()
+        {
+            if (m_MemberRuntimeObjectArray == null || m_MemberRuntimeObjectArray.Length == 0)
+            {
+                m_MemberData = null;
+                return;
+            }
+
+            int n = m_MemberRuntimeObjectArray.Length;
+            int totalBytes = 0;
+            for (int i = 0; i < n; i++)
+            {
+                totalBytes += MemberDataLayout.GetSlotByteLength(m_MemberRuntimeObjectArray[i].runtimeType);
+            }
+
+            m_MemberData = totalBytes > 0 ? new byte[totalBytes] : null;
+            int offset = 0;
+            for (int i = 0; i < n; i++)
+            {
+                var ro = m_MemberRuntimeObjectArray[i];
+                int len = MemberDataLayout.GetSlotByteLength(ro.runtimeType);
+                ro.AttachMemberDataSlice(m_MemberData, offset, len, i);
+                offset += len;
+            }
         }
         public virtual void CreateDefine()
         {

@@ -1,9 +1,8 @@
 using SimpleLanguage.VM.Runtime;
 using System;
+using System.Buffers.Binary;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SimpleLanguage.VM
 {
@@ -15,12 +14,24 @@ namespace SimpleLanguage.VM
         public RuntimeVariable runtimeVariable => m_RuntimeVariable;
         public bool isNull => m_SObject == null;
 
+        /// <summary>IR / Meta 侧成员变量 id（与 <see cref="RuntimeVariable.id"/> 一致）；无关联变量时为 0。</summary>
+        public int memberVariableId => m_RuntimeVariable?.id ?? 0;
+
+        /// <summary>在所属 <see cref="ClassObject"/> 成员表中的下标。</summary>
+        public int memberIndex => m_Index;
+        /// <summary>在紧凑成员缓冲区中的起始偏移（实例：<see cref="ClassObject.memberData"/>；静态：<see cref="RuntimeType.memberData"/>）。</summary>
+        public int memberDataStart => m_Start;
+        /// <summary>紧凑成员缓冲区中本槽位字节长度。</summary>
+        public int memberDataLength => m_Length;
+        public bool hasMemberDataSlice => m_MemberDataBuffer != null && m_Length > 0;
+
         private RuntimeVariable m_RuntimeVariable = null;
         private RuntimeType m_RuntimeType = null;
         private SObject m_SObject = null;
         private int m_Index = 0;
         private int m_Start = 0;
         private int m_Length = 0;
+        private byte[]? m_MemberDataBuffer = null;
         public RuntimeObject( RuntimeType rt, SObject sobj )
         {
             m_RuntimeType = rt;
@@ -32,6 +43,154 @@ namespace SimpleLanguage.VM
             m_RuntimeType = rt;
             m_SObject = sobj;
         }
+
+        internal void AttachMemberDataSlice(byte[]? classMemberData, int start, int length, int memberIndex)
+        {
+            m_MemberDataBuffer = classMemberData;
+            m_Start = start;
+            m_Length = length;
+            m_Index = memberIndex;
+        }
+
+        public bool TryReadMemberDataToSValue(ref SValue svalue)
+        {
+            if (m_MemberDataBuffer == null || m_Length <= 0 || m_RuntimeType == null)
+                return false;
+            if (m_Start + m_Length > m_MemberDataBuffer.Length)
+                return false;
+
+            ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), m_RuntimeType.eType, ref svalue);
+            return true;
+        }
+
+        private static void ReadSpanToSValue(ReadOnlySpan<byte> span, EVMType evmType, ref SValue svalue)
+        {
+            switch (evmType)
+            {
+                case EVMType.Boolean:
+                    svalue.SetBoolValue(span.Length >= 4 && BinaryPrimitives.ReadInt32LittleEndian(span) != 0);
+                    break;
+                case EVMType.Byte:
+                    svalue.SetInt8Value(span.Length > 0 ? span[0] : (byte)0);
+                    break;
+                case EVMType.SByte:
+                    svalue.SetSInt8Value(span.Length > 0 ? unchecked((sbyte)span[0]) : (sbyte)0);
+                    break;
+                case EVMType.Int16:
+                    svalue.SetInt16Value(span.Length >= 2 ? BinaryPrimitives.ReadInt16LittleEndian(span) : (short)0);
+                    break;
+                case EVMType.UInt16:
+                    svalue.SetUInt16Value(span.Length >= 2 ? BinaryPrimitives.ReadUInt16LittleEndian(span) : (ushort)0);
+                    break;
+                case EVMType.Int32:
+                    svalue.SetInt32Value(span.Length >= 4 ? BinaryPrimitives.ReadInt32LittleEndian(span) : 0);
+                    break;
+                case EVMType.UInt32:
+                    svalue.SetUInt32Value(span.Length >= 4 ? BinaryPrimitives.ReadUInt32LittleEndian(span) : 0u);
+                    break;
+                case EVMType.Int64:
+                    svalue.SetInt64Value(span.Length >= 8 ? BinaryPrimitives.ReadInt64LittleEndian(span) : 0L);
+                    break;
+                case EVMType.UInt64:
+                    svalue.SetUInt64Value(span.Length >= 8 ? BinaryPrimitives.ReadUInt64LittleEndian(span) : 0uL);
+                    break;
+                case EVMType.Float32:
+                    svalue.SetFloatValue(span.Length >= 4 ? BinaryPrimitives.ReadSingleLittleEndian(span) : 0f);
+                    break;
+                case EVMType.Float64:
+                    svalue.SetDoubleValue(span.Length >= 8 ? BinaryPrimitives.ReadDoubleLittleEndian(span) : 0d);
+                    break;
+                default:
+                    svalue.SetInt32Value(span.Length >= 4 ? BinaryPrimitives.ReadInt32LittleEndian(span) : 0);
+                    break;
+            }
+        }
+
+        private void ClearMemberDataSlice()
+        {
+            if (m_MemberDataBuffer == null || m_Length <= 0)
+                return;
+            if (m_Start + m_Length <= m_MemberDataBuffer.Length)
+                m_MemberDataBuffer.AsSpan(m_Start, m_Length).Clear();
+        }
+
+        private void WriteCurrentValueToMemberData()
+        {
+            if (m_MemberDataBuffer == null || m_Length <= 0 || m_RuntimeType == null)
+                return;
+            if (m_Start + m_Length > m_MemberDataBuffer.Length)
+                return;
+
+            Span<byte> span = m_MemberDataBuffer.AsSpan(m_Start, m_Length);
+            var evm = m_RuntimeType.eType;
+
+            if (m_SObject == null)
+            {
+                span.Clear();
+                if (span.Length >= 4)
+                    BinaryPrimitives.WriteInt32LittleEndian(span, 0);
+                return;
+            }
+
+            switch (evm)
+            {
+                case EVMType.Boolean:
+                    BinaryPrimitives.WriteInt32LittleEndian(span, (m_SObject as BoolObject)?.value == true ? 1 : 0);
+                    break;
+                case EVMType.Byte:
+                    if (span.Length > 0)
+                        span[0] = (m_SObject as Int8Object)?.value ?? 0;
+                    break;
+                case EVMType.SByte:
+                    if (span.Length > 0)
+                        span[0] = unchecked((byte)((m_SObject as SInt8Object)?.value ?? 0));
+                    break;
+                case EVMType.Int16:
+                    BinaryPrimitives.WriteInt16LittleEndian(span, (m_SObject as Int16Object)?.value ?? 0);
+                    break;
+                case EVMType.UInt16:
+                    BinaryPrimitives.WriteUInt16LittleEndian(span, (m_SObject as UInt16Object)?.value ?? 0);
+                    break;
+                case EVMType.Int32:
+                    BinaryPrimitives.WriteInt32LittleEndian(span, (m_SObject as Int32Object)?.value ?? 0);
+                    break;
+                case EVMType.UInt32:
+                    if (m_SObject is UInt32Object u32o)
+                        BinaryPrimitives.WriteUInt32LittleEndian(span, u32o.value);
+                    else if (m_SObject is Int32Object i32u)
+                        BinaryPrimitives.WriteUInt32LittleEndian(span, unchecked((uint)i32u.value));
+                    else
+                        BinaryPrimitives.WriteUInt32LittleEndian(span, 0u);
+                    break;
+                case EVMType.Int64:
+                    BinaryPrimitives.WriteInt64LittleEndian(span, (m_SObject as Int64Object)?.value ?? 0L);
+                    break;
+                case EVMType.UInt64:
+                    if (m_SObject is UInt64Object u64o)
+                        BinaryPrimitives.WriteUInt64LittleEndian(span, u64o.value);
+                    else if (m_SObject is Int64Object i64u)
+                        BinaryPrimitives.WriteUInt64LittleEndian(span, unchecked((ulong)i64u.value));
+                    else
+                        BinaryPrimitives.WriteUInt64LittleEndian(span, 0uL);
+                    break;
+                case EVMType.Float32:
+                    BinaryPrimitives.WriteSingleLittleEndian(span, (m_SObject as Float32Object)?.value ?? 0f);
+                    break;
+                case EVMType.Float64:
+                    BinaryPrimitives.WriteDoubleLittleEndian(span, (m_SObject as Float64Object)?.value ?? 0d);
+                    break;
+                case EVMType.String:
+                case EVMType.Class:
+                case EVMType.Array:
+                case EVMType.Object:
+                case EVMType.Type:
+                case EVMType.Member:
+                default:
+                    BinaryPrimitives.WriteInt32LittleEndian(span, m_SObject.GetHashCode());
+                    break;
+            }
+        }
+
         public bool GetBoolean()
         {
             if( m_SObject is BoolObject bl )
@@ -43,10 +202,12 @@ namespace SimpleLanguage.VM
         public void SetNull()
         {
             m_SObject = null;
+            ClearMemberDataSlice();
         }
         public void SetSObject( SObject sobj )
         {
             m_SObject = sobj;
+            WriteCurrentValueToMemberData();
         }
         public void SetSObjectBySValue( ref SValue sval )
         {
@@ -521,6 +682,7 @@ namespace SimpleLanguage.VM
             if (sval.isNull)
             {
                 m_SObject = null;
+                ClearMemberDataSlice();
                 return;
             }
             if (eType == EVMType.Object)
@@ -528,6 +690,7 @@ namespace SimpleLanguage.VM
                 if ( m_SObject == null)
                 {
                     m_SObject = sval.GetSObject();
+                    WriteCurrentValueToMemberData();
                     return;
                 }
             }
@@ -667,6 +830,7 @@ namespace SimpleLanguage.VM
                     }
                     break;
             }
+            WriteCurrentValueToMemberData();
         }
 
         public void SetSValueBySObjct(ref SValue svalue)
