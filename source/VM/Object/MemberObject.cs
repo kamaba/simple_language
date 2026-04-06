@@ -15,16 +15,16 @@ namespace SimpleLanguage.VM
 {
     class MemberObject : SObject
     {
-        public new string value { get { return (string)m_Value; } }
+        public new string? value => m_Reference as string;
 
         public MemberObject(string str) : base(EVMType.Member)
         {
-            m_Value = str;
+            m_Reference = str;
             m_RuntimeType = RuntimeTypeManager.stringRuntimeType;
         }
-        public void SetValue(String _val)
+        public void SetValue(string _val)
         {
-            m_Value = _val;
+            m_Reference = _val;
         }
         //public static StringObject SetToString( Int32MetaClass mc )
         //{
@@ -34,7 +34,7 @@ namespace SimpleLanguage.VM
         //}
         public override string ToFormatString()
         {
-            return value;
+            return value ?? "";
         }
     }
 }

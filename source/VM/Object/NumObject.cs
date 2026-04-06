@@ -22,7 +22,7 @@ namespace SimpleLanguage.VM
         {
         }
 
-        // Provide convenient setters for numeric values and keep SObject.value as storage
+        // Convenient setters; payload lives in SObject.m_Numeric / SetValueByType.
         public virtual void SetValue(double v)
         {
             SetValueByType(EVMType.Float64, v);

@@ -22,13 +22,14 @@ namespace SimpleLanguage.VM
         }
         public void SetClassObject(ClassObject val)
         {
-            m_Value = val;
+            m_Type = EVMType.Class;
+            m_Numeric = default;
+            m_Reference = val;
             val.refCount++;
         }
         public void SetValue(EVMType _eType, System.Object val)
         {
-            m_Type = _eType;
-            m_Value = val;
+            StoreValue(_eType, val);
         }
         public override string ToFormatString()
         {

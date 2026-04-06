@@ -7,57 +7,198 @@
 //****************************************************************************
 
 using SimpleLanguage.VM.Runtime;
+using System;
 
 namespace SimpleLanguage.VM
 {
     public class SObject
     {
         public EVMType eType => m_Type;
-        public virtual object value 
-        {
-            get
-            {
-                return m_Value;
-            } 
-        }
-        public RuntimeClass runtimeClass => m_RuntimeType?.runtimeClass;
-        public RuntimeType runtimeType => m_RuntimeType;
+        public virtual object? value => GetBoxedValue();
+        public RuntimeClass? runtimeClass => m_RuntimeType?.runtimeClass;
+        public RuntimeType? runtimeType => m_RuntimeType;
         public short typeId { get; set; } = 0;
         public int refCount { get; set; } = 0;
 
+        /// <summary>标量位型数据（布尔用 <see cref="NumericUnion.i8"/> 0/1，与 <see cref="SValue"/> 一致）。</summary>
+        protected NumericUnion m_Numeric;
+        /// <summary>引用型负载：字符串、类实例、MethodHandle 等。</summary>
+        protected object? m_Reference;
 
         protected EVMType m_Type = EVMType.Class;
-        protected RuntimeType m_RuntimeType = null;
+        protected RuntimeType? m_RuntimeType = null;
         protected int m_Length = 0;
-        protected object m_Value = null;
         protected int id = 0;
 
         static int idCount = 0;
         protected SObject()
         {
             id = idCount++;
-            m_Value = this;
+            m_Numeric = default;
+            m_Reference = this;
         }
-        public SObject( EVMType etype )
+        public SObject(EVMType etype)
         {
-            this.m_Type = etype;
+            m_Type = etype;
+            m_Numeric = default;
+            m_Reference = null;
         }
-        public void SetValue(System.Object val)
+
+        protected virtual object? GetBoxedValue()
         {
-            //m_IsNull = false;
-            m_Value = val;
+            switch (m_Type)
+            {
+                case EVMType.Boolean:
+                    return m_Numeric.i8 != 0;
+                case EVMType.Byte:
+                    return m_Numeric.i8;
+                case EVMType.SByte:
+                    return m_Numeric.si8;
+                case EVMType.Int16:
+                    return m_Numeric.i16;
+                case EVMType.UInt16:
+                    return m_Numeric.ui16;
+                case EVMType.Int32:
+                    return m_Numeric.i32;
+                case EVMType.UInt32:
+                    return m_Numeric.u32;
+                case EVMType.Int64:
+                    return m_Numeric.i64;
+                case EVMType.UInt64:
+                    return m_Numeric.u64;
+                case EVMType.Float32:
+                    return m_Numeric.f;
+                case EVMType.Float64:
+                case EVMType.Num:
+                    return m_Numeric.d;
+                default:
+                    return m_Reference;
+            }
         }
-        public void SetValueByType(EVMType vmType, System.Object val)
+
+        /// <summary>写入类型与负载（不修改 <see cref="refCount"/>）。</summary>
+        protected void StoreValue(EVMType vmType, object? val)
         {
             m_Type = vmType;
-            //m_IsNull = false;
-            m_Value = val;
+            m_Numeric = default;
+            m_Reference = null;
+            if (val == null)
+                return;
+
+            switch (vmType)
+            {
+                case EVMType.Boolean:
+                    if (val is bool bb)
+                        m_Numeric.i8 = bb ? (byte)1 : (byte)0;
+                    else if (val is byte b8)
+                        m_Numeric.i8 = b8;
+                    else
+                        m_Numeric.i8 = Convert.ToBoolean(val) ? (byte)1 : (byte)0;
+                    break;
+                case EVMType.Byte:
+                    m_Numeric.i8 = Convert.ToByte(val);
+                    break;
+                case EVMType.SByte:
+                    m_Numeric.si8 = Convert.ToSByte(val);
+                    break;
+                case EVMType.Int16:
+                    m_Numeric.i16 = Convert.ToInt16(val);
+                    break;
+                case EVMType.UInt16:
+                    m_Numeric.ui16 = Convert.ToUInt16(val);
+                    break;
+                case EVMType.Int32:
+                    m_Numeric.i32 = Convert.ToInt32(val);
+                    break;
+                case EVMType.UInt32:
+                    m_Numeric.u32 = Convert.ToUInt32(val);
+                    break;
+                case EVMType.Int64:
+                    m_Numeric.i64 = Convert.ToInt64(val);
+                    break;
+                case EVMType.UInt64:
+                    m_Numeric.u64 = Convert.ToUInt64(val);
+                    break;
+                case EVMType.Float32:
+                    m_Numeric.f = Convert.ToSingle(val);
+                    break;
+                case EVMType.Float64:
+                case EVMType.Num:
+                    m_Numeric.d = Convert.ToDouble(val);
+                    break;
+                case EVMType.String:
+                case EVMType.Member:
+                case EVMType.Class:
+                case EVMType.Array:
+                case EVMType.Object:
+                case EVMType.Type:
+                default:
+                    m_Reference = val;
+                    break;
+            }
+        }
+
+        public virtual void SetValue(object? val)
+        {
+            if (val == null)
+            {
+                m_Numeric = default;
+                m_Reference = null;
+                return;
+            }
+            switch (val)
+            {
+                case bool b:
+                    StoreValue(EVMType.Boolean, b);
+                    return;
+                case byte b8:
+                    StoreValue(EVMType.Byte, b8);
+                    return;
+                case sbyte sb:
+                    StoreValue(EVMType.SByte, sb);
+                    return;
+                case short s16:
+                    StoreValue(EVMType.Int16, s16);
+                    return;
+                case ushort u16:
+                    StoreValue(EVMType.UInt16, u16);
+                    return;
+                case int i32:
+                    StoreValue(EVMType.Int32, i32);
+                    return;
+                case uint u32:
+                    StoreValue(EVMType.UInt32, u32);
+                    return;
+                case long i64:
+                    StoreValue(EVMType.Int64, i64);
+                    return;
+                case ulong u64:
+                    StoreValue(EVMType.UInt64, u64);
+                    return;
+                case float f:
+                    StoreValue(EVMType.Float32, f);
+                    return;
+                case double d:
+                    StoreValue(EVMType.Float64, d);
+                    return;
+                case string:
+                    StoreValue(EVMType.String, val);
+                    return;
+                default:
+                    m_Reference = val;
+                    break;
+            }
+        }
+
+        public void SetValueByType(EVMType vmType, object? val)
+        {
+            StoreValue(vmType, val);
             refCount++;
         }
+
         public virtual string ToFormatString()
         {
             return "";
-            //return value.ToString();
         }
     }
 }

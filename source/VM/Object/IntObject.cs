@@ -12,115 +12,80 @@ namespace SimpleLanguage.VM
 {
     public class BoolObject : SObject
     {
-        public new bool value
-        {
-            get
-            {
-                return (bool)m_Value;
-            }
-        }
+        public new bool value => m_Numeric.i8 != 0;
+
         public BoolObject(bool flag) : base(EVMType.Boolean)
         {
-            m_Value = flag;
+            m_Numeric.i8 = flag ? (byte)1 : (byte)0;
             m_RuntimeType = RuntimeTypeManager.boolRuntimeType;
         }
 
         public void SetValue(bool _val)
         {
-            m_Value = _val;
+            m_Numeric.i8 = _val ? (byte)1 : (byte)0;
         }
         public override string ToFormatString()
         {
-            return m_Value.ToString();
+            return value.ToString();
         }
     }
     public class Int8Object : NumObject
     {
-        public new Byte value
+        public new byte value => m_Numeric.i8;
+
+        public Int8Object(byte _val) : base(EVMType.Byte)
         {
-            get
-            {
-                return (byte)m_Value;
-            }
-        }
-        public Int8Object(Byte _val) : base(EVMType.Byte)
-        {
-            m_Value = _val;
+            m_Numeric.i8 = _val;
             m_RuntimeType = RuntimeTypeManager.byteRuntimeType;
         }
     }
     public class SInt8Object : NumObject
     {
-        public new SByte value
+        public new sbyte value => m_Numeric.si8;
+
+        public SInt8Object(sbyte _val) : base(EVMType.SByte)
         {
-            get
-            {
-                return (SByte)m_Value;
-            }
-        }
-        public SInt8Object(SByte _val) : base(EVMType.SByte)
-        {
-            m_Value = _val;
+            m_Numeric.si8 = _val;
             m_RuntimeType = RuntimeTypeManager.sbyteRuntimeType;
         }
     }
     class Int16Object : NumObject
     {
-        public new Int16 value
+        public new short value => m_Numeric.i16;
+
+        public Int16Object(short val) : base(EVMType.Int16)
         {
-            get
-            {
-                return (Int16)m_Value;
-            }
-        }
-        public Int16Object(Int16 val) : base(EVMType.Int16)
-        {
-            m_Value = val;
+            m_Numeric.i16 = val;
             m_RuntimeType = RuntimeTypeManager.int16RuntimeType;
         }
     }
     public class UInt16Object : NumObject
     {
-        public new UInt16 value
+        public new ushort value => m_Numeric.ui16;
+
+        public UInt16Object(ushort val) : base(EVMType.UInt16)
         {
-            get
-            {
-                return (UInt16)m_Value;
-            }
-        }
-        public UInt16Object(UInt16 val) : base(EVMType.UInt16)
-        {
-            m_Value = val;
+            m_Numeric.ui16 = val;
             m_RuntimeType = RuntimeTypeManager.uint16RuntimeType;
         }
     }
     public class Int32Object : NumObject
     {
-        public new Int32 value
+        public new int value => m_Numeric.i32;
+
+        public Int32Object(int obj) : base(EVMType.Int32)
         {
-            get
-            {
-                return (Int32)m_Value;
-            }
-        }
-        public Int32Object( int obj ) : base(EVMType.Int32)
-        {
-            m_Value = obj;
+            m_Numeric.i32 = obj;
             m_RuntimeType = RuntimeTypeManager.int32RuntimeType;
         }
     }
     public class UInt32Object : NumObject
     {
-        public new UInt32 value
+        public new uint value => m_Numeric.u32;
+
+        public UInt32Object(uint obj) : base(EVMType.UInt32)
         {
-            get
-            {
-                return (UInt32)m_Value;
-            }
-        }
-        public UInt32Object(UInt32 obj) : base(EVMType.UInt32)
-        {
-            m_Value = obj;
+            m_Numeric.u32 = obj;
             m_Type = EVMType.UInt32;
             m_RuntimeType = RuntimeTypeManager.uint32RuntimeType;
         }
@@ -129,31 +94,21 @@ namespace SimpleLanguage.VM
 
     public class Int64Object : NumObject
     {
-        public new Int64 value
+        public new long value => m_Numeric.i64;
+
+        public Int64Object(long val) : base(EVMType.Int64)
         {
-            get
-            {
-                return (Int64)m_Value;
-            }
-        }
-        public Int64Object(Int64 val) : base(EVMType.Int64)
-        {
-            m_Value = val;
+            m_Numeric.i64 = val;
             m_RuntimeType = RuntimeTypeManager.int64RuntimeType;
         }
     }
     public class UInt64Object : NumObject
     {
-        public new UInt64 value
+        public new ulong value => m_Numeric.u64;
+
+        public UInt64Object(ulong val) : base(EVMType.UInt64)
         {
-            get
-            {
-                return (UInt64)m_Value;
-            }
-        }
-        public UInt64Object(UInt64 val) : base(EVMType.UInt64)
-        {
-            m_Value = val;
+            m_Numeric.u64 = val;
             m_RuntimeType = RuntimeTypeManager.uint64RuntimeType;
         }
     }

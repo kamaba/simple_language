@@ -14,21 +14,6 @@ using System.Runtime.InteropServices;
 using System.Globalization;
 namespace SimpleLanguage.VM
 {
-
-    [StructLayout(LayoutKind.Explicit)]
-    struct NumericUnion
-    {
-        [FieldOffset(0)] public long i64;
-        [FieldOffset(0)] public ulong u64;
-        [FieldOffset(0)] public double d;
-        [FieldOffset(0)] public float f;
-        [FieldOffset(0)] public int i32;
-        [FieldOffset(0)] public uint u32;
-        [FieldOffset(0)] public short i16;
-        [FieldOffset(0)] public ushort ui16;
-        [FieldOffset(0)] public byte i8;
-        [FieldOffset(0)] public sbyte si8;
-    }
     public partial struct SValue
     {
         public EVMType eType;

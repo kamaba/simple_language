@@ -12,31 +12,21 @@ namespace SimpleLanguage.VM
 {
     public class Float32Object : NumObject
     {
-        public new float value
+        public new float value => m_Numeric.f;
+
+        public Float32Object(float _val) : base(EVMType.Float32)
         {
-            get
-            {
-                return (float)m_Value;
-            }
-        }
-        public Float32Object( Single _val ) : base(EVMType.Float32)
-        {
-            m_Value = _val;
+            m_Numeric.f = _val;
             m_RuntimeType = RuntimeTypeManager.float32RuntimeType;
         }
     }
     public class Float64Object : NumObject
     {
-        public new double value
+        public new double value => m_Numeric.d;
+
+        public Float64Object(double _val) : base(EVMType.Float64)
         {
-            get
-            {
-                return (double)m_Value;
-            }
-        }
-        public Float64Object(Double _val) : base(EVMType.Float64)
-        {
-            m_Value = _val;
+            m_Numeric.d = _val;
             m_RuntimeType = RuntimeTypeManager.float64RuntimeType;
         }
     }
