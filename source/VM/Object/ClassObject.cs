@@ -23,6 +23,7 @@ namespace SimpleLanguage.VM
     {
         protected RuntimeObject[] m_MemberRuntimeObjectArray = null;
         protected List<RuntimeType> m_IRTemplateList = new List<RuntimeType>();
+        protected byte[] m_MemberData = null;
 
         protected ClassObject() { }
 

@@ -18,6 +18,9 @@ namespace SimpleLanguage.VM
         private RuntimeVariable m_RuntimeVariable = null;
         private RuntimeType m_RuntimeType = null;
         private SObject m_SObject = null;
+        private int m_Index = 0;
+        private int m_Start = 0;
+        private int m_Length = 0;
         public RuntimeObject( RuntimeType rt, SObject sobj )
         {
             m_RuntimeType = rt;
