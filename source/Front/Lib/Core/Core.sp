@@ -40,6 +40,11 @@ Project
         
         for v in BridgeKind
         {
+            if v == BridgeKind.SELF 
+            {
+                println( "BridgeKind--------------Native " )
+                continue
+            }
             println( "BridgeKind= $v.name.toString() " )
         }
 

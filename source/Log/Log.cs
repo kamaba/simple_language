@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 
 namespace SimpleLanguage.Logging
@@ -143,10 +144,51 @@ namespace SimpleLanguage.Logging
     public class Log
     {
         static List<LogData> logDataList = new List<LogData>();
+        private static readonly object s_VmLogFileLock = new object();
+
+        /// <summary>
+        /// VM 日志落盘路径：优先 <c>SIMPLELANG_EXPORT_OUTDIR/vm.txt</c>，否则当前工作目录下的 <c>vm.txt</c>。
+        /// </summary>
+        public static string GetVmLogFilePath()
+        {
+            var outDir = Environment.GetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR");
+            if (!string.IsNullOrWhiteSpace(outDir))
+            {
+                try
+                {
+                    Directory.CreateDirectory(outDir);
+                    return Path.Combine(outDir, "vm.txt");
+                }
+                catch
+                {
+                    /* fall through */
+                }
+            }
+            return Path.Combine(Environment.CurrentDirectory, "vm.txt");
+        }
+
+        static void AppendVmLogToFile(LogData data)
+        {
+            var path = GetVmLogFilePath();
+            lock (s_VmLogFileLock)
+            {
+                try
+                {
+                    File.AppendAllText(path, data.ToString() + Environment.NewLine, Encoding.UTF8);
+                }
+                catch
+                {
+                    /* 避免日志写盘失败影响 VM 执行 */
+                }
+            }
+        }
+
         public static void AddCodeFileLog( LogData data )
         {
-            Console.WriteLine(data.ToString());
+            //Console.WriteLine(data.ToString());
             logDataList.Add(data);
+            if (data.errorType == LogData.EErrorType.VM)
+                AppendVmLogToFile(data);
         }
         //public static LogData AddInInitProject(Token token, EError err, string msg)
         //{

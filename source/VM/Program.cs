@@ -1,9 +1,10 @@
 // See https://aka.ms/new-console-template for more information
 
 
+using SimpleLanguage.Logging;
 using SimpleLanguage.VM;
 
-Console.WriteLine("SimpleLanguage VM");
+Console.WriteLine("---------------------------SimpleLanguage VM---------------------------");
 
 Environment.SetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR", "E:\\project\\lang\\simple_language\\source\\Front\\bin\\Debug\\net8.0\\out\\export");
 
@@ -18,7 +19,7 @@ try
     {
         if (!pkgPath.EndsWith(".package.json", StringComparison.OrdinalIgnoreCase))
         {
-            Console.WriteLine($"Unsupported json slir input for runtime parse: {pkgPath}");
+            Log.AddVM(EError.None, $"Unsupported json slir input for runtime parse: {pkgPath}");
             return;
         }
 
@@ -26,7 +27,7 @@ try
         var parseResult = SLIRModuleParse.Parse(graph, args);
         if (parseResult == null)
         {
-            Console.WriteLine("No valid module package loaded.");
+            Log.AddVM(EError.None, "No valid module package loaded.");
             return;
         }
         SLIRModuleParse.EntryPoint( parseResult );
@@ -40,8 +41,8 @@ try
         var slTypeCount = asmList.Sum(a => a.moduleList.Sum(m => m.namespaceList.Sum(n => n.typeList.Count)));
         var slMethodCount = asmList.Sum(a => a.moduleList.Sum(m => m.namespaceList.Sum(n => n.typeList.Sum(t => t.methodList.Count))));
 
-        Console.WriteLine($"SLAssembly: {slAsm?.id}");
-        Console.WriteLine($"Modules: {moduleCount}, Namespaces: {nsCount}, Types: {slTypeCount}, Methods: {slMethodCount}");
+        Log.AddVM( EError.None, $"SLAssembly: {slAsm?.id}");
+        Log.AddVM(EError.None, $"Modules: {moduleCount}, Namespaces: {nsCount}, Types: {slTypeCount}, Methods: {slMethodCount}");
 
         var sampleMethod = slAsm?.moduleList
             .SelectMany(m => m.namespaceList)
@@ -51,22 +52,22 @@ try
 
         if (sampleMethod != null)
         {
-            Console.WriteLine($"IR Sample (SLIR package instruction): {sampleMethod.id}");
+            Log.AddVM(EError.None, $"IR Sample (SLIR package instruction): {sampleMethod.id}");
             foreach (var ins in sampleMethod.instructionList.Take(40))
             {
-                Console.WriteLine($"{ins.id} {ins.opCode} payloadLen={ins.Payload?.Length ?? 0}");
+                Log.AddVM(EError.None, $"{ins.id} {ins.opCode} payloadLen={ins.Payload?.Length ?? 0}");
             }
         }
 
-        Console.WriteLine($"GlobalStaticVariableList: {parseResult.globalVariableCount}, GlobalInitInstructions: {parseResult.globalInitInstructionCount}");
+        Log.AddVM(EError.None, $"GlobalStaticVariableList: {parseResult.globalVariableCount}, GlobalInitInstructions: {parseResult.globalInitInstructionCount}");
 
 
         return;
     }
 
-    Console.WriteLine("No module package found. Pass a module package JSON or export one to out/export/module.package.json.");
+    Log.AddVM(EError.None, "No module package found. Pass a module package JSON or export one to out/export/module.package.json.");
 }
 catch (Exception e)
 {
-    Console.WriteLine(e.ToString());
+    Log.AddVM(EError.None, e.ToString());
 }

@@ -30,10 +30,10 @@ namespace SimpleLanguage.VM
         protected int m_Length = 0;
         protected int id = 0;
 
-        static int idCount = 0;
+        static int idCount = 10000;
         protected SObject()
         {
-            id = idCount++;
+            id = ++idCount;
             m_Numeric = default;
             m_Reference = this;
         }
