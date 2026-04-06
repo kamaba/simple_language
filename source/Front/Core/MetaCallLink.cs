@@ -35,9 +35,11 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             CreateCallLinkNode(frontDefineMt, mv);
         }
-        public MetaCallLink(MetaClass omc, MetaType frontDefineMt)
+        public MetaCallLink(MetaClass omc, MetaType frontDefineMt, MetaVariable mv)
         {
-
+            m_OwnerMetaClass = omc;
+            m_OwnerMetaBlockStatements = null;
+            CreateCallLinkNode(frontDefineMt, mv);
         }
 
         private static FileMetaCallLink RewriteLocalCallLinkIfNeed(FileMetaCallLink fmcl, MetaClass ownerMc)

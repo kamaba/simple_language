@@ -26,3 +26,4 @@
 - When debugging parse or compile pipeline issues, first check debug outputs under `source/Front/bin/Debug/net8.0/DebugCode` and follow the strict order: `IR.txt` -> `Meta.txt` -> `File.txt` -> `Node.txt` -> `Token.txt` -> `Code.txt`; if a layer is wrong, trace to the previous upstream layer immediately.
 - Required troubleshooting chain: start from `IR.txt`, then verify `Meta.txt`, then `File.txt`, then `Node.txt`, then `Token.txt`, and finally `Code.txt`.
 - If one layer is incorrect, immediately trace to the previous upstream layer to find where the incorrect output was introduced.
+- In `MetaMemberEnum.CreateValuesArrayElementExpress`, do not use `MetaNewObjectExpressNode`; instead, use an expression similar to `MetaCallLink` to directly read enum member variables.

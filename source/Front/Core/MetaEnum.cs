@@ -60,9 +60,10 @@ namespace SimpleLanguage.Core
 
                 foreach (var mme in enumMembers)
                 {
-                    var elem = mme.CreateValuesArrayElementExpress();
-                    if (elem != null)
-                        maen.metaCallArray.Add(elem);
+                    MetaVisitNode mvn = MetaVisitNode.CreateByEnumMember(mme.defineMetaType, mme);
+                    MetaCallLink mcl = new MetaCallLink(mvn);
+                    MetaCallLinkExpressNode mclen = new MetaCallLinkExpressNode(mcl);
+                    maen.metaCallArray.Add(mclen);
                 }
 
 
