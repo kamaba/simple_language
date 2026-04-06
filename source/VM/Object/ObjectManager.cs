@@ -123,13 +123,14 @@ namespace SimpleLanguage.VM
             else if (name == "Core.Array" || name == "Array"
                 || name == "Core.Array<T>")
             {
-                var ao = new ArrayObject( rt, 0);
-                ao.typeId = 0;
-                if (isCreateMemObject)
-                {
-                    ao.CreateObject();
-                }
-                sobj = ao;
+                //var ao = new ArrayObject( rt, 0);
+                //ao.typeId = 0;
+                //if (isCreateMemObject)
+                //{
+                //    ao.CreateObject();
+                //}
+                //sobj = ao;
+                Debug.Assert(false);
             }
             else if (rt == RuntimeTypeManager.typeRuntimeType)
             {

@@ -11,6 +11,9 @@ namespace SimpleLanguage.VM
 {
     public class TemplateObject : SObject
     {
+        public SObject instnceObject => m_InstnceObject;
+
+        SObject m_InstnceObject = null;
         public TemplateObject() :base(  )
         {
         }
