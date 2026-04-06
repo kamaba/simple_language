@@ -2123,7 +2123,26 @@ namespace SimpleLanguage.VM.Runtime
                 robj.SetNull();
                 return;
             }
+
             var obj = robj.sobject;
+            if (robj.eType == EVMType.Object)
+            {
+                if (robj.sobject == null)
+                {
+                    robj.SetSObjectBySValue(ref svalue);
+                    return;
+                }
+                obj = robj.sobject;
+            }
+            else
+            {
+                if (RuntimeTypeManager.IsCoreRuntimeType( robj.runtimeType ) && obj == null )
+                {
+                    robj.SetSObject( svalue.GetSObject() );
+                    return;
+                }
+            }
+
             bool anyObj = robj.eType == EVMType.Object;
             switch (svalue.eType)
             {
@@ -2582,32 +2601,6 @@ namespace SimpleLanguage.VM.Runtime
                         stringObj.SetValue(svalue.stringValue);
                     }
                     break;
-                case EVMType.Array:
-                    {
-                        if (anyObj)
-                        {
-                            obj.SetValueByType(svalue.eType, svalue.sobject);
-                            return;
-                        }
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetClassObject(svalue.sobject as ClassObject);
-                            return;
-                        }
-                        if (obj is ClassObject co)
-                        {
-                            var ao = svalue.sobject as ClassObject;
-                            Debug.Assert(ao != null);
-                            //co.SetClassObject(ao);                            
-                            (obj as ClassObject).SetSValue(ao);
-                        }
-                        else
-                        {
-                            robj.SetSObject(svalue.sobject);
-                        }
-                    }
-                    break;
                 case EVMType.Object:
                     {
                         if (svalue.eType == EVMType.Object)
@@ -2654,6 +2647,7 @@ namespace SimpleLanguage.VM.Runtime
                     }
                     break;
                 case EVMType.Class:
+                case EVMType.Array:
                     {
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
@@ -2676,14 +2670,7 @@ namespace SimpleLanguage.VM.Runtime
                             obj.SetValueByType(EVMType.Class, svalue.sobject);
                             return;
                         }
-                        ClassObject classObj = obj as ClassObject;
-                        if (classObj == null)
-                        {
-                            Debug.Assert(false);
-                            Debug.Write("该类型不是Class类型!!");
-                            return;
-                        }
-                        classObj.SetSValue(svalue.sobject as ClassObject);
+                        robj.SetSObject(svalue.sobject);
                         /*
                         Int32Object int32Obj = obj as Int32Object;
                         if (int32Obj != null)
@@ -2735,6 +2722,12 @@ namespace SimpleLanguage.VM.Runtime
 
         public void SetSValue(SObject obj, EVMType etype, ref SValue svalue)
         {
+            if(obj == null )
+            {
+                svalue.SetNull();
+                return;
+            }
+
             bool anyObj = svalue.eType == EVMType.Object;
             switch (etype)
             {
