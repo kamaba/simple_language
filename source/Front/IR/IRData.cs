@@ -479,6 +479,7 @@ namespace SimpleLanguage.IR
             if (opValue != null)
             {
                 MetaType mt = opValue as MetaType;
+                IRMetaType irmt = opValue as IRMetaType;
                 IRMethod irm = opValue as IRMethod;
                 if ( opValue.GetType() == typeof( Int32 ) )
                 {
@@ -490,6 +491,10 @@ namespace SimpleLanguage.IR
                     {
                         m_StringBuilder.Append(" val mt:[" + mt.name + "] ");
                     }
+                    else if (irmt != null)
+                    {
+                        m_StringBuilder.Append(" val irmt:[" + irmt.ToString() + "] ");
+                    }
                     else if( irm != null )
                     {
                         m_StringBuilder.Append(" val irm:[" + irm.id + "] ");
@@ -500,7 +505,105 @@ namespace SimpleLanguage.IR
                     }
                 }
             }
+            else if (TryGetRuntimeDefTypeDebugString(out var runtimeTypeText))
+            {
+                m_StringBuilder.Append(" val irmt:[");
+                m_StringBuilder.Append(runtimeTypeText);
+                m_StringBuilder.Append("] ");
+            }
+            else if (opCode == EIROpCode.LoadConstString)
+            {
+                var resolved = IRManager.instance.GetStringIRStack(index);
+                if (resolved != null)
+                {
+                    m_StringBuilder.Append(" val: string[");
+                    m_StringBuilder.Append(EscapeForIRDebug(resolved));
+                    m_StringBuilder.Append("] ");
+                }
+            }
             return m_StringBuilder.ToString();
+        }
+
+        private bool TryGetRuntimeDefTypeDebugString(out string text)
+        {
+            text = null;
+
+            if (Payload == null || Payload.Length == 0)
+            {
+                return false;
+            }
+
+            // 仅对携带 RuntimeDefType 的指令尝试解析，避免误把其他 payload 当作类型。
+            if (opCode != EIROpCode.LoadStaticField
+                && opCode != EIROpCode.StoreStaticField
+                && opCode != EIROpCode.CastClass
+                && opCode != EIROpCode.Ldc
+                && opCode != EIROpCode.ClassInit
+                && opCode != EIROpCode.NewArray
+                && opCode != EIROpCode.NewTemplateObject)
+            {
+                return false;
+            }
+
+            try
+            {
+                var json = Encoding.UTF8.GetString(Payload);
+                if (string.IsNullOrWhiteSpace(json) || json[0] != '{')
+                {
+                    return false;
+                }
+
+                var pkg = JsonSerializer.Deserialize<RuntimeDefTypeExport>(json);
+                if (pkg == null)
+                {
+                    return false;
+                }
+
+                text = FormatRuntimeDefTypeExport(pkg);
+                return !string.IsNullOrEmpty(text);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static string FormatRuntimeDefTypeExport(RuntimeDefTypeExport item)
+        {
+            if (item == null) return string.Empty;
+
+            var sb = new StringBuilder();
+            sb.Append(string.IsNullOrEmpty(item.className) ? "<null>" : item.className);
+
+            if (item.runtimeDefTypeList != null && item.runtimeDefTypeList.Count > 0)
+            {
+                sb.Append('<');
+                for (int i = 0; i < item.runtimeDefTypeList.Count; i++)
+                {
+                    if (i > 0) sb.Append(", ");
+                    sb.Append(FormatRuntimeDefTypeExport(item.runtimeDefTypeList[i]));
+                }
+                sb.Append('>');
+            }
+
+            if (item.templateIndex >= 0)
+            {
+                sb.Append("[T:");
+                sb.Append(item.templateIndex);
+                sb.Append(']');
+            }
+
+            return sb.ToString();
+        }
+
+        private static string EscapeForIRDebug(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return value ?? string.Empty;
+            return value
+                .Replace("\\", "\\\\")
+                .Replace("\r", "\\r")
+                .Replace("\n", "\\n")
+                .Replace("\t", "\\t");
         }
     }
 }

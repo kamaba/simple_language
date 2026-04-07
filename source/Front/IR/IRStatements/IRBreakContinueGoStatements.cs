@@ -21,7 +21,8 @@ namespace SimpleLanguage.IR.Statements
         public IRBranch irBrach = null;
         public void ParseIRStatements(MetaBreakStatements ms)
         {
-            irBrach = new IRBranch(irMethod,  EIROpCode.Br, null );
+            var breakTarget = irMethod?.GetCurrentBreakTarget();
+            irBrach = new IRBranch(irMethod,  EIROpCode.Br, breakTarget );
             m_IRStatements.Add(irBrach);
             //if (m_FileMetaKeyOnlySyntax.token != null )
             //{
@@ -46,7 +47,8 @@ namespace SimpleLanguage.IR.Statements
         public IRBranch irBrach = null;
         public void ParseIRStatements(MetaContinueStatements mcs )
         {
-            irBrach = new IRBranch(irMethod, EIROpCode.Br, null );
+            var continueTarget = irMethod?.GetCurrentContinueTarget();
+            irBrach = new IRBranch(irMethod, EIROpCode.Br, continueTarget );
             //if (m_FileMetaKeyOnlySyntax.token != null)
             //{
             //    irBrach.SetDebugInfoByToken( m_FileMetaKeyOnlySyntax.token );

@@ -36,6 +36,8 @@ namespace SimpleLanguage.IR
         private List<IRMetaVariable> m_MethodReturnList = new List<IRMetaVariable>();
         private List<IRData> m_LabelList = new List<IRData>();
         private List<IRData> m_IRDataList = new List<IRData>();
+        private Stack<IRData> m_BreakTargetStack = new Stack<IRData>();
+        private Stack<IRData> m_ContinueTargetStack = new Stack<IRData>();
         private MetaFunction m_BindMetaFunction = null;
         private IRMetaClass m_IROwnerMetaClass = null;
         private bool m_InterfaceMethod = false;
@@ -190,6 +192,50 @@ namespace SimpleLanguage.IR
         public IRMetaVariable GetReturnVariableById( int id )
         {
             return m_MethodReturnList.Find(a => a.id == id);
+        }
+
+        public void PushBreakTarget(IRData target)
+        {
+            if (target != null)
+            {
+                m_BreakTargetStack.Push(target);
+            }
+        }
+
+        public void PopBreakTarget()
+        {
+            if (m_BreakTargetStack.Count > 0)
+            {
+                m_BreakTargetStack.Pop();
+            }
+        }
+
+        public IRData GetCurrentBreakTarget()
+        {
+            if (m_BreakTargetStack.Count == 0) return null;
+            return m_BreakTargetStack.Peek();
+        }
+
+        public void PushContinueTarget(IRData target)
+        {
+            if (target != null)
+            {
+                m_ContinueTargetStack.Push(target);
+            }
+        }
+
+        public void PopContinueTarget()
+        {
+            if (m_ContinueTargetStack.Count > 0)
+            {
+                m_ContinueTargetStack.Pop();
+            }
+        }
+
+        public IRData GetCurrentContinueTarget()
+        {
+            if (m_ContinueTargetStack.Count == 0) return null;
+            return m_ContinueTargetStack.Peek();
         }
         public string ToIRString()
         {

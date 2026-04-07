@@ -113,11 +113,19 @@ namespace SimpleLanguage.IR
 
                         iRCaseStatements.conditionStatList.Add(iRCaseStatements.thenNop);
 
-                        IRBlockStatements irbs2 = new IRBlockStatements(_irMethod);
-                        irbs2.ParseAllIRStatements(mires.thenMetaStatements);
-                        iRCaseStatements.thenStatList.AddRange(irbs2.irStatements);
+                    iRCaseStatements.caseEndBrach = new IRBranch(_irMethod, EIROpCode.Br, null);
 
-                        iRCaseStatements.caseEndBrach = new IRBranch(_irMethod, EIROpCode.Br, null);
+                    IRBlockStatements irbs2 = new IRBlockStatements(_irMethod);
+                    _irMethod.PushBreakTarget(iRCaseStatements.caseEndBrach.data);
+                    try
+                    {
+                        irbs2.ParseAllIRStatements(mires.thenMetaStatements);
+                    }
+                    finally
+                    {
+                        _irMethod.PopBreakTarget();
+                    }
+                        iRCaseStatements.thenStatList.AddRange(irbs2.irStatements);
                         iRCaseStatements.thenStatList.Add(iRCaseStatements.caseEndBrach);
                     }
                     return;
@@ -146,11 +154,19 @@ namespace SimpleLanguage.IR
                 }
                 conditionStatList.Add(thenNop);
 
-                IRBlockStatements irbs = new IRBlockStatements(_irMethod);
-                irbs.ParseAllIRStatements(mires.thenMetaStatements);
-                thenStatList.AddRange(irbs.irStatements);
-
                 caseEndBrach = new IRBranch(_irMethod, EIROpCode.Br, null);
+
+                IRBlockStatements irbs = new IRBlockStatements(_irMethod);
+                _irMethod.PushBreakTarget(caseEndBrach.data);
+                try
+                {
+                    irbs.ParseAllIRStatements(mires.thenMetaStatements);
+                }
+                finally
+                {
+                    _irMethod.PopBreakTarget();
+                }
+                thenStatList.AddRange(irbs.irStatements);
                 thenStatList.Add(caseEndBrach);
 
                 //if (m_IfOrElseIfKeySyntax != null)
@@ -233,7 +249,15 @@ namespace SimpleLanguage.IR
                 defaultNop = new IRNop(irMethod);
                 m_IRStatements.Add(defaultNop);
                 IRBlockStatements irbs = new IRBlockStatements(irMethod);
-                irbs.ParseIRStatements(ms.defaultMetaStatements);
+                irMethod.PushBreakTarget(endIRNop.data);
+                try
+                {
+                    irbs.ParseIRStatements(ms.defaultMetaStatements);
+                }
+                finally
+                {
+                    irMethod.PopBreakTarget();
+                }
                 m_IRStatements.AddRange(irbs.irStatements);
             }
             else

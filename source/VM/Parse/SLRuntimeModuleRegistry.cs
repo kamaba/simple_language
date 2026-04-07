@@ -387,7 +387,7 @@ namespace SimpleLanguage.Parse
                 }
             }
 
-            return null;
+            return opValue as RuntimeDefType;
         }
 
         public static RuntimeCall? TryCreateRuntimeCallForInstruction(SLRuntimeCallPackage? callPkg, int fallbackParamCount)

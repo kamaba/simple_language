@@ -34,6 +34,10 @@ namespace SimpleLanguage.IR
 
             if (ms.isForIn)
             {
+                irMethod.PushBreakTarget(endIRData.data);
+                irMethod.PushContinueTarget(startIRData.data);
+                try
+                {
                 /*
                  * for v in variable1
                  * 以下是对上边的IR解释
@@ -146,6 +150,12 @@ namespace SimpleLanguage.IR
 
                 // 9. 循环结束标记
                 m_IRStatements.Add(endIRData);
+                }
+                finally
+                {
+                    irMethod.PopContinueTarget();
+                    irMethod.PopBreakTarget();
+                }
 
                 // 10. 释放迭代器资源
                 /*
@@ -168,6 +178,11 @@ namespace SimpleLanguage.IR
             }
             else
             {
+                forStartIRData = new IRNop(irMethod);
+                irMethod.PushBreakTarget(endIRData.data);
+                irMethod.PushContinueTarget(forStartIRData.data);
+                try
+                {
                 /*
                  * for( i = 0, i < express; i++ ) 
                  * 以下是对上边的IR解释
@@ -211,6 +226,7 @@ namespace SimpleLanguage.IR
                 loopBody.ParseAllIRStatements(ms.thenMetaStatements);
                 m_IRStatements.AddRange(loopBody.irStatements);
 
+                m_IRStatements.Add(forStartIRData);
 
                 if (ms.stepStatements != null)
                 {
@@ -225,6 +241,12 @@ namespace SimpleLanguage.IR
 
                 // 9. 循环结束标记
                 m_IRStatements.Add(endIRData);
+                }
+                finally
+                {
+                    irMethod.PopContinueTarget();
+                    irMethod.PopBreakTarget();
+                }
             }
 
             if (ms.nextMetaStatements != null)
