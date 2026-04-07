@@ -188,6 +188,15 @@ namespace SimpleLanguage.Compile
                 }
                 else if (curNodeType == ENodeType.LineEnd)
                 {
+                    if (condition != null
+                        && condition.isFirstKey
+                        && keynodeStruct.keyNode == null
+                        && keynodeStruct.tokenType == ETokenType.None)
+                    {
+                        // when probing follow-key syntax (if/elif/else), skip leading newlines
+                        continue;
+                    }
+
                     if (keynodeStruct.IsLineEndBreak())
                     {
                         if (ProjectManager.isUseForceSemiColonInLineEnd)

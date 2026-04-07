@@ -40,10 +40,15 @@ Project
         
         for v in BridgeKind
         {
-            if v == BridgeKind.JVM 
+            if v == BridgeKind.SELF 
+            {
+                println( "BridgeKind--------------SELF " )
+                continue
+            }
+            elif v == BridgeKind.JVM
             {
                 println( "BridgeKind--------------JVM " )
-                continue
+                break
             }
             println( "BridgeKind= $v.name.toString() " )
         }

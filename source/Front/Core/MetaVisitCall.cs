@@ -781,6 +781,30 @@ namespace SimpleLanguage.Core
                         sb.Append(this.m_CallMetaType.ToString());
                     }
                     break;
+                case EVisitType.Enum:
+                    {
+                        if (this.variable != null)
+                        {
+                            sb.Append(this.variable.ToString());
+                        }
+                        else if (this.m_CallMetaType != null)
+                        {
+                            sb.Append(this.m_CallMetaType.ToString());
+                        }
+                    }
+                    break;
+                case EVisitType.EnumMember:
+                    {
+                        if (this.variable != null)
+                        {
+                            sb.Append(this.variable.ToString());
+                        }
+                        else if (this.visitVariable != null)
+                        {
+                            sb.Append(this.visitVariable.ToFormatString());
+                        }
+                    }
+                    break;
                 default:
                     {
                         sb.Append("Error MetaVisitCall Default Parse!");
