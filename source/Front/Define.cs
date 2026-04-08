@@ -403,6 +403,7 @@ namespace SimpleLanguage
         SystemConvertFloat32,
         SystemConvertFloat64,
         SystemConvertString,
+        SystemEqualObject,
         SystemArrayGetValueThis,
         SystemArraySetValueThis,
     }

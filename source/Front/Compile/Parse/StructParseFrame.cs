@@ -924,6 +924,10 @@ namespace SimpleLanguage.Compile
                 {
                     nodeList.Add(curNode);
                 }
+                else if (curNode.nodeType == ENodeType.Colon)
+                {
+                    nodeList.Add(curNode);
+                }
                 else if (curNode.nodeType == ENodeType.IdentifierLink)  //Class1
                 {
                     nodeList.Add(curNode);
@@ -1065,6 +1069,10 @@ namespace SimpleLanguage.Compile
                     parseType = 3;
                 }
                 else if (curNode.nodeType == ENodeType.Comma)
+                {
+                    nodeList.Add(curNode);
+                }
+                else if (curNode.nodeType == ENodeType.Colon)
                 {
                     nodeList.Add(curNode);
                 }

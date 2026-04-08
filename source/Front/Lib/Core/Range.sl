@@ -1,64 +1,71 @@
+public class Range<T:Num> interface IIterable<T>, IIterator<T>
+{
+    T _start = null
+    T _end = null
+    T _step = null
+    T _iteratorValue = 0
+    T _current = null
 
-
-    public class Range<T:Number> interface IIterable<T>, IIterator<T>
+    _init_( T _start, T _end )
     {
-        T _start = null
-        T _end = null
-        T _step = null
-        T _current = null;
-        _init_( T _start, T _end, T _step )
-        {
-            this._start = _start
-            this._end = _end
-            this._step = _step
-        }
-        #接口层
-        override void reset()
-        {
-            this._current = this._start
-        }
-        override bool moveNext()
-        {            
-            bool hasNext_var = this._current < this._end 
-            if hasNext_var
-            {
-                this._current = SimpleLanguage.Lib.ArrayClass.GetArrayValueThis( this, this._index ) as T
-            }
-            else
-            {
-                this._current = null
-            }
-            this._current += this._step;
-            #System.Console.WriteLine(" Array.moveNext-----" + this._index )
-            ret hasNext_var
-        }
-        override T current()
-        {
-            ret this._current;
-        }
-        override void release()
-        {
-        }
-        override IIterator<T> iterator()
-        {
-            ret this
-        }
-        override string toString()
-        {            
-            string showstr = "["
-            for i = _start, i < this._end
-            {
-                var cur = i + this._step
-                showstr = showstr + cur.toString()
-                if( i < this._length - 1 )
-                {
-                    showstr += ","
-                }
-            }
-            ret showstr + "]"
-        }
+        this._init_(_start, _end, 1)
     }
+    _init_( T _start, T _end, T _step )
+    {
+        this._start = _start
+        this._end = _end
+        this._step = _step
+        this.reset()
+    }
+    #接口层
+    override void reset()
+    {
+        this._iteratorValue = 0
+        this._current = null
+    }
+    override bool moveNext()
+    {
+        if this._step == 0
+        {
+            this._current = null
+            ret false
+        }
 
-    public class Range extends Range<int>
-    { 
+        T nextValue = this._start + this._iteratorValue
+        bool hasNext_var = false
+        if this._step > 0
+        {
+            hasNext_var = nextValue < this._end
+        }
+        else
+        {
+            hasNext_var = nextValue > this._end
+        }
+
+        if hasNext_var
+        {
+            this._current = nextValue
+            this._iteratorValue += this._step
+        }
+        else
+        {
+            this._current = null
+        }
+        ret hasNext_var
     }
+    override T current()
+    {
+        ret this._current
+    }
+    override void release()
+    {
+    }
+    override IIterator<T> iterator()
+    {
+        ret this
+    }
+    override string toString()
+    {
+        ret "Range(" + this._start + "," + this._end + "," + this._step + ")"
+    }
+}

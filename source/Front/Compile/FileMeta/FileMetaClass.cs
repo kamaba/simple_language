@@ -185,9 +185,12 @@ namespace SimpleLanguage.Compile
                                     FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, templateNode, templateExtendsNode);
                                     m_TemplateDefineList.Add(fmtd);
                                     templateNode = null;
+                                    templateExtendsNode = null;
+                                    templateInExtends = false;
                                     continue;
                                 }
-                                else if (cnode2.nodeType == ENodeType.Key && cnode2.token?.type == ETokenType.Colon )
+                                else if (cnode2.nodeType == ENodeType.Colon
+                                    || (cnode2.nodeType == ENodeType.Key && cnode2.token?.type == ETokenType.Colon))
                                 {
                                     templateInExtends = true;
                                     continue;

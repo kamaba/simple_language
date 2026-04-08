@@ -17,29 +17,6 @@ using System.Globalization;
 
 namespace SimpleLanguage.VM.Runtime
 {
-    // System-level builtin method calls — must stay in sync with <see cref="SimpleLanguage.ESystemMethodCall"/> (Front Define.cs).
-    public enum ESystemMethodCall
-    {
-        SystemCallCLRMethod,
-        SystemCallNativeMethod,
-        SystemCallJVMMethod,
-        SystemPrint,
-        SystemReadLine,
-        SystemReadKey,
-        SystemConvertInt8,
-        SystemConvertSInt8,
-        SystemConvertInt16,
-        SystemConvertUInt16,
-        SystemConvertInt32,
-        SystemConvertUInt32,
-        SystemConvertInt64,
-        SystemConvertUInt64,
-        SystemConvertFloat32,
-        SystemConvertFloat64,
-        SystemConvertString,
-        SystemArrayGetValueThis,
-        SystemArraySetValueThis,
-    }
     public unsafe class RuntimeVM
     {
         public RuntimeObject[] returnRuntimeObjectArray { get => m_ReturnRuntimeObjectArray; }
@@ -729,7 +706,27 @@ namespace SimpleLanguage.VM.Runtime
             return resolved;
         }
 
-        private bool TryInvokeRegisteredBridgeByIndex(Instruction iri)
+        internal bool TrySystemCallPopArgs(int paramCount, out SValue[] args)
+        {
+            args = null!;
+            if (paramCount < 0) return false;
+            if (m_ValueIndex < paramCount) return false;
+            args = new SValue[paramCount];
+            for (int pi = paramCount - 1; pi >= 0; pi--)
+                args[pi] = m_ValueStack[--m_ValueIndex];
+            return true;
+        }
+
+        internal bool TrySystemCallPopDiscard(int discardCount)
+        {
+            if (discardCount < 0) return false;
+            if (m_ValueIndex < discardCount) return false;
+            for (int pi = discardCount - 1; pi >= 0; pi--)
+                _ = m_ValueStack[--m_ValueIndex];
+            return true;
+        }
+
+        internal bool TryInvokeRegisteredBridgeByIndex(Instruction iri)
         {
             int bridgeIndex;
             if (iri.TryGetInt32(out var payloadIndex)) bridgeIndex = payloadIndex;
@@ -773,7 +770,7 @@ namespace SimpleLanguage.VM.Runtime
             return true;
         }
 
-        private bool TryInvokeLegacyBridgeSignature(Instruction iri, string callName)
+        internal bool TryInvokeLegacyBridgeSignature(Instruction iri, string callName)
         {
             int paramCountLocal = iri.index;
             if (paramCountLocal <= 0) return false;
@@ -1527,87 +1524,22 @@ namespace SimpleLanguage.VM.Runtime
                         switch (kind)
                         {
                             case (int)ESystemMethodCall.SystemPrint:
-                                {
-                                    int paramCount = sysPkg.paramCount;
-                                    if (paramCount <= 0)
-                                    {
-                                        Console.Write(string.Empty);
-                                        break;
-                                    }
-                                    if (m_ValueIndex < paramCount)
-                                    {
-                                        Debug.Assert(false, $"SystemPrint stack underflow, need={paramCount}, has={m_ValueIndex}");
-                                        break;
-                                    }
-
-                                    var args = new SValue[paramCount];
-                                    for (int i = paramCount - 1; i >= 0; i--)
-                                    {
-                                        args[i] = m_ValueStack[--m_ValueIndex];
-                                    }
-
-                                    // Builtin contract: SystemPrint(string text)
-                                    // Use ToString fallback so non-string input still prints readable text.
-                                    var textObj = args[0].GetValueObject();
-                                    var text = textObj?.ToString() ?? string.Empty;
-                                    Console.Write(text);
-                                }
+                                ConsoleSystemMethodCall.ExecuteSystemPrint(this, sysPkg);
                                 break;
                             case (int)ESystemMethodCall.SystemCallCLRMethod:
-                                {
-                                    if (!TryInvokeRegisteredBridgeByIndex(iri))
-                                    {
-                                        TryInvokeLegacyBridgeSignature(iri, "CallCLRMethod");
-                                    }
-                                }
+                                BridgeSystemMethodCall.ExecuteSystemCallCLRMethod(this, iri);
                                 break;
                             case (int)ESystemMethodCall.SystemCallNativeMethod:
-                                {
-                                    if (!TryInvokeRegisteredBridgeByIndex(iri))
-                                    {
-                                        TryInvokeLegacyBridgeSignature(iri, "CallNativeMethod");
-                                    }
-                                }
+                                BridgeSystemMethodCall.ExecuteSystemCallNativeMethod(this, iri);
                                 break;
                             case (int)ESystemMethodCall.SystemCallJVMMethod:
-                                {
-                                    if (!TryInvokeLegacyBridgeSignature(iri, "CallJVMMethod"))
-                                    {
-                                        Debug.Assert(false, "CallJVMMethod is not configured");
-                                    }
-                                }
+                                BridgeSystemMethodCall.ExecuteSystemCallJVMMethod(this, iri);
                                 break;
                             case (int)ESystemMethodCall.SystemReadLine:
-                                {
-                                    int pc = sysPkg.paramCount;
-                                    if (m_ValueIndex < pc)
-                                    {
-                                        Debug.Assert(false, $"SystemReadLine stack underflow, need={pc}, has={m_ValueIndex}");
-                                        break;
-                                    }
-                                    for (int pi = pc - 1; pi >= 0; pi--)
-                                        _ = m_ValueStack[--m_ValueIndex];
-                                    string line = Console.ReadLine() ?? string.Empty;
-                                    var sv = default(SValue);
-                                    sv.SetStringValue(line);
-                                    PushSValueSynced(sv);
-                                }
+                                ConsoleSystemMethodCall.ExecuteSystemReadLine(this, sysPkg);
                                 break;
                             case (int)ESystemMethodCall.SystemReadKey:
-                                {
-                                    int pc = sysPkg.paramCount;
-                                    if (m_ValueIndex < pc)
-                                    {
-                                        Debug.Assert(false, $"SystemReadKey stack underflow, need={pc}, has={m_ValueIndex}");
-                                        break;
-                                    }
-                                    for (int pi = pc - 1; pi >= 0; pi--)
-                                        _ = m_ValueStack[--m_ValueIndex];
-                                    var k = Console.ReadKey(intercept: true);
-                                    var svk = default(SValue);
-                                    svk.SetStringValue(k.KeyChar.ToString());
-                                    PushSValueSynced(svk);
-                                }
+                                ConsoleSystemMethodCall.ExecuteSystemReadKey(this, sysPkg);
                                 break;
                             case (int)ESystemMethodCall.SystemConvertInt8:
                             case (int)ESystemMethodCall.SystemConvertSInt8:
@@ -1619,80 +1551,19 @@ namespace SimpleLanguage.VM.Runtime
                             case (int)ESystemMethodCall.SystemConvertUInt64:
                             case (int)ESystemMethodCall.SystemConvertFloat32:
                             case (int)ESystemMethodCall.SystemConvertFloat64:
+                                NumSystemMethodCall.ExecuteNumericConvert(this, sysPkg, (ESystemMethodCall)kind);
+                                break;
                             case (int)ESystemMethodCall.SystemConvertString:
-                                {
-                                    int pc = sysPkg.paramCount;
-                                    if (m_ValueIndex < pc)
-                                    {
-                                        Debug.Assert(false, $"SystemConvert stack underflow, need={pc}, has={m_ValueIndex}");
-                                        break;
-                                    }
-                                    var args = new SValue[pc];
-                                    for (int pi = pc - 1; pi >= 0; pi--)
-                                        args[pi] = m_ValueStack[--m_ValueIndex];
-                                    var outv = SystemBuiltinConvertValue(ref args[0], (ESystemMethodCall)kind);
-                                    PushSValueSynced(outv);
-                                }
+                                StringSystemMethodCall.ExecuteStringConvert(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemEqualObject:
+                                ObjectSystemMethodCall.ExecuteSystemEqualObject(this, sysPkg);
                                 break;
                             case (int)ESystemMethodCall.SystemArrayGetValueThis:
-                                {
-                                    int pc = sysPkg.paramCount;
-                                    if (pc < 2 || m_ValueIndex < pc)
-                                    {
-                                        Debug.Assert(false, $"SystemArrayGetValueThis stack underflow, need={pc}, has={m_ValueIndex}");
-                                        break;
-                                    }
-                                    var args = new SValue[pc];
-                                    for (int pi = pc - 1; pi >= 0; pi--)
-                                        args[pi] = m_ValueStack[--m_ValueIndex];
-
-                                    var arrObj = args[0].sobject as ArrayObject;
-                                    if (arrObj == null)
-                                    {
-                                        var nz = default(SValue);
-                                        nz.SetNull();
-                                        PushSValueSynced(nz);
-                                        break;
-                                    }
-
-                                    int index = 0;
-                                    try { index = Convert.ToInt32(args[1].GetValueObject(), CultureInfo.InvariantCulture); }
-                                    catch { index = 0; }
-
-                                    var got = arrObj.GetValue(index);
-                                    if (got is SObject so)
-                                    {
-                                        var sv = default(SValue);
-                                        SetSValue(so, so.eType, ref sv );
-                                        PushSValueSynced(sv);
-                                    }
-                                    else
-                                    {
-                                        PushSValueSynced(SValue.FromClrObject(got));
-                                    }
-                                }
+                                ObjectSystemMethodCall.ExecuteSystemArrayGetValueThis(this, sysPkg);
                                 break;
                             case (int)ESystemMethodCall.SystemArraySetValueThis:
-                                {
-                                    int pc = sysPkg.paramCount;
-                                    if (pc < 3 || m_ValueIndex < pc)
-                                    {
-                                        Debug.Assert(false, $"SystemArraySetValueThis stack underflow, need={pc}, has={m_ValueIndex}");
-                                        break;
-                                    }
-                                    var args = new SValue[pc];
-                                    for (int pi = pc - 1; pi >= 0; pi--)
-                                        args[pi] = m_ValueStack[--m_ValueIndex];
-
-                                    var arrObj = args[0].sobject as ArrayObject;
-                                    if (arrObj == null) break;
-
-                                    int index = 0;
-                                    try { index = Convert.ToInt32(args[1].GetValueObject(), CultureInfo.InvariantCulture); }
-                                    catch { index = 0; }
-
-                                    arrObj.StoreValue(index, args[2]);
-                                }
+                                ObjectSystemMethodCall.ExecuteSystemArraySetValueThis(this, sysPkg);
                                 break;
                             default:
                                 Log.AddVM(EError.None, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + (sysPkg.name ?? string.Empty));
@@ -3277,84 +3148,5 @@ namespace SimpleLanguage.VM.Runtime
             }
         }
 
-        /// <summary>Pops one stack operand and converts it to the target primitive/string per <see cref="ESystemMethodCall"/>.</summary>
-        private static SValue SystemBuiltinConvertValue(ref SValue arg, ESystemMethodCall kind)
-        {
-            if (arg.isNull)
-            {
-                var z = default(SValue);
-                z.SetNull();
-                return z;
-            }
-            object raw = UnwrapStackValueForSystemConvert(ref arg);
-            try
-            {
-                object conv = kind switch
-                {
-                    ESystemMethodCall.SystemConvertInt8 => Convert.ToByte(raw, CultureInfo.InvariantCulture),
-                    ESystemMethodCall.SystemConvertSInt8 => Convert.ToSByte(raw, CultureInfo.InvariantCulture),
-                    ESystemMethodCall.SystemConvertInt16 => Convert.ToInt16(raw, CultureInfo.InvariantCulture),
-                    ESystemMethodCall.SystemConvertUInt16 => Convert.ToUInt16(raw, CultureInfo.InvariantCulture),
-                    ESystemMethodCall.SystemConvertInt32 => Convert.ToInt32(raw, CultureInfo.InvariantCulture),
-                    ESystemMethodCall.SystemConvertUInt32 => Convert.ToUInt32(raw, CultureInfo.InvariantCulture),
-                    ESystemMethodCall.SystemConvertInt64 => Convert.ToInt64(raw, CultureInfo.InvariantCulture),
-                    ESystemMethodCall.SystemConvertUInt64 => Convert.ToUInt64(raw, CultureInfo.InvariantCulture),
-                    ESystemMethodCall.SystemConvertFloat32 => Convert.ToSingle(raw, CultureInfo.InvariantCulture),
-                    ESystemMethodCall.SystemConvertFloat64 => Convert.ToDouble(raw, CultureInfo.InvariantCulture),
-                    ESystemMethodCall.SystemConvertString => raw?.ToString() ?? string.Empty,
-                    _ => raw,
-                };
-                return SValue.FromClrObject(conv);
-            }
-            catch
-            {
-                var z = default(SValue);
-                z.SetNull();
-                return z;
-            }
-        }
-
-        private static object UnwrapStackValueForSystemConvert(ref SValue v)
-        {
-            if (v.isNull) return 0;
-            switch (v.eType)
-            {
-                case EVMType.Boolean: return v.int8Value != 0;
-                case EVMType.Byte: return v.int8Value;
-                case EVMType.SByte: return v.sint8Value;
-                case EVMType.Int16: return v.int16Value;
-                case EVMType.UInt16: return v.uint16Value;
-                case EVMType.Int32: return v.int32Value;
-                case EVMType.UInt32: return v.uint32Value;
-                case EVMType.Int64: return v.int64Value;
-                case EVMType.UInt64: return v.uint64Value;
-                case EVMType.Float32: return v.floatValue;
-                case EVMType.Float64: return v.doubleValue;
-                case EVMType.Num: return v.doubleValue;
-                case EVMType.String: return v.stringValue ?? string.Empty;
-                default: break;
-            }
-            if (v.sobject != null)
-            {
-                switch (v.sobject)
-                {
-                    case BoolObject o: return o.value;
-                    case Int8Object o: return o.value;
-                    case SInt8Object o: return o.value;
-                    case Int16Object o: return o.value;
-                    case UInt16Object o: return o.value;
-                    case Int32Object o: return o.value;
-                    case UInt32Object o: return o.value;
-                    case Int64Object o: return o.value;
-                    case UInt64Object o: return o.value;
-                    case Float32Object o: return o.value;
-                    case Float64Object o: return o.value;
-                    case StringObject o: return o.value ?? string.Empty;
-                    case NumObject o: return o.ToDouble();
-                }
-                return v.sobject.value ?? v.sobject.ToString() ?? string.Empty;
-            }
-            return v.GetValueObject() ?? string.Empty;
-        }
     }
 }

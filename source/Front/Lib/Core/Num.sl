@@ -19,46 +19,46 @@ public abstract class Num extends Object
     
     bool toBool()
     {
-        #ret SimpleLanguage.Lib.NumClass.NumToBool(this )
+        ret SystemConvertFloat64(this) != 0
     }
     Byte toByte( byte index = 0 )
     {
-        #ret SimpleLanguage.Lib.NumClass.NumToByte(this, index )
+        ret SystemConvertInt8(this)
     }
     Byte toSByte( byte index = 0 )
     {
-        #ret SimpleLanguage.Lib.NumClass.NumToSByte(this, index )
+        ret SystemConvertSInt8(this)
     }
     Int16 toInt16()
     {
-        #ret SimpleLanguage.Lib.NumClass.NumToInt16(this )
+        ret SystemConvertInt16(this)
     }
     UInt16 toUInt16()
     {
-        #ret SimpleLanguage.Lib.NumClass.NumToUInt16(this )
+        ret SystemConvertUInt16(this)
     }
     Int32 toInt32()
     {
-        #ret SimpleLanguage.Lib.NumClass.NumToInt32(this )
+        ret SystemConvertInt32(this)
     }
     UInt32 toUInt32()
     {
-        #ret SimpleLanguage.Lib.NumClass.NumToUInt32(this )
+        ret SystemConvertUInt32(this)
     }
     Int64 toInt64()
     {
-        #ret SimpleLanguage.Lib.NumClass.NumToInt64(this )
+        ret SystemConvertInt64(this)
     }
     Int64 toUInt64()
     {
-        #ret SimpleLanguage.Lib.NumClass.NumToUInt64(this )
+        ret SystemConvertUInt64(this)
     }
     Float32 toFloat32()
     {
-        #ret SimpleLanguage.Lib.NumClass.NumToFloat32(this)
+        ret SystemConvertFloat32(this)
     }
     Float64 toFloat64()
     {
-        #ret SimpleLanguage.Lib.NumClass.NumToFloat64(this)
+        ret SystemConvertFloat64(this)
     }
 }

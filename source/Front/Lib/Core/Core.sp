@@ -55,9 +55,9 @@ Project
 
         
         
+            #!
         for v in BridgeKind
         {
-            #!
             if v == BridgeKind.SELF 
             {
                 println( "BridgeKind--------------SELF " )
@@ -69,24 +69,23 @@ Project
                 break
             }
             println( "BridgeKind= $v.name.toString() " )
-            !#
             printBridgeKind(v)
         }
+        !#
         
 
-        #!
         sum = 0
-        for i in range(1,100)
+        for i in range(1,10)
         {
             sum += i
             #!
-            for n in range( 3, 50 )
+            for n in range( 3, 6 )
             {
                 sum += n
             }
+            !#
         }
         println(sum)
-        !#       
     }
     _test_()
     {

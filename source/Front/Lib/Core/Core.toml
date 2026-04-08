@@ -113,6 +113,13 @@ ignore   = false
 priority = 0
 
 [[compileFiles.files]]
+path     = "Range.sl"
+group    = "core"
+tag      = "ir"
+ignore   = false
+priority = 0
+
+[[compileFiles.files]]
 path     = "NativeBridge.sl"
 group    = "core"
 tag      = "ir"
