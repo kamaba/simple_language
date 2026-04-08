@@ -14,6 +14,9 @@ using System.Reflection;
 using SimpleLanuageVM.Load;
 using SimpleLanguage.Parse;
 using System.Globalization;
+using System.Collections.Generic;
+using SimpleLanguage.VM;
+using SimpleLanguage.VM.MemoryManagement;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -165,7 +168,39 @@ namespace SimpleLanguage.VM.Runtime
             {
                 m_ValueStack = new SValue[500];
             }
+
+            SlMemoryManager.Instance.RegisterVmForRootCollection(this);
         }
+
+        /// <summary>GC roots: value stack and argument/local/return runtime object slots.</summary>
+        internal void AppendSlMemoryRoots(HashSet<SObject> roots)
+        {
+            if (roots == null) return;
+            if (m_ValueStack != null)
+            {
+                int n = m_ValueIndex;
+                for (int i = 0; i < n; i++)
+                {
+                    var v = m_ValueStack[i];
+                    if (!v.isNull && v.sobject != null)
+                        roots.Add(v.sobject);
+                }
+            }
+            AppendRuntimeObjectRoots(roots, m_ArgumentRuntimeObjectArray);
+            AppendRuntimeObjectRoots(roots, m_LocalVariableRuntimeObjectArray);
+            AppendRuntimeObjectRoots(roots, m_ReturnRuntimeObjectArray);
+        }
+
+        private static void AppendRuntimeObjectRoots(HashSet<SObject> roots, RuntimeObject[]? arr)
+        {
+            if (arr == null) return;
+            foreach (var ro in arr)
+            {
+                if (ro?.sobject != null)
+                    roots.Add(ro.sobject);
+            }
+        }
+
         public bool IsNumericTypeLocal(EVMType t)
         {
             return t == EVMType.Num || t == EVMType.Int32 || t == EVMType.Int64 || t == EVMType.Float32 || t == EVMType.Float64;
@@ -1558,6 +1593,27 @@ namespace SimpleLanguage.VM.Runtime
                                 break;
                             case (int)ESystemMethodCall.SystemEqualObject:
                                 ObjectSystemMethodCall.ExecuteSystemEqualObject(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemObjectGetType:
+                                ObjectSystemMethodCall.ExecuteSystemObjectGetType(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemObjectGetHashCode:
+                                ObjectSystemMethodCall.ExecuteSystemObjectGetHashCode(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemObjectRef:
+                                ObjectSystemMethodCall.ExecuteSystemObjectRef(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemObjectRefWeak:
+                                ObjectSystemMethodCall.ExecuteSystemObjectRefWeak(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemObjectRefCount:
+                                ObjectSystemMethodCall.ExecuteSystemObjectRefCount(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemObjectFree:
+                                ObjectSystemMethodCall.ExecuteSystemObjectFree(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemObjectRelease:
+                                ObjectSystemMethodCall.ExecuteSystemObjectRelease(this, sysPkg);
                                 break;
                             case (int)ESystemMethodCall.SystemArrayGetValueThis:
                                 ObjectSystemMethodCall.ExecuteSystemArrayGetValueThis(this, sysPkg);

@@ -7,8 +7,7 @@ public class Object
 
     final get Type type()
     {
-        #ret SimpleLanguage.Lib.ObjectClass.GetObjectType(this);
-        ret null
+        ret SystemObjectGetType(this)
     }
 
     #static helper: null-safe equality
@@ -34,47 +33,42 @@ public class Object
     #hashCode getter - delegated to runtime helper
     public Int32 get hashCode()
     {
-        #ret SimpleLanguage.Lib.ObjectClass.GetHashCodeBySObject(this);
-        ret 0
+        ret SystemObjectGetHashCode(this)
     }
 
     #equality: default delegates to runtime equality helper which may compare by reference
     public bool equals(object obj)
     {
         if (obj == null){ ret false; }
-        #ret SimpleLanguage.Lib.ObjectClass.EqualObject(this, obj);
-        ret false
+        ret SystemEqualObject(this, obj)
     }
     #runtime internal reference (object identity)
     object get ref()
     {
-        #ret SimpleLanguage.Lib.ObjectClass.ObjectRef(this);
-        ret null
+        ret SystemObjectRef(this)
     }
 
     #weak reference getter
     object get refWeak()
     {
-        #ret SimpleLanguage.Lib.ObjectClass.ObjectWeakRef(this);
-        ret null
+        ret SystemObjectRefWeak(this)
     }
 
     #reference count (for debugging)
     public Int32 get refCount()
     {
-        #ret SimpleLanguage.Lib.ObjectClass.RefCount(this);
-        ret 0
+        ret SystemObjectRefCount(this)
     }
 
     #free/release placeholders - runtime manages lifecycle, expose for API completeness
     public void free()
     {
-        #SimpleLanguage.Lib.ObjectClass.FreeObject(this);
+        SystemObjectFree(this)
     }
 
     public void release()
     {
-        #SimpleLanguage.Lib.ObjectClass.ReleaseObject(this);
+        SystemObjectRelease(this)
     }
     #string representation
     public string toString()

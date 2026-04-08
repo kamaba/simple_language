@@ -404,6 +404,13 @@ namespace SimpleLanguage
         SystemConvertFloat64,
         SystemConvertString,
         SystemEqualObject,
+        SystemObjectGetType,
+        SystemObjectGetHashCode,
+        SystemObjectRef,
+        SystemObjectRefWeak,
+        SystemObjectRefCount,
+        SystemObjectFree,
+        SystemObjectRelease,
         SystemArrayGetValueThis,
         SystemArraySetValueThis,
     }

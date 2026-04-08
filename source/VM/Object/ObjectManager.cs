@@ -6,6 +6,7 @@
 //  Description: 
 //****************************************************************************
 
+using SimpleLanguage.VM.MemoryManagement;
 using SimpleLanguage.VM.Runtime;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -146,6 +147,7 @@ namespace SimpleLanguage.VM
                 }
                 sobj = co;
             }
+            SlMemoryManager.Instance.RegisterAllocation(sobj);
             return sobj;
         }
     }

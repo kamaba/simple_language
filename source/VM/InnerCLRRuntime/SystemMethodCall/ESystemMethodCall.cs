@@ -25,6 +25,13 @@ namespace SimpleLanguage.VM.Runtime
         SystemConvertFloat64,
         SystemConvertString,
         SystemEqualObject,
+        SystemObjectGetType,
+        SystemObjectGetHashCode,
+        SystemObjectRef,
+        SystemObjectRefWeak,
+        SystemObjectRefCount,
+        SystemObjectFree,
+        SystemObjectRelease,
         SystemArrayGetValueThis,
         SystemArraySetValueThis,
     }

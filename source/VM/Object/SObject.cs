@@ -20,6 +20,12 @@ namespace SimpleLanguage.VM
         public short typeId { get; set; } = 0;
         public int refCount { get; set; } = 0;
 
+        /// <summary>
+        /// Dart-style generation: 0 = nursery (new space), 1 = old space.
+        /// Updated by <see cref="T:SimpleLanguage.VM.MemoryManagement.SlMemoryManager"/> during SL GC.
+        /// </summary>
+        public byte SlMemoryGeneration { get; internal set; }
+
         /// <summary>标量位型数据（布尔用 <see cref="NumericUnion.i8"/> 0/1，与 <see cref="SValue"/> 一致）。</summary>
         protected NumericUnion m_Numeric;
         /// <summary>引用型负载：字符串、类实例、MethodHandle 等。</summary>
