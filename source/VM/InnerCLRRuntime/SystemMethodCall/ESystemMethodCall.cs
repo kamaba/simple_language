@@ -34,5 +34,8 @@ namespace SimpleLanguage.VM.Runtime
         SystemObjectRelease,
         SystemArrayGetValueThis,
         SystemArraySetValueThis,
+        SystemInt32Parse,
+        SystemNumAbs,
+        SystemNumFloor,
     }
 }

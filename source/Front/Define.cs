@@ -413,6 +413,9 @@ namespace SimpleLanguage
         SystemObjectRelease,
         SystemArrayGetValueThis,
         SystemArraySetValueThis,
+        SystemInt32Parse,
+        SystemNumAbs,
+        SystemNumFloor,
     }
 
     class Define

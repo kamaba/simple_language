@@ -13,63 +13,46 @@ public class Float64 extends Num
         this._value = f
     }
     
-    override get int size() { ret 32 }
-    override get int byteLength() { ret 4 }
+    override get int size() { ret 64 }
+    override get int byteLength() { ret 8 }
 
-    
-    public override Float64 abs()
+    public override Num abs()
     {
-        ret 0 #SimpleLanguage.Lib.Int32Class.Abs(this._value)
+        ret SystemNumAbs(this)
     } 
-    public override Float64 floor()
+    public override Num floor()
+    {
+        ret SystemNumFloor(this)
+    }
+    public override Num ceil()
     {
         ret this
     }
-    public override Float64 ceil()
+    public override Int32 compareTo(Num other)
     {
-        ret this
-    }
-    public override int compareTo(Float64 value)
-    {
-        if (value == null)
-        {
-            ret 1;
-        }
-        if (this._value == value ){ ret 0; }
-        ret this._value > value._value ? 1 : -1
+        if (other == null) { ret 1 }
+        Float64 ov = other.toFloat64()
+        if (this._value == ov) { ret 0 }
+        ret this._value > ov ? 1 : -1
     }
 
     public static bool isFinite( Float64 f )
     {
         #try {
-            ret false;  #!double.IsInfinity(f) && !double.IsNaN(f); 
+            ret false;  # !double.IsInfinity(f) && !double.IsNaN(f); 
         #} catch { return false; }
     }
-    #!
-    public override String toString( string format )
-    {
-        ret string.format( "{0}", this._value );
-    }
-
     public override Int32 toInt32()
     {
-        ret (Int32) this._value
+        ret SystemConvertInt32(this)
     }
     public override Float64 toFloat64()
     {
-        ret this._value
+        ret SystemConvertFloat64(this)
     }
-    public override Num abs()
+
+    override String toString()
     {
-        ret Float64( System.Math.Abs(this._value) )
+        ret SystemConvertString(this)
     }
-    public override Num floor()
-    {
-        ret Float64( System.Math.Floor(this._value) )
-    }
-    public override Num ceil()
-    {
-        ret Float64( System.Math.Ceiling(this._value) )
-    }
-    !#
 }

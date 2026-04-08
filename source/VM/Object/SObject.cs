@@ -19,6 +19,7 @@ namespace SimpleLanguage.VM
         public RuntimeType? runtimeType => m_RuntimeType;
         public short typeId { get; set; } = 0;
         public int refCount { get; set; } = 0;
+        public int id => m_Id;
 
         /// <summary>
         /// Dart-style generation: 0 = nursery (new space), 1 = old space.
@@ -34,12 +35,12 @@ namespace SimpleLanguage.VM
         protected EVMType m_Type = EVMType.Class;
         protected RuntimeType? m_RuntimeType = null;
         protected int m_Length = 0;
-        protected int id = 0;
+        protected int m_Id = 0;
 
         static int idCount = 10000;
         protected SObject()
         {
-            id = ++idCount;
+            m_Id = ++idCount;
             m_Numeric = default;
             m_Reference = this;
         }

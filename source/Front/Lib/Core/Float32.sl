@@ -29,28 +29,23 @@ public class Float32 extends Num
     !#
     public override Int32 toInt32()
     {
-        #ret SimpleLanguage.Lib.Float32Class.ToInt32(this)
         ret SystemConvertInt32(this)
     }
     public override Float64 toFloat64()
     {
-        #convert to double
-        ret this._value
+        ret SystemConvertFloat64(this)
     }
     public override Num abs()
     {
-        #ret SimpleLanguage.Lib.Float32Class.Abs(this)
-        ret 0
+        ret SystemNumAbs(this)
     }
     public override Num floor()
     {
-        #ret SimpleLanguage.Lib.Float32Class.Floor(this)
-        ret 0
+        ret SystemNumFloor(this)
     }
     public override Num ceil()
     {
-        #ret SimpleLanguage.Lib.Float32Class.Ceil(this)
-        ret 0
+        ret this
     }
     public override Int32 compareTo( Num other )
     {
@@ -58,5 +53,10 @@ public class Float32 extends Num
         Float64 ov = other.toFloat64()
         if (this._value == ov){ ret 0 }
         ret this._value > ov ? 1 : -1
+    }
+
+    override String toString()
+    {
+        ret SystemConvertString(this)
     }
 }

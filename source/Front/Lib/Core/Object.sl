@@ -28,7 +28,7 @@ public class Object
     public static bool refEquals(object objA, object objB)
     {
         if (objA == null || objB == null){ ret false };
-        ret objA.ref == objB.ref;
+        ret objA.refWeak == objB.refWeak;
     }
     #hashCode getter - delegated to runtime helper
     public Int32 get hashCode()
@@ -73,6 +73,7 @@ public class Object
     #string representation
     public string toString()
     {
-        ret "Object";
+        hc = SystemObjectGetHashCode(this);
+        ret "Object" + hc.toString();
     }
 }

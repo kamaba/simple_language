@@ -1,79 +1,58 @@
 
 public class Byte extends Num
-{    
-    const Byte MaxValue = 0b1111111;
-    const Byte MinValue = 0b0000000;
-    Byte _value = 0;    
+{
+    const Byte MaxValue = 0b11111111;
+    const Byte MinValue = 0b00000000;
+    Byte _value = 0;
 
-    static String ByteToString( Byte value )
-    {
-        #ret SimpleLanguage.Lib.ByteClass.ByteToString( value )
-    }
-    public static Byte parseString( string s )
-    {
-        ret 0
-    }
-    _init_( Byte _val )
+    _init_(Byte _val)
     {
         this._value = _val
     }
 
-    override get int size() { ret 32 }
-    override get int byteLength() { ret 4 }
+    override get int size() { ret 8 }
+    override get int byteLength() { ret 1 }
 
-    public override Byte abs()
+    public static Byte parseString(string s)
     {
-        ret 0
-    } 
-    public override Byte floor()
+        ret System.Convert.ToByte(s)
+    }
+
+    public override Num abs()
     {
         ret this
     }
-    public override Byte ceil()
+
+    public override Num floor()
+    {
+        ret SystemNumFloor(this)
+    }
+
+    public override Num ceil()
     {
         ret this
     }
-    public override int compareTo(Byte value)
+
+    public override Int32 compareTo(Num other)
     {
-        if (value == null)
-        {
-            ret 1;
-        }
-        if (this._value == value ){ ret 0; }
-        ret this._value > value._value ? 1 : -1
+        if (other == null) { ret 1 }
+        Byte ov = SystemConvertInt8(other)
+        if (this._value == ov) { ret 0 }
+        ret this._value > ov ? 1 : -1
     }
-    #!
-    Byte toByte()
+
+    override Int32 toInt32()
     {
-        ret 0
+        ret SystemConvertInt32(this)
     }
-    SByte toSByte()
+
+    override Float64 toFloat64()
     {
-        ret 0
+        ret SystemConvertFloat64(this)
     }
-    Int16 toSInt16()
-    {
-        ret 0
-    }
-    UInt16 toUInt16()
-    {
-        ret 0
-    }
-    UInt32 toUInt32()
-    {
-        ret 0
-    }
-    Float32 toFloat32()
-    {
-        ret 0
-    }
-    Float64 toFloat64()
-    {
-        ret 0
-    }
-    !#
+
     override String toString()
     {
-        #ret SimpleLanguage.Lib.ByteClass.ByteToString( this )
+        ret SystemConvertString(this)
     }
 }

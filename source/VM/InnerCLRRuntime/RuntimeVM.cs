@@ -1588,6 +1588,15 @@ namespace SimpleLanguage.VM.Runtime
                             case (int)ESystemMethodCall.SystemConvertFloat64:
                                 NumSystemMethodCall.ExecuteNumericConvert(this, sysPkg, (ESystemMethodCall)kind);
                                 break;
+                            case (int)ESystemMethodCall.SystemInt32Parse:
+                                NumSystemMethodCall.ExecuteSystemInt32Parse(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemNumAbs:
+                                NumSystemMethodCall.ExecuteSystemNumAbs(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemNumFloor:
+                                NumSystemMethodCall.ExecuteSystemNumFloor(this, sysPkg);
+                                break;
                             case (int)ESystemMethodCall.SystemConvertString:
                                 StringSystemMethodCall.ExecuteStringConvert(this, sysPkg);
                                 break;

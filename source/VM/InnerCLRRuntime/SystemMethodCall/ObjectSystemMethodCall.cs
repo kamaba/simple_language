@@ -43,7 +43,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             else if (a.sobject != null)
             {
-                hash = a.sobject.GetHashCode();
+                hash = a.sobject.id;
             }
             else
             {

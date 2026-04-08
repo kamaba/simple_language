@@ -598,6 +598,63 @@ namespace SimpleLanguage.Compile
         void ReadNumberOrHexOrOctOrBinNumber()
         {
             char t = ReadChar();
+            void AddBaseNumberToken(int radix)
+            {
+                if (m_Builder.Length == 0)
+                {
+                    m_Builder.Append('0');
+                }
+
+                string raw = m_Builder.ToString();
+                int digitCount = raw.Length;
+
+                // 按“总位置”推断类型：1位->Byte, 2位->Int16, 3~4位->Int32, 超过4位->Int64
+                EType targetType = EType.Int32;
+                if (digitCount <= 1)
+                {
+                    targetType = EType.Byte;
+                }
+                else if (digitCount <= 2)
+                {
+                    targetType = EType.Int16;
+                }
+                else if (digitCount <= 4)
+                {
+                    targetType = EType.Int32;
+                }
+                else
+                {
+                    targetType = EType.Int64;
+                }
+
+                try
+                {
+                    long parsed = Convert.ToInt64(raw, radix);
+                    switch (targetType)
+                    {
+                        case EType.Byte:
+                            AddToken(ETokenType.Number, (byte)parsed, EType.Byte);
+                            break;
+                        case EType.Int16:
+                            AddToken(ETokenType.Number, (short)parsed, EType.Int16);
+                            break;
+                        case EType.Int32:
+                            AddToken(ETokenType.Number, (int)parsed, EType.Int32);
+                            break;
+                        default:
+                            AddToken(ETokenType.Number, parsed, EType.Int64);
+                            break;
+                    }
+                }
+                catch
+                {
+                    var ld = Log.AddInHandleToken(m_Path, m_SourceLine, m_SourceChar, EError.None,
+                        $"进制数字超出可解析范围(0{(radix == 16 ? 'x' : radix == 8 ? 'o' : 'b')}{raw})，按Int64最大值处理");
+                    ld.demo = raw;
+                    AddToken(ETokenType.Number, long.MaxValue, EType.Int64);
+                }
+            }
+
             if ( t == 'x' )
             {
                 do
@@ -613,11 +670,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        if(m_Builder.Length == 0 )
-                        {
-                            m_Builder.Append(0);
-                        }
-                        AddToken(ETokenType.Number, Convert.ToInt32(m_Builder.ToString(), 16), EType.Int32);
+                        AddBaseNumberToken(16);
                         break;
                     }
                 } while (true);
@@ -637,11 +690,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        if (m_Builder.Length == 0)
-                        {
-                            m_Builder.Append(0);
-                        }
-                        AddToken(ETokenType.Number, Convert.ToInt32(m_Builder.ToString(), 8), EType.Int32);
+                        AddBaseNumberToken(8);
                         break;
                     }
                 } while (true);
@@ -662,11 +711,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        if (m_Builder.Length == 0)
-                        {
-                            m_Builder.Append(0);
-                        }
-                        AddToken(ETokenType.Number, Convert.ToInt32(m_Builder.ToString(), 2), EType.Int32);
+                        AddBaseNumberToken(2);
                         break;
                     }
                 } while (true);
