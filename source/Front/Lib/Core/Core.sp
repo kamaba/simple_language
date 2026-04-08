@@ -13,6 +13,22 @@ Project
         string newstr = SystemConvertString(str) + "\n";
         SystemPrint(newstr)
     }
+    printBridgeKind( BridgeKind v )
+    {
+
+            if v == BridgeKind.SELF 
+            {
+                println( "BridgeKind--------------SELF " )
+            }
+            elif v == BridgeKind.JVM
+            {
+                println( "BridgeKind--------------JVM " )
+            }
+            else
+            {
+                println( "BridgeKind--------------NATIVE " )
+            }
+    }
     _main_()
     {
         #ObjectTest.fun()
@@ -38,8 +54,10 @@ Project
         !#
 
         
+        
         for v in BridgeKind
         {
+            #!
             if v == BridgeKind.SELF 
             {
                 println( "BridgeKind--------------SELF " )
@@ -51,7 +69,10 @@ Project
                 break
             }
             println( "BridgeKind= $v.name.toString() " )
+            !#
+            printBridgeKind(v)
         }
+        
 
         #!
         sum = 0

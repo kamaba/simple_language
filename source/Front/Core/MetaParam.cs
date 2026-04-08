@@ -217,14 +217,15 @@ namespace SimpleLanguage.Core
                 // (MetaEnum) of the same enum type, not the underlying primitive type.
                 if (declaredMC is MetaEnum declaredEnum && mip.express is MetaCallLinkExpressNode mcle)
                 {
-                    var gmv = mcle.metaCallLink.finalCallNode.variable.GetOwnerClassTemplateClass();
+                    var v = mcle.metaCallLink.finalCallNode.variable;
 
-                    if(gmv is MetaEnum )
+                    var mt = v.isDefineMetaType ? v.defineMetaType : v.realMetaType;
+
+                    var gmv = mt.GetTemplateMetaClass();
+
+                    if(gmv == CoreMetaClassManager.memberMetaClass )
                     {
-                        if (gmv == declaredMC)
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                     return false;
                 }
