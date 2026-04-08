@@ -97,7 +97,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 sv.SetSObject(sobj);
                 if (retainForStrongRef)
-                    ManualMemory.Retain(sobj);
+                    ObjectManager.RetainObject(sobj);
             }
             vm.PushSValueSynced(sv);
         }
@@ -138,7 +138,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 ManualMemory.Unpin(a.sobject);
                 a.sobject.refCount = 0;
-                ManualMemory.OnManualRefForcedZero(a.sobject);
+                ObjectManager.OnManualRefForcedZero(a.sobject);
             }
         }
 
@@ -153,7 +153,7 @@ namespace SimpleLanguage.VM.Runtime
 
             var a = args[0];
             if (!a.isNull && a.sobject != null)
-                ManualMemory.Release(a.sobject);
+                ObjectManager.ReleaseObject(a.sobject);
         }
 
         public static void ExecuteSystemEqualObject(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)

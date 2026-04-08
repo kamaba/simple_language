@@ -7,9 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.VM.Runtime;
-using System;
-using System.Collections.Generic;
-using System.Text;
+
 
 namespace SimpleLanguage.VM
 {
@@ -26,12 +24,6 @@ namespace SimpleLanguage.VM
         {
             m_Reference = _val;
         }
-        //public static StringObject SetToString( Int32MetaClass mc )
-        //{
-        //    StringObject s = new StringObject("");
-
-        //    return s;
-        //}
         public override string ToFormatString()
         {
             return value ?? "";

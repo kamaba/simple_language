@@ -6,7 +6,6 @@
 //  Description: 
 //****************************************************************************
 using SimpleLanguage.VM.Runtime;
-using System;
 
 namespace SimpleLanguage.VM
 {

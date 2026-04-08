@@ -14,8 +14,7 @@ namespace SimpleLanguage.VM.MemoryManagement
         /// <summary>Maps to <see cref="SObject.refCount"/> — explicit reference accounting alongside GC.</summary>
         public static void Retain(SObject obj)
         {
-            if (obj == null) return;
-            obj.refCount++;
+            ObjectManager.RetainObject(obj);
         }
 
         /// <summary>
@@ -25,30 +24,11 @@ namespace SimpleLanguage.VM.MemoryManagement
         /// </summary>
         public static void Release(SObject obj)
         {
-            if (obj == null) return;
-            if (obj.refCount <= 0) return;
-            obj.refCount--;
-            if (obj.refCount != 0) return;
-            TryRemoveClassObjectRegistryEntry(obj);
+            ObjectManager.ReleaseObject(obj);
         }
 
         /// <summary>Same <see cref="ClassObject"/> registry cleanup as when <see cref="Release"/> reaches zero, for paths that assign <see cref="SObject.refCount"/> to zero directly (e.g. <c>SystemObjectFree</c>).</summary>
-        public static void OnManualRefForcedZero(SObject obj) => TryRemoveClassObjectRegistryEntry(obj);
-
-        private static void TryRemoveClassObjectRegistryEntry(SObject sobj)
-        {
-            if (sobj is not ClassObject co) return;
-            try
-            {
-                int key = co.GetHashCode();
-                if (ObjectManager.classObjectDict.ContainsKey(key))
-                    ObjectManager.classObjectDict.Remove(key);
-            }
-            catch
-            {
-                // same as legacy FreeObject: never throw from refcount cleanup
-            }
-        }
+        public static void OnManualRefForcedZero(SObject obj) => ObjectManager.OnManualRefForcedZero(obj);
 
         public static void CollectYoungGeneration() => SlMemoryManager.Instance.CollectYoungGeneration();
 

@@ -8,7 +8,6 @@
 
 using SimpleLanguage.VM.MemoryManagement;
 using SimpleLanguage.VM.Runtime;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace SimpleLanguage.VM
@@ -24,6 +23,48 @@ namespace SimpleLanguage.VM
             if (!classObjectDict.ContainsKey(cl.GetHashCode()))
             {
                 classObjectDict.Add(cl.GetHashCode(), cl);
+            }
+        }
+
+        /// <summary>Manual strong-reference retain counter (pairs with system Object.ref).</summary>
+        public static void RetainObject(SObject obj)
+        {
+            if (obj == null) return;
+            obj.refCount++;
+        }
+
+        /// <summary>
+        /// Manual release of strong-reference counter.
+        /// When it reaches zero, remove ClassObject registry entry (legacy-compatible behavior).
+        /// </summary>
+        public static void ReleaseObject(SObject obj)
+        {
+            if (obj == null) return;
+            if (obj.refCount <= 0) return;
+            obj.refCount--;
+            if (obj.refCount != 0) return;
+            TryRemoveClassObjectRegistryEntry(obj);
+        }
+
+        /// <summary>For paths that force <see cref="SObject.refCount"/> to zero directly (e.g. SystemObjectFree).</summary>
+        public static void OnManualRefForcedZero(SObject obj)
+        {
+            if (obj == null) return;
+            TryRemoveClassObjectRegistryEntry(obj);
+        }
+
+        private static void TryRemoveClassObjectRegistryEntry(SObject sobj)
+        {
+            if (sobj is not ClassObject co) return;
+            try
+            {
+                int key = co.GetHashCode();
+                if (classObjectDict.ContainsKey(key))
+                    classObjectDict.Remove(key);
+            }
+            catch
+            {
+                // Keep legacy behavior: cleanup must never break runtime path.
             }
         }
         //public static void AddArrayObject(ArrayObject cl)
