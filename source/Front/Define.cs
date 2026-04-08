@@ -416,6 +416,7 @@ namespace SimpleLanguage
         SystemInt32Parse,
         SystemNumAbs,
         SystemNumFloor,
+        SystemStringFormat,
     }
 
     class Define

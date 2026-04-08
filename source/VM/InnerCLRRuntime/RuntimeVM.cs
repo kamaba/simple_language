@@ -1600,6 +1600,9 @@ namespace SimpleLanguage.VM.Runtime
                             case (int)ESystemMethodCall.SystemConvertString:
                                 StringSystemMethodCall.ExecuteStringConvert(this, sysPkg);
                                 break;
+                            case (int)ESystemMethodCall.SystemStringFormat:
+                                StringSystemMethodCall.ExecuteStringFormat(this, sysPkg);
+                                break;
                             case (int)ESystemMethodCall.SystemEqualObject:
                                 ObjectSystemMethodCall.ExecuteSystemEqualObject(this, sysPkg);
                                 break;

@@ -37,5 +37,6 @@ namespace SimpleLanguage.VM.Runtime
         SystemInt32Parse,
         SystemNumAbs,
         SystemNumFloor,
+        SystemStringFormat,
     }
 }
