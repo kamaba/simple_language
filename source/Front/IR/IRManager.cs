@@ -8,10 +8,12 @@
 
 using SimpleLanguage.Core;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SimpleLanguage.IR
 {
@@ -44,19 +46,30 @@ namespace SimpleLanguage.IR
             // NOTE:
             // DebugCode 的 IR 导出需要同时包含“源码定义的成员函数”和“动态解析出来的函数”。
             // 之前仅翻译 metaDynamicFunctionList，导致 NativeBridge / BridgeKind 等类的同级函数缺失。
+            var allMethods = new List<MetaMemberFunction>();
             var mmfDict = MethodManager.instance.metaOriginalFunctionList;
             foreach (var v in mmfDict)
             {
-                // functionAllName / owner 等可能依赖解析后的状态
-                // v.UpdateFunctionName(); // 若当前版本无需更新，可保持注释
-                IRMethod irm = this.TranslateIRByFunction(v);
-                AddIRMethod(irm);
+                allMethods.Add(v);
             }
-            //动态解析出来的函数
             var dynamicMmfDict4 = MethodManager.instance.metaDynamicFunctionList;
             foreach (var v in dynamicMmfDict4)
             {
-                IRMethod irm = TranslateIRByFunction(v);
+                allMethods.Add(v);
+            }
+
+            var translatedMethods = new ConcurrentBag<IRMethod>();
+            Parallel.ForEach(allMethods, mmf =>
+            {
+                var irm = TranslateIRByFunction(mmf);
+                if (irm != null)
+                {
+                    translatedMethods.Add(irm);
+                }
+            });
+
+            foreach (var irm in translatedMethods)
+            {
                 AddIRMethod(irm);
             }
 

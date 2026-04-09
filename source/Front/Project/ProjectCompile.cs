@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using System.Timers;
 using Tomlyn;
 using Tomlyn.Model;
@@ -79,9 +80,9 @@ namespace SimpleLanguage.Project
                 string compilefile = projectName + ".sp";
 
                 var fp = new FileParse(compilefile, new ParseFileParam());
-                fp.structParseComplete = StructParseComplete;
-                fp.buildParseComplete = BuildParseComplete;
-                fp.grammerParseComplete = GrammerParseComplete;
+                fp.structParseComplete = null;
+                fp.buildParseComplete = null;
+                fp.grammerParseComplete = null;
 
                 m_ProjectFile = fp.file;
 
@@ -124,9 +125,9 @@ namespace SimpleLanguage.Project
         public static void AddFileParse( string path )
         {
             var fp = new FileParse( path, new ParseFileParam() );
-            fp.structParseComplete = StructParseComplete;
-            fp.buildParseComplete = BuildParseComplete;
-            fp.grammerParseComplete = GrammerParseComplete;
+            fp.structParseComplete = null;
+            fp.buildParseComplete = null;
+            fp.grammerParseComplete = null;
             fileParseList.Add(fp);
         }
         public static bool CheckFileList()
@@ -146,12 +147,14 @@ namespace SimpleLanguage.Project
         public static void FileListStructParse()
         {
             if (!CheckFileList()) return;
-            for (int i = 0; i < fileParseList.Count; i++)
+            // Pre-FileMeta stage: process each source file in parallel.
+            Parallel.ForEach(fileParseList, fp =>
             {
-                fileParseList[i].StructParse();
+                fp.StructParse();
+            });
 
-                //Log.AddProcess( EProcess.StructMeta, LID.Unknown, fileParseList[i].ToFormatString());
-            }
+            // After all FileMeta-pre stages are complete, continue with unified main-thread MetaCore pipeline.
+            CompileFileAllEnd();
         }
         public static void StructParseComplete()
         {
