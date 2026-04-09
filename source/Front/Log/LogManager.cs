@@ -58,7 +58,7 @@ namespace SimpleLanguage.Logging
                 ErrorRegistry.Instance.Register(new ErrorDefinition()
                 {
                     Id = (int)LID.Unknown,
-                    Module = LogModule.Project,
+                    //Module = LogModule.Project,
                     LogType = LogType.Error,
                     EnableAssert = true,
                     BlockOnErrorAssert = false,
@@ -128,7 +128,7 @@ namespace SimpleLanguage.Logging
             {
                 Id = def.Id,
                 LogType = def.LogType,
-                Module = def.Module,
+                //Module = def.Module,
                 Message = msg,
                 FixHint = def.FixHint
             };
@@ -151,7 +151,7 @@ namespace SimpleLanguage.Logging
             {
                 Id = def.Id,
                 LogType = def.LogType,
-                Module = def.Module,
+                //Module = def.Module,
                 Message = msg,
                 FixHint = def.FixHint,
                 FilePath = tokenInfo.Path,

@@ -155,10 +155,14 @@ namespace SimpleLanguage.Project
         {
             if (!CheckFileList()) return;
             // Pre-FileMeta stage: process each source file in parallel.
-            Parallel.ForEach(fileParseList, fp =>
+            //Parallel.ForEach(fileParseList, fp =>
+            //{
+            //    fp.StructParse();
+            //});
+            foreach( var v in fileParseList )
             {
-                fp.StructParse();
-            });
+                v.StructParse();
+            }
 
             // After all FileMeta-pre stages are complete, continue with unified main-thread MetaCore pipeline.
             CompileFileAllEnd();

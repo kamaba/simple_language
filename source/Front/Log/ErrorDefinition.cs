@@ -40,21 +40,10 @@ namespace SimpleLanguage.Logging
         public string MessageTemplate { get; set; } = string.Empty;
         public LogType LogType { get; set; } = LogType.Error;
         public int ParamCount { get; set; } = 0;
-        public LogModule Module { get; set; } = LogModule.FileMeta;
         public bool EnableAssert { get; set; } = true;
         public bool BlockOnErrorAssert { get; set; } = false;
         public bool AbortCompilation { get; set; } = false;
         public ErrorDisplayType DisplayType { get; set; } = ErrorDisplayType.Direct;
         public string FixHint { get; set; } = string.Empty;
-
-        // compatibility bridge
-        public LogType Severity { get => LogType; set => LogType = value; }
-        public bool AbortCurrent { get => BlockOnErrorAssert; set => BlockOnErrorAssert = value; }
-        public bool AbortLater { get => AbortCompilation; set => AbortCompilation = value; }
-
-        public override string ToString()
-        {
-            return $"[{Id}] {LogType} {Module}: {MessageTemplate}";
-        }
     }
 }

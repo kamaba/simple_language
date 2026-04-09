@@ -438,4 +438,21 @@ namespace SimpleLanguage.Compile
             return sb.ToString();
         }
     }
+
+
+    public class NodeHelper
+    {
+        public static List<Token> GetTokensByNodeList( List<Node> nodeList )
+        {
+            List<Token> list = new List<Token>();
+            if (nodeList == null) return list;
+
+            foreach (var child in nodeList )
+            {
+                list.Add(child.token);
+            }
+
+            return list;
+        }
+    }
 }

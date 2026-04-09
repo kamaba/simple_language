@@ -12,7 +12,7 @@ namespace SimpleLanguage.Compile
 {
     public class FileMetaBase
     {
-        public Token token => m_Token;
+        public virtual Token token => m_Token;
         public int deep => m_Deep;
         public virtual string name
         {

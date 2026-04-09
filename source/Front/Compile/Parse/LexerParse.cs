@@ -468,7 +468,7 @@ namespace SimpleLanguage.Compile
                         }
                     }
                 }
-                else if (m_TempChar == 'L')
+                else if (m_TempChar == 'L' || m_TempChar == 'l')
                 {
                     if (endPoint == 0)    //13L
                     {
@@ -487,11 +487,12 @@ namespace SimpleLanguage.Compile
                 else if (m_TempChar == 'u')
                 {
                     var m_TempChar2 = ReadChar();
-                    if (m_TempChar2 == 's')  //1us
+                    if (m_TempChar2 == 's' || m_TempChar2 == 'S')  //1us
                     {
                         if (endPoint == 0)      //1us
                         {
                             AddToken(ETokenType.Number, UInt16.Parse(m_Builder.ToString()), EType.UInt16);
+                            break;
                         }
                         else if (endPoint == 1)   //1.us
                         {
@@ -503,11 +504,12 @@ namespace SimpleLanguage.Compile
                             break;
                         }
                     }
-                    else if (m_TempChar2 == 'i')
+                    else if (m_TempChar2 == 'i' || m_TempChar2 == 'I')
                     {
                         if (endPoint == 0)
                         {
                             AddToken(ETokenType.Number, UInt32.Parse(m_Builder.ToString()), EType.UInt32);
+                            break;
                         }
                         else if (endPoint == 1)
                         {
@@ -519,11 +521,12 @@ namespace SimpleLanguage.Compile
                             break;
                         }
                     }
-                    else if (m_TempChar2 == 'L')
+                    else if (m_TempChar2 == 'L' || m_TempChar2 == 'l')
                     {
                         if (endPoint == 0)
                         {
                             AddToken(ETokenType.Number, UInt64.Parse(m_Builder.ToString()), EType.UInt64);
+                            break;
                         }
                         else if (endPoint == 1)
                         {
@@ -537,6 +540,12 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
+                        if (endPoint == 0)
+                        {
+                            AddToken(ETokenType.Number, UInt32.Parse(m_Builder.ToString()), EType.UInt32);
+                            UndoChar();
+                            break;
+                        }
                         UndoChar();
                     }
                     break;

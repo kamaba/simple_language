@@ -50,7 +50,6 @@ namespace SimpleLanguage.Logging
                 ErrorRegistry.Instance.Register(new ErrorDefinition
                 {
                     Id = debugBridgeId,
-                    Module = LogModule.Project,
                     LogType = logType,
                     EnableAssert = true,
                     BlockOnErrorAssert = logType == LogType.Assert,

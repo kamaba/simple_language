@@ -36,9 +36,9 @@ namespace SimpleLanguage.Compile.Process
                     {
                         if (ErrorRegistry.Instance.TryGet(errorId, out var def))
                         {
-                            var logger = LogManager.GetLogger(def.Module);
-                            logger.Log(errorId, message);
-                            Aborted?.Invoke(def, message);
+                            //var logger = LogManager.GetLogger(def.Module);
+                            //logger.Log(errorId, message);
+                            //Aborted?.Invoke(def, message);
                         }
                         else
                         {

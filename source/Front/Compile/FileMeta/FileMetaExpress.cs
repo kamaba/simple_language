@@ -140,7 +140,9 @@ namespace SimpleLanguage.Compile
         }
         public virtual List<Token> GetTokens()
         {
-            return null;
+            List<Token> tokens = new List<Token>() { m_Token };
+
+            return tokens;
         }
         public virtual bool BuildAST()
         {
@@ -1309,7 +1311,7 @@ namespace SimpleLanguage.Compile
                 {
                     if(fmbt != null )
                     {
-                        Log.AddFileMetaLog(LID.Unknown, "Error 表达式不允许多个自定义元素存在33!!" + fmbt.ToTokenString() );
+                        Log.AddFileMetaLog(LID.Unknown, "表达式不允许多个自定义元素存在33!!", fmbt.token );
                     }
                     fmbt = new FileMetaCallTerm(m_FileMeta, node);
                     fmbt.priority = int.MaxValue;

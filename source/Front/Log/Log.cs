@@ -148,7 +148,7 @@ namespace SimpleLanguage.Logging
             }
         }
 
-        public static void AddCodeFileLog( LogData data )
+        public static void AddLog( LogData data )
         {
             logDataList.Enqueue(data);
             if (data.errorType == LogData.EErrorType.VM)
@@ -165,63 +165,61 @@ namespace SimpleLanguage.Logging
             return WriteCore(lid, LogData.EErrorType.Project, null, extendMessage, null, args);
         }
 
-        public static LogData Add(LID lid, object token, params object[] args)
+        public static LogData Add(LID lid, Token token, params object[] args)
         {
             return WriteCore(lid, LogData.EErrorType.Project, token, null, null, args);
         }
 
-        public static LogData Add(LID lid, object token, string extendMessage, params object[] args)
+        public static LogData Add(LID lid, Token token, string extendMessage, params object[] args)
         {
             return WriteCore(lid, LogData.EErrorType.Project, token, extendMessage, null, args);
         }
-        //public static LogData AddInInitProject(Token token, EError err, string msg)
-        //{
-        //    LogData ld = new LogData()
-        //    {
-        //        filePath = token.path,
-        //        sourceBeginLine = token.sourceBeginLine,
-        //        sourceEndLine = token.sourceEndLine,
-        //        errorType = LogData.EErrorType.InitProject
-        //    };
-        //    ld.message = msg;
-        //    ld.error = err;
-        //    AddCodeFileLog(ld);
-        //    return ld;
-        //}
+        //--------------------------------Process----------------------------------------------
         public static LogData AddProcessLog(EProcess proc, LID lid, string msg)
         {
             return WriteCore(lid, LogData.EErrorType.Process, null, null, msg, null);
         }
-
+        //--------------------------------Token----------------------------------------------
         public static LogData AddTokenLog(LID lid, string msg)
         {
             return WriteCore(lid, LogData.EErrorType.ParseToken, null, null, msg, null);
         }
 
-        public static LogData AddTokenLog(LID lid, string msg, object token, string extendMessage = null)
+        public static LogData AddTokenLog(LID lid, string msg, Token token, string extendMessage = null)
         {
             return WriteCore(lid, LogData.EErrorType.ParseToken, token, extendMessage, msg, null);
         }
-
+        //--------------------------------Node----------------------------------------------
         public static LogData AddNodeLog(LID lid, string msg)
         {
             return WriteCore(lid, LogData.EErrorType.ParseNode, null, null, msg, null);
         }
 
-        public static LogData AddNodeLog(LID lid, string msg, object token, string extendMessage = null)
+        public static LogData AddNodeLog(LID lid, string msg, Token token, string extendMessage = null)
         {
             return WriteCore(lid, LogData.EErrorType.ParseNode, token, extendMessage, msg, null);
         }
 
+
+        //--------------------------------FileMeta----------------------------------------------
+        public static LogData AddFileMetaLog(int lid, Token token)
+        {
+            //return WriteCore(lid, LogData.EErrorType.ParseFile, token, extendMessage, msg, null);
+            return null;
+        }
         public static LogData AddFileMetaLog(LID lid, string msg)
         {
             return WriteCore(lid, LogData.EErrorType.ParseFile, null, null, msg, null);
         }
 
-        public static LogData AddFileMetaLog(LID lid, string msg, object token, string extendMessage = null)
+        public static LogData AddFileMetaLog(LID lid, string msg, Token token, string extendMessage = null)
         {
             return WriteCore(lid, LogData.EErrorType.ParseFile, token, extendMessage, msg, null);
         }
+
+
+
+        //--------------------------------MetaCore----------------------------------------------
 
         public static LogData AddMetaCoreLog(LID lid, string msg)
         {
@@ -234,7 +232,7 @@ namespace SimpleLanguage.Logging
             return null;
         }
 
-        public static LogData AddMetaCoreLog(LID lid, string msg, object token, string extendMessage = null)
+        public static LogData AddMetaCoreLog(LID lid, string msg, Token token, string extendMessage = null)
         {
             return WriteCore(lid, LogData.EErrorType.ParseMeta, token, extendMessage, msg, null);
         }
@@ -244,7 +242,7 @@ namespace SimpleLanguage.Logging
             return WriteCore(lid, LogData.EErrorType.GenIR, null, null, msg, null);
         }
 
-        public static LogData AddIRLog(LID lid, string msg, object token, string extendMessage = null)
+        public static LogData AddIRLog(LID lid, string msg, Token token, string extendMessage = null)
         {
             return WriteCore(lid, LogData.EErrorType.GenIR, token, extendMessage, msg, null);
         }
@@ -254,7 +252,7 @@ namespace SimpleLanguage.Logging
             return WriteCore(lid, LogData.EErrorType.Project, null, null, msg, null);
         }
 
-        public static LogData AddProjectLog(LID lid, string msg, object token, string extendMessage = null)
+        public static LogData AddProjectLog(LID lid, string msg, Token token, string extendMessage = null)
         {
             return WriteCore(lid, LogData.EErrorType.Project, token, extendMessage, msg, null);
         }
@@ -274,12 +272,11 @@ namespace SimpleLanguage.Logging
         private static LogData WriteCore(
             LID lid,
             LogData.EErrorType errorType,
-            object token,
+            Token token,
             string extendMessage,
             string explicitMessage,
             object[] args)
         {
-            var tokenData = ParseTokenData(token);
             var resolvedLid = ResolveLid(lid, explicitMessage, args);
 
             var ld = new LogData()
@@ -287,11 +284,14 @@ namespace SimpleLanguage.Logging
                 errorType = errorType,
                 time = DateTime.Now
             };
-            ld.filePath = tokenData.Path;
-            ld.sourceBeginLine = tokenData.SourceBeginLine;
-            ld.sourceBeginChar = tokenData.SourceBeginChar;
-            ld.sourceEndLine = tokenData.SourceEndLine;
-            ld.sourceEndChar = tokenData.SourceEndChar;
+            if( token != null )
+            {
+                ld.filePath = token.path;
+                ld.sourceBeginLine = token.sourceBeginLine;
+                ld.sourceBeginChar = token.sourceBeginChar;
+                ld.sourceEndLine = token.sourceEndLine;
+                ld.sourceEndChar = token.sourceEndChar;
+            }
             ld.error = resolvedLid;
 
             var finalMessage = BuildMessage(resolvedLid, explicitMessage, args);
@@ -304,7 +304,7 @@ namespace SimpleLanguage.Logging
             ld.message = finalMessage;
             ld.extendMessage = extendMessage;
 
-            AddCodeFileLog(ld);
+            AddLog(ld);
 
             ForwardToUnifiedLogger((int)resolvedLid, errorType, token, finalMessage, args);
             return ld;
@@ -375,7 +375,7 @@ namespace SimpleLanguage.Logging
                         MessageTemplate = "{0}",
                         LogType = LogType.Warning,
                         ParamCount = 1,
-                        Module = module,
+                        //Module = module,
                         EnableAssert = true,
                         BlockOnErrorAssert = false,
                         AbortCompilation = false,
@@ -429,58 +429,6 @@ namespace SimpleLanguage.Logging
                 Console.WriteLine(ld.ToString());
             }
             Console.WriteLine("----------错误收集 结束---------------------");
-        }
-
-        private static ParsedTokenData ParseTokenData(object token)
-        {
-            if (token == null)
-            {
-                return ParsedTokenData.Empty;
-            }
-
-            return new ParsedTokenData(
-                ReadTokenProp<string>(token, "path") ?? string.Empty,
-                ReadTokenProp<int>(token, "sourceBeginLine"),
-                ReadTokenProp<int>(token, "sourceBeginChar"),
-                ReadTokenProp<int>(token, "sourceEndLine"),
-                ReadTokenProp<int>(token, "sourceEndChar"));
-        }
-
-        private static T ReadTokenProp<T>(object token, string propName)
-        {
-            try
-            {
-                var prop = token.GetType().GetProperty(propName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-                if (prop == null) return default;
-                var value = prop.GetValue(token);
-                if (value == null) return default;
-                if (value is T typed) return typed;
-                return (T)Convert.ChangeType(value, typeof(T));
-            }
-            catch
-            {
-                return default;
-            }
-        }
-
-        private readonly struct ParsedTokenData
-        {
-            public static ParsedTokenData Empty => new ParsedTokenData(string.Empty, 0, 0, 0, 0);
-
-            public ParsedTokenData(string path, int sourceBeginLine, int sourceBeginChar, int sourceEndLine, int sourceEndChar)
-            {
-                Path = path;
-                SourceBeginLine = sourceBeginLine;
-                SourceBeginChar = sourceBeginChar;
-                SourceEndLine = sourceEndLine;
-                SourceEndChar = sourceEndChar;
-            }
-
-            public string Path { get; }
-            public int SourceBeginLine { get; }
-            public int SourceBeginChar { get; }
-            public int SourceEndLine { get; }
-            public int SourceEndChar { get; }
         }
     }
 }

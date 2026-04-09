@@ -95,7 +95,7 @@ namespace SimpleLanguage.Logging
                     if (!int.TryParse(parts[3], out var pc)) pc = 0;
                     def.ParamCount = pc;
                     Enum.TryParse<LogModule>(parts[4], true, out var modLegacy);
-                    def.Module = modLegacy;
+                    //def.Module = modLegacy;
                     bool.TryParse(parts[5], out var ac);
                     def.BlockOnErrorAssert = ac;
                     bool.TryParse(parts[6], out var al);
@@ -107,7 +107,7 @@ namespace SimpleLanguage.Logging
                 else
                 {
                     Enum.TryParse<LogModule>(parts[1], true, out var mod);
-                    def.Module = mod;
+                    //def.Module = mod;
                     Enum.TryParse<LogType>(parts[2], true, out var lt);
                     def.LogType = lt;
                     bool.TryParse(parts[3], out var enableAssert);
