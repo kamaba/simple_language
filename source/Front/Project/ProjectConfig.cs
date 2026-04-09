@@ -24,7 +24,7 @@ namespace SimpleLanguage.Project
         public EEnvType envType { get; set; } = EEnvType.SLVM;
         public ERunInOS runInOS { get; set; } = ERunInOS.None;
     }
-    // Strongly-typed representation of project <ProjectName>.toml
+    // Strongly-typed representation of project <ProjectName>.jsonc
     public class ProjectConfig
     {
         public RuntimeEnv RuntimeEnvironment { get; set; } = new RuntimeEnv();
@@ -48,7 +48,6 @@ namespace SimpleLanguage.Project
         public class SourceSection
         {
             public string Root { get; set; } = "source";
-            public string EntryFile { get; set; } = "Program.sl";
         }
 
         public class StructTreeNode

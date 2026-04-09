@@ -20,8 +20,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using System.Timers;
-using Tomlyn;
-using Tomlyn.Model;
 
 namespace SimpleLanguage.Project
 {
@@ -57,21 +55,19 @@ namespace SimpleLanguage.Project
 
             ProjectManager.projectPath = projectDir;
 
-            // 2. 使用 .sp 文件名(不含扩展名)作为项目名，加载 <ProjectName>.toml
+            // 2. 使用 .sp 文件名(不含扩展名)作为项目名，加载 <ProjectName>.jsonc
             string projectName = Path.GetFileNameWithoutExtension(spFilePath);
-            string tomlFileName = projectName + ".toml";
-            string tomlPath = Path.Combine(projectDir, tomlFileName);
-            System.Diagnostics.Debug.WriteLine($"[LoadProject] using config: {tomlPath}");
-             if (!File.Exists(tomlPath))
-             {
-                 Debug.Write($"Error 项目加载路径没有找到 {tomlFileName} 配置文件!!");
-                 return;
-             }
+            string jsoncFileName = projectName + ".jsonc";
+            string jsoncPath = Path.Combine(projectDir, jsoncFileName);
+            System.Diagnostics.Debug.WriteLine($"[LoadProject] using config: {jsoncPath}");
+            if (!File.Exists(jsoncPath))
+            {
+                Debug.Write($"Error 项目加载路径没有找到 {jsoncFileName} 配置文件!!");
+                return;
+            }
 
-            string tomlText = File.ReadAllText(tomlPath);
-            TomlTable model = Toml.ToModel(tomlText);
-
-            ProjectConfig config = ProjectTomlLoader.FromModel(model);
+            string jsoncText = File.ReadAllText(jsoncPath);
+            ProjectConfig config = ProjectJsoncLoader.FromJsonc(jsoncText);
             ProjectManager.currentProject = new Project(config);
 
             // 3. 后续逻辑仍然可以保留 m_ProjectFile，用于旧的基于 FileMeta 的流程

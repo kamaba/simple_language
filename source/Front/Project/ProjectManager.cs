@@ -8,21 +8,12 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.Project;
+using System;
 using System.IO;
-using Tomlyn.Model;
+using System.Linq;
 
 namespace SimpleLanguage.Parse
 {
-    public class CommandInputArgs
-    {
-        public bool isTest { get; set; } = false;
-        public bool isPrintToken { get; set; } = false;
-
-        public CommandInputArgs( string[] args )
-        {
-
-        }
-    }
     public enum EUseDefineType
     {
         NoUseProjectConfigNamespace,        //不使用项目内部配置
@@ -72,7 +63,7 @@ namespace SimpleLanguage.Parse
                 }
             }
 
-                // path 现在是 .sp 配置文件路径，ProjectCompile 会基于它加载 <ProjectName>.toml
+                // path 现在是 .sp 配置文件路径，ProjectCompile 会基于它加载 <ProjectName>.jsonc
             ProjectCompile.Compile(path);
 
             if (!cinputArgs.isTest)

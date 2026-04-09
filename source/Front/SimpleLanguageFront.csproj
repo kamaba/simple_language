@@ -37,7 +37,6 @@
     <PackageReference Include="swigged.llvm" Version="70.0.1" />
     <PackageReference Include="LLVMSharp" Version="20.1.2" />
     <PackageReference Include="System.Diagnostics.Debug" Version="4.3.0" />
-    <PackageReference Include="Tomlyn" Version="0.20.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Log\SimpleLanguageLog.csproj" />
