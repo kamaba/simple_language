@@ -57,9 +57,9 @@ ProjectEnter
       arr1 = Array<ArrNodeClass>(30);     #申请一个该类型的数组对象，但长度为0
 
       arr1[1] = { i = 20 };   #直接设置数组下标为1的内容
-      arr1.@0 = ArrNodeClass();
-      arr1.@0.instValue();             #实体化$0,相当于 arr1[0] = ArrNodeClass();
-      arr1.@0.instValue().i = 10;         #使用$值下标，进行值置换，如果$0为空，则需要先实体化对象才可      以，设置，否则会有空对象报错, 可以调用instValue进行初始化，如果已有内容，则不进行new对象
+      arr1.$0 = ArrNodeClass();
+      arr1.$0.instValue();             #实体化$0,相当于 arr1[0] = ArrNodeClass();
+      arr1.$0.instValue().i = 10;         #使用$值下标，进行值置换，如果$0为空，则需要先实体化对象才可      以，设置，否则会有空对象报错, 可以调用instValue进行初始化，如果已有内容，则不进行new对象
       arr1[1000].i = 10000; # 在编译时，处理是否有超过长度现象，如果有的话，则编译不通过
       
       int i11 = 11;

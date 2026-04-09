@@ -12,7 +12,7 @@ Class0
     Variable0 = 0;
 }
 
-Class1 :: Class0
+Class1 extends Class0
 {
     Variable1 = 0i;
     Variable2 = "abcd";

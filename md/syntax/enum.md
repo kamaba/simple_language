@@ -185,13 +185,13 @@ Season s = Season.Spring
 |------|------|
 | `.index` | 该枚举项在枚举中的定义顺序（从 0 开始） |
 | `.name`  | 该枚举项的名称字符串 |
-| `.ToString()` | 该枚举项的字符串表示 |
+| `.toString()` | 该枚举项的字符串表示 |
 
 ```ruby
 EErr e = EErr.First
 int idx = e.index         # 1（定义顺序）
 string nm = e.name        # "First"
-string str = e.ToString() # "2"（实际值）
+string str = e.toString() # "2"（实际值）
 ```
 
 ### mut 字段的动态修改
@@ -211,13 +211,13 @@ EShape.cd = CircleShape(){ x = 100, y = 100, r = 1000 }
 ```ruby
 for b in Season
 {
-    Debug.Write(b.name + " = " + b.ToString())
+    Core.print(b.name + " = " + b.ToString())
 }
 
 # 也可以遍历 .values 获取值集合
 for v in Season.values
 {
-    Debug.Write(v)
+    Core.print(v)
 }
 ```
 
@@ -232,9 +232,9 @@ GameState state = GameState.Begin
 
 switch state
 {
-    case GameState.Init  { Debug.Write("初始化"); }
-    case GameState.Begin { Debug.Write("游戏开始"); }
-    case GameState.End   { Debug.Write("游戏结束"); }
+    case GameState.Init  { Core.print("初始化"); }
+    case GameState.Begin { Core.print("游戏开始"); }
+    case GameState.End   { Core.print("游戏结束"); }
 }
 ```
 
@@ -243,7 +243,7 @@ switch state
 ```ruby
 if state == GameState.Begin
 {
-    Debug.Write(state.ToString())
+    Core.print(state.toString())
 }
 ```
 

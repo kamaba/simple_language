@@ -18,7 +18,7 @@ ProjectEnter
       Range<double> r3 = (3.2d, 54.3d, 0.22d );
       r4 = Range<short>( 1s, 100s, 2s );
 
-      r1.SetStep( 1 )   #设置r1的步进
+      r1.step( 1 )   #设置r1的步进
       r4.step = 2       #设置r4的步进 与SetStep方法一样
       for v in r1   
       {
