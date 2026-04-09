@@ -12,6 +12,8 @@ using System.Diagnostics;
 
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
+using System.IO;
+using System.Text;
 using System.Text.Json;
 
 namespace SimpleLanguage.Project
@@ -46,8 +48,9 @@ namespace SimpleLanguage.Project
             {
                 flist[i].ParseStatements();
             }
-            //s_CompileBeforeFunction = compile.GetMetaDefineGetSetMemberFunctionByName("CompileBefore",false,false);
-            //s_CompileAfterFunction = compile.GetMetaDefineGetSetMemberFunctionByName("CompileAfter", false, false);
+            MetaInputParamCollection mipc = new MetaInputParamCollection(compile, null);
+            s_CompileBeforeFunction = compile.GetMetaDefineGetSetMemberFunctionByName("_before_", mipc, false,false);
+            s_CompileAfterFunction = compile.GetMetaDefineGetSetMemberFunctionByName("_after_", mipc, false, false);
 
         }
         public static void RunTest()
@@ -368,6 +371,95 @@ namespace SimpleLanguage.Project
                 return objNode;
             }
             return null;
+        }
+
+        public static void ExportProjectGuideMarkdown(string spFilePath, string jsoncPath)
+        {
+            if (string.IsNullOrWhiteSpace(spFilePath))
+            {
+                return;
+            }
+
+            try
+            {
+                var dir = Path.GetDirectoryName(spFilePath);
+                var projectName = Path.GetFileNameWithoutExtension(spFilePath);
+                if (string.IsNullOrWhiteSpace(dir) || string.IsNullOrWhiteSpace(projectName))
+                {
+                    return;
+                }
+
+                var mdPath = Path.Combine(dir, projectName + ".md");
+                var sb = new StringBuilder();
+
+                sb.AppendLine("# " + projectName + " Project Guide");
+                sb.AppendLine();
+                sb.AppendLine("- Project Entry File: `" + Path.GetFileName(spFilePath) + "`");
+                sb.AppendLine("- Project Config File: `" + Path.GetFileName(jsoncPath) + "`");
+                sb.AppendLine();
+
+                sb.AppendLine("## Project Entry Conventions");
+                sb.AppendLine();
+                sb.AppendLine("### `_main_`\n");
+                sb.AppendLine("Primary runtime entry. Normal execution starts here.");
+                sb.AppendLine();
+                sb.AppendLine("### `_test_`\n");
+                sb.AppendLine("Test entry. Used when test mode is enabled.");
+                sb.AppendLine();
+                sb.AppendLine("### `_before_`\n");
+                sb.AppendLine("Compile pre-hook entry (from `Compile` class). Executed before compile core flow when configured.");
+                sb.AppendLine();
+                sb.AppendLine("### `_after_`\n");
+                sb.AppendLine("Compile post-hook entry (from `Compile` class). Executed after compile core flow when configured.");
+                sb.AppendLine();
+
+                sb.AppendLine("## Global Integration");
+                sb.AppendLine();
+                sb.AppendLine("`global.xxx` / `global.func()` is integrated with `Project{}` semantic source.");
+                sb.AppendLine();
+                sb.AppendLine("### `global.data` from JSONC");
+                sb.AppendLine();
+                sb.AppendLine("When `global.data` is configured in project JSONC:");
+                sb.AppendLine();
+                sb.AppendLine("- Primitive values (`int32`/`string`/`float`) are injected as direct static members on `Project` and can be accessed by `global.<name>`. ");
+                sb.AppendLine("- Object values are converted into `MetaData` trees, then injected into `Project` members, e.g. `global.vardata2.a`. ");
+                sb.AppendLine();
+
+                var dataMap = ProjectManager.config?.Global?.Data;
+                if (dataMap != null && dataMap.Count > 0)
+                {
+                    sb.AppendLine("### Current configured `global.data` keys");
+                    sb.AppendLine();
+                    foreach (var kv in dataMap)
+                    {
+                        sb.AppendLine("- `" + kv.Key + "` (`" + kv.Value.ValueKind + "`)");
+                    }
+                    sb.AppendLine();
+                }
+
+                sb.AppendLine("## Example");
+                sb.AppendLine();
+                sb.AppendLine("```jsonc");
+                sb.AppendLine("\"global\": {");
+                sb.AppendLine("  \"data\": {");
+                sb.AppendLine("    \"var1\": 12,");
+                sb.AppendLine("    \"vardata2\": { \"a\": 10, \"b\": 20 }");
+                sb.AppendLine("  }");
+                sb.AppendLine("}");
+                sb.AppendLine("```");
+                sb.AppendLine();
+                sb.AppendLine("Access:");
+                sb.AppendLine();
+                sb.AppendLine("- `global.var1`");
+                sb.AppendLine("- `global.vardata2.a`");
+                sb.AppendLine("- `global.vardata2.b`");
+
+                File.WriteAllText(mdPath, sb.ToString(), new UTF8Encoding(true));
+            }
+            catch (System.Exception ex)
+            {
+                Log.AddProjectLog(LID.Unknown, "Export project guide markdown failed: " + ex.Message);
+            }
         }
     }
 }

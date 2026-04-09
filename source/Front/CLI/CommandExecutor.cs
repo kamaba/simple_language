@@ -104,6 +104,8 @@ namespace SimpleLanguage.Project
                     new UTF8Encoding(true));
             }
 
+            ProjectClass.ExportProjectGuideMarkdown(spPath, jsoncPath);
+
             return true;
         }
 

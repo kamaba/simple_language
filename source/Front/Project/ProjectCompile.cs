@@ -77,6 +77,8 @@ namespace SimpleLanguage.Project
                 Log.AddProjectLog(LID.FilemetaAddMetaclassMetanodeDuplicateNode_10156, "", jsoncPath);
                 return;
             }
+            // Generate project guide markdown beside .sp/.jsonc
+            ProjectClass.ExportProjectGuideMarkdown(spFilePath, jsoncPath);
             ProjectManager.SetConfig(config);
 
             // 3. 后续逻辑仍然可以保留 m_ProjectFile，用于旧的基于 FileMeta 的流程
