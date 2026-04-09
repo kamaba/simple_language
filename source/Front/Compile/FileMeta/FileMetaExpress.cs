@@ -138,6 +138,10 @@ namespace SimpleLanguage.Compile
             }
             m_FileMetaExpressList.AddRange(fmn);
         }
+        public virtual List<Token> GetTokens()
+        {
+            return null;
+        }
         public virtual bool BuildAST()
         {
             return true;

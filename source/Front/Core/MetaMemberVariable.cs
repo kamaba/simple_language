@@ -224,10 +224,17 @@ namespace SimpleLanguage.Core
             }
             if( this.m_Express == null )
             {
-                Debug.Assert(false);
-                var ld = Log.AddMetaCoreLog( LID.Unknown, $"Error [{this.ownerMetaClass.allClassName + "." + this.m_Name} ]配置成员变量时，必须需要有等号及后续的表达式!!");
-                ld.demo = "T t";
-                ld.advan = "T t = null";
+                if( this.m_FileMetaMemeberVariable?.express != null )
+                {
+                    var tokens = this.m_FileMetaMemeberVariable?.express.GetTokens();
+                    var ld = Log.AddMetaCoreLog(LID.Unknown, $"Error [{this.ownerMetaClass.allClassName + "." + this.m_Name} ]配置成员变量时，必须需要有等号及后续的表达式!!");
+                    ld.demo = "T t";
+                    ld.advan = "T t = null";
+                }
+                else
+                {
+
+                }
             }
         }
         public void SetExpress( MetaExpressNode mcen)

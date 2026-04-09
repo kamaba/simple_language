@@ -5,15 +5,13 @@ public class Int16 extends Num
 
     Int16 _value = 0i;
     
-    static String Int16ToString( Int16 value )
+
+    public static Int16 parse( string s )
     {
-        #ret SimpleLanguage.Lib.Int32Class.Int16ToString( value )
-        ret ""
+        ret SystemConvertInt16(s)
     }
-    public static Int16 parseString( string s )
-    {
-        ret System.Convert.ToInt16(s)
-    }
+
+
     _init_( Int16 _val )
     {
         this._value = _val
@@ -40,7 +38,6 @@ public class Int16 extends Num
         if (this._value == ov) { ret 0 }
         ret this._value > ov ? 1 : -1
     }
-
     override Int32 toInt32()
     {
         ret SystemConvertInt32(this)

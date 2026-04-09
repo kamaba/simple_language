@@ -2,12 +2,17 @@ public class SByte extends Num
 {    
     const SByte MaxValue = 0b1111111;
     const SByte MinValue = 0b0000000;
-    SByte _value = 0; 
-
+    SByte _value = 0;
     
     override get int size() { ret 8 }
     override get int byteLength() { ret 1 }   
     
+    
+    _init_( SByte _val )
+    {
+        this._value = _val
+    }
+
     public override Num abs()
     {
         ret SystemConvertSInt8(SystemNumAbs(this))
@@ -27,18 +32,9 @@ public class SByte extends Num
         if (this._value == ov) { ret 0 }
         ret this._value > ov ? 1 : -1
     }
-
-    static String SByteToString( SByte value )
+    public static SByte parse( string s )
     {
-        #ret SimpleLanguage.Lib.SByteClass.SByteToString( value )
-    }
-    public static SByte parseString( string s )
-    {
-        ret System.Convert.ToSByte(s)
-    }
-    _init_( SByte _val )
-    {
-        this._value = _val
+        ret SystemConvertSInt8(s)
     }
     override Int32 toInt32()
     {

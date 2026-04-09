@@ -43,17 +43,6 @@ namespace SimpleLanguage.Logging
         MetaMemberEnumValueExpress,
     }
 
-    public class Token
-    {
-        public string path { get; protected set; }               //文件路径
-        public int type { get; protected set; }         //标记类型
-        public object lexeme { get; protected set; }          //标记值
-        public object extend { get; protected set; }            //辅助标记，可为空
-        public int sourceBeginLine { get; protected set; }         //开始所在行
-        public int sourceBeginChar { get; protected set; }         //开始所在列
-        public int sourceEndLine { get; protected set; }            //结束所在行
-        public int sourceEndChar { get; protected set; }            //结束所在行
-    }
     public class LogData
     {
 
@@ -199,27 +188,27 @@ namespace SimpleLanguage.Logging
         //    AddCodeFileLog(ld);
         //    return ld;
         //}
-        public static LogData AddProcess(EProcess proc, LID lid, string msg)
+        public static LogData AddProcessLog(EProcess proc, LID lid, string msg)
         {
             return WriteCore(lid, LogData.EErrorType.Process, null, null, msg, null);
         }
 
-        public static LogData AddParseTokenLog(LID lid, string msg)
+        public static LogData AddTokenLog(LID lid, string msg)
         {
             return WriteCore(lid, LogData.EErrorType.ParseToken, null, null, msg, null);
         }
 
-        public static LogData AddParseTokenLog(LID lid, string msg, object token, string extendMessage = null)
+        public static LogData AddTokenLog(LID lid, string msg, object token, string extendMessage = null)
         {
             return WriteCore(lid, LogData.EErrorType.ParseToken, token, extendMessage, msg, null);
         }
 
-        public static LogData AddParseNodeLog(LID lid, string msg)
+        public static LogData AddNodeLog(LID lid, string msg)
         {
             return WriteCore(lid, LogData.EErrorType.ParseNode, null, null, msg, null);
         }
 
-        public static LogData AddNodeParseLog(LID lid, string msg, object token, string extendMessage = null)
+        public static LogData AddNodeLog(LID lid, string msg, object token, string extendMessage = null)
         {
             return WriteCore(lid, LogData.EErrorType.ParseNode, token, extendMessage, msg, null);
         }
@@ -237,6 +226,12 @@ namespace SimpleLanguage.Logging
         public static LogData AddMetaCoreLog(LID lid, string msg)
         {
             return WriteCore(lid, LogData.EErrorType.ParseMeta, null, null, msg, null);
+        }
+        public static LogData AddMetaCoreLog(LID lid, List<Token> tokens, params object[] objs )
+        {
+            //return WriteCore(lid, LogData.EErrorType.ParseMeta, null, null, msg, args);
+
+            return null;
         }
 
         public static LogData AddMetaCoreLog(LID lid, string msg, object token, string extendMessage = null)
@@ -266,46 +261,11 @@ namespace SimpleLanguage.Logging
 
         public static LogData AddInHandleToken(string path, int sbl, int sel, LID lid, string msg)
         {
-            var ld = AddParseTokenLog(lid, msg);
+            var ld = AddTokenLog(lid, msg);
             ld.filePath = path;
             ld.sourceBeginLine = sbl;
             ld.sourceBeginChar = sel;
             return ld;
-        }
-        //public static LogData AddInHandleNode(Token token, EError err, string msg)
-        //{
-        //    LogData ld = new LogData()
-        //    {
-        //        filePath = token.path,
-        //        sourceBeginLine = token.sourceBeginLine,
-        //        sourceEndLine = token.sourceEndLine,
-        //        errorType = LogData.EErrorType.HandleNode,
-        //        time = DateTime.Now
-        //    };
-        //    ld.message = msg;
-        //    ld.error = err;
-        //    AddCodeFileLog(ld);
-        //    return ld;
-        //}
-        public static LogData AddInStructFileMeta(LID lid, string msg)
-        {
-            return AddFileMetaLog(lid, msg);
-        }
-        public static LogData AddInStructFileMeta(LID lid, string msg, object token )
-        {
-            return AddFileMetaLog(lid, msg, token);
-        }
-        public static LogData AddInStructMeta(LID lid, string msg)
-        {
-            return AddMetaCoreLog(lid, msg);
-        }
-        public static LogData AddInStructMeta(LID lid, string msg, object token )
-        {
-            return AddMetaCoreLog(lid, msg, token);
-        }
-        public static LogData AddGenIR(LID lid, string msg)
-        {
-            return AddIRLog(lid, msg);
         }
         public static LogData AddVM( LID lid, string msg )
         {

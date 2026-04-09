@@ -1654,14 +1654,28 @@ namespace SimpleLanguage.Core
                 }
                 else if (retMC.IsMetaClass())
                 {
-                    m_MetaClass = retMC.GetMetaClassByTemplateCount(count);
-                    m_CallNodeType = ECallNodeType.ClassName;
-                    if (m_MetaClass == null)
+                    // language keyword: lowercase `range` => default Range<int>
+                    // keep case-sensitive behavior so `Range` does not auto-infer here
+                    if (count == 0
+                        && string.Equals(inputname, "range", StringComparison.Ordinal))
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, $"Template class count mismatch: found {retMC.allName}, templateCount={count}.");
-                        return false;
+                        m_MetaClass = retMC.GetMetaClassByTemplateCount(1);
+                        m_MetaType = new MetaType(m_MetaClass, new List<MetaType>()
+                        {
+                            new MetaType(CoreMetaClassManager.int32MetaClass)
+                        });
                     }
-                    m_MetaType = new MetaType(m_MetaClass);
+                    else
+                    {
+                        m_MetaClass = retMC.GetMetaClassByTemplateCount(count);
+                        m_CallNodeType = ECallNodeType.ClassName;
+                        if (m_MetaClass == null)
+                        {
+                            Log.AddMetaCoreLog(LID.Unknown, $"Template class count mismatch: found {retMC.allName}, templateCount={count}.");
+                            return false;
+                        }
+                    }
+
                 }
                 else
                 {
