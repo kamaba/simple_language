@@ -7,9 +7,9 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.Parse;
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
+using SimpleLanguage.Project;
 
 namespace SimpleLanguage.Core
 {
@@ -215,7 +215,7 @@ namespace SimpleLanguage.Core
         {
             bool isCanAddBind = false;
             MetaNode finalTopMetaNode = ModuleManager.instance.selfModule.metaNode;
-            if( ProjectManager.currentProject?.Config?.Project?.Name == "Core" )
+            if( ProjectManager.config?.Project?.Name == "Core" )
             {                
                 finalTopMetaNode = ModuleManager.instance.coreModule.metaNode;
             }

@@ -40,6 +40,10 @@ namespace SimpleLanguage.Core
         private FileMetaMemberData m_FileMetaMemeberData = null;
         private FileMetaOpAssignSyntax m_FileMetaOpAssignSyntax = null;
 
+        private MetaMemberData()
+        {
+        }
+
         public MetaMemberData(MetaData mc, FileMetaOpAssignSyntax fmoa)
         {
             m_FileMetaOpAssignSyntax = fmoa;
@@ -79,6 +83,33 @@ namespace SimpleLanguage.Core
             SetOwnerMetaClass(parentNode.ownerMetaClass);
             m_IsConst = parentNode.isConst;
             m_Express = men;
+        }
+
+        public static MetaMemberData CreateConst(MetaData owner, string name, int index, MetaConstExpressNode constExpress)
+        {
+            var mmd = new MetaMemberData();
+            mmd.m_Name = name;
+            mmd.m_Index = index;
+            mmd.m_IsWithName = true;
+            mmd.m_DefineMetaType = new MetaType(constExpress?.GetReturnMetaClass() ?? CoreMetaClassManager.objectMetaClass);
+            mmd.SetOwnerMetaClass(owner);
+            mmd.m_IsConst = owner?.isConst ?? false;
+            mmd.m_Express = constExpress;
+            mmd.m_MemberDataType = EMemberDataType.ConstValue;
+            return mmd;
+        }
+
+        public static MetaMemberData CreateObject(MetaData owner, string name, int index)
+        {
+            var mmd = new MetaMemberData();
+            mmd.m_Name = name;
+            mmd.m_Index = index;
+            mmd.m_IsWithName = true;
+            mmd.m_DefineMetaType = new MetaType(owner);
+            mmd.SetOwnerMetaClass(owner);
+            mmd.m_IsConst = owner?.isConst ?? false;
+            mmd.m_MemberDataType = EMemberDataType.MemberData;
+            return mmd;
         }
         public void SetIndex(int index) { m_Index = index; }
         public string GetString(string name, bool isInChildren = true)

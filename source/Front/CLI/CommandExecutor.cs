@@ -1,5 +1,5 @@
 using SimpleLanguage.ExportLanguage;
-using SimpleLanguage.Parse;
+using SimpleLanguage.Logging;
 using System;
 using System.IO;
 using System.Linq;
@@ -182,7 +182,7 @@ namespace SimpleLanguage.Project
             var spPath = ResolveProjectSp(inputArgs.projectSpPath);
             if (string.IsNullOrWhiteSpace(spPath) || !File.Exists(spPath))
             {
-                Console.WriteLine("Project .sp file not found.");
+                Log.AddProjectLog( LID.Unknown, "Project .sp file not found.", spPath );
                 return true;
             }
 
@@ -197,9 +197,13 @@ namespace SimpleLanguage.Project
 
         static string ResolveProjectSp(string explicitSpPath)
         {
-            if (!string.IsNullOrWhiteSpace(explicitSpPath) && File.Exists(explicitSpPath))
+            if (!string.IsNullOrWhiteSpace(explicitSpPath))
             {
-                return Path.GetFullPath(explicitSpPath);
+                // already normalized by CommandInputArgs (-p parsing) to <dir>/<name>.sp when possible
+                if (File.Exists(explicitSpPath))
+                {
+                    return Path.GetFullPath(explicitSpPath);
+                }
             }
 
             var cwdSp = FindCurrentProjectSp(Directory.GetCurrentDirectory());
@@ -208,7 +212,7 @@ namespace SimpleLanguage.Project
                 return cwdSp;
             }
 
-            return Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "../../../Lib/Core/Core.sp"));
+            return Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "Project.sp"));
         }
 
         static string FindCurrentProjectSp(string dir)
@@ -219,7 +223,7 @@ namespace SimpleLanguage.Project
             }
 
             var files = Directory.GetFiles(dir, "*.sp", SearchOption.TopDirectoryOnly)
-                .Where(p => !string.Equals(Path.GetFileNameWithoutExtension(p), "Core", StringComparison.OrdinalIgnoreCase)
+                .Where(p => !string.Equals(Path.GetFileNameWithoutExtension(p), "Project", StringComparison.OrdinalIgnoreCase)
                             || Directory.GetFiles(dir, "*.sp").Length == 1)
                 .ToList();
             if (files.Count == 0)

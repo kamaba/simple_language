@@ -7,12 +7,9 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
-using SimpleLanguage.Project;
-using System;
-using System.IO;
-using System.Linq;
 
-namespace SimpleLanguage.Parse
+
+namespace SimpleLanguage.Project
 {
     public enum EUseDefineType
     {
@@ -24,7 +21,6 @@ namespace SimpleLanguage.Parse
     {
         public static string projectPath { get; set; } = "";
         public static ProjectConfig config => m_Config;
-        public static SimpleLanguage.Project.Project currentProject { get; set; }
         public static EUseDefineType useDefineNamespaceType { get; set; } = EUseDefineType.NoUseProjectConfigNamespace;
 
         public static bool useGenMetaClass { get; set; } = false;
@@ -47,7 +43,14 @@ namespace SimpleLanguage.Parse
        
 
         public static MetaData globalData = new MetaData( "global", false, true, false );
-         public static void Run( string path, CommandInputArgs cinputArgs )
+        internal static string currentProject;
+
+        public static void SetConfig(ProjectConfig cfg)
+        {
+            m_Config = cfg ?? new ProjectConfig();
+        }
+
+        public static void Run( string path, CommandInputArgs cinputArgs )
          {
             int index = path.LastIndexOf("\\");
             if (index != -1)

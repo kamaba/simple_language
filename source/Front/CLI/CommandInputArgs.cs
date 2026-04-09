@@ -19,6 +19,8 @@ public class CommandInputArgs
     public ECommandType commandType { get; private set; } = ECommandType.None;
     public bool exportIR { get; private set; } = false;
     public string projectSpPath { get; private set; } = null;
+    public string compileProjectName { get; private set; } = null;
+    public string compileProjectDir { get; private set; } = null;
     public string newProjectBasePath { get; private set; } = null;
     public string newProjectName { get; private set; } = null;
     public string newClassFileName { get; private set; } = null;
@@ -80,6 +82,10 @@ public class CommandInputArgs
                 {
                     exportIR = true;
                 }
+                if (string.Equals(args[i], "-p", StringComparison.OrdinalIgnoreCase))
+                {
+                    ParseCompileProjectPath(args[i + 1]);
+                }
             }
             return;
         }
@@ -88,6 +94,37 @@ public class CommandInputArgs
         {
             commandType = ECommandType.Compile;
             projectSpPath = args[0];
+        }
+    }
+
+    void ParseCompileProjectPath(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return;
+        }
+
+        var p = input.Trim();
+
+        // support explicit .sp path directly
+        if (p.EndsWith(".sp", StringComparison.OrdinalIgnoreCase))
+        {
+            projectSpPath = p;
+            compileProjectName = Path.GetFileNameWithoutExtension(p);
+            compileProjectDir = Path.GetDirectoryName(p);
+            return;
+        }
+
+        // format expected by user: ...\<ProjectDir>\<ProjectName>
+        // last segment is project name, preceding is project directory.
+        var full = Path.GetFullPath(p);
+        compileProjectName = Path.GetFileName(full);
+        compileProjectDir = Path.GetDirectoryName(full);
+
+        if (!string.IsNullOrWhiteSpace(compileProjectName)
+            && !string.IsNullOrWhiteSpace(compileProjectDir))
+        {
+            projectSpPath = Path.Combine(compileProjectDir, compileProjectName + ".sp");
         }
     }
 

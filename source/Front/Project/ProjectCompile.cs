@@ -12,7 +12,7 @@ using SimpleLanguage.CSharp;
 using SimpleLanguage.IR;
 using SimpleLanguage.Lib;
 using SimpleLanguage.Logging;
-using SimpleLanguage.Parse;
+using SimpleLanguage.Project;
 using SimpleLanguage.Export;
 using System;
 using System.Collections.Generic;
@@ -59,16 +59,25 @@ namespace SimpleLanguage.Project
             string projectName = Path.GetFileNameWithoutExtension(spFilePath);
             string jsoncFileName = projectName + ".jsonc";
             string jsoncPath = Path.Combine(projectDir, jsoncFileName);
-            System.Diagnostics.Debug.WriteLine($"[LoadProject] using config: {jsoncPath}");
+            Log.AddProjectLog(LID.FilemetaAddMetaclassMetanodeDuplicateNode_10156, $"[LoadProject] using config: {jsoncPath}");
             if (!File.Exists(jsoncPath))
             {
-                Debug.Write($"Error 项目加载路径没有找到 {jsoncFileName} 配置文件!!");
+                Log.AddProjectLog(LID.FilemetaAddMetaclassMetanodeDuplicateNode_10156, $"Error 项目加载路径没有找到 {jsoncFileName} 配置文件!!");
                 return;
             }
 
             string jsoncText = File.ReadAllText(jsoncPath);
-            ProjectConfig config = ProjectJsoncLoader.FromJsonc(jsoncText);
-            ProjectManager.currentProject = new Project(config);
+            ProjectConfig config = null;
+            try
+            {
+                config = ProjectJsoncLoader.FromJsonc(jsoncText);
+            }
+            catch( Exception e )
+            {
+                Log.AddProjectLog(LID.FilemetaAddMetaclassMetanodeDuplicateNode_10156, "", jsoncPath);
+                return;
+            }
+            ProjectManager.SetConfig(config);
 
             // 3. 后续逻辑仍然可以保留 m_ProjectFile，用于旧的基于 FileMeta 的流程
             if (m_ProjectFile == null)
@@ -213,6 +222,9 @@ namespace SimpleLanguage.Project
             ClassManager.instance.ParseMemberEnumExpress();
             MetaVariableManager.instance.ParseMetaDataMemberExpress();
             MetaVariableManager.instance.ParseMetaClassMemberExpress();
+
+            // Inject project global.data config into Project meta members before statements parse.
+            ProjectClass.InjectProjectGlobalDataFromConfig();
 
             // Build per-file local{} classes after member express parsed but before statements parsing.
             GlobalManager.instance.BuildGlobalClass(fileParseList);

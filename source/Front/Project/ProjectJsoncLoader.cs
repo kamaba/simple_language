@@ -68,6 +68,7 @@ namespace SimpleLanguage.Project
                         cfg.CompileFiles.Files.Add(f);
                     }
                 }
+
             }
 
             if (TryGetObj(root, "compileFilter", out var filter))
@@ -95,6 +96,7 @@ namespace SimpleLanguage.Project
                         }
                     }
                 }
+
             }
 
             if (TryGetObj(root, "global", out var global))
@@ -108,6 +110,14 @@ namespace SimpleLanguage.Project
                             cfg.Global.Imports.Add(i.GetString() ?? string.Empty);
                         }
                     }
+
+                if (TryGetObj(global, "data", out var dataObj))
+                {
+                    foreach (var kv in dataObj.EnumerateObject())
+                    {
+                        cfg.Global.Data[kv.Name] = kv.Value.Clone();
+                    }
+                }
                 }
 
                 if (TryGetObj(global, "replace", out var replace))

@@ -54,6 +54,13 @@
       "Std.Console",
       "Std.IO.File"
     ],
+    "data": {
+      "var1": 12,
+      "vardata2": {
+        "a": 10,
+        "b": 20
+      }
+    },
     "replace": {
       "DEBUG": "true"
     }

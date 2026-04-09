@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace SimpleLanguage.Project
 {
@@ -48,6 +49,7 @@ namespace SimpleLanguage.Project
         public class SourceSection
         {
             public string Root { get; set; } = "source";
+            public string EntryFile { get; set; } = "Main.sl";
         }
 
         public class StructTreeNode
@@ -170,6 +172,8 @@ namespace SimpleLanguage.Project
         {
             public List<string> Imports { get; set; } = new List<string>();
             public Dictionary<string, string> Replace { get; set; } = new Dictionary<string, string>();
+            // project jsonc: global.data = { key: primitive|object }
+            public Dictionary<string, JsonElement> Data { get; set; } = new Dictionary<string, JsonElement>();
         }
 
         public class ExportSection

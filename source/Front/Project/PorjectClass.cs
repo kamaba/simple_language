@@ -7,12 +7,12 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
-using SimpleLanguage.Parse;
 using SimpleLanguage.IR;
 using System.Diagnostics;
 
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
+using System.Text.Json;
 
 namespace SimpleLanguage.Project
 {
@@ -173,7 +173,7 @@ namespace SimpleLanguage.Project
             NamespaceManager.instance.metaNamespaceDict.Clear();
 
             // 使用 TOML 基于的 ProjectConfig 填充编译文件列表
-            var cfg = ProjectManager.currentProject?.Config;
+            var cfg = ProjectManager.config;
             if (cfg == null)
                 return;
 
@@ -182,7 +182,7 @@ namespace SimpleLanguage.Project
             var fileList = cfg.CompileFiles.Files;
             var filter = cfg.CompileFilter;
 
-            System.Diagnostics.Debug.WriteLine($"[Project] compileFiles count in config = {fileList.Count}");
+            Log.AddProjectLog( LID.Unknown, $"[Project] compileFiles count in config = {fileList.Count}");
  
             for (int i = 0; i < fileList.Count; i++)
             {
@@ -232,6 +232,142 @@ namespace SimpleLanguage.Project
                 //InnerCLRRuntimeVM.Init();
                 //InnerCLRRuntimeVM.RunIRMethod(s_CompileBeforeFunction.irMethod);
             }
+        }
+
+        public static void InjectProjectGlobalDataFromConfig()
+        {
+            var dataMap = ProjectManager.config?.Global?.Data;
+            if (dataMap == null || dataMap.Count == 0)
+            {
+                return;
+            }
+
+            var projectMc = ClassManager.instance.GetClassByName("S.Project", 0)
+                ?? ClassManager.instance.GetClassByName("Core.Project", 0)
+                ?? ClassManager.instance.GetClassByName("Project", 0);
+            if (projectMc == null)
+            {
+                return;
+            }
+
+            int index = 0;
+            foreach (var kv in dataMap)
+            {
+                if (string.IsNullOrWhiteSpace(kv.Key))
+                {
+                    continue;
+                }
+
+                AddProjectGlobalDataMember(projectMc, kv.Key, kv.Value, index++);
+            }
+        }
+
+        static void AddProjectGlobalDataMember(MetaClass projectMc, string name, JsonElement element, int index)
+        {
+            if (projectMc.GetMetaMemberVariableByName(name) != null)
+            {
+                return;
+            }
+
+            var mmv = new MetaMemberVariable(projectMc, name);
+            mmv.SetIsStatic(true);
+            mmv.SetIsConst(true);
+
+            if (element.ValueKind == JsonValueKind.String)
+            {
+                mmv.SetMetaDefineType(new MetaType(CoreMetaClassManager.stringMetaClass));
+                mmv.SetRealMetaType(new MetaType(CoreMetaClassManager.stringMetaClass));
+                mmv.SetIsDefineMetaType(true);
+                mmv.SetExpress(new MetaConstExpressNode(EType.String, element.GetString() ?? string.Empty));
+                projectMc.AddMetaMemberVariable(mmv);
+                return;
+            }
+
+            if (element.ValueKind == JsonValueKind.Number)
+            {
+                if (element.TryGetInt32(out var i32))
+                {
+                    mmv.SetMetaDefineType(new MetaType(CoreMetaClassManager.int32MetaClass));
+                    mmv.SetRealMetaType(new MetaType(CoreMetaClassManager.int32MetaClass));
+                    mmv.SetIsDefineMetaType(true);
+                    mmv.SetExpress(new MetaConstExpressNode(EType.Int32, i32));
+                    projectMc.AddMetaMemberVariable(mmv);
+                    return;
+                }
+
+                if (element.TryGetDouble(out var f64))
+                {
+                    mmv.SetMetaDefineType(new MetaType(CoreMetaClassManager.float64MetaClass));
+                    mmv.SetRealMetaType(new MetaType(CoreMetaClassManager.float64MetaClass));
+                    mmv.SetIsDefineMetaType(true);
+                    mmv.SetExpress(new MetaConstExpressNode(EType.Float64, f64));
+                    projectMc.AddMetaMemberVariable(mmv);
+                    return;
+                }
+            }
+
+            if (element.ValueKind == JsonValueKind.Object)
+            {
+                var dataClass = CreateMetaDataByJsonObject($"ProjectGlobalData_{name}", element, index);
+                mmv.SetMetaDefineType(new MetaType(dataClass));
+                mmv.SetRealMetaType(new MetaType(dataClass));
+                mmv.SetIsDefineMetaType(true);
+                projectMc.AddMetaMemberVariable(mmv);
+                return;
+            }
+
+            Log.AddMetaCoreLog(LID.Unknown, $"Unsupported global.data value kind for '{name}': {element.ValueKind}");
+        }
+
+        static MetaData CreateMetaDataByJsonObject(string dataName, JsonElement element, int seed)
+        {
+            var md = new MetaData(dataName, true, true, true);
+            int idx = 0;
+            foreach (var kv in element.EnumerateObject())
+            {
+                var child = CreateMetaMemberDataByJson(md, kv.Name, kv.Value, seed * 1000 + idx);
+                if (child != null)
+                {
+                    md.AddMetaMemberData(child);
+                }
+                idx++;
+            }
+            return md;
+        }
+
+        static MetaMemberData CreateMetaMemberDataByJson(MetaData owner, string name, JsonElement element, int index)
+        {
+            if (element.ValueKind == JsonValueKind.String)
+            {
+                return MetaMemberData.CreateConst(owner, name, index, new MetaConstExpressNode(EType.String, element.GetString() ?? string.Empty));
+            }
+            if (element.ValueKind == JsonValueKind.Number)
+            {
+                if (element.TryGetInt32(out var i32))
+                {
+                    return MetaMemberData.CreateConst(owner, name, index, new MetaConstExpressNode(EType.Int32, i32));
+                }
+                if (element.TryGetDouble(out var f64))
+                {
+                    return MetaMemberData.CreateConst(owner, name, index, new MetaConstExpressNode(EType.Float64, f64));
+                }
+            }
+            if (element.ValueKind == JsonValueKind.Object)
+            {
+                var objNode = MetaMemberData.CreateObject(owner, name, index);
+                int childIndex = 0;
+                foreach (var kv in element.EnumerateObject())
+                {
+                    var child = CreateMetaMemberDataByJson(owner, kv.Name, kv.Value, index * 1000 + childIndex);
+                    if (child != null)
+                    {
+                        objNode.AddMetaMemberData(child);
+                    }
+                    childIndex++;
+                }
+                return objNode;
+            }
+            return null;
         }
     }
 }
