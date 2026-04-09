@@ -13,6 +13,7 @@ namespace SimpleLanguage.VM.Runtime
         SystemPrint,
         SystemReadLine,
         SystemReadKey,
+        SystemConvertBool,
         SystemConvertInt8,
         SystemConvertSInt8,
         SystemConvertInt16,

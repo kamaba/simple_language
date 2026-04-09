@@ -1,4 +1,4 @@
-//****************************************************************************
+﻿//****************************************************************************
 //  File:      ClassManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -26,6 +26,7 @@ namespace SimpleLanguage.Core
             Parent,
             Similar,
             Interface,
+            Num,
             SameClassNotSameInputTemplate,
             SameClassAndSameInputTemplate,
         }
@@ -223,7 +224,7 @@ namespace SimpleLanguage.Core
             {                
                 if( topLevelClass?.metaClass?.metaNode == null )
                 {
-                    Log.AddInStructMeta(EError.None, "Error 上级类中的MetaClass没有绑定!!");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error 涓婄骇绫讳腑鐨凪etaClass娌℃湁缁戝畾!!");
                     return null;
                 }
 
@@ -232,7 +233,7 @@ namespace SimpleLanguage.Core
                 {
                     if(findmc.isMetaNamespace || findmc.isMetaData || findmc.isMetaEnum )
                     {
-                        Log.AddInStructMeta(EError.None, "已添加了空间命名节点，不允许有重复名称的类节点再次添加");
+                        Log.AddMetaCoreLog(LID.Unknown, "Namespace/data/enum node already exists, duplicate class node is not allowed.");
                         return null;
                     }
 
@@ -249,12 +250,12 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddInStructMeta(EError.None, "Error 查到内部不是内部内，可能有相同成员");
+                            Log.AddMetaCoreLog(LID.Unknown, "Found existing class node with incompatible define type.");
                         }
                     }
                     else
                     {
-                        Log.AddInStructMeta(EError.None, "Error 查到内部不是内部内，可能有相同成员");
+                        Log.AddMetaCoreLog(LID.Unknown, "Found existing class node with incompatible define type.");
                         return null;
                     }
                 }
@@ -287,7 +288,7 @@ namespace SimpleLanguage.Core
                    
                     if (finalTopMetaNode == null )
                     {
-                        Log.AddInStructMeta(EError.None, "命名空间中，已定义其它非命名空间的类型 !!");
+                        Log.AddMetaCoreLog(LID.Unknown, "鍛藉悕绌洪棿涓紝宸插畾涔夊叾瀹冮潪鍛藉悕绌洪棿鐨勭被鍨?!!");
                         return null;
                     }
                 }
@@ -327,7 +328,7 @@ namespace SimpleLanguage.Core
                         }
                         //if (!fmc.isPartial)
                         //{
-                        //    Log.AddInStructMeta(EError.None, "类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持文件并行 定义类");
+                        //    Log.AddMetaCoreLog(LID.Unknown, "绫?" + fmc.name + "鍦? " + fmc.token.ToAllString() + "涓嶆敮鎸佹枃浠跺苟琛?瀹氫箟绫");
                         //    return null;
                         //}
                         //bool isPartial = true;
@@ -336,7 +337,7 @@ namespace SimpleLanguage.Core
                         //    if (v.Value.isPartial == false)
                         //    {
                         //        isPartial = false;
-                        //        Log.AddInStructMeta(EError.None, "类:" + findamc.name + "在: " + v.Value.token.ToAllString() + "不支持文件并行 定义类");
+                        //        Log.AddMetaCoreLog(LID.Unknown, "绫?" + findamc.name + "鍦? " + v.Value.token.ToAllString() + "涓嶆敮鎸佹枃浠跺苟琛?瀹氫箟绫");
                         //        break;
                         //    }
                         //}
@@ -372,7 +373,7 @@ namespace SimpleLanguage.Core
                         }
                         if (!fmc.isPartial)
                         {
-                            Log.AddInStructMeta(EError.None, "类:" + fmc.name + "在: " + fmc.token.ToAllString() + "不支持文件并行 定义类");
+                            Log.AddMetaCoreLog(LID.Unknown, "Class " + fmc.name + " at " + fmc.token.ToAllString() + " does not support parallel file definitions.");
                             return null;
                         }
                         bool isPartial = true;
@@ -381,7 +382,7 @@ namespace SimpleLanguage.Core
                             if (v.Value.isPartial == false)
                             {
                                 isPartial = false;
-                                Log.AddInStructMeta(EError.None, "类:" + findamc.name + "在: " + v.Value.token.ToAllString() + "不支持文件并行 定义类");
+                                Log.AddMetaCoreLog(LID.Unknown, "Class " + findamc.name + " at " + v.Value.token.ToAllString() + " does not support parallel file definitions.");
                                 break;
                             }
                         }
@@ -403,7 +404,7 @@ namespace SimpleLanguage.Core
             {
                 if (ProjectManager.useDefineNamespaceType == EUseDefineType.LimitUseProjectConfigNamespaceAndClass)
                 {
-                    Log.AddInStructMeta(EError.None, "Error 使用的强定制类节点的方式中，没有查找到相关的类，所以不允许定义该类，请先在工程中定义类");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error 浣跨敤鐨勫己瀹氬埗绫昏妭鐐圭殑鏂瑰紡涓紝娌℃湁鏌ユ壘鍒扮浉鍏崇殑绫伙紝鎵€浠ヤ笉鍏佽瀹氫箟璇ョ被锛岃鍏堝湪宸ョ▼涓畾涔夌被");
                 }
                 if (fmc.isEnum)
                 {
@@ -432,7 +433,7 @@ namespace SimpleLanguage.Core
                 {
                     if (fmc.isConst)
                     {
-                        Log.AddInStructMeta(EError.None, "Class 中，使用关键字，不允许使用Const");
+                        Log.AddMetaCoreLog(LID.Unknown, "Class 涓紝浣跨敤鍏抽敭瀛楋紝涓嶅厑璁镐娇鐢–onst");
                         return null;
                     }
                     var newmc = new MetaClass(fmc.name);
@@ -470,7 +471,7 @@ namespace SimpleLanguage.Core
             {
                 if( v.Value == mc )
                 {
-                    Log.AddInStructMeta(EError.AddClassNameSame, $"已包含类:{mc.allClassName} 又进行了重进添加!");
+                    Log.AddMetaCoreLog(LID.Unknown, $"宸插寘鍚被:{mc.allClassName} 鍙堣繘琛屼簡閲嶈繘娣诲姞!");
                     return;
                 }
             }
@@ -575,6 +576,11 @@ namespace SimpleLanguage.Core
         //}
         public static bool IsNumberClass( MetaClass curClass )
         {
+            if (curClass == null)
+            {
+                return false;
+            }
+
             if ( curClass == CoreMetaClassManager.numMetaClass
                 || curClass == CoreMetaClassManager.byteMetaClass
                 || curClass == CoreMetaClassManager.sbyteMetaClass
@@ -589,6 +595,13 @@ namespace SimpleLanguage.Core
             {
                 return true;
             }
+
+            // 瀵规ā鏉跨害鏉?娉涘瀷瀹炰緥鍖栫被锛岃嫢缁ф壙閾惧寘鍚?Num锛屼篃鎸夋暟鍊肩被鍨嬪鐞?
+            if (curClass.IsParseMetaClass(CoreMetaClassManager.numMetaClass))
+            {
+                return true;
+            }
+
             return false;
         }
         public static EClassRelation ValidateClassRelationByMetaClass( MetaClass curClass, MetaClass compareClass )
@@ -633,7 +646,7 @@ namespace SimpleLanguage.Core
                     //        }
                     //        break;
                     //}
-                    return EClassRelation.Similar;
+                    return EClassRelation.Num;
                 }
                 else
                 {
@@ -670,7 +683,7 @@ namespace SimpleLanguage.Core
 
         //            if( !mc.metaClass.GetMemberInterfaceFunctionByFunc(func) )
         //            {
-        //                Log.AddInStructMeta(EError.None, "查找接口类中的要实现的函数，实现失败函数名称" + func.name + " Token位置: " );
+        //                Log.AddMetaCoreLog(LID.Unknown, "鏌ユ壘鎺ュ彛绫讳腑鐨勮瀹炵幇鐨勫嚱鏁帮紝瀹炵幇澶辫触鍑芥暟鍚嶇О" + func.name + " Token浣嶇疆: " );
         //                //func.fileMetaMemberFunction.token.sourceBeginLine.ToString()
         //                isSuccess = false;
         //                break;
@@ -722,7 +735,7 @@ namespace SimpleLanguage.Core
         //            {
         //                if( textendClass.metaMemberVariableDict.ContainsKey( v.Key ) )
         //                {
-        //                    Log.AddInStructMeta(EError.None, "Error 在类的值: " + v.Key + "  有重复定义: " + textendClass.allClassName + "中，值: [" + v.Key + "] Token1位置: "
+        //                    Log.AddMetaCoreLog(LID.Unknown, "Error 鍦ㄧ被鐨勫€? " + v.Key + "  鏈夐噸澶嶅畾涔? " + textendClass.allClassName + "涓紝鍊? [" + v.Key + "] Token1浣嶇疆: "
         //                        + textendClass.metaMemberVariableDict[v.Key].ToTokenString());
         //                    isFailed = true;
         //                    break;
@@ -756,7 +769,7 @@ namespace SimpleLanguage.Core
         {
             return GetMetaClassByNameAndFileMeta(ownerClass, fmcd.fileMeta, fmcd.stringList );
         }
-        // 在ownerClass类中，通过当前的ownerClass的父节点逐查，直到没有父节点，如果找到了当前的节点后，开始往stringList下边找
+        // 鍦╫wnerClass绫讳腑锛岄€氳繃褰撳墠鐨刼wnerClass鐨勭埗鑺傜偣閫愭煡锛岀洿鍒版病鏈夌埗鑺傜偣锛屽鏋滄壘鍒颁簡褰撳墠鐨勮妭鐐瑰悗锛屽紑濮嬪線stringList涓嬭竟鎵?
         private MetaNode GetMetaNodeByListString( MetaClass ownerClass, List<string> stringList )
         {
             if (stringList.Count == 0)
@@ -839,7 +852,7 @@ namespace SimpleLanguage.Core
                 {
                     if (mb.isMetaNamespace )
                     {
-                        Log.AddInStructMeta(EError.None, "找到了已有命名空间而不是要继承的类!!");
+                        Log.AddMetaCoreLog(LID.Unknown, "鎵惧埌浜嗗凡鏈夊懡鍚嶇┖闂磋€屼笉鏄缁ф壙鐨勭被!!");
                         return null;
                     }
                     else if (mb.IsMetaClass())
@@ -850,13 +863,16 @@ namespace SimpleLanguage.Core
             }
             return mc;
         }
-        //通过FileInputTemplateNode 获取MetaType 例 List< List< List<int> > > 这种的，需要嵌套获取处理
+        //閫氳繃FileInputTemplateNode 鑾峰彇MetaType 渚?List< List< List<int> > > 杩欑鐨勶紝闇€瑕佸祵濂楄幏鍙栧鐞?
         public MetaClass GetMetaClassByInputTemplateAndFileMeta( MetaClass ownerClass, FileInputTemplateNode fitn )
         {
+            if (fitn == null)
+            {
+                return null;
+            }
             var nlist = fitn.nameList;
-            FileMeta fm = fitn.fileMeta;
             MetaNode mn = GetMetaClassByNameAndFileMeta(ownerClass, fitn.fileMeta, nlist);
-            if (mn == null)
+            if (mn != null)
             {
                 var mb = mn.GetMetaClassByTemplateCount(fitn.inputTemplateCount);
                 if (mb != null)
@@ -867,7 +883,7 @@ namespace SimpleLanguage.Core
             return null;
         }
         
-        #region 模板类处理区 该区先识别当前类， 再识别是否带模板输入，如果带则拿模板类
+        #region 妯℃澘绫诲鐞嗗尯 璇ュ尯鍏堣瘑鍒綋鍓嶇被锛?鍐嶈瘑鍒槸鍚﹀甫妯℃澘杈撳叆锛屽鏋滃甫鍒欐嬁妯℃澘绫?
         public MetaClass GetMetaClassAndRegisterExptendTemplateClassInstance( MetaClass curMc, FileMetaClassDefine fmcd)
         {
             if (fmcd == null) return null;
@@ -875,8 +891,8 @@ namespace SimpleLanguage.Core
             MetaNode getmc = GetMetaClassByRef(curMc, fmcd );
             if (getmc == null)
             {
-                Log.AddInStructMeta(EError.StructMetaStart, " CheckExtendAndInterface 在判断继承的时候，发没的:" + fmcd.allName + "  类");
-                //    + "位置行: " + m_ExtendClass.token.sourceBeginLine.ToString() );
+                Log.AddMetaCoreLog(LID.Unknown, "CheckExtendAndInterface failed, class not found: " + fmcd.allName);
+                //    + "浣嶇疆琛? " + m_ExtendClass.token.sourceBeginLine.ToString() );
 
             }
             else

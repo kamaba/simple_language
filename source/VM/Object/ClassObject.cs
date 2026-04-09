@@ -122,12 +122,12 @@ namespace SimpleLanguage.VM
         {
             if (index < 0 )
             {
-                Log.AddVM(EError.None, "执行的参数超出范围!! < 0 ");
+                Log.AddVM(LID.Unknown, "执行的参数超出范围!! < 0 ");
                 return;
             }
             if (index > m_MemberRuntimeObjectArray.Length)
             {
-                Log.AddVM(EError.None, "执行的参数超出范围!!");
+                Log.AddVM(LID.Unknown, "执行的参数超出范围!!");
                 return;
             }
             m_MemberRuntimeObjectArray[index].SetSValueBySObjct(ref svalue);
@@ -136,7 +136,7 @@ namespace SimpleLanguage.VM
         {
             if (index > m_MemberRuntimeObjectArray.Length)
             {
-                Log.AddVM(EError.None, "执行的参数超出范围!!");
+                Log.AddVM(LID.Unknown, "执行的参数超出范围!!");
                 return;
             }
 

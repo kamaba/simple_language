@@ -278,7 +278,7 @@ namespace SimpleLanguage.Core
         //            //}
         //            //else
         //            //{
-        //            //    Log.AddInStructMeta(EError.None, "没有找到模板中定义的模板内容!" + mt.metaTemplate.name);
+        //            //    Log.AddMetaCoreLog(LID.Unknown, "没有找到模板中定义的模板内容!" + mt.metaTemplate.name);
         //            //}
         //        }
         //    }

@@ -87,7 +87,7 @@ namespace SimpleLanguage.Compile
 
             if (namespaceNode == null)
             {
-                Log.AddInStructFileMeta(EError.None, "Error 在解析namespace 中，没有找到namespace设置的名称!!");
+                Log.AddFileMetaLog(LID.Unknown, "Error 在解析namespace 中，没有找到namespace设置的名称!!");
                 return;
             }
 

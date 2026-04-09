@@ -1,4 +1,4 @@
-//****************************************************************************
+﻿//****************************************************************************
 //  File:      ClassManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -87,7 +87,7 @@ namespace SimpleLanguage.Core
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaExpressNode expressNode => m_MetaExpressNode;
         //public bool isFunctionTemplate => m_IsFunctionTemplate;
-        public bool isMust { get { return m_MetaExpressNode == null; } }            //是否为非省略参数
+        public bool isMust { get { return m_MetaExpressNode == null; } }            //鏄惁涓洪潪鐪佺暐鍙傛暟
         public bool isExtendParams => m_FileMetaParamter?.paramsToken != null;
 
         protected bool m_IsFunctionTemplate = false;
@@ -235,7 +235,9 @@ namespace SimpleLanguage.Core
                 if (relation == ClassManager.EClassRelation.Same
                     || relation == ClassManager.EClassRelation.Child
                     || relation == ClassManager.EClassRelation.Interface
-                    || relation == ClassManager.EClassRelation.Parent)
+                    || relation == ClassManager.EClassRelation.Parent
+                    || relation == ClassManager.EClassRelation.Num
+                    )
                 {
                     return true;
                 }
@@ -363,7 +365,7 @@ namespace SimpleLanguage.Core
         {
             if( m_IsExtendParams )
             {
-                Log.AddInStructMeta(EError.None, "Error Params 模式下，只允许 使用一个参数，多余参数为无效模式");
+                Log.AddMetaCoreLog(LID.Unknown, "Error Params 妯″紡涓嬶紝鍙厑璁?浣跨敤涓€涓弬鏁帮紝澶氫綑鍙傛暟涓烘棤鏁堟ā寮");
                 return;
             }
 
@@ -377,7 +379,7 @@ namespace SimpleLanguage.Core
             {
                 if (metaMemberParam.expressNode == null)
                 {
-                    Log.AddInStructMeta(EError.None, "Error AddMetaDefineParam 参数前边已定义表达式，后边必须跟进默认值表达式!!");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error AddMetaDefineParam 鍙傛暟鍓嶈竟宸插畾涔夎〃杈惧紡锛屽悗杈瑰繀椤昏窡杩涢粯璁ゅ€艰〃杈惧紡!!");
                 }
             }
             else
@@ -401,7 +403,7 @@ namespace SimpleLanguage.Core
             }
             if ( m_IsExtendParams )
             {
-                //传入值 ，可以与定义值不同，因为使用params 的方式 后边一般跟一个对象数组，或者是类型数组进行限制                
+                //浼犲叆鍊?锛屽彲浠ヤ笌瀹氫箟鍊间笉鍚岋紝鍥犱负浣跨敤params 鐨勬柟寮?鍚庤竟涓€鑸窡涓€涓璞℃暟缁勶紝鎴栬€呮槸绫诲瀷鏁扮粍杩涜闄愬埗                
                 if(m_MetaDefineParamList.Count == 0 )
                 {
                     return false;
@@ -549,7 +551,7 @@ namespace SimpleLanguage.Core
         {
             if (b == null)
             {
-                return !a.isMust;      // 必须传参，但没有参数
+                return !a.isMust;      // 蹇呴』浼犲弬锛屼絾娌℃湁鍙傛暟
             }
             if (a.EqualsInputMetaParam(b))
                 return true;
@@ -668,7 +670,7 @@ namespace SimpleLanguage.Core
             }
             if(isAllSame )
             {
-                Log.AddInStructMeta(EError.None, "全都相似");
+                Log.AddMetaCoreLog(LID.Unknown, "鍏ㄩ兘鐩镐技");
             }
             return mc;
         }

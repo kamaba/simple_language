@@ -115,7 +115,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddInStructFileMeta( EError.None, "读取文件出错 FileParse Parse LoadFile !!!");
+                Log.AddFileMetaLog( LID.Unknown, "读取文件出错 FileParse Parse LoadFile !!!");
             }
         }
         public void CreateNamespace()
@@ -132,7 +132,7 @@ namespace SimpleLanguage.Compile
         }
         public void PrintFormatString()
         {
-            Log.AddInStructFileMeta(EError.None, m_File.ToFormatString());
+            Log.AddFileMetaLog(LID.Unknown, m_File.ToFormatString());
         }
         public void SaveCodeToFile()
         {

@@ -1,4 +1,4 @@
-//****************************************************************************
+ï»¿//****************************************************************************
 //  File:      LocalManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -72,7 +72,7 @@ namespace SimpleLanguage.Core
                 var existNode = root.GetChildrenMetaNodeByName(localClassName);
                 if (existNode != null && existNode.IsMetaClass())
                 {
-                    Log.AddInStructMeta(EError.None, "Error local{} Éú³ÉµÄÀàÃû·¢Éú³åÍ»: " + localClassName);
+                    Log.AddMetaCoreLog(LID.Unknown, "Error local{} ç”Ÿæˆçš„ç±»åå‘ç”Ÿå†²çª: " + localClassName);
                     continue;
                 }
 
@@ -91,7 +91,7 @@ namespace SimpleLanguage.Core
                         if (fmmf == null) continue;
                         if (fmmf.staticToken != null)
                         {
-                            Log.AddInStructMeta(EError.None, "Error local{} ÖĞ¶¨ÒåµÄº¯Êı²»ÔÊĞíÊ¹ÓÃ static");
+                            Log.AddMetaCoreLog(LID.Unknown, "Error local{} ä¸­å®šä¹‰çš„å‡½æ•°ä¸å…è®¸ä½¿ç”¨ static");
                             continue;
                         }
                         var mmf = new MetaMemberFunction(localMc, fmmf);

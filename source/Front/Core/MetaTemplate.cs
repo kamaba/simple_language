@@ -70,6 +70,20 @@ namespace SimpleLanguage.Core
                 {
                     m_ExtendsMetaClass = ClassManager.instance.GetMetaClassByInputTemplateAndFileMeta(m_OwnerClass, m_FileMetaTemplateDefine.inClassNameTemplateNode );
                 }
+                else if (m_FileMetaTemplateDefine.extendNode != null)
+                {
+                    // 支持 `T:Num` 这种约束语法（extendNode 来自 class 模板定义解析）
+                    var fmcd = new FileMetaClassDefine(m_FileMetaTemplateDefine.fileMeta, m_FileMetaTemplateDefine.extendNode);
+                    var mn = ClassManager.instance.GetMetaClassByClassDefineAndFileMeta(m_OwnerClass, fmcd);
+                    if (mn != null && mn.IsMetaClass())
+                    {
+                        m_ExtendsMetaClass = mn.GetMetaClassByTemplateCount(fmcd.inputTemplateNodeList.Count);
+                    }
+                    if (m_ExtendsMetaClass == null)
+                    {
+                        m_ExtendsMetaClass = CoreMetaClassManager.objectMetaClass;
+                    }
+                }
                 else
                 {
                     m_ExtendsMetaClass = CoreMetaClassManager.objectMetaClass;

@@ -262,7 +262,7 @@ namespace SimpleLanguage.Core
             }
             if (this.m_ExtendClassMetaType != null)
             {
-                Log.AddInStructMeta(EError.None, "已绑定过了继承类 : " + extendClass.name );
+                Log.AddMetaCoreLog(LID.Unknown, "已绑定过了继承类 : " + extendClass.name );
                 return;
             }
             foreach( var v in m_FileMetaClassDict )
@@ -274,7 +274,7 @@ namespace SimpleLanguage.Core
                 }
                 if(this.m_ExtendClassMetaType != null )
                 {
-                    Log.AddInStructMeta(EError.None, "已绑定过了继承类 : " + mc.metaClass.extendClass.name );
+                    Log.AddMetaCoreLog(LID.Unknown, "已绑定过了继承类 : " + mc.metaClass.extendClass.name );
                     continue;
                 }
 
@@ -285,7 +285,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddInStructMeta(EError.None, "没有发现继承类的类型!!! " + mc.metaClass.extendClass.name );
+                    Log.AddMetaCoreLog(LID.Unknown, "没有发现继承类的类型!!! " + mc.metaClass.extendClass.name );
                 }
             }
 
@@ -317,7 +317,7 @@ namespace SimpleLanguage.Core
                     MetaType getmt = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(this, icd );
                     if (getmt == null )
                     {
-                        Log.AddInStructMeta(EError.None, "没有找到接口相关的定义类!!");
+                        Log.AddMetaCoreLog(LID.Unknown, "没有找到接口相关的定义类!!");
                         continue;
                     }
                     this.m_FileCollectMetaInterfaceList.Add(getmt);
@@ -363,7 +363,7 @@ namespace SimpleLanguage.Core
                     var c = v.Value;
                     if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
                     {
-                        var ld = Log.AddInStructMeta(EError.None, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.m_AllName} 中已包含:{c.name} ");
+                        var ld = Log.AddMetaCoreLog(LID.Unknown, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.m_AllName} 中已包含:{c.name} ");
                         //ld.valDict.Add(EMetaType.MetaClass, this);
                         //ld.valDict.Add(EMetaType.MetaExtendsClass, m_ExtendClass);
                         //ld.valDict.Add(EMetaType.MetaMemberVariable, c);
@@ -376,7 +376,7 @@ namespace SimpleLanguage.Core
                     var c = v.Value;
                     if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
                     {
-                        var ld = Log.AddInStructMeta(EError.None, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.m_AllName} 中已包含:{c.name} ");
+                        var ld = Log.AddMetaCoreLog(LID.Unknown, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.m_AllName} 中已包含:{c.name} ");
                         //ld.valDict.Add(EMetaType.MetaClass, this);
                         //ld.valDict.Add(EMetaType.MetaExtendsClass, m_ExtendClass);
                         //ld.valDict.Add(EMetaType.MetaMemberVariable, c);
@@ -388,7 +388,7 @@ namespace SimpleLanguage.Core
                 {
                     if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
                     {
-                        Log.AddInStructMeta(EError.None, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
+                        Log.AddMetaCoreLog(LID.Unknown, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
                         continue;
                     }
                     this.m_MetaMemberVariableDict.Add(c.name, c);
@@ -431,7 +431,7 @@ namespace SimpleLanguage.Core
                             // if parent is abstract, child must mark method with 'override'
                             if (efun.isAbstract && !v2.isOverrideFunction)
                             {
-                                Log.AddInStructMeta(EError.None, "Error 子类[" + this.m_AllName + "] 方法: " + v2.name + " 实现了抽象父方法但未使用 override 标记");
+                                Log.AddMetaCoreLog(LID.Unknown, "Error 子类[" + this.m_AllName + "] 方法: " + v2.name + " 实现了抽象父方法但未使用 override 标记");
                             }
                             canAdd = false;
                             m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
@@ -443,7 +443,7 @@ namespace SimpleLanguage.Core
                         // If parent function is abstract and current class is concrete, require override
                         if (efun.isAbstract && !this.m_IsAbstractClass)
                         {
-                            Log.AddInStructMeta(EError.None, "Error 类[" + this.m_AllName + "] 必须实现抽象函数: " + efun.name + " 或 将类声明为 abstract");
+                            Log.AddMetaCoreLog(LID.Unknown, "Error 类[" + this.m_AllName + "] 必须实现抽象函数: " + efun.name + " 或 将类声明为 abstract");
                         }
                         m_NonStaticVirtualMetaMemberFunctionList.Add(efun);
                     }
@@ -619,7 +619,7 @@ namespace SimpleLanguage.Core
                     }
                     if (!certified)
                     {
-                        Log.AddInStructMeta(EError.None, "严重错误，必须在接口类型中，要实现接口的函数");
+                        Log.AddMetaCoreLog(LID.Unknown, "严重错误，必须在接口类型中，要实现接口的函数");
                     }
                 }
             }
@@ -733,6 +733,7 @@ namespace SimpleLanguage.Core
             }
             fmc.SetMetaClass(this);
             m_FileMetaClassDict.Add(fmc.token, fmc);
+            AddPingToken(fmc.token);
 
             if (fmc.attributeList != null && fmc.attributeList.Count > 0)
             {
@@ -755,7 +756,7 @@ namespace SimpleLanguage.Core
                 var mn = m_MetaNode.GetChildrenMetaNodeByName(v2.name);
                 if( mn != null )
                 {
-                    Log.AddInStructMeta(EError.None, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
                     continue;
                 }
 
@@ -768,7 +769,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddInStructMeta(EError.None, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
                     }
                     isHave = true;
                 }
@@ -779,7 +780,7 @@ namespace SimpleLanguage.Core
                 {
                     if (v2.staticToken != null || v2.constToken != null)
                     {
-                        Log.AddInStructMeta(EError.None, "Error Project类成员变量不允许显式定义 static/const，系统会按全局语义处理: " + v2.token?.ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.Unknown, "Error Project类成员变量不允许显式定义 static/const，系统会按全局语义处理: " + v2.token?.ToLexemeAllString());
                     }
                     mmv.SetIsStatic(true);
                     mmv.SetIsConst(true);
@@ -796,7 +797,7 @@ namespace SimpleLanguage.Core
                 var mn = this.m_MetaNode.GetChildrenMetaNodeByName(v2.name);
                 if (mn != null)
                 {
-                    Log.AddInStructMeta(EError.None, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
                     continue;
                 }
 
@@ -805,7 +806,7 @@ namespace SimpleLanguage.Core
                 {
                     if (v2.staticToken != null)
                     {
-                        Log.AddInStructMeta(EError.None, "Info Project类成员函数默认按 static 处理: " + v2.token?.ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.Unknown, "Info Project类成员函数默认按 static 处理: " + v2.token?.ToLexemeAllString());
                     }
                     mmf.SetIsStatic(true);
                 }
@@ -831,7 +832,7 @@ namespace SimpleLanguage.Core
                 var defaultFunction = GetMetaMemberConstructDefaultFunction();
                 if (defaultFunction == null)
                 {
-                    Log.AddInStructMeta(EError.None, "没有找发现默认构造函数");
+                    Log.AddMetaCoreLog(LID.Unknown, "没有找发现默认构造函数");
                     return;
                 }
                 m_DefaultExpressNode = new MetaNewObjectExpressNode(mdt, this, defaultFunction.metaBlockStatements);
@@ -921,7 +922,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddInStructMeta(EError.None, "重复添加接口");
+                Log.AddMetaCoreLog(LID.Unknown, "重复添加接口");
             }
         }
         public void AddMetaMemberVariable( MetaMemberVariable mmv, bool isAddManager = true )

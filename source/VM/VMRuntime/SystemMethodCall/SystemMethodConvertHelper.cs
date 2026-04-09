@@ -20,6 +20,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 object conv = kind switch
                 {
+                    ESystemMethodCall.SystemConvertBool => Convert.ToBoolean(raw, CultureInfo.InvariantCulture),
                     ESystemMethodCall.SystemConvertInt8 => Convert.ToByte(raw, CultureInfo.InvariantCulture),
                     ESystemMethodCall.SystemConvertSInt8 => Convert.ToSByte(raw, CultureInfo.InvariantCulture),
                     ESystemMethodCall.SystemConvertInt16 => Convert.ToInt16(raw, CultureInfo.InvariantCulture),

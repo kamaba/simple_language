@@ -62,7 +62,7 @@ namespace SimpleLanguage.IR
                     //{
                     //    if (index == -1)
                     //    {
-                    //        Log.AddGenIR(EError.None, "没有找到对应成员变量的Index");
+                    //        Log.AddIRLog(LID.Unknown, "没有找到对应成员变量的Index");
                     //        return null;
                     //    }
                     //    IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
@@ -76,7 +76,7 @@ namespace SimpleLanguage.IR
                     //
                     if (index == -1)
                     {
-                        Log.AddGenIR(EError.None, "没有找到对应成员变量的Index");
+                        Log.AddIRLog(LID.Unknown, "没有找到对应成员变量的Index");
                         return null;
                     }
                     IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
@@ -86,7 +86,7 @@ namespace SimpleLanguage.IR
                 {
                     if (index == -1)
                     {
-                        Log.AddGenIR(EError.None, "没有找到对应成员变量的Index");
+                        Log.AddIRLog(LID.Unknown, "没有找到对应成员变量的Index");
                         Debug.Assert(false);
                         return null;
                     }
@@ -195,7 +195,7 @@ namespace SimpleLanguage.IR
             else
             {
                 Debug.Assert(false);
-                Log.AddVM(EError.None, $"SVM Error 没有找到加载变量的来源类型！");
+                Log.AddVM(LID.Unknown, $"SVM Error 没有找到加载变量的来源类型！");
             }
         }
         public override string ToIRString()
@@ -338,7 +338,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                Log.AddVM(EError.None, $"SVM Error 没有找到加载变量的来源类型！");
+                Log.AddVM(LID.Unknown, $"SVM Error 没有找到加载变量的来源类型！");
             }
         }
 

@@ -1,4 +1,4 @@
-//****************************************************************************
+ï»¿//****************************************************************************
 //  File:      StructParse.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -41,7 +41,7 @@ namespace SimpleLanguage.Compile
                 // only allow in namespace/class blocks
                 if (currentNodeInfo == null || (currentNodeInfo.parseType != EParseNodeType.Namespace && currentNodeInfo.parseType != EParseNodeType.Class))
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error @Attribute Ö»ÔÊĞíĞ´ÔÚ namespace{} / class{} ÄÚ");
+                    Log.AddFileMetaLog(LID.Unknown, "Error @Attribute åªå…è®¸å†™åœ¨ namespace{} / class{} å†…");
                     // do not consume; let outer parser handle as error or normal token
                     break;
                 }
@@ -50,7 +50,7 @@ namespace SimpleLanguage.Compile
                 var attrName = atToken.extend != null ? atToken.extend.ToString() : null;
                 if (string.IsNullOrEmpty(attrName))
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error @Attribute Ãû³ÆÎª¿Õ");
+                    Log.AddFileMetaLog(LID.Unknown, "Error @Attribute åç§°ä¸ºç©º");
                     // invalid attribute; do not consume to avoid breaking outer logic
                     break;
                 }
@@ -207,7 +207,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddInStructFileMeta(EError.None, "´íÎó !!1 AddParseClassNodeInfo");
+                Log.AddFileMetaLog(LID.Unknown, "é”™è¯¯ !!1 AddParseClassNodeInfo");
                 return;
             }
 
@@ -225,7 +225,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddInStructFileMeta(EError.None, "´íÎó !!1 AddParseVariableInfo");
+                Log.AddFileMetaLog(LID.Unknown, "é”™è¯¯ !!1 AddParseVariableInfo");
                 return;
             }
         }
@@ -241,7 +241,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddInStructFileMeta(EError.None, "´íÎó !!1 AddParseFunctionNodeInfo");
+                Log.AddFileMetaLog(LID.Unknown, "é”™è¯¯ !!1 AddParseFunctionNodeInfo");
                 return;
             }
 
@@ -257,7 +257,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddInStructFileMeta(EError.None, "´íÎó !!1 AddParseFunctionNodeInfo");
+                Log.AddFileMetaLog(LID.Unknown, "é”™è¯¯ !!1 AddParseFunctionNodeInfo");
                 return;
             }
 
@@ -280,7 +280,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddInStructFileMeta(EError.None, "´íÎó !!1 AddParseFunctionNodeInfo");
+                Log.AddFileMetaLog(LID.Unknown, "é”™è¯¯ !!1 AddParseFunctionNodeInfo");
                 return;
             }
 
@@ -293,7 +293,7 @@ namespace SimpleLanguage.Compile
 
         // Normalize single-line sequences: attach trailing (), [] to the preceding
         // IdentifierLink (or its last extend link). When attached, the bracket/par children
-        // are not recursively processed here ¡ª they remain as part of the attached node.
+        // are not recursively processed here â€” they remain as part of the attached node.
         private void HandleNodeSingleLine(Node root)
         {
             if (root == null) return;
@@ -388,7 +388,7 @@ namespace SimpleLanguage.Compile
                                 // local{} must be after imports and before any namespace/class definitions.
                                 if (hasNamespaceOrClass)
                                 {
-                                    Log.AddInStructFileMeta(EError.None, "Error local{} Ö»ÄÜĞ´ÔÚ import ºó¡¢namespace/class/data/enum Ç°");
+                                    Log.AddFileMetaLog(LID.Unknown, "Error local{} åªèƒ½å†™åœ¨ import åã€namespace/class/data/enum å‰");
                                     pnode.parseIndex++;
                                     break;
                                 }
@@ -400,7 +400,7 @@ namespace SimpleLanguage.Compile
                         //    {
                         //        if (hasNamespaceOrClass)
                         //        {
-                        //            Log.AddInStructFileMeta(EError.None, "Error global{} Ö»ÄÜĞ´ÔÚ import ºó¡¢namespace/class/data/enum Ç°");
+                        //            Log.AddFileMetaLog(LID.Unknown, "Error global{} åªèƒ½å†™åœ¨ import åã€namespace/class/data/enum å‰");
                         //            Debug.Assert(false, "");
                         //            pnode.parseIndex++;
                         //            break;
@@ -408,7 +408,7 @@ namespace SimpleLanguage.Compile
 
                         //        if (!m_FileMeta.path.EndsWith(".sp", System.StringComparison.OrdinalIgnoreCase))
                         //        {
-                        //            Log.AddInStructFileMeta(EError.None, "Error global{} Ö»ÄÜ³öÏÖÔÚ .sp ÎÄ¼şÖĞ");
+                        //            Log.AddFileMetaLog(LID.Unknown, "Error global{} åªèƒ½å‡ºç°åœ¨ .sp æ–‡ä»¶ä¸­");
                         //            pnode.parseIndex++;
                         //            break;
                         //        }
@@ -438,7 +438,7 @@ namespace SimpleLanguage.Compile
                             break;
                         default:
                             {
-                                Log.AddInStructFileMeta( EError.None, "Error ²»ÔÊĞí ÔÚFileÍ·¼¶Ä¿Â¼ÖĞ³öÏÖ : " + node.token.lexeme.ToString());
+                                Log.AddFileMetaLog( LID.Unknown, "Error ä¸å…è®¸ åœ¨Fileå¤´çº§ç›®å½•ä¸­å‡ºç° : " + node.token.lexeme.ToString());
                             }
                             break;
                     }
@@ -454,7 +454,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error ²»ÔÊĞí ÔÚFileÍ·¼¶Ä¿Â¼ÖĞ³öÏÖ2 : " + node.token?.lexeme.ToString());
+                    Log.AddFileMetaLog(LID.Unknown, "Error ä¸å…è®¸ åœ¨Fileå¤´çº§ç›®å½•ä¸­å‡ºç°2 : " + node.token?.lexeme.ToString());
                 }
             }
 
@@ -466,13 +466,13 @@ namespace SimpleLanguage.Compile
                 m_FileMeta.SetDeep(0);
 #endif
 
-                Log.AddProcess( EProcess.ParseNode, EError.None, "½âÎö³ÉCode´úÂë½á¹¹ÎÄ¼ş³É¹¦!!! ÏÂÒ»²½£¬¿ÉÒÔÉú²úMetaÎÄ¼şÁË \n " +
-                    "Éú³ÉFileMetaÎÄ¼ş³É¹¦!!! ÏÂÒ»²½£¬¿ÉÒÔ ½øĞĞ»ìºÏÁË");
+                Log.AddProcess( EProcess.ParseNode, LID.Unknown, "è§£ææˆCodeä»£ç ç»“æ„æ–‡ä»¶æˆåŠŸ!!! ä¸‹ä¸€æ­¥ï¼Œå¯ä»¥ç”Ÿäº§Metaæ–‡ä»¶äº† \n " +
+                    "ç”ŸæˆFileMetaæ–‡ä»¶æˆåŠŸ!!! ä¸‹ä¸€æ­¥ï¼Œå¯ä»¥ è¿›è¡Œæ··åˆäº†");
             }
             else
             {
 
-                Log.AddProcess(EProcess.ParseNode, EError.ParseFileError, "½âÎö³öÏÖ´íÎó ParseFile : " + currentNodeInfo.parseType.ToString() );
+                Log.AddProcess(EProcess.ParseNode, LID.Unknown, "è§£æå‡ºç°é”™è¯¯ ParseFile : " + currentNodeInfo.parseType.ToString() );
                 return;
             }
             return;
@@ -539,13 +539,13 @@ namespace SimpleLanguage.Compile
             Node localNode = pnode.GetParseNode(); // consume 'local'
             if (localNode == null || localNode.token?.type != ETokenType.Local)
             {
-                Log.AddInStructFileMeta(EError.None, "Error local ½âÎöÊ§°Ü");
+                Log.AddFileMetaLog(LID.Unknown, "Error local è§£æå¤±è´¥");
                 return;
             }
 
             if (m_FileMeta.GetFileMetaLocalSyntax() != null)
             {
-                Log.AddInStructFileMeta(EError.None, "Error local{} ÔÚÍ¬Ò»ÎÄ¼şÖĞÖ»ÔÊĞí¶¨ÒåÒ»´Î");
+                Log.AddFileMetaLog(LID.Unknown, "Error local{} åœ¨åŒä¸€æ–‡ä»¶ä¸­åªå…è®¸å®šä¹‰ä¸€æ¬¡");
                 return;
             }
 
@@ -574,7 +574,7 @@ namespace SimpleLanguage.Compile
 
             if (blockNode == null)
             {
-                Log.AddInStructFileMeta(EError.None, "Error local ºó±ØĞë¸ú {} ¿é");
+                Log.AddFileMetaLog(LID.Unknown, "Error local åå¿…é¡»è·Ÿ {} å—");
                 return;
             }
 
@@ -600,13 +600,13 @@ namespace SimpleLanguage.Compile
         //    Node globalNode = pnode.GetParseNode(); // consume 'global'
         //    if (globalNode == null || globalNode.token?.type != ETokenType.Global)
         //    {
-        //        Log.AddInStructFileMeta(EError.None, "Error global ½âÎöÊ§°Ü");
+        //        Log.AddFileMetaLog(LID.Unknown, "Error global è§£æå¤±è´¥");
         //        return;
         //    }
 
         //    if (m_FileMeta.GetFileMetaGlobalSyntax() != null)
         //    {
-        //        Log.AddInStructFileMeta(EError.None, "Error global{} ÔÚÍ¬Ò»ÎÄ¼şÖĞÖ»ÔÊĞí¶¨ÒåÒ»´Î");
+        //        Log.AddFileMetaLog(LID.Unknown, "Error global{} åœ¨åŒä¸€æ–‡ä»¶ä¸­åªå…è®¸å®šä¹‰ä¸€æ¬¡");
         //        return;
         //    }
 
@@ -635,11 +635,11 @@ namespace SimpleLanguage.Compile
 
         //    if (blockNode == null)
         //    {
-        //        Log.AddInStructFileMeta(EError.None, "Info global{} ½âÎöÒÑ½ûÓÃ");
+        //        Log.AddFileMetaLog(LID.Unknown, "Info global{} è§£æå·²ç¦ç”¨");
         //        return;
         //    }
 
-        //    Log.AddInStructFileMeta(EError.None, "Info global{} ½âÎöÒÑ½ûÓÃ£¬ÒÑÌø¹ı¸Ã¿é");
+        //    Log.AddFileMetaLog(LID.Unknown, "Info global{} è§£æå·²ç¦ç”¨ï¼Œå·²è·³è¿‡è¯¥å—");
         //}
         private bool TryParseGlobalFunction(Node ownerBlock, FileMetaLocalSyntax fgs, List<Node> lineNodes, ref bool hasFunction)
         {
@@ -671,9 +671,9 @@ namespace SimpleLanguage.Compile
 
                     if (hasFunction)
                     {
-                        Log.AddInStructFileMeta(EError.None, isLocal
-                            ? "Error local{} ÖĞ³öÏÖº¯Êı¶¨Òåºó£¬ºó±ßÖ»ÔÊĞí¼ÌĞø¶¨Òåº¯Êı"
-                            : "Error global{} ÖĞ³öÏÖº¯Êı¶¨Òåºó£¬ºó±ßÖ»ÔÊĞí¼ÌĞø¶¨Òåº¯Êı");
+                        Log.AddFileMetaLog(LID.Unknown, isLocal
+                            ? "Error local{} ä¸­å‡ºç°å‡½æ•°å®šä¹‰åï¼Œåè¾¹åªå…è®¸ç»§ç»­å®šä¹‰å‡½æ•°"
+                            : "Error global{} ä¸­å‡ºç°å‡½æ•°å®šä¹‰åï¼Œåè¾¹åªå…è®¸ç»§ç»­å®šä¹‰å‡½æ•°");
                         lineNodes.Clear();
                         continue;
                     }
@@ -703,9 +703,9 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddInStructFileMeta(EError.None, isLocal
-                        ? "Error local{} ÖĞ³öÏÖº¯Êı¶¨Òåºó£¬ºó±ßÖ»ÔÊĞí¼ÌĞø¶¨Òåº¯Êı"
-                        : "Error global{} ÖĞ³öÏÖº¯Êı¶¨Òåºó£¬ºó±ßÖ»ÔÊĞí¼ÌĞø¶¨Òåº¯Êı");
+                    Log.AddFileMetaLog(LID.Unknown, isLocal
+                        ? "Error local{} ä¸­å‡ºç°å‡½æ•°å®šä¹‰åï¼Œåè¾¹åªå…è®¸ç»§ç»­å®šä¹‰å‡½æ•°"
+                        : "Error global{} ä¸­å‡ºç°å‡½æ•°å®šä¹‰åï¼Œåè¾¹åªå…è®¸ç»§ç»­å®šä¹‰å‡½æ•°");
                 }
             }
         }
@@ -763,9 +763,9 @@ namespace SimpleLanguage.Compile
 
             if (funcBlock == null)
             {
-                Log.AddInStructFileMeta(EError.None, isLocal
-                    ? "Error local{} º¯Êı¶¨ÒåÈ±ÉÙº¯ÊıÌå {}"
-                    : "Error global{} º¯Êı¶¨ÒåÈ±ÉÙº¯ÊıÌå {}");
+                Log.AddFileMetaLog(LID.Unknown, isLocal
+                    ? "Error local{} å‡½æ•°å®šä¹‰ç¼ºå°‘å‡½æ•°ä½“ {}"
+                    : "Error global{} å‡½æ•°å®šä¹‰ç¼ºå°‘å‡½æ•°ä½“ {}");
                 return true;
             }
 
@@ -773,9 +773,9 @@ namespace SimpleLanguage.Compile
             {
                 if (normalizedNodes[i]?.nodeType == ENodeType.Key && normalizedNodes[i].token?.type == ETokenType.Static)
                 {
-                    Log.AddInStructFileMeta(EError.None, isLocal
-                        ? "Error local{} ÖĞ¶¨ÒåµÄº¯Êı²»ÔÊĞíÊ¹ÓÃ static"
-                        : "Error global{} ÖĞ¶¨ÒåµÄº¯Êı²»ÔÊĞíÊ¹ÓÃ static");
+                    Log.AddFileMetaLog(LID.Unknown, isLocal
+                        ? "Error local{} ä¸­å®šä¹‰çš„å‡½æ•°ä¸å…è®¸ä½¿ç”¨ static"
+                        : "Error global{} ä¸­å®šä¹‰çš„å‡½æ•°ä¸å…è®¸ä½¿ç”¨ static");
                     return true;
                 }
             }
@@ -809,7 +809,7 @@ namespace SimpleLanguage.Compile
                 {
                     if (namespaceNode != null)
                     {
-                        Log.AddInStructFileMeta(EError.None, "Error ÔÚ½âÎönamespace ÖĞ£¬ºó±ß¸ú×Å²ÎÊı¶àÓÚÕı³£Óï·¨!!");
+                        Log.AddFileMetaLog(LID.Unknown, "Error åœ¨è§£ænamespace ä¸­ï¼Œåè¾¹è·Ÿç€å‚æ•°å¤šäºæ­£å¸¸è¯­æ³•!!");
                     }
                     namespaceNode = nextNode;
 
@@ -843,7 +843,7 @@ namespace SimpleLanguage.Compile
                 {
                     if (ProjectManager.isUseForceSemiColonInLineEnd)
                     {
-                        Log.AddInStructFileMeta(EError.None, "Error ÔÚ½âÎönamespace ÖĞ£¬ĞèÒªÇ¿ÖÆ;ºÅ½áÊø");
+                        Log.AddFileMetaLog(LID.Unknown, "Error åœ¨è§£ænamespace ä¸­ï¼Œéœ€è¦å¼ºåˆ¶;å·ç»“æŸ");
                         break;
                     }
                     else
@@ -856,7 +856,7 @@ namespace SimpleLanguage.Compile
             }
             FileMetaNamespace fmn = new FileMetaNamespace(currentNode, namespaceNode);
 
-            if (isBlock)        //ÊÇ·ñÊ¹ÓÃ namespace N{}µÄ¸ñÊ½ Èç¹û²»ÊÇ{}¸ñÊ½£¬ÈÏÎªÊÇËÑË÷Ä£Ê½
+            if (isBlock)        //æ˜¯å¦ä½¿ç”¨ namespace N{}çš„æ ¼å¼ å¦‚æœä¸æ˜¯{}æ ¼å¼ï¼Œè®¤ä¸ºæ˜¯æœç´¢æ¨¡å¼
             {
                 m_FileMeta.AddFileDefineNamespace(fmn);
                 AddParseNamespaceNodeInfo(fmn);
@@ -876,7 +876,7 @@ namespace SimpleLanguage.Compile
             }
             return false;
         }
-        // Ö»½âÎö ÔÚÈ«¾ÖÎÄ¼şÏÂµÄ namespace ÏÂ µÄ »¹ÓĞ¾ÍÊÇÎÄ¼şclass
+        // åªè§£æ åœ¨å…¨å±€æ–‡ä»¶ä¸‹çš„ namespace ä¸‹ çš„ è¿˜æœ‰å°±æ˜¯æ–‡ä»¶class
         public void ParseNamespaceOrTopClass(Node pnode)
         {
             Node braceNode = pnode.blockNode;
@@ -894,7 +894,7 @@ namespace SimpleLanguage.Compile
                 if (curNode.token?.type == ETokenType.At)
                 {
                     // attributes at file root are not allowed
-                    Log.AddInStructFileMeta(EError.None, "Error @Attribute ²»ÔÊĞí³öÏÖÔÚÎÄ¼şÍ·¼¶(Ö»ÄÜÔÚ namespace{} / class{} ÄÚ)");
+                    Log.AddFileMetaLog(LID.Unknown, "Error @Attribute ä¸å…è®¸å‡ºç°åœ¨æ–‡ä»¶å¤´çº§(åªèƒ½åœ¨ namespace{} / class{} å†…)");
                     continue;
                 }
 
@@ -970,7 +970,7 @@ namespace SimpleLanguage.Compile
                 }    
                 else
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error ²»ÔÊĞíÔÚ½âÊÍClassµÄÊ±ºò£¬ÓĞ´íÎó µÄÓï·¨--------------------" + curNode.token?.ToLexemeAllString());
+                    Log.AddFileMetaLog(LID.Unknown, "Error ä¸å…è®¸åœ¨è§£é‡ŠClassçš„æ—¶å€™ï¼Œæœ‰é”™è¯¯ çš„è¯­æ³•--------------------" + curNode.token?.ToLexemeAllString());
                 }
             }
             pnode.parseIndex = index;
@@ -1002,12 +1002,12 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddInStructFileMeta(EError.None, "Error ¶ÔÓÚ namespace A.B{}µÄ¸ñÊ½ ¶àÁËÒ»¸ö²ÎÊı!1");
+                        Log.AddFileMetaLog(LID.Unknown, "Error å¯¹äº namespace A.B{}çš„æ ¼å¼ å¤šäº†ä¸€ä¸ªå‚æ•°!1");
                     }
                 }
                 else
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error Ã»ÓĞ·¢ÏÖÊÇClass»¹ÊÇNamespaceµÄ¹Ø¼ü×Ö!");
+                    Log.AddFileMetaLog(LID.Unknown, "Error æ²¡æœ‰å‘ç°æ˜¯Classè¿˜æ˜¯Namespaceçš„å…³é”®å­—!");
                 }
             }
         }
@@ -1024,7 +1024,7 @@ namespace SimpleLanguage.Compile
 
             List<FileMetaAttributeSyntax> attrs = new List<FileMetaAttributeSyntax>();
 
-            int parseType = 0;      // 1->ÊÇÀàclass\n{}  2->º¯Êı init()\n{}      3->±äÁ¿  int a;  int a=20; a = 20; a = {}\n a = {};
+            int parseType = 0;      // 1->æ˜¯ç±»class\n{}  2->å‡½æ•° init()\n{}      3->å˜é‡  int a;  int a=20; a = 20; a = {}\n a = {};
             Node block = null;
             for (index = pnode.parseIndex; index < pnode.childList.Count;)
             {
@@ -1094,8 +1094,8 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddInStructFileMeta(EError.None, "Error StructParseFrame.ParseClassNode ½âÎöµÄÀàºó±ß²»ÓÃÊ¹ÓÃ;ºÅ½áÎ²!! ");
-                        Log.AddInStructFileMeta(EError.None, "Ò»°ãÊÇÖ»¶¨ÒåÁËÀà±äÁ¿£¬Ã»ÓĞ¸³Öµ£¬Õı³£ºó±ßÓ¦¸Ã¿ÉÒÔÊ¹ÓÃ=null¸³Öµ");
+                        Log.AddFileMetaLog(LID.Unknown, "Error StructParseFrame.ParseClassNode è§£æçš„ç±»åè¾¹ä¸ç”¨ä½¿ç”¨;å·ç»“å°¾!! ");
+                        Log.AddFileMetaLog(LID.Unknown, "ä¸€èˆ¬æ˜¯åªå®šä¹‰äº†ç±»å˜é‡ï¼Œæ²¡æœ‰èµ‹å€¼ï¼Œæ­£å¸¸åè¾¹åº”è¯¥å¯ä»¥ä½¿ç”¨=nullèµ‹å€¼");
                         break;
                     }
                 }
@@ -1144,7 +1144,7 @@ namespace SimpleLanguage.Compile
                 else
                 {
                     Debug.Assert(false, "");
-                    Log.AddInStructFileMeta(EError.None, "Error ParseClassNode ²»ÔÊĞí2ÔÚ½âÊÍClassµÄÊ±ºò£¬ÓĞ´íÎó µÄÓï·¨--------------------" + curNode.token?.ToLexemeAllString());
+                    Log.AddFileMetaLog(LID.Unknown, "Error ParseClassNode ä¸å…è®¸2åœ¨è§£é‡ŠClassçš„æ—¶å€™ï¼Œæœ‰é”™è¯¯ çš„è¯­æ³•--------------------" + curNode.token?.ToLexemeAllString());
                 }
             }
             pnode.parseIndex = index;
@@ -1202,7 +1202,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error Î´111111111111123123123");
+                    Log.AddFileMetaLog(LID.Unknown, "Error æœª111111111111123123123");
                 }
             }
             ParseClassNode(pnode);
@@ -1242,7 +1242,7 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Log.AddInStructFileMeta(EError.None, "Error ÔÚ+-·ûÇ°±ß²»ÔÊĞíÓĞÆäËü·ÇconstÀàĞÍ´æÔÚ!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error åœ¨+-ç¬¦å‰è¾¹ä¸å…è®¸æœ‰å…¶å®ƒéconstç±»å‹å­˜åœ¨!");
                             continue;
                         }
                     }
@@ -1279,7 +1279,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error DataÊı¾İÖĞ []ÖĞ£¬²»Ö§³Ö¸ÃÀàĞÍµÄÊı¾İ" + curNode?.token?.ToLexemeAllString());
+                    Log.AddFileMetaLog(LID.Unknown, "Error Dataæ•°æ®ä¸­ []ä¸­ï¼Œä¸æ”¯æŒè¯¥ç±»å‹çš„æ•°æ®" + curNode?.token?.ToLexemeAllString());
                     continue;
                 }
             }
@@ -1392,7 +1392,7 @@ namespace SimpleLanguage.Compile
                                 }
                                 else
                                 {
-                                    Log.AddInStructFileMeta(EError.None, "Error DataÊı¾İÖĞ£¬²»ÔÊĞíÊ¹ÓÃ³ı×Ô¶¨ÒåÒÔºóµÄ×Ö¶Î!!" + curNode?.token?.ToLexemeAllString());
+                                    Log.AddFileMetaLog(LID.Unknown, "Error Dataæ•°æ®ä¸­ï¼Œä¸å…è®¸ä½¿ç”¨é™¤è‡ªå®šä¹‰ä»¥åçš„å­—æ®µ!!" + curNode?.token?.ToLexemeAllString());
                                 }
                             }
                         }
@@ -1428,13 +1428,13 @@ namespace SimpleLanguage.Compile
 
                     if( nextNode == null )
                     {
-                        Log.AddInStructFileMeta(EError.None, "Error ºó±ß±ØĞëÓĞÑÓÉìÎ»...");
+                        Log.AddFileMetaLog(LID.Unknown, "Error åè¾¹å¿…é¡»æœ‰å»¶ä¼¸ä½...");
                         continue;
                     }
 
                     int parseType = 0;
-                    //=ºÅºó±ßµÚÒ»Î»£¬±ØĞëÊÇidetifier »òÕßÊÇ constValueÖµ£¬  Èç¹ûÕÛĞĞ£¬Ö»ÔÊĞí \n{}  \
-                    if (nextNode.nodeType == ENodeType.ConstValue) // a = 10 ²»ÔÊĞíÕÛĞĞ  
+                    //=å·åè¾¹ç¬¬ä¸€ä½ï¼Œå¿…é¡»æ˜¯idetifier æˆ–è€…æ˜¯ constValueå€¼ï¼Œ  å¦‚æœæŠ˜è¡Œï¼Œåªå…è®¸ \n{}  \
+                    if (nextNode.nodeType == ENodeType.ConstValue) // a = 10 ä¸å…è®¸æŠ˜è¡Œ  
                     {
                         index++;
                         backList.Add(nextNode);
@@ -1457,12 +1457,12 @@ namespace SimpleLanguage.Compile
                             }
                             else
                             {
-                                Log.AddInStructFileMeta(EError.None, "Error Èç¹ûÊÇ x=-??µÄĞÎÊ½£¬ÔÚ·ûºÅºó±ß");
+                                Log.AddFileMetaLog(LID.Unknown, "Error å¦‚æœæ˜¯ x=-??çš„å½¢å¼ï¼Œåœ¨ç¬¦å·åè¾¹");
                             }
                         }
                         else
                         {
-                            Log.AddInStructFileMeta(EError.None, "Error Èç¹ûÊÇ x=-??µÄĞÎÊ½£¬ÔÚ·ûºÅºó±ß");
+                            Log.AddFileMetaLog(LID.Unknown, "Error å¦‚æœæ˜¯ x=-??çš„å½¢å¼ï¼Œåœ¨ç¬¦å·åè¾¹");
                         }
                     }
                     else if(nextNode.nodeType == ENodeType.Brace )
@@ -1496,12 +1496,12 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Log.AddInStructFileMeta(EError.None, "Error ÔÚ¶¨ÒåDataÊı¾İµÄÊ±ºò£¬Èç¹ûÓĞÕÛĞĞ£¬Ö»ÔÊĞí =\n{} =\n[] Á½ÖÖĞÎÊ½! ");
+                            Log.AddFileMetaLog(LID.Unknown, "Error åœ¨å®šä¹‰Dataæ•°æ®çš„æ—¶å€™ï¼Œå¦‚æœæœ‰æŠ˜è¡Œï¼Œåªå…è®¸ =\n{} =\n[] ä¸¤ç§å½¢å¼! ");
                         }
                     }
                     else
                     {
-                        Log.AddInStructFileMeta(EError.None, "Error ÔÚ¶¨ÒåDataÊı¾İµÄÊ±ºò£¬²»ÔÊĞí=ºÅºó±ßÓĞÆäËüĞÎÊ½µÄ´æÔÚ");
+                        Log.AddFileMetaLog(LID.Unknown, "Error åœ¨å®šä¹‰Dataæ•°æ®çš„æ—¶å€™ï¼Œä¸å…è®¸=å·åè¾¹æœ‰å…¶å®ƒå½¢å¼çš„å­˜åœ¨");
                     }
 
                     if( parseType > 0 )
@@ -1534,7 +1534,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error ±¨´í£¬²»ÔÊĞí ½âÎöDataÓĞÆäËüµÄÀàĞÍ³öÏÖ!" + curNode.token.ToLexemeAllString() );
+                    Log.AddFileMetaLog(LID.Unknown, "Error æŠ¥é”™ï¼Œä¸å…è®¸ è§£æDataæœ‰å…¶å®ƒçš„ç±»å‹å‡ºç°!" + curNode.token.ToLexemeAllString() );
                 }
 
                 if (isParseEnd)
@@ -1566,7 +1566,7 @@ namespace SimpleLanguage.Compile
                     if (curNodexxx.nodeType == ENodeType.Key
                         && curNodexxx.token.type == ETokenType.Enum)
                     {
-                        Log.AddInStructFileMeta(EError.None, "error ²»ÔÊĞíÔÚenum ÄÚÈİÀï±ßÔÙÇ¶Ì×enum");
+                        Log.AddFileMetaLog(LID.Unknown, "error ä¸å…è®¸åœ¨enum å†…å®¹é‡Œè¾¹å†åµŒå¥—enum");
                         return;
                     }
                 }
@@ -1616,7 +1616,7 @@ namespace SimpleLanguage.Compile
                                         }
                                     }
                                 }
-                                else if (next2Node?.nodeType == ENodeType.Brace)  //Class1(){}µÄ½á¹¹
+                                else if (next2Node?.nodeType == ENodeType.Brace)  //Class1(){}çš„ç»“æ„
                                 {
                                     index += 2;
                                     blockNode = next2Node;
@@ -1651,7 +1651,7 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Log.AddInStructFileMeta(EError.None, "ÔÚ½âÎöenum member ÖĞ ³ÉÔ±±äÁ¿ Èç¹ûÊÇidentifier¸ñÊ½£¬Ôòºó±ß²»ÔÊĞí¸úµ±Ç°¸ñÊ½");
+                            Log.AddFileMetaLog(LID.Unknown, "åœ¨è§£æenum member ä¸­ æˆå‘˜å˜é‡ å¦‚æœæ˜¯identifieræ ¼å¼ï¼Œåˆ™åè¾¹ä¸å…è®¸è·Ÿå½“å‰æ ¼å¼");
                         }
                     }
                     else
@@ -1690,7 +1690,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error ½âÎöEnum memeber Ê±£¬²»ÔÊĞíÓĞÆäËüĞÎÊ½µÄ´æÔÚ!");
+                    Log.AddFileMetaLog(LID.Unknown, "Error è§£æEnum memeber æ—¶ï¼Œä¸å…è®¸æœ‰å…¶å®ƒå½¢å¼çš„å­˜åœ¨!");
                 }
 
                 if(isParse )
@@ -1704,8 +1704,8 @@ namespace SimpleLanguage.Compile
                     isAssign = false;
                 }
 
-                #region À©Õ¹½âÎöÆäËü·½Ê½
-                //if (curNode?.nodeType == ENodeType.Par)  //ÀàÖĞµÄ´ø()µÄ½á¹¹
+                #region æ‰©å±•è§£æå…¶å®ƒæ–¹å¼
+                //if (curNode?.nodeType == ENodeType.Par)  //ç±»ä¸­çš„å¸¦()çš„ç»“æ„
                 //{
                 //    if (nextNode?.nodeType == ENodeType.SemiColon)
                 //    {
@@ -1723,11 +1723,11 @@ namespace SimpleLanguage.Compile
                 //    }
                 //    else
                 //    {
-                //        Debug.WriteLine("Error ²»ÔÊĞíÔÚClass1()ºó ²»ÄÜÔö¼ÓÆäËüÄÚÈİ!!");
+                //        Debug.WriteLine("Error ä¸å…è®¸åœ¨Class1()å ä¸èƒ½å¢åŠ å…¶å®ƒå†…å®¹!!");
                 //        break;
                 //    }
                 //}
-                //else if (curNode?.nodeType == ENodeType.Brace)     //ÄäÃû¶ÔÏó
+                //else if (curNode?.nodeType == ENodeType.Brace)     //åŒ¿åå¯¹è±¡
                 //{
                 //    bool isAssign = false;
                 //    for (int m = 0; m < nodeList.Count; m++)
@@ -1747,7 +1747,7 @@ namespace SimpleLanguage.Compile
                 //    }
                 //    else
                 //    {
-                //        Debug.WriteLine("Error ÔÚÓï¾äÖĞÖ±½ÓÊ¹ÓÃ{}²»·ûºÏÓï·¨ÒªÇó!!!");
+                //        Debug.WriteLine("Error åœ¨è¯­å¥ä¸­ç›´æ¥ä½¿ç”¨{}ä¸ç¬¦åˆè¯­æ³•è¦æ±‚!!!");
                 //    }
                 //}
                 #endregion
@@ -1756,7 +1756,7 @@ namespace SimpleLanguage.Compile
         /*
         public void ParseParContrent(Node pnode)
         {
-            // [] ½âÎöÖĞÀ¨ºÅÀï±ßµÄÄÚÈİ
+            // [] è§£æä¸­æ‹¬å·é‡Œè¾¹çš„å†…å®¹
             Node bracketNode = pnode.bracketNode;
             int index1 = bracketNode.parseIndex;
             for (index1 = bracketNode.parseIndex; index1 < bracketNode.childList.Count;)
@@ -1784,7 +1784,7 @@ namespace SimpleLanguage.Compile
                         var next3Node = bracketNode.childList[index1 + 1];
                         if (next3Node?.nodeType != ENodeType.SemiColon)
                         {
-                            Debug.WriteLine("Error Ó¦¸ÃÊ¹ÓÃ;½áÊøÓï¾ä!!");
+                            Debug.WriteLine("Error åº”è¯¥ä½¿ç”¨;ç»“æŸè¯­å¥!!");
                         }
                     }
                 }
@@ -1810,7 +1810,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Debug.WriteLine("Error DataÊı¾İÖĞ []ÖĞ£¬²»Ö§³Ö¸ÃÀàĞÍµÄÊı¾İ" + curNode?.token?.ToLexemeAllString());
+                    Debug.WriteLine("Error Dataæ•°æ®ä¸­ []ä¸­ï¼Œä¸æ”¯æŒè¯¥ç±»å‹çš„æ•°æ®" + curNode?.token?.ToLexemeAllString());
                     continue;
                 }
             }
@@ -2235,7 +2235,7 @@ namespace SimpleLanguage.Compile
             }
             node.SetChildList(list);
         }
-        //ÅĞ¶Ï>> »¹ÊÇ> > ¾ßÌåÊÇ·ñÊÇ±í´ïÊ½
+        //åˆ¤æ–­>> è¿˜æ˜¯> > å…·ä½“æ˜¯å¦æ˜¯è¡¨è¾¾å¼
         private static bool IsCommonExpressNode( Node node )
         {
             int isAngleFlagIndex = 0;
@@ -2305,7 +2305,7 @@ namespace SimpleLanguage.Compile
 
             return false;
         }
-        //´¦Àí ident <> () {} [] . µÄ½áºÏ Óë×ÓÔªËØµÄÍ³Ò»´¦Àí
+        //å¤„ç† ident <> () {} [] . çš„ç»“åˆ ä¸å­å…ƒç´ çš„ç»Ÿä¸€å¤„ç†
         private static void _HandleExpressNodeProcess(Node node, Node inputFinaleNode )
         {
             if( node.parseIndex < 0 || node.parseIndex >= node.childList.Count )
@@ -2537,7 +2537,7 @@ namespace SimpleLanguage.Compile
         //    }
         //}
 
-        ////´¦Àí ident <> () {} [] . µÄ½áºÏ Óë×ÓÔªËØµÄÍ³Ò»´¦Àí
+        ////å¤„ç† ident <> () {} [] . çš„ç»“åˆ ä¸å­å…ƒç´ çš„ç»Ÿä¸€å¤„ç†
         //private static void _HandleBeforeNodeProcess(Node node, Node inputFinaleNode = null)
         //{
         //    int index = node.parseIndex;

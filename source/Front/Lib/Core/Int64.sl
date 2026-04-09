@@ -14,11 +14,7 @@ public class Int64 extends Num
     
     public Int64? parse( string s )
     {
-        ret System.Convert.ToInt64(s)
-    }    
-    public static Int64 parseInt64(string s)
-    {
-        ret System.Convert.ToInt64(s)
+        ret SystemConvertInt64(s)
     }
     public override Num abs()
     {
@@ -41,7 +37,7 @@ public class Int64 extends Num
     }
     override bool toBool()
     {
-        ret SystemConvertFloat64(this) != 0
+        ret SystemConvertBool(this) 
     }
     override Byte toByte( byte index = 0 )
     {

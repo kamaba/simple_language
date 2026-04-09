@@ -162,6 +162,7 @@ namespace SimpleLanguage.Core
         {
             m_FileMetaKeyIfSyntax = fm;
             m_MetaVariable = mv;
+            AddPingToken(fm?.ifExpressSyntax?.token);
             Parse();
         }
         private void Parse()
@@ -209,6 +210,7 @@ namespace SimpleLanguage.Core
             for ( int i = 0; i < m_FileMetaKeyIfSyntax.elseIfExpressSyntax.Count; i++ )
             {
                 var fmsthen = m_FileMetaKeyIfSyntax.elseIfExpressSyntax[i];
+                AddPingToken(fmsthen?.token);
 
                 CreateExpressParam cep2 = new CreateExpressParam()
                 {
@@ -238,6 +240,7 @@ namespace SimpleLanguage.Core
             
             if( m_FileMetaKeyIfSyntax.elseExpressSyntax != null )
             {
+                AddPingToken(m_FileMetaKeyIfSyntax.elseExpressSyntax.token);
                 MetaIfStatements.MetaElseIfStatements msis3 = new MetaIfStatements.MetaElseIfStatements(m_OwnerMetaBlockStatements, m_FileMetaKeyIfSyntax.elseExpressSyntax);
                 AddIfEslseStateStatements(msis3, IfElseState.Else );
                 if (msis3.thenMetaStatements != null)

@@ -19,7 +19,7 @@ public abstract class Num extends Object
     
     bool toBool()
     {
-        ret SystemConvertFloat64(this) != 0
+        ret SystemConvertBool(this)
     }
     Byte toByte( byte index = 0 )
     {

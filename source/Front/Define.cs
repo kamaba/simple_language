@@ -392,6 +392,7 @@ namespace SimpleLanguage
         SystemPrint,
         SystemReadLine,
         SystemReadKey,
+        SystemConvertBool,
         SystemConvertInt8,
         SystemConvertSInt8,
         SystemConvertInt16,

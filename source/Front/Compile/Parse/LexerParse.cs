@@ -1,4 +1,4 @@
-//****************************************************************************
+﻿//****************************************************************************
 //  File:      LexerParse.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace SimpleLanguage.Compile
 {
-    //词法解析
+    //璇嶆硶瑙ｆ瀽
     public class LexerParse
     {
         public List<Token> listTokens => m_ListTokens;
@@ -29,17 +29,17 @@ namespace SimpleLanguage.Compile
         //    return withEndList;
         //}
 
-        const char END_CHAR = char.MaxValue;    //结尾字符
+        const char END_CHAR = char.MaxValue;    //缁撳熬瀛楃
 
-        private char m_CurChar;                              //当前字符
-        private char m_TempChar;                             //临时字符
+        private char m_CurChar;                              //褰撳墠瀛楃
+        private char m_TempChar;                             //涓存椂瀛楃
         private StringBuilder m_Builder = new StringBuilder();
         private List<Token> m_ListTokens = new List<Token>();
         private Token m_CurrentToken = null;
         private char[] m_Buffer;                    
         private int m_Length = 0;                      
-        private int m_SourceLine = 0;                  //解析到当前的行数
-        private int m_SourceChar = 0;                  //解析到当前行中的位置
+        private int m_SourceLine = 0;                  //瑙ｆ瀽鍒板綋鍓嶇殑琛屾暟
+        private int m_SourceChar = 0;                  //瑙ｆ瀽鍒板綋鍓嶈涓殑浣嶇疆
         private int m_Index = 0;                       
         private string m_Path;
         public LexerParse( string path, char[] buffer )
@@ -347,7 +347,7 @@ namespace SimpleLanguage.Compile
             }
             //else if (m_TempChar == '<')
             //{
-            //    // double '<' form '<<' (shift left) — consume both chars and emit single token
+            //    // double '<' form '<<' (shift left) 鈥?consume both chars and emit single token
             //    AddToken(ETokenType.Less, "<");
             //}
             else
@@ -369,7 +369,7 @@ namespace SimpleLanguage.Compile
                 UndoChar();
             }
         }
-        /// <summary> 读取数字 </summary>
+        /// <summary> 璇诲彇鏁板瓧 </summary>
         void ReadNumber()
         {
             m_Builder.Append(m_CurChar);
@@ -426,7 +426,7 @@ namespace SimpleLanguage.Compile
                 {
                     if( endPoint == 0 )     // 2f
                     {
-                        var ld = Log.AddInHandleToken( m_Path, m_SourceLine, m_SourceChar, EError.None, "读取浮点形必须有小数点!!!" );
+                        var ld = Log.AddInHandleToken( m_Path, m_SourceLine, m_SourceChar, LID.Unknown, "璇诲彇娴偣褰㈠繀椤绘湁灏忔暟鐐?!!" );
                         ld.demo = "2f";
                         ld.advan = "2.0f";
                         AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
@@ -564,7 +564,7 @@ namespace SimpleLanguage.Compile
                             if( frontChar == '.' )
                             {
                                 //LexelLogData lld = new LexelLogData() { m_}
-                                Debug.Write("Error 不允许直接使用  number.function的方式，而是必须使用数据识别符才可以使用，例: 2.0f.ToString()");
+                                Debug.Write("Error 涓嶅厑璁哥洿鎺ヤ娇鐢? number.function鐨勬柟寮忥紝鑰屾槸蹇呴』浣跨敤鏁版嵁璇嗗埆绗︽墠鍙互浣跨敤锛屼緥: 2.0f.ToString()");
                                 //m_Buffer.Remove(m_Buffer.Length - 1, 1);
                                 AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Int32);
                                 AddToken(ETokenType.Period, frontChar );
@@ -608,7 +608,7 @@ namespace SimpleLanguage.Compile
                 string raw = m_Builder.ToString();
                 int digitCount = raw.Length;
 
-                // 按“总位置”推断类型：1位->Byte, 2位->Int16, 3~4位->Int32, 超过4位->Int64
+                // 鎸夆€滄€讳綅缃€濇帹鏂被鍨嬶細1浣?>Byte, 2浣?>Int16, 3~4浣?>Int32, 瓒呰繃4浣?>Int64
                 EType targetType = EType.Int32;
                 if (digitCount <= 1)
                 {
@@ -648,8 +648,8 @@ namespace SimpleLanguage.Compile
                 }
                 catch
                 {
-                    var ld = Log.AddInHandleToken(m_Path, m_SourceLine, m_SourceChar, EError.None,
-                        $"进制数字超出可解析范围(0{(radix == 16 ? 'x' : radix == 8 ? 'o' : 'b')}{raw})，按Int64最大值处理");
+                    var ld = Log.AddInHandleToken(m_Path, m_SourceLine, m_SourceChar, LID.Unknown,
+                        $"Radix number overflow (0{(radix == 16 ? 'x' : radix == 8 ? 'o' : 'b')}{raw}), fallback to Int64.MaxValue.");
                     ld.demo = raw;
                     AddToken(ETokenType.Number, long.MaxValue, EType.Int64);
                 }
@@ -732,7 +732,7 @@ namespace SimpleLanguage.Compile
                 default: AddToken(ETokenType.QuestionMark, "?"); UndoChar(); return;
             }
         }
-        /// <summary> 读取 @ </summary>
+        /// <summary> 璇诲彇 @ </summary>
         void ReadAt()
         {
             var ch = ReadChar();
@@ -766,10 +766,10 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Debug.Write("Error 不允许@后边加其它符号!!");
+                Debug.Write("Error 涓嶅厑璁窣鍚庤竟鍔犲叾瀹冪鍙?!");
             }
         }
-        /// <summary> 读取 }  </summary>
+        /// <summary> 璇诲彇 }  </summary>
         void ReadRightBrace() 
         {
             //if (m_FormatString == EFormatString.None ) 
@@ -809,7 +809,7 @@ namespace SimpleLanguage.Compile
                 }
                 else if (m_TempChar == END_CHAR)
                 {
-                    Debug.Write("Error 单引号字符串没有找到结束符号 '\'' ");
+                    Debug.Write("Error 鍗曞紩鍙峰瓧绗︿覆娌℃湁鎵惧埌缁撴潫绗﹀彿 '\'' ");
                     AddToken(ETokenType.String, m_Builder.ToString(), EType.String);
                     break;
                 }
@@ -892,7 +892,7 @@ namespace SimpleLanguage.Compile
                 m_TempChar = ReadChar();
                 if (m_TempChar == END_CHAR)
                 {
-                    Debug.Write("Error f\"\"\" 字符串没有找到结束的 \"\"\" ");
+                    Debug.Write("Error f\"\"\" 瀛楃涓叉病鏈夋壘鍒扮粨鏉熺殑 \"\"\" ");
                     break;
                 }
 
@@ -1067,7 +1067,7 @@ namespace SimpleLanguage.Compile
                 m_TempChar = ReadChar();
                 if( m_TempChar == END_CHAR)
                 {
-                    Debug.Write("Error 字符串没有找到结束的 \" ");
+                    Debug.Write("Error 瀛楃涓叉病鏈夋壘鍒扮粨鏉熺殑 \" ");
                     break;
                 }
                 if (m_TempChar == '\\')
@@ -1102,13 +1102,13 @@ namespace SimpleLanguage.Compile
                                 break;
                             }
                         default:
-                            Debug.Write("Error 读字符的时候，不支持当前的符号!! : |" + m_CurChar);
+                            Debug.Write("Error 璇诲瓧绗︾殑鏃跺€欙紝涓嶆敮鎸佸綋鍓嶇殑绗﹀彿!! : |" + m_CurChar);
                             break;
                     }
                 }
                 else if (this.m_TempChar == '\n')
                 {
-                    Debug.Write("Error NotInterrupt 读字符的时候，不允许换行，请使用/r/t 一类的换行符!!");
+                    Debug.Write("Error NotInterrupt 璇诲瓧绗︾殑鏃跺€欙紝涓嶅厑璁告崲琛岋紝璇蜂娇鐢?r/t 涓€绫荤殑鎹㈣绗?!");
                     m_Builder.Append(m_TempChar);
                 }
                 else if (m_TempChar == '"')
@@ -1335,9 +1335,9 @@ namespace SimpleLanguage.Compile
             int checkBracket = 1;
             bool isBracket = false;
             StringBuilder bracketStringBuild = new StringBuilder();
-#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
+#pragma warning disable CS0219 // 鍙橀噺宸茶璧嬪€硷紝浣嗕粠鏈娇鐢ㄨ繃瀹冪殑鍊?
             int offsetLine = 0;
-#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
+#pragma warning restore CS0219 // 鍙橀噺宸茶璧嬪€硷紝浣嗕粠鏈娇鐢ㄨ繃瀹冪殑鍊?
             int type = 0;// 0 all line 1 #! !#  ##! !##
             while( true )
             {
@@ -1348,7 +1348,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Debug.Write("读取Sharp中[]内容出错!!!");
+                    Debug.Write("璇诲彇Sharp涓璠]鍐呭鍑洪敊!!!");
                     break;
                 }
 
@@ -1386,7 +1386,7 @@ namespace SimpleLanguage.Compile
             {
                 if( offset >= m_Length)
                 {
-                    Debug.Write("注释没有结尾!!");
+                    Debug.Write("娉ㄩ噴娌℃湁缁撳熬!!");
                     break;
                 }
                 
@@ -1477,7 +1477,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Debug.Write("Error 不允许$后边加其它符号!!");
+                Debug.Write("Error 涓嶅厑璁?鍚庤竟鍔犲叾瀹冪鍙?!");
             }
         }
         void ReadSharp()
@@ -1521,7 +1521,7 @@ namespace SimpleLanguage.Compile
             }          
             
         }
-        /// <summary> 读取关键字 </summary>
+        /// <summary> 璇诲彇鍏抽敭瀛?</summary>
         void ReadIdentifier()
         {
             m_Builder.Append(m_CurChar);
@@ -1762,7 +1762,7 @@ namespace SimpleLanguage.Compile
                     tokenType = ETokenType.Interface;
                     break;
                 //case "virtual":
-                //    Debug.Write("Error virtual 但不能在代码中使用!!");
+                //    Debug.Write("Error virtual 浣嗕笉鑳藉湪浠ｇ爜涓娇鐢?!");
                 //    tokenType = ETokenType.Virtual;
                 //    return;
                 case "override":
@@ -1846,7 +1846,7 @@ namespace SimpleLanguage.Compile
                 AddToken(tokenType, m_Builder.ToString(), extend, m_SourceLine, m_SourceChar );
             }
         }
-        /// <summary> 解析字符串 </summary>
+        /// <summary> 瑙ｆ瀽瀛楃涓?</summary>
         public void ParseToTokenList() 
         {    
             m_CurChar = END_CHAR;
@@ -2085,7 +2085,7 @@ namespace SimpleLanguage.Compile
                             }
                             else
                             {
-                                var ld = Log.AddInHandleToken(m_Path, m_SourceLine, m_SourceChar, EError.UnMatchChar, $"解析错误，无法解析这种类型的字符[ {this.m_CurChar} ]");
+                                var ld = Log.AddInHandleToken(m_Path, m_SourceLine, m_SourceChar, LID.Unknown, $"瑙ｆ瀽閿欒锛屾棤娉曡В鏋愯繖绉嶇被鍨嬬殑瀛楃[ {this.m_CurChar} ]");
                                 
                             }
                             break;
@@ -2172,8 +2172,8 @@ namespace SimpleLanguage.Compile
             {
                 if (string.IsNullOrEmpty(m_Path)) return;
 
-                // 使用当前运行目录，创建 DebugCode 目录，然后在其下以 m_Path 去掉后缀的名字建子目录，最后在该目录下写 Token.txt
-                // 例如: <运行目录>/DebugCode/<m_Path无后缀>/Token.txt
+                // 浣跨敤褰撳墠杩愯鐩綍锛屽垱寤?DebugCode 鐩綍锛岀劧鍚庡湪鍏朵笅浠?m_Path 鍘绘帀鍚庣紑鐨勫悕瀛楀缓瀛愮洰褰曪紝鏈€鍚庡湪璇ョ洰褰曚笅鍐?Token.txt
+                // 渚嬪: <杩愯鐩綍>/DebugCode/<m_Path鏃犲悗缂€>/Token.txt
 
                 outFile = Common.GetDebugCodeFilePath(m_Path, "Token.txt");
 

@@ -1,4 +1,4 @@
-//****************************************************************************
+﻿//****************************************************************************
 //  File:      ArrayObject.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -279,7 +279,7 @@ namespace SimpleLanguage.VM
                 default:
                     {
                         Debug.Assert(false);
-                        Log.AddVM(EError.None, "不支持该类型的数组创建!!");
+                        Log.AddVM(LID.Unknown, "涓嶆敮鎸佽绫诲瀷鐨勬暟缁勫垱寤?!");
                     }
                     break;
             }
@@ -289,13 +289,13 @@ namespace SimpleLanguage.VM
             if (index < 0)
             {
                 Debug.Assert(false);
-                Log.AddVM(EError.None, "执行的参数超出范围!! < 0 ");
+                Log.AddVM(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?! < 0 ");
                 return;
             }
             if (index >= m_Length )
             {
                 Debug.Assert(false);
-                Log.AddVM(EError.None, "执行的参数超出范围!!");
+                Log.AddVM(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
                 return;
             }
 
@@ -499,7 +499,7 @@ namespace SimpleLanguage.VM
                     default:  
                         {
                             Debug.Assert(false);
-                            Log.AddVM(EError.None, "不支持该类型的数组读取!!");
+                            Log.AddVM(LID.Unknown, "涓嶆敮鎸佽绫诲瀷鐨勬暟缁勮鍙?!");
                         }
                         break;
                 }
@@ -510,12 +510,12 @@ namespace SimpleLanguage.VM
         {
             if (index < 0)
             {
-                Log.AddVM(EError.None, "执行的参数超出范围!! < 0 ");
+                Log.AddVM(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?! < 0 ");
                 return null;
             }
             if (index > m_Length)
             {
-                Log.AddVM(EError.None, "执行的参数超出范围!!");
+                Log.AddVM(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
                 return null;
             }
 
@@ -735,7 +735,7 @@ namespace SimpleLanguage.VM
                         //    Int8Object byteObj = mva as Int8Object;
                         //    if (byteObj == null)
                         //    {
-                        //        Log.AddVM(EError.None, "Class Int8Object 该类型不是Int32类型!!");
+                        //        Log.AddVM(LID.Unknown, "Class Int8Object 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                         //        return;
                         //    }
                         //    byteObj.SetValue(svalue.int8Value);
@@ -746,7 +746,7 @@ namespace SimpleLanguage.VM
                         //    SInt8Object sbyteObj = mva as SInt8Object;
                         //    if (sbyteObj == null)
                         //    {
-                        //        Log.AddVM(EError.None, "Class SInt8Object 该类型不是Int32类型!!");
+                        //        Log.AddVM(LID.Unknown, "Class SInt8Object 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                         //        return;
                         //    }
                         //    sbyteObj.SetValue(svalue.sint8Value);
@@ -757,7 +757,7 @@ namespace SimpleLanguage.VM
                         //    Int16Object int16Obj = mva as Int16Object;
                         //    if (int16Obj == null)
                         //    {
-                        //        Log.AddVM(EError.None, "Class Int16Object 该类型不是Int16类型!!");
+                        //        Log.AddVM(LID.Unknown, "Class Int16Object 璇ョ被鍨嬩笉鏄疘nt16绫诲瀷!!");
                         //        return;
                         //    }
                         //    int16Obj.SetValue(svalue.int16Value);
@@ -768,7 +768,7 @@ namespace SimpleLanguage.VM
                         //    UInt32Object uint32Obj = mva as UInt32Object;
                         //    if (uint32Obj == null)
                         //    {
-                        //        Log.AddVM(EError.None, "Class UInt32Object 该类型不是UInt32类型!!");
+                        //        Log.AddVM(LID.Unknown, "Class UInt32Object 璇ョ被鍨嬩笉鏄疷Int32绫诲瀷!!");
                         //        return;
                         //    }
                         //    uint32Obj.SetValue(svalue.uint32Value);
@@ -778,7 +778,7 @@ namespace SimpleLanguage.VM
                         //    Int32Object int32Obj = mva as Int32Object;
                         //    if (int32Obj == null)
                         //    {
-                        //        Log.AddVM(EError.None, "Class Int32Object 该类型不是Int32类型!!");
+                        //        Log.AddVM(LID.Unknown, "Class Int32Object 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                         //        return;
                         //    }
                         //    int32Obj.SetValue(svalue.int32Value);
@@ -789,7 +789,7 @@ namespace SimpleLanguage.VM
                         //    UInt32Object uint32Obj = mva as UInt32Object;
                         //    if (uint32Obj == null)
                         //    {
-                        //        Log.AddVM(EError.None, "Class UInt32Object 该类型不是Int32类型!!");
+                        //        Log.AddVM(LID.Unknown, "Class UInt32Object 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                         //        return;
                         //    }
                         //    uint32Obj.SetValue(svalue.uint32Value);
@@ -800,7 +800,7 @@ namespace SimpleLanguage.VM
                         //    Int64Object int64Obj = mva as Int64Object;
                         //    if (int64Obj == null)
                         //    {
-                        //        Log.AddVM(EError.None, "该类型不是Int64类型!!");
+                        //        Log.AddVM(LID.Unknown, "璇ョ被鍨嬩笉鏄疘nt64绫诲瀷!!");
                         //        return;
                         //    }
                         //    int64Obj.SetValue(svalue.int64Value);
@@ -811,7 +811,7 @@ namespace SimpleLanguage.VM
                         //    UInt64Object uint64Obj = mva as UInt64Object;
                         //    if (uint64Obj == null)
                         //    {
-                        //        Log.AddVM(EError.None, "该类型不是Int64类型!!");
+                        //        Log.AddVM(LID.Unknown, "璇ョ被鍨嬩笉鏄疘nt64绫诲瀷!!");
                         //        return;
                         //    }
                         //    uint64Obj.SetValue(svalue.uint64Value);
@@ -822,7 +822,7 @@ namespace SimpleLanguage.VM
                         //    StringObject stringObj = mva as StringObject;
                         //    if (stringObj == null)
                         //    {
-                        //        Log.AddVM(EError.None, "该类型不是stringObj类型!!");
+                        //        Log.AddVM(LID.Unknown, "璇ョ被鍨嬩笉鏄痵tringObj绫诲瀷!!");
                         //        return;
                         //    }
                         //    stringObj.SetValue(svalue.stringValue);
@@ -838,7 +838,7 @@ namespace SimpleLanguage.VM
                         //            anyObj.SetValue(EVMType.Class, svalue.sobject);
                         //            return;
                         //        }
-                        //        Log.AddVM(EError.None, "该类型不是classObj类型!!");
+                        //        Log.AddVM(LID.Unknown, "璇ョ被鍨嬩笉鏄痗lassObj绫诲瀷!!");
                         //        return;
                         //    }
                         //    //classObj.SetValue(svalue.sobject as ClassObject);
@@ -936,7 +936,7 @@ namespace SimpleLanguage.VM
                 default:    
                     {
                         Debug.Assert(false);
-                        Log.AddVM(EError.None, "不支持该类型的数组存储!!");
+                        Log.AddVM(LID.Unknown, "涓嶆敮鎸佽绫诲瀷鐨勬暟缁勫瓨鍌?!");
                     }
                     break;
             }

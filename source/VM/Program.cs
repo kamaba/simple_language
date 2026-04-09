@@ -1,4 +1,4 @@
-// See https://aka.ms/new-console-template for more information
+﻿// See https://aka.ms/new-console-template for more information
 
 
 using SimpleLanguage.Logging;
@@ -19,7 +19,7 @@ try
     {
         if (!pkgPath.EndsWith(".package.json", StringComparison.OrdinalIgnoreCase))
         {
-            Log.AddVM(EError.None, $"Unsupported json slir input for runtime parse: {pkgPath}");
+            Log.AddVM(LID.Unknown, $"Unsupported json slir input for runtime parse: {pkgPath}");
             return;
         }
 
@@ -27,7 +27,7 @@ try
         var parseResult = SLIRModuleParse.Parse(graph, args);
         if (parseResult == null)
         {
-            Log.AddVM(EError.None, "No valid module package loaded.");
+            Log.AddVM(LID.Unknown, "No valid module package loaded.");
             return;
         }
         SLIRModuleParse.EntryPoint( parseResult );
@@ -41,8 +41,8 @@ try
         var slTypeCount = asmList.Sum(a => a.moduleList.Sum(m => m.namespaceList.Sum(n => n.typeList.Count)));
         var slMethodCount = asmList.Sum(a => a.moduleList.Sum(m => m.namespaceList.Sum(n => n.typeList.Sum(t => t.methodList.Count))));
 
-        Log.AddVM( EError.None, $"SLAssembly: {slAsm?.id}");
-        Log.AddVM(EError.None, $"Modules: {moduleCount}, Namespaces: {nsCount}, Types: {slTypeCount}, Methods: {slMethodCount}");
+        Log.AddVM( LID.Unknown, $"SLAssembly: {slAsm?.id}");
+        Log.AddVM(LID.Unknown, $"Modules: {moduleCount}, Namespaces: {nsCount}, Types: {slTypeCount}, Methods: {slMethodCount}");
 
         var sampleMethod = slAsm?.moduleList
             .SelectMany(m => m.namespaceList)
@@ -52,22 +52,22 @@ try
 
         if (sampleMethod != null)
         {
-            Log.AddVM(EError.None, $"IR Sample (SLIR package instruction): {sampleMethod.id}");
+            Log.AddVM(LID.Unknown, $"IR Sample (SLIR package instruction): {sampleMethod.id}");
             foreach (var ins in sampleMethod.instructionList.Take(40))
             {
-                Log.AddVM(EError.None, $"{ins.id} {ins.opCode} payloadLen={ins.Payload?.Length ?? 0}");
+                Log.AddVM(LID.Unknown, $"{ins.id} {ins.opCode} payloadLen={ins.Payload?.Length ?? 0}");
             }
         }
 
-        Log.AddVM(EError.None, $"GlobalStaticVariableList: {parseResult.globalVariableCount}, GlobalInitInstructions: {parseResult.globalInitInstructionCount}");
+        Log.AddVM(LID.Unknown, $"GlobalStaticVariableList: {parseResult.globalVariableCount}, GlobalInitInstructions: {parseResult.globalInitInstructionCount}");
 
 
         return;
     }
 
-    Log.AddVM(EError.None, "No module package found. Pass a module package JSON or export one to out/export/module.package.json.");
+    Log.AddVM(LID.Unknown, "No module package found. Pass a module package JSON or export one to out/export/module.package.json.");
 }
 catch (Exception e)
 {
-    Log.AddVM(EError.None, e.ToString());
+    Log.AddVM(LID.Unknown, e.ToString());
 }

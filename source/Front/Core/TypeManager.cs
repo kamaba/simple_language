@@ -89,7 +89,7 @@ namespace SimpleLanguage.Core
                 var newmc = mt.metaClass.AddInstanceMetaClass(regMCList, true );
                 if (newmc == null)
                 {
-                    Log.AddInStructMeta(EError.None, "MetaClass is Null");
+                    Log.AddMetaCoreLog(LID.Unknown, "MetaClass is Null");
                     return false;
                 }
                 mt.SetGenMetaClass(newmc);
@@ -103,7 +103,7 @@ namespace SimpleLanguage.Core
 
                     if (gmgt.metaType.metaClass == null)
                     {
-                        Log.AddInStructMeta(EError.None, "MetaClass is Null");
+                        Log.AddMetaCoreLog(LID.Unknown, "MetaClass is Null");
                         return false;
                     }
 
@@ -118,7 +118,7 @@ namespace SimpleLanguage.Core
                     {
                         if (gmgt.metaType.metaClass == null)
                         {
-                            Log.AddInStructMeta(EError.None, "MetaClass is Null");
+                            Log.AddMetaCoreLog(LID.Unknown, "MetaClass is Null");
                             return false;
                         }
                         mt.SetMetaClass(gmgt.metaType.metaClass);
@@ -127,7 +127,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddInStructMeta(EError.None, "没有找到模板中定义的模板内容!" + mt.metaTemplate.name);
+                        Log.AddMetaCoreLog(LID.Unknown, "没有找到模板中定义的模板内容!" + mt.metaTemplate.name);
                     }
                 }
             }
@@ -149,7 +149,7 @@ namespace SimpleLanguage.Core
                 var mt = curMc.GetMetaTemplateByName(fmcd.stringList[0]);
                 if (mt == null)
                 {
-                    Log.AddInStructMeta(EError.None, $"没有找到模板类中，对应的模板，名称为{fmcd.stringList[0]}请仔细检查模板的命名与使用模板命名是否对应");//, fmcd.classNameToken );
+                    Log.AddMetaCoreLog(LID.Unknown, $"没有找到模板类中，对应的模板，名称为{fmcd.stringList[0]}请仔细检查模板的命名与使用模板命名是否对应");//, fmcd.classNameToken );
                 }
                 else
                 {
@@ -211,7 +211,7 @@ namespace SimpleLanguage.Core
                 var findfn = newmn.GetMetaClassByTemplateCount(fmtd.inputTemplateCount);
                 if(findfn == null )
                 {
-                    Log.AddInStructMeta(EError.None, $"没有发现{fmtd.nameList}找到的类!");
+                    Log.AddMetaCoreLog(LID.Unknown, $"没有发现{fmtd.nameList}找到的类!");
                     return null;
                 }
                 if( fmtd.inputTemplateCount == 0 )
@@ -262,7 +262,7 @@ namespace SimpleLanguage.Core
                     var mt = ownerMc.GetMetaTemplateByName(fmtd.nameList[0]);
                     if (mt == null)
                     {
-                        Log.AddInStructMeta(EError.None, "没有找到模板类中，对应的模板，请仔细检查模板的命名与使用模板命名是否对应");//, cnode?.token );
+                        Log.AddMetaCoreLog(LID.Unknown, "没有找到模板类中，对应的模板，请仔细检查模板的命名与使用模板命名是否对应");//, cnode?.token );
                     }
                     else
                     {
@@ -271,7 +271,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddInStructMeta(EError.None, "使用模板类中使用.连接符号，模板中不允许使用.");
+                    Log.AddMetaCoreLog(LID.Unknown, "使用模板类中使用.连接符号，模板中不允许使用.");
                 }
             }
             return null;
@@ -323,7 +323,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddInStructMeta(EError.None, $"没有找到{fmcd.stringList[0]} 的相关类!");
+                    Log.AddMetaCoreLog(LID.Unknown, $"没有找到{fmcd.stringList[0]} 的相关类!");
                 }
 
             }
@@ -410,7 +410,7 @@ namespace SimpleLanguage.Core
 
                 if (findfn == null)
                 {
-                    Log.AddInStructMeta(EError.None, "没有找到相对应的模板类!!");
+                    Log.AddMetaCoreLog(LID.Unknown, "没有找到相对应的模板类!!");
                     return null;
                 }
                 if( fmtd.inputTemplateCount > 0 )
@@ -453,7 +453,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddInStructMeta(EError.None, "----fmtd.nameList.count > 1 ");
+                    Log.AddMetaCoreLog(LID.Unknown, "----fmtd.nameList.count > 1 ");
                 }
             }
             return null;

@@ -63,7 +63,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_FileMetaKeyForSyntax.conditionExpress == null)
                 {
-                    Log.AddInStructMeta( EError.None, "Error for in express后边没有表达式!!");
+                    Log.AddMetaCoreLog( LID.Unknown, "Error for in express后边没有表达式!!");
                 }
 
                 m_ForInContent = null;
@@ -97,7 +97,7 @@ namespace SimpleLanguage.Core
                 var mnoen = m_ConditionExpress as MetaNewObjectExpressNode;
                 if (mcallEn == null && mnoen == null)
                 {
-                    Log.AddInStructMeta(EError.None, "Error For in 表达式，应该是个数组形式");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error For in 表达式，应该是个数组形式");
                     return;
                 }
                 if( mcallEn != null )
@@ -113,7 +113,7 @@ namespace SimpleLanguage.Core
                 MetaType mdt = m_ForInContent.GetFinalMetaType();
                 if ( !m_ForInContent.GetIsCanCanIterate() )
                 {
-                    Log.AddInStructMeta(EError.None, "Error For in 必须是支持迭代器iterate");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error For in 必须是支持迭代器iterate");
                     return;
                 }
                 MetaClass iterMT = ClassManager.instance.GetClassByName("Core.IIterator<T>", 1);
@@ -134,7 +134,7 @@ namespace SimpleLanguage.Core
                     var dmv = m_ThenMetaStatements.GetMetaVariableByName(dname);
                     if (dmv != null)
                     {
-                        Log.AddInStructMeta(EError.None, "Error 在 for .. in 中，不允许从for 外边定义遍历变量!!");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error 在 for .. in 中，不允许从for 外边定义遍历变量!!");
                         return;
                     }
                     else
@@ -148,7 +148,7 @@ namespace SimpleLanguage.Core
                     var dmv = m_ThenMetaStatements.GetMetaVariableByName(dname);
                     if (dmv != null)
                     {
-                        Log.AddInStructMeta(EError.None, "Error 在 for .. in 中，不允许从for 外边定义遍历变量!!");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error 在 for .. in 中，不允许从for 外边定义遍历变量!!");
                         return;
                     }
                     else
@@ -158,7 +158,7 @@ namespace SimpleLanguage.Core
                 }
                 if(m_ForIterateVariable == null )
                 {
-                    Log.AddInStructMeta(EError.None, "Error For x in X必须有!!");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error For x in X必须有!!");
                     return;
                 }
                 m_ForIterateVariable.Parse();
@@ -232,7 +232,7 @@ namespace SimpleLanguage.Core
                 }
                 if (m_ForIterateVariable == null)
                 {
-                    Log.AddInStructMeta(EError.None, "Error 没有找到相应的变量!!");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error 没有找到相应的变量!!");
                 }
                 m_ThenMetaStatements.UpdateMetaVariableDict(m_ForIterateVariable);
 

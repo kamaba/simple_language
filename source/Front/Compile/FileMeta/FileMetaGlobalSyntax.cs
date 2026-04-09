@@ -1,4 +1,4 @@
-//****************************************************************************
+ï»¿//****************************************************************************
 //  File:      FileMetaGlobalSyntax.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -43,7 +43,7 @@ namespace SimpleLanguage.Compile
         {
             if (m_NodeList.Count < 2)
             {
-                Log.AddInStructFileMeta(EError.None, "Error import±ØÐëÓÐ2¸ö½Úµã!!");
+                Log.AddFileMetaLog(LID.Unknown, "Error importå¿…é¡»æœ‰2ä¸ªèŠ‚ç‚¹!!");
                 return false;
             }
             var namespaceNode = m_NodeList[0];
@@ -86,7 +86,7 @@ namespace SimpleLanguage.Compile
                     {
                         mb = mb.GetChildrenMetaNodeByName(name);
                     }
-                    Debug.Assert(mb != null, "²éÕÒÊ§°Ü" + name);
+                    Debug.Assert(mb != null, "æŸ¥æ‰¾å¤±è´¥" + name);
                 }
                 else
                 {
@@ -99,13 +99,13 @@ namespace SimpleLanguage.Compile
                         var findmb = mb.GetChildrenMetaNodeByName(name);
                         if (findmb == null)
                         {
-                            Debug.Assert(false, $"ÎÄ¼þ:{m_NamespaceStatement.tokenList[i].path } Ã»ÓÐÕÒµ½:{mb.allName} ÏÂµÄ:{name}");
+                            Debug.Assert(false, $"æ–‡ä»¶:{m_NamespaceStatement.tokenList[i].path } æ²¡æœ‰æ‰¾åˆ°:{mb.allName} ä¸‹çš„:{name}");
                             break;
                         }
                         mb = findmb;
                         if (!mb.isMetaNamespace)
                         {
-                            Log.AddInStructFileMeta(EError.None, "½âÎöImportÓï¾ä·¢Éú´íÎó£¬Ã»ÓÐÕÒµ½¶ÔÓ¦µÄÃüÃû¿Õ¼äÂ·¾¶: " + m_NamespaceStatement.tokenList[i].lexeme.ToString()
+                            Log.AddFileMetaLog(LID.Unknown, "è§£æžImportè¯­å¥å‘ç”Ÿé”™è¯¯ï¼Œæ²¡æœ‰æ‰¾åˆ°å¯¹åº”çš„å‘½åç©ºé—´è·¯å¾„: " + m_NamespaceStatement.tokenList[i].lexeme.ToString()
                                     + "Token: " + m_NamespaceStatement.tokenList[i].sourceBeginLine.ToString());
                             break;
                         }
@@ -121,7 +121,7 @@ namespace SimpleLanguage.Compile
             {
                 if (tokenList.Count < 1)
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error ÔÚÊ¹ÓÃimportÒýÓÃCSharp¿âÊ±£¬ÖÁÉÙÐèÒªÒ»¸öÃüÃû¿Õ¼ä");
+                    Log.AddFileMetaLog(LID.Unknown, "Error åœ¨ä½¿ç”¨importå¼•ç”¨CSharpåº“æ—¶ï¼Œè‡³å°‘éœ€è¦ä¸€ä¸ªå‘½åç©ºé—´");
                     return;
                 }
 
@@ -152,7 +152,7 @@ namespace SimpleLanguage.Compile
                             }
                             else
                             {
-                                Log.AddInStructFileMeta(EError.None, "½âÎöImportÓï¾ä·¢Éú´íÎó£¬Ã»ÓÐÕÒµ½¶ÔÓ¦µÄÃüÃû¿Õ¼äÂ·¾¶: " + allname
+                                Log.AddFileMetaLog(LID.Unknown, "è§£æžImportè¯­å¥å‘ç”Ÿé”™è¯¯ï¼Œæ²¡æœ‰æ‰¾åˆ°å¯¹åº”çš„å‘½åç©ºé—´è·¯å¾„: " + allname
                                     + "Token: " + tokenList[i].sourceBeginLine.ToString());
                                 break;
                             }

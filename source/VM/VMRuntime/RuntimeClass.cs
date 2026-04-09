@@ -1,4 +1,4 @@
-using SimpleLanguage.Logging;
+﻿using SimpleLanguage.Logging;
 using System.Diagnostics;
 
 namespace SimpleLanguage.VM
@@ -7,7 +7,7 @@ namespace SimpleLanguage.VM
     {
         public int id { get; set; } = 0;
         public string name { get; set; } = "";
-        /// <summary>0=Class, 1=Enum, 2=Data — from exported SLIR class metadata.</summary>
+        /// <summary>0=Class, 1=Enum, 2=Data 鈥?from exported SLIR class metadata.</summary>
         public int metaClassKind { get; set; }
         /// <summary>IR generated template meta type count exported from Front <c>IRMetaClass.templateCount</c>.</summary>
         public int templateCount { get; set; }
@@ -49,7 +49,7 @@ namespace SimpleLanguage.VM
             if (index >= m_NotStaticMethodList.Count || index < 0)
             {
                 Debug.Assert(false);
-                Log.AddVM(EError.None, "GetIRMethodByIndex is null");
+                Log.AddVM(LID.Unknown, "GetIRMethodByIndex is null");
                 return null;
             }
             return m_NotStaticMethodList[index];
@@ -98,7 +98,7 @@ namespace SimpleLanguage.VM
             return null;
         }
         /// <summary>
-        /// Installs template bindings from exported <c>templateRelationList</c> (related class → template index → bound type).
+        /// Installs template bindings from exported <c>templateRelationList</c> (related class 鈫?template index 鈫?bound type).
         /// </summary>
         public void SetTemplateRelation(int relatedClassId, int templateIndex, RuntimeDefType? binding)
         {

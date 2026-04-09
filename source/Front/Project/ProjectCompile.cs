@@ -42,7 +42,7 @@ namespace SimpleLanguage.Project
         {
             if (string.IsNullOrEmpty(spFilePath))
             {
-                Debug.Write("Error LoadProject 传入的 .sp 路径为空!!");
+                Log.AddProjectLog(LID.FilemetaAddMetaclassMetanodeDuplicateNode_10156, "", spFilePath );
                 return;
             }
 
@@ -50,7 +50,7 @@ namespace SimpleLanguage.Project
             string projectDir = Path.GetDirectoryName(spFilePath) ?? string.Empty;
             if (string.IsNullOrEmpty(projectDir) || !Directory.Exists(projectDir))
             {
-                Debug.Write("Error 项目加载路径不正确!!");
+                Log.AddProjectLog(LID.FilemetaAddMetaclassMetanodeDuplicateNode_10156, "项目加载路径不正确!!", spFilePath);
                 return;
             }
 
@@ -118,8 +118,6 @@ namespace SimpleLanguage.Project
 
             ProjectClass.ProjectCompileAfter();
 
-            Console.WriteLine(ModuleManager.instance.selfModule.metaNode.ToFormatString());
-
             IRManager.instance.TranslateIR();
         }
 
@@ -152,7 +150,7 @@ namespace SimpleLanguage.Project
             {
                 fileParseList[i].StructParse();
 
-                Log.AddProcess( EProcess.StructMeta, EError.StructFileMetaEnd, fileParseList[i].ToFormatString());
+                //Log.AddProcess( EProcess.StructMeta, LID.Unknown, fileParseList[i].ToFormatString());
             }
         }
         public static void StructParseComplete()
@@ -238,15 +236,8 @@ namespace SimpleLanguage.Project
             ModuleManager.instance.selfModule.metaNode.SetDeep(0);
 
 
-            ClassManager.instance.PrintAlllClassContent();
-
-
-            Log.PrintLog();
-
-            Debug.WriteLine("-------------------------解析完成后的格式输出 开始--------------------------");
-            //Debug.WriteLine(ModuleManager.instance.ToFormatString());
-            Debug.WriteLine(ModuleManager.instance.selfModule.metaNode.ToFormatString());
-            Debug.WriteLine("-------------------------解析完成后的格式输出 结束--------------------------");
+            // Front layer print output is disabled.
+            // Debug/export content is written to DebugCode/*.txt by dedicated exporters.
 
             // (reserved) Export steps are invoked explicitly by Export pipeline.
         }

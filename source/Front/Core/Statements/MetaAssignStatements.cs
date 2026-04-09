@@ -49,13 +49,13 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddInStructMeta( EError.None, "Error 返回的判断语句: " + mcen.ToTokenString() + "   并非是boolean类型!");
+                            Log.AddMetaCoreLog( LID.Unknown, "Error 返回的判断语句: " + mcen.ToTokenString() + "   并非是boolean类型!");
                         }
                     }
                     break;
                 case MetaConstExpressNode mconen:
                     {
-                        Log.AddInStructMeta(EError.None, "Error -------------------------------------------");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error -------------------------------------------");
                     }
                     break;
                 case MetaOpExpressNode moen:
@@ -66,13 +66,13 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            //Log.AddInStructMeta( EError.None, "Error 返回的判断语句: " + mcen.ToTokenString() + "   并非是boolean类型!");
+                            //Log.AddMetaCoreLog( LID.Unknown, "Error 返回的判断语句: " + mcen.ToTokenString() + "   并非是boolean类型!");
                         }
                     }
                     break;
                 default:
                     {
-                        Log.AddInStructMeta(EError.None, "Error -------------------------------------------");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error -------------------------------------------");
                     }
                     break;
             }
@@ -149,12 +149,12 @@ namespace SimpleLanguage.Core
 
             if (metaCallLink == null)
             {
-                Log.AddInStructMeta(EError.None, "Error MetaAssignStatements ParseDefine!!!" + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
+                Log.AddMetaCoreLog(LID.Unknown, "Error MetaAssignStatements ParseDefine!!!" + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
                 return;
             }
             if(m_FileMetaOpAssignSyntax?.staticToken != null )
             {
-                Log.AddInStructMeta(EError.None, "Error 不允许在语句中，出现static字段! " + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
+                Log.AddMetaCoreLog(LID.Unknown, "Error 不允许在语句中，出现static字段! " + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
             }
 
             m_LeftMetaExpress = new MetaCallLinkExpressNode(metaCallLink);
@@ -192,7 +192,7 @@ namespace SimpleLanguage.Core
                 else
                 {
                     //这里只能使用等号进行赋值操作  a.A += 10;  是不允许的
-                    Log.AddInStructMeta(EError.None, "Error set语句只能使用=号进行赋值操作!!");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error set语句只能使用=号进行赋值操作!!");
                     return;
                 }
             }
@@ -273,7 +273,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddInStructMeta(EError.None, "Error 赋值语句解析符号暂不支持: " + ett.ToString());
+                        Log.AddMetaCoreLog(LID.Unknown, "Error 赋值语句解析符号暂不支持: " + ett.ToString());
                     }
                     break;
             }
@@ -289,12 +289,12 @@ namespace SimpleLanguage.Core
                 m_MetaVariable = m_LeftMetaExpress.GetMetaVariable();
                 if (m_MetaVariable == null)
                 {
-                    Log.AddInStructMeta( EError.None, "Error 变量没有发现" + m_LeftMetaExpress.ToTokenString());
+                    Log.AddMetaCoreLog( LID.Unknown, "Error 变量没有发现" + m_LeftMetaExpress.ToTokenString());
                     return;
                 }
                 if(m_MetaVariable.isConst )
                 {
-                    Log.AddInStructMeta( EError.None, "Error 类型为Const类型，不允许使用赋值!!");
+                    Log.AddMetaCoreLog( LID.Unknown, "Error 类型为Const类型，不允许使用赋值!!");
                     return;
                 }
 
@@ -307,7 +307,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddInStructMeta( EError.None, "Error 只能在Project工程下的函数中，给全局变量赋值!!");
+                        Log.AddMetaCoreLog( LID.Unknown, "Error 只能在Project工程下的函数中，给全局变量赋值!!");
                         return;
                     }
                 }
@@ -340,7 +340,7 @@ namespace SimpleLanguage.Core
                 if (m_RightMetaExpress == null)
                 {
                     Debug.Assert(false, "");
-                    Log.AddInStructMeta( EError.None, "Error 解析新建变量语句时，表达式解析为空!!");
+                    Log.AddMetaCoreLog( LID.Unknown, "Error 解析新建变量语句时，表达式解析为空!!");
                     return;
                 }
 
@@ -350,7 +350,7 @@ namespace SimpleLanguage.Core
             {
                 if(m_RightMetaExpress == null)
                 {
-                    Log.AddInStructMeta( EError.None, "Error 解析新建变量语句时，表达式为空!!__2");
+                    Log.AddMetaCoreLog( LID.Unknown, "Error 解析新建变量语句时，表达式为空!!__2");
                     return;
                 }
             }
@@ -359,7 +359,7 @@ namespace SimpleLanguage.Core
             MetaType expressRetMetaDefineType = m_RightMetaExpress.GetReturnMetaDefineType();
             if (expressRetMetaDefineType == null)
             {
-                Log.AddInStructMeta( EError.None, "Error 解析新建变量语句时，表达式返回类型为空!!__3");
+                Log.AddMetaCoreLog( LID.Unknown, "Error 解析新建变量语句时，表达式返回类型为空!!__3");
                 return;
             }
             else
@@ -384,7 +384,7 @@ namespace SimpleLanguage.Core
                 m_LeftMethodCall.AddMetaInputParamList(m_RightMetaExpress);
                 if(!m_LeftMethodCall.ValidateInputParamAndDefineParam() )
                 {
-                    Log.AddInStructMeta(EError.None, "Error 输入参数与定义参数不正确");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error 输入参数与定义参数不正确");
                     return;
                 }
             }
@@ -404,7 +404,7 @@ namespace SimpleLanguage.Core
             //{
             //    if( expressRetMetaDefineType?.metaTemplate != mdt.metaTemplate )
             //    {
-            //        Log.AddInStructMeta( EError.None, "Error 模版与类定义的模版不相同!!");
+            //        Log.AddMetaCoreLog( LID.Unknown, "Error 模版与类定义的模版不相同!!");
             //    }
             //}
             //else
@@ -452,7 +452,7 @@ namespace SimpleLanguage.Core
                 if (relation == ClassManager.EClassRelation.No)
                 {
                     sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
-                    Log.AddInStructMeta(EError.None, sb.ToString());
+                    Log.AddMetaCoreLog(LID.Unknown, sb.ToString());
                     m_IsNeedCastState = true;
                 }
                 else if (relation == ClassManager.EClassRelation.Similar)
@@ -494,14 +494,14 @@ namespace SimpleLanguage.Core
                             sb.Append(compareClass.allClassName + " -> ");
                         if (curClass != null)
                             sb.Append(curClass.allClassName);
-                        Log.AddInStructMeta(EError.None, sb.ToString());
+                        Log.AddMetaCoreLog(LID.Unknown, sb.ToString());
                         m_IsNeedCastState = true;
                         return;
                     }
 
                     // other numeric-similar cases: emit warning and mark cast-needed
                     sb.Append("数字类型相似，可能会有强转，会有精度的丢失或需要显式转换!");
-                    Log.AddInStructMeta(EError.None, sb.ToString());
+                    Log.AddMetaCoreLog(LID.Unknown, sb.ToString());
                     m_IsNeedCastState = true;
                 }
                 else if (relation == ClassManager.EClassRelation.Same)
@@ -510,7 +510,7 @@ namespace SimpleLanguage.Core
                 else if (relation == ClassManager.EClassRelation.Parent)
                 {
                     sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
-                    Log.AddInStructMeta(EError.None, sb.ToString());
+                    Log.AddMetaCoreLog(LID.Unknown, sb.ToString());
                     m_IsNeedCastState = true;
                 }
                 else if (relation == ClassManager.EClassRelation.Child)
@@ -523,7 +523,7 @@ namespace SimpleLanguage.Core
                 else
                 {
                     sb.Append("表达式错误，或者是定义类型错误");
-                    Log.AddInStructMeta(EError.None, sb.ToString());
+                    Log.AddMetaCoreLog(LID.Unknown, sb.ToString());
                 }
             }
             //}

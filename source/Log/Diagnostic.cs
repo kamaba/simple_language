@@ -16,12 +16,12 @@ namespace SimpleLanguage.Logging
         /// <summary>
         /// Severity category.
         /// </summary>
-        public ErrorSeverity Severity { get; set; }
+        public LogType LogType { get; set; }
 
         /// <summary>
         /// Logical module where this diagnostic originated.
         /// </summary>
-        public ErrorModule Module { get; set; }
+        public LogModule Module { get; set; }
 
         /// <summary>
         /// The fully formatted message text ready for display.
@@ -61,15 +61,18 @@ namespace SimpleLanguage.Logging
         /// <summary>
         /// Optional original Token associated with the diagnostic.
         /// </summary>
-        public Token Token { get; set; }
+        public object Token { get; set; }
+
+        public string TokenSummary { get; set; }
 
         public override string ToString()
         {
             if (!string.IsNullOrEmpty(FilePath))
             {
-                return $"[{Id}] {Severity} {FilePath}({StartLine},{StartChar}) {Message}";
+                var tokenText = string.IsNullOrEmpty(TokenSummary) ? string.Empty : $" {TokenSummary}";
+                return $"[{Id}] {LogType} {FilePath}({StartLine},{StartChar}) {Message}{tokenText}";
             }
-            return $"[{Id}] {Severity} {Message}";
+            return $"[{Id}] {LogType} {Message}";
         }
     }
 }

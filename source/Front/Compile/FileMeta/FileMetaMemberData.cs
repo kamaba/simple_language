@@ -79,7 +79,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error 带着名称FileMetaMemberData 但没有发现相关的token");
+                    Log.AddFileMetaLog(LID.Unknown, "Error 带着名称FileMetaMemberData 但没有发现相关的token");
                 }
             }
             if (dataType == EMemberDataType.Data)

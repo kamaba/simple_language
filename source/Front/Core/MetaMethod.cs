@@ -30,7 +30,6 @@ namespace SimpleLanguage.Core
         public bool isDefineMetaType => m_IsDefineMetaType;
         public MetaType defineMetaType => m_DefineMetaType;
         public MetaType realMetaType => m_RealMetaType;
-        public Token pingToken => m_PintTokenList.Count > 0 ? m_PintTokenList[0] : null;
         public virtual bool isStatic => m_IsStatic;
         public virtual bool isParsed => m_IsParsed;
         public virtual string functionAllName {
@@ -102,7 +101,6 @@ namespace SimpleLanguage.Core
         protected bool m_IsParsed = false;
         protected string m_FunctionAllName = null;
         protected string m_VirtualFunctionName = null;
-        protected List<Token> m_PintTokenList = new List<Token>();
         #endregion
         public MetaFunction(MetaClass mc)
         {

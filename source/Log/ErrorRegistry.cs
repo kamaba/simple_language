@@ -30,54 +30,111 @@ namespace SimpleLanguage.Logging
             return _dict.TryGetValue(id, out def);
         }
 
+        public bool TryResolveByMessage(string message, out ErrorDefinition def)
+        {
+            def = null;
+            if (string.IsNullOrWhiteSpace(message) || _dict.Count == 0)
+            {
+                return false;
+            }
+
+            var text = message.Trim();
+
+            def = _dict.Values.FirstOrDefault(d =>
+                !string.IsNullOrWhiteSpace(d.MessageTemplate)
+                && string.Equals(d.MessageTemplate.Trim(), text, StringComparison.Ordinal));
+            if (def != null)
+            {
+                return true;
+            }
+
+            def = _dict.Values.FirstOrDefault(d =>
+                !string.IsNullOrWhiteSpace(d.MessageTemplate)
+                && text.StartsWith(d.MessageTemplate.Trim(), StringComparison.Ordinal));
+            if (def != null)
+            {
+                return true;
+            }
+
+            def = _dict.Values.FirstOrDefault(d =>
+                !string.IsNullOrWhiteSpace(d.MessageTemplate)
+                && d.MessageTemplate.Trim().Length >= 8
+                && text.Contains(d.MessageTemplate.Trim(), StringComparison.Ordinal));
+            return def != null;
+        }
+
         /// <summary>
         /// Enumerate all registered definitions ordered by id.
         /// </summary>
         public IEnumerable<ErrorDefinition> AllDefinitions => _dict.Values.OrderBy(d => d.Id);
 
-        /// <summary>
-        /// Load definitions from a CSV file. The expected columns are:
-        /// id,messageTemplate,severity,paramCount,module,abortCurrent,abortLater,displayType,fixHint
-        /// Lines with invalid format are skipped.
-        /// </summary>
-        /// <param name="path">Path to CSV file.</param>
         public void LoadFromCsv(string path)
         {
             if (!File.Exists(path)) return;
             using var sr = new StreamReader(path);
-            string header = sr.ReadLine();
+            _ = sr.ReadLine();
             while (!sr.EndOfStream)
             {
                 var line = sr.ReadLine();
                 if (string.IsNullOrWhiteSpace(line)) continue;
                 var parts = SplitCsvLine(line);
-                // id, messageTemplate, severity, paramCount, module, abortCurrent, abortLater, displayType, fixHint
                 if (parts.Length < 9) continue;
                 if (!int.TryParse(parts[0], out var id)) continue;
                 var def = new ErrorDefinition();
                 def.Id = id;
-                def.MessageTemplate = parts[1];
-                Enum.TryParse<ErrorSeverity>(parts[2], true, out var sev);
-                def.Severity = sev;
-                if (!int.TryParse(parts[3], out var pc)) pc = 0;
-                def.ParamCount = pc;
-                Enum.TryParse<ErrorModule>(parts[4], true, out var mod);
-                def.Module = mod;
-                bool.TryParse(parts[5], out var ac);
-                def.AbortCurrent = ac;
-                bool.TryParse(parts[6], out var al);
-                def.AbortLater = al;
-                Enum.TryParse<ErrorDisplayType>(parts[7], true, out var dt);
-                def.DisplayType = dt;
-                def.FixHint = parts[8];
+
+                // preferred schema:
+                // id,module,logType,enableAssert,blockOnErrorAssert,abortCompilation,messageTemplate,paramCount,fixHint
+                // legacy schema fallback:
+                // id,messageTemplate,severity,paramCount,module,abortCurrent,abortLater,displayType,fixHint
+                if (IsLegacySchema(parts))
+                {
+                    def.MessageTemplate = parts[1];
+                    Enum.TryParse<LogType>(parts[2], true, out var sev);
+                    def.LogType = sev;
+                    if (!int.TryParse(parts[3], out var pc)) pc = 0;
+                    def.ParamCount = pc;
+                    Enum.TryParse<LogModule>(parts[4], true, out var modLegacy);
+                    def.Module = modLegacy;
+                    bool.TryParse(parts[5], out var ac);
+                    def.BlockOnErrorAssert = ac;
+                    bool.TryParse(parts[6], out var al);
+                    def.AbortCompilation = al;
+                    Enum.TryParse<ErrorDisplayType>(parts[7], true, out var dtLegacy);
+                    def.DisplayType = dtLegacy;
+                    def.FixHint = parts[8];
+                }
+                else
+                {
+                    Enum.TryParse<LogModule>(parts[1], true, out var mod);
+                    def.Module = mod;
+                    Enum.TryParse<LogType>(parts[2], true, out var lt);
+                    def.LogType = lt;
+                    bool.TryParse(parts[3], out var enableAssert);
+                    def.EnableAssert = enableAssert;
+                    bool.TryParse(parts[4], out var blockOnErrorAssert);
+                    def.BlockOnErrorAssert = blockOnErrorAssert;
+                    bool.TryParse(parts[5], out var abortCompilation);
+                    def.AbortCompilation = abortCompilation;
+                    def.MessageTemplate = parts[6];
+                    if (!int.TryParse(parts[7], out var paramCount)) paramCount = 0;
+                    def.ParamCount = paramCount;
+                    def.FixHint = parts[8];
+                    def.DisplayType = ErrorDisplayType.TokenDisplay;
+                }
                 _dict[def.Id] = def;
             }
         }
 
-        /// <summary>
-        /// Basic CSV parser that supports quoted fields. It does not handle escaped quotes.
-        /// It is intentionally simple because the CSV we use is small and controlled.
-        /// </summary>
+        private static bool IsLegacySchema(string[] parts)
+        {
+            return parts.Length >= 2
+                && (parts[1].Contains("{")
+                    || parts[1].Contains(" ")
+                    || parts[1].Contains("Error", StringComparison.OrdinalIgnoreCase)
+                    || parts[1].Contains("Warning", StringComparison.OrdinalIgnoreCase));
+        }
+
         private static string[] SplitCsvLine(string line)
         {
             var list = new List<string>();

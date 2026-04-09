@@ -1,4 +1,4 @@
-
+﻿
 using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.VM.Runtime
@@ -67,7 +67,7 @@ namespace SimpleLanguage.VM.Runtime
         //{
         //    if(staticClassObjectDict.ContainsKey(irmc.id) == false )
         //    {
-        //        Log.AddVM(EError.None, "GetStaticVariable 没有找到相当的静态类");
+        //        Log.AddVM(LID.Unknown, "GetStaticVariable 娌℃湁鎵惧埌鐩稿綋鐨勯潤鎬佺被");
         //        return;
         //    }
         //    ClassObject sobj = staticClassObjectDict[irmc.id];
@@ -78,7 +78,7 @@ namespace SimpleLanguage.VM.Runtime
         //{
         //    if (staticClassObjectDict.ContainsKey(irmc.id) == false)
         //    {
-        //        Log.AddVM(EError.None, "SetStaticVariable 没有找到相当的静态类");
+        //        Log.AddVM(LID.Unknown, "SetStaticVariable 娌℃湁鎵惧埌鐩稿綋鐨勯潤鎬佺被");
         //        return;
         //    }
         //    ClassObject sobj = staticClassObjectDict[irmc.id];
@@ -168,12 +168,12 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 else
                 {
-                    Log.AddVM(EError.None, $"没有找到全局变量所属的RuntimeType映射! globalId={id}");
+                    Log.AddVM(LID.Unknown, $"娌℃湁鎵惧埌鍏ㄥ眬鍙橀噺鎵€灞炵殑RuntimeType鏄犲皠! globalId={id}");
                 }
             }
             else
             {
-                Log.AddVM(EError.None, "没有找到全局变量的映射关系!");
+                Log.AddVM(LID.Unknown, "娌℃湁鎵惧埌鍏ㄥ眬鍙橀噺鐨勬槧灏勫叧绯?");
             }
 
         }
@@ -205,7 +205,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 default:
                     {
-                        Log.AddVM(EError.None, "Error StoreNotStaticField Path:" );
+                        Log.AddVM(LID.Unknown, "Error StoreNotStaticField Path:" );
                     }
                     break;
             }
@@ -223,12 +223,12 @@ namespace SimpleLanguage.VM.Runtime
                 else
                 {
                     sval.SetNull();
-                    Log.AddVM(EError.None, $"没有找到全局变量所属的RuntimeType映射! globalId={id} ");
+                    Log.AddVM(LID.Unknown, $"娌℃湁鎵惧埌鍏ㄥ眬鍙橀噺鎵€灞炵殑RuntimeType鏄犲皠! globalId={id} ");
                 }
             }
             else
             {
-                Log.AddVM(EError.None, "没有找到全局变量的映射关系!");
+                Log.AddVM(LID.Unknown, "娌℃湁鎵惧埌鍏ㄥ眬鍙橀噺鐨勬槧灏勫叧绯?");
             }
         }
         public static void RunIRMethod( List<RuntimeType> irmtList, RuntimeMethod _irMethod, bool isDisCountStackCount = true )

@@ -74,6 +74,6 @@ public class Object
     public string toString()
     {
         hc = SystemObjectGetHashCode(this);
-        ret "Object" + hc.toString();
+        ret "Object:" + hc.toString();
     }
 }

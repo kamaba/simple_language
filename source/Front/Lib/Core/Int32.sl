@@ -42,7 +42,7 @@ public class Int32 extends Num
     }
     override bool toBool()
     {
-        ret SystemConvertFloat64(this) != 0
+        ret SystemConvertBool(this)
     }
     override Byte toByte( byte index = 0 )
     {

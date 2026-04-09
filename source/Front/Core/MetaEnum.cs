@@ -1,4 +1,4 @@
-//****************************************************************************
+﻿//****************************************************************************
 //  File:      MetaEnum.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -36,7 +36,7 @@ namespace SimpleLanguage.Core
         }
         public void CreateValues()
         {
-            //创建一个Enum 里边的静态元素列表，用来遍历 比如enum { a = 1; b = 2} 则 enum { values = [a,b]
+            //鍒涘缓涓€涓狤num 閲岃竟鐨勯潤鎬佸厓绱犲垪琛紝鐢ㄦ潵閬嶅巻 姣斿enum { a = 1; b = 2} 鍒?enum { values = [a,b]
             if(m_ValuesMetaVariable == null )
             {
                 List<MetaType> mtList = new List<MetaType>();
@@ -51,8 +51,8 @@ namespace SimpleLanguage.Core
                 m_ValuesMetaVariable.SetIndex(m_MetaMemberVariableDict.Count);
 
                 MetaArrayExpressNode maen = new MetaArrayExpressNode( this, null, mt, m_ValuesMetaVariable );
-                // values 数组只应包含真实枚举成员，不应把 values 自己也放进去；
-                // 否则 for-in 枚举遍历会出现额外项并导致导出的 IR 逻辑异常。
+                // values 鏁扮粍鍙簲鍖呭惈鐪熷疄鏋氫妇鎴愬憳锛屼笉搴旀妸 values 鑷繁涔熸斁杩涘幓锛?
+                // 鍚﹀垯 for-in 鏋氫妇閬嶅巻浼氬嚭鐜伴澶栭」骞跺鑷村鍑虹殑 IR 閫昏緫寮傚父銆?
                 var enumMembers = m_MetaMemberVariableDict.Values
                     .OfType<MetaMemberEnum>()
                     .OrderBy(v => v.index)
@@ -107,18 +107,18 @@ namespace SimpleLanguage.Core
         {
             if (fmc.memberFunctionList.Count > 0)
             {
-                Log.AddInStructMeta(EError.None, "Error Enum中不允许有Function!!");
+                Log.AddMetaCoreLog(LID.Unknown, "Error Enum涓笉鍏佽鏈塅unction!!");
             }
             if (fmc.templateDefineList.Count > 0)
             {
-                Log.AddInStructMeta(EError.None, "Error 在Enum定义中，不允许使用Template模板的形式!");
+                Log.AddMetaCoreLog(LID.Unknown, "Error 鍦‥num瀹氫箟涓紝涓嶅厑璁镐娇鐢═emplate妯℃澘鐨勫舰寮?");
             }
             //for (int i = 0; i < fmc.templateParamList.Count; i++)
             //{
             //    string tTemplateName = fmc.templateParamList[i].name;
             //    if (m_MetaTemplateList.Find(a => a.name == tTemplateName) != null)
             //    {
-            //        Debug.Write("Error 定义模式名称重复!!");
+            //        Debug.Write("Error 瀹氫箟妯″紡鍚嶇О閲嶅!!");
             //    }
             //    else
             //    {
@@ -132,12 +132,12 @@ namespace SimpleLanguage.Core
                 MetaBase mb = GetMetaMemberVariableByName(v.name);
                 if (mb != null)
                 {
-                    Log.AddInStructMeta(EError.None, "Error Enum MetaMemberData已有定义类: " + m_AllName + "中 已有: " + v.token?.ToLexemeAllString() + "的元素!!");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error Enum MetaMemberData宸叉湁瀹氫箟绫? " + m_AllName + "涓?宸叉湁: " + v.token?.ToLexemeAllString() + "鐨勫厓绱?!");
                     isHave = true;
                 }
                 else
                     isHave = false;
-                // 如果类定义前带有 const，则传递父级 const 标志，使内部成员默认视为 const
+                // 濡傛灉绫诲畾涔夊墠甯︽湁 const锛屽垯浼犻€掔埗绾?const 鏍囧織锛屼娇鍐呴儴鎴愬憳榛樿瑙嗕负 const
                 bool parentIsConst = fmc.isConst;
                 MetaMemberEnum mmv = new MetaMemberEnum(this, v, this.extendClass, parentIsConst);
                 if (isHave)
@@ -172,7 +172,7 @@ namespace SimpleLanguage.Core
             }
             else if (m_ExtendClass == CoreMetaClassManager.dynamicMetaData)
             {
-                //仅限data数据类型
+                //浠呴檺data鏁版嵁绫诲瀷
                 var mt = new MetaType(m_ExtendClass);
                 foreach (var v in m_MetaMemberVariableDict )
                 {
@@ -188,7 +188,7 @@ namespace SimpleLanguage.Core
         {
             if (m_MetaMemberVariableDict.Count == 0)
             {
-                Log.AddInStructMeta(EError.None, "Warning 在enum : " + name + " 没有发现有任何成员");
+                Log.AddMetaCoreLog(LID.Unknown, "Warning 鍦╡num : " + name + " 娌℃湁鍙戠幇鏈変换浣曟垚鍛");
                 return;
             }
 
@@ -215,7 +215,7 @@ namespace SimpleLanguage.Core
                     {
                         if (mme.express == null)
                         {
-                            Log.AddInStructMeta(EError.None, "Warning Enum Member Enum 成员第一位必须有=号");
+                            Log.AddMetaCoreLog(LID.Unknown, "Warning Enum Member Enum 鎴愬憳绗竴浣嶅繀椤绘湁=鍙");
                             continue;
                         }
                     }
@@ -225,7 +225,7 @@ namespace SimpleLanguage.Core
                         mme.ParseMetaExpress();
                         if (mme.enumValueConstExpressNode == null)
                         {
-                            Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内允许使用const值类变量");
+                            Log.AddMetaCoreLog(LID.Unknown, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╟onst鍊肩被鍙橀噺");
                             continue;
                         }
 
@@ -238,7 +238,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内部int转byte出错");
+                                Log.AddMetaCoreLog(LID.Unknown, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
                                 continue;
                             }
                         }
@@ -251,7 +251,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内部int转byte出错");
+                                Log.AddMetaCoreLog(LID.Unknown, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
                                 continue;
                             }
                         }
@@ -264,7 +264,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内部int转byte出错");
+                                Log.AddMetaCoreLog(LID.Unknown, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
                                 continue;
                             }
                         }
@@ -277,7 +277,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内部int转byte出错");
+                                Log.AddMetaCoreLog(LID.Unknown, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
                                 continue;
                             }
                         }
@@ -290,7 +290,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内部int转byte出错");
+                                Log.AddMetaCoreLog(LID.Unknown, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
                                 continue;
                             }
                         }
@@ -303,7 +303,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内部int转byte出错");
+                                Log.AddMetaCoreLog(LID.Unknown, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
                                 continue;
                             }
                         }
@@ -343,18 +343,18 @@ namespace SimpleLanguage.Core
                     mme.ParseDefineMetaType();
                     if (mme.express == null)
                     {
-                        Log.AddInStructMeta(EError.None, "Error Enum Member Enum String成员必须有=号" + v.Key);
+                        Log.AddMetaCoreLog(LID.Unknown, "Error Enum Member Enum String鎴愬憳蹇呴』鏈?鍙" + v.Key);
                         continue;
                     }
                     mme.ParseMetaExpress();
                     if (mme.enumValueConstExpressNode == null)
                     {
-                        Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内允许使用const值类变量");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╟onst鍊肩被鍙橀噺");
                         continue;
                     }
                     if (mme.enumValueConstExpressNode.eType != EType.String)
                     {
-                        Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内允许使用string值类变量");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╯tring鍊肩被鍙橀噺");
                         continue;
                     }
 
@@ -370,7 +370,7 @@ namespace SimpleLanguage.Core
                     mme.ParseDefineMetaType();
                     if (mme.express == null)
                     {
-                        Log.AddInStructMeta(EError.None, "Error Enum Member Enum 动态成员第一位必须有=号");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error Enum Member Enum 鍔ㄦ€佹垚鍛樼涓€浣嶅繀椤绘湁=鍙");
                         continue;
                     }
                     mme.ParseMetaExpress();
@@ -382,12 +382,12 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内允许使用data值类变量, 不允许其它类型");
+                            Log.AddMetaCoreLog(LID.Unknown, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata鍊肩被鍙橀噺, 涓嶅厑璁稿叾瀹冪被鍨");
                         }
                     }
                     else
                     {
-                        Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内允许使用data new 值类变量");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata new 鍊肩被鍙橀噺");
                     }
                 }
             }
@@ -398,7 +398,7 @@ namespace SimpleLanguage.Core
                     v.Value.ParseDefineMetaType();
                     if (v.Value.express == null)
                     {
-                        Log.AddInStructMeta(EError.None, "Error Enum Member Enum 成员必须有=号");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error Enum Member Enum 鎴愬憳蹇呴』鏈?鍙");
                         continue;
                     }
                     v.Value.ParseMetaExpress();
@@ -411,7 +411,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内允许使用data值类变量, 不允许其它类型");
+                            Log.AddMetaCoreLog(LID.Unknown, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata鍊肩被鍙橀噺, 涓嶅厑璁稿叾瀹冪被鍨");
                         }
                     }
                     else if (v.Value.constExpressNode != null)
@@ -420,7 +420,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddInStructMeta(EError.None, "Error Enum Member Enum 内允许使用data new 值类变量");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata new 鍊肩被鍙橀噺");
                     }
                 }
             }

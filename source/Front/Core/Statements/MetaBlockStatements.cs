@@ -103,7 +103,7 @@ namespace SimpleLanguage.Core
 
             if (count > 1)
             {
-                Log.AddInStructMeta(EError.None, "Error 终结语句 next/break/continue/return 互斥" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                Log.AddMetaCoreLog(LID.Unknown, "Error 终结语句 next/break/continue/return 互斥" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
                 m_TerminatorType = ETerminatorType.None;
                 m_TerminatorStatement = null;
                 return;
@@ -112,28 +112,28 @@ namespace SimpleLanguage.Core
             // if exists, must be the last statement
             if (hasBreak && !IsLastStatement<MetaBreakStatements>(out _))
             {
-                Log.AddInStructMeta(EError.None, "Error break 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                Log.AddMetaCoreLog(LID.Unknown, "Error break 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
                 m_TerminatorType = ETerminatorType.None;
                 m_TerminatorStatement = null;
                 return;
             }
             if (hasContinue && !IsLastStatement<MetaContinueStatements>(out _))
             {
-                Log.AddInStructMeta(EError.None, "Error continue 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                Log.AddMetaCoreLog(LID.Unknown, "Error continue 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
                 m_TerminatorType = ETerminatorType.None;
                 m_TerminatorStatement = null;
                 return;
             }
             if (hasReturn && !IsLastStatement<MetaReturnStatements>(out _))
             {
-                Log.AddInStructMeta(EError.None, "Error return 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                Log.AddMetaCoreLog(LID.Unknown, "Error return 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
                 m_TerminatorType = ETerminatorType.None;
                 m_TerminatorStatement = null;
                 return;
             }
             if (hasNext && !IsLastStatement<SimpleLanguage.Core.MetaNextStatements>(out _))
             {
-                Log.AddInStructMeta(EError.None, "Error next 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                Log.AddMetaCoreLog(LID.Unknown, "Error next 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
                 m_TerminatorType = ETerminatorType.None;
                 m_TerminatorStatement = null;
                 return;
@@ -149,16 +149,19 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = null;
             m_OwnerMetaFunction = mf;
             m_FileMetaBlockSyntax = fmbs;
+            AddPingToken(fmbs?.token);
         }
         public MetaBlockStatements( MetaBlockStatements mbs, FileMetaBlockSyntax fmbs) : base(mbs)
         {
             mbs.m_ChildrenMetaBlockStatementsList.Add(this);
             m_OwnerMetaFunction = mbs.ownerMetaFunction;
             m_FileMetaBlockSyntax = fmbs;
+            AddPingToken(fmbs?.token);
         }
         public void SetFileMetaBlockSyntax( FileMetaBlockSyntax blockSyntax )
         {
             m_FileMetaBlockSyntax = blockSyntax;
+            AddPingToken(blockSyntax?.token);
         }
         public void SetOwnerMetaStatements( MetaStatements ms )
         {
@@ -232,7 +235,7 @@ namespace SimpleLanguage.Core
 
             if (!IsLastStatement<TStatement>(out _))
             {
-                Log.AddInStructMeta(EError.None, errorMessage + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                Log.AddMetaCoreLog(LID.Unknown, errorMessage + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
                 return false;
             }
             return true;

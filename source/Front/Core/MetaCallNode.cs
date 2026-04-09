@@ -1,4 +1,4 @@
-//****************************************************************************
+﻿//****************************************************************************
 //  File:      MetaCallNode.cs
 // ------------------------------------------------
 //  Copyright (c) author: Like Cheng kamaba233@gmail.com
@@ -133,10 +133,10 @@ namespace SimpleLanguage.Core
         private List<MetaType> m_MetaTemplateParamsList = new List<MetaType>();
         //private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent  = null;
         private MetaType m_FrontDefineMetaType = null;
-        private MetaExpressNode m_ExpressNode = null;    // a+b+([expressNode[3+20+10.0f]).ToString() 中的3+20+10.f就是表示式 , fun(expressNode)
+        private MetaExpressNode m_ExpressNode = null;    // a+b+([expressNode[3+20+10.0f]).ToString() 涓殑3+20+10.f灏辨槸琛ㄧず寮?, fun(expressNode)
         private MetaVariable m_DefineMetaVariable = null;
         private MetaVariable m_StoreMetaVariable = null;
-        private List<MetaExpressNode> m_BracketExpressList = new List<MetaExpressNode>();   // a[1][1][1][]   解析的是这个里边的1,或者是在[]里边的变量
+        private List<MetaExpressNode> m_BracketExpressList = new List<MetaExpressNode>();   // a[1][1][1][]   瑙ｆ瀽鐨勬槸杩欎釜閲岃竟鐨?,鎴栬€呮槸鍦╗]閲岃竟鐨勫彉閲?
 
         private MetaNode m_MetaNode = null;
         private MetaType m_MetaType = null;
@@ -212,12 +212,12 @@ namespace SimpleLanguage.Core
                 else if (m_FileMetaCallSign.token.type == ETokenType.And)
                 {
                     m_CallNodeSign = ECallNodeSign.Pointer;
-                    Log.AddInStructMeta(EError.None, "Error MetaStatements Parse  不允许使用其它连接符!!");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error MetaStatements Parse  涓嶅厑璁镐娇鐢ㄥ叾瀹冭繛鎺ョ!!");
                     return false;
                 }
                 else
                 {
-                    Log.AddInStructMeta(EError.None, "Error MetaStatements Parse  不允许使用其它连接符!!");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error MetaStatements Parse  涓嶅厑璁镐娇鐢ㄥ叾瀹冭繛鎺ョ!!");
                     return false;
                 }
             }
@@ -230,14 +230,14 @@ namespace SimpleLanguage.Core
             {
                 if (m_FileMetaCallNode == null)
                 {
-                    Log.AddInStructMeta(EError.None, "Error 定义原数据为空!! " + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.Unknown, "Error 瀹氫箟鍘熸暟鎹负绌?! " + m_Token.ToLexemeAllString());
                 }
                 if (m_FileMetaCallNode != null && m_FileMetaCallNode.fileMetaParTerm != null && !m_IsFunction)
                 {
                     var firstNode = m_FileMetaCallNode.fileMetaParTerm.fileMetaExpressList[0];
                     if (firstNode == null)
                     {
-                        Log.AddInStructMeta(EError.None, "Error 不能使用输入()中的内容 0号位的没有内容!!");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error 涓嶈兘浣跨敤杈撳叆()涓殑鍐呭 0鍙蜂綅鐨勬病鏈夊唴瀹?!");
                     }
                     else
                     {
@@ -338,7 +338,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddInStructMeta(EError.None, "Error 不支持表达式类型!!");
+                Log.AddMetaCoreLog(LID.Unknown, "Error 涓嶆敮鎸佽〃杈惧紡绫诲瀷!!");
             }
             return true;
         }
@@ -349,7 +349,7 @@ namespace SimpleLanguage.Core
 
             string fatherName = m_FrontCallNode?.m_Name;
             bool isAt = m_FileMetaCallNode?.atToken != null || m_VisitFlag;
-            // 当前是否是第一个元素
+            // 褰撳墠鏄惁鏄涓€涓厓绱?
             bool isFirst = m_FrontCallNode == null;
             int templateCount = this.m_FileMetaCallNode.inputTemplateNodeList.Count;
 
@@ -371,7 +371,7 @@ namespace SimpleLanguage.Core
 
             if (!isFirst && frontCNT == ECallNodeType.Null)
             {
-                Log.AddInStructMeta(EError.None, "Error 前边节点没有发现MetaBase!!");
+                Log.AddMetaCoreLog(LID.Unknown, "Error 鍓嶈竟鑺傜偣娌℃湁鍙戠幇MetaBase!!");
                 return false;
             }
 
@@ -414,13 +414,13 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                //Array1.0.x 不允许
-                                Log.AddInStructMeta(EError.None, "Error 在Array.后边如果使用变量或者是数字常量，必须使用Array.$方式!!");
+                                //Array1.0.x 涓嶅厑璁?
+                                Log.AddMetaCoreLog(LID.Unknown, "Error 鍦ˋrray.鍚庤竟濡傛灉浣跨敤鍙橀噺鎴栬€呮槸鏁板瓧甯搁噺锛屽繀椤讳娇鐢ˋrray.$鏂瑰紡!!");
                             }
                         }
                     }
                 }
-                //不是常量值 
+                //涓嶆槸甯搁噺鍊?
                 if (!isNotConstValue)
                 {
                     FileMetaConstValueTerm fmcvt = new FileMetaConstValueTerm(m_FileMetaCallNode.fileMeta, m_Token);
@@ -445,7 +445,7 @@ namespace SimpleLanguage.Core
                 {
                     if (m_IsFunction)
                     {
-                        Log.AddInStructMeta(EError.None, "Error 不允许global的函数形式!!");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error 涓嶅厑璁竒lobal鐨勫嚱鏁板舰寮?!");
                     }
                     else
                     {
@@ -477,7 +477,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddInStructMeta(EError.None, "Error  不允许 使用global 只有第一位置可以使用This关键字" + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.Unknown, "Error global can only be used at first position." + m_Token.ToLexemeAllString());
                 }
             }
             else if (etype == ETokenType.New)
@@ -486,13 +486,13 @@ namespace SimpleLanguage.Core
                 {
                     if (!m_IsFunction)
                     {
-                        Log.AddInStructMeta(EError.None, "Error 不允许new是非函数形式出现!!" + m_Token.ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.Unknown, "Error new cannot be used as non-function form." + m_Token.ToLexemeAllString());
                     }
                     else
                     {
                         if (m_FrontDefineMetaType == null)
                         {
-                            Log.AddInStructMeta(EError.None, "Error 没有前置定义类型!!" + m_Token.ToLexemeAllString());
+                            Log.AddMetaCoreLog(LID.Unknown, "Error missing front define meta type." + m_Token.ToLexemeAllString());
                             return false;
                         }
                         m_MetaType = m_FrontDefineMetaType;
@@ -506,7 +506,7 @@ namespace SimpleLanguage.Core
                             MetaMemberFunction mmf = m_FrontDefineMetaType.metaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_MetaInputParamCollection);
                             if (mmf == null)
                             {
-                                //Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + m_FrontDefineMetaType.metaClass.allClassName + "的_init_方法!)", m_Token);
+                                //Log.AddMetaCoreLog(LID.Unknown, "Error 娌℃湁鎵惧埌 鍏充簬绫讳腑" + m_FrontDefineMetaType.metaClass.allClassName + "鐨刜init_鏂规硶!)", m_Token);
                                 return false;
                             }
                             this.m_MetaFunction = mmf;
@@ -525,25 +525,25 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddInStructMeta(EError.None, "Error 只有第一位置可以使用new关键字" + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.Unknown, "Error new can only be used at first position." + m_Token.ToLexemeAllString());
                 }
             }
             else if (etype == ETokenType.This)
             {
                 if (this.m_AllowUseSettings.parseFrom == EParseFrom.MemberVariableExpress)
                 {
-                    Log.AddInStructMeta(EError.None, "Error 不允许在成员变量中使用this关键字" + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.Unknown, "Error this is not allowed in member variable expression." + m_Token.ToLexemeAllString());
                 }
                 if (this.m_AllowUseSettings.parseFrom == EParseFrom.InputParamExpress)
                 {
-                    Log.AddInStructMeta(EError.None, "Error 不允许在输入变量中中使用this关键字" + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.Unknown, "Error this is not allowed in input parameter expression." + m_Token.ToLexemeAllString());
                 }
-                //this.普通的函数，变量，get/set方法
+                //this.鏅€氱殑鍑芥暟锛屽彉閲忥紝get/set鏂规硶
                 if (isFirst)
                 {
                     if (m_IsFunction)
                     {
-                        Log.AddInStructMeta(EError.None, "Error 不允许this的函数形式!!" + m_Token.ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.Unknown, "Error 涓嶅厑璁竧his鐨勫嚱鏁板舰寮?!" + m_Token.ToLexemeAllString());
                     }
                     else
                     {
@@ -552,36 +552,36 @@ namespace SimpleLanguage.Core
                         m_CallNodeType = ECallNodeType.This;
                         if (m_MetaVariable == null)
                         {
-                            Log.AddInStructMeta(EError.None, "Error 静态函数，不允许使用this");
+                            Log.AddMetaCoreLog(LID.Unknown, "Error static function cannot use this.");
                             return false;
                         }
                         if (m_OwnerMetaFunctionBlock.ownerMetaFunction.isStatic && m_MetaVariable.isStatic == false)
                         {
                             Debug.Assert(false, "");
-                            Log.AddInStructMeta(EError.None, "Error 静态函数，不允许使用this");
+                            Log.AddMetaCoreLog(LID.Unknown, "Error static function cannot use this.");
                         }
                     }
                 }
                 else
                 {
-                    Log.AddInStructMeta(EError.None, "Error 只有第一位置可以使用This关键字" + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.Unknown, "Error this can only be used at first position." + m_Token.ToLexemeAllString());
                 }
             }
             else if (etype == ETokenType.Base)
             {
                 if (this.m_AllowUseSettings.parseFrom == EParseFrom.MemberVariableExpress)
                 {
-                    Log.AddInStructMeta(EError.None, "Error 不允许在成员变量中使用base关键字" + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.Unknown, "Error base is not allowed in member variable expression." + m_Token.ToLexemeAllString());
                 }
                 if (this.m_AllowUseSettings.parseFrom == EParseFrom.InputParamExpress)
                 {
-                    Log.AddInStructMeta(EError.None, "Error 不允许在输入变量中中使用base关键字" + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.Unknown, "Error base is not allowed in input parameter expression." + m_Token.ToLexemeAllString());
                 }
 
                 MetaClass parentClass = m_OwnerMetaClass.metaNode.parentNode.GetMetaClassByTemplateCount(0);
                 if (parentClass == null)
                 {
-                    Log.AddInStructMeta(EError.None, "Error 使用base没有找到父节点!!");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error base parent class not found.");
                     return false;
                 }
 
@@ -589,7 +589,7 @@ namespace SimpleLanguage.Core
                 {
                     if (m_IsFunction)
                     {
-                        Log.AddInStructMeta(EError.None, "Error 不允许base的函数形式!!");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error base cannot be used as function form.");
                     }
                     else
                     {
@@ -599,7 +599,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddInStructMeta(EError.None, "Error 只有第一位置可以使用base关键字" + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.Unknown, "Error base can only be used at first position." + m_Token.ToLexemeAllString());
                 }
             }
             else if (etype == ETokenType.Local)
@@ -609,20 +609,20 @@ namespace SimpleLanguage.Core
                     var fm = m_FileMetaCallNode?.fileMeta;
                     if (fm == null)
                     {
-                        Log.AddInStructMeta(EError.None, "Error local 解析失败: fileMeta 为空");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error local 瑙ｆ瀽澶辫触: fileMeta 涓虹┖");
                         return false;
                     }
 
                     if (fm.GetFileMetaLocalSyntax() == null)
                     {
-                        Log.AddInStructMeta(EError.None, "Error 当前文件未定义 local{}，不允许使用 local.xxx" + m_Token.ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.Unknown, "Error 褰撳墠鏂囦欢鏈畾涔?local{}锛屼笉鍏佽浣跨敤 local.xxx" + m_Token.ToLexemeAllString());
                         return false;
                     }
 
                     var global = ProjectManager.globalData;
                     if (global == null)
                     {
-                        Log.AddInStructMeta(EError.None, "Error local 解析失败: globalData 为空");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error local 瑙ｆ瀽澶辫触: globalData 涓虹┖");
                         return false;
                     }
 
@@ -630,7 +630,7 @@ namespace SimpleLanguage.Core
                     var mv = global.GetMetaMemberVariableByName(varName);
                     if (mv == null)
                     {
-                        Log.AddInStructMeta(EError.None, "Error local 解析失败: 没有找到 local instance 变量: " + varName);
+                        Log.AddMetaCoreLog(LID.Unknown, "Error local 瑙ｆ瀽澶辫触: 娌℃湁鎵惧埌 local instance 鍙橀噺: " + varName);
                         return false;
                     }
 
@@ -642,7 +642,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.Assert(false, "local.只能在首位!");
+                    Debug.Assert(false, "local.鍙兘鍦ㄩ浣?");
                     return false;
                 }
             }
@@ -661,7 +661,7 @@ namespace SimpleLanguage.Core
                     {
                         if (m_MetaClass != null && m_MetaClass.isAbstractClass)
                         {
-                            Log.AddInStructMeta(EError.None, "Error 不能实例化抽象类: " + m_MetaClass.name + " " + m_Token.ToLexemeAllString());
+                            Log.AddMetaCoreLog(LID.Unknown, "Error 涓嶈兘瀹炰緥鍖栨娊璞＄被: " + m_MetaClass.name + " " + m_Token.ToLexemeAllString());
                             Debug.Assert(false);
                             return false;
                         }
@@ -719,7 +719,7 @@ namespace SimpleLanguage.Core
                                 }
                                 else
                                 {
-                                    Log.AddInStructMeta(EError.None, "Error 没有发该RetMC的类别MetaCommon");
+                                    Log.AddMetaCoreLog(LID.Unknown, "Error 娌℃湁鍙戣RetMC鐨勭被鍒玀etaCommon");
                                 }
                             }
                         }
@@ -746,7 +746,7 @@ namespace SimpleLanguage.Core
                             }
                             return true;
                         }
-                        // ClassName 一般使用在 Class1.静态变量，或者是静态方法的调用
+                        // ClassName 涓€鑸娇鐢ㄥ湪 Class1.闈欐€佸彉閲忥紝鎴栬€呮槸闈欐€佹柟娉曠殑璋冪敤
                         MetaNode tmb = null;
                         MetaNode curMetaNode = null;
                         if (frontCNT == ECallNodeType.MetaType)
@@ -769,17 +769,17 @@ namespace SimpleLanguage.Core
                             {
                                 return false;
                             }
-                            //查找静态函数
+                            //鏌ユ壘闈欐€佸嚱鏁?
                             if (m_MetaFunction is MetaMemberFunction mmf)
                             {
                                 if (!mmf.isStatic)
                                 {
-                                    Log.AddInStructMeta(EError.None, "Error 调用非静态成员函数，不能使用Class.Variable的方式!");
+                                    Log.AddMetaCoreLog(LID.Unknown, "Error 璋冪敤闈為潤鎬佹垚鍛樺嚱鏁帮紝涓嶈兘浣跨敤Class.Variable鐨勬柟寮?");
                                     return false;
                                 }
                                 if (mmf.isConstructInitFunction && !m_AllowUseSettings.callConstructFunction)
                                 {
-                                    Log.AddInStructMeta(EError.None, "Error 不允许使用构造函数" + m_Token.ToLexemeAllString());
+                                    Log.AddMetaCoreLog(LID.Unknown, "Error constructor call is not allowed here." + m_Token.ToLexemeAllString());
                                     return false;
                                 }
                                 if (m_FrontCallNode != null)
@@ -793,7 +793,7 @@ namespace SimpleLanguage.Core
                             {
                                 if (!mmv.isStatic && !mmv.isConst)
                                 {
-                                    Log.AddInStructMeta(EError.None, "Error 调用非静态成员变量，不能使用Class.Variable的方式!");
+                                    Log.AddMetaCoreLog(LID.Unknown, "Error 璋冪敤闈為潤鎬佹垚鍛樺彉閲忥紝涓嶈兘浣跨敤Class.Variable鐨勬柟寮?");
                                     return false;
                                 }
                                 if (m_FrontCallNode != null)
@@ -808,8 +808,8 @@ namespace SimpleLanguage.Core
                         {
                             if (tmb.IsMetaClass() == false)
                             {
-                                Log.AddInStructMeta(EError.None, $"Error 在当前类: {m_FrontCallNode?.m_MetaClass.name} " +
-                                    $"里查找到了子项，但不是类{m_Name} ");
+                                Log.AddMetaCoreLog(LID.Unknown, $"Error 鍦ㄥ綋鍓嶇被: {m_FrontCallNode?.m_MetaClass.name} " +
+                                    $"閲屾煡鎵惧埌浜嗗瓙椤癸紝浣嗕笉鏄被{m_Name} ");
                                 return false;
                             }
                             m_MetaClass = tmb.GetMetaClassByTemplateCount(templateCount);
@@ -826,12 +826,12 @@ namespace SimpleLanguage.Core
                             }
                             if (m_MetaVariable != null && m_MetaVariable.permission == EPermission.Private)
                             {
-                                Log.AddInStructMeta(EError.None, "Error global." + m_Name + " 不允许访问 private 成员");
+                                Log.AddMetaCoreLog(LID.Unknown, "Error global." + m_Name + " 涓嶅厑璁歌闂?private 鎴愬憳");
                                 return false;
                             }
                             if (m_MetaFunction != null && m_MetaFunction.permission == EPermission.Private)
                             {
-                                Log.AddInStructMeta(EError.None, "Error global." + m_Name + " 不允许访问 private 函数");
+                                Log.AddMetaCoreLog(LID.Unknown, "Error global." + m_Name + " 涓嶅厑璁歌闂?private 鍑芥暟");
                                 return false;
                             }
                             return true;
@@ -851,12 +851,12 @@ namespace SimpleLanguage.Core
 
                                 if (m_MetaVariable != null && m_MetaVariable.permission == EPermission.Private)
                                 {
-                                    Log.AddInStructMeta(EError.None, "Error global." + m_Name + " 不允许访问 private 成员");
+                                    Log.AddMetaCoreLog(LID.Unknown, "Error global." + m_Name + " 涓嶅厑璁歌闂?private 鎴愬憳");
                                     return false;
                                 }
                                 if (m_MetaFunction != null && m_MetaFunction.permission == EPermission.Private)
                                 {
-                                    Log.AddInStructMeta(EError.None, "Error global." + m_Name + " 不允许访问 private 函数");
+                                    Log.AddMetaCoreLog(LID.Unknown, "Error global." + m_Name + " 涓嶅厑璁歌闂?private 鍑芥暟");
                                     return false;
                                 }
                                 return true;
@@ -881,7 +881,7 @@ namespace SimpleLanguage.Core
                         }
                         if (findMd == null)
                         {
-                            Log.AddInStructMeta(EError.None, $"Error 没有找到{m_Name} 的MetaData数据!");
+                            Log.AddMetaCoreLog(LID.Unknown, $"Error 娌℃湁鎵惧埌{m_Name} 鐨凪etaData鏁版嵁!");
                             return false;
                         }
                         if (findMd.memberDataType == EMemberDataType.MemberClass)
@@ -926,7 +926,7 @@ namespace SimpleLanguage.Core
                             {
                                 if (m_IsFunction)// Enum e = Enum.MetaVaraible( 2 )
                                 {
-                                    Log.AddInStructMeta(EError.None, "不能使用Enum.metaVariable(2) 这样的格式!");
+                                    Log.AddMetaCoreLog(LID.Unknown, "涓嶈兘浣跨敤Enum.metaVariable(2) 杩欐牱鐨勬牸寮?");
                                     return false;
                                 }
                                 else
@@ -937,7 +937,7 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                Log.AddInStructMeta(EError.None, "Error 不能使用Enum.xxxx未发现后续!");
+                                Log.AddMetaCoreLog(LID.Unknown, "Error 涓嶈兘浣跨敤Enum.xxxx鏈彂鐜板悗缁?");
                                 return false;
                             }
                         }
@@ -967,7 +967,7 @@ namespace SimpleLanguage.Core
 
                         if (tempMetaBase2 == null)
                         {
-                            //如果已经定义过来型的，则优化使用定义类型，进行计算
+                            //濡傛灉宸茬粡瀹氫箟杩囨潵鍨嬬殑锛屽垯浼樺寲浣跨敤瀹氫箟绫诲瀷锛岃繘琛岃绠?
                             MetaClass mc = null;
                             if (mv.isDefineMetaType)
                             {
@@ -984,7 +984,7 @@ namespace SimpleLanguage.Core
                                 m_MetaVariable = retmmd;
                                 if (retmmd == null)
                                 {
-                                    Log.AddInStructMeta(EError.None, $"Error 没有找到{m_Name} 的MetaData数据!");
+                                    Log.AddMetaCoreLog(LID.Unknown, $"Error 娌℃湁鎵惧埌{m_Name} 鐨凪etaData鏁版嵁!");
                                     return false;
                                 }
                                 if (retmmd.memberDataType == EMemberDataType.MemberClass)
@@ -1034,14 +1034,14 @@ namespace SimpleLanguage.Core
                         var mv = m_FrontCallNode.m_MetaVariable;
                         if (mv == null)
                         {
-                            Log.AddInStructMeta(EError.None, "Error local instance 为空");
+                            Log.AddMetaCoreLog(LID.Unknown, "Error local instance 涓虹┖");
                             return false;
                         }
                         mv.ParseRealMetaType();
                         var mc2 = mv.realMetaType?.metaClass;
                         if (mc2 == null)
                         {
-                            Log.AddInStructMeta(EError.None, "Error local instance 类型为空");
+                            Log.AddMetaCoreLog(LID.Unknown, "Error local instance 绫诲瀷涓虹┖");
                             return false;
                         }
                         if (GetFunctionOrVariableByOwnerClass(mc2, m_Name) == false)
@@ -1080,7 +1080,7 @@ namespace SimpleLanguage.Core
                                 MetaMemberFunction mmf = m_FrontCallNode.m_MetaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_FrontCallNode.m_MetaInputParamCollection);
                                 if (mmf == null)
                                 {
-                                    Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + m_FrontCallNode.m_MetaClass.allClassName + "的_init_方法!)");
+                                    Log.AddMetaCoreLog(LID.Unknown, "Error 娌℃湁鎵惧埌 鍏充簬绫讳腑" + m_FrontCallNode.m_MetaClass.allClassName + "鐨刜init_鏂规硶!)");
                                     return false;
                                 }
                                 m_FrontCallNode.m_MetaFunction = mmf;
@@ -1095,7 +1095,7 @@ namespace SimpleLanguage.Core
                     {
                         if (m_FrontCallNode.m_MetaType == null)
                         {
-                            Log.AddInStructMeta(EError.None, "没有推算出相当的类型");
+                            Log.AddMetaCoreLog(LID.Unknown, "娌℃湁鎺ㄧ畻鍑虹浉褰撶殑绫诲瀷");
                             return false;
                         }
                         if (GetFunctionOrVariableByOwnerClass(m_FrontCallNode.m_MetaType.GetTemplateMetaClass(), m_Name) == false)
@@ -1120,7 +1120,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddInStructMeta(EError.None, "Error 函数没有返回类型");
+                            Log.AddMetaCoreLog(LID.Unknown, "Error 鍑芥暟娌℃湁杩斿洖绫诲瀷");
                         }
                     }
                     else if (frontCNT == ECallNodeType.TemplateName)
@@ -1150,12 +1150,12 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddInStructMeta(EError.None, "Error 暂不支持上节点的类型: " + frontCNT.ToString());
+                        Log.AddMetaCoreLog(LID.Unknown, "Error 鏆備笉鏀寔涓婅妭鐐圭殑绫诲瀷: " + frontCNT.ToString());
                     }
                 }
             }
 
-            //如果检查到在函数体里边的T,需要对T进行实例化，看是类的T还是模板函数的T
+            //濡傛灉妫€鏌ュ埌鍦ㄥ嚱鏁颁綋閲岃竟鐨凾,闇€瑕佸T杩涜瀹炰緥鍖栵紝鐪嬫槸绫荤殑T杩樻槸妯℃澘鍑芥暟鐨凾
             if (m_CallNodeType == ECallNodeType.TemplateName)
             {
                 //if (m_OwnerMetaClass is MetaGenTemplateClass mgtc)
@@ -1246,12 +1246,12 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            //下边的代码未重构后，未经过验证，需要验证
+            //涓嬭竟鐨勪唬鐮佹湭閲嶆瀯鍚庯紝鏈粡杩囬獙璇侊紝闇€瑕侀獙璇?
             if (m_IsFunction)
             {
                 if (m_CallNodeType == ECallNodeType.MetaNode)
                 {
-                    Log.AddInStructMeta(EError.None, "Error 函数调用与命名空间冲突!!");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error 鍑芥暟璋冪敤涓庡懡鍚嶇┖闂村啿绐?!");
                     return false;
                 }
                 else if (m_CallNodeType == ECallNodeType.MemberFunctionName)
@@ -1315,7 +1315,7 @@ namespace SimpleLanguage.Core
                     //    MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", null, m_MetaInputParamCollection);
                     //    if (mmf == null)
                     //    {
-                    //        Log.AddInStructMeta(EError.None, $"Error 没有找到相关的_init_类!! 类[{curmc.allClassName}] 函数:[_init_({m_MetaInputParamCollection.count} )]", m_Token);
+                    //        Log.AddMetaCoreLog(LID.Unknown, $"Error 娌℃湁鎵惧埌鐩稿叧鐨刜init_绫?! 绫籟{curmc.allClassName}] 鍑芥暟:[_init_({m_MetaInputParamCollection.count} )]", m_Token);
                     //        return false;
                     //    }
                     //    m_MetaClass = curmc;
@@ -1328,7 +1328,7 @@ namespace SimpleLanguage.Core
                         MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_MetaInputParamCollection);
                         if (mmf == null)
                         {
-                            Log.AddInStructMeta(EError.None, "Error 没有找到 关于类中" + curmc.allClassName + "的_init_方法!)");
+                            Log.AddMetaCoreLog(LID.Unknown, "Error 娌℃湁鎵惧埌 鍏充簬绫讳腑" + curmc.allClassName + "鐨刜init_鏂规硶!)");
                             return false;
                         }
                         if (m_DefineMetaVariable == null)
@@ -1349,13 +1349,13 @@ namespace SimpleLanguage.Core
                             m_CallNodeType = ECallNodeType.NewClass;
                         }
 
-                        /* 该逻辑会放到NewExpressNode里这
-                        if (m_FileMetaCallNode.fileMetaBraceTerm != null)  //可以使用  ArrClass(){ x = ??} 的方式
+                        /* 璇ラ€昏緫浼氭斁鍒癗ewExpressNode閲岃繖
+                        if (m_FileMetaCallNode.fileMetaBraceTerm != null)  //鍙互浣跨敤  ArrClass(){ x = ??} 鐨勬柟寮?
                         {
                             if( m_AllowUseSettings.parseFrom == EParseFrom.InputParamExpress  )
                             {
-                                Log.AddInStructMeta(EError.None, "Error 在InputParam 里边，构建函数，只允许 使用ClassName() 的方式, " +
-                                    "不允许使用 ClassName(){}的方式" + m_FileMetaCallNode.fileMetaBraceTerm.ToTokenString() );
+                                Log.AddMetaCoreLog(LID.Unknown, "Error 鍦↖nputParam 閲岃竟锛屾瀯寤哄嚱鏁帮紝鍙厑璁?浣跨敤ClassName() 鐨勬柟寮? " +
+                                    "涓嶅厑璁镐娇鐢?ClassName(){}鐨勬柟寮" + m_FileMetaCallNode.fileMetaBraceTerm.ToTokenString() );
                                 return false;
                             }
                             m_MetaBraceStatementsContent = new MetaBraceOrBracketStatementsContent(m_FileMetaCallNode.fileMetaBraceTerm, m_OwnerMetaFunctionBlock, m_OwnerMetaClass);
@@ -1367,19 +1367,19 @@ namespace SimpleLanguage.Core
 
                     if (!m_AllowUseSettings.callFunction && m_IsFunction)
                     {
-                        Log.AddInStructMeta(EError.None, "Error 当前位置不允许有函数调用方式使用!!!" + m_Token?.ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.Unknown, "Error 褰撳墠浣嶇疆涓嶅厑璁告湁鍑芥暟璋冪敤鏂瑰紡浣跨敤!!!" + m_Token?.ToLexemeAllString());
                     }
                 }
                 else if (m_MetaData != null)
                 {
                     m_CallNodeType = ECallNodeType.NewData;
                     /*
-                    if (m_FileMetaCallNode.fileMetaBraceTerm != null)  //可以使用  ArrClass(){ x = ??} 的方式
+                    if (m_FileMetaCallNode.fileMetaBraceTerm != null)  //鍙互浣跨敤  ArrClass(){ x = ??} 鐨勬柟寮?
                     {
                         if (m_AllowUseSettings.parseFrom == EParseFrom.InputParamExpress)
                         {
-                            Log.AddInStructMeta(EError.None, "Error 在InputParam 里边，构建函数，只允许 使用ClassName() 的方式, " +
-                                "不允许使用 ClassName(){}的方式" + m_FileMetaCallNode.fileMetaBraceTerm.ToTokenString());
+                            Log.AddMetaCoreLog(LID.Unknown, "Error 鍦↖nputParam 閲岃竟锛屾瀯寤哄嚱鏁帮紝鍙厑璁?浣跨敤ClassName() 鐨勬柟寮? " +
+                                "涓嶅厑璁镐娇鐢?ClassName(){}鐨勬柟寮" + m_FileMetaCallNode.fileMetaBraceTerm.ToTokenString());
                             return false;
                         }
                         m_MetaBraceStatementsContent = new MetaBraceOrBracketStatementsContent(m_FileMetaCallNode.fileMetaBraceTerm, m_OwnerMetaFunctionBlock, m_OwnerMetaClass);
@@ -1398,7 +1398,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddInStructMeta(EError.None, "Error 使用函数调用与当前节点不吻合!!");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error 浣跨敤鍑芥暟璋冪敤涓庡綋鍓嶈妭鐐逛笉鍚诲悎!!");
                     return false;
                 }
             }
@@ -1414,7 +1414,7 @@ namespace SimpleLanguage.Core
                             || frontCNT == ECallNodeType.This
                             || frontCNT == ECallNodeType.Base)
                         {
-                            Log.AddInStructMeta(EError.None, "Error 1 静态调用，不能调用非静态字段!!");
+                            Log.AddMetaCoreLog(LID.Unknown, "Error 1 闈欐€佽皟鐢紝涓嶈兘璋冪敤闈為潤鎬佸瓧娈?!");
                             return false;
                         }
                     }
@@ -1443,7 +1443,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddInStructMeta(EError.None, "Error !! 非函数类型!!" + m_FileMetaCallNode.token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.Unknown, "Error !! 闈炲嚱鏁扮被鍨?!" + m_FileMetaCallNode.token.ToLexemeAllString());
                 }
             }
             //if( this.m_MetaArrayCallNodeList.Count > 0 )
@@ -1480,7 +1480,7 @@ namespace SimpleLanguage.Core
                 {
                     // Array1.$i.x   Array1.$mmq.x;
                     var getmv2 = m_OwnerMetaFunctionBlock.GetMetaVariableByName(m_Name);
-                    if (getmv2 != null)    //查找是否已定义过变量
+                    if (getmv2 != null)    //鏌ユ壘鏄惁宸插畾涔夎繃鍙橀噺
                     {
                         string inputMVName = "Visit_" + m_Name;
                         m_MetaVariable = variable.GetMetaVariable(inputMVName);
@@ -1503,14 +1503,14 @@ namespace SimpleLanguage.Core
                             {
                                 if (list[0] > 0 && list[0] < index)
                                 {
-                                    Log.AddInStructMeta(EError.None, "数组下标记超过了！");
+                                    Log.AddMetaCoreLog(LID.Unknown, "Array index out of range.");
                                     return;
                                 }
                             }
                         }
                         else
                         {
-                            Log.AddInStructMeta(EError.None, "非数组的处理！");
+                            Log.AddMetaCoreLog(LID.Unknown, "Visit operation requires array type.");
                             return;
                         }
 
@@ -1532,7 +1532,7 @@ namespace SimpleLanguage.Core
                     else
                     {
                         Debug.Assert(false);
-                        Log.AddInStructMeta(EError.None, "没有找到适合的访问节点的变量一类的！");
+                        Log.AddMetaCoreLog(LID.Unknown, "Cannot find suitable visit variable/access node.");
                     }
 
                     m_MetaVariable.ParseDefineMetaType();
@@ -1553,7 +1553,7 @@ namespace SimpleLanguage.Core
         {
             if (mv == null)
             {
-                Log.AddInStructMeta(EError.None, "Error HandleGetTypeByMetaVariable mv is null");
+                Log.AddMetaCoreLog(LID.Unknown, "Error HandleGetTypeByMetaVariable mv is null");
                 return;
             }
 
@@ -1595,14 +1595,16 @@ namespace SimpleLanguage.Core
                 {
                     m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, inputname);
                     m_MetaFunction.SetIndex((int)inputindex);
-                    m_CallMetaType = new MetaType(mc);
+                    var retMt = m_MetaFunction.GetFinalMetaType();
+                    m_CallMetaType = retMt != null ? new MetaType(retMt) : new MetaType(mc);
+                    m_MetaType = retMt != null ? new MetaType(retMt) : null;
                     m_CallNodeType = ECallNodeType.SystemFunctionCall;
                     return true;
                 }
             }
 
             MetaNode retMC = null;
-            // 查找定义关键字的class => range   array
+            // 鏌ユ壘瀹氫箟鍏抽敭瀛楃殑class => range   array
             if (m_Token.extend != null)
             {
                 MetaNode findMB = CoreMetaClassManager.GetCoreMetaClass(m_Token.extend.ToString());
@@ -1611,7 +1613,7 @@ namespace SimpleLanguage.Core
                     retMC = findMB;
                 }
             }
-            //查找类模型
+            //鏌ユ壘绫绘ā鍨?
             if (retMC == null)
             {
                 var t = mc.GetMetaTemplateByName(inputname);
@@ -1622,12 +1624,12 @@ namespace SimpleLanguage.Core
                     return true;
                 }
             }
-            //通过fileMeta查找是否有首定义字符
+            //閫氳繃fileMeta鏌ユ壘鏄惁鏈夐瀹氫箟瀛楃
             if (retMC == null)
             {
                 retMC = ClassManager.instance.GetMetaClassByNameAndFileMeta(m_OwnerMetaClass, m_FileMetaCallNode.fileMeta, new List<string>(1) { inputname });
             }
-            //查找父类或子类中包含的节点
+            //鏌ユ壘鐖剁被鎴栧瓙绫讳腑鍖呭惈鐨勮妭鐐?
             if (retMC == null)
             {
                 retMC = mc.metaNode.GetChildrenMetaNodeByName(inputname);
@@ -1656,14 +1658,14 @@ namespace SimpleLanguage.Core
                     m_CallNodeType = ECallNodeType.ClassName;
                     if (m_MetaClass == null)
                     {
-                        Log.AddInStructMeta(EError.None, $"找到{retMC.allName} 里边模板数据为{count} 没有找到相关的类!");
+                        Log.AddMetaCoreLog(LID.Unknown, $"Template class count mismatch: found {retMC.allName}, templateCount={count}.");
                         return false;
                     }
                     m_MetaType = new MetaType(m_MetaClass);
                 }
                 else
                 {
-                    Log.AddInStructMeta(EError.None, "Error 没有发该RetMC的类别MetaCommon");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error 娌℃湁鍙戣RetMC鐨勭被鍒玀etaCommon");
                 }
             }
             else
@@ -1687,7 +1689,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddInStructMeta(EError.None, "第一位的成员变量名称必须是个静态变量才可以哇!");
+                        Log.AddMetaCoreLog(LID.Unknown, "绗竴浣嶇殑鎴愬憳鍙橀噺鍚嶇О蹇呴』鏄釜闈欐€佸彉閲忔墠鍙互鍝?");
                         return false;
                     }
                 }
@@ -1708,19 +1710,19 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddInStructMeta(EError.None, "第一位的成员函数名称必须是个静态函数才可以哇!");
+                        Log.AddMetaCoreLog(LID.Unknown, "绗竴浣嶇殑鎴愬憳鍑芥暟鍚嶇О蹇呴』鏄釜闈欐€佸嚱鏁版墠鍙互鍝?");
                         return false;
                     }
                 }
             }
 
-            //函数内成员
+            //鍑芥暟鍐呮垚鍛?
             if (retMC == null)
             {
                 var ownerFun = m_OwnerMetaFunctionBlock?.ownerMetaFunction;
                 if (ownerFun != null)
                 {
-                    //函数的参数是否是模版，如果是，则返回
+                    //鍑芥暟鐨勫弬鏁版槸鍚︽槸妯＄増锛屽鏋滄槸锛屽垯杩斿洖
                     var metaTemplate = ownerFun.GetMetaDefineTemplateByName(inputname);
                     if (metaTemplate != null)
                     {
@@ -1751,20 +1753,20 @@ namespace SimpleLanguage.Core
         {
             //if ( this.m_MetaTemplateParamsList == null)
             //{
-            //    Debug.WriteLine("Error 没有Cast<>的使用，请正确使用Cast!!");
+            //    Debug.WriteLine("Error 娌℃湁Cast<>鐨勪娇鐢紝璇锋纭娇鐢–ast!!");
             //    return null;
             //}
             //else
             //{
             //    if (m_MetaTemplateParamsCollection.metaTemplateParamsList.Count != 1)
             //    {
-            //        Debug.WriteLine("Error 没有Cast<ClassName>()的使用，请正确使用Cast!!");
+            //        Debug.WriteLine("Error 娌℃湁Cast<ClassName>()鐨勪娇鐢紝璇锋纭娇鐢–ast!!");
             //        return null;
             //    }
             //    MetaClass castClass = m_MetaTemplateParamsCollection.metaTemplateParamsList[0].metaClass;
             //    if (castClass == null)
             //    {
-            //        Debug.WriteLine("Error 没有Cast<ClassName>()的使用，没有找到Cast<ClassName> 中的ClassName");
+            //        Debug.WriteLine("Error 娌℃湁Cast<ClassName>()鐨勪娇鐢紝娌℃湁鎵惧埌Cast<ClassName> 涓殑ClassName");
             //        return null;
             //    }
             //    //MetaFunction mf2 = mc.GetMetaMemberFunctionByNameAndTemplateCollectInputParamCollect("Cast", m_MetaTemplateParamsCollection, m_MetaInputParamCollection);
@@ -1774,7 +1776,7 @@ namespace SimpleLanguage.Core
             //    //}
             //    //else
             //    //{
-            //    //    Debug.Write("没有找到Cast的函数，或者是重定义错误!!");
+            //    //    Debug.Write("娌℃湁鎵惧埌Cast鐨勫嚱鏁帮紝鎴栬€呮槸閲嶅畾涔夐敊璇?!");
             //    //    return null;
             //    //}
             //}
@@ -1784,20 +1786,20 @@ namespace SimpleLanguage.Core
         {
             //if ( this.m_MetaTemplateParamsList == null)
             //{
-            //    Debug.WriteLine("Error 没有Cast<>的使用，请正确使用Cast!!");
+            //    Debug.WriteLine("Error 娌℃湁Cast<>鐨勪娇鐢紝璇锋纭娇鐢–ast!!");
             //    return null;
             //}
             //else
             //{
             //    if (m_MetaTemplateParamsCollection.metaTemplateParamsList.Count != 1)
             //    {
-            //        Debug.WriteLine("Error 没有Cast<ClassName>()的使用，请正确使用Cast!!");
+            //        Debug.WriteLine("Error 娌℃湁Cast<ClassName>()鐨勪娇鐢紝璇锋纭娇鐢–ast!!");
             //        return null;
             //    }
             //    MetaClass castClass = m_MetaTemplateParamsCollection.metaTemplateParamsList[0].metaClass;
             //    if (castClass == null)
             //    {
-            //        Debug.WriteLine("Error 没有Cast<ClassName>()的使用，没有找到Cast<ClassName> 中的ClassName");
+            //        Debug.WriteLine("Error 娌℃湁Cast<ClassName>()鐨勪娇鐢紝娌℃湁鎵惧埌Cast<ClassName> 涓殑ClassName");
             //        return null;
             //    }
             //    //MetaFunction mf2 = mc.GetMetaMemberFunctionByNameAndTemplateCollectInputParamCollect("Cast", m_MetaTemplateParamsCollection, m_MetaInputParamCollection);
@@ -1807,7 +1809,7 @@ namespace SimpleLanguage.Core
             //    //}
             //    //else
             //    //{
-            //    //    Debug.Write("没有找到Cast的函数，或者是重定义错误!!");
+            //    //    Debug.Write("娌℃湁鎵惧埌Cast鐨勫嚱鏁帮紝鎴栬€呮槸閲嶅畾涔夐敊璇?!");
             //    //    return null;
             //    //}
             //}
@@ -1833,7 +1835,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddInStructMeta(EError.None, "没有发现实体的模板类!!" + m_MetaClass?.name);
+                    Log.AddMetaCoreLog(LID.Unknown, "娌℃湁鍙戠幇瀹炰綋鐨勬ā鏉跨被!!" + m_MetaClass?.name);
                     return false;
                 }
             }
@@ -1896,7 +1898,7 @@ namespace SimpleLanguage.Core
                     }
                     catch { }
                 }
-                Log.AddInStructMeta(EError.None, "Error 设置notStatic时，没有找到相应的变量!" + m_Token?.ToLexemeAllString());
+                Log.AddMetaCoreLog(LID.Unknown, "Error 璁剧疆notStatic鏃讹紝娌℃湁鎵惧埌鐩稿簲鐨勫彉閲?" + m_Token?.ToLexemeAllString());
                 return false;
             }
 
@@ -2040,7 +2042,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    //sb.Append("Error 解析Token错误" + token?.ToLexemeAllString());
+                    //sb.Append("Error 瑙ｆ瀽Token閿欒" + token?.ToLexemeAllString());
                     sb.Append(m_Token?.lexeme.ToString() + "Error(CurrentMetaBase is Null!)");
                 }
             }

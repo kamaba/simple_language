@@ -360,7 +360,7 @@ namespace SimpleLanguage.VM
                         RuntimeClass irc = co.runtimeClass;                        
                         if (irc == null)
                         {
-                            Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
+                            Log.AddVM(LID.Unknown, "IRC是调用虚函数为空!!");
                             return;
                         }
                         RuntimeMethod cfc = irc.GetOperatorMethodIndexByMethod(isEqual ? "_eq_" : "_ne_", out int index);
@@ -386,7 +386,7 @@ namespace SimpleLanguage.VM
                             else
                             {
                                 sval1.SetBoolValue(!isEqual);
-                                //Log.AddVM(EError.None, " VM Compare SVAlue 比较的低码还没有完善!!");
+                                //Log.AddVM(LID.Unknown, " VM Compare SVAlue 比较的低码还没有完善!!");
                             }
 
                         }
@@ -430,13 +430,13 @@ namespace SimpleLanguage.VM
             {
                 case EVMType.String:
                     {
-                        Log.AddVM(EError.None, " VM Compare SVAlue string 比较的低码还没有完善!!");
+                        Log.AddVM(LID.Unknown, " VM Compare SVAlue string 比较的低码还没有完善!!");
                         //return;
                     }
                     break;
                 case EVMType.Boolean:
                     {
-                        Log.AddVM(EError.None, " VM Compare SVAlue boolean 比较的低码还没有完善!!");
+                        Log.AddVM(LID.Unknown, " VM Compare SVAlue boolean 比较的低码还没有完善!!");
                         //return;
                     }
                     break;
@@ -473,7 +473,7 @@ namespace SimpleLanguage.VM
                         RuntimeClass irc = co.runtimeClass;                        
                         if (irc == null)
                         {
-                            Log.AddVM(EError.None, "IRC是调用虚函数为空!!");
+                            Log.AddVM(LID.Unknown, "IRC是调用虚函数为空!!");
                             return;
                         }
                         RuntimeMethod cfc = irc.GetOperatorMethodIndexByMethod(isEqual ? "_eq_" : "_ne_", out int index);
@@ -499,7 +499,7 @@ namespace SimpleLanguage.VM
                             else
                             {
                                 sval1.SetBoolValue(!isEqual);
-                                //Log.AddVM(EError.None, " VM Compare SVAlue 比较的低码还没有完善!!");
+                                //Log.AddVM(LID.Unknown, " VM Compare SVAlue 比较的低码还没有完善!!");
                             }
 
                         }
@@ -509,7 +509,7 @@ namespace SimpleLanguage.VM
 
             // fallback: already handled objects/classes earlier; default false
             sval1.SetBoolValue(false);
-            Log.AddVM(EError.None, "VM Compare SVAlue 比较的低码还没有完善!!");
+            Log.AddVM(LID.Unknown, "VM Compare SVAlue 比较的低码还没有完善!!");
         }
 
 

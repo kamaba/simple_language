@@ -45,7 +45,6 @@ namespace SimpleLanguage.Core
         public MetaType realMetaType => m_RealMetaType;
         public MetaClass ownerMetaClass => m_OwnerMetaClass;
         public MetaVariable sourceMetaVariable => m_SourceMetaVariable;
-        public Token pingToken => m_PintTokenList.Count > 0 ? m_PintTokenList[0] : null;
 
         private Token m_VariableNameToken = null;
 
@@ -55,7 +54,6 @@ namespace SimpleLanguage.Core
         protected MetaType m_DefineMetaType = null;
         protected MetaType m_RealMetaType = null;
         protected EVariableFrom m_VariableFrom;
-        protected List<Token> m_PintTokenList = new List<Token>();
         protected bool m_IsParsed = false;
         protected bool m_IsStatic = false;
         protected bool m_IsConst = false;
@@ -240,30 +238,6 @@ namespace SimpleLanguage.Core
                 return m_RealMetaType.metaClass;
             }
         }
-        public void AddPingToken( string path, int beginline, int beginpos, int endline, int endpos )
-        {
-            var pingToken = new Token(path, ETokenType.None, "", beginline, beginpos);
-            pingToken.SetSrouceEnd( endline, endpos );
-
-            var find1 = m_PintTokenList.Find( a=> a.sourceBeginLine == beginline && a.sourceBeginChar == beginpos );
-            if( find1 == null )
-            {
-                m_PintTokenList.Add(pingToken);
-            }
-        }
-        public void AddPingToken( Token token )
-        {
-            var find1 = m_PintTokenList.Find(
-                a => a.sourceBeginLine == token.sourceBeginLine
-                && a.sourceBeginChar == token.sourceBeginChar
-                && a.sourceEndLine == token.sourceEndLine
-                && a.sourceEndChar == token.sourceEndChar
-                && a.path == token.path );
-            if (find1 == null)
-            {
-                m_PintTokenList.Add(token);
-            }
-        }
         public void SetDefineMetaClass(MetaClass defineClass)
         {
             m_DefineMetaType.SetMetaClass(defineClass);
@@ -394,7 +368,7 @@ namespace SimpleLanguage.Core
             {
                 if (mvv == null && string.IsNullOrEmpty(m_AtName))
                 {
-                    Log.AddInStructMeta(EError.None, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
                     return;
                 }
                 m_VisitExpressNode = new MetaCallLinkExpressNode(mvv);
@@ -425,7 +399,7 @@ namespace SimpleLanguage.Core
             {
                 if (moe == null && string.IsNullOrEmpty(m_AtName))
                 {
-                    Log.AddInStructMeta(EError.None, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
                     return;
                 }
                 m_VisitExpressNode = moe;

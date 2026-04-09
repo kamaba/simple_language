@@ -1,4 +1,4 @@
-//****************************************************************************
+﻿//****************************************************************************
 //  File:      MetaCallLink.cs
 // ------------------------------------------------
 //  Copyright (c) author: Like Cheng kamaba233@gmail.com
@@ -58,7 +58,7 @@ namespace SimpleLanguage.Core
             // Only allow local usage in the file that defines local{}.
             if (fileMeta.GetFileMetaLocalSyntax() == null)
             {
-                Log.AddInStructMeta(EError.None, "Error 当前文件未定义 local{}，不允许使用 local.xxx" + (first.token != null ? (" " + first.token.ToLexemeAllString()) : ""));
+                Log.AddMetaCoreLog(LID.Unknown, "Error 褰撳墠鏂囦欢鏈畾涔?local{}锛屼笉鍏佽浣跨敤 local.xxx" + (first.token != null ? (" " + first.token.ToLexemeAllString()) : ""));
                 return fmcl;
             }
 
@@ -159,7 +159,7 @@ namespace SimpleLanguage.Core
             var m_FinalMetaCallNode = frontMetaNode;
             if (m_FinalMetaCallNode == null)
             {
-                Log.AddInStructMeta(EError.None, "Error 连接串没有找到合适的节点  360!!!");
+                Log.AddMetaCoreLog(LID.Unknown, "Error 杩炴帴涓叉病鏈夋壘鍒板悎閫傜殑鑺傜偣  360!!!");
             }
             m_FinalMetaCallNode.SetDefineMetaVariable(mv);
         }
@@ -170,7 +170,7 @@ namespace SimpleLanguage.Core
             {
                 if( cn2.fileMetaBracketTermList.Count > 3 )
                 {
-                    Log.AddInStructMeta(EError.None, "Error 数组不能超过三维!!");
+                    Log.AddMetaCoreLog(LID.Unknown, "Error 鏁扮粍涓嶈兘瓒呰繃涓夌淮!!");
                 }
 
                 for (int j = 0; j < cn2.fileMetaBracketTermList.Count; j++)
@@ -192,7 +192,7 @@ namespace SimpleLanguage.Core
             //{
             //    if (cn2.arrayNodeList.Count > 3)
             //    {
-            //        Log.AddInStructMeta(EError.None, "Error 数组不能超过三维!!");
+            //        Log.AddMetaCoreLog(LID.Unknown, "Error 鏁扮粍涓嶈兘瓒呰繃涓夌淮!!");
             //    }
             //    for (int j = 0; j < cn2.arrayNodeList.Count; j++)
             //    {
@@ -231,7 +231,7 @@ namespace SimpleLanguage.Core
                         if (i < m_CallNodeList.Count - 1)
                         {
                             flag = false;
-                            Log.AddInStructMeta(EError.None, "Parse Statement Error 在使用NewClassName的方式，后边不允许有其它的调用!");
+                            Log.AddMetaCoreLog(LID.Unknown, "Parse Statement Error 鍦ㄤ娇鐢∟ewClassName鐨勬柟寮忥紝鍚庤竟涓嶅厑璁告湁鍏跺畠鐨勮皟鐢?");
                         }
                     }
                     if (flag)
@@ -266,7 +266,7 @@ namespace SimpleLanguage.Core
                                     }
                                     else
                                     {
-                                        Log.AddInStructMeta(EError.None, "Parse 使用[][][] 访问超过了数组的维度!");
+                                        Log.AddMetaCoreLog(LID.Unknown, "Parse 浣跨敤[][][] 璁块棶瓒呰繃浜嗘暟缁勭殑缁村害!");
                                     }
                                 }
                             }
@@ -306,8 +306,8 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddInStructMeta(EError.None, "Error 解析执行链出错");
-                Debug.Assert(false, "解析执行链出错");
+                Log.AddMetaCoreLog(LID.Unknown, "Parse execute call-link failed.");
+                Debug.Assert(false, "Parse execute call-link failed.");
                 flag = false;
             }
 
@@ -341,7 +341,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddInStructMeta(EError.None, "解析嵌套expressList 的时候发生了问题!");
+                        Log.AddMetaCoreLog(LID.Unknown, "瑙ｆ瀽宓屽expressList 鐨勬椂鍊欏彂鐢熶簡闂!");
                     }
                     break;
             }
@@ -404,7 +404,7 @@ namespace SimpleLanguage.Core
                         newmv = frontNode.ownerMetaFunctionBlock.GetMetaVariable(name);
                         if (newmv == null)
                         {
-                            Debug.Assert(false, "没有创建const变量!");
+                            Debug.Assert(false, "娌℃湁鍒涘缓const鍙橀噺!");
                             //var mccm = CoreMetaClassManager.GetMetaClassByEType(fvn.constValueExpress.eType);
                             //newmv = new MetaVariable(name, MetaVariable.EVariableFrom.LocalStatement,
                             //frontNode.ownerMetaFunctionBlock, frontNode.metaType.metaClass, new MetaType(mccm));
@@ -455,7 +455,7 @@ namespace SimpleLanguage.Core
                         newmv = frontNode.ownerMetaFunctionBlock.GetMetaVariable(name);
                         if (newmv == null)
                         {
-                            Debug.Assert(false, "没有创建const变量!");
+                            Debug.Assert(false, "娌℃湁鍒涘缓const鍙橀噺!");
                         }
 
                         MetaVisitNode mvn1 = MetaVisitNode.CreateByNewConst(frontNode.ownerMetaClass, frontNode.ownerMetaFunctionBlock,
@@ -562,7 +562,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddInStructMeta(EError.None, "Error 使用NewClass方式，后边不允许跟其它变量相关内容!");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error 浣跨敤NewClass鏂瑰紡锛屽悗杈逛笉鍏佽璺熷叾瀹冨彉閲忕浉鍏冲唴瀹?");
                     }
                 }
                 else if (mcn.callNodeType == ECallNodeType.NewTemplate)
@@ -608,7 +608,7 @@ namespace SimpleLanguage.Core
                 }
                 else if (mcn.callNodeType == ECallNodeType.IteratorVariable)
                 {
-                    Log.AddInStructMeta(EError.None, "Meta Common Parse IteratorVariable----------------------------------------------------");
+                    Log.AddMetaCoreLog(LID.Unknown, "Meta Common Parse IteratorVariable----------------------------------------------------");
                 }
                 else if (mcn.callNodeType == ECallNodeType.DataName)
                 {

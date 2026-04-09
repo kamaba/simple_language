@@ -4,10 +4,12 @@
 - First general instruction
 - Second general instruction
 - Attach FileMeta attribute metadata to the Meta layer first, then enforce via checks at runtime/execute-before/new-class/member access/call sites.
+- Use CSV-driven log definitions with id-based enum mapping and route Debug.Assert/Debug.Write style diagnostics through the centralized Log system.
 
 ## Code Style
 - Use specific formatting rules
 - Follow naming conventions
+- In this repo, LID enum members should use meaningful English names derived from CSV message content, not numeric-style names like Id10000.
 
 ## Project-Specific Rules
 - VM execution order: after loading modules, first initialize `globalStaticVariableList`, then execute its initialization expressions, and finally execute main.

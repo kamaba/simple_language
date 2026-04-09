@@ -1,4 +1,4 @@
-//****************************************************************************
+﻿//****************************************************************************
 //  File:      SValue.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -37,9 +37,9 @@ namespace SimpleLanguage.VM
         {
             if (isNull) return null;
 
-            // NativeBridge/BridgeObject 参数落地：VM 侧将 BridgeObject 实例解析成目标 CLR 类型。
-            // BridgeObject 在 Front 里通过 _init_(string type) 作为“参数描述符”传入，
-            // 在 VM 运行时通常会被写入某个可读成员变量（常见为 `type`），因此这里做对称转换。
+            // NativeBridge/BridgeObject 鍙傛暟钀藉湴锛歏M 渚у皢 BridgeObject 瀹炰緥瑙ｆ瀽鎴愮洰鏍?CLR 绫诲瀷銆?
+            // BridgeObject 鍦?Front 閲岄€氳繃 _init_(string type) 浣滀负鈥滃弬鏁版弿杩扮鈥濅紶鍏ワ紝
+            // 鍦?VM 杩愯鏃堕€氬父浼氳鍐欏叆鏌愪釜鍙鎴愬憳鍙橀噺锛堝父瑙佷负 `type`锛夛紝鍥犳杩欓噷鍋氬绉拌浆鎹€?
             if (sobject is ClassObject co && IsBridgeObjectRuntime(co.runtimeClass))
             {
                 if (TryExtractBridgeObjectPayload(co, out var payloadObj))
@@ -51,7 +51,7 @@ namespace SimpleLanguage.VM
 
                     if (targetType.IsInstanceOfType(payloadObj)) return payloadObj;
 
-                    // BridgeObject 里的值常常是字符串形式（例如 BridgeObject(123) 会落为 "123"）
+                    // BridgeObject 閲岀殑鍊煎父甯告槸瀛楃涓插舰寮忥紙渚嬪 BridgeObject(123) 浼氳惤涓?"123"锛?
                     if (payloadObj is string payloadStr)
                     {
                         if (targetType == typeof(int) && int.TryParse(payloadStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i))
@@ -69,7 +69,7 @@ namespace SimpleLanguage.VM
                         }
                     }
 
-                    // 最后兜底：尝试系统转换（对部分数值/枚举可能有效）
+                    // 鏈€鍚庡厹搴曪細灏濊瘯绯荤粺杞崲锛堝閮ㄥ垎鏁板€?鏋氫妇鍙兘鏈夋晥锛?
                     if (targetType.IsEnum)
                     {
                         try { return Enum.ToObject(targetType, payloadObj); } catch { /* ignore */ }
@@ -104,7 +104,7 @@ namespace SimpleLanguage.VM
             var vars = rc.nonStaticIRMetaVariableList;
             if (vars == null || vars.Count == 0) return false;
 
-            // _init_ 参数名是 `type`，因此优先读这个成员变量；如果不存在，则退化为读取第一个成员变量。
+            // _init_ 鍙傛暟鍚嶆槸 `type`锛屽洜姝や紭鍏堣杩欎釜鎴愬憳鍙橀噺锛涘鏋滀笉瀛樺湪锛屽垯閫€鍖栦负璇诲彇绗竴涓垚鍛樺彉閲忋€?
             int index = -1;
             for (int i = 0; i < vars.Count; i++)
             {
@@ -329,7 +329,7 @@ namespace SimpleLanguage.VM
             isNull = false;
 
 
-            Log.AddVM(EError.None, "SetStringValue" + val );
+            Log.AddVM(LID.Unknown, "SetStringValue" + val );
         }
 
         public void SetValue(SObject val)
@@ -730,7 +730,7 @@ namespace SimpleLanguage.VM
                     break;
                 default:
                     {
-                        Debug.Write("Error 异常类型在ConvertByEType中");
+                        Debug.Write("Error 寮傚父绫诲瀷鍦–onvertByEType涓");
                     }
                     break;
             }

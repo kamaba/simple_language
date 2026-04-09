@@ -1,4 +1,4 @@
-//****************************************************************************
+﻿//****************************************************************************
 //  File:      IRExpress.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -221,7 +221,7 @@ namespace SimpleLanguage.IR
                     break;
                 default:
                     {
-                        Debug.Assert( false, "Error IR表达式错误!!");
+                        Debug.Assert( false, "Error IR琛ㄨ揪寮忛敊璇?!");
                     }
                     break;
             }
@@ -322,7 +322,7 @@ namespace SimpleLanguage.IR
                     var runtimeMethod = irmc.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
                     if (callMethodIndex == -1)
                     {
-                        Log.AddGenIR(EError.None, "没有找到构建对象函数!");
+                        Log.AddIRLog(LID.Unknown, "娌℃湁鎵惧埌鏋勫缓瀵硅薄鍑芥暟!");
                     }
                     List<IRMetaType> functionMtList = new List<IRMetaType>();
                     var irmethodcall = new IRMethodCall(newObjectIRMT, functionMtList, runtimeMethod, paramCount);
@@ -447,7 +447,7 @@ namespace SimpleLanguage.IR
                     var runtimeMethod = irmc.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
                     if (callMethodIndex == -1)
                     {
-                        Log.AddGenIR(EError.None, "没有找到构建对象函数!");
+                        Log.AddIRLog(LID.Unknown, "娌℃湁鎵惧埌鏋勫缓瀵硅薄鍑芥暟!");
                     }
                     List<IRMetaType> functionMtList = new List<IRMetaType>();
                     var irmethodcall = new IRMethodCall(newObjectIRMT, functionMtList, runtimeMethod, paramCount);

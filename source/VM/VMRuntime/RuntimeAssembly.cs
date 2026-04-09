@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -41,7 +41,7 @@ namespace SimpleLanguage.VM
 
             if (!File.Exists(assemblyPath))
             {
-                Log.AddVM(EError.None, $"LoadFromPath: assembly not found: {assemblyPath}");
+                Log.AddVM(LID.Unknown, $"LoadFromPath: assembly not found: {assemblyPath}");
                 return null;
             }
 

@@ -1,4 +1,4 @@
-//****************************************************************************
+ï»¿//****************************************************************************
 //  File:      FileMetaLocalSyntax.cs
 // ------------------------------------------------
 //  Description:  File-level global/local block syntax
@@ -29,7 +29,7 @@ namespace SimpleLanguage.Compile
 
             if (blockNode == null || blockNode.nodeType != ENodeType.Brace)
             {
-                Log.AddInStructFileMeta(EError.None, "Error local ºó±ØĞë¸ú {} ¿é");
+                Log.AddFileMetaLog(LID.Unknown, "Error local åå¿…é¡»è·Ÿ {} å—");
                 return;
             }
 
@@ -49,7 +49,7 @@ namespace SimpleLanguage.Compile
         {
             if (!isLocal)
             {
-                Log.AddInStructFileMeta(EError.None, "Info global{} ½âÎöÒÑ½ûÓÃ£¬µ±Ç°½ö±£Áô local{} Âß¼­");
+                Log.AddFileMetaLog(LID.Unknown, "Info global{} è§£æå·²ç¦ç”¨ï¼Œå½“å‰ä»…ä¿ç•™ local{} é€»è¾‘");
             }
         }
 

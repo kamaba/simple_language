@@ -130,7 +130,7 @@ namespace SimpleLanguage.Compile
             {
                 if (ifSyntax.ifExpressSyntax != null)
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error 不能有多个if语句!!");
+                    Log.AddFileMetaLog(LID.Unknown, "Error 不能有多个if语句!!");
                 }
                 ifSyntax.SetFileMetaConditionExpressSyntax(fms);
             }
@@ -868,14 +868,14 @@ namespace SimpleLanguage.Compile
             Token labelToken = null;
             if (akss.keyContent.Count != 1 )
             {
-                Log.AddInStructFileMeta(EError.None, "Error 解析Goto Label语法，只支持 goto id;的语法!!");
+                Log.AddFileMetaLog(LID.Unknown, "Error 解析Goto Label语法，只支持 goto id;的语法!!");
             }
             else
             {
                 labelToken = akss.keyContent[0].token;
                 if (labelToken.type != ETokenType.Identifier)
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error 解析GotoLabel中 后边必须使用普通字符");
+                    Log.AddFileMetaLog(LID.Unknown, "Error 解析GotoLabel中 后边必须使用普通字符");
                 }
             }
             var fms = new FileMetaKeyGotoLabelSyntax( fm, cnode.token, labelToken);

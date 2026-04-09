@@ -223,7 +223,7 @@ namespace SimpleLanguage.VM
             {
                 if( m_IRRuntimeMethod == null )
                 {
-                    Log.AddVM(EError.None, "------------没有找到调用的方法体!!");
+                    Log.AddVM(LID.Unknown, "------------没有找到调用的方法体!!");
                     return;
                 }
 

@@ -102,7 +102,7 @@ namespace SimpleLanguage.Core
 
             if (fmte == null)
             {
-                Log.AddInStructMeta(EError.None, "CreateExpressNode FileMetaBaseTerm 为空 !!");
+                Log.AddMetaCoreLog(LID.Unknown, "CreateExpressNode FileMetaBaseTerm 为空 !!");
                 return null;
             }
 
@@ -131,7 +131,7 @@ namespace SimpleLanguage.Core
             }
             else if( ifExpressTerm != null )
             {
-                Log.AddInStructMeta(EError.None, "不允许使用If语句!!");
+                Log.AddMetaCoreLog(LID.Unknown, "不允许使用If语句!!");
                 return null;
             }
 
@@ -149,7 +149,7 @@ namespace SimpleLanguage.Core
             }
             else if (switchExpressTerm != null)
             {
-                Log.AddInStructMeta(EError.None, "不允许使用Switch语句!!");
+                Log.AddMetaCoreLog(LID.Unknown, "不允许使用Switch语句!!");
                 return null;
             }
 
@@ -166,7 +166,7 @@ namespace SimpleLanguage.Core
             //}
             //else if (parExpressTerm != null)
             //{
-            //    Log.AddInStructMeta(EError.None, "不允许使用Switch语句!!");
+            //    Log.AddMetaCoreLog(LID.Unknown, "不允许使用Switch语句!!");
             //    return null;
             //}
 
@@ -188,7 +188,7 @@ namespace SimpleLanguage.Core
 
                     case FileMetaSymbolTerm fmst:
                         {
-                            Log.AddInStructMeta(EError.None, "Error CreateExpressNode 创建表达项不能为符号");
+                            Log.AddMetaCoreLog(LID.Unknown, "Error CreateExpressNode 创建表达项不能为符号");
                         }
                         break;
                     case FileMetaAsOrIsTerm fmaoit:
@@ -260,7 +260,7 @@ namespace SimpleLanguage.Core
                             return maen;
                         }
                     default:
-                        Log.AddInStructMeta(EError.None, "Error CreateExpressNode 创建表达项不能为符号");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error CreateExpressNode 创建表达项不能为符号");
                         break;
                 }
             }
@@ -280,7 +280,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddInStructMeta(EError.None, " Error VisitFileMetaExpress fileMetaNode 不是符号!!");
+                        Log.AddMetaCoreLog(LID.Unknown, " Error VisitFileMetaExpress fileMetaNode 不是符号!!");
                     }
                 }
                 else if (leftNode != null && rightNode == null)
@@ -307,7 +307,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddInStructMeta(EError.None, " Error VisitFileMetaExpress left and right都为空!!");
+                    Log.AddMetaCoreLog(LID.Unknown, " Error VisitFileMetaExpress left and right都为空!!");
                 }
                 return null;
             }
@@ -356,7 +356,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddInStructMeta(EError.None, "Error Optimaze don't support that ExpressType");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error Optimaze don't support that ExpressType");
                     }
                     break;
             }

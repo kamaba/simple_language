@@ -93,7 +93,7 @@ namespace SimpleLanguage.IR
             else
             {
                 Debug.Assert(false);
-                Log.AddGenIR(EError.None, "IRMetaVariable 没有找到对应的from ");
+                Log.AddIRLog(LID.Unknown, "IRMetaVariable 没有找到对应的from ");
             }
             IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
             //if( mv.isDefineMetaType )

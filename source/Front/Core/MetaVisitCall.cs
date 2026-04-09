@@ -1,4 +1,4 @@
-//****************************************************************************
+﻿//****************************************************************************
 //  File:      MetaVisitCall.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -36,9 +36,9 @@ namespace SimpleLanguage.Core
         // which results in empty m_MetaInputParamList and missing args in Meta.txt.
         // Keep the parsed input param collection so we can still print args.
         private MetaInputParamCollection? m_InputParamCollectionForDebug = null;
-        //模板或者是调用时的函数
+        //妯℃澘鎴栬€呮槸璋冪敤鏃剁殑鍑芥暟
         protected MetaFunction m_VMCallMetaFunction = null;
-        //真实的成员函数
+        //鐪熷疄鐨勬垚鍛樺嚱鏁?
         protected MetaMemberFunction m_MetaMemberFunction = null;
         protected List<MetaExpressNode> m_MetaInputParamList = new List<MetaExpressNode>();
         protected List<MetaType> m_MetaFunctionInputTemplateList = new List<MetaType>();
@@ -338,7 +338,7 @@ namespace SimpleLanguage.Core
         protected MetaType m_ReturnMetaType = null;
         protected MetaClass m_OwnerMetaClass = null;
         protected MetaTemplate m_MetaTemplate = null;
-        protected MetaType m_CallMetaType = null; //该变量，一般是为 T t = new() 这种情况准备的
+        protected MetaType m_CallMetaType = null; //璇ュ彉閲忥紝涓€鑸槸涓?T t = new() 杩欑鎯呭喌鍑嗗鐨?
 
         public static MetaVisitNode CreateByVisitMetaClass(MetaType mt)
         {
@@ -676,7 +676,7 @@ namespace SimpleLanguage.Core
                     }
                 default:
                     {
-                        Log.AddInStructMeta(EError.None, "Error ---------" + visitType.ToString() );
+                        Log.AddMetaCoreLog(LID.Unknown, "Error ---------" + visitType.ToString() );
                     }
                     break;
             }
@@ -687,7 +687,7 @@ namespace SimpleLanguage.Core
             var mt = GetMetaType();
             if( mt == null )
             {
-                Log.AddInStructMeta(EError.None, "Error");
+                Log.AddMetaCoreLog(LID.Unknown, "Error");
                 return null;
             }
             return mt.metaClass;
@@ -723,7 +723,7 @@ namespace SimpleLanguage.Core
                     }
                 default:
                     {
-                        Log.AddInStructMeta(EError.None, "Error MetaVisiCall IsNull!");
+                        Log.AddMetaCoreLog(LID.Unknown, "Error MetaVisiCall IsNull!");
                     }
                     break;
             }

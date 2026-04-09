@@ -2,52 +2,120 @@ using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace SimpleLanguage.Logging
 {
-    /// <summary>
-    /// Central access point for per-module loggers and initialization.
-    /// Call Initialize to load definitions before logging occurs.
-    /// </summary>
+    public sealed class LogRuntimeOptions
+    {
+        public bool EnableAssertFeature { get; set; } = true;
+        public bool BlockOnAssert { get; set; } = true;
+        public bool BlockOnError { get; set; } = false;
+        public bool AbortCompilationOnAssert { get; set; } = true;
+        public bool AbortCompilationOnError { get; set; } = false;
+    }
+
     public class LogManager
     {
-        private static readonly ConcurrentDictionary<ErrorModule, ModuleLogger> _loggers = new ConcurrentDictionary<ErrorModule, ModuleLogger>();
+        private static readonly ConcurrentDictionary<LogModule, ModuleLogger> _loggers = new ConcurrentDictionary<LogModule, ModuleLogger>();
+        private static readonly ConcurrentQueue<Diagnostic> _diagnostics = new ConcurrentQueue<Diagnostic>();
+        private static LogRuntimeOptions _options = new LogRuntimeOptions();
+        private static int s_DebugListenerAttached = 0;
 
-        /// <summary>
-        /// Obtain a logger for a specific logical module.
-        /// The returned logger implements formatting, diagnostic construction and abort behaviour.
-        /// </summary>
-        public static ModuleLogger GetLogger(ErrorModule module)
+        static LogManager()
+        {
+            EnsureBuiltinDefinitions();
+            AttachDebugTraceBridge();
+        }
+
+        public static LogRuntimeOptions Options => _options;
+
+        public static void Configure(LogRuntimeOptions options)
+        {
+            if (options != null)
+            {
+                _options = options;
+            }
+        }
+
+        public static ModuleLogger GetLogger(LogModule module)
         {
             return _loggers.GetOrAdd(module, m => new ModuleLogger(m));
         }
 
-        /// <summary>
-        /// Load the error registry from a CSV file. Should be called once during startup.
-        /// </summary>
         public static void Initialize(string csvPath)
         {
             ErrorRegistry.Instance.LoadFromCsv(csvPath);
+            EnsureBuiltinDefinitions();
+            AttachDebugTraceBridge();
+        }
+
+        private static void EnsureBuiltinDefinitions()
+        {
+            if (!ErrorRegistry.Instance.TryGet((int)LID.Unknown, out _))
+            {
+                ErrorRegistry.Instance.Register(new ErrorDefinition()
+                {
+                    Id = (int)LID.Unknown,
+                    Module = LogModule.Project,
+                    LogType = LogType.Error,
+                    EnableAssert = true,
+                    BlockOnErrorAssert = false,
+                    AbortCompilation = false,
+                    DisplayType = ErrorDisplayType.Direct,
+                    ParamCount = 1,
+                    MessageTemplate = "{0}",
+                    FixHint = "查看调用栈并在对应模块补充明确的错误码定义。",
+                });
+            }
+        }
+
+        private static void AttachDebugTraceBridge()
+        {
+            if (System.Threading.Interlocked.Exchange(ref s_DebugListenerAttached, 1) == 1)
+            {
+                return;
+            }
+
+            var listener = new DebugLogTraceListener();
+            bool exists = false;
+            foreach (TraceListener item in Trace.Listeners)
+            {
+                if (item is DebugLogTraceListener)
+                {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists)
+            {
+                Trace.Listeners.Add(listener);
+            }
+        }
+
+        internal static void AddDiagnostic(Diagnostic diag)
+        {
+            if (diag != null)
+            {
+                _diagnostics.Enqueue(diag);
+            }
+        }
+
+        public static Diagnostic[] GetDiagnosticsSnapshot()
+        {
+            return _diagnostics.ToArray();
         }
     }
 
-    /// <summary>
-    /// Module-specific logger implementing the small ILogger API.
-    /// It resolves ErrorDefinition by id and creates Diagnostics. If the definition
-    /// requests aborting the current module the logger throws CompilationAbortException.
-    /// </summary>
     public class ModuleLogger : ILogger
     {
-        private readonly ErrorModule _module;
-        public ModuleLogger(ErrorModule module)
+        private readonly LogModule _module;
+        public ModuleLogger(LogModule module)
         {
             _module = module;
         }
 
-        /// <summary>
-        /// Log an error by id and optional formatting arguments.
-        /// If the ErrorDefinition specifies AbortCurrent or severity Assert this will throw.
-        /// </summary>
         public void Log(int errorId, params object[] args)
         {
             if (!ErrorRegistry.Instance.TryGet(errorId, out var def))
@@ -55,70 +123,67 @@ namespace SimpleLanguage.Logging
                 Console.WriteLine($"Unknown error id:{errorId}");
                 return;
             }
-            var msg = FormatMessage(def, null, args);
+            var msg = FormatMessage(def, args);
             var diag = new Diagnostic()
             {
                 Id = def.Id,
-                Severity = def.Severity,
+                LogType = def.LogType,
                 Module = def.Module,
                 Message = msg,
                 FixHint = def.FixHint
             };
             Console.WriteLine(diag.ToString());
+            LogManager.AddDiagnostic(diag);
 
-            if (def.AbortCurrent || def.Severity == ErrorSeverity.Assert)
-            {
-                throw new CompilationAbortException(def.Id, msg);
-            }
+            HandleBlocking(def, msg);
         }
 
-        /// <summary>
-        /// Log an error associated with a Token. The token's file and location are embedded into the Diagnostic.
-        /// </summary>
-        public void LogWithToken(int errorId, Token token, params object[] args)
+        public void LogWithToken(int errorId, object token, params object[] args)
         {
             if (!ErrorRegistry.Instance.TryGet(errorId, out var def))
             {
                 Console.WriteLine($"Unknown error id:{errorId}");
                 return;
             }
-            var msg = FormatMessage(def, token, args);
+            var tokenInfo = ExtractTokenInfo(token);
+            var msg = FormatMessage(def, args);
             var diag = new Diagnostic()
             {
                 Id = def.Id,
-                Severity = def.Severity,
+                LogType = def.LogType,
                 Module = def.Module,
                 Message = msg,
                 FixHint = def.FixHint,
-                FilePath = token?.path,
-                StartLine = token?.sourceBeginLine ?? 0,
-                StartChar = token?.sourceBeginChar ?? 0,
-                EndLine = token?.sourceEndLine ?? 0,
-                EndChar = token?.sourceEndChar ?? 0,
-                Token = token
+                FilePath = tokenInfo.Path,
+                StartLine = tokenInfo.StartLine,
+                StartChar = tokenInfo.StartChar,
+                EndLine = tokenInfo.EndLine,
+                EndChar = tokenInfo.EndChar,
+                Token = token,
+                TokenSummary = tokenInfo.Summary,
             };
             Console.WriteLine(diag.ToString());
+            LogManager.AddDiagnostic(diag);
 
-            if (def.AbortCurrent || def.Severity == ErrorSeverity.Assert)
-            {
-                throw new CompilationAbortException(def.Id, msg);
-            }
+            HandleBlocking(def, msg);
         }
 
-        /// <summary>
-        /// Force an assert (throws CompilationAbortException unconditionally).
-        /// </summary>
         public void Assert(int errorId, params object[] args)
         {
             if (!ErrorRegistry.Instance.TryGet(errorId, out var def))
             {
                 throw new CompilationAbortException(errorId, "Unknown assert error");
             }
-            var msg = FormatMessage(def, null, args);
-            throw new CompilationAbortException(def.Id, msg);
+            if (!LogManager.Options.EnableAssertFeature || !def.EnableAssert)
+            {
+                Log(errorId, args);
+                return;
+            }
+            var msg = FormatMessage(def, args);
+            throw new CompilationAbortException(def.Id, msg, true);
         }
 
-        private static string FormatMessage(ErrorDefinition def, Token token, object[] args)
+        private static string FormatMessage(ErrorDefinition def, object[] args)
         {
             string msg = def.MessageTemplate;
             try
@@ -127,17 +192,103 @@ namespace SimpleLanguage.Logging
                 {
                     msg = string.Format(CultureInfo.InvariantCulture, def.MessageTemplate, args);
                 }
-                if (def.DisplayType == ErrorDisplayType.TokenDisplay && token != null)
-                {
-                    //msg = token.ToLexemeAllString() + " " + msg;
-                }
             }
             catch
             {
-                // formatting fallback
                 msg = def.MessageTemplate + " [format error]";
             }
             return msg;
+        }
+
+        private static void HandleBlocking(ErrorDefinition def, string message)
+        {
+            bool isAssert = def.LogType == LogType.Assert;
+            bool isError = def.LogType == LogType.Error;
+
+            if (isAssert && (!LogManager.Options.EnableAssertFeature || !def.EnableAssert))
+            {
+                return;
+            }
+
+            bool shouldBlockCurrent = def.BlockOnErrorAssert
+                || (isAssert && LogManager.Options.BlockOnAssert)
+                || (isError && LogManager.Options.BlockOnError);
+
+            bool shouldAbortCompilation = def.AbortCompilation
+                || (isAssert && LogManager.Options.AbortCompilationOnAssert)
+                || (isError && LogManager.Options.AbortCompilationOnError);
+
+            if (shouldBlockCurrent || shouldAbortCompilation)
+            {
+                throw new CompilationAbortException(def.Id, message, shouldAbortCompilation);
+            }
+        }
+
+        private static TokenInfo ExtractTokenInfo(object token)
+        {
+            if (token == null)
+            {
+                return TokenInfo.Empty;
+            }
+
+            string path = ReadProperty<string>(token, "path") ?? string.Empty;
+            int sLine = ReadProperty<int>(token, "sourceBeginLine");
+            int sChar = ReadProperty<int>(token, "sourceBeginChar");
+            int eLine = ReadProperty<int>(token, "sourceEndLine");
+            int eChar = ReadProperty<int>(token, "sourceEndChar");
+            object lexeme = ReadProperty<object>(token, "lexeme");
+            object type = ReadProperty<object>(token, "type");
+
+            string summary = string.Empty;
+            if (lexeme != null || type != null)
+            {
+                summary = $"[Token lexeme={lexeme}, type={type}]";
+            }
+
+            return new TokenInfo(path, sLine, sChar, eLine, eChar, summary);
+        }
+
+        private static T ReadProperty<T>(object obj, string name)
+        {
+            try
+            {
+                var p = obj.GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+                if (p == null) return default;
+                var val = p.GetValue(obj);
+                if (val == null) return default;
+
+                if (val is T matched)
+                {
+                    return matched;
+                }
+                return (T)Convert.ChangeType(val, typeof(T), CultureInfo.InvariantCulture);
+            }
+            catch
+            {
+                return default;
+            }
+        }
+
+        private readonly struct TokenInfo
+        {
+            public static TokenInfo Empty => new TokenInfo(string.Empty, 0, 0, 0, 0, string.Empty);
+
+            public TokenInfo(string path, int sLine, int sChar, int eLine, int eChar, string summary)
+            {
+                Path = path;
+                StartLine = sLine;
+                StartChar = sChar;
+                EndLine = eLine;
+                EndChar = eChar;
+                Summary = summary;
+            }
+
+            public string Path { get; }
+            public int StartLine { get; }
+            public int StartChar { get; }
+            public int EndLine { get; }
+            public int EndChar { get; }
+            public string Summary { get; }
         }
     }
 }

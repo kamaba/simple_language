@@ -150,7 +150,7 @@ namespace SimpleLanguage.Project
                         // 已有同名子节点，要求其必须是命名空间节点
                         if (!cfindNode.isMetaNamespace)
                         {
-                            Log.AddInStructMeta(EError.None, "Error 解析namespace添加命名空间节点时，发现已有定义类!!");
+                            Log.AddMetaCoreLog(LID.Unknown, "Error 解析namespace添加命名空间节点时，发现已有定义类!!");
                             return;
                         }
                         // 复用已有命名空间节点

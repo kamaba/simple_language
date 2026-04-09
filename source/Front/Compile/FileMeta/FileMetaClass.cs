@@ -88,7 +88,7 @@ namespace SimpleLanguage.Compile
         {
             if (m_NodeList.Count == 0)
             {
-                Log.AddInStructFileMeta(EError.None, "Error 错误 !!!");
+                Log.AddFileMetaLog(LID.Unknown, "Error 错误 !!!");
                 return false;
             }
 
@@ -118,16 +118,16 @@ namespace SimpleLanguage.Compile
                         {
                             if(m_FileMetaExtendClass != null )
                             {
-                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 已有继承类,请勿多重继承!");
+                                Log.AddFileMetaLog(LID.Unknown, "Error 已有继承类,请勿多重继承!");
 
                             }
                             if (fcdList.Count == 0 )
                             {
-                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 继承关键字后边没有相应的内容!");
+                                Log.AddFileMetaLog(LID.Unknown, "Error 继承关键字后边没有相应的内容!");
                             }
                             if (fcdList.Count > 1)
                             {
-                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 继承只能单继承，不能多继承!!");
+                                Log.AddFileMetaLog(LID.Unknown, "Error 继承只能单继承，不能多继承!!");
                             }
                             m_FileMetaExtendClass = fcdList[0];
                         }
@@ -135,7 +135,7 @@ namespace SimpleLanguage.Compile
                         {
                             if (fcdList.Count == 0)
                             {
-                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "接口关键字后边没有相应的内容!");
+                                Log.AddFileMetaLog(LID.Unknown, "接口关键字后边没有相应的内容!");
                             }
                             m_InterfaceClassList.AddRange(fcdList);
                         }
@@ -144,10 +144,10 @@ namespace SimpleLanguage.Compile
                     {
                         if (classNameTokenList.Count > 0)
                         {
-                            Log.AddInStructFileMeta(EError.StructClassNameRepeat, "Error 字符两次赋值 107");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 字符两次赋值 107");
                             for (int i = 0; i < classNameTokenList.Count; i++)
                             {
-                                Log.AddInStructFileMeta(EError.None, classNameTokenList[i].lexeme.ToString());
+                                Log.AddFileMetaLog(LID.Unknown, classNameTokenList[i].lexeme.ToString());
                             }
                         }
                         classNameTokenList = cnode.linkTokenList;
@@ -171,7 +171,7 @@ namespace SimpleLanguage.Compile
                                 {
                                     if(templateNode == null )
                                     {
-                                        var ld = Log.AddInStructFileMeta(EError.None, "没有找到模板定义T");
+                                        var ld = Log.AddFileMetaLog(LID.Unknown, "没有找到模板定义T");
                                         ld.filePath = cnode2.token.path;
                                         ld.sourceBeginLine = cnode2.token.sourceBeginLine;
                                         break;
@@ -208,7 +208,7 @@ namespace SimpleLanguage.Compile
                                 }
                                 else
                                 {
-                                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 不支持其它格式 在类后续的模板限定中!");
+                                    Log.AddFileMetaLog(LID.Unknown, "Error 不支持其它格式 在类后续的模板限定中!");
                                 }
                             }
                             addCount = cAddCount;
@@ -230,7 +230,7 @@ namespace SimpleLanguage.Compile
                         else
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次权限!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次权限!!");
                         }
                     }
                     else if (token.type == ETokenType.Const)
@@ -242,7 +242,7 @@ namespace SimpleLanguage.Compile
                         else
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Const!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次Const!!");
                         }
                     }
                     else if (token.type == ETokenType.Partial)
@@ -250,7 +250,7 @@ namespace SimpleLanguage.Compile
                         if (m_PartialToken != null)
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Class!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次Class!!");
                         }
                         m_PartialToken = token;
                     }
@@ -259,7 +259,7 @@ namespace SimpleLanguage.Compile
                         if (m_AbstractToken != null)
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Abstract!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次Abstract!!");
                         }
                         m_AbstractToken = token;
                     }
@@ -268,17 +268,17 @@ namespace SimpleLanguage.Compile
                         if (m_EnumToken != null)
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Enum!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次Enum!!");
                         }
                         if (m_DataToken != null)
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次data!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次data!!");
                         }
                         if (m_ClassToken != null)
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Class!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次Class!!");
                         }
                         m_ClassToken = token;
                     }
@@ -287,17 +287,17 @@ namespace SimpleLanguage.Compile
                         if (m_EnumToken != null)
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Enum!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次Enum!!");
                         }
                         if (m_DataToken != null)
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次data!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次data!!");
                         }
                         if (m_ClassToken != null)
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Class!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次Class!!");
                         }
                         m_EnumToken = token;
                     }
@@ -306,19 +306,19 @@ namespace SimpleLanguage.Compile
                         if (m_EnumToken != null)
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Enum!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次Enum!!");
                         }
                         else
                         {
                             if (m_DataToken != null)
                             {
                                 isError = true;
-                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次data!!");
+                                Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次data!!");
                             }
                             if (m_ClassToken != null)
                             {
                                 isError = true;
-                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Class!!");
+                                Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次Class!!");
                             }
                             m_DataToken = token;
                         }
@@ -328,7 +328,7 @@ namespace SimpleLanguage.Compile
                         if (m_ExtendsToken != null)
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Extend!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次Extend!!");
                         }
                         m_ExtendsToken = token;
                     }
@@ -337,24 +337,24 @@ namespace SimpleLanguage.Compile
                         if (m_EnumToken != null)
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次Enum!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次Enum!!");
                         }
                         if (m_DataToken != null)
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析过了一次data!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次data!!");
                         }
                         if (classNameTokenList.Count > 0 )    //后置
                         {
                             if (m_PreInterfaceToken != null)
                             {
                                 isError = true;
-                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
+                                Log.AddFileMetaLog(LID.Unknown, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
                             }
                             if (m_SufInterfaceToken != null)
                             {
                                 isError = true;
-                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
+                                Log.AddFileMetaLog(LID.Unknown, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
                             }
                             m_SufInterfaceToken = token;
 
@@ -364,17 +364,17 @@ namespace SimpleLanguage.Compile
                             if (m_ClassToken != null)
                             {
                                 isError = true;
-                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析interface与class不可以周时出现!!");
+                                Log.AddFileMetaLog(LID.Unknown, "Error 解析interface与class不可以周时出现!!");
                             }
                             if (m_PreInterfaceToken != null)
                             {
                                 isError = true;
-                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
+                                Log.AddFileMetaLog(LID.Unknown, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
                             }
                             if (m_SufInterfaceToken != null)
                             {
                                 isError = true;
-                                Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
+                                Log.AddFileMetaLog(LID.Unknown, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
                             }
                             m_PreInterfaceToken = token;
                         }
@@ -386,7 +386,7 @@ namespace SimpleLanguage.Compile
                     else
                     {
                         isError = true; 
-                        Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 有其它未知类型在class中");
+                        Log.AddFileMetaLog(LID.Unknown, "Error 有其它未知类型在class中");
                         break;
                     }
                 }
@@ -397,23 +397,23 @@ namespace SimpleLanguage.Compile
             {
                 if (m_PreInterfaceToken != null)
                 {
-                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Enum方式，与enum同级，不允许同时出现");
+                    Log.AddFileMetaLog(LID.Unknown, "Error Enum方式，与enum同级，不允许同时出现");
                     return false;
                 }
                 if (m_SufInterfaceToken != null)
                 {
-                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Enum方式，不支持接口方式");
-                    Log.AddInStructFileMeta(EError.None, "");
+                    Log.AddFileMetaLog(LID.Unknown, "Error Enum方式，不支持接口方式");
+                    Log.AddFileMetaLog(LID.Unknown, "");
                     return false;
                 }
                 if (permissionToken != null)
                 {
-                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Enum方式，不支持权限的使用!!");
+                    Log.AddFileMetaLog(LID.Unknown, "Error Enum方式，不支持权限的使用!!");
                     return false;
                 }
                 if (m_PartialToken != null)
                 {
-                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Enum方式，不支持partial的使用!!");
+                    Log.AddFileMetaLog(LID.Unknown, "Error Enum方式，不支持partial的使用!!");
                     return false;
                 }
 
@@ -422,22 +422,22 @@ namespace SimpleLanguage.Compile
             {
                 if (m_PreInterfaceToken != null)
                 {
-                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Enum方式，与data同级，不允许同时出现");
+                    Log.AddFileMetaLog(LID.Unknown, "Error Enum方式，与data同级，不允许同时出现");
                     return false;
                 }
                 if (m_SufInterfaceToken != null)
                 {
-                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Enum方式，不支持接口方式");
+                    Log.AddFileMetaLog(LID.Unknown, "Error Enum方式，不支持接口方式");
                     return false;
                 }
                 if (permissionToken != null)
                 {
-                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Data方式，不支持权限的使用!!");
+                    Log.AddFileMetaLog(LID.Unknown, "Error Data方式，不支持权限的使用!!");
                     return false;
                 }
                 if (m_PartialToken != null)
                 {
-                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error Data方式，不支持partial的使用!!");
+                    Log.AddFileMetaLog(LID.Unknown, "Error Data方式，不支持partial的使用!!");
                     return false;
                 }
 
@@ -447,7 +447,7 @@ namespace SimpleLanguage.Compile
 
                 if (classNameTokenList.Count == 0)
                 {
-                    Log.AddInStructFileMeta(EError.StructFileMetaStart, "Error 解析类型名称错误!!");
+                    Log.AddFileMetaLog(LID.Unknown, "Error 解析类型名称错误!!");
                 }                
             }
             m_Token = classNameTokenList[classNameTokenList.Count - 1];
@@ -567,7 +567,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error 不支持其它格式 在类后续的模板限定中!");
+                    Log.AddFileMetaLog(LID.Unknown, "Error 不支持其它格式 在类后续的模板限定中!");
                 }
                 cAddCount++;
             }

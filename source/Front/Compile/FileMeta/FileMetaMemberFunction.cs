@@ -44,7 +44,7 @@ namespace SimpleLanguage.Compile
 
             if (!FileMetatUtil.SplitNodeList(nodeList, listDefieNode, valueNodeList, ref m_AssignToken))
             {
-                Log.AddInStructFileMeta(EError.None, "Error 解析NodeList出现错误~~~");
+                Log.AddFileMetaLog(LID.Unknown, "Error 解析NodeList出现错误~~~");
                 return false;
             }
             if(valueNodeList.Count > 0 )
@@ -55,12 +55,12 @@ namespace SimpleLanguage.Compile
             Node typeNode = null;
             if (!GetNameAndTypeNode(listDefieNode, ref nameNode, ref typeNode, ref m_ParamsToken ))
             {
-                Log.AddInStructFileMeta( EError.UnMatchChar, "Error 没有找到该定义名称 必须使用例: X = 102; 的格式");
+                Log.AddFileMetaLog( LID.Unknown, "Error 没有找到该定义名称 必须使用例: X = 102; 的格式");
                 return false;
             }
             if (nameNode == null)
             {
-                Log.AddInStructFileMeta(EError.None, "Error 没有找到该定义名称 必须使用例: X = 101; 的格式");
+                Log.AddFileMetaLog(LID.Unknown, "Error 没有找到该定义名称 必须使用例: X = 101; 的格式");
                 return false;
             }
             m_Token = nameNode?.token;
@@ -256,7 +256,7 @@ namespace SimpleLanguage.Compile
                     {
                         if(funNameNode != null )
                         {
-                            Log.AddInStructFileMeta( EError.UnMatchChar, "Error 已有函数实体，不能同时出现两个函数实体!");
+                            Log.AddFileMetaLog( LID.Unknown, "Error 已有函数实体，不能同时出现两个函数实体!");
                         }
                         funNameNode = cnode;
                     }
@@ -280,7 +280,7 @@ namespace SimpleLanguage.Compile
                         else
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.None, "Error 解析过了一次权限!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次权限!!");
                         }
                     }
                     else if (token.type == ETokenType.Override)
@@ -288,7 +288,7 @@ namespace SimpleLanguage.Compile
                         if (virtualToken != null)
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.None, "Error 解析过了一次Override!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次Override!!");
                         }
                         virtualToken = token;
                     }
@@ -297,7 +297,7 @@ namespace SimpleLanguage.Compile
                         if (m_AbstractToken != null)
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.None, "Error 解析过了一次Abstract!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次Abstract!!");
                         }
                         m_AbstractToken = token;
                     }
@@ -310,7 +310,7 @@ namespace SimpleLanguage.Compile
                         if (getToken != null)
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.None, " Error 解析类型多个get");
+                            Log.AddFileMetaLog(LID.Unknown, " Error 解析类型多个get");
                         }
                         getToken = token;
                     }
@@ -319,7 +319,7 @@ namespace SimpleLanguage.Compile
                         if (setToken != null)
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.None, " Error 解析类型多个set");
+                            Log.AddFileMetaLog(LID.Unknown, " Error 解析类型多个set");
                         }
                         setToken = token;
                     }
@@ -332,7 +332,7 @@ namespace SimpleLanguage.Compile
                         if (interfaceToken != null)
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.None, "Error 解析interface已使用过一次，不允许重复使用!!");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 解析interface已使用过一次，不允许重复使用!!");
                         }
                         interfaceToken = token;
                     }
@@ -341,21 +341,21 @@ namespace SimpleLanguage.Compile
                         if(finalToken != null )
                         {
                             isError = true;
-                            Log.AddInStructFileMeta(EError.None, " Error 解析类型多个final");
+                            Log.AddFileMetaLog(LID.Unknown, " Error 解析类型多个final");
                         }
                         finalToken = token;
                     }
                     else
                     {
                         isError = true;
-                        Log.AddInStructFileMeta(EError.None, "Error 有其它未知类型在class中" );
+                        Log.AddFileMetaLog(LID.Unknown, "Error 有其它未知类型在class中" );
                         break;
                     }
                 }
             }
             if(funNameNode == null )
             {
-                Log.AddInStructFileMeta(EError.None, "Eror 没有找到合适的函数类型: 位置: " + nodeList[0].token?.ToLexemeAllString());
+                Log.AddFileMetaLog(LID.Unknown, "Eror 没有找到合适的函数类型: 位置: " + nodeList[0].token?.ToLexemeAllString());
                 return false;
             }
 
@@ -371,7 +371,7 @@ namespace SimpleLanguage.Compile
             }
             if( isError )
             {
-                Log.AddInStructFileMeta(EError.None, "ParseFunction 解析函数");
+                Log.AddFileMetaLog(LID.Unknown, "ParseFunction 解析函数");
             }
             m_OverrideToken = virtualToken;            
             m_PermissionToken = permissionToken;
@@ -432,7 +432,7 @@ namespace SimpleLanguage.Compile
                 FileMetaParamterDefine cdp = new FileMetaParamterDefine(m_FileMeta, nodelist);
                 if (nameSet.Contains(cdp.name))
                 {
-                    Log.AddInStructFileMeta(EError.None, "Error 参数名称有重名!!!");
+                    Log.AddFileMetaLog(LID.Unknown, "Error 参数名称有重名!!!");
                 }
                 AddMetaParamter(cdp);
             }
@@ -454,7 +454,7 @@ namespace SimpleLanguage.Compile
                     FileMetaTemplateDefine cdp = new FileMetaTemplateDefine(m_FileMeta, cnode);
                     if (m_MetaTemplatesList.Find( a=> a.name == cdp.name ) != null )
                     {
-                        Log.AddInStructFileMeta(EError.None, "Error 参数名称有重名!!!");
+                        Log.AddFileMetaLog(LID.Unknown, "Error 参数名称有重名!!!");
                         continue;
                     }
                     AddMetaTemplate(cdp);

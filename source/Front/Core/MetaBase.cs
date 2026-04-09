@@ -6,6 +6,9 @@
 //  Description:  Core MetaBase is a basement class, attribute value has name or tree's deepvalue or tree struct node!
 //****************************************************************************
 
+using SimpleLanguage.Compile;
+using System.Collections.Generic;
+
 namespace SimpleLanguage.Core
 {
     public enum RefFromType
@@ -17,6 +20,8 @@ namespace SimpleLanguage.Core
     public class MetaBase
     {
         public int deep => m_Deep;
+        public Token pingToken => m_PintTokenList.Count > 0 ? m_PintTokenList[0] : null;
+        public List<Token> pingTokenList => m_PintTokenList;
         public int realDeep
         {
             get
@@ -37,6 +42,7 @@ namespace SimpleLanguage.Core
         protected MetaNode m_MetaNode = null;
         protected int m_Deep = 0;
         protected int m_AnchorDeep = 0;
+        protected List<Token> m_PintTokenList = new List<Token>();
 
         public MetaBase()
         {
@@ -49,6 +55,35 @@ namespace SimpleLanguage.Core
             m_RefFromType = mb.m_RefFromType;
             m_Permission = mb.m_Permission;
             m_MetaNode = mb.m_MetaNode;
+            m_PintTokenList = mb.m_PintTokenList;
+        }
+        public void AddPingToken(Token token)
+        {
+            if (token == null)
+            {
+                return;
+            }
+            var find1 = m_PintTokenList.Find(
+                a => a.sourceBeginLine == token.sourceBeginLine
+                && a.sourceBeginChar == token.sourceBeginChar
+                && a.sourceEndLine == token.sourceEndLine
+                && a.sourceEndChar == token.sourceEndChar
+                && a.path == token.path);
+            if (find1 == null)
+            {
+                m_PintTokenList.Add(token);
+            }
+        }
+        public void AddPingToken(string path, int beginline, int beginpos, int endline, int endpos)
+        {
+            var pingToken = new Token(path, ETokenType.None, "", beginline, beginpos);
+            pingToken.SetSrouceEnd(endline, endpos);
+
+            var find1 = m_PintTokenList.Find(a => a.sourceBeginLine == beginline && a.sourceBeginChar == beginpos);
+            if (find1 == null)
+            {
+                m_PintTokenList.Add(pingToken);
+            }
         }
         public void SetRefFromType(  RefFromType type )
         {

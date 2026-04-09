@@ -1,4 +1,4 @@
-//****************************************************************************
+﻿//****************************************************************************
 //  File:      IRMetaClass.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -36,7 +36,7 @@ namespace SimpleLanguage.IR
         public List<IRMetaType> templateTypeList => m_IRMetaTypeList;
         // number of generated/template meta types
         public int templateCount => m_TemplateCount;
-        /// <summary>Number of template parameters declared in source (e.g. <c>class Foo&lt;T,U&gt;</c> → 2). Not the same as <see cref="templateCount"/>.</summary>
+        /// <summary>Number of template parameters declared in source (e.g. <c>class Foo&lt;T,U&gt;</c> 鈫?2). Not the same as <see cref="templateCount"/>.</summary>
         public int templateParameterCount => m_MetaClass?.metaTemplateList?.Count ?? 0;
         // template relations mapping: key is related class id, value maps template index -> IRMetaType
         public Dictionary<int, Dictionary<int, IRMetaType>> templateRelation => m_IRMetaClassMapTemplateDict;
@@ -95,7 +95,7 @@ namespace SimpleLanguage.IR
         {
             if( index >= m_IRNotStaticMethodList.Count || index < 0 )
             {
-                Log.AddVM(EError.None, "GetIRMethodByIndex is null");
+                Log.AddVM(LID.Unknown, "GetIRMethodByIndex is null");
                 return null;
             }
             return m_IRNotStaticMethodList[index];
@@ -241,8 +241,8 @@ namespace SimpleLanguage.IR
                     //    && !string.IsNullOrEmpty(this.m_SourcePath)
                     //    && this.m_SourcePath.EndsWith(".sp", System.StringComparison.OrdinalIgnoreCase);
 
-                    // const 成员需要进入 globalStaticVariableList，由 VM 在全局阶段初始化（与「非 Project/非模板静态」路径一致）。
-                    // 若同时放进 staticIRMetaVariableList，会与全局初始化重复。
+                    // const 鎴愬憳闇€瑕佽繘鍏?globalStaticVariableList锛岀敱 VM 鍦ㄥ叏灞€闃舵鍒濆鍖栵紙涓庛€岄潪 Project/闈炴ā鏉块潤鎬併€嶈矾寰勪竴鑷达級銆?
+                    // 鑻ュ悓鏃舵斁杩?staticIRMetaVariableList锛屼細涓庡叏灞€鍒濆鍖栭噸澶嶃€?
                     //if (v.isConst || isProjectLikeClass )
                     //{
                     //    IRManager.instance.AddGlobalMetaMemberVariable(irmv);
