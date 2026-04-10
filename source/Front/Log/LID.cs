@@ -533,5 +533,8 @@
 
         MetaCoreExpressIsNull = 11009,
         MetaCoreDefineTypeIsNull = 11010,
+        FileFunctionDefineConflict = 11011,
+        FileFunctionDefineNotHandle = 11012,
+        FileFunctionDefineNotName = 11013,
     }
 }

@@ -465,8 +465,8 @@ namespace SimpleLanguage.Compile
                 m_FileMeta.SetDeep(0);
 #endif
 
-                Log.AddNodeLog( LID.ShowExtendMessage, "解析成Code代码结构文件成功!!! 下一步，可以生产Meta文件了 \n " +
-                    "生成FileMeta文件成功!!! 下一步，可以 进行混合了");
+                //Log.AddNodeLog( LID.ShowExtendMessage, "解析成Code代码结构文件成功!!! 下一步，可以生产Meta文件了  "
+                //+ "生成FileMeta文件成功!!! 下一步，可以 进行混合了");
             }
             else
             {

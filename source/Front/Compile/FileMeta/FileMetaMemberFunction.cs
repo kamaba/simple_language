@@ -227,7 +227,7 @@ namespace SimpleLanguage.Compile
         public bool ParseFunction(List<Node> nodeList)
         {
             Token permissionToken = null;
-            Token virtualToken = null;
+            Token overrideToken = null;
             int addCount = 0;
             bool isError = false;
             Node returnClassNameNode = null;
@@ -256,7 +256,7 @@ namespace SimpleLanguage.Compile
                     {
                         if(funNameNode != null )
                         {
-                            Log.AddFileMetaLog( LID.Unknown, "Error 已有函数实体，不能同时出现两个函数实体!");
+                            Log.AddFileMetaLog( LID.ShowExtendMessage, token, "Error 已有函数实体，不能同时出现两个函数实体!");
                         }
                         funNameNode = cnode;
                     }
@@ -280,24 +280,24 @@ namespace SimpleLanguage.Compile
                         else
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次权限!!");
+                            Log.AddFileMetaLog(LID.FileFunctionDefineConflict, token, $"permission: [{permissionToken.lexeme.ToString()}]");
                         }
                     }
                     else if (token.type == ETokenType.Override)
                     {
-                        if (virtualToken != null)
+                        if (overrideToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次Override!!");
+                            Log.AddFileMetaLog(LID.FileFunctionDefineConflict, token, $"override:[{overrideToken.lexeme.ToString()}]");
                         }
-                        virtualToken = token;
+                        overrideToken = token;
                     }
                     else if (token.type == ETokenType.Abstract)
                     {
                         if (m_AbstractToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.Unknown, "Error 解析过了一次Abstract!!");
+                            Log.AddFileMetaLog(LID.FileFunctionDefineConflict, token, $"abstract:[{m_AbstractToken.lexeme.ToString()}]");
                         }
                         m_AbstractToken = token;
                     }
@@ -310,7 +310,7 @@ namespace SimpleLanguage.Compile
                         if (getToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.Unknown, " Error 解析类型多个get");
+                            Log.AddFileMetaLog(LID.FileFunctionDefineConflict, token, $"get:[{getToken.lexeme.ToString()}]" );
                         }
                         getToken = token;
                     }
@@ -319,7 +319,7 @@ namespace SimpleLanguage.Compile
                         if (setToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.Unknown, " Error 解析类型多个set");
+                            Log.AddFileMetaLog(LID.FileFunctionDefineConflict, token, $"set:[{getToken.lexeme.ToString()}]");
                         }
                         setToken = token;
                     }
@@ -332,7 +332,7 @@ namespace SimpleLanguage.Compile
                         if (interfaceToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.Unknown, "Error 解析interface已使用过一次，不允许重复使用!!");
+                            Log.AddFileMetaLog(LID.FileFunctionDefineConflict, token, $"set:[{interfaceToken.lexeme.ToString()}]" );
                         }
                         interfaceToken = token;
                     }
@@ -341,21 +341,21 @@ namespace SimpleLanguage.Compile
                         if(finalToken != null )
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.Unknown, " Error 解析类型多个final");
+                            Log.AddFileMetaLog(LID.FileFunctionDefineConflict, token, $"final:[{finalToken.lexeme.ToString()}]" );
                         }
                         finalToken = token;
                     }
                     else
                     {
                         isError = true;
-                        Log.AddFileMetaLog(LID.Unknown, "Error 有其它未知类型在class中" );
+                        Log.AddFileMetaLog(LID.FileFunctionDefineNotHandle,  token, $"");
                         break;
                     }
                 }
             }
             if(funNameNode == null )
             {
-                Log.AddFileMetaLog(LID.Unknown, "Eror 没有找到合适的函数类型: 位置: " + nodeList[0].token?.ToLexemeAllString());
+                Log.AddFileMetaLog(LID.FileFunctionDefineNotName, nodeList[0].token );
                 return false;
             }
 
@@ -371,9 +371,9 @@ namespace SimpleLanguage.Compile
             }
             if( isError )
             {
-                Log.AddFileMetaLog(LID.Unknown, "ParseFunction 解析函数");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, m_Token, "ParseFileMetaMemberFunction have Error");
             }
-            m_OverrideToken = virtualToken;            
+            m_OverrideToken = overrideToken;            
             m_PermissionToken = permissionToken;
             m_StaticToken = staticToken;
             m_GetToken = getToken;

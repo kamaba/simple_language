@@ -63,20 +63,20 @@ namespace SimpleLanguage.Logging
             m_SB.Append($"[{time.ToString("hh:mm:ss fff")}] ");
             m_SB.Append($"[{logType.ToString()}] ");
             m_SB.Append($"[{errorType.ToString()}] " );
-            m_SB.Append(" [" + error.ToString() + " ] ");
+            m_SB.Append(" [" + error.ToString() + "] ");
 
             if (!string.IsNullOrEmpty(filePath))
             {
-                m_SB.Append($"file: [{filePath}_{sourceBeginLine}_{sourceEndLine} ");
+                m_SB.Append($"Position:[{filePath}_{sourceBeginLine}_{sourceEndLine}] ");
             }
 
             if( !string.IsNullOrWhiteSpace(message ) )
             {
-                m_SB.Append($" Info: [" + message + " ]");
+                m_SB.Append($" Info:[" + message + "]");
             }
             if (!string.IsNullOrWhiteSpace(extendMessage))
             {
-                m_SB.Append($" Extend: [" + extendMessage + " ]");
+                m_SB.Append($" Extend:[" + extendMessage + "]");
             }
             return m_SB.ToString();
         }
@@ -104,45 +104,50 @@ namespace SimpleLanguage.Logging
         //--------------------------------Process----------------------------------------------
         public static LogData AddProcessLog(EProcess proc, LID lid, string msg)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, null, null, msg ); ;
+            return WriteCoreByToken(lid, EErrorType.Process, null, null, msg ); ;
         }
         //--------------------------------Token----------------------------------------------
         public static LogData AddTokenByString( LID lid, string path, int sLine, int sChar, int eLine, int eChar, string msg)
         {
             var token = new Token(path, ETokenType.None, sLine, sChar, eLine, eChar);
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, msg); ;
+            return WriteCoreByToken(lid, EErrorType.ParseToken, token, null, msg); ;
         }
         public static LogData AddTokenLog(LID lid, string msg)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, null, null, msg); ;
+            return WriteCoreByToken(lid, EErrorType.ParseToken, null, null, msg); ;
         }
         public static LogData AddTokenLog(LID lid, string msg, Token token, string extendMessage = null)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, ""); 
+            return WriteCoreByToken(lid, EErrorType.ParseToken, token, null, ""); 
         }
 
         //--------------------------------Node----------------------------------------------
         public static LogData AddNodeLog(LID lid, string msg)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, null, null, "");
+            return WriteCoreByToken(lid, EErrorType.ParseNode, null, null, msg);
         }
 
         public static LogData AddNodeLog(LID lid, string msg, Token token, string extendMessage = null)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, "");
+            return WriteCoreByToken(lid, EErrorType.ParseNode, token, null, "");
         }
         //--------------------------------FileMeta----------------------------------------------
-        public static LogData AddFileMetaLog(LID lid, Token token)
+        public static LogData AddFileMetaLog(LID lid, Token token, string msg = "" )
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, new object[1] { token }, "" );
+            return WriteCoreByToken(lid, EErrorType.ParseFile, token, new object[1] { token }, msg);
         }
         public static LogData AddFileMetaLog(LID lid, string msg)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, null, null, msg);
+            return WriteCoreByToken(lid, EErrorType.ParseFile, null, null, msg);
         }
-        public static LogData AddFileMetaLog(LID lid, string msg, Token token, string extendMessage = null)
+        public static LogData AddFileMetaLog(LID lid, string msg, params object[] objs)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, "");
+            Token token = null;
+            if( objs.Length > 0 )
+            {
+                token = objs[0] as Token;
+            }
+            return WriteCoreByToken(lid, EErrorType.ParseFile, token, objs, msg);
         }
 
         //--------------------------------MetaCore----------------------------------------------
@@ -168,12 +173,12 @@ namespace SimpleLanguage.Logging
         //-------------------------------GenIR----------------------------------------------
         public static LogData AddIRLog(LID lid, string msg)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, null, null, ""); ;
+            return WriteCoreByToken(lid, EErrorType.GenIR, null, null, ""); ;
         }
 
         public static LogData AddIRLog(LID lid, string msg, Token token, string extendMessage = null)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, ""); ;
+            return WriteCoreByToken(lid, EErrorType.GenIR, token, null, ""); ;
         }
 
         private static LogData WriteCoreByToken(
