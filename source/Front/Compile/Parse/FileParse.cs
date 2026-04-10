@@ -59,6 +59,7 @@ namespace SimpleLanguage.Compile
         }
         public bool LoadFile()
         {
+            Log.AddProjectLog( LID.ProjectCompileFileStart, "", m_FilePath );
             m_FileCompileState.SetLoadState( FileCompileState.ELoadState.LoadStart );
             string realpath = Path.Combine(ProjectManager.projectPath, m_FilePath);
             using (var stream = File.OpenRead(realpath))

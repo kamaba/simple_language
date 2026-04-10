@@ -40,6 +40,7 @@ namespace SimpleLanguage.Logging
     {
         public LID error { get; set; } = LID.None;
         public EErrorType errorType { get; set; } = EErrorType.None;
+        public LogType logType { get; set; } = LogType.Info;
         public string message { get; set; }
         public string filePath { get; set; }
         public int sourceBeginLine { get; set; }         //开始所在行
@@ -59,22 +60,24 @@ namespace SimpleLanguage.Logging
         {
             m_SB.Clear();
 
-            m_SB.Append($"类型: [{errorType.ToString()}] " );
-            m_SB.Append(" Error: [" + error.ToString() + " ] ");
+            m_SB.Append($"[{time.ToString("hh:mm:ss fff")}] ");
+            m_SB.Append($"[{logType.ToString()}] ");
+            m_SB.Append($"[{errorType.ToString()}] " );
+            m_SB.Append(" [" + error.ToString() + " ] ");
 
             if (!string.IsNullOrEmpty(filePath))
             {
-                m_SB.Append($" FilePath: [{filePath}] ");
-                m_SB.Append($" SLine: [{sourceBeginLine}] ");
-                m_SB.Append($" ELine: [{sourceEndLine}] ");
+                m_SB.Append($"file: [{filePath}_{sourceBeginLine}_{sourceEndLine} ");
             }
 
-            m_SB.Append($" Info: [" + message + " ]");
+            if( !string.IsNullOrWhiteSpace(message ) )
+            {
+                m_SB.Append($" Info: [" + message + " ]");
+            }
             if (!string.IsNullOrWhiteSpace(extendMessage))
             {
                 m_SB.Append($" Extend: [" + extendMessage + " ]");
             }
-
             return m_SB.ToString();
         }
     }
@@ -91,86 +94,86 @@ namespace SimpleLanguage.Logging
         //-------------------------------Project----------------------------------------------
         public static LogData AddProjectLog(LID lid, string msg, params object[] par)
         {
-            return WriteCoreByToken(lid, EErrorType.Project, null, null, msg, par );
+            return WriteCoreByToken(lid, EErrorType.Project, null, par, msg );
         }
 
         public static LogData AddProjectLog(LID lid, string msg, Token token, string extendMessage = null)
         {
-            return WriteCoreByToken(lid, EErrorType.Project, token, null, "", null); ;
+            return WriteCoreByToken(lid, EErrorType.Project, token, null, ""); ;
         }
         //--------------------------------Process----------------------------------------------
         public static LogData AddProcessLog(EProcess proc, LID lid, string msg)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, null, null, msg, null); ;
+            return WriteCoreByToken(lid, EErrorType.ParseMeta, null, null, msg ); ;
         }
         //--------------------------------Token----------------------------------------------
         public static LogData AddTokenByString( LID lid, string path, int sLine, int sChar, int eLine, int eChar, string msg)
         {
             var token = new Token(path, ETokenType.None, sLine, sChar, eLine, eChar);
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, msg, null); ;
+            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, msg); ;
         }
         public static LogData AddTokenLog(LID lid, string msg)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, null, null, msg, null); ;
+            return WriteCoreByToken(lid, EErrorType.ParseMeta, null, null, msg); ;
         }
         public static LogData AddTokenLog(LID lid, string msg, Token token, string extendMessage = null)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, "", null); 
+            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, ""); 
         }
 
         //--------------------------------Node----------------------------------------------
         public static LogData AddNodeLog(LID lid, string msg)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, null, null, "", null);
+            return WriteCoreByToken(lid, EErrorType.ParseMeta, null, null, "");
         }
 
         public static LogData AddNodeLog(LID lid, string msg, Token token, string extendMessage = null)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, "", null);
+            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, "");
         }
         //--------------------------------FileMeta----------------------------------------------
         public static LogData AddFileMetaLog(LID lid, Token token)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, new object[1] { token }, "", null );
+            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, new object[1] { token }, "" );
         }
         public static LogData AddFileMetaLog(LID lid, string msg)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, null, null, msg, null);
+            return WriteCoreByToken(lid, EErrorType.ParseMeta, null, null, msg);
         }
         public static LogData AddFileMetaLog(LID lid, string msg, Token token, string extendMessage = null)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, "", null);
+            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, "");
         }
 
         //--------------------------------MetaCore----------------------------------------------
-        public static LogData AddMetaCoreLog(LID lid, string msg)
+        public static LogData AddMetaCoreLog(LID lid, string msg, params object[] objs)
         {
-            return null;//WriteCore(lid, EErrorType.ParseMeta, null, null, msg, null);
+            return WriteCoreByToken(lid, EErrorType.ParseMeta, null, objs, msg);
         }
-        public static LogData AddMetaCoreLog(LID lid, List<Token> tokens, params object[] objs )
+        public static LogData AddMetaCoreLog(LID lid, List<Token> tokens, params object[] objs)
         {
             //return WriteCore(lid, LogData.EErrorType.ParseMeta, null, null, msg, args);
             Token token = null;
-            if( tokens.Count > 0 )
+            if (tokens.Count > 0)
             {
                 token = tokens[0];
             }
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, tokens.ToArray(), "", null);
+            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, tokens.ToArray(), "");
         }
-        public static LogData AddMetaCoreLog(LID lid, string msg, Token token, string extendMessage = null)
+        public static LogData AddMetaCoreLog(LID lid, string msg, Token token )
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, "", null );
+            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, "" );
         }
 
         //-------------------------------GenIR----------------------------------------------
         public static LogData AddIRLog(LID lid, string msg)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, null, null, "", null); ;
+            return WriteCoreByToken(lid, EErrorType.ParseMeta, null, null, ""); ;
         }
 
         public static LogData AddIRLog(LID lid, string msg, Token token, string extendMessage = null)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, "", null); ;
+            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, ""); ;
         }
 
         private static LogData WriteCoreByToken(
@@ -178,8 +181,7 @@ namespace SimpleLanguage.Logging
             EErrorType errorType,
             Token token,
             object[] objects,
-            string extendMessage,
-            object[] extendsObject )
+            string extendMessage )
         {
             if( !LogManager.TryGet( (int)lid, out var errorDefine ) )
             {
@@ -190,6 +192,7 @@ namespace SimpleLanguage.Logging
             {
                 error = lid,
                 errorType = errorType,
+                logType = errorDefine.LogType,
                 time = DateTime.Now
             };
             if (token != null)
@@ -233,14 +236,7 @@ namespace SimpleLanguage.Logging
 
             if (!string.IsNullOrWhiteSpace(extendMessage))
             {
-                if(extendsObject != null )
-                {
-                    ld.extendMessage = string.Format(extendMessage, extendsObject);
-                }
-                else
-                {
-                    ld.extendMessage = extendMessage;
-                }
+                ld.extendMessage = extendMessage;
             }
             AddLog(ld);
 

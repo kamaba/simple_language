@@ -522,5 +522,16 @@
 
         FileMetaExpressBeforeDefine = 11000,
         ShowExtendMessage = 11001,
+        ProjectSPFilePathNotFound = 11002,
+        ProjectRootPathNotFound = 11003,
+        ProjectShowConfigPath = 11004,
+        ProjectShowConfigSuccessPath = 11005,
+        ProjectParseConfigFailed = 11006,
+        ProjectShowCompileFiles = 11007,
+        ProjectCompileFileStart = 11008,
+
+
+        MetaCoreExpressIsNull = 11009,
+        MetaCoreDefineTypeIsNull = 11010,
     }
 }

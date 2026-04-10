@@ -12,8 +12,4 @@
     <Optimize>False</Optimize>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Log\SimpleLanguageLog.csproj" />
-  </ItemGroup>
-
 </Project>

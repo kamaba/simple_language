@@ -58,7 +58,7 @@ namespace SimpleLanguage.Project
             MetaClass project = ClassManager.instance.GetClassByName("Project");
             if (project == null)
             {
-                Debug.Write("Error project!!");
+                Log.AddProjectLog(LID.ShowExtendMessage, "Error project!!");
                 return;
             }
             MetaMemberFunction mmf = project.GetFirstMetaMemberFunctionByName("Test");
@@ -68,7 +68,7 @@ namespace SimpleLanguage.Project
             }
             if (mmf == null)
             {
-                Debug.Write("Error project._test_函数!!");
+                Log.AddProjectLog(LID.ShowExtendMessage, "Error project._test_函数!!");
                 return;
             }
             //var irmethod = IRManager.instance.GetIRMethod(mmf.allName);
@@ -91,7 +91,7 @@ namespace SimpleLanguage.Project
             MetaMemberFunction mmf = projectEnter.GetFirstMetaMemberFunctionByName("_main_");
             if (mmf == null)
             {
-                Debug.Write("Error 没有找到Project._main_函数!!");
+                Log.AddProjectLog( LID.ShowExtendMessage, "Error 没有找到Project._main_函数!!");
                 return;
             }
             //var irmethod = IRManager.instance.GetIRMethod(mmf.functionAllName);
@@ -153,7 +153,7 @@ namespace SimpleLanguage.Project
                         // 已有同名子节点，要求其必须是命名空间节点
                         if (!cfindNode.isMetaNamespace)
                         {
-                            Log.AddMetaCoreLog(LID.Unknown, "Error 解析namespace添加命名空间节点时，发现已有定义类!!");
+                            Log.AddProjectLog(LID.Unknown, "Error 解析namespace添加命名空间节点时，发现已有定义类!!");
                             return;
                         }
                         // 复用已有命名空间节点
@@ -185,7 +185,7 @@ namespace SimpleLanguage.Project
             var fileList = cfg.CompileFiles.Files;
             var filter = cfg.CompileFilter;
 
-            Log.AddProjectLog( LID.ShowExtendMessage, $"[Project] compileFiles count in config = {fileList.Count}");
+            Log.AddProjectLog( LID.ProjectShowCompileFiles, $"",fileList.Count );
  
             for (int i = 0; i < fileList.Count; i++)
             {
@@ -319,7 +319,7 @@ namespace SimpleLanguage.Project
                 return;
             }
 
-            Log.AddMetaCoreLog(LID.Unknown, $"Unsupported global.data value kind for '{name}': {element.ValueKind}");
+            Log.AddProjectLog(LID.ShowExtendMessage, $"Unsupported global.data value kind for '{name}': {element.ValueKind}");
         }
 
         static MetaData CreateMetaDataByJsonObject(string dataName, JsonElement element, int seed)

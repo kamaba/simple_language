@@ -185,7 +185,7 @@ namespace SimpleLanguage.Project
             var spPath = ResolveProjectSp(inputArgs.projectSpPath);
             if (string.IsNullOrWhiteSpace(spPath) || !File.Exists(spPath))
             {
-                Log.AddProjectLog( LID.Unknown, "Project .sp file not found.", spPath );
+                Log.AddProjectLog( LID.ProjectSPFilePathNotFound, "", spPath );
                 return true;
             }
 

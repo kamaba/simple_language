@@ -365,10 +365,13 @@ namespace SimpleLanguage.Core
             else
             {
             }
-            if (m_Express == null || m_DefineMetaType == null)
+            if( m_DefineMetaType == null)
             {
-                Log.AddMetaCoreLog(LID.Unknown, "Error 表达式为空 或者 表达示必须有返回值");
-                Debug.Assert(false, "");
+                Log.AddMetaCoreLog(LID.MetaCoreDefineTypeIsNull, "Error 表达式为空 或者 表达示必须有返回值", "express" );
+            }
+            if (m_Express == null )
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreExpressIsNull, "", "express" );
             }
         }
         public int CompareTo(MetaMemberVariable mmv)

@@ -49,7 +49,7 @@ namespace SimpleLanguage.Project
             string projectDir = Path.GetDirectoryName(spFilePath) ?? string.Empty;
             if (string.IsNullOrEmpty(projectDir) || !Directory.Exists(projectDir))
             {
-                Log.AddProjectLog(LID.ShowExtendMessage, "项目加载路径不正确!!", spFilePath);
+                Log.AddProjectLog(LID.ProjectRootPathNotFound, "项目加载路径不正确!!", spFilePath);
                 return;
             }
 
@@ -59,10 +59,10 @@ namespace SimpleLanguage.Project
             string projectName = Path.GetFileNameWithoutExtension(spFilePath);
             string jsoncFileName = projectName + ".jsonc";
             string jsoncPath = Path.Combine(projectDir, jsoncFileName);
-            Log.AddProjectLog(LID.ShowExtendMessage, $"[LoadProject] using config: {jsoncPath}");
+            Log.AddProjectLog(LID.ProjectShowConfigPath, "", jsoncPath );
             if (!File.Exists(jsoncPath))
             {
-                Log.AddProjectLog(LID.ShowExtendMessage, $"Error 项目加载路径没有找到 {jsoncFileName} 配置文件!!");
+                Log.AddProjectLog(LID.ProjectShowConfigSuccessPath,"", jsoncPath);
                 return;
             }
 
@@ -74,7 +74,7 @@ namespace SimpleLanguage.Project
             }
             catch( Exception e )
             {
-                Log.AddProjectLog(LID.FilemetaAddMetaclassMetanodeDuplicateNode_10156, "", jsoncPath);
+                Log.AddProjectLog(LID.ProjectParseConfigFailed, "", jsoncPath);
                 return;
             }
             // Generate project guide markdown beside .sp/.jsonc
@@ -145,7 +145,7 @@ namespace SimpleLanguage.Project
                 if( !fileParseList[i].IsExists() )
                 {
                     isSuccess = false;
-                    Debug.Assert( false, "没有找到要编译的文件: " + fileParseList[i].filePath);
+                    Log.AddProjectLog(LID.ShowExtendMessage, "没有找到要编译的文件: " + fileParseList[i].filePath);
                     break;
                 }
             }
