@@ -15,6 +15,7 @@ namespace SimpleLanguage.Project
             {
                 return false;
             }
+            LogManager.Initialize("");
 
             switch (inputArgs.commandType)
             {

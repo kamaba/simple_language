@@ -195,7 +195,7 @@ namespace SimpleLanguage.IR
             else
             {
                 Debug.Assert(false);
-                Log.AddVM(LID.Unknown, $"SVM Error 没有找到加载变量的来源类型！");
+                Log.AddIRLog(LID.Unknown, $"SVM Error 没有找到加载变量的来源类型！");
             }
         }
         public override string ToIRString()
@@ -338,7 +338,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                Log.AddVM(LID.Unknown, $"SVM Error 没有找到加载变量的来源类型！");
+                Log.AddIRLog(LID.Unknown, $"SVM Error 没有找到加载变量的来源类型！");
             }
         }
 

@@ -11,19 +11,6 @@ namespace SimpleLanguage.Logging
         Info,
         Trace,
     }
-
-    public enum LogModule
-    {
-        // legacy aliases
-        TokenParse = 0,
-        NodeParse = 1,
-        FileMeta = 2,
-        CoreMeta = 3,
-        IROutput = 4,
-        Project = 5,
-        VM = 6,
-    }
-
     /// <summary>
     /// How a diagnostic message should be displayed to the user.
     /// </summary>
@@ -45,5 +32,6 @@ namespace SimpleLanguage.Logging
         public bool AbortCompilation { get; set; } = false;
         public ErrorDisplayType DisplayType { get; set; } = ErrorDisplayType.Direct;
         public string FixHint { get; set; } = string.Empty;
+        public string Demo { get; set; } = "";
     }
 }

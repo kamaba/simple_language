@@ -426,7 +426,7 @@ namespace SimpleLanguage.Compile
                 {
                     if( endPoint == 0 )     // 2f
                     {
-                        var ld = Log.AddInHandleToken( m_Path, m_SourceLine, m_SourceChar, LID.Unknown, "璇诲彇娴偣褰㈠繀椤绘湁灏忔暟鐐?!!" );
+                        var ld = Log.AddTokenByString(LID.Unknown, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "" );
                         ld.demo = "2f";
                         ld.advan = "2.0f";
                         AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
@@ -657,8 +657,8 @@ namespace SimpleLanguage.Compile
                 }
                 catch
                 {
-                    var ld = Log.AddInHandleToken(m_Path, m_SourceLine, m_SourceChar, LID.Unknown,
-                        $"Radix number overflow (0{(radix == 16 ? 'x' : radix == 8 ? 'o' : 'b')}{raw}), fallback to Int64.MaxValue.");
+                    var ld = Log.AddTokenByString(LID.Unknown, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar
+                        ,$"Radix number overflow (0{(radix == 16 ? 'x' : radix == 8 ? 'o' : 'b')}{raw}), fallback to Int64.MaxValue.");
                     ld.demo = raw;
                     AddToken(ETokenType.Number, long.MaxValue, EType.Int64);
                 }
@@ -2094,8 +2094,7 @@ namespace SimpleLanguage.Compile
                             }
                             else
                             {
-                                var ld = Log.AddInHandleToken(m_Path, m_SourceLine, m_SourceChar, LID.Unknown, $"瑙ｆ瀽閿欒锛屾棤娉曡В鏋愯繖绉嶇被鍨嬬殑瀛楃[ {this.m_CurChar} ]");
-                                
+                                Log.AddTokenByString(LID.Unknown, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "");                                
                             }
                             break;
                     }

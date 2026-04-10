@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Concurrent;
-using System.Globalization;
-using System.Text;
-using System.Reflection;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 
 namespace SimpleLanguage.Logging
 {
@@ -18,15 +21,14 @@ namespace SimpleLanguage.Logging
 
     public class LogManager
     {
-        private static readonly ConcurrentDictionary<LogModule, ModuleLogger> _loggers = new ConcurrentDictionary<LogModule, ModuleLogger>();
-        private static readonly ConcurrentQueue<Diagnostic> _diagnostics = new ConcurrentQueue<Diagnostic>();
         private static LogRuntimeOptions _options = new LogRuntimeOptions();
         private static int s_DebugListenerAttached = 0;
+        private static ConcurrentDictionary<int, ErrorDefinition> _dict = new ConcurrentDictionary<int, ErrorDefinition>();
 
         static LogManager()
         {
             EnsureBuiltinDefinitions();
-            AttachDebugTraceBridge();
+            //AttachDebugTraceBridge();
         }
 
         public static LogRuntimeOptions Options => _options;
@@ -38,24 +40,146 @@ namespace SimpleLanguage.Logging
                 _options = options;
             }
         }
-
-        public static ModuleLogger GetLogger(LogModule module)
-        {
-            return _loggers.GetOrAdd(module, m => new ModuleLogger(m));
-        }
-
         public static void Initialize(string csvPath)
         {
-            ErrorRegistry.Instance.LoadFromCsv(csvPath);
+            if (!string.IsNullOrWhiteSpace(csvPath))
+            {
+                LoadFromCsv(csvPath);
+            }
+            else
+            {
+                TryLoadEmbeddedCsv();
+            }
             EnsureBuiltinDefinitions();
-            AttachDebugTraceBridge();
+            //AttachDebugTraceBridge();
+        }
+
+        private static void TryLoadEmbeddedCsv()
+        {
+            string[] candidates =
+            {
+                "ErrorDefinitions.csv",
+            };
+
+            var asms = new[]
+            {
+                Assembly.GetExecutingAssembly(),
+                Assembly.GetEntryAssembly(),
+                Assembly.GetCallingAssembly(),
+            }
+            .Where(a => a != null)
+            .Distinct()
+            .ToArray();
+
+            foreach (var asm in asms)
+            {
+                var names = asm.GetManifestResourceNames();
+                foreach (var resName in names)
+                {
+                    if (!candidates.Any(c => resName.EndsWith(c, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        continue;
+                    }
+
+                    using var stream = asm.GetManifestResourceStream(resName);
+                    if (stream == null)
+                    {
+                        continue;
+                    }
+
+                    LoadFromCsvStream(stream);
+                    return;
+                }
+            }
+        }
+        /// <summary>
+        /// Try get an ErrorDefinition by its id.
+        /// </summary>
+        public static bool TryGet(int id, out ErrorDefinition def)
+        {
+            return _dict.TryGetValue(id, out def);
+        }
+
+        public static void LoadFromCsv(string path)
+        {
+            if (!File.Exists(path)) return;
+            using var sr = new StreamReader(path);
+            LoadFromCsvReader(sr);
+        }
+        public static void LoadFromCsvStream(Stream stream)
+        {
+            if (stream == null) return;
+            using var sr = new StreamReader(stream);
+            LoadFromCsvReader(sr);
+        }
+
+        private static void LoadFromCsvReader(StreamReader sr)
+        {
+            _ = sr.ReadLine();
+            while (!sr.EndOfStream)
+            {
+                var line = sr.ReadLine();
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                var parts = SplitCsvLine(line);
+                if (parts.Length < 8) continue;
+                if (!int.TryParse(parts[0], out var id)) continue;
+                var def = new ErrorDefinition();
+                def.Id = id;
+
+                def.MessageTemplate = parts[1];
+                Enum.TryParse<LogType>(parts[2], true, out var sev);
+                def.LogType = sev;
+                if (!int.TryParse(parts[3], out var pc)) pc = 0;
+                def.ParamCount = pc;
+                bool.TryParse(parts[4], out var ac);
+                def.BlockOnErrorAssert = ac;
+                bool.TryParse(parts[5], out var al);
+                def.AbortCompilation = al;
+                Enum.TryParse<ErrorDisplayType>(parts[6], true, out var dtLegacy);
+                def.DisplayType = dtLegacy;
+                def.FixHint = parts[7];
+                _dict[def.Id] = def;
+            }
+        }
+
+        private static string[] SplitCsvLine(string line)
+        {
+            var list = new List<string>();
+            bool inQuote = false;
+            var cur = new System.Text.StringBuilder();
+            for (int i = 0; i < line.Length; i++)
+            {
+                var c = line[i];
+                if (c == '"')
+                {
+                    inQuote = !inQuote;
+                    continue;
+                }
+                if (c == ',' && !inQuote)
+                {
+                    list.Add(cur.ToString());
+                    cur.Clear();
+                    continue;
+                }
+                cur.Append(c);
+            }
+            list.Add(cur.ToString());
+            return list.ToArray();
+        }
+
+        /// <summary>
+        /// Register or update an ErrorDefinition programmatically.
+        /// </summary>
+        public static void Register(ErrorDefinition def)
+        {
+            _dict[def.Id] = def;
         }
 
         private static void EnsureBuiltinDefinitions()
         {
-            if (!ErrorRegistry.Instance.TryGet((int)LID.Unknown, out _))
+            if (!TryGet((int)LID.Unknown, out _))
             {
-                ErrorRegistry.Instance.Register(new ErrorDefinition()
+                Register(new ErrorDefinition()
                 {
                     Id = (int)LID.Unknown,
                     //Module = LogModule.Project,
@@ -71,224 +195,41 @@ namespace SimpleLanguage.Logging
             }
         }
 
-        private static void AttachDebugTraceBridge()
-        {
-            if (System.Threading.Interlocked.Exchange(ref s_DebugListenerAttached, 1) == 1)
-            {
-                return;
-            }
+        //private static void AttachDebugTraceBridge()
+        //{
+        //    if (System.Threading.Interlocked.Exchange(ref s_DebugListenerAttached, 1) == 1)
+        //    {
+        //        return;
+        //    }
 
-            var listener = new DebugLogTraceListener();
-            bool exists = false;
-            foreach (TraceListener item in Trace.Listeners)
-            {
-                if (item is DebugLogTraceListener)
-                {
-                    exists = true;
-                    break;
-                }
-            }
-            if (!exists)
-            {
-                Trace.Listeners.Add(listener);
-            }
-        }
+        //    var listener = new DebugLogTraceListener();
+        //    bool exists = false;
+        //    foreach (TraceListener item in Trace.Listeners)
+        //    {
+        //        if (item is DebugLogTraceListener)
+        //        {
+        //            exists = true;
+        //            break;
+        //        }
+        //    }
+        //    if (!exists)
+        //    {
+        //        Trace.Listeners.Add(listener);
+        //    }
+        //}
 
-        internal static void AddDiagnostic(Diagnostic diag)
-        {
-            if (diag != null)
-            {
-                _diagnostics.Enqueue(diag);
-            }
-        }
+        //internal static void AddDiagnostic(Diagnostic diag)
+        //{
+        //    if (diag != null)
+        //    {
+        //        _diagnostics.Enqueue(diag);
+        //    }
+        //}
 
-        public static Diagnostic[] GetDiagnosticsSnapshot()
-        {
-            return _diagnostics.ToArray();
-        }
+        //public static Diagnostic[] GetDiagnosticsSnapshot()
+        //{
+        //    return _diagnostics.ToArray();
+        //}
     }
 
-    public class ModuleLogger : ILogger
-    {
-        private readonly LogModule _module;
-        public ModuleLogger(LogModule module)
-        {
-            _module = module;
-        }
-
-        public void Log(int errorId, params object[] args)
-        {
-            if (!ErrorRegistry.Instance.TryGet(errorId, out var def))
-            {
-                Console.WriteLine($"Unknown error id:{errorId}");
-                return;
-            }
-            var msg = FormatMessage(def, args);
-            var diag = new Diagnostic()
-            {
-                Id = def.Id,
-                LogType = def.LogType,
-                //Module = def.Module,
-                Message = msg,
-                FixHint = def.FixHint
-            };
-            Console.WriteLine(diag.ToString());
-            LogManager.AddDiagnostic(diag);
-
-            HandleBlocking(def, msg);
-        }
-
-        public void LogWithToken(int errorId, object token, params object[] args)
-        {
-            if (!ErrorRegistry.Instance.TryGet(errorId, out var def))
-            {
-                Console.WriteLine($"Unknown error id:{errorId}");
-                return;
-            }
-            var tokenInfo = ExtractTokenInfo(token);
-            var msg = FormatMessage(def, args);
-            var diag = new Diagnostic()
-            {
-                Id = def.Id,
-                LogType = def.LogType,
-                //Module = def.Module,
-                Message = msg,
-                FixHint = def.FixHint,
-                FilePath = tokenInfo.Path,
-                StartLine = tokenInfo.StartLine,
-                StartChar = tokenInfo.StartChar,
-                EndLine = tokenInfo.EndLine,
-                EndChar = tokenInfo.EndChar,
-                Token = token,
-                TokenSummary = tokenInfo.Summary,
-            };
-            Console.WriteLine(diag.ToString());
-            LogManager.AddDiagnostic(diag);
-
-            HandleBlocking(def, msg);
-        }
-
-        public void Assert(int errorId, params object[] args)
-        {
-            if (!ErrorRegistry.Instance.TryGet(errorId, out var def))
-            {
-                throw new CompilationAbortException(errorId, "Unknown assert error");
-            }
-            if (!LogManager.Options.EnableAssertFeature || !def.EnableAssert)
-            {
-                Log(errorId, args);
-                return;
-            }
-            var msg = FormatMessage(def, args);
-            throw new CompilationAbortException(def.Id, msg, true);
-        }
-
-        private static string FormatMessage(ErrorDefinition def, object[] args)
-        {
-            string msg = def.MessageTemplate;
-            try
-            {
-                if (def.ParamCount > 0 && args != null)
-                {
-                    msg = string.Format(CultureInfo.InvariantCulture, def.MessageTemplate, args);
-                }
-            }
-            catch
-            {
-                msg = def.MessageTemplate + " [format error]";
-            }
-            return msg;
-        }
-
-        private static void HandleBlocking(ErrorDefinition def, string message)
-        {
-            bool isAssert = def.LogType == LogType.Assert;
-            bool isError = def.LogType == LogType.Error;
-
-            if (isAssert && (!LogManager.Options.EnableAssertFeature || !def.EnableAssert))
-            {
-                return;
-            }
-
-            bool shouldBlockCurrent = def.BlockOnErrorAssert
-                || (isAssert && LogManager.Options.BlockOnAssert)
-                || (isError && LogManager.Options.BlockOnError);
-
-            bool shouldAbortCompilation = def.AbortCompilation
-                || (isAssert && LogManager.Options.AbortCompilationOnAssert)
-                || (isError && LogManager.Options.AbortCompilationOnError);
-
-            if (shouldBlockCurrent || shouldAbortCompilation)
-            {
-                throw new CompilationAbortException(def.Id, message, shouldAbortCompilation);
-            }
-        }
-
-        private static TokenInfo ExtractTokenInfo(object token)
-        {
-            if (token == null)
-            {
-                return TokenInfo.Empty;
-            }
-
-            string path = ReadProperty<string>(token, "path") ?? string.Empty;
-            int sLine = ReadProperty<int>(token, "sourceBeginLine");
-            int sChar = ReadProperty<int>(token, "sourceBeginChar");
-            int eLine = ReadProperty<int>(token, "sourceEndLine");
-            int eChar = ReadProperty<int>(token, "sourceEndChar");
-            object lexeme = ReadProperty<object>(token, "lexeme");
-            object type = ReadProperty<object>(token, "type");
-
-            string summary = string.Empty;
-            if (lexeme != null || type != null)
-            {
-                summary = $"[Token lexeme={lexeme}, type={type}]";
-            }
-
-            return new TokenInfo(path, sLine, sChar, eLine, eChar, summary);
-        }
-
-        private static T ReadProperty<T>(object obj, string name)
-        {
-            try
-            {
-                var p = obj.GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-                if (p == null) return default;
-                var val = p.GetValue(obj);
-                if (val == null) return default;
-
-                if (val is T matched)
-                {
-                    return matched;
-                }
-                return (T)Convert.ChangeType(val, typeof(T), CultureInfo.InvariantCulture);
-            }
-            catch
-            {
-                return default;
-            }
-        }
-
-        private readonly struct TokenInfo
-        {
-            public static TokenInfo Empty => new TokenInfo(string.Empty, 0, 0, 0, 0, string.Empty);
-
-            public TokenInfo(string path, int sLine, int sChar, int eLine, int eChar, string summary)
-            {
-                Path = path;
-                StartLine = sLine;
-                StartChar = sChar;
-                EndLine = eLine;
-                EndChar = eChar;
-                Summary = summary;
-            }
-
-            public string Path { get; }
-            public int StartLine { get; }
-            public int StartChar { get; }
-            public int EndLine { get; }
-            public int EndChar { get; }
-            public string Summary { get; }
-        }
-    }
 }

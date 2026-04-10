@@ -517,5 +517,9 @@
         FilemetaInt64ClassType_10510 = 10510,
         FilemetaStringobjClassType_10511 = 10511,
         FilemetaClassobjClassType_10512 = 10512,
+
+
+
+        FileMetaExpressBeforeDefine = 11000,
     }
 }

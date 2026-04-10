@@ -1311,7 +1311,7 @@ namespace SimpleLanguage.Compile
                 {
                     if(fmbt != null )
                     {
-                        Log.AddFileMetaLog(LID.Unknown, "表达式不允许多个自定义元素存在33!!", fmbt.token );
+                        Log.AddFileMetaLog( LID.FileMetaExpressBeforeDefine, fmbt.token );
                     }
                     fmbt = new FileMetaCallTerm(m_FileMeta, node);
                     fmbt.priority = int.MaxValue;

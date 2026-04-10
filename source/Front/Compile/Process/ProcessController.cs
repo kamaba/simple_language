@@ -34,7 +34,7 @@ namespace SimpleLanguage.Compile.Process
                     // log and notify
                     try
                     {
-                        if (ErrorRegistry.Instance.TryGet(errorId, out var def))
+                        if (LogManager.TryGet(errorId, out var def))
                         {
                             //var logger = LogManager.GetLogger(def.Module);
                             //logger.Log(errorId, message);
@@ -43,9 +43,9 @@ namespace SimpleLanguage.Compile.Process
                         else
                         {
                             // fallback log
-                            var logger = LogManager.GetLogger(LogModule.FileMeta);
-                            logger.Log((int)LID.Unknown, message);
-                            Aborted?.Invoke(new ErrorDefinition { Id = errorId, MessageTemplate = message }, message);
+                            //var logger = LogManager.GetLogger(LogModule.FileMeta);
+                            //logger.Log((int)LID.Unknown, message);
+                            //Aborted?.Invoke(new ErrorDefinition { Id = errorId, MessageTemplate = message }, message);
                         }
                     }
                     catch (Exception ex)

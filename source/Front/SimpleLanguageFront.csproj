@@ -32,6 +32,12 @@
     <None Remove="tools\**" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Log\ErrorDefinitions.csv" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Log\ErrorDefinitions.csv" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="libLLVM" Version="21.1.8" />
     <PackageReference Include="libLLVM.runtime.win-x64" Version="21.1.8" />
     <PackageReference Include="swigged.llvm" Version="70.0.1" />
